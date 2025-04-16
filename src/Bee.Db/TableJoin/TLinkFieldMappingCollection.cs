@@ -1,0 +1,11 @@
+﻿using Bee.Base;
+
+namespace Bee.Db
+{
+    /// <summary>
+    /// 關連欄位對應集合。
+    /// </summary>
+    internal class TLinkFieldMappingCollection : TKeyCollectionBase<TLinkFieldMapping>
+    {
+    }
+}
