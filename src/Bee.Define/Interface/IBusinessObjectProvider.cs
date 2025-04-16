@@ -1,0 +1,23 @@
+﻿using System;
+
+namespace Bee.Define
+{
+    /// <summary>
+    /// 商業邏輯物件提供者介面。
+    /// </summary>
+    public interface IBusinessObjectProvider
+    {
+        /// <summary>
+        /// 建立系統層級商業邏輯物件。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        ISystemObject CreateSystemObject(Guid accessToken);
+
+        /// <summary>
+        /// 建立功能層級商業邏輯物件。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="progID">程式代碼。</param>
+        IBusinessObject CreateBusinessObject(Guid accessToken, string progID);
+    }
+}
