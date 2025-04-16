@@ -29,6 +29,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Db.UnitTests", "tests\B
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Cache.UnitTests", "tests\Bee.Cache.UnitTests\Bee.Cache.UnitTests.csproj", "{5389F37D-4E76-49C7-83A2-3EA38E289436}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Business.UnitTests", "tests\Bee.Business.UnitTests\Bee.Business.UnitTests.csproj", "{0B0BFB85-ECC4-4178-A827-366603660200}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Connect.UnitTests", "tests\Bee.Connect.UnitTests\Bee.Connect.UnitTests.csproj", "{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,6 +79,14 @@ Global
 		{5389F37D-4E76-49C7-83A2-3EA38E289436}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5389F37D-4E76-49C7-83A2-3EA38E289436}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5389F37D-4E76-49C7-83A2-3EA38E289436}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B0BFB85-ECC4-4178-A827-366603660200}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B0BFB85-ECC4-4178-A827-366603660200}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B0BFB85-ECC4-4178-A827-366603660200}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B0BFB85-ECC4-4178-A827-366603660200}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -90,6 +102,8 @@ Global
 		{82CED0BE-547F-25DF-8B4A-D73F1099AA77} = {77848C0B-F388-489F-B772-FD982081A609}
 		{A7AB2977-8EC1-16C0-376E-939762BFBE4D} = {77848C0B-F388-489F-B772-FD982081A609}
 		{5389F37D-4E76-49C7-83A2-3EA38E289436} = {77848C0B-F388-489F-B772-FD982081A609}
+		{0B0BFB85-ECC4-4178-A827-366603660200} = {77848C0B-F388-489F-B772-FD982081A609}
+		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99} = {77848C0B-F388-489F-B772-FD982081A609}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7E07F2-83DF-4D84-82CE-C010B47BBCE6}
