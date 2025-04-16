@@ -1,0 +1,30 @@
+﻿using System;
+using Bee.Define;
+
+namespace Bee.Business
+{
+    /// <summary>
+    /// 功能層級商業邏輯物件。
+    /// </summary>
+    public class TBusinessObject : TBaseBusinessObject, IBusinessObject
+    {
+        #region 建構函式
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="progID">程式代碼。</param>
+        public TBusinessObject(Guid accessToken, string progID) : base(accessToken)
+        {
+            this.ProgID = progID;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 程式代碼。
+        /// </summary>
+        public string ProgID { get; private set; }
+    }
+}

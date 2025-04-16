@@ -1,0 +1,106 @@
+﻿using System;
+using Bee.Base;
+using Bee.Define;
+
+namespace Bee.Connect
+{
+    /// <summary>
+    /// 系統層級服務連線器。
+    /// </summary>
+    public class TSystemConnector : TApiConnector
+    {
+        #region 建構函式
+
+        /// <summary>
+        /// 建構函式，採用近端連線。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        public TSystemConnector(Guid accessToken) : base(accessToken)
+        { }
+
+        /// <summary>
+        /// 建構函式，採用遠端連線。
+        /// </summary>
+        /// <param name="endpoint">服務端點。。</param>
+        /// <param name="accessToken">存取令牌。</param>
+        public TSystemConnector(string endpoint, Guid accessToken) : base(endpoint, accessToken)
+        { }
+
+        #endregion
+
+        /// <summary>
+        /// 執行 API 方法。
+        /// </summary>
+        /// <param name="action">執行動作。</param>
+        /// <param name="value">對應執行動作的傳入參數。</param>
+        protected object ApiExecute(string action, object value)
+        {
+            return base.ApiExecute(SysProgIDs.System, action, value);
+        }
+
+        /// <summary>
+        /// 執行自訂方法。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public TExecFuncResult ExecFunc(TExecFuncArgs args)
+        {
+            return ApiExecute(SystemActions.ExecFunc, args) as TExecFuncResult;
+        }
+
+        /// <summary>
+        /// 建立連線。
+        /// </summary>
+        /// <param name="userID">用戶帳號。</param>
+        /// <param name="expiresIn">到期秒數，預設 3600 秒。</param>
+        /// <param name="oneTime">一次性有效。</param>
+        public Guid CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
+        {
+            TCreateSessionArgs oArgs;
+            TCreateSessionResult oResult;
+
+            oArgs = new TCreateSessionArgs();
+            oArgs.UserID = userID;
+            oArgs.ExpiresIn = expiresIn;
+            oArgs.OneTime = oneTime;
+            oResult = ApiExecute(SystemActions.CreateSession, oArgs) as TCreateSessionResult;
+            return oResult.AccessToken;
+        }
+
+        /// <summary>
+        /// 取得定義資料。
+        /// </summary>
+        /// <typeparam name="T">泛型型別。</typeparam>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="keys">取得定義資料的鍵值。</param>
+        public T GetDefine<T>(EDefineType defineType, string[] keys = null)
+        {
+            var args = new TGetDefineArgs()
+            {
+                DefineType = defineType,
+                Keys = keys
+            };
+            var result = ApiExecute(SystemActions.GetDefine, args) as TGetDefineResult;
+            if (StrFunc.IsNotEmpty(result.Xml))
+                return SerializeFunc.XmlToObject<T>(result.Xml);
+            else
+                return default;
+        }
+
+        /// <summary>
+        /// 儲存定義資料。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="defineObject">定義資料。</param>
+        /// <param name="keys">儲存定義資料的鍵值。</param>
+        public void SaveDefine(EDefineType defineType, object defineObject, string[] keys = null)
+        {
+            var args = new TSaveDefineArgs()
+            {
+                DefineType = defineType,
+                DefineObject = defineObject,
+                Keys = keys
+            };
+            ApiExecute(SystemActions.SaveDefine, args);
+        }
+    }
+}

@@ -1,0 +1,69 @@
+﻿using System;
+using Bee.Db;
+using Bee.Define;
+
+namespace Bee.Business
+{
+    /// <summary>
+    /// 系統層級商業邏輯物件提供的自訂方法。
+    /// </summary>
+    internal class TSystemExecFunc
+    {
+        #region 建構函式
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        public TSystemExecFunc(Guid accessToken)
+        {
+            AccessToken = accessToken;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 存取令牌。
+        /// </summary>
+        public Guid AccessToken { get; private set; }
+
+        /// <summary>
+        /// Hello 測試方法。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        /// <param name="result">傳出結果。</param>
+        public void Hello(TExecFuncArgs args, TExecFuncResult result)
+        {
+            result.Parameters.Add("Hello", "Hello SystemObject");
+        }
+
+        /// <summary>
+        /// 升級資料表結構。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        /// <param name="result">傳出結果。</param>
+        public void UpgradeTableSchema(TExecFuncArgs args, TExecFuncResult result)
+        {
+            TTableSchemaBuilder oBuilder;
+            string sDatabaseID, sDbName, sTableName;
+            bool bUpgraded;
+
+            sDatabaseID = args.Parameters.GetValue<string>("DatabaseID");
+            sDbName = args.Parameters.GetValue<string>("DbName");
+            sTableName = args.Parameters.GetValue<string>("TableName");
+            oBuilder = new TTableSchemaBuilder(sDatabaseID);
+            bUpgraded = oBuilder.Execute(sDbName, sTableName);
+            result.Parameters.Add("Upgraded", bUpgraded);  // 回傳是否已升級
+        }
+
+        /// <summary>
+        /// 測試資料庫連線。
+        /// </summary>
+        public void TestConnection(TExecFuncArgs args, TExecFuncResult result)
+        {
+            var item = args.Parameters.GetValue<TDatabaseItem>("DatabaseItem");
+            var dbAccess = new TDbAccess(item);
+            dbAccess.TestConnection();
+        }
+    }
+}

@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<PackageIcon>bee.png</PackageIcon>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Version>3.0.5</Version>
+		<Authors>Bee.NET</Authors>
+		<Product>Bee.NET</Product>
+		<Description>The connector library for backend business logic in the Bee.NET Framework.</Description>
+		<Copyright>© Bee.NET. All rights reserved.</Copyright>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageTags>netstandard2.0</PackageTags>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<DocumentationFile></DocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<DocumentationFile></DocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\bee.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Bee.Base\Bee.Base.csproj" />
+		<ProjectReference Include="..\Bee.Define\Bee.Define.csproj" />
+	</ItemGroup>
+
+</Project>
