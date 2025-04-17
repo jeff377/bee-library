@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bee.Cache
+﻿namespace Bee.Cache
 {
     /// <summary>
     /// 頁面狀態快取。

@@ -12,12 +12,10 @@ namespace Bee.Cache
         /// </summary>
         protected override TCacheItemPolicy GetPolicy()
         {
-            TCacheItemPolicy oPolicy;
-
-            oPolicy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineProvider is TFileDefineProvider)
-                oPolicy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbTableSettingsFilePath() };
-            return oPolicy;
+                policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbTableSettingsFilePath() };
+            return policy;
         }
 
         /// <summary>
@@ -25,10 +23,7 @@ namespace Bee.Cache
         /// </summary>
         protected override TDbSchemaSettings CreateInstance()
         {
-            TDbSchemaSettings oValue;
-
-            oValue = BackendInfo.DefineProvider.GetDbSchemaSettings();
-            return oValue;
+            return BackendInfo.DefineProvider.GetDbSchemaSettings();
         }
     }
 }

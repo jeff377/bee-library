@@ -16,43 +16,40 @@ namespace Bee.Cache
         /// <param name="keys">取得定義資料的鍵值。</param>
         public object GetDefine(EDefineType defineType, string[] keys = null)
         {
-            object oValue;
-
-            oValue = null;
             switch (defineType)
             {
                 case EDefineType.SystemSettings:
-                    oValue = this.GetSystemSettings();
-                    break;
+                    return this.GetSystemSettings();
                 case EDefineType.DatabaseSettings:
-                    oValue = this.GetDatabaseSettings();
-                    break;
+                    return this.GetDatabaseSettings();
                 case EDefineType.ProgramSettings:
-                    oValue = this.GetProgramSettings();
-                    break;
+                    return  this.GetProgramSettings();
                 case EDefineType.DbSchemaSettings:
-                    oValue = this.GetDbSchemaSettings();
-                    break;
+                    return this.GetDbSchemaSettings();
                 case EDefineType.DbTable:
-                    if (keys == null || keys.Length != 2)
-                        throw new TException($"{defineType} Keys verification error");
-                    oValue = this.GetDbTable(keys[0], keys[1]);
-                    break;
+                    ValidateKeys(defineType, keys, 2);
+                    return  this.GetDbTable(keys[0], keys[1]);
                 case EDefineType.FormDefine:
-                    if (keys == null || keys.Length != 1)
-                        throw new TException($"{defineType} Keys verification error");
-                    oValue = this.GetFormDefine(keys[0]);
-                    break;
+                    ValidateKeys(defineType, keys, 1);
+                    return this.GetFormDefine(keys[0]);
                 case EDefineType.FormLayout:
-                    if (keys == null || keys.Length != 1)
-                        throw new TException($"{defineType} Keys verification error");
-                    oValue = this.GetFormLayout(keys[0]);
-                    break;
+                    ValidateKeys(defineType, keys, 1);
+                    return  this.GetFormLayout(keys[0]);
                 default:
-                    throw new NotSupportedException();
+                    throw new NotSupportedException($"DefineType '{defineType}' is not supported.");
             }
+        }
 
-            return oValue;
+        /// <summary>
+        /// 驗證鍵值的長度。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="keys">取得定義資料的鍵值。</param>
+        /// <param name="expectedLength">正確鍵值的長度。</param>
+        private void ValidateKeys(EDefineType defineType, string[] keys, int expectedLength)
+        {
+            if (keys == null || keys.Length != expectedLength)
+                throw new TException($"{defineType} Keys verification error. Input: {string.Join(",", keys ?? new string[0])}");
         }
 
         /// <summary>

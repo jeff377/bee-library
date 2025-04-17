@@ -14,11 +14,9 @@ namespace Bee.Cache
         /// </summary>
         protected override TCacheItemPolicy GetPolicy()
         {
-            TCacheItemPolicy oPolicy;
-
-            oPolicy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
-            oPolicy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetSystemSettingsFilePath() };
-            return oPolicy;
+            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetSystemSettingsFilePath() };
+            return policy;
         }
 
         /// <summary>
@@ -27,14 +25,11 @@ namespace Bee.Cache
         /// <returns></returns>
         protected override TSystemSettings CreateInstance()
         {
-            TSystemSettings oValue;
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetSystemSettingsFilePath();
+            string sFilePath = DefinePathInfo.GetSystemSettingsFilePath();
             if (!FileFunc.FileExists(sFilePath))
                 throw new FileNotFoundException($"The file {sFilePath} does not exist.");
-            oValue = SerializeFunc.XmlFileToObject<TSystemSettings>(sFilePath);
-            return oValue;
+
+            return SerializeFunc.XmlFileToObject<TSystemSettings>(sFilePath);
         }
     }
 }

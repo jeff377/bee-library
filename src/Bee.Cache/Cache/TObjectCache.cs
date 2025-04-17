@@ -22,11 +22,9 @@ namespace Bee.Cache
         /// </summary>
         protected virtual TCacheItemPolicy GetPolicy()
         {
-            TCacheItemPolicy oPolicy;
-
             // 預設為相對時間 20 分鐘
-            oPolicy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
-            return oPolicy;
+            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            return policy;
         }
 
         /// <summary>
@@ -50,22 +48,19 @@ namespace Bee.Cache
         /// </summary>
         public virtual T Get()
         {
-            T oValue;
-            string sKey;
-
-            sKey = GetKey();
-
+            // 取得快取鍵值
+            string key = GetKey();
             // 若物件存在於快取區，則直接回傳該快取物件
-            if (SysCache.Contains(sKey))               
-                return (T)SysCache.Get(sKey);
+            if (SysCache.Contains(key))               
+                return (T)SysCache.Get(key);
 
             // 建立物件置入快取區，並回傳該物件
-            oValue = CreateInstance();
-            if (oValue != null)
+            var value = CreateInstance();
+            if (value != null)
             {
-                SysCache.Set(sKey, oValue, GetPolicy());
+                SysCache.Set(key, value, GetPolicy());
             }
-            return oValue;
+            return value;
         }
 
         /// <summary>
@@ -74,10 +69,8 @@ namespace Bee.Cache
         /// <param name="value">要置入快取的物件。</param>
         public virtual void Set(T value)
         {
-            string sKey;
-
-            sKey = GetKey();
-            SysCache.Set(sKey, value, GetPolicy());
+            string key = GetKey();
+            SysCache.Set(key, value, GetPolicy());
         }
 
         /// <summary>
@@ -85,10 +78,8 @@ namespace Bee.Cache
         /// </summary>
         public virtual void Remove()
         {
-            string sKey;
-
-            sKey = GetKey();
-            SysCache.Remove(sKey);
+            string key = GetKey();
+            SysCache.Remove(key);
         }
     }
 }

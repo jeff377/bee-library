@@ -13,16 +13,13 @@ namespace Bee.Cache
         /// <param name="key">成員鍵值。</param>
         protected override TCacheItemPolicy GetPolicy(string key)
         {
-            TCacheItemPolicy oPolicy;
-            string sProgID;
-
             // 程式代碼
-            sProgID = key;
+            string progID = key;
             // 預設為相對時間 20 分鐘
-            oPolicy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineProvider is TFileDefineProvider)
-                oPolicy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormDefineFilePath(sProgID) };
-            return oPolicy;
+                policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormDefineFilePath(progID) };
+            return policy;
         }
 
         /// <summary>
@@ -31,13 +28,9 @@ namespace Bee.Cache
         /// <param name="key">成員鍵值為 [程式代碼]。</param>
         protected override TFormDefine CreateInstance(string key)
         {
-            TFormDefine oValue;
-            string sProgID;
-
             // 程式代碼
-            sProgID = key;
-            oValue = BackendInfo.DefineProvider.GetFormDefine(sProgID);
-            return oValue;
+            string progID = key;
+            return BackendInfo.DefineProvider.GetFormDefine(progID);
         }
     }
 }

@@ -23,11 +23,9 @@ namespace Bee.Cache
         /// <param name="key">成員鍵值。</param>
         protected virtual TCacheItemPolicy GetPolicy(string key)
         {
-            TCacheItemPolicy oPolicy;
-
             // 預設為相對時間 20 分鐘
-            oPolicy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
-            return oPolicy;
+            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            return policy;
         }
 
         /// <summary>
@@ -56,22 +54,19 @@ namespace Bee.Cache
         /// <param name="key">成員鍵值。</param>
         public virtual T Get(string key)
         {
-            T oValue;
-            string sKey;
-
-            sKey = GetCacheKey(key);
-
+            // 取得快取鍵值
+            string cacheKey = GetCacheKey(key);
             // 若物件存在於快取區，則直接回傳該快取物件
-            if (SysCache.Contains(sKey))
-                return (T)SysCache.Get(sKey);
+            if (SysCache.Contains(cacheKey))
+                return (T)SysCache.Get(cacheKey);
 
             // 建立物件置入快取區，並回傳該物件
-            oValue = CreateInstance(key);
-            if (oValue != null)
+            var value = CreateInstance(key);
+            if (value != null)
             {
-                SysCache.Set(sKey, oValue, GetPolicy(key));
+                SysCache.Set(cacheKey, value, GetPolicy(key));
             }
-            return oValue;
+            return value;
         }
 
         /// <summary>
@@ -81,10 +76,8 @@ namespace Bee.Cache
         /// <param name="value">要置入快取的物件。</param>
         public virtual void Set(string key, T value)
         {
-            string sKey;
-
-            sKey = GetCacheKey(key);
-            SysCache.Set(sKey, value, GetPolicy(key));
+            string cacheKey = GetCacheKey(key);
+            SysCache.Set(cacheKey, value, GetPolicy(key));
         }
 
         /// <summary>
@@ -105,10 +98,8 @@ namespace Bee.Cache
         /// <param name="key">成員鍵值。</param>
         public virtual void Remove(string key)
         {
-            string sKey;
-
-            sKey = GetCacheKey(key);
-            SysCache.Remove(sKey);
+            string cacheKey = GetCacheKey(key);
+            SysCache.Remove(cacheKey);
         }
     }
 }

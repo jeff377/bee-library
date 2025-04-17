@@ -30,13 +30,9 @@ namespace Bee.Cache
         /// <param name="key">成員鍵值為 [資料表分類.資料表名稱]。</param>
         protected override TDbTable CreateInstance(string key)
         {
-            TDbTable oValue;
-            string sDbName, sTableName;
-
             // 拆解成員鍵值，取得資料庫名稱及資料表名稱
-            StrFunc.SplitLeft(key, ".", out sDbName, out sTableName);
-            oValue = BackendInfo.DefineProvider.GetDbTable(sDbName, sTableName);
-            return oValue;
+            StrFunc.SplitLeft(key, ".", out string dbName, out string tableName);
+            return BackendInfo.DefineProvider.GetDbTable(dbName, tableName);
         }
 
         /// <summary>
@@ -46,10 +42,8 @@ namespace Bee.Cache
         /// <param name="tableName">資料表名稱。</param>
         public TDbTable Get(string dbName, string tableName)
         {
-            string sKey;
-
-            sKey = $"{dbName}.{tableName}";
-            return base.Get(sKey);
+            string key = $"{dbName}.{tableName}";
+            return base.Get(key);
         }
 
         /// <summary>
@@ -59,10 +53,8 @@ namespace Bee.Cache
         /// <param name="tableName">資料表名稱。</param>
         public void Remove(string categoryID, string tableName)
         {
-            string sKey;
-
-            sKey = $"{categoryID}.{tableName}";
-            base.Remove(sKey);  
+            string key = $"{categoryID}.{tableName}";
+            base.Remove(key);
         }
     }
 }
