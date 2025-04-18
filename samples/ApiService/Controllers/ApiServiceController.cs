@@ -10,6 +10,9 @@ namespace ApiService.Controllers
         [HttpPost]
         public IActionResult Post([FromBody] TApiServiceArgs args)
         {
+            var apiKey = HttpContext.Request.Headers["X-Api-Key"].ToString();
+            var authorization = HttpContext.Request.Headers["Authorization"].ToString();
+
             // 解密處理（如有加密）
             if (args.Encrypted)
             {
