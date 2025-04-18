@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Business.UnitTests", "t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Connect.UnitTests", "tests\Bee.Connect.UnitTests\Bee.Connect.UnitTests.csproj", "{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiService", "samples\ApiService\ApiService.csproj", "{2631F427-A8F0-46D5-895F-B9A9C531007A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,6 +89,10 @@ Global
 		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2631F427-A8F0-46D5-895F-B9A9C531007A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2631F427-A8F0-46D5-895F-B9A9C531007A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2631F427-A8F0-46D5-895F-B9A9C531007A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2631F427-A8F0-46D5-895F-B9A9C531007A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -104,6 +110,7 @@ Global
 		{5389F37D-4E76-49C7-83A2-3EA38E289436} = {77848C0B-F388-489F-B772-FD982081A609}
 		{0B0BFB85-ECC4-4178-A827-366603660200} = {77848C0B-F388-489F-B772-FD982081A609}
 		{3FCC7F7E-A42C-43FA-A5B0-D42845BC4E99} = {77848C0B-F388-489F-B772-FD982081A609}
+		{2631F427-A8F0-46D5-895F-B9A9C531007A} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7E07F2-83DF-4D84-82CE-C010B47BBCE6}
