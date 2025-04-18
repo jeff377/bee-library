@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using System;
+using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Cache
@@ -29,6 +30,24 @@ namespace Bee.Cache
                 UserID = user.UserID,
                 UserName = user.UserName
             };
+        }
+
+        /// <summary>
+        /// 取得連線資訊。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        public TSessionInfo Get(Guid accessToken)
+        {
+            return Get(accessToken.ToString());
+        }
+
+        /// <summary>
+        /// 由快取區移除連線資訊。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        public void Remove(Guid accessToken)
+        {
+            Remove(accessToken.ToString());
         }
     }
 }

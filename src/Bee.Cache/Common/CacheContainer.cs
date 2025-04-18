@@ -21,5 +21,17 @@ namespace Bee.Cache
 
         private static readonly Lazy<TDbTableCache> _dbTable = new Lazy<TDbTableCache>(() => new TDbTableCache());
         internal static TDbTableCache DbTable => _dbTable.Value;
+
+        private static readonly Lazy<TFormDefineCache> _formDefine = new Lazy<TFormDefineCache>(() => new TFormDefineCache());
+        internal static TFormDefineCache FormDefine => _formDefine.Value;
+
+        private static readonly Lazy<TFormLayoutCache> _formLayout = new Lazy<TFormLayoutCache>(() => new TFormLayoutCache());
+        internal static TFormLayoutCache FormLayout => _formLayout.Value;
+
+        private static readonly Lazy<TSessionInfoCache> _sessionInfo = new Lazy<TSessionInfoCache>(() => new TSessionInfoCache());
+        internal static TSessionInfoCache SessionInfo => _sessionInfo.Value;
+
+        private static readonly Lazy<TViewStateCache> viewState = new Lazy<TViewStateCache>(() => new TViewStateCache());
+        internal static TViewStateCache ViewState => viewState.Value;
     }
 }

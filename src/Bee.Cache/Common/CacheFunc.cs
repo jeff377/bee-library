@@ -100,8 +100,7 @@ namespace Bee.Cache
         /// <param name="progID">程式代碼。</param>
         public static TFormDefine GetFormDefine(string progID)
         {
-            var cache = new TFormDefineCache();
-            return cache.Get(progID);
+            return CacheContainer.FormDefine.Get(progID);
         }
 
         /// <summary>
@@ -110,8 +109,7 @@ namespace Bee.Cache
         /// <param name="layoutID">版面代碼。</param>
         public static TFormLayout GetFormLayout(string layoutID)
         {
-            var cache = new TFormLayoutCache();
-            return cache.Get(layoutID);
+            return CacheContainer.FormLayout.Get(layoutID);
         }
 
         /// <summary>
@@ -120,8 +118,7 @@ namespace Bee.Cache
         /// <param name="accessToken">存取令牌。</param>
         public static TSessionInfo GetSessionInfo(Guid accessToken)
         {
-            var cache = new TSessionInfoCache();
-            return cache.Get(accessToken.ToString());
+            return CacheContainer.SessionInfo.Get(accessToken);
         }
 
         /// <summary>
@@ -130,8 +127,7 @@ namespace Bee.Cache
         /// <param name="sessionInfo">連線資訊。</param>
         public static void SetSessionInfo(TSessionInfo sessionInfo)
         {
-            var cache = new TSessionInfoCache();
-            cache.Set(sessionInfo);
+            CacheContainer.SessionInfo.Set(sessionInfo);
         }
 
         /// <summary>
@@ -140,8 +136,7 @@ namespace Bee.Cache
         /// <param name="accessToken">存取令牌。</param>
         public static void RemoveSessionInfo(Guid accessToken)
         {
-            var cache = new TSessionInfoCache();
-            cache.Remove(accessToken.ToString());
+            CacheContainer.SessionInfo.Remove(accessToken);
         }
 
         /// <summary>
@@ -151,8 +146,7 @@ namespace Bee.Cache
         /// <param name="viewState">頁面狀態。</param>
         public static void SaveViewState(Guid uniqueGUID, object viewState)
         {
-            var cache = new TViewStateCache();
-            cache.Set(uniqueGUID.ToString(), viewState);
+            CacheContainer.ViewState.Set(uniqueGUID, viewState);
         }
 
         /// <summary>
@@ -161,8 +155,7 @@ namespace Bee.Cache
         /// <param name="uniqueGUID">頁面識別。</param>
         public static object LoadViewState(Guid uniqueGUID)
         {
-            var cache = new TViewStateCache();
-            return cache.Get(uniqueGUID.ToString());
+            return CacheContainer.ViewState.Get(uniqueGUID);
         }
     }
 }
