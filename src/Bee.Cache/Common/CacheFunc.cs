@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Caching;
 using Bee.Base;
 using Bee.Define;
@@ -16,14 +17,14 @@ namespace Bee.Cache
         /// <param name="policy">快取項目的回收條件。</param>
         internal static CacheItemPolicy CreateCachePolicy(TCacheItemPolicy policy)
         {
-            var itemPolicy = new CacheItemPolicy();
+            var cachePolicy = new CacheItemPolicy();
             if (policy.AbsoluteExpiration != DateTimeOffset.MaxValue)
-                itemPolicy.AbsoluteExpiration = policy.AbsoluteExpiration;
+                cachePolicy.AbsoluteExpiration = policy.AbsoluteExpiration;
             if (policy.SlidingExpiration != TimeSpan.Zero)
-                itemPolicy.SlidingExpiration = policy.SlidingExpiration;
+                cachePolicy.SlidingExpiration = policy.SlidingExpiration;
             if (policy.ChangeMonitorFilePaths != null)
-                itemPolicy.ChangeMonitors.Add(new HostFileChangeMonitor(policy.ChangeMonitorFilePaths));
-            return itemPolicy;
+                cachePolicy.ChangeMonitors.Add(new HostFileChangeMonitor(policy.ChangeMonitorFilePaths));
+            return cachePolicy;
         }
 
         /// <summary>
@@ -31,10 +32,8 @@ namespace Bee.Cache
         /// </summary>
         public static TSystemSettings GetSystemSettings()
         {
-            TSystemSettingsCache oCache;
-
-            oCache = new TSystemSettingsCache();
-            return oCache.Get();
+            var cache = new TSystemSettingsCache();
+            return cache.Get();
         }
 
         /// <summary>
@@ -42,10 +41,8 @@ namespace Bee.Cache
         /// </summary>
         public static TDatabaseSettings GetDatabaseSettings()
         {
-            TDatabaseSettingsCache oCache;
-
-            oCache = new TDatabaseSettingsCache();
-            return oCache.Get();
+            var cache = new TDatabaseSettingsCache();
+            return cache.Get();
         }
 
         /// <summary>
@@ -53,10 +50,8 @@ namespace Bee.Cache
         /// </summary>
         public static TProgramSettings GetProgramSettings()
         {
-            TProgramSettingsCache oCache;
-
-            oCache = new TProgramSettingsCache();
-            return oCache.Get();
+            var cache = new TProgramSettingsCache();
+            return cache.Get();
         }
 
         /// <summary>
@@ -65,16 +60,14 @@ namespace Bee.Cache
         /// <param name="databaseID">資料庫編號。</param>
         public static TDatabaseItem GetDatabaseItem(string databaseID)
         {
-            TDatabaseSettings oSettings;
-
             if (StrFunc.IsEmpty(databaseID))
-                new ArgumentNullException("databaseID");
+                throw new ArgumentNullException(nameof(databaseID));
 
-            oSettings = GetDatabaseSettings();
-            if (!oSettings.Items.Contains(databaseID))
-                throw new TException("DatabaseID '{0}' not found", databaseID);
+            var settings = GetDatabaseSettings();
+            if (!settings.Items.Contains(databaseID))
+                throw new KeyNotFoundException($"DatabaseID '{databaseID}' not found.");
 
-            return oSettings.Items[databaseID];
+            return settings.Items[databaseID];
         }
 
         /// <summary>
@@ -82,10 +75,8 @@ namespace Bee.Cache
         /// </summary>
         public static TDbSchemaSettings GetDbSchemaSettings()
         {
-            TDbSchemaSettingsCache oCache;
-
-            oCache = new TDbSchemaSettingsCache();
-            return oCache.Get();
+            var cache = new TDbSchemaSettingsCache();
+            return cache.Get();
         }
 
         /// <summary>
@@ -95,10 +86,8 @@ namespace Bee.Cache
         /// <param name="tableName">資料表名稱。</param>
         public static TDbTable GetDbTable(string dbName, string tableName)
         {
-            TDbTableCache oCache;
-
-            oCache = new TDbTableCache();
-            return oCache.Get(dbName, tableName);
+            var cache = new TDbTableCache();
+            return cache.Get(dbName, tableName);
         }
 
         /// <summary>
@@ -116,10 +105,8 @@ namespace Bee.Cache
         /// <param name="progID">程式代碼。</param>
         public static TFormDefine GetFormDefine(string progID)
         {
-            TFormDefineCache oCache;
-
-            oCache = new TFormDefineCache();
-            return oCache.Get(progID);
+            var cache = new TFormDefineCache();
+            return cache.Get(progID);
         }
 
         /// <summary>
@@ -169,10 +156,8 @@ namespace Bee.Cache
         /// <param name="viewState">頁面狀態。</param>
         public static void SaveViewState(Guid uniqueGUID, object viewState)
         {
-            TViewStateCache oCache;
-
-            oCache = new TViewStateCache();
-            oCache.Set(uniqueGUID.ToString(), viewState);
+            var cache = new TViewStateCache();
+            cache.Set(uniqueGUID.ToString(), viewState);
         }
 
         /// <summary>
@@ -181,10 +166,8 @@ namespace Bee.Cache
         /// <param name="uniqueGUID">頁面識別。</param>
         public static object LoadViewState(Guid uniqueGUID)
         {
-            TViewStateCache oCache;
-
-            oCache = new TViewStateCache();
-            return oCache.Get(uniqueGUID.ToString());
+            var cache = new TViewStateCache();
+            return cache.Get(uniqueGUID.ToString());
         }
     }
 }
