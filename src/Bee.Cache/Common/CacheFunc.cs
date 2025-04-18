@@ -32,8 +32,7 @@ namespace Bee.Cache
         /// </summary>
         public static TSystemSettings GetSystemSettings()
         {
-            var cache = new TSystemSettingsCache();
-            return cache.Get();
+            return CacheContainer.SystemSettings.Get();
         }
 
         /// <summary>
@@ -41,8 +40,7 @@ namespace Bee.Cache
         /// </summary>
         public static TDatabaseSettings GetDatabaseSettings()
         {
-            var cache = new TDatabaseSettingsCache();
-            return cache.Get();
+            return CacheContainer.DatabaseSettings.Get();
         }
 
         /// <summary>
@@ -50,8 +48,7 @@ namespace Bee.Cache
         /// </summary>
         public static TProgramSettings GetProgramSettings()
         {
-            var cache = new TProgramSettingsCache();
-            return cache.Get();
+            return CacheContainer.ProgramSettings.Get();
         }
 
         /// <summary>
@@ -75,8 +72,7 @@ namespace Bee.Cache
         /// </summary>
         public static TDbSchemaSettings GetDbSchemaSettings()
         {
-            var cache = new TDbSchemaSettingsCache();
-            return cache.Get();
+            return CacheContainer.DbSchemaSettings.Get();
         }
 
         /// <summary>
@@ -86,8 +82,7 @@ namespace Bee.Cache
         /// <param name="tableName">資料表名稱。</param>
         public static TDbTable GetDbTable(string dbName, string tableName)
         {
-            var cache = new TDbTableCache();
-            return cache.Get(dbName, tableName);
+            return CacheContainer.DbTable.Get(dbName, tableName);
         }
 
         /// <summary>

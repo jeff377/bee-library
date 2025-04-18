@@ -45,8 +45,8 @@ namespace Bee.Db
             // 定義的資料表結構
             var defineTable = CacheFunc.GetDbTable(dbName, tableName);
             // 執行比對，並傳回比對後產生的資料表結構
-            var oComparer = new TTableSchemaComparer(defineTable, realTable);
-            return oComparer.Compare();
+            var comparer = new TTableSchemaComparer(defineTable, realTable);
+            return comparer.Compare();
         }
 
         /// <summary>

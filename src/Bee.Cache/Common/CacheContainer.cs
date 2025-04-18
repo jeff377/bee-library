@@ -8,12 +8,18 @@ namespace Bee.Cache
     internal class CacheContainer
     {
         private static readonly Lazy<TSystemSettingsCache> _systemSettings = new Lazy<TSystemSettingsCache>(() => new TSystemSettingsCache());
-        public static TSystemSettingsCache SystemSettings => _systemSettings.Value;
+        internal static TSystemSettingsCache SystemSettings => _systemSettings.Value;
 
         private static readonly Lazy<TDatabaseSettingsCache> _databaseSettings = new Lazy<TDatabaseSettingsCache>(() => new TDatabaseSettingsCache());
-        public static TDatabaseSettingsCache DatabaseSettings => _databaseSettings.Value;
+        internal static TDatabaseSettingsCache DatabaseSettings => _databaseSettings.Value;
 
         private static readonly Lazy<TProgramSettingsCache> _programSettings = new Lazy<TProgramSettingsCache>(() => new TProgramSettingsCache());
-        public static TProgramSettingsCache ProgramSettings => _programSettings.Value;
+        internal static TProgramSettingsCache ProgramSettings => _programSettings.Value;
+
+        private static readonly Lazy<TDbSchemaSettingsCache> _dbSchemaSettings = new Lazy<TDbSchemaSettingsCache>(() => new TDbSchemaSettingsCache());
+        internal static TDbSchemaSettingsCache DbSchemaSettings => _dbSchemaSettings.Value;
+
+        private static readonly Lazy<TDbTableCache> _dbTable = new Lazy<TDbTableCache>(() => new TDbTableCache());
+        internal static TDbTableCache DbTable => _dbTable.Value;
     }
 }
