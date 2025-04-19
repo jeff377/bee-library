@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\" />
+    <Folder Include="Executor\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Base\Bee.Base.csproj" />
+    <ProjectReference Include="..\Bee.Define\Bee.Define.csproj" />
+  </ItemGroup>
+
+</Project>
