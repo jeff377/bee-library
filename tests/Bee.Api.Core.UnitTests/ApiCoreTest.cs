@@ -16,7 +16,7 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// Hello 測應方法。
+        /// 透過 API 執行 Hello 方法。
         /// </summary>
         [Fact]
         public void Hello()
