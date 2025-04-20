@@ -10,7 +10,7 @@ namespace Bee.Db.UnitTests
             BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
             BackendInfo.DatabaseType = EDatabaseType.SQLServer;
             // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, System.Data.SqlClient.SqlClientFactory.Instance);
+            DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
         }
 
         /// <summary>
