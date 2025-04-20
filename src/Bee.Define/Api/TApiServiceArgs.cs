@@ -54,7 +54,7 @@ namespace Bee.Define
         /// 資料是否加密。
         /// </summary>
         [DefaultValue(false)]
-        public bool Encrypted { get; set; } = false;
+        public bool Encrypted { get; private set; } = false;
 
         /// <summary>
         /// 資料進行加密。

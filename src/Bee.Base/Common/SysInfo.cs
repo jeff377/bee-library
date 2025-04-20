@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bee.Base
+﻿namespace Bee.Base
 {
     /// <summary>
     /// 系統資訊，前端及後端通用的參數及環境設置。
