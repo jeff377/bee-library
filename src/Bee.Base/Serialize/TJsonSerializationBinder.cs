@@ -53,8 +53,11 @@ namespace Bee.Base
         private bool ValidateType(string typeName)
         {
             // 正向列舉允許的命名空間
-            if (StrFunc.LeftWith(typeName, "Bee.Base.")) { return true; }
-            if (StrFunc.LeftWith(typeName, "Bee.Define.")) { return true; }
+            if (typeName.StartsWith("Bee.Base.") ||
+                typeName.StartsWith("Bee.Define."))
+            {
+                return true;
+            }
 
             // 正向列舉允許型別
             string[] typeNames = new string[] { "System.Byte[]" };
