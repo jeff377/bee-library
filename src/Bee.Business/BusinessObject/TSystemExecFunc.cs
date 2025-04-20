@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
 
@@ -65,5 +66,17 @@ namespace Bee.Business
             var dbAccess = new TDbAccess(item);
             dbAccess.TestConnection();
         }
+
+        /// <summary>
+        /// 指定 DatabaseId 測試資料庫連線。
+        /// </summary>
+        public void TestDatabaseId(TExecFuncArgs args, TExecFuncResult result)
+        {
+            string databaseId = args.Parameters.GetValue<string>("DatabaseId");
+            var item = CacheFunc.GetDatabaseItem(databaseId);
+            var dbAccess = new TDbAccess(item);
+            dbAccess.TestConnection();
+        }
+
     }
 }
