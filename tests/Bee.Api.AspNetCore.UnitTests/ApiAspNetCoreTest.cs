@@ -1,4 +1,6 @@
 using System.Text;
+using Bee.Api.Core;
+using Bee.Base;
 using Bee.Db;
 using Bee.Define;
 using Microsoft.AspNetCore.Http;
@@ -21,18 +23,40 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// </summary>
         public class ApiServiceController : TApiServiceController { }
 
+        /// <summary>
+        /// 取得 API 傳入引數的 JSON 字串。
+        /// </summary>
+        /// <param name="progID">程式代碼。</param>
+        /// <param name="action">執行動作。</param>
+        /// <param name="value">傳入資料。</param>
+        private string GetArgs(string progID, string action, object value)
+        {
+            // 設定 API 方法傳入引數
+            var args = new TApiServiceArgs()
+            {
+                ProgID = SysProgIDs.System,
+                Action = action,
+                Value = value
+            };
+            return args.ToJson();
+        }
+
         [Fact]
         public async Task Hello()
         {
+            // 設定 ExecFunc 方法傳入引數
+            Guid accessToken = Guid.NewGuid();
+            var args = new TExecFuncArgs("Hello");
+            // 取得 API 傳入引數的 JSON 字串
+            string json =GetArgs(SysProgIDs.System, "ExecFunc", args);
+
             // Arrange
             var controller = new ApiServiceController();
-
-            var validJson = "{\"ProgID\":\"System\",\"Action\":\"ExecFunc\",\"Value\":{\"$type\":\"Bee.Define.TExecFuncArgs, Bee.Define\",\"FuncID\":\"Hello\",\"Parameters\":[]}}";
-            var requestBody = new MemoryStream(Encoding.UTF8.GetBytes(validJson));
+            var requestBody = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
             var context = new DefaultHttpContext();
             context.Request.Headers["X-Api-Key"] = "valid-api-key";
-            context.Request.Headers["Authorization"] = "Bearer valid-token";
+            context.Request.Headers["Authorization"] = $"Bearer {accessToken}";
             context.Request.Body = requestBody;
 
             controller.ControllerContext = new ControllerContext()
