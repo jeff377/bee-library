@@ -7,6 +7,7 @@ namespace ApiService.Controllers
 {
     [ApiController]
     [Route("api")]
+    [Produces("application/json")]
     public class ApiServiceController : ControllerBase
     {
         [HttpPost]
@@ -14,22 +15,45 @@ namespace ApiService.Controllers
         {
             var apiKey = HttpContext.Request.Headers["X-Api-Key"].ToString();
             var authorization = HttpContext.Request.Headers["Authorization"].ToString();
+
+            if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(authorization))
+            {
+                return Unauthorized(new TApiServiceResult
+                {
+                    Message = "Missing or invalid authentication headers"
+                });
+            }
+
+            Guid accessToken = TryGetAccessToken(authorization, out var errorMessage);
+
+            string json;
             using var reader = new StreamReader(HttpContext.Request.Body);
-            string json = await reader.ReadToEndAsync();
-            var args = SerializeFunc.JsonToObject<TApiServiceArgs>(json);
+            json = await reader.ReadToEndAsync();
+
+            TApiServiceArgs args;
+            try
+            {
+                args = SerializeFunc.JsonToObject<TApiServiceArgs>(json);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new TApiServiceResult
+                {
+                    Message = $"Failed to deserialize request body: {ex.Message}"
+                });
+            }
+
             if (args == null)
             {
-                var result = new TApiServiceResult()
+                return BadRequest(new TApiServiceResult
                 {
-                    Message = "無法解析傳入的 JSON 資料"
-                };
-                return BadRequest(result);
+                    Message = "Invalid request body"
+                });
             }
 
             try
             {
-
-                var result = Execute(args);
+                var result = Execute(accessToken, args);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -38,22 +62,48 @@ namespace ApiService.Controllers
                 {
                     Message = ex.Message
                 };
-                // 建議回傳 500 錯誤
                 return StatusCode(StatusCodes.Status500InternalServerError, result);
             }
         }
 
         /// <summary>
-        /// 執行 API 方法。
+        /// 執行 API 服務。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        public TApiServiceResult Execute(TApiServiceArgs args)
+        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="args">呼叫 API 服務傳入引數。</param>
+        public TApiServiceResult Execute(Guid accessToken, TApiServiceArgs args)
         {
-            args.Decrypt();  // 傳入資料進行解密
-            var executor = new TApiServiceExecutor(Guid.Empty);
+            bool encrypted = args.Encrypted;
+            // 傳入引數有加密，則進行解密
+            if (encrypted) { args.Decrypt(); }
+            // 執行指定方法
+            var executor = new TApiServiceExecutor(accessToken);
             var result = executor.Execute(args);
-            result.Encrypt();  // 傳出結果進行加密
+            // 若傳入引數有加密，回傳結果也要加密
+            if (encrypted) { result.Encrypt(); }
             return result;
         }
+
+        private Guid TryGetAccessToken(string authorization, out string errorMessage)
+        {
+            errorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(authorization) || !authorization.StartsWith("Bearer "))
+            {
+                errorMessage = "Missing or invalid Authorization header";
+                return Guid.Empty;
+            }
+
+            var token = authorization.Substring("Bearer ".Length).Trim();
+            if (Guid.TryParse(token, out var guid))
+            {
+                return guid;
+            }
+
+            errorMessage = "Invalid access token format";
+            return Guid.Empty;
+        }
+
     }
+
 }

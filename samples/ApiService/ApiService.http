@@ -1,12 +1,12 @@
 @baseUrl = https://localhost:7056
 @apiKey = test-api-key
-@authToken = Bearer test-auth-token
+@accessToken = Bearer 22AC9A7C-6E76-4C07-8560-89784D86AA76
 
 POST {{baseUrl}}/api/
 Accept: application/json
 content-type: application/json
 X-Api-Key: {{apiKey}}
-Authorization: {{authToken}}
+Authorization: {{accessToken}}
 
 {
   "ProgID": "System",
