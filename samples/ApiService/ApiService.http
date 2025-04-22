@@ -1,6 +1,20 @@
-@ApiService_HostAddress = http://localhost:5219
+@baseUrl = http://localhost:5219
+@apiKey = test-api-key
+@authToken = Bearer test-auth-token
 
-GET {{ApiService_HostAddress}}/weatherforecast/
+POST {{baseUrl}}/api/
 Accept: application/json
+content-type: application/json
+X-Api-Key: {{apiKey}}
+Authorization: {{authToken}}
 
+{
+  "ProgID": "System",
+  "Action": "ExecFunc",
+  "Value": {
+    "$type": "Bee.Define.TExecFuncArgs, Bee.Define",
+    "FuncID": "Hello",
+    "Parameters": []
+  }
+}
 ###

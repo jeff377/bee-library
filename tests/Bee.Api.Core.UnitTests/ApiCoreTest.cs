@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Db;
 using Bee.Define;
 
@@ -54,6 +55,8 @@ namespace Bee.Api.Core.UnitTests
                 Action = "ExecFunc",
                 Value = execFuncArgs
             };
+
+            string json = args.ToJson();
             // °õ¦æ API ¤èªk
             var executor = new TApiServiceExecutor(accessToken);
             var result = executor.Execute(args);

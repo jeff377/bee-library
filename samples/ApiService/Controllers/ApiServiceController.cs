@@ -1,4 +1,6 @@
-﻿using Bee.Define;
+﻿using Bee.Api.Core;
+using Bee.Base;
+using Bee.Define;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ApiService.Controllers
@@ -8,57 +10,50 @@ namespace ApiService.Controllers
     public class ApiServiceController : ControllerBase
     {
         [HttpPost]
-        public IActionResult Post([FromBody] TApiServiceArgs args)
+        public async Task<IActionResult> PostAsync()
         {
             var apiKey = HttpContext.Request.Headers["X-Api-Key"].ToString();
             var authorization = HttpContext.Request.Headers["Authorization"].ToString();
-
-            // 解密處理（如有加密）
-            if (args.Encrypted)
+            using var reader = new StreamReader(HttpContext.Request.Body);
+            string json = await reader.ReadToEndAsync();
+            var args = SerializeFunc.JsonToObject<TApiServiceArgs>(json);
+            if (args == null)
             {
-                args.Decrypt();
+                var result = new TApiServiceResult()
+                {
+                    Message = "無法解析傳入的 JSON 資料"
+                };
+                return BadRequest(result);
             }
-
-            var result = new TApiServiceResult(args);
 
             try
             {
-                // 根據 ProgID + Action 決定執行邏輯
-                object output = HandleApiCall(args.ProgID, args.Action, args.Value);
 
-                result.Value = output;
+                var result = Execute(args);
+                return Ok(result);
             }
             catch (Exception ex)
             {
-                result.Message = ex.Message;
+                var result = new TApiServiceResult(args)
+                {
+                    Message = ex.Message
+                };
+                // 建議回傳 500 錯誤
+                return StatusCode(StatusCodes.Status500InternalServerError, result);
             }
-
-            // 加密處理（如需要）
-            if (args.Encrypted)
-            {
-                result.Encrypt();
-            }
-
-            return Ok(result);
         }
 
         /// <summary>
-        /// 實際的呼叫邏輯，可擴充 switch 或策略模式
+        /// 執行 API 方法。
         /// </summary>
-        private object HandleApiCall(string progID, string action, object value)
+        /// <param name="args">傳入參數。</param>
+        public TApiServiceResult Execute(TApiServiceArgs args)
         {
-            if (progID == "LeaveForm" && action == "Submit")
-            {
-                // TODO: cast value to appropriate model (e.g., LeaveFormModel)
-                // var form = JsonConvert.DeserializeObject<LeaveFormModel>(value.ToString());
-                return new { Success = true, Message = "假單已送出" };
-            }
-            else if (progID == "LeaveForm" && action == "GetStatus")
-            {
-                return new { Status = "審核中", Approver = "王主管" };
-            }
-
-            throw new InvalidOperationException($"未支援的 ProgID 或 Action: {progID}/{action}");
+            args.Decrypt();  // 傳入資料進行解密
+            var executor = new TApiServiceExecutor(Guid.Empty);
+            var result = executor.Execute(args);
+            result.Encrypt();  // 傳出結果進行加密
+            return result;
         }
     }
 }
