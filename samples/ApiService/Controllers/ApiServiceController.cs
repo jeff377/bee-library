@@ -54,7 +54,12 @@ namespace ApiService.Controllers
             try
             {
                 var result = Execute(accessToken, args);
-                return Ok(result);
+                return new ContentResult
+                {
+                    Content = result.ToJson(),
+                    ContentType = "application/json",
+                    StatusCode = StatusCodes.Status200OK
+                };
             }
             catch (Exception ex)
             {
