@@ -1,34 +1,30 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using Bee.Base;
+using Bee.Define;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
-    /// 呼叫 API 服務傳入引數。 
+    /// 呼叫 API 服務傳出結果。 
     /// </summary>
-    [Serializable]
-    public class TApiServiceArgs : IObjectSerializeBase
+    public class TApiServiceResult : IObjectSerializeBase
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TApiServiceArgs()
+        public TApiServiceResult()
         { }
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        /// <param name="action">執行動作。</param>
-        /// <param name="value">傳入資料。</param>
-        public TApiServiceArgs(string progID, string action, object value)
+        /// <param name="args">呼叫 API 服務傳入引數。</param>
+        public TApiServiceResult(TApiServiceArgs args)
         {
-            ProgID = progID;
-            Action = action;
-            Value = value;
+            ProgID = args.ProgID;
+            Action = args.Action;
         }
 
         #endregion
@@ -46,15 +42,21 @@ namespace Bee.Define
         public string Action { get; set; } = string.Empty;
 
         /// <summary>
-        /// 傳入資料。
+        /// 傳出資料。
         /// </summary>
         public object Value { get; set; }
+
+        /// <summary>
+        /// 回傳訊息文字。
+        /// </summary>
+        [DefaultValue("")]
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// 資料是否加密。
         /// </summary>
         [DefaultValue(false)]
-        public bool Encrypted { get; private set; } = false;
+        public bool Encrypted { get; set; } = false;
 
         /// <summary>
         /// 資料進行加密。

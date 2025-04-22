@@ -1,6 +1,6 @@
 ﻿using System;
+using Bee.Api.Core;
 using Bee.Base;
-using Bee.Define;
 
 namespace Bee.Connect
 {

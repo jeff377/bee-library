@@ -1,7 +1,7 @@
 ﻿
 using System.Threading.Tasks;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// API 服務提供者介面。
