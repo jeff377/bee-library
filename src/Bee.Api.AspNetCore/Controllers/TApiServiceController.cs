@@ -12,7 +12,7 @@ namespace Bee.Api.AspNetCore
     [ApiController]
     [Route("api")]
     [Produces("application/json")]
-    public abstract class ApiServiceControllerBase : ControllerBase
+    public class TApiServiceController : ControllerBase
     {
         /// <summary>
         /// 處理 HTTP POST 請求，並執行相應的 API 服務。
