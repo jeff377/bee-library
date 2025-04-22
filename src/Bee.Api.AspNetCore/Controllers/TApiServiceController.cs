@@ -1,6 +1,5 @@
 ﻿using Bee.Api.Core;
 using Bee.Base;
-using Bee.Define;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,7 +11,7 @@ namespace Bee.Api.AspNetCore
     [ApiController]
     [Route("api")]
     [Produces("application/json")]
-    public class TApiServiceController : ControllerBase
+    public abstract class TApiServiceController : ControllerBase
     {
         /// <summary>
         /// 處理 HTTP POST 請求，並執行相應的 API 服務。
