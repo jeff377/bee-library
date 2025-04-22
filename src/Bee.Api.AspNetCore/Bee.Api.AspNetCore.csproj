@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		
+		<Version>3.0.5</Version>
+		<Company>Bee.NET</Company>
+		<Authors>Bee.NET</Authors>
+		<Product>Bee.NET</Product>
+		<Description>Base controller for handling dynamic Web API requests in ASP.NET Core.</Description>
+		<Copyright>© Bee.NET. All rights reserved.</Copyright>
+		<PackageTags>aspnetcore;api;controller;dynamic;erp;low-code;bee</PackageTags>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>bee.png</PackageIcon>
+		<PackageReleaseNotes></PackageReleaseNotes>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<DocumentationFile></DocumentationFile>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<DocumentationFile></DocumentationFile>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="..\..\bee.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="..\..\README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Bee.Api.Core\Bee.Api.Core.csproj" />
+	</ItemGroup>
+
+</Project>
