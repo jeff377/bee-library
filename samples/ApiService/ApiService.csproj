@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Bee.Api.Core\Bee.Api.Core.csproj" />
     <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
-    <ProjectReference Include="..\..\src\Bee.Connect\Bee.Connect.csproj" />
   </ItemGroup>
 
 </Project>
