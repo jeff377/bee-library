@@ -24,7 +24,7 @@ namespace ApiService.Controllers
                 });
             }
 
-            Guid accessToken = TryGetAccessToken(authorization, out var errorMessage);
+            Guid accessToken = TryGetAccessToken(authorization);
 
             string json;
             using var reader = new StreamReader(HttpContext.Request.Body);
@@ -89,25 +89,17 @@ namespace ApiService.Controllers
             return result;
         }
 
-        private Guid TryGetAccessToken(string authorization, out string errorMessage)
+        private Guid TryGetAccessToken(string authorization)
         {
-            errorMessage = string.Empty;
-
             if (string.IsNullOrWhiteSpace(authorization) || !authorization.StartsWith("Bearer "))
             {
-                errorMessage = "Missing or invalid Authorization header";
                 return Guid.Empty;
             }
 
             var token = authorization.Substring("Bearer ".Length).Trim();
-            if (Guid.TryParse(token, out var guid))
-            {
-                return guid;
-            }
-
-            errorMessage = "Invalid access token format";
-            return Guid.Empty;
+            return Guid.TryParse(token, out var guid) ? guid : Guid.Empty;
         }
+
 
     }
 
