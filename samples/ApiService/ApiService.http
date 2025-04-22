@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:5219
+@baseUrl = https://localhost:7056
 @apiKey = test-api-key
 @authToken = Bearer test-auth-token
 

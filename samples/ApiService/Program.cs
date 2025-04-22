@@ -3,25 +3,20 @@ using ApiService.Extensions;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-//builder.Services.AddEndpointsApiExplorer();
-//builder.Services.AddCustomSwagger();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// 開發環境建議開啟詳細錯誤頁面
 if (app.Environment.IsDevelopment())
 {
-    //app.UseSwagger();
-    //app.UseSwaggerUI();
+    app.UseDeveloperExceptionPage();
 }
 
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
+// 後端程式初始化
 app.BackendInitialize();
 
 app.Run();
