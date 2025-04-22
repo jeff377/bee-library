@@ -11,7 +11,7 @@
 		<Product>Bee.NET</Product>
 		<Description>Base controller for handling dynamic Web API requests in ASP.NET Core.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageTags>aspnetcore;api;controller;dynamic;erp;low-code;bee</PackageTags>
+		<PackageTags>aspnetcore;api;webapi;dynamicapi,service</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>

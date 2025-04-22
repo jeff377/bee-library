@@ -8,7 +8,7 @@
 		<Product>Bee.NET</Product>
 		<Description>Provides cross-platform shared API support functionalities, including API model definitions, encryption/decryption, serialization utilities, and other common logic components.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageTags>netstandard2.0</PackageTags>
+		<PackageTags>api;core;service;dynamicapi</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
