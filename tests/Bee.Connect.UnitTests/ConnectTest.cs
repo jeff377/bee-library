@@ -1,10 +1,22 @@
+using Bee.Db;
+using Bee.Define;
+
 namespace Bee.Connect.UnitTests
 {
     public class ConnectTest
     {
         static ConnectTest()
         {
-            // 這裡可以放置靜態建構函式的初始化邏輯
+            // 設定定義路徑
+            BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
+            // 設定測試環境
+            BackendInfo.DefineProvider = new TFileDefineProvider();
+            BackendInfo.BusinessObjectProvider = new Bee.Cache.TBusinessObjectProvider();
+            BackendInfo.SystemObject = new Bee.Business.TSystemObject();
+            // 註冊資料庫提供者
+            DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            // .NET 8 預設停用 BinaryFormatter，需手動啟用
+            AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
 
         /// <summary>
@@ -13,7 +25,13 @@ namespace Bee.Connect.UnitTests
         [Fact]
         public void Hello()
         {
-
+            // 設定 ExecFunc 方法傳入引數
+            var args = new TExecFuncArgs("Hello");
+            // 透過 Connect 執行 ExecFunc 方法
+            Guid accessToken = Guid.NewGuid();
+            var connector = new TSystemConnector(accessToken);
+            var result = connector.ExecFunc(args);
+            Assert.NotNull(result);  // 確認 ExecFunc 方法傳出結果不為 null
         }
     }
 }

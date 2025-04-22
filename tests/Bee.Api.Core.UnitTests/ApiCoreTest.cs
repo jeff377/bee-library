@@ -47,8 +47,6 @@ namespace Bee.Api.Core.UnitTests
             // 設定 ExecFunc 方法傳入引數
             Guid accessToken = Guid.NewGuid();
             var execFuncArgs = new TExecFuncArgs("Hello");
-            execFuncArgs.Parameters.Add("Name", "World");
-            execFuncArgs.Parameters.Add("Age", 18);
             // 設定 API 方法傳入引數
             var args = new TApiServiceArgs()
             {

@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using System.Threading.Tasks;
+using Bee.Api.Core;
 using Bee.Define;
 
 namespace Bee.Connect
@@ -30,16 +30,13 @@ namespace Bee.Connect
         /// <param name="args">傳入參數。</param>
         public TApiServiceResult Execute(TApiServiceArgs args)
         {
-            TApiServiceExecutor oExecutor;
-            TApiServiceResult oResult;
-
             // 註1：開發階段使用近端連線，簡化運行環境及方便偵錯；運行階段則使用遠端連線
             // 註2：近端連線傳遞資料做加解密，是為了驗證開發階段傳遞的資料型別都能正常序列化
-            oExecutor = new TApiServiceExecutor(AccessToken);
+            var executor = new TApiServiceExecutor(AccessToken);
             args.Encrypt();  // 傳入資料進行加密
-            oResult = oExecutor.Execute(args);
-            oResult.Decrypt();  // 傳出結果進行解密
-            return oResult;
+            var result = executor.Execute(args);
+            result.Decrypt();  // 傳出結果進行解密
+            return result;
         }
 
         /// <summary>

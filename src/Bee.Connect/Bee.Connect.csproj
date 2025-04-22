@@ -37,8 +37,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Bee.Api.Core\Bee.Api.Core.csproj" />
-		<ProjectReference Include="..\Bee.Base\Bee.Base.csproj" />
-		<ProjectReference Include="..\Bee.Define\Bee.Define.csproj" />
 	</ItemGroup>
 
 </Project>
