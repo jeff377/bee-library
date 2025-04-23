@@ -26,52 +26,52 @@ namespace Bee.Api.Core
         /// <summary>
         /// 執行 API 服務。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        public TJsonRpcResponse Execute(TJsonRpcRequest args)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public TJsonRpcResponse Execute(TJsonRpcRequest request)
         {
-            var result = new TJsonRpcResponse(args);
+            var response = new TJsonRpcResponse(request);
             try
             {
                 // 傳輸資料是否加密
-                bool encrypted = args.Encrypted;
+                bool encrypted = request.Encrypted;
                 // 傳入參數進行解密
                 if (encrypted)
-                    args.Decrypt();
+                    request.Decrypt();
 
                 // 建立商業邏輯物件，執行指定方法
-                var businessObject = CreateBusinessObject(args);
-                var method = businessObject.GetType().GetMethod(args.Action);
-                var value = method.Invoke(businessObject, new object[] { args.Value });
+                var businessObject = CreateBusinessObject(request);
+                var method = businessObject.GetType().GetMethod(request.Action);
+                var value = method.Invoke(businessObject, new object[] { request.Value });
 
                 // 傳出結果
-                result.Value = value;
+                response.Value = value;
                 // 傳出結果進行加密
                 if (encrypted)
-                    result.Encrypt();
+                    response.Encrypt();
             }
             catch (Exception ex)
             {
                 if (ex.InnerException != null)
-                    result.Message = ex.InnerException.Message;
+                    response.Message = ex.InnerException.Message;
                 else
-                    result.Message = ex.Message;
+                    response.Message = ex.Message;
             }
-            return result;
+            return response;
         }
 
         /// <summary>
         /// 建立商業邏輯物件。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        private object CreateBusinessObject(TJsonRpcRequest args)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        private object CreateBusinessObject(TJsonRpcRequest request)
         {
-            if (StrFunc.IsEmpty(args.ProgID))
+            if (StrFunc.IsEmpty(request.ProgID))
                 throw new TException("ProgID is empty");
 
-            if (StrFunc.IsEquals(args.ProgID, SysProgIDs.System))
+            if (StrFunc.IsEquals(request.ProgID, SysProgIDs.System))
                 return BackendInfo.BusinessObjectProvider.CreateSystemObject(AccessToken);
             else
-                return BackendInfo.BusinessObjectProvider.CreateBusinessObject(AccessToken, args.ProgID);
+                return BackendInfo.BusinessObjectProvider.CreateBusinessObject(AccessToken, request.ProgID);
         }
     }
 }

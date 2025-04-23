@@ -22,8 +22,8 @@ namespace Bee.Api.Core.UnitTests
         /// <param name="value">傳入資料。</param>
         private T ApiExecute<T>(string progID, string action, object value)
         {
-            // 設定 API 方法傳入引數
-            var args = new TJsonRpcRequest()
+            // 設定 JSON-RPC 請求模型
+            var request = new TJsonRpcRequest()
             {
                 ProgID = SysProgIDs.System,
                 Action = action,
@@ -31,7 +31,7 @@ namespace Bee.Api.Core.UnitTests
             };
             Guid accessToken = Guid.NewGuid();
             var executor = new TApiServiceExecutor(accessToken);
-            var result = executor.Execute(args);
+            var result = executor.Execute(request);
             return (T)result.Value;
         }
 
@@ -44,18 +44,18 @@ namespace Bee.Api.Core.UnitTests
             // 設定 ExecFunc 方法傳入引數
             Guid accessToken = Guid.NewGuid();
             var execFuncArgs = new TExecFuncArgs("Hello");
-            // 設定 API 方法傳入引數
-            var args = new TJsonRpcRequest()
+            // 設定 設定 JSON-RPC 請求模型
+            var request = new TJsonRpcRequest()
             {
                 ProgID = SysProgIDs.System,
                 Action = "ExecFunc",
                 Value = execFuncArgs
             };
 
-            string json = args.ToJson();
+            string json = request.ToJson();
             // 執行 API 方法
             var executor = new TApiServiceExecutor(accessToken);
-            var result = executor.Execute(args);
+            var result = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
             var execFuncResult = result.Value as TExecFuncResult;
             Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null

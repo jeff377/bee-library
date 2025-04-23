@@ -36,10 +36,10 @@ namespace Bee.Api.AspNetCore
             using var reader = new StreamReader(HttpContext.Request.Body);
             json = await reader.ReadToEndAsync();
 
-            TJsonRpcRequest args;
+            TJsonRpcRequest request;
             try
             {
-                args = SerializeFunc.JsonToObject<TJsonRpcRequest>(json);
+                request = SerializeFunc.JsonToObject<TJsonRpcRequest>(json);
             }
             catch (Exception ex)
             {
@@ -49,7 +49,7 @@ namespace Bee.Api.AspNetCore
                 });
             }
 
-            if (args == null)
+            if (request == null)
             {
                 return BadRequest(new TJsonRpcResponse
                 {
@@ -59,7 +59,7 @@ namespace Bee.Api.AspNetCore
 
             try
             {
-                var result = Execute(accessToken, args);
+                var result = Execute(accessToken, request);
                 return new ContentResult
                 {
                     Content = result.ToJson(),
@@ -69,7 +69,7 @@ namespace Bee.Api.AspNetCore
             }
             catch (Exception ex)
             {
-                var result = new TJsonRpcResponse(args)
+                var result = new TJsonRpcResponse(request)
                 {
                     Message = ex.Message
                 };
@@ -81,18 +81,18 @@ namespace Bee.Api.AspNetCore
         /// 執行 API 服務。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        /// <param name="args">呼叫 API 服務傳入引數。</param>
-        protected virtual TJsonRpcResponse Execute(Guid accessToken, TJsonRpcRequest args)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        protected virtual TJsonRpcResponse Execute(Guid accessToken, TJsonRpcRequest request)
         {
-            bool encrypted = args.Encrypted;
+            bool encrypted = request.Encrypted;
             // 傳入引數有加密，則進行解密
-            if (encrypted) { args.Decrypt(); }
+            if (encrypted) { request.Decrypt(); }
             // 執行指定方法
             var executor = new TApiServiceExecutor(accessToken);
-            var result = executor.Execute(args);
+            var response = executor.Execute(request);
             // 若傳入引數有加密，回傳結果也要加密
-            if (encrypted) { result.Encrypt(); }
-            return result;
+            if (encrypted) { response.Encrypt(); }
+            return response;
         }
 
         /// <summary>

@@ -24,21 +24,21 @@ namespace Bee.Api.AspNetCore.UnitTests
         public class ApiServiceController : TApiServiceController { }
 
         /// <summary>
-        /// 取得 API 傳入引數的 JSON 字串。
+        /// 取得 JSON-RPC 請求模型的 JSON 字串。
         /// </summary>
         /// <param name="progID">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">傳入資料。</param>
-        private string GetArgs(string progID, string action, object value)
+        private string GetRpcRequestJson(string progID, string action, object value)
         {
-            // 設定 API 方法傳入引數
-            var args = new TJsonRpcRequest()
+            // 設定 JSON-RPC 請求模型
+            var request = new TJsonRpcRequest()
             {
                 ProgID = SysProgIDs.System,
                 Action = action,
                 Value = value
             };
-            return args.ToJson();
+            return request.ToJson();
         }
 
         [Fact]
@@ -47,8 +47,8 @@ namespace Bee.Api.AspNetCore.UnitTests
             // 設定 ExecFunc 方法傳入引數
             Guid accessToken = Guid.NewGuid();
             var args = new TExecFuncArgs("Hello");
-            // 取得 API 傳入引數的 JSON 字串
-            string json =GetArgs(SysProgIDs.System, "ExecFunc", args);
+            // 取得 JSON-RPC 請求模型的 JSON 字串
+            string json =GetRpcRequestJson(SysProgIDs.System, "ExecFunc", args);
 
             // Arrange
             var controller = new ApiServiceController();

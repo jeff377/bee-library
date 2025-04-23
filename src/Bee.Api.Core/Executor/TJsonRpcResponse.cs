@@ -20,11 +20,11 @@ namespace Bee.Api.Core
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="args">呼叫 API 服務傳入引數。</param>
-        public TJsonRpcResponse(TJsonRpcRequest args)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public TJsonRpcResponse(TJsonRpcRequest request)
         {
-            ProgID = args.ProgID;
-            Action = args.Action;
+            ProgID = request.ProgID;
+            Action = request.Action;
         }
 
         #endregion
