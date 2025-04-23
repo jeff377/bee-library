@@ -54,7 +54,7 @@ namespace Bee.Api.Core.UnitTests
             Guid accessToken = Guid.NewGuid();
             var executor = new TJsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
-            return (T)response.Value;
+            return (T)response.Result.Value;
         }
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Bee.Api.Core.UnitTests
             var executor = new TJsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
-            var execFuncResult = response.Value as TExecFuncResult;
+            var execFuncResult = response.Result.Value as TExecFuncResult;
             Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null
         }
 

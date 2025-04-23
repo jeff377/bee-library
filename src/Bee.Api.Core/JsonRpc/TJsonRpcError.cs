@@ -6,7 +6,7 @@ namespace Bee.Api.Core
     /// <summary>
     /// JSON-RPC 錯誤模型。
     /// </summary>
-    public class TJsonRpcError : IObjectSerializeBase
+    public class TJsonRpcError
     {
         /// <summary>
         /// 錯誤代碼。

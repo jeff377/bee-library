@@ -51,7 +51,7 @@ namespace Bee.Api.Core
         {
             if (Params != null)
             {
-                Params.Encrypt();  // 加密引數
+                Params.Encrypt();  // 加密資料
             }
         }
 
@@ -62,7 +62,7 @@ namespace Bee.Api.Core
         {
             if (Params != null)
             {
-                Params.Decrypt();  // 解密引數
+                Params.Decrypt();  // 解密資料
             }
         }
     }

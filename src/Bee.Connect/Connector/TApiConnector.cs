@@ -69,10 +69,10 @@ namespace Bee.Connect
                 },
                 Id = Guid.NewGuid()
             };
-            var result = this.Provider.Execute(request);
-            if (StrFunc.IsNotEmpty(result.Message))
-                throw new TException(result.Message);
-            return result.Value;
+            var response = this.Provider.Execute(request);
+            if (StrFunc.IsNotEmpty(response.Message))
+                throw new TException(response.Message);
+            return response.Result.Value;
         }
     }
 }

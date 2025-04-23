@@ -5,12 +5,12 @@ using Newtonsoft.Json;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// JSON-RPC 執行方法的傳入引數。
+    /// JSON-RPC 執行方法的傳出結果。
     /// </summary>
-    public class TJsonRpcParams
+    public class TJsonRpcResult
     {
         /// <summary>
-        /// 傳入資料。
+        /// 傳出資料。
         /// </summary>
         [JsonProperty("value")]
         public object Value { get; set; }

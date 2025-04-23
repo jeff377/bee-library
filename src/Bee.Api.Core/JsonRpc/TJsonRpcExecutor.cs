@@ -46,7 +46,10 @@ namespace Bee.Api.Core
                 var value = method.Invoke(businessObject, new object[] { request.Params.Value });
 
                 // 傳出結果
-                response.Value = value;
+                response.Result = new TJsonRpcResult()
+                {
+                    Value = value
+                };
                 // 傳出結果進行加密
                 if (encrypted)
                     response.Encrypt();
