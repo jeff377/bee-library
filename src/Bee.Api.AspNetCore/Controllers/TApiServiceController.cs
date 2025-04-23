@@ -24,49 +24,32 @@ namespace Bee.Api.AspNetCore
 
             if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(authorization))
             {
-                return StatusCode(StatusCodes.Status401Unauthorized, new TJsonRpcResponse
-                {
-                    Error = new TJsonRpcError
-                    {
-                        Code = -32600,
-                        Message = "Missing or invalid authentication headers"
-                    }
-                });
+                return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Missing or invalid authentication headers");
             }
 
             Guid accessToken = TryGetAccessToken(authorization);
+            if (accessToken == Guid.Empty)
+            {
+                return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Invalid access token");
+            }
 
             string json;
             using var reader = new StreamReader(HttpContext.Request.Body);
             json = await reader.ReadToEndAsync();
 
-            TJsonRpcRequest request;
+            TJsonRpcRequest? request;
             try
             {
                 request = SerializeFunc.JsonToObject<TJsonRpcRequest>(json);
             }
             catch (Exception ex)
             {
-                return BadRequest(new TJsonRpcResponse
-                {
-                    Error = new TJsonRpcError
-                    {
-                        Code = -32700,
-                        Message = $"Failed to deserialize request body: {ex.Message}"
-                    }
-                });
+                return CreateErrorResponse(StatusCodes.Status400BadRequest, -32700, $"Failed to deserialize request body: {ex.Message}");
             }
 
             if (request == null)
             {
-                return BadRequest(new TJsonRpcResponse
-                {
-                    Error = new TJsonRpcError
-                    {
-                        Code = -32600,
-                        Message = "Invalid request body"
-                    }
-                });
+                return CreateErrorResponse(StatusCodes.Status400BadRequest, -32600, "Invalid request body");
             }
 
             try
@@ -81,18 +64,10 @@ namespace Bee.Api.AspNetCore
             }
             catch (Exception ex)
             {
-                var result = new TJsonRpcResponse(request)
-                {
-                    Error = new TJsonRpcError
-                    {
-                        Code = -32000,
-                        Message = "Internal server error",
-                        Data = ex.InnerException?.Message
-                    }
-                };
-                return StatusCode(StatusCodes.Status500InternalServerError, result);
+                return CreateErrorResponse(StatusCodes.Status500InternalServerError, -32000, "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
             }
         }
+
 
         /// <summary>
         /// 執行 API 方法。
@@ -120,6 +95,23 @@ namespace Bee.Api.AspNetCore
             return Guid.TryParse(token, out var guid) ? guid : Guid.Empty;
         }
 
+        /// <summary>
+        /// 建立統一格式的 JSON-RPC 錯誤回應。
+        /// </summary>
+        private IActionResult CreateErrorResponse(int httpStatusCode, int code, string message, string? id = null, string? data = null)
+        {
+            var response = new TJsonRpcResponse
+            {
+                Id = id,
+                Error = new TJsonRpcError
+                {
+                    Code = code,
+                    Message = message,
+                    Data = data
+                }
+            };
+            return StatusCode(httpStatusCode, response);
+        }
 
     }
 }

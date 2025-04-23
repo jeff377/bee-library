@@ -67,7 +67,7 @@ namespace Bee.Connect
                 {
                     Value = value
                 },
-                Id = Guid.NewGuid()
+                Id = Guid.NewGuid().ToString()
             };
             var response = this.Provider.Execute(request);
             if (StrFunc.IsNotEmpty(response.Error))

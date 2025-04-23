@@ -27,7 +27,7 @@ namespace Bee.Api.Core.UnitTests
                 {
                     Value = new TExecFuncArgs("Hello")
                 },
-                Id = Guid.NewGuid()
+                Id = Guid.NewGuid().ToString()
             };
             string json = request.ToJson();
             Assert.NotNull(json);
@@ -49,7 +49,7 @@ namespace Bee.Api.Core.UnitTests
                 {
                     Value = value
                 },
-                Id = Guid.NewGuid()
+                Id = Guid.NewGuid().ToString()
             };
             Guid accessToken = Guid.NewGuid();
             var executor = new TJsonRpcExecutor(accessToken);
@@ -73,7 +73,7 @@ namespace Bee.Api.Core.UnitTests
                 {
                     Value = new TExecFuncArgs("Hello")
                 },
-                Id = Guid.NewGuid()
+                Id = Guid.NewGuid().ToString()
             };
 
             string json = request.ToJson();

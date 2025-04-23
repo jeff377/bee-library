@@ -1,5 +1,4 @@
-﻿using System.ComponentModel;
-using Bee.Base;
+﻿using Bee.Base;
 using Newtonsoft.Json;
 
 namespace Bee.Api.Core
@@ -51,7 +50,7 @@ namespace Bee.Api.Core
         /// 請求的唯一識別碼。
         /// </summary>
         [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
-        public object Id { get; set; }
+        public string Id { get; set; }
 
         /// <summary>
         /// 資料進行加密。

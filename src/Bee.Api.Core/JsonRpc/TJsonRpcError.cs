@@ -1,5 +1,4 @@
-﻿using Bee.Base;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Bee.Api.Core
 {
