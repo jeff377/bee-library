@@ -20,19 +20,6 @@ namespace Bee.Api.Core
         public TJsonRpcRequest()
         { }
 
-        /// <summary>
-        /// 建構函式。
-        /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        /// <param name="action">執行動作。</param>
-        /// <param name="value">傳入資料。</param>
-        public TJsonRpcRequest(string progID, string action, object value)
-        {
-            ProgID = progID;
-            Action = action;
-            Value = value;
-        }
-
         #endregion
 
         /// <summary>
@@ -51,25 +38,13 @@ namespace Bee.Api.Core
         /// 方法的引數。
         /// </summary>
         [JsonProperty("params")]
-        public object Params { get; set; }
+        public TJsonRpcParams Params { get; set; } = new TJsonRpcParams();
 
         /// <summary>
         /// 請求的唯一識別碼。
         /// </summary>
-        [JsonProperty("id")]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
         public object Id { get; set; }
-
-        /// <summary>
-        /// 程式代碼。
-        /// </summary>
-        [DefaultValue("")]
-        public string ProgID { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 執行動作。
-        /// </summary>
-        [DefaultValue("")]
-        public string Action { get; set; } = string.Empty;
 
         /// <summary>
         /// 傳入資料。

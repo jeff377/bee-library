@@ -34,8 +34,12 @@ namespace Bee.Api.AspNetCore.UnitTests
             // 設定 JSON-RPC 請求模型
             var request = new TJsonRpcRequest()
             {
-                ProgID = SysProgIDs.System,
-                Action = action,
+                Method = $"{progID}.{action}",
+                Params = new TJsonRpcParams()
+                {
+                    Value = value
+                },
+                Id = Guid.NewGuid(),
                 Value = value
             };
             return request.ToJson();

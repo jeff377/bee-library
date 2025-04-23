@@ -24,8 +24,8 @@ namespace Bee.Api.Core
         /// <param name="request">JSON-RPC 請求模型。</param>
         public TJsonRpcResponse(TJsonRpcRequest request)
         {
-            ProgID = request.ProgID;
-            Action = request.Action;
+            // 設定請求的唯一識別碼
+            Id = request.Id;
         }
 
         #endregion
@@ -51,20 +51,8 @@ namespace Bee.Api.Core
         /// <summary>
         /// 請求的唯一識別碼。
         /// </summary>
-        [JsonProperty("id")]
+        [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
         public object Id { get; set; }
-
-        /// <summary>
-        /// 程式代碼。
-        /// </summary>
-        [DefaultValue("")]
-        public string ProgID { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 執行動作。
-        /// </summary>
-        [DefaultValue("")]
-        public string Action { get; set; } = string.Empty;
 
         /// <summary>
         /// 傳出資料。

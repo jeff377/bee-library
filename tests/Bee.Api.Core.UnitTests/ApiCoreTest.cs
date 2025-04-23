@@ -22,8 +22,12 @@ namespace Bee.Api.Core.UnitTests
         {
             var request = new TJsonRpcRequest()
             {
-                ProgID = SysProgIDs.System,
-                Action = "ExecFunc",
+                Method = $"{SysProgIDs.System}.ExecFunc",
+                Params = new TJsonRpcParams()
+                {
+                    Value = new TExecFuncArgs("Hello")
+                },
+                Id = Guid.NewGuid(),
                 Value = new TExecFuncArgs("Hello")
             };
             string json = request.ToJson();
@@ -41,14 +45,18 @@ namespace Bee.Api.Core.UnitTests
             // 設定 JSON-RPC 請求模型
             var request = new TJsonRpcRequest()
             {
-                ProgID = SysProgIDs.System,
-                Action = action,
+                Method = $"{progID}.{action}",
+                Params = new TJsonRpcParams()
+                {
+                    Value = value
+                },
+                Id = Guid.NewGuid(),
                 Value = value
             };
             Guid accessToken = Guid.NewGuid();
             var executor = new TJsonRpcExecutor(accessToken);
-            var result = executor.Execute(request);
-            return (T)result.Value;
+            var response = executor.Execute(request);
+            return (T)response.Value;
         }
 
         /// <summary>
@@ -63,17 +71,21 @@ namespace Bee.Api.Core.UnitTests
             // 設定 設定 JSON-RPC 請求模型
             var request = new TJsonRpcRequest()
             {
-                ProgID = SysProgIDs.System,
-                Action = "ExecFunc",
+                Method = $"{SysProgIDs.System}.ExecFunc",
+                Params = new TJsonRpcParams()
+                {
+                    Value = new TExecFuncArgs("Hello")
+                },
+                Id = Guid.NewGuid(),
                 Value = execFuncArgs
             };
 
             string json = request.ToJson();
             // 執行 API 方法
             var executor = new TJsonRpcExecutor(accessToken);
-            var result = executor.Execute(request);
+            var response = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
-            var execFuncResult = result.Value as TExecFuncResult;
+            var execFuncResult = response.Value as TExecFuncResult;
             Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null
         }
 

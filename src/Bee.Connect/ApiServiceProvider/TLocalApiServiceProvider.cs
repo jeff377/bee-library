@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Bee.Api.Core;
-using Bee.Define;
 
 namespace Bee.Connect
 {
@@ -32,11 +31,15 @@ namespace Bee.Connect
         {
             // 註1：開發階段使用近端連線，簡化運行環境及方便偵錯；運行階段則使用遠端連線
             // 註2：近端連線傳遞資料做加解密，是為了驗證開發階段傳遞的資料型別都能正常序列化
+
+            // 傳入資料進行加密
+            request.Encrypt();
+            // 執行 API 方法
             var executor = new TJsonRpcExecutor(AccessToken);
-            request.Encrypt();  // 傳入資料進行加密
-            var result = executor.Execute(request);
-            result.Decrypt();  // 傳出結果進行解密
-            return result;
+            var response = executor.Execute(request);
+            // 傳出結果進行解密
+            response.Decrypt();
+            return response;
         }
 
         /// <summary>

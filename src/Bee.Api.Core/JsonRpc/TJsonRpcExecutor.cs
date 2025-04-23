@@ -24,7 +24,7 @@ namespace Bee.Api.Core
         public Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 執行 API 服務。
+        /// 執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
         public TJsonRpcResponse Execute(TJsonRpcRequest request)
@@ -38,9 +38,11 @@ namespace Bee.Api.Core
                 if (encrypted)
                     request.Decrypt();
 
+                // 從 Method 屬性解析出 ProgID 與 Action
+                var (progID, action) = ParseMethod(request.Method);
                 // 建立商業邏輯物件，執行指定方法
-                var businessObject = CreateBusinessObject(request);
-                var method = businessObject.GetType().GetMethod(request.Action);
+                var businessObject = CreateBusinessObject(progID);
+                var method = businessObject.GetType().GetMethod(action);
                 var value = method.Invoke(businessObject, new object[] { request.Value });
 
                 // 傳出結果
@@ -60,18 +62,35 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
+        /// 從 Method 屬性解析出 ProgID 與 Action。
+        /// </summary>
+        /// <returns>Tuple，包含 ProgID 與 Action。若格式錯誤則回傳空字串。</returns>
+        public (string progID, string action) ParseMethod(string method)
+        {
+            if (!string.IsNullOrEmpty(method))
+            {
+                var parts = method.Split(new[] { '.' }, 2);
+                if (parts.Length == 2)
+                {
+                    return (parts[0], parts[1]);
+                }
+            }
+            return (string.Empty, string.Empty);
+        }
+
+        /// <summary>
         /// 建立商業邏輯物件。
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
-        private object CreateBusinessObject(TJsonRpcRequest request)
+        /// <param name="progID">程式代碼。</param>
+        private object CreateBusinessObject(string progID)
         {
-            if (StrFunc.IsEmpty(request.ProgID))
+            if (StrFunc.IsEmpty(progID))
                 throw new TException("ProgID is empty");
 
-            if (StrFunc.IsEquals(request.ProgID, SysProgIDs.System))
+            if (StrFunc.IsEquals(progID, SysProgIDs.System))
                 return BackendInfo.BusinessObjectProvider.CreateSystemObject(AccessToken);
             else
-                return BackendInfo.BusinessObjectProvider.CreateBusinessObject(AccessToken, request.ProgID);
+                return BackendInfo.BusinessObjectProvider.CreateBusinessObject(AccessToken, progID);
         }
     }
 }
