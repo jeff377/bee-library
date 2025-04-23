@@ -41,9 +41,7 @@ namespace Bee.Api.Core
                 // 從 Method 屬性解析出 ProgID 與 Action
                 var (progID, action) = ParseMethod(request.Method);
                 // 建立商業邏輯物件，執行指定方法
-                var businessObject = CreateBusinessObject(progID);
-                var method = businessObject.GetType().GetMethod(action);
-                var value = method.Invoke(businessObject, new object[] { request.Params.Value });
+                var value = ExecuteMethod(progID, action, request.Params.Value);
 
                 // 傳出結果
                 response.Result = new TJsonRpcResult()
@@ -57,9 +55,9 @@ namespace Bee.Api.Core
             catch (Exception ex)
             {
                 if (ex.InnerException != null)
-                    response.Message = ex.InnerException.Message;
+                    response.Error = new TJsonRpcError(-1, ex.InnerException.Message);
                 else
-                    response.Message = ex.Message;
+                    response.Error = new TJsonRpcError(-1, ex.Message);
             }
             return response;
         }
@@ -78,17 +76,32 @@ namespace Bee.Api.Core
                     return (parts[0], parts[1]);
                 }
             }
-            return (string.Empty, string.Empty);
+            throw new FormatException($"Invalid method format: {method}");
         }
 
         /// <summary>
-        /// 建立商業邏輯物件。
+        /// 建立商業邏輯物件，執行指定方法。
         /// </summary>
         /// <param name="progID">程式代碼。</param>
-        private object CreateBusinessObject(string progID)
+        /// <param name="action">執行動作。</param>
+        /// <param name="value">執行動作的傳入引數。</param>
+        public object ExecuteMethod(string progID, string action, object value)
         {
-            if (StrFunc.IsEmpty(progID))
-                throw new TException("ProgID is empty");
+            var businessObject = ResolveBusinessObject(progID);
+            var method = businessObject.GetType().GetMethod(action);
+            if (method == null)
+                throw new MissingMethodException($"Method '{action}' not found in business object '{progID}'.");
+            return method.Invoke(businessObject, new object[] { value });
+        }
+
+        /// <summary>
+        /// 解析並取得實體商業邏輯物件。
+        /// </summary>
+        /// <param name="progID">程式代碼。</param>
+        private object ResolveBusinessObject(string progID)
+        {
+            if (string.IsNullOrWhiteSpace(progID))
+                throw new ArgumentException("ProgID cannot be null or empty.", nameof(progID));
 
             if (StrFunc.IsEquals(progID, SysProgIDs.System))
                 return BackendInfo.BusinessObjectProvider.CreateSystemObject(AccessToken);

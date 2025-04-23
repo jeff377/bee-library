@@ -70,8 +70,8 @@ namespace Bee.Connect
                 Id = Guid.NewGuid()
             };
             var response = this.Provider.Execute(request);
-            if (StrFunc.IsNotEmpty(response.Message))
-                throw new TException(response.Message);
+            if (StrFunc.IsNotEmpty(response.Error))
+                throw new TException(response.Error.Message);
             return response.Result.Value;
         }
     }

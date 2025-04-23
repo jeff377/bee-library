@@ -54,12 +54,6 @@ namespace Bee.Api.Core
         public object Id { get; set; }
 
         /// <summary>
-        /// 回傳訊息文字。
-        /// </summary>
-        [DefaultValue("")]
-        public string Message { get; set; } = string.Empty;
-
-        /// <summary>
         /// 資料進行加密。
         /// </summary>
         public void Encrypt()

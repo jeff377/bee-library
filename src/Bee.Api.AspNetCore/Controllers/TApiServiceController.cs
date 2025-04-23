@@ -26,7 +26,11 @@ namespace Bee.Api.AspNetCore
             {
                 return StatusCode(StatusCodes.Status401Unauthorized, new TJsonRpcResponse
                 {
-                    Message = "Missing or invalid authentication headers"
+                    Error = new TJsonRpcError
+                    {
+                        Code = -32600,
+                        Message = "Missing or invalid authentication headers"
+                    }
                 });
             }
 
@@ -45,7 +49,11 @@ namespace Bee.Api.AspNetCore
             {
                 return BadRequest(new TJsonRpcResponse
                 {
-                    Message = $"Failed to deserialize request body: {ex.Message}"
+                    Error = new TJsonRpcError
+                    {
+                        Code = -32700,
+                        Message = $"Failed to deserialize request body: {ex.Message}"
+                    }
                 });
             }
 
@@ -53,7 +61,11 @@ namespace Bee.Api.AspNetCore
             {
                 return BadRequest(new TJsonRpcResponse
                 {
-                    Message = "Invalid request body"
+                    Error = new TJsonRpcError
+                    {
+                        Code = -32600,
+                        Message = "Invalid request body"
+                    }
                 });
             }
 
@@ -71,7 +83,12 @@ namespace Bee.Api.AspNetCore
             {
                 var result = new TJsonRpcResponse(request)
                 {
-                    Message = ex.Message
+                    Error = new TJsonRpcError
+                    {
+                        Code = -32000,
+                        Message = "Internal server error",
+                        Data = ex.InnerException?.Message
+                    }
                 };
                 return StatusCode(StatusCodes.Status500InternalServerError, result);
             }
