@@ -1,7 +1,5 @@
 ﻿using System;
-using System.ComponentModel;
 using Bee.Base;
-using Bee.Define;
 using Newtonsoft.Json;
 
 namespace Bee.Api.Core
@@ -47,28 +45,14 @@ namespace Bee.Api.Core
         public object Id { get; set; }
 
         /// <summary>
-        /// 傳入資料。
-        /// </summary>
-        public object Value { get; set; }
-
-        /// <summary>
-        /// 資料是否加密。
-        /// </summary>
-        [DefaultValue(false)]
-        public bool Encrypted { get; private set; } = false;
-
-        /// <summary>
         /// 資料進行加密。
         /// </summary>
         public void Encrypt()
         {
-            // 已加密離開
-            if (this.Encrypted) { return; }
-
-            byte[] bytes = SerializeFunc.ObjectToBinary(Value);  // 序列化
-            var encryption = SysFunc.CreateApiServiceEncryption();
-            Value = encryption.Encrypt(bytes);  // 加密
-            Encrypted = true;
+            if (Params != null)
+            {
+                Params.Encrypt();  // 加密引數
+            }
         }
 
         /// <summary>
@@ -76,13 +60,10 @@ namespace Bee.Api.Core
         /// </summary>
         public void Decrypt()
         {
-            // 未加密則離開
-            if (!this.Encrypted) { return; }
-
-            var encryption = SysFunc.CreateApiServiceEncryption();
-            byte[] bytes = encryption.Decrypt(Value as byte[]);  // 解密
-            Value = SerializeFunc.BinaryToObject(bytes);  // 反序列化
-            Encrypted = false;
+            if (Params != null)
+            {
+                Params.Decrypt();  // 解密引數
+            }
         }
     }
 }

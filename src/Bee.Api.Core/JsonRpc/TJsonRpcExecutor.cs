@@ -33,7 +33,7 @@ namespace Bee.Api.Core
             try
             {
                 // 傳輸資料是否加密
-                bool encrypted = request.Encrypted;
+                bool encrypted = request.Params.Encrypted;
                 // 傳入參數進行解密
                 if (encrypted)
                     request.Decrypt();
@@ -43,7 +43,7 @@ namespace Bee.Api.Core
                 // 建立商業邏輯物件，執行指定方法
                 var businessObject = CreateBusinessObject(progID);
                 var method = businessObject.GetType().GetMethod(action);
-                var value = method.Invoke(businessObject, new object[] { request.Value });
+                var value = method.Invoke(businessObject, new object[] { request.Params.Value });
 
                 // 傳出結果
                 response.Value = value;

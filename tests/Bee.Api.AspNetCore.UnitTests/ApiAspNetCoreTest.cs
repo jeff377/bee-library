@@ -39,8 +39,7 @@ namespace Bee.Api.AspNetCore.UnitTests
                 {
                     Value = value
                 },
-                Id = Guid.NewGuid(),
-                Value = value
+                Id = Guid.NewGuid()
             };
             return request.ToJson();
         }

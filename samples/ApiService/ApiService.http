@@ -9,12 +9,15 @@ X-Api-Key: {{apiKey}}
 Authorization: {{accessToken}}
 
 {
-  "ProgID": "System",
-  "Action": "ExecFunc",
-  "Value": {
-    "$type": "Bee.Define.TExecFuncArgs, Bee.Define",
-    "FuncID": "Hello",
-    "Parameters": []
-  }
+  "jsonrpc": "2.0",
+  "method": "System.ExecFunc",
+  "params": {
+    "value": {
+      "$type": "Bee.Define.TExecFuncArgs, Bee.Define",
+      "FuncID": "Hello",
+      "Parameters": []
+    }
+  },
+  "id": "228bd7e0-603f-4433-93d9-9c03ebabc5e4"
 }
 ###

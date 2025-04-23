@@ -78,21 +78,14 @@ namespace Bee.Api.AspNetCore
         }
 
         /// <summary>
-        /// 執行 API 服務。
+        /// 執行 API 方法。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="request">JSON-RPC 請求模型。</param>
         protected virtual TJsonRpcResponse Execute(Guid accessToken, TJsonRpcRequest request)
         {
-            bool encrypted = request.Encrypted;
-            // 傳入引數有加密，則進行解密
-            if (encrypted) { request.Decrypt(); }
-            // 執行指定方法
             var executor = new TJsonRpcExecutor(accessToken);
-            var response = executor.Execute(request);
-            // 若傳入引數有加密，回傳結果也要加密
-            if (encrypted) { response.Encrypt(); }
-            return response;
+            return executor.Execute(request);
         }
 
         /// <summary>

@@ -27,8 +27,7 @@ namespace Bee.Api.Core.UnitTests
                 {
                     Value = new TExecFuncArgs("Hello")
                 },
-                Id = Guid.NewGuid(),
-                Value = new TExecFuncArgs("Hello")
+                Id = Guid.NewGuid()
             };
             string json = request.ToJson();
             Assert.NotNull(json);
@@ -50,8 +49,7 @@ namespace Bee.Api.Core.UnitTests
                 {
                     Value = value
                 },
-                Id = Guid.NewGuid(),
-                Value = value
+                Id = Guid.NewGuid()
             };
             Guid accessToken = Guid.NewGuid();
             var executor = new TJsonRpcExecutor(accessToken);
@@ -67,7 +65,6 @@ namespace Bee.Api.Core.UnitTests
         {
             // 設定 ExecFunc 方法傳入引數
             Guid accessToken = Guid.NewGuid();
-            var execFuncArgs = new TExecFuncArgs("Hello");
             // 設定 設定 JSON-RPC 請求模型
             var request = new TJsonRpcRequest()
             {
@@ -76,8 +73,7 @@ namespace Bee.Api.Core.UnitTests
                 {
                     Value = new TExecFuncArgs("Hello")
                 },
-                Id = Guid.NewGuid(),
-                Value = execFuncArgs
+                Id = Guid.NewGuid()
             };
 
             string json = request.ToJson();
