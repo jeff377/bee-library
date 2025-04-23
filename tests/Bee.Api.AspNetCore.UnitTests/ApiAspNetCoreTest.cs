@@ -32,7 +32,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         private string GetArgs(string progID, string action, object value)
         {
             // 設定 API 方法傳入引數
-            var args = new TApiServiceArgs()
+            var args = new TJsonRpcRequest()
             {
                 ProgID = SysProgIDs.System,
                 Action = action,

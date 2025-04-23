@@ -27,14 +27,14 @@ namespace Bee.Connect
         /// <summary>
         /// 執行 API 方法。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        public TApiServiceResult Execute(TApiServiceArgs args)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public TJsonRpcResponse Execute(TJsonRpcRequest request)
         {
             // 註1：開發階段使用近端連線，簡化運行環境及方便偵錯；運行階段則使用遠端連線
             // 註2：近端連線傳遞資料做加解密，是為了驗證開發階段傳遞的資料型別都能正常序列化
             var executor = new TApiServiceExecutor(AccessToken);
-            args.Encrypt();  // 傳入資料進行加密
-            var result = executor.Execute(args);
+            request.Encrypt();  // 傳入資料進行加密
+            var result = executor.Execute(request);
             result.Decrypt();  // 傳出結果進行解密
             return result;
         }
@@ -42,8 +42,8 @@ namespace Bee.Connect
         /// <summary>
         /// 非同步執行 API 方法。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        public Task<string> ExecuteAsync(TApiServiceArgs args)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public Task<string> ExecuteAsync(TJsonRpcRequest request)
         {
             throw new NotSupportedException();
         }

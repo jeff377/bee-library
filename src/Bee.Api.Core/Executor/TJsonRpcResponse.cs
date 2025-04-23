@@ -5,23 +5,23 @@ using Bee.Define;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 呼叫 API 服務傳出結果。 
+    /// JSON-RPC 回應模型。 
     /// </summary>
-    public class TApiServiceResult : IObjectSerializeBase
+    public class TJsonRpcResponse : IObjectSerializeBase
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TApiServiceResult()
+        public TJsonRpcResponse()
         { }
 
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="args">呼叫 API 服務傳入引數。</param>
-        public TApiServiceResult(TApiServiceArgs args)
+        public TJsonRpcResponse(TJsonRpcRequest args)
         {
             ProgID = args.ProgID;
             Action = args.Action;

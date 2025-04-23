@@ -24,7 +24,7 @@ namespace Bee.Api.AspNetCore
 
             if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(authorization))
             {
-                return StatusCode(StatusCodes.Status401Unauthorized, new TApiServiceResult
+                return StatusCode(StatusCodes.Status401Unauthorized, new TJsonRpcResponse
                 {
                     Message = "Missing or invalid authentication headers"
                 });
@@ -36,14 +36,14 @@ namespace Bee.Api.AspNetCore
             using var reader = new StreamReader(HttpContext.Request.Body);
             json = await reader.ReadToEndAsync();
 
-            TApiServiceArgs args;
+            TJsonRpcRequest args;
             try
             {
-                args = SerializeFunc.JsonToObject<TApiServiceArgs>(json);
+                args = SerializeFunc.JsonToObject<TJsonRpcRequest>(json);
             }
             catch (Exception ex)
             {
-                return BadRequest(new TApiServiceResult
+                return BadRequest(new TJsonRpcResponse
                 {
                     Message = $"Failed to deserialize request body: {ex.Message}"
                 });
@@ -51,7 +51,7 @@ namespace Bee.Api.AspNetCore
 
             if (args == null)
             {
-                return BadRequest(new TApiServiceResult
+                return BadRequest(new TJsonRpcResponse
                 {
                     Message = "Invalid request body"
                 });
@@ -69,7 +69,7 @@ namespace Bee.Api.AspNetCore
             }
             catch (Exception ex)
             {
-                var result = new TApiServiceResult(args)
+                var result = new TJsonRpcResponse(args)
                 {
                     Message = ex.Message
                 };
@@ -82,7 +82,7 @@ namespace Bee.Api.AspNetCore
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="args">呼叫 API 服務傳入引數。</param>
-        protected virtual TApiServiceResult Execute(Guid accessToken, TApiServiceArgs args)
+        protected virtual TJsonRpcResponse Execute(Guid accessToken, TJsonRpcRequest args)
         {
             bool encrypted = args.Encrypted;
             // 傳入引數有加密，則進行解密

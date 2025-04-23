@@ -60,7 +60,7 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
-            var args = new TApiServiceArgs(progID, action, value);
+            var args = new TJsonRpcRequest(progID, action, value);
             var result = this.Provider.Execute(args);
             if (StrFunc.IsNotEmpty(result.Message))
                 throw new TException(result.Message);

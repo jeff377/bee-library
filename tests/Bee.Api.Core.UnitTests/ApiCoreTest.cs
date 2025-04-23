@@ -23,7 +23,7 @@ namespace Bee.Api.Core.UnitTests
         private T ApiExecute<T>(string progID, string action, object value)
         {
             // 設定 API 方法傳入引數
-            var args = new TApiServiceArgs()
+            var args = new TJsonRpcRequest()
             {
                 ProgID = SysProgIDs.System,
                 Action = action,
@@ -45,7 +45,7 @@ namespace Bee.Api.Core.UnitTests
             Guid accessToken = Guid.NewGuid();
             var execFuncArgs = new TExecFuncArgs("Hello");
             // 設定 API 方法傳入引數
-            var args = new TApiServiceArgs()
+            var args = new TJsonRpcRequest()
             {
                 ProgID = SysProgIDs.System,
                 Action = "ExecFunc",

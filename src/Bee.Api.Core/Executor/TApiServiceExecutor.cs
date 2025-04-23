@@ -27,9 +27,9 @@ namespace Bee.Api.Core
         /// 執行 API 服務。
         /// </summary>
         /// <param name="args">傳入參數。</param>
-        public TApiServiceResult Execute(TApiServiceArgs args)
+        public TJsonRpcResponse Execute(TJsonRpcRequest args)
         {
-            var result = new TApiServiceResult(args);
+            var result = new TJsonRpcResponse(args);
             try
             {
                 // 傳輸資料是否加密
@@ -63,7 +63,7 @@ namespace Bee.Api.Core
         /// 建立商業邏輯物件。
         /// </summary>
         /// <param name="args">傳入參數。</param>
-        private object CreateBusinessObject(TApiServiceArgs args)
+        private object CreateBusinessObject(TJsonRpcRequest args)
         {
             if (StrFunc.IsEmpty(args.ProgID))
                 throw new TException("ProgID is empty");

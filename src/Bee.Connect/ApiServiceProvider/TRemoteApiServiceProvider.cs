@@ -40,17 +40,17 @@ namespace Bee.Connect
         /// <summary>
         /// 執行 API 方法。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        public TApiServiceResult Execute(TApiServiceArgs args)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public TJsonRpcResponse Execute(TJsonRpcRequest request)
         {
             var header = new NameValueCollection();
             header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
             header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
 
-            args.Encrypt(); // 傳入參數進行加密
-            string body = args.ToJson();  // 傳入參數進行 JSON 序列化
+            request.Encrypt(); // 傳入參數進行加密
+            string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             string json = HttpFunc.PostAsync(this.Endpoint, body, header).Result;  // 執行 Web API 方法
-            var result = SerializeFunc.JsonToObject<TApiServiceResult>(json);  // 執行 JSON 反序列化
+            var result = SerializeFunc.JsonToObject<TJsonRpcResponse>(json);  // 執行 JSON 反序列化
             result.Decrypt();  // 傳出結果進行解密
             return result;
         }
@@ -58,15 +58,15 @@ namespace Bee.Connect
         /// <summary>
         /// 非同步執行 API 方法。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        public Task<string> ExecuteAsync(TApiServiceArgs args)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public Task<string> ExecuteAsync(TJsonRpcRequest request)
         {
             var header = new NameValueCollection();
             header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
             header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
 
-            args.Encrypt(); // 傳入參數進行加密
-            string body = args.ToJson();  // 傳入參數進行 JSON 序列化
+            request.Encrypt(); // 傳入參數進行加密
+            string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             return HttpFunc.PostAsync(this.Endpoint, body, header);  // 執行 Web API 方法
         }
 
@@ -78,7 +78,7 @@ namespace Bee.Connect
         {
             task.ContinueWith(t =>
             {
-                var result = SerializeFunc.JsonToObject<TApiServiceResult>(t.Result);  // 執行 JSON 反序列化
+                var result = SerializeFunc.JsonToObject<TJsonRpcResponse>(t.Result);  // 執行 JSON 反序列化
                 result.Decrypt();  // 傳出結果進行解密
             }); // 異步處理
         }

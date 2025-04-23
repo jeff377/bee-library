@@ -6,17 +6,17 @@ using Bee.Define;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 呼叫 API 服務傳入引數。 
+    /// JSON-RPC 請求模型。 
     /// </summary>
     [Serializable]
-    public class TApiServiceArgs : IObjectSerializeBase
+    public class TJsonRpcRequest : IObjectSerializeBase
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TApiServiceArgs()
+        public TJsonRpcRequest()
         { }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Bee.Api.Core
         /// <param name="progID">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">傳入資料。</param>
-        public TApiServiceArgs(string progID, string action, object value)
+        public TJsonRpcRequest(string progID, string action, object value)
         {
             ProgID = progID;
             Action = action;

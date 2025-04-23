@@ -11,13 +11,13 @@ namespace Bee.Api.Core
         /// <summary>
         /// 執行 API 方法。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        TApiServiceResult Execute(TApiServiceArgs args);
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        TJsonRpcResponse Execute(TJsonRpcRequest request);
 
         /// <summary>
         /// 非同步執行 API 方法。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
-        Task<string> ExecuteAsync(TApiServiceArgs args);
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        Task<string> ExecuteAsync(TJsonRpcRequest request);
     }
 }
