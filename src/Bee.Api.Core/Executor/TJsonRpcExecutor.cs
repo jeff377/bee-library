@@ -5,15 +5,15 @@ using Bee.Define;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// API 服務執行器。
+    /// JSON-RPC 執行器。
     /// </summary>
-    public class TApiServiceExecutor
+    public class TJsonRpcExecutor
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TApiServiceExecutor(Guid accessToken)
+        public TJsonRpcExecutor(Guid accessToken)
         {
             AccessToken = accessToken;
         }

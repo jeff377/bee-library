@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// API 服務提供者介面。
+    /// JSON-RPC 服務提供者介面。
     /// </summary>
-    public interface IApiServiceProvider
+    public interface IJsonRpcProvider
     {
         /// <summary>
         /// 執行 API 方法。

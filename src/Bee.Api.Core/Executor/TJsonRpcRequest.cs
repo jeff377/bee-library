@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Bee.Base;
 using Bee.Define;
+using Newtonsoft.Json;
 
 namespace Bee.Api.Core
 {
@@ -33,6 +34,30 @@ namespace Bee.Api.Core
         }
 
         #endregion
+
+        /// <summary>
+        /// 指定 JSON-RPC 的版本。
+        /// </summary>
+        [JsonProperty("jsonrpc", NullValueHandling = NullValueHandling.Include)]
+        public string Jsonrpc { get; set; } = "2.0";
+
+        /// <summary>
+        /// 要呼叫的方法名稱。
+        /// </summary>
+        [JsonProperty("method", NullValueHandling = NullValueHandling.Include)]
+        public string Method { get; set; }
+
+        /// <summary>
+        /// 方法的引數。
+        /// </summary>
+        [JsonProperty("params")]
+        public object Params { get; set; }
+
+        /// <summary>
+        /// 請求的唯一識別碼。
+        /// </summary>
+        [JsonProperty("id")]
+        public object Id { get; set; }
 
         /// <summary>
         /// 程式代碼。

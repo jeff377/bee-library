@@ -45,7 +45,7 @@ namespace Bee.Connect
         /// <summary>
         /// API 服務提供者。
         /// </summary>
-        public IApiServiceProvider Provider { get; private set; }
+        public IJsonRpcProvider Provider { get; private set; }
 
         /// <summary>
         /// 執行 API 方法。

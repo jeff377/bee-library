@@ -15,6 +15,22 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
+        /// JSON-RPC 請求模型序列化。
+        /// </summary>
+        [Fact]
+        public void JsonRpcRequestSerialize()
+        {
+            var request = new TJsonRpcRequest()
+            {
+                ProgID = SysProgIDs.System,
+                Action = "ExecFunc",
+                Value = new TExecFuncArgs("Hello")
+            };
+            string json = request.ToJson();
+            Assert.NotNull(json);
+        }
+
+        /// <summary>
         /// 執行 API 方法。
         /// </summary>
         /// <param name="progID">程式代碼。</param>
@@ -30,7 +46,7 @@ namespace Bee.Api.Core.UnitTests
                 Value = value
             };
             Guid accessToken = Guid.NewGuid();
-            var executor = new TApiServiceExecutor(accessToken);
+            var executor = new TJsonRpcExecutor(accessToken);
             var result = executor.Execute(request);
             return (T)result.Value;
         }
@@ -54,7 +70,7 @@ namespace Bee.Api.Core.UnitTests
 
             string json = request.ToJson();
             // 執行 API 方法
-            var executor = new TApiServiceExecutor(accessToken);
+            var executor = new TJsonRpcExecutor(accessToken);
             var result = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
             var execFuncResult = result.Value as TExecFuncResult;

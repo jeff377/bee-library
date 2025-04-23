@@ -10,7 +10,7 @@ namespace Bee.Connect
     /// <summary>
     /// 遠端 API 服務提供者（透過網路存取後端商業邏輯）。
     /// </summary>
-    public class TRemoteApiServiceProvider : IApiServiceProvider
+    public class TRemoteApiServiceProvider : IJsonRpcProvider
     {
         #region 建構函式
 

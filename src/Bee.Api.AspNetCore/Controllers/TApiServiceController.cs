@@ -88,7 +88,7 @@ namespace Bee.Api.AspNetCore
             // 傳入引數有加密，則進行解密
             if (encrypted) { request.Decrypt(); }
             // 執行指定方法
-            var executor = new TApiServiceExecutor(accessToken);
+            var executor = new TJsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
             // 若傳入引數有加密，回傳結果也要加密
             if (encrypted) { response.Encrypt(); }
