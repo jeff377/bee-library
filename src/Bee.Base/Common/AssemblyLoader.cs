@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Reflection;
 
 namespace Bee.Base
@@ -8,18 +10,29 @@ namespace Bee.Base
     /// </summary>
     public static class AssemblyLoader
     {
+        // 快取已載入的組件，避免重複載入
+        private static readonly Dictionary<string, Assembly> _loadedAssemblies = new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
+
         /// <summary>
         /// 尋找組件。
         /// </summary>
         /// <param name="assemblyName">組件名稱。</param>
         public static Assembly FindAssembly(string assemblyName)
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            foreach (Assembly assembly in assemblies)
+            // 先從快取中找
+            if (_loadedAssemblies.TryGetValue(assemblyName, out var cached))
+                return cached;
+
+            // 從目前 AppDomain 中查找
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (StrFunc.IsEquals(assembly.ManifestModule.Name, assemblyName))
+                {
+                    _loadedAssemblies[assemblyName] = assembly;
                     return assembly;
+                }
             }
+
             return null;
         }
 
@@ -36,12 +49,13 @@ namespace Bee.Base
         /// 載入組件。
         /// </summary>
         /// <param name="assemblyName">組件名稱。</param>
-        /// <remarks>傳回組件檔案路徑。</remarks>
+        /// <returns>已載入的組件。</returns>
         public static Assembly LoadAssembly(string assemblyName)
-        {       
+        {
             // 若組件已載入，則直接回傳
             var assembly = FindAssembly(assemblyName);
-            if (assembly != null) { return assembly; }
+            if (assembly != null)
+                return assembly;
 
             // 取得組件的完整路徑
             string assemblyFile;
@@ -49,8 +63,12 @@ namespace Bee.Base
                 assemblyFile = FileFunc.PathCombine(FileFunc.GetAssemblyPath(), assemblyName);
             else
                 assemblyFile = assemblyName;
+
             // 載入組件
-            return Assembly.LoadFrom(assemblyFile);
+            assembly = Assembly.LoadFrom(assemblyFile);
+            _loadedAssemblies[assemblyName] = assembly;
+
+            return assembly;
         }
 
         /// <summary>
@@ -87,7 +105,7 @@ namespace Bee.Base
         /// <param name="typeName">型別名稱。</param>
         public static Type GetType(string assemblyName, string typeName)
         {
-            var assembly = AssemblyLoader.LoadAssembly(assemblyName);
+            var assembly = LoadAssembly(assemblyName);
             return assembly.GetType(typeName);
         }
 
@@ -110,18 +128,18 @@ namespace Bee.Base
         /// <param name="typeName">型別名稱。</param>
         private static void GetAssemblyAndType(string fullTypeName, out string assemblyName, out string typeName)
         {
-            string leftPart, rigthPart;
+            string leftPart, rightPart;
             if (StrFunc.Contains(fullTypeName, ","))
             {
                 // 範例為 "Bee.Business.TBusinessObject, Bee.Business"
-                StrFunc.SplitLeft(fullTypeName, ",", out leftPart, out rigthPart);
-                assemblyName = StrFunc.Format("{0}.dll", StrFunc.Trim(rigthPart));
+                StrFunc.SplitLeft(fullTypeName, ",", out leftPart, out rightPart);
+                assemblyName = StrFunc.Format("{0}.dll", StrFunc.Trim(rightPart));
                 typeName = leftPart;
             }
             else
             {
                 // 範例為 "Bee.Business.TBusinessObject"
-                StrFunc.SplitRight(fullTypeName, ".", out leftPart, out rigthPart);
+                StrFunc.SplitRight(fullTypeName, ".", out leftPart, out rightPart);
                 assemblyName = StrFunc.Format("{0}.dll", leftPart);
                 typeName = fullTypeName;
             }
