@@ -22,15 +22,9 @@ namespace Bee.Api.AspNetCore
             var apiKey = HttpContext.Request.Headers["X-Api-Key"].ToString();
             var authorization = HttpContext.Request.Headers["Authorization"].ToString();
 
-            if (string.IsNullOrWhiteSpace(apiKey) || string.IsNullOrWhiteSpace(authorization))
+            if (string.IsNullOrWhiteSpace(apiKey))
             {
-                return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Missing or invalid authentication headers");
-            }
-
-            Guid accessToken = TryGetAccessToken(authorization);
-            if (accessToken == Guid.Empty)
-            {
-                return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Invalid access token");
+                return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Missing or invalid X-Api-Key header");
             }
 
             string json;
@@ -47,11 +41,36 @@ namespace Bee.Api.AspNetCore
                 return CreateErrorResponse(StatusCodes.Status400BadRequest, -32700, $"Failed to deserialize request body: {ex.Message}");
             }
 
-            if (request == null)
+            if (request == null || string.IsNullOrWhiteSpace(request.Method))
             {
-                return CreateErrorResponse(StatusCodes.Status400BadRequest, -32600, "Invalid request body");
+                return CreateErrorResponse(StatusCodes.Status400BadRequest, -32600, "Invalid request body or missing method");
             }
 
+            if (IsAuthorizationRequired(request.Method))
+            {
+                if (string.IsNullOrWhiteSpace(authorization))
+                {
+                    return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Missing Authorization header", request.Id);
+                }
+
+                var accessToken = TryGetAccessToken(authorization);
+                if (accessToken == Guid.Empty)
+                {
+                    return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Invalid access token", request.Id);
+                }
+
+                return HandleRequest(request, accessToken);
+            }
+            else
+            {
+                // 不需驗證授權
+                return HandleRequest(request, Guid.Empty);
+            }
+        }
+
+
+        private IActionResult HandleRequest(TJsonRpcRequest request, Guid accessToken)
+        {
             try
             {
                 var result = Execute(accessToken, request);
@@ -94,6 +113,25 @@ namespace Bee.Api.AspNetCore
             var token = authorization.Substring("Bearer ".Length).Trim();
             return Guid.TryParse(token, out var guid) ? guid : Guid.Empty;
         }
+
+        /// <summary>
+        /// 判斷指定的 JSON-RPC 方法是否需要授權。
+        /// </summary>
+        /// <param name="method">JSON-RPC 方法名稱（大小寫敏感）。</param>
+        /// <returns>需要授權則回傳 true，否則 false。</returns>
+        protected virtual bool IsAuthorizationRequired(string method)
+        {
+            // 不需授權的方法清單（大小寫敏感）
+            var noAuthMethods = new HashSet<string>
+            {
+                "System.Login",
+                "System.Ping"
+            };
+
+            return !noAuthMethods.Contains(method);
+        }
+
+
 
         /// <summary>
         /// 建立統一格式的 JSON-RPC 錯誤回應。

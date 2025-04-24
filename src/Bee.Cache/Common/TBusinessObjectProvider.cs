@@ -18,7 +18,7 @@ namespace Bee.Cache
         /// 建立系統層級商業邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public ISystemObject CreateSystemObject(Guid accessToken)
+        public object CreateSystemObject(Guid accessToken)
         {
             return SysFunc.CreateSystemObject(accessToken);
         }
@@ -28,7 +28,7 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progID">程式代碼。</param>
-        public IBusinessObject CreateBusinessObject(Guid accessToken, string progID)
+        public object CreateBusinessObject(Guid accessToken, string progID)
         {
             return SysFunc.CreateBusinessObject(accessToken, progID);
         }

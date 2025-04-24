@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Bee.Base
 {
@@ -141,8 +142,11 @@ namespace Bee.Base
         /// <param name="includeTypeName">是否包含型別名稱。</param>
         private static JsonSerializerSettings GetJsonSerializerSettings(bool ignoreDefaultValue, bool ignoreNullValue, bool includeTypeName)
         {
-            var settings = new JsonSerializerSettings();
-            settings.Formatting = Formatting.Indented;
+            var settings = new JsonSerializerSettings()
+            {
+                Formatting = Formatting.Indented,
+                ContractResolver = new CamelCasePropertyNamesContractResolver()
+            };
             // 忽略預設值
             if (ignoreDefaultValue)
                 settings.DefaultValueHandling = DefaultValueHandling.Ignore;
