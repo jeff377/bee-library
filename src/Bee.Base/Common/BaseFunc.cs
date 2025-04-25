@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 
 namespace Bee.Base
 {
@@ -183,18 +184,36 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷是否為數值。
+        /// 判斷指定的物件是否可被視為數值（支援 string、bool、enum）。
         /// </summary>
         /// <param name="value">要判斷的值。</param>
+        /// <returns>若能轉型為數值則回傳 true。</returns>
         public static bool IsNumeric(object value)
         {
-            // 列舉視為數值
-            if (value is Enum) { return true; }
-            // 布林值視為數值
-            if (value is bool) { return true; }
-            // 驗證是否能轉型為數值
-            return double.TryParse(CStr(value), out _);
+            if (value == null)
+                return false;
+
+            // bool 與 enum 視為可轉為數值
+            if (value is bool || value is Enum)
+                return true;
+
+            // 針對 string 做特殊處理
+            var s = value as string;
+            if (s != null)
+                return double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
+
+            // 基本數值型別
+            if (value is byte || value is sbyte ||
+                value is short || value is ushort ||
+                value is int || value is uint ||
+                value is long || value is ulong ||
+                value is float || value is double || value is decimal)
+                return true;
+
+            // 最後一線防守：ToString 後再判斷（防止反射動態物件等）
+            return double.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out _);
         }
+
 
         /// <summary>
         /// 判斷字串是否為指定長度的數值。
@@ -210,27 +229,46 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 將傳入的值轉換為數值。
+        /// 將傳入的物件轉換為數值型別。支援 string、bool、enum 與各種數值型別。
+        /// 若無法轉換，將拋出 InvalidCastException。
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        private static object ConvertToNumber(object value)
+        /// <param name="value">要轉型的值，可為 string、bool、enum 或數值型別。</param>
+        /// <returns>轉換後的數值。string 會轉為 double，bool 轉為 1 或 0，enum 轉為整數。</returns>
+        /// <exception cref="InvalidCastException">若無法轉換為數值，則拋出此例外。</exception>
+        public static object ConvertToNumber(object value)
         {
-            // Null 傳回 0
-            if (IsNullOrDBNull(value)) { return 0; }
+            if (IsNullOrDBNull(value))
+                return 0;
 
-            // 針對文字型別做處理
-            if (value is string s)
+            var s = value as string;
+            if (s != null)
             {
-                // 空字串傳回 0
-                if (IsEmpty(s)) { return 0; }
-                // 若為數值先轉型為 Double 型別，防止有小數點無法轉型為整數
-                if (IsNumeric(s)) { value = Convert.ToDouble(s); }
+                if (IsEmpty(s))
+                    return 0;
+
+                double result;
+                if (double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+                    return result;
             }
 
-            if (!IsNumeric(value))
-                throw new InvalidCastException($"Cannot convert '{value}' to number.");
+            if (value is bool)
+                return (bool)value ? 1 : 0;
 
-            return value;
+            if (value is Enum)
+                return Convert.ToInt32(value);
+
+            if (value is byte || value is sbyte ||
+                value is short || value is ushort ||
+                value is int || value is uint ||
+                value is long || value is ulong ||
+                value is float || value is double || value is decimal)
+                return value;
+
+            double fallback;
+            if (double.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out fallback))
+                return fallback;
+
+            throw new InvalidCastException($"Cannot convert '{value}' to number.");
         }
 
         /// <summary>

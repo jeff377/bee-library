@@ -76,5 +76,37 @@ namespace Bee.Base.UnitTests
             sDstValue = EncryptionFunc.Sha256Encrypt(sSrcValue);
             Assert.NotEmpty(sDstValue);
         }
+
+        /// <summary>
+        /// 代刚 IsNumeric よ猭
+        /// </summary>
+        [Fact]
+        public void IsNumericTest()
+        {
+            // ガ狶代刚
+            Assert.True(BaseFunc.IsNumeric(true));
+            Assert.True(BaseFunc.IsNumeric(false));
+
+            // 羭代刚
+            Assert.True(BaseFunc.IsNumeric(EDateInterval.Day));
+            Assert.True(BaseFunc.IsNumeric(EDateInterval.Hour));
+
+            // 计代刚
+            Assert.True(BaseFunc.IsNumeric(123)); // 俱计
+            Assert.True(BaseFunc.IsNumeric(123.45)); // 疊翴计
+            Assert.True(BaseFunc.IsNumeric(123.45m)); // 秈计
+
+            // ﹃代刚
+            Assert.True(BaseFunc.IsNumeric("123"));
+            Assert.True(BaseFunc.IsNumeric("123.45"));
+            Assert.False(BaseFunc.IsNumeric("abc"));
+
+            // 疭代刚
+            Assert.False(BaseFunc.IsNumeric(null));
+            Assert.False(BaseFunc.IsNumeric(new object()));
+            Assert.False(BaseFunc.IsNumeric(DateTime.Now));
+        }
+
+
     }
 }
