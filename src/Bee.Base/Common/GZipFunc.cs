@@ -20,7 +20,7 @@ namespace Bee.Base
                 {
                     gZipStream.Write(bytes, 0, bytes.Length);
                 }
-                return stream.ToArray();
+                return stream.ToArray(); // 確保所有資料都被寫入並轉換為位元組陣列
             }
         }
 
@@ -30,22 +30,18 @@ namespace Bee.Base
         /// <param name="bytes">壓縮二進位資料。</param>
         public static byte[] Uncompress(byte[] bytes)
         {
-            byte[] oBuffer = new byte[4096];
-            int iRead;
+            byte[] buffer = new byte[4096];
+            int count;
 
-            using (MemoryStream inputStream = new MemoryStream())
+            using (MemoryStream inputStream = new MemoryStream(bytes))
             {
-                inputStream.Write(bytes, 0, bytes.Length);
-                inputStream.Position = 0;
                 using (GZipStream gZipStream = new GZipStream(inputStream, CompressionMode.Decompress, true))
                 {
                     using (MemoryStream outputStream = new MemoryStream())
                     {
-                        iRead = gZipStream.Read(oBuffer, 0, oBuffer.Length);
-                        while (iRead > 0)
+                        while ((count = gZipStream.Read(buffer, 0, buffer.Length)) > 0)
                         {
-                            outputStream.Write(oBuffer, 0, iRead);
-                            iRead = gZipStream.Read(oBuffer, 0, oBuffer.Length);
+                            outputStream.Write(buffer, 0, count);
                         }
                         return outputStream.ToArray();
                     }
@@ -53,4 +49,6 @@ namespace Bee.Base
             }
         }
     }
+
+
 }
