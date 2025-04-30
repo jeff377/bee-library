@@ -1,37 +1,50 @@
-﻿# Bee.NET Framework
+﻿
+# Bee.NET Framework
 
-Bee.NET Framework is a three-tier software architecture designed to accelerate the development of information systems. Built on **NETStandard 2.0**, it provides a solid foundation compatible with various .NET platforms, including .NET Core, and .NET Framework.
+Bee.NET Framework is a three-tier software architecture designed to accelerate the development of enterprise information systems. Built on **.NET Standard 2.0**, it features high modularity and cross-platform compatibility across .NET Framework, .NET Core, .NET 5+, and beyond.
 
-The framework is modularized into several components, each targeting specific functionalities to ensure flexibility and scalability.
+## ✨ Features
+
+- **Three-tier architecture**: Clear separation of presentation, business logic, and data access layers.
+- **Cross-platform compatibility**: Powered by .NET Standard 2.0 for broad .NET runtime support.
+- **Modular components**: Decoupled libraries for core utilities, data, caching, business logic, and API hosting.
+- **Rapid development**: Provides common reusable components to simplify system integration.
+
+## 📦 Components
+
+| Component Name              | Scope         | Target Framework       | Description |
+|----------------------------|---------------|------------------------|-------------|
+| **Bee.Base.dll**           | Frontend / Backend | .NET Standard 2.0  | Core utilities such as serialization, encryption, and general-purpose helpers. |
+| **Bee.Define.dll**         | Frontend / Backend | .NET Standard 2.0  | Defines system-wide structured types for config, schema, and layout. |
+| **Bee.Cache.dll**          | Backend        | .NET Standard 2.0      | Runtime caching of definitions and related system data to improve performance. |
+| **Bee.Db.dll**             | Backend        | .NET Standard 2.0      | Database abstraction with dynamic command generation and connection binding. |
+| **Bee.Business.dll**       | Backend        | .NET Standard 2.0      | Implements core business logic and application-level workflows. |
+| **Bee.Api.Core.dll**       | Backend        | .NET Standard 2.0      | Encapsulates API support such as model definitions, encryption, and serialization. |
+| **Bee.Api.AspNetCore.dll** | Backend       | .NET 8             | Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls via JSON-RPC protocol. |
+| **Bee.Connect.dll**        | Frontend       | .NET Standard 2.0      | Connector for local or remote invocation of backend logic. |
 
 ---
 
-## Key Features
+# Bee.NET Framework（繁體中文）
 
-- **Three-tier architecture**: Supports presentation, business logic, and data access layers.
-- **Cross-platform compatibility**: Powered by NETStandard 2.0.
-- **Modular components**: Focused libraries for caching, database access, business logic, and more.
-- **Rapid development**: Simplifies and accelerates the development of information systems.
+Bee.NET Framework 是一套三層式應用架構，旨在加速企業資訊系統的開發。此架構建構於 **.NET Standard 2.0** 之上，具備高度模組化與跨平台相容性，支援 .NET Framework、.NET Core、.NET 5+ 等環境。
 
----
+## ✨ 特色
 
-## Components
+- **三層式架構**：支援表現層、邏輯層與資料層分離，強化可維護性與擴充性。
+- **跨平台支援**：核心採用 .NET Standard 2.0，可執行於多種 .NET 平台。
+- **模組化組件**：根據職責切分為多個元件，靈活組合、降低耦合。
+- **開發加速器**：快速建立與整合企業常見功能模組。
 
-### 1. **Bee.Base**
-Provides core utilities and shared functionality for other components.
+## 📦 組件說明
 
-### 2. **Bee.Define**
-Manages structured data definitions, including system configurations, database schemas, and form layouts.
-
-### 3. **Bee.Cache**
-Supporting the caching of defined data and system data. Defined data includes system settings, database settings, form settings, form layouts, and other definition files. System data includes user connections, system parameters, organizational structures, and more.
-
-### 4. **Bee.Db**
-Provides a comprehensive library for database access, including query, update, and transaction support.
-
-### 5. **Bee.Business**
-Encapsulates reusable backend business logic and rules.
-
-### 6. **Bee.Connect**
-Serves as a connector for backend business logic components and external systems.
-
+| 組件名稱                   | 適用範圍       | 目標框架               | 說明 |
+|----------------------------|----------------|------------------------|------|
+| **Bee.Base.dll**           | 前端 / 後端    | .NET Standard 2.0      | 提供基礎函式與工具（序列化、加密等），作為共通基礎模組。 |
+| **Bee.Define.dll**         | 前端 / 後端    | .NET Standard 2.0      | 定義系統結構化資料，如設定、資料表結構、表單配置。 |
+| **Bee.Cache.dll**          | 後端           | .NET Standard 2.0      | 執行階段快取模組，快取定義資料與衍生資料以提升效能。 |
+| **Bee.Db.dll**             | 後端           | .NET Standard 2.0      | 封裝資料庫操作邏輯，支援 SQL 命令組合與動態連線綁定。 |
+| **Bee.Business.dll**       | 後端           | .NET Standard 2.0      | 實作應用層商業邏輯，處理表單流程與業務規則。 |
+| **Bee.Api.Core.dll**       | 後端           | .NET Standard 2.0      | 提供 API 核心支援，包含資料模型、加解密、序列化等功能。 |
+| **Bee.Api.AspNetCore.dll** | 後端       | .NET 8                 | 提供 ASP.NET Core 的 JSON-RPC 2.0 API 控制器，作為統一入口處理後端方法呼叫。 |
+| **Bee.Connect.dll**        | 前端           | .NET Standard 2.0      | 提供連接器機制，支援近端與遠端呼叫後端邏輯元件。 |
