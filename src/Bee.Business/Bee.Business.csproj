@@ -4,7 +4,7 @@
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		<PackageIcon>bee.png</PackageIcon>
-		<Version>3.0.5</Version>
+		<Version>3.0.6</Version>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
 		<Description>The backend business logic library of the Bee.NET Framework.</Description>
