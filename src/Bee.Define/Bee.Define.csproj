@@ -6,7 +6,7 @@
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
-		<Description>Defines structured data for the Bee.NET Framework.</Description>
+		<Description>Defines system-wide structured types for config, schema, and layout.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageTags>netstandard2.0</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

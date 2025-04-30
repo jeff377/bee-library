@@ -9,7 +9,7 @@
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
-		<Description>Base controller for handling dynamic Web API requests in ASP.NET Core.</Description>
+		<Description>Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls via JSON-RPC protocol.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageTags>aspnetcore;api;webapi;dynamicapi,service</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

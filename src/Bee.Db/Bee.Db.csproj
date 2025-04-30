@@ -5,7 +5,7 @@
 		<Version>3.0.6</Version>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
-		<Description>The database access library of the Bee.NET Framework.</Description>
+		<Description>Database abstraction with dynamic command generation and connection binding.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>bee.png</PackageIcon>

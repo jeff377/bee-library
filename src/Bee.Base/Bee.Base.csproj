@@ -7,7 +7,7 @@
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
-		<Description>The foundational library of the Bee.NET Framework.</Description>
+		<Description>Core utilities such as serialization, encryption, and general-purpose helpers.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageIcon>bee.png</PackageIcon>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>

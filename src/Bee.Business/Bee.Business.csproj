@@ -7,7 +7,7 @@
 		<Version>3.0.6</Version>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
-		<Description>The backend business logic library of the Bee.NET Framework.</Description>
+		<Description>Implements core business logic and application-level workflows.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageTags>netstandard2.0</PackageTags>
