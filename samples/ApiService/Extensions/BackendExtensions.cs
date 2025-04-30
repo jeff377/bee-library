@@ -16,10 +16,6 @@ namespace ApiService.Extensions
         {
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
-            // 設定測試環境
-            BackendInfo.DefineProvider = new TFileDefineProvider();
-            BackendInfo.BusinessObjectProvider = new Bee.Cache.TBusinessObjectProvider();
-            BackendInfo.SystemObject = new Bee.Business.TSystemObject();
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
