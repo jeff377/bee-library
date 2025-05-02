@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bee.Api.AspNetCore
 {
     /// <summary>
-    /// API 服務控制器基底類別。
+    /// 提供 JSON-RPC API 處理的控制器基底類別，適用於 ASP.NET Core。
     /// </summary>
     [ApiController]
     [Route("api")]

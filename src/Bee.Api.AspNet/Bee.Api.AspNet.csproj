@@ -1,17 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
 	<PropertyGroup>
-		<TargetFramework>net8.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		
+		<TargetFramework>net48</TargetFramework>
+		<OutputType>Library</OutputType>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+
 		<Version>3.0.6</Version>
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
-		<Description>Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls via JSON-RPC protocol.</Description>
+		<Description>Provides a JSON-RPC 2.0 API HttpModule for ASP.NET, enabling a unified HTTP POST endpoint for invoking backend methods via the JSON-RPC protocol.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageTags>aspnetcore;api;webapi;jsonrpc;dynamicapi,service</PackageTags>
+		<PackageTags>aspnet;api;webapi;jsonrpc;httpmodule;dynamicapi;service</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -43,11 +42,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+		<PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
 	</ItemGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\Bee.Api.Core\Bee.Api.Core.csproj" />
 	</ItemGroup>
-
+	<ItemGroup>
+		<Reference Include="System.Web" />
+	</ItemGroup>
 </Project>
