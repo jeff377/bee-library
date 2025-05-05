@@ -19,12 +19,9 @@ namespace Bee.Api.AspNetCore
         [HttpPost]
         public async Task<IActionResult> PostAsync()
         {
-            var apiKey = HttpContext.Request.Headers["X-Api-Key"].ToString();
-            var authorization = HttpContext.Request.Headers["Authorization"].ToString();
-
-            if (string.IsNullOrWhiteSpace(apiKey))
+            if (!HttpContext.Request.ContentType?.Contains("application/json") ?? true)
             {
-                return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Missing or invalid X-Api-Key header");
+                return CreateErrorResponse(StatusCodes.Status415UnsupportedMediaType, -32600, "Unsupported media type");
             }
 
             string json;
@@ -46,34 +43,38 @@ namespace Bee.Api.AspNetCore
                 return CreateErrorResponse(StatusCodes.Status400BadRequest, -32600, "Invalid request body or missing method");
             }
 
-            if (IsAuthorizationRequired(request.Method))
+            var apiKey = HttpContext.Request.Headers["X-Api-Key"].ToString();
+            var authorization = HttpContext.Request.Headers["Authorization"].ToString();
+            // 授權驗證統一交由 Validator 處理
+            var context = new TApiAuthorizationContext
             {
-                if (string.IsNullOrWhiteSpace(authorization))
-                {
-                    return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Missing Authorization header", request.Id);
-                }
+                ApiKey = apiKey,
+                Authorization = authorization,
+                Method = request.Method
+            };
 
-                var accessToken = TryGetAccessToken(authorization);
-                if (accessToken == Guid.Empty)
-                {
-                    return CreateErrorResponse(StatusCodes.Status401Unauthorized, -32600, "Invalid access token", request.Id);
-                }
+            var validator = ApiAuthorizationValidatorProvider.GetValidator();
+            var result = validator.Validate(context);
 
-                return HandleRequest(request, accessToken);
-            }
-            else
+            if (!result.IsValid)
             {
-                // 不需驗證授權
-                return HandleRequest(request, Guid.Empty);
+                return CreateErrorResponse(StatusCodes.Status401Unauthorized, result.Code, result.ErrorMessage, request.Id);
             }
+
+            return HandleRequest(request, result.AccessToken);
         }
 
-
+        /// <summary>
+        /// 處理 JSON-RPC 請求，並執行相應的 API 服務。
+        /// </summary>
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="accessToken">存取令牌。</param>
         private IActionResult HandleRequest(TJsonRpcRequest request, Guid accessToken)
         {
             try
             {
-                var result = Execute(accessToken, request);
+                var executor = new TJsonRpcExecutor(accessToken);
+                var result = executor.Execute(request);
                 return new ContentResult
                 {
                     Content = result.ToJson(),
@@ -86,52 +87,6 @@ namespace Bee.Api.AspNetCore
                 return CreateErrorResponse(StatusCodes.Status500InternalServerError, -32000, "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
             }
         }
-
-
-        /// <summary>
-        /// 執行 API 方法。
-        /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="request">JSON-RPC 請求模型。</param>
-        protected virtual TJsonRpcResponse Execute(Guid accessToken, TJsonRpcRequest request)
-        {
-            var executor = new TJsonRpcExecutor(accessToken);
-            return executor.Execute(request);
-        }
-
-        /// <summary>
-        /// 取得存取令牌。
-        /// </summary>
-        /// <param name="authorization">由 Header 傳入的 Authorization 值。</param>
-        private Guid TryGetAccessToken(string authorization)
-        {
-            if (string.IsNullOrWhiteSpace(authorization) || !authorization.StartsWith("Bearer "))
-            {
-                return Guid.Empty;
-            }
-
-            var token = authorization.Substring("Bearer ".Length).Trim();
-            return Guid.TryParse(token, out var guid) ? guid : Guid.Empty;
-        }
-
-        /// <summary>
-        /// 判斷指定的 JSON-RPC 方法是否需要授權。
-        /// </summary>
-        /// <param name="method">JSON-RPC 方法名稱（大小寫敏感）。</param>
-        /// <returns>需要授權則回傳 true，否則 false。</returns>
-        protected virtual bool IsAuthorizationRequired(string method)
-        {
-            // 不需授權的方法清單（大小寫敏感）
-            var noAuthMethods = new HashSet<string>
-            {
-                "System.Login",
-                "System.Ping"
-            };
-
-            return !noAuthMethods.Contains(method);
-        }
-
-
 
         /// <summary>
         /// 建立統一格式的 JSON-RPC 錯誤回應。
