@@ -21,12 +21,17 @@ namespace Bee.Api.AspNetCore
         {
             if (!HttpContext.Request.ContentType?.Contains("application/json") ?? true)
             {
-                return CreateErrorResponse(StatusCodes.Status415UnsupportedMediaType, -32600, "Unsupported media type");
+                return CreateErrorResponse(StatusCodes.Status415UnsupportedMediaType,
+                    EJsonRpcErrorCode.InvalidRequest, "Unsupported media type");
             }
 
-            string json;
-            using var reader = new StreamReader(HttpContext.Request.Body);
-            json = await reader.ReadToEndAsync();
+            using var reader = new StreamReader(Request.Body);
+            var json = await reader.ReadToEndAsync();
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                return CreateErrorResponse(StatusCodes.Status400BadRequest,
+                    EJsonRpcErrorCode.InvalidRequest, "Empty request body");
+            }
 
             TJsonRpcRequest? request;
             try
@@ -35,41 +40,42 @@ namespace Bee.Api.AspNetCore
             }
             catch (Exception ex)
             {
-                return CreateErrorResponse(StatusCodes.Status400BadRequest, -32700, $"Failed to deserialize request body: {ex.Message}");
+                return CreateErrorResponse(StatusCodes.Status400BadRequest,
+                    EJsonRpcErrorCode.ParseError, $"Invalid JSON format: {ex.Message}");
             }
 
             if (request == null || string.IsNullOrWhiteSpace(request.Method))
             {
-                return CreateErrorResponse(StatusCodes.Status400BadRequest, -32600, "Invalid request body or missing method");
+                return CreateErrorResponse(StatusCodes.Status400BadRequest,
+                    EJsonRpcErrorCode.InvalidRequest, "Missing method");
             }
 
+            // 授權驗證統一交由 Validator 處理
             var apiKey = HttpContext.Request.Headers["X-Api-Key"].ToString();
             var authorization = HttpContext.Request.Headers["Authorization"].ToString();
-            // 授權驗證統一交由 Validator 處理
             var context = new TApiAuthorizationContext
             {
                 ApiKey = apiKey,
                 Authorization = authorization,
                 Method = request.Method
             };
-
             var validator = ApiAuthorizationValidatorProvider.GetValidator();
             var result = validator.Validate(context);
-
             if (!result.IsValid)
             {
                 return CreateErrorResponse(StatusCodes.Status401Unauthorized, result.Code, result.ErrorMessage, request.Id);
             }
 
-            return HandleRequest(request, result.AccessToken);
+            // 執行相應的 API 方法
+            return HandleRequest(result.AccessToken, request);
         }
 
         /// <summary>
-        /// 處理 JSON-RPC 請求，並執行相應的 API 服務。
+        /// 處理 JSON-RPC 請求，並執行相應的 API 方法。
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
         /// <param name="accessToken">存取令牌。</param>
-        private IActionResult HandleRequest(TJsonRpcRequest request, Guid accessToken)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        private IActionResult HandleRequest(Guid accessToken, TJsonRpcRequest request)
         {
             try
             {
@@ -84,21 +90,22 @@ namespace Bee.Api.AspNetCore
             }
             catch (Exception ex)
             {
-                return CreateErrorResponse(StatusCodes.Status500InternalServerError, -32000, "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
+                return CreateErrorResponse(StatusCodes.Status500InternalServerError, EJsonRpcErrorCode.InternalError,
+                    "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
             }
         }
 
         /// <summary>
         /// 建立統一格式的 JSON-RPC 錯誤回應。
         /// </summary>
-        private IActionResult CreateErrorResponse(int httpStatusCode, int code, string message, string? id = null, string? data = null)
+        private IActionResult CreateErrorResponse(int httpStatusCode, EJsonRpcErrorCode code, string message, string? id = null, string? data = null)
         {
             var response = new TJsonRpcResponse
             {
                 Id = id,
                 Error = new TJsonRpcError
                 {
-                    Code = code,
+                    Code = (int)code,
                     Message = message,
                     Data = data
                 }

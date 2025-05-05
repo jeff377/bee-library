@@ -60,6 +60,7 @@ namespace Bee.Api.AspNetCore.UnitTests
             var context = new DefaultHttpContext();
             context.Request.Headers["X-Api-Key"] = "valid-api-key";
             context.Request.Headers["Authorization"] = $"Bearer {accessToken}";
+            context.Request.Headers["Content-Type"] = "application/json";
             context.Request.Body = requestBody;
 
             controller.ControllerContext = new ControllerContext()

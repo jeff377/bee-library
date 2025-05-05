@@ -34,13 +34,13 @@ namespace Bee.Api.Core
             // 驗證輸入參數是否為 null
             if (context == null)
             {
-                return TApiAuthorizationResult.Fail(-32600, "Invalid authorization context.");
+                return TApiAuthorizationResult.Fail(EJsonRpcErrorCode.InvalidRequest, "Invalid authorization context.");
             }
 
             // 驗證是否有 API 金鑰
             if (string.IsNullOrWhiteSpace(context.ApiKey))
             {
-                return TApiAuthorizationResult.Fail(-32600, "Missing or invalid API key.");
+                return TApiAuthorizationResult.Fail(EJsonRpcErrorCode.InvalidRequest, "Missing or invalid API key.");
             }
 
             // 若為免授權的方法，直接回傳成功且不附帶 access token
@@ -52,20 +52,20 @@ namespace Bee.Api.Core
             // 需授權的方法，檢查 Authorization 標頭
             if (string.IsNullOrWhiteSpace(context.Authorization))
             {
-                return TApiAuthorizationResult.Fail(-32600, "Missing Authorization header.");
+                return TApiAuthorizationResult.Fail(EJsonRpcErrorCode.InvalidRequest, "Missing Authorization header.");
             }
 
             // 確認 Authorization 格式為 Bearer Token
             if (!context.Authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                return TApiAuthorizationResult.Fail(-32600, "Invalid Authorization format. Expected 'Bearer <token>'.");
+                return TApiAuthorizationResult.Fail(EJsonRpcErrorCode.InvalidRequest, "Invalid Authorization format. Expected 'Bearer <token>'.");
             }
 
             // 解析 Bearer Token，並驗證為有效的 GUID
             var tokenPart = context.Authorization.Substring("Bearer ".Length).Trim();
             if (!Guid.TryParse(tokenPart, out var accessToken))
             {
-                return TApiAuthorizationResult.Fail(-32600, "Invalid access token.");
+                return TApiAuthorizationResult.Fail(EJsonRpcErrorCode.InvalidRequest, "Invalid access token.");
             }
 
             // 此處可擴充驗證邏輯，例如存取資料庫確認 access token 是否有效

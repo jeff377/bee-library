@@ -15,7 +15,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 錯誤代碼。
         /// </summary>
-        public int Code { get; set; }
+        public EJsonRpcErrorCode Code { get; set; }
 
         /// <summary>
         /// 驗證失敗的錯誤訊息。
@@ -45,7 +45,7 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="code">錯誤代碼。</param>
         /// <param name="errorMessage">錯誤訊息。</param>
-        public static TApiAuthorizationResult Fail(int code,  string errorMessage)
+        public static TApiAuthorizationResult Fail(EJsonRpcErrorCode code,  string errorMessage)
         {
             return new TApiAuthorizationResult
             {
