@@ -1,0 +1,23 @@
+@baseUrl = https://localhost:44390
+@apiKey = test-api-key
+@accessToken = Bearer 22AC9A7C-6E76-4C07-8560-89784D86AA76
+
+POST {{baseUrl}}/api
+Accept: application/json
+content-type: application/json
+X-Api-Key: {{apiKey}}
+Authorization: {{accessToken}}
+
+{
+  "jsonrpc": "2.0",
+  "method": "System.ExecFunc",
+  "params": {
+    "value": {
+      "$type": "Bee.Define.TExecFuncArgs, Bee.Define",
+      "FuncID": "Hello",
+      "Parameters": []
+    }
+  },
+  "id": "228bd7e0-603f-4433-93d9-9c03ebabc5e4"
+}
+###

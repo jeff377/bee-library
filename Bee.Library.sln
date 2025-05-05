@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Api.AspNetCore.UnitTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Api.AspNet", "src\Bee.Api.AspNet\Bee.Api.AspNet.csproj", "{EAAB09A8-8E49-4655-9F2D-976FCA1EF76D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonRpcSampleAspNet", "samples\JsonRpcSampleAspNet\JsonRpcSampleAspNet.csproj", "{CFF8C017-74EB-4840-BEEE-5009D895338C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,10 @@ Global
 		{EAAB09A8-8E49-4655-9F2D-976FCA1EF76D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAAB09A8-8E49-4655-9F2D-976FCA1EF76D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAAB09A8-8E49-4655-9F2D-976FCA1EF76D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -146,6 +152,7 @@ Global
 		{55BC1562-6A32-4880-8C5D-5D7339A64BFE} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{499FB86D-643F-4142-8AD6-DD1EEF699B17} = {77848C0B-F388-489F-B772-FD982081A609}
 		{EAAB09A8-8E49-4655-9F2D-976FCA1EF76D} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{CFF8C017-74EB-4840-BEEE-5009D895338C} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7E07F2-83DF-4D84-82CE-C010B47BBCE6}
