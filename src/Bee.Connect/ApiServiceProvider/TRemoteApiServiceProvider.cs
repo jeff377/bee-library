@@ -50,9 +50,9 @@ namespace Bee.Connect
             request.Encrypt(); // 傳入參數進行加密
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             string json = HttpFunc.PostAsync(this.Endpoint, body, header).Result;  // 執行 Web API 方法
-            var result = SerializeFunc.JsonToObject<TJsonRpcResponse>(json);  // 執行 JSON 反序列化
-            result.Decrypt();  // 傳出結果進行解密
-            return result;
+            var response = SerializeFunc.JsonToObject<TJsonRpcResponse>(json);  // 執行 JSON 反序列化
+            response.Decrypt();  // 傳出結果進行解密
+            return response;
         }
 
         /// <summary>
