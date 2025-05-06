@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Bee.Base;
 using Bee.Define;
 
@@ -60,6 +61,15 @@ namespace Bee.Api.Core
                     response.Error = new TJsonRpcError(-1, ex.Message);
             }
             return response;
+        }
+
+        /// <summary>
+        /// 非同步執行 API 方法。
+        /// </summary>
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request)
+        {
+            return Task.FromResult(Execute(request));
         }
 
         /// <summary>
