@@ -2,6 +2,21 @@
 namespace Bee.Api.Core
 {
     /// <summary>
+    /// API Header 鍵值。
+    /// </summary>
+    public class ApiHeaders
+    {
+        /// <summary>
+        /// API KEY。
+        /// </summary>
+        public const string ApiKey = "X-Api-Key";
+        /// <summary>
+        /// Authorization，用於身份驗證或授權。
+        /// </summary>
+        public const string Authorization = "Authorization";
+    }
+
+    /// <summary>
     /// 定義 JSON-RPC 標準錯誤代碼，用於表示請求處理過程中的錯誤狀況。
     /// </summary>
     public enum EJsonRpcErrorCode

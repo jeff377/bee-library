@@ -102,8 +102,8 @@ namespace Bee.Api.AspNetCore
         /// <returns>驗證結果。</returns>
         protected virtual TApiAuthorizationResult ValidateAuthorization(TJsonRpcRequest request)
         {
-            var apiKey = HttpContext.Request.Headers["X-Api-Key"].ToString();
-            var authorization = HttpContext.Request.Headers["Authorization"].ToString();
+            var apiKey = HttpContext.Request.Headers[ApiHeaders.ApiKey].ToString();
+            var authorization = HttpContext.Request.Headers[ApiHeaders.Authorization].ToString();
 
             var context = new TApiAuthorizationContext
             {

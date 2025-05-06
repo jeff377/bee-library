@@ -5,21 +5,6 @@ namespace Bee.Define
     #region 常數
 
     /// <summary>
-    /// API Header 鍵值。
-    /// </summary>
-    public class ApiHeaders
-    {
-        /// <summary>
-        /// API KEY。
-        /// </summary>
-        public const string ApiKey = "Api-Key";
-        /// <summary>
-        /// Authorization，用於身份驗證或授權。
-        /// </summary>
-        public const string Authorization = "Authorization";
-    }
-
-    /// <summary>
     /// SystemObject 的 Action 常數。
     /// </summary>
     public class SystemActions

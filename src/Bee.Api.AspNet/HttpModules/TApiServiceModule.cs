@@ -104,8 +104,8 @@ namespace Bee.Api.AspNet
         /// <returns>驗證結果。</returns>
         private TApiAuthorizationResult ValidateAuthorization(HttpContext context, TJsonRpcRequest request)
         {
-            var apiKey = context.Request.Headers["X-Api-Key"] ?? string.Empty;
-            var authorization = context.Request.Headers["Authorization"] ?? string.Empty;
+            var apiKey = context.Request.Headers[ApiHeaders.ApiKey] ?? string.Empty;
+            var authorization = context.Request.Headers[ApiHeaders.Authorization] ?? string.Empty;
 
             var authContext = new TApiAuthorizationContext
             {
