@@ -4,7 +4,7 @@
 		<OutputType>Library</OutputType>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 
-		<Version>3.0.6</Version>
+		<Version>3.0.7</Version>
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
