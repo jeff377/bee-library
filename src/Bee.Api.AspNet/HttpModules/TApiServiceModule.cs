@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Web;
 using Bee.Api.Core;
@@ -13,13 +12,16 @@ namespace Bee.Api.AspNet
     public class TApiServiceModule : IHttpModule
     {
         /// <summary>
-        /// 初始化模組，註冊請求攔截事件。
+        /// 初始化模組，註冊請求攔截事件
         /// </summary>
         public void Init(HttpApplication context)
         {
             context.BeginRequest += OnBeginRequest;
         }
 
+        /// <summary>
+        /// 處理 HTTP 請求的開始事件。
+        /// </summary>
         private void OnBeginRequest(object sender, EventArgs e)
         {
             var app = (HttpApplication)sender;
@@ -31,84 +33,104 @@ namespace Bee.Api.AspNet
             if (context.Request.HttpMethod != "POST" ||
                 !context.Request.ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
             {
-                context.Response.StatusCode = 400;
-                context.Response.StatusDescription = "Invalid HTTP method or content type.";
-                context.Response.End();
+                WriteErrorResponse(context, 415, (int)EJsonRpcErrorCode.InvalidRequest, "Unsupported media type");
                 return;
             }
 
-            string apiKey = context.Request.Headers["X-Api-Key"] ?? string.Empty;
-            string authorization = context.Request.Headers["Authorization"] ?? string.Empty;
-
-            if (string.IsNullOrWhiteSpace(apiKey))
-            {
-                WriteErrorResponse(context, 401, -32600, "Missing or invalid X-Api-Key header");
-                return;
-            }
-
-            string json;
-            using (var reader = new StreamReader(context.Request.InputStream))
-                json = reader.ReadToEnd();
-
-            TJsonRpcRequest request = null;
+            // 讀取並解析 JSON-RPC 請求
+            TJsonRpcRequest request;
             try
             {
-                request = SerializeFunc.JsonToObject<TJsonRpcRequest>(json);
+                request = ReadRequest(context);
             }
-            catch (Exception ex)
+            catch (JsonRpcException ex)
             {
-                WriteErrorResponse(context, 400, -32700, $"Failed to deserialize request body: {ex.Message}");
+                WriteErrorResponse(context, ex.HttpStatusCode, (int)ex.ErrorCode, ex.RpcMessage);
                 return;
             }
 
-            if (request == null || string.IsNullOrWhiteSpace(request.Method))
+            // 驗證 API 金鑰與授權
+            var result = ValidateAuthorization(context, request);
+            if (!result.IsValid)
             {
-                WriteErrorResponse(context, 400, -32600, "Invalid request body or missing method");
+                WriteErrorResponse(context, 401, (int)result.Code, result.ErrorMessage, request.Id);
                 return;
             }
 
-            var accessToken = Guid.Empty;
-            if (IsAuthorizationRequired(request.Method))
-            {
-                accessToken = TryGetAccessToken(authorization);
-                if (accessToken == Guid.Empty)
-                {
-                    WriteErrorResponse(context, 401, -32600, "Missing or invalid Authorization header", request.Id);
-                    return;
-                }
-            }
-
+            // 執行相應的 API 方法
             try
             {
-                var executor = new TJsonRpcExecutor(accessToken);
-                var result = executor.Execute(request);
+                var executor = new TJsonRpcExecutor(result.AccessToken);
+                var response = executor.Execute(request);
 
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = 200;
-                context.Response.Write(result.ToJson());
+                context.Response.Write(response.ToJson());
                 context.ApplicationInstance.CompleteRequest();  // 取代 Response.End 方法，不會丟出例外錯誤
             }
             catch (Exception ex)
             {
-                WriteErrorResponse(context, 500, -32000, "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
+                WriteErrorResponse(context, 500, (int)EJsonRpcErrorCode.InternalError,
+                    "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
             }
         }
 
-        private Guid TryGetAccessToken(string authorization)
+        /// <summary>
+        /// 讀取並解析 JSON-RPC 請求。
+        /// </summary>
+        /// <exception cref="JsonRpcException">當內容為空或格式錯誤時拋出。</exception>
+        private TJsonRpcRequest ReadRequest(HttpContext context)
         {
-            if (string.IsNullOrWhiteSpace(authorization) || !authorization.StartsWith("Bearer "))
-                return Guid.Empty;
+            string json;
+            using (var reader = new StreamReader(context.Request.InputStream))
+                json = reader.ReadToEnd();
 
-            var token = authorization.Substring("Bearer ".Length).Trim();
-            return Guid.TryParse(token, out var guid) ? guid : Guid.Empty;
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                throw new JsonRpcException(400, EJsonRpcErrorCode.InvalidRequest, "Empty request body");
+            }
+
+            try
+            {
+                var request = SerializeFunc.JsonToObject<TJsonRpcRequest>(json);
+                if (request == null || string.IsNullOrWhiteSpace(request.Method))
+                {
+                    throw new JsonRpcException(400, EJsonRpcErrorCode.InvalidRequest, "Missing method");
+                }
+                return request;
+            }
+            catch (JsonRpcException) { throw; }
+            catch (Exception ex)
+            {
+                throw new JsonRpcException(400, EJsonRpcErrorCode.ParseError, $"Invalid JSON format: {ex.Message}");
+            }
         }
 
-        private bool IsAuthorizationRequired(string method)
+        private TApiAuthorizationResult ValidateAuthorization(HttpContext context, TJsonRpcRequest request)
         {
-            var noAuthMethods = new HashSet<string> { "System.Login", "System.Ping" };
-            return !noAuthMethods.Contains(method);
+            var apiKey = context.Request.Headers["X-Api-Key"] ?? string.Empty;
+            var authorization = context.Request.Headers["Authorization"] ?? string.Empty;
+
+            var authContext = new TApiAuthorizationContext
+            {
+                ApiKey = apiKey,
+                Authorization = authorization,
+                Method = request.Method
+            };
+
+            var validator = ApiAuthorizationValidatorProvider.GetValidator();
+            return validator.Validate(authContext);
         }
 
+        /// <summary>
+        /// 建立 JSON-RPC 格式的錯誤回應，並寫入 HTTP 回應。
+        /// </summary>
+        /// <param name="context">HTTP 請求的上下文物件。</param>
+        /// <param name="httpStatusCode">HTTP 狀態碼，例如 400、401、500。</param>
+        /// <param name="code">JSON-RPC 錯誤代碼，使用 <see cref="EJsonRpcErrorCode"/> 列舉。</param>
+        /// <param name="message">錯誤訊息內容。</param>
+        /// <param name="id">對應的 JSON-RPC 請求識別碼，可為 null。</param>
+        /// <param name="data">額外的錯誤資料，例如例外訊息，可為 null。</param>
         private void WriteErrorResponse(HttpContext context, int httpStatusCode, int code, string message, string id = null, string data = null)
         {
             var response = new TJsonRpcResponse
@@ -125,11 +147,11 @@ namespace Bee.Api.AspNet
             context.Response.StatusCode = httpStatusCode;
             context.Response.ContentType = "application/json";
             context.Response.Write(response.ToJson());
-            context.Response.End();
+            context.ApplicationInstance.CompleteRequest();  // 取代 Response.End 方法，不會丟出例外錯誤
         }
 
         /// <summary>
-        /// 模組資源釋放（不需實作）。
+        /// 釋放資源。
         /// </summary>
         public void Dispose() { }
     }
