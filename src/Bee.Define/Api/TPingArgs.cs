@@ -3,7 +3,7 @@
 namespace Bee.Define
 {
     /// <summary>
-    /// Ping 方法的傳入參數。
+    /// Ping 方法的傳入引數。
     /// </summary>
     [Serializable]
     public class TPingArgs : TBusinessArgs

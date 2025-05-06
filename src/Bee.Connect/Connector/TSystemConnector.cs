@@ -33,9 +33,9 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
-        protected object ApiExecute(string action, object value)
+        public T Execute<T>(string action, object value)
         {
-            return base.ApiExecute(SysProgIDs.System, action, value);
+            return base.Execute<T>(SysProgIDs.System, action, value);
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Bee.Connect
         /// <param name="args">傳入引數。</param>
         public TExecFuncResult ExecFunc(TExecFuncArgs args)
         {
-            return ApiExecute(SystemActions.ExecFunc, args) as TExecFuncResult;
+            return Execute< TExecFuncResult>(SystemActions.ExecFunc, args);
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Bee.Connect
             oArgs.UserID = userID;
             oArgs.ExpiresIn = expiresIn;
             oArgs.OneTime = oneTime;
-            oResult = ApiExecute(SystemActions.CreateSession, oArgs) as TCreateSessionResult;
+            oResult = Execute<TCreateSessionResult>(SystemActions.CreateSession, oArgs);
             return oResult.AccessToken;
         }
 
@@ -79,7 +79,7 @@ namespace Bee.Connect
                 DefineType = defineType,
                 Keys = keys
             };
-            var result = ApiExecute(SystemActions.GetDefine, args) as TGetDefineResult;
+            var result = Execute<TGetDefineResult>(SystemActions.GetDefine, args);
             if (StrFunc.IsNotEmpty(result.Xml))
                 return SerializeFunc.XmlToObject<T>(result.Xml);
             else
@@ -100,7 +100,7 @@ namespace Bee.Connect
                 DefineObject = defineObject,
                 Keys = keys
             };
-            ApiExecute(SystemActions.SaveDefine, args);
+            Execute<TSaveDefineResult>(SystemActions.SaveDefine, args);
         }
     }
 }

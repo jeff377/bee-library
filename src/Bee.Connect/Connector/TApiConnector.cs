@@ -53,7 +53,7 @@ namespace Bee.Connect
         /// <param name="progID">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
-        protected object ApiExecute(string progID, string action, object value)
+        protected T Execute<T>(string progID, string action, object value)
         {
             if (StrFunc.IsEmpty(progID))
                 throw new ArgumentException("progID cannot be null or empty.", nameof(progID));
@@ -70,9 +70,9 @@ namespace Bee.Connect
                 Id = Guid.NewGuid().ToString()
             };
             var response = this.Provider.Execute(request);
-            if (StrFunc.IsNotEmpty(response.Error))
+            if (response.Error != null)
                 throw new TException(response.Error.Message);
-            return response.Result.Value;
+            return (T)response.Result.Value;
         }
     }
 }

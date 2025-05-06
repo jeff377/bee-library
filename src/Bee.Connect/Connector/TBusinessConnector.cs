@@ -43,9 +43,9 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
-        protected object ApiExecute(string action, object value)
+        public T Execute<T>(string action, object value)
         {
-            return base.ApiExecute(this.ProgID, action, value);
+            return base.Execute<T>(this.ProgID, action, value);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Bee.Connect
         /// <param name="args">傳入引數。</param>
         public TExecFuncResult ExecFunc(TExecFuncArgs args)
         {
-            return ApiExecute(SystemActions.ExecFunc, args) as TExecFuncResult;
+            return Execute<TExecFuncResult>(SystemActions.ExecFunc, args);
         }
     }
 }

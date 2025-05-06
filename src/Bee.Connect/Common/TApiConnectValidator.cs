@@ -119,10 +119,16 @@ namespace Bee.Connect
                 throw new TException("不支援遠端連線");
             if (StrFunc.IsEmpty(endpoint))
                 throw new TException("未指定服務端點");
-            // 使用遠端連線，執行 Hello 測試方法
-            var args = new TExecFuncArgs(SysFuncIDs.Hello);
+            // 使用遠端連線，執行 Ping 方法
+            var args = new TPingArgs()
+            {
+                ClientName = "Connector",
+                TraceId = "001"
+            };
             var connector = new TSystemConnector(endpoint, Guid.Empty);
-            connector.ExecFunc(args);
+            var result = connector.Execute<TPingResult>("Ping", args);
+            if (result.Status != "ok")
+                throw new TException($"Ping 方法執行失敗，錯誤訊息：{result.Status}");
         }
     }
 }

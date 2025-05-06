@@ -19,6 +19,14 @@ namespace Bee.Connect.UnitTests
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
 
+        [Fact(Skip = "這個測試僅限手動執行")]
+        public void ApiConnectValidator()
+        {
+            var validator = new TApiConnectValidator();
+            var connectType = validator.Validate("http://localhost:5000/api");
+            Assert.Equal(EConnectType.Remote, connectType);  // 確認連線方式為遠端連線
+        }
+
         /// <summary>
         /// 透過 Connect 執行 Hello 方法。
         /// </summary>
