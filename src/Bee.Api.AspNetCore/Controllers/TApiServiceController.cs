@@ -39,7 +39,7 @@ namespace Bee.Api.AspNetCore
             }
 
             // 執行相應的 API 方法
-            return HandleRequest(result.AccessToken, request);
+            return await HandleRequestAsync(result.AccessToken, request);
         }
 
         /// <summary>
@@ -108,18 +108,17 @@ namespace Bee.Api.AspNetCore
             return validator.Validate(context);
         }
 
-
         /// <summary>
         /// 處理 JSON-RPC 請求，並執行相應的 API 方法。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        private IActionResult HandleRequest(Guid accessToken, TJsonRpcRequest request)
+        protected virtual async Task<IActionResult> HandleRequestAsync(Guid accessToken, TJsonRpcRequest request)
         {
             try
             {
                 var executor = new TJsonRpcExecutor(accessToken);
-                var result = executor.Execute(request);
+                var result = await executor.ExecuteAsync(request);
                 return new ContentResult
                 {
                     Content = result.ToJson(),
@@ -143,7 +142,7 @@ namespace Bee.Api.AspNetCore
         /// <param name="id">對應的請求 ID，可為 null。</param>
         /// <param name="data">額外錯誤資料，可為 null。</param>
         /// <returns>回傳帶有錯誤資訊的 IActionResult。</returns>
-        private IActionResult CreateErrorResponse(int httpStatusCode, EJsonRpcErrorCode code, string message, string? id = null, string? data = null)
+        protected virtual IActionResult CreateErrorResponse(int httpStatusCode, EJsonRpcErrorCode code, string message, string? id = null, string? data = null)
         {
             var response = new TJsonRpcResponse
             {
