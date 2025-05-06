@@ -58,6 +58,23 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
+        /// 透過 API 執行 Ping 方法。
+        /// </summary>
+        [Fact]
+        public void Ping()
+        {
+            var args = new TPingArgs()
+            {
+                ClientName = "TestClient",
+                TraceId = "001",
+            };
+            var result = ApiExecute<TPingResult>(SysProgIDs.System, "Ping", args);
+            Assert.NotNull(result);
+            Assert.Equal("ok", result.Status);
+            Assert.Equal("001", result.TraceId);
+        }
+
+        /// <summary>
         /// 透過 API 執行 Hello 方法。
         /// </summary>
         [Fact]

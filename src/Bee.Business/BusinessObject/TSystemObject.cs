@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using Bee.Base;
 using Bee.Cache;
 using Bee.Db;
@@ -28,6 +27,21 @@ namespace Bee.Business
         { }
 
         #endregion
+
+        /// <summary>
+        /// Ping 測試方法，回傳當下的 UTC 時間。
+        /// </summary>
+        /// <param name="args">傳入參數。</param>
+        public TPingResult Ping(TPingArgs args)
+        {
+            return new TPingResult()
+            {
+                Status = "ok",
+                ServerTime = DateTime.UtcNow,
+                Version = SysInfo.Version, // 系統版本
+                TraceId = args.TraceId // 回傳追蹤 ID
+            };
+        }
 
         /// <summary>
         /// 執行 ExecFunc 方法的實作。
