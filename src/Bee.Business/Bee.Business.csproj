@@ -2,15 +2,19 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<PackageIcon>bee.png</PackageIcon>
 		<Version>3.0.8</Version>
+		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
 		<Description>Implements core business logic and application-level workflows.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
+		<PackageTags>netstandard2.0</PackageTags>		
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>bee.png</PackageIcon>
+		<PackageReleaseNotes></PackageReleaseNotes>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>netstandard2.0</PackageTags>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
 
