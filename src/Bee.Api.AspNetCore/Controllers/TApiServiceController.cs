@@ -3,6 +3,8 @@ using Bee.Api.Core;
 using Bee.Base;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Bee.Api.AspNetCore
 {
@@ -14,6 +16,12 @@ namespace Bee.Api.AspNetCore
     [Produces("application/json")]
     public abstract class TApiServiceController : ControllerBase
     {
+        /// <summary>
+        /// 判斷當前環境是否為開發環境。
+        /// </summary>
+        protected bool IsDevelopment =>
+            HttpContext.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment();
+
         /// <summary>
         /// 處理 HTTP POST 請求，並執行相應的 API 服務。
         /// </summary>
@@ -128,8 +136,12 @@ namespace Bee.Api.AspNetCore
             }
             catch (Exception ex)
             {
+                var message = IsDevelopment
+                    ? ex.InnerException?.Message ?? ex.Message
+                    : string.Empty;
+
                 return CreateErrorResponse(StatusCodes.Status500InternalServerError, EJsonRpcErrorCode.InternalError,
-                    "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
+                    "Internal server error", request.Id, message);
             }
         }
 
