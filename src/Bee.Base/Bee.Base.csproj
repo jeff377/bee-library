@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Version>3.0.7</Version>
+		<Version>3.0.8</Version>
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
