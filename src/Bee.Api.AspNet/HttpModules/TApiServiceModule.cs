@@ -86,7 +86,7 @@ namespace Bee.Api.AspNet
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = 200;
                 context.Response.Write(result.ToJson());
-                context.Response.End();
+                context.ApplicationInstance.CompleteRequest();  // 取代 Response.End 方法，不會丟出例外錯誤
             }
             catch (Exception ex)
             {
