@@ -28,9 +28,8 @@ namespace Bee.Api.AspNet
             var context = app.Context;
 
             // 判斷是否為 API 路徑
-            var path = context.Request.Path.TrimEnd('/');
-            if (!path.Equals("/api", StringComparison.OrdinalIgnoreCase))
-                return;
+            string executionPath = app.Request.AppRelativeCurrentExecutionFilePath.TrimEnd('/');
+            if (!StrFunc.IsEquals(executionPath, "~/api")) { return; }
 
             // 讀取並解析 JSON-RPC 請求
             TJsonRpcRequest request;
