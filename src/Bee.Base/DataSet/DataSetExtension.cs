@@ -33,18 +33,15 @@ namespace Bee.Base
         /// <param name="fieldNames">主索引鍵的欄位集合字串，以逗點分隔多個欄位。</param>
         public static void SetPrimaryKey(this DataTable table, string fieldNames)
         {
-            string[] oFieldNames;
-            DataColumn[] oDataColumns;
             int iIndex = 0;
-
-            oFieldNames = StrFunc.Split(fieldNames, ",");
-            oDataColumns = new DataColumn[oFieldNames.Length];
-            foreach (string fieldName in oFieldNames)
+            string[] fieldNameArray = StrFunc.Split(fieldNames, ",");
+            DataColumn[] dataColumns = new DataColumn[fieldNameArray.Length];
+            foreach (string fieldName in fieldNameArray)
             {
-                oDataColumns[iIndex] = table.Columns[fieldName];
+                dataColumns[iIndex] = table.Columns[fieldName];
                 iIndex++;
             }
-            table.PrimaryKey = oDataColumns;
+            table.PrimaryKey = dataColumns;
         }
 
         /// <summary>
@@ -58,25 +55,21 @@ namespace Bee.Base
         /// <param name="dateTimeMode">設定資料行的 DateTimeMode。</param>
         private static DataColumn AddColumn(this DataTable table, string fieldName, string caption, Type dataType, object defaultValue, DataSetDateTime dateTimeMode = DataSetDateTime.Unspecified)
         {
-            DataColumn oDataColumn;
-            string sFieldName;
-
             // 欄位名稱全轉為大寫
-            sFieldName = StrFunc.ToUpper(fieldName);
-            oDataColumn = new DataColumn(sFieldName, dataType);
-            oDataColumn.DefaultValue = defaultValue;
+            var column = new DataColumn(fieldName.ToUpper(), dataType);
+            column.DefaultValue = defaultValue;
 
             if (dataType == typeof(DateTime))
-                oDataColumn.DateTimeMode = dateTimeMode;
+                column.DateTimeMode = dateTimeMode;
 
             if (!BaseFunc.IsNullOrDBNull(defaultValue))
-                oDataColumn.AllowDBNull = false;
+                column.AllowDBNull = false;
 
             if (StrFunc.IsNotEmpty(caption))
-                oDataColumn.Caption = caption;
+                column.Caption = caption;
 
-            table.Columns.Add(oDataColumn);
-            return oDataColumn;
+            table.Columns.Add(column);
+            return column;
         }
 
         /// <summary>
@@ -99,9 +92,7 @@ namespace Bee.Base
         /// <param name="dbType">欄位資料型別。</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, EFieldDbType dbType)
         {
-            Type oDataType;
-
-            oDataType = DbTypeConverter.ToType(dbType);
+            Type oDataType = DbTypeConverter.ToType(dbType);
             object oDefaultValue = DataSetFunc.GetDefaultValue(dbType);
             return AddColumn(table, fieldName, oDataType, oDefaultValue);
         }
