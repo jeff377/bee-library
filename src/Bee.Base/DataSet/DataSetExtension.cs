@@ -92,9 +92,9 @@ namespace Bee.Base
         /// <param name="dbType">欄位資料型別。</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, EFieldDbType dbType)
         {
-            Type oDataType = DbTypeConverter.ToType(dbType);
-            object oDefaultValue = DataSetFunc.GetDefaultValue(dbType);
-            return AddColumn(table, fieldName, oDataType, oDefaultValue);
+            Type dataType = DbTypeConverter.ToType(dbType);
+            object defaultValue = DataSetFunc.GetDefaultValue(dbType);
+            return AddColumn(table, fieldName, dataType, defaultValue);
         }
 
         /// <summary>
@@ -106,10 +106,8 @@ namespace Bee.Base
         /// <param name="defaultValue">預設值。</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, EFieldDbType dbType, object defaultValue)
         {
-            Type oDataType;
-
-            oDataType = DbTypeConverter.ToType(dbType);
-            return AddColumn(table, fieldName, oDataType, defaultValue);
+            Type dataType = DbTypeConverter.ToType(dbType);
+            return AddColumn(table, fieldName, dataType, defaultValue);
         }
 
         /// <summary>
@@ -122,10 +120,8 @@ namespace Bee.Base
         /// <param name="defaultValue">預設值。</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, string caption, EFieldDbType dbType, object defaultValue)
         {
-            Type oDataType;
-
-            oDataType = DbTypeConverter.ToType(dbType);
-            return AddColumn(table, fieldName, caption, oDataType, defaultValue);
+            Type dataType = DbTypeConverter.ToType(dbType);
+            return AddColumn(table, fieldName, caption, dataType, defaultValue);
         }
     }
 }

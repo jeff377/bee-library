@@ -11,11 +11,11 @@ namespace Bee.Base
         /// <summary>
         /// 判斷資料表是否無資料。
         /// </summary>
-        /// <param name="table">要判斷的資料表。</param>
-        public static bool IsEmpty(DataTable table)
+        /// <param name="dataTable">要判斷的資料表。</param>
+        public static bool IsEmpty(DataTable dataTable)
         {
             // 資料表為 Null 或資料列數為零，皆視為無資料
-            return (table == null || (table.Rows.Count == 0));
+            return (dataTable == null || (dataTable.Rows.Count == 0));
         }
 
         /// <summary>
@@ -83,11 +83,9 @@ namespace Bee.Base
         /// <param name="dataSet">資料集。</param>
         public static DataRow GetMasterRow(DataSet dataSet)
         {
-            DataTable oTable;
-
-            oTable = GetMasterTable(dataSet);
-            if (IsEmpty(oTable)) { return null; }
-            return oTable.Rows[0];
+            var table = GetMasterTable(dataSet);
+            if (IsEmpty(table)) { return null; }
+            return table.Rows[0];
         }
 
         /// <summary>
@@ -96,11 +94,9 @@ namespace Bee.Base
         /// <param name="tableName">資料表名稱。</param>
         public static DataTable CreateDataTable(string tableName)
         {
-            DataTable oTable;
-
-            oTable = new DataTable(tableName);
-            oTable.RemotingFormat = SerializationFormat.Binary;
-            return oTable;
+            var table = new DataTable(tableName);
+            table.RemotingFormat = SerializationFormat.Binary;
+            return table;
         }
 
         /// <summary>
@@ -118,29 +114,26 @@ namespace Bee.Base
         /// <param name="fieldNames">保留欄位名稱陣列。</param>
         public static DataTable CopyDataTable(DataTable source, string[] fieldNames)
         {
-            DataTable oTable;
-            string sFieldName;
-
             // 複製來源資料及結構
-            oTable = source.Copy();
+            var table = source.Copy();
             // 欄位名稱先轉為大寫
             for (int N1 = 0; N1 < fieldNames.Length; N1++)
                 fieldNames[N1] = StrFunc.ToUpper(fieldNames[N1]);
             // 去除不需要的欄位
-            for (int N1 = oTable.Columns.Count - 1; N1 >= 0; N1--)
+            for (int N1 = table.Columns.Count - 1; N1 >= 0; N1--)
             {
-                sFieldName = oTable.Columns[N1].ColumnName.ToUpper();
-                if (Array.IndexOf(fieldNames, sFieldName) == -1)
-                    oTable.Columns.Remove(sFieldName);
+                string fieldName = table.Columns[N1].ColumnName.ToUpper();
+                if (Array.IndexOf(fieldNames, fieldName) == -1)
+                    table.Columns.Remove(fieldName);
             }
             // 重新設定欄位順序
             for (int N1 = 0; N1 < fieldNames.Length - 1; N1++)
             {
-                sFieldName = fieldNames[N1];
-                oTable.Columns[sFieldName].SetOrdinal(N1);
+                string fieldName = fieldNames[N1];
+                table.Columns[fieldName].SetOrdinal(N1);
             }
             // 回傳處理後的資料表
-            return oTable;
+            return table;
         }
 
         /// <summary>
