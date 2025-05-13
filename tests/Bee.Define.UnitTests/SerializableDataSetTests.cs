@@ -8,6 +8,12 @@ namespace Bee.Define.UnitTests
 {
     public class SerializableDataSetTests
     {
+        static SerializableDataSetTests()
+        {
+            // .NET 8 預設停用 BinaryFormatter，需手動啟用
+            AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
+        }
+
         /// <summary>
         /// 測試從 DataSet 轉換為可序列化格式，並能正確還原回 DataSet。
         /// </summary>
@@ -82,18 +88,6 @@ namespace Bee.Define.UnitTests
         [Fact]
         public void Test_DataTable_Serialization()
         {
-            // 使用自訂的 TFormatterResolver 搭配 StandardResolver 組合解析器
-            var resolver = CompositeResolver.Create(
-                [
-                    new TDataTableFormatter() // 自訂 formatter
-                ],
-                [
-                    TFormatterResolver.Instance, // 自訂 resolver
-                    StandardResolver.Instance    // 標準 resolver 做為後援
-                ]);
-
-            var options = MessagePackSerializerOptions.Standard.WithResolver(resolver);
-
             // 建立範例 DataTable 並加入測試資料
             var table = new DataTable("TestTable");
             table.Columns.Add("Column1", typeof(string));
@@ -101,11 +95,10 @@ namespace Bee.Define.UnitTests
             table.Rows.Add("Test1", 100);
             table.Rows.Add("Test2", 200);
 
-            // 序列化 DataTable
-            byte[] serialized = MessagePackSerializer.Serialize(table, options);
-
+            // 使用 MessagePackHelper 進行序列化
+            byte[] serialized = MessagePackHelper.Serialize(table);
             // 反序列化回 DataTable
-            var deserialized = MessagePackSerializer.Deserialize<DataTable>(serialized, options);
+            var deserialized = MessagePackHelper.Deserialize<DataTable>(serialized);
 
             // 驗證資料是否正確
             Assert.Equal(2, deserialized.Rows.Count);
@@ -114,6 +107,56 @@ namespace Bee.Define.UnitTests
             Assert.Equal("Test2", deserialized.Rows[1]["Column1"]);
             Assert.Equal(200, deserialized.Rows[1]["Column2"]);
         }
+
+
+        /// <summary>
+        /// 測試 MessagePack 是否能正確序列化與反序列化 DataSet。
+        /// </summary>
+        [Fact]
+        public void Test_DataSet_Serialization()
+        {
+            // 建立範例 DataSet 並加入兩個 DataTable
+            var dataSet = new DataSet("TestDataSet");
+
+            var table1 = new DataTable("Table1");
+            table1.Columns.Add("Name", typeof(string));
+            table1.Columns.Add("Age", typeof(int));
+            table1.Rows.Add("Alice", 30);
+            table1.Rows.Add("Bob", 40);
+
+            var table2 = new DataTable("Table2");
+            table2.Columns.Add("Product", typeof(string));
+            table2.Columns.Add("Price", typeof(decimal));
+            table2.Rows.Add("Pen", 1.5m);
+            table2.Rows.Add("Notebook", 3.2m);
+
+            dataSet.Tables.Add(table1);
+            dataSet.Tables.Add(table2);
+
+            // 使用 MessagePackHelper 進行序列化
+            byte[] serialized = MessagePackHelper.Serialize(dataSet);
+
+            // 反序列化回 DataSet
+            var deserialized = MessagePackHelper.Deserialize<DataSet>(serialized);
+
+            // 驗證資料是否正確
+            Assert.Equal(2, deserialized.Tables.Count);
+
+            var dt1 = deserialized.Tables["Table1"];
+            Assert.Equal(2, dt1.Rows.Count);
+            Assert.Equal("Alice", dt1.Rows[0]["Name"]);
+            Assert.Equal(30, dt1.Rows[0]["Age"]);
+            Assert.Equal("Bob", dt1.Rows[1]["Name"]);
+            Assert.Equal(40, dt1.Rows[1]["Age"]);
+
+            var dt2 = deserialized.Tables["Table2"];
+            Assert.Equal(2, dt2.Rows.Count);
+            Assert.Equal("Pen", dt2.Rows[0]["Product"]);
+            Assert.Equal(1.5m, dt2.Rows[0]["Price"]);
+            Assert.Equal("Notebook", dt2.Rows[1]["Product"]);
+            Assert.Equal(3.2m, dt2.Rows[1]["Price"]);
+        }
+
 
     }
 }
