@@ -81,7 +81,6 @@ namespace Bee.Define
 
                 foreach (DataColumn col in table.Columns)
                 {
-                    // 將 DBNull.Value 轉為 null
                     object currentValue = row[col] is DBNull ? null : row[col];
                     current[col.ColumnName] = currentValue;
 
@@ -127,18 +126,29 @@ namespace Bee.Define
             }
 
             if (sdt.PrimaryKeys.Count > 0)
-                dt.PrimaryKey = sdt.PrimaryKeys.Select(pk => dt.Columns[pk]).ToArray();
+            {
+                var primaryCols = sdt.PrimaryKeys
+                    .Select(pk => dt.Columns.Contains(pk) ? dt.Columns[pk] : null)
+                    .Where(col => col != null)
+                    .ToArray();
+
+                if (primaryCols.Length > 0)
+                    dt.PrimaryKey = primaryCols;
+            }
 
             foreach (var srow in sdt.Rows)
             {
                 var row = dt.NewRow();
+
                 foreach (var kvp in srow.CurrentValues)
                     row[kvp.Key] = kvp.Value ?? DBNull.Value;
 
                 dt.Rows.Add(row);
 
                 if (srow.RowState == DataRowState.Unchanged)
+                {
                     row.AcceptChanges();
+                }
                 else if (srow.RowState == DataRowState.Modified)
                 {
                     row.AcceptChanges();
@@ -158,5 +168,4 @@ namespace Bee.Define
             return dt;
         }
     }
-
 }
