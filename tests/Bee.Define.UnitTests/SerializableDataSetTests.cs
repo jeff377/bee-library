@@ -1,11 +1,16 @@
 ﻿using System.Data;
 using MessagePack;
 using Bee.Base;
+using MessagePack.Formatters;
+using MessagePack.Resolvers;
 
 namespace Bee.Define.UnitTests
 {
     public class SerializableDataSetTests
     {
+        /// <summary>
+        /// 測試從 DataSet 轉換為可序列化格式，並能正確還原回 DataSet。
+        /// </summary>
         [Fact]
         public void FromDataSet_And_ToDataSet_ShouldBeEquivalent()
         {
@@ -70,6 +75,46 @@ namespace Bee.Define.UnitTests
             Assert.Equal(1, restored.Rows[0]["Id"]);
             Assert.True(restored.Rows[0].IsNull("Name")); // 正確為 DBNull.Value
         }
+
+        /// <summary>
+        /// 測試 MessagePack 是否能正確序列化與反序列化 DataTable。
+        /// </summary>
+        [Fact]
+        public void Test_DataTable_Serialization()
+        {
+            // 使用自訂的 TFormatterResolver 搭配 StandardResolver 組合解析器
+            var resolver = CompositeResolver.Create(
+                [
+                    new TDataTableFormatter() // 自訂 formatter
+                ],
+                [
+                    TFormatterResolver.Instance, // 自訂 resolver
+                    StandardResolver.Instance    // 標準 resolver 做為後援
+                ]);
+
+            var options = MessagePackSerializerOptions.Standard.WithResolver(resolver);
+
+            // 建立範例 DataTable 並加入測試資料
+            var table = new DataTable("TestTable");
+            table.Columns.Add("Column1", typeof(string));
+            table.Columns.Add("Column2", typeof(int));
+            table.Rows.Add("Test1", 100);
+            table.Rows.Add("Test2", 200);
+
+            // 序列化 DataTable
+            byte[] serialized = MessagePackSerializer.Serialize(table, options);
+
+            // 反序列化回 DataTable
+            var deserialized = MessagePackSerializer.Deserialize<DataTable>(serialized, options);
+
+            // 驗證資料是否正確
+            Assert.Equal(2, deserialized.Rows.Count);
+            Assert.Equal("Test1", deserialized.Rows[0]["Column1"]);
+            Assert.Equal(100, deserialized.Rows[0]["Column2"]);
+            Assert.Equal("Test2", deserialized.Rows[1]["Column1"]);
+            Assert.Equal(200, deserialized.Rows[1]["Column2"]);
+        }
+
     }
 }
 
