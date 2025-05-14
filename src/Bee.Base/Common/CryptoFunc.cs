@@ -131,35 +131,33 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// SHA 512 不可逆加密，常用於密碼儲存。
+        /// 以 SHA256 雜湊演算法計算字串的雜湊值。
         /// </summary>
-        /// <param name="value">原始字串。</param>
-        public static string Sha512Encrypt(string value)
+        /// <param name="value">要雜湊的字串。</param>
+        /// <returns>SHA256 雜湊值（Hex 字串）。</returns>
+        public static string Sha256Hash(string value)
         {
-            SHA512 oSHA;
-            byte[] oBytes;
-            byte[] oResultBytes;
-
-            oBytes = Encoding.UTF8.GetBytes(value);
-            oSHA = new SHA512Managed();
-            oResultBytes = oSHA.ComputeHash(oBytes);
-            return Convert.ToBase64String(oResultBytes);
+            using (var sha256 = SHA256.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(value);
+                byte[] hash = sha256.ComputeHash(bytes);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
         }
 
         /// <summary>
-        /// SHA 256 不可逆加密，常用於密碼儲存。
+        /// 以 SHA512 雜湊演算法計算字串的雜湊值。
         /// </summary>
-        /// <param name="value">原始字串。</param>
-        public static string Sha256Encrypt(string value)
+        /// <param name="value">要雜湊的字串。</param>
+        /// <returns>SHA512 雜湊值（Hex 字串）。</returns>
+        public static string Sha512Hash(string value)
         {
-            SHA256 oSHA;
-            byte[] oBytes;
-            byte[] oResultBytes;
-
-            oBytes = Encoding.UTF8.GetBytes(value);
-            oSHA = new SHA256Managed();
-            oResultBytes = oSHA.ComputeHash(oBytes);
-            return Convert.ToBase64String(oResultBytes);
+            using (var sha512 = SHA512.Create())
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(value);
+                byte[] hash = sha512.ComputeHash(bytes);
+                return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
+            }
         }
     }
 }

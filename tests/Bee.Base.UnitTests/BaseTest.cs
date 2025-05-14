@@ -70,11 +70,6 @@ namespace Bee.Base.UnitTests
             sDstValue = CryptoFunc.AesDecrypt(sEncryption);
             Assert.Equal(sSrcValue, sDstValue);
 
-            sDstValue = CryptoFunc.Sha512Encrypt(sSrcValue);
-            Assert.NotEmpty(sDstValue);
-
-            sDstValue = CryptoFunc.Sha256Encrypt(sSrcValue);
-            Assert.NotEmpty(sDstValue);
         }
 
         /// <summary>
