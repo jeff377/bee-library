@@ -46,9 +46,16 @@ namespace Bee.Connect
         /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        public Task<string> ExecuteAsync(TJsonRpcRequest request)
+        public async Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request)
         {
-            throw new NotSupportedException();
+            // 傳入資料進行加密
+            request.Encrypt();
+            // 執行 API 方法
+            var executor = new TJsonRpcExecutor(AccessToken);
+            var response = await executor.ExecuteAsync(request);
+            // 傳出結果進行解密
+            response.Decrypt();
+            return response;
         }
     }
 }

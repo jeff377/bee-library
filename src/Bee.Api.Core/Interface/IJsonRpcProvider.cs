@@ -18,6 +18,6 @@ namespace Bee.Api.Core
         /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        Task<string> ExecuteAsync(TJsonRpcRequest request);
+        Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request);
     }
 }

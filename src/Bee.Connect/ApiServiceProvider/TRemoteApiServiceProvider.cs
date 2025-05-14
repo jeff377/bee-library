@@ -59,7 +59,7 @@ namespace Bee.Connect
         /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        public Task<string> ExecuteAsync(TJsonRpcRequest request)
+        public async Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request)
         {
             var header = new NameValueCollection();
             header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
@@ -67,20 +67,11 @@ namespace Bee.Connect
 
             request.Encrypt(); // 傳入參數進行加密
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
-            return HttpFunc.PostAsync(this.Endpoint, body, header);  // 執行 Web API 方法
+            string json = await HttpFunc.PostAsync(this.Endpoint, body, header);  // 執行 Web API 方法
+            var response = SerializeFunc.JsonToObject<TJsonRpcResponse>(json);  // 執行 JSON 反序列化
+            response.Decrypt();  // 傳出結果進行解密
+            return response;
         }
 
-        /// <summary>
-        /// 處理非同步執行 API 方法的回傳結果。
-        /// </summary>
-        /// <param name="task">非同步的任務。</param>
-        public void ExecuteEnd(Task<string> task)
-        {
-            task.ContinueWith(t =>
-            {
-                var result = SerializeFunc.JsonToObject<TJsonRpcResponse>(t.Result);  // 執行 JSON 反序列化
-                result.Decrypt();  // 傳出結果進行解密
-            }); // 異步處理
-        }
     }
 }
