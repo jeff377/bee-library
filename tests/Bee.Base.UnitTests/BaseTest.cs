@@ -55,25 +55,25 @@ namespace Bee.Base.UnitTests
 
             sSrcValue = "À£ÁY´ú¸Õ¤å¦r";
             oSrcBytes = Encoding.UTF8.GetBytes(sSrcValue);
-            oDstBytes = EncryptionFunc.AesEncrypt(oSrcBytes, sKey, sIV);
-            oSrcBytes = EncryptionFunc.AesDecrypt(oDstBytes, sKey, sIV);
+            oDstBytes = CryptoFunc.AesEncrypt(oSrcBytes, sKey, sIV);
+            oSrcBytes = CryptoFunc.AesDecrypt(oDstBytes, sKey, sIV);
             sDstValue = Encoding.UTF8.GetString(oSrcBytes);
             Assert.Equal(sSrcValue, sDstValue);
 
             oSrcBytes = Encoding.UTF8.GetBytes(sSrcValue);
-            oDstBytes = EncryptionFunc.AesEncrypt(oSrcBytes);
-            oSrcBytes = EncryptionFunc.AesDecrypt(oDstBytes);
+            oDstBytes = CryptoFunc.AesEncrypt(oSrcBytes);
+            oSrcBytes = CryptoFunc.AesDecrypt(oDstBytes);
             sDstValue = Encoding.UTF8.GetString(oSrcBytes);
             Assert.Equal(sSrcValue, sDstValue);
 
-            sEncryption = EncryptionFunc.AesEncrypt(sSrcValue);
-            sDstValue = EncryptionFunc.AesDecrypt(sEncryption);
+            sEncryption = CryptoFunc.AesEncrypt(sSrcValue);
+            sDstValue = CryptoFunc.AesDecrypt(sEncryption);
             Assert.Equal(sSrcValue, sDstValue);
 
-            sDstValue = EncryptionFunc.Sha512Encrypt(sSrcValue);
+            sDstValue = CryptoFunc.Sha512Encrypt(sSrcValue);
             Assert.NotEmpty(sDstValue);
 
-            sDstValue = EncryptionFunc.Sha256Encrypt(sSrcValue);
+            sDstValue = CryptoFunc.Sha256Encrypt(sSrcValue);
             Assert.NotEmpty(sDstValue);
         }
 

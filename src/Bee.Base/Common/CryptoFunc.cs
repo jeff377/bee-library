@@ -5,9 +5,9 @@ using System.Text;
 namespace Bee.Base
 {
     /// <summary>
-    /// 加解密函式庫。
+    /// 提供常用的密碼學功能，包括對稱加解密、雜湊與金鑰導出等方法。
     /// </summary>
-    public static class EncryptionFunc
+    public static class CryptoFunc
     {
         /// <summary>
         /// AES 256 加密。
@@ -17,21 +17,18 @@ namespace Bee.Base
         /// <param name="iv">初始化向量，要求 6*8=128 位元，長度需為 16 碼。</param>
         public static byte[] AesEncrypt(byte[] bytes, string key, string iv)
         {
-            Aes oAes;
-            ICryptoTransform oTransform;
-
             if (StrFunc.IsEmpty(key))
                 throw new ArgumentNullException("key");
             if (StrFunc.IsEmpty(iv))
                 throw new ArgumentNullException("iv");
 
-            oAes = Aes.Create();
-            oAes.Mode = CipherMode.CBC;
-            oAes.Padding = PaddingMode.PKCS7;
-            oAes.Key = Encoding.UTF8.GetBytes(key);
-            oAes.IV = Encoding.UTF8.GetBytes(iv);
-            oTransform = oAes.CreateEncryptor();
-            return oTransform.TransformFinalBlock(bytes, 0, bytes.Length);
+            var aes = Aes.Create();
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.Key = Encoding.UTF8.GetBytes(key);
+            aes.IV = Encoding.UTF8.GetBytes(iv);
+            var encryptor = aes.CreateEncryptor();
+            return encryptor.TransformFinalBlock(bytes, 0, bytes.Length);
         }
 
         /// <summary>
@@ -42,21 +39,18 @@ namespace Bee.Base
         /// <param name="iv">初始化向量，要求 6*8=128 位元，長度需為 16 碼。</param>
         public static byte[] AesDecrypt(byte[] bytes, string key, string iv)
         {
-            Aes oAes;
-            ICryptoTransform oTransform;
-
             if (StrFunc.IsEmpty(key))
                 throw new ArgumentNullException("key");
             if (StrFunc.IsEmpty(iv))
                 throw new ArgumentNullException("iv");
 
-            oAes = Aes.Create();
-            oAes.Mode = CipherMode.CBC;
-            oAes.Padding = PaddingMode.PKCS7;
-            oAes.Key = Encoding.UTF8.GetBytes(key);
-            oAes.IV = Encoding.UTF8.GetBytes(iv);
-            oTransform = oAes.CreateDecryptor();
-            return oTransform.TransformFinalBlock(bytes, 0, bytes.Length);
+            var aes = Aes.Create();
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.Key = Encoding.UTF8.GetBytes(key);
+            aes.IV = Encoding.UTF8.GetBytes(iv);
+            var decryptor = aes.CreateDecryptor();
+            return decryptor.TransformFinalBlock(bytes, 0, bytes.Length);
         }
 
         /// <summary>
@@ -65,23 +59,17 @@ namespace Bee.Base
         /// <param name="bytes">未加密的 Byte 陣列。</param>
         public static byte[] AesEncrypt(byte[] bytes)
         {
-            byte[] oAesBytes;
-            byte[] oKeyBytes;
-            byte[] oBytes;
-            string sKey;
-            string sIV;
-
             // 隨機產生 Key 及 IV
-            sKey = StrFunc.Left(Guid.NewGuid().ToString().Replace("-", ""), 32);
-            sIV = StrFunc.Left(Guid.NewGuid().ToString().Replace("-", ""), 16);
+            string key = StrFunc.Left(Guid.NewGuid().ToString().Replace("-", ""), 32);
+            string iv = StrFunc.Left(Guid.NewGuid().ToString().Replace("-", ""), 16);
             // 執行 AES 256 加密
-            oAesBytes = AesEncrypt(bytes, sKey, sIV);
-            oKeyBytes = Encoding.UTF8.GetBytes(sKey + sIV);
+            byte[] aesBytes = AesEncrypt(bytes, key, iv);
+            byte[] keyBytes = Encoding.UTF8.GetBytes(key + iv);
             // 合併資料
-            oBytes = new byte[oKeyBytes.Length + oAesBytes.Length];
-            Buffer.BlockCopy(oKeyBytes, 0, oBytes, 0, oKeyBytes.Length);
-            Buffer.BlockCopy(oAesBytes, 0, oBytes, oKeyBytes.Length, oAesBytes.Length);
-            return oBytes;
+            byte[] resultBytes = new byte[keyBytes.Length + aesBytes.Length];
+            Buffer.BlockCopy(keyBytes, 0, resultBytes, 0, keyBytes.Length);
+            Buffer.BlockCopy(aesBytes, 0, resultBytes, keyBytes.Length, aesBytes.Length);
+            return resultBytes;
         }
 
         /// <summary>
@@ -90,25 +78,18 @@ namespace Bee.Base
         /// <param name="bytes">已加密的 Byte 陣列。</param>
         public static byte[] AesDecrypt(byte[] bytes)
         {
-            byte[] oAesBytes;
-            byte[] oKeyBytes;
-            byte[] oBytes;
-            string sValue;
-            string sKey;
-            string sIV;
-
             // 拆解資料
-            oKeyBytes = new byte[32 + 16];
-            oAesBytes = new byte[bytes.Length - oKeyBytes.Length];
-            Buffer.BlockCopy(bytes, 0, oKeyBytes, 0, oKeyBytes.Length);
-            Buffer.BlockCopy(bytes, oKeyBytes.Length, oAesBytes, 0, oAesBytes.Length);
+            byte[] keyBytes = new byte[32 + 16];
+            byte[] aesBytes = new byte[bytes.Length - keyBytes.Length];
+            Buffer.BlockCopy(bytes, 0, keyBytes, 0, keyBytes.Length);
+            Buffer.BlockCopy(bytes, keyBytes.Length, aesBytes, 0, aesBytes.Length);
             // 取得 Key 及 IV
-            sValue = Encoding.UTF8.GetString(oKeyBytes);
-            sKey = StrFunc.Left(sValue, 32);
-            sIV = StrFunc.Right(sValue, 16);
+            string value = Encoding.UTF8.GetString(keyBytes);
+            string key = StrFunc.Left(value, 32);
+            string iV = StrFunc.Right(value, 16);
             // 執行 AES 256 解密
-            oBytes = AesDecrypt(oAesBytes, sKey, sIV);
-            return oBytes;
+            byte[] resultBytes = AesDecrypt(aesBytes, key, iV);
+            return resultBytes;
         }
 
         /// <summary>
@@ -117,11 +98,9 @@ namespace Bee.Base
         /// <param name="value">未加密字串。</param>
         public static string AesEncrypt(string value)
         {
-            byte[] oBytes;
-
-            oBytes = Encoding.UTF8.GetBytes(value);
-            oBytes = AesEncrypt(oBytes);
-            return  Convert.ToBase64String(oBytes);
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            bytes = AesEncrypt(bytes);
+            return Convert.ToBase64String(bytes);
         }
 
         /// <summary>
@@ -130,11 +109,9 @@ namespace Bee.Base
         /// <param name="value">已加密的字串。</param>
         public static string AesDecrypt(string value)
         {
-            byte[] oBytes;
-
-            oBytes = Convert.FromBase64String(value);
-            oBytes = AesDecrypt(oBytes);
-            return Encoding.UTF8.GetString(oBytes);
+            byte[]  bytes = Convert.FromBase64String(value);
+            bytes = AesDecrypt(bytes);
+            return Encoding.UTF8.GetString(bytes);
         }
 
         /// <summary>
@@ -142,12 +119,12 @@ namespace Bee.Base
         /// </summary>
         /// <param name="value">已加密的字串。</param>
         public static string AesTryDecrypt(string value)
-        {            
+        {
             try
             {
                 return AesDecrypt(value);
             }
-            catch 
+            catch
             {
                 return value;
             }

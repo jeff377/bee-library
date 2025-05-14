@@ -87,7 +87,7 @@ namespace Bee.Define
             foreach (TDatabaseItem item in this.Items)
             {
                 if (StrFunc.IsNotEmpty(item.Password))
-                    item.EncryptedData = EncryptionFunc.AesEncrypt(item.Password);
+                    item.EncryptedData = CryptoFunc.AesEncrypt(item.Password);
             }
         }
 
@@ -109,7 +109,7 @@ namespace Bee.Define
             foreach (TDatabaseItem item in this.Items)
             {
                 if (StrFunc.IsNotEmpty(item.EncryptedData))
-                    item.Password = EncryptionFunc.AesTryDecrypt(item.EncryptedData);
+                    item.Password = CryptoFunc.AesTryDecrypt(item.EncryptedData);
             }
         }
 

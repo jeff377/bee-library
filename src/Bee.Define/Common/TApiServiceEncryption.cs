@@ -16,7 +16,7 @@ namespace Bee.Define
             byte[] oBytes;
 
             oBytes = GZipFunc.Compress(bytes);  // 壓縮
-            return EncryptionFunc.AesEncrypt(oBytes);  // 加密
+            return CryptoFunc.AesEncrypt(oBytes);  // 加密
         }
 
         /// <summary>
@@ -27,7 +27,7 @@ namespace Bee.Define
         {
             byte[] oBytes;
 
-            oBytes = EncryptionFunc.AesDecrypt(bytes);  // 解密
+            oBytes = CryptoFunc.AesDecrypt(bytes);  // 解密
             return GZipFunc.Uncompress(oBytes);  // 解壓縮
         }
     }
