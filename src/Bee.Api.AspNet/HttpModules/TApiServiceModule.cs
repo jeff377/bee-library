@@ -113,7 +113,7 @@ namespace Bee.Api.AspNet
                 Method = request.Method
             };
 
-            var validator = ApiAuthorizationValidatorProvider.GetValidator();
+            var validator = ApiServiceOptions.AuthorizationValidator;
             return validator.Validate(authContext);
         }
 
