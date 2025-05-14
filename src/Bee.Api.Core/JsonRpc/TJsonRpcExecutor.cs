@@ -34,7 +34,7 @@ namespace Bee.Api.Core
             try
             {
                 // 傳輸資料是否加密
-                bool encrypted = request.Params.Encrypted;
+                bool encrypted = request.Params.IsEncoded;
                 // 傳入參數進行解密
                 if (encrypted)
                     request.Decrypt();

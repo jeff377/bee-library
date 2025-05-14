@@ -16,10 +16,10 @@ namespace Bee.Api.Core
         public object Value { get; set; }
 
         /// <summary>
-        /// 資料是否加密。
+        /// 資料是否已經進行編碼（例如加密或壓縮）。
         /// </summary>
-        [JsonProperty("encrypted")]
-        public bool Encrypted { get; private set; } = false;
+        [JsonProperty("isEncoded")]
+        public bool IsEncoded { get; private set; } = false;
 
         /// <summary>
         /// 資料進行加密。
@@ -27,12 +27,12 @@ namespace Bee.Api.Core
         public void Encrypt()
         {
             // 已加密離開
-            if (this.Encrypted) { return; }
+            if (this.IsEncoded) { return; }
 
             byte[] bytes = SerializeFunc.ObjectToBinary(Value);  // 序列化
             var encryption = SysFunc.CreateApiServiceEncryption();
             Value = encryption.Encrypt(bytes);  // 加密
-            Encrypted = true;
+            IsEncoded = true;
         }
 
         /// <summary>
@@ -41,12 +41,12 @@ namespace Bee.Api.Core
         public void Decrypt()
         {
             // 未加密則離開
-            if (!this.Encrypted) { return; }
+            if (!this.IsEncoded) { return; }
 
             var encryption = SysFunc.CreateApiServiceEncryption();
             byte[] bytes = encryption.Decrypt(Value as byte[]);  // 解密
             Value = SerializeFunc.BinaryToObject(bytes);  // 反序列化
-            Encrypted = false;
+            IsEncoded = false;
         }
     }
 }
