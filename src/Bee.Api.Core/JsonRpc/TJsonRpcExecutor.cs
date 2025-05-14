@@ -20,7 +20,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 存取令牌。
+        /// 存取令牌，用於識別目前使用者或工作階段。
         /// </summary>
         public Guid AccessToken { get; set; } = Guid.Empty;
 
@@ -33,11 +33,10 @@ namespace Bee.Api.Core
             var response = new TJsonRpcResponse(request);
             try
             {
-                // 傳輸資料是否加密
-                bool encrypted = request.Params.IsEncoded;
-                // 傳入參數進行解密
-                if (encrypted)
-                    request.Decrypt();
+                // 傳輸資料是否進行編碼
+                bool isEncoded = request.Params.IsEncoded;
+                // 若為編碼狀態，則進行解碼
+                if (isEncoded) { request.Decode(); }
 
                 // 從 Method 屬性解析出 ProgID 與 Action
                 var (progID, action) = ParseMethod(request.Method);
@@ -45,13 +44,9 @@ namespace Bee.Api.Core
                 var value = ExecuteMethod(progID, action, request.Params.Value);
 
                 // 傳出結果
-                response.Result = new TJsonRpcResult()
-                {
-                    Value = value
-                };
-                // 傳出結果進行加密
-                if (encrypted)
-                    response.Encrypt();
+                response.Result = new TJsonRpcResult() { Value = value };
+                // 若傳出結果需要編碼，則進行編碼
+                if (isEncoded) { response.Encode(); }
             }
             catch (Exception ex)
             {

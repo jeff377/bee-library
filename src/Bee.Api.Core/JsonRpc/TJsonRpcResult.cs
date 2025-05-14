@@ -22,30 +22,32 @@ namespace Bee.Api.Core
         public bool IsEncoded { get; private set; } = false;
 
         /// <summary>
-        /// 資料進行加密。
+        /// 將傳入資料進行轉換處理，例如序列化、壓縮或加密。
         /// </summary>
-        public void Encrypt()
+        public void Encode()
         {
-            // 已加密離開
+            // 已經過編碼則離開
             if (this.IsEncoded) { return; }
 
-            byte[] bytes = SerializeFunc.ObjectToBinary(Value);  // 序列化
-            var encryption = SysFunc.CreateApiServiceEncryption();
-            Value = encryption.Encrypt(bytes);  // 加密
+            // 將指定的物件進行轉換處理，例如序列化、壓縮或加密
+            var transformer = ApiServiceOptions.PayloadTransformer;
+            Value = transformer.Encode(Value);
+
             IsEncoded = true;
         }
 
         /// <summary>
-        /// 資料進行解密。
+        /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。
         /// </summary>
-        public void Decrypt()
+        public void Decode()
         {
-            // 未加密則離開
+            // 未經過編碼則離開
             if (!this.IsEncoded) { return; }
 
-            var encryption = SysFunc.CreateApiServiceEncryption();
-            byte[] bytes = encryption.Decrypt(Value as byte[]);  // 解密
-            Value = SerializeFunc.BinaryToObject(bytes);  // 反序列化
+            // 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化
+            var transformer = ApiServiceOptions.PayloadTransformer;
+            Value = transformer.Decode(Value);
+
             IsEncoded = false;
         }
     }

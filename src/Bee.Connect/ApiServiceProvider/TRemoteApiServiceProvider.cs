@@ -47,11 +47,11 @@ namespace Bee.Connect
             header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
             header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
 
-            request.Encrypt(); // 傳入參數進行加密
+            request.Encode(); // 傳入參數進行編碼
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             string json = HttpFunc.PostAsync(this.Endpoint, body, header).Result;  // 執行 Web API 方法
             var response = SerializeFunc.JsonToObject<TJsonRpcResponse>(json);  // 執行 JSON 反序列化
-            response.Decrypt();  // 傳出結果進行解密
+            response.Decode();  // 傳出結果進行解碼
             return response;
         }
 
@@ -65,11 +65,11 @@ namespace Bee.Connect
             header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
             header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
 
-            request.Encrypt(); // 傳入參數進行加密
+            request.Encode(); // 傳入參數進行編碼
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             string json = await HttpFunc.PostAsync(this.Endpoint, body, header);  // 執行 Web API 方法
             var response = SerializeFunc.JsonToObject<TJsonRpcResponse>(json);  // 執行 JSON 反序列化
-            response.Decrypt();  // 傳出結果進行解密
+            response.Decode();  // 傳出結果進行解碼
             return response;
         }
 

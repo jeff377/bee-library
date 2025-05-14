@@ -53,24 +53,24 @@ namespace Bee.Api.Core
         public string Id { get; set; }
 
         /// <summary>
-        /// 資料進行加密。
+        /// 將指定的物件進行轉換處理，例如序列化、壓縮或加密。
         /// </summary>
-        public void Encrypt()
+        public void Encode()
         {
             if (Result != null)
             {
-                Result.Encrypt();  // 加密資料
+                Result.Encode(); 
             }
         }
 
         /// <summary>
-        /// 資料進行解密。
+        /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。。
         /// </summary>
-        public void Decrypt()
+        public void Decode()
         {
             if (Result != null)
             {
-                Result.Decrypt();  // 解密資料
+                Result.Decode(); 
             }
         }
     }

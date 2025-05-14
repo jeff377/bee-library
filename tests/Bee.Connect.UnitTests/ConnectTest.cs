@@ -19,7 +19,7 @@ namespace Bee.Connect.UnitTests
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
 
-        [Fact]
+        [Fact(Skip = "¤â°Ê´ú¸Õ")]
         public void ApiConnectValidator()
         {
             var validator = new TApiConnectValidator();

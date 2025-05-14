@@ -42,16 +42,5 @@ namespace Bee.Define
             sTypeName = "Bee.Business.TCacheDataSourceProvider";
             return BaseFunc.CreateInstance(sTypeName, new object[] { }) as ICacheDataSourceProvider;
         }
-
-        /// <summary>
-        /// 建立 API 服務傳輸資料加密物件。
-        /// </summary>
-        /// <returns></returns>
-        public static IApiServiceEncryption CreateApiServiceEncryption()
-        {
-            return new TApiServiceEncryption();
-        }
-
-
     }
 }
