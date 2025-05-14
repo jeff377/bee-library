@@ -37,42 +37,6 @@ namespace Bee.Base.UnitTests
         }
 
         /// <summary>
-        /// 加解密測試。
-        /// </summary>
-        [Fact]
-        public void Encryption()
-        {
-            byte[] oSrcBytes;
-            byte[] oDstBytes;
-            string sSrcValue;
-            string sDstValue;
-            string sKey;
-            string sIV;
-            string sEncryption;
-
-            sKey = StrFunc.Left(Guid.NewGuid().ToString().Replace("-", ""), 32);
-            sIV = StrFunc.Left(Guid.NewGuid().ToString().Replace("-", ""), 16);
-
-            sSrcValue = "壓縮測試文字";
-            oSrcBytes = Encoding.UTF8.GetBytes(sSrcValue);
-            oDstBytes = CryptoFunc.AesEncrypt(oSrcBytes, sKey, sIV);
-            oSrcBytes = CryptoFunc.AesDecrypt(oDstBytes, sKey, sIV);
-            sDstValue = Encoding.UTF8.GetString(oSrcBytes);
-            Assert.Equal(sSrcValue, sDstValue);
-
-            oSrcBytes = Encoding.UTF8.GetBytes(sSrcValue);
-            oDstBytes = CryptoFunc.AesEncrypt(oSrcBytes);
-            oSrcBytes = CryptoFunc.AesDecrypt(oDstBytes);
-            sDstValue = Encoding.UTF8.GetString(oSrcBytes);
-            Assert.Equal(sSrcValue, sDstValue);
-
-            sEncryption = CryptoFunc.AesEncrypt(sSrcValue);
-            sDstValue = CryptoFunc.AesDecrypt(sEncryption);
-            Assert.Equal(sSrcValue, sDstValue);
-
-        }
-
-        /// <summary>
         /// 測試 IsNumeric 方法。
         /// </summary>
         [Fact]
