@@ -133,6 +133,7 @@ namespace Bee.Define
         {
             var dt = new DataTable(sdt.TableName);
 
+            // 建立欄位結構
             foreach (var col in sdt.Columns)
             {
                 var type = Type.GetType(col.DataType) ?? typeof(string);
@@ -147,6 +148,7 @@ namespace Bee.Define
                 dt.Columns.Add(dc);
             }
 
+            // 設定主鍵
             if (sdt.PrimaryKeys.Count > 0)
             {
                 var primaryCols = sdt.PrimaryKeys
@@ -158,54 +160,59 @@ namespace Bee.Define
                     dt.PrimaryKey = primaryCols;
             }
 
+            // 逐筆還原
             foreach (var srow in sdt.Rows)
             {
                 DataRow row = dt.NewRow();
 
-                if (srow.RowState == DataRowState.Deleted)
+                switch (srow.RowState)
                 {
-                    foreach (var kvp in srow.OriginalValues)
-                    {
-                        row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                    }
-                    dt.Rows.Add(row);
-                    row.AcceptChanges();
-                    row.Delete();
-                }
-                else if (srow.RowState == DataRowState.Modified)
-                {
-                    // 先設定目前值
-                    foreach (var kvp in srow.CurrentValues)
-                    {
-                        row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                    }
-                    dt.Rows.Add(row);
-
-                    // 接受變更變成 Unchanged（OriginalValues 記錄目前值）
-                    row.AcceptChanges();
-
-                    // 用原始值覆蓋欄位，讓欄位值變成修改前
-                    foreach (var kvp in srow.OriginalValues)
-                    {
-                        row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                    }
-
-                    // 設定為 Modified
-                    row.SetModified();
-                }
-                else
-                {
-                    foreach (var kvp in srow.CurrentValues)
-                    {
-                        row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                    }
-                    dt.Rows.Add(row);
-
-                    if (srow.RowState == DataRowState.Unchanged)
-                    {
+                    case DataRowState.Unchanged:
+                        foreach (var kvp in srow.CurrentValues)
+                        {
+                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
+                        }
+                        dt.Rows.Add(row);
                         row.AcceptChanges();
-                    }
-                    // Added 狀態不用特別處理，預設就是 Added
+                        break;
+
+                    case DataRowState.Added:
+                        foreach (var kvp in srow.CurrentValues)
+                        {
+                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
+                        }
+                        dt.Rows.Add(row);
+                        // 不呼叫 AcceptChanges，保持 Added 狀態
+                        break;
+
+                    case DataRowState.Modified:
+                        // 先寫入修改前的值
+                        foreach (var kvp in srow.OriginalValues)
+                        {
+                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
+                        }
+                        dt.Rows.Add(row);
+
+                        // 接受變更，狀態為 Unchanged
+                        row.AcceptChanges();
+
+                        // 再寫入修改後的值，會自動標記為 Modified
+                        foreach (var kvp in srow.CurrentValues)
+                        {
+                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
+                        }
+                        break;
+
+                    case DataRowState.Deleted:
+                        // 用原始值建立列，加入，AcceptChanges，然後刪除
+                        foreach (var kvp in srow.OriginalValues)
+                        {
+                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
+                        }
+                        dt.Rows.Add(row);
+                        row.AcceptChanges();
+                        row.Delete();
+                        break;
                 }
             }
 

@@ -163,36 +163,38 @@ namespace Bee.Define.UnitTests
             table.Columns.Add("Id", typeof(int));
             table.Columns.Add("Name", typeof(string));
 
-            // Added row
-            var addedRow = table.NewRow();
-            addedRow["Id"] = 1;
-            addedRow["Name"] = "新增資料";
-            table.Rows.Add(addedRow);
+            // 新增第一筆
+            var row1 = table.NewRow();
+            row1["Id"] = 1;
+            row1["Name"] = "資料1";
+            table.Rows.Add(row1);
 
-            // Accept changes and modify (Modified)
-            table.AcceptChanges();
-            var modifiedRow = table.Rows[0];
-            modifiedRow["Name"] = "修改後";
+            // 新增第二筆
+            var row2 = table.NewRow();
+            row2["Id"] = 2;
+            row2["Name"] = "資料2";
+            table.Rows.Add(row2);
 
-            // Add and delete (Deleted)
-            var deletedRow = table.NewRow();
-            deletedRow["Id"] = 2;
-            deletedRow["Name"] = "準備刪除";
-            table.Rows.Add(deletedRow);
+            // 先 AcceptChanges，兩筆變成 Unchanged
             table.AcceptChanges();
+
+            // 修改第一筆 (RowState -> Modified)
+            table.Rows[0]["Name"] = "修改後資料1";
+
+            // 刪除第二筆 (RowState -> Deleted)
             table.Rows[1].Delete();
 
-            // Another added row not accepted (Added)
-            var addedAgain = table.NewRow();
-            addedAgain["Id"] = 3;
-            addedAgain["Name"] = "新增未提交";
-            table.Rows.Add(addedAgain);
+            // 新增第三筆 (RowState -> Added)
+            var row3 = table.NewRow();
+            row3["Id"] = 3;
+            row3["Name"] = "新增資料3";
+            table.Rows.Add(row3);
 
-            // Serialize and Deserialize
+            // Serialize & Deserialize
             var bytes = MessagePackHelper.Serialize(table);
             var restored = MessagePackHelper.Deserialize<DataTable>(bytes);
 
-            // Check total rows (including Deleted)
+            // 確認總筆數包含 Deleted
             Assert.Equal(3, restored.Rows.Count);
 
             bool foundModified = false;
@@ -205,18 +207,15 @@ namespace Bee.Define.UnitTests
                 {
                     if (row.RowState == DataRowState.Deleted)
                     {
-                        // 讀取 Deleted 列的欄位需用 Original 版本
+                        // 讀取 Deleted 列欄位要用 Original 版本
                         int id = row.Field<int>("Id", DataRowVersion.Original);
-                        if (id == 2)
-                            foundDeleted = true;
+                        if (id == 2) foundDeleted = true;
                     }
                     else
                     {
                         int id = row.Field<int>("Id");
-                        if (id == 1 && row.RowState == DataRowState.Modified)
-                            foundModified = true;
-                        else if (id == 3 && row.RowState == DataRowState.Added)
-                            foundAdded = true;
+                        if (id == 1 && row.RowState == DataRowState.Modified) foundModified = true;
+                        else if (id == 3 && row.RowState == DataRowState.Added) foundAdded = true;
                     }
                 }
                 catch (Exception ex)
@@ -229,6 +228,7 @@ namespace Bee.Define.UnitTests
             Assert.True(foundDeleted, "找不到 RowState 為 Deleted 且 Id = 2 的列");
             Assert.True(foundAdded, "找不到 RowState 為 Added 且 Id = 3 的列");
         }
+
 
 
 
