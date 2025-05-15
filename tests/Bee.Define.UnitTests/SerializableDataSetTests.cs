@@ -194,39 +194,10 @@ namespace Bee.Define.UnitTests
             var bytes = MessagePackHelper.Serialize(table);
             var restored = MessagePackHelper.Deserialize<DataTable>(bytes);
 
-            // 確認總筆數包含 Deleted
-            Assert.Equal(3, restored.Rows.Count);
-
-            bool foundModified = false;
-            bool foundDeleted = false;
-            bool foundAdded = false;
-
-            foreach (DataRow row in restored.Rows)
+            if (!DataTableComparer.IsEqual(table, restored))
             {
-                try
-                {
-                    if (row.RowState == DataRowState.Deleted)
-                    {
-                        // 讀取 Deleted 列欄位要用 Original 版本
-                        int id = row.Field<int>("Id", DataRowVersion.Original);
-                        if (id == 2) foundDeleted = true;
-                    }
-                    else
-                    {
-                        int id = row.Field<int>("Id");
-                        if (id == 1 && row.RowState == DataRowState.Modified) foundModified = true;
-                        else if (id == 3 && row.RowState == DataRowState.Added) foundAdded = true;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Assert.Fail($"讀取欄位時出錯: {ex.Message}");
-                }
+                Assert.Fail("序列化還原後的 DataTable 與原始 DataTable 不相等");
             }
-
-            Assert.True(foundModified, "找不到 RowState 為 Modified 且 Id = 1 的列");
-            Assert.True(foundDeleted, "找不到 RowState 為 Deleted 且 Id = 2 的列");
-            Assert.True(foundAdded, "找不到 RowState 為 Added 且 Id = 3 的列");
         }
 
 
