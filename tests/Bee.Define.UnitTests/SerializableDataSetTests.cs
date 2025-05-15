@@ -1,13 +1,17 @@
 ﻿using System.Data;
-using MessagePack;
 using Bee.Base;
-using MessagePack.Formatters;
-using MessagePack.Resolvers;
+using MessagePack;
 
 namespace Bee.Define.UnitTests
 {
+    /// <summary>
+    /// 測試可序列化的 DataSet 物件。
+    /// </summary>
     public class SerializableDataSetTests
     {
+        /// <summary>
+        /// 靜態建構函式。
+        /// </summary>
         static SerializableDataSetTests()
         {
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
@@ -142,6 +146,7 @@ namespace Bee.Define.UnitTests
             Assert.Equal(2, deserialized.Tables.Count);
 
             var dt1 = deserialized.Tables["Table1"];
+            Assert.NotNull(dt1);
             Assert.Equal(2, dt1.Rows.Count);
             Assert.Equal("Alice", dt1.Rows[0]["Name"]);
             Assert.Equal(30, dt1.Rows[0]["Age"]);
@@ -149,6 +154,7 @@ namespace Bee.Define.UnitTests
             Assert.Equal(40, dt1.Rows[1]["Age"]);
 
             var dt2 = deserialized.Tables["Table2"];
+            Assert.NotNull(dt2);
             Assert.Equal(2, dt2.Rows.Count);
             Assert.Equal("Pen", dt2.Rows[0]["Product"]);
             Assert.Equal(1.5m, dt2.Rows[0]["Price"]);
