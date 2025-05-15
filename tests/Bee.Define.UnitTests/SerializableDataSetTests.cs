@@ -108,7 +108,6 @@ namespace Bee.Define.UnitTests
             Assert.Equal(200, deserialized.Rows[1]["Column2"]);
         }
 
-
         /// <summary>
         /// 測試 MessagePack 是否能正確序列化與反序列化 DataSet。
         /// </summary>
@@ -156,6 +155,81 @@ namespace Bee.Define.UnitTests
             Assert.Equal("Notebook", dt2.Rows[1]["Product"]);
             Assert.Equal(3.2m, dt2.Rows[1]["Price"]);
         }
+
+        [Fact(DisplayName = "DataTable 序列化還原後應保留 RowState 狀態")]
+        public void SerializeDeserialize_DataTable_ShouldPreserveRowState()
+        {
+            var table = new DataTable("SampleTable");
+            table.Columns.Add("Id", typeof(int));
+            table.Columns.Add("Name", typeof(string));
+
+            // Added row
+            var addedRow = table.NewRow();
+            addedRow["Id"] = 1;
+            addedRow["Name"] = "新增資料";
+            table.Rows.Add(addedRow);
+
+            // Accept changes and modify (Modified)
+            table.AcceptChanges();
+            var modifiedRow = table.Rows[0];
+            modifiedRow["Name"] = "修改後";
+
+            // Add and delete (Deleted)
+            var deletedRow = table.NewRow();
+            deletedRow["Id"] = 2;
+            deletedRow["Name"] = "準備刪除";
+            table.Rows.Add(deletedRow);
+            table.AcceptChanges();
+            table.Rows[1].Delete();
+
+            // Another added row not accepted (Added)
+            var addedAgain = table.NewRow();
+            addedAgain["Id"] = 3;
+            addedAgain["Name"] = "新增未提交";
+            table.Rows.Add(addedAgain);
+
+            // Serialize and Deserialize
+            var bytes = MessagePackHelper.Serialize(table);
+            var restored = MessagePackHelper.Deserialize<DataTable>(bytes);
+
+            // Check total rows (including Deleted)
+            Assert.Equal(3, restored.Rows.Count);
+
+            bool foundModified = false;
+            bool foundDeleted = false;
+            bool foundAdded = false;
+
+            foreach (DataRow row in restored.Rows)
+            {
+                try
+                {
+                    if (row.RowState == DataRowState.Deleted)
+                    {
+                        // 讀取 Deleted 列的欄位需用 Original 版本
+                        int id = row.Field<int>("Id", DataRowVersion.Original);
+                        if (id == 2)
+                            foundDeleted = true;
+                    }
+                    else
+                    {
+                        int id = row.Field<int>("Id");
+                        if (id == 1 && row.RowState == DataRowState.Modified)
+                            foundModified = true;
+                        else if (id == 3 && row.RowState == DataRowState.Added)
+                            foundAdded = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Assert.Fail($"讀取欄位時出錯: {ex.Message}");
+                }
+            }
+
+            Assert.True(foundModified, "找不到 RowState 為 Modified 且 Id = 1 的列");
+            Assert.True(foundDeleted, "找不到 RowState 為 Deleted 且 Id = 2 的列");
+            Assert.True(foundAdded, "找不到 RowState 為 Added 且 Id = 3 的列");
+        }
+
 
 
     }

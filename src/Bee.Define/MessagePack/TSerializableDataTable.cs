@@ -58,6 +58,7 @@ namespace Bee.Define
                 TableName = table.TableName
             };
 
+            // 處理欄位定義
             foreach (DataColumn col in table.Columns)
             {
                 sdt.Columns.Add(new TSerializableDataColumn
@@ -72,30 +73,51 @@ namespace Bee.Define
                 });
             }
 
+            // 主鍵欄位
             sdt.PrimaryKeys.AddRange(table.PrimaryKey.Select(pk => pk.ColumnName));
 
+            // 處理資料列
             foreach (DataRow row in table.Rows)
             {
                 var current = new Dictionary<string, object>();
                 var original = new Dictionary<string, object>();
+                var state = row.RowState;
 
-                foreach (DataColumn col in table.Columns)
+                switch (state)
                 {
-                    object currentValue = row[col] is DBNull ? null : row[col];
-                    current[col.ColumnName] = currentValue;
+                    case DataRowState.Added:
+                        foreach (DataColumn col in table.Columns)
+                        {
+                            current[col.ColumnName] = row[col] is DBNull ? null : row[col];
+                        }
+                        break;
 
-                    if (row.RowState != DataRowState.Added)
-                    {
-                        object originalValue = row[col, DataRowVersion.Original] is DBNull ? null : row[col, DataRowVersion.Original];
-                        original[col.ColumnName] = originalValue;
-                    }
+                    case DataRowState.Deleted:
+                        foreach (DataColumn col in table.Columns)
+                        {
+                            original[col.ColumnName] = row[col, DataRowVersion.Original] is DBNull ? null : row[col, DataRowVersion.Original];
+                        }
+                        break;
+
+                    case DataRowState.Modified:
+                    case DataRowState.Unchanged:
+                        foreach (DataColumn col in table.Columns)
+                        {
+                            current[col.ColumnName] = row[col] is DBNull ? null : row[col];
+                            original[col.ColumnName] = row[col, DataRowVersion.Original] is DBNull ? null : row[col, DataRowVersion.Original];
+                        }
+                        break;
+
+                    default:
+                        // Detached 或其他狀態略過或紀錄警告（可視情況擴充）
+                        continue;
                 }
 
                 sdt.Rows.Add(new TSerializableDataRow
                 {
-                    CurrentValues = current,
-                    OriginalValues = original,
-                    RowState = row.RowState
+                    CurrentValues = current.Count > 0 ? current : null,
+                    OriginalValues = original.Count > 0 ? original : null,
+                    RowState = state
                 });
             }
 
@@ -129,7 +151,7 @@ namespace Bee.Define
             {
                 var primaryCols = sdt.PrimaryKeys
                     .Select(pk => dt.Columns.Contains(pk) ? dt.Columns[pk] : null)
-                    .Where(col => col != null)
+                    .Where(c => c != null)
                     .ToArray();
 
                 if (primaryCols.Length > 0)
@@ -138,34 +160,57 @@ namespace Bee.Define
 
             foreach (var srow in sdt.Rows)
             {
-                var row = dt.NewRow();
+                DataRow row = dt.NewRow();
 
-                foreach (var kvp in srow.CurrentValues)
-                    row[kvp.Key] = kvp.Value ?? DBNull.Value;
-
-                dt.Rows.Add(row);
-
-                if (srow.RowState == DataRowState.Unchanged)
+                if (srow.RowState == DataRowState.Deleted)
                 {
+                    foreach (var kvp in srow.OriginalValues)
+                    {
+                        row[kvp.Key] = kvp.Value ?? DBNull.Value;
+                    }
+                    dt.Rows.Add(row);
                     row.AcceptChanges();
+                    row.Delete();
                 }
                 else if (srow.RowState == DataRowState.Modified)
                 {
-                    row.AcceptChanges();
-                    foreach (var kvp in srow.OriginalValues)
+                    // 先設定目前值
+                    foreach (var kvp in srow.CurrentValues)
+                    {
                         row[kvp.Key] = kvp.Value ?? DBNull.Value;
+                    }
+                    dt.Rows.Add(row);
+
+                    // 接受變更變成 Unchanged（OriginalValues 記錄目前值）
+                    row.AcceptChanges();
+
+                    // 用原始值覆蓋欄位，讓欄位值變成修改前
+                    foreach (var kvp in srow.OriginalValues)
+                    {
+                        row[kvp.Key] = kvp.Value ?? DBNull.Value;
+                    }
+
+                    // 設定為 Modified
                     row.SetModified();
                 }
-                else if (srow.RowState == DataRowState.Deleted)
+                else
                 {
-                    row.AcceptChanges();
-                    foreach (var kvp in srow.OriginalValues)
+                    foreach (var kvp in srow.CurrentValues)
+                    {
                         row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                    row.Delete();
+                    }
+                    dt.Rows.Add(row);
+
+                    if (srow.RowState == DataRowState.Unchanged)
+                    {
+                        row.AcceptChanges();
+                    }
+                    // Added 狀態不用特別處理，預設就是 Added
                 }
             }
 
             return dt;
         }
+
     }
 }
