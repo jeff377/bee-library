@@ -1,4 +1,4 @@
-﻿using Bee.Base;
+﻿using Bee.Define;
 
 namespace Bee.Db
 {

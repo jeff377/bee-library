@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bee.Base;
-using Bee.Define;
+﻿using Bee.Define;
 
 namespace Bee.Db
 {
