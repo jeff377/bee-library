@@ -342,10 +342,10 @@ namespace Bee.Define.UnitTests
         }
 
         /// <summary>
-        /// 測試 TPingArgs 可正確序列化與還原資料。
+        /// 測試 Ping 方法傳遞參數的序列化。
         /// </summary>
-        [Fact(DisplayName = "TPingArgs 序列化")]
-        public void TPingArgs_Serialize()
+        [Fact(DisplayName = "Ping 方法傳遞參數的序列化")]
+        public void Ping_Serialize()
         {
             // 建立 TPingArgs 並指定屬性與參數
             var args = new TPingArgs
@@ -356,32 +356,9 @@ namespace Bee.Define.UnitTests
             args.Parameters.Add("Env", "UAT");
             args.Parameters.Add("Verbose", true);
 
-            // 序列化
-            var bytes = MessagePackHelper.Serialize(args);
+            // 測試 MessagePack 序列化
+            TestFunc.TestMessagePackSerialization(args);
 
-            // 反序列化
-            var restored = MessagePackHelper.Deserialize<TPingArgs>(bytes);
-
-            // 驗證基本屬性
-            Assert.NotNull(restored);
-            Assert.Equal("TestClient", restored.ClientName);
-            Assert.Equal(args.TraceId, restored.TraceId);
-
-            // 驗證參數集合
-            Assert.NotNull(restored.Parameters);
-            Assert.Equal("UAT", restored.Parameters.GetValue<string>("Env"));
-            Assert.True(restored.Parameters.GetValue<bool>("Verbose"));
-
-            // 驗證不存在參數的預設值
-            Assert.Equal("Unknown", restored.Parameters.GetValue<string>("UnknownKey", "Unknown"));
-        }
-
-        /// <summary>
-        /// 測試 TPingResult 可正確序列化與還原資料。
-        /// </summary>
-        [Fact(DisplayName = "TPingResult 序列化")]
-        public void TPingResult_Serialize()
-        {
             // 建立 TPingResult 並指定屬性與參數
             var result = new TPingResult
             {
@@ -393,23 +370,8 @@ namespace Bee.Define.UnitTests
             result.Parameters.Add("Region", "TW");
             result.Parameters.Add("Elapsed", 42);
 
-            // 序列化
-            var bytes = MessagePackHelper.Serialize(result);
-
-            // 反序列化
-            var restored = MessagePackHelper.Deserialize<TPingResult>(bytes);
-
-            // 驗證基本屬性
-            Assert.NotNull(restored);
-            Assert.Equal("pong", restored.Status);
-            Assert.Equal(result.ServerTime, restored.ServerTime);
-            Assert.Equal("1.2.3", restored.Version);
-            Assert.Equal(result.TraceId, restored.TraceId);
-
-            // 驗證參數集合
-            Assert.NotNull(restored.Parameters);
-            Assert.Equal("TW", restored.Parameters.GetValue<string>("Region"));
-            Assert.Equal(42, restored.Parameters.GetValue<int>("Elapsed"));
+            // 測試 MessagePack 序列化
+            TestFunc.TestMessagePackSerialization(result);
         }
 
         /// <summary>

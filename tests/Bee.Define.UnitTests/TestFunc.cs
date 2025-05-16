@@ -8,6 +8,9 @@ namespace Bee.Define.UnitTests
     /// </summary>
     internal static class TestFunc
     {
+        /// <summary>
+        /// 測試 MessagePack 的序列化與反序列化。
+        /// </summary>
         public static void TestMessagePackSerialization<T>(T obj)
         {
             // 序列化與反序列化
@@ -58,6 +61,9 @@ namespace Bee.Define.UnitTests
             }
         }
 
+        /// <summary>
+        /// 判斷是否為簡單型別。
+        /// </summary>
         private static bool IsSimpleType(Type type)
         {
             return type.IsPrimitive
