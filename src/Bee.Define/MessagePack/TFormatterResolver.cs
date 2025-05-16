@@ -8,7 +8,7 @@ using MessagePack.Resolvers;
 namespace Bee.Define
 {
     /// <summary>
-    /// 自訂的 MessagePack 格式化器解析器，註冊 DataSet 和 DataTable 專用格式化器。
+    /// 自訂的 MessagePack 格式化器解析器，註冊 DataSet、DataTable 和 TCollectionBase 專用格式化器。
     /// </summary>
     public class TFormatterResolver : IFormatterResolver
     {
@@ -33,16 +33,32 @@ namespace Bee.Define
         {
             return (IMessagePackFormatter<T>)_formatters.GetOrAdd(typeof(T), type =>
             {
+                // 專屬支援 DataSet 及 DataTable
                 if (type == typeof(DataSet))
                     return new TDataSetFormatter();
                 if (type == typeof(DataTable))
                     return new TDataTableFormatter();
 
-                // fallback to standard resolver
+                // 檢查是否繼承自 TCollectionBase<T>
+                if (type.IsClass && !type.IsAbstract && type.BaseType != null &&
+                    type.BaseType.IsGenericType &&
+                    type.BaseType.GetGenericTypeDefinition() == typeof(TCollectionBase<>))
+                {
+                    var elementType = type.BaseType.GetGenericArguments()[0];
+
+                    // 建立泛型 Formatter 類型
+                    var formatterType = typeof(TCollectionBaseFormatter<,>).MakeGenericType(type, elementType);
+
+                    // 建立實例並回傳
+                    return Activator.CreateInstance(formatterType);
+                }
+
+                // fallback：委託給標準解析器
                 var method = typeof(StandardResolver).GetMethod("GetFormatter")
                     .MakeGenericMethod(type);
                 return method.Invoke(StandardResolver.Instance, null);
             });
         }
     }
+
 }

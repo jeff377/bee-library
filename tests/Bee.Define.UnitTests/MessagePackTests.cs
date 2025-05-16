@@ -213,10 +213,10 @@ namespace Bee.Define.UnitTests
             original[1].Combine = ECombineOperator.Or;
 
             // 序列化集合
-            byte[] bytes = MessagePackSerializer.Serialize(original);
+            byte[] bytes = MessagePackHelper.Serialize(original);
 
             // 反序列化集合
-            var restored = MessagePackSerializer.Deserialize<TFilterItemCollection>(bytes);
+            var restored = MessagePackHelper.Deserialize<TFilterItemCollection>(bytes);
 
             // 驗證集合數量
             Assert.Equal(original.Count, restored.Count);
