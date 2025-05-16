@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace Bee.Define
@@ -14,8 +15,6 @@ namespace Bee.Define
     {
         private string _Key = string.Empty;
         private IKeyCollectionBase _Collection = null;
-        [NonSerialized]
-        private object _Tag = null;
         private ESerializeState _SerializeState = ESerializeState.None;
 
         #region IKeyCollectionItem 介面
@@ -23,7 +22,8 @@ namespace Bee.Define
         /// <summary>
         /// 鍵值。
         /// </summary>
-        [XmlIgnore, JsonIgnore, Browsable(false)]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [Browsable(false)]
         public virtual string Key
         {
             get
@@ -67,14 +67,9 @@ namespace Bee.Define
         /// <summary>
         /// 儲存額外資訊。
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Tag
-        {
-            get { return _Tag; }
-            set { _Tag = value; }
-        }
+        public object Tag { get; set; } = null;
 
         #endregion
 
@@ -83,7 +78,7 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public ESerializeState SerializeState
         {
@@ -104,8 +99,7 @@ namespace Bee.Define
         /// <summary>
         /// 所屬集合。
         /// </summary>
-        [JsonIgnore]
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         [TreeNodeIgnore]
         public IKeyCollectionBase Collection

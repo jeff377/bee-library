@@ -1,19 +1,18 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
+using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
     /// 清單項目。
     /// </summary>
+    [MessagePackObject]
     [Serializable]
     [XmlType("ListItem")]
     public class TListItem : TKeyCollectionItem
     {
-        private string _Text = string.Empty;
-
         #region 建構函式
 
         /// <summary>
@@ -30,7 +29,7 @@ namespace Bee.Define
         public TListItem(string value, string text)
         {
             this.Value = value;
-            _Text = text;
+            Text = text;
         }
 
         #endregion
@@ -39,6 +38,7 @@ namespace Bee.Define
         /// 項目值。
         /// </summary>
         [XmlAttribute]
+        [Key(100)]
         [Description("項目值。")]
         public string Value
         {
@@ -50,12 +50,9 @@ namespace Bee.Define
         /// 顯示文字。
         /// </summary>
         [XmlAttribute]
+        [Key(101)]
         [Description("顯示文字。")]
-        public string Text
-        {
-            get { return _Text; }
-            set { _Text = value; }
-        }
+        public string Text { get; set; } = string.Empty;
 
         /// <summary>
         /// 描述文字。

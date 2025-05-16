@@ -1,0 +1,192 @@
+﻿using System.Data;
+using Bee.Base;
+using MessagePack;
+
+namespace Bee.Define.UnitTests
+{
+    /// <summary>
+    /// MessagePack 序列化測試。
+    /// </summary>
+    public class MessagePackTests
+    {
+        /// <summary>
+        /// 靜態建構函式。
+        /// </summary>
+        static MessagePackTests()
+        {
+            // .NET 8 預設停用 BinaryFormatter，需手動啟用
+            AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
+        }
+
+        /// <summary>
+        /// 測試 MessagePack 是否能正確序列化與反序列化 DataSet。
+        /// </summary>
+        [Fact(DisplayName = "DataSet 序列化")]
+        public void DataSet_Serialize()
+        {
+            // 建立範例 DataSet 並加入兩個 DataTable
+            var dataSet = new DataSet("TestDataSet");
+
+            var table1 = new DataTable("Table1");
+            table1.Columns.Add("Name", typeof(string));
+            table1.Columns.Add("Age", typeof(int));
+            table1.Rows.Add("Alice", 30);
+            table1.Rows.Add("Bob", 40);
+
+            var table2 = new DataTable("Table2");
+            table2.Columns.Add("Product", typeof(string));
+            table2.Columns.Add("Price", typeof(decimal));
+            table2.Rows.Add("Pen", 1.5m);
+            table2.Rows.Add("Notebook", 3.2m);
+
+            dataSet.Tables.Add(table1);
+            dataSet.Tables.Add(table2);
+
+            // 使用 MessagePackHelper 進行序列化
+            byte[] serialized = MessagePackHelper.Serialize(dataSet);
+
+            // 反序列化回 DataSet
+            var deserialized = MessagePackHelper.Deserialize<DataSet>(serialized);
+
+            // 驗證資料是否正確
+            Assert.Equal(2, deserialized.Tables.Count);
+
+            var dt1 = deserialized.Tables["Table1"];
+            Assert.NotNull(dt1);
+            Assert.Equal(2, dt1.Rows.Count);
+            Assert.Equal("Alice", dt1.Rows[0]["Name"]);
+            Assert.Equal(30, dt1.Rows[0]["Age"]);
+            Assert.Equal("Bob", dt1.Rows[1]["Name"]);
+            Assert.Equal(40, dt1.Rows[1]["Age"]);
+
+            var dt2 = deserialized.Tables["Table2"];
+            Assert.NotNull(dt2);
+            Assert.Equal(2, dt2.Rows.Count);
+            Assert.Equal("Pen", dt2.Rows[0]["Product"]);
+            Assert.Equal(1.5m, dt2.Rows[0]["Price"]);
+            Assert.Equal("Notebook", dt2.Rows[1]["Product"]);
+            Assert.Equal(3.2m, dt2.Rows[1]["Price"]);
+        }
+
+        /// <summary>
+        /// 測試 MessagePack 是否能正確序列化與反序列化 DataTable。
+        /// </summary>
+        [Fact(DisplayName = "DataTable 序列化")]
+        public void DataTable_Serialize()
+        {
+            // 建立範例 DataTable 並加入測試資料
+            var table = new DataTable("TestTable");
+            table.Columns.Add("Column1", typeof(string));
+            table.Columns.Add("Column2", typeof(int));
+            table.Rows.Add("Test1", 100);
+            table.Rows.Add("Test2", 200);
+
+            // 使用 MessagePackHelper 進行序列化
+            byte[] serialized = MessagePackHelper.Serialize(table);
+            // 反序列化回 DataTable
+            var deserialized = MessagePackHelper.Deserialize<DataTable>(serialized);
+
+            // 驗證資料是否正確
+            Assert.Equal(2, deserialized.Rows.Count);
+            Assert.Equal("Test1", deserialized.Rows[0]["Column1"]);
+            Assert.Equal(100, deserialized.Rows[0]["Column2"]);
+            Assert.Equal("Test2", deserialized.Rows[1]["Column1"]);
+            Assert.Equal(200, deserialized.Rows[1]["Column2"]);
+        }
+
+        /// <summary>
+        /// 測試 DbNull.Value 是否能正確轉換為 null，並確認轉換後資料能夠正確寫回資料庫。
+        /// </summary>
+        [Fact(DisplayName = "DataTable 序列化包含 DBNull 值")]
+        public void DataTable_Serialize_DbNull()
+        {
+            // Arrange：建立含 DBNull 的 DataTable
+            var dt = new DataTable("TestTable");
+            dt.Columns.Add("Id", typeof(int));
+            dt.Columns.Add("Name", typeof(string));
+
+            var row = dt.NewRow();
+            row["Id"] = 1;
+            row["Name"] = DBNull.Value; // 模擬空值
+            dt.Rows.Add(row);
+
+            // Act：轉為序列化格式，再轉回 DataTable
+            var serializable = TSerializableDataTable.FromDataTable(dt);
+            var restored = TSerializableDataTable.ToDataTable(serializable);
+
+            // Assert：確認還原後的值為 DBNull.Value
+            Assert.Equal(1, restored.Rows[0]["Id"]);
+            Assert.True(restored.Rows[0].IsNull("Name")); // 正確為 DBNull.Value
+        }
+
+        /// <summary>
+        /// 測試 DataTable 在序列化後能否保留 RowState 狀態。
+        /// </summary>
+        [Fact(DisplayName = "DataTable 序列化保留 RowState 狀態")]
+        public void DataTable_Serialize_RowState()
+        {
+            var table = new DataTable("SampleTable");
+            table.Columns.Add("Id", typeof(int));
+            table.Columns.Add("Name", typeof(string));
+
+            // 新增第一筆
+            var row1 = table.NewRow();
+            row1["Id"] = 1;
+            row1["Name"] = "資料1";
+            table.Rows.Add(row1);
+
+            // 新增第二筆
+            var row2 = table.NewRow();
+            row2["Id"] = 2;
+            row2["Name"] = "資料2";
+            table.Rows.Add(row2);
+
+            // 先 AcceptChanges，兩筆變成 Unchanged
+            table.AcceptChanges();
+
+            // 修改第一筆 (RowState -> Modified)
+            table.Rows[0]["Name"] = "修改後資料1";
+
+            // 刪除第二筆 (RowState -> Deleted)
+            table.Rows[1].Delete();
+
+            // 新增第三筆 (RowState -> Added)
+            var row3 = table.NewRow();
+            row3["Id"] = 3;
+            row3["Name"] = "新增資料3";
+            table.Rows.Add(row3);
+
+            // Serialize & Deserialize
+            var bytes = MessagePackHelper.Serialize(table);
+            var restored = MessagePackHelper.Deserialize<DataTable>(bytes);
+
+            if (!DataTableComparer.IsEqual(table, restored))
+            {
+                Assert.Fail("序列化還原後的 DataTable 與原始 DataTable 不相等");
+            }
+        }
+
+        /// <summary>
+        /// 測試 TListItem 類別的序列化與反序列化。
+        /// </summary>
+        [Fact(DisplayName = "ListItem 序列化")]
+        public void ListItem_Serialize()
+        {
+            // 建立原始物件
+            var original = new TListItem("A001", "選項一");
+
+            // 序列化為位元組陣列
+            var bytes = MessagePackHelper.Serialize(original);
+
+            // 反序列化為物件
+            var restored = MessagePackHelper.Deserialize<TListItem>(bytes);
+
+            // 驗證還原後的值與原值一致
+            Assert.NotNull(restored);
+            Assert.Equal(original.Value, restored.Value);
+            Assert.Equal(original.Text, restored.Text);
+        }
+
+    }
+}
+
