@@ -445,6 +445,34 @@ namespace Bee.Define.UnitTests
             Assert.Equal("Default", restored.Parameters.GetValue<string>("UnknownKey", "Default"));
         }
 
+        /// <summary>
+        /// 測試 CreateSession 方法傳入引數及傳出結果的序列化。
+        /// </summary>
+        [Fact(DisplayName = "TCreateSessionArgs 序列化測試")]
+        public void CreateSession_Serialize()
+        {
+            // Arrange: 建立 TCreateSessionArgs 實例並設定屬性
+            var args = new TCreateSessionArgs
+            {
+                UserID = "TestUser",
+                ExpiresIn = 7200,
+                OneTime = true
+            };
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            TestFunc.TestMessagePackSerialization(args);
+
+            // Arrange: 建立 TCreateSessionResult 實例並設定屬性
+            var result = new TCreateSessionResult
+            {
+                AccessToken = Guid.NewGuid(),
+                Expires = new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc)
+            };
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            TestFunc.TestMessagePackSerialization(result);
+        }
+
     }
 }
 
