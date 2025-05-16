@@ -412,6 +412,39 @@ namespace Bee.Define.UnitTests
             Assert.Equal(42, restored.Parameters.GetValue<int>("Elapsed"));
         }
 
+        /// <summary>
+        /// 測試 TExecFuncArgs 可正確序列化與還原資料。
+        /// </summary>
+        [Fact(DisplayName = "TExecFuncArgs 序列化")]
+        public void TExecFuncArgs_Serialize()
+        {
+            // 建立 TExecFuncArgs 並指定屬性與參數
+            var args = new TExecFuncArgs
+            {
+                FuncID = "CustomFunction123"
+            };
+            args.Parameters.Add("Key1", "Value1");
+            args.Parameters.Add("Key2", 42);
+
+            // 序列化
+            var bytes = MessagePackHelper.Serialize(args);
+
+            // 反序列化
+            var restored = MessagePackHelper.Deserialize<TExecFuncArgs>(bytes);
+
+            // 驗證基本屬性
+            Assert.NotNull(restored);
+            Assert.Equal("CustomFunction123", restored.FuncID);
+
+            // 驗證參數集合
+            Assert.NotNull(restored.Parameters);
+            Assert.Equal("Value1", restored.Parameters.GetValue<string>("Key1"));
+            Assert.Equal(42, restored.Parameters.GetValue<int>("Key2"));
+
+            // 驗證不存在參數的預設值
+            Assert.Equal("Default", restored.Parameters.GetValue<string>("UnknownKey", "Default"));
+        }
+
     }
 }
 
