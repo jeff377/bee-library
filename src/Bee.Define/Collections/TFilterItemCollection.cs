@@ -1,11 +1,12 @@
 ﻿using System;
-using Bee.Base;
+using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
     /// 過濾條件集合。
     /// </summary>
+    [MessagePackObject]
     [Serializable]
     public class TFilterItemCollection : TCollectionBase<TFilterItem>
     {

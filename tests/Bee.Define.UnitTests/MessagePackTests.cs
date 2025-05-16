@@ -198,28 +198,37 @@ namespace Bee.Define.UnitTests
         }
 
         /// <summary>
-        /// 測試 TFilterItem 類別的序列化與反序列化。
+        /// 測試 TFilterItemCollection 類別的序列化與反序列化。
         /// </summary>
-        [Fact(DisplayName = "TFilterItem 序列化")]
-        public void TFilterItem_Serialize()
+        [Fact(DisplayName = "TFilterItemCollection 序列化")]
+        public void TFilterItemCollection_Serialize()
         {
-            // 建立原始物件
-            var original = new TFilterItem("Age", EComparisonOperator.GreaterOrEqual, "18")
-            {
-                Combine = ECombineOperator.Or
-            };
+            // 建立集合並加入條件
+            var original = new TFilterItemCollection();
+            original.Add("Age", EComparisonOperator.GreaterOrEqual, "18");
+            original.Add("Gender", EComparisonOperator.Equal, "Male");
 
-            // 序列化
+            // 設定結合運算子，驗證欄位也能序列化
+            original[0].Combine = ECombineOperator.And;
+            original[1].Combine = ECombineOperator.Or;
+
+            // 序列化集合
             byte[] bytes = MessagePackSerializer.Serialize(original);
 
-            // 反序列化
-            var restored = MessagePackSerializer.Deserialize<TFilterItem>(bytes);
+            // 反序列化集合
+            var restored = MessagePackSerializer.Deserialize<TFilterItemCollection>(bytes);
 
-            // 驗證內容
-            Assert.Equal(original.Combine, restored.Combine);
-            Assert.Equal(original.FieldName, restored.FieldName);
-            Assert.Equal(original.Comparison, restored.Comparison);
-            Assert.Equal(original.Value, restored.Value);
+            // 驗證集合數量
+            Assert.Equal(original.Count, restored.Count);
+
+            // 驗證每筆內容
+            for (int i = 0; i < original.Count; i++)
+            {
+                Assert.Equal(original[i].FieldName, restored[i].FieldName);
+                Assert.Equal(original[i].Comparison, restored[i].Comparison);
+                Assert.Equal(original[i].Value, restored[i].Value);
+                Assert.Equal(original[i].Combine, restored[i].Combine);
+            }
         }
     }
 }

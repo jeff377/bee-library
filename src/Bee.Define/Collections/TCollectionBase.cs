@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace Bee.Define
@@ -20,7 +21,7 @@ namespace Bee.Define
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TCollectionBase()
+        public TCollectionBase() : base()
         {
             Owner = null;
         }
@@ -29,7 +30,7 @@ namespace Bee.Define
         /// 建構函式。
         /// </summary>
         /// <param name="owner">擁有者。</param>
-        public TCollectionBase(object owner)
+        public TCollectionBase(object owner) : base()
         {
             Owner = owner;
         }
@@ -41,8 +42,7 @@ namespace Bee.Define
         /// <summary>
         ///  擁有者。
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public object Owner { get; private set; }
 
@@ -90,10 +90,9 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public ESerializeState SerializeState { get; private set; }
+        public ESerializeState SerializeState { get; private set; } = ESerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -116,8 +115,7 @@ namespace Bee.Define
         /// <summary>
         /// 儲存額外資訊。
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public object Tag { get; set; } = null;
 
