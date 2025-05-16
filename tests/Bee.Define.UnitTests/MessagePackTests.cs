@@ -167,24 +167,34 @@ namespace Bee.Define.UnitTests
         }
 
         /// <summary>
-        /// 測試 TListItem 類別的序列化與反序列化。
+        /// 測試 TListItemCollection 類別的序列化與反序列化。
         /// </summary>
-        [Fact(DisplayName = "ListItem 序列化")]
-        public void ListItem_Serialize()
+        [Fact(DisplayName = "TListItemCollection 序列化")]
+        public void TListItemCollection_Serialize()
         {
             // 建立原始物件
-            var original = new TListItem("A001", "選項一");
+            var original = new TListItemCollection()
+            {
+                new TListItem("A001", "選項一"),
+                new TListItem("A002", "選項二"),
+                new TListItem("A003", "選項三")
+            };
 
             // 序列化為位元組陣列
             var bytes = MessagePackHelper.Serialize(original);
 
             // 反序列化為物件
-            var restored = MessagePackHelper.Deserialize<TListItem>(bytes);
+            var restored = MessagePackHelper.Deserialize<TListItemCollection>(bytes);
 
             // 驗證還原後的值與原值一致
             Assert.NotNull(restored);
-            Assert.Equal(original.Value, restored.Value);
-            Assert.Equal(original.Text, restored.Text);
+            Assert.Equal(original.Count, restored.Count);
+
+            for (int i = 0; i < original.Count; i++)
+            {
+                Assert.Equal(original[i].Value, restored[i].Value);
+                Assert.Equal(original[i].Text, restored[i].Text);
+            }
         }
 
     }

@@ -1,8 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Xml.Serialization;
 using Bee.Base;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace Bee.Define
@@ -12,10 +15,9 @@ namespace Bee.Define
     /// </summary>
     /// <typeparam name="T">集合成員型別。</typeparam>
     [Serializable]
-    public class TKeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty
+    public class TKeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty, IMessagePackSerializationCallbackReceiver
         where T : class, IKeyCollectionItem
     {
-        private object _Owner = null;
         private ESerializeState _SerializeState = ESerializeState.None;
 
         #region 建構函式
@@ -33,7 +35,7 @@ namespace Bee.Define
         /// <param name="owner">擁有者。</param>
         public TKeyCollectionBase(object owner) : this()
         {
-            _Owner = owner;
+            Owner = owner;
         }
 
         #endregion
@@ -43,13 +45,9 @@ namespace Bee.Define
         /// <summary>
         ///  擁有者。
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Owner
-        {
-            get { return _Owner; }
-        }
+        public object Owner { get; } = null;
 
         /// <summary>
         /// 變更成員鍵值。 
@@ -96,6 +94,7 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public ESerializeState SerializeState
         {
@@ -123,10 +122,48 @@ namespace Bee.Define
         /// <summary>
         /// 儲存額外資訊。
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Tag { get; set; }
+        public object Tag { get; set; } = null;
+
+        #endregion
+
+        #region IMessagePackSerializationCallbackReceiver 介面
+
+        private List<T> _itemsBuffer;
+
+        /// <summary>
+        /// MessagePack 透過這個欄位序列化資料。
+        /// </summary>
+        [Key(0)]
+        public List<T> ItemsForSerialization
+        {
+            get => Items.ToList();      // 將內部項目轉為 List 傳給 MessagePack
+            set => _itemsBuffer = value;
+        }
+
+        /// <summary>
+        /// MessagePack 透過這個欄位反序列化資料。
+        /// </summary>
+        void IMessagePackSerializationCallbackReceiver.OnBeforeSerialize()
+        {
+            // 不需處理
+        }
+
+        /// <summary>
+        /// MessagePack 透過這個欄位反序列化資料。
+        /// </summary>
+        void IMessagePackSerializationCallbackReceiver.OnAfterDeserialize()
+        {
+            if (_itemsBuffer != null)
+            {
+                foreach (var item in _itemsBuffer)
+                {
+                    Add(item);
+                }
+                _itemsBuffer = null;
+            }
+        }
 
         #endregion
 
@@ -159,5 +196,6 @@ namespace Bee.Define
             (this[index] as IKeyCollectionItem).SetCollection(null);
             base.RemoveItem(index);
         }
+
     }
 }
