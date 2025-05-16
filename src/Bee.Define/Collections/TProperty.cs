@@ -2,12 +2,14 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
+using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
     /// 自訂屬性。
     /// </summary>
+    [MessagePackObject]
     [Serializable]
     [XmlType("Property")]
     [Description("自訂屬性。")]
@@ -38,6 +40,7 @@ namespace Bee.Define
         /// 屬性名稱。
         /// </summary>
         [XmlAttribute]
+        [Key(100)]
         [Description("屬性名稱。")]
         public string Name
         {
@@ -49,6 +52,7 @@ namespace Bee.Define
         /// 屬性值。
         /// </summary>
         [XmlAttribute]
+        [Key(101)]
         [Description("屬性值。")]
         public string Value { get; set; } = string.Empty;
 

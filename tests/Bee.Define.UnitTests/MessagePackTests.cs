@@ -310,6 +310,37 @@ namespace Bee.Define.UnitTests
             Assert.Equal("Bob", restoredTable.Rows[1]["Name"]);
         }
 
+        /// <summary>
+        /// 測試 TPropertyCollection 可正確序列化與還原屬性集合資料。
+        /// </summary>
+        [Fact(DisplayName = "TPropertyCollection 序列化")]
+        public void TPropertyCollection_Serialize()
+        {
+            // 建立屬性集合
+            var properties = new TPropertyCollection();
+            properties.Add("AppName", "BeeERP");
+            properties.Add("Enabled", "true");
+            properties.Add("RetryCount", "3");
+
+            // 序列化
+            var bytes = MessagePackHelper.Serialize(properties);
+
+            // 反序列化
+            var restored = MessagePackHelper.Deserialize<TPropertyCollection>(bytes);
+
+            // 驗證內容是否正確還原
+            Assert.NotNull(restored);
+            Assert.Equal(3, restored.Count);
+            Assert.Equal("BeeERP", restored.GetValue("AppName", "DefaultApp"));
+            Assert.True(restored.GetValue("Enabled", false));
+            Assert.Equal(3, restored.GetValue("RetryCount", 0));
+
+            // 測試預設值（不存在的欄位）
+            Assert.Equal("Default", restored.GetValue("NotExist", "Default"));
+            Assert.False(restored.GetValue("NotExistBool", false));
+            Assert.Equal(999, restored.GetValue("NotExistInt", 999));
+        }
+
     }
 }
 
