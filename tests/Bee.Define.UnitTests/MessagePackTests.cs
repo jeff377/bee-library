@@ -429,6 +429,32 @@ namespace Bee.Define.UnitTests
             TestFunc.TestMessagePackSerialization(result);
         }
 
+        /// <summary>
+        /// 測試 GetDefine 方法傳遞參數的序列化。
+        /// </summary>
+        [Fact(DisplayName = "GetDefine 方法傳遞參數的序列化")]
+        public void GetDefine_Serialize()
+        {
+            // Arrange: 建立 TGetDefineArgs 實例並設定屬性
+            var args = new TGetDefineArgs
+            {
+                DefineType = EDefineType.FormDefine,
+                Keys = new[] { "Key1", "Key2", "Key3" }
+            };
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            TestFunc.TestMessagePackSerialization(args);
+
+            // Arrange: 建立 TGetDefineResult 實例並設定屬性
+            var result = new TGetDefineResult
+            {
+                Xml = "<Define><Item Key='Key1'>Value1</Item></Define>"
+            };
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            TestFunc.TestMessagePackSerialization(result);
+        }
+
     }
 }
 
