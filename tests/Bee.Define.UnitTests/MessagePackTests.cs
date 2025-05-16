@@ -413,10 +413,10 @@ namespace Bee.Define.UnitTests
         }
 
         /// <summary>
-        /// 測試 TExecFuncArgs 可正確序列化與還原資料。
+        /// 測試 ExecFunc 方法傳遞參數的序列化。
         /// </summary>
-        [Fact(DisplayName = "TExecFuncArgs 序列化")]
-        public void TExecFuncArgs_Serialize()
+        [Fact(DisplayName = "ExecFunc 方法傳遞參數的序列化")]
+        public void ExecFunc_Serialize()
         {
             // 建立 TExecFuncArgs 並指定屬性與參數
             var args = new TExecFuncArgs
@@ -426,29 +426,23 @@ namespace Bee.Define.UnitTests
             args.Parameters.Add("Key1", "Value1");
             args.Parameters.Add("Key2", 42);
 
-            // 序列化
-            var bytes = MessagePackHelper.Serialize(args);
+            // 測試 MessagePack 序列化
+            TestFunc.TestMessagePackSerialization(args);
 
-            // 反序列化
-            var restored = MessagePackHelper.Deserialize<TExecFuncArgs>(bytes);
+            // 建立 TExecFuncResult 並指定屬性與參數
+            var result = new TExecFuncResult();
+            result.Parameters.Add("ResultKey", "ResultValue");
+            result.Parameters.Add("ResultCount", 100);
+            result.Parameters.Add("ResultDate", new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc));
 
-            // 驗證基本屬性
-            Assert.NotNull(restored);
-            Assert.Equal("CustomFunction123", restored.FuncID);
-
-            // 驗證參數集合
-            Assert.NotNull(restored.Parameters);
-            Assert.Equal("Value1", restored.Parameters.GetValue<string>("Key1"));
-            Assert.Equal(42, restored.Parameters.GetValue<int>("Key2"));
-
-            // 驗證不存在參數的預設值
-            Assert.Equal("Default", restored.Parameters.GetValue<string>("UnknownKey", "Default"));
+            // 測試 MessagePack 序列化
+            TestFunc.TestMessagePackSerialization(result);
         }
 
         /// <summary>
-        /// 測試 CreateSession 方法傳入引數及傳出結果的序列化。
+        /// 測試 CreateSession 方法傳遞參數的序列化。
         /// </summary>
-        [Fact(DisplayName = "TCreateSessionArgs 序列化測試")]
+        [Fact(DisplayName = "CreateSession 方法傳遞參數的序列化")]
         public void CreateSession_Serialize()
         {
             // Arrange: 建立 TCreateSessionArgs 實例並設定屬性
@@ -459,7 +453,7 @@ namespace Bee.Define.UnitTests
                 OneTime = true
             };
 
-            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(args);
 
             // Arrange: 建立 TCreateSessionResult 實例並設定屬性
@@ -469,7 +463,7 @@ namespace Bee.Define.UnitTests
                 Expires = new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc)
             };
 
-            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(result);
         }
 
