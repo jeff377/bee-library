@@ -230,6 +230,52 @@ namespace Bee.Define.UnitTests
                 Assert.Equal(original[i].Combine, restored[i].Combine);
             }
         }
+
+        /// <summary>
+        /// 測試 TParameterCollection 支援多種型別的序列化與反序列化。
+        /// </summary>
+        [Fact(DisplayName = "TParameterCollection 多型別序列化")]
+        public void TParameterCollection_Serialize_MultipleTypes()
+        {
+            // 建立原始物件，包含不同型別的參數
+            var original = new TParameterCollection();
+            original.Add("IntValue", 123);
+            original.Add("StringValue", "測試字串");
+            original.Add("BoolValue", true);
+            original.Add("DateTimeValue", new DateTime(2025, 5, 16, 10, 30, 0));
+            original.Add("DecimalValue", 123.45m);
+            original.Add("DoubleValue", 9876.54321);
+            original.Add("NullValue", null);
+
+            // 序列化為位元組陣列
+            var bytes = MessagePackHelper.Serialize(original);
+
+            // 反序列化為物件
+            var restored = MessagePackHelper.Deserialize<TParameterCollection>(bytes);
+
+            // 驗證還原後的值與原值一致
+            Assert.NotNull(restored);
+            Assert.Equal(original.Count, restored.Count);
+
+            foreach (var param in original)
+            {
+                Assert.True(restored.Contains(param.Name));
+
+                var originalValue = param.Value;
+                var restoredValue = restored[param.Name].Value;
+
+                if (originalValue == null)
+                {
+                    Assert.Null(restoredValue);
+                }
+                else
+                {
+                    Assert.Equal(originalValue.GetType(), restoredValue.GetType());
+                    Assert.Equal(originalValue, restoredValue);
+                }
+            }
+        }
+
     }
 }
 

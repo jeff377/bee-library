@@ -2,19 +2,20 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
+using MessagePack;
+using MessagePack.Formatters;
 
 namespace Bee.Define
 {
     /// <summary>
     /// 參數項目。
     /// </summary>
+    [MessagePackObject]
     [Serializable]
     [XmlType("Parameter")]
     [DefaultProperty("Value")]
     public class TParameter : TKeyCollectionItem
     {
-        private object _Value = null;
-
         #region 建構函式
 
         /// <summary>
@@ -31,7 +32,7 @@ namespace Bee.Define
         public TParameter(string name, object value)
         {
             this.Name = name;
-            _Value = value;
+            Value = value;
         }
 
         #endregion
@@ -39,6 +40,7 @@ namespace Bee.Define
         /// <summary>
         /// 參數名稱。
         /// </summary>
+        [Key(100)]
         public string Name
         {
             get { return base.Key; }
@@ -48,11 +50,9 @@ namespace Bee.Define
         /// <summary>
         /// 參數值。
         /// </summary>        
-        public object Value
-        {
-            get { return _Value; }
-            set { _Value = value; }
-        }
+        [Key(101)]
+        [MessagePackFormatter(typeof(TypelessFormatter))]
+        public object Value { get; set; } = null;
 
         /// <summary>
         /// 物件的描述文字。

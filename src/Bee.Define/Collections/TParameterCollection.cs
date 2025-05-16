@@ -1,11 +1,13 @@
 ﻿using System;
 using Bee.Base;
+using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
     ///  參數項目集合，支援序列化。
     /// </summary>
+    [MessagePackObject]
     [Serializable]
     public class TParameterCollection : TKeyCollectionBase<TParameter>
     {
@@ -16,17 +18,13 @@ namespace Bee.Define
         /// <param name="value">參數值。</param>
         public void Add(string name, object value)
         {
-            TParameter oItem;
-
             if (this.Contains(name))
             {
-                oItem = this[name];
-                oItem.Value = value;
+                this[name].Value = value;
             }
             else
             {
-                oItem = new TParameter(name, value);
-                this.Add(oItem);
+                this.Add(new TParameter(name, value));
             }
         }
 
