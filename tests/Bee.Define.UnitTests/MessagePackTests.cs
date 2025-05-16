@@ -1,6 +1,5 @@
 ﻿using System.Data;
 using Bee.Base;
-using MessagePack;
 
 namespace Bee.Define.UnitTests
 {
@@ -235,7 +234,7 @@ namespace Bee.Define.UnitTests
         /// 測試 TParameterCollection 支援多種型別的序列化與反序列化。
         /// </summary>
         [Fact(DisplayName = "TParameterCollection 多型別序列化")]
-        public void TParameterCollection_Serialize_MultipleTypes()
+        public void TParameterCollection_Serialize()
         {
             // 建立原始物件，包含不同型別的參數
             var original = new TParameterCollection();
@@ -274,6 +273,41 @@ namespace Bee.Define.UnitTests
                     Assert.Equal(originalValue, restoredValue);
                 }
             }
+        }
+
+        /// <summary>
+        /// 測試 TParameterCollection 加入 DataTable 可正常序列化。
+        /// </summary>
+        [Fact(DisplayName = "TParameterCollection 加入 DataTable 可正常序列化")]
+        public void TParameterCollection_Serialize_DataTable()
+        {
+            // 建立測試用的 DataTable
+            var table = new DataTable("TestTable");
+            table.Columns.Add("Id", typeof(int));
+            table.Columns.Add("Name", typeof(string));
+            table.Rows.Add(1, "Alice");
+            table.Rows.Add(2, "Bob");
+
+            // 建立參數集合，加入 DataTable 參數
+            var parameters = new TParameterCollection();
+            parameters.Add("Data", table);
+
+            // 序列化
+            var bytes = MessagePackHelper.Serialize(parameters);
+
+            // 反序列化
+            var restored = MessagePackHelper.Deserialize<TParameterCollection>(bytes);
+
+            // 驗證
+            Assert.NotNull(restored);
+            Assert.True(restored.Contains("Data"));
+            Assert.IsType<DataTable>(restored["Data"].Value);
+
+            var restoredTable = (DataTable)restored["Data"].Value;
+            Assert.Equal("TestTable", restoredTable.TableName);
+            Assert.Equal(2, restoredTable.Rows.Count);
+            Assert.Equal("Alice", restoredTable.Rows[0]["Name"]);
+            Assert.Equal("Bob", restoredTable.Rows[1]["Name"]);
         }
 
     }
