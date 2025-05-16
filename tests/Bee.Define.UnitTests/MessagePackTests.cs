@@ -376,6 +376,42 @@ namespace Bee.Define.UnitTests
             Assert.Equal("Unknown", restored.Parameters.GetValue<string>("UnknownKey", "Unknown"));
         }
 
+        /// <summary>
+        /// 測試 TPingResult 可正確序列化與還原資料。
+        /// </summary>
+        [Fact(DisplayName = "TPingResult 序列化")]
+        public void TPingResult_Serialize()
+        {
+            // 建立 TPingResult 並指定屬性與參數
+            var result = new TPingResult
+            {
+                Status = "pong",
+                ServerTime = new DateTime(2025, 5, 16, 8, 30, 0, DateTimeKind.Utc),
+                Version = "1.2.3",
+                TraceId = Guid.NewGuid().ToString()
+            };
+            result.Parameters.Add("Region", "TW");
+            result.Parameters.Add("Elapsed", 42);
+
+            // 序列化
+            var bytes = MessagePackHelper.Serialize(result);
+
+            // 反序列化
+            var restored = MessagePackHelper.Deserialize<TPingResult>(bytes);
+
+            // 驗證基本屬性
+            Assert.NotNull(restored);
+            Assert.Equal("pong", restored.Status);
+            Assert.Equal(result.ServerTime, restored.ServerTime);
+            Assert.Equal("1.2.3", restored.Version);
+            Assert.Equal(result.TraceId, restored.TraceId);
+
+            // 驗證參數集合
+            Assert.NotNull(restored.Parameters);
+            Assert.Equal("TW", restored.Parameters.GetValue<string>("Region"));
+            Assert.Equal(42, restored.Parameters.GetValue<int>("Elapsed"));
+        }
+
     }
 }
 

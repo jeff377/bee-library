@@ -1,4 +1,5 @@
 ﻿using System;
+using MessagePack;
 
 namespace Bee.Define
 {
@@ -13,6 +14,7 @@ namespace Bee.Define
         /// <summary>
         /// 傳出參數集合。
         /// </summary>
+        [Key(0)]
         public TParameterCollection Parameters
         {
             get
