@@ -133,8 +133,9 @@ namespace Bee.Define
         private List<T> _itemsBuffer;
 
         /// <summary>
-        /// MessagePack 透過這個欄位序列化資料。
+        /// MessagePack 透過這個欄位代理序列化 Items 的內容。
         /// </summary>
+        /// <remarks>父類別 KeyedCollection 不支援 MessagePack 序列化，需透過 ItemsForSerialization 屬性序列化資料。</remarks>
         [Key(0)]
         public List<T> ItemsForSerialization
         {
@@ -147,7 +148,7 @@ namespace Bee.Define
         /// </summary>
         void IMessagePackSerializationCallbackReceiver.OnBeforeSerialize()
         {
-            // 不需處理
+            _itemsBuffer = null; // 確保序列化前不會有資料
         }
 
         /// <summary>
