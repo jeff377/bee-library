@@ -1,22 +1,18 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
+using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
     /// 過濾條件。
     /// </summary>
+    [MessagePackObject]
     [Serializable]
     [XmlType("FilterItem")]
     public class TFilterItem : TCollectionItem
     {
-        private ECombineOperator _Combine = ECombineOperator.And;
-        private string _FieldName = string.Empty;
-        private EComparisonOperator _Comparison = EComparisonOperator.Equal;
-        private string _Value = string.Empty;
-
         #region 建構函式
 
         /// <summary>
@@ -33,9 +29,9 @@ namespace Bee.Define
         /// <param name="value">過濾值。</param>
         public TFilterItem(string fieldName, EComparisonOperator comparison, string value)
         {
-            _FieldName = fieldName;
-            _Comparison = comparison;
-            _Value = value;
+            FieldName = fieldName;
+            Comparison = comparison;
+            Value = value;
         }
 
         #endregion
@@ -44,45 +40,33 @@ namespace Bee.Define
         /// 結合運算子。
         /// </summary>
         [XmlAttribute]
+        [Key(100)]
         [Description("結合運算子。")]
         [DefaultValue(ECombineOperator.And)]
-        public ECombineOperator Combine
-        {
-            get { return _Combine; }
-            set { _Combine = value; }
-        }
+        public ECombineOperator Combine { get; set; } = ECombineOperator.And;
 
         /// <summary>
         /// 欄位名稱。
         /// </summary>
         [XmlAttribute]
+        [Key(101)]
         [Description("欄位名稱。")]
-        public string FieldName
-        {
-            get { return _FieldName; }
-            set { _FieldName = value; }
-        }
+        public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
         /// 比較運算子。
         /// </summary>
         [XmlAttribute]
+        [Key(102)]
         [Description("比較運算子。")]
-        public EComparisonOperator Comparison
-        {
-            get { return _Comparison; }
-            set { _Comparison = value; }
-        }
+        public EComparisonOperator Comparison {get; set; } = EComparisonOperator.Equal;
 
         /// <summary>
         /// 過濾值。
         /// </summary>
         [XmlAttribute]
+        [Key(103)]
         [Description("過濾值。")]
-        public string Value
-        {
-            get { return _Value; }
-            set { _Value = value; }
-        }
+        public string Value { get; set; } = string.Empty;
     }
 }

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
+using MessagePack;
 using Newtonsoft.Json;
 
 namespace Bee.Define
@@ -13,8 +14,6 @@ namespace Bee.Define
     public abstract class TCollectionItem : ICollectionItem, ITagProperty, IObjectSerialize
     {
         private ICollectionBase _Collection = null;
-        [NonSerialized]
-        private object _Tag = null;
         private ESerializeState _SerializeState = ESerializeState.None;
 
         #region ICollectionItem 介面
@@ -44,14 +43,9 @@ namespace Bee.Define
         /// <summary>
         /// 儲存額外資訊。
         /// </summary>
-        [JsonIgnore]
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Tag
-        {
-            get { return _Tag; }
-            set { _Tag = value; }
-        }
+        public object Tag { get; set; } = null;
 
         #endregion
 
@@ -60,7 +54,7 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public ESerializeState SerializeState
         {
@@ -81,8 +75,7 @@ namespace Bee.Define
         /// <summary>
         /// 所屬集合。
         /// </summary>
-        [JsonIgnore]
-        [XmlIgnore]
+        [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         [TreeNodeIgnore]
         public ICollectionBase Collection

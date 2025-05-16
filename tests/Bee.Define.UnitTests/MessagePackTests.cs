@@ -197,6 +197,30 @@ namespace Bee.Define.UnitTests
             }
         }
 
+        /// <summary>
+        /// 測試 TFilterItem 類別的序列化與反序列化。
+        /// </summary>
+        [Fact(DisplayName = "TFilterItem 序列化")]
+        public void TFilterItem_Serialize()
+        {
+            // 建立原始物件
+            var original = new TFilterItem("Age", EComparisonOperator.GreaterOrEqual, "18")
+            {
+                Combine = ECombineOperator.Or
+            };
+
+            // 序列化
+            byte[] bytes = MessagePackSerializer.Serialize(original);
+
+            // 反序列化
+            var restored = MessagePackSerializer.Deserialize<TFilterItem>(bytes);
+
+            // 驗證內容
+            Assert.Equal(original.Combine, restored.Combine);
+            Assert.Equal(original.FieldName, restored.FieldName);
+            Assert.Equal(original.Comparison, restored.Comparison);
+            Assert.Equal(original.Value, restored.Value);
+        }
     }
 }
 
