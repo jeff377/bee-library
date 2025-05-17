@@ -49,28 +49,16 @@ namespace Bee.Define
         /// <exception cref="NotSupportedException"></exception>
         public static Type GetDefineType(EDefineType defineType)
         {
-            switch (defineType)
-            {
-                case EDefineType.SystemSettings:
-                    return typeof(TSystemSettings);
-                case EDefineType.DatabaseSettings:
-                    return typeof(TDatabaseSettings);
-                case EDefineType.DbSchemaSettings:
-                    return typeof(TDbSchemaSettings);
-                case EDefineType.ProgramSettings:
-                    return typeof(TProgramSettings);
-                case EDefineType.DbTable:
-                    return typeof(TDbTable);
-                case EDefineType.FormDefine:
-                    return typeof(TFormDefine);
-                case EDefineType.FormLayout:
-                    return typeof(TFormLayout);
-                default:
-                    throw new NotSupportedException($"不支援的定義型別: {defineType}");
-            }
+            // 取得型別名稱
+            string typeName = "Bee.Define.T" + defineType.ToString();
+            // 取得目前組件
+            var assembly = typeof(DefineFunc).Assembly;
+            // 嘗試取得型別
+            var type = assembly.GetType(typeName);
+            if (type == null)
+                throw new NotSupportedException($"Type not found: {typeName}");
+            return type;
         }
-
-
 
         /// <summary>
         /// 取得數值格式化字串。

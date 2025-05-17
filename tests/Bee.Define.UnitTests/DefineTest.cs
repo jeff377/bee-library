@@ -11,6 +11,19 @@ namespace Bee.Define.UnitTests
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
 
+        [Theory]
+        [InlineData(EDefineType.SystemSettings, typeof(TSystemSettings))]
+        [InlineData(EDefineType.DatabaseSettings, typeof(TDatabaseSettings))]
+        [InlineData(EDefineType.FormDefine, typeof(TFormDefine))]
+        public void GetDefineType_ValidType(EDefineType defineType, Type expectedType)
+        {
+            // Act
+            var result = DefineFunc.GetDefineType(defineType);
+
+            // Assert
+            Assert.Equal(expectedType, result);
+        }
+
         /// <summary>
         /// ª«¥ó§Ç¦C¤Æ¡C
         /// </summary>
