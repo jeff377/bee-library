@@ -20,7 +20,7 @@ namespace Bee.Define
         /// 定義資料。
         /// </summary>
         [Key(101)]
-        public object DefineObject { get; set; } = null;
+        public string Xml { get; set; } = string.Empty;
 
         /// <summary>
         /// 儲存定義資料的鍵值。

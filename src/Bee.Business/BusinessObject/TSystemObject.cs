@@ -116,12 +116,16 @@ namespace Bee.Business
         /// <param name="args">傳入引數。</param>
         public TSaveDefineResult SaveDefine(TSaveDefineArgs args)
         {
-            TSaveDefineResult oResult;
-            TCacheDefineAccess oAccess;
+            // 將 XML 轉換為物件
+            Type type = DefineFunc.GetDefineType(args.DefineType);
+            object defineObject = SerializeFunc.XmlToObject(args.Xml, type);
+            if (defineObject == null)
+                throw new TException($"Failed to deserialize XML to {type.Name} object.");
 
-            oAccess = new TCacheDefineAccess();
-            oAccess.SaveDefine(args.DefineType, args.DefineObject, args.Keys);
-            oResult = new TSaveDefineResult();
+            // 儲存定義資料
+            var access = new TCacheDefineAccess();
+            access.SaveDefine(args.DefineType, defineObject, args.Keys);
+            var oResult = new TSaveDefineResult();
             return oResult;
         }
     }

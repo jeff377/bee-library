@@ -96,7 +96,7 @@ namespace Bee.Connect
             var args = new TSaveDefineArgs()
             {
                 DefineType = defineType,
-                DefineObject = defineObject,
+                Xml = SerializeFunc.ObjectToXml(defineObject),
                 Keys = keys
             };
             Execute<TSaveDefineResult>(SystemActions.SaveDefine, args);

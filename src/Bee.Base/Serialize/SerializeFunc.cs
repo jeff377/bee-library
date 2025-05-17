@@ -82,19 +82,29 @@ namespace Bee.Base
         /// <param name="xml">XML 字串。</param>
         public static T XmlToObject<T>(string xml)
         {
+            return (T)XmlToObject(xml, typeof(T));
+        }
+
+        /// <summary>
+        /// 將 XML 字串反序列化為物件。
+        /// </summary>
+        /// <param name="xml">XML 字串。</param>
+        /// <param name="type">物件型別。</param>
+        public static object XmlToObject(string xml, Type type)
+        {
             if (StrFunc.IsEmpty(xml))
                 return default;
 
             object value;
             using (StringReader reader = new StringReader(xml))
             {
-                var serializer = new XmlSerializer(typeof(T));
+                var serializer = new XmlSerializer(type);
                 value = serializer.Deserialize(reader);
             }
 
             // 反序列化後執行作業
             DoAfterDeserialize(ESerializeFormat.Xml, value);
-            return (T)value;
+            return value;
         }
 
         /// <summary>

@@ -43,6 +43,36 @@ namespace Bee.Define
         }
 
         /// <summary>
+        /// 取得定義型別。
+        /// </summary>
+        /// <param name="defineType">定資資料類別。</param>
+        /// <exception cref="NotSupportedException"></exception>
+        public static Type GetDefineType(EDefineType defineType)
+        {
+            switch (defineType)
+            {
+                case EDefineType.SystemSettings:
+                    return typeof(TSystemSettings);
+                case EDefineType.DatabaseSettings:
+                    return typeof(TDatabaseSettings);
+                case EDefineType.DbSchemaSettings:
+                    return typeof(TDbSchemaSettings);
+                case EDefineType.ProgramSettings:
+                    return typeof(TProgramSettings);
+                case EDefineType.DbTable:
+                    return typeof(TDbTable);
+                case EDefineType.FormDefine:
+                    return typeof(TFormDefine);
+                case EDefineType.FormLayout:
+                    return typeof(TFormLayout);
+                default:
+                    throw new NotSupportedException($"不支援的定義型別: {defineType}");
+            }
+        }
+
+
+
+        /// <summary>
         /// 取得數值格式化字串。
         /// </summary>
         /// <param name="numberFormat">數值格式化。</param>
