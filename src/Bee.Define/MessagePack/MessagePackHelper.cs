@@ -50,6 +50,17 @@ namespace Bee.Define
         }
 
         /// <summary>
+        /// 序列化物件為 byte[]。
+        /// </summary>
+        /// <param name="value">待序列化的物件。</param>
+        /// <param name="type">物件的型別。</param>
+        /// <returns>序列化後的 byte[]。</returns>
+        public static byte[] Serialize(object value, Type type)
+        {
+            return MessagePackSerializer.Serialize(type, value, Options);
+        }
+
+        /// <summary>
         /// 反序列化 byte[] 為物件。
         /// </summary>
         /// <typeparam name="T">反序列化後的物件類型。</typeparam>

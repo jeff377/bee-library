@@ -11,7 +11,8 @@ namespace Bee.Api.Core
         /// 將物件序列化為位元組陣列。
         /// </summary>
         /// <param name="value">要序列化的物件。</param>
-        byte[] Serialize(object value);
+        /// <param name="type">物件的型別。</param>
+        byte[] Serialize(object value, Type type);
 
         /// <summary>
         /// 將位元組陣列反序列化為物件。
