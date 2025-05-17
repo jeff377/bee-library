@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using System;
+using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
 
@@ -45,7 +46,6 @@ namespace Bee.Define
         /// <returns>序列化後的 byte[]。</returns>
         public static byte[] Serialize<T>(T value)
         {
-            // 使用靜態的 MessagePackSerializerOptions 進行序列化
             return MessagePackSerializer.Serialize(value, Options);
         }
 
@@ -57,8 +57,18 @@ namespace Bee.Define
         /// <returns>反序列化後的物件。</returns>
         public static T Deserialize<T>(byte[] data)
         {
-            // 使用靜態的 MessagePackSerializerOptions 進行反序列化
             return MessagePackSerializer.Deserialize<T>(data, Options);
+        }
+
+        /// <summary>
+        /// 反序列化 byte[] 為物件。
+        /// </summary>
+        /// <param name="data">要反序列化的 byte[]。</param>
+        /// <param name="type">物件型別。</param>
+        /// <returns>反序列化後的物件。</returns>
+        public static object Deserialize(byte[] data, Type type)
+        {
+            return MessagePackSerializer.Deserialize(type, data, Options);  
         }
     }
 
