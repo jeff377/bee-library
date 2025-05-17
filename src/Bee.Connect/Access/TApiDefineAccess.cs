@@ -1,5 +1,4 @@
-﻿using System;
-using Bee.Base;
+﻿using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Connect
@@ -43,22 +42,20 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 取得定義物件的識別鍵值
+        /// 取得定義物件的快取鍵值。
         /// </summary>
         /// <param name="defineType">定義資料類型。</param>
         /// <param name="keys">存取定義資料的鍵值。</param>
-        private string GetKey(EDefineType defineType, string[] keys = null)
+        private string GetCacheKey(EDefineType defineType, string[] keys = null)
         {
-            string sKey;
-
-            sKey = $"{defineType}";
+            string cacheKey = $"{defineType}";
             if (keys != null && keys.Length > 0)
             {
-                sKey += "_";
+                cacheKey += "_";
                 foreach (string value in keys)
-                    sKey += $".{value}";
+                    cacheKey += $".{value}";
             }
-            return sKey;
+            return cacheKey;
         }
 
         /// <summary>
@@ -69,22 +66,20 @@ namespace Bee.Connect
         /// <param name="keys">取得定義資料的鍵值。</param>
         private T GetDefine<T>(EDefineType defineType, string[] keys = null)
         {
-            object oValue;
-            string sKey;
-
-            sKey = GetKey(defineType, keys);
-            if (this.List.ContainsKey(sKey))
+            object defineObject;
+            string cacheKey = GetCacheKey(defineType, keys);
+            if (this.List.ContainsKey(cacheKey))
             {
-                // 若定義資料已下載，則直接回傳
-                oValue = this.List[sKey];
+                // 若定義資料已存在，則直接回傳
+                defineObject = this.List[cacheKey];
             }
             else
             {
                 // 下載定義資料，並加入集合
-                oValue = this.Connector.GetDefine<T>(defineType, keys);
-                this.List.Add(sKey, oValue);
+                defineObject = this.Connector.GetDefine<T>(defineType, keys);
+                this.List.Add(cacheKey, defineObject);
             }
-            return (T)oValue;
+            return (T)defineObject;
         }
 
         /// <summary>

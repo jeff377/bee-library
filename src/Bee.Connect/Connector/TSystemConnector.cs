@@ -55,15 +55,14 @@ namespace Bee.Connect
         /// <param name="oneTime">一次性有效。</param>
         public Guid CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
-            TCreateSessionArgs oArgs;
-            TCreateSessionResult oResult;
-
-            oArgs = new TCreateSessionArgs();
-            oArgs.UserID = userID;
-            oArgs.ExpiresIn = expiresIn;
-            oArgs.OneTime = oneTime;
-            oResult = Execute<TCreateSessionResult>(SystemActions.CreateSession, oArgs);
-            return oResult.AccessToken;
+            var args = new TCreateSessionArgs()
+            {
+                UserID = userID,
+                ExpiresIn = expiresIn,
+                OneTime = oneTime
+            };
+            var result = Execute<TCreateSessionResult>(SystemActions.CreateSession, args);
+            return result.AccessToken;
         }
 
         /// <summary>
