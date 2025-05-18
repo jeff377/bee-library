@@ -12,6 +12,8 @@ namespace Bee.Api.Core.UnitTests
             BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            // .NET 8 預設停用 BinaryFormatter，需手動啟用
+            AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
 
         /// <summary>
@@ -30,7 +32,17 @@ namespace Bee.Api.Core.UnitTests
                 Id = Guid.NewGuid().ToString()
             };
             string json = request.ToJson();
-            Assert.NotNull(json);
+            Assert.NotEmpty(json);
+
+            // 測試編碼
+            request.Encode();
+            string encodedJson = request.ToJson();
+            Assert.NotEmpty(encodedJson);
+
+            // 測試解碼
+            request.Decode();
+            string decodedJson = request.ToJson();
+            Assert.NotEmpty(decodedJson);
         }
 
         /// <summary>
