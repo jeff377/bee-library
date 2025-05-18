@@ -9,6 +9,11 @@ namespace Bee.Api.Core
     public class TBinaryFormatterPayloadSerializer : IApiPayloadSerializer
     {
         /// <summary>
+        /// 序列化格式的識別字串。
+        /// </summary>
+        public string SerializationMethod => "BinaryFormatter";
+
+        /// <summary>
         /// 將物件序列化為位元組陣列。
         /// </summary>
         /// <param name="value">要序列化的物件。</param>
@@ -27,6 +32,8 @@ namespace Bee.Api.Core
         {
             return SerializeFunc.BinaryToObject(bytes);
         }
+
+        
     }
 
 

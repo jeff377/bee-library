@@ -9,6 +9,11 @@ namespace Bee.Api.Core
     public class TMessagePackPayloadSerializer : IApiPayloadSerializer
     {
         /// <summary>
+        /// 序列化格式的識別字串。
+        /// </summary>
+        public string SerializationMethod => "MessagePack";
+
+        /// <summary>
         /// 將物件序列化為位元組陣列。
         /// </summary>
         /// <param name="value">要序列化的物件。</param>
