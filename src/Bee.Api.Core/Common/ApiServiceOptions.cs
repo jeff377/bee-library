@@ -58,5 +58,13 @@ namespace Bee.Api.Core
             get => _payloadEncryptor;
             set => _payloadEncryptor = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        /// <summary>
+        /// 取得當前的設定摘要，包含序列化器、壓縮器與加密器的使用狀態。
+        /// </summary>
+        public static string CurrentSettingsSummary =>
+            $"Serializer: {PayloadSerializer.SerializationMethod}, " +
+            $"Compressor: {PayloadCompressor.CompressionMethod}, " +
+            $"Encryptor: {PayloadEncryptor.EncryptionMethod}";
     }
 }
