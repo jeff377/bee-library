@@ -11,7 +11,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 序列化格式的識別字串。
         /// </summary>
-        public string SerializationMethod => "BinaryFormatter";
+        public string SerializationMethod => "binaryformatter";
 
         /// <summary>
         /// 將物件序列化為位元組陣列。

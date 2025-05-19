@@ -10,7 +10,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 壓縮演算法的識別字串。
         /// </summary>
-        public string CompressionMethod => "GZip";
+        public string CompressionMethod => "gzip";
 
         /// <summary>
         /// 將原始位元組資料進行壓縮處理。
