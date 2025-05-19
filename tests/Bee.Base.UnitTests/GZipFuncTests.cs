@@ -22,7 +22,7 @@ namespace Bee.Base.UnitTests
             Assert.NotEmpty(compressedData);
 
             // 驗證壓縮後的資料可以成功解壓縮
-            byte[] decompressedData = GZipFunc.Uncompress(compressedData);
+            byte[] decompressedData = GZipFunc.Decompress(compressedData);
             string decompressedText = Encoding.UTF8.GetString(decompressedData);
 
             // 驗證解壓縮後的資料與原始資料一致
@@ -43,7 +43,7 @@ namespace Bee.Base.UnitTests
             byte[] compressedData = GZipFunc.Compress(originalBytes);
 
             // 執行解壓縮
-            byte[] uncompressedData = GZipFunc.Uncompress(compressedData);
+            byte[] uncompressedData = GZipFunc.Decompress(compressedData);
 
             // 驗證解壓縮後的資料不為空
             Assert.NotNull(uncompressedData);

@@ -24,7 +24,7 @@ namespace Bee.Api.Core
             try
             {
                 byte[] bytes = ApiServiceOptions.PayloadSerializer.Serialize(payload, type);  // 序列化
-                byte[] compressedBytes = GZipFunc.Compress(bytes);  // 壓縮
+                byte[] compressedBytes = ApiServiceOptions.PayloadCompressor.Compress(bytes);  // 壓縮
                 return CryptoFunc.AesEncrypt(compressedBytes);  // 加密
             }
             catch (Exception ex)
@@ -55,7 +55,7 @@ namespace Bee.Api.Core
                 }
 
                 byte[] decryptedBytes = CryptoFunc.AesDecrypt(bytes);  // 解密
-                byte[] decompressedBytes = GZipFunc.Uncompress(decryptedBytes);  // 解壓縮
+                byte[] decompressedBytes = ApiServiceOptions.PayloadCompressor.Decompress(decryptedBytes);  // 解壓縮
                 return ApiServiceOptions.PayloadSerializer.Deserialize(decompressedBytes, type);  // 反序列化
             }
             catch (Exception ex)

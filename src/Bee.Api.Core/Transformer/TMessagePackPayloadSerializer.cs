@@ -1,7 +1,7 @@
 ﻿using System;
 using Bee.Define;
 
-namespace Bee.Api.Core.Transformer
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 使用 MessagePack 的 API Payload 序列化器。

@@ -11,6 +11,7 @@ namespace Bee.Api.Core
         private static IApiAuthorizationValidator _authorizationValidator = new TApiAuthorizationValidator(); // 預設實作
         private static IApiPayloadTransformer _payloadTransformer = new TApiPayloadTransformer(); // 預設實作
         private static IApiPayloadSerializer _payloadSerializer = new TMessagePackPayloadSerializer(); // 預設實作
+        private static IApiPayloadCompressor _payloadCompressor = new TGZipCompressor(); // 預設實作
 
         /// <summary>
         /// API 金鑰與授權驗證器。
@@ -37,6 +38,15 @@ namespace Bee.Api.Core
         {
             get => _payloadSerializer;
             set => _payloadSerializer = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// API 傳輸層 payload 專用壓縮器。
+        /// </summary>
+        public static IApiPayloadCompressor PayloadCompressor
+        {
+            get => _payloadCompressor;
+            set => _payloadCompressor = value ?? throw new ArgumentNullException(nameof(value));
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Bee.Base
         /// <summary>
         /// 執行壓縮。
         /// </summary>
-        /// <param name="bytes">原始二進位資料。</param>
+        /// <param name="bytes">原始位元組資料。</param>
         public static byte[] Compress(byte[] bytes)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -27,8 +27,8 @@ namespace Bee.Base
         /// <summary>
         /// 執行解壓縮。
         /// </summary>
-        /// <param name="bytes">壓縮二進位資料。</param>
-        public static byte[] Uncompress(byte[] bytes)
+        /// <param name="bytes">壓縮後的位元組資料。</param>
+        public static byte[] Decompress(byte[] bytes)
         {
             byte[] buffer = new byte[4096];
             int count;

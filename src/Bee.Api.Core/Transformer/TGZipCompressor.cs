@@ -1,29 +1,38 @@
-﻿namespace Bee.Api.Core
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Bee.Base;
+
+namespace Bee.Api.Core
 {
     /// <summary>
-    /// API 傳輸層資料壓縮策略介面。
-    /// 提供位元組資料的壓縮與還原功能，可用於縮小傳輸體積。
+    /// 使用 GZip 的壓縮與解壓縮實作。
     /// </summary>
-    public interface IApiPayloadCompressor
+    public class TGZipCompressor : IApiPayloadCompressor
     {
         /// <summary>
-        /// 壓縮演算法的識別字串，例如 "gzip"、"brotli"。
+        /// 壓縮演算法的識別字串。
         /// </summary>
-        string CompressionMethod { get; }
+        public string CompressionMethod => "GZip";
 
         /// <summary>
         /// 將原始位元組資料進行壓縮處理。
         /// </summary>
         /// <param name="bytes">原始位元組資料。</param>
         /// <returns>壓縮後的位元組資料。</returns>
-        byte[] Compress(byte[] bytes);
+        public byte[] Compress(byte[] bytes)
+        {
+            return GZipFunc.Compress(bytes);
+        }
 
         /// <summary>
         /// 將壓縮過的位元組資料還原為原始資料。
         /// </summary>
         /// <param name="bytes">壓縮後的位元組資料。</param>
         /// <returns>解壓縮後的位元組資料。</returns>
-        byte[] Decompress(byte[] bytes);
+        public byte[] Decompress(byte[] bytes)
+        {
+            return GZipFunc.Decompress(bytes);
+        }
     }
-
 }
