@@ -1,5 +1,4 @@
 ﻿using System;
-using Bee.Base;
 
 namespace Bee.Api.Core
 {
@@ -25,7 +24,7 @@ namespace Bee.Api.Core
             {
                 byte[] bytes = ApiServiceOptions.PayloadSerializer.Serialize(payload, type);  // 序列化
                 byte[] compressedBytes = ApiServiceOptions.PayloadCompressor.Compress(bytes);  // 壓縮
-                return CryptoFunc.AesEncrypt(compressedBytes);  // 加密
+                return ApiServiceOptions.PayloadEncryptor.Encrypt(compressedBytes);  // 加密
             }
             catch (Exception ex)
             {
@@ -54,7 +53,7 @@ namespace Bee.Api.Core
                     throw new InvalidCastException("Invalid data type. The input data must be a byte array.");
                 }
 
-                byte[] decryptedBytes = CryptoFunc.AesDecrypt(bytes);  // 解密
+                byte[] decryptedBytes = ApiServiceOptions.PayloadEncryptor.Decrypt(bytes);  // 解密
                 byte[] decompressedBytes = ApiServiceOptions.PayloadCompressor.Decompress(decryptedBytes);  // 解壓縮
                 return ApiServiceOptions.PayloadSerializer.Deserialize(decompressedBytes, type);  // 反序列化
             }

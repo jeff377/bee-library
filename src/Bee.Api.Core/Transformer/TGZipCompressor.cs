@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bee.Base;
+﻿using Bee.Base;
 
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 使用 GZip 的壓縮與解壓縮實作。
+    /// 使用 GZip 的 API 傳輸層資料壓縮器。
     /// </summary>
     public class TGZipCompressor : IApiPayloadCompressor
     {
