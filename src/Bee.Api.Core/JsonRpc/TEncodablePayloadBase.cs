@@ -16,7 +16,7 @@ namespace Bee.Api.Core
         public object Value { get; set; }
 
         /// <summary>
-        /// 資料是否已經進行編碼（例如加密或壓縮）。
+        /// 資料是否已經進行編碼（例如序列化、壓縮或加密）。
         /// </summary>
         [JsonProperty("isEncoded")]
         [DefaultValue(false)]

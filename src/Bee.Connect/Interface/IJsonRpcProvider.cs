@@ -13,12 +13,14 @@ namespace Bee.Connect
         /// 執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        TJsonRpcResponse Execute(TJsonRpcRequest request);
+        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
+        TJsonRpcResponse Execute(TJsonRpcRequest request, bool enableEncoding);
 
         /// <summary>
         /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request);
+        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
+        Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request, bool enableEncoding);
     }
 }

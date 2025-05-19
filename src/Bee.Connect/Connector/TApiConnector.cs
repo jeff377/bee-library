@@ -53,7 +53,8 @@ namespace Bee.Connect
         /// <param name="progID">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
-        protected T Execute<T>(string progID, string action, object value)
+        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
+        protected T Execute<T>(string progID, string action, object value, bool enableEncoding = true)
         {
             if (StrFunc.IsEmpty(progID))
                 throw new ArgumentException("progID cannot be null or empty.", nameof(progID));
@@ -69,7 +70,7 @@ namespace Bee.Connect
                 },
                 Id = Guid.NewGuid().ToString()
             };
-            var response = this.Provider.Execute(request);
+            var response = this.Provider.Execute(request, enableEncoding);
             if (response.Error != null)
                 throw new TException(response.Error.Message);
             return (T)response.Result.Value;

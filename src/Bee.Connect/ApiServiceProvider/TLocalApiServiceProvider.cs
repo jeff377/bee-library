@@ -27,18 +27,18 @@ namespace Bee.Connect
         /// 執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        public TJsonRpcResponse Execute(TJsonRpcRequest request)
+        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
+        public TJsonRpcResponse Execute(TJsonRpcRequest request, bool enableEncoding)
         {
-            // 註1：開發階段使用近端連線，簡化運行環境及方便偵錯；運行階段則使用遠端連線
-            // 註2：近端連線傳遞資料進行編碼，是為了驗證開發階段傳遞的資料型別都能正常序列化
-
             // 傳入資料進行編碼
-            request.Encode();
+            if (enableEncoding) { request.Encode(); }
+
             // 執行 API 方法
             var executor = new TJsonRpcExecutor(AccessToken);
             var response = executor.Execute(request);
+
             // 傳出結果進行解碼
-            response.Decode();
+            if (enableEncoding) { response.Decode(); }
             return response;
         }
 
@@ -46,15 +46,18 @@ namespace Bee.Connect
         /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        public async Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request)
+        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
+        public async Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request, bool enableEncoding)
         {
             // 傳入資料進行編碼
-            request.Encode();
+            if (enableEncoding) { request.Encode(); }
+
             // 執行 API 方法
             var executor = new TJsonRpcExecutor(AccessToken);
             var response = await executor.ExecuteAsync(request);
+
             // 傳出結果進行解碼
-            response.Decode();
+            if (enableEncoding) { response.Decode(); }
             return response;
         }
     }

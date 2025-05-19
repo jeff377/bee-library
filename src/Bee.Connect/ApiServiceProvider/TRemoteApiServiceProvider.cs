@@ -41,17 +41,22 @@ namespace Bee.Connect
         /// 執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        public TJsonRpcResponse Execute(TJsonRpcRequest request)
+        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
+        public TJsonRpcResponse Execute(TJsonRpcRequest request, bool enableEncoding)
         {
             var header = new NameValueCollection();
             header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
             header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
 
-            request.Encode(); // 傳入參數進行編碼
+            // 傳入資料進行編碼
+            if (enableEncoding) { request.Encode(); }
+
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             string json = HttpFunc.PostAsync(this.Endpoint, body, header).Result;  // 執行 Web API 方法
             var response = SerializeFunc.JsonToObject<TJsonRpcResponse>(json);  // 執行 JSON 反序列化
-            response.Decode();  // 傳出結果進行解碼
+
+            // 傳出結果進行解碼
+            if (enableEncoding) { response.Decode(); }
             return response;
         }
 
@@ -59,17 +64,22 @@ namespace Bee.Connect
         /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        public async Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request)
+        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
+        public async Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request, bool enableEncoding)
         {
             var header = new NameValueCollection();
             header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
             header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
 
-            request.Encode(); // 傳入參數進行編碼
+            // 傳入資料進行編碼
+            if (enableEncoding) { request.Encode(); }
+
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             string json = await HttpFunc.PostAsync(this.Endpoint, body, header);  // 執行 Web API 方法
             var response = SerializeFunc.JsonToObject<TJsonRpcResponse>(json);  // 執行 JSON 反序列化
-            response.Decode();  // 傳出結果進行解碼
+
+            // 傳出結果進行解碼
+            if (enableEncoding) { response.Decode(); }
             return response;
         }
 
