@@ -15,11 +15,6 @@ namespace Bee.Define
     [TreeNode("系統設定")]
     public class TSystemSettings : IObjectSerializeFile, IObjectSerializeProcess
     {
-        private TCommonConfiguration _CommonConfiguration = null;
-        private TBackendConfiguration _BackendConfiguration = null;
-        private TFrontendConfiguration _FrontendConfiguration = null;
-        private TWebsiteConfiguration _WebsiteConfiguration = null;
-        private TBackgroundServiceConfiguration _BackgroundServiceConfiguration = null;
         private TPropertyCollection _ExtendedProperties = null;
 
         #region 建構函式
@@ -113,90 +108,35 @@ namespace Bee.Define
         /// </summary>
         [Description("通用參數及環境設置。")]
         [Browsable(false)]
-        public TCommonConfiguration CommonConfiguration
-        {
-            get
-            {
-                if (_CommonConfiguration == null) { _CommonConfiguration = new TCommonConfiguration(); }
-                return _CommonConfiguration;
-            }
-            set
-            {
-                _CommonConfiguration = value;
-            }
-        }
+        public TCommonConfiguration CommonConfiguration { get; set; } = new TCommonConfiguration();
 
         /// <summary>
         /// 後端參數及環境設置。
         /// </summary>
         [Description("後端參數及環境設置。")]
         [Browsable(false)]
-        public TBackendConfiguration BackendConfiguration
-        {
-            get
-            {
-                if (_BackendConfiguration == null) { _BackendConfiguration = new TBackendConfiguration(); }
-                return _BackendConfiguration;
-            }
-            set
-            {
-                _BackendConfiguration = value;
-            }
-        }
+        public TBackendConfiguration BackendConfiguration { get; set; } = new TBackendConfiguration();
 
         /// <summary>
         /// 前端參數及環境設置。
         /// </summary>
         [Description("前端參數及環境設置。")]
         [Browsable(false)]
-        public TFrontendConfiguration FrontendConfiguration
-        {
-            get
-            {
-                if (_FrontendConfiguration == null) { _FrontendConfiguration = new TFrontendConfiguration(); }
-                return _FrontendConfiguration;
-            }
-            set
-            {
-                _FrontendConfiguration = value;
-            }
-        }
+        public TFrontendConfiguration FrontendConfiguration { get; set; } = new TFrontendConfiguration();
 
         /// <summary>
         /// 網站參數及環境設置。
         /// </summary>
         [Description("網站參數及環境設置。")]
         [Browsable(false)]
-        public TWebsiteConfiguration WebsiteConfiguration
-        {
-            get
-            {
-                if (_WebsiteConfiguration == null) { _WebsiteConfiguration = new TWebsiteConfiguration(); }
-                return _WebsiteConfiguration;
-            }
-            set
-            {
-                _WebsiteConfiguration = value;
-            }
-        }
+        public TWebsiteConfiguration WebsiteConfiguration { get; set; } = new TWebsiteConfiguration();
 
         /// <summary>
         /// 服務程式參數及環境設置。
         /// </summary>
         [Description("服務程式參數及環境設置。")]
         [Browsable(false)]
-        public TBackgroundServiceConfiguration BackgroundServiceConfiguration
-        {
-            get
-            {
-                if (_BackgroundServiceConfiguration == null) { _BackgroundServiceConfiguration = new TBackgroundServiceConfiguration(); }
-                return _BackgroundServiceConfiguration;
-            }
-            set
-            {
-                _BackgroundServiceConfiguration = value;
-            }
-        }
+        public TBackgroundServiceConfiguration BackgroundServiceConfiguration { get; set; } = new TBackgroundServiceConfiguration();    
 
         /// <summary>
         /// 延伸屬性集合。

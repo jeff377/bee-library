@@ -50,10 +50,18 @@ namespace Bee.Define
         /// <summary>
         /// API KEY。
         /// </summary>
-        [Category("System")]
+        [Category("API")]
         [Description("API KEY。")]
         [DefaultValue("")]
         public string ApiKey { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 提供 API Payload 處理相關選項，例如序列化、壓縮與加密。
+        /// </summary>
+        [Category("API")]
+        [Description("提供 API Payload 處理相關選項，例如序列化、壓縮與加密。")]
+        [DefaultValue("")]
+        public TApiPayloadOptions ApiPayloadOptions { get; set; } = new TApiPayloadOptions();
 
         /// <summary>
         /// 初始化。
