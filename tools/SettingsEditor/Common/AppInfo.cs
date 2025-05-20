@@ -25,7 +25,7 @@ namespace SettingsEditor
                 BackendInfo.BusinessObjectProvider = new Bee.Cache.TBusinessObjectProvider();
                 BackendInfo.SystemObject = new Bee.Business.TSystemObject();
                 // 註冊資料庫提供者
-                DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, System.Data.SqlClient.SqlClientFactory.Instance);
+                DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             }
 
             return true;
