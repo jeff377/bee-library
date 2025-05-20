@@ -19,10 +19,11 @@ Bee.NET Framework is a three-tier software architecture designed to accelerate t
 | **Bee.Cache.dll**          | Backend        | .NET Standard 2.0      | Runtime caching of definitions and related system data to improve performance. |
 | **Bee.Db.dll**             | Backend        | .NET Standard 2.0      | Database abstraction with dynamic command generation and connection binding. |
 | **Bee.Business.dll**       | Backend        | .NET Standard 2.0      | Implements core business logic and application-level workflows. |
-| **Bee.Api.Core.dll**       | Backend        | .NET Standard 2.0      | Encapsulates API support such as model definitions, encryption, and serialization. |
+| **Bee.Api.Core.dll**       | Frontend / Backend        | .NET Standard 2.0      | Encapsulates API support such as model definitions, encryption, and serialization. |
 | **Bee.Api.AspNetCore.dll** | Backend       | .NET 8             | Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls via JSON-RPC protocol. |
 | **Bee.Api.AspNet.dll**     | Backend        | .NET Framework 4.8     | Provides a JSON-RPC 2.0 API HttpModule for ASP.NET, enabling a unified POST endpoint to invoke backend methods via the JSON-RPC protocol. |
 | **Bee.Connect.dll**        | Frontend       | .NET Standard 2.0      | Connector for local or remote invocation of backend logic. |
+| **Bee.UI.Core.dll**        | Frontend       | .NET Standard 2.0      | Manages client-server connection settings and states. |
 
 ---
 
@@ -46,7 +47,8 @@ Bee.NET Framework 是一套三層式應用架構，旨在加速企業資訊系�
 | **Bee.Cache.dll**          | 後端           | .NET Standard 2.0      | 執行階段快取模組，快取定義資料與衍生資料以提升效能。 |
 | **Bee.Db.dll**             | 後端           | .NET Standard 2.0      | 封裝資料庫操作邏輯，支援 SQL 命令組合與動態連線綁定。 |
 | **Bee.Business.dll**       | 後端           | .NET Standard 2.0      | 實作應用層商業邏輯，處理表單流程與業務規則。 |
-| **Bee.Api.Core.dll**       | 後端           | .NET Standard 2.0      | 提供 API 核心支援，包含資料模型、加解密、序列化等功能。 |
+| **Bee.Api.Core.dll**       | 前端 / 後端           | .NET Standard 2.0      | 提供 API 核心支援，包含資料模型、加解密、序列化等功能。 |
 | **Bee.Api.AspNetCore.dll** | 後端       | .NET 8                 | 提供 ASP.NET Core 的 JSON-RPC 2.0 API 控制器，作為統一入口處理後端方法呼叫。 |
 | **Bee.Api.AspNet.dll**     | 後端           | .NET Framework 4.8     | 提供 ASP.NET 的 JSON-RPC 2.0 API HttpModule，作為統一的 POST 入口處理後端方法呼叫。 |
 | **Bee.Connect.dll**        | 前端           | .NET Standard 2.0      | 提供連接器機制，支援近端與遠端呼叫後端邏輯元件。 |
+| **Bee.UI.Core.dll**        | 前端       | .NET Standard 2.0      | 管理用戶端與伺服端連線的設定與狀態。 |
