@@ -49,11 +49,12 @@ namespace Bee.Business
         /// <param name="args">傳入引數。</param>
         public TGetApiPayloadOptionsResult GetApiPayloadOptions(TGetApiPayloadOptionsArgs args)
         {
+            var options = CacheFunc.GetSystemSettings().BackendConfiguration.ApiPayloadOptions;
             return new TGetApiPayloadOptionsResult()
             {
-                Serializer = "messagepack",
-                Compressor = "gzip",
-                Encryptor = "aes256"
+                Serializer = options.Serializer,
+                Compressor = options.Compressor,
+                Encryptor = options.Encryptor
             };
         }
 

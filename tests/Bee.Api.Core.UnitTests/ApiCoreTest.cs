@@ -87,13 +87,13 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// 執行 GetEncodingProfile 方法。
+        /// 執行 GetApiPayloadOptions 方法。
         /// </summary>
         [Fact]
-        public void GetEncodingProfile()
+        public void GetApiPayloadOptions()
         {
             var args = new TGetApiPayloadOptionsArgs();
-            var result = ApiExecute<TGetApiPayloadOptionsResult>(SysProgIDs.System, "GetEncodingProfile", args);
+            var result = ApiExecute<TGetApiPayloadOptionsResult>(SysProgIDs.System, "GetApiPayloadOptions", args);
             Assert.NotNull(result);
             Assert.Equal("messagepack", result.Serializer);
         }
