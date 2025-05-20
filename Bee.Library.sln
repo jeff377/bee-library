@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonRpcSample", "samples\Js
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.UI.Core", "src\Bee.UI.Core\Bee.UI.Core.csproj", "{869F6BE1-0A08-4E81-4379-F5C4F2DBBC04}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.UI.WinForms", "src\Bee.UI.WinForms\Bee.UI.WinForms.csproj", "{68490597-4DD5-3EEE-DB32-7188BDB70568}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -135,6 +137,10 @@ Global
 		{869F6BE1-0A08-4E81-4379-F5C4F2DBBC04}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{869F6BE1-0A08-4E81-4379-F5C4F2DBBC04}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{869F6BE1-0A08-4E81-4379-F5C4F2DBBC04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68490597-4DD5-3EEE-DB32-7188BDB70568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68490597-4DD5-3EEE-DB32-7188BDB70568}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68490597-4DD5-3EEE-DB32-7188BDB70568}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68490597-4DD5-3EEE-DB32-7188BDB70568}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -160,6 +166,7 @@ Global
 		{CFF8C017-74EB-4840-BEEE-5009D895338C} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 		{939C77AE-6421-3343-03A9-CD81B767E820} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 		{869F6BE1-0A08-4E81-4379-F5C4F2DBBC04} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{68490597-4DD5-3EEE-DB32-7188BDB70568} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7E07F2-83DF-4D84-82CE-C010B47BBCE6}

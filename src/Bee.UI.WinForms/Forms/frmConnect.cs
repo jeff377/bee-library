@@ -1,0 +1,57 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Bee.Base;
+using Bee.UI.Core;
+
+namespace Bee.UI.WinForms
+{
+    /// <summary>
+    /// 連線設定。
+    /// </summary>
+    internal partial class frmConnect : TForm
+    {
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        public frmConnect()
+        {
+            InitializeComponent();
+        }
+
+        /// <summary>
+        /// Load 事件。
+        /// </summary>
+        private void frmConnect_Load(object sender, EventArgs e)
+        {
+            edtEndpoint.Text = ClientInfo.ClientSettings.Endpoint;
+        }
+
+        private void btnOK_Click(object sender, EventArgs e)
+        {
+            string sEndpoint = StrFunc.Trim(edtEndpoint.Text);
+            try
+            {
+                // 設置服務端點
+                ClientInfo.SetEndpoint(sEndpoint);
+            }
+            catch (Exception ex)
+            {
+                UIFunc.ErrorMsgBox(ex.Message);
+                return;
+            }
+            this.DialogResult = DialogResult.OK;
+        }
+
+        private void btnCancel_Click(object sender, EventArgs e)
+        {
+            this.DialogResult = DialogResult.Cancel;
+        }
+    }
+}

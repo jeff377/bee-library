@@ -24,6 +24,7 @@ Bee.NET Framework is a three-tier software architecture designed to accelerate t
 | **Bee.Api.AspNet.dll**     | Backend        | .NET Framework 4.8     | Provides a JSON-RPC 2.0 API HttpModule for ASP.NET, enabling a unified POST endpoint to invoke backend methods via the JSON-RPC protocol. |
 | **Bee.Connect.dll**        | Frontend       | .NET Standard 2.0      | Connector for local or remote invocation of backend logic. |
 | **Bee.UI.Core.dll**        | Frontend       | .NET Standard 2.0      | Manages client-server connection settings and states. |
+| **Bee.UI.WinForms.dll**        | Frontend       | .NET 8      | UI components and layout management for WinForms. |
 
 ---
 
@@ -52,3 +53,5 @@ Bee.NET Framework 是一套三層式應用架構，旨在加速企業資訊系�
 | **Bee.Api.AspNet.dll**     | 後端           | .NET Framework 4.8     | 提供 ASP.NET 的 JSON-RPC 2.0 API HttpModule，作為統一的 POST 入口處理後端方法呼叫。 |
 | **Bee.Connect.dll**        | 前端           | .NET Standard 2.0      | 提供連接器機制，支援近端與遠端呼叫後端邏輯元件。 |
 | **Bee.UI.Core.dll**        | 前端       | .NET Standard 2.0      | 管理用戶端與伺服端連線的設定與狀態。 |
+| **Bee.UI.WinForms.dll**        | 前端       | .NET 8      | WinForms 使用者介面元件與排版管理。|
+
