@@ -13,8 +13,6 @@
 		<Product>Bee.NET</Product>
 		<Description>Configuration editor for managing System.Setting.xml and Database.Settings.xml.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageTags>winforms;ui;layout;form designer;runtime ui;dynamic ui;bee.net</PackageTags>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		
 	</PropertyGroup>
 
