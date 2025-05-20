@@ -10,7 +10,7 @@ namespace Bee.Api.Core
     {
         private static IApiAuthorizationValidator _authorizationValidator = new TApiAuthorizationValidator(); // 預設實作
         private static IApiPayloadTransformer _payloadTransformer = new TApiPayloadTransformer(); // 預設實作
-        private static IApiPayloadSerializer _payloadSerializer = new TMessagePackPayloadSerializer(); // 預設實作
+        private static IApiPayloadSerializer _payloadSerializer = new TBinaryFormatterPayloadSerializer(); // 預設實作
         private static IApiPayloadCompressor _payloadCompressor = new TGZipPayloadCompressor(); // 預設實作
         private static IApiPayloadEncryptor _payloadEncryptor = new TAesPayloadEncryptor(); // 預設實作
 
