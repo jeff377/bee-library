@@ -19,7 +19,7 @@ namespace Bee.Api.Core
             var noAuthMethods = new HashSet<string>
             {
                 "System.Ping",  // Ping 方法，連線測試使用
-                "System.GetEncodingProfile", // 取得編碼設定檔
+                "System.GetApiPayloadOptions", // 取得 API 傳輸層的 Payload 編碼選項
                 "System.Login" // 登入方法
             };
             return !noAuthMethods.Contains(method);

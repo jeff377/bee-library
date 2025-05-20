@@ -44,12 +44,12 @@ namespace Bee.Business
         }
 
         /// <summary>
-        /// 取得 API 傳輸層的編碼設定。
+        /// 取得 API 傳輸層的 Payload 編碼選項。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public TGetEncodingProfileResult GetEncodingProfile(TGetEncodingProfileArgs args)
+        public TGetApiPayloadOptionsResult GetApiPayloadOptions(TGetApiPayloadOptionsArgs args)
         {
-            return new TGetEncodingProfileResult()
+            return new TGetApiPayloadOptionsResult()
             {
                 Serializer = "messagepack",
                 Compressor = "gzip",

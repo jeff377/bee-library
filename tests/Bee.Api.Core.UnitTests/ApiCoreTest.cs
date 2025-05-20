@@ -92,8 +92,8 @@ namespace Bee.Api.Core.UnitTests
         [Fact]
         public void GetEncodingProfile()
         {
-            var args = new TGetEncodingProfileArgs();
-            var result = ApiExecute<TGetEncodingProfileResult>(SysProgIDs.System, "GetEncodingProfile", args);
+            var args = new TGetApiPayloadOptionsArgs();
+            var result = ApiExecute<TGetApiPayloadOptionsResult>(SysProgIDs.System, "GetEncodingProfile", args);
             Assert.NotNull(result);
             Assert.Equal("messagepack", result.Serializer);
         }

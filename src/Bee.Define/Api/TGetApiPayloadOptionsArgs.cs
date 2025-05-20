@@ -4,11 +4,11 @@ using MessagePack;
 namespace Bee.Define
 {
     /// <summary>
-    /// 取得 API 傳輸層的編碼設定的傳入引數。
+    /// 取得 API 傳輸層的 Payload 編碼選項的傳入引數。
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class TGetEncodingProfileArgs : TBusinessArgs
+    public class TGetApiPayloadOptionsArgs : TBusinessArgs
     {
     }
 }

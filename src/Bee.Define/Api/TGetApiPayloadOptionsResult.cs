@@ -4,11 +4,11 @@ using MessagePack;
 namespace Bee.Define
 {
     /// <summary>
-    /// 取得 API 傳輸層的編碼設定的傳出結果。
+    /// 取得 API 傳輸層的 Payload 編碼選項的傳出結果。
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class TGetEncodingProfileResult : TBusinessResult
+    public class TGetApiPayloadOptionsResult : TBusinessResult
     {
         /// <summary>
         /// 使用的序列化格式（例如 messagepack、binaryformatter）。
