@@ -87,6 +87,18 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
+        /// 執行 GetEncodingProfile 方法。
+        /// </summary>
+        [Fact]
+        public void GetEncodingProfile()
+        {
+            var args = new TGetEncodingProfileArgs();
+            var result = ApiExecute<TGetEncodingProfileResult>(SysProgIDs.System, "GetEncodingProfile", args);
+            Assert.NotNull(result);
+            Assert.Equal("messagepack", result.Serializer);
+        }
+
+        /// <summary>
         /// 透過 API 執行 Hello 方法。
         /// </summary>
         [Fact]

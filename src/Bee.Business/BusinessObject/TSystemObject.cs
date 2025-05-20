@@ -31,7 +31,7 @@ namespace Bee.Business
         /// <summary>
         /// Ping 測試方法，回傳當下的 UTC 時間。
         /// </summary>
-        /// <param name="args">傳入參數。</param>
+        /// <param name="args">傳入引數。</param>
         public TPingResult Ping(TPingArgs args)
         {
             return new TPingResult()
@@ -40,6 +40,20 @@ namespace Bee.Business
                 ServerTime = DateTime.UtcNow,
                 Version = SysInfo.Version, // 系統版本
                 TraceId = args.TraceId // 回傳追蹤 ID
+            };
+        }
+
+        /// <summary>
+        /// 取得 API 傳輸層的編碼設定。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public TGetEncodingProfileResult GetEncodingProfile(TGetEncodingProfileArgs args)
+        {
+            return new TGetEncodingProfileResult()
+            {
+                Serializer = "messagepack",
+                Compressor = "gzip",
+                Encryptor = "aes256"
             };
         }
 

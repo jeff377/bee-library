@@ -18,8 +18,9 @@ namespace Bee.Api.Core
             // 不需授權的方法清單（大小寫敏感）
             var noAuthMethods = new HashSet<string>
             {
-                "System.Login",
-                "System.Ping"
+                "System.Ping",  // Ping 方法，連線測試使用
+                "System.GetEncodingProfile", // 取得編碼設定檔
+                "System.Login" // 登入方法
             };
             return !noAuthMethods.Contains(method);
         }

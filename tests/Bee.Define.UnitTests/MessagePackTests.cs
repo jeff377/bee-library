@@ -455,6 +455,31 @@ namespace Bee.Define.UnitTests
             TestFunc.TestMessagePackSerialization(result);
         }
 
+
+        /// <summary>
+        /// 測試 GetEncodingProfile 方法傳遞參數的序列化。
+        /// </summary>
+        [Fact(DisplayName = "GetEncodingProfile 方法傳遞參數的序列化")]
+        public void GetEncodingProfile_Serialize()
+        {
+            // Arrange: 建立 TGetEncodingProfileArgs 實例並設定屬性
+            var args = new TGetEncodingProfileArgs();
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試參數序列化
+            TestFunc.TestMessagePackSerialization(args);
+
+            // Arrange: 建立 TGetEncodingProfileResult 實例並設定屬性
+            var result = new TGetEncodingProfileResult
+            {
+                Serializer = "messagepack",
+                Compressor = "gzip",
+                Encryptor = "aes256"
+            };
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試回傳結果序列化
+            TestFunc.TestMessagePackSerialization(result);
+        }
+
     }
 }
 
