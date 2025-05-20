@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SettingsEditor": {
+      "commandName": "Project",
+      "commandLineArgs": "--Endpoint \"http://localhost/apiservice/api\""
+    }
+  }
+}

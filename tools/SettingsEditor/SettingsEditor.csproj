@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<OutputType>WinExe</OutputType>
+		<UseWindowsForms>true</UseWindowsForms>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<Version>3.0.10</Version>
+		<Company>Bee.NET</Company>
+		<Authors>Bee.NET</Authors>
+		<Product>Bee.NET</Product>
+		<Description>Configuration editor for managing System.Setting.xml and Database.Settings.xml.</Description>
+		<Copyright>© Bee.NET. All rights reserved.</Copyright>
+		<PackageTags>winforms;ui;layout;form designer;runtime ui;dynamic ui;bee.net</PackageTags>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
+		<ProjectReference Include="..\..\src\Bee.UI.WinForms\Bee.UI.WinForms.csproj" />
+	</ItemGroup>
+
+</Project>

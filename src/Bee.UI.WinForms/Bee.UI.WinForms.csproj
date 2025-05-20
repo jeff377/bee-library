@@ -2,9 +2,9 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0-windows</TargetFramework>
-		<Nullable>enable</Nullable>
-		<UseWindowsForms>true</UseWindowsForms>
 		<OutputType>Library</OutputType>
+		<UseWindowsForms>true</UseWindowsForms>
+		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 
 		<Version>3.0.10</Version>
