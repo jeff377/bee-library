@@ -33,9 +33,10 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
-        public T Execute<T>(string action, object value)
+        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
+        public T Execute<T>(string action, object value, bool enableEncoding = true)
         {
-            return base.Execute<T>(SysProgIDs.System, action, value);
+            return base.Execute<T>(SysProgIDs.System, action, value, enableEncoding);
         }
 
         /// <summary>

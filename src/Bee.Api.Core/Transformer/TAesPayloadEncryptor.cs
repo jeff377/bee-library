@@ -5,7 +5,7 @@ namespace Bee.Api.Core
     /// <summary>
     /// 使用 AES 的 API 傳輸層資料加密器。
     /// </summary>
-    public class TAesEncryptor : IApiPayloadEncryptor
+    public class TAesPayloadEncryptor : IApiPayloadEncryptor
     {
         /// <summary>
         /// 加密演算法的識別字串。

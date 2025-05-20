@@ -5,7 +5,7 @@ namespace Bee.Api.Core
     /// <summary>
     /// 使用 GZip 的 API 傳輸層資料壓縮器。
     /// </summary>
-    public class TGZipCompressor : IApiPayloadCompressor
+    public class TGZipPayloadCompressor : IApiPayloadCompressor
     {
         /// <summary>
         /// 壓縮演算法的識別字串。

@@ -1,4 +1,5 @@
-﻿using Bee.Db;
+﻿using Bee.Cache;
+using Bee.Db;
 using Bee.Define;
 
 namespace ApiService.Extensions
@@ -20,6 +21,11 @@ namespace ApiService.Extensions
             DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
+
+            // 系統設定初始化
+            var settings = CacheFunc.GetSystemSettings();
+            settings.Initialize();
+
             return app;
         }
     }
