@@ -200,10 +200,10 @@ namespace Bee.UI.Core
             {
                 // 驗證服務端點，傳回對應的連線方式
                 var connectType = validator.Validate(ClientSettings.Endpoint, AllowGenerateSettings);
-                // 初始化 API 服務選項
-                ApiServiceOptionsInitialize();
                 // 設置連線方式
                 SetConnectType(connectType, ClientSettings.Endpoint);
+                // 初始化 API 服務選項
+                ApiServiceOptionsInitialize();
                 return true;
             }
             catch

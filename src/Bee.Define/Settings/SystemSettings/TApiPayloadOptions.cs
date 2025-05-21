@@ -9,6 +9,7 @@ namespace Bee.Define
     /// </summary>
     [Serializable]
     [XmlType("ApiPayloadOptions")]
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     [Description("提供 API Payload 處理相關選項，例如序列化、壓縮與加密。")]
     public class TApiPayloadOptions
     {
@@ -29,6 +30,14 @@ namespace Bee.Define
         /// </summary>
         [Description("指定加密器名稱，例如：aes256、none。")]
         public string Encryptor { get; set; } = "aes256";
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return $"Serializer: {Serializer}, Compressor: {Compressor}, Encryptor: {Encryptor}";
+        }
     }
 
 }
