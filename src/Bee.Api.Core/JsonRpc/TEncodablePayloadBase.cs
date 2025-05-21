@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Bee.Base;
 using Newtonsoft.Json;
 
 namespace Bee.Api.Core
@@ -7,8 +8,31 @@ namespace Bee.Api.Core
     /// <summary>
     /// 提供編碼與解碼的共用實作。
     /// </summary>
-    public abstract  class TEncodablePayloadBase : IEncodablePayload
+    public abstract  class TEncodablePayloadBase : IEncodablePayload, IObjectSerialize
     {
+        #region IObjectSerialize 介面
+
+        /// <summary>
+        /// 序列化狀態。
+        /// </summary>
+        [JsonIgnore]
+        public ESerializeState SerializeState { get; private set; } = ESerializeState.None;
+
+        /// <summary>
+        /// 設定序列化狀態。
+        /// </summary>
+        /// <param name="serializeState">序列化狀態。</param>
+        public virtual void SetSerializeState(ESerializeState serializeState)
+        {
+            SerializeState = serializeState;
+            if (Value is IObjectSerialize objectSerialize)
+            {
+                BaseFunc.SetSerializeState(objectSerialize, serializeState);
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// 傳遞資料。
         /// </summary>

@@ -120,5 +120,32 @@ namespace Bee.Define.UnitTests
             settings.BackendConfiguration.DatabaseID = "default";
             SerializeObject<TSystemSettings>(settings, true, true, false);
         }
+
+        /// <summary>
+        /// 代刚 Ping よ猭肚患把计て
+        /// </summary>
+        [Fact(DisplayName = "Ping よ猭肚患把计て")]
+        public void Ping_Serialize()
+        {
+            // ミ TPingArgs ﹚妮┦籔把计
+            var args = new TPingArgs
+            {
+                ClientName = "TestClient",
+                TraceId = Guid.NewGuid().ToString()
+            };
+            // 代刚て
+            SerializeObject<TPingArgs>(args, true, false, true);
+
+            // ミ TPingResult ﹚妮┦籔把计
+            var result = new TPingResult
+            {
+                Status = "pong",
+                ServerTime = new DateTime(2025, 5, 16, 8, 30, 0, DateTimeKind.Utc),
+                Version = "1.2.3",
+                TraceId = Guid.NewGuid().ToString()
+            };
+            // 代刚て
+            SerializeObject<TPingResult>(result, true, false, true);
+        }
     }
 }

@@ -71,7 +71,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (this.SerializeState == ESerializeState.Serialize && BaseFunc.IsEmpty(_Items)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Items)) { return null; }
                 if (_Items == null) { _Folders = new TMenuFolderCollection(this); }
                 return _Folders;
             }
@@ -86,8 +86,8 @@ namespace Bee.Define
         {
             get
             {
-                //序列化時，若集合無資料則傳回 null
-                if (this.SerializeState == ESerializeState.Serialize && BaseFunc.IsEmpty(_Items)) { return null; }
+                // 序列化時，若集合無資料則傳回 null
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Items)) { return null; }
                 if (_Items == null) { _Items = new TMenuItemCollection(this); }
                 return _Items;
             }

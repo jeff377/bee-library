@@ -8,7 +8,7 @@ namespace Bee.Api.Core
     /// JSON-RPC 請求模型。 
     /// </summary>
     [Serializable]
-    public class TJsonRpcRequest : IObjectSerializeBase
+    public class TJsonRpcRequest : IObjectSerialize
     {
         #region 建構函式
 
@@ -17,6 +17,26 @@ namespace Bee.Api.Core
         /// </summary>
         public TJsonRpcRequest()
         { }
+
+        #endregion
+
+        #region IObjectSerialize 介面
+
+        /// <summary>
+        /// 序列化狀態。
+        /// </summary>
+        [JsonIgnore]
+        public ESerializeState SerializeState { get; private set; } = ESerializeState.None;
+
+        /// <summary>
+        /// 設定序列化狀態。
+        /// </summary>
+        /// <param name="serializeState">序列化狀態。</param>
+        public virtual void SetSerializeState(ESerializeState serializeState)
+        {
+            SerializeState = serializeState;
+            BaseFunc.SetSerializeState(Params, serializeState);
+        }
 
         #endregion
 

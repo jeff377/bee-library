@@ -1,4 +1,4 @@
-@baseUrl = https://localhost:44390
+@baseUrl = http://localhost/jsonrpc_aspnet
 @apiKey = test-api-key
 @accessToken = Bearer 22AC9A7C-6E76-4C07-8560-89784D86AA76
 
@@ -15,8 +15,7 @@ X-Api-Key: {{apiKey}}
     "value": {
       "$type": "Bee.Define.TPingArgs, Bee.Define",
       "clientName": "Connector",
-      "traceId": "001",
-      "parameters": []
+      "traceId": "001"
     }
   },
   "id": "e942952b-6450-412c-bb24-c6ab7c804789"
@@ -35,8 +34,7 @@ Authorization: {{accessToken}}
   "params": {
     "value": {
       "$type": "Bee.Define.TExecFuncArgs, Bee.Define",
-      "FuncID": "Hello",
-      "Parameters": []
+      "FuncID": "Hello"
     }
   },
   "id": "228bd7e0-603f-4433-93d9-9c03ebabc5e4"

@@ -1,5 +1,7 @@
 ﻿using System;
+using Bee.Base;
 using MessagePack;
+using Newtonsoft.Json;
 
 namespace Bee.Define
 {
@@ -7,9 +9,29 @@ namespace Bee.Define
     /// 商業邏輯物件方法傳出結果基底類別。
     /// </summary>
     [Serializable]
-    public abstract class TBusinessResult
+    public abstract class TBusinessResult : IObjectSerialize
     {
         private TParameterCollection _parameters = null;
+
+        #region IObjectSerialize 介面
+
+        /// <summary>
+        /// 序列化狀態。
+        /// </summary>
+        [JsonIgnore, IgnoreMember]
+        public ESerializeState SerializeState { get; private set; } = ESerializeState.None;
+
+        /// <summary>
+        /// 設定序列化狀態。
+        /// </summary>
+        /// <param name="serializeState">序列化狀態。</param>
+        public virtual void SetSerializeState(ESerializeState serializeState)
+        {
+            SerializeState = serializeState;
+            BaseFunc.SetSerializeState(_parameters, serializeState);
+        }
+
+        #endregion
 
         /// <summary>
         /// 傳出參數集合。
@@ -19,10 +41,9 @@ namespace Bee.Define
         {
             get
             {
-                if (_parameters == null)
-                {
-                    _parameters = new TParameterCollection();
-                }
+                // 序列化時，若集合無資料則傳回 null
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _parameters)) { return null; }
+                if (_parameters == null) { _parameters = new TParameterCollection(); }
                 return _parameters;
             }
             set

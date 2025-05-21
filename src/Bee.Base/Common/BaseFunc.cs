@@ -95,6 +95,19 @@ namespace Bee.Base
         }
 
         /// <summary>
+        /// 判斷 IEnumerable 型別的集合是否無資料。
+        /// </summary>
+        /// <param name="enumerable">要判斷的集合。</param>
+        public static bool IsEmpty(IEnumerable enumerable)
+        {
+            if (enumerable == null) return true;
+
+            var enumerator = enumerable.GetEnumerator();
+            return !enumerator.MoveNext(); // 判斷是否有至少一筆資料
+        }
+
+
+        /// <summary>
         /// 判斷資料表是否無資料。
         /// </summary>
         /// <param name="table">要判斷的資料表。</param>
@@ -517,6 +530,8 @@ namespace Bee.Base
                     return objectSerializeEmpty.IsSerializeEmpty;
                 case IList listValue:
                     return IsEmpty(listValue);
+                case IEnumerable enumerableValue:
+                    return IsEmpty(enumerableValue);
                 default:
                     return false;
             }
