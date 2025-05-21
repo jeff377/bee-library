@@ -43,21 +43,24 @@ Authorization: {{accessToken}}
 }
 ###
 
+// GetDefine ¤èªk (½s½X)
 POST {{baseUrl}}/api
 Accept: application/json
 content-type: application/json
 X-Api-Key: {{apiKey}}
+Authorization: {{accessToken}}
 
 {
   "jsonrpc": "2.0",
-  "method": "System.Ping",
+  "method": "System.GetDefine",
   "params": {
     "value": {
       "$type": "System.Byte[], System.Private.CoreLib",
-      "$value": "YmQxZTZhNzFhNzk0NGVhNGJkZTVkZDkyNzZkZDgxZWJlZDQ1ODk5NTg4Mjg0ZTk3z7cS+IQn+Su9+SPmsqIwawaSjkOp8YL4xXnENGgm4x3qh306rvlYMzcOrxhwDaiip2s8uq984nOioblOnVm8PninL7kliEQ9VM6iMUlHJxNyap7iBfuPqdcmLk/76YPHDPSrrMLCYvKSkeY6bDgV28slVf9vIX6mVuzAsHAblvmLpoi5FEqf8Tq4Rnk8RFnCVhS9eOwN1BWznHhLPW3Kblmsr5imwB+YJSIMYME0uvh+3npyu5cP4JBfIdD1E80jOXorR7Rn+UFsGGkfBmfhSydrQehs1wpIP7FTzGy73AI="
+      "$value": "NzFjZTMzOTgzYjJkNDMxNzkyNTZkYTRkOTNjYzE2OGUwNzg0Nzg5NGIxNzk0NDI0mIDVnNsOOrL5sKVC7x8S1QggkbE+VjzoYekFna4cRLiWOsa3p1zZS934E8LispaF/nCKc3+b18NcK4H7mEc82YW298XwtsakDWKiZRuyVys1LTqpDgKqkxFRfd4nPo1/YJZosZ7E6pZuQjAuR0nJbmc9dJtZC/xIMFeB+0EKzodR5nTncAlu7l0cHycaPZMsit4tRlhIv4iG8eB5E9yj52VWj1TfQhEaL5YDRd6GRtQWF6jUJR/QU03NEyuUFa0HJj9a0Bz1PkmopAkH/ivRGTAH3MEhG5zulNwK8RxeEUDXjj8HC76i5yOrSOjzCfAs"
     },
-    "encrypted": true
+    "isEncoded": true,
+    "type": "Bee.Define.TGetDefineArgs, Bee.Define"
   },
-  "id": "6adc7505-cacd-4bb2-820c-77266e099c54"
+  "id": "795bfacc-892a-4bff-bbff-fba51dcf6367"
 }
 ###
