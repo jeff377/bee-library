@@ -1,6 +1,27 @@
-@baseUrl = http://localhost/jsonrpc_aspnet
+@baseUrl = https://localhost:44390
 @apiKey = test-api-key
 @accessToken = Bearer 22AC9A7C-6E76-4C07-8560-89784D86AA76
+
+// Ping ¤èªk
+POST {{baseUrl}}/api
+Accept: application/json
+content-type: application/json
+X-Api-Key: {{apiKey}}
+
+{
+  "jsonrpc": "2.0",
+  "method": "System.Ping",
+  "params": {
+    "value": {
+      "$type": "Bee.Define.TPingArgs, Bee.Define",
+      "clientName": "Connector",
+      "traceId": "001",
+      "parameters": []
+    }
+  },
+  "id": "e942952b-6450-412c-bb24-c6ab7c804789"
+}
+###
 
 POST {{baseUrl}}/api
 Accept: application/json
