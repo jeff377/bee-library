@@ -126,7 +126,7 @@ namespace Bee.Connect
                 TraceId = "001"
             };
             var connector = new TSystemConnector(endpoint, Guid.Empty);
-            var result = connector.Execute<TPingResult>("Ping", args, false);
+            var result = connector.Execute<TPingResult>(SystemActions.Ping, args, false);
             if (result.Status != "ok")
                 throw new TException($"Ping 方法執行失敗，錯誤訊息：{result.Status}");
         }

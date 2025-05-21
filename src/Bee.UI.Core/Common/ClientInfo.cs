@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bee.Api.Core;
 using Bee.Base;
 using Bee.Connect;
 using Bee.Define;
@@ -154,6 +155,22 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
+        /// 初始化 API 服務選項，API 服務端點異動時需重新建立。
+        /// </summary>
+        private static void ApiServiceOptionsInitialize()
+        {
+            var args = new TGetApiPayloadOptionsArgs();
+            var result = SystemConnector.Execute<TGetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args, false);
+            var payloadOptions = new TApiPayloadOptions()
+            {
+                Serializer = result.Serializer,
+                Compressor = result.Compressor,
+                Encryptor = result.Encryptor
+            };
+            ApiServiceOptions.Initialize(payloadOptions);
+        }
+
+        /// <summary>
         /// 設置服務端點。
         /// </summary>
         /// <param name="endpoint">服務端點位置，遠端連線為網址，近端連線為本地路徑。</param>
@@ -164,6 +181,8 @@ namespace Bee.UI.Core
             var connectType = validator.Validate(endpoint, AllowGenerateSettings);
             // 設置連線方式
             SetConnectType(connectType, endpoint);
+            // 初始化 API 服務選項
+            ApiServiceOptionsInitialize();
             // 儲存用戶端設定
             ClientSettings.Endpoint = endpoint;
             ClientSettings.Save();
@@ -181,6 +200,8 @@ namespace Bee.UI.Core
             {
                 // 驗證服務端點，傳回對應的連線方式
                 var connectType = validator.Validate(ClientSettings.Endpoint, AllowGenerateSettings);
+                // 初始化 API 服務選項
+                ApiServiceOptionsInitialize();
                 // 設置連線方式
                 SetConnectType(connectType, ClientSettings.Endpoint);
                 return true;

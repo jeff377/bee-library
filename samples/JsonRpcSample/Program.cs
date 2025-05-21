@@ -17,6 +17,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 // 後端程式初始化
-app.BackendInitialize();
+app.BackendInitialize(app.Configuration);
 
 app.Run();

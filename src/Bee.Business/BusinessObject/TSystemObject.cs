@@ -29,7 +29,7 @@ namespace Bee.Business
         #endregion
 
         /// <summary>
-        /// Ping 測試方法，回傳當下的 UTC 時間。
+        /// Ping 方法，測試 API 服務是否可用。
         /// </summary>
         /// <param name="args">傳入引數。</param>
         public TPingResult Ping(TPingArgs args)
