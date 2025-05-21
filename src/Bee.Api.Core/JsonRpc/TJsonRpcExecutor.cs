@@ -92,26 +92,13 @@ namespace Bee.Api.Core
         /// <param name="value">執行動作的傳入引數。</param>
         public object ExecuteMethod(string progID, string action, object value)
         {
-            var businessObject = ResolveBusinessObject(progID);
+            // 建立指定 progID 的商業邏輯物件實例
+            var businessObject = ApiServiceOptions.BusinessObjectResolver.CreateBusinessObject(AccessToken, progID);
             var method = businessObject.GetType().GetMethod(action);
             if (method == null)
                 throw new MissingMethodException($"Method '{action}' not found in business object '{progID}'.");
             return method.Invoke(businessObject, new object[] { value });
         }
 
-        /// <summary>
-        /// 解析並取得實體商業邏輯物件。
-        /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        private object ResolveBusinessObject(string progID)
-        {
-            if (string.IsNullOrWhiteSpace(progID))
-                throw new ArgumentException("ProgID cannot be null or empty.", nameof(progID));
-
-            if (StrFunc.IsEquals(progID, SysProgIDs.System))
-                return BackendInfo.BusinessObjectProvider.CreateSystemObject(AccessToken);
-            else
-                return BackendInfo.BusinessObjectProvider.CreateBusinessObject(AccessToken, progID);
-        }
     }
 }

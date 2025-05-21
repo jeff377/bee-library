@@ -14,6 +14,7 @@ namespace Bee.Api.Core
         private static IApiPayloadSerializer _payloadSerializer = new TBinaryFormatterPayloadSerializer(); // 預設實作
         private static IApiPayloadCompressor _payloadCompressor = new TGZipPayloadCompressor(); // 預設實作
         private static IApiPayloadEncryptor _payloadEncryptor = new TAesPayloadEncryptor(); // 預設實作
+        private static IBusinessObjectResolver businessObjectResolver = new TBusinessObjectResolver(); // 預設實作
 
         /// <summary>
         /// 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作。
@@ -69,6 +70,15 @@ namespace Bee.Api.Core
         {
             get => _payloadEncryptor;
             set => _payloadEncryptor = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// 商業物件建立，負責依照 progID 建立對應物件實例。
+        /// </summary>
+        public static IBusinessObjectResolver BusinessObjectResolver
+        {
+            get => businessObjectResolver;
+            set => businessObjectResolver = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
