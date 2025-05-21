@@ -28,6 +28,24 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
+        /// 初始化 API Payload 編碼元件，直接指定序列化器、壓縮器與加密器的實作。
+        /// 此方法可取代使用 Factory 的預設建立方式，適合進階自訂場景。
+        /// </summary>
+        /// <param name="serializer">自訂序列化器。</param>
+        /// <param name="compressor">自訂壓縮器。</param>
+        /// <param name="encryptor">自訂加密器。</param>
+        public static void Initialize(
+            IApiPayloadSerializer serializer,
+            IApiPayloadCompressor compressor,
+            IApiPayloadEncryptor encryptor)
+        {
+            PayloadSerializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+            PayloadCompressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
+            PayloadEncryptor = encryptor ?? throw new ArgumentNullException(nameof(encryptor));
+        }
+
+
+        /// <summary>
         /// API 金鑰與授權驗證器。
         /// </summary>
         public static IApiAuthorizationValidator AuthorizationValidator
@@ -73,7 +91,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 商業物件建立，負責依照 progID 建立對應物件實例。
+        /// 商業物件建立解析器，負責依照 progID 建立對應物件實例。
         /// </summary>
         public static IBusinessObjectResolver BusinessObjectResolver
         {

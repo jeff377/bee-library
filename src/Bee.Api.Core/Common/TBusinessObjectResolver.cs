@@ -5,7 +5,7 @@ using Bee.Define;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 商業物件建立預設實作，負責依照 progID 建立對應物件實例。
+    /// 商業物件建立解析器，負責依照 progID 建立對應物件實例。
     /// </summary>
     public class TBusinessObjectResolver : IBusinessObjectResolver
     {
