@@ -60,7 +60,7 @@ namespace Bee.Define
     public class SysProgIDs
     {
         /// <summary>
-        /// 系統層級商業邏輯物件。
+        /// 系統層級業務邏輯物件。
         /// </summary>
         public const string System = "System";
     }

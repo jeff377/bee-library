@@ -40,7 +40,7 @@ namespace Bee.Api.Core
 
                 // 從 Method 屬性解析出 ProgID 與 Action
                 var (progID, action) = ParseMethod(request.Method);
-                // 建立商業邏輯物件，執行指定方法
+                // 建立業務邏輯物件，執行指定方法
                 var value = ExecuteMethod(progID, action, request.Params.Value);
 
                 // 傳出結果
@@ -85,14 +85,14 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 建立商業邏輯物件，執行指定方法。
+        /// 建立業務邏輯物件，執行指定方法。
         /// </summary>
         /// <param name="progID">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">執行動作的傳入引數。</param>
         public object ExecuteMethod(string progID, string action, object value)
         {
-            // 建立指定 progID 的商業邏輯物件實例
+            // 建立指定 progID 的業務邏輯物件實例
             var businessObject = ApiServiceOptions.BusinessObjectResolver.CreateBusinessObject(AccessToken, progID);
             var method = businessObject.GetType().GetMethod(action);
             if (method == null)

@@ -1,7 +1,7 @@
 ﻿namespace Bee.Define
 {
     /// <summary>
-    /// 系統層級商業邏輯物件介面。
+    /// 系統層級業務邏輯物件介面。
     /// </summary>
     public interface ISystemObject : IBaseBusinessObject
     {

@@ -5,7 +5,7 @@ using Bee.Api.Core;
 namespace Bee.Connect
 {
     /// <summary>
-    /// 近端 API 服務提供者（在同一進程內直接存取後端商業邏輯）。
+    /// 近端 API 服務提供者（在同一進程內直接存取後端業務邏輯）。
     /// </summary>
     public class TLocalApiServiceProvider : IJsonRpcProvider
     {

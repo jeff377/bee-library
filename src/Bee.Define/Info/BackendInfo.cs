@@ -18,12 +18,12 @@ namespace Bee.Define
         public static string DefinePath { get; set; } = string.Empty;
 
         /// <summary>
-        /// 預載入系統商業邏輯物件，工具程式若發佈為獨立執行檔需預先載入。
+        /// 預載入系統業務邏輯物件，工具程式若發佈為獨立執行檔需預先載入。
         /// </summary>
         public static ISystemObject SystemObject { get; set; }
 
         /// <summary>
-        /// 系統層級商業邏輯物件預設型別，由設定檔指定。
+        /// 系統層級業務邏輯物件預設型別，由設定檔指定。
         /// </summary>
         public static string SystemTypeName
         {
@@ -32,7 +32,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 功能層級商業邏輯物件預設型別，由設定檔指定。
+        /// 功能層級業務邏輯物件預設型別，由設定檔指定。
         /// </summary>
         public static string BusinessTypeName
         {
@@ -65,7 +65,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 商業邏輯物件提供者。
+        /// 業務邏輯物件提供者。
         /// </summary>
         public static IBusinessObjectProvider BusinessObjectProvider
         {

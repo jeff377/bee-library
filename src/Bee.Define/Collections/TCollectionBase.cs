@@ -14,7 +14,7 @@ namespace Bee.Define
     /// <typeparam name="T">集合成員型別。</typeparam>
     [Serializable]
     public abstract class TCollectionBase<T> : Collection<T>, ICollectionBase, IObjectSerialize, ITagProperty
-        where T : class, ICollectionItem
+        where T : class, ICollectionItem  // 定義成員型別必須實作 ICollectionItem 介面
     {
         #region 建構函式
 
@@ -131,7 +131,7 @@ namespace Bee.Define
             // 加入成員
             base.InsertItem(index, item);
             // 設定成員的集合類別
-            (item as ICollectionItem).SetCollection(this);
+            item.SetCollection(this);
         }
 
         /// <summary>

@@ -16,7 +16,7 @@ namespace Bee.Define
     /// <typeparam name="T">集合成員型別。</typeparam>
     [Serializable]
     public class TKeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty, IMessagePackSerializationCallbackReceiver
-        where T : class, IKeyCollectionItem
+        where T : class, IKeyCollectionItem  // 定義成員型別必須實作 IKeyCollectionItem 介面
     {
         private ESerializeState _SerializeState = ESerializeState.None;
 

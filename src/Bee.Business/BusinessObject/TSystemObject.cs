@@ -7,7 +7,7 @@ using Bee.Define;
 namespace Bee.Business
 {
     /// <summary>
-    /// 系統層級商業邏輯物件。
+    /// 系統層級業務邏輯物件。
     /// </summary>
     public class TSystemObject : TBaseBusinessObject, ISystemObject
     {

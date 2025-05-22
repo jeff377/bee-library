@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Bee.Define
 {
     /// <summary>
-    /// 商業邏輯物件方法傳入引數基底類別。
+    /// 業務邏輯物件方法傳入引數基底類別。
     /// </summary>
     [Serializable]
     public abstract class TBusinessArgs : IObjectSerialize

@@ -8,7 +8,7 @@ using Bee.Define;
 namespace Bee.Connect
 {
     /// <summary>
-    /// 遠端 API 服務提供者（透過網路存取後端商業邏輯）。
+    /// 遠端 API 服務提供者（透過網路存取後端業務邏輯）。
     /// </summary>
     public class TRemoteApiServiceProvider : IJsonRpcProvider
     {

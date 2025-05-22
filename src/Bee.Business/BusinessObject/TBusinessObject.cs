@@ -4,7 +4,7 @@ using Bee.Define;
 namespace Bee.Business
 {
     /// <summary>
-    /// 功能層級商業邏輯物件。
+    /// 功能層級業務邏輯物件。
     /// </summary>
     public class TBusinessObject : TBaseBusinessObject, IBusinessObject
     {

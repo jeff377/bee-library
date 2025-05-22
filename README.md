@@ -47,7 +47,7 @@ Bee.NET Framework 是一套三層式應用架構，旨在加速企業資訊系�
 | **Bee.Define.dll**         | 前端 / 後端    | .NET Standard 2.0      | 定義系統結構化資料，如設定、資料表結構、表單配置。 |
 | **Bee.Cache.dll**          | 後端           | .NET Standard 2.0      | 執行階段快取模組，快取定義資料與衍生資料以提升效能。 |
 | **Bee.Db.dll**             | 後端           | .NET Standard 2.0      | 封裝資料庫操作邏輯，支援 SQL 命令組合與動態連線綁定。 |
-| **Bee.Business.dll**       | 後端           | .NET Standard 2.0      | 實作應用層商業邏輯，處理表單流程與業務規則。 |
+| **Bee.Business.dll**       | 後端           | .NET Standard 2.0      | 實作應用層業務邏輯，處理表單流程與業務規則。 |
 | **Bee.Api.Core.dll**       | 前端 / 後端           | .NET Standard 2.0      | 提供 API 核心支援，包含資料模型、加解密、序列化等功能。 |
 | **Bee.Api.AspNetCore.dll** | 後端       | .NET 8                 | 提供 ASP.NET Core 的 JSON-RPC 2.0 API 控制器，作為統一入口處理後端方法呼叫。 |
 | **Bee.Api.AspNet.dll**     | 後端           | .NET Framework 4.8     | 提供 ASP.NET 的 JSON-RPC 2.0 API HttpModule，作為統一的 POST 入口處理後端方法呼叫。 |

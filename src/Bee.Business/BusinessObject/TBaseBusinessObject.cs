@@ -4,7 +4,7 @@ using Bee.Define;
 namespace Bee.Business
 {
     /// <summary>
-    /// 商業邏輯物件基底類別。
+    /// 業務邏輯物件基底類別。
     /// </summary>
     public abstract class TBaseBusinessObject : IBaseBusinessObject
     {

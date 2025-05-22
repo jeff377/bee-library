@@ -8,11 +8,11 @@ namespace Bee.Api.Core
     public interface IBusinessObjectResolver
     {
         /// <summary>
-        /// 建立指定 progID 的商業邏輯物件實例。
+        /// 建立指定 progID 的業務邏輯物件實例。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progID">程式代碼。</param>
-        /// <returns>商業邏輯物件實例。</returns>
+        /// <returns>業務邏輯物件實例。</returns>
         object CreateBusinessObject(Guid accessToken, string progID);
     }
 

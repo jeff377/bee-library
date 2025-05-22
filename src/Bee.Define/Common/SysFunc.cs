@@ -9,12 +9,12 @@ namespace Bee.Define
     public static class SysFunc
     {
         /// <summary>
-        /// 建立系統層級商業邏輯物件。
+        /// 建立系統層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         public static ISystemObject CreateSystemObject(Guid accessToken)
         {
-            // 若預載入系統商業邏輯物件，則直接回傳
+            // 若預載入系統業務邏輯物件，則直接回傳
             if (BackendInfo.SystemObject != null) { return BackendInfo.SystemObject; }
 
             string typeName = BackendInfo.SystemTypeName;
@@ -22,7 +22,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 建立功能層級商業邏輯物件。
+        /// 建立功能層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progID">程式代碼。</param>

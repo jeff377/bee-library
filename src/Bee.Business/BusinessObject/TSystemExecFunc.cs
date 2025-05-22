@@ -6,7 +6,7 @@ using Bee.Define;
 namespace Bee.Business
 {
     /// <summary>
-    /// 系統層級商業邏輯物件提供的自訂方法。
+    /// 系統層級業務邏輯物件提供的自訂方法。
     /// </summary>
     internal class TSystemExecFunc
     {
