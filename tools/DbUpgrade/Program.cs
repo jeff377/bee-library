@@ -10,7 +10,7 @@ namespace DbUpgrade
         [STAThread]
         static void Main()
         {
-            ApplicationHandleException.Initialize();  // 應用程式全域例外處理
+            ApplicationExceptionHandler.Initialize();  // 應用程式全域例外處理
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();

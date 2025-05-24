@@ -1,4 +1,4 @@
-@baseUrl = http://localhost/jsonrpc_aspnet
+@baseUrl = http://localhost/jsonrpc
 @apiKey = test-api-key
 @accessToken = Bearer 22AC9A7C-6E76-4C07-8560-89784D86AA76
 

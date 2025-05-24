@@ -55,3 +55,10 @@ Bee.NET Framework 是一套三層式應用架構，旨在加速企業資訊系�
 | **Bee.UI.Core.dll**        | 前端       | .NET Standard 2.0      | 管理用戶端與伺服端連線的設定與狀態。 |
 | **Bee.UI.WinForms.dll**        | 前端       | .NET 8      | WinForms 使用者介面元件與排版管理。|
 
+
+## 📬 聯絡與關注
+
+歡迎追蹤我的技術筆記與實戰經驗分享：
+
+👉 [Facebook｜天台上的架構師](https://www.facebook.com/profile.php?id=61574839666569)  
+👉 [HackMD｜架構開發筆記](https://hackmd.io/@jeff377)

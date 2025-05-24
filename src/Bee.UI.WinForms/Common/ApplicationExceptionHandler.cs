@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Bee.UI.WinForms
+﻿namespace Bee.UI.WinForms
 {
     /// <summary>
-    /// 應用程式全域例外處理。
+    /// 應用程式全域例外處理器。
     /// </summary>
-    public static class ApplicationHandleException
+    public static class ApplicationExceptionHandler
     {
         /// <summary>
         /// 初始化。
@@ -49,7 +43,15 @@ namespace Bee.UI.WinForms
         /// <param name="exception">例外錯誤。</param>
         private static void ShowException(Exception exception)
         {
-            UIFunc.ErrorMsgBox(exception.Message);
+            var message = $"Exception Message: {exception.Message}\n\n" +
+                          $"Stack Trace: {exception.StackTrace}";
+
+            if (exception.InnerException != null)
+            {
+                message += $"\n\nInner Exception: {exception.InnerException.Message}";
+            }
+
+            UIFunc.ErrorMsgBox(message);
         }
     }
 }
