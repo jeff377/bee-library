@@ -14,8 +14,8 @@ namespace Bee.Base
     /// </remarks>
     public class TIPValidator
     {
-        private readonly List<string> _Whitelist;
-        private readonly List<string> _Blacklist;
+        private readonly List<string> _whitelist;
+        private readonly List<string> _blacklist;
 
         /// <summary>
         /// 建構函式。
@@ -24,8 +24,8 @@ namespace Bee.Base
         /// <param name="blacklist">黑名單 IP 位址模式的列表。</param>
         public TIPValidator(List<string> whitelist, List<string> blacklist)
         {
-            _Whitelist = whitelist ?? new List<string>();
-            _Blacklist = blacklist ?? new List<string>();
+            _whitelist = whitelist ?? new List<string>();
+            _blacklist = blacklist ?? new List<string>();
         }
 
         /// <summary>
@@ -33,7 +33,7 @@ namespace Bee.Base
         /// </summary>
         public List<string> Whitelist
         {
-            get { return _Whitelist; }
+            get { return _whitelist; }
         }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Bee.Base
         /// </summary>
         public List<string> Blacklist
         {
-            get { return _Blacklist; }
+            get { return _blacklist; }
         }
 
         /// <summary>
