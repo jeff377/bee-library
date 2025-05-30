@@ -1,25 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
-    <Nullable>enable</Nullable>
-    <UseWindowsForms>true</UseWindowsForms>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>DbUpgrade.ico</ApplicationIcon>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net8.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWindowsForms>true</UseWindowsForms>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ApplicationIcon>DbUpgrade.ico</ApplicationIcon>
+		<!-- 僅包含英文語系的資源，避免產生多語系 satellite assemblies -->
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Content Include="DbUpgrade.ico" />
-  </ItemGroup>
+	<ItemGroup>
+		<Content Include="DbUpgrade.ico" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
-    <ProjectReference Include="..\..\src\Bee.UI.WinForms\Bee.UI.WinForms.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
+		<ProjectReference Include="..\..\src\Bee.UI.WinForms\Bee.UI.WinForms.csproj" />
+	</ItemGroup>
 
 </Project>

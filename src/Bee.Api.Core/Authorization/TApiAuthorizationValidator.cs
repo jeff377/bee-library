@@ -9,20 +9,23 @@ namespace Bee.Api.Core
     public class TApiAuthorizationValidator : IApiAuthorizationValidator
     {
         /// <summary>
+        /// 不需授權的方法清單（大小寫敏感）。
+        /// </summary>
+        private static readonly HashSet<string> NoAuthMethods = new HashSet<string>
+        {
+            "System.Ping",
+            "System.GetApiPayloadOptions",
+            "System.Login"
+        };
+
+        /// <summary>
         /// 判斷指定的 JSON-RPC 方法是否需要授權。
         /// </summary>
         /// <param name="method">JSON-RPC 方法名稱（大小寫敏感）。</param>
         /// <returns>需要授權則回傳 true，否則 false。</returns>
         protected virtual bool IsAuthorizationRequired(string method)
         {
-            // 不需授權的方法清單（大小寫敏感）
-            var noAuthMethods = new HashSet<string>
-            {
-                "System.Ping",  // Ping 方法，連線測試使用
-                "System.GetApiPayloadOptions", // 取得 API 傳輸層的 Payload 編碼選項
-                "System.Login" // 登入方法
-            };
-            return !noAuthMethods.Contains(method);
+            return !NoAuthMethods.Contains(method);
         }
 
         /// <summary>

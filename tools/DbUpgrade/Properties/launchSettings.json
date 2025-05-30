@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "DbUpgrade": {
+      "commandName": "Project",
+      "commandLineArgs": "--Endpoint D:\\Git\\wendell\\src\\Application\\Fcst\\App_Data"
+    }
+  }
+}
