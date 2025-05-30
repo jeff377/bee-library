@@ -19,11 +19,14 @@ namespace Bee.Connect.UnitTests
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
 
-        [Fact]
-        public void ApiConnectValidator()
+        [Theory]
+        [InlineData("http://localhost/jsonrpc/api")]
+        [InlineData("http://localhost/jsonrpc_aspnet/api")]
+        public void ApiConnectValidator(string apiUrl)
         {
             var validator = new TApiConnectValidator();
-            var connectType = validator.Validate("http://localhost/jsonrpc/api");
+            var connectType = validator.Validate(apiUrl);
+
             Assert.Equal(EConnectType.Remote, connectType);  // 確認連線方式為遠端連線
         }
 
