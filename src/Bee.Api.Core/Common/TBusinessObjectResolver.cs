@@ -23,7 +23,7 @@ namespace Bee.Api.Core
             if (StrFunc.IsEquals(progID, SysProgIDs.System))
                 return BackendInfo.BusinessObjectProvider.CreateSystemObject(accessToken);
             else
-                return BackendInfo.BusinessObjectProvider.CreateBusinessObject(accessToken, progID);
+                return BackendInfo.BusinessObjectProvider.CreateFormObject(accessToken, progID);
         }
     }
 }

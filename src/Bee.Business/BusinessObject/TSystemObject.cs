@@ -32,7 +32,7 @@ namespace Bee.Business
         /// Ping 方法，測試 API 服務是否可用。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public TPingResult Ping(TPingArgs args)
+        public virtual TPingResult Ping(TPingArgs args)
         {
             return new TPingResult()
             {
@@ -47,7 +47,7 @@ namespace Bee.Business
         /// 取得 API 傳輸層的 Payload 編碼選項。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public TGetApiPayloadOptionsResult GetApiPayloadOptions(TGetApiPayloadOptionsArgs args)
+        public virtual TGetApiPayloadOptionsResult GetApiPayloadOptions(TGetApiPayloadOptionsArgs args)
         {
             var options = CacheFunc.GetSystemSettings().BackendConfiguration.ApiPayloadOptions;
             return new TGetApiPayloadOptionsResult()
@@ -56,42 +56,6 @@ namespace Bee.Business
                 Compressor = options.Compressor,
                 Encryptor = options.Encryptor
             };
-        }
-
-        /// <summary>
-        /// 執行 ExecFunc 方法的實作。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
-        protected override void DoExecFunc(TExecFuncArgs args, TExecFuncResult result)
-        {
-            InvokeExecFunc(args, result);
-        }
-
-        /// <summary>
-        /// 使用反射，執行 ExecFunc 方法。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
-        private void InvokeExecFunc(TExecFuncArgs args, TExecFuncResult result)
-        {
-            try
-            {
-                // 使用反射，執行 FuncID 對應的自訂方法
-                var execFunc = new TSystemExecFunc(this.AccessToken);
-                var method = execFunc.GetType().GetMethod(args.FuncID);
-                if (method == null)
-                    throw new MissingMethodException($"Method {args.FuncID} not found.");
-                method.Invoke(execFunc, new object[] { args, result });
-            }
-            catch (Exception ex)
-            {
-                // 使用反射時，需抓取 InnerException 才是原始例外錯誤
-                if (ex.InnerException != null)
-                    throw ex.InnerException;
-                else
-                    throw ex;
-            }
         }
 
         /// <summary>
@@ -140,8 +104,44 @@ namespace Bee.Business
             // 儲存定義資料
             var access = new TCacheDefineAccess();
             access.SaveDefine(args.DefineType, defineObject, args.Keys);
-            var oResult = new TSaveDefineResult();
-            return oResult;
+            var result = new TSaveDefineResult();
+            return result;
+        }
+
+        /// <summary>
+        /// 執行 ExecFunc 方法的實作。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        /// <param name="result">傳出結果。</param>
+        protected override void DoExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        {
+            InvokeExecFunc(args, result);
+        }
+
+        /// <summary>
+        /// 使用反射，執行 ExecFunc 方法。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        /// <param name="result">傳出結果。</param>
+        private void InvokeExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        {
+            try
+            {
+                // 使用反射，執行 FuncID 對應的自訂方法
+                var execFunc = new TSystemExecFunc(this.AccessToken);
+                var method = execFunc.GetType().GetMethod(args.FuncID);
+                if (method == null)
+                    throw new MissingMethodException($"Method {args.FuncID} not found.");
+                method.Invoke(execFunc, new object[] { args, result });
+            }
+            catch (Exception ex)
+            {
+                // 使用反射時，需抓取 InnerException 才是原始例外錯誤
+                if (ex.InnerException != null)
+                    throw ex.InnerException;
+                else
+                    throw ex;
+            }
         }
     }
 }

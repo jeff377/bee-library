@@ -28,7 +28,7 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progID">程式代碼。</param>
-        public object CreateBusinessObject(Guid accessToken, string progID)
+        public object CreateFormObject(Guid accessToken, string progID)
         {
             return SysFunc.CreateBusinessObject(accessToken, progID);
         }

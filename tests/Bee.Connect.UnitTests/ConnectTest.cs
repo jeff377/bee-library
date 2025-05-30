@@ -31,16 +31,31 @@ namespace Bee.Connect.UnitTests
         }
 
         /// <summary>
-        /// 透過 Connect 執行 Hello 方法。
+        /// 透過 SystemConnector 執行 Hello 方法。
         /// </summary>
         [Fact]
-        public void Hello()
+        public void SystemConnector_Hello()
         {
             // 設定 ExecFunc 方法傳入引數
             var args = new TExecFuncArgs("Hello");
-            // 透過 Connect 執行 ExecFunc 方法
+            // 透過 Connector 執行 ExecFunc 方法
             Guid accessToken = Guid.NewGuid();
             var connector = new TSystemConnector(accessToken);
+            var result = connector.ExecFunc(args);
+            Assert.NotNull(result);  // 確認 ExecFunc 方法傳出結果不為 null
+        }
+
+        /// <summary>
+        /// 透過 FormConnector 執行 Hello 方法。
+        /// </summary>
+        [Fact]
+        public void FormConnector_Hello()
+        {
+            // 設定 ExecFunc 方法傳入引數
+            var args = new TExecFuncArgs("Hello");
+            // 透過 Connector 執行 ExecFunc 方法
+            Guid accessToken = Guid.NewGuid();
+            var connector = new TFormConnector(accessToken, "demo");
             var result = connector.ExecFunc(args);
             Assert.NotNull(result);  // 確認 ExecFunc 方法傳出結果不為 null
         }

@@ -18,6 +18,6 @@ namespace Bee.Define
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progID">程式代碼。</param>
-        object CreateBusinessObject(Guid accessToken, string progID);
+        object CreateFormObject(Guid accessToken, string progID);
     }
 }

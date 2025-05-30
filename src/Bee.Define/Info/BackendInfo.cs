@@ -9,8 +9,8 @@ namespace Bee.Define
     {
         private static string _SystemTypeName = string.Empty;
         private static string _BusinessTypeName = string.Empty;
-        private static IDefineProvider _DefineProvider = null;
         private static IBusinessObjectProvider _BusinessObjectProvider = null;
+        private static IDefineProvider _DefineProvider = null;
 
         /// <summary>
         /// 定義資料路徑。
@@ -41,6 +41,20 @@ namespace Bee.Define
         }
 
         /// <summary>
+        /// 業務邏輯物件提供者。
+        /// </summary>
+        public static IBusinessObjectProvider BusinessObjectProvider
+        {
+            get
+            {
+                if (_BusinessObjectProvider == null)
+                    _BusinessObjectProvider = BaseFunc.CreateInstance("Bee.Cache.TBusinessObjectProvider") as IBusinessObjectProvider;
+                return _BusinessObjectProvider;
+            }
+            set { _BusinessObjectProvider = value; }
+        }
+
+        /// <summary>
         /// 資料庫類型。
         /// </summary>
         public static EDatabaseType DatabaseType { get; set; } = EDatabaseType.SQLServer;
@@ -62,20 +76,6 @@ namespace Bee.Define
                 return _DefineProvider;
             }
             set { _DefineProvider = value; }
-        }
-
-        /// <summary>
-        /// 業務邏輯物件提供者。
-        /// </summary>
-        public static IBusinessObjectProvider BusinessObjectProvider
-        {
-            get
-            {
-                if (_BusinessObjectProvider == null)
-                    _BusinessObjectProvider = BaseFunc.CreateInstance("Bee.Cache.TBusinessObjectProvider") as IBusinessObjectProvider;
-                return _BusinessObjectProvider;
-            }
-            set { _BusinessObjectProvider = value; }
         }
     }
 }
