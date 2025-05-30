@@ -32,11 +32,11 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 功能層級業務邏輯物件預設型別，由設定檔指定。
+        /// 表單層級業務邏輯物件預設型別，由設定檔指定。
         /// </summary>
-        public static string BusinessTypeName
+        public static string FormTypeName
         {
-            get => StrFunc.IsEmpty(_BusinessTypeName) ? "Bee.Business.TBusinessObject" : _BusinessTypeName;
+            get => StrFunc.IsEmpty(_BusinessTypeName) ? "Bee.Business.TFormObject" : _BusinessTypeName;
             set => _BusinessTypeName = value;
         }
 

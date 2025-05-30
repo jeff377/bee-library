@@ -24,12 +24,12 @@ namespace Bee.Define
         public string SystemTypeName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 功能層級業務邏輯物件預設型別。
+        /// 表單層級業務邏輯物件預設型別。
         /// </summary>
         [Category("System")]
-        [Description("功能層級業務邏輯物件預設型別。")]
+        [Description("表單層級業務邏輯物件預設型別。")]
         [DefaultValue("")]
-        public string BusinessTypeName { get; set; } = string.Empty;
+        public string FormTypeName { get; set; } = string.Empty;
 
         /// <summary>
         /// 資料庫類型。
@@ -71,9 +71,9 @@ namespace Bee.Define
             // 系統層級業務邏輯物件預設型別
             if (StrFunc.IsNotEmpty(this.SystemTypeName))
                 BackendInfo.SystemTypeName = this.SystemTypeName;
-            // 功能層級業務邏輯物件預設型別
-            if (StrFunc.IsNotEmpty(this.BusinessTypeName))
-                BackendInfo.BusinessTypeName = this.BusinessTypeName;
+            // 表單層級業務邏輯物件預設型別
+            if (StrFunc.IsNotEmpty(this.FormTypeName))
+                BackendInfo.FormTypeName = this.FormTypeName;
             // 資料庫類型
             BackendInfo.DatabaseType = this.DatabaseType;
             // 預設資料庫編號

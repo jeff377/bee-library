@@ -22,14 +22,14 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 建立功能層級業務邏輯物件。
+        /// 建立表單層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progID">程式代碼。</param>
-        public static IBusinessObject CreateBusinessObject(Guid accessToken, string progID)
+        public static IFormObject CreateBusinessObject(Guid accessToken, string progID)
         {
-            string typeName = BackendInfo.BusinessTypeName;
-            return BaseFunc.CreateInstance(typeName, new object[] { accessToken, progID }) as IBusinessObject;
+            string typeName = BackendInfo.FormTypeName;
+            return BaseFunc.CreateInstance(typeName, new object[] { accessToken, progID }) as IFormObject;
         }
 
         /// <summary>

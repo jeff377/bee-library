@@ -9,7 +9,7 @@ namespace Bee.Business
     /// <summary>
     /// 系統層級業務邏輯物件。
     /// </summary>
-    public class TSystemObject : TBaseBusinessObject, ISystemObject
+    public class TSystemObject : TBusinessObject, ISystemObject
     {
         #region 建構函式
 

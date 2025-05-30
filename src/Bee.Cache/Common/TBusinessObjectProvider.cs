@@ -24,7 +24,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 建立功能層級業務邏輯物件。
+        /// 建立表單層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progID">程式代碼。</param>
