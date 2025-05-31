@@ -5,7 +5,7 @@ using Bee.Define;
 namespace Bee.Connect
 {
     /// <summary>
-    /// 系統層級服務連線器。
+    /// 系統層級 API 服務連接器。
     /// </summary>
     public class TSystemConnector : TApiConnector
     {

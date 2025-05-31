@@ -16,7 +16,7 @@ namespace Bee.Connect
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="connector">系統層級服務連線器。</param>
+        /// <param name="connector">系統層級 API 服務連接器。</param>
         public TApiDefineAccess(TSystemConnector connector)
         {
             _Connector = connector;
@@ -26,7 +26,7 @@ namespace Bee.Connect
         #endregion
 
         /// <summary>
-        /// 系統層級服務連線器。
+        /// 系統層級 API 服務連接器。
         /// </summary>
         public TSystemConnector Connector
         {

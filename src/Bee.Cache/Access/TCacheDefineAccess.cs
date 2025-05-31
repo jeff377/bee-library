@@ -101,14 +101,12 @@ namespace Bee.Cache
         /// <param name="settings">系統設定。</param>
         public void SaveSystemSettings(TSystemSettings settings)
         {
-            TSystemSettingsCache oCache;
-            string sFilePath;
-
-            // 儲存系統設定後，移除快取
-            sFilePath = DefinePathInfo.GetSystemSettingsFilePath();
-            SerializeFunc.ObjectToXmlFile(settings, sFilePath);
-            oCache = new TSystemSettingsCache();
-            oCache.Remove();
+            // 儲存系統設定
+            string filePath = DefinePathInfo.GetSystemSettingsFilePath();
+            SerializeFunc.ObjectToXmlFile(settings, filePath);
+            // 移除快取
+            var cache = new TSystemSettingsCache();
+            cache.Remove();
         }
 
         /// <summary>
@@ -128,9 +126,10 @@ namespace Bee.Cache
             TDatabaseSettingsCache oCache;
             string sFilePath;
 
-            // 儲存資料庫設定後，移除快取
+            // 儲存資料庫設定後
             sFilePath = DefinePathInfo.GetDatabaseSettingsFilePath();
             SerializeFunc.ObjectToXmlFile(settings, sFilePath);
+            // 移除快取
             oCache = new TDatabaseSettingsCache();
             oCache.Remove();
         }

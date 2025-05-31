@@ -57,7 +57,7 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
-        /// 系統層級服務連線器，服務端點異動時需重新建立。
+        /// 系統層級 API 服務連接器，服務端點異動時需重新建立。
         /// </summary>
         public static TSystemConnector SystemConnector
         {
@@ -73,7 +73,7 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
-        /// 建立系統層級服務連線器。
+        /// 建立系統層級 API 服務連接器。
         /// </summary>
         /// <returns></returns>
         private static TSystemConnector CreateSystemConnector()
@@ -82,6 +82,18 @@ namespace Bee.UI.Core
                 return new TSystemConnector(FrontendInfo.AccessToken);
             else
                 return new TSystemConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken);
+        }
+
+        /// <summary>
+        /// 建立表單層級 API 服務連接器。
+        /// </summary>
+        /// <param name="progID">程式代碼。</param>
+        public static TFormConnector CreateFormConnector(string progID)
+        { 
+            if (FrontendInfo.ConnectType != EConnectType.Local)
+                return new TFormConnector(FrontendInfo.AccessToken, progID);
+            else
+                return new TFormConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progID);
         }
 
         /// <summary>

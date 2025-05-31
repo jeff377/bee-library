@@ -5,7 +5,7 @@ using Bee.Base;
 namespace Bee.Connect
 {
     /// <summary>
-    /// API 服務連線器基底類別。
+    /// API 服務連接器基底類別。
     /// </summary>
     public abstract class TApiConnector
     {

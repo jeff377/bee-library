@@ -4,7 +4,7 @@ using Bee.Define;
 namespace Bee.Connect
 {
     /// <summary>
-    /// 表單層級服務連線器。
+    /// 表單層級 API 服務連接器。
     /// </summary>
     public class TFormConnector : TApiConnector
     {
