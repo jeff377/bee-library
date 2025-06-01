@@ -87,4 +87,4 @@ jobs:
 
           如需安裝請至 NuGet.org 查詢對應版本。
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_PAT_WITH_REPO_SCOPE }}

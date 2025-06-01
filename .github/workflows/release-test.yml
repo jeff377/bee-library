@@ -1,0 +1,40 @@
+name: Release Test
+
+on:
+  push:
+    tags:
+      - 'v*'  # 只有推送 tag（例如 v1.2.3）時才會觸發
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.2.3)'
+        required: true
+
+jobs:
+  test-release:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Create GitHub Release
+      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+        name: Release ${{ github.event.inputs.tag || github.ref_name }}
+        body: |
+          自動發佈 NuGet 套件：
+          - Bee.Base
+          - Bee.Define
+          - Bee.Cache
+          - Bee.Db
+          - Bee.Business
+          - Bee.Connect
+          - Bee.Api.Core
+          - Bee.Api.AspNetCore
+          - Bee.Api.AspNet
+          - Bee.UI.Core
+          - Bee.UI.WinForms
+
+          如需安裝請至 NuGet.org 查詢對應版本。
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_PAT_WITH_REPO_SCOPE }}
