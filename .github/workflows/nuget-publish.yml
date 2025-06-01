@@ -1,0 +1,68 @@
+name: Publish NuGet Packages
+
+on:
+  push:
+    tags:
+      - 'v*'  # 只有推送 tag（例如 v1.2.3）時才會觸發
+
+jobs:
+  publish:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build solution
+      run: dotnet build Bee.Library.sln --configuration Release --no-restore
+
+    - name: Pack all NuGet projects
+      run: |
+        dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Define/Bee.Define.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Cache/Bee.Cache.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Connect/Bee.Connect.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Api.AspNet/Bee.Api.AspNet.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.UI.WinForms/Bee.UI.WinForms.csproj --configuration Release --output ./nupkgs
+
+    - name: Push to NuGet
+      run: |
+        for f in ./nupkgs/*.nupkg; do
+          dotnet nuget push "$f" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        done
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        body: |
+          自動發佈 NuGet 套件：
+          - Bee.Base
+          - Bee.Define
+          - Bee.Cache
+          - Bee.Db
+          - Bee.Business
+          - Bee.Connect
+          - Bee.Api.Core
+          - Bee.Api.AspNetCore
+          - Bee.Api.AspNet
+          - Bee.UI.Core
+          - Bee.UI.WinForms
+
+          如需安裝請至 NuGet.org 查詢對應版本。
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
