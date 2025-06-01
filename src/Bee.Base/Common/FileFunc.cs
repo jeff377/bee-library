@@ -37,17 +37,7 @@ namespace Bee.Base
         /// <param name="filePath">檔案路徑。</param>
         public static byte[] FileToBytes(string filePath)
         {
-            FileStream oFileStream;
-            Byte[] oBytes;
-            int iLen;
-
-            using (oFileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
-            {
-                iLen = (int)oFileStream.Length;
-                oBytes = new Byte[iLen];
-                oFileStream.Read(oBytes, 0, iLen);
-            }
-            return oBytes;
+            return File.ReadAllBytes(filePath);
         }
 
         /// <summary>
@@ -57,16 +47,10 @@ namespace Bee.Base
         /// <param name="filePath">檔案路徑。</param>
         public static void BytesToFile(byte[] bytes, string filePath)
         {
-            FileStream oFileStream;
-            int iLen;
-
             // 判斷目錄是否存在，不存在則建立
             DirectoryCheck(filePath, true);
-
-            iLen = bytes.Length;
-            oFileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
-            oFileStream.Write(bytes, 0, iLen);
-            oFileStream.Close();
+            // 二進位資料寫入檔案
+            File.WriteAllBytes(filePath, bytes);
         }
 
         /// <summary>
@@ -242,12 +226,10 @@ namespace Bee.Base
         /// <param name="subPath">子路徑。</param>
         public static string GetAppPath(string subPath ="")
         {
-            string sPath;
-
-            sPath = AppDomain.CurrentDomain.BaseDirectory;
+            string path = AppDomain.CurrentDomain.BaseDirectory;
             if (StrFunc.IsNotEmpty(subPath))
-                sPath = PathCombine(sPath, subPath);
-            return sPath;
+                path = PathCombine(path, subPath);
+            return path;
         }
 
         /// <summary>

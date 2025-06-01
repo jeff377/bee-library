@@ -1,4 +1,3 @@
-using Bee.Base;
 using Bee.Define;
 using Bee.UI.Core;
 using Bee.UI.WinForms;

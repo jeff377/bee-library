@@ -8,8 +8,8 @@ namespace Bee.Connect
     /// </summary>
     public class TApiDefineAccess : IDefineAccess
     {
-        private readonly TSystemConnector _Connector = null;
-        private readonly TDictionary<object> _List = null;
+        private readonly TSystemConnector _connector = null;
+        private readonly TDictionary<object> _list = null;
 
         #region 建構函式
 
@@ -19,8 +19,8 @@ namespace Bee.Connect
         /// <param name="connector">系統層級 API 服務連接器。</param>
         public TApiDefineAccess(TSystemConnector connector)
         {
-            _Connector = connector;
-            _List = new TDictionary<object>();
+            _connector = connector;
+            _list = new TDictionary<object>();
         }
 
         #endregion
@@ -28,17 +28,17 @@ namespace Bee.Connect
         /// <summary>
         /// 系統層級 API 服務連接器。
         /// </summary>
-        public TSystemConnector Connector
+        private TSystemConnector Connector
         {
-            get { return _Connector; }
+            get { return _connector; }
         }
 
         /// <summary>
         /// 存放已取得定義資料的集合。
         /// </summary>
-        public TDictionary<object> List
+        private TDictionary<object> List
         {
-            get { return _List; }
+            get { return _list; }
         }
 
         /// <summary>
