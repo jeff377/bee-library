@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'v*'  # 只有推送 tag（例如 v1.2.3）時才會觸發
+  workflow_dispatch:
 
 jobs:
   publish:
@@ -16,7 +17,13 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: '8.0.x'
+        dotnet-version: |
+          8.0.x
+          6.0.x
+          3.1.x  # 可省略，如確定不使用 legacy tooling
+
+    - name: Add MSBuild to PATH (for .NET Framework)
+      uses: microsoft/setup-msbuild@v1.3
 
     - name: Restore dependencies
       run: dotnet restore
