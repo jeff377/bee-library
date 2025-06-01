@@ -5,6 +5,10 @@ on:
     tags:
       - 'v*'  # 只有推送 tag（例如 v1.2.3）時才會觸發
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g., v1.2.3)'
+        required: true
 
 jobs:
   publish:
@@ -62,10 +66,11 @@ jobs:
         }
 
     - name: Create GitHub Release
+      if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: ${{ github.ref_name }}
-        name: Release ${{ github.ref_name }}
+        tag_name: ${{ github.event.inputs.tag || github.ref_name }}
+        name: Release ${{ github.event.inputs.tag || github.ref_name }}
         body: |
           自動發佈 NuGet 套件：
           - Bee.Base
