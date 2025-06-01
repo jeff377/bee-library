@@ -57,9 +57,9 @@ jobs:
 
     - name: Push to NuGet
       run: |
-        for f in ./nupkgs/*.nupkg; do
-          dotnet nuget push "$f" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-        done
+        Get-ChildItem -Path ./nupkgs -Filter *.nupkg | ForEach-Object {
+          dotnet nuget push $_.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+        }
 
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
