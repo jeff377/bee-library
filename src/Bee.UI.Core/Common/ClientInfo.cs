@@ -89,8 +89,8 @@ namespace Bee.UI.Core
         /// </summary>
         /// <param name="progID">程式代碼。</param>
         public static TFormConnector CreateFormConnector(string progID)
-        { 
-            if (FrontendInfo.ConnectType != EConnectType.Local)
+        {
+            if (FrontendInfo.ConnectType == EConnectType.Local)
                 return new TFormConnector(FrontendInfo.AccessToken, progID);
             else
                 return new TFormConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progID);
@@ -114,7 +114,7 @@ namespace Bee.UI.Core
         /// <summary>
         /// UI 相關的視窗 (View) 服務。
         /// </summary>
-        public static IUIViewService UIViewService { get; private set;}
+        public static IUIViewService UIViewService { get; private set; }
 
         /// <summary>
         /// 近端連線指定端點不在存設定檔時，是否自動生成 System.Settings.xml 及 Database.Settings.xml 設定檔。
