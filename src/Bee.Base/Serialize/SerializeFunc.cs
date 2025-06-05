@@ -277,9 +277,9 @@ namespace Bee.Base
             object value;
             using (MemoryStream stream = new MemoryStream(bytes))
             {
-                var oFormatter = new BinaryFormatter();
-                oFormatter.Binder = new TBinarySerializationBinder();
-                value = oFormatter.Deserialize(stream);
+                var formatter = new BinaryFormatter();
+                formatter.Binder = new TBinarySerializationBinder();
+                value = formatter.Deserialize(stream);
             }
 
             // 反序列化後執行作業

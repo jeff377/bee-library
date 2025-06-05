@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
-using Newtonsoft.Json;
 
 namespace Bee.Define
 {
