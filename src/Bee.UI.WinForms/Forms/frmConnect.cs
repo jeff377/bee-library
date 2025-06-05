@@ -21,7 +21,7 @@ namespace Bee.UI.WinForms
         /// </summary>
         private void frmConnect_Load(object sender, EventArgs e)
         {
-            edtEndpoint.Text = ClientInfo.ClientSettings.Endpoint;
+            edtEndpoint.Text = ClientInfo.GetEndpoint();
         }
 
         private void btnOK_Click(object sender, EventArgs e)

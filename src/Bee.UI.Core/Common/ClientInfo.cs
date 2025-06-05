@@ -222,10 +222,12 @@ namespace Bee.UI.Core
             var validator = new TApiConnectValidator();
             try
             {
+                // 取得目前設置服務端點
+                string endpoint = GetEndpoint();
                 // 驗證服務端點，傳回對應的連線方式
-                var connectType = validator.Validate(ClientSettings.Endpoint, AllowGenerateSettings);
+                var connectType = validator.Validate(endpoint, AllowGenerateSettings);
                 // 設置連線方式
-                SetConnectType(connectType, ClientSettings.Endpoint);
+                SetConnectType(connectType, endpoint);
                 // 初始化 API 服務選項
                 ApiServiceOptionsInitialize();
                 return true;
@@ -253,7 +255,8 @@ namespace Bee.UI.Core
             Arguments = BaseFunc.GetCommandLineArgs();
             if (Arguments.ContainsKey("Endpoint"))
             {
-                ClientSettings.Endpoint = Arguments["Endpoint"];
+                // 由命令列引數設定服務端點
+                EndpointStorage.SetEndpoint(Arguments["Endpoint"]);
             }
             // 初始化連線設置
             if (!ClientInfo.InitializeConnect(connectTypes))

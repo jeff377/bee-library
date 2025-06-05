@@ -6,14 +6,21 @@
     public interface IEndpointStorage
     {
         /// <summary>
-        /// 儲存服務端點。
-        /// </summary>
-        void SaveEndpoint(string endpoint);
-
-        /// <summary>
         /// 取得服務端點。
         /// </summary>
         string LoadEndpoint();
+
+        /// <summary>
+        /// 設定服務端點。
+        /// </summary>
+        /// <param name="endpoint">服務端點。</param>
+        void SetEndpoint(string endpoint);
+
+        /// <summary>
+        /// 設定並儲存服務端點。
+        /// </summary>
+        /// <param name="endpoint">服務端點。</param>
+        void SaveEndpoint(string endpoint);
     }
 
 }
