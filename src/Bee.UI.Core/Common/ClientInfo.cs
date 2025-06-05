@@ -22,6 +22,11 @@ namespace Bee.UI.Core
         public static Dictionary<string, string> Arguments { get; private set; } = null;
 
         /// <summary>
+        /// 服務端點儲存區。
+        /// </summary>
+        public static IEndpointStorage EndpointStorage { get; private set; } = new TEndpointStorage();
+
+        /// <summary>
         /// 用戶端設定。
         /// </summary>
         public static TClientSettings ClientSettings
@@ -195,9 +200,16 @@ namespace Bee.UI.Core
             SetConnectType(connectType, endpoint);
             // 初始化 API 服務選項
             ApiServiceOptionsInitialize();
-            // 儲存用戶端設定
-            ClientSettings.Endpoint = endpoint;
-            ClientSettings.Save();
+            // 儲存服務端點
+            EndpointStorage.SaveEndpoint(endpoint);
+        }
+
+        /// <summary>
+        /// 取得目前設置服務端點。
+        /// </summary>
+        public static string GetEndpoint()
+        {
+            return EndpointStorage.LoadEndpoint();
         }
 
         /// <summary>
