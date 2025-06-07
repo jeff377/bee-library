@@ -5,15 +5,14 @@
     /// </summary>
     public static class SysInfo
     {
-        private static string _Version = string.Empty;
-
         /// <summary>
         /// 系統主版琥。
         /// </summary>
-        public static string Version
-        {
-            get { return _Version; }
-            set { _Version = value; }
-        }
+        public static string Version { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 是否為偵錯模式。
+        /// </summary>
+        public static bool IsDebugMode { get; set; } = false;
     }
 }

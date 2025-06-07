@@ -136,7 +136,7 @@ namespace Bee.Define
         /// </summary>
         [Description("服務程式參數及環境設置。")]
         [Browsable(false)]
-        public TBackgroundServiceConfiguration BackgroundServiceConfiguration { get; set; } = new TBackgroundServiceConfiguration();    
+        public TBackgroundServiceConfiguration BackgroundServiceConfiguration { get; set; } = new TBackgroundServiceConfiguration();
 
         /// <summary>
         /// 延伸屬性集合。
@@ -159,8 +159,8 @@ namespace Bee.Define
         /// </summary>
         public void Initialize()
         {
-            // 系統主版琥
-            SysInfo.Version = this.CommonConfiguration.Version;
+            // 通用初始化
+            this.CommonConfiguration.Initialize();
             // 後端初始化
             this.BackendConfiguration.Initialize();
         }

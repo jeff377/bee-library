@@ -15,16 +15,26 @@ namespace Bee.Define
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class TCommonConfiguration
     {
-        private string _Version = string.Empty;
-
         /// <summary>
-        /// 系統版號。
+        /// 系統主版琥。
         /// </summary>
         [Description("系統版號。")]
-        public string Version
+        public string Version { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 是否為偵錯模式。
+        /// </summary>
+        [Description("是否為偵錯模式")]
+        [DefaultValue(false)]
+        public bool IsDebugMode { get; set; } = false;
+
+        /// <summary>
+        /// 初始化。
+        /// </summary>
+        public void Initialize()
         {
-            get { return _Version; }
-            set { _Version = value; }
+            SysInfo.Version = Version;
+            SysInfo.IsDebugMode = IsDebugMode;
         }
 
         /// <summary>
