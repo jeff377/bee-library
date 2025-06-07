@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Bee.Base;
-using Bee.Define;
 
 namespace Bee.Api.Core
 {
@@ -30,6 +28,24 @@ namespace Bee.Api.Core
         /// <param name="request">JSON-RPC 請求模型。</param>
         public TJsonRpcResponse Execute(TJsonRpcRequest request)
         {
+            return ExecuteAsyncCore(request).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// 非同步執行 API 方法。
+        /// </summary>
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request)
+        {
+            return ExecuteAsyncCore(request);
+        }
+
+        /// <summary>
+        /// 內部非同步執行核心邏輯。
+        /// </summary>
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        private async Task<TJsonRpcResponse> ExecuteAsyncCore(TJsonRpcRequest request)
+        {
             var response = new TJsonRpcResponse(request);
             try
             {
@@ -41,10 +57,10 @@ namespace Bee.Api.Core
                 // 從 Method 屬性解析出 ProgID 與 Action
                 var (progID, action) = ParseMethod(request.Method);
                 // 建立業務邏輯物件，執行指定方法
-                var value = ExecuteMethod(progID, action, request.Params.Value);
+                var value = await ExecuteMethodAsync(progID, action, request.Params.Value);
 
                 // 傳出結果
-                response.Result = new TJsonRpcResult() { Value = value };
+                response.Result = new TJsonRpcResult { Value = value };
                 // 若傳出結果需要編碼，則進行編碼
                 if (isEncoded) { response.Encode(); }
             }
@@ -56,15 +72,6 @@ namespace Bee.Api.Core
                     response.Error = new TJsonRpcError(-1, ex.Message);
             }
             return response;
-        }
-
-        /// <summary>
-        /// 非同步執行 API 方法。
-        /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
-        public Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request)
-        {
-            return Task.FromResult(Execute(request));
         }
 
         /// <summary>
@@ -85,20 +92,36 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 建立業務邏輯物件，執行指定方法。
+        /// 建立業務邏輯物件，非同步執行指定方法。
         /// </summary>
         /// <param name="progID">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">執行動作的傳入引數。</param>
-        public object ExecuteMethod(string progID, string action, object value)
+        public async Task<object> ExecuteMethodAsync(string progID, string action, object value)
         {
             // 建立指定 progID 的業務邏輯物件實例
             var businessObject = ApiServiceOptions.BusinessObjectResolver.CreateBusinessObject(AccessToken, progID);
             var method = businessObject.GetType().GetMethod(action);
             if (method == null)
                 throw new MissingMethodException($"Method '{action}' not found in business object '{progID}'.");
-            return method.Invoke(businessObject, new object[] { value });
-        }
 
+            var result = method.Invoke(businessObject, new object[] { value });
+
+            // 若方法為非同步方法（Task 或 Task<T>），則進行 await
+            if (result is Task task)
+            {
+                // 等待該非同步任務完成，（避免死鎖，在後端環境推薦使用）
+                await task.ConfigureAwait(false);
+                // 若為 Task<T> 則取出 Result；否則為 Task (void)，回傳 null
+                var taskType = task.GetType();
+                var isGeneric = taskType.IsGenericType && taskType.GetGenericTypeDefinition() == typeof(Task<>);
+                return isGeneric
+                    ? taskType.GetProperty("Result")?.GetValue(task)
+                    : null;
+            }
+
+            return result;
+        }
     }
+
 }
