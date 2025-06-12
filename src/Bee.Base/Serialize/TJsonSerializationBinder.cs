@@ -52,20 +52,7 @@ namespace Bee.Base
         /// <param name="typeName">型別名稱。</param>
         private bool ValidateType(string typeName)
         {
-            // 正向列舉允許的命名空間
-            if (typeName.StartsWith("Bee.Base.") ||
-                typeName.StartsWith("Bee.Define."))
-            {
-                return true;
-            }
-
-            // 正向列舉允許型別
-            string[] typeNames = new string[] { "System.Byte[]" };
-            foreach (string name in typeNames)
-            {
-                if (typeName == name) { return true; }
-            }
-            return false;
+            return SysInfo.IsTypeNameAllowed(typeName);
         }
     }
 }

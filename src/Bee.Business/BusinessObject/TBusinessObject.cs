@@ -22,7 +22,8 @@ namespace Bee.Business
         /// <param name="accessToken">存取令牌。</param>
         public TBusinessObject(Guid accessToken)
         {
-            this.AccessToken = accessToken;
+            AccessToken = accessToken;
+            // SessionInfo = CacheFunc.GetSessionInfo(accessToken);
         }
 
         #endregion
@@ -31,6 +32,11 @@ namespace Bee.Business
         /// 存取令牌。
         /// </summary>
         public Guid AccessToken { get; private set; }
+
+        /// <summary>
+        /// 連線資訊。
+        /// </summary>
+        public TSessionInfo SessionInfo { get; private set; }   
 
         /// <summary>
         /// 執行自訂方法。

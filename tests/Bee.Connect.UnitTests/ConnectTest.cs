@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Db;
 using Bee.Define;
 
@@ -7,6 +8,7 @@ namespace Bee.Connect.UnitTests
     {
         static ConnectTest()
         {
+            SysInfo.IsDebugMode = true;
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
             // 設定測試環境

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Xml.Serialization;
 using Bee.Base;
 
@@ -29,12 +31,47 @@ namespace Bee.Define
         public bool IsDebugMode { get; set; } = false;
 
         /// <summary>
+        /// 允許 JSON-RPC 傳遞資料的型別命名空間清單（以 '|' 分隔）。
+        /// 僅允許這些命名空間中的型別進行反序列化，以確保安全性。
+        /// 設定格式範例：Custom.Module|ThirdParty.Dto
+        /// 注意：Bee.Base 與 Bee.Define 為系統內建的預設命名空間，無需額外指定。
+        /// </summary>
+        [Description("允許 JSON-RPC 傳遞資料的型別命名空間清單，以 '|' 分隔。")]
+        [DefaultValue("")]
+        public string AllowedTypeNamespaces { get; set; } = string.Empty;
+
+        /// <summary>
         /// 初始化。
         /// </summary>
         public void Initialize()
         {
             SysInfo.Version = Version;
             SysInfo.IsDebugMode = IsDebugMode;
+
+            // 初始化 HashSet 以確保不重複
+            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Bee.Base",
+                "Bee.Define"
+            };
+
+            // 使用者自訂命名空間清單（以 '|' 分隔）
+            // 使用者設定值可能為 null、空白或帶多餘的分隔符
+            if (!string.IsNullOrWhiteSpace(AllowedTypeNamespaces))
+            {
+                var parts = AllowedTypeNamespaces.Split('|');
+                foreach (var ns in parts)
+                {
+                    var trimmed = ns.Trim().TrimEnd('.');
+                    if (!string.IsNullOrEmpty(trimmed))
+                    {
+                        allowed.Add(trimmed);
+                    }
+                }
+            }
+
+            // 寫入 SysInfo.AllowedTypeNamespaces，全系統可用
+            SysInfo.AllowedTypeNamespaces = allowed.ToList();
         }
 
         /// <summary>
