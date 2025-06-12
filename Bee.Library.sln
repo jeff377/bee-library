@@ -60,8 +60,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{96AF59F3-9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbUpgrade", "tools\DbUpgrade\DbUpgrade.csproj", "{24F24898-DA84-30F8-7328-082774803583}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonRpcSampleAspNet", "samples\JsonRpcSampleAspNet\JsonRpcSampleAspNet.csproj", "{CFF8C017-74EB-4840-BEEE-5009D895338C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -156,10 +154,6 @@ Global
 		{24F24898-DA84-30F8-7328-082774803583}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24F24898-DA84-30F8-7328-082774803583}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{24F24898-DA84-30F8-7328-082774803583}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -187,7 +181,6 @@ Global
 		{68490597-4DD5-3EEE-DB32-7188BDB70568} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{48C3066E-4723-F9A6-056D-45F1376215B7} = {A7BD835F-6EE1-4575-AD25-F8205470AC4D}
 		{24F24898-DA84-30F8-7328-082774803583} = {A7BD835F-6EE1-4575-AD25-F8205470AC4D}
-		{CFF8C017-74EB-4840-BEEE-5009D895338C} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7E07F2-83DF-4D84-82CE-C010B47BBCE6}
