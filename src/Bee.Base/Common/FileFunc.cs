@@ -10,7 +10,7 @@ namespace Bee.Base
     /// </summary>
     public static class FileFunc
     {
-        #region 檔案相關方取
+        #region 檔案相關方法
 
         /// <summary>
         /// 判斷指定檔案是否存在。

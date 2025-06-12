@@ -30,7 +30,7 @@ namespace Bee.Define.UnitTests
         /// <param name="value">物件。</param>
         /// <param name="isBinary">執行二進位序列化。</param>
         /// <param name="isXml">執行 XML 序列化。</param>
-        /// <param name="isJson">執行 JOSN 序列化。</param>
+        /// <param name="isJson">執行 JSON 序列化。</param>
         private  void SerializeObject<T>(object value, bool isBinary = true, bool isXml = true, bool isJson = true)
         {
             object? value2;
@@ -48,7 +48,7 @@ namespace Bee.Define.UnitTests
                 value2 = SerializeFunc.XmlToObject<T>(xml);
                 Assert.NotNull(value2);
             }
-            // JOSN 序列化
+            // JSON 序列化
             if (isJson)
             {
                 string json = SerializeFunc.ObjectToJson(value);
