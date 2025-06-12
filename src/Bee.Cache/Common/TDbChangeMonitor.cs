@@ -23,7 +23,7 @@ namespace Bee.Cache
         {
             _UniqueId = BaseFunc.NewGuidString();
             _Key = key;
-            _UpdateTime = GetUpateTime(key);
+            _UpdateTime = GetUpdateTime(key);
             _Timer = new Timer(1000);
             _Timer.Elapsed += new ElapsedEventHandler(Elapsed_EventHandler);
             _Timer.Start();
@@ -60,7 +60,7 @@ namespace Bee.Cache
         /// 取得快取相依資料的更新時間。
         /// </summary>
         /// <param name="key">鍵值。</param>
-        private DateTime GetUpateTime(string key)
+        private DateTime GetUpdateTime(string key)
         {
             // TODO : 實作取得資料庫相關資料的更新時間
             return DateTime.MinValue;
@@ -82,7 +82,7 @@ namespace Bee.Cache
             DateTime oUpdateTime;
 
             // 相依資料的更新時間若不同，表示原始資料有異動，需釋放快取
-            oUpdateTime = GetUpateTime(this.Key);
+            oUpdateTime = GetUpdateTime(this.Key);
             if (this.UpdateTime != oUpdateTime)
             {
                 this.UpdateTime = oUpdateTime;
