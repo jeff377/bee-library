@@ -30,7 +30,7 @@ namespace ApiService.Extensions
             var settings = CacheFunc.GetSystemSettings();
             settings.Initialize();
             // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
-            ApiServiceOptions.Initialize(settings.BackendConfiguration.ApiPayloadOptions);
+            ApiServiceOptions.Initialize(settings.CommonConfiguration.ApiPayloadOptions);
 
             return app;
         }

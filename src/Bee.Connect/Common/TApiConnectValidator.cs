@@ -116,9 +116,9 @@ namespace Bee.Connect
         {
             // 驗證程式是否支援遠端連線
             if (!FrontendInfo.SupportedConnectTypes.HasFlag(ESupportedConnectTypes.Remote))
-                throw new TException("不支援遠端連線");
+                throw new InvalidOperationException("Remote connections are not supported.");
             if (StrFunc.IsEmpty(endpoint))
-                throw new TException("未指定服務端點");
+                throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));
             // 使用遠端連線，執行 Ping 方法
             var args = new TPingArgs()
             {
@@ -128,7 +128,7 @@ namespace Bee.Connect
             var connector = new TSystemConnector(endpoint, Guid.Empty);
             var result = connector.Execute<TPingResult>(SystemActions.Ping, args, false);
             if (result.Status != "ok")
-                throw new TException($"Ping 方法執行失敗，錯誤訊息：{result.Status}");
+                throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
         }
     }
 }

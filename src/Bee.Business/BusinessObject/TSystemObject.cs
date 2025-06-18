@@ -49,7 +49,7 @@ namespace Bee.Business
         /// <param name="args">傳入引數。</param>
         public virtual TGetApiPayloadOptionsResult GetApiPayloadOptions(TGetApiPayloadOptionsArgs args)
         {
-            var options = CacheFunc.GetSystemSettings().BackendConfiguration.ApiPayloadOptions;
+            var options = CacheFunc.GetSystemSettings().CommonConfiguration.ApiPayloadOptions;
             return new TGetApiPayloadOptionsResult()
             {
                 Serializer = options.Serializer,

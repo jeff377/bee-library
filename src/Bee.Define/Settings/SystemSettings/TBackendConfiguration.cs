@@ -32,6 +32,14 @@ namespace Bee.Define
         public string FormTypeName { get; set; } = string.Empty;
 
         /// <summary>
+        /// 業務邏輯物件提供者型別。
+        /// </summary>
+        [Category("System")]
+        [Description("業務邏輯物件提供者型別。")]
+        [DefaultValue("")]
+        public string BusinessObjectProvider { get; set; } = string.Empty;
+
+        /// <summary>
         /// 資料庫類型。
         /// </summary>
         [Category("System")]
@@ -56,28 +64,29 @@ namespace Bee.Define
         public string ApiKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// 提供 API Payload 處理相關選項，例如序列化、壓縮與加密。
-        /// </summary>
-        [Category("API")]
-        [Description("提供 API Payload 處理相關選項，例如序列化、壓縮與加密。")]
-        [DefaultValue("")]
-        public TApiPayloadOptions ApiPayloadOptions { get; set; } = new TApiPayloadOptions();
-
-        /// <summary>
         /// 初始化。
         /// </summary>
         public void Initialize()
         {
             // 系統層級業務邏輯物件預設型別
-            if (StrFunc.IsNotEmpty(this.SystemTypeName))
-                BackendInfo.SystemTypeName = this.SystemTypeName;
+            if (StrFunc.IsNotEmpty(SystemTypeName))
+            {
+                BackendInfo.SystemTypeName = SystemTypeName;
+            }
             // 表單層級業務邏輯物件預設型別
-            if (StrFunc.IsNotEmpty(this.FormTypeName))
-                BackendInfo.FormTypeName = this.FormTypeName;
+            if (StrFunc.IsNotEmpty(FormTypeName))
+            {
+                BackendInfo.FormTypeName = FormTypeName;
+            }
+            // 指定業務邏輯物件提供者
+            if (StrFunc.IsNotEmpty(BusinessObjectProvider))
+            {
+                BackendInfo.BusinessObjectProvider = BaseFunc.CreateInstance(BusinessObjectProvider) as IBusinessObjectProvider;
+            }
             // 資料庫類型
-            BackendInfo.DatabaseType = this.DatabaseType;
+            BackendInfo.DatabaseType = DatabaseType;
             // 預設資料庫編號
-            BackendInfo.DatabaseID = this.DatabaseID;
+            BackendInfo.DatabaseID = DatabaseID;
         }
 
         /// <summary>

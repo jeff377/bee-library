@@ -36,9 +36,18 @@ namespace Bee.Define
         /// 設定格式範例：Custom.Module|ThirdParty.Dto
         /// 注意：Bee.Base 與 Bee.Define 為系統內建的預設命名空間，無需額外指定。
         /// </summary>
+        [Category("API")]
         [Description("允許 JSON-RPC 傳遞資料的型別命名空間清單，以 '|' 分隔。")]
         [DefaultValue("")]
         public string AllowedTypeNamespaces { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 提供 API Payload 處理相關選項，例如序列化、壓縮與加密。
+        /// </summary>
+        [Category("API")]
+        [Description("提供 API Payload 處理相關選項，例如序列化、壓縮與加密。")]
+        [DefaultValue("")]
+        public TApiPayloadOptions ApiPayloadOptions { get; set; } = new TApiPayloadOptions();
 
         /// <summary>
         /// 初始化。
