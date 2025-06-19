@@ -13,11 +13,9 @@ namespace Bee.Define
         /// </summary>
         public TDbSchemaSettings GetDbSchemaSettings()
         {
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetDbTableSettingsFilePath();
-            ValidateFilePath(sFilePath);
-            return SerializeFunc.XmlFileToObject<TDbSchemaSettings>(sFilePath);
+            string filePath = DefinePathInfo.GetDbTableSettingsFilePath();
+            ValidateFilePath(filePath);
+            return SerializeFunc.XmlFileToObject<TDbSchemaSettings>(filePath);
         }
 
         /// <summary>
@@ -26,10 +24,8 @@ namespace Bee.Define
         /// <param name="settings">資料表清單。</param>
         public void SaveDbSchemaSettings(TDbSchemaSettings settings)
         {
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetDbTableSettingsFilePath();
-            SerializeFunc.ObjectToXmlFile(settings, sFilePath);
+            string filePath = DefinePathInfo.GetDbTableSettingsFilePath();
+            SerializeFunc.ObjectToXmlFile(settings, filePath);
         }
 
         /// <summary>
@@ -39,13 +35,9 @@ namespace Bee.Define
         /// <param name="tableName">資料表名稱。</param>
         public TDbTable GetDbTable(string dbName, string tableName)
         {
-            TDbTable oValue;
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetDbTableFilePath(dbName, tableName);
-            ValidateFilePath(sFilePath);
-            oValue = SerializeFunc.XmlFileToObject<TDbTable>(sFilePath);
-            return oValue;
+            string filePath = DefinePathInfo.GetDbTableFilePath(dbName, tableName);
+            ValidateFilePath(filePath);
+            return SerializeFunc.XmlFileToObject<TDbTable>(filePath);
         }
 
         /// <summary>
@@ -55,10 +47,8 @@ namespace Bee.Define
         /// <param name="dbTable">資料表結構。</param>
         public void SaveDbTable(string dbName, TDbTable dbTable)
         {
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetDbTableFilePath(dbName, dbTable.TableName);
-            SerializeFunc.ObjectToXmlFile(dbTable, sFilePath);
+            string filePath = DefinePathInfo.GetDbTableFilePath(dbName, dbTable.TableName);
+            SerializeFunc.ObjectToXmlFile(dbTable, filePath);
         }
 
         /// <summary>
@@ -67,11 +57,9 @@ namespace Bee.Define
         /// <param name="progId">程式代碼。</param>
         public TFormDefine GetFormDefine(string progId)
         {
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetFormDefineFilePath(progId);
-            ValidateFilePath(sFilePath);
-            return SerializeFunc.XmlFileToObject<TFormDefine>(sFilePath);
+            string filePath = DefinePathInfo.GetFormDefineFilePath(progId);
+            ValidateFilePath(filePath);
+            return SerializeFunc.XmlFileToObject<TFormDefine>(filePath);
         }
 
         /// <summary>
@@ -80,10 +68,8 @@ namespace Bee.Define
         /// <param name="formDefine">表單定義。</param>
         public void SaveFormDefine(TFormDefine formDefine)
         {
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
-            SerializeFunc.ObjectToXmlFile(formDefine, sFilePath);
+            string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
+            SerializeFunc.ObjectToXmlFile(formDefine, filePath);
         }
 
         /// <summary>
@@ -92,11 +78,9 @@ namespace Bee.Define
         /// <param name="layoutId">表單版面代碼。</param>
         public TFormLayout GetFormLayout(string layoutId)
         {
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetFormLayoutFilePath(layoutId);
-            ValidateFilePath(sFilePath);
-            return SerializeFunc.XmlFileToObject<TFormLayout>(sFilePath);
+            string filePath = DefinePathInfo.GetFormLayoutFilePath(layoutId);
+            ValidateFilePath(filePath);
+            return SerializeFunc.XmlFileToObject<TFormLayout>(filePath);
         }
 
         /// <summary>
@@ -105,10 +89,8 @@ namespace Bee.Define
         /// <param name="formLayout">表單版面配置。</param>
         public void SaveFormLayout(TFormLayout formLayout)
         {
-            string sFilePath;
-
-            sFilePath = DefinePathInfo.GetFormLayoutFilePath(formLayout.LayoutId);
-            SerializeFunc.ObjectToXmlFile(formLayout, sFilePath);
+            string filePath = DefinePathInfo.GetFormLayoutFilePath(formLayout.LayoutId);
+            SerializeFunc.ObjectToXmlFile(formLayout, filePath);
         }
 
         /// <summary>
