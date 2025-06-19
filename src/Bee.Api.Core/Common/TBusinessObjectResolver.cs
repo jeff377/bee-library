@@ -21,9 +21,9 @@ namespace Bee.Api.Core
                 throw new ArgumentException("ProgId cannot be null or empty.", nameof(progId));
 
             if (StrFunc.IsEquals(progId, SysProgIds.System))
-                return BackendInfo.BusinessObjectProvider.CreateSystemObject(accessToken);
+                return BackendInfo.BusinessObjectProvider.CreateSystemBusinessObject(accessToken);
             else
-                return BackendInfo.BusinessObjectProvider.CreateFormObject(accessToken, progId);
+                return BackendInfo.BusinessObjectProvider.CreateFormBusinessObject(accessToken, progId);
         }
     }
 }

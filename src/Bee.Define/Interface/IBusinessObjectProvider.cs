@@ -11,13 +11,13 @@ namespace Bee.Define
         /// 建立系統層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        object CreateSystemObject(Guid accessToken);
+        ISystemBusinessObject CreateSystemBusinessObject(Guid accessToken);
 
         /// <summary>
         /// 建立表單層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        object CreateFormObject(Guid accessToken, string progId);
+        IFormBusinessObject CreateFormBusinessObject(Guid accessToken, string progId);
     }
 }

@@ -1,7 +1,7 @@
 ﻿using Bee.Define;
 using System;
 
-namespace Bee.Cache
+namespace Bee.Business
 {
     /// <summary>
     /// 業務邏輯物件提供者。
@@ -18,9 +18,9 @@ namespace Bee.Cache
         /// 建立系統層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public object CreateSystemObject(Guid accessToken)
+        public ISystemBusinessObject CreateSystemBusinessObject(Guid accessToken)
         {
-            return SysFunc.CreateSystemObject(accessToken);
+            return new TSystemBusinessObject(accessToken);
         }
 
         /// <summary>
@@ -28,9 +28,9 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        public object CreateFormObject(Guid accessToken, string progId)
+        public IFormBusinessObject CreateFormBusinessObject(Guid accessToken, string progId)
         {
-            return SysFunc.CreateBusinessObject(accessToken, progId);
+            return new TFormBusinessObject(accessToken, progId);
         }
     }
 }

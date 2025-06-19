@@ -16,22 +16,6 @@ namespace Bee.Define
     public class TBackendConfiguration
     {
         /// <summary>
-        /// 系統層級業務邏輯物件預設型別。
-        /// </summary>
-        [Category("System")]
-        [Description("系統層級業務邏輯物件預設型別。")]
-        [DefaultValue("")]
-        public string SystemTypeName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 表單層級業務邏輯物件預設型別。
-        /// </summary>
-        [Category("System")]
-        [Description("表單層級業務邏輯物件預設型別。")]
-        [DefaultValue("")]
-        public string FormTypeName { get; set; } = string.Empty;
-
-        /// <summary>
         /// 業務邏輯物件提供者型別。
         /// </summary>
         [Category("System")]
@@ -68,16 +52,6 @@ namespace Bee.Define
         /// </summary>
         public void Initialize()
         {
-            // 系統層級業務邏輯物件預設型別
-            if (StrFunc.IsNotEmpty(SystemTypeName))
-            {
-                BackendInfo.SystemTypeName = SystemTypeName;
-            }
-            // 表單層級業務邏輯物件預設型別
-            if (StrFunc.IsNotEmpty(FormTypeName))
-            {
-                BackendInfo.FormTypeName = FormTypeName;
-            }
             // 指定業務邏輯物件提供者
             if (StrFunc.IsNotEmpty(BusinessObjectProvider))
             {

@@ -22,8 +22,7 @@ namespace DbUpgrade
             if (FrontendInfo.ConnectType == EConnectType.Local)
             {
                 BackendInfo.DefineProvider = new TFileDefineProvider();
-                BackendInfo.BusinessObjectProvider = new Bee.Cache.TBusinessObjectProvider();
-                BackendInfo.SystemObject = new Bee.Business.TSystemBusinessObject();
+                BackendInfo.BusinessObjectProvider = new Bee.Business.TBusinessObjectProvider();
                 // 註冊資料庫提供者
                 DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             }
