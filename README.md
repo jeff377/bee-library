@@ -26,6 +26,10 @@ Bee.NET Framework is a three-tier software architecture designed to accelerate t
 | **Bee.UI.Core.dll**        | Frontend       | .NET Standard 2.0      | Manages client-server connection settings and states. |
 | **Bee.UI.WinForms.dll**        | Frontend       | .NET 8      | UI components and layout management for WinForms. |
 
+## 💡 Sample Project
+
+Refer to [jsonrpc-sample](https://github.com/jeff377/jsonrpc-sample), which includes examples of JSON-RPC server and client implementations, and demonstrates how to use the Connector for both local and remote connections.
+
 ---
 
 # Bee.NET Framework（繁體中文）
@@ -54,6 +58,10 @@ Bee.NET Framework 是一套三層式應用架構，旨在加速企業資訊系�
 | **Bee.Connect.dll**        | 前端           | .NET Standard 2.0      | 提供連接器機制，支援近端與遠端呼叫後端邏輯元件。 |
 | **Bee.UI.Core.dll**        | 前端       | .NET Standard 2.0      | 管理用戶端與伺服端連線的設定與狀態。 |
 | **Bee.UI.WinForms.dll**        | 前端       | .NET 8      | WinForms 使用者介面元件與排版管理。|
+
+## 💡 範例程式
+
+請參考 [jsonrpc-sample](https://github.com/jeff377/jsonrpc-sample)，其中包含 JSON-RPC 的 Server 與 Client 實作範例，並說明如何透過 Connector 進行近端與遠端連線。
 
 
 ## 📬 聯絡與關注
