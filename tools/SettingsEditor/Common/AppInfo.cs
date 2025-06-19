@@ -18,9 +18,9 @@ namespace SettingsEditor
             // 用戶端初始化
             if (!ClientInfo.Initialize(new TUIViewService(), ESupportedConnectTypes.Both, true)) { return false; }
 
-            // 因為發佈為單一執行檔，BackendInfo 無法動態載入物件，需改由預載入方法
             if (FrontendInfo.ConnectType == EConnectType.Local)
             {
+                // 因為發佈為單一執行檔，BackendInfo 無法動態載入物件，需改由預載入方法
                 BackendInfo.DefineProvider = new TFileDefineProvider();
                 BackendInfo.BusinessObjectProvider = new Bee.Business.TBusinessObjectProvider();
                 // 註冊資料庫提供者
