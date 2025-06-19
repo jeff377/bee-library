@@ -12,13 +12,13 @@ namespace Bee.Define
         /// 建立系統層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public static ISystemObject CreateSystemObject(Guid accessToken)
+        public static ISystemBusinessObject CreateSystemObject(Guid accessToken)
         {
             // 若預載入系統業務邏輯物件，則直接回傳
             if (BackendInfo.SystemObject != null) { return BackendInfo.SystemObject; }
 
             string typeName = BackendInfo.SystemTypeName;
-            return BaseFunc.CreateInstance(typeName, new object[] { accessToken }) as ISystemObject;
+            return BaseFunc.CreateInstance(typeName, new object[] { accessToken }) as ISystemBusinessObject;
         }
 
         /// <summary>
@@ -26,10 +26,10 @@ namespace Bee.Define
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        public static IFormObject CreateBusinessObject(Guid accessToken, string progId)
+        public static IFormBusinessObject CreateBusinessObject(Guid accessToken, string progId)
         {
             string typeName = BackendInfo.FormTypeName;
-            return BaseFunc.CreateInstance(typeName, new object[] { accessToken, progId }) as IFormObject;
+            return BaseFunc.CreateInstance(typeName, new object[] { accessToken, progId }) as IFormBusinessObject;
         }
 
         /// <summary>

@@ -6,7 +6,7 @@ namespace Bee.Business
     /// <summary>
     /// 表單層級業務邏輯物件。
     /// </summary>
-    public class TFormObject : TBusinessObject, IFormObject
+    public class TFormBusinessObject : TBusinessObject, IFormBusinessObject
     {
         #region 建構函式
 
@@ -15,7 +15,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        public TFormObject(Guid accessToken, string progId) : base(accessToken)
+        public TFormBusinessObject(Guid accessToken, string progId) : base(accessToken)
         {
             this.ProgId = progId;
         }

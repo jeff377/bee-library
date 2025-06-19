@@ -3,7 +3,7 @@
     /// <summary>
     /// 系統層級業務邏輯物件介面。
     /// </summary>
-    public interface ISystemObject : IBusinessObject
+    public interface ISystemBusinessObject : IBusinessObject
     {
         /// <summary>
         /// 建立連線。

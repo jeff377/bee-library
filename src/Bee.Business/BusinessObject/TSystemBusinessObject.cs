@@ -9,21 +9,21 @@ namespace Bee.Business
     /// <summary>
     /// 系統層級業務邏輯物件。
     /// </summary>
-    public class TSystemObject : TBusinessObject, ISystemObject
+    public class TSystemBusinessObject : TBusinessObject, ISystemBusinessObject
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TSystemObject() : base()
+        public TSystemBusinessObject() : base()
         { }
 
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TSystemObject(Guid accessToken) : base(accessToken)
+        public TSystemBusinessObject(Guid accessToken) : base(accessToken)
         { }
 
         #endregion

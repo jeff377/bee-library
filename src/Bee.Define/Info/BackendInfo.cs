@@ -20,14 +20,14 @@ namespace Bee.Define
         /// <summary>
         /// 預載入系統業務邏輯物件，工具程式若發佈為獨立執行檔需預先載入。
         /// </summary>
-        public static ISystemObject SystemObject { get; set; }
+        public static ISystemBusinessObject SystemObject { get; set; }
 
         /// <summary>
         /// 系統層級業務邏輯物件預設型別，由設定檔指定。
         /// </summary>
         public static string SystemTypeName
         {
-            get => StrFunc.IsEmpty(_SystemTypeName) ? "Bee.Business.TSystemObject" : _SystemTypeName;
+            get => StrFunc.IsEmpty(_SystemTypeName) ? "Bee.Business.TSystemBusinessObject" : _SystemTypeName;
             set => _SystemTypeName = value;
         }
 
@@ -36,7 +36,7 @@ namespace Bee.Define
         /// </summary>
         public static string FormTypeName
         {
-            get => StrFunc.IsEmpty(_BusinessTypeName) ? "Bee.Business.TFormObject" : _BusinessTypeName;
+            get => StrFunc.IsEmpty(_BusinessTypeName) ? "Bee.Business.TFormBusinessObject" : _BusinessTypeName;
             set => _BusinessTypeName = value;
         }
 

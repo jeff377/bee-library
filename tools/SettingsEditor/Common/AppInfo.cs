@@ -23,7 +23,7 @@ namespace SettingsEditor
             {
                 BackendInfo.DefineProvider = new TFileDefineProvider();
                 BackendInfo.BusinessObjectProvider = new Bee.Cache.TBusinessObjectProvider();
-                BackendInfo.SystemObject = new Bee.Business.TSystemObject();
+                BackendInfo.SystemObject = new Bee.Business.TSystemBusinessObject();
                 // 註冊資料庫提供者
                 DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             }
