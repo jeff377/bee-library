@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Bee.Define;
 
 namespace Bee.Api.Core
 {
@@ -100,7 +101,7 @@ namespace Bee.Api.Core
         public async Task<object> ExecuteMethodAsync(string progId, string action, object value)
         {
             // 建立指定 progId 的業務邏輯物件實例
-            var businessObject = ApiServiceOptions.BusinessObjectResolver.CreateBusinessObject(AccessToken, progId);
+            var businessObject = CreateBusinessObject(AccessToken, progId);
             var method = businessObject.GetType().GetMethod(action);
             if (method == null)
                 throw new MissingMethodException($"Method '{action}' not found in business object '{progId}'.");
@@ -121,6 +122,23 @@ namespace Bee.Api.Core
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 建立指定 progId 的業務邏輯物件實例。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="progId">程式代碼。</param>
+        /// <returns>業務邏輯物件實例。</returns>
+        public object CreateBusinessObject(Guid accessToken, string progId)
+        {
+            if (string.IsNullOrWhiteSpace(progId))
+                throw new ArgumentException("ProgId cannot be null or empty.", nameof(progId));
+
+            if (progId == SysProgIds.System)
+                return BackendInfo.BusinessObjectProvider.CreateSystemBusinessObject(accessToken);
+            else
+                return BackendInfo.BusinessObjectProvider.CreateFormBusinessObject(accessToken, progId);
         }
     }
 
