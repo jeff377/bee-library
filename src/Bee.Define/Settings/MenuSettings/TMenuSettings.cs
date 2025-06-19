@@ -197,13 +197,13 @@ namespace Bee.Define
         /// <summary>
         /// 尋找選單項目節點。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <returns></returns>
-        public TMenuItem FindItem(string progID)
+        public TMenuItem FindItem(string progId)
         {
             foreach (TMenuFolder folder in this.Folders)
             {
-                var item = folder.FindItem(progID);
+                var item = folder.FindItem(progId);
                 if (item != null)
                     return item;
             }

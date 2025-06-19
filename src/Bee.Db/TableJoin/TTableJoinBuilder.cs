@@ -154,13 +154,13 @@ namespace Bee.Db
 
             foreach (TFormField field in table.Fields)
             {
-                // 有設定 LinkProgID 的實際欄位
-                if (field.Type == EFieldType.DbField && StrFunc.IsNotEmpty(field.LinkProgID))
+                // 有設定 LinkProgId 的實際欄位
+                if (field.Type == EFieldType.DbField && StrFunc.IsNotEmpty(field.LinkProgId))
                 {
                     oReturnFields = GetReturnFields(table, field.FieldName, useFields);
                     if (oReturnFields.Count > 0)
                     {
-                        sKey = StrFunc.Format("{0}.{1}.{2}", table.TableName, field.FieldName, field.LinkProgID);
+                        sKey = StrFunc.Format("{0}.{1}.{2}", table.TableName, field.FieldName, field.LinkProgId);
                         sLeftTableAlias = StrFunc.IsEmpty(detailTableName) ? "A" : "DA";
                         // BuildTableJoin(sKey, provider, field, oReturnFields, sLeftTableAlias, detailTableName);
                     }
@@ -191,12 +191,12 @@ namespace Bee.Db
         //    string sKey;
 
         //    // 取得關連程式定義
-        //    oFormDefine = CacheFunc.GetFormDefine(field.LinkProgID);
+        //    oFormDefine = CacheFunc.GetFormDefine(field.LinkProgId);
         //    if (BaseFunc.IsNull(oFormDefine))
-        //        throw new TException($"'{field.LinkProgID}' FormDefine not found");
+        //        throw new TException($"'{field.LinkProgId}' FormDefine not found");
 
         //    if (BaseFunc.IsNull(oFormDefine.MasterTable))
-        //        throw new TException($"'{field.LinkProgID}' MasterTable not found");
+        //        throw new TException($"'{field.LinkProgId}' MasterTable not found");
 
         //    // 取得關連資料表定義
         //    oSourceTable = oFormDefine.MasterTable;
@@ -232,7 +232,7 @@ namespace Bee.Db
         //        if (oSourceField.Type == EFieldType.LinkField)
         //        {
         //            oLinkDefineField = oSourceField.GetLinkField();
-        //            sKey = key + "." + oLinkDefineField.LinkProgID;
+        //            sKey = key + "." + oLinkDefineField.LinkProgId;
         //            oReturnFields = new TStringHashSet();
         //            oReturnFields.Add(oSourceField.DbFieldName);
         //            BuildTableJoin(sKey, provider, oLinkDefineField, oReturnFields, oTableJoin.RightTableAlias, detailTableName, fieldName);

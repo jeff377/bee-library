@@ -64,12 +64,12 @@ namespace Bee.Define
         /// <summary>
         /// 取得表單定義。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        public TFormDefine GetFormDefine(string progID)
+        /// <param name="progId">程式代碼。</param>
+        public TFormDefine GetFormDefine(string progId)
         {
             string sFilePath;
 
-            sFilePath = DefinePathInfo.GetFormDefineFilePath(progID);
+            sFilePath = DefinePathInfo.GetFormDefineFilePath(progId);
             ValidateFilePath(sFilePath);
             return SerializeFunc.XmlFileToObject<TFormDefine>(sFilePath);
         }
@@ -82,7 +82,7 @@ namespace Bee.Define
         {
             string sFilePath;
 
-            sFilePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgID);
+            sFilePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
             SerializeFunc.ObjectToXmlFile(formDefine, sFilePath);
         }
 

@@ -97,10 +97,10 @@ namespace Bee.Cache
         /// <summary>
         /// 取得表單定義。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        public static TFormDefine GetFormDefine(string progID)
+        /// <param name="progId">程式代碼。</param>
+        public static TFormDefine GetFormDefine(string progId)
         {
-            return CacheContainer.FormDefine.Get(progID);
+            return CacheContainer.FormDefine.Get(progId);
         }
 
         /// <summary>

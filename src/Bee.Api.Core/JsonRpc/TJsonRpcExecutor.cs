@@ -54,10 +54,10 @@ namespace Bee.Api.Core
                 // 若為編碼狀態，則進行解碼
                 if (isEncoded) { request.Decode(); }
 
-                // 從 Method 屬性解析出 ProgID 與 Action
-                var (progID, action) = ParseMethod(request.Method);
+                // 從 Method 屬性解析出 ProgId 與 Action
+                var (progId, action) = ParseMethod(request.Method);
                 // 建立業務邏輯物件，執行指定方法
-                var value = await ExecuteMethodAsync(progID, action, request.Params.Value);
+                var value = await ExecuteMethodAsync(progId, action, request.Params.Value);
 
                 // 傳出結果
                 response.Result = new TJsonRpcResult { Value = value };
@@ -75,10 +75,10 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 從 Method 屬性解析出 ProgID 與 Action。
+        /// 從 Method 屬性解析出 progId 與 Action。
         /// </summary>
-        /// <returns>Tuple，包含 ProgID 與 Action。若格式錯誤則回傳空字串。</returns>
-        public (string progID, string action) ParseMethod(string method)
+        /// <returns>Tuple，包含 progId 與 Action。若格式錯誤則回傳空字串。</returns>
+        public (string progId, string action) ParseMethod(string method)
         {
             if (!string.IsNullOrEmpty(method))
             {
@@ -94,16 +94,16 @@ namespace Bee.Api.Core
         /// <summary>
         /// 建立業務邏輯物件，非同步執行指定方法。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">執行動作的傳入引數。</param>
-        public async Task<object> ExecuteMethodAsync(string progID, string action, object value)
+        public async Task<object> ExecuteMethodAsync(string progId, string action, object value)
         {
-            // 建立指定 progID 的業務邏輯物件實例
-            var businessObject = ApiServiceOptions.BusinessObjectResolver.CreateBusinessObject(AccessToken, progID);
+            // 建立指定 progId 的業務邏輯物件實例
+            var businessObject = ApiServiceOptions.BusinessObjectResolver.CreateBusinessObject(AccessToken, progId);
             var method = businessObject.GetType().GetMethod(action);
             if (method == null)
-                throw new MissingMethodException($"Method '{action}' not found in business object '{progID}'.");
+                throw new MissingMethodException($"Method '{action}' not found in business object '{progId}'.");
 
             var result = method.Invoke(businessObject, new object[] { value });
 

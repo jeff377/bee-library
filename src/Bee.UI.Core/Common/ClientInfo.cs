@@ -92,13 +92,13 @@ namespace Bee.UI.Core
         /// <summary>
         /// 建立表單層級 API 服務連接器。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        public static TFormConnector CreateFormConnector(string progID)
+        /// <param name="progId">程式代碼。</param>
+        public static TFormConnector CreateFormConnector(string progId)
         {
             if (FrontendInfo.ConnectType == EConnectType.Local)
-                return new TFormConnector(FrontendInfo.AccessToken, progID);
+                return new TFormConnector(FrontendInfo.AccessToken, progId);
             else
-                return new TFormConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progID);
+                return new TFormConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progId);
         }
 
         /// <summary>

@@ -26,15 +26,15 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// <summary>
         /// 取得 JSON-RPC 請求模型的 JSON 字串。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="args">傳入資料。</param>
-        private string GetRpcRequestJson(string progID, string action, object args)
+        private string GetRpcRequestJson(string progId, string action, object args)
         {
             // 設定 JSON-RPC 請求模型
             var request = new TJsonRpcRequest()
             {
-                Method = $"{progID}.{action}",
+                Method = $"{progId}.{action}",
                 Params = new TJsonRpcParams()
                 {
                     Value = args
@@ -48,17 +48,17 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// 執行 ApiServiceController 並傳回反序列化結果。
         /// </summary>
         /// <typeparam name="TResult">回傳型別。</typeparam>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="args">JSON-RPC 傳入參數。</param>
         /// <param name="accessToken">存取權杖。</param>
         /// <returns>反序列化後的執行結果。</returns>
-        private async Task<TResult> ExecuteRpcAsync<TResult>(string progID, string action, object args, Guid? accessToken = null)
+        private async Task<TResult> ExecuteRpcAsync<TResult>(string progId, string action, object args, Guid? accessToken = null)
         {
             accessToken ??= Guid.NewGuid();
 
             // 建立 JSON-RPC 請求內容
-            string json = GetRpcRequestJson(progID, action, args);
+            string json = GetRpcRequestJson(progId, action, args);
 
             var requestBody = new MemoryStream(Encoding.UTF8.GetBytes(json));
             var context = new DefaultHttpContext();
@@ -97,7 +97,7 @@ namespace Bee.Api.AspNetCore.UnitTests
                 ClientName = "TestClient",
                 TraceId = "001",
             };
-            var result = await ExecuteRpcAsync<TPingResult>(SysProgIDs.System, "Ping", args);
+            var result = await ExecuteRpcAsync<TPingResult>(SysProgIds.System, "Ping", args);
             Assert.NotNull(result);
             Assert.Equal("ok", result.Status);
             Assert.Equal("001", result.TraceId);
@@ -107,7 +107,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         public async Task Hello()
         {
             var args = new TExecFuncArgs("Hello");
-            var result = await ExecuteRpcAsync<TExecFuncResult>(SysProgIDs.System, "ExecFunc", args);
+            var result = await ExecuteRpcAsync<TExecFuncResult>(SysProgIds.System, "ExecFunc", args);
             Assert.NotNull(result);
         }
     }

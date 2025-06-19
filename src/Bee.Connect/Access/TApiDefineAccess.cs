@@ -185,10 +185,10 @@ namespace Bee.Connect
         /// <summary>
         /// 取得表單定義。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        public TFormDefine GetFormDefine(string progID)
+        /// <param name="progId">程式代碼。</param>
+        public TFormDefine GetFormDefine(string progId)
         {
-            return GetDefine<TFormDefine>(EDefineType.FormDefine, new string[] { progID });
+            return GetDefine<TFormDefine>(EDefineType.FormDefine, new string[] { progId });
         }
 
         /// <summary>

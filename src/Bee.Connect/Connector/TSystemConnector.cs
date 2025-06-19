@@ -36,7 +36,7 @@ namespace Bee.Connect
         /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
         public T Execute<T>(string action, object value, bool enableEncoding = true)
         {
-            return base.Execute<T>(SysProgIDs.System, action, value, enableEncoding);
+            return base.Execute<T>(SysProgIds.System, action, value, enableEncoding);
         }
 
         /// <summary>

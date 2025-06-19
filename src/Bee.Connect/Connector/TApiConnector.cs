@@ -50,20 +50,20 @@ namespace Bee.Connect
         /// <summary>
         /// 執行 API 方法。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
         /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
-        protected T Execute<T>(string progID, string action, object value, bool enableEncoding = true)
+        protected T Execute<T>(string progId, string action, object value, bool enableEncoding = true)
         {
-            if (StrFunc.IsEmpty(progID))
-                throw new ArgumentException("progID cannot be null or empty.", nameof(progID));
+            if (StrFunc.IsEmpty(progId))
+                throw new ArgumentException("progId cannot be null or empty.", nameof(progId));
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
             var request = new TJsonRpcRequest()
             {
-                Method = $"{progID}.{action}",
+                Method = $"{progId}.{action}",
                 Params = new TJsonRpcParams()
                 {
                     Value = value

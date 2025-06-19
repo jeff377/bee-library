@@ -27,11 +27,11 @@ namespace Bee.Define
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <param name="displayName">顯示名稱。</param>
-        public TProgramItem(string progID, string displayName)
+        public TProgramItem(string progId, string displayName)
         {
-            this.ProgID = progID;
+            this.ProgId = progId;
             _DisplayName = displayName;
         }
 
@@ -42,7 +42,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("程式代碼。")]
-        public string ProgID
+        public string ProgId
         {
             get { return base.Key; }
             set { base.Key = value; }
@@ -65,7 +65,7 @@ namespace Bee.Define
         /// <returns></returns>
         public override string ToString()
         {
-            return $"{this.ProgID} - {this.DisplayName}";
+            return $"{this.ProgId} - {this.DisplayName}";
         }
     }
 }

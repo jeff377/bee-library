@@ -91,7 +91,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 商業物件建立解析器，負責依照 progID 建立對應物件實例。
+        /// 商業物件建立解析器，負責依照 progId 建立對應物件實例。
         /// </summary>
         public static IBusinessObjectResolver BusinessObjectResolver
         {

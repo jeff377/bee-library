@@ -27,11 +27,11 @@ namespace Bee.Define
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <param name="displayName">顯示名稱。</param>
-        public TMenuItem(string progID, string displayName)
+        public TMenuItem(string progId, string displayName)
         {
-            this.ProgID = progID;
+            ProgId = progId;
             _DisplayName = displayName;
         }
 
@@ -42,7 +42,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("程式代碼。")]
-        public string ProgID
+        public string ProgId
         {
             get { return this.Key; }
             set { this.Key = value; }
@@ -65,12 +65,10 @@ namespace Bee.Define
         /// <returns></returns>
         public TMenuItem Clone()
         {
-            TMenuItem oItem;
-
-            oItem = new TMenuItem();
-            oItem.ProgID = this.ProgID;
-            oItem.DisplayName = this.DisplayName;
-            return oItem;
+            var item = new TMenuItem();
+            item.ProgId = this.ProgId;
+            item.DisplayName = this.DisplayName;
+            return item;
         }
 
         /// <summary>
@@ -78,7 +76,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return StrFunc.Format("{0} - {1}", this.ProgID, this.DisplayName);
+            return StrFunc.Format("{0} - {1}", this.ProgId, this.DisplayName);
         }
     }
 }

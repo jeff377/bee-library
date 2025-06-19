@@ -76,12 +76,12 @@ namespace Bee.Define
         /// <summary>
         /// 取得表單定義的檔案路徑。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        public static string GetFormDefineFilePath(string progID)
+        /// <param name="progId">程式代碼。</param>
+        public static string GetFormDefineFilePath(string progId)
         {
             string sFilePath;
 
-            sFilePath = $@"FormDefine\{progID}.FormDefine.xml";
+            sFilePath = $@"FormDefine\{progId}.FormDefine.xml";
             return GetDefinePath(sFilePath);
         }
 

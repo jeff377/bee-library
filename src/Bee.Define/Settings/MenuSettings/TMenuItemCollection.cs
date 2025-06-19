@@ -21,13 +21,13 @@ namespace Bee.Define
         /// <summary>
         /// 加入成員。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <param name="displayName">顯示名稱。</param>
-        public TMenuItem Add(string progID, string displayName)
+        public TMenuItem Add(string progId, string displayName)
         {
             TMenuItem oItem;
 
-            oItem = new TMenuItem(progID, displayName); ;
+            oItem = new TMenuItem(progId, displayName); ;
             this.Add(oItem);
             return oItem;
         }

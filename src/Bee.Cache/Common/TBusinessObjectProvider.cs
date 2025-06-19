@@ -27,10 +27,10 @@ namespace Bee.Cache
         /// 建立表單層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        /// <param name="progID">程式代碼。</param>
-        public object CreateFormObject(Guid accessToken, string progID)
+        /// <param name="progId">程式代碼。</param>
+        public object CreateFormObject(Guid accessToken, string progId)
         {
-            return SysFunc.CreateBusinessObject(accessToken, progID);
+            return SysFunc.CreateBusinessObject(accessToken, progId);
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Bee.Api.Core.UnitTests
         {
             var request = new TJsonRpcRequest()
             {
-                Method = $"{SysProgIDs.System}.ExecFunc",
+                Method = $"{SysProgIds.System}.ExecFunc",
                 Params = new TJsonRpcParams()
                 {
                     Value = new TExecFuncArgs("Hello")
@@ -48,15 +48,15 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// 執行 API 方法。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">傳入資料。</param>
-        private T ApiExecute<T>(string progID, string action, object value)
+        private T ApiExecute<T>(string progId, string action, object value)
         {
             // 設定 JSON-RPC 請求模型
             var request = new TJsonRpcRequest()
             {
-                Method = $"{progID}.{action}",
+                Method = $"{progId}.{action}",
                 Params = new TJsonRpcParams()
                 {
                     Value = value
@@ -80,7 +80,7 @@ namespace Bee.Api.Core.UnitTests
                 ClientName = "TestClient",
                 TraceId = "001",
             };
-            var result = ApiExecute<TPingResult>(SysProgIDs.System, "Ping", args);
+            var result = ApiExecute<TPingResult>(SysProgIds.System, "Ping", args);
             Assert.NotNull(result);
             Assert.Equal("ok", result.Status);
             Assert.Equal("001", result.TraceId);
@@ -93,7 +93,7 @@ namespace Bee.Api.Core.UnitTests
         public void GetApiPayloadOptions()
         {
             var args = new TGetApiPayloadOptionsArgs();
-            var result = ApiExecute<TGetApiPayloadOptionsResult>(SysProgIDs.System, "GetApiPayloadOptions", args);
+            var result = ApiExecute<TGetApiPayloadOptionsResult>(SysProgIds.System, "GetApiPayloadOptions", args);
             Assert.NotNull(result);
             //Assert.Equal("messagepack", result.Serializer);
         }
@@ -109,7 +109,7 @@ namespace Bee.Api.Core.UnitTests
             // 設定 設定 JSON-RPC 請求模型
             var request = new TJsonRpcRequest()
             {
-                Method = $"{SysProgIDs.System}.ExecFunc",
+                Method = $"{SysProgIds.System}.ExecFunc",
                 Params = new TJsonRpcParams()
                 {
                     Value = new TExecFuncArgs("Hello")
@@ -131,7 +131,7 @@ namespace Bee.Api.Core.UnitTests
         {
             var args = new TExecFuncArgs("TestDatabaseId");
             args.Parameters.Add("DatabaseId", "common");
-            var result = ApiExecute<TExecFuncResult>(SysProgIDs.System, "ExecFunc", args);
+            var result = ApiExecute<TExecFuncResult>(SysProgIds.System, "ExecFunc", args);
             Assert.NotNull(result);
         }
     }

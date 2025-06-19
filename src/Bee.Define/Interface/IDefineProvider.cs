@@ -33,8 +33,8 @@
         /// <summary>
         /// 取得表單定義。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        TFormDefine GetFormDefine(string progID);
+        /// <param name="progId">程式代碼。</param>
+        TFormDefine GetFormDefine(string progId);
 
         /// <summary>
         /// 儲存表單定義。

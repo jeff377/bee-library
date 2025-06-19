@@ -141,7 +141,7 @@ namespace Bee.Define
             oFieldNames = StrFunc.Split(formDefine.ListFields, ",");
 
             oGrid = new TLayoutGrid();
-            oGrid.TableName = formDefine.ProgID;
+            oGrid.TableName = formDefine.ProgId;
             // 加入 sys_RowID 隱藏欄位
             oGrid.Columns.Add(SysFields.RowId, "列識別", EColumnControlType.TextEdit).Visible = false;
             // 加入清單顯示欄位

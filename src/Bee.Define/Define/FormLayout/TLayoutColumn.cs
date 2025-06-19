@@ -17,7 +17,6 @@ namespace Bee.Define
         private string _FieldName = string.Empty;
         private string _Caption = string.Empty;
         private EColumnControlType _ControlType = EColumnControlType.TextEdit;
-        private string _ProgID = string.Empty;
         private bool _Visible = true;
         private bool _ReadOnly = false;
         private int _Width = 0;
@@ -91,11 +90,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("關連程式代碼。")]
         [DefaultValue("")]
-        public string ProgID
-        {
-            get { return _ProgID; }
-            set { _ProgID = value; }
-        }
+        public string ProgId { get; set; }
 
         /// <summary>
         /// 是否顯示。

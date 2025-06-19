@@ -23,7 +23,6 @@ namespace Bee.Define
         private string _DefaultValue = string.Empty;
         private string _DisplayFormat = string.Empty;
         private string _NumberFormat = string.Empty;
-        private string _LinkProgID = string.Empty;
         private string _LinkFieldName = string.Empty;
         private TLinkReturnFieldCollection _LinkReturnFields = null;
         private int _Width = 0;
@@ -174,11 +173,7 @@ namespace Bee.Define
         [Category("Link")]
         [Description("欄位關連的程式代碼。")]
         [DefaultValue("")]
-        public string LinkProgID
-        {
-            get { return _LinkProgID; }
-            set { _LinkProgID = value; }
-        }
+        public string LinkProgId { get; set; } = string.Empty;
 
         /// <summary>
         /// 關連取回欄位集合。
@@ -217,7 +212,7 @@ namespace Bee.Define
         {
             if (StrFunc.IsNotEmpty(this.LinkFieldName))
                 return this.Table.Fields[this.LinkFieldName];
-            else if (StrFunc.IsNotEmpty(this.LinkProgID))
+            else if (StrFunc.IsNotEmpty(this.LinkProgId))
                 return this;
             else
                 return null;
@@ -254,10 +249,10 @@ namespace Bee.Define
         /// <summary>
         /// 加入關連取回設定。
         /// </summary>
-        /// <param name="linkProgID">欄位關連的程式代碼。</param>
+        /// <param name="linkProgId">欄位關連的程式代碼。</param>
         /// <param name="sourceFields">來源欄位集合字串，以逗點分隔多個欄位。</param>
         /// <param name="destinationFields">目的欄位集合字串，以逗點分隔多個欄位。</param>
-        public void AddLinkReturn(string linkProgID, string sourceFields, string destinationFields)
+        public void AddLinkReturn(string linkProgId, string sourceFields, string destinationFields)
         {
             string[] oSourceFields, oDestinationFields;
 
@@ -266,7 +261,7 @@ namespace Bee.Define
             if (oSourceFields.Length != oDestinationFields.Length)
                 throw new TException("Source and destination fields must have the same number.");
 
-            this.LinkProgID = linkProgID;
+            this.LinkProgId = linkProgId;
             this.LinkReturnFields.Clear();
             for (int N1 = 0; N1 < oSourceFields.Length; N1++)
                 this.LinkReturnFields.Add(oSourceFields[N1], oDestinationFields[N1]);

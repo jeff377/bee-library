@@ -208,10 +208,10 @@ namespace Bee.Cache
         /// <summary>
         /// 取得表單定義。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        public TFormDefine GetFormDefine(string progID)
+        /// <param name="progId">程式代碼。</param>
+        public TFormDefine GetFormDefine(string progId)
         {
-            return CacheFunc.GetFormDefine(progID);
+            return CacheFunc.GetFormDefine(progId);
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace Bee.Cache
             // 儲存資料表結構後，移除快取
             BackendInfo.DefineProvider.SaveFormDefine(formDefine);
             oCache = new TFormDefineCache();
-            oCache.Remove(formDefine.ProgID);
+            oCache.Remove(formDefine.ProgId);
         }
 
         /// <summary>

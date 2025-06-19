@@ -19,7 +19,6 @@ namespace Bee.Define
         private EControlType _ControlType = EControlType.TextEdit;
         private int _RowSpan = 1;
         private int _ColumnSpan = 1;
-        private string _ProgID = string.Empty;
         private bool _ReadOnly = false;
         private string _DisplayFormat = string.Empty;
         private string _NumberFormat = string.Empty;
@@ -106,11 +105,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("關連程式代碼。")]
         [DefaultValue("")]
-        public string ProgID
-        {
-            get { return _ProgID; }
-            set { _ProgID = value; }
-        }
+        public string ProgId { get; set; } = string.Empty;
 
         /// <summary>
         /// 是否唯讀。

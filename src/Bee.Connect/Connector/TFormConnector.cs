@@ -14,10 +14,10 @@ namespace Bee.Connect
         /// 建構函式，採用近端連線。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        /// <param name="progID">程式代碼。</param>
-        public TFormConnector(Guid accessToken, string progID) : base(accessToken)
+        /// <param name="progId">程式代碼。</param>
+        public TFormConnector(Guid accessToken, string progId) : base(accessToken)
         {
-            ProgID = progID;
+            ProgId = progId;
         }
 
         /// <summary>
@@ -25,10 +25,10 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="endpoint">服務端點。。</param>
         /// <param name="accessToken">存取令牌。</param>
-        /// <param name="progID">程式代碼。</param>
-        public TFormConnector(string endpoint, Guid accessToken, string progID) : base(endpoint, accessToken)
+        /// <param name="progId">程式代碼。</param>
+        public TFormConnector(string endpoint, Guid accessToken, string progId) : base(endpoint, accessToken)
         {
-            ProgID = progID;
+            ProgId = progId;
         }
 
         #endregion
@@ -36,7 +36,7 @@ namespace Bee.Connect
         /// <summary>
         /// 程式代碼。
         /// </summary>
-        public string ProgID { get; private set; }
+        public string ProgId { get; private set; }
 
         /// <summary>
         /// 執行 API 方法。
@@ -45,7 +45,7 @@ namespace Bee.Connect
         /// <param name="value">對應執行動作的傳入參數。</param>
         public T Execute<T>(string action, object value)
         {
-            return base.Execute<T>(this.ProgID, action, value);
+            return base.Execute<T>(ProgId, action, value);
         }
 
         /// <summary>

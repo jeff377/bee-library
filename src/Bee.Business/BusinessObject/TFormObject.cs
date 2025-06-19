@@ -14,10 +14,10 @@ namespace Bee.Business
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        /// <param name="progID">程式代碼。</param>
-        public TFormObject(Guid accessToken, string progID) : base(accessToken)
+        /// <param name="progId">程式代碼。</param>
+        public TFormObject(Guid accessToken, string progId) : base(accessToken)
         {
-            this.ProgID = progID;
+            this.ProgId = progId;
         }
 
         #endregion
@@ -25,7 +25,7 @@ namespace Bee.Business
         /// <summary>
         /// 程式代碼。
         /// </summary>
-        public string ProgID { get; private set; }
+        public string ProgId { get; private set; }
 
         /// <summary>
         /// 執行 ExecFunc 方法的實作。

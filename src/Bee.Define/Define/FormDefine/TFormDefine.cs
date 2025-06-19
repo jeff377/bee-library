@@ -17,7 +17,6 @@ namespace Bee.Define
     {
         private string _ObjectFilePath = string.Empty;
         private ESerializeState _SerializeState = ESerializeState.None;
-        private DateTime _CreateTime = DateTime.MinValue;
         private string _FormID = string.Empty;
         private string _DisplayName = string.Empty;
         private TFormTableCollection _Tables = null;
@@ -30,7 +29,6 @@ namespace Bee.Define
         /// </summary>
         public TFormDefine()
         {
-            _CreateTime = DateTime.Now;
         }
 
         #endregion
@@ -81,19 +79,16 @@ namespace Bee.Define
         /// <summary>
         /// 物件建立時間。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public DateTime CreateTime
-        {
-            get { return _CreateTime; }
-        }
+        public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
         /// 程式代碼。
         /// </summary>
         [XmlAttribute()]
         [Description("程式代碼。")]
-        public string ProgID
+        public string ProgId
         {
             get { return _FormID; }
             set { _FormID = value; }
@@ -148,10 +143,10 @@ namespace Bee.Define
         {
             get
             {
-                if (StrFunc.IsEmpty(this.ProgID) || !this.Tables.Contains(this.ProgID))
+                if (StrFunc.IsEmpty(this.ProgId) || !this.Tables.Contains(this.ProgId))
                     return null;
                 else
-                    return this.Tables[this.ProgID];
+                    return this.Tables[this.ProgId];
             }
         }
 
@@ -168,7 +163,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.ProgID} - {this.DisplayName}";
+            return $"{this.ProgId} - {this.DisplayName}";
         }
     }
 }

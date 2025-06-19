@@ -66,8 +66,8 @@
         /// <summary>
         /// 取得表單定義。
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
-        TFormDefine GetFormDefine(string progID);
+        /// <param name="progId">程式代碼。</param>
+        TFormDefine GetFormDefine(string progId);
 
         /// <summary>
         /// 儲存表單定義。
@@ -78,8 +78,8 @@
         /// <summary>
         /// 取得表單版面配置。
         /// </summary>
-        /// <param name="layoutID">版面代碼。</param>
-        TFormLayout GetFormLayout(string layoutID);
+        /// <param name="layoutId">版面代碼。</param>
+        TFormLayout GetFormLayout(string layoutId);
 
         /// <summary>
         /// 儲存表單版面配置。

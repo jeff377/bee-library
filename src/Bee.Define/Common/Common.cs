@@ -57,7 +57,7 @@ namespace Bee.Define
     /// <summary>
     /// 系統使用程式代碼。
     /// </summary>
-    public class SysProgIDs
+    public class SysProgIds
     {
         /// <summary>
         /// 系統層級業務邏輯物件。
