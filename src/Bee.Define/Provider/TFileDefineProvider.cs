@@ -89,12 +89,12 @@ namespace Bee.Define
         /// <summary>
         /// 取得表單版面配置。
         /// </summary>
-        /// <param name="layoutID">版面代碼。</param>
-        public TFormLayout GetFormLayout(string layoutID)
+        /// <param name="layoutId">表單版面代碼。</param>
+        public TFormLayout GetFormLayout(string layoutId)
         {
             string sFilePath;
 
-            sFilePath = DefinePathInfo.GetFormLayoutFilePath(layoutID);
+            sFilePath = DefinePathInfo.GetFormLayoutFilePath(layoutId);
             ValidateFilePath(sFilePath);
             return SerializeFunc.XmlFileToObject<TFormLayout>(sFilePath);
         }
@@ -107,7 +107,7 @@ namespace Bee.Define
         {
             string sFilePath;
 
-            sFilePath = DefinePathInfo.GetFormLayoutFilePath(formLayout.LayoutID);
+            sFilePath = DefinePathInfo.GetFormLayoutFilePath(formLayout.LayoutId);
             SerializeFunc.ObjectToXmlFile(formLayout, sFilePath);
         }
 

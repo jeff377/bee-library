@@ -229,18 +229,18 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得表單排版。
+        /// 取得表單版面配置。
         /// </summary>
-        /// <param name="layoutID">版面代碼。</param>
-        public TFormLayout GetFormLayout(string layoutID)
+        /// <param name="layoutId">表單版面代碼。</param>
+        public TFormLayout GetFormLayout(string layoutId)
         {
-            return CacheFunc.GetFormLayout(layoutID);
+            return CacheFunc.GetFormLayout(layoutId);
         }
 
         /// <summary>
-        /// 儲存表單排版。
+        /// 儲存表單版面配置。
         /// </summary>
-        /// <param name="formLayout">表單排版。</param>
+        /// <param name="formLayout">表單版面配置。</param>
         public void SaveFormLayout(TFormLayout formLayout)
         {
             TFormLayoutCache oCache;
@@ -248,7 +248,7 @@ namespace Bee.Cache
             // 儲存表單版面配置後，移除快取
             BackendInfo.DefineProvider.SaveFormLayout(formLayout);
             oCache = new TFormLayoutCache();
-            oCache.Remove(formLayout.LayoutID);
+            oCache.Remove(formLayout.LayoutId);
         }
     }
 }

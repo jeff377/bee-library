@@ -106,10 +106,10 @@ namespace Bee.Cache
         /// <summary>
         /// 取得表單版面配置。
         /// </summary>
-        /// <param name="layoutID">版面代碼。</param>
-        public static TFormLayout GetFormLayout(string layoutID)
+        /// <param name="layoutId">表單版面代碼。</param>
+        public static TFormLayout GetFormLayout(string layoutId)
         {
-            return CacheContainer.FormLayout.Get(layoutID);
+            return CacheContainer.FormLayout.Get(layoutId);
         }
 
         /// <summary>

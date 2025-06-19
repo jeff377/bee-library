@@ -201,18 +201,18 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 取得表單排版。
+        /// 取得表單版面配置。
         /// </summary>
-        /// <param name="layoutID">排版代碼。</param>
-        public TFormLayout GetFormLayout(string layoutID)
+        /// <param name="layoutId">排版代碼。</param>
+        public TFormLayout GetFormLayout(string layoutId)
         {
-            return GetDefine<TFormLayout>(EDefineType.FormLayout, new string[] { layoutID });
+            return GetDefine<TFormLayout>(EDefineType.FormLayout, new string[] { layoutId });
         }
 
         /// <summary>
-        /// 儲存表單排版。
+        /// 儲存表單版面配置。
         /// </summary>
-        /// <param name="formLayout">表單排版。</param>
+        /// <param name="formLayout">表單版面配置。</param>
         public void SaveFormLayout(TFormLayout formLayout)
         {
             SaveDefine(EDefineType.FormLayout, formLayout);

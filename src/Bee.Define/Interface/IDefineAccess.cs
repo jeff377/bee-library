@@ -78,7 +78,7 @@
         /// <summary>
         /// 取得表單版面配置。
         /// </summary>
-        /// <param name="layoutId">版面代碼。</param>
+        /// <param name="layoutId">表單版面代碼。</param>
         TFormLayout GetFormLayout(string layoutId);
 
         /// <summary>

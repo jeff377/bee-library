@@ -243,7 +243,7 @@ namespace Bee.Define
         /// </summary>
         FormDefine,
         /// <summary>
-        /// 表單排版。
+        /// 表單版面配置。
         /// </summary>
         FormLayout
     }

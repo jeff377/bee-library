@@ -7,18 +7,17 @@ using Newtonsoft.Json;
 namespace Bee.Define
 {
     /// <summary>
-    /// 表單排版。
+    /// 表單版面配置。
     /// </summary>
     [Serializable]
     [XmlType("FormLayout")]
-    [Description("表單排版。")]
+    [Description("表單版面配置。")]
     [TreeNode]
     public class TFormLayout : IObjectSerializeFile
     {
         private string _ObjectFilePath = string.Empty;
         private ESerializeState _SerializeState = ESerializeState.None;
         private DateTime _CreateTime = DateTime.MinValue;
-        private string _LayoutID = string.Empty;
         private string _DisplayName = string.Empty;
         private TLayoutGroupCollection _Groups = null;
 
@@ -88,16 +87,12 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 排版代碼。
+        /// 表單版面代碼。
         /// </summary>
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("排版代碼。")]
-        public string LayoutID
-        {
-            get { return _LayoutID; }
-            set { _LayoutID = value; }
-        }
+        [Description("表單版面代碼。")]
+        public string LayoutId { get; set; } = string.Empty;
 
         /// <summary>
         /// 顯示名稱。
@@ -150,7 +145,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.LayoutID} - {this.DisplayName}";
+            return $"{this.LayoutId} - {this.DisplayName}";
         }
     }
 }

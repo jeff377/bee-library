@@ -88,12 +88,12 @@ namespace Bee.Define
         /// <summary>
         /// 取得表單版面配置的檔案路徑。
         /// </summary>
-        /// <param name="layoutID">版面代碼。</param>
-        public static string GetFormLayoutFilePath(string layoutID)
+        /// <param name="layoutId">表單版面代碼。</param>
+        public static string GetFormLayoutFilePath(string layoutId)
         {
             string sFilePath;
 
-            sFilePath = $@"FormLayout\{layoutID}.FormLayout.xml";
+            sFilePath = $@"FormLayout\{layoutId}.FormLayout.xml";
             return GetDefinePath(sFilePath);
         }
     }
