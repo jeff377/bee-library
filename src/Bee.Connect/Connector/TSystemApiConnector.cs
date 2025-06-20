@@ -7,7 +7,7 @@ namespace Bee.Connect
     /// <summary>
     /// 系統層級 API 服務連接器。
     /// </summary>
-    public class TSystemConnector : TApiConnector
+    public class TSystemApiConnector : TApiConnector
     {
         #region 建構函式
 
@@ -15,7 +15,7 @@ namespace Bee.Connect
         /// 建構函式，採用近端連線。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TSystemConnector(Guid accessToken) : base(accessToken)
+        public TSystemApiConnector(Guid accessToken) : base(accessToken)
         { }
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="endpoint">服務端點。。</param>
         /// <param name="accessToken">存取令牌。</param>
-        public TSystemConnector(string endpoint, Guid accessToken) : base(endpoint, accessToken)
+        public TSystemApiConnector(string endpoint, Guid accessToken) : base(endpoint, accessToken)
         { }
 
         #endregion

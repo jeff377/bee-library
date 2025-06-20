@@ -41,7 +41,7 @@ namespace Bee.Connect.UnitTests
             var args = new TExecFuncArgs("Hello");
             // 透過 Connector 執行 ExecFunc 方法
             Guid accessToken = Guid.NewGuid();
-            var connector = new TSystemConnector(accessToken);
+            var connector = new TSystemApiConnector(accessToken);
             var result = connector.ExecFunc(args);
             Assert.NotNull(result);  // 確認 ExecFunc 方法傳出結果不為 null
         }
@@ -56,7 +56,7 @@ namespace Bee.Connect.UnitTests
             var args = new TExecFuncArgs("Hello");
             // 透過 Connector 執行 ExecFunc 方法
             Guid accessToken = Guid.NewGuid();
-            var connector = new TFormConnector(accessToken, "demo");
+            var connector = new TFormApiConnector(accessToken, "demo");
             var result = connector.ExecFunc(args);
             Assert.NotNull(result);  // 確認 ExecFunc 方法傳出結果不為 null
         }

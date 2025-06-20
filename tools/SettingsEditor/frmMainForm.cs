@@ -144,7 +144,7 @@ namespace SettingsEditor
             {
                 var args = new TExecFuncArgs(SysFuncIDs.TestConnection);
                 args.Parameters.Add("DatabaseItem", databaseItem);
-                ClientInfo.SystemConnector.ExecFunc(args);
+                ClientInfo.SystemApiConnector.ExecFunc(args);
                 UIFunc.MsgBox("資料庫連線測試成功");
             }
             catch (Exception ex)

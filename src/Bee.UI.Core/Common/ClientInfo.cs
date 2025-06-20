@@ -13,7 +13,7 @@ namespace Bee.UI.Core
     public class ClientInfo
     {
         private static TClientSettings _clientSettings = null;
-        private static TSystemConnector _systemConnector = null;
+        private static TSystemApiConnector _systemConnector = null;
         private static IDefineAccess _defineAccess = null;
 
         /// <summary>
@@ -64,13 +64,13 @@ namespace Bee.UI.Core
         /// <summary>
         /// 系統層級 API 服務連接器，服務端點異動時需重新建立。
         /// </summary>
-        public static TSystemConnector SystemConnector
+        public static TSystemApiConnector SystemApiConnector
         {
             get
             {
                 if (_systemConnector == null)
                 {
-                    _systemConnector = CreateSystemConnector();
+                    _systemConnector = CreateSystemApiConnector();
                 }
                 return _systemConnector;
             }
@@ -81,24 +81,24 @@ namespace Bee.UI.Core
         /// 建立系統層級 API 服務連接器。
         /// </summary>
         /// <returns></returns>
-        private static TSystemConnector CreateSystemConnector()
+        private static TSystemApiConnector CreateSystemApiConnector()
         {
             if (FrontendInfo.ConnectType == EConnectType.Local)
-                return new TSystemConnector(FrontendInfo.AccessToken);
+                return new TSystemApiConnector(FrontendInfo.AccessToken);
             else
-                return new TSystemConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken);
+                return new TSystemApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken);
         }
 
         /// <summary>
         /// 建立表單層級 API 服務連接器。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        public static TFormConnector CreateFormConnector(string progId)
+        public static TFormApiConnector CreateFormApiConnector(string progId)
         {
             if (FrontendInfo.ConnectType == EConnectType.Local)
-                return new TFormConnector(FrontendInfo.AccessToken, progId);
+                return new TFormApiConnector(FrontendInfo.AccessToken, progId);
             else
-                return new TFormConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progId);
+                return new TFormApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progId);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Bee.UI.Core
             {
                 if (_defineAccess == null)
                 {
-                    _defineAccess = new TApiDefineAccess(SystemConnector);
+                    _defineAccess = new TApiDefineAccess(SystemApiConnector);
                 }
                 return _defineAccess;
             }
@@ -140,8 +140,8 @@ namespace Bee.UI.Core
             SessionInfo = sessionInfo;
             FrontendInfo.AccessToken = sessionInfo.AccessToken;
             // 更新 AccessToken 需重置 SystemConnector 及 DefineAccess
-            _systemConnector = CreateSystemConnector();
-            _defineAccess = new TApiDefineAccess(SystemConnector);
+            _systemConnector = CreateSystemApiConnector();
+            _defineAccess = new TApiDefineAccess(SystemApiConnector);
         }
 
         /// <summary>
@@ -177,7 +177,7 @@ namespace Bee.UI.Core
         private static void ApiServiceOptionsInitialize()
         {
             var args = new TGetApiPayloadOptionsArgs();
-            var result = SystemConnector.Execute<TGetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args, false);
+            var result = SystemApiConnector.Execute<TGetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args, false);
             var payloadOptions = new TApiPayloadOptions()
             {
                 Serializer = result.Serializer,

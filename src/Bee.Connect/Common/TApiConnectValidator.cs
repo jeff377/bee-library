@@ -125,7 +125,7 @@ namespace Bee.Connect
                 ClientName = "Connector",
                 TraceId = "001"
             };
-            var connector = new TSystemConnector(endpoint, Guid.Empty);
+            var connector = new TSystemApiConnector(endpoint, Guid.Empty);
             var result = connector.Execute<TPingResult>(SystemActions.Ping, args, false);
             if (result.Status != "ok")
                 throw new InvalidOperationException($"Ping method failed with status: {result.Status}");

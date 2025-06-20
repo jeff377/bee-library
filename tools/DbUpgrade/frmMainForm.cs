@@ -128,7 +128,7 @@ namespace DbUpgrade
             args.Parameters.Add("DatabaseID", BackendInfo.DatabaseID);
             args.Parameters.Add("DbName", dbName);
             args.Parameters.Add("TableName", tableName);
-            var result = ClientInfo.SystemConnector.ExecFunc(args);
+            var result = ClientInfo.SystemApiConnector.ExecFunc(args);
             return result.Parameters.GetValue<bool>("Upgraded");
         }
 

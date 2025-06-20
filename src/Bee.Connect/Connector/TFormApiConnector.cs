@@ -6,7 +6,7 @@ namespace Bee.Connect
     /// <summary>
     /// 表單層級 API 服務連接器。
     /// </summary>
-    public class TFormConnector : TApiConnector
+    public class TFormApiConnector : TApiConnector
     {
         #region 建構函式
 
@@ -15,7 +15,7 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        public TFormConnector(Guid accessToken, string progId) : base(accessToken)
+        public TFormApiConnector(Guid accessToken, string progId) : base(accessToken)
         {
             ProgId = progId;
         }
@@ -26,7 +26,7 @@ namespace Bee.Connect
         /// <param name="endpoint">服務端點。。</param>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        public TFormConnector(string endpoint, Guid accessToken, string progId) : base(endpoint, accessToken)
+        public TFormApiConnector(string endpoint, Guid accessToken, string progId) : base(endpoint, accessToken)
         {
             ProgId = progId;
         }
