@@ -259,7 +259,7 @@ namespace Bee.Define
             oSourceFields = StrFunc.Split(sourceFields, ",");
             oDestinationFields = StrFunc.Split(destinationFields, ",");
             if (oSourceFields.Length != oDestinationFields.Length)
-                throw new TException("Source and destination fields must have the same number.");
+                throw new InvalidOperationException("Source and destination fields must have the same number.");
 
             this.LinkProgId = linkProgId;
             this.LinkReturnFields.Clear();

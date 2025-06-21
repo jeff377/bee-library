@@ -87,7 +87,7 @@ namespace Bee.Db
                                  "WHERE sys_id={0}";
             helper.SetCommandFormatText(sql);
             var row = helper.ExecuteDataRow();
-            if (row == null) { throw new TException($"UserID='{userID}' not found"); }
+            if (row == null) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
 
             var user = new TSessionUser()
             {

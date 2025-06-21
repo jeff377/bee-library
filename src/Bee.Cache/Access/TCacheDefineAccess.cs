@@ -49,7 +49,7 @@ namespace Bee.Cache
         private void ValidateKeys(EDefineType defineType, string[] keys, int expectedLength)
         {
             if (keys == null || keys.Length != expectedLength)
-                throw new TException($"{defineType} Keys verification error. Input: {string.Join(",", keys ?? new string[0])}");
+                throw new ArgumentException($"{defineType} keys verification error. Input: {string.Join(",", keys ?? new string[0])}");
         }
 
         /// <summary>
@@ -76,7 +76,7 @@ namespace Bee.Cache
                     break;
                 case EDefineType.DbTable:
                     if (keys == null || keys.Length != 1)
-                        throw new TException($"{defineType} Keys verification error");
+                        throw new ArgumentException($"{defineType} keys verification error");
                     this.SaveDbTable(keys[0], defineObject as TDbTable);
                     break;
                 case EDefineType.FormLayout:

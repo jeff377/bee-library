@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using System;
+using Bee.Base;
 
 namespace Bee.Cache
 {
@@ -89,7 +90,7 @@ namespace Bee.Cache
             if (value is IKeyObject c)
                 Set(c.GetKey(), value);
             else
-                throw new TException("未實作 IKeyObject 介面");
+                throw new InvalidOperationException("The value does not implement the IKeyObject interface.");
         }
 
         /// <summary>

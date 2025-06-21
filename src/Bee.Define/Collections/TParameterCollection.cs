@@ -1,5 +1,5 @@
 ﻿using System;
-using Bee.Base;
+using System.Collections.Generic;
 using MessagePack;
 
 namespace Bee.Define
@@ -38,7 +38,7 @@ namespace Bee.Define
             if (this.Contains(name))
                 return (T)this[name].Value;
             else
-                throw new TException("'{0}' 參數不存在", name);
+                throw new KeyNotFoundException($"Parameter '{name}' does not exist.");
         }
 
         /// <summary>
