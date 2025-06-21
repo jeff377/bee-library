@@ -24,6 +24,13 @@ namespace Bee.Base
         public static bool IsDebugMode { get; set; } = false;
 
         /// <summary>
+        /// 是否為工具程式模式（例如 SettingsEditor.exe）。
+        /// 此屬性**只能由程式啟動階段指定**，不允許從設定檔載入。
+        /// 用於允許近端執行且不需 AccessToken 的驗證流程。
+        /// </summary>
+        public static bool IsToolMode { get; set; } = false;
+
+        /// <summary>
         /// 允許 JSON-RPC 傳遞資料的型別命名空間清單。
         /// 僅允許這些命名空間中的型別進行反序列化，以確保安全性。
         /// 注意：Bee.Base 與 Bee.Define 為系統內建的預設命名空間，無需額外指定。

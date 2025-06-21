@@ -1,4 +1,5 @@
 ﻿using Bee.Base;
+using Bee.Define;
 using Bee.UI.Core;
 
 namespace Bee.UI.WinForms
@@ -22,15 +23,19 @@ namespace Bee.UI.WinForms
         private void frmConnect_Load(object sender, EventArgs e)
         {
             edtEndpoint.Text = ClientInfo.GetEndpoint();
+            if (!FrontendInfo.SupportedConnectTypes.HasFlag(ESupportedConnectTypes.Remote))
+            {
+                lblEndpoint.Text = "DefinePath";
+            }
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            string sEndpoint = StrFunc.Trim(edtEndpoint.Text);
+            string endpoint = StrFunc.Trim(edtEndpoint.Text);
             try
             {
                 // 設置服務端點
-                ClientInfo.SetEndpoint(sEndpoint);
+                ClientInfo.SetEndpoint(endpoint);
             }
             catch (Exception ex)
             {
