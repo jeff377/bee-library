@@ -173,7 +173,7 @@ namespace Bee.Db
         {
             if (StrFunc.IsNotEmpty(databaseID)) { return databaseID; }
             if (StrFunc.IsEmpty(BackendInfo.DatabaseID))
-                throw new TException("BackendInfo.DatabaseID is empty");
+                throw new InvalidOperationException("BackendInfo.DatabaseID is empty");
             return BackendInfo.DatabaseID;
         }
 

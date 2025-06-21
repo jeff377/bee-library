@@ -41,7 +41,7 @@ namespace Bee.Base
             }
 
             if (!ValidateType(typeName))
-                throw new TException($"TypeName={typeName} not allowed");
+                throw new InvalidOperationException($"Type name '{typeName}' is not allowed.");
 
             return Binder.BindToType(assemblyName, typeName);
         }

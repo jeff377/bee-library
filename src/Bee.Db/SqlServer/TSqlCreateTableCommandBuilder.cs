@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using Bee.Base;
 using Bee.Define;
 
@@ -257,7 +258,7 @@ namespace Bee.Db
                 case EFieldDbType.Binary:
                     return "[varbinary](max)";
                 default:
-                    throw new TException($"DbType={field.DbType} not supported");
+                    throw new InvalidOperationException($"DbType={field.DbType} is not supported");
             }
         }
 

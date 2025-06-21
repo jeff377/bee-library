@@ -20,7 +20,7 @@ namespace Bee.Base
 
             // 驗證參數型別是否合法
             if (!ValidateType(typeName))
-                throw new TException($"TypeName={typeName} not allowed");
+                throw new InvalidOperationException($"Type name '{typeName}' is not allowed.");
             // 傳回序列化型別
             oType = Type.GetType(String.Format("{0}, {1}", typeName, assemblyName));
             return oType;

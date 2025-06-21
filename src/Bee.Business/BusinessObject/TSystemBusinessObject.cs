@@ -99,7 +99,7 @@ namespace Bee.Business
             Type type = DefineFunc.GetDefineType(args.DefineType);
             object defineObject = SerializeFunc.XmlToObject(args.Xml, type);
             if (defineObject == null)
-                throw new TException($"Failed to deserialize XML to {type.Name} object.");
+                throw new InvalidOperationException($"Failed to deserialize XML to {type.Name} object.");
 
             // 儲存定義資料
             var access = new TCacheDefineAccess();

@@ -72,7 +72,7 @@ namespace Bee.Connect
             };
             var response = this.Provider.Execute(request, enableEncoding);
             if (response.Error != null)
-                throw new TException(response.Error.Message);
+                throw new InvalidOperationException($"API error: {response.Error.Message}");
             return (T)response.Result.Value;
         }
     }
