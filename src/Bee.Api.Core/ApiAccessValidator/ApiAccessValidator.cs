@@ -33,7 +33,7 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="method">目標方法</param>
         /// <returns>取得的屬性，若無則為 null</returns>
-        private static ApiAccessControlAttribute? FindAccessAttribute(MethodInfo method)
+        private static ApiAccessControlAttribute FindAccessAttribute(MethodInfo method)
         {
             var attr = method.GetCustomAttribute<ApiAccessControlAttribute>();
             if (attr != null)

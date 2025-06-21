@@ -35,7 +35,7 @@ namespace Bee.Connect
             if (SysInfo.IsDebugMode && enableEncoding) { request.Encode(); }
 
             // 執行 API 方法
-            var executor = new TJsonRpcExecutor(AccessToken);
+            var executor = new TJsonRpcExecutor(AccessToken, true);
             var response = executor.Execute(request);
 
             // 偵錯模式時，傳出結果進行解碼

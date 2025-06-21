@@ -13,15 +13,22 @@ namespace Bee.Api.Core
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TJsonRpcExecutor(Guid accessToken)
+        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        public TJsonRpcExecutor(Guid accessToken, bool isLocalCall =false)
         {
             AccessToken = accessToken;
+            IsLocalCall = isLocalCall;
         }
 
         /// <summary>
         /// 存取令牌，用於識別目前使用者或工作階段。
         /// </summary>
         public Guid AccessToken { get; set; } = Guid.Empty;
+
+        /// <summary>
+        /// 呼叫是否為近端來源（例如與伺服器同一進程或主機）。
+        /// </summary>
+        public bool IsLocalCall { get; set; } = false;
 
         /// <summary>
         /// 執行 API 方法。
@@ -58,7 +65,7 @@ namespace Bee.Api.Core
                 // 從 Method 屬性解析出 ProgId 與 Action
                 var (progId, action) = ParseMethod(request.Method);
                 // 建立業務邏輯物件，執行指定方法
-                var value = await ExecuteMethodAsync(progId, action, request.Params.Value);
+                var value = await ExecuteMethodAsync(progId, action, request.Params.Value, isEncoded);
 
                 // 傳出結果
                 response.Result = new TJsonRpcResult { Value = value };
@@ -98,13 +105,17 @@ namespace Bee.Api.Core
         /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">執行動作的傳入引數。</param>
-        public async Task<object> ExecuteMethodAsync(string progId, string action, object value)
+        /// <param name="isEncoded">傳輸資料是否進行編碼。</param>
+        public async Task<object> ExecuteMethodAsync(string progId, string action, object value, bool isEncoded)
         {
             // 建立指定 progId 的業務邏輯物件實例
             var businessObject = CreateBusinessObject(AccessToken, progId);
             var method = businessObject.GetType().GetMethod(action);
             if (method == null)
                 throw new MissingMethodException($"Method '{action}' not found in business object '{progId}'.");
+
+            // 存取驗證
+            ApiAccessValidator.ValidateAccess(method, new TApiCallContext(IsLocalCall, isEncoded));
 
             var result = method.Invoke(businessObject, new object[] { value });
 
