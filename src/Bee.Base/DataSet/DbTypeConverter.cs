@@ -52,7 +52,7 @@ namespace Bee.Base
                 case TypeCode.UInt64:
                     return EFieldDbType.Integer;
                 default:
-                    throw new TException("{0} can't convert to FieldDbType", type.Name);
+                    throw new InvalidOperationException($"{type.Name} can't convert to FieldDbType");
             }
         }
 
@@ -85,7 +85,7 @@ namespace Bee.Base
                 case EFieldDbType.Binary:
                     return DbType.Binary;
                 default:
-                    throw new TException("{0} can't convert to DbType", fieldDbType);
+                    throw new InvalidOperationException($"{fieldDbType} can't convert to DbType");
             }
         }
 
@@ -117,7 +117,7 @@ namespace Bee.Base
                 case EFieldDbType.Binary:
                     return typeof(byte[]);
                 default:
-                    throw new TException("{0} can't convert to System.Type", fieldDbType);
+                    throw new InvalidOperationException($"{fieldDbType} can't convert to System.Type");
             }
         }
     }

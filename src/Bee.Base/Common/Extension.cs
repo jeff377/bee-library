@@ -64,7 +64,7 @@ namespace Bee.Base
             string sExtension;
 
             if (StrFunc.IsEmpty(value.ObjectFilePath))
-                throw new TException("ObjectFilePath is empty");
+                throw new ArgumentException("ObjectFilePath is empty");
 
             sExtension = FileFunc.GetExtension(value.ObjectFilePath);
             if (StrFunc.IsEquals(sExtension, ".xml"))

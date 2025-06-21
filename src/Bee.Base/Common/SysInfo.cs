@@ -25,7 +25,7 @@ namespace Bee.Base
 
         /// <summary>
         /// 是否為工具程式模式（例如 SettingsEditor.exe）。
-        /// 此屬性**只能由程式啟動階段指定**，不允許從設定檔載入。
+        /// 此屬性只能由程式啟動階段指定，不允許從設定檔載入。
         /// 用於允許近端執行且不需 AccessToken 的驗證流程。
         /// </summary>
         public static bool IsToolMode { get; set; } = false;

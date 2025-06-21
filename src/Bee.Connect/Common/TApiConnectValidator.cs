@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Bee.Base;
 using Bee.Define;
 
@@ -17,7 +18,7 @@ namespace Bee.Connect
         public EConnectType Validate(string endpoint, bool allowGenerateSettings = false)
         {
             if (StrFunc.IsEmpty(endpoint))
-                throw new TException("輸入資料不能為空字串");
+                throw new ArgumentException("Input cannot be null or empty.", nameof(endpoint));
 
             if (FileFunc.IsLocalPath(endpoint))  // 輸入資料為本地路徑，驗證近端連線設定
             {
@@ -35,7 +36,7 @@ namespace Bee.Connect
             }
             else
             {
-                throw new TException("無法識別的連線類型，請輸入有效的服務端點或本地路徑");
+                throw new InvalidOperationException("Unrecognized connection type. Please enter a valid service endpoint or local path.");
             }
         }
 
@@ -48,9 +49,9 @@ namespace Bee.Connect
         {
             // 驗證程式是否支援近端連線
             if (!FrontendInfo.SupportedConnectTypes.HasFlag(ESupportedConnectTypes.Local))
-                throw new TException("不支援近端連線");
+                throw new InvalidOperationException("Local connections are not supported.");
             if (StrFunc.IsEmpty(definePath))
-                throw new TException("未指定定義路徑");
+                throw new ArgumentException("Definition path must be specified.", nameof(definePath));
 
             if (allowGenerateSettings) // 設定檔不存在允許自動生成，用於工具程式
             {
@@ -62,11 +63,11 @@ namespace Bee.Connect
             else // 要求設定檔一定要存在，用於一般應用程式
             {
                 if (!FileFunc.DirectoryExists(definePath))
-                    throw new TException("定義路徑不存在");
+                    throw new ArgumentException("Definition path does not exist.", nameof(definePath));
                 // 驗證指定路徑下是否包含 SystemSettings.xml 檔案
                 string filePath = FileFunc.PathCombine(definePath, "SystemSettings.xml");
                 if (!FileFunc.FileExists(filePath))
-                    throw new TException("定義路徑下無 SystemSettings.xml 檔案");
+                    throw new FileNotFoundException("SystemSettings.xml file not found in the definition path.", filePath);
             }
         }
 

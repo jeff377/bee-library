@@ -140,7 +140,7 @@ namespace Bee.Base
             }
             catch (Exception ex)
             {
-                throw new TException("XmlFileToObject Error: {0}\nFileName: {1}", ex.Message, filePath);
+                throw new InvalidOperationException($"XmlFileToObject Error: {ex.Message}\nFileName: {filePath}", ex);
             }
         }
 
@@ -242,7 +242,7 @@ namespace Bee.Base
             }
             catch (Exception ex)
             {
-                throw new TException("JsonFileToObject Error: {0}\nFileName: {1}", ex.Message, filePath);
+                throw new InvalidOperationException($"JsonFileToObject Error: {ex.Message}\nFileName: {filePath}", ex);
             }
         }
 

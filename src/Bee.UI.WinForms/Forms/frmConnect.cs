@@ -25,7 +25,7 @@ namespace Bee.UI.WinForms
             edtEndpoint.Text = ClientInfo.GetEndpoint();
             if (!FrontendInfo.SupportedConnectTypes.HasFlag(ESupportedConnectTypes.Remote))
             {
-                lblEndpoint.Text = "DefinePath";
+                lblEndpoint.Text = "Definition path";
             }
         }
 
