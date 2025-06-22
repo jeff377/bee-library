@@ -21,12 +21,27 @@ namespace Bee.Api.Core
             if (attr == null)
                 return;
 
-            if (attr.LocalOnly && !context.IsLocalCall)
-                throw new UnauthorizedAccessException("This method is only allowed for local calls.");
+            switch (attr.ProtectionLevel)
+            {
+                case EApiProtectionLevel.Public:
+                    // 允許任何呼叫，不驗證
+                    break;
 
-            if (attr.RequireEncoding && context.ShouldValidateEncoding && !context.IsEncoded)
-                throw new UnauthorizedAccessException("This method is only allowed for internal system calls (encryption/compression encoding required).");
+                case EApiProtectionLevel.Internal:
+                    if (context.ShouldValidateEncoding && !context.IsEncoded)
+                        throw new UnauthorizedAccessException("This API requires encoded transmission for internal calls.");
+                    break;
+
+                case EApiProtectionLevel.LocalOnly:
+                    if (!context.IsLocalCall)
+                        throw new UnauthorizedAccessException("This API is restricted to local-only usage.");
+                    break;
+
+                default:
+                    throw new NotSupportedException($"Unsupported protection level: {attr.ProtectionLevel}");
+            }
         }
+
 
         /// <summary>
         /// 嘗試從方法或其基底定義中取得 <see cref="ApiAccessControlAttribute"/>。

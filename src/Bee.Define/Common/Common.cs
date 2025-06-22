@@ -214,6 +214,26 @@ namespace Bee.Define
     }
 
     /// <summary>
+    /// API 存取保護等級。
+    /// </summary>
+    public enum EApiProtectionLevel
+    {
+        /// <summary>
+        /// 一般開放：允許任何呼叫（不強制編碼，開放給第三方）
+        /// </summary>
+        Public = 0,
+        /// <summary>
+        /// 內部呼叫：允許遠端呼叫，但必須進行編碼（加密或壓縮）
+        /// </summary>
+        Internal = 1,
+        /// <summary>
+        /// 僅限近端呼叫（不驗證編碼，適用於工具程式、背景服務）
+        /// </summary>
+        LocalOnly = 2
+    }
+
+
+    /// <summary>
     /// 定義資料類型。
     /// </summary>
     public enum EDefineType
