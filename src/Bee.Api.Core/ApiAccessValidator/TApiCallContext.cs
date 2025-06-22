@@ -31,5 +31,10 @@
         /// 呼叫是否為經過編碼的傳輸（例如加密與壓縮）。
         /// </summary>
         public bool IsEncoded { get; set; }
+
+        /// <summary>
+        /// 是否應該驗證編碼（只有遠端呼叫才需驗證）。
+        /// </summary>
+        public bool ShouldValidateEncoding => !IsLocalCall;
     }
 }

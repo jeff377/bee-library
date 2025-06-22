@@ -79,6 +79,7 @@ namespace Bee.Business
         /// 取得定義資料。
         /// </summary>
         /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(RequireEncoding = true)]
         public TGetDefineResult GetDefine(TGetDefineArgs args)
         {
             var result = new TGetDefineResult();
@@ -93,6 +94,7 @@ namespace Bee.Business
         /// 儲存定義資料。
         /// </summary>
         /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(RequireEncoding = true)]
         public TSaveDefineResult SaveDefine(TSaveDefineArgs args)
         {
             // 將 XML 轉換為物件

@@ -24,7 +24,7 @@ namespace Bee.Api.Core
             if (attr.LocalOnly && !context.IsLocalCall)
                 throw new UnauthorizedAccessException("This method is only allowed for local calls.");
 
-            if (attr.RequireEncoding && !context.IsEncoded)
+            if (attr.RequireEncoding && context.ShouldValidateEncoding && !context.IsEncoded)
                 throw new UnauthorizedAccessException("This method is only allowed for internal system calls (encryption/compression encoding required).");
         }
 
