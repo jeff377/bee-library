@@ -9,6 +9,7 @@ namespace Bee.Define
     {
         private static IBusinessObjectProvider _businessObjectProvider = null;
         private static IDefineProvider _defineProvider = null;
+        private static ICacheDataSourceProvider _cacheDataSourceProvider = null;
 
         /// <summary>
         /// 定義資料路徑。
@@ -51,6 +52,20 @@ namespace Bee.Define
                 return _defineProvider;
             }
             set { _defineProvider = value; }
+        }
+
+        /// <summary>
+        /// 快取資料來源提供者。
+        /// </summary>
+        public static ICacheDataSourceProvider CacheDataSourceProvider
+        {
+            get
+            {
+                if (_cacheDataSourceProvider == null)
+                    _cacheDataSourceProvider = BaseFunc.CreateInstance("Bee.Business.TCacheDataSourceProvider") as ICacheDataSourceProvider;
+                return _cacheDataSourceProvider;
+            }
+            set { _cacheDataSourceProvider = value; }
         }
     }
 }

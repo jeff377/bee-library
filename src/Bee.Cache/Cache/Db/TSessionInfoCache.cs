@@ -19,8 +19,7 @@ namespace Bee.Cache
             if (BaseFunc.IsEmpty(accessToken)) { return null; }
 
             // 取得暫存連線的用戶資料
-            var provider = SysFunc.CreateCacheDataSourceProvider();
-            var user = provider.GetSessionUser(accessToken);
+            var user = BackendInfo.CacheDataSourceProvider.GetSessionUser(accessToken);
             if (user == null) { return null; }
 
             // 傳回連線資訊
