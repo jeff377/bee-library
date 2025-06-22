@@ -5,16 +5,19 @@ using Bee.Define;
 namespace Bee.Db
 {
     /// <summary>
-    /// 連線資訊的資料庫存取類別。
+    /// 連線資訊的資料存取物件，封裝存取 ts_session 與 ts_user 資料表的操作邏輯。
     /// </summary>
-    /// <remarks>此類別會存取 ts_session 及 ts_user 二個系統資料表。</remarks>
-    public class TSessionDbHelper
+    /// <remarks>
+    /// 此類別負責建立、查詢與刪除 Session 使用者資料，並以 <see cref="TSessionUser"/> 為資料模型。
+    /// 常見用途包含使用者登入產生 AccessToken、驗證連線狀態、清除過期連線等情境。
+    /// </remarks>
+    public class TSessionRepository
     {
         /// <summary>
         /// 寫入連線資訊。
         /// </summary>
         /// <param name="sessionUser">連線資訊儲存的用戶資料。</param>
-        public void Insert(TSessionUser sessionUser)
+        private void Insert(TSessionUser sessionUser)
         {
             string xml = SerializeFunc.ObjectToXml(sessionUser);
             var helper = DbFunc.CreateDbCommandHelper();
@@ -30,10 +33,24 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 刪除連線資訊。
+        /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
+        private void Delete(Guid accessToken)
+        {
+            var helper = DbFunc.CreateDbCommandHelper();
+            helper.AddParameter("access_token", EFieldDbType.Guid, accessToken);
+            string sql = "DELETE FROM ts_session \n" +
+                                 "WHERE access_token={0}";
+            helper.SetCommandFormatText(sql);
+            helper.ExecuteNonQuery();
+        }
+
+        /// <summary>
         /// 取得連線資訊。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TSessionUser Get(Guid accessToken)
+        public TSessionUser GetSession(Guid accessToken)
         {
             var helper = DbFunc.CreateDbCommandHelper();
             helper.AddParameter("access_token", EFieldDbType.Guid, accessToken);
@@ -60,26 +77,12 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 刪除連線資訊。
-        /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        public void Delete(Guid accessToken)
-        {
-            var helper = DbFunc.CreateDbCommandHelper();
-            helper.AddParameter("access_token", EFieldDbType.Guid, accessToken);
-            string sql = "DELETE FROM ts_session \n" +
-                                 "WHERE access_token={0}";
-            helper.SetCommandFormatText(sql);
-            helper.ExecuteNonQuery();
-        }
-
-        /// <summary>
         /// 建立一組用戶連線。
         /// </summary>
         /// <param name="userID">用戶帳號。</param>
         /// <param name="expiresIn">到期秒數。</param>
         /// <param name="oneTime">一次性有效。</param>
-        public TSessionUser Create(string userID, int expiresIn = 3600, bool oneTime = false)
+        public TSessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
             var helper = DbFunc.CreateDbCommandHelper();
             helper.AddParameter(SysFields.Id, EFieldDbType.String, userID);

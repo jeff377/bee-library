@@ -65,8 +65,8 @@ namespace Bee.Business
         public virtual TCreateSessionResult CreateSession(TCreateSessionArgs args)
         {
             // 建立一組用戶連線
-            var helper = new TSessionDbHelper();
-            var user = helper.Create(args.UserID, args.ExpiresIn, args.OneTime);
+            var repo = new TSessionRepository();
+            var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
             // 回傳存取令牌
             return new TCreateSessionResult()
             {

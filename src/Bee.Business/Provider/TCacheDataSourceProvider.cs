@@ -21,12 +21,8 @@ namespace Bee.Business
         /// <param name="accessToken">存取令牌。</param>
         public TSessionUser GetSessionUser(Guid accessToken)
         {
-            TSessionDbHelper oHelper;
-            TSessionUser oUser;
-
-            oHelper = new TSessionDbHelper();
-            oUser = oHelper.Get(accessToken);
-            return oUser;
+            var repo = new TSessionRepository();
+            return repo.GetSession(accessToken);
         }
     }
 }
