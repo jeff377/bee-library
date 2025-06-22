@@ -10,12 +10,14 @@ namespace Bee.Connect.UnitTests
         {
             SysInfo.IsDebugMode = true;
             // 設定定義路徑
-            BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
+            BackendInfo.DefinePath = @"D:\DefinePath";
             // 設定測試環境
             BackendInfo.DefineProvider = new TFileDefineProvider();
             BackendInfo.BusinessObjectProvider = new Bee.Business.TBusinessObjectProvider();
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            // 預設資料庫編號
+            BackendInfo.DatabaseID = "common";
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
@@ -59,6 +61,28 @@ namespace Bee.Connect.UnitTests
             var connector = new TFormApiConnector(accessToken, "demo");
             var result = connector.ExecFunc(args);
             Assert.NotNull(result);  // 確認 ExecFunc 方法傳出結果不為 null
+        }
+
+        /// <summary>
+        /// 測試 SystemApiConnector 的 CreateSession 方法。
+        /// </summary>
+        [Fact]
+        public void SystemConnector_CreateSession()
+        {
+            // Arrange
+            string userId = "001";
+            int expiresIn = 600;
+            bool oneTime = false;
+
+            // 產生一個隨機 Guid 作為 accessToken（僅用於初始化，CreateSession 會回傳新的 token）
+            Guid accessToken = Guid.NewGuid();
+            var connector = new TSystemApiConnector(accessToken);
+
+            // Act
+            Guid newToken = connector.CreateSession(userId, expiresIn, oneTime);
+
+            // Assert
+            Assert.NotEqual(Guid.Empty, newToken); // 應取得有效的 accessToken
         }
     }
 }
