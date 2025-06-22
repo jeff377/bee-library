@@ -62,7 +62,7 @@ namespace Bee.Business
         /// 建立連線。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public TCreateSessionResult CreateSession(TCreateSessionArgs args)
+        public virtual TCreateSessionResult CreateSession(TCreateSessionArgs args)
         {
             // 建立一組用戶連線
             var helper = new TSessionDbHelper();
@@ -80,7 +80,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         [ApiAccessControl(EApiProtectionLevel.Internal)]
-        public TGetDefineResult GetDefine(TGetDefineArgs args)
+        public virtual TGetDefineResult GetDefine(TGetDefineArgs args)
         {
             var result = new TGetDefineResult();
             var access = new TCacheDefineAccess();
@@ -95,7 +95,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         [ApiAccessControl(EApiProtectionLevel.Internal)]
-        public TSaveDefineResult SaveDefine(TSaveDefineArgs args)
+        public virtual TSaveDefineResult SaveDefine(TSaveDefineArgs args)
         {
             // 將 XML 轉換為物件
             Type type = DefineFunc.GetDefineType(args.DefineType);
