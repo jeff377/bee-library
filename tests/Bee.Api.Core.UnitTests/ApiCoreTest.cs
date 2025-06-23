@@ -9,7 +9,7 @@ namespace Bee.Api.Core.UnitTests
         static ApiCoreTest()
         {
             // 設定定義路徑
-            BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
+            BackendInfo.DefinePath = @"D:\DefinePath";
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // .NET 8 預設停用 BinaryFormatter，需手動啟用

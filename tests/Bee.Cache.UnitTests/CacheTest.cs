@@ -1,4 +1,3 @@
-using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Cache.UnitTests
@@ -7,7 +6,7 @@ namespace Bee.Cache.UnitTests
     {
         static CacheTest()
         {
-            BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
+            BackendInfo.DefinePath = @"D:\DefinePath";
         }
 
         [Fact]
