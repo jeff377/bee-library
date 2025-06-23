@@ -8,6 +8,7 @@ namespace Bee.Define
     public static class BackendInfo
     {
         private static IBusinessObjectProvider _businessObjectProvider = null;
+        private static IRepositoryProvider _repositoryProvider = null;
         private static IDefineProvider _defineProvider = null;
         private static ICacheDataSourceProvider _cacheDataSourceProvider = null;
 
@@ -27,7 +28,7 @@ namespace Bee.Define
         public static string DatabaseID { get; set; } = string.Empty;
 
         /// <summary>
-        /// 業務邏輯物件提供者。
+        /// 業務邏輯物件提供者，定義所有 BusinessObject 的取得方式。
         /// </summary>
         public static IBusinessObjectProvider BusinessObjectProvider
         {
@@ -38,6 +39,20 @@ namespace Bee.Define
                 return _businessObjectProvider;
             }
             set { _businessObjectProvider = value; }
+        }
+
+        /// <summary>
+        /// 資料儲存物件提供者，定義所有 Repository 的取得方式。
+        /// </summary>
+        public static IRepositoryProvider RepositoryProvider
+        {
+            get
+            {
+                if (_repositoryProvider == null)
+                    _repositoryProvider = BaseFunc.CreateInstance("Bee.Db.TRepositoryProvider") as IRepositoryProvider;
+                return _repositoryProvider;
+            }
+            set { _repositoryProvider = value; }
         }
 
         /// <summary>

@@ -11,7 +11,7 @@ namespace Bee.Db
     /// 此類別負責建立、查詢與刪除 Session 使用者資料，並以 <see cref="TSessionUser"/> 為資料模型。
     /// 常見用途包含使用者登入產生 AccessToken、驗證連線狀態、清除過期連線等情境。
     /// </remarks>
-    public class TSessionRepository
+    public class TSessionRepository : ISessionRepository
     {
         /// <summary>
         /// 寫入連線資訊。

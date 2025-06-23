@@ -3,7 +3,7 @@
 namespace Bee.Define
 {
     /// <summary>
-    /// 業務邏輯物件提供者介面。
+    /// 業務邏輯物件提供者介面，定義所有 BusinessObject 的取得方式。
     /// </summary>
     public interface IBusinessObjectProvider
     {

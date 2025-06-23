@@ -21,7 +21,7 @@ namespace Bee.Business
         /// <param name="accessToken">存取令牌。</param>
         public TSessionUser GetSessionUser(Guid accessToken)
         {
-            var repo = new TSessionRepository();
+            var repo = BackendInfo.RepositoryProvider.SessionRepository;
             return repo.GetSession(accessToken);
         }
     }

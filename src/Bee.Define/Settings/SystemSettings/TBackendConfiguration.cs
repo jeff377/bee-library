@@ -16,12 +16,20 @@ namespace Bee.Define
     public class TBackendConfiguration
     {
         /// <summary>
-        /// 業務邏輯物件提供者型別。
+        /// 業務邏輯物件提供者型別，定義所有 BusinessObject 的取得方式。
         /// </summary>
         [Category("System")]
-        [Description("業務邏輯物件提供者型別。")]
+        [Description("業務邏輯物件提供者型別，定義所有 BusinessObject 的取得方式。")]
         [DefaultValue("")]
         public string BusinessObjectProvider { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 資料儲存物件提供者型別，定義所有 Repository 的取得方式。
+        /// </summary>
+        [Category("System")]
+        [Description("資料儲存物件提供者型別，定義所有 Repository 的取得方式。")]
+        [DefaultValue("")]
+        public string RepositoryProvider { get; set; } = string.Empty;
 
         /// <summary>
         /// 資料庫類型。
@@ -56,6 +64,11 @@ namespace Bee.Define
             if (StrFunc.IsNotEmpty(BusinessObjectProvider))
             {
                 BackendInfo.BusinessObjectProvider = BaseFunc.CreateInstance(BusinessObjectProvider) as IBusinessObjectProvider;
+            }
+            // 指定資料儲存物件提供者型別
+            if (StrFunc.IsNotEmpty(RepositoryProvider))
+            {
+                BackendInfo.RepositoryProvider = BaseFunc.CreateInstance(RepositoryProvider) as IRepositoryProvider;
             }
             // 資料庫類型
             BackendInfo.DatabaseType = DatabaseType;
