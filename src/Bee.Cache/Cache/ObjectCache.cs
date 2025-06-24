@@ -20,10 +20,10 @@ namespace Bee.Cache
         /// <summary>
         /// 取得快取項目到期條件。
         /// </summary>
-        protected virtual TCacheItemPolicy GetPolicy()
+        protected virtual CacheItemPolicy GetPolicy()
         {
             // 預設為相對時間 20 分鐘
-            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
+            var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             return policy;
         }
 

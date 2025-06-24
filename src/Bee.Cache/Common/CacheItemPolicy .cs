@@ -5,7 +5,7 @@ namespace Bee.Cache
     /// <summary>
     /// 快取項目到期條件。
     /// </summary>
-    public class TCacheItemPolicy
+    public class CacheItemPolicy
     {
         private DateTimeOffset _AbsoluteExpiration = DateTimeOffset.MaxValue;
         private TimeSpan _SlidingExpiration = TimeSpan.Zero;
@@ -17,7 +17,7 @@ namespace Bee.Cache
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TCacheItemPolicy()
+        public CacheItemPolicy()
         { }
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="kind">快取條件相依的時間類型，AbsoluteExpiration 及 SlidingExpiration 只能擇一設定。</param>
         /// <param name="minutes">分鐘數。</param>
-        public TCacheItemPolicy(CacheTimeKind  kind, int minutes)
+        public CacheItemPolicy(CacheTimeKind  kind, int minutes)
         {
             SetCacheTime(kind, minutes);
         }

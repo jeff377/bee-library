@@ -12,7 +12,7 @@ namespace Bee.Define
     [XmlType("WebsiteConfiguration")]
     [Description("網站參數及環境設置。")]
     [TreeNode("網站")]
-    public class TWebsiteConfiguration
+    public class WebsiteConfiguration
     {
         /// <summary>
         /// 物件描述文字。

@@ -3,12 +3,12 @@
     /// <summary>
     /// API 授權驗證內容。
     /// </summary>
-    public class TApiAuthorizationContext
+    public class ApiAuthorizationContext
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TApiAuthorizationContext()
+        public ApiAuthorizationContext()
         {
         }
 

@@ -12,9 +12,9 @@ namespace Bee.Cache
         /// <summary>
         /// 取得快取項目到期條件。
         /// </summary>
-        protected override TCacheItemPolicy GetPolicy()
+        protected override CacheItemPolicy GetPolicy()
         {
-            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
+            var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetProgramSettingsFilePath() };
             return policy;
         }

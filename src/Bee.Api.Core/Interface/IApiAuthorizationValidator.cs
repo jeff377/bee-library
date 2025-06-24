@@ -8,7 +8,7 @@
         /// <summary>
         /// 驗證 API 金鑰與授權。
         /// </summary>
-        ApiAuthorizationResult Validate(TApiAuthorizationContext context);
+        ApiAuthorizationResult Validate(ApiAuthorizationContext context);
     }
 
 }

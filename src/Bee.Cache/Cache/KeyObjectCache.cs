@@ -22,10 +22,10 @@ namespace Bee.Cache
         /// 取得快取項目到期條件。
         /// </summary>
         /// <param name="key">成員鍵值。</param>
-        protected virtual TCacheItemPolicy GetPolicy(string key)
+        protected virtual CacheItemPolicy GetPolicy(string key)
         {
             // 預設為相對時間 20 分鐘
-            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
+            var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             return policy;
         }
 

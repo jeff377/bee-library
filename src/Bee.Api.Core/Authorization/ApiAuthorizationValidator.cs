@@ -33,7 +33,7 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="context">API 授權驗證上下文。</param>
         /// <returns>授權驗證結果。</returns>
-        public ApiAuthorizationResult Validate(TApiAuthorizationContext context)
+        public ApiAuthorizationResult Validate(ApiAuthorizationContext context)
         {
             // 驗證輸入參數是否為 null
             if (context == null)

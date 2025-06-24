@@ -106,7 +106,7 @@ namespace Bee.Api.AspNet
             var apiKey = context.Request.Headers[ApiHeaders.ApiKey] ?? string.Empty;
             var authorization = context.Request.Headers[ApiHeaders.Authorization] ?? string.Empty;
 
-            var authContext = new TApiAuthorizationContext
+            var authContext = new ApiAuthorizationContext
             {
                 ApiKey = apiKey,
                 Authorization = authorization,

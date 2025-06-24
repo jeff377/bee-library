@@ -15,9 +15,9 @@ namespace Bee.Cache
         /// 建立快取項目的回收條件。
         /// </summary>
         /// <param name="policy">快取項目的回收條件。</param>
-        internal static CacheItemPolicy CreateCachePolicy(TCacheItemPolicy policy)
+        internal static System.Runtime.Caching.CacheItemPolicy CreateCachePolicy(CacheItemPolicy policy)
         {
-            var cachePolicy = new CacheItemPolicy();
+            var cachePolicy = new System.Runtime.Caching.CacheItemPolicy();
             if (policy.AbsoluteExpiration != DateTimeOffset.MaxValue)
                 cachePolicy.AbsoluteExpiration = policy.AbsoluteExpiration;
             if (policy.SlidingExpiration != TimeSpan.Zero)

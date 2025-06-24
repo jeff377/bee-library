@@ -129,7 +129,7 @@ namespace Bee.Define
         /// </summary>
         [Description("網站參數及環境設置。")]
         [Browsable(false)]
-        public TWebsiteConfiguration WebsiteConfiguration { get; set; } = new TWebsiteConfiguration();
+        public WebsiteConfiguration WebsiteConfiguration { get; set; } = new WebsiteConfiguration();
 
         /// <summary>
         /// 服務程式參數及環境設置。

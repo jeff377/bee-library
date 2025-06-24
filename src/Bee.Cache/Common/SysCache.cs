@@ -43,7 +43,7 @@ namespace Bee.Cache
         /// <param name="item">快取項目。</param>
         /// <param name="policy">快取項目到期條件。</param>
         /// <remarks>如果快取資料不存在，則會建立它。 如果快取資料存在，則會更新，</remarks>
-        public static void Set(CacheItem item, CacheItemPolicy policy)
+        public static void Set(CacheItem item, System.Runtime.Caching.CacheItemPolicy policy)
         {
             item.Key = GetKey(item.Key);
             MemoryCache.Set(item, policy);
@@ -56,10 +56,10 @@ namespace Bee.Cache
         /// <param name="value">要置入快取的物件。</param>
         /// <param name="policy">快取項目到期條件。</param>
         /// <remarks>如果快取資料不存在，則會建立它。 如果快取資料存在，則會更新，</remarks>
-        public static void Set(string key, object value, TCacheItemPolicy policy)
+        public static void Set(string key, object value, CacheItemPolicy policy)
         {
             CacheItem oItem;
-            CacheItemPolicy oPolicy;
+            System.Runtime.Caching.CacheItemPolicy oPolicy;
 
             oItem = new CacheItem(key, value);
             oPolicy = CacheFunc.CreateCachePolicy(policy);

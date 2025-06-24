@@ -12,13 +12,13 @@ namespace Bee.Cache
         /// 取得快取項目到期條件。
         /// </summary>
         /// <param name="key">成員鍵值。</param>
-        protected override TCacheItemPolicy GetPolicy(string key)
+        protected override CacheItemPolicy GetPolicy(string key)
         {
             // 拆解成員鍵值，取得資料庫名稱及資料表名稱
             StrFunc.SplitLeft(key, ".", out string dbName, out string tableName);
 
             // 預設為相對時間 20 分鐘
-            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
+            var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineProvider is FileDefineProvider)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbTableFilePath(dbName, tableName) };
             return policy;
