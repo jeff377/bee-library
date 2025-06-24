@@ -8,7 +8,7 @@ namespace Bee.Cache
     /// <summary>
     /// 監控資料庫 ST_Cahce 資料表異動，並通知快取受監控項目發生變更的資訊。
     /// </summary>
-    public class TDbChangeMonitor : ChangeMonitor
+    public class DbChangeMonitor : ChangeMonitor
     {
         private readonly string _UniqueId = string.Empty;
         private readonly string _Key = string.Empty;
@@ -19,7 +19,7 @@ namespace Bee.Cache
         /// 建構函式。
         /// </summary>
         /// <param name="key"></param>
-        private TDbChangeMonitor(string key)
+        private DbChangeMonitor(string key)
         {
             _UniqueId = BaseFunc.NewGuidString();
             _Key = key;

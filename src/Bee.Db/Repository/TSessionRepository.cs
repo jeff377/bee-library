@@ -8,7 +8,7 @@ namespace Bee.Db
     /// 連線資訊的資料存取物件，封裝存取 ts_session 與 ts_user 資料表的操作邏輯。
     /// </summary>
     /// <remarks>
-    /// 此類別負責建立、查詢與刪除 Session 使用者資料，並以 <see cref="TSessionUser"/> 為資料模型。
+    /// 此類別負責建立、查詢與刪除 Session 使用者資料，並以 <see cref="SessionUser"/> 為資料模型。
     /// 常見用途包含使用者登入產生 AccessToken、驗證連線狀態、清除過期連線等情境。
     /// </remarks>
     public class TSessionRepository : ISessionRepository
@@ -17,7 +17,7 @@ namespace Bee.Db
         /// 寫入連線資訊。
         /// </summary>
         /// <param name="sessionUser">連線資訊儲存的用戶資料。</param>
-        private void Insert(TSessionUser sessionUser)
+        private void Insert(SessionUser sessionUser)
         {
             string xml = SerializeFunc.ObjectToXml(sessionUser);
             var helper = DbFunc.CreateDbCommandHelper();
@@ -50,7 +50,7 @@ namespace Bee.Db
         /// 取得連線資訊。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TSessionUser GetSession(Guid accessToken)
+        public SessionUser GetSession(Guid accessToken)
         {
             var helper = DbFunc.CreateDbCommandHelper();
             helper.AddParameter("access_token", FieldDbType.Guid, accessToken);
@@ -70,7 +70,7 @@ namespace Bee.Db
             }
 
             string xml = BaseFunc.CStr(row["session_user_xml"]);
-            var user = SerializeFunc.XmlToObject<TSessionUser>(xml);
+            var user = SerializeFunc.XmlToObject<SessionUser>(xml);
             // 若為一次性有效，刪除連線資訊
             if (user.OneTime) { this.Delete(accessToken); }
             return user;
@@ -82,7 +82,7 @@ namespace Bee.Db
         /// <param name="userID">用戶帳號。</param>
         /// <param name="expiresIn">到期秒數。</param>
         /// <param name="oneTime">一次性有效。</param>
-        public TSessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
+        public SessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
             var helper = DbFunc.CreateDbCommandHelper();
             helper.AddParameter(SysFields.Id, FieldDbType.String, userID);
@@ -92,7 +92,7 @@ namespace Bee.Db
             var row = helper.ExecuteDataRow();
             if (row == null) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
 
-            var user = new TSessionUser()
+            var user = new SessionUser()
             {
                 AccessToken = BaseFunc.NewGuid(),
                 UserID = userID,

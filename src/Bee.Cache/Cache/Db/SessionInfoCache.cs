@@ -7,13 +7,13 @@ namespace Bee.Cache
     /// <summary>
     /// 連線資訊快取。
     /// </summary>
-    internal class TSessionInfoCache : TKeyObjectCache<TSessionInfo>
+    internal class SessionInfoCache : KeyObjectCache<SessionInfo>
     {
         /// <summary>
         /// 建立執行個體。
         /// </summary>
         /// <param name="key">存取令牌。</param>
-        protected override TSessionInfo CreateInstance(string key)
+        protected override SessionInfo CreateInstance(string key)
         {
             var accessToken = BaseFunc.CGuid(key);
             if (BaseFunc.IsEmpty(accessToken)) { return null; }
@@ -23,7 +23,7 @@ namespace Bee.Cache
             if (user == null) { return null; }
 
             // 傳回連線資訊
-            return new TSessionInfo()
+            return new SessionInfo()
             {
                 AccessToken = accessToken,
                 UserID = user.UserID,
@@ -35,7 +35,7 @@ namespace Bee.Cache
         /// 取得連線資訊。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TSessionInfo Get(Guid accessToken)
+        public SessionInfo Get(Guid accessToken)
         {
             return Get(accessToken.ToString());
         }

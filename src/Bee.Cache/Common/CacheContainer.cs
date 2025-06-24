@@ -7,31 +7,31 @@ namespace Bee.Cache
     /// </summary>
     internal class CacheContainer
     {
-        private static readonly Lazy<TSystemSettingsCache> _systemSettings = new Lazy<TSystemSettingsCache>(() => new TSystemSettingsCache());
-        internal static TSystemSettingsCache SystemSettings => _systemSettings.Value;
+        private static readonly Lazy<SystemSettingsCache> _systemSettings = new Lazy<SystemSettingsCache>(() => new SystemSettingsCache());
+        internal static SystemSettingsCache SystemSettings => _systemSettings.Value;
 
-        private static readonly Lazy<TDatabaseSettingsCache> _databaseSettings = new Lazy<TDatabaseSettingsCache>(() => new TDatabaseSettingsCache());
-        internal static TDatabaseSettingsCache DatabaseSettings => _databaseSettings.Value;
+        private static readonly Lazy<DatabaseSettingsCache> _databaseSettings = new Lazy<DatabaseSettingsCache>(() => new DatabaseSettingsCache());
+        internal static DatabaseSettingsCache DatabaseSettings => _databaseSettings.Value;
 
-        private static readonly Lazy<TProgramSettingsCache> _programSettings = new Lazy<TProgramSettingsCache>(() => new TProgramSettingsCache());
-        internal static TProgramSettingsCache ProgramSettings => _programSettings.Value;
+        private static readonly Lazy<ProgramSettingsCache> _programSettings = new Lazy<ProgramSettingsCache>(() => new ProgramSettingsCache());
+        internal static ProgramSettingsCache ProgramSettings => _programSettings.Value;
 
-        private static readonly Lazy<TDbSchemaSettingsCache> _dbSchemaSettings = new Lazy<TDbSchemaSettingsCache>(() => new TDbSchemaSettingsCache());
-        internal static TDbSchemaSettingsCache DbSchemaSettings => _dbSchemaSettings.Value;
+        private static readonly Lazy<DbSchemaSettingsCache> _dbSchemaSettings = new Lazy<DbSchemaSettingsCache>(() => new DbSchemaSettingsCache());
+        internal static DbSchemaSettingsCache DbSchemaSettings => _dbSchemaSettings.Value;
 
-        private static readonly Lazy<TDbTableCache> _dbTable = new Lazy<TDbTableCache>(() => new TDbTableCache());
-        internal static TDbTableCache DbTable => _dbTable.Value;
+        private static readonly Lazy<DbTableCache> _dbTable = new Lazy<DbTableCache>(() => new DbTableCache());
+        internal static DbTableCache DbTable => _dbTable.Value;
 
-        private static readonly Lazy<TFormDefineCache> _formDefine = new Lazy<TFormDefineCache>(() => new TFormDefineCache());
-        internal static TFormDefineCache FormDefine => _formDefine.Value;
+        private static readonly Lazy<FormDefineCache> _formDefine = new Lazy<FormDefineCache>(() => new FormDefineCache());
+        internal static FormDefineCache FormDefine => _formDefine.Value;
 
-        private static readonly Lazy<TFormLayoutCache> _formLayout = new Lazy<TFormLayoutCache>(() => new TFormLayoutCache());
-        internal static TFormLayoutCache FormLayout => _formLayout.Value;
+        private static readonly Lazy<FormLayoutCache> _formLayout = new Lazy<FormLayoutCache>(() => new FormLayoutCache());
+        internal static FormLayoutCache FormLayout => _formLayout.Value;
 
-        private static readonly Lazy<TSessionInfoCache> _sessionInfo = new Lazy<TSessionInfoCache>(() => new TSessionInfoCache());
-        internal static TSessionInfoCache SessionInfo => _sessionInfo.Value;
+        private static readonly Lazy<SessionInfoCache> _sessionInfo = new Lazy<SessionInfoCache>(() => new SessionInfoCache());
+        internal static SessionInfoCache SessionInfo => _sessionInfo.Value;
 
-        private static readonly Lazy<TViewStateCache> viewState = new Lazy<TViewStateCache>(() => new TViewStateCache());
-        internal static TViewStateCache ViewState => viewState.Value;
+        private static readonly Lazy<ViewStateCache> viewState = new Lazy<ViewStateCache>(() => new ViewStateCache());
+        internal static ViewStateCache ViewState => viewState.Value;
     }
 }

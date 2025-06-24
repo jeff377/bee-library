@@ -19,7 +19,7 @@ namespace Bee.Business
         /// 取得暫存連線的用戶資料。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TSessionUser GetSessionUser(Guid accessToken)
+        public SessionUser GetSessionUser(Guid accessToken)
         {
             var repo = BackendInfo.RepositoryProvider.SessionRepository;
             return repo.GetSession(accessToken);

@@ -6,14 +6,14 @@ namespace Bee.Cache
     /// <summary>
     /// 透過鍵值存取同類型物件快取基底類別.。
     /// </summary>
-    public abstract class TKeyObjectCache<T>
+    public abstract class KeyObjectCache<T>
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TKeyObjectCache()
+        public KeyObjectCache()
         { }
 
         #endregion

@@ -7,7 +7,7 @@ namespace Bee.Cache
     /// <summary>
     /// 透過 Cache 進行定義資料存取。
     /// </summary>
-    public class TCacheDefineAccess : IDefineAccess
+    public class CacheDefineAccess : IDefineAccess
     {
         /// <summary>
         /// 取得定義資料。
@@ -105,7 +105,7 @@ namespace Bee.Cache
             string filePath = DefinePathInfo.GetSystemSettingsFilePath();
             SerializeFunc.ObjectToXmlFile(settings, filePath);
             // 移除快取
-            var cache = new TSystemSettingsCache();
+            var cache = new SystemSettingsCache();
             cache.Remove();
         }
 
@@ -123,14 +123,14 @@ namespace Bee.Cache
         /// <param name="settings">資料庫設定。</param>
         public void SaveDatabaseSettings(DatabaseSettings settings)
         {
-            TDatabaseSettingsCache oCache;
+            DatabaseSettingsCache oCache;
             string sFilePath;
 
             // 儲存資料庫設定後
             sFilePath = DefinePathInfo.GetDatabaseSettingsFilePath();
             SerializeFunc.ObjectToXmlFile(settings, sFilePath);
             // 移除快取
-            oCache = new TDatabaseSettingsCache();
+            oCache = new DatabaseSettingsCache();
             oCache.Remove();
         }
 
@@ -148,13 +148,13 @@ namespace Bee.Cache
         /// <param name="settings">程式清單。</param>
         public void SaveProgramSettings(ProgramSettings settings)
         {
-            TProgramSettingsCache oCache;
+            ProgramSettingsCache oCache;
             string sFilePath;
 
             // 儲存程式清單後，移除快取
             sFilePath = DefinePathInfo.GetProgramSettingsFilePath();
             SerializeFunc.ObjectToXmlFile(settings, sFilePath);
-            oCache = new TProgramSettingsCache();
+            oCache = new ProgramSettingsCache();
             oCache.Remove();
         }
 
@@ -172,11 +172,11 @@ namespace Bee.Cache
         /// <param name="settings">資料庫結構設定。</param>
         public void SaveDbSchemaSettings(DbSchemaSettings settings)
         {
-            TDbSchemaSettingsCache oCache;
+            DbSchemaSettingsCache oCache;
 
             // 儲存資料庫結構設定後，移除快取
             BackendInfo.DefineProvider.SaveDbSchemaSettings(settings);
-            oCache = new TDbSchemaSettingsCache();
+            oCache = new DbSchemaSettingsCache();
             oCache.Remove();
         }
 
@@ -197,11 +197,11 @@ namespace Bee.Cache
         /// <param name="dbTable">資料表結構。</param>
         public void SaveDbTable(string dbName, DbTable dbTable)
         {
-            TDbTableCache oCache;
+            DbTableCache oCache;
 
             // 儲存資料表結構後，移除快取
             BackendInfo.DefineProvider.SaveDbTable(dbName, dbTable);
-            oCache = new TDbTableCache();
+            oCache = new DbTableCache();
             oCache.Remove(dbName, dbTable.TableName);
         }
 
@@ -220,11 +220,11 @@ namespace Bee.Cache
         /// <param name="formDefine">表單定義。</param>
         public void SaveFormDefine(FormDefine formDefine)
         {
-            TFormDefineCache oCache;
+            FormDefineCache oCache;
 
             // 儲存資料表結構後，移除快取
             BackendInfo.DefineProvider.SaveFormDefine(formDefine);
-            oCache = new TFormDefineCache();
+            oCache = new FormDefineCache();
             oCache.Remove(formDefine.ProgId);
         }
 
@@ -243,11 +243,11 @@ namespace Bee.Cache
         /// <param name="formLayout">表單版面配置。</param>
         public void SaveFormLayout(FormLayout formLayout)
         {
-            TFormLayoutCache oCache;
+            FormLayoutCache oCache;
 
             // 儲存表單版面配置後，移除快取
             BackendInfo.DefineProvider.SaveFormLayout(formLayout);
-            oCache = new TFormLayoutCache();
+            oCache = new FormLayoutCache();
             oCache.Remove(formLayout.LayoutId);
         }
     }

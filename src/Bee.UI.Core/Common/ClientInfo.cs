@@ -129,13 +129,13 @@ namespace Bee.UI.Core
         /// <summary>
         /// 連線資訊，需登入驗證的應用程式才會有連線資訊。
         /// </summary>
-        public static TSessionInfo SessionInfo { get; private set; }
+        public static SessionInfo SessionInfo { get; private set; }
 
         /// <summary>
         /// 設定連線資訊，用戶登入後使用。
         /// </summary>
         /// <param name="sessionInfo">連線資訊。</param>
-        public static void SetSessionInfo(TSessionInfo sessionInfo)
+        public static void SetSessionInfo(SessionInfo sessionInfo)
         {
             SessionInfo = sessionInfo;
             FrontendInfo.AccessToken = sessionInfo.AccessToken;

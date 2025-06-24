@@ -11,6 +11,6 @@ namespace Bee.Define
         /// 取得暫存連線的用戶資料。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        TSessionUser GetSessionUser(Guid accessToken);
+        SessionUser GetSessionUser(Guid accessToken);
     }
 }

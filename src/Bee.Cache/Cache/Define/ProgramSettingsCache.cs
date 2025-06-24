@@ -7,7 +7,7 @@ namespace Bee.Cache
     /// <summary>
     /// 程式清單快取。
     /// </summary>
-    internal class TProgramSettingsCache : TObjectCache<ProgramSettings>
+    internal class ProgramSettingsCache : ObjectCache<ProgramSettings>
     {
         /// <summary>
         /// 取得快取項目到期條件。

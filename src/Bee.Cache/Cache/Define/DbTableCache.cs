@@ -6,7 +6,7 @@ namespace Bee.Cache
     /// <summary>
     /// 資料表結構快取。
     /// </summary>
-    internal class TDbTableCache : TKeyObjectCache<DbTable>
+    internal class DbTableCache : KeyObjectCache<DbTable>
     {
         /// <summary>
         /// 取得快取項目到期條件。

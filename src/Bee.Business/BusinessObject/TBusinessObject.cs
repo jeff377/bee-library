@@ -36,7 +36,7 @@ namespace Bee.Business
         /// <summary>
         /// 連線資訊。
         /// </summary>
-        public TSessionInfo SessionInfo { get; private set; }   
+        public SessionInfo SessionInfo { get; private set; }   
 
         /// <summary>
         /// 執行自訂方法。

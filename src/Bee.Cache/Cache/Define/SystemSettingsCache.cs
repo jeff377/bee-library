@@ -7,7 +7,7 @@ namespace Bee.Cache
     /// <summary>
     /// 系統設定快取。
     /// </summary>
-    internal class TSystemSettingsCache : TObjectCache<SystemSettings>
+    internal class SystemSettingsCache : ObjectCache<SystemSettings>
     {
         /// <summary>
         /// 取得快取項目到期條件。

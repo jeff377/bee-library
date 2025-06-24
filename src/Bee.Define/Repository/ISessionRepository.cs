@@ -11,7 +11,7 @@ namespace Bee.Define
         /// 取得連線資訊。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        TSessionUser GetSession(Guid accessToken);
+        SessionUser GetSession(Guid accessToken);
 
         /// <summary>
         /// 建立一組用戶連線。
@@ -19,6 +19,6 @@ namespace Bee.Define
         /// <param name="userID">用戶帳號。</param>
         /// <param name="expiresIn">到期秒數。</param>
         /// <param name="oneTime">一次性有效。</param>
-        TSessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false);
+        SessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false);
     }
 }

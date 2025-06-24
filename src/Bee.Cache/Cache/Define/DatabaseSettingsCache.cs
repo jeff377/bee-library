@@ -7,7 +7,7 @@ namespace Bee.Cache
     /// <summary>
     /// 資料庫設定快取。
     /// </summary>
-    internal class TDatabaseSettingsCache : TObjectCache<DatabaseSettings>
+    internal class DatabaseSettingsCache : ObjectCache<DatabaseSettings>
     {
         /// <summary>
         /// 取得快取項目到期條件。

@@ -82,7 +82,7 @@ namespace Bee.Business
         public virtual GetDefineResult GetDefine(GetDefineArgs args)
         {
             var result = new GetDefineResult();
-            var access = new TCacheDefineAccess();
+            var access = new CacheDefineAccess();
             object value = access.GetDefine(args.DefineType, args.Keys);
             if (value != null)
                 result.Xml = SerializeFunc.ObjectToXml(value);
@@ -103,7 +103,7 @@ namespace Bee.Business
                 throw new InvalidOperationException($"Failed to deserialize XML to {type.Name} object.");
 
             // 儲存定義資料
-            var access = new TCacheDefineAccess();
+            var access = new CacheDefineAccess();
             access.SaveDefine(args.DefineType, defineObject, args.Keys);
             var result = new SaveDefineResult();
             return result;

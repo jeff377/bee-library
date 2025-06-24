@@ -116,7 +116,7 @@ namespace Bee.Cache
         /// 由快取區取得連線資訊。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public static TSessionInfo GetSessionInfo(Guid accessToken)
+        public static SessionInfo GetSessionInfo(Guid accessToken)
         {
             return CacheContainer.SessionInfo.Get(accessToken);
         }
@@ -125,7 +125,7 @@ namespace Bee.Cache
         /// 將連線資訊置入快取。
         /// </summary>
         /// <param name="sessionInfo">連線資訊。</param>
-        public static void SetSessionInfo(TSessionInfo sessionInfo)
+        public static void SetSessionInfo(SessionInfo sessionInfo)
         {
             CacheContainer.SessionInfo.Set(sessionInfo);
         }

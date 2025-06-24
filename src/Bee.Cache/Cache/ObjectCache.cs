@@ -5,14 +5,14 @@ namespace Bee.Cache
     /// <summary>
     /// 物件快取基底類別。
     /// </summary>
-    public abstract class TObjectCache<T>
+    public abstract class ObjectCache<T>
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TObjectCache()
+        public ObjectCache()
         { }
 
         #endregion

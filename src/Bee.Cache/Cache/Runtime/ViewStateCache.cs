@@ -5,7 +5,7 @@ namespace Bee.Cache
     /// <summary>
     /// 頁面狀態快取。
     /// </summary>
-    internal class TViewStateCache : TKeyObjectCache<object>
+    internal class ViewStateCache : KeyObjectCache<object>
     {
         /// <summary>
         /// 取得快取鍵值。
