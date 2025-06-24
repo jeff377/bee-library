@@ -8,9 +8,9 @@ namespace Bee.UI.WinForms
     /// <summary>
     /// TreeView 樹狀結構控制項產生器。
     /// </summary>
-    internal class TTreeViewBuilder
+    internal class BeeTreeViewBuilder
     {
-        private readonly TTreeView _TreeView;
+        private readonly BeeTreeView _TreeView;
         private readonly ImageList _ImageList;
         private bool _UseTagProperty = true;
 
@@ -21,7 +21,7 @@ namespace Bee.UI.WinForms
         /// </summary>
         /// <param name="treeView">樹狀結構控制項。</param>
         /// <param name="useTagProperty">是否使用 ITagProperty.Tag 屬性去儲存樹狀結節。。</param>
-        public TTreeViewBuilder(TTreeView treeView, bool useTagProperty)
+        public BeeTreeViewBuilder(BeeTreeView treeView, bool useTagProperty)
         {
             _TreeView = treeView;
             _ImageList = treeView.ImageList;
@@ -33,7 +33,7 @@ namespace Bee.UI.WinForms
         /// <summary>
         /// 樹狀結構控制項。
         /// </summary>
-        public TTreeView TreeView
+        public BeeTreeView TreeView
         {
             get { return _TreeView; }
         }

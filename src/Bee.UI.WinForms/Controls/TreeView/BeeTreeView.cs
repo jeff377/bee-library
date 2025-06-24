@@ -9,9 +9,9 @@ namespace Bee.UI.WinForms
     /// </summary>
     [ToolboxItem(true)]
     [Description("樹狀結構控制項")]
-    public class TTreeView : System.Windows.Forms.TreeView
+    public class BeeTreeView : System.Windows.Forms.TreeView
     {
-        private TPropertyGrid _propertyGrid = null;
+        private BeePropertyGrid _propertyGrid = null;
 
         #region ObjectTreeNodeCreating 事件
 
@@ -56,7 +56,7 @@ namespace Bee.UI.WinForms
         /// </summary>
         [Description("繫結屬性視窗控制項，以顯示節點繫結物件。")]
         [DefaultValue((string)null)]
-        public TPropertyGrid PropertyGrid
+        public BeePropertyGrid PropertyGrid
         {
             get { return _propertyGrid; }
             set
@@ -128,7 +128,7 @@ namespace Bee.UI.WinForms
         public void BuildObjectTree(object value, bool useTagProperty = true, bool isClear = true)
         {
             this.BeginUpdate();
-            var builder = new TTreeViewBuilder(this, useTagProperty);
+            var builder = new BeeTreeViewBuilder(this, useTagProperty);
             builder.BuildObjectTree(value, isClear);
             if (PropertyGrid != null)
             {

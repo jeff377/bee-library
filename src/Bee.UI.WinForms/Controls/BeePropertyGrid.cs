@@ -7,7 +7,7 @@ namespace Bee.UI.WinForms
     /// </summary>
     [ToolboxItem(true)]
     [Description("屬性視窗控制項。")]
-    public class TPropertyGrid : PropertyGrid
+    public class BeePropertyGrid : PropertyGrid
     {
     }
 }

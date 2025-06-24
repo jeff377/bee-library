@@ -40,8 +40,8 @@
             tbConnect = new ToolStripMenuItem();
             statusBar = new StatusStrip();
             lblConnectType = new ToolStripStatusLabel();
-            treeView = new Bee.UI.WinForms.TTreeView();
-            propertyGrid = new Bee.UI.WinForms.TPropertyGrid();
+            treeView = new Bee.UI.WinForms.BeeTreeView();
+            propertyGrid = new Bee.UI.WinForms.BeePropertyGrid();
             splitContainer = new SplitContainer();
             tbTestConnection = new ToolStripMenuItem();
             menuBar.SuspendLayout();
@@ -208,8 +208,8 @@
         private ToolStripMenuItem 工具TToolStripMenuItem;
         private ToolStripMenuItem tbSystemSettings;
         private ToolStripMenuItem tbDatabaseSettings;
-        private Bee.UI.WinForms.TTreeView treeView;
-        private Bee.UI.WinForms.TPropertyGrid propertyGrid;
+        private Bee.UI.WinForms.BeeTreeView treeView;
+        private Bee.UI.WinForms.BeePropertyGrid propertyGrid;
         private SplitContainer splitContainer;
         private ToolStripSeparator toolStripMenuItem1;
         private ToolStripMenuItem tbSave;
