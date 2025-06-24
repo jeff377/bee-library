@@ -9,7 +9,7 @@ namespace Bee.Api.AspNet
     /// <summary>
     /// 提供 JSON-RPC API 處理的 HTTP 模組，適用於 ASP.NET。
     /// </summary>
-    public class TApiServiceModule : IHttpModule
+    public class ApiServiceModule : IHttpModule
     {
         /// <summary>
         /// 初始化模組，註冊請求攔截事件
@@ -32,7 +32,7 @@ namespace Bee.Api.AspNet
             if (!StrFunc.IsEquals(executionPath, "~/api")) { return; }
 
             // 讀取並解析 JSON-RPC 請求
-            TJsonRpcRequest request;
+            JsonRpcRequest request;
             try
             {
                 request = ReadRequest(context);
@@ -59,12 +59,12 @@ namespace Bee.Api.AspNet
         /// 讀取並解析 JSON-RPC 請求。
         /// </summary>
         /// <exception cref="JsonRpcException">當內容為空或格式錯誤時拋出。</exception>
-        private TJsonRpcRequest ReadRequest(HttpContext context)
+        private JsonRpcRequest ReadRequest(HttpContext context)
         {
             if (context.Request.HttpMethod != "POST" ||
                 !context.Request.ContentType.StartsWith("application/json", StringComparison.OrdinalIgnoreCase))
             {
-                throw new JsonRpcException(415, EJsonRpcErrorCode.InvalidRequest, "Unsupported media type");
+                throw new JsonRpcException(415, JsonRpcErrorCode.InvalidRequest, "Unsupported media type");
             }
 
             // 將 InputStream 指回開頭位置，避免被其他模組先讀取過而導致讀取失敗
@@ -76,22 +76,22 @@ namespace Bee.Api.AspNet
 
             if (string.IsNullOrWhiteSpace(json))
             {
-                throw new JsonRpcException(400, EJsonRpcErrorCode.InvalidRequest, "Empty request body");
+                throw new JsonRpcException(400, JsonRpcErrorCode.InvalidRequest, "Empty request body");
             }
 
             try
             {
-                var request = SerializeFunc.JsonToObject<TJsonRpcRequest>(json);
+                var request = SerializeFunc.JsonToObject<JsonRpcRequest>(json);
                 if (request == null || string.IsNullOrWhiteSpace(request.Method))
                 {
-                    throw new JsonRpcException(400, EJsonRpcErrorCode.InvalidRequest, "Missing method");
+                    throw new JsonRpcException(400, JsonRpcErrorCode.InvalidRequest, "Missing method");
                 }
                 return request;
             }
             catch (JsonRpcException) { throw; }
             catch (Exception ex)
             {
-                throw new JsonRpcException(400, EJsonRpcErrorCode.ParseError, $"Invalid JSON format: {ex.Message}");
+                throw new JsonRpcException(400, JsonRpcErrorCode.ParseError, $"Invalid JSON format: {ex.Message}");
             }
         }
 
@@ -101,7 +101,7 @@ namespace Bee.Api.AspNet
         /// <param name="context">HTTP 請求的上下文物件。</param>
         /// <param name="request">JSON-RPC 請求。</param>
         /// <returns>驗證結果。</returns>
-        private TApiAuthorizationResult ValidateAuthorization(HttpContext context, TJsonRpcRequest request)
+        private ApiAuthorizationResult ValidateAuthorization(HttpContext context, JsonRpcRequest request)
         {
             var apiKey = context.Request.Headers[ApiHeaders.ApiKey] ?? string.Empty;
             var authorization = context.Request.Headers[ApiHeaders.Authorization] ?? string.Empty;
@@ -123,11 +123,11 @@ namespace Bee.Api.AspNet
         /// <param name="context">HTTP 請求的上下文物件。</param>
         /// <param name="request">JSON-RPC 請求物件。</param>
         /// <param name="authResult">授權驗證的結果物件。</param>
-        private void HandleRequest(HttpContext context, TJsonRpcRequest request, TApiAuthorizationResult authResult)
+        private void HandleRequest(HttpContext context, JsonRpcRequest request, ApiAuthorizationResult authResult)
         {
             try
             {
-                var executor = new TJsonRpcExecutor(authResult.AccessToken);
+                var executor = new JsonRpcExecutor(authResult.AccessToken);
                 var response = executor.Execute(request);
 
                 context.Response.ContentType = "application/json";
@@ -137,7 +137,7 @@ namespace Bee.Api.AspNet
             }
             catch (Exception ex)
             {
-                WriteErrorResponse(context, 500, (int)EJsonRpcErrorCode.InternalError,
+                WriteErrorResponse(context, 500, (int)JsonRpcErrorCode.InternalError,
                     "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
             }
         }
@@ -148,16 +148,16 @@ namespace Bee.Api.AspNet
         /// </summary>
         /// <param name="context">HTTP 請求的上下文物件。</param>
         /// <param name="httpStatusCode">HTTP 狀態碼，例如 400、401、500。</param>
-        /// <param name="code">JSON-RPC 錯誤代碼，使用 <see cref="EJsonRpcErrorCode"/> 列舉。</param>
+        /// <param name="code">JSON-RPC 錯誤代碼，使用 <see cref="JsonRpcErrorCode"/> 列舉。</param>
         /// <param name="message">錯誤訊息內容。</param>
         /// <param name="id">對應的 JSON-RPC 請求識別碼，可為 null。</param>
         /// <param name="data">額外的錯誤資料，例如例外訊息，可為 null。</param>
         private void WriteErrorResponse(HttpContext context, int httpStatusCode, int code, string message, string id = null, string data = null)
         {
-            var response = new TJsonRpcResponse
+            var response = new JsonRpcResponse
             {
                 Id = id,
-                Error = new TJsonRpcError
+                Error = new JsonRpcError
                 {
                     Code = code,
                     Message = message,

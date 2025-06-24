@@ -1,22 +1,30 @@
-﻿using System;
-using Bee.Base;
+﻿using Bee.Base;
 using Newtonsoft.Json;
 
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// JSON-RPC 請求模型。 
+    /// JSON-RPC 回應模型。 
     /// </summary>
-    [Serializable]
-    public class TJsonRpcRequest : IObjectSerialize
+    public class JsonRpcResponse : IObjectSerialize
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TJsonRpcRequest()
+        public JsonRpcResponse()
         { }
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        public JsonRpcResponse(JsonRpcRequest request)
+        {
+            // 設定請求的唯一識別碼
+            Id = request.Id;
+        }
 
         #endregion
 
@@ -35,7 +43,7 @@ namespace Bee.Api.Core
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(Params, serializeState);
+            BaseFunc.SetSerializeState(Result, serializeState);
         }
 
         #endregion
@@ -47,16 +55,16 @@ namespace Bee.Api.Core
         public string Jsonrpc { get; set; } = "2.0";
 
         /// <summary>
-        /// 要呼叫的方法名稱。
+        /// 方法執行的結果。
         /// </summary>
-        [JsonProperty("method", NullValueHandling = NullValueHandling.Include)]
-        public string Method { get; set; }
+        [JsonProperty("result")]
+        public JsonRpcResult Result { get; set; }
 
         /// <summary>
-        /// 方法的引數。
+        /// 錯誤訊息。
         /// </summary>
-        [JsonProperty("params")]
-        public TJsonRpcParams Params { get; set; } = new TJsonRpcParams();
+        [JsonProperty("error")]
+        public JsonRpcError Error { get; set; }
 
         /// <summary>
         /// 請求的唯一識別碼。
@@ -69,20 +77,20 @@ namespace Bee.Api.Core
         /// </summary>
         public void Encode()
         {
-            if (Params != null)
+            if (Result != null)
             {
-                Params.Encode();
+                Result.Encode();
             }
         }
 
         /// <summary>
-        /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。
+        /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。。
         /// </summary>
         public void Decode()
         {
-            if (Params != null)
+            if (Result != null)
             {
-                Params.Decode();
+                Result.Decode();
             }
         }
     }

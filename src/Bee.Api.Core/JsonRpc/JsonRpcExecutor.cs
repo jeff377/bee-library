@@ -7,14 +7,14 @@ namespace Bee.Api.Core
     /// <summary>
     /// JSON-RPC 執行器。
     /// </summary>
-    public class TJsonRpcExecutor
+    public class JsonRpcExecutor
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="isLocalCall">呼叫是否為近端來源。</param>
-        public TJsonRpcExecutor(Guid accessToken, bool isLocalCall =false)
+        public JsonRpcExecutor(Guid accessToken, bool isLocalCall =false)
         {
             AccessToken = accessToken;
             IsLocalCall = isLocalCall;
@@ -34,7 +34,7 @@ namespace Bee.Api.Core
         /// 執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        public TJsonRpcResponse Execute(TJsonRpcRequest request)
+        public JsonRpcResponse Execute(JsonRpcRequest request)
         {
             return ExecuteAsyncCore(request).GetAwaiter().GetResult();
         }
@@ -43,7 +43,7 @@ namespace Bee.Api.Core
         /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        public Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request)
+        public Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request)
         {
             return ExecuteAsyncCore(request);
         }
@@ -52,9 +52,9 @@ namespace Bee.Api.Core
         /// 內部非同步執行核心邏輯。
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
-        private async Task<TJsonRpcResponse> ExecuteAsyncCore(TJsonRpcRequest request)
+        private async Task<JsonRpcResponse> ExecuteAsyncCore(JsonRpcRequest request)
         {
-            var response = new TJsonRpcResponse(request);
+            var response = new JsonRpcResponse(request);
             try
             {
                 // 傳輸資料是否進行編碼
@@ -68,16 +68,16 @@ namespace Bee.Api.Core
                 var value = await ExecuteMethodAsync(progId, action, request.Params.Value, isEncoded);
 
                 // 傳出結果
-                response.Result = new TJsonRpcResult { Value = value };
+                response.Result = new JsonRpcResult { Value = value };
                 // 若傳出結果需要編碼，則進行編碼
                 if (isEncoded) { response.Encode(); }
             }
             catch (Exception ex)
             {
                 if (ex.InnerException != null)
-                    response.Error = new TJsonRpcError(-1, ex.InnerException.Message);
+                    response.Error = new JsonRpcError(-1, ex.InnerException.Message);
                 else
-                    response.Error = new TJsonRpcError(-1, ex.Message);
+                    response.Error = new JsonRpcError(-1, ex.Message);
             }
             return response;
         }
@@ -115,7 +115,7 @@ namespace Bee.Api.Core
                 throw new MissingMethodException($"Method '{action}' not found in business object '{progId}'.");
 
             // 存取驗證
-            ApiAccessValidator.ValidateAccess(method, new TApiCallContext(IsLocalCall, isEncoded));
+            ApiAccessValidator.ValidateAccess(method, new ApiCallContext(IsLocalCall, isEncoded));
 
             var result = method.Invoke(businessObject, new object[] { value });
 

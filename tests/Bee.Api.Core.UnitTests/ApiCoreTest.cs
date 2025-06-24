@@ -22,10 +22,10 @@ namespace Bee.Api.Core.UnitTests
         [Fact]
         public void JsonRpcRequestSerialize()
         {
-            var request = new TJsonRpcRequest()
+            var request = new JsonRpcRequest()
             {
                 Method = $"{SysProgIds.System}.ExecFunc",
-                Params = new TJsonRpcParams()
+                Params = new JsonRpcParams()
                 {
                     Value = new ExecFuncArgs("Hello")
                 },
@@ -54,17 +54,17 @@ namespace Bee.Api.Core.UnitTests
         private T ApiExecute<T>(string progId, string action, object value)
         {
             // 設定 JSON-RPC 請求模型
-            var request = new TJsonRpcRequest()
+            var request = new JsonRpcRequest()
             {
                 Method = $"{progId}.{action}",
-                Params = new TJsonRpcParams()
+                Params = new JsonRpcParams()
                 {
                     Value = value
                 },
                 Id = Guid.NewGuid().ToString()
             };
             Guid accessToken = Guid.NewGuid();
-            var executor = new TJsonRpcExecutor(accessToken);
+            var executor = new JsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
             return (T)response.Result.Value;
         }
@@ -107,10 +107,10 @@ namespace Bee.Api.Core.UnitTests
             // 設定 ExecFunc 方法傳入引數
             Guid accessToken = Guid.NewGuid();
             // 設定 設定 JSON-RPC 請求模型
-            var request = new TJsonRpcRequest()
+            var request = new JsonRpcRequest()
             {
                 Method = $"{SysProgIds.System}.ExecFunc",
-                Params = new TJsonRpcParams()
+                Params = new JsonRpcParams()
                 {
                     Value = new ExecFuncArgs("Hello")
                 },
@@ -119,7 +119,7 @@ namespace Bee.Api.Core.UnitTests
 
             string json = request.ToJson();
             // 執行 API 方法
-            var executor = new TJsonRpcExecutor(accessToken);
+            var executor = new JsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
             var execFuncResult = response.Result.Value as ExecFuncResult;

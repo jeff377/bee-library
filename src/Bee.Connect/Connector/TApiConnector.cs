@@ -61,10 +61,10 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
-            var request = new TJsonRpcRequest()
+            var request = new JsonRpcRequest()
             {
                 Method = $"{progId}.{action}",
-                Params = new TJsonRpcParams()
+                Params = new JsonRpcParams()
                 {
                     Value = value
                 },

@@ -3,7 +3,7 @@
     /// <summary>
     /// JSON-RPC 執行方法的傳入引數。
     /// </summary>
-    public class TJsonRpcParams : TEncodablePayloadBase
+    public class JsonRpcParams : EncodablePayloadBase
     {
     }
 }

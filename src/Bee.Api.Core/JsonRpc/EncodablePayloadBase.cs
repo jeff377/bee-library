@@ -8,7 +8,7 @@ namespace Bee.Api.Core
     /// <summary>
     /// 提供編碼與解碼的共用實作。
     /// </summary>
-    public abstract  class TEncodablePayloadBase : IEncodablePayload, IObjectSerialize
+    public abstract  class EncodablePayloadBase : IEncodablePayload, IObjectSerialize
     {
         #region IObjectSerialize 介面
 

@@ -5,12 +5,12 @@ namespace Bee.Api.Core
     /// <summary>
     /// JSON-RPC 錯誤模型。
     /// </summary>
-    public class TJsonRpcError
+    public class JsonRpcError
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TJsonRpcError()
+        public JsonRpcError()
         { }
 
         /// <summary>
@@ -19,7 +19,7 @@ namespace Bee.Api.Core
         /// <param name="code">錯誤代碼。</param>
         /// <param name="message">錯誤訊息。</param>
         /// <param name="data">用於提供附加的錯誤訊息。</param>
-        public TJsonRpcError(int code, string message, object data = null)
+        public JsonRpcError(int code, string message, object data = null)
         {
             Code = code;
             Message = message;

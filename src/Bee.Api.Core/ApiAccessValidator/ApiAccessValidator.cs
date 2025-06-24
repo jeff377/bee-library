@@ -15,7 +15,7 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="method">要驗證的 API 方法</param>
         /// <param name="context">目前的 API 呼叫上下文</param>
-        public static void ValidateAccess(MethodInfo method, TApiCallContext context)
+        public static void ValidateAccess(MethodInfo method, ApiCallContext context)
         {
             var attr = FindAccessAttribute(method);
             if (attr == null)

@@ -3,7 +3,7 @@
     /// <summary>
     /// JSON-RPC 執行方法的傳出結果。
     /// </summary>
-    public class TJsonRpcResult : TEncodablePayloadBase
+    public class JsonRpcResult : EncodablePayloadBase
     {
     }
 }

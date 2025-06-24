@@ -18,9 +18,9 @@ namespace Bee.Api.Core
             switch (name)
             {
                 case "messagepack":
-                    return new TMessagePackPayloadSerializer();
+                    return new MessagePackPayloadSerializer();
                 case "binaryformatter":
-                    return new TBinaryFormatterPayloadSerializer();
+                    return new BinaryFormatterPayloadSerializer();
                 default:
                     throw new NotSupportedException($"Unsupported serializer: {name}");
             }
@@ -37,10 +37,10 @@ namespace Bee.Api.Core
             switch (name)
             {
                 case "gzip":
-                    return new TGZipPayloadCompressor();
+                    return new GZipPayloadCompressor();
                 case "none":
                 case "":
-                    return new TNoCompressionCompressor();
+                    return new NoCompressionCompressor();
                 default:
                     throw new NotSupportedException($"Unsupported compressor: {name}");
             }
@@ -57,10 +57,10 @@ namespace Bee.Api.Core
             switch (name)
             {
                 case "aes256":
-                    return new TAesPayloadEncryptor();
+                    return new AesPayloadEncryptor();
                 case "none":
                 case "":
-                    return new TNoEncryptionEncryptor();
+                    return new NoEncryptionEncryptor();
                 default:
                     throw new NotSupportedException($"Unsupported encryptor: {name}");
             }

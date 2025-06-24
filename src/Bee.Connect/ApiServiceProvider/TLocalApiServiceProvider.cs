@@ -29,13 +29,13 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
         /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
-        public TJsonRpcResponse Execute(TJsonRpcRequest request, bool enableEncoding)
+        public JsonRpcResponse Execute(JsonRpcRequest request, bool enableEncoding)
         {
             // 偵錯模式時，傳入資料進行編碼
             if (SysInfo.IsDebugMode && enableEncoding) { request.Encode(); }
 
             // 執行 API 方法
-            var executor = new TJsonRpcExecutor(AccessToken, true);
+            var executor = new JsonRpcExecutor(AccessToken, true);
             var response = executor.Execute(request);
 
             // 偵錯模式時，傳出結果進行解碼
@@ -48,13 +48,13 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="request">JSON-RPC 請求模型。</param>
         /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
-        public async Task<TJsonRpcResponse> ExecuteAsync(TJsonRpcRequest request, bool enableEncoding)
+        public async Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request, bool enableEncoding)
         {
             // 傳入資料進行編碼
             if (enableEncoding) { request.Encode(); }
 
             // 執行 API 方法
-            var executor = new TJsonRpcExecutor(AccessToken);
+            var executor = new JsonRpcExecutor(AccessToken);
             var response = await executor.ExecuteAsync(request);
 
             // 傳出結果進行解碼

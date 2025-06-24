@@ -1,17 +1,17 @@
 ﻿using System;
-using Bee.Define;
+using Bee.Base;
 
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 使用 MessagePack 的 API Payload 序列化器。
+    /// 使用 BinaryFormatter 的 API Payload 序列化器。
     /// </summary>
-    public class TMessagePackPayloadSerializer : IApiPayloadSerializer
+    public class BinaryFormatterPayloadSerializer : IApiPayloadSerializer
     {
         /// <summary>
         /// 序列化格式的識別字串。
         /// </summary>
-        public string SerializationMethod => "messagepack";
+        public string SerializationMethod => "binaryformatter";
 
         /// <summary>
         /// 將物件序列化為位元組陣列。
@@ -20,7 +20,7 @@ namespace Bee.Api.Core
         /// <param name="type">物件的型別。</param>
         public byte[] Serialize(object value, Type type)
         {
-            return MessagePackHelper.Serialize(value, type);
+            return SerializeFunc.ObjectToBinary(value);
         }
 
         /// <summary>
@@ -30,8 +30,12 @@ namespace Bee.Api.Core
         /// <param name="type">反序列化後的物件型別。</param>
         public object Deserialize(byte[] bytes, Type type)
         {
-            return MessagePackHelper.Deserialize(bytes, type);
+            return SerializeFunc.BinaryToObject(bytes);
         }
+
+        
     }
+
+
 
 }

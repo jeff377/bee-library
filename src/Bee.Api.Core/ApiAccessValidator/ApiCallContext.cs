@@ -3,12 +3,12 @@
     /// <summary>
     /// 呼叫上下文，描述目前 API 呼叫的狀態。
     /// </summary>
-    public class TApiCallContext
+    public class ApiCallContext
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TApiCallContext()
+        public ApiCallContext()
         { }
 
         /// <summary>
@@ -16,7 +16,7 @@
         /// </summary>
         /// <param name="isLocalCall">呼叫是否為近端來源。</param>
         /// <param name="isEncoded">呼叫是否為經過編碼的傳輸。</param>
-        public TApiCallContext(bool isLocalCall, bool isEncoded)
+        public ApiCallContext(bool isLocalCall, bool isEncoded)
         {
             IsLocalCall = isLocalCall;
             IsEncoded = isEncoded;

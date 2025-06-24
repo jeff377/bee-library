@@ -3,7 +3,7 @@
     /// <summary>
     /// 不執行任何壓縮或解壓縮操作的壓縮器實作。
     /// </summary>
-    public class TNoCompressionCompressor : IApiPayloadCompressor
+    public class NoCompressionCompressor : IApiPayloadCompressor
     {
         /// <summary>
         /// 壓縮演算法的識別字串，none 表示不進行壓縮。

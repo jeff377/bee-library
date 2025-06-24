@@ -9,11 +9,11 @@ namespace Bee.Api.Core
     /// </summary>
     public static class ApiServiceOptions
     {
-        private static IApiAuthorizationValidator _authorizationValidator = new TApiAuthorizationValidator(); // 預設實作
-        private static IApiPayloadTransformer _payloadTransformer = new TApiPayloadTransformer(); // 預設實作
-        private static IApiPayloadSerializer _payloadSerializer = new TMessagePackPayloadSerializer(); // 預設實作
-        private static IApiPayloadCompressor _payloadCompressor = new TGZipPayloadCompressor(); // 預設實作
-        private static IApiPayloadEncryptor _payloadEncryptor = new TAesPayloadEncryptor(); // 預設實作
+        private static IApiAuthorizationValidator _authorizationValidator = new ApiAuthorizationValidator(); // 預設實作
+        private static IApiPayloadTransformer _payloadTransformer = new ApiPayloadTransformer(); // 預設實作
+        private static IApiPayloadSerializer _payloadSerializer = new MessagePackPayloadSerializer(); // 預設實作
+        private static IApiPayloadCompressor _payloadCompressor = new GZipPayloadCompressor(); // 預設實作
+        private static IApiPayloadEncryptor _payloadEncryptor = new AesPayloadEncryptor(); // 預設實作
 
         /// <summary>
         /// 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作。

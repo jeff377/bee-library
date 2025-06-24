@@ -21,7 +21,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// <summary>
         /// 測試用的 ApiServiceController 類別。
         /// </summary>
-        public class ApiServiceController : TApiServiceController { }
+        public class ApiServiceController : AspNetCore.ApiServiceController { }
 
         /// <summary>
         /// 取得 JSON-RPC 請求模型的 JSON 字串。
@@ -32,10 +32,10 @@ namespace Bee.Api.AspNetCore.UnitTests
         private string GetRpcRequestJson(string progId, string action, object args)
         {
             // 設定 JSON-RPC 請求模型
-            var request = new TJsonRpcRequest()
+            var request = new JsonRpcRequest()
             {
                 Method = $"{progId}.{action}",
-                Params = new TJsonRpcParams()
+                Params = new JsonRpcParams()
                 {
                     Value = args
                 },
@@ -82,7 +82,7 @@ namespace Bee.Api.AspNetCore.UnitTests
             Assert.Equal("application/json", contentResult.ContentType);
             Assert.False(string.IsNullOrWhiteSpace(contentResult.Content));
 
-            var response = SerializeFunc.JsonToObject<TJsonRpcResponse>(contentResult.Content);
+            var response = SerializeFunc.JsonToObject<JsonRpcResponse>(contentResult.Content);
             return (TResult)response.Result.Value;
         }
 

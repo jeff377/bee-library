@@ -15,7 +15,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 取得 JSON-RPC 錯誤代碼。
         /// </summary>
-        public EJsonRpcErrorCode ErrorCode { get; }
+        public JsonRpcErrorCode ErrorCode { get; }
 
         /// <summary>
         /// 取得 JSON-RPC 錯誤訊息。
@@ -28,7 +28,7 @@ namespace Bee.Api.Core
         /// <param name="httpStatusCode">HTTP 狀態碼。</param>
         /// <param name="errorCode">JSON-RPC 錯誤代碼。</param>
         /// <param name="rpcMessage">JSON-RPC 錯誤訊息。</param>
-        public JsonRpcException(int httpStatusCode, EJsonRpcErrorCode errorCode, string rpcMessage)
+        public JsonRpcException(int httpStatusCode, JsonRpcErrorCode errorCode, string rpcMessage)
             : base(rpcMessage)
         {
             HttpStatusCode = httpStatusCode;

@@ -5,7 +5,7 @@ namespace Bee.Api.Core
     /// <summary>
     /// API 授權驗證結果。
     /// </summary>
-    public class TApiAuthorizationResult
+    public class ApiAuthorizationResult
     {
         /// <summary>
         /// 是否驗證成功。
@@ -15,7 +15,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 錯誤代碼。
         /// </summary>
-        public EJsonRpcErrorCode Code { get; set; }
+        public JsonRpcErrorCode Code { get; set; }
 
         /// <summary>
         /// 驗證失敗的錯誤訊息。
@@ -31,9 +31,9 @@ namespace Bee.Api.Core
         /// 建立驗證成功的結果。
         /// </summary>
         /// <param name="accessToken">存取權杖。</param>
-        public static TApiAuthorizationResult Success(Guid accessToken)
+        public static ApiAuthorizationResult Success(Guid accessToken)
         {
-            return new TApiAuthorizationResult
+            return new ApiAuthorizationResult
             {
                 IsValid = true,
                 AccessToken = accessToken
@@ -45,9 +45,9 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="code">錯誤代碼。</param>
         /// <param name="errorMessage">錯誤訊息。</param>
-        public static TApiAuthorizationResult Fail(EJsonRpcErrorCode code,  string errorMessage)
+        public static ApiAuthorizationResult Fail(JsonRpcErrorCode code,  string errorMessage)
         {
-            return new TApiAuthorizationResult
+            return new ApiAuthorizationResult
             {
                 IsValid = false,
                 Code = code,

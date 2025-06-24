@@ -5,7 +5,7 @@ namespace Bee.Api.Core
     /// <summary>
     /// 預設 API 傳輸資料的處理器，提供資料加解密、序列化與壓縮等轉換功能。
     /// </summary>
-    public class TApiPayloadTransformer : IApiPayloadTransformer
+    public class ApiPayloadTransformer : IApiPayloadTransformer
     {
         /// <summary>
         /// 將指定的物件進行轉換處理，例如序列化、壓縮或加密。
