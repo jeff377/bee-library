@@ -23,7 +23,7 @@ namespace Bee.Cache
         protected virtual TCacheItemPolicy GetPolicy()
         {
             // 預設為相對時間 20 分鐘
-            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             return policy;
         }
 

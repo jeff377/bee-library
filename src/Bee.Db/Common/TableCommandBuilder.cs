@@ -8,7 +8,7 @@ namespace Bee.Db
     /// <summary>
     /// 依結構資料表為依據，產生資料庫命令。
     /// </summary>
-    public class TTableCommandBuilder
+    public class TableCommandBuilder
     {
         private readonly DbTable _DbTable = null;
 
@@ -16,7 +16,7 @@ namespace Bee.Db
         /// 建構函式。
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
-        public TTableCommandBuilder(DbTable dbTable)
+        public TableCommandBuilder(DbTable dbTable)
         {
             _DbTable = dbTable;
         }

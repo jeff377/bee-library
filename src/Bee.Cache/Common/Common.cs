@@ -7,7 +7,7 @@ namespace Bee.Cache
     /// <summary>
     /// 快取條件相依的時間類型。
     /// </summary>
-    public enum ECacheTimeKind
+    public enum CacheTimeKind
     {
         /// <summary>
         /// 相對時間。

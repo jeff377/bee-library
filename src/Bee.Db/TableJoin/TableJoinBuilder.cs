@@ -6,7 +6,7 @@ namespace Bee.Db
     /// <summary>
     /// 資料表關連產生器。
     /// </summary>
-    internal class TTableJoinBuilder
+    internal class TableJoinBuilder
     {
         private readonly IDbCommandHelper _Helper = null;
         private readonly FormDefine _FormDefine = null;
@@ -21,7 +21,7 @@ namespace Bee.Db
         /// <param name="formDefine">表單定義。</param>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="selectFields">取回欄位的集合字串。</param>
-        public TTableJoinBuilder(IDbCommandHelper helper, FormDefine formDefine, string tableName, string selectFields)
+        public TableJoinBuilder(IDbCommandHelper helper, FormDefine formDefine, string tableName, string selectFields)
         {
             _Helper = helper;
             _FormDefine = formDefine;
@@ -73,9 +73,9 @@ namespace Bee.Db
         /// <summary>
         /// 建立資料表關連資訊提供者。
         /// </summary>
-        public TTableJoinProvider Execute()
+        public TableJoinProvider Execute()
         {
-            TTableJoinProvider oProvider;
+            TableJoinProvider oProvider;
             FormTable oTable;
             StringHashSet oUseFields, oUseTableFields;
 
@@ -88,7 +88,7 @@ namespace Bee.Db
             // 取得主要資料表使用欄位集合
             oUseTableFields = GetUseTableFields(oUseFields);
             // 建立資料表關連
-            oProvider = new TTableJoinProvider(this.Helper);            
+            oProvider = new TableJoinProvider(this.Helper);            
             BuildTableJoins(oProvider, oTable, oUseTableFields);
 
 
@@ -146,7 +146,7 @@ namespace Bee.Db
         /// <param name="table">表單資料表。</param>
         /// <param name="useFields">使用到的欄位集合。</param>
         /// <param name="detailTableName">明細資料表名稱。</param>
-        private void BuildTableJoins(TTableJoinProvider provider, FormTable table, StringHashSet useFields, string detailTableName = "")
+        private void BuildTableJoins(TableJoinProvider provider, FormTable table, StringHashSet useFields, string detailTableName = "")
         {
             StringHashSet oReturnFields;
             string sLeftTableAlias;

@@ -7,7 +7,7 @@ namespace Bee.Db
     /// <summary>
     /// SQL Server 資料庫建立表單相關命令語法產生器，包含 Select、Insert、Update、Delete 語法。
     /// </summary>
-    public class TSqlFormCommandBuilder : IFormCommandBuilder
+    public class SqlFormCommandBuilder : IFormCommandBuilder
     {
         private readonly FormDefine _FormDefine = null;
 
@@ -16,7 +16,7 @@ namespace Bee.Db
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TSqlFormCommandBuilder(FormDefine formDefine)
+        public SqlFormCommandBuilder(FormDefine formDefine)
         {
             _FormDefine = formDefine;
         }
@@ -38,9 +38,9 @@ namespace Bee.Db
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
         public DbCommand BuildSelectCommand(string tableName, string selectFields)
         {
-            TSqlFormSelectCommandBuilder oBuilder;
+            SqlFormSelectCommandBuilder oBuilder;
 
-            oBuilder = new TSqlFormSelectCommandBuilder(this.FormDefine);
+            oBuilder = new SqlFormSelectCommandBuilder(this.FormDefine);
             return oBuilder.Execute(tableName, selectFields);
         }
 

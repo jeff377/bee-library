@@ -5,7 +5,7 @@ namespace Bee.Db
     /// <summary>
     /// 關連欄位對應。
     /// </summary>
-    internal class TLinkFieldMapping : KeyCollectionItem
+    internal class LinkFieldMapping : KeyCollectionItem
     {
         private string _SourceTableAlias = string.Empty;
         private string _SourceField = string.Empty;

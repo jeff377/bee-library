@@ -6,7 +6,7 @@ namespace Bee.Business
     /// <summary>
     /// 表單層級業務邏輯物件。
     /// </summary>
-    public class TFormBusinessObject : TBusinessObject, IFormBusinessObject
+    public class FormBusinessObject : BusinessObject, IFormBusinessObject
     {
         #region 建構函式
 
@@ -15,7 +15,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        public TFormBusinessObject(Guid accessToken, string progId) : base(accessToken)
+        public FormBusinessObject(Guid accessToken, string progId) : base(accessToken)
         {
             this.ProgId = progId;
         }
@@ -47,7 +47,7 @@ namespace Bee.Business
             try
             {
                 // 使用反射，執行 FuncID 對應的自訂方法
-                var execFunc = new TFormExecFunc(this.AccessToken);
+                var execFunc = new FormExecFunc(this.AccessToken);
                 var method = execFunc.GetType().GetMethod(args.FuncID);
                 if (method == null)
                     throw new MissingMethodException($"Method {args.FuncID} not found.");

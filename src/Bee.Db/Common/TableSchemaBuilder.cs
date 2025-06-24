@@ -7,7 +7,7 @@ namespace Bee.Db
     /// <summary>
     /// 資料表結構產生器。
     /// </summary>
-    public class TTableSchemaBuilder
+    public class TableSchemaBuilder
     {
         private readonly string _DatabaseID = string.Empty;
 
@@ -17,7 +17,7 @@ namespace Bee.Db
         /// 建構函式。
         /// </summary>
         /// <param name="databaseID">資料庫編號。</param>
-        public TTableSchemaBuilder(string databaseID)
+        public TableSchemaBuilder(string databaseID)
         {
             _DatabaseID = databaseID;
         }
@@ -40,12 +40,12 @@ namespace Bee.Db
         public DbTable Compare(string dbName, string tableName)
         {
             // 實際的資料表結構
-            var helper = new TSqlDbTableHelper(this.DatabaseID);
+            var helper = new SqlDbTableHelper(this.DatabaseID);
             var realTable = helper.CreateDbTable(tableName);
             // 定義的資料表結構
             var defineTable = CacheFunc.GetDbTable(dbName, tableName);
             // 執行比對，並傳回比對後產生的資料表結構
-            var comparer = new TTableSchemaComparer(defineTable, realTable);
+            var comparer = new TableSchemaComparer(defineTable, realTable);
             return comparer.Compare();
         }
 
@@ -60,7 +60,7 @@ namespace Bee.Db
             var dbTable = this.Compare(dbName, tableName);
             if (dbTable.UpgradeAction != DbUpgradeAction.None)
             {
-                var builder = new TSqlCreateTableCommandBuilder();
+                var builder = new SqlCreateTableCommandBuilder();
                 return builder.GetCommandText(dbTable);
             }
             return string.Empty;

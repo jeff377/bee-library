@@ -8,7 +8,7 @@ namespace Bee.Business
     /// <summary>
     /// 系統層級業務邏輯物件提供的自訂方法。
     /// </summary>
-    internal class TSystemExecFunc
+    internal class SystemExecFunc
     {
         #region 建構函式
 
@@ -16,7 +16,7 @@ namespace Bee.Business
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TSystemExecFunc(Guid accessToken)
+        public SystemExecFunc(Guid accessToken)
         {
             AccessToken = accessToken;
         }
@@ -45,14 +45,14 @@ namespace Bee.Business
         /// <param name="result">傳出結果。</param>
         public void UpgradeTableSchema(ExecFuncArgs args, ExecFuncResult result)
         {
-            TTableSchemaBuilder oBuilder;
+            TableSchemaBuilder oBuilder;
             string sDatabaseID, sDbName, sTableName;
             bool bUpgraded;
 
             sDatabaseID = args.Parameters.GetValue<string>("DatabaseID");
             sDbName = args.Parameters.GetValue<string>("DbName");
             sTableName = args.Parameters.GetValue<string>("TableName");
-            oBuilder = new TTableSchemaBuilder(sDatabaseID);
+            oBuilder = new TableSchemaBuilder(sDatabaseID);
             bUpgraded = oBuilder.Execute(sDbName, sTableName);
             result.Parameters.Add("Upgraded", bUpgraded);  // 回傳是否已升級
         }
@@ -63,7 +63,7 @@ namespace Bee.Business
         public void TestConnection(ExecFuncArgs args, ExecFuncResult result)
         {
             var item = args.Parameters.GetValue<DatabaseItem>("DatabaseItem");
-            var dbAccess = new TDbAccess(item);
+            var dbAccess = new DbAccess(item);
             dbAccess.TestConnection();
         }
 
@@ -74,7 +74,7 @@ namespace Bee.Business
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
             var item = CacheFunc.GetDatabaseItem(databaseId);
-            var dbAccess = new TDbAccess(item);
+            var dbAccess = new DbAccess(item);
             dbAccess.TestConnection();
         }
 

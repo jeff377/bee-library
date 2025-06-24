@@ -8,21 +8,21 @@ namespace Bee.Business
     /// <summary>
     /// 系統層級業務邏輯物件。
     /// </summary>
-    public class TSystemBusinessObject : TBusinessObject, ISystemBusinessObject
+    public class SystemBusinessObject : BusinessObject, ISystemBusinessObject
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TSystemBusinessObject() : base()
+        public SystemBusinessObject() : base()
         { }
 
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TSystemBusinessObject(Guid accessToken) : base(accessToken)
+        public SystemBusinessObject(Guid accessToken) : base(accessToken)
         { }
 
         #endregion
@@ -129,7 +129,7 @@ namespace Bee.Business
             try
             {
                 // 使用反射，執行 FuncID 對應的自訂方法
-                var execFunc = new TSystemExecFunc(this.AccessToken);
+                var execFunc = new SystemExecFunc(this.AccessToken);
                 var method = execFunc.GetType().GetMethod(args.FuncID);
                 if (method == null)
                     throw new MissingMethodException($"Method {args.FuncID} not found.");

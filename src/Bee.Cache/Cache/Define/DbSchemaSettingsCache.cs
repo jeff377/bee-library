@@ -12,7 +12,7 @@ namespace Bee.Cache
         /// </summary>
         protected override TCacheItemPolicy GetPolicy()
         {
-            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineProvider is FileDefineProvider)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbTableSettingsFilePath() };
             return policy;

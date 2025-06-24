@@ -18,7 +18,7 @@ namespace Bee.Db
         /// </summary>
         public static IDbCommandHelper CreateDbCommandHelper(DatabaseType databaseType)
         {
-            return new TDbCommandHelper(databaseType);
+            return new DbCommandHelper(databaseType);
         }
 
         /// <summary>

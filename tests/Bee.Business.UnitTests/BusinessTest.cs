@@ -25,7 +25,7 @@ namespace Bee.Business.UnitTests
         public void CreateSession()
         {
             // Arrange
-            var business = new TSystemBusinessObject();
+            var business = new SystemBusinessObject();
             var args = new CreateSessionArgs
             {
                 UserID = "001",

@@ -25,7 +25,7 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="kind">快取條件相依的時間類型，AbsoluteExpiration 及 SlidingExpiration 只能擇一設定。</param>
         /// <param name="minutes">分鐘數。</param>
-        public TCacheItemPolicy(ECacheTimeKind  kind, int minutes)
+        public TCacheItemPolicy(CacheTimeKind  kind, int minutes)
         {
             SetCacheTime(kind, minutes);
         }
@@ -37,9 +37,9 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="kind">快取條件相依的時間類型，AbsoluteExpiration 及 SlidingExpiration 只能擇一設定。</param>
         /// <param name="minutes">分鐘數。</param>
-        public void SetCacheTime(ECacheTimeKind kind, int minutes)
+        public void SetCacheTime(CacheTimeKind kind, int minutes)
         {
-           if (kind == ECacheTimeKind.AbsoluteTime)
+           if (kind == CacheTimeKind.AbsoluteTime)
                 _AbsoluteExpiration = DateTimeOffset.Now.AddMinutes(minutes);  // 絕對時間到期
            else
                 _SlidingExpiration =  TimeSpan.FromMinutes(minutes);  // 相對時間到期

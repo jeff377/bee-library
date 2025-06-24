@@ -5,10 +5,10 @@ namespace Bee.Db
     /// <summary>
     /// 資料表關連資訊提供者，產生 JOIN 語法時使用。
     /// </summary>
-    internal class TTableJoinProvider
+    internal class TableJoinProvider
     {
-        private readonly TTableJoinCollection _TableJoins = null;
-        private readonly TLinkFieldMappingCollection _Mappings = null;
+        private readonly TableJoinCollection _TableJoins = null;
+        private readonly LinkFieldMappingCollection _Mappings = null;
         private readonly IDbCommandHelper _Helper = null;
 
         #region 建構函式
@@ -17,10 +17,10 @@ namespace Bee.Db
         /// 建構函式。
         /// </summary>
         /// <param name="helper">資料庫命令輔助類別。</param>
-        public TTableJoinProvider(IDbCommandHelper helper)
+        public TableJoinProvider(IDbCommandHelper helper)
         {
-            _TableJoins = new TTableJoinCollection();
-            _Mappings = new TLinkFieldMappingCollection();
+            _TableJoins = new TableJoinCollection();
+            _Mappings = new LinkFieldMappingCollection();
             _Helper = helper;
         }
 
@@ -29,7 +29,7 @@ namespace Bee.Db
         /// <summary>
         /// 資料表關連集合。
         /// </summary>
-        public TTableJoinCollection TableJoins
+        public TableJoinCollection TableJoins
         {
             get { return _TableJoins; }
         }
@@ -37,7 +37,7 @@ namespace Bee.Db
         /// <summary>
         /// 關連欄位對應集合。
         /// </summary>
-        public TLinkFieldMappingCollection Mappings
+        public LinkFieldMappingCollection Mappings
         {
             get { return _Mappings; }
         }
@@ -56,7 +56,7 @@ namespace Bee.Db
         /// <param name="field">表單欄位。</param>
         public string GetFIeldName(FormField field)
         {
-            TLinkFieldMapping oMapping;
+            LinkFieldMapping oMapping;
 
             oMapping = this.Mappings[field.FieldName];
             if (oMapping == null)

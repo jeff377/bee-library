@@ -6,7 +6,7 @@ namespace Bee.Business
     /// <summary>
     /// 表單層級業務邏輯物件提供的自訂方法。
     /// </summary>
-    internal class TFormExecFunc
+    internal class FormExecFunc
     {
         #region 建構函式
 
@@ -14,7 +14,7 @@ namespace Bee.Business
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TFormExecFunc(Guid accessToken)
+        public FormExecFunc(Guid accessToken)
         {
             AccessToken = accessToken;
         }

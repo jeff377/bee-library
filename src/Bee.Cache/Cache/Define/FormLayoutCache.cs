@@ -16,7 +16,7 @@ namespace Bee.Cache
             // 表單版面代碼
             string layoutId = key;
             // 預設為相對時間 20 分鐘
-            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineProvider is FileDefineProvider)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormLayoutFilePath(layoutId) };
             return policy;

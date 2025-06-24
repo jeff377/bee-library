@@ -6,7 +6,7 @@ namespace Bee.Db
     /// <summary>
     /// 資料表結構比對。
     /// </summary>
-    public class TTableSchemaComparer
+    public class TableSchemaComparer
     {
         private readonly DbTable _DefineTable = null;
         private readonly DbTable _RealTable = null;
@@ -16,7 +16,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="defineTable">定義的資料表結構。</param>
         /// <param name="realTable">實際的資料表結構。</param>
-        public TTableSchemaComparer(DbTable defineTable, DbTable realTable)
+        public TableSchemaComparer(DbTable defineTable, DbTable realTable)
         {
             _DefineTable = defineTable;
             _RealTable = realTable;

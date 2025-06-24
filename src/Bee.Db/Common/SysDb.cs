@@ -13,10 +13,10 @@ namespace Bee.Db
         /// 建立資料庫存取物件。
         /// </summary>
         /// <param name="databaseID">資料庫編號。</param>
-        private static TDbAccess CreateDbAcccess(string databaseID)
+        private static DbAccess CreateDbAcccess(string databaseID)
         {
             var database = CacheFunc.GetDatabaseItem(databaseID);
-            return new TDbAccess(database);
+            return new DbAccess(database);
         }
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace Bee.Db
         /// <param name="command">資料庫命令。</param>
         public static object ExecuteScalar(string databaseID, DbCommand command)
         {
-            TDbAccess oDbAccess;
+            DbAccess oDbAccess;
 
             oDbAccess = CreateDbAcccess(databaseID);
             return oDbAccess.ExecuteScalar(command);
@@ -83,7 +83,7 @@ namespace Bee.Db
         /// <param name="commandText">SQL 陳述式。</param>
         public static object ExecuteScalar(string databaseID, string commandText)
         {
-            TDbAccess oDbAccess;
+            DbAccess oDbAccess;
 
             oDbAccess = CreateDbAcccess(databaseID);
             return oDbAccess.ExecuteScalar(commandText);
@@ -123,7 +123,7 @@ namespace Bee.Db
         /// <param name="deleteCommand">刪除命令。</param>
         public static int UpdateDataTable(string databaseID, DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand)
         {
-            TDbAccess oDbAccess;
+            DbAccess oDbAccess;
 
             oDbAccess = CreateDbAcccess(databaseID);
             return oDbAccess.UpdateDataTable(dataTable, insertCommand, updateCommand, deleteCommand);

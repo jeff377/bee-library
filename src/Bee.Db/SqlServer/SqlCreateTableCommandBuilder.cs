@@ -8,7 +8,7 @@ namespace Bee.Db
     /// <summary>
     /// SQL Server 資料庫建立資料表命令語法產生器。
     /// </summary>
-    public class TSqlCreateTableCommandBuilder : ICreateTableCommandBuilder
+    public class SqlCreateTableCommandBuilder : ICreateTableCommandBuilder
     {
         private DbTable _DbTable = null;
 
@@ -17,7 +17,7 @@ namespace Bee.Db
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TSqlCreateTableCommandBuilder()
+        public SqlCreateTableCommandBuilder()
         { }
 
         #endregion

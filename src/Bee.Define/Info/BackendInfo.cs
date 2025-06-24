@@ -35,7 +35,7 @@ namespace Bee.Define
             get
             {
                 if (_businessObjectProvider == null)
-                    _businessObjectProvider = BaseFunc.CreateInstance("Bee.Business.TBusinessObjectProvider") as IBusinessObjectProvider;
+                    _businessObjectProvider = BaseFunc.CreateInstance("Bee.Business.BusinessObjectProvider") as IBusinessObjectProvider;
                 return _businessObjectProvider;
             }
             set { _businessObjectProvider = value; }
@@ -49,7 +49,7 @@ namespace Bee.Define
             get
             {
                 if (_repositoryProvider == null)
-                    _repositoryProvider = BaseFunc.CreateInstance("Bee.Db.TRepositoryProvider") as IRepositoryProvider;
+                    _repositoryProvider = BaseFunc.CreateInstance("Bee.Db.RepositoryProvider") as IRepositoryProvider;
                 return _repositoryProvider;
             }
             set { _repositoryProvider = value; }

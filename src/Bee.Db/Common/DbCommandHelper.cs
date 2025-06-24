@@ -11,7 +11,7 @@ namespace Bee.Db
     /// <summary>
     /// 資料庫命令輔助基底類別。
     /// </summary>
-    public class TDbCommandHelper : IDbCommandHelper
+    public class DbCommandHelper : IDbCommandHelper
     {
         #region 建構函式
 
@@ -20,7 +20,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="databaseType">資料庫類型。</param>
         /// <param name="commandType">命令類型。</param>
-        public TDbCommandHelper(DatabaseType databaseType, CommandType commandType = CommandType.Text)
+        public DbCommandHelper(DatabaseType databaseType, CommandType commandType = CommandType.Text)
         {
             DatabaseType = databaseType;
             Provider = DbProviderManager.GetFactory(databaseType);

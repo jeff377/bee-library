@@ -1,5 +1,4 @@
 ﻿using System;
-using Bee.Db;
 using Bee.Define;
 
 namespace Bee.Business
@@ -7,12 +6,12 @@ namespace Bee.Business
     /// <summary>
     /// 快取資料來源提供者。
     /// </summary>
-    public class TCacheDataSourceProvider : ICacheDataSourceProvider
+    public class CacheDataSourceProvider : ICacheDataSourceProvider
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TCacheDataSourceProvider()
+        public CacheDataSourceProvider()
         { }
 
         /// <summary>

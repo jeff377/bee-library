@@ -7,7 +7,7 @@ namespace Bee.Db
     /// <summary>
     /// SQL Server 資料庫結構輔助類別。
     /// </summary>
-    public class TSqlDbTableHelper
+    public class SqlDbTableHelper
     {
         #region 建構函式
 
@@ -15,7 +15,7 @@ namespace Bee.Db
         /// 建構函式。
         /// </summary>
         /// <param name="databaseID">資料庫編號。</param>
-        public TSqlDbTableHelper(string databaseID)
+        public SqlDbTableHelper(string databaseID)
         {
             DatabaseID = databaseID;
         }

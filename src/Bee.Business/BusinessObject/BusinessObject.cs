@@ -6,21 +6,21 @@ namespace Bee.Business
     /// <summary>
     /// 業務邏輯物件基底類別。
     /// </summary>
-    public abstract class TBusinessObject : IBusinessObject
+    public abstract class BusinessObject : IBusinessObject
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TBusinessObject()
+        public BusinessObject()
         { }
 
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TBusinessObject(Guid accessToken)
+        public BusinessObject(Guid accessToken)
         {
             AccessToken = accessToken;
             // SessionInfo = CacheFunc.GetSessionInfo(accessToken);

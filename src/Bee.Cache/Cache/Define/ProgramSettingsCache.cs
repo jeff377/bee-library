@@ -14,7 +14,7 @@ namespace Bee.Cache
         /// </summary>
         protected override TCacheItemPolicy GetPolicy()
         {
-            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetProgramSettingsFilePath() };
             return policy;
         }

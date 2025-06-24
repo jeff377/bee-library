@@ -8,7 +8,7 @@ namespace Bee.Db
     /// <summary>
     /// 資料庫存取物件。
     /// </summary>
-    public class TDbAccess
+    public class DbAccess
     {
         #region 建構函式
 
@@ -17,7 +17,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="provider">資料庫來源提供者。</param>
         /// <param name="connectionString">資料庫連線字串。</param>
-        public TDbAccess(DbProviderFactory provider, string connectionString)
+        public DbAccess(DbProviderFactory provider, string connectionString)
         {
             Provider = provider;
             ConnectionString = connectionString;
@@ -27,7 +27,7 @@ namespace Bee.Db
         /// 建構函式。
         /// </summary>
         /// <param name="database">資料庫連線定義。</param>
-        public TDbAccess(DatabaseItem database)
+        public DbAccess(DatabaseItem database)
         {
             Provider = DbProviderManager.GetFactory(database.DatabaseType);
             ConnectionString = database.GetConnectionString();

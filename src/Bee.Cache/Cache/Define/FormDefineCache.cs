@@ -16,7 +16,7 @@ namespace Bee.Cache
             // 程式代碼
             string progId = key;
             // 預設為相對時間 20 分鐘
-            var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
+            var policy = new TCacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineProvider is FileDefineProvider)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormDefineFilePath(progId) };
             return policy;
