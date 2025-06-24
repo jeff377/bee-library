@@ -8,7 +8,7 @@ namespace Bee.Connect
     /// <summary>
     /// API 服務連線設定驗證器。
     /// </summary>
-    public class TApiConnectValidator
+    public class ApiConnectValidator
     {
         /// <summary>
         /// 驗證輸入服務端點，傳回對應的連線方式。
@@ -126,7 +126,7 @@ namespace Bee.Connect
                 ClientName = "Connector",
                 TraceId = "001"
             };
-            var connector = new TSystemApiConnector(endpoint, Guid.Empty);
+            var connector = new SystemApiConnector(endpoint, Guid.Empty);
             var result = connector.Execute<PingResult>(SystemActions.Ping, args, false);
             if (result.Status != "ok")
                 throw new InvalidOperationException($"Ping method failed with status: {result.Status}");

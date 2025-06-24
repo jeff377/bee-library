@@ -5,9 +5,8 @@ namespace Bee.UI.Core
     /// <summary>
     /// 預設服務端點儲存實作。
     /// </summary>
-    public class TEndpointStorage : IEndpointStorage
+    public class EndpointStorage : IEndpointStorage
     {
-
         /// <summary>
         /// 取得服務端點。
         /// </summary>

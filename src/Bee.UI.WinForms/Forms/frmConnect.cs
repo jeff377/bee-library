@@ -7,7 +7,7 @@ namespace Bee.UI.WinForms
     /// <summary>
     /// 連線設定。
     /// </summary>
-    internal partial class frmConnect : TForm
+    internal partial class frmConnect : BaseForm
     {
         /// <summary>
         /// 建構函式。

@@ -10,7 +10,7 @@ namespace Bee.Connect
     /// <summary>
     /// 遠端 API 服務提供者（透過網路存取後端業務邏輯）。
     /// </summary>
-    public class TRemoteApiServiceProvider : IJsonRpcProvider
+    public class RemoteApiServiceProvider : IJsonRpcProvider
     {
         #region 建構函式
 
@@ -19,7 +19,7 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="endpoint">API 服務端點。</param>
         /// <param name="accessToken">存取令牌。</param>
-        public TRemoteApiServiceProvider(string endpoint, Guid accessToken)
+        public RemoteApiServiceProvider(string endpoint, Guid accessToken)
         {
             Endpoint = endpoint;
             AccessToken = accessToken;

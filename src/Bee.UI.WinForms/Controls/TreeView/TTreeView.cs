@@ -9,7 +9,7 @@ namespace Bee.UI.WinForms
     /// </summary>
     [ToolboxItem(true)]
     [Description("樹狀結構控制項")]
-    public class TTreeView : TreeView
+    public class TTreeView : System.Windows.Forms.TreeView
     {
         private TPropertyGrid _propertyGrid = null;
 

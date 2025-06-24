@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel;
 using Bee.Define;
 
 namespace Bee.UI.WinForms
@@ -11,14 +6,14 @@ namespace Bee.UI.WinForms
     /// <summary>
     /// 表單基底類別。
     /// </summary>
-    public class TForm : Form
+    public class BaseForm : Form
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TForm()
+        public BaseForm()
         {
             StartPosition = FormStartPosition.CenterScreen;
             Font = new Font("Tahoma", 9);

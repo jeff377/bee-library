@@ -5,7 +5,7 @@ namespace Bee.UI.WinForms
     /// <summary>
     /// UI 相關的視窗 (View) 服務。
     /// </summary>
-    public class TUIViewService : IUIViewService
+    public class UIViewService : IUIViewService
     {
         /// <summary>
         /// 顯示連線設定。

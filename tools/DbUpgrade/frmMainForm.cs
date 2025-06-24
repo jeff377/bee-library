@@ -9,7 +9,7 @@ namespace DbUpgrade
     /// <summary>
     /// 主視窗。
     /// </summary>
-    public partial class frmMainForm : TForm
+    public partial class frmMainForm : BaseForm
     {
         private StringBuilder _buffer;  // 執行訊息輸出暫存區
 

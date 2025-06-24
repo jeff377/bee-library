@@ -24,7 +24,7 @@ namespace Bee.Connect.UnitTests
         //[InlineData("http://localhost/jsonrpc_aspnet/api")]
         public void ApiConnectValidator(string apiUrl)
         {
-            var validator = new TApiConnectValidator();
+            var validator = new ApiConnectValidator();
             var connectType = validator.Validate(apiUrl);
 
             Assert.Equal(ConnectType.Remote, connectType);  // 確認連線方式為遠端連線
@@ -40,7 +40,7 @@ namespace Bee.Connect.UnitTests
             var args = new ExecFuncArgs("Hello");
             // 透過 Connector 執行 ExecFunc 方法
             Guid accessToken = Guid.NewGuid();
-            var connector = new TSystemApiConnector(accessToken);
+            var connector = new SystemApiConnector(accessToken);
             var result = connector.ExecFunc(args);
             Assert.NotNull(result);  // 確認 ExecFunc 方法傳出結果不為 null
         }
@@ -55,7 +55,7 @@ namespace Bee.Connect.UnitTests
             var args = new ExecFuncArgs("Hello");
             // 透過 Connector 執行 ExecFunc 方法
             Guid accessToken = Guid.NewGuid();
-            var connector = new TFormApiConnector(accessToken, "demo");
+            var connector = new FormApiConnector(accessToken, "demo");
             var result = connector.ExecFunc(args);
             Assert.NotNull(result);  // 確認 ExecFunc 方法傳出結果不為 null
         }
@@ -73,7 +73,7 @@ namespace Bee.Connect.UnitTests
 
             // 產生一個隨機 Guid 作為 accessToken（僅用於初始化，CreateSession 會回傳新的 token）
             Guid accessToken = Guid.NewGuid();
-            var connector = new TSystemApiConnector(accessToken);
+            var connector = new SystemApiConnector(accessToken);
 
             // Act
             Guid newToken = connector.CreateSession(userId, expiresIn, oneTime);

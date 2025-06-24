@@ -17,7 +17,7 @@ namespace SettingsEditor
         public static bool Initialize()
         {
             // 用戶端初始化
-            if (!ClientInfo.Initialize(new TUIViewService(), SupportedConnectTypes.Local, true)) { return false; }
+            if (!ClientInfo.Initialize(new UIViewService(), SupportedConnectTypes.Local, true)) { return false; }
 
             // 設為工具程式模式
             SysInfo.IsToolMode = true;

@@ -13,7 +13,7 @@ namespace Bee.UI.Core
     public class ClientInfo
     {
         private static ClientSettings _clientSettings = null;
-        private static TSystemApiConnector _systemConnector = null;
+        private static SystemApiConnector _systemConnector = null;
         private static IDefineAccess _defineAccess = null;
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Bee.UI.Core
         /// <summary>
         /// 服務端點儲存區。
         /// </summary>
-        public static IEndpointStorage EndpointStorage { get; private set; } = new TEndpointStorage();
+        public static IEndpointStorage EndpointStorage { get; private set; } = new EndpointStorage();
 
         /// <summary>
         /// 用戶端設定。
@@ -64,7 +64,7 @@ namespace Bee.UI.Core
         /// <summary>
         /// 系統層級 API 服務連接器，服務端點異動時需重新建立。
         /// </summary>
-        public static TSystemApiConnector SystemApiConnector
+        public static SystemApiConnector SystemApiConnector
         {
             get
             {
@@ -81,24 +81,24 @@ namespace Bee.UI.Core
         /// 建立系統層級 API 服務連接器。
         /// </summary>
         /// <returns></returns>
-        private static TSystemApiConnector CreateSystemApiConnector()
+        private static SystemApiConnector CreateSystemApiConnector()
         {
             if (FrontendInfo.ConnectType == ConnectType.Local)
-                return new TSystemApiConnector(FrontendInfo.AccessToken);
+                return new SystemApiConnector(FrontendInfo.AccessToken);
             else
-                return new TSystemApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken);
+                return new SystemApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken);
         }
 
         /// <summary>
         /// 建立表單層級 API 服務連接器。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        public static TFormApiConnector CreateFormApiConnector(string progId)
+        public static FormApiConnector CreateFormApiConnector(string progId)
         {
             if (FrontendInfo.ConnectType == ConnectType.Local)
-                return new TFormApiConnector(FrontendInfo.AccessToken, progId);
+                return new FormApiConnector(FrontendInfo.AccessToken, progId);
             else
-                return new TFormApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progId);
+                return new FormApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progId);
         }
 
         /// <summary>
@@ -110,7 +110,7 @@ namespace Bee.UI.Core
             {
                 if (_defineAccess == null)
                 {
-                    _defineAccess = new TApiDefineAccess(SystemApiConnector);
+                    _defineAccess = new ApiDefineAccess(SystemApiConnector);
                 }
                 return _defineAccess;
             }
@@ -141,7 +141,7 @@ namespace Bee.UI.Core
             FrontendInfo.AccessToken = sessionInfo.AccessToken;
             // 更新 AccessToken 需重置 SystemConnector 及 DefineAccess
             _systemConnector = CreateSystemApiConnector();
-            _defineAccess = new TApiDefineAccess(SystemApiConnector);
+            _defineAccess = new ApiDefineAccess(SystemApiConnector);
         }
 
         /// <summary>
@@ -194,7 +194,7 @@ namespace Bee.UI.Core
         public static void SetEndpoint(string endpoint)
         {
             // 判斷服務端點位置為本地路徑或網址，傳回對應的連線方式
-            var validator = new TApiConnectValidator();
+            var validator = new ApiConnectValidator();
             var connectType = validator.Validate(endpoint, AllowGenerateSettings);
             // 設置連線方式
             SetConnectType(connectType, endpoint);
@@ -219,7 +219,7 @@ namespace Bee.UI.Core
         private static bool InitializeConnect(SupportedConnectTypes supportedConnectTypes)
         {
             FrontendInfo.SupportedConnectTypes = supportedConnectTypes;
-            var validator = new TApiConnectValidator();
+            var validator = new ApiConnectValidator();
             try
             {
                 // 取得目前設置服務端點

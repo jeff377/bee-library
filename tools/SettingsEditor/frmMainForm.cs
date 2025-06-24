@@ -7,7 +7,7 @@ namespace SettingsEditor
     /// <summary>
     /// 主視窗。
     /// </summary>
-    public partial class frmMainForm : TForm
+    public partial class frmMainForm : BaseForm
     {
         /// <summary>
         /// 建構函式。

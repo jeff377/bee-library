@@ -6,9 +6,9 @@ namespace Bee.Connect
     /// <summary>
     /// 透過 API 進行定義資料存取。
     /// </summary>
-    public class TApiDefineAccess : IDefineAccess
+    public class ApiDefineAccess : IDefineAccess
     {
-        private readonly TSystemApiConnector _connector = null;
+        private readonly SystemApiConnector _connector = null;
         private readonly Dictionary<object> _list = null;
 
         #region 建構函式
@@ -17,7 +17,7 @@ namespace Bee.Connect
         /// 建構函式。
         /// </summary>
         /// <param name="connector">系統層級 API 服務連接器。</param>
-        public TApiDefineAccess(TSystemApiConnector connector)
+        public ApiDefineAccess(SystemApiConnector connector)
         {
             _connector = connector;
             _list = new Dictionary<object>();
@@ -28,7 +28,7 @@ namespace Bee.Connect
         /// <summary>
         /// 系統層級 API 服務連接器。
         /// </summary>
-        private TSystemApiConnector Connector
+        private SystemApiConnector Connector
         {
             get { return _connector; }
         }

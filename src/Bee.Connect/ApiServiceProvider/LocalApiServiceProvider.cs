@@ -8,13 +8,13 @@ namespace Bee.Connect
     /// <summary>
     /// 近端 API 服務提供者（在同一進程內直接存取後端業務邏輯）。
     /// </summary>
-    public class TLocalApiServiceProvider : IJsonRpcProvider
+    public class LocalApiServiceProvider : IJsonRpcProvider
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TLocalApiServiceProvider(Guid accessToken)
+        public LocalApiServiceProvider(Guid accessToken)
         {
             AccessToken = accessToken;
         }

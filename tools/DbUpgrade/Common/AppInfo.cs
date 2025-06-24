@@ -16,7 +16,7 @@ namespace DbUpgrade
         public static bool Initialize()
         {
             // 用戶端初始化
-            if (!ClientInfo.Initialize(new TUIViewService(), SupportedConnectTypes.Both, false)) { return false; }
+            if (!ClientInfo.Initialize(new UIViewService(), SupportedConnectTypes.Both, false)) { return false; }
 
             if (FrontendInfo.ConnectType == ConnectType.Local)
             {

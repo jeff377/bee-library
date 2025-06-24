@@ -7,7 +7,7 @@ namespace Bee.Connect
     /// <summary>
     /// API 服務連接器基底類別。
     /// </summary>
-    public abstract class TApiConnector
+    public abstract class ApiConnector
     {
         #region 建構函式
 
@@ -15,10 +15,10 @@ namespace Bee.Connect
         /// 建構函式，採用近端連線。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public TApiConnector(Guid accessToken)
+        public ApiConnector(Guid accessToken)
         {
             AccessToken = accessToken;
-            Provider = new TLocalApiServiceProvider(accessToken);
+            Provider = new LocalApiServiceProvider(accessToken);
         }
 
         /// <summary>
@@ -26,13 +26,13 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="endpoint">API 服務端點。</param>
         /// <param name="accessToken">存取令牌。</param>
-        public TApiConnector(string endpoint, Guid accessToken)
+        public ApiConnector(string endpoint, Guid accessToken)
         {
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));
 
             AccessToken = accessToken;
-            Provider = new TRemoteApiServiceProvider(endpoint, accessToken);
+            Provider = new RemoteApiServiceProvider(endpoint, accessToken);
         }
 
         #endregion

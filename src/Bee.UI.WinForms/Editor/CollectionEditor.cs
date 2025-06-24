@@ -7,7 +7,7 @@ namespace Bee.UI.WinForms
     /// <summary>
     /// 集合屬性編輯器。
     /// </summary>
-    public class TCollectionEditor : CollectionEditor
+    public class CollectionEditor : System.ComponentModel.Design.CollectionEditor
     {
         private IServiceProvider? _provider;
 
@@ -17,7 +17,7 @@ namespace Bee.UI.WinForms
         /// 建構函式。
         /// </summary>
         /// <param name="Type">型別。</param>
-        public TCollectionEditor(Type Type) : base(Type)
+        public CollectionEditor(Type Type) : base(Type)
         { }
 
         #endregion
