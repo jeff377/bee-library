@@ -9,7 +9,7 @@ namespace Bee.Db
     internal class TTableJoinBuilder
     {
         private readonly IDbCommandHelper _Helper = null;
-        private readonly TFormDefine _FormDefine = null;
+        private readonly FormDefine _FormDefine = null;
         private readonly string _TableName = string.Empty;
         private readonly string _SelectFields = string.Empty;
         private string _ActiveTableAlias = string.Empty;
@@ -21,7 +21,7 @@ namespace Bee.Db
         /// <param name="formDefine">表單定義。</param>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="selectFields">取回欄位的集合字串。</param>
-        public TTableJoinBuilder(IDbCommandHelper helper, TFormDefine formDefine, string tableName, string selectFields)
+        public TTableJoinBuilder(IDbCommandHelper helper, FormDefine formDefine, string tableName, string selectFields)
         {
             _Helper = helper;
             _FormDefine = formDefine;
@@ -40,7 +40,7 @@ namespace Bee.Db
         /// <summary>
         /// 表單定義。
         /// </summary>
-        public TFormDefine FormDefine
+        public FormDefine FormDefine
         {
             get { return _FormDefine; }
         }
@@ -76,8 +76,8 @@ namespace Bee.Db
         public TTableJoinProvider Execute()
         {
             TTableJoinProvider oProvider;
-            TFormTable oTable;
-            TStringHashSet oUseFields, oUseTableFields;
+            FormTable oTable;
+            StringHashSet oUseFields, oUseTableFields;
 
             // 資料表別名初始值
             this.ActiveTableAlias = "A";
@@ -101,16 +101,16 @@ namespace Bee.Db
         /// 取得使用的欄位集合。
         /// </summary>
         /// <param name="table">表單資料表。</param>
-        private TStringHashSet GetUseFields(TFormTable table)
+        private StringHashSet GetUseFields(FormTable table)
         {
-            TStringHashSet oUseFields;
+            StringHashSet oUseFields;
 
             // 取得資料表定義
-            oUseFields = new TStringHashSet();
+            oUseFields = new StringHashSet();
             if (StrFunc.IsEmpty(this.SelectFields))
             {
                 // 包含所有欄位
-                foreach (TFormField field in table.Fields)
+                foreach (FormField field in table.Fields)
                     oUseFields.Add(field.FieldName);
             }
             else
@@ -125,11 +125,11 @@ namespace Bee.Db
         /// 取得主要資料表使用欄位集合。
         /// </summary>
         /// <param name="useFields">使用欄位集合。</param>
-        private TStringHashSet GetUseTableFields(TStringHashSet useFields)
+        private StringHashSet GetUseTableFields(StringHashSet useFields)
         {
-            TStringHashSet oUseFields;
+            StringHashSet oUseFields;
 
-            oUseFields = new TStringHashSet();
+            oUseFields = new StringHashSet();
             foreach (string fieldName in useFields)
             {
                 // 有包含資料表別名的欄位為明細欄位，非主要資料表的欄位
@@ -146,16 +146,16 @@ namespace Bee.Db
         /// <param name="table">表單資料表。</param>
         /// <param name="useFields">使用到的欄位集合。</param>
         /// <param name="detailTableName">明細資料表名稱。</param>
-        private void BuildTableJoins(TTableJoinProvider provider, TFormTable table, TStringHashSet useFields, string detailTableName = "")
+        private void BuildTableJoins(TTableJoinProvider provider, FormTable table, StringHashSet useFields, string detailTableName = "")
         {
-            TStringHashSet oReturnFields;
+            StringHashSet oReturnFields;
             string sLeftTableAlias;
             string sKey;
 
-            foreach (TFormField field in table.Fields)
+            foreach (FormField field in table.Fields)
             {
                 // 有設定 LinkProgId 的實際欄位
-                if (field.Type == EFieldType.DbField && StrFunc.IsNotEmpty(field.LinkProgId))
+                if (field.Type == FieldType.DbField && StrFunc.IsNotEmpty(field.LinkProgId))
                 {
                     oReturnFields = GetReturnFields(table, field.FieldName, useFields);
                     if (oReturnFields.Count > 0)
@@ -257,16 +257,16 @@ namespace Bee.Db
         /// <param name="table">表單資料表。</param>
         /// <param name="linkFieldName">關連來源欄位。</param>
         /// <param name="useFields">使用到的欄位集合。</param>
-        private TStringHashSet GetReturnFields(TFormTable table, string linkFieldName, TStringHashSet useFields)
+        private StringHashSet GetReturnFields(FormTable table, string linkFieldName, StringHashSet useFields)
         {
-            TStringHashSet oReturnFields;
-            TFormField oField;
+            StringHashSet oReturnFields;
+            FormField oField;
 
-            oReturnFields = new TStringHashSet();
+            oReturnFields = new StringHashSet();
             foreach (string fieldName in useFields)
             {
                 oField = table.Fields[fieldName];
-                if (oField != null && oField.Type == EFieldType.LinkField && StrFunc.Equals(oField.LinkFieldName, linkFieldName))
+                if (oField != null && oField.Type == FieldType.LinkField && StrFunc.Equals(oField.LinkFieldName, linkFieldName))
                     oReturnFields.Add(fieldName);
             }
             return oReturnFields;

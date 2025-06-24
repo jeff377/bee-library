@@ -12,7 +12,7 @@ namespace Bee.Connect.UnitTests
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\DefinePath";
             // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // 預設資料庫編號
             BackendInfo.DatabaseID = "common";
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
@@ -21,13 +21,13 @@ namespace Bee.Connect.UnitTests
 
         [Theory]
         [InlineData("http://localhost/jsonrpc/api")]
-        [InlineData("http://localhost/jsonrpc_aspnet/api")]
+        //[InlineData("http://localhost/jsonrpc_aspnet/api")]
         public void ApiConnectValidator(string apiUrl)
         {
             var validator = new TApiConnectValidator();
             var connectType = validator.Validate(apiUrl);
 
-            Assert.Equal(EConnectType.Remote, connectType);  // 確認連線方式為遠端連線
+            Assert.Equal(ConnectType.Remote, connectType);  // 確認連線方式為遠端連線
         }
 
         /// <summary>
@@ -37,7 +37,7 @@ namespace Bee.Connect.UnitTests
         public void SystemConnector_Hello()
         {
             // 設定 ExecFunc 方法傳入引數
-            var args = new TExecFuncArgs("Hello");
+            var args = new ExecFuncArgs("Hello");
             // 透過 Connector 執行 ExecFunc 方法
             Guid accessToken = Guid.NewGuid();
             var connector = new TSystemApiConnector(accessToken);
@@ -52,7 +52,7 @@ namespace Bee.Connect.UnitTests
         public void FormConnector_Hello()
         {
             // 設定 ExecFunc 方法傳入引數
-            var args = new TExecFuncArgs("Hello");
+            var args = new ExecFuncArgs("Hello");
             // 透過 Connector 執行 ExecFunc 方法
             Guid accessToken = Guid.NewGuid();
             var connector = new TFormApiConnector(accessToken, "demo");

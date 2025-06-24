@@ -7,7 +7,7 @@ namespace Bee.Cache
     /// <summary>
     /// 資料庫設定快取。
     /// </summary>
-    internal class TDatabaseSettingsCache : TObjectCache<TDatabaseSettings>
+    internal class TDatabaseSettingsCache : TObjectCache<DatabaseSettings>
     {
         /// <summary>
         /// 取得快取項目到期條件。
@@ -22,13 +22,13 @@ namespace Bee.Cache
         /// <summary>
         /// 建立執行個體。
         /// </summary>
-        protected override TDatabaseSettings CreateInstance()
+        protected override DatabaseSettings CreateInstance()
         {
             string filePath = DefinePathInfo.GetDatabaseSettingsFilePath();
             if (!FileFunc.FileExists(filePath))
                 throw new FileNotFoundException($"The file {filePath} does not exist.");
 
-            return  SerializeFunc.XmlFileToObject<TDatabaseSettings>(filePath);
+            return  SerializeFunc.XmlFileToObject<DatabaseSettings>(filePath);
         }
     }
 }

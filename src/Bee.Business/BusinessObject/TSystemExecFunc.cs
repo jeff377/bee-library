@@ -33,7 +33,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        public void Hello(TExecFuncArgs args, TExecFuncResult result)
+        public void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Hello", "Hello SystemObject");
         }
@@ -43,7 +43,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        public void UpgradeTableSchema(TExecFuncArgs args, TExecFuncResult result)
+        public void UpgradeTableSchema(ExecFuncArgs args, ExecFuncResult result)
         {
             TTableSchemaBuilder oBuilder;
             string sDatabaseID, sDbName, sTableName;
@@ -60,9 +60,9 @@ namespace Bee.Business
         /// <summary>
         /// 測試資料庫連線。
         /// </summary>
-        public void TestConnection(TExecFuncArgs args, TExecFuncResult result)
+        public void TestConnection(ExecFuncArgs args, ExecFuncResult result)
         {
-            var item = args.Parameters.GetValue<TDatabaseItem>("DatabaseItem");
+            var item = args.Parameters.GetValue<DatabaseItem>("DatabaseItem");
             var dbAccess = new TDbAccess(item);
             dbAccess.TestConnection();
         }
@@ -70,7 +70,7 @@ namespace Bee.Business
         /// <summary>
         /// 指定 DatabaseId 測試資料庫連線。
         /// </summary>
-        public void TestDatabaseId(TExecFuncArgs args, TExecFuncResult result)
+        public void TestDatabaseId(ExecFuncArgs args, ExecFuncResult result)
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
             var item = CacheFunc.GetDatabaseItem(databaseId);

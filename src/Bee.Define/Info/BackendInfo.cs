@@ -20,7 +20,7 @@ namespace Bee.Define
         /// <summary>
         /// 資料庫類型。
         /// </summary>
-        public static EDatabaseType DatabaseType { get; set; } = EDatabaseType.SQLServer;
+        public static DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
 
         /// <summary>
         /// 預設資料庫編號。
@@ -63,7 +63,7 @@ namespace Bee.Define
             get
             {
                 if (_defineProvider == null)
-                    _defineProvider = BaseFunc.CreateInstance("Bee.Define.TFileDefineProvider") as IDefineProvider;
+                    _defineProvider = BaseFunc.CreateInstance("Bee.Define.FileDefineProvider") as IDefineProvider;
                 return _defineProvider;
             }
             set { _defineProvider = value; }

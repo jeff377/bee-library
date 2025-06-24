@@ -12,7 +12,7 @@ namespace Bee.Define
         /// 建構函式。
         /// </summary>
         /// <param name="level">API 存取保護等級。</param>
-        public ApiAccessControlAttribute(EApiProtectionLevel level)
+        public ApiAccessControlAttribute(ApiProtectionLevel level)
         {
             ProtectionLevel = level;
         }
@@ -20,7 +20,7 @@ namespace Bee.Define
         /// <summary>
         /// 存取保護等級
         /// </summary>
-        public EApiProtectionLevel ProtectionLevel { get; }
+        public ApiProtectionLevel ProtectionLevel { get; }
     }
 
 }

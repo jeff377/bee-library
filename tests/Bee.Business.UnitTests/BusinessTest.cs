@@ -13,7 +13,7 @@ namespace Bee.Business.UnitTests
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\DefinePath";
             // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // 預設資料庫編號
             BackendInfo.DatabaseID = "common";
         }
@@ -26,7 +26,7 @@ namespace Bee.Business.UnitTests
         {
             // Arrange
             var business = new TSystemBusinessObject();
-            var args = new TCreateSessionArgs
+            var args = new CreateSessionArgs
             {
                 UserID = "001",
                 ExpiresIn = 600,

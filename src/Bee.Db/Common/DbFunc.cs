@@ -16,7 +16,7 @@ namespace Bee.Db
         /// <summary>
         /// 建立資料庫命令輔助類別。
         /// </summary>
-        public static IDbCommandHelper CreateDbCommandHelper(EDatabaseType databaseType)
+        public static IDbCommandHelper CreateDbCommandHelper(DatabaseType databaseType)
         {
             return new TDbCommandHelper(databaseType);
         }
@@ -34,31 +34,31 @@ namespace Bee.Db
         /// </summary>
         /// <param name="fieldDbType">EFieldDbType 值</param>
         /// <returns>對應的 DbType</returns>
-        public static DbType ConvertToDbType(EFieldDbType fieldDbType)
+        public static DbType ConvertToDbType(FieldDbType fieldDbType)
         {
             switch (fieldDbType)
             {
-                case EFieldDbType.String:
+                case FieldDbType.String:
                     return DbType.String;
-                case EFieldDbType.Text:
+                case FieldDbType.Text:
                     return DbType.String; // 一般的 Text 使用 String
-                case EFieldDbType.Boolean:
+                case FieldDbType.Boolean:
                     return DbType.Boolean;
-                case EFieldDbType.Identity:
+                case FieldDbType.Identity:
                     return DbType.Int32; // Identity 在 SQL Server 中通常為 Int32
-                case EFieldDbType.Integer:
+                case FieldDbType.Integer:
                     return DbType.Int32;
-                case EFieldDbType.Double:
+                case FieldDbType.Double:
                     return DbType.Double;
-                case EFieldDbType.Currency:
+                case FieldDbType.Currency:
                     return DbType.Currency;
-                case EFieldDbType.Date:
+                case FieldDbType.Date:
                     return DbType.Date;
-                case EFieldDbType.DateTime:
+                case FieldDbType.DateTime:
                     return DbType.DateTime;
-                case EFieldDbType.Guid:
+                case FieldDbType.Guid:
                     return DbType.Guid;
-                case EFieldDbType.Binary:
+                case FieldDbType.Binary:
                     return DbType.Binary;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(fieldDbType), $"Unsupported EFieldDbType: {fieldDbType}");
@@ -84,22 +84,22 @@ namespace Bee.Db
         /// 取得 SQL Server 資料庫的欄位預設值。
         /// </summary>
         /// <param name="dbType">欄位資料型別。</param>
-        internal static string GetSqlDefaultValue(EFieldDbType dbType)
+        internal static string GetSqlDefaultValue(FieldDbType dbType)
         {
             switch (dbType)
             {
-                case EFieldDbType.String:
-                case EFieldDbType.Text:
+                case FieldDbType.String:
+                case FieldDbType.Text:
                     return string.Empty;
-                case EFieldDbType.Boolean:
-                case EFieldDbType.Integer:           
-                case EFieldDbType.Double:
-                case EFieldDbType.Currency:
+                case FieldDbType.Boolean:
+                case FieldDbType.Integer:           
+                case FieldDbType.Double:
+                case FieldDbType.Currency:
                     return "0";
-                case EFieldDbType.Date:
-                case EFieldDbType.DateTime:
+                case FieldDbType.Date:
+                case FieldDbType.DateTime:
                     return "getdate()";
-                case EFieldDbType.Guid:
+                case FieldDbType.Guid:
                     return "newid()";
                 default:
                     return string.Empty;

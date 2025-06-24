@@ -19,7 +19,7 @@ namespace Bee.Api.Core
         /// 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作。
         /// </summary>
         /// <param name="payloadOptions">提供 API Payload 處理相關選項，例如序列化、壓縮與加密。</param>
-        public static void Initialize(TApiPayloadOptions payloadOptions)
+        public static void Initialize(ApiPayloadOptions payloadOptions)
         {
             PayloadSerializer = ApiPayloadOptionsFactory.CreateSerializer(payloadOptions.Serializer);
             PayloadCompressor = ApiPayloadOptionsFactory.CreateCompressor(payloadOptions.Compressor);

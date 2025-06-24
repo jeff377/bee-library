@@ -13,7 +13,7 @@ namespace Bee.Db
         /// <summary>
         /// 存放已註冊的 DbProviderFactory。
         /// </summary>
-        private static readonly Dictionary<EDatabaseType, DbProviderFactory> _factories = new Dictionary<EDatabaseType, DbProviderFactory>();
+        private static readonly Dictionary<DatabaseType, DbProviderFactory> _factories = new Dictionary<DatabaseType, DbProviderFactory>();
 
         /// <summary>
         /// 註冊新的資料庫提供者。
@@ -21,7 +21,7 @@ namespace Bee.Db
         /// <param name="type">資料庫類型</param>
         /// <param name="factory">對應的 DbProviderFactory</param>
         /// <exception cref="ArgumentNullException">當 factory 為 null 時拋出異常</exception>
-        public static void RegisterProvider(EDatabaseType type, DbProviderFactory factory)
+        public static void RegisterProvider(DatabaseType type, DbProviderFactory factory)
         {
             if (factory == null)
                 throw new ArgumentNullException(nameof(factory), "DbProviderFactory cannot be null.");
@@ -35,7 +35,7 @@ namespace Bee.Db
         /// <param name="type">資料庫類型</param>
         /// <returns>對應的 DbProviderFactory</returns>
         /// <exception cref="KeyNotFoundException">當指定類型未註冊時拋出異常</exception>
-        public static DbProviderFactory GetFactory(EDatabaseType type)
+        public static DbProviderFactory GetFactory(DatabaseType type)
         {
             if (_factories.TryGetValue(type, out var factory))
             {

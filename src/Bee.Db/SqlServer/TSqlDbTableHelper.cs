@@ -31,12 +31,12 @@ namespace Bee.Db
         /// 建立資料表結構。
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
-        public TDbTable CreateDbTable(string tableName)
+        public DbTable CreateDbTable(string tableName)
         {
             // 若資料表不存在則回傳 null
             if (!TableExists(tableName)) { return null; }
 
-            var dbTable = new TDbTable();
+            var dbTable = new DbTable();
             dbTable.TableName = tableName;
 
             // 取得索引的資料來源
@@ -64,7 +64,7 @@ namespace Bee.Db
         private bool TableExists(string tableName)
         {
             var helper = DbFunc.CreateDbCommandHelper();
-            helper.AddParameter("TableName", EFieldDbType.String, tableName);
+            helper.AddParameter("TableName", FieldDbType.String, tableName);
             string sSQL = "Select Count(*) From sys.tables A Where A.name={0}";
             helper.SetCommandFormatText(sSQL);
             int iCount = BaseFunc.CInt(helper.ExecuteScalar());
@@ -82,7 +82,7 @@ namespace Bee.Db
             DataTable oTable;
 
             oHelper = DbFunc.CreateDbCommandHelper();
-            oHelper.AddParameter("TableName", EFieldDbType.String, tableName);
+            oHelper.AddParameter("TableName", FieldDbType.String, tableName);
             sSQL = "SELECT A.name as FieldName,D.is_primary_key as IsPrimaryKey,D.is_unique as IsUnique,D.name,\n" +
                           "C.key_ordinal as KeyOrdinal,C.is_descending_key As IsDesc \n" +
                           "FROM sys.columns A  \n" +
@@ -102,10 +102,10 @@ namespace Bee.Db
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
         /// <param name="table">索引資料表。</param>
-        private void ParsePrimaryKey(TDbTable dbTable, DataTable table)
+        private void ParsePrimaryKey(DbTable dbTable, DataTable table)
         {
-            TDbTableIndex oTableIndex;
-            TIndexField oIndexField;
+            DbTableIndex oTableIndex;
+            IndexField oIndexField;
 
             if (DataSetFunc.IsEmpty(table)) { return; }
 
@@ -116,16 +116,16 @@ namespace Bee.Db
             // 取得索引名稱
             string name = BaseFunc.CStr(table.DefaultView[0]["name"]);
             // 取得主索引
-            oTableIndex = new TDbTableIndex();
+            oTableIndex = new DbTableIndex();
             oTableIndex.PrimaryKey = true;
             oTableIndex.Name = name;
             oTableIndex.Unique = true;
             dbTable.Indexes.Add(oTableIndex);
             foreach (DataRowView row in table.DefaultView)
             {
-                oIndexField = new TIndexField();
+                oIndexField = new IndexField();
                 oIndexField.FieldName = BaseFunc.CStr(row["FieldName"]);
-                oIndexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? ESortDirection.Desc : ESortDirection.Asc;
+                oIndexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
                 oTableIndex.IndexFields.Add(oIndexField);
             }
             // 刪除已處理的主索引鍵資料
@@ -137,10 +137,10 @@ namespace Bee.Db
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
         /// <param name="table">索引資料表。</param>
-        private void ParseIndexes(TDbTable dbTable, DataTable table)
+        private void ParseIndexes(DbTable dbTable, DataTable table)
         {
-            TDbTableIndex oTableIndex;
-            TIndexField oIndexField;
+            DbTableIndex oTableIndex;
+            IndexField oIndexField;
             DataRow oRow;
             string sName;
             bool bUnique;
@@ -151,7 +151,7 @@ namespace Bee.Db
                 sName = BaseFunc.CStr(oRow["Name"]);  // 取得索引名稱
                 bUnique = BaseFunc.CBool(oRow["IsUnique"]);
 
-                oTableIndex = new TDbTableIndex();
+                oTableIndex = new DbTableIndex();
                 oTableIndex.Name = sName;
                 oTableIndex.Unique = bUnique;
                 dbTable.Indexes.Add(oTableIndex);
@@ -160,9 +160,9 @@ namespace Bee.Db
                 table.DefaultView.Sort = "Name,KeyOrdinal";
                 foreach (DataRowView row in table.DefaultView)
                 {
-                    oIndexField = new TIndexField();
+                    oIndexField = new IndexField();
                     oIndexField.FieldName = BaseFunc.CStr(row["FieldName"]);
-                    oIndexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? ESortDirection.Desc : ESortDirection.Asc;
+                    oIndexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
                     oTableIndex.IndexFields.Add(oIndexField);
                 }
                 // 刪除已處理的索引鍵資料
@@ -181,7 +181,7 @@ namespace Bee.Db
             DataTable oTable;
 
             oHelper = DbFunc.CreateDbCommandHelper();
-            oHelper.AddParameter("TableName", EFieldDbType.String, tableName);
+            oHelper.AddParameter("TableName", FieldDbType.String, tableName);
             sSQL = "SELECT A.is_nullable as AllowDBNull,A.is_identity as AutoIncrement, \n" +
                           "IsNull(C.seed_value,0) as AutoIncrementSeed,IsNull(C.increment_value,0) as AutoIncrementStep, \n" +
                           "IsNull(E.name,'') as BindDefault,TYPE_NAME(A.system_type_id) as DbType,A.precision,A.scale as Decimals, \n" +
@@ -204,19 +204,19 @@ namespace Bee.Db
         /// 建立欄位結構。
         /// </summary>
         /// <param name="row">欄位資訊的資料列。</param>
-        private TDbField ParseDbField(DataRow row)
+        private DbField ParseDbField(DataRow row)
         {
-            var dbField = new TDbField();
+            var dbField = new DbField();
             dbField.FieldName = BaseFunc.CStr(row["FieldName"]);
             dbField.Caption = BaseFunc.CStr(row["Description"]);
             dbField.AllowNull = BaseFunc.CBool(row["AllowDBNull"]);
 
             if (BaseFunc.CBool(row["AutoIncrement"]))
-                dbField.DbType = EFieldDbType.Identity;
+                dbField.DbType = FieldDbType.Identity;
             else
                 dbField.DbType = GetFieldDbType(BaseFunc.CStr(row["DbType"]), BaseFunc.CInt(row["precision"]), BaseFunc.CInt(row["Length"]));
 
-            if (dbField.DbType == EFieldDbType.String)
+            if (dbField.DbType == FieldDbType.String)
             {
                 if (StrFunc.ToUpper(BaseFunc.CStr(row["DbType"])) == "NVARCHAR")
                     dbField.Length = BaseFunc.CInt(row["Length"]) / 2;
@@ -234,35 +234,35 @@ namespace Bee.Db
         /// <param name="dataType">資料型別。</param>
         /// <param name="dataPrecision">精確度。</param>
         /// <param name="length">資料長度。</param>
-        public static EFieldDbType GetFieldDbType(string dataType, int dataPrecision, int length)
+        public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int length)
         {
             switch (StrFunc.ToUpper(dataType))
             {
                 case "NCHAR":
-                    return EFieldDbType.String;
+                    return FieldDbType.String;
                 case "NVARCHAR":
                     if (length == -1)
-                        return EFieldDbType.Text;
+                        return FieldDbType.Text;
                     else
-                        return EFieldDbType.String;
+                        return FieldDbType.String;
                 case "BIT":
-                    return EFieldDbType.Boolean;
+                    return FieldDbType.Boolean;
                 case "INT":
-                    return EFieldDbType.Integer;
+                    return FieldDbType.Integer;
                 case "FLOAT":
-                    return EFieldDbType.Double;
+                    return FieldDbType.Double;
                 case "MONEY":
-                    return EFieldDbType.Currency;
+                    return FieldDbType.Currency;
                 case "DATE":
-                    return EFieldDbType.Date;
+                    return FieldDbType.Date;
                 case "DATETIME":
-                    return EFieldDbType.DateTime;
+                    return FieldDbType.DateTime;
                 case "UNIQUEIDENTIFIER":
-                    return EFieldDbType.Guid;
+                    return FieldDbType.Guid;
                 case "VARBINARY":
-                    return EFieldDbType.Binary;
+                    return FieldDbType.Binary;
                 default:
-                    return EFieldDbType.String;
+                    return FieldDbType.String;
             }
         }
 
@@ -274,7 +274,7 @@ namespace Bee.Db
         /// <returns></returns>
         public string ParseDBDefaultValue(string dataType, string defaultValue)
         {
-            EFieldDbType dbType = GetFieldDbType(dataType, 0, 0);
+            FieldDbType dbType = GetFieldDbType(dataType, 0, 0);
             string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbType);
 
             switch (StrFunc.ToUpper(dataType))

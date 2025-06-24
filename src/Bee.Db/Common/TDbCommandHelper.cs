@@ -20,7 +20,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="databaseType">資料庫類型。</param>
         /// <param name="commandType">命令類型。</param>
-        public TDbCommandHelper(EDatabaseType databaseType, CommandType commandType = CommandType.Text)
+        public TDbCommandHelper(DatabaseType databaseType, CommandType commandType = CommandType.Text)
         {
             DatabaseType = databaseType;
             Provider = DbProviderManager.GetFactory(databaseType);
@@ -33,7 +33,7 @@ namespace Bee.Db
         /// <summary>
         /// 資料庫類型。
         /// </summary>
-        public EDatabaseType DatabaseType { get; private set; }
+        public DatabaseType DatabaseType { get; private set; }
 
         /// <summary>
         /// 資料庫來源提供者。
@@ -48,12 +48,12 @@ namespace Bee.Db
         /// <summary>
         /// 參數符號字典。
         /// </summary>
-        private static readonly Dictionary<EDatabaseType, string> ParameterSymbols = new Dictionary<EDatabaseType, string>
+        private static readonly Dictionary<DatabaseType, string> ParameterSymbols = new Dictionary<DatabaseType, string>
         {
-            { EDatabaseType.SQLServer, "@" },
-            { EDatabaseType.MySQL, "?" },
-            { EDatabaseType.SQLite, "@" },
-            { EDatabaseType.Oracle, ":" }
+            { DatabaseType.SQLServer, "@" },
+            { DatabaseType.MySQL, "?" },
+            { DatabaseType.SQLite, "@" },
+            { DatabaseType.Oracle, ":" }
         };
 
         /// <summary>
@@ -82,12 +82,12 @@ namespace Bee.Db
         /// <summary>
         /// 跳脫字元字典。
         /// </summary>
-        private static readonly Dictionary<EDatabaseType, Func<string, string>> QuoteIdentifiers = new Dictionary<EDatabaseType, Func<string, string>>
+        private static readonly Dictionary<DatabaseType, Func<string, string>> QuoteIdentifiers = new Dictionary<DatabaseType, Func<string, string>>
         {
-            { EDatabaseType.SQLServer, s => $"[{s}]" },
-            { EDatabaseType.MySQL, s => $"`{s}`" },
-            { EDatabaseType.SQLite, s => $"\"{s}\"" },
-            { EDatabaseType.Oracle, s => $"\"{s}\"" }
+            { DatabaseType.SQLServer, s => $"[{s}]" },
+            { DatabaseType.MySQL, s => $"`{s}`" },
+            { DatabaseType.SQLite, s => $"\"{s}\"" },
+            { DatabaseType.Oracle, s => $"\"{s}\"" }
         };
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace Bee.Db
         /// <param name="name">參數名稱。</param>
         /// <param name="dbType">資料型別。</param>
         /// <param name="value">參數值。</param>
-        public DbParameter AddParameter(string name, EFieldDbType dbType, object value)
+        public DbParameter AddParameter(string name, FieldDbType dbType, object value)
         {
             // 建立參數
             var parameter = Provider.CreateParameter();
@@ -123,7 +123,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="field">結構欄位。</param>
         /// <param name="sourceVersion"> DataRow 取值版本。</param>
-        public DbParameter AddParameter(TDbField field, DataRowVersion sourceVersion = DataRowVersion.Current)
+        public DbParameter AddParameter(DbField field, DataRowVersion sourceVersion = DataRowVersion.Current)
         {
             // 建立參數
             var parameter = Provider.CreateParameter();
@@ -133,7 +133,7 @@ namespace Bee.Db
             parameter.SourceVersion = sourceVersion;
             if (!field.AllowNull)
                 parameter.Value = DataSetFunc.GetDefaultValue(field.DbType);
-            if (field.DbType == EFieldDbType.String)
+            if (field.DbType == FieldDbType.String)
                 parameter.Size = field.Length;
             // 加入參數
             DbCommand.Parameters.Add(parameter);

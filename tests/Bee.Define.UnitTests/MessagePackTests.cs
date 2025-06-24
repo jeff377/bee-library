@@ -110,8 +110,8 @@ namespace Bee.Define.UnitTests
             dt.Rows.Add(row);
 
             // Act：轉為序列化格式，再轉回 DataTable
-            var serializable = TSerializableDataTable.FromDataTable(dt);
-            var restored = TSerializableDataTable.ToDataTable(serializable);
+            var serializable = SerializableDataTable.FromDataTable(dt);
+            var restored = SerializableDataTable.ToDataTable(serializable);
 
             // Assert：確認還原後的值為 DBNull.Value
             Assert.Equal(1, restored.Rows[0]["Id"]);
@@ -172,18 +172,18 @@ namespace Bee.Define.UnitTests
         public void TListItemCollection_Serialize()
         {
             // 建立原始物件
-            var original = new TListItemCollection()
+            var original = new ListItemCollection()
             {
-                new TListItem("A001", "選項一"),
-                new TListItem("A002", "選項二"),
-                new TListItem("A003", "選項三")
+                new ListItem("A001", "選項一"),
+                new ListItem("A002", "選項二"),
+                new ListItem("A003", "選項三")
             };
 
             // 序列化為位元組陣列
             var bytes = MessagePackHelper.Serialize(original);
 
             // 反序列化為物件
-            var restored = MessagePackHelper.Deserialize<TListItemCollection>(bytes);
+            var restored = MessagePackHelper.Deserialize<ListItemCollection>(bytes);
 
             // 驗證還原後的值與原值一致
             Assert.NotNull(restored);
@@ -203,19 +203,19 @@ namespace Bee.Define.UnitTests
         public void TFilterItemCollection_Serialize()
         {
             // 建立集合並加入條件
-            var original = new TFilterItemCollection();
-            original.Add("Age", EComparisonOperator.GreaterOrEqual, "18");
-            original.Add("Gender", EComparisonOperator.Equal, "Male");
+            var original = new FilterItemCollection();
+            original.Add("Age", ComparisonOperator.GreaterOrEqual, "18");
+            original.Add("Gender", ComparisonOperator.Equal, "Male");
 
             // 設定結合運算子，驗證欄位也能序列化
-            original[0].Combine = ECombineOperator.And;
-            original[1].Combine = ECombineOperator.Or;
+            original[0].Combine = CombineOperator.And;
+            original[1].Combine = CombineOperator.Or;
 
             // 序列化集合
             byte[] bytes = MessagePackHelper.Serialize(original);
 
             // 反序列化集合
-            var restored = MessagePackHelper.Deserialize<TFilterItemCollection>(bytes);
+            var restored = MessagePackHelper.Deserialize<FilterItemCollection>(bytes);
 
             // 驗證集合數量
             Assert.Equal(original.Count, restored.Count);
@@ -237,7 +237,7 @@ namespace Bee.Define.UnitTests
         public void TParameterCollection_Serialize()
         {
             // 建立原始物件，包含不同型別的參數
-            var original = new TParameterCollection();
+            var original = new ParameterCollection();
             original.Add("IntValue", 123);
             original.Add("StringValue", "測試字串");
             original.Add("BoolValue", true);
@@ -250,7 +250,7 @@ namespace Bee.Define.UnitTests
             var bytes = MessagePackHelper.Serialize(original);
 
             // 反序列化為物件
-            var restored = MessagePackHelper.Deserialize<TParameterCollection>(bytes);
+            var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);
 
             // 驗證還原後的值與原值一致
             Assert.NotNull(restored);
@@ -289,14 +289,14 @@ namespace Bee.Define.UnitTests
             table.Rows.Add(2, "Bob");
 
             // 建立參數集合，加入 DataTable 參數
-            var parameters = new TParameterCollection();
+            var parameters = new ParameterCollection();
             parameters.Add("Data", table);
 
             // 序列化
             var bytes = MessagePackHelper.Serialize(parameters);
 
             // 反序列化
-            var restored = MessagePackHelper.Deserialize<TParameterCollection>(bytes);
+            var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);
 
             // 驗證
             Assert.NotNull(restored);
@@ -317,7 +317,7 @@ namespace Bee.Define.UnitTests
         public void TPropertyCollection_Serialize()
         {
             // 建立屬性集合
-            var properties = new TPropertyCollection();
+            var properties = new PropertyCollection();
             properties.Add("AppName", "BeeERP");
             properties.Add("Enabled", "true");
             properties.Add("RetryCount", "3");
@@ -326,7 +326,7 @@ namespace Bee.Define.UnitTests
             var bytes = MessagePackHelper.Serialize(properties);
 
             // 反序列化
-            var restored = MessagePackHelper.Deserialize<TPropertyCollection>(bytes);
+            var restored = MessagePackHelper.Deserialize<PropertyCollection>(bytes);
 
             // 驗證內容是否正確還原
             Assert.NotNull(restored);
@@ -348,7 +348,7 @@ namespace Bee.Define.UnitTests
         public void Ping_Serialize()
         {
             // 建立 TPingArgs 並指定屬性與參數
-            var args = new TPingArgs
+            var args = new PingArgs
             {
                 ClientName = "TestClient",
                 TraceId = Guid.NewGuid().ToString()
@@ -360,7 +360,7 @@ namespace Bee.Define.UnitTests
             TestFunc.TestMessagePackSerialization(args);
 
             // 建立 TPingResult 並指定屬性與參數
-            var result = new TPingResult
+            var result = new PingResult
             {
                 Status = "pong",
                 ServerTime = new DateTime(2025, 5, 16, 8, 30, 0, DateTimeKind.Utc),
@@ -381,7 +381,7 @@ namespace Bee.Define.UnitTests
         public void ExecFunc_Serialize()
         {
             // 建立 TExecFuncArgs 並指定屬性與參數
-            var args = new TExecFuncArgs
+            var args = new ExecFuncArgs
             {
                 FuncID = "CustomFunction123"
             };
@@ -392,7 +392,7 @@ namespace Bee.Define.UnitTests
             TestFunc.TestMessagePackSerialization(args);
 
             // 建立 TExecFuncResult 並指定屬性與參數
-            var result = new TExecFuncResult();
+            var result = new ExecFuncResult();
             result.Parameters.Add("ResultKey", "ResultValue");
             result.Parameters.Add("ResultCount", 100);
             result.Parameters.Add("ResultDate", new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc));
@@ -408,7 +408,7 @@ namespace Bee.Define.UnitTests
         public void CreateSession_Serialize()
         {
             // Arrange: 建立 TCreateSessionArgs 實例並設定屬性
-            var args = new TCreateSessionArgs
+            var args = new CreateSessionArgs
             {
                 UserID = "TestUser",
                 ExpiresIn = 7200,
@@ -419,7 +419,7 @@ namespace Bee.Define.UnitTests
             TestFunc.TestMessagePackSerialization(args);
 
             // Arrange: 建立 TCreateSessionResult 實例並設定屬性
-            var result = new TCreateSessionResult
+            var result = new CreateSessionResult
             {
                 AccessToken = Guid.NewGuid(),
                 Expires = new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc)
@@ -436,9 +436,9 @@ namespace Bee.Define.UnitTests
         public void GetDefine_Serialize()
         {
             // Arrange: 建立 TGetDefineArgs 實例並設定屬性
-            var args = new TGetDefineArgs
+            var args = new GetDefineArgs
             {
-                DefineType = EDefineType.FormDefine,
+                DefineType = DefineType.FormDefine,
                 Keys = new[] { "Key1", "Key2", "Key3" }
             };
 
@@ -446,7 +446,7 @@ namespace Bee.Define.UnitTests
             TestFunc.TestMessagePackSerialization(args);
 
             // Arrange: 建立 TGetDefineResult 實例並設定屬性
-            var result = new TGetDefineResult
+            var result = new GetDefineResult
             {
                 Xml = "<Define><Item Key='Key1'>Value1</Item></Define>"
             };
@@ -463,13 +463,13 @@ namespace Bee.Define.UnitTests
         public void GetEncodingProfile_Serialize()
         {
             // Arrange: 建立 TGetEncodingProfileArgs 實例並設定屬性
-            var args = new TGetApiPayloadOptionsArgs();
+            var args = new GetApiPayloadOptionsArgs();
 
             // Act & Assert: 使用 TestMessagePackSerialization 測試參數序列化
             TestFunc.TestMessagePackSerialization(args);
 
             // Arrange: 建立 TGetEncodingProfileResult 實例並設定屬性
-            var result = new TGetApiPayloadOptionsResult
+            var result = new GetApiPayloadOptionsResult
             {
                 Serializer = "messagepack",
                 Compressor = "gzip",

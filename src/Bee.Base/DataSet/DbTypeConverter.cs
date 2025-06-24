@@ -25,7 +25,7 @@ namespace Bee.Base
         /// 將指定型別轉換為 FieldDbType 列舉型別。
         /// </summary>
         /// <param name="type">型別。</param>
-        public static EFieldDbType ToFieldDbType(Type type)
+        public static FieldDbType ToFieldDbType(Type type)
         {
             TypeCode oTypeCode;
 
@@ -33,24 +33,24 @@ namespace Bee.Base
             switch (oTypeCode)
             {
                 case TypeCode.Boolean:
-                    return EFieldDbType.Boolean;
+                    return FieldDbType.Boolean;
                 case TypeCode.Char:
                 case TypeCode.String:
-                    return EFieldDbType.String;
+                    return FieldDbType.String;
                 case TypeCode.DateTime:
-                    return EFieldDbType.DateTime;
+                    return FieldDbType.DateTime;
                 case TypeCode.Decimal:
-                    return EFieldDbType.Currency;
+                    return FieldDbType.Currency;
                 case TypeCode.Double:
                 case TypeCode.Single:
-                    return EFieldDbType.Double;
+                    return FieldDbType.Double;
                 case TypeCode.Int16:
                 case TypeCode.Int32:
                 case TypeCode.Int64:
                 case TypeCode.UInt16:
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
-                    return EFieldDbType.Integer;
+                    return FieldDbType.Integer;
                 default:
                     throw new InvalidOperationException($"{type.Name} can't convert to FieldDbType");
             }
@@ -60,29 +60,29 @@ namespace Bee.Base
         /// 將 EFieldDbType 轉型為 DbType 型別。
         /// </summary>
         /// <param name="fieldDbType">欄位資料型別。</param>
-        public static DbType ToDbType(EFieldDbType fieldDbType)
+        public static DbType ToDbType(FieldDbType fieldDbType)
         {
             switch (fieldDbType)
             {
-                case EFieldDbType.String:
+                case FieldDbType.String:
                     return DbType.String;
-                case EFieldDbType.Text:
+                case FieldDbType.Text:
                     return DbType.String;
-                case EFieldDbType.Boolean:
+                case FieldDbType.Boolean:
                     return DbType.Boolean;
-                case EFieldDbType.Integer:
+                case FieldDbType.Integer:
                     return DbType.Int32;
-                case EFieldDbType.Double:
+                case FieldDbType.Double:
                     return DbType.Double;
-                case EFieldDbType.Currency:
+                case FieldDbType.Currency:
                     return DbType.Currency;
-                case EFieldDbType.Date:
+                case FieldDbType.Date:
                     return DbType.Date;
-                case EFieldDbType.DateTime:
+                case FieldDbType.DateTime:
                     return DbType.DateTime;
-                case EFieldDbType.Guid:
+                case FieldDbType.Guid:
                     return DbType.Guid;
-                case EFieldDbType.Binary:
+                case FieldDbType.Binary:
                     return DbType.Binary;
                 default:
                     throw new InvalidOperationException($"{fieldDbType} can't convert to DbType");
@@ -93,28 +93,28 @@ namespace Bee.Base
         /// 將 EFieldDbType 轉型為 System.Type。
         /// </summary>
         /// <param name="fieldDbType">欄位資料型別。</param>
-        public static Type ToType(EFieldDbType fieldDbType)
+        public static Type ToType(FieldDbType fieldDbType)
         {
             switch (fieldDbType)
             {
-                case EFieldDbType.String:
+                case FieldDbType.String:
                     return typeof(string);
-                case EFieldDbType.Text:
+                case FieldDbType.Text:
                     return typeof(string);
-                case EFieldDbType.Boolean:
+                case FieldDbType.Boolean:
                     return typeof(bool);
-                case EFieldDbType.Integer:
+                case FieldDbType.Integer:
                     return typeof(int);
-                case EFieldDbType.Double:
+                case FieldDbType.Double:
                     return typeof(double);
-                case EFieldDbType.Currency:
+                case FieldDbType.Currency:
                     return typeof(decimal);
-                case EFieldDbType.Date:
-                case EFieldDbType.DateTime:
+                case FieldDbType.Date:
+                case FieldDbType.DateTime:
                     return typeof(DateTime);
-                case EFieldDbType.Guid:
+                case FieldDbType.Guid:
                     return typeof(Guid);
-                case EFieldDbType.Binary:
+                case FieldDbType.Binary:
                     return typeof(byte[]);
                 default:
                     throw new InvalidOperationException($"{fieldDbType} can't convert to System.Type");

@@ -30,7 +30,7 @@ namespace Bee.Cache
         /// <summary>
         /// 取得系統設定。
         /// </summary>
-        public static TSystemSettings GetSystemSettings()
+        public static SystemSettings GetSystemSettings()
         {
             return CacheContainer.SystemSettings.Get();
         }
@@ -38,7 +38,7 @@ namespace Bee.Cache
         /// <summary>
         /// 取得資料庫設定。
         /// </summary>
-        public static TDatabaseSettings GetDatabaseSettings()
+        public static DatabaseSettings GetDatabaseSettings()
         {
             return CacheContainer.DatabaseSettings.Get();
         }
@@ -46,7 +46,7 @@ namespace Bee.Cache
         /// <summary>
         /// 取得程式清單。
         /// </summary>
-        public static TProgramSettings GetProgramSettings()
+        public static ProgramSettings GetProgramSettings()
         {
             return CacheContainer.ProgramSettings.Get();
         }
@@ -55,7 +55,7 @@ namespace Bee.Cache
         /// 取得資料庫項目。
         /// </summary>
         /// <param name="databaseID">資料庫編號。</param>
-        public static TDatabaseItem GetDatabaseItem(string databaseID)
+        public static DatabaseItem GetDatabaseItem(string databaseID)
         {
             if (StrFunc.IsEmpty(databaseID))
                 throw new ArgumentNullException(nameof(databaseID));
@@ -70,7 +70,7 @@ namespace Bee.Cache
         /// <summary>
         /// 取得資料庫結構設定。
         /// </summary>
-        public static TDbSchemaSettings GetDbSchemaSettings()
+        public static DbSchemaSettings GetDbSchemaSettings()
         {
             return CacheContainer.DbSchemaSettings.Get();
         }
@@ -80,7 +80,7 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        public static TDbTable GetDbTable(string dbName, string tableName)
+        public static DbTable GetDbTable(string dbName, string tableName)
         {
             return CacheContainer.DbTable.Get(dbName, tableName);
         }
@@ -89,7 +89,7 @@ namespace Bee.Cache
         /// 取得預設資料庫的資料表結構。
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
-        public static TDbTable GetDbTable(string tableName)
+        public static DbTable GetDbTable(string tableName)
         {
             return GetDbTable(BackendInfo.DatabaseID, tableName);
         }
@@ -98,7 +98,7 @@ namespace Bee.Cache
         /// 取得表單定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        public static TFormDefine GetFormDefine(string progId)
+        public static FormDefine GetFormDefine(string progId)
         {
             return CacheContainer.FormDefine.Get(progId);
         }
@@ -107,7 +107,7 @@ namespace Bee.Cache
         /// 取得表單版面配置。
         /// </summary>
         /// <param name="layoutId">表單版面代碼。</param>
-        public static TFormLayout GetFormLayout(string layoutId)
+        public static FormLayout GetFormLayout(string layoutId)
         {
             return CacheContainer.FormLayout.Get(layoutId);
         }

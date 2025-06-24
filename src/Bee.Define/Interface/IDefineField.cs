@@ -20,6 +20,6 @@ namespace Bee.Define
         /// <summary>
         /// 資料型別。
         /// </summary>
-        EFieldDbType DbType { get; set; }
+        FieldDbType DbType { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace Bee.Db
     /// </summary>
     public class TSqlCreateTableCommandBuilder : ICreateTableCommandBuilder
     {
-        private TDbTable _DbTable = null;
+        private DbTable _DbTable = null;
 
         #region 建構函式
 
@@ -25,7 +25,7 @@ namespace Bee.Db
         /// <summary>
         /// 資料表結構。
         /// </summary>
-        private TDbTable DbTable
+        private DbTable DbTable
         {
             get { return _DbTable; }
         }
@@ -42,11 +42,11 @@ namespace Bee.Db
         /// 取得 Create Table 的 SQL 語法。
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
-        public string GetCommandText(TDbTable dbTable)
+        public string GetCommandText(DbTable dbTable)
         {
             _DbTable = dbTable;
 
-            if (this.DbTable.UpgradeAction == EDbUpgradeAction.Upgrade)
+            if (this.DbTable.UpgradeAction == DbUpgradeAction.Upgrade)
                 return $"-- 升級 {this.TableName} 資料表\r\n{this.GetUpgradeCommandText()}";
             else
                 return $"-- 建立 {this.TableName} 資料表\r\n{this.GetCreateTableCommandText()}";
@@ -110,9 +110,9 @@ namespace Bee.Db
 
             // 取得要搬除的欄位清單
             sFields = string.Empty;
-            foreach (TDbField field in this.DbTable.Fields)
+            foreach (DbField field in this.DbTable.Fields)
             {
-                if (field.UpgradeAction != EDbUpgradeAction.New && field.DbType != EFieldDbType.Identity)
+                if (field.UpgradeAction != DbUpgradeAction.New && field.DbType != FieldDbType.Identity)
                 {
                     if (StrFunc.IsNotEmpty(sFields))
                         sFields += ", ";
@@ -134,7 +134,7 @@ namespace Bee.Db
         {
             var sb = new StringBuilder();
             // 索引更名
-            foreach (TDbTableIndex index in this.DbTable.Indexes)
+            foreach (DbTableIndex index in this.DbTable.Indexes)
             {
                 string oldName = StrFunc.Format(index.Name, tableName);  // 舊索引名稱
                 string newName = StrFunc.Format(index.Name, newTableName);  // 新索引名稱 
@@ -185,7 +185,7 @@ namespace Bee.Db
         {
             // 取得建立欄位結構的語法
             var sb = new StringBuilder();
-            foreach (TDbField field in this.DbTable.Fields)
+            foreach (DbField field in this.DbTable.Fields)
             {
                 // 取得欄位結構的命令語法
                 string text = GetFieldCommandText(field);
@@ -203,7 +203,7 @@ namespace Bee.Db
         /// 取得單一欄位結構的命令語法。
         /// </summary>
         /// <param name="field">欄位結構。</param>
-        private string GetFieldCommandText(TDbField field)
+        private string GetFieldCommandText(DbField field)
         {
             string sDbType;  // 欄位型別
             string sAllowNull;  // 是否允許 Null
@@ -231,31 +231,31 @@ namespace Bee.Db
         /// 轉換為 SQL Server 資料庫的欄位型別。
         /// </summary>
         /// <param name="field">欄位結構。</param>
-        private string ConverDbType(TDbField field)
+        private string ConverDbType(DbField field)
         {
             switch (field.DbType)
             {
-                case EFieldDbType.String:
+                case FieldDbType.String:
                     return $"[nvarchar]({field.Length})";
-                case EFieldDbType.Text:
+                case FieldDbType.Text:
                     return "[nvarchar](max)";
-                case EFieldDbType.Boolean:
+                case FieldDbType.Boolean:
                     return "[bit]";
-                case EFieldDbType.Identity:
+                case FieldDbType.Identity:
                     return "[int] IDENTITY(1,1)";
-                case EFieldDbType.Integer:
+                case FieldDbType.Integer:
                     return "[int]";
-                case EFieldDbType.Double:
+                case FieldDbType.Double:
                     return "[float]";
-                case EFieldDbType.Currency:
+                case FieldDbType.Currency:
                     return "[money]";
-                case EFieldDbType.Date:
+                case FieldDbType.Date:
                     return "[date]";
-                case EFieldDbType.DateTime:
+                case FieldDbType.DateTime:
                     return "[datetime]";
-                case EFieldDbType.Guid:
+                case FieldDbType.Guid:
                     return "[uniqueidentifier]";
-                case EFieldDbType.Binary:
+                case FieldDbType.Binary:
                     return "[varbinary](max)";
                 default:
                     throw new InvalidOperationException($"DbType={field.DbType} is not supported");
@@ -266,7 +266,7 @@ namespace Bee.Db
         /// 取得欄位預設值。
         /// </summary>
         /// <param name="dbField">欄位結構。</param>
-        private string GetDefaultValue(TDbField dbField)
+        private string GetDefaultValue(DbField dbField)
         {
             if (dbField.AllowNull)
                 return string.Empty;
@@ -279,16 +279,16 @@ namespace Bee.Db
         /// </summary>
         /// <param name="dbType">欄位資料型別。</param>
         /// <param name="defaultValue">預設值。</param>
-        private string GetDefaultValue(EFieldDbType dbType, string defaultValue)
+        private string GetDefaultValue(FieldDbType dbType, string defaultValue)
         {
             string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbType);
 
             switch (dbType)
             {
-                case EFieldDbType.String:
-                case EFieldDbType.Text:
+                case FieldDbType.String:
+                case FieldDbType.Text:
                     return StrFunc.Format("N'{0}'", StrFunc.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue);
-                case EFieldDbType.Identity:
+                case FieldDbType.Identity:
                     return string.Empty;
                 default:
                     return StrFunc.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue;
@@ -306,7 +306,7 @@ namespace Bee.Db
 
             // 索引欄位
             string fields = string.Empty;
-            foreach (TIndexField field in index.IndexFields)
+            foreach (IndexField field in index.IndexFields)
             {
                 if (StrFunc.IsNotEmpty(fields))
                     fields += ", ";
@@ -324,7 +324,7 @@ namespace Bee.Db
         private string GetIndexsCommandText(string tableName)
         {
             var sb = new StringBuilder();
-            foreach (TDbTableIndex index in this.DbTable.Indexes)
+            foreach (DbTableIndex index in this.DbTable.Indexes)
             {
                 if (!index.PrimaryKey)
                     sb.AppendLine(GetIndexCommandText(tableName, index));
@@ -337,13 +337,13 @@ namespace Bee.Db
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="index">資料表索引。</param>
-        private string GetIndexCommandText(string tableName, TDbTableIndex index)
+        private string GetIndexCommandText(string tableName, DbTableIndex index)
         {
             // 索引名稱
             string name = StrFunc.Format(index.Name, tableName);
             // 索引欄位
             string fields = string.Empty;
-            foreach (TIndexField field in index.IndexFields)
+            foreach (IndexField field in index.IndexFields)
             {
                 if (StrFunc.IsNotEmpty(fields))
                     fields += ", ";

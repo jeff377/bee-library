@@ -49,7 +49,7 @@ namespace DbUpgrade
         {
             edtDatabases.Items.Clear();
             var settings = ClientInfo.DefineAccess.GetDatabaseSettings();
-            foreach (TDatabaseItem item in settings.Items)
+            foreach (DatabaseItem item in settings.Items)
                 edtDatabases.Items.Add(item);
             if (edtDatabases.Items.Count > 0) { edtDatabases.SelectedIndex = 0; }
         }
@@ -59,7 +59,7 @@ namespace DbUpgrade
         /// </summary>
         private void btnExecute_Click(object sender, EventArgs e)
         {
-            TDbTableItem oTable;
+            DbTableItem oTable;
 
             btnExecute.Enabled = false;
             try
@@ -68,7 +68,7 @@ namespace DbUpgrade
                 lblMessage.Visible = true;
                 int upgradeCount = 0;
 
-                var item = edtDatabases.SelectedItem as TDatabaseItem;
+                var item = edtDatabases.SelectedItem as DatabaseItem;
                 if (item == null) { return; }
 
                 var settings = ClientInfo.DefineAccess.GetDbSchemaSettings();
@@ -123,7 +123,7 @@ namespace DbUpgrade
         /// <param name="tableName">資料表名稱。</param>
         private bool UpgradeTableSchema(string dbName, string tableName)
         {
-            var args = new TExecFuncArgs();
+            var args = new ExecFuncArgs();
             args.FuncID = SysFuncIDs.UpgradeTableSchema;
             args.Parameters.Add("DatabaseID", BackendInfo.DatabaseID);
             args.Parameters.Add("DbName", dbName);

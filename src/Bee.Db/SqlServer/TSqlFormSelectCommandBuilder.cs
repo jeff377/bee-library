@@ -10,7 +10,7 @@ namespace Bee.Db
     /// </summary>
     internal class TSqlFormSelectCommandBuilder
     {
-        private readonly TFormDefine _FormDefine = null;
+        private readonly FormDefine _FormDefine = null;
         private readonly IDbCommandHelper _Helper = null;
         private TTableJoinProvider _TableJoinProvider = null;
 
@@ -19,10 +19,10 @@ namespace Bee.Db
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TSqlFormSelectCommandBuilder(TFormDefine formDefine)
+        public TSqlFormSelectCommandBuilder(FormDefine formDefine)
         {
             _FormDefine = formDefine;
-            _Helper = DbFunc.CreateDbCommandHelper(EDatabaseType.SQLServer);
+            _Helper = DbFunc.CreateDbCommandHelper(DatabaseType.SQLServer);
         }
 
         #endregion
@@ -30,7 +30,7 @@ namespace Bee.Db
         /// <summary>
         /// 表單定義。
         /// </summary>
-        public TFormDefine FormDefine
+        public FormDefine FormDefine
         {
             get { return _FormDefine; }
         }
@@ -71,7 +71,7 @@ namespace Bee.Db
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
         public DbCommand Execute(string tableName, string selectFields)
         {
-            TFormTable oFormTable;
+            FormTable oFormTable;
             StringBuilder oBuffer;
             string sCommandText;
 

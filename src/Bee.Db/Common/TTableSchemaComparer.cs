@@ -8,15 +8,15 @@ namespace Bee.Db
     /// </summary>
     public class TTableSchemaComparer
     {
-        private readonly TDbTable _DefineTable = null;
-        private readonly TDbTable _RealTable = null;
+        private readonly DbTable _DefineTable = null;
+        private readonly DbTable _RealTable = null;
 
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="defineTable">定義的資料表結構。</param>
         /// <param name="realTable">實際的資料表結構。</param>
-        public TTableSchemaComparer(TDbTable defineTable, TDbTable realTable)
+        public TTableSchemaComparer(DbTable defineTable, DbTable realTable)
         {
             _DefineTable = defineTable;
             _RealTable = realTable;
@@ -25,7 +25,7 @@ namespace Bee.Db
         /// <summary>
         /// 定義的資料表結構。
         /// </summary>
-        public TDbTable DefineTable
+        public DbTable DefineTable
         {
             get { return _DefineTable; }
         }
@@ -33,7 +33,7 @@ namespace Bee.Db
         /// <summary>
         /// 實際的資料表結構。
         /// </summary>
-        public TDbTable RealTable
+        public DbTable RealTable
         {
             get { return _RealTable; }
         }
@@ -41,26 +41,26 @@ namespace Bee.Db
         /// <summary>
         /// 執行比對，並傳回比對後產生的資料表結構。
         /// </summary>
-        public TDbTable Compare()
+        public DbTable Compare()
         {
-            TDbTable oCompareTable;
+            DbTable oCompareTable;
 
             // 建立定義的資料表結構複本，作為比對的回傳結果
             oCompareTable = this.DefineTable.Clone();
             // 無實體的資料表結構，直接回傳定義的資料表結構
             if (this.RealTable == null)
             {
-                oCompareTable.UpgradeAction = EDbUpgradeAction.New;
+                oCompareTable.UpgradeAction = DbUpgradeAction.New;
                 return oCompareTable;
             }
             // 比對欄位結構
             if (!CompareFields(oCompareTable))
-                oCompareTable.UpgradeAction = EDbUpgradeAction.Upgrade;
+                oCompareTable.UpgradeAction = DbUpgradeAction.Upgrade;
             // 比對索引
             if (!CompareIndexes(oCompareTable))
-                oCompareTable.UpgradeAction = EDbUpgradeAction.Upgrade;
+                oCompareTable.UpgradeAction = DbUpgradeAction.Upgrade;
             // 加入實體資料表的額外欄位
-            if (oCompareTable.UpgradeAction != EDbUpgradeAction.None)
+            if (oCompareTable.UpgradeAction != DbUpgradeAction.None)
                 AddExtensionFields(oCompareTable);
             return oCompareTable;
         }
@@ -69,26 +69,26 @@ namespace Bee.Db
         /// 比對欄位結構。
         /// </summary>
         /// <param name="compareTable">比對回傳的資料表結構。</param>
-        private bool CompareFields(TDbTable compareTable)
+        private bool CompareFields(DbTable compareTable)
         {
             bool bCompare;
 
             bCompare = true;
-            foreach (TDbField field in compareTable.Fields)
+            foreach (DbField field in compareTable.Fields)
             {
                 if (this.RealTable.Fields.Contains(field.FieldName))
                 {
                     if (!field.Compare(this.RealTable.Fields[field.FieldName]))
                     {
                         // 已存在欄位，升級模式為異動
-                        field.UpgradeAction = EDbUpgradeAction.Upgrade;
+                        field.UpgradeAction = DbUpgradeAction.Upgrade;
                         bCompare = false;
                     }
                 }
                 else
                 {
                     // 不存在欄位，升級模式為新增
-                    field.UpgradeAction = EDbUpgradeAction.New;
+                    field.UpgradeAction = DbUpgradeAction.New;
                     bCompare = false;
                 }
             }
@@ -99,10 +99,10 @@ namespace Bee.Db
         /// 比對索引。
         /// </summary>
         /// <param name="compareTable">比對回傳的資料表結構。</param>
-        private bool CompareIndexes(TDbTable compareTable)
+        private bool CompareIndexes(DbTable compareTable)
         {
             // 有任一索引比對不符，則直接回傳 false
-            foreach (TDbTableIndex index in compareTable.Indexes)
+            foreach (DbTableIndex index in compareTable.Indexes)
             {
                 string name = StrFunc.Format(index.Name, compareTable.TableName);
                 if (this.RealTable.Indexes.Contains(name))
@@ -110,14 +110,14 @@ namespace Bee.Db
                     if (!index.Compare(this.RealTable.Indexes[name]))
                     {
                         // 已存在索引，升級模式為異動
-                        index.UpgradeAction = EDbUpgradeAction.Upgrade;
+                        index.UpgradeAction = DbUpgradeAction.Upgrade;
                         return false;
                     }
                 }
                 else
                 {
                     // 不存在欄位，升級模式為新增
-                    index.UpgradeAction = EDbUpgradeAction.New;
+                    index.UpgradeAction = DbUpgradeAction.New;
                     return false;
                 }
             }
@@ -128,9 +128,9 @@ namespace Bee.Db
         /// 加入實體資料表的額外欄位。
         /// </summary>
         /// <param name="compareTable">比對回傳的資料表結構。</param>
-        private void AddExtensionFields(TDbTable compareTable)
+        private void AddExtensionFields(DbTable compareTable)
         {
-            foreach (TDbField field in this.RealTable.Fields)
+            foreach (DbField field in this.RealTable.Fields)
             {
                 if (!compareTable.Fields.Contains(field.FieldName))
                     compareTable.Fields.Add(field.Clone());

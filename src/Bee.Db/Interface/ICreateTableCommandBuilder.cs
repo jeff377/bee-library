@@ -11,6 +11,6 @@ namespace Bee.Db
         /// 取得 Create Table 的 SQL 語法。
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
-        string GetCommandText(TDbTable dbTable);
+        string GetCommandText(DbTable dbTable);
     }
 }

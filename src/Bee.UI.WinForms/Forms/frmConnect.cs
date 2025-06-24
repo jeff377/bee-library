@@ -23,7 +23,7 @@ namespace Bee.UI.WinForms
         private void frmConnect_Load(object sender, EventArgs e)
         {
             edtEndpoint.Text = ClientInfo.GetEndpoint();
-            if (!FrontendInfo.SupportedConnectTypes.HasFlag(ESupportedConnectTypes.Remote))
+            if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
             {
                 lblEndpoint.Text = "Definition path";
             }

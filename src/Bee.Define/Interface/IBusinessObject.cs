@@ -9,6 +9,6 @@
         /// 執行自訂方法。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        TExecFuncResult ExecFunc(TExecFuncArgs args);
+        ExecFuncResult ExecFunc(ExecFuncArgs args);
     }
 }

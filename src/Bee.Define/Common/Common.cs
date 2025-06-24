@@ -116,7 +116,7 @@ namespace Bee.Define
     /// 初始化選項。
     /// </summary>
     [Flags]
-    public enum EInitializeOptions
+    public enum InitializeOptions
     {
         /// <summary>
         /// 後端初始化。
@@ -139,7 +139,7 @@ namespace Bee.Define
     /// <summary>
     /// 應用程式類型。
     /// </summary>
-    public enum EApplicationType
+    public enum ApplicationType
     {
         /// <summary>
         /// 網站應用程式
@@ -158,7 +158,7 @@ namespace Bee.Define
     /// <summary>
     ///  服務連線方式。
     /// </summary>
-    public enum EConnectType
+    public enum ConnectType
     {
         /// <summary>
         /// 近端連線。
@@ -174,7 +174,7 @@ namespace Bee.Define
     /// 程式支援的服務連線方式。
     /// </summary>
     [Flags]
-    public enum ESupportedConnectTypes
+    public enum SupportedConnectTypes
     {
         /// <summary>
         /// 近端連線。
@@ -193,7 +193,7 @@ namespace Bee.Define
     /// <summary>
     /// 用戶輸入的服務端點類型。
     /// </summary>
-    public enum EEndpointType
+    public enum EndpointType
     {
         /// <summary>
         /// 服務網址。
@@ -216,7 +216,7 @@ namespace Bee.Define
     /// <summary>
     /// API 存取保護等級。
     /// </summary>
-    public enum EApiProtectionLevel
+    public enum ApiProtectionLevel
     {
         /// <summary>
         /// 一般開放：允許任何呼叫（不強制編碼，開放給第三方）
@@ -232,11 +232,10 @@ namespace Bee.Define
         LocalOnly = 2
     }
 
-
     /// <summary>
     /// 定義資料類型。
     /// </summary>
-    public enum EDefineType
+    public enum DefineType
     {
         /// <summary>
         /// 系統設定。
@@ -271,7 +270,7 @@ namespace Bee.Define
     /// <summary>
     /// 資料庫類型。
     /// </summary>
-    public enum EDatabaseType
+    public enum DatabaseType
     {
         /// <summary>
         /// SQL Server。
@@ -294,7 +293,7 @@ namespace Bee.Define
     /// <summary>
     /// 資料庫結構升級動作。
     /// </summary>
-    public enum EDbUpgradeAction
+    public enum DbUpgradeAction
     {
         /// <summary>
         /// 結構一致無需升級。
@@ -313,7 +312,7 @@ namespace Bee.Define
     /// <summary>
     /// 欄位類型。
     /// </summary>
-    public enum EFieldType
+    public enum FieldType
     {
         /// <summary>
         /// 實際存在於資料庫表中的欄位。
@@ -332,7 +331,7 @@ namespace Bee.Define
     /// <summary>
     /// 排序方式。
     /// </summary>
-    public enum ESortDirection
+    public enum SortDirection
     {
         /// <summary>
         /// 遞增排序。
@@ -347,7 +346,7 @@ namespace Bee.Define
     /// <summary>
     /// 結合運算子。
     /// </summary>
-    public enum ECombineOperator
+    public enum CombineOperator
     {
         /// <summary>
         /// 而且。
@@ -362,7 +361,7 @@ namespace Bee.Define
     /// <summary>
     /// 比較運算子。
     /// </summary>
-    public enum EComparisonOperator
+    public enum ComparisonOperator
     {
         /// <summary>
         /// 等於。
@@ -409,7 +408,7 @@ namespace Bee.Define
     /// <summary>
     /// 單筆資料表單模式。
     /// </summary>
-    public enum ESingleFormMode
+    public enum SingleFormMode
     {
         /// <summary>
         /// 檢視。
@@ -426,24 +425,9 @@ namespace Bee.Define
     }
 
     /// <summary>
-    /// 報表表單模式。
-    /// </summary>
-    public enum EReportFormMode
-    {
-        /// <summary>
-        /// 顯示報表條件。
-        /// </summary>
-        Filter,
-        /// <summary>
-        /// 顯示報表結果。
-        /// </summary>
-        Report
-    }
-
-    /// <summary>
     /// 控制項類型。
     /// </summary>
-    public enum EControlType
+    public enum ControlType
     {
         /// <summary>
         /// 文字框。
@@ -478,7 +462,7 @@ namespace Bee.Define
     /// <summary>
     /// 表格欄位的控制項類型。
     /// </summary>
-    public enum EColumnControlType
+    public enum ColumnControlType
     {
         /// <summary>
         /// 文字框。
@@ -510,7 +494,7 @@ namespace Bee.Define
     /// Grid 控制項允許執行的動作。
     /// </summary>
     [Flags]
-    public enum EGridControlAllowActions
+    public enum GridControlAllowActions
     {
         /// <summary>
         /// 無。

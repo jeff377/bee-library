@@ -42,9 +42,9 @@ namespace Bee.Business
         /// 執行自訂方法。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public TExecFuncResult ExecFunc(TExecFuncArgs args)
+        public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
-            var result = new TExecFuncResult();
+            var result = new ExecFuncResult();
             DoBeforeExecFunc(args, result);
             DoExecFunc(args, result);
             DoAfterExecFunc(args, result);
@@ -56,7 +56,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        protected virtual  void DoBeforeExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        protected virtual  void DoBeforeExecFunc(ExecFuncArgs args, ExecFuncResult result)
         { }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        protected virtual void DoExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        protected virtual void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         { }
 
         /// <summary>
@@ -72,7 +72,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        protected virtual void DoAfterExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        protected virtual void DoAfterExecFunc(ExecFuncArgs args, ExecFuncResult result)
         { }
     }
 }

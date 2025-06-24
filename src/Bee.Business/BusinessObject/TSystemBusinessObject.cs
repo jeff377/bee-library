@@ -1,7 +1,6 @@
 ﻿using System;
 using Bee.Base;
 using Bee.Cache;
-using Bee.Db;
 using Bee.Define;
 
 namespace Bee.Business
@@ -32,9 +31,9 @@ namespace Bee.Business
         /// Ping 方法，測試 API 服務是否可用。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public virtual TPingResult Ping(TPingArgs args)
+        public virtual PingResult Ping(PingArgs args)
         {
-            return new TPingResult()
+            return new PingResult()
             {
                 Status = "ok",
                 ServerTime = DateTime.UtcNow,
@@ -47,10 +46,10 @@ namespace Bee.Business
         /// 取得 API 傳輸層的 Payload 編碼選項。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public virtual TGetApiPayloadOptionsResult GetApiPayloadOptions(TGetApiPayloadOptionsArgs args)
+        public virtual GetApiPayloadOptionsResult GetApiPayloadOptions(GetApiPayloadOptionsArgs args)
         {
             var options = CacheFunc.GetSystemSettings().CommonConfiguration.ApiPayloadOptions;
-            return new TGetApiPayloadOptionsResult()
+            return new GetApiPayloadOptionsResult()
             {
                 Serializer = options.Serializer,
                 Compressor = options.Compressor,
@@ -62,13 +61,13 @@ namespace Bee.Business
         /// 建立連線。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public virtual TCreateSessionResult CreateSession(TCreateSessionArgs args)
+        public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
         {
             // 建立一組用戶連線
             var repo = BackendInfo.RepositoryProvider.SessionRepository;
             var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
             // 回傳存取令牌
-            return new TCreateSessionResult()
+            return new CreateSessionResult()
             {
                 AccessToken = user.AccessToken,
                 Expires = user.EndTime
@@ -79,10 +78,10 @@ namespace Bee.Business
         /// 取得定義資料。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        [ApiAccessControl(EApiProtectionLevel.Internal)]
-        public virtual TGetDefineResult GetDefine(TGetDefineArgs args)
+        [ApiAccessControl(ApiProtectionLevel.Internal)]
+        public virtual GetDefineResult GetDefine(GetDefineArgs args)
         {
-            var result = new TGetDefineResult();
+            var result = new GetDefineResult();
             var access = new TCacheDefineAccess();
             object value = access.GetDefine(args.DefineType, args.Keys);
             if (value != null)
@@ -94,8 +93,8 @@ namespace Bee.Business
         /// 儲存定義資料。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        [ApiAccessControl(EApiProtectionLevel.Internal)]
-        public virtual TSaveDefineResult SaveDefine(TSaveDefineArgs args)
+        [ApiAccessControl(ApiProtectionLevel.Internal)]
+        public virtual SaveDefineResult SaveDefine(SaveDefineArgs args)
         {
             // 將 XML 轉換為物件
             Type type = DefineFunc.GetDefineType(args.DefineType);
@@ -106,7 +105,7 @@ namespace Bee.Business
             // 儲存定義資料
             var access = new TCacheDefineAccess();
             access.SaveDefine(args.DefineType, defineObject, args.Keys);
-            var result = new TSaveDefineResult();
+            var result = new SaveDefineResult();
             return result;
         }
 
@@ -115,7 +114,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        protected override void DoExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
             InvokeExecFunc(args, result);
         }
@@ -125,7 +124,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        private void InvokeExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        private void InvokeExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
             try
             {

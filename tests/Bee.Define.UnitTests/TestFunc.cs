@@ -38,7 +38,7 @@ namespace Bee.Define.UnitTests
                     {
                         Assert.Equal(originalValue, deserializedValue);
                     }
-                    else if (originalValue is IEnumerable<TParameter> origList && deserializedValue is IEnumerable<TParameter> deserList)
+                    else if (originalValue is IEnumerable<Parameter> origList && deserializedValue is IEnumerable<Parameter> deserList)
                     {
                         // 特別處理 TParameterCollection 的內容比對
                         Assert.Equal(origList.Count(), deserList.Count());

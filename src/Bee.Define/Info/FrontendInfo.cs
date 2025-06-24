@@ -10,12 +10,12 @@ namespace Bee.Define
         /// <summary>
         /// 程式支援的服務連線方式。
         /// </summary>
-        public static ESupportedConnectTypes SupportedConnectTypes { get; set; } = ESupportedConnectTypes.Both;
+        public static SupportedConnectTypes SupportedConnectTypes { get; set; } = SupportedConnectTypes.Both;
 
         /// <summary>
         /// 服務連線方式。
         /// </summary>
-        public static EConnectType ConnectType { get; set; } = EConnectType.Local;
+        public static ConnectType ConnectType { get; set; } = ConnectType.Local;
 
         /// <summary>
         /// API 服務端點，一般由設定檔取得服務端點。

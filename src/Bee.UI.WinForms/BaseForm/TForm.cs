@@ -35,7 +35,7 @@ namespace Bee.UI.WinForms
         /// </summary>
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public TParameterCollection? Parameters { get; set; } = null;
+        public ParameterCollection? Parameters { get; set; } = null;
 
         /// <summary>
         /// 判斷表單是否已載入完成。

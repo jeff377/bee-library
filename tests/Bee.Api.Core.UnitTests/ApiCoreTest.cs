@@ -11,7 +11,7 @@ namespace Bee.Api.Core.UnitTests
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\DefinePath";
             // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
@@ -27,7 +27,7 @@ namespace Bee.Api.Core.UnitTests
                 Method = $"{SysProgIds.System}.ExecFunc",
                 Params = new TJsonRpcParams()
                 {
-                    Value = new TExecFuncArgs("Hello")
+                    Value = new ExecFuncArgs("Hello")
                 },
                 Id = Guid.NewGuid().ToString()
             };
@@ -75,12 +75,12 @@ namespace Bee.Api.Core.UnitTests
         [Fact]
         public void Ping()
         {
-            var args = new TPingArgs()
+            var args = new PingArgs()
             {
                 ClientName = "TestClient",
                 TraceId = "001",
             };
-            var result = ApiExecute<TPingResult>(SysProgIds.System, "Ping", args);
+            var result = ApiExecute<PingResult>(SysProgIds.System, "Ping", args);
             Assert.NotNull(result);
             Assert.Equal("ok", result.Status);
             Assert.Equal("001", result.TraceId);
@@ -92,8 +92,8 @@ namespace Bee.Api.Core.UnitTests
         [Fact]
         public void GetApiPayloadOptions()
         {
-            var args = new TGetApiPayloadOptionsArgs();
-            var result = ApiExecute<TGetApiPayloadOptionsResult>(SysProgIds.System, "GetApiPayloadOptions", args);
+            var args = new GetApiPayloadOptionsArgs();
+            var result = ApiExecute<GetApiPayloadOptionsResult>(SysProgIds.System, "GetApiPayloadOptions", args);
             Assert.NotNull(result);
             //Assert.Equal("messagepack", result.Serializer);
         }
@@ -112,7 +112,7 @@ namespace Bee.Api.Core.UnitTests
                 Method = $"{SysProgIds.System}.ExecFunc",
                 Params = new TJsonRpcParams()
                 {
-                    Value = new TExecFuncArgs("Hello")
+                    Value = new ExecFuncArgs("Hello")
                 },
                 Id = Guid.NewGuid().ToString()
             };
@@ -122,16 +122,16 @@ namespace Bee.Api.Core.UnitTests
             var executor = new TJsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
-            var execFuncResult = response.Result.Value as TExecFuncResult;
+            var execFuncResult = response.Result.Value as ExecFuncResult;
             Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null
         }
 
         [Fact]
         public void TestDatabaseId()
         {
-            var args = new TExecFuncArgs("TestDatabaseId");
+            var args = new ExecFuncArgs("TestDatabaseId");
             args.Parameters.Add("DatabaseId", "common");
-            var result = ApiExecute<TExecFuncResult>(SysProgIds.System, "ExecFunc", args);
+            var result = ApiExecute<ExecFuncResult>(SysProgIds.System, "ExecFunc", args);
             Assert.NotNull(result);
         }
     }

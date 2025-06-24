@@ -15,7 +15,7 @@ namespace Bee.Api.AspNetCore.UnitTests
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\DefinePath";
             // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
         }
 
         /// <summary>
@@ -92,12 +92,12 @@ namespace Bee.Api.AspNetCore.UnitTests
         [Fact]
         public async Task Ping()
         {
-            var args = new TPingArgs()
+            var args = new PingArgs()
             {
                 ClientName = "TestClient",
                 TraceId = "001",
             };
-            var result = await ExecuteRpcAsync<TPingResult>(SysProgIds.System, "Ping", args);
+            var result = await ExecuteRpcAsync<PingResult>(SysProgIds.System, "Ping", args);
             Assert.NotNull(result);
             Assert.Equal("ok", result.Status);
             Assert.Equal("001", result.TraceId);
@@ -106,8 +106,8 @@ namespace Bee.Api.AspNetCore.UnitTests
         [Fact]
         public async Task Hello()
         {
-            var args = new TExecFuncArgs("Hello");
-            var result = await ExecuteRpcAsync<TExecFuncResult>(SysProgIds.System, "ExecFunc", args);
+            var args = new ExecFuncArgs("Hello");
+            var result = await ExecuteRpcAsync<ExecFuncResult>(SysProgIds.System, "ExecFunc", args);
             Assert.NotNull(result);
         }
     }

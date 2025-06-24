@@ -462,26 +462,26 @@ namespace Bee.Base
         /// </summary>
         /// <param name="dbType">欄位資料型別。</param>
         /// <param name="value">傳入值。</param>
-        public static object CFieldValue(EFieldDbType dbType, object value)
+        public static object CFieldValue(FieldDbType dbType, object value)
         {
             switch (dbType)
             {
-                case EFieldDbType.String:
-                case EFieldDbType.Text:
+                case FieldDbType.String:
+                case FieldDbType.Text:
                     return CStr(value);
-                case EFieldDbType.Boolean:
+                case FieldDbType.Boolean:
                     return CBool(value);
-                case EFieldDbType.Integer:
+                case FieldDbType.Integer:
                     return CInt(value);
-                case EFieldDbType.Double:
+                case FieldDbType.Double:
                     return CDouble(value);
-                case EFieldDbType.Currency:
+                case FieldDbType.Currency:
                     return CDecimal(value);
-                case EFieldDbType.Date:
+                case FieldDbType.Date:
                     return CDate(value);
-                case EFieldDbType.DateTime:
+                case FieldDbType.DateTime:
                     return CDateTime(value);
-                case EFieldDbType.Guid:
+                case FieldDbType.Guid:
                     return CGuid(value);
                 default:
                     return value;
@@ -493,7 +493,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="dbType">欄位資料型別。</param>
         /// <param name="value">傳入值。</param>
-        public static object CDbFieldValue(EFieldDbType dbType, object value)
+        public static object CDbFieldValue(FieldDbType dbType, object value)
         {
             if (value is DateTime)
             {
@@ -508,7 +508,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="objectSerialize">物件序列化介面。</param>
         /// <param name="serializeState">序列化狀態。</param>
-        public static void SetSerializeState(IObjectSerialize objectSerialize, ESerializeState serializeState)
+        public static void SetSerializeState(IObjectSerialize objectSerialize, SerializeState serializeState)
         {
             objectSerialize?.SetSerializeState(serializeState);
         }
@@ -518,9 +518,9 @@ namespace Bee.Base
         /// </summary>
         /// <param name="serializeState">序列化狀態。</param>
         /// <param name="value">要判斷的值。</param>
-        public static bool IsSerializeEmpty(ESerializeState serializeState, object value)
+        public static bool IsSerializeEmpty(SerializeState serializeState, object value)
         {
-            if (serializeState != ESerializeState.Serialize) { return false; }
+            if (serializeState != SerializeState.Serialize) { return false; }
 
             switch (value)
             {

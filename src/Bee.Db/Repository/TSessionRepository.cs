@@ -21,10 +21,10 @@ namespace Bee.Db
         {
             string xml = SerializeFunc.ObjectToXml(sessionUser);
             var helper = DbFunc.CreateDbCommandHelper();
-            helper.AddParameter("access_token", EFieldDbType.Guid, sessionUser.AccessToken);
-            helper.AddParameter("session_user_xml", EFieldDbType.Text, xml);
-            helper.AddParameter(SysFields.InsertTime, EFieldDbType.DateTime, DateTime.Now);
-            helper.AddParameter(SysFields.InvalidTime, EFieldDbType.DateTime, sessionUser.EndTime);
+            helper.AddParameter("access_token", FieldDbType.Guid, sessionUser.AccessToken);
+            helper.AddParameter("session_user_xml", FieldDbType.Text, xml);
+            helper.AddParameter(SysFields.InsertTime, FieldDbType.DateTime, DateTime.Now);
+            helper.AddParameter(SysFields.InvalidTime, FieldDbType.DateTime, sessionUser.EndTime);
             string sql = "INSERT INTO ts_session \n" +
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
@@ -39,7 +39,7 @@ namespace Bee.Db
         private void Delete(Guid accessToken)
         {
             var helper = DbFunc.CreateDbCommandHelper();
-            helper.AddParameter("access_token", EFieldDbType.Guid, accessToken);
+            helper.AddParameter("access_token", FieldDbType.Guid, accessToken);
             string sql = "DELETE FROM ts_session \n" +
                                  "WHERE access_token={0}";
             helper.SetCommandFormatText(sql);
@@ -53,7 +53,7 @@ namespace Bee.Db
         public TSessionUser GetSession(Guid accessToken)
         {
             var helper = DbFunc.CreateDbCommandHelper();
-            helper.AddParameter("access_token", EFieldDbType.Guid, accessToken);
+            helper.AddParameter("access_token", FieldDbType.Guid, accessToken);
             string sql = "SELECT session_user_xml, sys_invalid_time \n" +
                                  "FROM ts_session \n" +
                                  "WHERE access_token={0}";
@@ -85,7 +85,7 @@ namespace Bee.Db
         public TSessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
             var helper = DbFunc.CreateDbCommandHelper();
-            helper.AddParameter(SysFields.Id, EFieldDbType.String, userID);
+            helper.AddParameter(SysFields.Id, FieldDbType.String, userID);
             string sql = "SELECT sys_id, sys_name FROM ts_user \n" +
                                  "WHERE sys_id={0}";
             helper.SetCommandFormatText(sql);

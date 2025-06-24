@@ -5,7 +5,7 @@ namespace Bee.Cache
     /// <summary>
     /// 資料庫結構設定快取。
     /// </summary>
-    internal class TDbSchemaSettingsCache : TObjectCache<TDbSchemaSettings>
+    internal class TDbSchemaSettingsCache : TObjectCache<DbSchemaSettings>
     {
         /// <summary>
         /// 取得快取項目到期條件。
@@ -13,7 +13,7 @@ namespace Bee.Cache
         protected override TCacheItemPolicy GetPolicy()
         {
             var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
-            if (BackendInfo.DefineProvider is TFileDefineProvider)
+            if (BackendInfo.DefineProvider is FileDefineProvider)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbTableSettingsFilePath() };
             return policy;
         }
@@ -21,7 +21,7 @@ namespace Bee.Cache
         /// <summary>
         /// 建立執行個體。
         /// </summary>
-        protected override TDbSchemaSettings CreateInstance()
+        protected override DbSchemaSettings CreateInstance()
         {
             return BackendInfo.DefineProvider.GetDbSchemaSettings();
         }

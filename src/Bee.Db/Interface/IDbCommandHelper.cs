@@ -40,14 +40,14 @@ namespace Bee.Db
         /// <param name="name">參數名稱。</param>
         /// <param name="dbType">資料型別。</param>
         /// <param name="value">參數值。</param>
-        DbParameter AddParameter(string name, EFieldDbType dbType, object value);
+        DbParameter AddParameter(string name, FieldDbType dbType, object value);
 
         /// <summary>
         /// 新增命令參數。
         /// </summary>
         /// <param name="field">結構欄位。</param>
         /// <param name="sourceVersion"> DataRow 取值版本。</param>
-        DbParameter AddParameter(TDbField field, DataRowVersion sourceVersion = DataRowVersion.Current);
+        DbParameter AddParameter(DbField field, DataRowVersion sourceVersion = DataRowVersion.Current);
 
         /// <summary>
         /// 設定資料庫命令字串。

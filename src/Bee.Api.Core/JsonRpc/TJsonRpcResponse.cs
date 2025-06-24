@@ -34,13 +34,13 @@ namespace Bee.Api.Core
         /// 序列化狀態。
         /// </summary>
         [JsonIgnore]
-        public ESerializeState SerializeState { get; private set; } = ESerializeState.None;
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
         /// </summary>
         /// <param name="serializeState">序列化狀態。</param>
-        public virtual void SetSerializeState(ESerializeState serializeState)
+        public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
             BaseFunc.SetSerializeState(Result, serializeState);

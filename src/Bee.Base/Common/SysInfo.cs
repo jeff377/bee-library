@@ -10,7 +10,7 @@ namespace Bee.Base
         static SysInfo()
         {
             // 預設加入允許 JSON-RPC 傳遞資料的型別命名空間
-            AllowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Define" };
+            AllowedTypeNamespaces = new System.Collections.Generic.List<string> { "Bee.Base", "Bee.Define" };
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Bee.Base
         /// 僅允許這些命名空間中的型別進行反序列化，以確保安全性。
         /// 注意：Bee.Base 與 Bee.Define 為系統內建的預設命名空間，無需額外指定。
         /// </summary>
-        public static List<string> AllowedTypeNamespaces { get; set; }
+        public static System.Collections.Generic.List<string> AllowedTypeNamespaces { get; set; }
 
         /// <summary>
         /// 驗證是否為允許的型別命名空間。

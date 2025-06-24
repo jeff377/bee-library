@@ -8,12 +8,12 @@
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        ESerializeState SerializeState { get; }
+        SerializeState SerializeState { get; }
 
         /// <summary>
         /// 設定序列化狀態。
         /// </summary>
         /// <param name="serializeState">序列化狀態。</param>
-        void SetSerializeState(ESerializeState serializeState);
+        void SetSerializeState(SerializeState serializeState);
     }
 }

@@ -36,7 +36,7 @@
     /// <summary>
     /// 序列化狀態。
     /// </summary>
-    public enum ESerializeState
+    public enum SerializeState
     {
         /// <summary>
         /// 無。
@@ -51,7 +51,7 @@
     /// <summary>
     /// 序列化格式。
     /// </summary>
-    public enum ESerializeFormat
+    public enum SerializeFormat
     {
         /// <summary>
         /// Xml 格式。
@@ -70,7 +70,7 @@
     /// <summary>
     /// 欄位資料型別。
     /// </summary>
-    public enum EFieldDbType
+    public enum FieldDbType
     {
         /// <summary>
         /// 字串。
@@ -121,7 +121,7 @@
     /// <summary>
     /// 含預設值的布林列舉。
     /// </summary>
-    public enum EDefaultBoolean
+    public enum DefaultBoolean
     {
         /// <summary>
         /// 預設。
@@ -140,7 +140,7 @@
     /// <summary>
     /// 含未設定的布林列舉。
     /// </summary>
-    public enum ENotSetBoolean
+    public enum NotSetBoolean
     {
         /// <summary>
         /// 未設定。
@@ -159,7 +159,7 @@
     /// <summary>
     /// 時間間隔。
     /// </summary>
-    public enum EDateInterval
+    public enum DateInterval
     {
         /// <summary>
         /// 年。
@@ -206,7 +206,7 @@
     /// <summary>
     /// 背景服務狀態。
     /// </summary>
-    public enum EBackgroundServiceStatus
+    public enum BackgroundServiceStatus
     {
         /// <summary>
         /// 停止。
@@ -229,7 +229,7 @@
     /// <summary>
     /// 背景服務執行動作。
     /// </summary>
-    public enum EBackgroundServiceAction
+    public enum BackgroundServiceAction
     {
         /// <summary>
         /// 初始化。

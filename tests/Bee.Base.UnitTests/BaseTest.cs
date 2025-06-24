@@ -11,7 +11,7 @@ namespace Bee.Base.UnitTests
         public void IPValidator()
         {
             // 定義白名單
-            var whitelist = new List<string>
+            var whitelist = new System.Collections.Generic.List<string>
             {
                 "192.168.1.*",
                 "10.0.*.*",
@@ -19,7 +19,7 @@ namespace Bee.Base.UnitTests
             };
 
             // 定義黑名單
-            var blacklist = new List<string>
+            var blacklist = new System.Collections.Generic.List<string>
             {
                 "192.168.1.100",
                 "10.0.0.5",
@@ -27,7 +27,7 @@ namespace Bee.Base.UnitTests
             };
 
             // 初始化驗證器
-            var validator = new TIPValidator(whitelist, blacklist);
+            var validator = new IPValidator(whitelist, blacklist);
 
             // 檢查 IP 地址是否被允許
             var allowed = validator.IsIpAllowed("192.168.2.50");
@@ -47,8 +47,8 @@ namespace Bee.Base.UnitTests
             Assert.True(BaseFunc.IsNumeric(false));
 
             // 列舉型別測試
-            Assert.True(BaseFunc.IsNumeric(EDateInterval.Day));
-            Assert.True(BaseFunc.IsNumeric(EDateInterval.Hour));
+            Assert.True(BaseFunc.IsNumeric(DateInterval.Day));
+            Assert.True(BaseFunc.IsNumeric(DateInterval.Hour));
 
             // 數值型別測試
             Assert.True(BaseFunc.IsNumeric(123)); // 整數

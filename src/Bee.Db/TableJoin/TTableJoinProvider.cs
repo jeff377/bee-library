@@ -54,7 +54,7 @@ namespace Bee.Db
         /// 取得 SQL 語法中的原始欄位，包含資料表別名的欄位名稱。
         /// </summary>
         /// <param name="field">表單欄位。</param>
-        public string GetFIeldName(TFormField field)
+        public string GetFIeldName(FormField field)
         {
             TLinkFieldMapping oMapping;
 

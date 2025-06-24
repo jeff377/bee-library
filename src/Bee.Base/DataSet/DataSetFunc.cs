@@ -190,24 +190,24 @@ namespace Bee.Base
         /// 依欄位資料型別取得預設值。
         /// </summary>
         /// <param name="dbType">欄位資料型別。</param>
-        public static object GetDefaultValue(EFieldDbType dbType)
+        public static object GetDefaultValue(FieldDbType dbType)
         {
             switch (dbType)
             {
-                case EFieldDbType.String:
-                case EFieldDbType.Text:
+                case FieldDbType.String:
+                case FieldDbType.Text:
                     return string.Empty;
-                case EFieldDbType.Boolean:
+                case FieldDbType.Boolean:
                     return false;
-                case EFieldDbType.Integer:
-                case EFieldDbType.Double:
-                case EFieldDbType.Currency:
+                case FieldDbType.Integer:
+                case FieldDbType.Double:
+                case FieldDbType.Currency:
                     return 0;
-                case EFieldDbType.Date:
+                case FieldDbType.Date:
                     return DateTime.Today;
-                case EFieldDbType.DateTime:
+                case FieldDbType.DateTime:
                     return DateTime.Now;
-                case EFieldDbType.Guid:
+                case FieldDbType.Guid:
                     return Guid.Empty;
                 default:
                     return DBNull.Value;

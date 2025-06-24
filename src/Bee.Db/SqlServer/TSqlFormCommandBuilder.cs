@@ -9,14 +9,14 @@ namespace Bee.Db
     /// </summary>
     public class TSqlFormCommandBuilder : IFormCommandBuilder
     {
-        private readonly TFormDefine _FormDefine = null;
+        private readonly FormDefine _FormDefine = null;
 
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public TSqlFormCommandBuilder(TFormDefine formDefine)
+        public TSqlFormCommandBuilder(FormDefine formDefine)
         {
             _FormDefine = formDefine;
         }
@@ -26,7 +26,7 @@ namespace Bee.Db
         /// <summary>
         /// 表單定義。
         /// </summary>
-        public TFormDefine FormDefine
+        public FormDefine FormDefine
         {
             get { return _FormDefine; }
         }

@@ -5,7 +5,7 @@ namespace Bee.Cache
     /// <summary>
     /// 表單版面配置快取。
     /// </summary>
-    internal class TFormLayoutCache : TKeyObjectCache<TFormLayout>
+    internal class TFormLayoutCache : TKeyObjectCache<FormLayout>
     {
         /// <summary>
         /// 取得快取項目到期條件。
@@ -17,7 +17,7 @@ namespace Bee.Cache
             string layoutId = key;
             // 預設為相對時間 20 分鐘
             var policy = new TCacheItemPolicy(ECacheTimeKind.SlidingTime, 20);
-            if (BackendInfo.DefineProvider is TFileDefineProvider)
+            if (BackendInfo.DefineProvider is FileDefineProvider)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormLayoutFilePath(layoutId) };
             return policy;
         }
@@ -26,7 +26,7 @@ namespace Bee.Cache
         /// 建立執行個體。
         /// </summary>
         /// <param name="key">成員鍵值為 [表單版面代碼]。</param>
-        protected override TFormLayout CreateInstance(string key)
+        protected override FormLayout CreateInstance(string key)
         {
             // 表單版面代碼
             string layoutId = key;

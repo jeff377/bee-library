@@ -9,18 +9,18 @@
         /// 執行序列化前的通知方法。
         /// </summary>
         /// <param name="serializeFormat">序列化格式。</param>
-        void BeforeSerialize(ESerializeFormat serializeFormat);
+        void BeforeSerialize(SerializeFormat serializeFormat);
 
         /// <summary>
         /// 執行序列化後的通知方法。
         /// </summary>
         /// <param name="serializeFormat">序列化格式。</param>
-        void AfterSerialize(ESerializeFormat serializeFormat);
+        void AfterSerialize(SerializeFormat serializeFormat);
 
         /// <summary>
         /// 執行反序列化後的通知方法。
         /// </summary>
         /// <param name="serializeFormat">序列化格式。</param>
-        void AfterDeserialize(ESerializeFormat serializeFormat);
+        void AfterDeserialize(SerializeFormat serializeFormat);
     }
 }

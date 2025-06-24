@@ -31,7 +31,7 @@ namespace SettingsEditor
         /// </summary>
         private void tbSystemSettings_Click(object sender, EventArgs e)
         {
-            LoadDefine(EDefineType.SystemSettings);
+            LoadDefine(DefineType.SystemSettings);
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace SettingsEditor
         /// </summary>
         private void tbDatabaseSettings_Click(object sender, EventArgs e)
         {
-            LoadDefine(EDefineType.DatabaseSettings);
+            LoadDefine(DefineType.DatabaseSettings);
         }
 
         /// <summary>
@@ -50,14 +50,14 @@ namespace SettingsEditor
             object? settings = treeView.Tag;
             if (settings == null) { return; }
 
-            if (settings is TSystemSettings)
+            if (settings is SystemSettings)
             {
-                ClientInfo.DefineAccess.SaveSystemSettings(settings as TSystemSettings);
+                ClientInfo.DefineAccess.SaveSystemSettings(settings as SystemSettings);
                 UIFunc.MsgBox("系統設定儲存完成");
             }
-            else if (settings is TDatabaseSettings)
+            else if (settings is DatabaseSettings)
             {
-                ClientInfo.DefineAccess.SaveDatabaseSettings(settings as TDatabaseSettings);
+                ClientInfo.DefineAccess.SaveDatabaseSettings(settings as DatabaseSettings);
                 UIFunc.MsgBox("資料庫設定儲存完成");
             }
         }
@@ -86,7 +86,7 @@ namespace SettingsEditor
         {
             if (treeView.SelectedNode == null) { return; }
 
-            var databaseItem = treeView.SelectedNode.Tag as TDatabaseItem;
+            var databaseItem = treeView.SelectedNode.Tag as DatabaseItem;
             if (databaseItem == null)
             {
                 UIFunc.ErrorMsgBox("請選取要測試的資料庫節點");
@@ -99,17 +99,17 @@ namespace SettingsEditor
         /// 載入定義資料。
         /// </summary>
         /// <param name="defineType">定義資料類型。</param>
-        private void LoadDefine(EDefineType defineType)
+        private void LoadDefine(DefineType defineType)
         {
             string displayName;
             object settings;
             switch (defineType)
             {
-                case EDefineType.SystemSettings:
+                case DefineType.SystemSettings:
                     settings = ClientInfo.DefineAccess.GetSystemSettings();
                     displayName = "系統設定";
                     break;
-                case EDefineType.DatabaseSettings:
+                case DefineType.DatabaseSettings:
                     settings = ClientInfo.DefineAccess.GetDatabaseSettings();
                     displayName = "資料庫設定";
                     break;
@@ -138,11 +138,11 @@ namespace SettingsEditor
         /// 測試資料庫連線。
         /// </summary>
         /// <param name="databaseItem">資料庫項目。</param>
-        private void TestConnection(TDatabaseItem databaseItem)
+        private void TestConnection(DatabaseItem databaseItem)
         {
             try
             {
-                var args = new TExecFuncArgs(SysFuncIDs.TestConnection);
+                var args = new ExecFuncArgs(SysFuncIDs.TestConnection);
                 args.Parameters.Add("DatabaseItem", databaseItem);
                 ClientInfo.SystemApiConnector.ExecFunc(args);
                 UIFunc.MsgBox("資料庫連線測試成功");

@@ -43,9 +43,9 @@ namespace Bee.Connect
         /// 執行自訂方法。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public TExecFuncResult ExecFunc(TExecFuncArgs args)
+        public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
-            return Execute<TExecFuncResult>(SystemActions.ExecFunc, args);
+            return Execute<ExecFuncResult>(SystemActions.ExecFunc, args);
         }
 
         /// <summary>
@@ -56,13 +56,13 @@ namespace Bee.Connect
         /// <param name="oneTime">一次性有效。</param>
         public Guid CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
-            var args = new TCreateSessionArgs()
+            var args = new CreateSessionArgs()
             {
                 UserID = userID,
                 ExpiresIn = expiresIn,
                 OneTime = oneTime
             };
-            var result = Execute<TCreateSessionResult>(SystemActions.CreateSession, args);
+            var result = Execute<CreateSessionResult>(SystemActions.CreateSession, args);
             return result.AccessToken;
         }
 
@@ -72,14 +72,14 @@ namespace Bee.Connect
         /// <typeparam name="T">泛型型別。</typeparam>
         /// <param name="defineType">定義資料類型。</param>
         /// <param name="keys">取得定義資料的鍵值。</param>
-        public T GetDefine<T>(EDefineType defineType, string[] keys = null)
+        public T GetDefine<T>(DefineType defineType, string[] keys = null)
         {
-            var args = new TGetDefineArgs()
+            var args = new GetDefineArgs()
             {
                 DefineType = defineType,
                 Keys = keys
             };
-            var result = Execute<TGetDefineResult>(SystemActions.GetDefine, args);
+            var result = Execute<GetDefineResult>(SystemActions.GetDefine, args);
             if (StrFunc.IsNotEmpty(result.Xml))
                 return SerializeFunc.XmlToObject<T>(result.Xml);
             else
@@ -92,15 +92,15 @@ namespace Bee.Connect
         /// <param name="defineType">定義資料類型。</param>
         /// <param name="defineObject">定義資料。</param>
         /// <param name="keys">儲存定義資料的鍵值。</param>
-        public void SaveDefine(EDefineType defineType, object defineObject, string[] keys = null)
+        public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
         {
-            var args = new TSaveDefineArgs()
+            var args = new SaveDefineArgs()
             {
                 DefineType = defineType,
                 Xml = SerializeFunc.ObjectToXml(defineObject),
                 Keys = keys
             };
-            Execute<TSaveDefineResult>(SystemActions.SaveDefine, args);
+            Execute<SaveDefineResult>(SystemActions.SaveDefine, args);
         }
     }
 }

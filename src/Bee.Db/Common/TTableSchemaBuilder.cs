@@ -37,7 +37,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        public TDbTable Compare(string dbName, string tableName)
+        public DbTable Compare(string dbName, string tableName)
         {
             // 實際的資料表結構
             var helper = new TSqlDbTableHelper(this.DatabaseID);
@@ -58,7 +58,7 @@ namespace Bee.Db
         {
             // 執行資料表結構比對後，回傳要升級的資料表結構
             var dbTable = this.Compare(dbName, tableName);
-            if (dbTable.UpgradeAction != EDbUpgradeAction.None)
+            if (dbTable.UpgradeAction != DbUpgradeAction.None)
             {
                 var builder = new TSqlCreateTableCommandBuilder();
                 return builder.GetCommandText(dbTable);

@@ -27,7 +27,7 @@ namespace Bee.Db
         /// 建構函式。
         /// </summary>
         /// <param name="database">資料庫連線定義。</param>
-        public TDbAccess(TDatabaseItem database)
+        public TDbAccess(DatabaseItem database)
         {
             Provider = DbProviderManager.GetFactory(database.DatabaseType);
             ConnectionString = database.GetConnectionString();

@@ -13,33 +13,33 @@ namespace Bee.Define
         /// 取得用戶輸入服務端點的類型。
         /// </summary>
         /// <param name="input">用戶輸入的服務端點。</param>
-        public static EEndpointType GetEndpointType(string input)
+        public static EndpointType GetEndpointType(string input)
         {
             if (string.IsNullOrWhiteSpace(input))
             {
-                return EEndpointType.Invalid;
+                return EndpointType.Invalid;
             }
 
             // 判斷是否為網址
             if (Uri.TryCreate(input, UriKind.Absolute, out Uri uriResult) &&
                 (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
-                return EEndpointType.Url;
+                return EndpointType.Url;
             }
 
             // 判斷是否為本機路徑
             if (FileFunc.DirectoryExists(input))
             {
-                return EEndpointType.LocalPath;
+                return EndpointType.LocalPath;
             }
 
             // 判斷是否為網芳路徑（網路路徑）
             if (Regex.IsMatch(input, @"^\\\\[a-zA-Z0-9_\.]+\\[a-zA-Z0-9_\.\\]+$"))
             {
-                return EEndpointType.NetworkPath;
+                return EndpointType.NetworkPath;
             }
 
-            return EEndpointType.Invalid;
+            return EndpointType.Invalid;
         }
 
         /// <summary>
@@ -47,10 +47,10 @@ namespace Bee.Define
         /// </summary>
         /// <param name="defineType">定資資料類別。</param>
         /// <exception cref="NotSupportedException"></exception>
-        public static Type GetDefineType(EDefineType defineType)
+        public static Type GetDefineType(DefineType defineType)
         {
             // 取得型別名稱
-            string typeName = "Bee.Define.T" + defineType.ToString();
+            string typeName = "Bee.Define." + defineType.ToString();
             // 取得目前組件
             var assembly = typeof(DefineFunc).Assembly;
             // 嘗試取得型別
@@ -84,24 +84,24 @@ namespace Bee.Define
         /// 轉換為表格欄位的控制項類型。
         /// </summary>
         /// <param name="type">控制項類型。</param>
-        internal static EColumnControlType ToColumnControlType(EControlType type)
+        internal static ColumnControlType ToColumnControlType(ControlType type)
         {
             switch (type)
             {
-                case EControlType.TextEdit:
-                    return EColumnControlType.TextEdit;
-                case EControlType.ButtonEdit:
-                    return EColumnControlType.ButtonEdit;
-                case EControlType.DateEdit:
-                    return EColumnControlType.DateEdit;
-                case EControlType.YearMonthEdit:
-                    return EColumnControlType.YearMonthEdit;
-                case EControlType.DropDownEdit:
-                    return EColumnControlType.DropDownEdit;
-                case EControlType.CheckEdit:
-                    return EColumnControlType.CheckEdit;
+                case ControlType.TextEdit:
+                    return ColumnControlType.TextEdit;
+                case ControlType.ButtonEdit:
+                    return ColumnControlType.ButtonEdit;
+                case ControlType.DateEdit:
+                    return ColumnControlType.DateEdit;
+                case ControlType.YearMonthEdit:
+                    return ColumnControlType.YearMonthEdit;
+                case ControlType.DropDownEdit:
+                    return ColumnControlType.DropDownEdit;
+                case ControlType.CheckEdit:
+                    return ColumnControlType.CheckEdit;
                 default:
-                    return EColumnControlType.TextEdit;
+                    return ColumnControlType.TextEdit;
             }
         }
 
@@ -109,13 +109,13 @@ namespace Bee.Define
         /// 轉換為資料表格排版欄位。
         /// </summary>
         /// <param name="field">表單欄位。</param>
-        internal static TLayoutColumn ToLayoutColumn(TFormField field)
+        internal static LayoutColumn ToLayoutColumn(FormField field)
         {
-            TLayoutColumn oColumn;
-            EColumnControlType oControlType;
+            LayoutColumn oColumn;
+            ColumnControlType oControlType;
 
             oControlType = DefineFunc.ToColumnControlType(field.ControlType);
-            oColumn = new TLayoutColumn(field.FieldName, field.Caption, oControlType);
+            oColumn = new LayoutColumn(field.FieldName, field.Caption, oControlType);
             if (field.Width > 0)
                 oColumn.Width = field.Width;
             else
@@ -129,21 +129,21 @@ namespace Bee.Define
         /// 取得清單版面。
         /// </summary>
         /// <param name="formDefine">表單定義。</param>
-        internal static TLayoutGrid GetListLayout(TFormDefine formDefine)
+        internal static LayoutGrid GetListLayout(FormDefine formDefine)
         {
-            TFormTable oTable;
-            TFormField oField;
-            TLayoutGrid oGrid;
-            TLayoutColumn oColumn;
+            FormTable oTable;
+            FormField oField;
+            LayoutGrid oGrid;
+            LayoutColumn oColumn;
             string[] oFieldNames;
 
             oTable = formDefine.MasterTable;
             oFieldNames = StrFunc.Split(formDefine.ListFields, ",");
 
-            oGrid = new TLayoutGrid();
+            oGrid = new LayoutGrid();
             oGrid.TableName = formDefine.ProgId;
             // 加入 sys_RowID 隱藏欄位
-            oGrid.Columns.Add(SysFields.RowId, "列識別", EColumnControlType.TextEdit).Visible = false;
+            oGrid.Columns.Add(SysFields.RowId, "列識別", ColumnControlType.TextEdit).Visible = false;
             // 加入清單顯示欄位
             foreach (string fieldName in oFieldNames)
             {

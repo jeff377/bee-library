@@ -23,16 +23,16 @@ namespace Bee.Api.Core
 
             switch (attr.ProtectionLevel)
             {
-                case EApiProtectionLevel.Public:
+                case ApiProtectionLevel.Public:
                     // 允許任何呼叫，不驗證
                     break;
 
-                case EApiProtectionLevel.Internal:
+                case ApiProtectionLevel.Internal:
                     if (context.ShouldValidateEncoding && !context.IsEncoded)
                         throw new UnauthorizedAccessException("This API requires encoded transmission for internal calls.");
                     break;
 
-                case EApiProtectionLevel.LocalOnly:
+                case ApiProtectionLevel.LocalOnly:
                     if (!context.IsLocalCall)
                         throw new UnauthorizedAccessException("This API is restricted to local-only usage.");
                     break;

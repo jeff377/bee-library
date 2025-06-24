@@ -12,10 +12,10 @@ namespace Bee.Define.UnitTests
         }
 
         [Theory]
-        [InlineData(EDefineType.SystemSettings, typeof(TSystemSettings))]
-        [InlineData(EDefineType.DatabaseSettings, typeof(TDatabaseSettings))]
-        [InlineData(EDefineType.FormDefine, typeof(TFormDefine))]
-        public void GetDefineType_ValidType(EDefineType defineType, Type expectedType)
+        [InlineData(DefineType.SystemSettings, typeof(SystemSettings))]
+        [InlineData(DefineType.DatabaseSettings, typeof(DatabaseSettings))]
+        [InlineData(DefineType.FormDefine, typeof(FormDefine))]
+        public void GetDefineType_ValidType(DefineType defineType, Type expectedType)
         {
             // Act
             var result = DefineFunc.GetDefineType(defineType);
@@ -86,11 +86,11 @@ namespace Bee.Define.UnitTests
         [Fact]
         public void SerializeListItems()
         {
-            var items = new TListItemCollection();
+            var items = new ListItemCollection();
             items.Add("01", "項目一");
             items.Add("02", "項目二");
             items.Add("03", "項目三");
-            SerializeObject<TListItemCollection>(items, true, true, true);
+            SerializeObject<ListItemCollection>(items, true, true, true);
         }
 
         /// <summary>
@@ -99,14 +99,14 @@ namespace Bee.Define.UnitTests
         [Fact]
         public void SerializeParameters()
         {
-            var parameters = new TParameterCollection
+            var parameters = new ParameterCollection
             {
-                new TParameter("P1", 1),
-                new TParameter("P2", "ABC"),
-                new TParameter("P3", CreateDataTable()),
-                new TParameter("P4", CreateDataSet())
+                new Parameter("P1", 1),
+                new Parameter("P2", "ABC"),
+                new Parameter("P3", CreateDataTable()),
+                new Parameter("P4", CreateDataSet())
             };
-            SerializeObject<TParameterCollection>(parameters, true, false, true);
+            SerializeObject<ParameterCollection>(parameters, true, false, true);
         }
 
         /// <summary>
@@ -115,10 +115,10 @@ namespace Bee.Define.UnitTests
         [Fact]
         public void SystemSettings()
         {
-            var settings = new TSystemSettings();
+            var settings = new SystemSettings();
             settings.CommonConfiguration.Version = "1.0.0";
             settings.BackendConfiguration.DatabaseID = "default";
-            SerializeObject<TSystemSettings>(settings, true, true, false);
+            SerializeObject<SystemSettings>(settings, true, true, false);
         }
 
         /// <summary>
@@ -128,16 +128,16 @@ namespace Bee.Define.UnitTests
         public void Ping_Serialize()
         {
             // 建立 TPingArgs 並指定屬性與參數
-            var args = new TPingArgs
+            var args = new PingArgs
             {
                 ClientName = "TestClient",
                 TraceId = Guid.NewGuid().ToString()
             };
             // 測試序列化
-            SerializeObject<TPingArgs>(args, true, false, true);
+            SerializeObject<PingArgs>(args, true, false, true);
 
             // 建立 TPingResult 並指定屬性與參數
-            var result = new TPingResult
+            var result = new PingResult
             {
                 Status = "pong",
                 ServerTime = new DateTime(2025, 5, 16, 8, 30, 0, DateTimeKind.Utc),
@@ -145,7 +145,7 @@ namespace Bee.Define.UnitTests
                 TraceId = Guid.NewGuid().ToString()
             };
             // 測試序列化
-            SerializeObject<TPingResult>(result, true, false, true);
+            SerializeObject<PingResult>(result, true, false, true);
         }
     }
 }

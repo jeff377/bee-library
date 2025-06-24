@@ -12,7 +12,7 @@
         public void HashPassword_And_VerifyPassword_Should_Pass_With_Correct_Password()
         {
             // Arrange
-            var hasher = new TPasswordHasher();
+            var hasher = new PasswordHasher();
             string originalPassword = "MySecurePassword!123";
 
             // Act
@@ -30,7 +30,7 @@
         public void VerifyPassword_Should_Fail_With_Incorrect_Password()
         {
             // Arrange
-            var hasher = new TPasswordHasher();
+            var hasher = new PasswordHasher();
             string originalPassword = "MySecurePassword!123";
             string wrongPassword = "WrongPassword";
             string hashedPassword = hasher.HashPassword(originalPassword);
@@ -49,7 +49,7 @@
         public void VerifyPassword_Should_Fail_With_Invalid_Format()
         {
             // Arrange
-            var hasher = new TPasswordHasher();
+            var hasher = new PasswordHasher();
             string password = "any";
             string invalidHash = "not.a.valid.hash";
 

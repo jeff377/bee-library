@@ -52,9 +52,9 @@ namespace Bee.Connect
         /// 執行自訂方法。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public TExecFuncResult ExecFunc(TExecFuncArgs args)
+        public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
-            return Execute<TExecFuncResult>(SystemActions.ExecFunc, args);
+            return Execute<ExecFuncResult>(SystemActions.ExecFunc, args);
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Bee.Cache
     /// <summary>
     /// 程式清單快取。
     /// </summary>
-    internal class TProgramSettingsCache : TObjectCache<TProgramSettings>
+    internal class TProgramSettingsCache : TObjectCache<ProgramSettings>
     {
         /// <summary>
         /// 取得快取項目到期條件。
@@ -22,13 +22,13 @@ namespace Bee.Cache
         /// <summary>
         /// 建立執行個體。
         /// </summary>
-        protected override TProgramSettings CreateInstance()
+        protected override ProgramSettings CreateInstance()
         {
             string filePath = DefinePathInfo.GetProgramSettingsFilePath();
             if (!FileFunc.FileExists(filePath))
                 throw new FileNotFoundException($"The file {filePath} does not exist.");
 
-            return SerializeFunc.XmlFileToObject<TProgramSettings>(filePath);
+            return SerializeFunc.XmlFileToObject<ProgramSettings>(filePath);
         }
     }
 }

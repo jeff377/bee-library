@@ -17,12 +17,12 @@ namespace Bee.Base
         /// </summary>
         /// <param name="serializeFormat">序列化格式。</param>
         /// <param name="value">物件。</param>
-        private static void DoBeforeSerialize(ESerializeFormat serializeFormat, object value)
+        private static void DoBeforeSerialize(SerializeFormat serializeFormat, object value)
         {
             // 序列化前的通知方法
             if (value is IObjectSerializeProcess serializeProcess) { serializeProcess.BeforeSerialize(serializeFormat); }
             // 標記開始序列化狀態
-            if (value is IObjectSerialize objectSerialize) { objectSerialize.SetSerializeState(ESerializeState.Serialize); }
+            if (value is IObjectSerialize objectSerialize) { objectSerialize.SetSerializeState(SerializeState.Serialize); }
         }
 
         /// <summary>
@@ -30,10 +30,10 @@ namespace Bee.Base
         /// </summary>
         /// <param name="serializeFormat">序列化格式。</param>
         /// <param name="value">物件。</param>
-        private static void DoAfterSerialize(ESerializeFormat serializeFormat, object value)
+        private static void DoAfterSerialize(SerializeFormat serializeFormat, object value)
         {
             // 標記結束序列化
-            if (value is IObjectSerialize objectSerialize) { objectSerialize.SetSerializeState(ESerializeState.None); }
+            if (value is IObjectSerialize objectSerialize) { objectSerialize.SetSerializeState(SerializeState.None); }
             // 序列化後的通知方法
             if (value is IObjectSerializeProcess objectSerializeProcess) { objectSerializeProcess.AfterSerialize(serializeFormat); }
         }
@@ -43,7 +43,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="serializeFormat">序列化格式。</param>
         /// <param name="value">物件。</param>
-        private static void DoAfterDeserialize(ESerializeFormat serializeFormat, object value)
+        private static void DoAfterDeserialize(SerializeFormat serializeFormat, object value)
         {
             // 反序列化後的通知方法
             if (value is IObjectSerializeProcess objectSerializeProcess) { objectSerializeProcess.AfterDeserialize(serializeFormat); }
@@ -59,11 +59,11 @@ namespace Bee.Base
                 return string.Empty;
 
             // 序列化前執行作業
-            DoBeforeSerialize(ESerializeFormat.Xml, value);
+            DoBeforeSerialize(SerializeFormat.Xml, value);
 
             // 執行序列化寫入字串
             string xml = string.Empty;
-            using (TStringWriter writer = new TStringWriter())
+            using (UTF8StringWriter writer = new UTF8StringWriter())
             {
                 var serializer = new XmlSerializer(value.GetType());
                 serializer.Serialize(writer, value);
@@ -71,7 +71,7 @@ namespace Bee.Base
             }
 
             // 序列化後執行作業
-            DoAfterSerialize(ESerializeFormat.Xml, value);
+            DoAfterSerialize(SerializeFormat.Xml, value);
             return xml;
         }
 
@@ -103,7 +103,7 @@ namespace Bee.Base
             }
 
             // 反序列化後執行作業
-            DoAfterDeserialize(ESerializeFormat.Xml, value);
+            DoAfterDeserialize(SerializeFormat.Xml, value);
             return value;
         }
 
@@ -167,7 +167,7 @@ namespace Bee.Base
             if (includeTypeName)
             {
                 settings.TypeNameHandling = TypeNameHandling.Auto;
-                settings.SerializationBinder = new TJsonSerializationBinder();
+                settings.SerializationBinder = new JsonSerializationBinder();
             }
             // 列舉型別使用字串
             settings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
@@ -185,14 +185,14 @@ namespace Bee.Base
         public static string ObjectToJson(object value, bool ignoreDefaultValue = true, bool ignoreNullValue = true, bool includeTypeName = true)
         {
             // 序列化前執行作業
-            DoBeforeSerialize(ESerializeFormat.Json, value);
+            DoBeforeSerialize(SerializeFormat.Json, value);
 
             // 序列化為 JSON 字串
             var settings = GetJsonSerializerSettings(ignoreDefaultValue, ignoreNullValue, includeTypeName);
             string json = JsonConvert.SerializeObject(value, settings);
 
             // 序列化後執行作業
-            DoAfterSerialize(ESerializeFormat.Json, value);
+            DoAfterSerialize(SerializeFormat.Json, value);
             return json;
         }
 
@@ -208,7 +208,7 @@ namespace Bee.Base
             var settings = GetJsonSerializerSettings(true, false, includeTypeName);
             object value = JsonConvert.DeserializeObject(json, typeof(T), settings);
             // 反序列化後執行作業
-            DoAfterDeserialize(ESerializeFormat.Json, value);
+            DoAfterDeserialize(SerializeFormat.Json, value);
             return (T)value;
         }
 
@@ -253,7 +253,7 @@ namespace Bee.Base
         public static byte[] ObjectToBinary(object value)
         {
             // 序列化前執行作業
-            DoBeforeSerialize(ESerializeFormat.Binary, value);
+            DoBeforeSerialize(SerializeFormat.Binary, value);
 
             byte[] bytes = null;
             using (MemoryStream stream = new MemoryStream())
@@ -264,7 +264,7 @@ namespace Bee.Base
             }
 
             // 序列化後執行作業
-            DoAfterSerialize(ESerializeFormat.Binary, value);
+            DoAfterSerialize(SerializeFormat.Binary, value);
             return bytes;
         }
 
@@ -278,12 +278,12 @@ namespace Bee.Base
             using (MemoryStream stream = new MemoryStream(bytes))
             {
                 var formatter = new BinaryFormatter();
-                formatter.Binder = new TBinarySerializationBinder();
+                formatter.Binder = new BinarySerializationBinder();
                 value = formatter.Deserialize(stream);
             }
 
             // 反序列化後執行作業
-            DoAfterDeserialize(ESerializeFormat.Binary, value);
+            DoAfterDeserialize(SerializeFormat.Binary, value);
             return value;
         }
 

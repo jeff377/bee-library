@@ -7,7 +7,7 @@ namespace Bee.Cache
     /// <summary>
     /// 系統設定快取。
     /// </summary>
-    internal class TSystemSettingsCache : TObjectCache<TSystemSettings>
+    internal class TSystemSettingsCache : TObjectCache<SystemSettings>
     {
         /// <summary>
         /// 取得快取項目到期條件。
@@ -23,13 +23,13 @@ namespace Bee.Cache
         /// 建立執行個體。
         /// </summary>
         /// <returns></returns>
-        protected override TSystemSettings CreateInstance()
+        protected override SystemSettings CreateInstance()
         {
             string sFilePath = DefinePathInfo.GetSystemSettingsFilePath();
             if (!FileFunc.FileExists(sFilePath))
                 throw new FileNotFoundException($"The file {sFilePath} does not exist.");
 
-            return SerializeFunc.XmlFileToObject<TSystemSettings>(sFilePath);
+            return SerializeFunc.XmlFileToObject<SystemSettings>(sFilePath);
         }
     }
 }

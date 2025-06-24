@@ -10,13 +10,13 @@ namespace Bee.Db
     /// </summary>
     public class TTableCommandBuilder
     {
-        private readonly TDbTable _DbTable = null;
+        private readonly DbTable _DbTable = null;
 
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
-        public TTableCommandBuilder(TDbTable dbTable)
+        public TTableCommandBuilder(DbTable dbTable)
         {
             _DbTable = dbTable;
         }
@@ -24,7 +24,7 @@ namespace Bee.Db
         /// <summary>
         /// 資料表結構。
         /// </summary>
-        public TDbTable DbTable
+        public DbTable DbTable
         {
             get { return _DbTable; }
         }
@@ -57,9 +57,9 @@ namespace Bee.Db
             // 處理 Insert 的欄位名稱
             oBuffer.Append("(");
             iCount = 0;
-            foreach (TDbField field in this.DbTable.Fields)
+            foreach (DbField field in this.DbTable.Fields)
             {
-                if (field.DbType != EFieldDbType.Identity)
+                if (field.DbType != FieldDbType.Identity)
                 {
                     if (iCount > 0)
                         oBuffer.Append(", ");
@@ -73,9 +73,9 @@ namespace Bee.Db
             oBuffer.AppendLine(" Values ");
             oBuffer.Append("(");
             iCount = 0;
-            foreach (TDbField field in this.DbTable.Fields)
+            foreach (DbField field in this.DbTable.Fields)
             {
-                if (field.DbType != EFieldDbType.Identity)
+                if (field.DbType != FieldDbType.Identity)
                 {
                     if (iCount > 0)
                         oBuffer.Append(", ");
@@ -98,7 +98,7 @@ namespace Bee.Db
             IDbCommandHelper oHelper;
             StringBuilder oBuffer;
             DbParameter oParameter;
-            TDbField oKeyField;
+            DbField oKeyField;
             string sTableName, sFieldName;
             int iCount;
 
@@ -113,9 +113,9 @@ namespace Bee.Db
             oKeyField = this.DbTable.Fields[SysFields.RowId];
             // 處理 Update 的欄位名稱與值
             iCount = 0;
-            foreach (TDbField field in this.DbTable.Fields)
+            foreach (DbField field in this.DbTable.Fields)
             {
-                if (field != oKeyField && field.DbType != EFieldDbType.Identity)
+                if (field != oKeyField && field.DbType != FieldDbType.Identity)
                 {
                     sFieldName = oHelper.QuoteIdentifier(field.FieldName);
                     // 加入命令參數
@@ -144,7 +144,7 @@ namespace Bee.Db
             IDbCommandHelper oHelper;
             StringBuilder oBuffer;
             DbParameter oParameter;
-            TDbField oKeyField;
+            DbField oKeyField;
             string sTableName, sFieldName;
 
             // 建立資料庫命令輔助類別

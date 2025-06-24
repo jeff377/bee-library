@@ -12,7 +12,7 @@ namespace Bee.UI.Core
     /// </summary>
     public class ClientInfo
     {
-        private static TClientSettings _clientSettings = null;
+        private static ClientSettings _clientSettings = null;
         private static TSystemApiConnector _systemConnector = null;
         private static IDefineAccess _defineAccess = null;
 
@@ -29,7 +29,7 @@ namespace Bee.UI.Core
         /// <summary>
         /// 用戶端設定。
         /// </summary>
-        public static TClientSettings ClientSettings
+        public static ClientSettings ClientSettings
         {
             get
             {
@@ -44,18 +44,18 @@ namespace Bee.UI.Core
         /// <summary>
         /// 取得用戶端設定。
         /// </summary>
-        private static TClientSettings GetClientSettings()
+        private static ClientSettings GetClientSettings()
         {
             string filePath = FileFunc.GetAppPath("Client.Settings.xml");
 
-            TClientSettings settings;
+            ClientSettings settings;
             if (FileFunc.FileExists(filePath))
             {
-                settings = SerializeFunc.XmlFileToObject<TClientSettings>(filePath);
+                settings = SerializeFunc.XmlFileToObject<ClientSettings>(filePath);
             }
             else
             {
-                settings = new TClientSettings();
+                settings = new ClientSettings();
                 settings.SetObjectFilePath(filePath);
             }
             return settings;
@@ -83,7 +83,7 @@ namespace Bee.UI.Core
         /// <returns></returns>
         private static TSystemApiConnector CreateSystemApiConnector()
         {
-            if (FrontendInfo.ConnectType == EConnectType.Local)
+            if (FrontendInfo.ConnectType == ConnectType.Local)
                 return new TSystemApiConnector(FrontendInfo.AccessToken);
             else
                 return new TSystemApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken);
@@ -95,7 +95,7 @@ namespace Bee.UI.Core
         /// <param name="progId">程式代碼。</param>
         public static TFormApiConnector CreateFormApiConnector(string progId)
         {
-            if (FrontendInfo.ConnectType == EConnectType.Local)
+            if (FrontendInfo.ConnectType == ConnectType.Local)
                 return new TFormApiConnector(FrontendInfo.AccessToken, progId);
             else
                 return new TFormApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progId);
@@ -149,19 +149,19 @@ namespace Bee.UI.Core
         /// </summary>
         /// <param name="connectType">服務連線方式。</param>
         /// <param name="endpoint">服端端點，遠端連線為網址，近端連線為本地路徑。</param>
-        private static void SetConnectType(EConnectType connectType, string endpoint)
+        private static void SetConnectType(ConnectType connectType, string endpoint)
         {
-            if (connectType == EConnectType.Local)
+            if (connectType == ConnectType.Local)
             {
                 // 設定近端連線相關屬性
-                FrontendInfo.ConnectType = EConnectType.Local;
+                FrontendInfo.ConnectType = ConnectType.Local;
                 FrontendInfo.Endpoint = string.Empty;
                 BackendInfo.DefinePath = endpoint;
             }
             else
             {
                 // 設定遠端連線相關屬性
-                FrontendInfo.ConnectType = EConnectType.Remote;
+                FrontendInfo.ConnectType = ConnectType.Remote;
                 FrontendInfo.Endpoint = endpoint;
                 BackendInfo.DefinePath = string.Empty;
             }
@@ -176,9 +176,9 @@ namespace Bee.UI.Core
         /// </summary>
         private static void ApiServiceOptionsInitialize()
         {
-            var args = new TGetApiPayloadOptionsArgs();
-            var result = SystemApiConnector.Execute<TGetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args, false);
-            var payloadOptions = new TApiPayloadOptions()
+            var args = new GetApiPayloadOptionsArgs();
+            var result = SystemApiConnector.Execute<GetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args, false);
+            var payloadOptions = new ApiPayloadOptions()
             {
                 Serializer = result.Serializer,
                 Compressor = result.Compressor,
@@ -216,7 +216,7 @@ namespace Bee.UI.Core
         /// 初始化連線設置。
         /// </summary>
         /// <param name="supportedConnectTypes">程式支援的服務連線方式。</param>
-        private static bool InitializeConnect(ESupportedConnectTypes supportedConnectTypes)
+        private static bool InitializeConnect(SupportedConnectTypes supportedConnectTypes)
         {
             FrontendInfo.SupportedConnectTypes = supportedConnectTypes;
             var validator = new TApiConnectValidator();
@@ -245,7 +245,7 @@ namespace Bee.UI.Core
         /// <param name="service">UI 相關的視窗 (View) 服務。</param>
         /// <param name="connectTypes">程式支援的服務連線方式。</param>
         /// <param name="allowGenerateSettings">近端連結是否允許自動生成設定檔，包含 System.Settings.xml 及 Database.Settings.xml 設定檔。</param>
-        public static bool Initialize(IUIViewService service, ESupportedConnectTypes connectTypes, bool allowGenerateSettings)
+        public static bool Initialize(IUIViewService service, SupportedConnectTypes connectTypes, bool allowGenerateSettings)
         {
             // 設置 UI 相關的視窗 (View) 服務
             UIViewService = service;

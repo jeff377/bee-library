@@ -5,7 +5,7 @@ namespace Bee.Db
     /// <summary>
     /// 資料表關連。
     /// </summary>
-    internal class TTableJoin : TKeyCollectionItem
+    internal class TTableJoin : KeyCollectionItem
     {
         private string _LeftTableAlias = string.Empty;
         private string _LeftField = string.Empty;

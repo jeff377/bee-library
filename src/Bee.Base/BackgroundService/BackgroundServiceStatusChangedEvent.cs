@@ -15,6 +15,6 @@ namespace Bee.Base
         /// <summary>
         /// 背景服務狀態。
         /// </summary>
-        public EBackgroundServiceStatus Status { get; set; } = EBackgroundServiceStatus.Stopped;
+        public BackgroundServiceStatus Status { get; set; } = BackgroundServiceStatus.Stopped;
     }
 }

@@ -24,13 +24,13 @@ namespace Bee.Define
             var resolver = CompositeResolver.Create(
                 new IMessagePackFormatter[]
                 {
-                    new TDataTableFormatter(), // 自訂 DataTable 格式化器
-                    new TDataSetFormatter()    // 自訂 DataSet 格式化器
+                    new DataTableFormatter(), // 自訂 DataTable 格式化器
+                    new DataSetFormatter()    // 自訂 DataSet 格式化器
                 },
                 new IFormatterResolver[]
                 {
                     TypelessContractlessStandardResolver.Instance, // 加入支援 object 多型別
-                    TFormatterResolver.Instance,   // 自訂解析器
+                    FormatterResolver.Instance,   // 自訂解析器
                     StandardResolver.Instance      // 標準解析器
                 });
 

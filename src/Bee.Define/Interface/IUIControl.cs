@@ -9,6 +9,6 @@
         /// 依表單模式設定控制項狀態。
         /// </summary>
         /// <param name="formMode">單筆資料表單模式。</param>
-        void SetControlState(ESingleFormMode formMode);
+        void SetControlState(SingleFormMode formMode);
     }
 }

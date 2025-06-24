@@ -15,7 +15,7 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="endpoint">驗證的服務端點，遠端連線為網址，近端連線為本地路徑。</param>
         /// <param name="allowGenerateSettings">近端連結是否允許自動生成設定檔，包含 System.Settings.xml 及 Database.Settings.xml 設定檔。</param>
-        public EConnectType Validate(string endpoint, bool allowGenerateSettings = false)
+        public ConnectType Validate(string endpoint, bool allowGenerateSettings = false)
         {
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("Input cannot be null or empty.", nameof(endpoint));
@@ -25,14 +25,14 @@ namespace Bee.Connect
                 // 驗證近端連線設定
                 ValidateLocal(endpoint, allowGenerateSettings);
                 // 回傳連線方式為近端連線
-                return EConnectType.Local;
+                return ConnectType.Local;
             }
             else if (HttpFunc.IsUrl(endpoint))    // 輸入資料為網址，驗證遠端連線設定
             {
                 // 驗證遠端連線設定
                 ValidateRemote(endpoint);
                 // 回傳連線方式為遠端連線
-                return EConnectType.Remote;
+                return ConnectType.Remote;
             }
             else
             {
@@ -48,7 +48,7 @@ namespace Bee.Connect
         private void ValidateLocal(string definePath, bool allowGenerateSettings)
         {
             // 驗證程式是否支援近端連線
-            if (!FrontendInfo.SupportedConnectTypes.HasFlag(ESupportedConnectTypes.Local))
+            if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
                 throw new InvalidOperationException("Local connections are not supported.");
             if (StrFunc.IsEmpty(definePath))
                 throw new ArgumentException("Definition path must be specified.", nameof(definePath));
@@ -81,7 +81,7 @@ namespace Bee.Connect
             string filePath = FileFunc.PathCombine(definePath, "SystemSettings.xml");
             if (!FileFunc.FileExists(filePath))
             {
-                var settings = new TSystemSettings();
+                var settings = new SystemSettings();
                 settings.SetObjectFilePath(filePath);
                 settings.Save();
             }
@@ -97,8 +97,8 @@ namespace Bee.Connect
             string filePath = FileFunc.PathCombine(definePath, "DatabaseSettings.xml");
             if (!FileFunc.FileExists(filePath))
             {
-                var settings = new TDatabaseSettings();
-                var item = new TDatabaseItem()
+                var settings = new DatabaseSettings();
+                var item = new DatabaseItem()
                 {
                     ID = "default",
                     DisplayName = "預設資料庫"
@@ -116,18 +116,18 @@ namespace Bee.Connect
         private void ValidateRemote(string endpoint)
         {
             // 驗證程式是否支援遠端連線
-            if (!FrontendInfo.SupportedConnectTypes.HasFlag(ESupportedConnectTypes.Remote))
+            if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
                 throw new InvalidOperationException("Remote connections are not supported.");
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));
             // 使用遠端連線，執行 Ping 方法
-            var args = new TPingArgs()
+            var args = new PingArgs()
             {
                 ClientName = "Connector",
                 TraceId = "001"
             };
             var connector = new TSystemApiConnector(endpoint, Guid.Empty);
-            var result = connector.Execute<TPingResult>(SystemActions.Ping, args, false);
+            var result = connector.Execute<PingResult>(SystemActions.Ping, args, false);
             if (result.Status != "ok")
                 throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
         }

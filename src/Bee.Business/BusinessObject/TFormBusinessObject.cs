@@ -32,7 +32,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        protected override void DoExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
             InvokeExecFunc(args, result);
         }
@@ -42,7 +42,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        private void InvokeExecFunc(TExecFuncArgs args, TExecFuncResult result)
+        private void InvokeExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
             try
             {
