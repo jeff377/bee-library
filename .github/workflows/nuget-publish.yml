@@ -4,7 +4,6 @@ on:
   push:
     tags:
       - 'v*'  # 只有推送 tag（例如 v1.2.3）時才會觸發
-  workflow_dispatch:
 
 jobs:
   publish:
@@ -60,4 +59,30 @@ jobs:
         Get-ChildItem -Path ./nupkgs -Filter *.nupkg | ForEach-Object {
           dotnet nuget push $_.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
         }
+
+  release:
+    needs: publish # 👈 確保發佈 NuGet 完成後才進行 Release
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref_name }}
+        name: Release ${{ github.ref_name }}
+        body: |
+          自動發佈 NuGet 套件：
+          - Bee.Base
+          - Bee.Define
+          - Bee.Cache
+          - Bee.Db
+          - Bee.Business
+          - Bee.Connect
+          - Bee.Api.Core
+          - Bee.Api.AspNetCore
+          - Bee.Api.AspNet
+          - Bee.UI.Core
+          - Bee.UI.WinForms
+
+          如需安裝請至 NuGet.org 查詢對應版本。
 
