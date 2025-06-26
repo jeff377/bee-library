@@ -5,6 +5,7 @@ namespace Bee.Define
 {
     /// <summary>
     /// 連線資訊儲存的用戶資料。
+    /// 保留重建 SessionInfo 所需的資訊，此資料會儲存在 DB。
     /// </summary>
     [Serializable]
     public class SessionUser

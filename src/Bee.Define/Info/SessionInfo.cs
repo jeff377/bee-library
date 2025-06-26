@@ -4,7 +4,7 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 連線資訊，記錄執行階段用戶與伺服端建立連線的相關資訊。
+    /// 伺服端連線資訊，記錄執行階段用戶與伺服端建立連線的相關資訊。
     /// </summary>
     [Serializable]
     public class SessionInfo : IKeyObject
@@ -35,6 +35,12 @@ namespace Bee.Define
         /// 用戶名稱。
         /// </summary>
         public string UserName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// AES 加密金鑰，供用戶端與伺服端雙向資料傳輸時進行加解密使用。
+        /// 此金鑰由伺服端產生，並於登入時傳回用戶端。
+        /// </summary>
+        public string SessionKey { get; set; }
 
         /// <summary>
         /// 物件描述文字。
