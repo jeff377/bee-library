@@ -5,7 +5,7 @@ using Bee.Define;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// JSON-RPC 執行器。
+    /// JSON-RPC 請求執行器。
     /// </summary>
     public class JsonRpcExecutor
     {
