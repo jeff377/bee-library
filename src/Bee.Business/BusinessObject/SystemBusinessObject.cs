@@ -58,6 +58,25 @@ namespace Bee.Business
         }
 
         /// <summary>
+        /// 登入系統。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public virtual LoginResult Login(LoginArgs args)
+        {
+            // 伺端端建立一組隨機 AES + HMAC 金鑰
+            string combinedKey = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
+            // 將伺服端建立的金鑰，使用公鑰加密回傳給用戶端
+            string encryptedSessionKey = RsaCryptor.EncryptWithPublicKey(combinedKey, args.ClientPublicKey);
+
+            return new LoginResult()
+            {
+                AccessToken = Guid.NewGuid(),
+                ExpiredAt = DateTime.UtcNow.AddHours(1), // 預設為 1 小時後過期
+                EncryptedSessionKey = encryptedSessionKey
+            };
+        }
+
+        /// <summary>
         /// 建立連線。
         /// </summary>
         /// <param name="args">傳入引數。</param>

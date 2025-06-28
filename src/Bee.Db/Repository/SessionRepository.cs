@@ -97,7 +97,7 @@ namespace Bee.Db
                 AccessToken = BaseFunc.NewGuid(),
                 UserID = userID,
                 UserName = BaseFunc.CStr(row[SysFields.Name]),
-                EndTime = DateTime.Now.AddSeconds(expiresIn),
+                EndTime = DateTime.UtcNow.AddSeconds(expiresIn),
                 OneTime = oneTime
             };
             this.Insert(user);

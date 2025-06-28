@@ -24,7 +24,7 @@ namespace Bee.Define
         public DateTime ExpiredAt { get; set; }
 
         /// <summary>
-        /// RSA 加密後的 Session Key（AESKey + IV 合併成一個 byte[] 後加密）
+        /// 經過 RSA 加密的會話金鑰。
         /// </summary>
         [Key(102)]
         public string EncryptedSessionKey { get; set; } = string.Empty;

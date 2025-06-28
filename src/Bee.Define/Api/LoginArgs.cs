@@ -23,7 +23,7 @@ namespace Bee.Define
         public string Password { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用戶端加密公鑰。
+        /// 用戶端產生的 RSA 加密公鑰。
         /// </summary>
         [Key(102)]
         public string ClientPublicKey { get; set; } = string.Empty;

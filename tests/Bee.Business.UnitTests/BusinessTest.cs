@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Db;
 using Bee.Define;
 
@@ -39,7 +40,37 @@ namespace Bee.Business.UnitTests
             // Assert
             Assert.NotNull(result);
             Assert.NotEqual(Guid.Empty, result.AccessToken);
-            Assert.True(result.ExpiredAt > DateTime.Now);
+            Assert.True(result.ExpiredAt > DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// 登入系統並驗證 RSA 加密的會話金鑰。
+        /// </summary>
+        [Fact]
+        public void Login()
+        {
+            // Arrange
+            // 產生 RSA 對稱金鑰
+            RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
+
+            var sbo = new SystemBusinessObject();
+            var args = new LoginArgs
+            {
+                UserId = "testuser",
+                Password = "testpassword",
+                ClientPublicKey = publicKeyXml
+            };
+
+            // Act
+            LoginResult result = sbo.Login(args);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotEmpty(result.EncryptedSessionKey);
+
+            // 用私鑰解密 EncryptedSessionKey
+            string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.EncryptedSessionKey, privateKeyXml);
+            Assert.False(string.IsNullOrWhiteSpace(sessionKey));
         }
     }
 }
