@@ -6,9 +6,9 @@ using Newtonsoft.Json;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 提供編碼與解碼的共用實作。
+    /// 提供 API 傳輸資料的標準結構。
     /// </summary>
-    public abstract  class EncodablePayloadBase : IObjectSerialize
+    public abstract  class ApiPayloadBase : IObjectSerialize
     {
         #region IObjectSerialize 介面
 

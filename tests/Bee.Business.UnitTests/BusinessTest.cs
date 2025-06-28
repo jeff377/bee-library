@@ -39,7 +39,7 @@ namespace Bee.Business.UnitTests
             // Assert
             Assert.NotNull(result);
             Assert.NotEqual(Guid.Empty, result.AccessToken);
-            Assert.True(result.Expires > DateTime.Now);
+            Assert.True(result.ExpiredAt > DateTime.Now);
         }
     }
 }

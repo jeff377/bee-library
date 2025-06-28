@@ -70,7 +70,7 @@ namespace Bee.Business
             return new CreateSessionResult()
             {
                 AccessToken = user.AccessToken,
-                Expires = user.EndTime
+                ExpiredAt = user.EndTime
             };
         }
 

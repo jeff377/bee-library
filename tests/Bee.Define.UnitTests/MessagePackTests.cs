@@ -422,7 +422,7 @@ namespace Bee.Define.UnitTests
             var result = new CreateSessionResult
             {
                 AccessToken = Guid.NewGuid(),
-                Expires = new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc)
+                ExpiredAt = new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc)
             };
 
             // 測試 MessagePack 序列化
