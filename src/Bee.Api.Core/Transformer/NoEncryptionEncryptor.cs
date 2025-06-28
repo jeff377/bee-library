@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Bee.Base;
 
 namespace Bee.Api.Core
 {
@@ -17,7 +15,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 傳回原始資料，未進行加密。
         /// </summary>
-        public byte[] Encrypt(byte[] bytes)
+        public byte[] Encrypt(byte[] bytes, EncryptionKeySet keySet)
         {
             return bytes;
         }
@@ -25,7 +23,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 傳回原始資料，未進行解密。
         /// </summary>
-        public byte[] Decrypt(byte[] bytes)
+        public byte[] Decrypt(byte[] bytes, EncryptionKeySet keySet)
         {
             return bytes;
         }

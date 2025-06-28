@@ -1,4 +1,6 @@
-﻿namespace Bee.Api.Core
+﻿using Bee.Base;
+
+namespace Bee.Api.Core
 {
     /// <summary>
     /// API 傳輸層資料加解密策略介面。
@@ -15,15 +17,17 @@
         /// 將原始位元組資料進行加密處理。
         /// </summary>
         /// <param name="bytes">原始位元組資料。</param>
+        /// <param name="keySet">加密金鑰組。</param>
         /// <returns>加密後的位元組資料。</returns>
-        byte[] Encrypt(byte[] bytes);
+        byte[] Encrypt(byte[] bytes, EncryptionKeySet keySet);
 
         /// <summary>
         /// 將加密過的位元組資料還原為原始資料。
         /// </summary>
         /// <param name="bytes">加密後的位元組資料。</param>
+        /// <param name="keySet">加密金鑰組。</param>
         /// <returns>解密後的位元組資料。</returns>
-        byte[] Decrypt(byte[] bytes);
+        byte[] Decrypt(byte[] bytes, EncryptionKeySet keySet);
     }
 
 }

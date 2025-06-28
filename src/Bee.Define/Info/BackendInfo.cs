@@ -18,6 +18,11 @@ namespace Bee.Define
         public static string DefinePath { get; set; } = string.Empty;
 
         /// <summary>
+        /// API 專用的對稱式金鑰組。
+        /// </summary>
+        public static string ApiEncryptionKeys { get; set; } = string.Empty;
+
+        /// <summary>
         /// 資料庫類型。
         /// </summary>
         public static DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
