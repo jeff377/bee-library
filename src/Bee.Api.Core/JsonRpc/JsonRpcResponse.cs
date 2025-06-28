@@ -75,22 +75,24 @@ namespace Bee.Api.Core
         /// <summary>
         /// 將指定的物件進行轉換處理，例如序列化、壓縮或加密。
         /// </summary>
-        public void Encode()
+        /// <param name="keySet"> 加密金鑰組。</param>
+        public void Encode(EncryptionKeySet keySet)
         {
             if (Result != null)
             {
-                Result.Encode();
+                Result.Encode(keySet);
             }
         }
 
         /// <summary>
         /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。。
         /// </summary>
-        public void Decode()
+        /// <param name="keySet"> 加密金鑰組。</param>
+        public void Decode(EncryptionKeySet keySet)
         {
             if (Result != null)
             {
-                Result.Decode();
+                Result.Decode(keySet);
             }
         }
     }

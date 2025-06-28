@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Base;
 
 namespace Bee.Api.Core
 {
@@ -12,8 +13,9 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="payload">要處理的原始資料物件。</param>
         /// <param name="type">物件的型別。</param>
+        /// <param name="keySet">加密金鑰組。</param>
         /// <returns>處理後的資料（通常為位元組陣列形式）。</returns>
-        public object Encode(object payload, Type type)
+        public object Encode(object payload, Type type, EncryptionKeySet keySet)
         {
             if (payload == null)
             {
@@ -24,7 +26,7 @@ namespace Bee.Api.Core
             {
                 byte[] bytes = ApiServiceOptions.PayloadSerializer.Serialize(payload, type);  // 序列化
                 byte[] compressedBytes = ApiServiceOptions.PayloadCompressor.Compress(bytes);  // 壓縮
-                return ApiServiceOptions.PayloadEncryptor.Encrypt(compressedBytes, null);  // 加密
+                return ApiServiceOptions.PayloadEncryptor.Encrypt(compressedBytes, keySet);  // 加密
             }
             catch (Exception ex)
             {
@@ -37,8 +39,9 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="payload">已處理的資料（通常為位元組陣列形式）。</param>
         /// <param name="type">反序列化後的物件型別。</param>
+        /// <param name="keySet">加密金鑰組。</param>
         /// <returns>還原後的原始資料物件。</returns>
-        public object Decode(object payload, Type type)
+        public object Decode(object payload, Type type, EncryptionKeySet keySet)
         {
             if (payload == null)
             {
@@ -53,7 +56,7 @@ namespace Bee.Api.Core
                     throw new InvalidCastException("Invalid data type. The input data must be a byte array.");
                 }
 
-                byte[] decryptedBytes = ApiServiceOptions.PayloadEncryptor.Decrypt(bytes, null);  // 解密
+                byte[] decryptedBytes = ApiServiceOptions.PayloadEncryptor.Decrypt(bytes, keySet);  // 解密
                 byte[] decompressedBytes = ApiServiceOptions.PayloadCompressor.Decompress(decryptedBytes);  // 解壓縮
                 return ApiServiceOptions.PayloadSerializer.Deserialize(decompressedBytes, type);  // 反序列化
             }

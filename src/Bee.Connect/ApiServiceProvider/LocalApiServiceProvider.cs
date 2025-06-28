@@ -32,14 +32,14 @@ namespace Bee.Connect
         public JsonRpcResponse Execute(JsonRpcRequest request, bool enableEncoding)
         {
             // 偵錯模式時，傳入資料進行編碼
-            if (SysInfo.IsDebugMode && enableEncoding) { request.Encode(); }
+            if (SysInfo.IsDebugMode && enableEncoding) { request.Encode(null); }
 
             // 執行 API 方法
             var executor = new JsonRpcExecutor(AccessToken, true);
             var response = executor.Execute(request);
 
             // 偵錯模式時，傳出結果進行解碼
-            if (SysInfo.IsDebugMode && enableEncoding) { response.Decode(); }
+            if (SysInfo.IsDebugMode && enableEncoding) { response.Decode(null); }
             return response;
         }
 
@@ -51,14 +51,14 @@ namespace Bee.Connect
         public async Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request, bool enableEncoding)
         {
             // 傳入資料進行編碼
-            if (enableEncoding) { request.Encode(); }
+            if (enableEncoding) { request.Encode(null); }
 
             // 執行 API 方法
             var executor = new JsonRpcExecutor(AccessToken);
             var response = await executor.ExecuteAsync(request);
 
             // 傳出結果進行解碼
-            if (enableEncoding) { response.Decode(); }
+            if (enableEncoding) { response.Decode(null); }
             return response;
         }
     }

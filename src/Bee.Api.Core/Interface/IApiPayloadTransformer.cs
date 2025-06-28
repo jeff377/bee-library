@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Base;
 
 namespace Bee.Api.Core
 {
@@ -12,16 +13,18 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="payload">要處理的原始資料物件。</param>
         /// <param name="type">物件的型別。</param>
+        /// <param name="keySet">加密金鑰組。</param>
         /// <returns>處理後的資料（通常為位元組陣列形式）。</returns>
-        object Encode(object payload, Type type);
+        object Encode(object payload, Type type, EncryptionKeySet keySet);
 
         /// <summary>
         /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。
         /// </summary>
         /// <param name="payload">已處理的資料（通常為位元組陣列形式）。</param>
         /// <param name="type">反序列化後的物件型別。</param>
+        /// <param name="keySet">加密金鑰組。</param> 
         /// <returns>還原後的原始資料物件。</returns>
-        object Decode(object payload, Type type);
+        object Decode(object payload, Type type, EncryptionKeySet keySet);
     }
 
 }

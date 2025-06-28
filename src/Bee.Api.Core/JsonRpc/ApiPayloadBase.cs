@@ -8,7 +8,7 @@ namespace Bee.Api.Core
     /// <summary>
     /// 提供 API 傳輸資料的標準結構。
     /// </summary>
-    public abstract  class ApiPayloadBase : IObjectSerialize
+    public abstract class ApiPayloadBase : IObjectSerialize
     {
         #region IObjectSerialize 介面
 
@@ -56,7 +56,8 @@ namespace Bee.Api.Core
         /// <summary>
         /// 將傳遞資料進行轉換處理，例如序列化、壓縮或加密。
         /// </summary>
-        public void Encode()
+        /// <param name="keySet"> 加密金鑰組。</param>
+        public void Encode(EncryptionKeySet keySet)
         {
             // 已經過編碼則離開
             if (this.IsEncoded) { return; }
@@ -65,7 +66,7 @@ namespace Bee.Api.Core
             var type = Value.GetType();
             TypeName = $"{type.FullName}, {type.Assembly.GetName().Name}";
             var transformer = ApiServiceOptions.PayloadTransformer;
-            Value = transformer.Encode(Value, type);
+            Value = transformer.Encode(Value, type, keySet);
 
             IsEncoded = true;
         }
@@ -73,7 +74,8 @@ namespace Bee.Api.Core
         /// <summary>
         /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。
         /// </summary>
-        public void Decode()
+        /// <param name="keySet"> 加密金鑰組。</param>
+        public void Decode(EncryptionKeySet keySet)
         {
             // 未經過編碼則離開
             if (!this.IsEncoded) { return; }
@@ -84,7 +86,7 @@ namespace Bee.Api.Core
 
             // 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化
             var transformer = ApiServiceOptions.PayloadTransformer;
-            Value = transformer.Decode(Value, type);
+            Value = transformer.Decode(Value, type, keySet);
 
             IsEncoded = false;
         }

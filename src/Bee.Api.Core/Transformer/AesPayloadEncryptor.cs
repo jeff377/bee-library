@@ -22,8 +22,9 @@ namespace Bee.Api.Core
         {
             // 如果沒有提供加密金鑰組，則直接返回原始位元組資料
             if (keySet == null) { return bytes; }
-            // 使用 AES 加密原始位元組資料
-            return CryptoFunc.AesEncrypt(bytes);
+            // 進行 AES-CBC 加密，並附加 HMAC 驗證碼
+            var aesHmacKeySet = keySet as AesHmacKeySet;
+            return AesCbcHmacCryptor.Encrypt(bytes, aesHmacKeySet.AesKey, aesHmacKeySet.HmacKey);
         }
 
         /// <summary>
@@ -37,7 +38,8 @@ namespace Bee.Api.Core
             // 如果沒有提供加密金鑰組，則直接返回原始位元組資料
             if (keySet == null) { return bytes; }
             // 使用 AES 解密加密後的位元組資料
-            return CryptoFunc.AesDecrypt(bytes);
+            var aesHmacKeySet = keySet as AesHmacKeySet;
+            return AesCbcHmacCryptor.Decrypt(bytes, aesHmacKeySet.AesKey, aesHmacKeySet.HmacKey);
         }
 
 

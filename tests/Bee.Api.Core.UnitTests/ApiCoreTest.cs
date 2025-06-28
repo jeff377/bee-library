@@ -35,12 +35,12 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotEmpty(json);
 
             // ´ú¸Õ½s½X
-            request.Encode();
+            request.Encode(null);
             string encodedJson = request.ToJson();
             Assert.NotEmpty(encodedJson);
 
             // ´ú¸Õ¸Ñ½X
-            request.Decode();
+            request.Decode(null);
             string decodedJson = request.ToJson();
             Assert.NotEmpty(decodedJson);
         }
