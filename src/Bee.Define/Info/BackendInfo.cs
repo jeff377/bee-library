@@ -18,9 +18,9 @@ namespace Bee.Define
         public static string DefinePath { get; set; } = string.Empty;
 
         /// <summary>
-        /// API 專用的對稱式金鑰組。
+        /// API 專用的加密金鑰組，所有連線共用一組加密金鑰使用。
         /// </summary>
-        public static string ApiEncryptionKeys { get; set; } = string.Empty;
+        public static EncryptionKeySet ApiEncryptionKeySet { get; set; } = null;
 
         /// <summary>
         /// 資料庫類型。

@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Base;
 
 namespace Bee.Define
 {
@@ -31,5 +32,10 @@ namespace Bee.Define
         /// 存取令牌，登入後取得存取令牌。
         /// </summary>
         public static Guid AccessToken { get; set; } = Guid.Empty;
+
+        /// <summary>
+        /// API 專用的加密金鑰組，通過 RSA 公鑰交換的金鑰。
+        /// </summary>
+        public static EncryptionKeySet ApiEncryptionKeySet { get; set; } = null;
     }
 }
