@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Bee.Api.Core;
 using Bee.Base;
+using Bee.Define;
 
 namespace Bee.Connect
 {
@@ -31,15 +32,18 @@ namespace Bee.Connect
         /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
         public JsonRpcResponse Execute(JsonRpcRequest request, bool enableEncoding)
         {
-            // 偵錯模式時，傳入資料進行編碼
-            if (SysInfo.IsDebugMode && enableEncoding) { request.Encode(null); }
+            // 檢查是否啟用編碼，近端連線只有在偵錯模式下才進行編碼
+            bool useEncoding = enableEncoding && SysInfo.IsDebugMode;
+
+            // 傳入資料進行編碼
+            if (useEncoding) { request.Encode(FrontendInfo.ApiEncryptionKeySet); }
 
             // 執行 API 方法
             var executor = new JsonRpcExecutor(AccessToken, true);
             var response = executor.Execute(request);
 
-            // 偵錯模式時，傳出結果進行解碼
-            if (SysInfo.IsDebugMode && enableEncoding) { response.Decode(null); }
+            // 傳出結果進行解碼
+            if (useEncoding) { response.Decode(FrontendInfo.ApiEncryptionKeySet); }
             return response;
         }
 
@@ -50,15 +54,18 @@ namespace Bee.Connect
         /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
         public async Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request, bool enableEncoding)
         {
+            // 檢查是否啟用編碼，近端連線只有在偵錯模式下才進行編碼
+            bool useEncoding = enableEncoding && SysInfo.IsDebugMode;
+
             // 傳入資料進行編碼
-            if (enableEncoding) { request.Encode(null); }
+            if (useEncoding) { request.Encode(FrontendInfo.ApiEncryptionKeySet); }
 
             // 執行 API 方法
             var executor = new JsonRpcExecutor(AccessToken);
             var response = await executor.ExecuteAsync(request);
 
             // 傳出結果進行解碼
-            if (enableEncoding) { response.Decode(null); }
+            if (useEncoding) { response.Decode(FrontendInfo.ApiEncryptionKeySet); }
             return response;
         }
     }

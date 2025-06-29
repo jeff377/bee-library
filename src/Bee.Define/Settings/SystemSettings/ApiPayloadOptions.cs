@@ -26,10 +26,10 @@ namespace Bee.Define
         public string Compressor { get; set; } = "gzip";
 
         /// <summary>
-        /// 指定加密器名稱，例如：aes256、none。
+        /// 指定加密器名稱，例如：aes-cbc-hmac、none。
         /// </summary>
-        [Description("指定加密器名稱，例如：aes256、none。")]
-        public string Encryptor { get; set; } = "aes256";
+        [Description("指定加密器名稱，例如：aes-cbc-hmac、none。")]
+        public string Encryptor { get; set; } = "aes-cbc-hmac";
 
         /// <summary>
         /// 物件描述文字。

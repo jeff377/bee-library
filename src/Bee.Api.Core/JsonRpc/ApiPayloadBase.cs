@@ -47,6 +47,13 @@ namespace Bee.Api.Core
         public bool IsEncoded { get; private set; } = false;
 
         /// <summary>
+        /// 編碼資料是否已加密。
+        /// </summary>
+        [JsonProperty("isEncrypted")]
+        [DefaultValue(false)]
+        public bool IsEncrypted { get; private set; } = false;
+
+        /// <summary>
         /// 傳遞資料的型別名稱，用於反序列化還原時指定型別。
         /// </summary>
         [JsonProperty("type")]
@@ -69,6 +76,7 @@ namespace Bee.Api.Core
             Value = transformer.Encode(Value, type, keySet);
 
             IsEncoded = true;
+            IsEncrypted = keySet != null;
         }
 
         /// <summary>
@@ -84,11 +92,15 @@ namespace Bee.Api.Core
             if (type == null)
                 throw new InvalidOperationException($"Unable to load type: {TypeName}");
 
+            // 如果資料已加密，則使用提供的金鑰組進行解密
+            var useKeySet = IsEncrypted ? keySet : null;    
+
             // 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化
             var transformer = ApiServiceOptions.PayloadTransformer;
-            Value = transformer.Decode(Value, type, keySet);
+            Value = transformer.Decode(Value, type, useKeySet);
 
             IsEncoded = false;
+            IsEncrypted = false;
         }
     }
 }

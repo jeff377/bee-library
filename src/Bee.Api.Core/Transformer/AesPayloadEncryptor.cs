@@ -10,7 +10,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 加密演算法的識別字串。
         /// </summary>
-        public string EncryptionMethod => "aes256";
+        public string EncryptionMethod => "aes-cbc-hmac";
 
         /// <summary>
         /// 將加密過的位元組資料還原為原始資料。

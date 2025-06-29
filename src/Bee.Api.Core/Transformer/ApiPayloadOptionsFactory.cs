@@ -56,7 +56,7 @@ namespace Bee.Api.Core
         {
             switch (name)
             {
-                case "aes256":
+                case "aes-cbc-hmac":
                     return new AesPayloadEncryptor();
                 case "none":
                 case "":
