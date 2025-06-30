@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Define;
 using Bee.UI.Core;
 using Bee.UI.WinForms;
@@ -151,6 +152,19 @@ namespace SettingsEditor
             {
                 UIFunc.ErrorMsgBox(ex.Message);
             }
+        }
+
+        /// <summary>
+        /// 產生 Master.Key。
+        /// </summary>
+        private void menuEncryptionGenerateKey_Click(object sender, EventArgs e)
+        {
+            string key = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
+            string filePath = UIFunc.ShowSaveFileDialog("Master Key|*.key", "Master.Key");
+            if (StrFunc.IsEmpty(filePath)) { return; }
+
+            File.WriteAllText(filePath, key);
+            UIFunc.MsgBox($"Master.Key 已儲存至：{filePath}");
         }
     }
 }

@@ -60,6 +60,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeeSettingsEditor", "tools\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeeDbUpgrade", "tools\BeeDbUpgrade\BeeDbUpgrade.csproj", "{D880CCFE-D54C-C0F1-AFC1-DE5487A5A650}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "define", "define", "{BD4A688A-DE87-448C-894E-AD422FE79E5B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -80,6 +80,28 @@ namespace Bee.UI.WinForms
         }
 
         /// <summary>
+        /// Displays a folder browser dialog that allows the user to select a folder.
+        /// </summary>
+        /// <remarks>
+        /// The dialog allows the user to create a new folder if needed. If the user cancels the
+        /// dialog, the method returns an empty string.
+        /// </remarks>
+        /// <param name="description">The description text displayed in the dialog.</param>
+        /// <returns>The full path of the selected folder if the user confirms the selection; otherwise, an empty string.</returns>
+        public static string ShowFolderBrowserDialog(string description = "")
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = description;
+                dialog.ShowNewFolderButton = true;
+                if (dialog.ShowDialog() == DialogResult.OK)
+                    return dialog.SelectedPath;
+                else
+                    return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// 顯示連線設定。
         /// </summary>
         public static DialogResult ShowConnect()
