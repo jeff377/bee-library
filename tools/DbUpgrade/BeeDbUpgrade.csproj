@@ -6,13 +6,13 @@
 		<Nullable>enable</Nullable>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<ApplicationIcon>DbUpgrade.ico</ApplicationIcon>
+		<ApplicationIcon>BeeDbUpgrade.ico</ApplicationIcon>
 		<!-- 僅包含英文語系的資源，避免產生多語系 satellite assemblies -->
 		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Content Include="DbUpgrade.ico" />
+		<Content Include="BeeDbUpgrade.ico" />
 	</ItemGroup>
 
 	<ItemGroup>

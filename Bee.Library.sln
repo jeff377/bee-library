@@ -51,14 +51,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.UI.WinForms", "src\Bee.
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{A7BD835F-6EE1-4575-AD25-F8205470AC4D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SettingsEditor", "tools\SettingsEditor\SettingsEditor.csproj", "{48C3066E-4723-F9A6-056D-45F1376215B7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeeSettingsEditor", "tools\SettingsEditor\BeeSettingsEditor.csproj", "{48C3066E-4723-F9A6-056D-45F1376215B7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{96AF59F3-97B1-4651-A732-35090516D435}"
 	ProjectSection(SolutionItems) = preProject
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DbUpgrade", "tools\DbUpgrade\DbUpgrade.csproj", "{24F24898-DA84-30F8-7328-082774803583}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BeeDbUpgrade", "tools\DbUpgrade\BeeDbUpgrade.csproj", "{24F24898-DA84-30F8-7328-082774803583}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
