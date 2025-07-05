@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bee.Base
+﻿namespace Bee.Base
 {
     /// <summary>
     /// 加密金鑰組的抽象基底類別。

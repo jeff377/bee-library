@@ -21,6 +21,7 @@ namespace Bee.Define
         /// 主加密金鑰組。
         /// 用於解密設定檔中的重要欄位（如連線字串、金鑰）。
         /// 執行階段應於啟動時載入 master.key 檔案，並指派至此屬性。
+        /// </summary>
         public static EncryptionKeySet MasterEncryptionKeySet { get; set; } = null;
 
         /// <summary>
