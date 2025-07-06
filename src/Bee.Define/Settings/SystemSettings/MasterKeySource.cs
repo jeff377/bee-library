@@ -11,7 +11,6 @@ namespace Bee.Define
     [Serializable]
     [XmlType("MasterKeySource")]
     [Description("主金錀來源。")]
-    [TreeNode("主金錀")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class MasterKeySource
     {
@@ -25,6 +24,14 @@ namespace Bee.Define
         /// 若為空白，將使用預設值。
         /// </summary>
         public string Value { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 將主金錀來源轉換為字串表示形式。
+        /// </summary>
+        public override string ToString()
+        {
+            return Type.ToString();
+        }
     }
 
 }
