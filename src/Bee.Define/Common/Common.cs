@@ -113,6 +113,21 @@ namespace Bee.Define
     #region 列舉型別
 
     /// <summary>
+    /// 主金錀來源類型。
+    /// </summary>
+    public enum MasterKeySourceType
+    {
+        /// <summary>
+        /// 從檔案載入主金錀。
+        /// </summary>
+        File,
+        /// <summary>
+        /// 從環境變數載入主金錀。
+        /// </summary>
+        Environment
+    }
+
+    /// <summary>
     /// 初始化選項。
     /// </summary>
     [Flags]

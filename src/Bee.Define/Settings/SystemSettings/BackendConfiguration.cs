@@ -56,9 +56,11 @@ namespace Bee.Define
         public string ApiKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// API 專用的加密金鑰，以 base64 編碼的字串表示。
+        /// 加密金錀設定。
         /// </summary>
-        public string ApiEncryptionKey { get; set; } = string.Empty;
+        [Category("Security")]
+        [Description("加密金錀設定。")]
+        public SecurityKeySettings SecurityKeySettings { get; set; } = new SecurityKeySettings();
 
         /// <summary>
         /// 初始化。
@@ -79,11 +81,6 @@ namespace Bee.Define
             BackendInfo.DatabaseType = DatabaseType;
             // 預設資料庫編號
             BackendInfo.DatabaseID = DatabaseID;
-            // 取得 API 專用的加密金鑰
-            if (StrFunc.IsNotEmpty(ApiEncryptionKey))
-            {
-                BackendInfo.ApiEncryptionKeySet = new AesHmacKeySet(ApiEncryptionKey);
-            }
         }
 
         /// <summary>
