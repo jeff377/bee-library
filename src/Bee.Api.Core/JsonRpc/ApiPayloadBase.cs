@@ -63,8 +63,8 @@ namespace Bee.Api.Core
         /// <summary>
         /// 將傳遞資料進行轉換處理，例如序列化、壓縮或加密。
         /// </summary>
-        /// <param name="keySet"> 加密金鑰組。</param>
-        public void Encode(EncryptionKeySet keySet)
+        /// <param name="encryptionKey"> 加密金鑰。</param>
+        public void Encode(byte[] encryptionKey)
         {
             // 已經過編碼則離開
             if (this.IsEncoded) { return; }
@@ -73,17 +73,17 @@ namespace Bee.Api.Core
             var type = Value.GetType();
             TypeName = $"{type.FullName}, {type.Assembly.GetName().Name}";
             var transformer = ApiServiceOptions.PayloadTransformer;
-            Value = transformer.Encode(Value, type, keySet);
+            Value = transformer.Encode(Value, type, encryptionKey);
 
             IsEncoded = true;
-            IsEncrypted = keySet != null;
+            IsEncrypted = encryptionKey != null;
         }
 
         /// <summary>
         /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。
         /// </summary>
-        /// <param name="keySet"> 加密金鑰組。</param>
-        public void Decode(EncryptionKeySet keySet)
+        /// <param name="encryptionKey"> 加密金鑰。</param>
+        public void Decode(byte[] encryptionKey)
         {
             // 未經過編碼則離開
             if (!this.IsEncoded) { return; }
@@ -93,7 +93,7 @@ namespace Bee.Api.Core
                 throw new InvalidOperationException($"Unable to load type: {TypeName}");
 
             // 如果資料已加密，則使用提供的金鑰組進行解密
-            var useKeySet = IsEncrypted ? keySet : null;    
+            var useKeySet = IsEncrypted ? encryptionKey : null;    
 
             // 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化
             var transformer = ApiServiceOptions.PayloadTransformer;

@@ -16,30 +16,30 @@ namespace Bee.Api.Core
         /// 將加密過的位元組資料還原為原始資料。
         /// </summary>
         /// <param name="bytes">加密後的位元組資料。</param>
-        /// <param name="keySet">加密金鑰組。</param>
+        /// <param name="encryptionKey">加密金鑰。</param>
         /// <returns>解密後的位元組資料。</returns>
-        public byte[] Encrypt(byte[] bytes, EncryptionKeySet keySet)
+        public byte[] Encrypt(byte[] bytes, byte[] encryptionKey)
         {
             // 如果沒有提供加密金鑰組，則直接返回原始位元組資料
-            if (keySet == null) { return bytes; }
-            // 進行 AES-CBC 加密，並附加 HMAC 驗證碼
-            var aesHmacKeySet = keySet as AesHmacKeySet;
-            return AesCbcHmacCryptor.Encrypt(bytes, aesHmacKeySet.AesKey, aesHmacKeySet.HmacKey);
+            if (encryptionKey == null || encryptionKey.Length == 0) { return bytes; }
+            // 進行 AES-CBC 加密
+            AesCbcHmacKeyGenerator.FromCombinedKey(encryptionKey, out var aesKey, out var hmacKey);
+            return AesCbcHmacCryptor.Encrypt(bytes, aesKey, hmacKey);
         }
 
         /// <summary>
         /// 將原始位元組資料進行加密處理。
         /// </summary>
         /// <param name="bytes">原始位元組資料。</param>
-        /// <param name="keySet">加密金鑰組。</param> 
+        /// <param name="encryptionKey">加密金鑰。</param> 
         /// <returns>加密後的位元組資料。</returns>
-        public byte[] Decrypt(byte[] bytes, EncryptionKeySet keySet)
+        public byte[] Decrypt(byte[] bytes, byte[] encryptionKey)
         {
             // 如果沒有提供加密金鑰組，則直接返回原始位元組資料
-            if (keySet == null) { return bytes; }
-            // 使用 AES 解密加密後的位元組資料
-            var aesHmacKeySet = keySet as AesHmacKeySet;
-            return AesCbcHmacCryptor.Decrypt(bytes, aesHmacKeySet.AesKey, aesHmacKeySet.HmacKey);
+            if (encryptionKey == null || encryptionKey.Length == 0) { return bytes; }
+            // 進行 AES-CBC 解密
+            AesCbcHmacKeyGenerator.FromCombinedKey(encryptionKey, out var aesKey, out var hmacKey);
+            return AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
         }
 
 

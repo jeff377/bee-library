@@ -36,6 +36,6 @@ namespace Bee.Define
         /// <summary>
         /// API 專用的加密金鑰組，通過 RSA 公鑰交換的金鑰。
         /// </summary>
-        public static EncryptionKeySet ApiEncryptionKeySet { get; set; } = null;
+        public static byte[] ApiEncryptionKeySet { get; set; } = null;
     }
 }

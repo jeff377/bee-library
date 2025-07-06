@@ -15,7 +15,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 傳回原始資料，未進行加密。
         /// </summary>
-        public byte[] Encrypt(byte[] bytes, EncryptionKeySet keySet)
+        public byte[] Encrypt(byte[] bytes, byte[] encryptionKey)
         {
             return bytes;
         }
@@ -23,7 +23,7 @@ namespace Bee.Api.Core
         /// <summary>
         /// 傳回原始資料，未進行解密。
         /// </summary>
-        public byte[] Decrypt(byte[] bytes, EncryptionKeySet keySet)
+        public byte[] Decrypt(byte[] bytes, byte[] encryptionKey)
         {
             return bytes;
         }

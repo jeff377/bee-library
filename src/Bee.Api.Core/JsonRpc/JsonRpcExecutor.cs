@@ -14,7 +14,7 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="isLocalCall">呼叫是否為近端來源。</param>
-        public JsonRpcExecutor(Guid accessToken, bool isLocalCall =false)
+        public JsonRpcExecutor(Guid accessToken, bool isLocalCall = false)
         {
             AccessToken = accessToken;
             IsLocalCall = isLocalCall;
@@ -60,7 +60,7 @@ namespace Bee.Api.Core
                 // 傳輸資料是否進行編碼
                 bool isEncoded = request.Params.IsEncoded;
                 // 若為編碼狀態，則進行解碼
-                if (isEncoded) { request.Decode(BackendInfo.ApiEncryptionKeySet); }
+                if (isEncoded) { request.Decode(SecurityKeys.ApiKey); }
 
                 // 從 Method 屬性解析出 ProgId 與 Action
                 var (progId, action) = ParseMethod(request.Method);
@@ -70,7 +70,7 @@ namespace Bee.Api.Core
                 // 傳出結果
                 response.Result = new JsonRpcResult { Value = value };
                 // 若傳出結果需要編碼，則進行編碼
-                if (isEncoded) { response.Encode(BackendInfo.ApiEncryptionKeySet); }
+                if (isEncoded) { response.Encode(SecurityKeys.ApiKey); }
             }
             catch (Exception ex)
             {

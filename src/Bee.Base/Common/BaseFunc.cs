@@ -31,6 +31,16 @@ namespace Bee.Base
         }
 
         /// <summary>
+        /// 判斷指定的位元組陣列是否為 null 或長度為 0。
+        /// </summary>
+        /// <param name="bytes">要檢查的位元組陣列。</param>
+        /// <returns>若為 null 或長度為 0，則傳回 true；否則傳回 false。</returns>
+        public static bool IsNullOrEmpty(byte[] bytes)
+        {
+            return bytes == null || bytes.Length == 0;
+        }
+
+        /// <summary>
         /// 是否為空值，Null 或 DBNull 皆視為空值。
         /// </summary>
         /// <param name="value">要判斷的值。</param>
