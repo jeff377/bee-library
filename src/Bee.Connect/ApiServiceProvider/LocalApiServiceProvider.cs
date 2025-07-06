@@ -36,14 +36,14 @@ namespace Bee.Connect
             bool useEncoding = enableEncoding && SysInfo.IsDebugMode;
 
             // 傳入資料進行編碼
-            if (useEncoding) { request.Encode(FrontendInfo.ApiEncryptionKeySet); }
+            if (useEncoding) { request.Encode(FrontendInfo.ApiEncryptionKey); }
 
             // 執行 API 方法
             var executor = new JsonRpcExecutor(AccessToken, true);
             var response = executor.Execute(request);
 
             // 傳出結果進行解碼
-            if (useEncoding) { response.Decode(FrontendInfo.ApiEncryptionKeySet); }
+            if (useEncoding) { response.Decode(FrontendInfo.ApiEncryptionKey); }
             return response;
         }
 
@@ -58,14 +58,14 @@ namespace Bee.Connect
             bool useEncoding = enableEncoding && SysInfo.IsDebugMode;
 
             // 傳入資料進行編碼
-            if (useEncoding) { request.Encode(FrontendInfo.ApiEncryptionKeySet); }
+            if (useEncoding) { request.Encode(FrontendInfo.ApiEncryptionKey); }
 
             // 執行 API 方法
             var executor = new JsonRpcExecutor(AccessToken);
             var response = await executor.ExecuteAsync(request);
 
             // 傳出結果進行解碼
-            if (useEncoding) { response.Decode(FrontendInfo.ApiEncryptionKeySet); }
+            if (useEncoding) { response.Decode(FrontendInfo.ApiEncryptionKey); }
             return response;
         }
     }

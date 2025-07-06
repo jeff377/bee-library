@@ -49,14 +49,14 @@ namespace Bee.Connect
             header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
 
             // 傳入資料進行編碼
-            if (enableEncoding) { request.Encode(FrontendInfo.ApiEncryptionKeySet); }
+            if (enableEncoding) { request.Encode(FrontendInfo.ApiEncryptionKey); }
 
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             string json = HttpFunc.PostAsync(this.Endpoint, body, header).Result;  // 執行 Web API 方法
             var response = SerializeFunc.JsonToObject<JsonRpcResponse>(json);  // 執行 JSON 反序列化
 
             // 傳出結果進行解碼
-            if (enableEncoding) { response.Decode(FrontendInfo.ApiEncryptionKeySet); }
+            if (enableEncoding) { response.Decode(FrontendInfo.ApiEncryptionKey); }
             return response;
         }
 
@@ -72,14 +72,14 @@ namespace Bee.Connect
             header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
 
             // 傳入資料進行編碼
-            if (enableEncoding) { request.Encode(FrontendInfo.ApiEncryptionKeySet); }
+            if (enableEncoding) { request.Encode(FrontendInfo.ApiEncryptionKey); }
 
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
             string json = await HttpFunc.PostAsync(this.Endpoint, body, header);  // 執行 Web API 方法
             var response = SerializeFunc.JsonToObject<JsonRpcResponse>(json);  // 執行 JSON 反序列化
 
             // 傳出結果進行解碼
-            if (enableEncoding) { response.Decode(FrontendInfo.ApiEncryptionKeySet); }
+            if (enableEncoding) { response.Decode(FrontendInfo.ApiEncryptionKey); }
             return response;
         }
 

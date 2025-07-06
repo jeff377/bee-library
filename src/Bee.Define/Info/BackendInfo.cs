@@ -18,18 +18,6 @@ namespace Bee.Define
         public static string DefinePath { get; set; } = string.Empty;
 
         /// <summary>
-        /// 主加密金鑰組。
-        /// 用於解密設定檔中的重要欄位（如連線字串、金鑰）。
-        /// 執行階段應於啟動時載入 master.key 檔案，並指派至此屬性。
-        /// </summary>
-        public static EncryptionKeySet MasterEncryptionKeySet { get; set; } = null;
-
-        /// <summary>
-        /// API 專用的加密金鑰組，所有連線共用一組加密金鑰使用。
-        /// </summary>
-        public static EncryptionKeySet ApiEncryptionKeySet { get; set; } = null;
-
-        /// <summary>
         /// 資料庫類型。
         /// </summary>
         public static DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
