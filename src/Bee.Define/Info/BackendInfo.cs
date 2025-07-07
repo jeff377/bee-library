@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using System;
+using Bee.Base;
 
 namespace Bee.Define
 {
@@ -16,6 +17,16 @@ namespace Bee.Define
         /// 定義資料路徑。
         /// </summary>
         public static string DefinePath { get; set; } = string.Empty;
+
+        /// <summary>
+        /// API 傳輸加密金錀。
+        /// </summary>
+        public static byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
+
+        /// <summary>
+        /// Cookie 資料加密金錀。
+        /// </summary>
+        public static byte[] CookieEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
         /// 資料庫類型。

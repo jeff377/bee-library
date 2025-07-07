@@ -60,7 +60,7 @@ namespace Bee.Api.Core
                 // 傳輸資料是否進行編碼
                 bool isEncoded = request.Params.IsEncoded;
                 // 若為編碼狀態，則進行解碼
-                if (isEncoded) { request.Decode(SecurityKeys.ApiKey); }
+                if (isEncoded) { request.Decode(BackendInfo.ApiEncryptionKey); }
 
                 // 從 Method 屬性解析出 ProgId 與 Action
                 var (progId, action) = ParseMethod(request.Method);
@@ -70,7 +70,7 @@ namespace Bee.Api.Core
                 // 傳出結果
                 response.Result = new JsonRpcResult { Value = value };
                 // 若傳出結果需要編碼，則進行編碼
-                if (isEncoded) { response.Encode(SecurityKeys.ApiKey); }
+                if (isEncoded) { response.Encode(BackendInfo.ApiEncryptionKey); }
             }
             catch (Exception ex)
             {

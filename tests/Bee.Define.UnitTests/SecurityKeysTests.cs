@@ -38,13 +38,36 @@ namespace Bee.Define.UnitTests
                 CookieEncryptionKey = cookieEncrypted
             };
 
-            // 初始化
-            SecurityKeys.Clear();
-            SecurityKeys.Initialize(settings);
+            LoadSecurityKey(settings, out byte[] apiKey2, out byte[] cookieKey2);
 
-            // 驗證
-            Assert.Equal(apiKey, SecurityKeys.ApiKey);
-            Assert.Equal(cookieKey, SecurityKeys.CookieKey);
+            Assert.Equal(apiKey, apiKey2);
+            Assert.Equal(cookieKey, cookieKey2);
+        }
+
+        /// <summary>
+        /// 載入金錀設定。
+        /// </summary>
+        /// <param name="settings">金錀設定。</param>
+        private static void LoadSecurityKey(SecurityKeySettings settings, out byte[] apiKey, out byte[] cookieKey)
+        {
+            byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
+            AesCbcHmacKeyGenerator.FromCombinedKey(masterKey, out var aesKey, out var hmacKey);
+
+            apiKey = Array.Empty<byte>();
+            cookieKey = Array.Empty<byte>();    
+            // 解密 API 金錀，如果設定中有提供。
+            if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
+            {
+                byte[] bytes = Convert.FromBase64String(settings.ApiEncryptionKey);
+                apiKey = AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
+            }
+
+            // 解密 Cookie 金錀，如果設定中有提供。
+            if (StrFunc.IsNotEmpty(settings.CookieEncryptionKey))
+            {
+                byte[] bytes = Convert.FromBase64String(settings.CookieEncryptionKey);
+                cookieKey = AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
+            }
         }
 
         /// <summary>
