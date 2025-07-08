@@ -8,12 +8,12 @@ namespace Bee.UI.WinForms
     public class UIViewService : IUIViewService
     {
         /// <summary>
-        /// 顯示連線設定。
+        /// 顯示 API 連線方式設定介面。
         /// </summary>
         /// <returns>連線設定完成傳回 true，反之傳回 false。</returns>
-        public bool ShowConnect()
+        public bool ShowApiConnect()
         {
-            var form = new frmConnect();
+            var form = new frmApiConnect();
             return form.ShowDialog() == DialogResult.OK;
         }
     }

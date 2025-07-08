@@ -262,7 +262,7 @@ namespace Bee.UI.Core
             if (!ClientInfo.InitializeConnect(connectTypes))
             {
                 // 初始化連線設置失敗，要求重新設定連線
-                if (!UIViewService.ShowConnect()) { return false; }
+                if (!UIViewService.ShowApiConnect()) { return false; }
             }
             return true;
         }

@@ -13,8 +13,13 @@
 		<Product>Bee.NET</Product>
 		<Description>Configuration editor for managing System.Setting.xml and Database.Settings.xml.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
+		<ApplicationIcon>BeeSettingsEditor.ico</ApplicationIcon>
 		
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Content Include="BeeSettingsEditor.ico" />
+	</ItemGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />

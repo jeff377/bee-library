@@ -6,9 +6,9 @@
     public interface IUIViewService
     {
         /// <summary>
-        /// 顯示連線設定。
+        /// 顯示 API 連線方式設定介面。
         /// </summary>
         /// <returns>連線設定完成傳回 true，反之傳回 false。</returns>
-        bool ShowConnect();
+        bool ShowApiConnect();
     }
 }

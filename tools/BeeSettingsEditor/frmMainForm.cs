@@ -84,7 +84,7 @@ namespace SettingsEditor
         /// </summary>
         private void tbApiConnect_Click(object sender, EventArgs e)
         {
-            if (ClientInfo.UIViewService.ShowConnect())
+            if (ClientInfo.UIViewService.ShowApiConnect())
                 SetConnectText();
         }
 
