@@ -28,25 +28,18 @@ namespace SettingsEditor
         }
 
         /// <summary>
-        /// 
+        /// Load System Settings。
         /// </summary>
         private void menuLoadSystemSettings_Click(object sender, EventArgs e)
         {
             LoadDefine(DefineType.SystemSettings);
         }
 
-        /// <summary>
-        /// 系統設定。
-        /// </summary>
-        private void tbSystemSettings_Click(object sender, EventArgs e)
-        {
-            LoadDefine(DefineType.SystemSettings);
-        }
 
         /// <summary>
         /// 資料庫設定。
         /// </summary>
-        private void tbDatabaseSettings_Click(object sender, EventArgs e)
+        private void menuLoadDatabaseSettings_Click(object sender, EventArgs e)
         {
             LoadDefine(DefineType.DatabaseSettings);
         }
@@ -85,13 +78,16 @@ namespace SettingsEditor
         private void tbApiConnect_Click(object sender, EventArgs e)
         {
             if (ClientInfo.UIViewService.ShowApiConnect())
-                SetConnectText();
+            {
+                Application.Restart();
+                Application.Exit();
+            }
         }
 
         /// <summary>
         /// 測試資料庫連線。
         /// </summary>
-        private void tbTestConnection_Click(object sender, EventArgs e)
+        private void menuTestDbConnection_Click(object sender, EventArgs e)
         {
             if (treeView.SelectedNode == null) { return; }
 
@@ -164,11 +160,74 @@ namespace SettingsEditor
         private void menuGenerateMasterKey_Click(object sender, EventArgs e)
         {
             string key = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
-            string filePath = UIFunc.ShowSaveFileDialog("Master Key|*.key", "*.key", BackendInfo.DefinePath , "Master.key");
+            string filePath = UIFunc.ShowSaveFileDialog("Master Key|*.key", "*.key", BackendInfo.DefinePath, "Master.key");
             if (StrFunc.IsEmpty(filePath)) { return; }
 
             File.WriteAllText(filePath, key);
             UIFunc.MsgBox($"Master.key has been saved to: {filePath}");
+        }
+
+        /// <summary>
+        /// Generate API encryption key.
+        /// </summary>
+        private void menuGenerateApiEncryptionKey_Click(object sender, EventArgs e)
+        {
+            var settings = treeView.Tag as SystemSettings;
+            if (settings == null) { return; }
+
+            var masterKeySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
+            string encryptionKey = GenerateEncryptionKey(masterKeySource);
+            if (string.IsNullOrEmpty(encryptionKey))
+            {
+                UIFunc.ErrorMsgBox("Failed to generate encryption key.");
+                return;
+            }
+
+            settings.BackendConfiguration.SecurityKeySettings.ApiEncryptionKey = encryptionKey;
+            this.propertyGrid.SelectedObject = null;
+            this.propertyGrid.SelectedObject = settings.BackendConfiguration.SecurityKeySettings;
+            UIFunc.MsgBox("API encryption key generated successfully.");
+        }
+
+        /// <summary>
+        /// Generate cookie encryption key.
+        /// </summary>
+        private void menuGenerateCookieEncryptionKey_Click(object sender, EventArgs e)
+        {
+            var settings = treeView.Tag as SystemSettings;
+            if (settings == null) { return; }
+
+            var masterKeySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
+            string encryptionKey = GenerateEncryptionKey(masterKeySource);
+            if (string.IsNullOrEmpty(encryptionKey))
+            {
+                UIFunc.ErrorMsgBox("Failed to generate encryption key.");
+                return;
+            }
+
+            settings.BackendConfiguration.SecurityKeySettings.CookieEncryptionKey = encryptionKey;
+            this.propertyGrid.SelectedObject = null;
+            this.propertyGrid.SelectedObject = settings.BackendConfiguration.SecurityKeySettings;
+            UIFunc.MsgBox("Cookie encryption key generated successfully.");
+        }
+
+        /// <summary>
+        /// 透過 Master Key 產生加密金鑰。
+        /// </summary>
+        private string GenerateEncryptionKey(MasterKeySource source)
+        {
+            var settings = treeView.Tag as SystemSettings;
+            if (settings == null) { return string.Empty; }
+
+            // 取得 Master Key
+            var masterKeySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
+            byte[] masterKey = MasterKeyProvider.GetMasterKey(masterKeySource);
+            AesCbcHmacKeyGenerator.FromCombinedKey(masterKey, out var aesKey, out var hmacKey);
+
+            // 產生 API 加密金鑰
+            byte[] plainBytes = AesCbcHmacKeyGenerator.GenerateCombinedKey();
+            byte[] encryptedBytes = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
+            return Convert.ToBase64String(encryptedBytes);
         }
 
 

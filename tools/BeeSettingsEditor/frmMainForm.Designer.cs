@@ -38,8 +38,11 @@
             tbExit = new ToolStripMenuItem();
             menuTools = new ToolStripMenuItem();
             menuApiConnect = new ToolStripMenuItem();
-            tbTestConnection = new ToolStripMenuItem();
+            menuTestDbConnection = new ToolStripMenuItem();
+            toolStripSeparator1 = new ToolStripSeparator();
             menuGenerateMasterKey = new ToolStripMenuItem();
+            menuGenerateApiEncryptionKey = new ToolStripMenuItem();
+            menuGenerateCookieEncryptionKey = new ToolStripMenuItem();
             statusBar = new StatusStrip();
             lblConnectType = new ToolStripStatusLabel();
             treeView = new Bee.UI.WinForms.BeeTreeView();
@@ -83,7 +86,7 @@
             menuLoadDatabaseSettings.ShortcutKeys = Keys.Control | Keys.D;
             menuLoadDatabaseSettings.Size = new Size(264, 22);
             menuLoadDatabaseSettings.Text = "Open Database Settings...";
-            menuLoadDatabaseSettings.Click += this.tbDatabaseSettings_Click;
+            menuLoadDatabaseSettings.Click += this.menuLoadDatabaseSettings_Click;
             // 
             // toolStripMenuItem1
             // 
@@ -113,7 +116,7 @@
             // 
             // menuTools
             // 
-            menuTools.DropDownItems.AddRange(new ToolStripItem[] { menuApiConnect, tbTestConnection, menuGenerateMasterKey });
+            menuTools.DropDownItems.AddRange(new ToolStripItem[] { menuApiConnect, menuTestDbConnection, toolStripSeparator1, menuGenerateMasterKey, menuGenerateApiEncryptionKey, menuGenerateCookieEncryptionKey });
             menuTools.Name = "menuTools";
             menuTools.Size = new Size(65, 20);
             menuTools.Text = "Tools(&T)";
@@ -126,13 +129,18 @@
             menuApiConnect.Text = "Set API Connection Mode...";
             menuApiConnect.Click += this.tbApiConnect_Click;
             // 
-            // tbTestConnection
+            // menuTestDbConnection
             // 
-            tbTestConnection.Name = "tbTestConnection";
-            tbTestConnection.ShortcutKeys = Keys.Control | Keys.T;
-            tbTestConnection.Size = new Size(275, 22);
-            tbTestConnection.Text = "Test Database Connection";
-            tbTestConnection.Click += this.tbTestConnection_Click;
+            menuTestDbConnection.Name = "menuTestDbConnection";
+            menuTestDbConnection.ShortcutKeys = Keys.Control | Keys.T;
+            menuTestDbConnection.Size = new Size(275, 22);
+            menuTestDbConnection.Text = "Test Database Connection";
+            menuTestDbConnection.Click += this.menuTestDbConnection_Click;
+            // 
+            // toolStripSeparator1
+            // 
+            toolStripSeparator1.Name = "toolStripSeparator1";
+            toolStripSeparator1.Size = new Size(272, 6);
             // 
             // menuGenerateMasterKey
             // 
@@ -141,6 +149,20 @@
             menuGenerateMasterKey.Size = new Size(275, 22);
             menuGenerateMasterKey.Text = "Generate Master Key...";
             menuGenerateMasterKey.Click += this.menuGenerateMasterKey_Click;
+            // 
+            // menuGenerateApiEncryptionKey
+            // 
+            menuGenerateApiEncryptionKey.Name = "menuGenerateApiEncryptionKey";
+            menuGenerateApiEncryptionKey.Size = new Size(275, 22);
+            menuGenerateApiEncryptionKey.Text = "Generate API Encryption Key";
+            menuGenerateApiEncryptionKey.Click += this.menuGenerateApiEncryptionKey_Click;
+            // 
+            // menuGenerateCookieEncryptionKey
+            // 
+            menuGenerateCookieEncryptionKey.Name = "menuGenerateCookieEncryptionKey";
+            menuGenerateCookieEncryptionKey.Size = new Size(275, 22);
+            menuGenerateCookieEncryptionKey.Text = "Generate Cookie Encryption Key";
+            menuGenerateCookieEncryptionKey.Click += this.menuGenerateCookieEncryptionKey_Click;
             // 
             // statusBar
             // 
@@ -232,7 +254,10 @@
         private ToolStripMenuItem tbExit;
         private ToolStripMenuItem menuApiConnect;
         private ToolStripStatusLabel lblConnectType;
-        private ToolStripMenuItem tbTestConnection;
+        private ToolStripMenuItem menuTestDbConnection;
         private ToolStripMenuItem menuGenerateMasterKey;
+        private ToolStripSeparator toolStripSeparator1;
+        private ToolStripMenuItem menuGenerateApiEncryptionKey;
+        private ToolStripMenuItem menuGenerateCookieEncryptionKey;
     }
 }

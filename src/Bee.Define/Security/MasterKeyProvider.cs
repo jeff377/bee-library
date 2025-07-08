@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Bee.Base;
 
 namespace Bee.Define
 {
@@ -53,7 +54,7 @@ namespace Bee.Define
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "master.key");
+                filePath = FileFunc.PathCombine(BackendInfo.DefinePath, "Master.key");
             }
 
             if (!File.Exists(filePath))
