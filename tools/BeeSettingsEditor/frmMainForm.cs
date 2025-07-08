@@ -28,6 +28,14 @@ namespace SettingsEditor
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        private void menuLoadSystemSettings_Click(object sender, EventArgs e)
+        {
+            LoadDefine(DefineType.SystemSettings);
+        }
+
+        /// <summary>
         /// 系統設定。
         /// </summary>
         private void tbSystemSettings_Click(object sender, EventArgs e)
@@ -54,12 +62,12 @@ namespace SettingsEditor
             if (settings is SystemSettings)
             {
                 ClientInfo.DefineAccess.SaveSystemSettings(settings as SystemSettings);
-                UIFunc.MsgBox("系統設定儲存完成");
+                UIFunc.MsgBox("The file System.Settings.xml was saved successfully.");
             }
             else if (settings is DatabaseSettings)
             {
                 ClientInfo.DefineAccess.SaveDatabaseSettings(settings as DatabaseSettings);
-                UIFunc.MsgBox("資料庫設定儲存完成");
+                UIFunc.MsgBox("The file Database.Settings.xml was saved successfully.");
             }
         }
 
@@ -72,9 +80,9 @@ namespace SettingsEditor
         }
 
         /// <summary>
-        /// 連線設定。
+        /// menuApiConnect。
         /// </summary>
-        private void tbConnect_Click(object sender, EventArgs e)
+        private void tbApiConnect_Click(object sender, EventArgs e)
         {
             if (ClientInfo.UIViewService.ShowConnect())
                 SetConnectText();
@@ -90,7 +98,7 @@ namespace SettingsEditor
             var databaseItem = treeView.SelectedNode.Tag as DatabaseItem;
             if (databaseItem == null)
             {
-                UIFunc.ErrorMsgBox("請選取要測試的資料庫節點");
+                UIFunc.ErrorMsgBox("Please select a database node to test.");
                 return;
             }
             TestConnection(databaseItem);
@@ -102,17 +110,14 @@ namespace SettingsEditor
         /// <param name="defineType">定義資料類型。</param>
         private void LoadDefine(DefineType defineType)
         {
-            string displayName;
             object settings;
             switch (defineType)
             {
                 case DefineType.SystemSettings:
                     settings = ClientInfo.DefineAccess.GetSystemSettings();
-                    displayName = "系統設定";
                     break;
                 case DefineType.DatabaseSettings:
                     settings = ClientInfo.DefineAccess.GetDatabaseSettings();
-                    displayName = "資料庫設定";
                     break;
                 default:
                     throw new NotSupportedException();
@@ -121,7 +126,6 @@ namespace SettingsEditor
             if (settings != null)
             {
                 treeView.BuildObjectTree(settings);
-                tbSave.Text = "儲存 " + displayName;
                 tbSave.Enabled = true;
             }
 
@@ -146,7 +150,7 @@ namespace SettingsEditor
                 var args = new ExecFuncArgs(SysFuncIDs.TestConnection);
                 args.Parameters.Add("DatabaseItem", databaseItem);
                 ClientInfo.SystemApiConnector.ExecFunc(args);
-                UIFunc.MsgBox("資料庫連線測試成功");
+                UIFunc.MsgBox("Database connection test succeeded.");
             }
             catch (Exception ex)
             {
@@ -157,14 +161,16 @@ namespace SettingsEditor
         /// <summary>
         /// 產生 Master.Key。
         /// </summary>
-        private void menuEncryptionGenerateKey_Click(object sender, EventArgs e)
+        private void menuGenerateMasterKey_Click(object sender, EventArgs e)
         {
             string key = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
             string filePath = UIFunc.ShowSaveFileDialog("Master Key|*.key", "Master.Key");
             if (StrFunc.IsEmpty(filePath)) { return; }
 
             File.WriteAllText(filePath, key);
-            UIFunc.MsgBox($"Master.Key 已儲存至：{filePath}");
+            UIFunc.MsgBox($"Master.Key has been saved to: {filePath}");
         }
+
+
     }
 }

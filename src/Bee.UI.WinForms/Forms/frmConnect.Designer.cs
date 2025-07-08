@@ -84,7 +84,7 @@
             this.MinimizeBox = false;
             this.Name = "frmConnect";
             this.ShowIcon = false;
-            this.Text = "Connection Configuration";
+            this.Text = "Set API Connection Mode";
             this.Load += this.frmConnect_Load;
             this.ResumeLayout(false);
             this.PerformLayout();

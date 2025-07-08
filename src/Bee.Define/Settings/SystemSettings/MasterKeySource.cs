@@ -17,12 +17,15 @@ namespace Bee.Define
         /// <summary>
         /// 主金錀來源類型。
         /// </summary>
+        [Description("主金錀來源類型")]
         public MasterKeySourceType Type { get; set; } = MasterKeySourceType.File;
 
         /// <summary>
         /// 來源參數值：檔案路徑或環境變數名稱。
         /// 若為空白，將使用預設值。
         /// </summary>
+        [Description("來源參數值，檔案路徑或環境變數名稱，若為空白將使用預設值")]
+        [DefaultValue("")]
         public string Value { get; set; } = string.Empty;
 
         /// <summary>

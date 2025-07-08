@@ -118,9 +118,9 @@ namespace Bee.UI.WinForms
         public static string GetConnectText()
         {
             if (FrontendInfo.ConnectType == ConnectType.Local)
-                return $"近端連線 : {BackendInfo.DefinePath}";
+                return $"Local : {BackendInfo.DefinePath}";
             else
-                return $"遠端連線 : {FrontendInfo.Endpoint}";
+                return $"Remote : {FrontendInfo.Endpoint}";
         }
     }
 }

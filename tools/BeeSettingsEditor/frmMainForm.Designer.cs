@@ -29,23 +29,22 @@
         private void InitializeComponent()
         {
             menuBar = new MenuStrip();
-            檔案FToolStripMenuItem = new ToolStripMenuItem();
-            tbSystemSettings = new ToolStripMenuItem();
-            tbDatabaseSettings = new ToolStripMenuItem();
+            menuFile = new ToolStripMenuItem();
+            menuLoadSystemSettings = new ToolStripMenuItem();
+            menuLoadDatabaseSettings = new ToolStripMenuItem();
             toolStripMenuItem1 = new ToolStripSeparator();
             tbSave = new ToolStripMenuItem();
             toolStripMenuItem2 = new ToolStripSeparator();
             tbExit = new ToolStripMenuItem();
-            工具TToolStripMenuItem = new ToolStripMenuItem();
-            tbConnect = new ToolStripMenuItem();
+            menuTools = new ToolStripMenuItem();
+            menuApiConnect = new ToolStripMenuItem();
             tbTestConnection = new ToolStripMenuItem();
+            menuGenerateMasterKey = new ToolStripMenuItem();
             statusBar = new StatusStrip();
             lblConnectType = new ToolStripStatusLabel();
             treeView = new Bee.UI.WinForms.BeeTreeView();
             propertyGrid = new Bee.UI.WinForms.BeePropertyGrid();
             splitContainer = new SplitContainer();
-            menuEncryption = new ToolStripMenuItem();
-            menuEncryptionGenerateKey = new ToolStripMenuItem();
             menuBar.SuspendLayout();
             statusBar.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer).BeginInit();
@@ -56,78 +55,92 @@
             // 
             // menuBar
             // 
-            menuBar.Items.AddRange(new ToolStripItem[] { 檔案FToolStripMenuItem, 工具TToolStripMenuItem, menuEncryption });
+            menuBar.Items.AddRange(new ToolStripItem[] { menuFile, menuTools });
             menuBar.Location = new Point(0, 0);
             menuBar.Name = "menuBar";
             menuBar.Size = new Size(584, 24);
             menuBar.TabIndex = 0;
             menuBar.Text = "menuStrip1";
             // 
-            // 檔案FToolStripMenuItem
+            // menuFile
             // 
-            檔案FToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { tbSystemSettings, tbDatabaseSettings, toolStripMenuItem1, tbSave, toolStripMenuItem2, tbExit });
-            檔案FToolStripMenuItem.Name = "檔案FToolStripMenuItem";
-            檔案FToolStripMenuItem.Size = new Size(57, 20);
-            檔案FToolStripMenuItem.Text = "檔案(&F)";
+            menuFile.DropDownItems.AddRange(new ToolStripItem[] { menuLoadSystemSettings, menuLoadDatabaseSettings, toolStripMenuItem1, tbSave, toolStripMenuItem2, tbExit });
+            menuFile.Name = "menuFile";
+            menuFile.Size = new Size(52, 20);
+            menuFile.Text = "File(&F)";
             // 
-            // tbSystemSettings
+            // menuLoadSystemSettings
             // 
-            tbSystemSettings.Name = "tbSystemSettings";
-            tbSystemSettings.Size = new Size(180, 22);
-            tbSystemSettings.Text = "系統設定";
-            tbSystemSettings.Click += this.tbSystemSettings_Click;
+            menuLoadSystemSettings.Name = "menuLoadSystemSettings";
+            menuLoadSystemSettings.ShortcutKeys = Keys.Control | Keys.O;
+            menuLoadSystemSettings.Size = new Size(264, 22);
+            menuLoadSystemSettings.Text = "Open  System Settings...";
+            menuLoadSystemSettings.Click += this.menuLoadSystemSettings_Click;
             // 
-            // tbDatabaseSettings
+            // menuLoadDatabaseSettings
             // 
-            tbDatabaseSettings.Name = "tbDatabaseSettings";
-            tbDatabaseSettings.Size = new Size(180, 22);
-            tbDatabaseSettings.Text = "資料庫設定";
-            tbDatabaseSettings.Click += this.tbDatabaseSettings_Click;
+            menuLoadDatabaseSettings.Name = "menuLoadDatabaseSettings";
+            menuLoadDatabaseSettings.ShortcutKeys = Keys.Control | Keys.D;
+            menuLoadDatabaseSettings.Size = new Size(264, 22);
+            menuLoadDatabaseSettings.Text = "Open Database Settings...";
+            menuLoadDatabaseSettings.Click += this.tbDatabaseSettings_Click;
             // 
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(177, 6);
+            toolStripMenuItem1.Size = new Size(261, 6);
             // 
             // tbSave
             // 
             tbSave.Name = "tbSave";
-            tbSave.Size = new Size(180, 22);
-            tbSave.Text = "儲存(&S)";
+            tbSave.ShortcutKeys = Keys.Control | Keys.S;
+            tbSave.Size = new Size(264, 22);
+            tbSave.Text = "Save Current Settings";
             tbSave.Click += this.tbSave_Click;
             // 
             // toolStripMenuItem2
             // 
             toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(177, 6);
+            toolStripMenuItem2.Size = new Size(261, 6);
             // 
             // tbExit
             // 
             tbExit.Name = "tbExit";
-            tbExit.Size = new Size(180, 22);
-            tbExit.Text = "結束(&X)";
+            tbExit.ShortcutKeys = Keys.Alt | Keys.F4;
+            tbExit.Size = new Size(264, 22);
+            tbExit.Text = "Exit(&X)";
             tbExit.Click += this.tbExit_Click;
             // 
-            // 工具TToolStripMenuItem
+            // menuTools
             // 
-            工具TToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { tbConnect, tbTestConnection });
-            工具TToolStripMenuItem.Name = "工具TToolStripMenuItem";
-            工具TToolStripMenuItem.Size = new Size(58, 20);
-            工具TToolStripMenuItem.Text = "工具(&T)";
+            menuTools.DropDownItems.AddRange(new ToolStripItem[] { menuApiConnect, tbTestConnection, menuGenerateMasterKey });
+            menuTools.Name = "menuTools";
+            menuTools.Size = new Size(65, 20);
+            menuTools.Text = "Tools(&T)";
             // 
-            // tbConnect
+            // menuApiConnect
             // 
-            tbConnect.Name = "tbConnect";
-            tbConnect.Size = new Size(180, 22);
-            tbConnect.Text = "連線設定";
-            tbConnect.Click += this.tbConnect_Click;
+            menuApiConnect.Name = "menuApiConnect";
+            menuApiConnect.ShortcutKeys = Keys.Control | Keys.M;
+            menuApiConnect.Size = new Size(275, 22);
+            menuApiConnect.Text = "Set API Connection Mode...";
+            menuApiConnect.Click += this.tbApiConnect_Click;
             // 
             // tbTestConnection
             // 
             tbTestConnection.Name = "tbTestConnection";
-            tbTestConnection.Size = new Size(180, 22);
-            tbTestConnection.Text = "測試資料庫連線";
+            tbTestConnection.ShortcutKeys = Keys.Control | Keys.T;
+            tbTestConnection.Size = new Size(275, 22);
+            tbTestConnection.Text = "Test Database Connection";
             tbTestConnection.Click += this.tbTestConnection_Click;
+            // 
+            // menuGenerateMasterKey
+            // 
+            menuGenerateMasterKey.Name = "menuGenerateMasterKey";
+            menuGenerateMasterKey.ShortcutKeys = Keys.Control | Keys.G;
+            menuGenerateMasterKey.Size = new Size(275, 22);
+            menuGenerateMasterKey.Text = "Generate Master Key...";
+            menuGenerateMasterKey.Click += this.menuGenerateMasterKey_Click;
             // 
             // statusBar
             // 
@@ -178,20 +191,6 @@
             splitContainer.SplitterDistance = 240;
             splitContainer.TabIndex = 4;
             // 
-            // menuEncryption
-            // 
-            menuEncryption.DropDownItems.AddRange(new ToolStripItem[] { menuEncryptionGenerateKey });
-            menuEncryption.Name = "menuEncryption";
-            menuEncryption.Size = new Size(82, 20);
-            menuEncryption.Text = "加密工具(&K)";
-            // 
-            // menuEncryptionGenerateKey
-            // 
-            menuEncryptionGenerateKey.Name = "menuEncryptionGenerateKey";
-            menuEncryptionGenerateKey.Size = new Size(180, 22);
-            menuEncryptionGenerateKey.Text = "產生 Master.Key";
-            menuEncryptionGenerateKey.Click += this.menuEncryptionGenerateKey_Click;
-            // 
             // frmMainForm
             // 
             this.AutoScaleDimensions = new SizeF(7F, 14F);
@@ -202,7 +201,7 @@
             this.Controls.Add(menuBar);
             this.MainMenuStrip = menuBar;
             this.Name = "frmMainForm";
-            this.Text = "設定檔編輯器";
+            this.Text = "Bee.NET Settings Editor";
             this.Load += this.frmMainForm_Load;
             menuBar.ResumeLayout(false);
             menuBar.PerformLayout();
@@ -220,10 +219,10 @@
 
         private MenuStrip menuBar;
         private StatusStrip statusBar;
-        private ToolStripMenuItem 檔案FToolStripMenuItem;
-        private ToolStripMenuItem 工具TToolStripMenuItem;
-        private ToolStripMenuItem tbSystemSettings;
-        private ToolStripMenuItem tbDatabaseSettings;
+        private ToolStripMenuItem menuFile;
+        private ToolStripMenuItem menuTools;
+        private ToolStripMenuItem menuLoadSystemSettings;
+        private ToolStripMenuItem menuLoadDatabaseSettings;
         private Bee.UI.WinForms.BeeTreeView treeView;
         private Bee.UI.WinForms.BeePropertyGrid propertyGrid;
         private SplitContainer splitContainer;
@@ -231,10 +230,9 @@
         private ToolStripMenuItem tbSave;
         private ToolStripSeparator toolStripMenuItem2;
         private ToolStripMenuItem tbExit;
-        private ToolStripMenuItem tbConnect;
+        private ToolStripMenuItem menuApiConnect;
         private ToolStripStatusLabel lblConnectType;
         private ToolStripMenuItem tbTestConnection;
-        private ToolStripMenuItem menuEncryption;
-        private ToolStripMenuItem menuEncryptionGenerateKey;
+        private ToolStripMenuItem menuGenerateMasterKey;
     }
 }
