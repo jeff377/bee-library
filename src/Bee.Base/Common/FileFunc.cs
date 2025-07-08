@@ -171,6 +171,16 @@ namespace Bee.Base
         }
 
         /// <summary>
+        /// 判斷指定的路徑是否為絕對路徑。
+        /// </summary>
+        /// <param name="path">要判斷的路徑字串。</param>
+        /// <returns>若為絕對路徑則傳回 true，否則傳回 false。</returns>
+        public static bool IsPathRooted(string path)
+        {
+            return Path.IsPathRooted(path);
+        }
+
+        /// <summary>
         /// 取得目錄。
         /// </summary>
         /// <param name="path">路徑字串。</param>

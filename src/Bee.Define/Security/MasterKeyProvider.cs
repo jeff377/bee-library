@@ -54,7 +54,13 @@ namespace Bee.Define
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
-                filePath = FileFunc.PathCombine(BackendInfo.DefinePath, "Master.key");
+                filePath = "Master.key";
+            }
+
+            // 若為相對路徑，則補上 BackendInfo.DefinePath
+            if (!Path.IsPathRooted(filePath))
+            {
+                filePath = FileFunc.PathCombine(BackendInfo.DefinePath, filePath);
             }
 
             if (!File.Exists(filePath))
