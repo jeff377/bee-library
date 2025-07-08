@@ -12,7 +12,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("SystemSettings")]
     [Description("系統設定。")]
-    [TreeNode("系統設定")]
+    [TreeNode("System Settings")]
     public class SystemSettings : IObjectSerializeFile, IObjectSerializeProcess
     {
         private PropertyCollection _ExtendedProperties = null;

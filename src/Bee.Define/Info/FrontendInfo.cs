@@ -33,7 +33,7 @@ namespace Bee.Define
         public static Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// API 傳輸加密金錀，通過 RSA 公鑰交換的金鑰。
+        /// API 傳輸加密金鑰，通過 RSA 公鑰交換的金鑰。
         /// </summary>
         public static byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
 

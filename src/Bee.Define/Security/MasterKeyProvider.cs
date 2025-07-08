@@ -4,15 +4,15 @@ using System.IO;
 namespace Bee.Define
 {
     /// <summary>
-    /// 主金錀提供者，從設定來源載入主金錀。
+    /// 主金鑰提供者，從設定來源載入主金鑰。
     /// </summary>
     public static class MasterKeyProvider
     {
         /// <summary>
-        /// 取得主金錀內容。
+        /// 取得主金鑰內容。
         /// </summary>
-        /// <param name="source">主金錀來源設定。</param>
-        /// <returns>解碼後的主金錀位元組陣列。</returns>
+        /// <param name="source">主金鑰來源設定。</param>
+        /// <returns>解碼後的主金鑰位元組陣列。</returns>
         public static byte[] GetMasterKey(MasterKeySource source)
         {
             string keyText;
@@ -45,10 +45,10 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 由檔案載入主金錀內容。
+        /// 由檔案載入主金鑰內容。
         /// </summary>
         /// <param name="filePath">檔案路徑。</param>
-        /// <returns>主金錀內容。</returns>
+        /// <returns>主金鑰內容。</returns>
         private static string LoadFromFile(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))
@@ -65,10 +65,10 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 由環境變數載入主金錀內容。
+        /// 由環境變數載入主金鑰內容。
         /// </summary>
         /// <param name="varName">環境變數名稱。</param>
-        /// <returns>主金錀內容。</returns>
+        /// <returns>主金鑰內容。</returns>
         private static string LoadFromEnvironment(string varName)
         {
             if (string.IsNullOrWhiteSpace(varName))

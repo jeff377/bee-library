@@ -31,11 +31,14 @@ namespace Bee.UI.WinForms
         /// </summary>
         /// <param name="filter">檔案過濾條件，範例如 "Excel 檔案|*.xlsx|Excel 97-2003 檔案|*.xls"。</param>
         /// <param name="defaultExt">預設副檔名。</param>
+        /// <param name="initialDirectory">初始目錄。</param>
         /// <param name="fileName">預設檔案名稱。</param>
-        public static string ShowSaveFileDialog(string filter, string defaultExt, string fileName = "")
+        public static string ShowSaveFileDialog(string filter, string defaultExt, string initialDirectory = "", string fileName = "")
         {
             var dialog = new SaveFileDialog()
             {
+                InitialDirectory = initialDirectory,
+                FileName = fileName,
                 Filter = filter,
                 DefaultExt = defaultExt
             };

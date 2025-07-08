@@ -11,7 +11,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("BackgroundServiceConfiguration")]
     [Description("背景服務程式參數及環境設置。")]
-    [TreeNode("背景服務")]
+    [TreeNode("BackgroundService")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class BackgroundServiceConfiguration
     {

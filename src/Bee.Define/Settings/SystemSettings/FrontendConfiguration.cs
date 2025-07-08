@@ -11,7 +11,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("FrontendConfiguration")]
     [Description("前端參數及環境設置。")]
-    [TreeNode("前端")]
+    [TreeNode("Frontend")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class FrontendConfiguration
     {

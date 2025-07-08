@@ -11,7 +11,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("BackendConfiguration")]
     [Description("後端參數及環境設置。")]
-    [TreeNode("後端")]
+    [TreeNode("Backend")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class BackendConfiguration
     {
@@ -56,10 +56,10 @@ namespace Bee.Define
         public string ApiKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// 加密金錀設定。
+        /// 加密金鑰設定。
         /// </summary>
         [Category("Security")]
-        [Description("加密金錀設定。")]
+        [Description("加密金鑰設定。")]
         public SecurityKeySettings SecurityKeySettings { get; set; } = new SecurityKeySettings();
 
         /// <summary>
@@ -81,27 +81,27 @@ namespace Bee.Define
             BackendInfo.DatabaseType = DatabaseType;
             // 預設資料庫編號
             BackendInfo.DatabaseID = DatabaseID;
-            // 初始化金錀
+            // 初始化金鑰
             Initialize(SecurityKeySettings);
         }
 
         /// <summary>
-        /// 初始化金錀。
+        /// 初始化金鑰。
         /// </summary>
-        /// <param name="settings">金錀設定。</param>
+        /// <param name="settings">金鑰設定。</param>
         private static void Initialize(SecurityKeySettings settings)
         {
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
             AesCbcHmacKeyGenerator.FromCombinedKey(masterKey, out var aesKey, out var hmacKey);
 
-            // 解密 API 金錀，如果設定中有提供。
+            // 解密 API 金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
             {
                 byte[] bytes = Convert.FromBase64String(settings.ApiEncryptionKey);
                 BackendInfo.ApiEncryptionKey = AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
             }
 
-            // 解密 Cookie 金錀，如果設定中有提供。
+            // 解密 Cookie 金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.CookieEncryptionKey))
             {
                 byte[] bytes = Convert.FromBase64String(settings.CookieEncryptionKey);

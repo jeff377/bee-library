@@ -13,7 +13,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("CommonConfiguration")]
     [Description("通用參數及環境設置。")]
-    [TreeNode("通用")]
+    [TreeNode("Common")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class CommonConfiguration
     {

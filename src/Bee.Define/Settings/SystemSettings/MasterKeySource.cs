@@ -6,18 +6,18 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 主金錀來源，包含來源類型與對應參數值。
+    /// 主金鑰來源，包含來源類型與對應參數值。
     /// </summary>
     [Serializable]
     [XmlType("MasterKeySource")]
-    [Description("主金錀來源。")]
+    [Description("主金鑰來源。")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class MasterKeySource
     {
         /// <summary>
-        /// 主金錀來源類型。
+        /// 主金鑰來源類型。
         /// </summary>
-        [Description("主金錀來源類型")]
+        [Description("主金鑰來源類型")]
         public MasterKeySourceType Type { get; set; } = MasterKeySourceType.File;
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Bee.Define
         public string Value { get; set; } = string.Empty;
 
         /// <summary>
-        /// 將主金錀來源轉換為字串表示形式。
+        /// 將主金鑰來源轉換為字串表示形式。
         /// </summary>
         public override string ToString()
         {

@@ -8,12 +8,12 @@ namespace Bee.Define.UnitTests
     public class SecurityKeysTests
     {
         /// <summary>
-        /// 驗證 SecurityKeys 可以正確解密 API 與 Cookie 金錀。
+        /// 驗證 SecurityKeys 可以正確解密 API 與 Cookie 金鑰。
         /// </summary>
         [Fact]
         public void Should_InitializeSecurityKeys_Correctly()
         {
-            // 建立模擬金錀
+            // 建立模擬金鑰
             byte[] masterKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
             byte[] apiKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
             byte[] cookieKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
@@ -45,9 +45,9 @@ namespace Bee.Define.UnitTests
         }
 
         /// <summary>
-        /// 載入金錀設定。
+        /// 載入金鑰設定。
         /// </summary>
-        /// <param name="settings">金錀設定。</param>
+        /// <param name="settings">金鑰設定。</param>
         private static void LoadSecurityKey(SecurityKeySettings settings, out byte[] apiKey, out byte[] cookieKey)
         {
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
@@ -55,14 +55,14 @@ namespace Bee.Define.UnitTests
 
             apiKey = Array.Empty<byte>();
             cookieKey = Array.Empty<byte>();    
-            // 解密 API 金錀，如果設定中有提供。
+            // 解密 API 金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
             {
                 byte[] bytes = Convert.FromBase64String(settings.ApiEncryptionKey);
                 apiKey = AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
             }
 
-            // 解密 Cookie 金錀，如果設定中有提供。
+            // 解密 Cookie 金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.CookieEncryptionKey))
             {
                 byte[] bytes = Convert.FromBase64String(settings.CookieEncryptionKey);
@@ -73,7 +73,7 @@ namespace Bee.Define.UnitTests
         /// <summary>
         /// 將 master key 寫入暫存檔，回傳檔案路徑。
         /// </summary>
-        /// <param name="key">金錀位元組。</param>
+        /// <param name="key">金鑰位元組。</param>
         /// <returns>檔案路徑。</returns>
         private string SaveTempMasterKey(byte[] key)
         {

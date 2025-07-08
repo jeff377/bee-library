@@ -11,7 +11,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("WebsiteConfiguration")]
     [Description("網站參數及環境設置。")]
-    [TreeNode("網站")]
+    [TreeNode("Website")]
     public class WebsiteConfiguration
     {
         /// <summary>

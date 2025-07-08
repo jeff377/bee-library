@@ -19,12 +19,12 @@ namespace Bee.Define
         public static string DefinePath { get; set; } = string.Empty;
 
         /// <summary>
-        /// API 傳輸加密金錀。
+        /// API 傳輸加密金鑰。
         /// </summary>
         public static byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
-        /// Cookie 資料加密金錀。
+        /// Cookie 資料加密金鑰。
         /// </summary>
         public static byte[] CookieEncryptionKey { get; set; } = Array.Empty<byte>();
 

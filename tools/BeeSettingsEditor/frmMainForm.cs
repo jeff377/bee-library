@@ -164,11 +164,11 @@ namespace SettingsEditor
         private void menuGenerateMasterKey_Click(object sender, EventArgs e)
         {
             string key = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
-            string filePath = UIFunc.ShowSaveFileDialog("Master Key|*.key", "Master.Key");
+            string filePath = UIFunc.ShowSaveFileDialog("Master Key|*.key", "*.key", BackendInfo.DefinePath , "Master.key");
             if (StrFunc.IsEmpty(filePath)) { return; }
 
             File.WriteAllText(filePath, key);
-            UIFunc.MsgBox($"Master.Key has been saved to: {filePath}");
+            UIFunc.MsgBox($"Master.key has been saved to: {filePath}");
         }
 
 
