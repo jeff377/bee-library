@@ -92,20 +92,17 @@ namespace Bee.Define
         private static void Initialize(SecurityKeySettings settings)
         {
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
-            AesCbcHmacKeyGenerator.FromCombinedKey(masterKey, out var aesKey, out var hmacKey);
 
             // 解密 API 金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
             {
-                byte[] bytes = Convert.FromBase64String(settings.ApiEncryptionKey);
-                BackendInfo.ApiEncryptionKey = AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
+                BackendInfo.ApiEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ApiEncryptionKey);
             }
 
             // 解密 Cookie 金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.CookieEncryptionKey))
             {
-                byte[] bytes = Convert.FromBase64String(settings.CookieEncryptionKey);
-                BackendInfo.CookieEncryptionKey = AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
+                BackendInfo.CookieEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.CookieEncryptionKey);
             }
         }
 

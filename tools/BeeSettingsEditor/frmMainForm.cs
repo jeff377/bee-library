@@ -222,12 +222,7 @@ namespace SettingsEditor
             // 取得 Master Key
             var masterKeySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
             byte[] masterKey = MasterKeyProvider.GetMasterKey(masterKeySource);
-            AesCbcHmacKeyGenerator.FromCombinedKey(masterKey, out var aesKey, out var hmacKey);
-
-            // 產生 API 加密金鑰
-            byte[] plainBytes = AesCbcHmacKeyGenerator.GenerateCombinedKey();
-            byte[] encryptedBytes = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
-            return Convert.ToBase64String(encryptedBytes);
+            return EncryptionKeyProtector.GenerateEncryptedKey(masterKey);
         }
 
 
