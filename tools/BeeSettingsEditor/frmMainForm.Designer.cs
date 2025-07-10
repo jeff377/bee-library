@@ -125,42 +125,42 @@
             // 
             menuApiConnect.Name = "menuApiConnect";
             menuApiConnect.ShortcutKeys = Keys.Control | Keys.M;
-            menuApiConnect.Size = new Size(275, 22);
-            menuApiConnect.Text = "Set API Connection Mode...";
+            menuApiConnect.Size = new Size(292, 22);
+            menuApiConnect.Text = "Set API Connection Endpoint...";
             menuApiConnect.Click += this.tbApiConnect_Click;
             // 
             // menuTestDbConnection
             // 
             menuTestDbConnection.Name = "menuTestDbConnection";
             menuTestDbConnection.ShortcutKeys = Keys.Control | Keys.T;
-            menuTestDbConnection.Size = new Size(275, 22);
+            menuTestDbConnection.Size = new Size(292, 22);
             menuTestDbConnection.Text = "Test Database Connection";
             menuTestDbConnection.Click += this.menuTestDbConnection_Click;
             // 
             // toolStripSeparator1
             // 
             toolStripSeparator1.Name = "toolStripSeparator1";
-            toolStripSeparator1.Size = new Size(272, 6);
+            toolStripSeparator1.Size = new Size(289, 6);
             // 
             // menuGenerateMasterKey
             // 
             menuGenerateMasterKey.Name = "menuGenerateMasterKey";
             menuGenerateMasterKey.ShortcutKeys = Keys.Control | Keys.G;
-            menuGenerateMasterKey.Size = new Size(275, 22);
+            menuGenerateMasterKey.Size = new Size(292, 22);
             menuGenerateMasterKey.Text = "Generate Master Key...";
             menuGenerateMasterKey.Click += this.menuGenerateMasterKey_Click;
             // 
             // menuGenerateApiEncryptionKey
             // 
             menuGenerateApiEncryptionKey.Name = "menuGenerateApiEncryptionKey";
-            menuGenerateApiEncryptionKey.Size = new Size(275, 22);
+            menuGenerateApiEncryptionKey.Size = new Size(292, 22);
             menuGenerateApiEncryptionKey.Text = "Generate API Encryption Key";
             menuGenerateApiEncryptionKey.Click += this.menuGenerateApiEncryptionKey_Click;
             // 
             // menuGenerateCookieEncryptionKey
             // 
             menuGenerateCookieEncryptionKey.Name = "menuGenerateCookieEncryptionKey";
-            menuGenerateCookieEncryptionKey.Size = new Size(275, 22);
+            menuGenerateCookieEncryptionKey.Size = new Size(292, 22);
             menuGenerateCookieEncryptionKey.Text = "Generate Cookie Encryption Key";
             menuGenerateCookieEncryptionKey.Click += this.menuGenerateCookieEncryptionKey_Click;
             // 

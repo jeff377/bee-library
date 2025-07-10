@@ -73,7 +73,7 @@ namespace SettingsEditor
         }
 
         /// <summary>
-        /// menuApiConnect。
+        /// 設定 API 連線端點。
         /// </summary>
         private void tbApiConnect_Click(object sender, EventArgs e)
         {

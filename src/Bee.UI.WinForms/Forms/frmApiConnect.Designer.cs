@@ -70,7 +70,7 @@
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += this.btnCancel_Click;
             // 
-            // frmConnect
+            // frmApiConnect
             // 
             this.AutoScaleDimensions = new SizeF(7F, 14F);
             this.AutoScaleMode = AutoScaleMode.Font;
@@ -82,9 +82,9 @@
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "frmConnect";
+            this.Name = "frmApiConnect";
             this.ShowIcon = false;
-            this.Text = "Set API Connection Mode";
+            this.Text = "Set API Connection Endpoint";
             this.Load += this.frmConnect_Load;
             this.ResumeLayout(false);
             this.PerformLayout();
