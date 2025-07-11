@@ -1,3 +1,4 @@
+using System.Reflection;
 using Bee.Base;
 using Bee.Define;
 using Bee.UI.Core;
@@ -23,6 +24,8 @@ namespace SettingsEditor
         /// </summary>
         private void frmMainForm_Load(object sender, EventArgs e)
         {
+            // 設定標題列文
+            this.Text = $"{VersionInfo.Product} v{VersionInfo.Version}";
             // 設定連線方式的顯示文字
             SetConnectText();
         }
@@ -69,7 +72,16 @@ namespace SettingsEditor
         /// </summary>
         private void tbExit_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            var result = MessageBox.Show(
+                    "Are you sure you want to exit?",
+                    "Exit",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+            if (result == DialogResult.Yes)
+            {
+                Application.Exit();
+            }
         }
 
         /// <summary>

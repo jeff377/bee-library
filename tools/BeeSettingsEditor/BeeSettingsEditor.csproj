@@ -7,27 +7,47 @@
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 
-		<Version>3.0.10</Version>
+		<Version>1.0.0</Version>
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
-		<Product>Bee.NET</Product>
+		<Product>Bee.NET Settings Editor</Product>
 		<Description>Configuration editor for managing System.Setting.xml and Database.Settings.xml.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<ApplicationIcon>BeeSettingsEditor.ico</ApplicationIcon>
-		
+
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <Content Include="BeeSettingsEditor.ico" />
+		<Content Include="BeeSettingsEditor.ico" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.2" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
 		<ProjectReference Include="..\..\src\Bee.UI.WinForms\Bee.UI.WinForms.csproj" />
 	</ItemGroup>
+
+	<!-- 只在 Release 組態下停用 pdb/xml -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<DebugType>none</DebugType>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<Target Name="RemoveExtraArtifacts" AfterTargets="Publish">
+		<!-- 刪除 XML 文件 -->
+		<ItemGroup>
+			<XmlFilesToDelete Include="$(PublishDir)**\*.xml" Exclude="$(PublishDir)BeeSettingsEditor.xml" />
+		</ItemGroup>
+		<Delete Files="@(XmlFilesToDelete)" />
+
+		<!-- 刪除 PDB 檔案 -->
+		<ItemGroup>
+			<PdbFilesToDelete Include="$(PublishDir)**\*.pdb" Exclude="$(PublishDir)BeeSettingsEditor.pdb" />
+		</ItemGroup>
+		<Delete Files="@(PdbFilesToDelete)" />
+	</Target>
 
 </Project>

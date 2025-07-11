@@ -12,7 +12,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("DatabaseSettings")]
     [Description("資料庫設定。")]
-    [TreeNode("資料庫設定")]
+    [TreeNode("Database Settings")]
     public class DatabaseSettings : IObjectSerializeFile, IObjectSerializeProcess
     {
         private string _ObjectFilePath = string.Empty;
