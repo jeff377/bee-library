@@ -23,8 +23,10 @@ namespace SettingsEditor
             BackendInfo.DefineProvider = new FileDefineProvider();
             BackendInfo.BusinessObjectProvider = new Bee.Business.BusinessObjectProvider();
 
+            // 允許產生設定檔
+            ClientInfo.AllowGenerateSettings = true;  
             // 用戶端初始化
-            if (!ClientInfo.Initialize(new UIViewService(), SupportedConnectTypes.Local, true)) { return false; }
+            if (!ClientInfo.Initialize(new UIViewService(), SupportedConnectTypes.Local)) { return false; }
 
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);

@@ -16,7 +16,6 @@ namespace Bee.Define
     {
         private string _ObjectFilePath = string.Empty;
         private SerializeState _SerializeState = SerializeState.None;
-        private DateTime _CreateTime = DateTime.MinValue;
         private string _Endpoint = string.Empty;
         private EndpointItemCollection _EndpointItems = new EndpointItemCollection();
 
@@ -27,7 +26,7 @@ namespace Bee.Define
         /// </summary>
         public ClientSettings()
         {
-            _CreateTime = DateTime.Now;
+            CreateTime = DateTime.Now;
         }
 
         #endregion
@@ -73,6 +72,13 @@ namespace Bee.Define
         }
 
         #endregion
+
+        /// <summary>
+        /// 物件建立時間。
+        /// </summary>
+        [XmlIgnore, JsonIgnore]
+        [Browsable(false)]
+        public DateTime CreateTime { get; private set; } = DateTime.MinValue;
 
         /// <summary>
         /// 服務端點位置，遠端連線為網址，近端連線為本地路徑。

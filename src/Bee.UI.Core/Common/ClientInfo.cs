@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using Bee.Api.Core;
 using Bee.Base;
 using Bee.Connect;
@@ -46,7 +47,10 @@ namespace Bee.UI.Core
         /// </summary>
         private static ClientSettings GetClientSettings()
         {
-            string filePath = FileFunc.GetAppPath("Client.Settings.xml");
+            // 取得執行檔名稱（不含副檔名）
+            string exeName = Assembly.GetEntryAssembly()?.GetName().Name ?? "Client";
+            string fileName = $"{exeName}.Settings.xml";
+            string filePath = FileFunc.GetAppPath(fileName);
 
             ClientSettings settings;
             if (FileFunc.FileExists(filePath))
@@ -124,7 +128,7 @@ namespace Bee.UI.Core
         /// <summary>
         /// 近端連線指定端點不在存設定檔時，是否自動生成 System.Settings.xml 及 Database.Settings.xml 設定檔。
         /// </summary>
-        public static bool AllowGenerateSettings { get; private set; }
+        public static bool AllowGenerateSettings { get; set; }
 
         /// <summary>
         /// 連線資訊，需登入驗證的應用程式才會有連線資訊。
@@ -244,13 +248,10 @@ namespace Bee.UI.Core
         /// </summary>
         /// <param name="service">UI 相關的視窗 (View) 服務。</param>
         /// <param name="connectTypes">程式支援的服務連線方式。</param>
-        /// <param name="allowGenerateSettings">近端連結是否允許自動生成設定檔，包含 System.Settings.xml 及 Database.Settings.xml 設定檔。</param>
-        public static bool Initialize(IUIViewService service, SupportedConnectTypes connectTypes, bool allowGenerateSettings)
+        public static bool Initialize(IUIViewService service, SupportedConnectTypes connectTypes)
         {
             // 設置 UI 相關的視窗 (View) 服務
             UIViewService = service;
-            // 近端連結是否允許自動生成設定檔
-            AllowGenerateSettings = allowGenerateSettings;
             // 取得命令列引數
             Arguments = BaseFunc.GetCommandLineArgs();
             if (Arguments.ContainsKey("Endpoint"))
