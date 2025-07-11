@@ -1,4 +1,3 @@
-using System.Reflection;
 using Bee.Base;
 using Bee.Define;
 using Bee.UI.Core;
@@ -28,6 +27,8 @@ namespace SettingsEditor
             this.Text = $"{VersionInfo.Product} v{VersionInfo.Version}";
             // 設定連線方式的顯示文字
             SetConnectText();
+            // 預設載入系統設定
+            LoadDefine(DefineType.SystemSettings);
         }
 
         /// <summary>
@@ -131,12 +132,11 @@ namespace SettingsEditor
                     throw new NotSupportedException();
             }
 
-            if (settings != null)
-            {
-                treeView.BuildObjectTree(settings);
-                tbSave.Enabled = true;
-            }
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings), "Settings cannot be null.");
 
+            treeView.BuildObjectTree(settings);
+            UpdateMenuVisibility(settings);
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace SettingsEditor
         /// <summary>
         /// Generate API encryption key.
         /// </summary>
-        private void menuGenerateApiEncryptionKey_Click(object sender, EventArgs e)
+        private void menuGenApiEncryptionKey_Click(object sender, EventArgs e)
         {
             var settings = treeView.Tag as SystemSettings;
             if (settings == null) { return; }
@@ -204,7 +204,7 @@ namespace SettingsEditor
         /// <summary>
         /// Generate cookie encryption key.
         /// </summary>
-        private void menuGenerateCookieEncryptionKey_Click(object sender, EventArgs e)
+        private void menuGenCookieEncryptionKey_Click(object sender, EventArgs e)
         {
             var settings = treeView.Tag as SystemSettings;
             if (settings == null) { return; }
@@ -237,6 +237,19 @@ namespace SettingsEditor
             return EncryptionKeyProtector.GenerateEncryptedKey(masterKey);
         }
 
+        /// <summary>
+        /// 根據設定檔類型，設定選單的顯示狀態。
+        /// </summary>
+        /// <param name="settings">已載入的設定檔物件。</param>
+        private void UpdateMenuVisibility(object? settings)
+        {
+            bool isSystemSettings = settings is SystemSettings;
+            bool isDatabaseSettings = settings is DatabaseSettings;
+
+            menuTestDbConnection.Visible = isDatabaseSettings;
+            menuGenApiEncryptionKey.Visible = isSystemSettings;
+            menuGenCookieEncryptionKey.Visible = isSystemSettings;
+        }
 
     }
 }

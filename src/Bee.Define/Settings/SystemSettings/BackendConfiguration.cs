@@ -60,6 +60,7 @@ namespace Bee.Define
         /// </summary>
         [Category("Security")]
         [Description("加密金鑰設定。")]
+        [Browsable(false)]
         public SecurityKeySettings SecurityKeySettings { get; set; } = new SecurityKeySettings();
 
         /// <summary>

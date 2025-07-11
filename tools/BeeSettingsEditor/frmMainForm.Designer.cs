@@ -41,8 +41,8 @@
             menuTestDbConnection = new ToolStripMenuItem();
             toolStripSeparator1 = new ToolStripSeparator();
             menuGenerateMasterKey = new ToolStripMenuItem();
-            menuGenerateApiEncryptionKey = new ToolStripMenuItem();
-            menuGenerateCookieEncryptionKey = new ToolStripMenuItem();
+            menuGenApiEncryptionKey = new ToolStripMenuItem();
+            menuGenCookieEncryptionKey = new ToolStripMenuItem();
             statusBar = new StatusStrip();
             lblConnectType = new ToolStripStatusLabel();
             treeView = new Bee.UI.WinForms.BeeTreeView();
@@ -62,7 +62,7 @@
             menuBar.Items.AddRange(new ToolStripItem[] { menuFile, menuTools });
             menuBar.Location = new Point(0, 0);
             menuBar.Name = "menuBar";
-            menuBar.Size = new Size(584, 24);
+            menuBar.Size = new Size(684, 24);
             menuBar.TabIndex = 0;
             menuBar.Text = "menuStrip1";
             // 
@@ -77,7 +77,7 @@
             // 
             menuLoadSystemSettings.Name = "menuLoadSystemSettings";
             menuLoadSystemSettings.ShortcutKeys = Keys.Control | Keys.O;
-            menuLoadSystemSettings.Size = new Size(264, 22);
+            menuLoadSystemSettings.Size = new Size(255, 22);
             menuLoadSystemSettings.Text = "Open  System Settings";
             menuLoadSystemSettings.Click += this.menuLoadSystemSettings_Click;
             // 
@@ -92,32 +92,32 @@
             // toolStripMenuItem1
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new Size(261, 6);
+            toolStripMenuItem1.Size = new Size(252, 6);
             // 
             // tbSave
             // 
             tbSave.Name = "tbSave";
             tbSave.ShortcutKeys = Keys.Control | Keys.S;
-            tbSave.Size = new Size(264, 22);
+            tbSave.Size = new Size(255, 22);
             tbSave.Text = "Save Current Settings";
             tbSave.Click += this.tbSave_Click;
             // 
             // toolStripMenuItem2
             // 
             toolStripMenuItem2.Name = "toolStripMenuItem2";
-            toolStripMenuItem2.Size = new Size(261, 6);
+            toolStripMenuItem2.Size = new Size(252, 6);
             // 
             // tbExit
             // 
             tbExit.Name = "tbExit";
             tbExit.ShortcutKeys = Keys.Alt | Keys.F4;
-            tbExit.Size = new Size(264, 22);
+            tbExit.Size = new Size(255, 22);
             tbExit.Text = "Exit(&X)";
             tbExit.Click += this.tbExit_Click;
             // 
             // menuTools
             // 
-            menuTools.DropDownItems.AddRange(new ToolStripItem[] { menuApiConnect, menuTestDbConnection, toolStripSeparator1, menuGenerateMasterKey, menuGenerateApiEncryptionKey, menuGenerateCookieEncryptionKey });
+            menuTools.DropDownItems.AddRange(new ToolStripItem[] { menuApiConnect, menuTestDbConnection, toolStripSeparator1, menuGenerateMasterKey, menuGenApiEncryptionKey, menuGenCookieEncryptionKey });
             menuTools.Name = "menuTools";
             menuTools.Size = new Size(65, 20);
             menuTools.Text = "Tools(&T)";
@@ -151,27 +151,27 @@
             menuGenerateMasterKey.Text = "Generate Master Key...";
             menuGenerateMasterKey.Click += this.menuGenerateMasterKey_Click;
             // 
-            // menuGenerateApiEncryptionKey
+            // menuGenApiEncryptionKey
             // 
-            menuGenerateApiEncryptionKey.Name = "menuGenerateApiEncryptionKey";
-            menuGenerateApiEncryptionKey.Size = new Size(292, 22);
-            menuGenerateApiEncryptionKey.Text = "Generate API Encryption Key";
-            menuGenerateApiEncryptionKey.Click += this.menuGenerateApiEncryptionKey_Click;
+            menuGenApiEncryptionKey.Name = "menuGenApiEncryptionKey";
+            menuGenApiEncryptionKey.Size = new Size(292, 22);
+            menuGenApiEncryptionKey.Text = "Generate API Encryption Key";
+            menuGenApiEncryptionKey.Click += this.menuGenApiEncryptionKey_Click;
             // 
-            // menuGenerateCookieEncryptionKey
+            // menuGenCookieEncryptionKey
             // 
-            menuGenerateCookieEncryptionKey.Name = "menuGenerateCookieEncryptionKey";
-            menuGenerateCookieEncryptionKey.Size = new Size(292, 22);
-            menuGenerateCookieEncryptionKey.Text = "Generate Cookie Encryption Key";
-            menuGenerateCookieEncryptionKey.Click += this.menuGenerateCookieEncryptionKey_Click;
+            menuGenCookieEncryptionKey.Name = "menuGenCookieEncryptionKey";
+            menuGenCookieEncryptionKey.Size = new Size(292, 22);
+            menuGenCookieEncryptionKey.Text = "Generate Cookie Encryption Key";
+            menuGenCookieEncryptionKey.Click += this.menuGenCookieEncryptionKey_Click;
             // 
             // statusBar
             // 
             statusBar.ImageScalingSize = new Size(20, 20);
             statusBar.Items.AddRange(new ToolStripItem[] { lblConnectType });
-            statusBar.Location = new Point(0, 389);
+            statusBar.Location = new Point(0, 439);
             statusBar.Name = "statusBar";
-            statusBar.Size = new Size(584, 22);
+            statusBar.Size = new Size(684, 22);
             statusBar.TabIndex = 1;
             statusBar.Text = "statusStrip1";
             // 
@@ -187,7 +187,7 @@
             treeView.Location = new Point(0, 0);
             treeView.Name = "treeView";
             treeView.PropertyGrid = propertyGrid;
-            treeView.Size = new Size(239, 365);
+            treeView.Size = new Size(218, 415);
             treeView.TabIndex = 2;
             // 
             // propertyGrid
@@ -195,7 +195,7 @@
             propertyGrid.Dock = DockStyle.Fill;
             propertyGrid.Location = new Point(0, 0);
             propertyGrid.Name = "propertyGrid";
-            propertyGrid.Size = new Size(341, 365);
+            propertyGrid.Size = new Size(462, 415);
             propertyGrid.TabIndex = 3;
             // 
             // splitContainer
@@ -211,15 +211,15 @@
             // splitContainer.Panel2
             // 
             splitContainer.Panel2.Controls.Add(propertyGrid);
-            splitContainer.Size = new Size(584, 365);
-            splitContainer.SplitterDistance = 239;
+            splitContainer.Size = new Size(684, 415);
+            splitContainer.SplitterDistance = 218;
             splitContainer.TabIndex = 4;
             // 
             // frmMainForm
             // 
             this.AutoScaleDimensions = new SizeF(7F, 14F);
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(584, 411);
+            this.ClientSize = new Size(684, 461);
             this.Controls.Add(splitContainer);
             this.Controls.Add(statusBar);
             this.Controls.Add(menuBar);
@@ -259,7 +259,7 @@
         private ToolStripMenuItem menuTestDbConnection;
         private ToolStripMenuItem menuGenerateMasterKey;
         private ToolStripSeparator toolStripSeparator1;
-        private ToolStripMenuItem menuGenerateApiEncryptionKey;
-        private ToolStripMenuItem menuGenerateCookieEncryptionKey;
+        private ToolStripMenuItem menuGenApiEncryptionKey;
+        private ToolStripMenuItem menuGenCookieEncryptionKey;
     }
 }
