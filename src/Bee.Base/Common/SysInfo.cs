@@ -19,6 +19,11 @@ namespace Bee.Base
         public static string Version { get; set; } = string.Empty;
 
         /// <summary>
+        /// 日誌寫入器。
+        /// </summary>
+        public static ILogWriter LogWriter { get; set; } = new NullLogWriter();
+
+        /// <summary>
         /// 是否為偵錯模式。
         /// </summary>
         public static bool IsDebugMode { get; set; } = false;
