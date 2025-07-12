@@ -14,7 +14,7 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 系統主版琥。
+        /// 系統主版號。
         /// </summary>
         public static string Version { get; set; } = string.Empty;
 
@@ -22,6 +22,11 @@ namespace Bee.Base
         /// 日誌寫入器。
         /// </summary>
         public static ILogWriter LogWriter { get; set; } = new NullLogWriter();
+
+        /// <summary>
+        /// 記錄選項，用於設定日誌記錄的相關參數。
+        /// </summary>
+        public static LogOptions LogOptions { get; set; } = new LogOptions();
 
         /// <summary>
         /// 是否為偵錯模式。

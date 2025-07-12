@@ -53,6 +53,25 @@
     }
 
     /// <summary>
+    /// DbAccess 記錄層級。
+    /// </summary>
+    public enum DbAccessLogLevel
+    {
+        /// <summary>
+        /// 只記錄 SQL 錯誤。
+        /// </summary>
+        Error,
+        /// <summary>
+        /// 記錄錯誤與異常（筆數過多、執行過久）。
+        /// </summary>
+        Warning,
+        /// <summary>
+        /// 記錄所有 SQL 指令（開發除錯使用）。
+        /// </summary>
+        All
+    }
+
+    /// <summary>
     /// 序列化狀態。
     /// </summary>
     public enum SerializeState
