@@ -18,9 +18,9 @@ namespace Bee.Define
     public class CommonConfiguration
     {
         /// <summary>
-        /// 系統主版琥。
+        /// 系統主版號。
         /// </summary>
-        [Description("系統版號。")]
+        [Description("系統主版號。")]
         public string Version { get; set; } = string.Empty;
 
         /// <summary>

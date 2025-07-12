@@ -24,11 +24,13 @@ namespace Bee.Define
         /// <summary>
         /// API 傳輸金鑰（使用主金鑰加密儲存，base64 字串）。
         /// </summary>
+        [Description("API 傳輸金鑰（使用主金鑰加密儲存，base64 字串）。")]
         public string ApiEncryptionKey { get; set; } = string.Empty;
 
         /// <summary>
         /// Cookie 金鑰（使用主金鑰加密儲存，base64 字串）。
         /// </summary>
+        [Description("Cookie 金鑰（使用主金鑰加密儲存，base64 字串）")]
         public string CookieEncryptionKey { get; set; } = string.Empty;
     }
 

@@ -90,7 +90,7 @@ namespace Bee.Define
         /// 初始化金鑰。
         /// </summary>
         /// <param name="settings">金鑰設定。</param>
-        private static void Initialize(SecurityKeySettings settings)
+        private void Initialize(SecurityKeySettings settings)
         {
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
 

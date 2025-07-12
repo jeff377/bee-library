@@ -1,6 +1,7 @@
 ﻿using System;
 using Bee.Api.Core;
 using Bee.Base;
+using Bee.Define;
 
 namespace Bee.Connect
 {
@@ -61,6 +62,13 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
+            // 近端連線只有在偵錯模式下才進行編碼
+            if (this.Provider is LocalApiServiceProvider && !SysInfo.IsDebugMode)
+            {
+                enableEncoding = false;
+            }
+
+            // 建立 JSON-RPC 請求模型
             var request = new JsonRpcRequest()
             {
                 Method = $"{progId}.{action}",
@@ -70,7 +78,22 @@ namespace Bee.Connect
                 },
                 Id = Guid.NewGuid().ToString()
             };
-            var response = this.Provider.Execute(request, enableEncoding);
+
+            // 傳入資料進行編碼
+            if (enableEncoding)
+            { 
+                request.Encode(FrontendInfo.ApiEncryptionKey);             
+            }
+
+            // 執行 API 方法
+            var response = this.Provider.Execute(request);
+
+            // 傳出結果進行解碼
+            if (enableEncoding)
+            { 
+                response.Decode(FrontendInfo.ApiEncryptionKey); 
+            }
+
             if (response.Error != null)
                 throw new InvalidOperationException($"API error: {response.Error.Message}");
             return (T)response.Result.Value;
