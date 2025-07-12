@@ -53,22 +53,24 @@
     }
 
     /// <summary>
-    /// DbAccess 記錄層級。
+    /// DbAccess 記錄層級（由低至高）。
     /// </summary>
     public enum DbAccessLogLevel
     {
         /// <summary>
-        /// 只記錄 SQL 錯誤。
+        /// 只記錄錯誤。
         /// </summary>
-        Error,
+        Error = 1,
+
         /// <summary>
-        /// 記錄錯誤與異常（筆數過多、執行過久）。
+        /// 包含異常（慢查詢、筆數過多）。
         /// </summary>
-        Warning,
+        Warning = 2,
+
         /// <summary>
-        /// 記錄所有 SQL 指令（開發除錯使用）。
+        /// 所有 SQL 指令（完整除錯記錄）。
         /// </summary>
-        All
+        All = 3
     }
 
     /// <summary>
