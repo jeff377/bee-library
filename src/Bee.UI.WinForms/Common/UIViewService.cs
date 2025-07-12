@@ -13,7 +13,7 @@ namespace Bee.UI.WinForms
         /// <returns>連線設定完成傳回 true，反之傳回 false。</returns>
         public bool ShowApiConnect()
         {
-            var form = new frmApiConnect();
+            var form = new ApiConnectForm();
             return form.ShowDialog() == DialogResult.OK;
         }
     }

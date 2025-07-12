@@ -7,12 +7,12 @@ namespace Bee.UI.WinForms
     /// <summary>
     /// 連線設定。
     /// </summary>
-    internal partial class frmApiConnect : BaseForm
+    internal partial class ApiConnectForm : BaseForm
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public frmApiConnect()
+        public ApiConnectForm()
         {
             InitializeComponent();
         }

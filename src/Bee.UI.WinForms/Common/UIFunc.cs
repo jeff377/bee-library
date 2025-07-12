@@ -109,9 +109,9 @@ namespace Bee.UI.WinForms
         /// </summary>
         public static DialogResult ShowConnect()
         {
-            frmApiConnect oForm;
+            ApiConnectForm oForm;
 
-            oForm = new frmApiConnect();
+            oForm = new ApiConnectForm();
             return oForm.ShowDialog();
         }
 

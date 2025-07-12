@@ -1,6 +1,6 @@
 ﻿namespace Bee.UI.WinForms
 {
-    partial class frmApiConnect
+    partial class ApiConnectForm
     {
         /// <summary>
         /// Required designer variable.
