@@ -15,6 +15,8 @@
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<ApplicationIcon>BeeSettingsEditor.ico</ApplicationIcon>
 
+		<!-- 僅包含英文語系的資源，避免產生多語系 satellite assemblies -->
+		<SatelliteResourceLanguages>en</SatelliteResourceLanguages>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -184,21 +184,7 @@ namespace SettingsEditor
         /// </summary>
         private void menuGenApiEncryptionKey_Click(object sender, EventArgs e)
         {
-            var settings = treeView.Tag as SystemSettings;
-            if (settings == null) { return; }
-
-            var masterKeySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
-            string encryptionKey = GenerateEncryptionKey(masterKeySource);
-            if (string.IsNullOrEmpty(encryptionKey))
-            {
-                UIFunc.ErrorMsgBox("Failed to generate encryption key.");
-                return;
-            }
-
-            settings.BackendConfiguration.SecurityKeySettings.ApiEncryptionKey = encryptionKey;
-            this.propertyGrid.SelectedObject = null;
-            this.propertyGrid.SelectedObject = settings.BackendConfiguration.SecurityKeySettings;
-            UIFunc.MsgBox("API encryption key generated successfully.");
+            GenerateEncryptionKey("Api");
         }
 
         /// <summary>
@@ -206,35 +192,78 @@ namespace SettingsEditor
         /// </summary>
         private void menuGenCookieEncryptionKey_Click(object sender, EventArgs e)
         {
+            GenerateEncryptionKey("Cookie");
+        }
+
+        /// <summary>
+        /// Generate configuration encryption key.
+        /// </summary>
+        private void menuGenConfigEncryptionKey_Click(object sender, EventArgs e)
+        {
+            GenerateEncryptionKey("Config");
+        }
+
+        /// <summary>
+        /// Generate database encryption key.
+        /// </summary>
+        private void menuGenDatabaseEncryptionKey_Click(object sender, EventArgs e)
+        {
+            GenerateEncryptionKey("Database");
+        }
+
+        /// <summary>
+        /// generate encryption key based on the specified key type.
+        /// </summary>
+        /// <param name="keyType">key type</param>
+        private void GenerateEncryptionKey(string keyType)
+        {
+            string encryptionKey = GenerateEncryptionKey();
+            if (string.IsNullOrEmpty(encryptionKey)) { return; }
+
             var settings = treeView.Tag as SystemSettings;
             if (settings == null) { return; }
-
-            var masterKeySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
-            string encryptionKey = GenerateEncryptionKey(masterKeySource);
-            if (string.IsNullOrEmpty(encryptionKey))
+            var keySettings = settings.BackendConfiguration.SecurityKeySettings;    
+            switch (keyType)
             {
-                UIFunc.ErrorMsgBox("Failed to generate encryption key.");
-                return;
+                case "Api":
+                    keySettings.ApiEncryptionKey = encryptionKey;
+                    break;
+                case "Cookie":
+                    keySettings.CookieEncryptionKey = encryptionKey;
+                    break;
+                case "Config":
+                    keySettings.ConfigEncryptionKey = encryptionKey;
+                    break;
+                case "Database":
+                    keySettings.DatabaseEncryptionKey = encryptionKey;
+                    break;
+                default:
+                    UIFunc.ErrorMsgBox("Invalid key type specified.");
+                    return;
             }
-
-            settings.BackendConfiguration.SecurityKeySettings.CookieEncryptionKey = encryptionKey;
             this.propertyGrid.SelectedObject = null;
-            this.propertyGrid.SelectedObject = settings.BackendConfiguration.SecurityKeySettings;
-            UIFunc.MsgBox("Cookie encryption key generated successfully.");
+            this.propertyGrid.SelectedObject = keySettings;
+            UIFunc.MsgBox($"{keyType} encryption key generated successfully.");
         }
 
         /// <summary>
         /// 透過 Master Key 產生加密金鑰。
         /// </summary>
-        private string GenerateEncryptionKey(MasterKeySource source)
+        private string GenerateEncryptionKey()
         {
             var settings = treeView.Tag as SystemSettings;
             if (settings == null) { return string.Empty; }
 
             // 取得 Master Key
-            var masterKeySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
-            byte[] masterKey = MasterKeyProvider.GetMasterKey(masterKeySource);
-            return EncryptionKeyProtector.GenerateEncryptedKey(masterKey);
+            var keySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
+            byte[] masterKey = MasterKeyProvider.GetMasterKey(keySource);
+            string encryptionKey = EncryptionKeyProtector.GenerateEncryptedKey(masterKey);
+            if (string.IsNullOrEmpty(encryptionKey))
+            {
+                UIFunc.ErrorMsgBox("Failed to generate encryption key.");
+                return string.Empty;
+            }
+            return encryptionKey;
         }
 
         /// <summary>
@@ -249,7 +278,10 @@ namespace SettingsEditor
             menuTestDbConnection.Visible = isDatabaseSettings;
             menuGenApiEncryptionKey.Visible = isSystemSettings;
             menuGenCookieEncryptionKey.Visible = isSystemSettings;
+            menuGenConfigEncryptionKey.Visible = isSystemSettings;
+            menuGenDatabaseEncryptionKey.Visible = isSystemSettings;  
         }
+
 
     }
 }
