@@ -66,20 +66,10 @@ namespace Bee.Define
         /// <summary>
         /// 登入密碼，取代連線字串中的 {@Password} 參數。
         /// </summary>
-        [XmlIgnore]
         [Description("登入密碼，取代連線字串中的 {@Password} 參數。")]
         [PasswordPropertyText(true)]
         [DefaultValue("")]
         public string Password { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 加密資料。
-        /// </summary>
-        [XmlAttribute]
-        [Description("加密資料。")]
-        [Browsable(false)]
-        [DefaultValue("")]
-        public string EncryptedData { get; set; } = string.Empty;
 
         /// <summary>
         /// 取得資料庫連線字串。

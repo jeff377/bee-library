@@ -1,8 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Text;
 using System.Xml.Serialization;
-using Newtonsoft.Json;
 using Bee.Base;
+using Newtonsoft.Json;
 
 namespace Bee.Define
 {
@@ -83,11 +84,19 @@ namespace Bee.Define
         /// <param name="serializeFormat">序列化格式。</param>
         public void BeforeSerialize(SerializeFormat serializeFormat)
         {
-            // 執行加密
+            var combinedKey = BackendInfo.ConfigEncryptionKey;
+            if (combinedKey == null || combinedKey.Length == 0) return;
+
+            AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
+
             foreach (DatabaseItem item in this.Items)
             {
-                if (StrFunc.IsNotEmpty(item.Password))
-                    item.EncryptedData = CryptoFunc.AesEncrypt(item.Password);
+                if (StrFunc.IsNotEmpty(item.Password) && !item.Password.StartsWith("enc:"))
+                {
+                    byte[] plainBytes = Encoding.UTF8.GetBytes(item.Password);
+                    byte[] encrypted = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
+                    item.Password = "enc:" + Convert.ToBase64String(encrypted);
+                }
             }
         }
 
@@ -105,11 +114,27 @@ namespace Bee.Define
         /// <param name="serializeFormat">序列化格式。</param>
         public void AfterDeserialize(SerializeFormat serializeFormat)
         {
-            // 執行解密
+            var combinedKey = BackendInfo.ConfigEncryptionKey;
+            if (combinedKey == null || combinedKey.Length == 0) return;
+
+            AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
+
             foreach (DatabaseItem item in this.Items)
             {
-                if (StrFunc.IsNotEmpty(item.EncryptedData))
-                    item.Password = CryptoFunc.AesTryDecrypt(item.EncryptedData);
+                if (StrFunc.IsNotEmpty(item.Password) && item.Password.StartsWith("enc:"))
+                {
+                    try
+                    {
+                        string base64 = item.Password.Substring(4);
+                        byte[] encrypted = Convert.FromBase64String(base64);
+                        byte[] plain = AesCbcHmacCryptor.Decrypt(encrypted, aesKey, hmacKey);
+                        item.Password = Encoding.UTF8.GetString(plain);
+                    }
+                    catch
+                    {
+                        item.Password = string.Empty; // 解密失敗時保護資料
+                    }
+                }
             }
         }
 

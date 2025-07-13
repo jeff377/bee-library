@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Cache;
 using Bee.Define;
 
 namespace Bee.Db.UnitTests
@@ -7,7 +8,12 @@ namespace Bee.Db.UnitTests
     {
         static DbTest()
         {
-            BackendInfo.DefinePath = @"D:\Bee\src\DefinePath";
+            // 設定定義路徑
+            BackendInfo.DefinePath = @"D:\DefinePath";
+            // 初始化金鑰
+            var settings = CacheFunc.GetSystemSettings();
+            settings.BackendConfiguration.InitializeSecurityKeys();
+
             BackendInfo.DatabaseType = DatabaseType.SQLServer;
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);

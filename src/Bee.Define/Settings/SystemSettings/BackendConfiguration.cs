@@ -83,15 +83,15 @@ namespace Bee.Define
             // 預設資料庫編號
             BackendInfo.DatabaseID = DatabaseID;
             // 初始化金鑰
-            Initialize(SecurityKeySettings);
+            InitializeSecurityKeys();
         }
 
         /// <summary>
         /// 初始化金鑰。
         /// </summary>
-        /// <param name="settings">金鑰設定。</param>
-        private void Initialize(SecurityKeySettings settings)
+        public void InitializeSecurityKeys()
         {
+            var settings = SecurityKeySettings;
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
 
             // 解密 API 金鑰，如果設定中有提供。

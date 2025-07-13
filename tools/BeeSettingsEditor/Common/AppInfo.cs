@@ -1,4 +1,5 @@
 ﻿using Bee.Base;
+using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
 using Bee.UI.Core;
@@ -27,9 +28,11 @@ namespace SettingsEditor
             ClientInfo.AllowGenerateSettings = true;  
             // 用戶端初始化
             if (!ClientInfo.Initialize(new UIViewService(), SupportedConnectTypes.Local)) { return false; }
-
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            // 初始化金鑰
+            var settings = CacheFunc.GetSystemSettings();
+            settings.BackendConfiguration.InitializeSecurityKeys();
 
             return true;
         }
