@@ -105,6 +105,18 @@ namespace Bee.Define
             {
                 BackendInfo.CookieEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.CookieEncryptionKey);
             }
+
+            // 解密設定檔金鑰，如果設定中有提供。
+            if (StrFunc.IsNotEmpty(settings.ConfigEncryptionKey))
+            {
+                BackendInfo.ConfigEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ConfigEncryptionKey);
+            }
+
+            // 解密資料庫金鑰，如果設定中有提供。
+            if (StrFunc.IsNotEmpty(settings.DatabaseEncryptionKey))
+            {
+                BackendInfo.DatabaseEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.DatabaseEncryptionKey);
+            }
         }
 
         /// <summary>

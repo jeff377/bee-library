@@ -34,7 +34,7 @@ namespace Bee.Define
         public string CookieEncryptionKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// 設定檔加密金鑰（使用主金鑰加密儲存，base64 字串）。
+        /// 設定檔機敏資料加密金鑰（使用主金鑰加密儲存，base64 字串）。
         /// </summary>
         [Description("設定檔中機敏資料的加密金鑰（使用主金鑰加密儲存，base64 字串）。")]
         public string ConfigEncryptionKey { get; set; } = string.Empty;

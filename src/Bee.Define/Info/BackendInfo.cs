@@ -29,6 +29,16 @@ namespace Bee.Define
         public static byte[] CookieEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
+        /// 設定檔機敏資料加密金鑰。
+        /// </summary>
+        public static byte[] ConfigEncryptionKey { get; set; } = Array.Empty<byte>();
+
+        /// <summary>
+        /// 資料庫機敏欄位加密金鑰。
+        /// </summary>
+        public static byte[] DatabaseEncryptionKey { get; set; } = Array.Empty<byte>();
+
+        /// <summary>
         /// 資料庫類型。
         /// </summary>
         public static DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
