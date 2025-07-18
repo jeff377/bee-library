@@ -6,9 +6,9 @@ using Newtonsoft.Json;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 提供 API 傳輸資料的標準結構。
+    /// 表示 API 傳遞的標準資料結構，支援序列化、壓縮與加密處理。
     /// </summary>
-    public abstract class ApiPayloadBase : IObjectSerialize
+    public abstract class ApiPayload : IObjectSerialize
     {
         #region IObjectSerialize 介面
 
@@ -38,7 +38,7 @@ namespace Bee.Api.Core
         /// </summary>
         [JsonProperty("format")]
         [DefaultValue(PayloadFormat.Plain)]
-        public PayloadFormat Format { get; private set; } = PayloadFormat.Plain;
+        public PayloadFormat Format { get; internal set; } = PayloadFormat.Plain;
 
         /// <summary>
         /// 傳遞資料。
@@ -68,46 +68,60 @@ namespace Bee.Api.Core
         public string TypeName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 將傳遞資料進行轉換處理，例如序列化、壓縮或加密。
+        /// 將傳遞資料進行編碼處理（序列化與壓縮，視需要加密）。
         /// </summary>
-        /// <param name="encryptionKey"> 加密金鑰。</param>
+        /// <param name="encryptionKey">可選的加密金鑰。</param>
         public void Encode(byte[] encryptionKey)
         {
-            // 已經過編碼則離開
-            if (this.IsEncoded) { return; }
+            if (Format != PayloadFormat.Plain) return;
 
-            // 將指定的物件進行轉換處理，例如序列化、壓縮或加密
             var type = Value.GetType();
             TypeName = $"{type.FullName}, {type.Assembly.GetName().Name}";
-            var transformer = ApiServiceOptions.PayloadTransformer;
-            Value = transformer.Encode(Value, type, encryptionKey);
 
-            IsEncoded = true;
-            IsEncrypted = encryptionKey != null;
+            var transformer = ApiServiceOptions.PayloadTransformer;
+            var encoded = transformer.Encode(Value, type);
+
+            if (encryptionKey != null && encryptionKey.Length > 0)
+            {
+                encoded = transformer.Encrypt((byte[])encoded, encryptionKey);
+                Format = PayloadFormat.Encrypted;
+            }
+            else
+            {
+                Format = PayloadFormat.Encoded;
+            }
+
+            Value = encoded;
         }
 
         /// <summary>
-        /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。
+        /// 將處理過的資料還原為原始物件。
         /// </summary>
-        /// <param name="encryptionKey"> 加密金鑰。</param>
+        /// <param name="encryptionKey">加密金鑰。</param>
         public void Decode(byte[] encryptionKey)
         {
-            // 未經過編碼則離開
-            if (!this.IsEncoded) { return; }
+            if (Format == PayloadFormat.Plain) return;
 
             Type type = Type.GetType(TypeName);
             if (type == null)
                 throw new InvalidOperationException($"Unable to load type: {TypeName}");
 
-            // 如果資料已加密，則使用提供的金鑰組進行解密
-            var useKeySet = IsEncrypted ? encryptionKey : null;    
-
-            // 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化
             var transformer = ApiServiceOptions.PayloadTransformer;
-            Value = transformer.Decode(Value, type, useKeySet);
+            byte[] bytes = Value as byte[];
 
-            IsEncoded = false;
-            IsEncrypted = false;
+            if (bytes == null)
+                throw new InvalidCastException("Invalid value type. Must be byte[].");
+
+            if (Format == PayloadFormat.Encrypted)
+            {
+                if (encryptionKey == null || encryptionKey.Length == 0)
+                    throw new InvalidOperationException("Missing encryption key for encrypted payload.");
+
+                bytes = transformer.Decrypt(bytes, encryptionKey);
+            }
+
+            Value = transformer.Decode(bytes, type);
+            Format = PayloadFormat.Plain;
         }
     }
 }

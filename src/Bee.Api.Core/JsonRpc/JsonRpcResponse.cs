@@ -23,7 +23,7 @@ namespace Bee.Api.Core
         public JsonRpcResponse(JsonRpcRequest request)
         {
             // 設定請求的唯一識別碼
-            Id = request.Id;
+            Id = request.Id;            
         }
 
         #endregion
