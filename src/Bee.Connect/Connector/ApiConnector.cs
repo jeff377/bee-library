@@ -114,7 +114,7 @@ namespace Bee.Connect
         {
             if (this.Provider is LocalApiServiceProvider && !SysInfo.IsDebugMode)
             {
-                enableEncoding = false;
+                enableEncoding = false;  // 在本地端執行時，除非是除錯模式，否則不進行編碼
             }
 
             if (enableEncoding)
@@ -148,7 +148,7 @@ namespace Bee.Connect
             if (value == null) { return; }
             if (!SysInfo.LogOptions.ApiConnector.RawData) { return; }
 
-            string json = value.ToJson();   
+            string json = value.ToJson();
             LogWrite($"Raw Data: {json}");
         }
 
@@ -178,7 +178,7 @@ namespace Bee.Connect
                 EntryType = LogEntryType.Information,
                 Timestamp = DateTime.Now
             };
-            SysInfo.LogWriter.Write(entry); 
+            SysInfo.LogWriter.Write(entry);
         }
 
     }
