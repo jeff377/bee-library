@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Api.Core;
 using Bee.Base;
 using Bee.Define;
 
@@ -33,10 +34,10 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
-        /// <param name="enableEncoding">是否啟用資料編碼（序列化、壓縮與加密）。</param>
-        public T Execute<T>(string action, object value, bool enableEncoding = true)
+        /// <param name="format">傳輸資料的封裝格式。</param>
+        public T Execute<T>(string action, object value, PayloadFormat format= PayloadFormat.Encrypted)
         {
-            return base.Execute<T>(SysProgIds.System, action, value, enableEncoding);
+            return base.Execute<T>(SysProgIds.System, action, value, format);
         }
 
         /// <summary>
@@ -62,7 +63,7 @@ namespace Bee.Connect
                 ExpiresIn = expiresIn,
                 OneTime = oneTime
             };
-            var result = Execute<CreateSessionResult>(SystemActions.CreateSession, args);
+            var result = Execute<CreateSessionResult>(SystemActions.CreateSession, args, PayloadFormat.Plain);
             return result.AccessToken;
         }
 

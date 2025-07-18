@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Bee.Api.Core;
 using Bee.Base;
 using Bee.Define;
 
@@ -127,7 +128,7 @@ namespace Bee.Connect
                 TraceId = "001"
             };
             var connector = new SystemApiConnector(endpoint, Guid.Empty);
-            var result = connector.Execute<PingResult>(SystemActions.Ping, args, false);
+            var result = connector.Execute<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain);
             if (result.Status != "ok")
                 throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
         }

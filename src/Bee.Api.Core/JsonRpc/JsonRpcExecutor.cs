@@ -57,20 +57,20 @@ namespace Bee.Api.Core
             var response = new JsonRpcResponse(request);
             try
             {
-                // 傳輸資料是否進行編碼
-                bool isEncoded = request.Params.IsEncoded;
-                // 若為編碼狀態，則進行解碼
-                if (isEncoded) { request.Decode(BackendInfo.ApiEncryptionKey); }
+                // 傳輸資料格式
+                var format = request.Params.Format;
+                // 還原請求資料內容
+                ApiPayloadConverter.RestoreFrom(request.Params, format, FrontendInfo.ApiEncryptionKey);
 
                 // 從 Method 屬性解析出 ProgId 與 Action
                 var (progId, action) = ParseMethod(request.Method);
                 // 建立業務邏輯物件，執行指定方法
-                var value = await ExecuteMethodAsync(progId, action, request.Params.Value, isEncoded);
+                var value = await ExecuteMethodAsync(progId, action, request.Params.Value, format != PayloadFormat.Plain);
 
                 // 傳出結果
                 response.Result = new JsonRpcResult { Value = value };
-                // 若傳出結果需要編碼，則進行編碼
-                if (isEncoded) { response.Encode(BackendInfo.ApiEncryptionKey); }
+                // 設定回應的資料格式
+                ApiPayloadConverter.TransformTo(response.Result, format, FrontendInfo.ApiEncryptionKey);
             }
             catch (Exception ex)
             {

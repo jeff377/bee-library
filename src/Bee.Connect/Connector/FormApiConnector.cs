@@ -45,7 +45,7 @@ namespace Bee.Connect
         /// <param name="value">對應執行動作的傳入參數。</param>
         public T Execute<T>(string action, object value)
         {
-            return base.Execute<T>(ProgId, action, value);
+            return base.Execute<T>(ProgId, action, value, Api.Core.PayloadFormat.Encrypted);
         }
 
         /// <summary>

@@ -71,29 +71,5 @@ namespace Bee.Api.Core
         /// </summary>
         [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
         public string Id { get; set; }
-
-        /// <summary>
-        /// 將指定的物件進行轉換處理，例如序列化、壓縮或加密。
-        /// </summary>
-        /// <param name="encryptionKey"> 加密金鑰。</param>
-        public void Encode(byte[] encryptionKey)
-        {
-            if (Result != null)
-            {
-                Result.Encode(encryptionKey);
-            }
-        }
-
-        /// <summary>
-        /// 將處理過的資料還原為原始物件，例如解密、解壓縮與反序列化。。
-        /// </summary>
-        /// <param name="encryptionKey"> 加密金鑰。</param>
-        public void Decode(byte[] encryptionKey)
-        {
-            if (Result != null)
-            {
-                Result.Decode(encryptionKey);
-            }
-        }
     }
 }

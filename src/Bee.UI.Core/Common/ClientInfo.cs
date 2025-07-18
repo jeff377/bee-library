@@ -181,7 +181,7 @@ namespace Bee.UI.Core
         private static void ApiServiceOptionsInitialize()
         {
             var args = new GetApiPayloadOptionsArgs();
-            var result = SystemApiConnector.Execute<GetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args, false);
+            var result = SystemApiConnector.Execute<GetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args,  PayloadFormat.Plain);
             var payloadOptions = new ApiPayloadOptions()
             {
                 Serializer = result.Serializer,

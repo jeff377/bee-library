@@ -39,12 +39,12 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotEmpty(json);
 
             // ´ú¸Õ½s½X
-            request.Encode(null);
+            ApiPayloadConverter.TransformTo(request.Params, PayloadFormat.Encoded);
             string encodedJson = request.ToJson();
             Assert.NotEmpty(encodedJson);
 
             // ´ú¸Õ¸Ñ½X
-            request.Decode(null);
+            ApiPayloadConverter.RestoreFrom(request.Params, PayloadFormat.Encoded);
             string decodedJson = request.ToJson();
             Assert.NotEmpty(decodedJson);
         }
