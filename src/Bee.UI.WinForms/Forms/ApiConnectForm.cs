@@ -25,7 +25,15 @@ namespace Bee.UI.WinForms
             edtEndpoint.Text = ClientInfo.GetEndpoint();
             if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
             {
-                lblEndpoint.Text = "Definition path";
+                Text += " (Local Only)";
+            }
+            else if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
+            {
+                Text += " (Remote Only)";
+            }
+            else
+            {
+                Text += " (Local/Remote)";
             }
         }
 
