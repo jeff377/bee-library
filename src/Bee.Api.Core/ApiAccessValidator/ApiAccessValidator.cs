@@ -21,13 +21,9 @@ namespace Bee.Api.Core
             if (attr == null)
                 return;
 
-            // 特殊處理 LocalOnly
-            if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly)
-            {
-                if (!context.IsLocalCall)
-                    throw new UnauthorizedAccessException("This API is restricted to local-only usage.");
+            // 近端呼叫允許所有保護等級
+            if (context.IsLocalCall)
                 return;
-            }
 
             // 依照呼叫端的 Format 判斷是否符合存取等級
             switch (context.Format)
