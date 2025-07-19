@@ -10,7 +10,7 @@ namespace Bee.Api.Core
     public static class ApiAccessValidator
     {
         /// <summary>
-        /// 驗證指定方法是否符合存取條件（近端、編碼），若不符合則擲出例外。
+        /// 驗證指定方法是否符合存取條件（近端、編碼、加密），若不符合則擲出例外。
         /// 若方法未標記 <see cref="ApiAccessControlAttribute"/> 則視為不限制。
         /// </summary>
         /// <param name="method">要驗證的 API 方法</param>
@@ -21,27 +21,33 @@ namespace Bee.Api.Core
             if (attr == null)
                 return;
 
-            switch (attr.ProtectionLevel)
+            // 特殊處理 LocalOnly
+            if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly)
             {
-                case ApiProtectionLevel.Public:
-                    // 允許任何呼叫，不驗證
-                    break;
+                if (!context.IsLocalCall)
+                    throw new UnauthorizedAccessException("This API is restricted to local-only usage.");
+                return;
+            }
 
-                case ApiProtectionLevel.Internal:
-                    if (context.ShouldValidateEncoding && !context.IsEncoded)
-                        throw new UnauthorizedAccessException("This API requires encoded transmission for internal calls.");
-                    break;
+            // 依照呼叫端的 Format 判斷是否符合存取等級
+            switch (context.Format)
+            {
+                case PayloadFormat.Encrypted:
+                    // 可呼叫任何非 LocalOnly API
+                    return;
 
-                case ApiProtectionLevel.LocalOnly:
-                    if (!context.IsLocalCall)
-                        throw new UnauthorizedAccessException("This API is restricted to local-only usage.");
-                    break;
+                case PayloadFormat.Encoded:
+                    if (attr.ProtectionLevel > ApiProtectionLevel.Encoded)
+                        throw new UnauthorizedAccessException("This API requires encrypted transmission.");
+                    return;
 
+                case PayloadFormat.Plain:
                 default:
-                    throw new NotSupportedException($"Unsupported protection level: {attr.ProtectionLevel}");
+                    if (attr.ProtectionLevel > ApiProtectionLevel.Public)
+                        throw new UnauthorizedAccessException("This API requires encoded or encrypted transmission.");
+                    return;
             }
         }
-
 
         /// <summary>
         /// 嘗試從方法或其基底定義中取得 <see cref="ApiAccessControlAttribute"/>。
@@ -60,4 +66,5 @@ namespace Bee.Api.Core
                 : null;
         }
     }
+
 }

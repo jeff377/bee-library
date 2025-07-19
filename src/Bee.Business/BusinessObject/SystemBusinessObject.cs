@@ -97,7 +97,7 @@ namespace Bee.Business
         /// 取得定義資料。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        [ApiAccessControl(ApiProtectionLevel.Internal)]
+        [ApiAccessControl(ApiProtectionLevel.Encrypted)]
         public virtual GetDefineResult GetDefine(GetDefineArgs args)
         {
             var result = new GetDefineResult();
@@ -112,7 +112,7 @@ namespace Bee.Business
         /// 儲存定義資料。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        [ApiAccessControl(ApiProtectionLevel.Internal)]
+        [ApiAccessControl(ApiProtectionLevel.Encrypted)]
         public virtual SaveDefineResult SaveDefine(SaveDefineArgs args)
         {
             // 將 XML 轉換為物件

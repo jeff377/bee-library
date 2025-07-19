@@ -65,7 +65,7 @@ namespace Bee.Api.Core
                 // 從 Method 屬性解析出 ProgId 與 Action
                 var (progId, action) = ParseMethod(request.Method);
                 // 建立業務邏輯物件，執行指定方法
-                var value = await ExecuteMethodAsync(progId, action, request.Params.Value, format != PayloadFormat.Plain);
+                var value = await ExecuteMethodAsync(progId, action, request.Params.Value, format);
 
                 // 傳出結果
                 response.Result = new JsonRpcResult { Value = value };
@@ -105,8 +105,8 @@ namespace Bee.Api.Core
         /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">執行動作的傳入引數。</param>
-        /// <param name="isEncoded">傳輸資料是否進行編碼。</param>
-        public async Task<object> ExecuteMethodAsync(string progId, string action, object value, bool isEncoded)
+        /// <param name="format">傳輸資料的封裝格式。</param>
+        public async Task<object> ExecuteMethodAsync(string progId, string action, object value, PayloadFormat format)
         {
             // 建立指定 progId 的業務邏輯物件實例
             var businessObject = CreateBusinessObject(AccessToken, progId);
@@ -115,7 +115,7 @@ namespace Bee.Api.Core
                 throw new MissingMethodException($"Method '{action}' not found in business object '{progId}'.");
 
             // 存取驗證
-            ApiAccessValidator.ValidateAccess(method, new ApiCallContext(IsLocalCall, isEncoded));
+            ApiAccessValidator.ValidateAccess(method, new ApiCallContext(IsLocalCall, format));
 
             var result = method.Invoke(businessObject, new object[] { value });
 

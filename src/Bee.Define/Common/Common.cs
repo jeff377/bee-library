@@ -238,13 +238,17 @@ namespace Bee.Define
         /// </summary>
         Public = 0,
         /// <summary>
-        /// 內部呼叫：允許遠端呼叫，但必須進行編碼（加密或壓縮）
+        /// 需要編碼：允許遠端呼叫，但必須進行編碼（序列化與壓縮）
         /// </summary>
-        Internal = 1,
+        Encoded = 1,
+        /// <summary>
+        /// 需要加密：允許遠端呼叫，必須進行編碼與加密（序列化、壓縮與加密）
+        /// </summary>
+        Encrypted = 2,
         /// <summary>
         /// 僅限近端呼叫（不驗證編碼，適用於工具程式、背景服務）
         /// </summary>
-        LocalOnly = 2
+        LocalOnly = 3
     }
 
     /// <summary>
