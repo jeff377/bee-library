@@ -2,16 +2,18 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageTags>netstandard2.0 cache</PackageTags>
-		<Description>Runtime caching of definitions and related system data to improve performance.</Description>
-		<Version>3.1.4</Version>
+		<Version>3.1.5</Version>
+		<Company>Bee.NET</Company>		
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
+		<Description>Runtime caching of definitions and related system data to improve performance.</Description>		
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageIcon>bee.png</PackageIcon>
+		<PackageTags>netstandard2.0;cache</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Company>Bee.NET</Company>
+		
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>		
+		<PackageIcon>bee.png</PackageIcon>
+		<PackageReleaseNotes></PackageReleaseNotes>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>

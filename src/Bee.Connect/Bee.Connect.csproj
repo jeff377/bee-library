@@ -2,17 +2,20 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<PackageIcon>bee.png</PackageIcon>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>3.1.4</Version>
+		<Version>3.1.5</Version>
+		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
 		<Description>Connector for local or remote invocation of backend logic.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageTags>netstandard2.0</PackageTags>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
+		<PackageTags>netstandard2.0;connector</PackageTags>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>bee.png</PackageIcon>
+		<PackageReleaseNotes></PackageReleaseNotes>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<GenerateDocumentationFile>True</GenerateDocumentationFile>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

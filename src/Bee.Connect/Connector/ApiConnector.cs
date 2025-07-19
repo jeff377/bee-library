@@ -162,7 +162,7 @@ namespace Bee.Connect
             if (!SysInfo.LogOptions.ApiConnector.RawData) { return; }
 
             string json = value.ToJson();
-            LogWrite($"Raw Data: {json}");
+            LogWrite($"Raw Data:{Environment.NewLine}{json}");
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Bee.Connect
             if (!SysInfo.LogOptions.ApiConnector.EncodedData) { return; }
 
             string json = value.ToJson();
-            LogWrite($"Encoded Data: {json}");
+            LogWrite($"Encoded Data:{Environment.NewLine}{json}");
         }
 
         /// <summary>

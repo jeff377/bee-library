@@ -2,16 +2,17 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
-		<Version>3.1.4</Version>
+		<Version>3.1.5</Version>
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
 		<Description>Core utilities such as serialization, encryption, and general-purpose helpers.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageIcon>bee.png</PackageIcon>
+		<PackageTags>netstandard2.0</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageIcon>bee.png</PackageIcon>
 		<PackageReleaseNotes></PackageReleaseNotes>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<GenerateDocumentationFile>True</GenerateDocumentationFile>
