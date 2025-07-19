@@ -180,15 +180,7 @@ namespace Bee.UI.Core
         /// </summary>
         private static void ApiServiceOptionsInitialize()
         {
-            var args = new GetApiPayloadOptionsArgs();
-            var result = SystemApiConnector.Execute<GetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args,  PayloadFormat.Plain);
-            var payloadOptions = new ApiPayloadOptions()
-            {
-                Serializer = result.Serializer,
-                Compressor = result.Compressor,
-                Encryptor = result.Encryptor
-            };
-            ApiServiceOptions.Initialize(payloadOptions);
+            SystemApiConnector.ApiServiceOptionsInitialize();
         }
 
         /// <summary>

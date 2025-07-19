@@ -64,6 +64,22 @@ namespace Bee.Connect
         }
 
         /// <summary>
+        /// 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作。
+        /// </summary>
+        public void ApiServiceOptionsInitialize()
+        {
+            var args = new GetApiPayloadOptionsArgs();
+            var result = Execute<GetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args, PayloadFormat.Plain);
+            var payloadOptions = new ApiPayloadOptions()
+            {
+                Serializer = result.Serializer,
+                Compressor = result.Compressor,
+                Encryptor = result.Encryptor
+            };
+            ApiServiceOptions.Initialize(payloadOptions);
+        }
+
+        /// <summary>
         /// 執行自訂方法。
         /// </summary>
         /// <param name="args">傳入引數。</param>
