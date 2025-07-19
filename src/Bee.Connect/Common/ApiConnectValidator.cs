@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Bee.Api.Core;
 using Bee.Base;
 using Bee.Define;
 
@@ -122,15 +121,8 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));
             // 使用遠端連線，執行 Ping 方法
-            var args = new PingArgs()
-            {
-                ClientName = "Connector",
-                TraceId = "001"
-            };
             var connector = new SystemApiConnector(endpoint, Guid.Empty);
-            var result = connector.Execute<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain);
-            if (result.Status != "ok")
-                throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
+            connector.Ping();
         }
     }
 }

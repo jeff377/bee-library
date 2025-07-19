@@ -11,11 +11,6 @@ namespace Bee.Base
     /// </summary>
     public class FtpClient
     {
-        private string _Endpoint = string.Empty;
-        private string _Username = string.Empty;
-        private string _Password = string.Empty;
-        private bool _UseSsl = true;
-
         /// <summary>
         /// 建構函式。
         /// </summary>
@@ -24,44 +19,30 @@ namespace Bee.Base
         /// <param name="password">登入密碼。</param>
         public FtpClient(string endpoint, string username, string password)
         {
-            _Endpoint = endpoint.EndsWith("/") ? endpoint : endpoint + "/";
-            _Username = username;
-            _Password = password;
-            _UseSsl = true; // 預設使用 SSL
+            Endpoint = endpoint.EndsWith("/") ? endpoint : endpoint + "/";
+            Username = username;
+            Password = password;
         }
 
         /// <summary>
         /// 指定是否使用 SSL 加密。
         /// </summary>
-        public bool UseSsl
-        {
-            get { return _UseSsl; }
-            set { _UseSsl = value; }
-        }
+        public bool UseSsl { get; set; } = true;
 
         /// <summary>
         /// FTP 伺服器端點。
         /// </summary>
-        public string Endpoint
-        {
-            get { return _Endpoint; }
-        }
+        public string Endpoint { get; private set; } = string.Empty;
 
         /// <summary>
         /// 登入帳號。
         /// </summary>
-        public string Username
-        {
-            get { return _Username; }
-        }
+        public string Username { get; private set; } = string.Empty;
 
         /// <summary>
         /// 登入密碼。
         /// </summary>
-        public string Password
-        {
-            get { return _Password; }
-        }
+        public string Password { get; private set; } = string.Empty;
 
         /// <summary>
         /// 測試與 FTP/FTPS 伺服器的連線是否正常。
@@ -69,15 +50,12 @@ namespace Bee.Base
         /// <returns>如果連線正常則返回 true，否則返回 false。</returns>
         public ConnectionTestResult TestConnection()
         {
-            FtpWebRequest oRequest;
-            FtpWebResponse oResponse;
-
             try
             {
-                oRequest = CreateFtpWebRequest(Endpoint, WebRequestMethods.Ftp.ListDirectory);
-                using (oResponse = (FtpWebResponse)oRequest.GetResponse())
+                var request = CreateFtpWebRequest(Endpoint, WebRequestMethods.Ftp.ListDirectory);
+                using (var response = (FtpWebResponse)request.GetResponse())
                 {
-                    return new ConnectionTestResult(true, oResponse.StatusDescription);
+                    return new ConnectionTestResult(true, response.StatusDescription);
                 }
             }
             catch (Exception ex)
@@ -91,30 +69,23 @@ namespace Bee.Base
         /// </summary>
         /// <param name="remotePath">遠端目錄路徑。</param>
         /// <returns>返回檔案和目錄名稱的清單。</returns>
-        public System.Collections.Generic.List<FtpItem> ListFiles(string remotePath)
+        public List<FtpItem> ListFiles(string remotePath)
         {
-            FtpWebRequest oRequest;
-            FtpWebResponse oResponse;
-            StreamReader oReader;
-            System.Collections.Generic.List<FtpItem> oItems;
-            FtpItem oItem;
-            string sLine;
-
-            oItems = new System.Collections.Generic.List<FtpItem>();
-            oRequest = CreateFtpWebRequest(Endpoint + remotePath, WebRequestMethods.Ftp.ListDirectoryDetails);
-            using (oResponse = (FtpWebResponse)oRequest.GetResponse())
+            var items = new List<FtpItem>();
+            var request = CreateFtpWebRequest(Endpoint + remotePath, WebRequestMethods.Ftp.ListDirectoryDetails);
+            using (var response = (FtpWebResponse)request.GetResponse())
             {
-                using (oReader = new StreamReader(oResponse.GetResponseStream()))
+                using (var reader = new StreamReader(response.GetResponseStream()))
                 {
-                    while ((sLine = oReader.ReadLine()) != null)
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
                     {
-                        oItem = ParseFtpItem(sLine);
-                        if (oItem != null)
-                            oItems.Add(oItem);
+                        var item = ParseFtpItem(line);
+                        if (item != null) { items.Add(item); }
                     }
                 }
             }
-            return oItems;
+            return items;
         }
 
         /// <summary>
@@ -151,8 +122,6 @@ namespace Bee.Base
                 LastModified = lastModified
             };
         }
-
-
 
         /// <summary>
         /// 上傳檔案到伺服器。
@@ -248,7 +217,7 @@ namespace Bee.Base
             }
             var request = (FtpWebRequest)WebRequest.Create(uri);
             request.Method = method;
-            request.Credentials = new NetworkCredential(Username, _Password);
+            request.Credentials = new NetworkCredential(Username, Password);
             request.EnableSsl = UseSsl; // 使用屬性來決定是否啟用 SSL
             request.UseBinary = true;
             request.KeepAlive = false; // 避免持續開啟連線

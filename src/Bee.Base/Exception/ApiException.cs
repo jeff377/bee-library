@@ -9,10 +9,6 @@ namespace Bee.Base
     [Serializable]
     public class ApiException : IObjectSerializeBase
     {
-        private string _Message = string.Empty;
-        private string _StackTrace = string.Empty;
-        private bool _IsHandle = false;
-
         #region 建構函式
 
         /// <summary>
@@ -27,8 +23,8 @@ namespace Bee.Base
         /// <param name="exception">執行期間的例外錯誤。</param>
         public ApiException(Exception exception)
         {
-            _Message = exception.Message;
-            _StackTrace = exception.StackTrace;
+            Message = exception.Message;
+            StackTrace = exception.StackTrace;
         }
 
         #endregion
@@ -37,32 +33,20 @@ namespace Bee.Base
         /// 例外錯誤訊息。
         /// </summary>
         [DefaultValue("")]
-        public string Message
-        {
-            get { return _Message; }
-            set { _Message = value; }
-        }
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// 呼叫堆疊。
         /// </summary>
         [DefaultValue("")]
-        public string StackTrace
-        {
-            get { return _StackTrace; }
-            set { _StackTrace = value; }
-        }
+        public string StackTrace { get; set; } = string.Empty;
 
         /// <summary>
         /// 是否為已處理的例外。
         /// </summary>
         [Description("是否為已處理的例外。")]
         [DefaultValue(false)]
-        public bool IsHandle
-        {
-            get { return _IsHandle; }
-            set { _IsHandle = value; }
-        }
+        public bool IsHandle { get; set; } = false;
 
         /// <summary>
         /// 物件描述文字。

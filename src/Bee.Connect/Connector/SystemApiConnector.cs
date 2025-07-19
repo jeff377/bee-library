@@ -35,9 +35,32 @@ namespace Bee.Connect
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
         /// <param name="format">傳輸資料的封裝格式。</param>
-        public T Execute<T>(string action, object value, PayloadFormat format= PayloadFormat.Encrypted)
+        public T Execute<T>(string action, object value, PayloadFormat format = PayloadFormat.Encrypted)
         {
             return base.Execute<T>(SysProgIds.System, action, value, format);
+        }
+
+        /// <summary>
+        /// 執行 Ping 方法，測試伺服端的連線狀態。
+        /// </summary>
+        public void Ping()
+        {
+            try
+            {
+                var args = new PingArgs()
+                {
+                    ClientName = "Connector",
+                    TraceId = Guid.NewGuid().ToString()
+                };
+                var result = Execute<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain);
+                if (result.Status != "ok")
+                    throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
+            }
+            catch (Exception ex)
+            {
+                // 保留原始錯誤訊息供上層判斷或記錄
+                throw new ApplicationException("Connection failed during Ping.", ex);
+            }
         }
 
         /// <summary>
