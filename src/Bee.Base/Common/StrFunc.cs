@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Data;
+using System.Globalization;
 
 namespace Bee.Base
 {
@@ -242,7 +243,7 @@ namespace Bee.Base
         public static string Merge(string s1, string s2, string delimiter)
         {
             if (IsNotEmpty(s1))
-                s1 = s1 + delimiter;
+                s1 += delimiter;
             return s1 + s2;
         }
 
@@ -497,75 +498,80 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷字串的相似性，可以使用 * 和 ? 表示萬用字元。
+        /// 模仿 VB 的 LikeString 方法，支援 *, ?, # 萬用字元的字串比對。
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="pattern">比對格式，* 表示一連串字元，? 表示單一字元。</param>
-        /// <param name="ignoreCase">是否忽略大小寫。</param>
-        /// <remarks>
-        /// 使用正規表示式，模仿 Microsoft.VisualBasic.CompilerServices.LikeOperator.LikeString 方法，實作字串的通配符匹配。
-        /// https://www.cnblogs.com/VAllen/p/18243038/Are-there-any-other-methods-besides-VB-LikeString-in-the-dotNET-Core
-        /// </remarks>
-        public static bool Like(string s, string pattern, bool ignoreCase = true)
+        /// <param name="source">來源字串。</param>
+        /// <param name="pattern">比對模式，使用 VB Like 語法。</param>
+        /// <param name="compareOption">比對選項（如 IgnoreCase）。</param>
+        /// <returns>是否符合指定模式。</returns>
+        public static bool Like(string source, string pattern, CompareOptions compareOption = CompareOptions.IgnoreCase)
         {
-            if (s == null && pattern == null)
-                return true;
-            if (s == null || pattern == null)
+            if (source == null || pattern == null)
                 return false;
 
-            string regexPattern = "^" + Regex.Escape(pattern).Replace("\\*", ".*").Replace("\\?", ".") + "$";
-            RegexOptions options = ignoreCase ? RegexOptions.IgnoreCase : RegexOptions.None;
-            return Regex.IsMatch(s, regexPattern, options);
+            // Escape 正規式，再將萬用字元還原為 Regex 語法
+            var regexPattern = "^" + Regex.Escape(pattern)
+                .Replace(@"\*", ".*")     // *：任意長度字串
+                .Replace(@"\?", ".")      // ?：任一字元
+                .Replace(@"\#", "[0-9]")  // #：任一數字
+                + "$";
+
+            var options = RegexOptions.Compiled;
+            if (compareOption.HasFlag(CompareOptions.IgnoreCase))
+                options |= RegexOptions.IgnoreCase;
+
+            return Regex.IsMatch(source, regexPattern, options);
         }
 
         /// <summary>
-        /// 取得下一個流水號。
+        /// 取得下一個流水號（支援 2~36 進位）。
         /// </summary>
         /// <param name="value">目前編號。</param>
-        /// <param name="numberBase">流水號進位基底(2-36)。</param>
-        public static string GetNextID(string value, int numberBase)
+        /// <param name="numberBase">流水號進位基底（2-36）。</param>
+        /// <returns>下一個流水號。</returns>
+        public static string GetNextId(string value, int numberBase)
         {
-            string sBaseValues;
+            if (numberBase < 2 || numberBase > 36)
+                throw new ArgumentOutOfRangeException(nameof(numberBase), "Number base must be between 2 and 36.");
 
-            sBaseValues = StrFunc.Left("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", numberBase);
-            return GetNextID(value, sBaseValues);
+            var baseValues = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".Substring(0, numberBase);
+            return GetNextId(value, baseValues);
         }
 
         /// <summary>
-        /// 取得下一個流水號。
+        /// 取得下一個流水號，依據自訂字元集遞增。
         /// </summary>
         /// <param name="value">目前編號。</param>
-        /// <param name="baseValues">編碼基底字串。</param>
-        public static string GetNextID(string value, string baseValues)
+        /// <param name="baseValues">進位基底字元集。</param>
+        /// <returns>下一個流水號。</returns>
+        public static string GetNextId(string value, string baseValues)
         {
-            string sValue;
-            char[] oBaseValues;
-            int iCount;
-            int iIndex;
+            if (string.IsNullOrEmpty(baseValues))
+                throw new ArgumentException("Base values must not be null or empty.", nameof(baseValues));
 
-            oBaseValues = baseValues.ToCharArray();
-            iCount = oBaseValues.Length;
-            sValue = StrFunc.Trim(value);
+            var digits = baseValues.ToCharArray();
+            var baseLength = digits.Length;
+            var current = StrFunc.Trim(value).ToCharArray();
 
-            for (int N1 = sValue.Length - 1; N1 >= 0; N1--)
+            for (int i = current.Length - 1; i >= 0; i--)
             {
-                iIndex = Array.IndexOf(oBaseValues, sValue[N1]);
-                if (iIndex != -1 && iIndex < iCount - 1)
+                var index = Array.IndexOf(digits, current[i]);
+
+                if (index == -1)
+                    throw new ArgumentException($"Invalid character '{current[i]}' in current ID.", nameof(value));
+
+                if (index < baseLength - 1)
                 {
-                    return StrFunc.Format("{0}{1}{2}", StrFunc.Left(sValue, N1), oBaseValues[iIndex + 1], StrFunc.Substring(sValue, N1 + 1));
+                    current[i] = digits[index + 1];
+                    return new string(current);
                 }
-                else
-                {
-                    // 需要進位，將目前位數歸零
-                    if (iIndex != -1 && iIndex < iCount)
-                    {
-                        sValue = StrFunc.Format("{0}{1}{2}", StrFunc.Left(sValue, N1), oBaseValues[0], StrFunc.Substring(sValue, N1 + 1));
-                        if (N1 == 0)
-                            return oBaseValues[0] + sValue;
-                    }
-                }
+
+                // overflow → reset to first digit
+                current[i] = digits[0];
             }
-            return string.Empty;
+
+            // 全部 overflow，進位補首碼（使用第一個非零字元）
+            return digits[1] + new string(current);
         }
     }
 }

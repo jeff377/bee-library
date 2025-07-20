@@ -1,3 +1,4 @@
+ï»¿using System.Globalization;
 using System.Text;
 
 namespace Bee.Base.UnitTests
@@ -5,12 +6,12 @@ namespace Bee.Base.UnitTests
     public class BaseTest
     {
         /// <summary>
-        /// IP ¦ì§}ÅçÃÒ¡C
+        /// IP ä½å€é©—è­‰ã€‚
         /// </summary>
         [Fact]
         public void IPValidator()
         {
-            // ©w¸q¥Õ¦W³æ
+            // å®šç¾©ç™½åå–®
             var whitelist = new System.Collections.Generic.List<string>
             {
                 "192.168.1.*",
@@ -18,7 +19,7 @@ namespace Bee.Base.UnitTests
                 "192.168.2.0/24"
             };
 
-            // ©w¸q¶Â¦W³æ
+            // å®šç¾©é»‘åå–®
             var blacklist = new System.Collections.Generic.List<string>
             {
                 "192.168.1.100",
@@ -26,46 +27,70 @@ namespace Bee.Base.UnitTests
                 "192.168.3.0/24"
             };
 
-            // ªì©l¤ÆÅçÃÒ¾¹
+            // åˆå§‹åŒ–é©—è­‰å™¨
             var validator = new IPValidator(whitelist, blacklist);
 
-            // ÀË¬d IP ¦a§}¬O§_³Q¤¹³\
+            // æª¢æŸ¥ IP åœ°å€æ˜¯å¦è¢«å…è¨±
             var allowed = validator.IsIpAllowed("192.168.2.50");
-            Assert.True(allowed);  // ¤ñ¸û¦^¶Ç­È»P¹w´Á­È
+            Assert.True(allowed);  // æ¯”è¼ƒå›å‚³å€¼èˆ‡é æœŸå€¼
             var allowed2 = validator.IsIpAllowed("10.0.0.5");
-            Assert.False(allowed2);  // ¤ñ¸û¦^¶Ç­È»P¹w´Á­È
+            Assert.False(allowed2);  // æ¯”è¼ƒå›å‚³å€¼èˆ‡é æœŸå€¼
         }
 
         /// <summary>
-        /// ´ú¸Õ IsNumeric ¤èªk¡C
+        /// æ¸¬è©¦ IsNumeric æ–¹æ³•ã€‚
         /// </summary>
         [Fact]
         public void IsNumericTest()
         {
-            // ¥¬ªL­È´ú¸Õ
+            // å¸ƒæ—å€¼æ¸¬è©¦
             Assert.True(BaseFunc.IsNumeric(true));
             Assert.True(BaseFunc.IsNumeric(false));
 
-            // ¦CÁ|«¬§O´ú¸Õ
+            // åˆ—èˆ‰å‹åˆ¥æ¸¬è©¦
             Assert.True(BaseFunc.IsNumeric(DateInterval.Day));
             Assert.True(BaseFunc.IsNumeric(DateInterval.Hour));
 
-            // ¼Æ­È«¬§O´ú¸Õ
-            Assert.True(BaseFunc.IsNumeric(123)); // ¾ã¼Æ
-            Assert.True(BaseFunc.IsNumeric(123.45)); // ¯BÂI¼Æ
-            Assert.True(BaseFunc.IsNumeric(123.45m)); // ¤Q¶i¦ì¼Æ
+            // æ•¸å€¼å‹åˆ¥æ¸¬è©¦
+            Assert.True(BaseFunc.IsNumeric(123)); // æ•´æ•¸
+            Assert.True(BaseFunc.IsNumeric(123.45)); // æµ®é»æ•¸
+            Assert.True(BaseFunc.IsNumeric(123.45m)); // åé€²ä½æ•¸
 
-            // ¦r¦ê«¬§O´ú¸Õ
+            // å­—ä¸²å‹åˆ¥æ¸¬è©¦
             Assert.True(BaseFunc.IsNumeric("123"));
             Assert.True(BaseFunc.IsNumeric("123.45"));
             Assert.False(BaseFunc.IsNumeric("abc"));
 
-            // ¯S®í­È´ú¸Õ
+            // ç‰¹æ®Šå€¼æ¸¬è©¦
             Assert.False(BaseFunc.IsNumeric(null));
             Assert.False(BaseFunc.IsNumeric(new object()));
             Assert.False(BaseFunc.IsNumeric(DateTime.Now));
         }
 
+        [Theory]
+        [InlineData("hello", "he*", true, CompareOptions.IgnoreCase)]
+        [InlineData("hello", "he?lo", true, CompareOptions.IgnoreCase)]
+        [InlineData("hello", "he#lo", false, CompareOptions.IgnoreCase)]
+        [InlineData("h3llo", "h#llo", true, CompareOptions.IgnoreCase)]
+        [InlineData("Hello", "h*", true, CompareOptions.IgnoreCase)]
+        [InlineData("Hello", "h*", false, CompareOptions.None)] // âœ… æ˜ç¢ºå€åˆ†å¤§å°å¯«
+        public void LikePatternTest(string input, string pattern, bool expected, CompareOptions options)
+        {
+            var result = StrFunc.Like(input, pattern, options);
+            Assert.Equal(expected, result);
+        }
 
+        [Theory]
+        [InlineData("0009", 10, "0010")]
+        [InlineData("0999", 10, "1000")]
+        [InlineData("Z9", 36, "ZA")]
+        [InlineData("ZZ", 36, "100")]
+        [InlineData("ABZ", 36, "AC0")] // æ­£ç¢ºçµæœ
+        [InlineData("ZZZ", 36, "1000")]
+        public void GetNextIdTest(string currentId, int numberBase, string expected)
+        {
+            var next = StrFunc.GetNextId(currentId, numberBase);
+            Assert.Equal(expected, next);
+        }
     }
 }
