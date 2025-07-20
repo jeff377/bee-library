@@ -78,7 +78,7 @@ namespace Bee.Db
             var ctor = type.GetConstructor(Type.EmptyTypes);
             if (ctor == null)
             {
-                throw new InvalidOperationException($"Type {type.FullName} 必須具有無參數建構子。");
+                throw new InvalidOperationException($"Type {type.FullName} must have a parameterless constructor.");
             }
 
             var isDBNullMethod = typeof(DbDataReader).GetMethod("IsDBNull", new[] { typeof(int) });
