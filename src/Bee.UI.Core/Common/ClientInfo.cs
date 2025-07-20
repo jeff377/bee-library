@@ -179,7 +179,7 @@ namespace Bee.UI.Core
         /// </summary>
         private static void ApiServiceOptionsInitialize()
         {
-            SystemApiConnector.ApiServiceOptionsInitialize();
+            SystemApiConnector.Initialize();
         }
 
         /// <summary>

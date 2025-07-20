@@ -14,9 +14,13 @@ namespace Bee.Define
         /// </summary>
         public const string Ping = "Ping";
         /// <summary>
-        /// 取得 API 傳輸層的 Payload 編碼選項，此方法不啟用資料編碼。
+        /// 取得通用參數及環境設置，此方法不啟用資料編碼。
         /// </summary>
-        public const string GetApiPayloadOptions = "GetApiPayloadOptions";
+        public const string GetCommonConfiguration = "GetCommonConfiguration";
+        /// <summary>
+        /// 執行登入操作，此方法不啟用加密。
+        /// </summary>
+        public const string Login = "Login";
         /// <summary>
         /// 執行自訂方法。
         /// </summary>

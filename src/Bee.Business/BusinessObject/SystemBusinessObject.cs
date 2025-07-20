@@ -44,39 +44,37 @@ namespace Bee.Business
         }
 
         /// <summary>
-        /// 取得 API 傳輸層的 Payload 編碼選項。
+        /// 取得通用參數及環境設置。
         /// </summary>
         /// <param name="args">傳入引數。</param>
-        public virtual GetApiPayloadOptionsResult GetApiPayloadOptions(GetApiPayloadOptionsArgs args)
+        public virtual GetCommonConfigurationResult GetCommonConfiguration(GetCommonConfigurationArgs args)
         {
-            var options = CacheFunc.GetSystemSettings().CommonConfiguration.ApiPayloadOptions;
-            return new GetApiPayloadOptionsResult()
+            var commonConfiguration = CacheFunc.GetSystemSettings().CommonConfiguration;
+            return new GetCommonConfigurationResult()
             {
-                Serializer = options.Serializer,
-                Compressor = options.Compressor,
-                Encryptor = options.Encryptor
+                CommonConfiguration = commonConfiguration
             };
         }
 
         /// <summary>
-        /// 登入系統。
+        /// 執行登入操作。
         /// </summary>
         /// <param name="args">傳入引數。</param>
         public virtual LoginResult Login(LoginArgs args)
         {
             // 伺端端建立一組隨機 AES + HMAC 金鑰
-            //string combinedKey = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
+            // string combinedKey = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
 
+            // 取得伺服端的 API 加密金鑰
             string apiEncryptionKey = Convert.ToBase64String(BackendInfo.ApiEncryptionKey);
-
             // 將伺服端建立的金鑰，使用公鑰加密回傳給用戶端
-            string encryptedSessionKey = RsaCryptor.EncryptWithPublicKey(apiEncryptionKey, args.ClientPublicKey);
+            apiEncryptionKey = RsaCryptor.EncryptWithPublicKey(apiEncryptionKey, args.ClientPublicKey);
 
             return new LoginResult()
             {
                 AccessToken = Guid.NewGuid(),
                 ExpiredAt = DateTime.UtcNow.AddHours(1), // 預設為 1 小時後過期
-                EncryptedSessionKey = encryptedSessionKey
+                ApiEncryptionKey = apiEncryptionKey
             };
         }
 

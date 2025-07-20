@@ -27,7 +27,7 @@ namespace Bee.Define
         /// 經過 RSA 加密的會話金鑰。
         /// </summary>
         [Key(102)]
-        public string EncryptedSessionKey { get; set; } = string.Empty;
+        public string ApiEncryptionKey { get; set; } = string.Empty;
     }
 
 }

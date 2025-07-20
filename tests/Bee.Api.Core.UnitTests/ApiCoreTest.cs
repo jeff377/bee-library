@@ -91,13 +91,13 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// 執行 GetApiPayloadOptions 方法。
+        /// 執行 GetCommonConfiguration 方法。
         /// </summary>
         [Fact]
-        public void GetApiPayloadOptions()
+        public void GetCommonConfiguration()
         {
-            var args = new GetApiPayloadOptionsArgs();
-            var result = ApiExecute<GetApiPayloadOptionsResult>(SysProgIds.System, "GetApiPayloadOptions", args);
+            var args = new GetCommonConfigurationArgs();
+            var result = ApiExecute<GetCommonConfigurationResult>(SysProgIds.System, SystemActions.GetCommonConfiguration, args);
             Assert.NotNull(result);
             //Assert.Equal("messagepack", result.Serializer);
         }

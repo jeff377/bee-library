@@ -51,7 +51,7 @@ namespace JsonRpcClient
 
             // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
             var connector = CreateSystemApiConnector();
-            connector.ApiServiceOptionsInitialize();
+            connector.Initialize();
 
             MessageBox.Show("系統設定初始化完成。");
         }
@@ -62,16 +62,7 @@ namespace JsonRpcClient
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
 
             var connector = CreateSystemApiConnector();
-            var args = new LoginArgs()
-            {
-                UserId = "jeff",
-                Password = "1234",
-                ClientPublicKey = publicKeyXml
-            };
-            var result = connector.Execute<LoginResult>("Login", args, PayloadFormat.Encoded);
-            // 用私鑰解密 EncryptedSessionKey
-            string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.EncryptedSessionKey, privateKeyXml);
-            FrontendInfo.ApiEncryptionKey = Convert.FromBase64String(sessionKey); ;
+            connector.Login("jeff", "1234");
         }
 
         /// <summary>

@@ -70,10 +70,10 @@ namespace Bee.Business.UnitTests
 
             // Assert
             Assert.NotNull(result);
-            Assert.NotEmpty(result.EncryptedSessionKey);
+            Assert.NotEmpty(result.ApiEncryptionKey);
 
             // •Œ®p∆_∏—±K EncryptedSessionKey
-            string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.EncryptedSessionKey, privateKeyXml);
+            string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
             Assert.False(string.IsNullOrWhiteSpace(sessionKey));
         }
     }

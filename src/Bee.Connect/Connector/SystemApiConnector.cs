@@ -64,19 +64,14 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作。
+        /// 取得通用參數及環境設置，進行初始化。
         /// </summary>
-        public void ApiServiceOptionsInitialize()
+        public void Initialize()
         {
-            var args = new GetApiPayloadOptionsArgs();
-            var result = Execute<GetApiPayloadOptionsResult>(SystemActions.GetApiPayloadOptions, args, PayloadFormat.Plain);
-            var payloadOptions = new ApiPayloadOptions()
-            {
-                Serializer = result.Serializer,
-                Compressor = result.Compressor,
-                Encryptor = result.Encryptor
-            };
-            ApiServiceOptions.Initialize(payloadOptions);
+            var args = new GetCommonConfigurationArgs();
+            var result = Execute<GetCommonConfigurationResult>(SystemActions.GetCommonConfiguration, args, PayloadFormat.Plain);
+            var commonConfiguration = result.CommonConfiguration;
+            commonConfiguration.Initialize();
         }
 
         /// <summary>
@@ -104,6 +99,29 @@ namespace Bee.Connect
             };
             var result = Execute<CreateSessionResult>(SystemActions.CreateSession, args, PayloadFormat.Plain);
             return result.AccessToken;
+        }
+
+        /// <summary>
+        /// 執行登入操作。
+        /// </summary>
+        /// <param name="userID">使用者帳號。</param>
+        /// <param name="password">使用者密碼。</param>
+        /// <returns></returns>
+        public void Login(string userID, string password)
+        {
+            // 產生 RSA 對稱金鑰
+            RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
+
+            var args = new LoginArgs()
+            {
+                UserId = userID,
+                Password = password,
+                ClientPublicKey = publicKeyXml
+            };
+            var result = Execute<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded);
+            // 用私鑰解密 EncryptedSessionKey
+            string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
+            FrontendInfo.ApiEncryptionKey = Convert.FromBase64String(sessionKey);
         }
 
         /// <summary>
