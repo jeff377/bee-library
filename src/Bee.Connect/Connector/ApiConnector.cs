@@ -72,11 +72,11 @@ namespace Bee.Connect
             var response = this.Provider.Execute(request);
             LogRawData(response);
 
-            // 還原回應資料（若為 Encoded 或 Encrypted）
-            RestoreResponsePayload(response, actualFormat);
-
             if (response.Error != null)
                 throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
+
+            // 還原回應資料（若為 Encoded 或 Encrypted）
+            RestoreResponsePayload(response, actualFormat);
 
             return (T)response.Result.Value;
         }

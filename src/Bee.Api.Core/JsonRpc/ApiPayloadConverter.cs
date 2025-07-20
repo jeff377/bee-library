@@ -40,10 +40,6 @@ namespace Bee.Api.Core
 
                 bytes = transformer.Encrypt(bytes, encryptionKey);
             }
-            else if (encryptionKey != null && encryptionKey.Length > 0)
-            {
-                throw new InvalidOperationException("Encryption key should not be provided for non-encrypted format.");
-            }
 
             payload.Value = bytes;
             payload.Format = targetFormat;
