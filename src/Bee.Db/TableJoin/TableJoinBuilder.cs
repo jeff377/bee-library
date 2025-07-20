@@ -282,10 +282,10 @@ namespace Bee.Db
             string sBaseValues;
 
             sBaseValues = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            sTableAlias = StrFunc.GetNextID(tableAlias, sBaseValues);
+            sTableAlias = StrFunc.GetNextId(tableAlias, sBaseValues);
             // 若資料表別名為關鍵字，則重取資料表別名
             if (StrFunc.IsEqualsOr(sTableAlias, "AS", "BY"))
-                sTableAlias = StrFunc.GetNextID(sTableAlias, sBaseValues);
+                sTableAlias = StrFunc.GetNextId(sTableAlias, sBaseValues);
             return sTableAlias;
         }
 
