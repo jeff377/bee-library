@@ -60,7 +60,7 @@ namespace Bee.Api.Core
                 // 傳輸資料格式
                 var format = request.Params.Format;
                 // 還原請求資料內容
-                ApiPayloadConverter.RestoreFrom(request.Params, format, FrontendInfo.ApiEncryptionKey);
+                ApiPayloadConverter.RestoreFrom(request.Params, format, BackendInfo.ApiEncryptionKey);
 
                 // 從 Method 屬性解析出 ProgId 與 Action
                 var (progId, action) = ParseMethod(request.Method);
@@ -70,7 +70,7 @@ namespace Bee.Api.Core
                 // 傳出結果
                 response.Result = new JsonRpcResult { Value = value };
                 // 設定回應的資料格式
-                ApiPayloadConverter.TransformTo(response.Result, format, FrontendInfo.ApiEncryptionKey);
+                ApiPayloadConverter.TransformTo(response.Result, format, BackendInfo.ApiEncryptionKey);
             }
             catch (Exception ex)
             {

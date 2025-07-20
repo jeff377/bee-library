@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography.X509Certificates;
 using Bee.Base;
 using Bee.Cache;
 using Bee.Define;
@@ -64,9 +65,12 @@ namespace Bee.Business
         public virtual LoginResult Login(LoginArgs args)
         {
             // 伺端端建立一組隨機 AES + HMAC 金鑰
-            string combinedKey = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
+            //string combinedKey = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
+
+            string apiEncryptionKey = Convert.ToBase64String(BackendInfo.ApiEncryptionKey);
+
             // 將伺服端建立的金鑰，使用公鑰加密回傳給用戶端
-            string encryptedSessionKey = RsaCryptor.EncryptWithPublicKey(combinedKey, args.ClientPublicKey);
+            string encryptedSessionKey = RsaCryptor.EncryptWithPublicKey(apiEncryptionKey, args.ClientPublicKey);
 
             return new LoginResult()
             {

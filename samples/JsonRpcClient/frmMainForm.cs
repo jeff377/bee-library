@@ -92,8 +92,6 @@ namespace JsonRpcClient
                 // 若為近端連線，需在用戶端模擬伺服端的初始化
                 var settings = CacheFunc.GetSystemSettings();
                 settings.Initialize();
-                // 設定前端 API 金鑰
-                FrontendInfo.ApiEncryptionKey = BackendInfo.ApiEncryptionKey;
             }
             else
             {
@@ -130,15 +128,20 @@ namespace JsonRpcClient
 
         private void btnHello_Click(object sender, EventArgs e)
         {
-            // 建立表單層級連接單，ProgId=Demo 未自訂業務邏輯物件，對應至共用的 FormBusinessObject
-            var connector = CreateFormApiConnector("Demo");
+            try
+            {
+                // 建立表單層級連接單，ProgId=Demo 未自訂業務邏輯物件，對應至共用的 FormBusinessObject
+                var connector = CreateFormApiConnector("Demo");
+                var args = new ExecFuncArgs("Hello");
+                var result = connector.Execute<ExecFuncResult>("ExecFunc", args);
+                string message = result.Parameters.GetValue<string>("Hello");
+                MessageBox.Show($"Message: {message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"發生錯誤: {ex.Message}");
+            }
 
-
-
-            var args = new ExecFuncArgs("Hello");
-            var result = connector.Execute<ExecFuncResult>("ExecFunc", args);
-            string message = result.Parameters.GetValue<string>("Hello");
-            MessageBox.Show($"Message: {message}");
         }
     }
 }
