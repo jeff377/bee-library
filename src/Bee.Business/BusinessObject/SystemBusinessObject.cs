@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using Bee.Base;
 using Bee.Cache;
 using Bee.Define;
@@ -62,7 +61,11 @@ namespace Bee.Business
         /// <param name="args">傳入引數。</param>
         public virtual LoginResult Login(LoginArgs args)
         {
-            // 伺端端建立一組隨機 AES + HMAC 金鑰
+            // 驗證使用者帳號與密碼是否正確
+            if (!AuthenticateUser(args))
+                throw new UnauthorizedAccessException("Invalid username or password.");
+
+            // 若要使用 SessionKey 做為 API 加密金鑰，需建立一組隨機 AES + HMAC 金鑰，與 AccessToken 做綁定
             // string combinedKey = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
 
             // 取得伺服端的 API 加密金鑰
@@ -76,6 +79,16 @@ namespace Bee.Business
                 ExpiredAt = DateTime.UtcNow.AddHours(1), // 預設為 1 小時後過期
                 ApiEncryptionKey = apiEncryptionKey
             };
+        }
+
+        /// <summary>
+        /// 驗證使用者帳號與密碼是否正確。
+        /// </summary>
+        /// <param name="args">登入引數。</param>
+        /// <returns>是否驗證成功。</returns>
+        protected virtual bool AuthenticateUser(LoginArgs args)
+        {
+            return true; // 預設為通過，可由子類實作實際驗證邏輯
         }
 
         /// <summary>
