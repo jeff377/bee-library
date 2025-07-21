@@ -1,5 +1,3 @@
-using Bee.Api.Core;
-
 using Bee.Base;
 using Bee.Cache;
 using Bee.Connect;
@@ -23,9 +21,16 @@ namespace JsonRpcClient
         /// </summary>
         private string Endpoint { get; set; } = string.Empty;
 
+        /// <summary>
+        /// Load event handler for the main form.
+        /// </summary>
         private void frmMainForm_Load(object sender, EventArgs e)
         {
             SysInfo.LogWriter = new FormLogWriter(this);
+            SysInfo.LogOptions = new LogOptions()
+            {
+                ApiConnector = new ApiConnectorLogOptions(true, true)
+            };
         }
 
         /// <summary>
@@ -33,7 +38,7 @@ namespace JsonRpcClient
         /// </summary>
         public void AppendLog(LogEntry entry)
         {
-            string message = $"{entry.Timestamp:yyyy-MM-dd HH:mm:ss}\n{entry.Message}";
+            string message = $"{entry.Timestamp:yyyy-MM-dd HH:mm:ss}\r\n{entry.Message}\r\n";
             edtLog.AppendText(message + Environment.NewLine);
         }
 
@@ -50,7 +55,7 @@ namespace JsonRpcClient
             // 設置連線方式
             SetConnectType(connectType, endpoint);
 
-            // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
+            // 取得通用參數及環境設置，進行初始化
             var connector = CreateSystemApiConnector();
             connector.Initialize();
 
@@ -59,9 +64,7 @@ namespace JsonRpcClient
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            // 產生 RSA 對稱金鑰
-            RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
-
+            // 登入系統，帳密未做驗證，僅為示範用
             var connector = CreateSystemApiConnector();
             connector.Login("jeff", "1234");
         }
@@ -74,23 +77,15 @@ namespace JsonRpcClient
         private void SetConnectType(ConnectType connectType, string endpoint)
         {
             Endpoint = endpoint;
+
+            // 設置連線方式相關靜態屬性
+            ConnectFunc.SetConnectType(connectType, endpoint);
+
+            // 若為近端連線，需在用戶端模擬伺服端的初始化
             if (connectType == ConnectType.Local)
             {
-                // 設定近端連線相關屬性
-                FrontendInfo.ConnectType = ConnectType.Local;
-                FrontendInfo.Endpoint = string.Empty;
-                BackendInfo.DefinePath = endpoint;
-
-                // 若為近端連線，需在用戶端模擬伺服端的初始化
                 var settings = CacheFunc.GetSystemSettings();
                 settings.Initialize();
-            }
-            else
-            {
-                // 設定遠端連線相關屬性
-                FrontendInfo.ConnectType = ConnectType.Remote;
-                FrontendInfo.Endpoint = endpoint;
-                BackendInfo.DefinePath = string.Empty;
             }
         }
 
