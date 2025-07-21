@@ -19,11 +19,9 @@ namespace SettingsEditor
         {
             // 設為工具程式模式
             SysInfo.IsToolMode = true;
-
             // 因為發佈為單一執行檔，無法動態載入物件，需由程式碼建立
             BackendInfo.DefineProvider = new FileDefineProvider();
             BackendInfo.BusinessObjectProvider = new Bee.Business.BusinessObjectProvider();
-
             // 允許產生設定檔
             ClientInfo.AllowGenerateSettings = true;  
             // 用戶端初始化
@@ -33,7 +31,8 @@ namespace SettingsEditor
             // 初始化金鑰
             var settings = CacheFunc.GetSystemSettings();
             settings.BackendConfiguration.InitializeSecurityKeys();
-
+            // 設定為非偵錯模式
+            SysInfo.IsDebugMode = false; 
             return true;
         }
     }

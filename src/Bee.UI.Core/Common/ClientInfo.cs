@@ -154,32 +154,11 @@ namespace Bee.UI.Core
         /// <param name="endpoint">服端端點，遠端連線為網址，近端連線為本地路徑。</param>
         private static void SetConnectType(ConnectType connectType, string endpoint)
         {
-            if (connectType == ConnectType.Local)
-            {
-                // 設定近端連線相關屬性
-                FrontendInfo.ConnectType = ConnectType.Local;
-                FrontendInfo.Endpoint = string.Empty;
-                BackendInfo.DefinePath = endpoint;
-            }
-            else
-            {
-                // 設定遠端連線相關屬性
-                FrontendInfo.ConnectType = ConnectType.Remote;
-                FrontendInfo.Endpoint = endpoint;
-                BackendInfo.DefinePath = string.Empty;
-            }
+            // 設置連線方式異動的相關靜態屬性
+            ConnectFunc.SetConnectType(connectType, endpoint);
             // 變更連線需重置 SystemConnector 及 DefineAccess
             _systemConnector = null;
             _defineAccess = null;
-            FrontendInfo.AccessToken = Guid.Empty;
-        }
-
-        /// <summary>
-        /// 初始化 API 服務選項，API 服務端點異動時需重新建立。
-        /// </summary>
-        private static void ApiServiceOptionsInitialize()
-        {
-            SystemApiConnector.Initialize();
         }
 
         /// <summary>
@@ -193,8 +172,8 @@ namespace Bee.UI.Core
             var connectType = validator.Validate(endpoint, AllowGenerateSettings);
             // 設置連線方式
             SetConnectType(connectType, endpoint);
-            // 初始化 API 服務選項
-            ApiServiceOptionsInitialize();
+            // 取得通用參數及環境設置，進行初始化
+            SystemApiConnector.Initialize();
             // 儲存服務端點
             EndpointStorage.SaveEndpoint(endpoint);
         }
@@ -223,8 +202,8 @@ namespace Bee.UI.Core
                 var connectType = validator.Validate(endpoint, AllowGenerateSettings);
                 // 設置連線方式
                 SetConnectType(connectType, endpoint);
-                // 初始化 API 服務選項
-                ApiServiceOptionsInitialize();
+                // 取得通用參數及環境設置，進行初始化
+                SystemApiConnector.Initialize();
                 return true;
             }
             catch

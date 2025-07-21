@@ -52,7 +52,7 @@ namespace Bee.Business
             var commonConfiguration = CacheFunc.GetSystemSettings().CommonConfiguration;
             return new GetCommonConfigurationResult()
             {
-                CommonConfiguration = commonConfiguration
+                CommonConfiguration = commonConfiguration.ToXml()
             };
         }
 

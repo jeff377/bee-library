@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Xml.Serialization;
-using MessagePack;
 using Bee.Base;
 
 namespace Bee.Define
@@ -11,25 +10,22 @@ namespace Bee.Define
     /// <summary>
     /// 通用參數及環境設置。
     /// </summary>
-    [MessagePackObject]
     [Serializable]
     [XmlType("CommonConfiguration")]
     [Description("通用參數及環境設置。")]
     [TreeNode("Common")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class CommonConfiguration
+    public class CommonConfiguration : IObjectSerializeBase
     {
         /// <summary>
         /// 系統主版號。
         /// </summary>
-        [Key(0)]
         [Description("系統主版號。")]
         public string Version { get; set; } = string.Empty;
 
         /// <summary>
         /// 是否為偵錯模式。
         /// </summary>
-        [Key(1)]
         [Description("是否為偵錯模式")]
         [DefaultValue(false)]
         public bool IsDebugMode { get; set; } = false;
@@ -40,7 +36,6 @@ namespace Bee.Define
         /// 設定格式範例：Custom.Module|ThirdParty.Dto
         /// 注意：Bee.Base 與 Bee.Define 為系統內建的預設命名空間，無需額外指定。
         /// </summary>
-        [Key(2)]
         [Category("API")]
         [Description("允許 JSON-RPC 傳遞資料的型別命名空間清單，以 '|' 分隔。")]
         [DefaultValue("")]
@@ -49,7 +44,6 @@ namespace Bee.Define
         /// <summary>
         /// 提供 API Payload 處理相關選項，例如序列化、壓縮與加密。
         /// </summary>
-        [Key(3)]
         [Category("API")]
         [Description("提供 API Payload 處理相關選項，例如序列化、壓縮與加密。")]
         public ApiPayloadOptions ApiPayloadOptions { get; set; } = new ApiPayloadOptions();
@@ -57,7 +51,6 @@ namespace Bee.Define
         /// <summary>
         /// 記錄選項，用於設定日誌記錄的相關參數。
         /// </summary>
-        [Key(4)]
         [Category("Logging")]
         [Description("提供日誌記錄的相關選項，例如記錄層級、輸出格式等。")]
         public LogOptions LogOptions { get; set; } = new LogOptions();

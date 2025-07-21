@@ -14,7 +14,7 @@ namespace Bee.Define
         /// 通用參數及環境設置。
         /// </summary>
         [Key(100)]
-        public CommonConfiguration CommonConfiguration { get; set; } = null;
+        public string CommonConfiguration { get; set; } = string.Empty;
     }
 
 }

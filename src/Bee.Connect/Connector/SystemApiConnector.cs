@@ -68,10 +68,13 @@ namespace Bee.Connect
         /// </summary>
         public void Initialize()
         {
+            // 取得通用參數及環境設置，進行初始化
             var args = new GetCommonConfigurationArgs();
             var result = Execute<GetCommonConfigurationResult>(SystemActions.GetCommonConfiguration, args, PayloadFormat.Plain);
-            var commonConfiguration = result.CommonConfiguration;
-            commonConfiguration.Initialize();
+            var configuration = SerializeFunc.XmlToObject<CommonConfiguration>(result.CommonConfiguration);
+            configuration.Initialize();
+            // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
+            ApiServiceOptions.Initialize(configuration.ApiPayloadOptions);
         }
 
         /// <summary>
