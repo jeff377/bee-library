@@ -48,22 +48,22 @@ namespace JsonRpcClient
         /// </summary>
         private void btnInitialize_Click(object sender, EventArgs e)
         {
-            edtLog.Text = string.Empty; // 清除日誌顯示
+            edtLog.Text = string.Empty;
             try
             {
-                // 判斷服務端點位置為本地路徑或網址，傳回對應的連線方式
+                // Determine whether the endpoint is a local path or URL, and return the corresponding connection type
                 string endpoint = edtEndpoint.Text;
                 var validator = new ApiConnectValidator();
                 var connectType = validator.Validate(endpoint);
 
-                // 設置連線方式
+                // Set the connection type
                 SetConnectType(connectType, endpoint);
 
-                // 取得通用參數及環境設置，進行初始化
+                // Retrieve general parameters and environment settings, and initialize the system
                 var connector = CreateSystemApiConnector();
                 connector.Initialize();
 
-                MessageBox.Show("初始化完成。");
+                MessageBox.Show("Initialization complete.");
             }
             catch (Exception ex)
             {
@@ -76,10 +76,10 @@ namespace JsonRpcClient
         /// </summary>
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            edtLog.Text = string.Empty; // 清除日誌顯示
+            edtLog.Text = string.Empty;
             try
             {
-                // 登入系統，帳密未做驗證，僅為示範用
+                // Log in to the system; no real credential validation here, for demonstration purposes only
                 var connector = CreateSystemApiConnector();
                 connector.Login("jeff", "1234");
                 MessageBox.Show($"AccessToken : {FrontendInfo.AccessToken}\nApiEncryptionKey : {Convert.ToBase64String(FrontendInfo.ApiEncryptionKey)}");
@@ -95,17 +95,17 @@ namespace JsonRpcClient
         /// </summary>
         private void btnHello_Click(object sender, EventArgs e)
         {
-            edtLog.Text = string.Empty; // 清除日誌顯示
+            edtLog.Text = string.Empty;
 
             if (FrontendInfo.AccessToken == Guid.Empty)
             {
-                MessageBox.Show("請先執行登入方法。");
+                MessageBox.Show("Please login first.");
                 return;
             }
 
             try
             {
-                // 建立表單層級連接單，ProgId=Demo 未自訂業務邏輯物件，對應至共用的 FormBusinessObject
+                // Create a form-level connector. ProgId = "Demo" is not mapped to a custom business object and will use the shared FormBusinessObject.
                 var connector = CreateFormApiConnector("Demo");
                 var args = new ExecFuncArgs("Hello");
                 var result = connector.Execute<ExecFuncResult>("ExecFunc", args);
@@ -120,18 +120,18 @@ namespace JsonRpcClient
         }
 
         /// <summary>
-        /// 設置連線方式，連線設定時使用。
+        /// Set the connection type. Used during initialization.
         /// </summary>
-        /// <param name="connectType">服務連線方式。</param>
-        /// <param name="endpoint">服端端點，遠端連線為網址，近端連線為本地路徑。</param>
+        /// <param name="connectType">Connection type for the service.</param>
+        /// <param name="endpoint">Service endpoint. URL for remote, local path for local mode.</param>
         private void SetConnectType(ConnectType connectType, string endpoint)
         {
             Endpoint = endpoint;
 
-            // 設置連線方式相關靜態屬性
+            // Set static connection information
             ConnectFunc.SetConnectType(connectType, endpoint);
 
-            // 若為近端連線，需在用戶端模擬伺服端的初始化
+            // If it is a local connection, simulate server initialization on the client
             if (connectType == ConnectType.Local)
             {
                 var settings = CacheFunc.GetSystemSettings();
@@ -140,29 +140,28 @@ namespace JsonRpcClient
         }
 
         /// <summary>
-        /// 建立系統層級 API 服務連接器。 
+        /// Create a system-level API connector.
         /// </summary>
         private SystemApiConnector CreateSystemApiConnector()
         {
             if (FrontendInfo.ConnectType == ConnectType.Local)
-                return new SystemApiConnector(Guid.Empty);  // 連端連線
+                return new SystemApiConnector(Guid.Empty);
             else
                 return new SystemApiConnector(Endpoint, Guid.Empty);
         }
 
         /// <summary>
-        /// 建立表單層級 API 服務連接器。
+        /// Create a form-level API connector.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">Program ID used to identify the function or form.</param>
         private FormApiConnector CreateFormApiConnector(string progId)
         {
             Guid accessToken = Guid.NewGuid();
             if (FrontendInfo.ConnectType == ConnectType.Local)
-                return new FormApiConnector(accessToken, progId);  // 連端連線
+                return new FormApiConnector(accessToken, progId);
             else
                 return new FormApiConnector(Endpoint, accessToken, progId);
         }
-
 
     }
 }

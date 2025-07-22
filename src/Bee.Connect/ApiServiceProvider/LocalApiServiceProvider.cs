@@ -42,7 +42,7 @@ namespace Bee.Connect
         public async Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request)
         {
             // 執行 API 方法
-            var executor = new JsonRpcExecutor(AccessToken);
+            var executor = new JsonRpcExecutor(AccessToken, true);
             var response = await executor.ExecuteAsync(request);
             return response;
         }
