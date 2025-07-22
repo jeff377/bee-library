@@ -38,7 +38,8 @@ namespace JsonRpcClient
         /// </summary>
         public void AppendLog(LogEntry entry)
         {
-            string message = $"{entry.Timestamp:yyyy-MM-dd HH:mm:ss}\r\n{entry.Message}\r\n";
+            string message = $"{entry.Timestamp:yyyy-MM-dd HH:mm:ss}\r\n{entry.Message}\r\n" +
+                                            "-------------------------------------------------------------------------\r\n";
             edtLog.AppendText(message + Environment.NewLine);
         }
 
@@ -47,26 +48,75 @@ namespace JsonRpcClient
         /// </summary>
         private void btnInitialize_Click(object sender, EventArgs e)
         {
-            // 判斷服務端點位置為本地路徑或網址，傳回對應的連線方式
-            string endpoint = edtEndpoint.Text;
-            var validator = new ApiConnectValidator();
-            var connectType = validator.Validate(endpoint);
+            edtLog.Text = string.Empty; // 清除日誌顯示
+            try
+            {
+                // 判斷服務端點位置為本地路徑或網址，傳回對應的連線方式
+                string endpoint = edtEndpoint.Text;
+                var validator = new ApiConnectValidator();
+                var connectType = validator.Validate(endpoint);
 
-            // 設置連線方式
-            SetConnectType(connectType, endpoint);
+                // 設置連線方式
+                SetConnectType(connectType, endpoint);
 
-            // 取得通用參數及環境設置，進行初始化
-            var connector = CreateSystemApiConnector();
-            connector.Initialize();
+                // 取得通用參數及環境設置，進行初始化
+                var connector = CreateSystemApiConnector();
+                connector.Initialize();
 
-            MessageBox.Show("系統設定初始化完成。");
+                MessageBox.Show("初始化完成。");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+            }
         }
 
+        /// <summary>
+        /// Login to the system.
+        /// </summary>
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            // 登入系統，帳密未做驗證，僅為示範用
-            var connector = CreateSystemApiConnector();
-            connector.Login("jeff", "1234");
+            edtLog.Text = string.Empty; // 清除日誌顯示
+            try
+            {
+                // 登入系統，帳密未做驗證，僅為示範用
+                var connector = CreateSystemApiConnector();
+                connector.Login("jeff", "1234");
+                MessageBox.Show($"AccessToken : {FrontendInfo.AccessToken}\nApiEncryptionKey : {Convert.ToBase64String(FrontendInfo.ApiEncryptionKey)}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// execute a simple "Hello" function on the server.
+        /// </summary>
+        private void btnHello_Click(object sender, EventArgs e)
+        {
+            edtLog.Text = string.Empty; // 清除日誌顯示
+
+            if (FrontendInfo.AccessToken == Guid.Empty)
+            {
+                MessageBox.Show("請先執行登入方法。");
+                return;
+            }
+
+            try
+            {
+                // 建立表單層級連接單，ProgId=Demo 未自訂業務邏輯物件，對應至共用的 FormBusinessObject
+                var connector = CreateFormApiConnector("Demo");
+                var args = new ExecFuncArgs("Hello");
+                var result = connector.Execute<ExecFuncResult>("ExecFunc", args);
+                string message = result.Parameters.GetValue<string>("Hello");
+                MessageBox.Show($"Message: {message}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error: {ex.Message}");
+            }
+
         }
 
         /// <summary>
@@ -113,22 +163,6 @@ namespace JsonRpcClient
                 return new FormApiConnector(Endpoint, accessToken, progId);
         }
 
-        private void btnHello_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                // 建立表單層級連接單，ProgId=Demo 未自訂業務邏輯物件，對應至共用的 FormBusinessObject
-                var connector = CreateFormApiConnector("Demo");
-                var args = new ExecFuncArgs("Hello");
-                var result = connector.Execute<ExecFuncResult>("ExecFunc", args);
-                string message = result.Parameters.GetValue<string>("Hello");
-                MessageBox.Show($"Message: {message}");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"發生錯誤: {ex.Message}");
-            }
 
-        }
     }
 }

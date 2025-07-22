@@ -115,14 +115,19 @@ namespace Bee.Connect
             // 產生 RSA 對稱金鑰
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
 
+            // 執行登入操作
             var args = new LoginArgs()
             {
                 UserId = userID,
                 Password = password,
-                ClientPublicKey = publicKeyXml
+                ClientPublicKey = publicKeyXml  // 傳入 RSA 公鑰
             };
             var result = Execute<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded);
-            // 用私鑰解密 EncryptedSessionKey
+
+            // 取得存取令牌
+            FrontendInfo.AccessToken = result.AccessToken;
+
+            // 用 RSA 私鑰解密，取得 API 加密金鑰
             string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
             FrontendInfo.ApiEncryptionKey = Convert.FromBase64String(sessionKey);
         }

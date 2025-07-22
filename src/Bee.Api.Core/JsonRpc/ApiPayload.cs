@@ -37,7 +37,6 @@ namespace Bee.Api.Core
         /// 傳遞資料的格式（原始、編碼或加密）。
         /// </summary>
         [JsonProperty("format")]
-        [DefaultValue(PayloadFormat.Plain)]
         public PayloadFormat Format { get; internal set; } = PayloadFormat.Plain;
 
         /// <summary>

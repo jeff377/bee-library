@@ -78,31 +78,5 @@ namespace Bee.Base
                 return sResponseBody;
             }
         }
-
-        /// <summary>
-        /// 發送 GET 請求取得回應內容。
-        /// </summary>
-        /// <param name="endpoint">服務端點。</param>
-        /// <param name="headers">自訂標頭。</param>
-        public static async Task<HttpResponseMessage> GetResponse(string endpoint, NameValueCollection headers = null)
-        {
-            HttpResponseMessage oResponse;
-
-            using (HttpClient client = new HttpClient())
-            {
-                if (headers != null)
-                {
-                    for (int N1 = 0; N1 < headers.Count; N1++)
-                        client.DefaultRequestHeaders.Add(headers.GetKey(N1), headers.Get(N1));
-                }
-                // 發送 GET 請求
-                oResponse = await client.GetAsync(endpoint).ConfigureAwait(false);
-                // 確認是否成功
-                oResponse.EnsureSuccessStatusCode();
-                // 讀取回應內容
-                return oResponse;
-            }
-        }
-
     }
 }

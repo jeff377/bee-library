@@ -21,8 +21,11 @@ namespace Bee.Connect
         /// <param name="accessToken">存取令牌。</param>
         public RemoteApiServiceProvider(string endpoint, Guid accessToken)
         {
+            if (string.IsNullOrWhiteSpace(endpoint))
+                throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));
+
             Endpoint = endpoint;
-            AccessToken = accessToken;
+            AccessToken = accessToken;  // 注意：AccessToken 可為 Guid.Empty，用於尚未登入狀態（如 Login、Ping）
         }
 
         #endregion
@@ -43,14 +46,7 @@ namespace Bee.Connect
         /// <param name="request">JSON-RPC 請求模型。</param>
         public JsonRpcResponse Execute(JsonRpcRequest request)
         {
-            var header = new NameValueCollection();
-            header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
-            header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
-
-            string body = request.ToJson();  // 傳入參數進行 JSON 序列化
-            string json = HttpFunc.PostAsync(this.Endpoint, body, header).Result;  // 執行 Web API 方法
-            var response = SerializeFunc.JsonToObject<JsonRpcResponse>(json);  // 執行 JSON 反序列化
-            return response;
+            return Task.Run(() => ExecuteAsync(request)).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -59,14 +55,23 @@ namespace Bee.Connect
         /// <param name="request">JSON-RPC 請求模型。</param>
         public async Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request)
         {
-            var header = new NameValueCollection();
-            header.Add(ApiHeaders.ApiKey, FrontendInfo.ApiKey);  // 遠端呼叫需傳入 API KEY，驗證呼叫端的合法性
-            header.Add(ApiHeaders.Authorization, $"Bearer {AccessToken}");
-
+            var headers = CreateHeaders();
             string body = request.ToJson();  // 傳入參數進行 JSON 序列化
-            string json = await HttpFunc.PostAsync(this.Endpoint, body, header);  // 執行 Web API 方法
+            string json = await HttpFunc.PostAsync(Endpoint, body, headers).ConfigureAwait(false); // 執行 Web API 方法
             var response = SerializeFunc.JsonToObject<JsonRpcResponse>(json);  // 執行 JSON 反序列化
             return response;
+        }
+
+        /// <summary>
+        /// 建立 HTTP 標頭集合。
+        /// </summary>
+        private NameValueCollection CreateHeaders()
+        {
+            return new NameValueCollection
+            {
+                { ApiHeaders.ApiKey, FrontendInfo.ApiKey },
+                { ApiHeaders.Authorization, $"Bearer {AccessToken}" }
+            };
         }
 
     }
