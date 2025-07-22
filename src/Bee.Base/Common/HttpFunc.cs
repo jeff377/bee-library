@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Text;
@@ -11,6 +12,31 @@ namespace Bee.Base
     /// </summary>
     public static class HttpFunc
     {
+        private static readonly ConcurrentDictionary<string, HttpClient> _clientMap = new ConcurrentDictionary<string, HttpClient>();
+
+        /// <summary>
+        /// 建立或取得對應網站主機的 <see cref="HttpClient"/> 實例。
+        /// </summary>
+        /// <param name="fullUrl">API 的完整網址，例如 https://api.example.com/v1/login。</param>
+        /// <returns>共用的 <see cref="HttpClient"/> 實例，可重複使用同一連線池。</returns>
+        /// <remarks>
+        /// 此方法會依據網址的 <c>Schema + Host + Port</c> 建立唯一快取 Key，避免同站建立過多 <c>HttpClient</c> 實例，
+        /// 有效解決 Socket Exhaustion 與 DNS 快取問題。
+        /// </remarks>
+        private static HttpClient GetOrCreateClient(string fullUrl)
+        {
+            var baseUri = new Uri(fullUrl);
+            string cacheKey = $"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}";
+
+            return _clientMap.GetOrAdd(cacheKey, _ =>
+            {
+                return new HttpClient
+                {
+                    BaseAddress = new Uri($"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/")
+                };
+            });
+        }
+
         /// <summary>
         /// 判斷是否為 URL。
         /// </summary>
@@ -30,25 +56,26 @@ namespace Bee.Base
         /// <param name="headers">自訂標頭。</param>
         public static async Task<string> PostAsync(string endpoint, string body, NameValueCollection headers = null)
         {
-            StringContent oContent;
-            HttpResponseMessage oResponse;
-            string sResponseBody;
+            HttpClient client = GetOrCreateClient(endpoint);
 
-            using (HttpClient client = new HttpClient())
+            // 發送 POST 請求
+            using (var request = new HttpRequestMessage(HttpMethod.Post, endpoint))
             {
-                oContent = new StringContent(body, Encoding.UTF8, "application/json");
+                request.Content = new StringContent(body, Encoding.UTF8, "application/json");
+
                 if (headers != null)
                 {
-                    for (int N1 = 0; N1 < headers.Count; N1++)
-                        client.DefaultRequestHeaders.Add(headers.GetKey(N1), headers.Get(N1));
+                    foreach (string key in headers)
+                    {
+                        request.Headers.TryAddWithoutValidation(key, headers[key]);
+                    }
                 }
-                // 發送 POST 請求
-                oResponse = await client.PostAsync(endpoint, oContent).ConfigureAwait(false);
-                // 確認是否成功
-                oResponse.EnsureSuccessStatusCode();
-                // 讀取回應內容
-                sResponseBody = await oResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                return sResponseBody;
+
+                using (HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();  // 確認是否成功
+                    return await response.Content.ReadAsStringAsync().ConfigureAwait(false); // 讀取回應內容
+                }
             }
         }
 
@@ -59,23 +86,24 @@ namespace Bee.Base
         /// <param name="headers">自訂標頭。</param>
         public static async Task<string> GetAsync(string endpoint, NameValueCollection headers = null)
         {
-            HttpResponseMessage oResponse;
-            string sResponseBody;
+            HttpClient client = GetOrCreateClient(endpoint);
 
-            using (HttpClient client = new HttpClient())
+            // 發送 GET 請求
+            using (var request = new HttpRequestMessage(HttpMethod.Get, endpoint))
             {
                 if (headers != null)
                 {
-                    for (int N1 = 0; N1 < headers.Count; N1++)
-                        client.DefaultRequestHeaders.Add(headers.GetKey(N1), headers.Get(N1));
+                    foreach (string key in headers)
+                    {
+                        request.Headers.TryAddWithoutValidation(key, headers[key]);
+                    }
                 }
-                // 發送 GET 請求
-                oResponse = await client.GetAsync(endpoint).ConfigureAwait(false);
-                // 確認是否成功
-                oResponse.EnsureSuccessStatusCode();
-                // 讀取回應內容
-                sResponseBody = await oResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
-                return sResponseBody;
+
+                using (HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();  // 確認是否成功
+                    return await response.Content.ReadAsStringAsync().ConfigureAwait(false);  // 讀取回應內容
+                }
             }
         }
     }
