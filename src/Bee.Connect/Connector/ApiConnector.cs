@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Bee.Api.Core;
 using Bee.Base;
 using Bee.Define;
@@ -81,6 +82,38 @@ namespace Bee.Connect
             return (T)response.Result.Value;
         }
 
+        /// <summary>
+        /// 非同步執行 API 方法。
+        /// </summary>
+        /// <param name="progId">程式代碼。</param>
+        /// <param name="action">執行動作。</param>
+        /// <param name="value">對應執行動作的傳入參數。</param>
+        /// <param name="format">傳輸資料的封裝格式。</param>
+        protected async Task<T> ExecuteAsync<T>(string progId, string action, object value, PayloadFormat format)
+        {
+            if (StrFunc.IsEmpty(progId))
+                throw new ArgumentException("progId cannot be null or empty.", nameof(progId));
+            if (StrFunc.IsEmpty(action))
+                throw new ArgumentException("action cannot be null or empty.", nameof(action));
+
+            // 建立 JSON-RPC 請求模型
+            var request = CreateRequest(progId, action, value);
+            LogRawData(request);
+
+            // 將參數格式轉換為指定的 payloadFormat
+            var actualFormat = TransformRequestPayload(request, format);
+            // 呼叫遠端或近端 JSON-RPC 方法
+            var response = await this.Provider.ExecuteAsync(request).ConfigureAwait(false);
+            LogRawData(response);
+
+            if (response.Error != null)
+                throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
+
+            // 還原回應資料（若為 Encoded 或 Encrypted）
+            RestoreResponsePayload(response, actualFormat);
+
+            return (T)response.Result.Value;
+        }
 
         /// <summary>
         /// 建立 JSON-RPC 請求物件。
