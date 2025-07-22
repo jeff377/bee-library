@@ -88,7 +88,8 @@ namespace Bee.Base
             {
                 return new HttpClient
                 {
-                    BaseAddress = new Uri($"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/")
+                    BaseAddress = new Uri($"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/"),
+                    Timeout = TimeSpan.FromSeconds(30)
                 };
             });
         }
