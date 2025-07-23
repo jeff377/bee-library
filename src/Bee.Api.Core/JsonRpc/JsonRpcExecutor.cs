@@ -59,8 +59,10 @@ namespace Bee.Api.Core
             {
                 // 傳輸資料格式
                 var format = request.Params.Format;
+                // 取得 API 加密金鑰
+                byte[] apiEncryptionKey = GetApiEncryptionKey(format);
                 // 還原請求資料內容
-                ApiPayloadConverter.RestoreFrom(request.Params, format, BackendInfo.ApiEncryptionKey);
+                ApiPayloadConverter.RestoreFrom(request.Params, format, apiEncryptionKey);
 
                 // 從 Method 屬性解析出 ProgId 與 Action
                 var (progId, action) = ParseMethod(request.Method);
@@ -70,7 +72,7 @@ namespace Bee.Api.Core
                 // 傳出結果
                 response.Result = new JsonRpcResult { Value = value };
                 // 設定回應的資料格式
-                ApiPayloadConverter.TransformTo(response.Result, format, BackendInfo.ApiEncryptionKey);
+                ApiPayloadConverter.TransformTo(response.Result, format, apiEncryptionKey);
             }
             catch (Exception ex)
             {
@@ -83,10 +85,22 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
+        /// 取得 API 加密金鑰。
+        /// </summary>
+        /// <param name="format">傳輸資料的封裝格式。</param>
+        private byte[] GetApiEncryptionKey(PayloadFormat format)
+        {
+            return format == PayloadFormat.Encrypted
+                ? BackendInfo.ApiKeyProvider.GetKey(Guid.Empty)  // 未實作 Session-based API key，目前使用共用金鑰
+                : null;
+        }
+
+
+        /// <summary>
         /// 從 Method 屬性解析出 progId 與 Action。
         /// </summary>
         /// <returns>Tuple，包含 progId 與 Action。若格式錯誤則回傳空字串。</returns>
-        public (string progId, string action) ParseMethod(string method)
+        private (string progId, string action) ParseMethod(string method)
         {
             if (!string.IsNullOrEmpty(method))
             {
@@ -106,7 +120,7 @@ namespace Bee.Api.Core
         /// <param name="action">執行動作。</param>
         /// <param name="value">執行動作的傳入引數。</param>
         /// <param name="format">傳輸資料的封裝格式。</param>
-        public async Task<object> ExecuteMethodAsync(string progId, string action, object value, PayloadFormat format)
+        private async Task<object> ExecuteMethodAsync(string progId, string action, object value, PayloadFormat format)
         {
             // 建立指定 progId 的業務邏輯物件實例
             var businessObject = CreateBusinessObject(AccessToken, progId);
@@ -141,7 +155,7 @@ namespace Bee.Api.Core
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
         /// <returns>業務邏輯物件實例。</returns>
-        public object CreateBusinessObject(Guid accessToken, string progId)
+        private object CreateBusinessObject(Guid accessToken, string progId)
         {
             if (string.IsNullOrWhiteSpace(progId))
                 throw new ArgumentException("ProgId cannot be null or empty.", nameof(progId));
