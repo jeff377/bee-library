@@ -8,6 +8,7 @@ namespace Bee.Define
     /// </summary>
     public static class BackendInfo
     {
+        private static IApiKeyProvider _apiKeyProvider = null;
         private static IBusinessObjectProvider _businessObjectProvider = null;
         private static IRepositoryProvider _repositoryProvider = null;
         private static IDefineProvider _defineProvider = null;
@@ -47,6 +48,22 @@ namespace Bee.Define
         /// 預設資料庫編號。
         /// </summary>
         public static string DatabaseID { get; set; } = string.Empty;
+
+
+        /// <summary>
+        /// API 金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。
+        /// 支援共用金鑰與每次登入動態產生的 Session 金鑰。
+        /// </summary>
+        public static IApiKeyProvider ApiKeyProvider
+        {
+            get
+            {
+                if (_apiKeyProvider == null)
+                    _apiKeyProvider = BaseFunc.CreateInstance("Bee.Business.ApiKeyProvider") as IApiKeyProvider;
+                return _apiKeyProvider;
+            }
+            set { _apiKeyProvider = value; }
+        }
 
         /// <summary>
         /// 業務邏輯物件提供者，定義所有 BusinessObject 的取得方式。
