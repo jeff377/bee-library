@@ -116,6 +116,15 @@ namespace Bee.Base
             return !enumerator.MoveNext(); // 判斷是否有至少一筆資料
         }
 
+        /// <summary>
+        /// 檢查指定的位元組陣列是否為空（null 或長度為 0）。
+        /// </summary>
+        /// <param name="data">位元組陣列。</param>
+        /// <returns>若為 null 或空陣列則回傳 true，否則為 false。</returns>
+        public static bool IsEmpty(byte[] data)
+        {
+            return data == null || data.Length == 0;
+        }
 
         /// <summary>
         /// 判斷資料表是否無資料。

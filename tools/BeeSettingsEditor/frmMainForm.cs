@@ -257,6 +257,12 @@ namespace SettingsEditor
             // ¨ú±o Master Key
             var keySource = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
             byte[] masterKey = MasterKeyProvider.GetMasterKey(keySource);
+            if (BaseFunc.IsEmpty(masterKey))
+            {
+                UIFunc.ErrorMsgBox("Unable to retrieve the master key.");
+                return string.Empty;
+            }
+
             string encryptionKey = EncryptionKeyProtector.GenerateEncryptedKey(masterKey);
             if (string.IsNullOrEmpty(encryptionKey))
             {

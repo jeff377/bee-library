@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using System.Xml.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -13,17 +11,6 @@ namespace Bee.Base
     /// </summary>
     public static class SerializeFunc
     {
-        private static readonly ConcurrentDictionary<Type, XmlSerializer> _xmlSerializerCache = new ConcurrentDictionary<Type, XmlSerializer>();
-
-        /// <summary>
-        /// 取得 XML 序列化器。
-        /// </summary>
-        /// <param name="type">物件型別。</param>
-        private static XmlSerializer GetXmlSerializer(Type type)
-        {
-            return _xmlSerializerCache.GetOrAdd(type, t => new XmlSerializer(t));
-        }
-
         /// <summary>
         /// 序列化前執行作業。
         /// </summary>
@@ -77,7 +64,7 @@ namespace Bee.Base
             string xml = string.Empty;
             using (UTF8StringWriter writer = new UTF8StringWriter())
             {
-                var serializer = GetXmlSerializer(value.GetType());
+                var serializer = XmlSerializerCache.Get(value.GetType());
                 serializer.Serialize(writer, value);
                 xml = writer.ToString();
             }
@@ -110,7 +97,7 @@ namespace Bee.Base
             object value;
             using (StringReader reader = new StringReader(xml))
             {
-                var serializer = GetXmlSerializer(type);
+                var serializer = XmlSerializerCache.Get(type);
                 value = serializer.Deserialize(reader);
             }
 
