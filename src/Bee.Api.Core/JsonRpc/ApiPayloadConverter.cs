@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Base;
 
 namespace Bee.Api.Core
 {
@@ -78,7 +79,7 @@ namespace Bee.Api.Core
 
             if (sourceFormat == PayloadFormat.Encrypted)
             {
-                if (encryptionKey == null || encryptionKey.Length == 0)
+                if (BaseFunc.IsEmpty(encryptionKey))
                     throw new InvalidOperationException("Missing encryption key for encrypted payload.");
 
                 bytes = transformer.Decrypt(bytes, encryptionKey);

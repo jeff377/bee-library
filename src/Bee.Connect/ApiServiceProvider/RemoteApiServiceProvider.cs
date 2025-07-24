@@ -38,7 +38,7 @@ namespace Bee.Connect
         /// <summary>
         /// 存取令牌。
         /// </summary>
-        public Guid AccessToken { get; set; } = Guid.Empty;
+        public Guid AccessToken { get; } = Guid.Empty;
 
         /// <summary>
         /// 執行 API 方法。
@@ -46,6 +46,10 @@ namespace Bee.Connect
         /// <param name="request">JSON-RPC 請求模型。</param>
         public JsonRpcResponse Execute(JsonRpcRequest request)
         {
+            // 在當前執行緒上執行 async 任務，死結風險較高（容易 UI 執行緒死結），無額外排程成本，適用呼叫端ＲＲＳ保證不是 UI 執行緒
+            // return ExecuteAsync(request).GetAwaiter().GetResult();
+
+            // 新開執行緒執行 async 任務，死結風險較低（因為不佔用 UI 執行緒），有額外排程成本，適用呼叫端可能為 UI 執行緒
             return Task.Run(() => ExecuteAsync(request)).GetAwaiter().GetResult();
         }
 

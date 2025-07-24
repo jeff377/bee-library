@@ -21,7 +21,7 @@ namespace Bee.Connect
         /// <summary>
         /// 存取令牌。
         /// </summary>
-        public Guid AccessToken { get; set; } = Guid.Empty;
+        public Guid AccessToken { get; } = Guid.Empty;
 
         /// <summary>
         /// 執行 API 方法。
