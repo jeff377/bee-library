@@ -36,25 +36,27 @@
             // 
             // edtEndpoint
             // 
-            edtEndpoint.Location = new Point(22, 32);
+            edtEndpoint.Location = new Point(25, 41);
+            edtEndpoint.Margin = new Padding(3, 4, 3, 4);
             edtEndpoint.Name = "edtEndpoint";
-            edtEndpoint.Size = new Size(360, 22);
+            edtEndpoint.Size = new Size(411, 26);
             edtEndpoint.TabIndex = 0;
             // 
             // lblEndpoint
             // 
             lblEndpoint.AutoSize = true;
-            lblEndpoint.Location = new Point(22, 15);
+            lblEndpoint.Location = new Point(25, 19);
             lblEndpoint.Name = "lblEndpoint";
-            lblEndpoint.Size = new Size(56, 14);
+            lblEndpoint.Size = new Size(63, 18);
             lblEndpoint.TabIndex = 1;
             lblEndpoint.Text = "Endpoint";
             // 
             // btnOK
             // 
-            btnOK.Location = new Point(226, 71);
+            btnOK.Location = new Point(258, 91);
+            btnOK.Margin = new Padding(3, 4, 3, 4);
             btnOK.Name = "btnOK";
-            btnOK.Size = new Size(75, 23);
+            btnOK.Size = new Size(86, 30);
             btnOK.TabIndex = 2;
             btnOK.Text = "OK";
             btnOK.UseVisualStyleBackColor = true;
@@ -62,27 +64,30 @@
             // 
             // btnCancel
             // 
-            btnCancel.Location = new Point(307, 71);
+            btnCancel.Location = new Point(351, 91);
+            btnCancel.Margin = new Padding(3, 4, 3, 4);
             btnCancel.Name = "btnCancel";
-            btnCancel.Size = new Size(75, 23);
+            btnCancel.Size = new Size(86, 30);
             btnCancel.TabIndex = 3;
             btnCancel.Text = "Cancel";
             btnCancel.UseVisualStyleBackColor = true;
             btnCancel.Click += this.btnCancel_Click;
             // 
-            // frmApiConnect
+            // ApiConnectForm
             // 
-            this.AutoScaleDimensions = new SizeF(7F, 14F);
+            this.AcceptButton = btnOK;
+            this.AutoScaleDimensions = new SizeF(8F, 18F);
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.ClientSize = new Size(405, 104);
+            this.ClientSize = new Size(463, 134);
             this.Controls.Add(btnCancel);
             this.Controls.Add(btnOK);
             this.Controls.Add(lblEndpoint);
             this.Controls.Add(edtEndpoint);
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
+            this.Margin = new Padding(3, 4, 3, 4);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "frmApiConnect";
+            this.Name = "ApiConnectForm";
             this.ShowIcon = false;
             this.Text = "Set API Connection Endpoint";
             this.Load += this.frmConnect_Load;
