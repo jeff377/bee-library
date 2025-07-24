@@ -93,7 +93,7 @@ namespace JsonRpcClient
         /// <summary>
         /// execute a simple "Hello" function on the server.
         /// </summary>
-        private void btnHello_Click(object sender, EventArgs e)
+        private async void btnHello_Click(object sender, EventArgs e)
         {
             edtLog.Text = string.Empty;
 
@@ -108,7 +108,7 @@ namespace JsonRpcClient
                 // Create a form-level connector. ProgId = "Demo" is not mapped to a custom business object and will use the shared FormBusinessObject.
                 var connector = CreateFormApiConnector("Demo");
                 var args = new ExecFuncArgs("Hello");
-                var result = connector.Execute<ExecFuncResult>("ExecFunc", args);
+                var result = await connector.ExecuteAsync<ExecFuncResult>("ExecFunc", args);
                 string message = result.Parameters.GetValue<string>("Hello");
                 MessageBox.Show($"Message: {message}");
             }

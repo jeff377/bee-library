@@ -38,7 +38,7 @@ namespace Bee.Connect
         /// <param name="format">傳輸資料的封裝格式。</param>
         public async Task<T> ExecuteAsync<T>(string action, object value, PayloadFormat format = PayloadFormat.Encrypted)
         {
-            return await base.ExecuteAsync<T>(SysProgIds.System, action, value, format);
+            return await base.ExecuteAsync<T>(SysProgIds.System, action, value, format).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -69,9 +69,9 @@ namespace Bee.Connect
         /// </summary>
         public void Ping()
         {
-            Task.Run(() =>
+            SyncExecutor.Run(() =>
                 PingAsync()
-            ).GetAwaiter().GetResult();
+            );
         }
 
         /// <summary>
@@ -93,9 +93,9 @@ namespace Bee.Connect
         /// </summary>
         public void Initialize()
         {
-            Task.Run(() =>
+            SyncExecutor.Run(() =>
                 InitializeAsync()
-            ).GetAwaiter().GetResult();
+            );
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Bee.Connect
         /// <param name="args">傳入引數。</param>
         public async Task<ExecFuncResult> ExecFuncAsync(ExecFuncArgs args)
         {
-            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFunc, args);
+            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFunc, args).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -113,9 +113,9 @@ namespace Bee.Connect
         /// <param name="args">傳入引數。</param>
         public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
-            return Task.Run(() =>
+            return SyncExecutor.Run(() =>
                 ExecFuncAsync(args)
-            ).GetAwaiter().GetResult();
+            );
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Bee.Connect
                 ExpiresIn = expiresIn,
                 OneTime = oneTime
             };
-            var result = await ExecuteAsync<CreateSessionResult>(SystemActions.CreateSession, args, PayloadFormat.Plain);
+            var result = await ExecuteAsync<CreateSessionResult>(SystemActions.CreateSession, args, PayloadFormat.Plain).ConfigureAwait(false);
             return result.AccessToken;
         }
 
@@ -153,7 +153,7 @@ namespace Bee.Connect
                 Password = password,
                 ClientPublicKey = publicKeyXml  // 傳入 RSA 公鑰
             };
-            var result = await ExecuteAsync<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded);
+            var result = await ExecuteAsync<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded).ConfigureAwait(false);
 
             // 取得存取令牌
             FrontendInfo.AccessToken = result.AccessToken;
@@ -170,9 +170,9 @@ namespace Bee.Connect
         /// <param name="password">使用者密碼。</param>
         public void Login(string userID, string password)
         {
-            Task.Run(() =>
+            SyncExecutor.Run(() =>
                 LoginAsync(userID, password)
-            ).GetAwaiter().GetResult();
+            );
         }
 
         /// <summary>
@@ -188,7 +188,7 @@ namespace Bee.Connect
                 DefineType = defineType,
                 Keys = keys
             };
-            var result = await ExecuteAsync<GetDefineResult>(SystemActions.GetDefine, args);
+            var result = await ExecuteAsync<GetDefineResult>(SystemActions.GetDefine, args).ConfigureAwait(false);
             if (StrFunc.IsNotEmpty(result.Xml))
                 return SerializeFunc.XmlToObject<T>(result.Xml);
             else
@@ -203,9 +203,9 @@ namespace Bee.Connect
         /// <param name="keys">取得定義資料的鍵值。</param>
         public T GetDefine<T>(DefineType defineType, string[] keys = null)
         {
-            return Task.Run(() =>
+            return SyncExecutor.Run(() =>
                 GetDefineAsync<T>(defineType, keys)
-            ).GetAwaiter().GetResult();
+            );
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace Bee.Connect
                 Xml = SerializeFunc.ObjectToXml(defineObject),
                 Keys = keys
             };
-            await ExecuteAsync<SaveDefineResult>(SystemActions.SaveDefine, args);
+            await ExecuteAsync<SaveDefineResult>(SystemActions.SaveDefine, args).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -233,9 +233,9 @@ namespace Bee.Connect
         /// <param name="keys">儲存定義資料的鍵值。</param>
         public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
         {
-            Task.Run(() =>
+            SyncExecutor.Run(() =>
                 SaveDefineAsync(defineType, defineObject, keys)
-            ).GetAwaiter().GetResult();
+            );
         }
     }
 }

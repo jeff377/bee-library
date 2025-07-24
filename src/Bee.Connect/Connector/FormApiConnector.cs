@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading.Tasks;
+using Bee.Api.Core;
 using Bee.Define;
 
 namespace Bee.Connect
@@ -34,18 +36,27 @@ namespace Bee.Connect
         #endregion
 
         /// <summary>
-        /// 程式代碼。
+        /// 程式代碼（對應表單層級的 ProgID，用於識別業務物件）。
         /// </summary>
         public string ProgId { get; private set; }
 
         /// <summary>
-        /// 執行 API 方法。
+        /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
-        public T Execute<T>(string action, object value)
+        public async Task<T> ExecuteAsync<T>(string action, object value)
         {
-            return base.Execute<T>(ProgId, action, value, Api.Core.PayloadFormat.Encrypted);
+            return await base.ExecuteAsync<T>(ProgId, action, value, PayloadFormat.Encrypted).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 非同步執行自訂方法。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public async Task<ExecFuncResult> ExecFuncAsync(ExecFuncArgs args)
+        {
+            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFunc, args).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -54,7 +65,9 @@ namespace Bee.Connect
         /// <param name="args">傳入引數。</param>
         public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
-            return Execute<ExecFuncResult>(SystemActions.ExecFunc, args);
+            return SyncExecutor.Run(() =>
+                ExecFuncAsync(args)
+            );
         }
     }
 }
