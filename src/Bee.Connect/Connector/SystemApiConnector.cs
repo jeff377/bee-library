@@ -31,17 +31,6 @@ namespace Bee.Connect
         #endregion
 
         /// <summary>
-        /// 執行 API 方法。
-        /// </summary>
-        /// <param name="action">執行動作。</param>
-        /// <param name="value">對應執行動作的傳入參數。</param>
-        /// <param name="format">傳輸資料的封裝格式。</param>
-        public T Execute<T>(string action, object value, PayloadFormat format = PayloadFormat.Encrypted)
-        {
-            return base.Execute<T>(SysProgIds.System, action, value, format);
-        }
-
-        /// <summary>
         /// 非同步執行 API 方法。
         /// </summary>
         /// <param name="action">執行動作。</param>
@@ -54,14 +43,6 @@ namespace Bee.Connect
 
         /// <summary>
         /// 執行 Ping 方法，測試伺服端的連線狀態。
-        /// </summary>
-        public void Ping()
-        {
-            Task.Run(() => PingAsync()).GetAwaiter().GetResult();
-        }
-
-        /// <summary>
-        /// 非同步執行 Ping 方法，測試伺服端的連線狀態。
         /// </summary>
         public async Task PingAsync()
         {
@@ -84,17 +65,46 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 取得通用參數及環境設置，進行初始化。
+        ///  非同步執行 Ping 方法，測試伺服端的連線狀態。
         /// </summary>
-        public void Initialize()
+        public void Ping()
+        {
+            Task.Run(() =>
+                PingAsync()
+            ).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// 非同步取得通用參數及環境設置，進行初始化。
+        /// </summary>
+        public async Task InitializeAsync()
         {
             // 取得通用參數及環境設置，進行初始化
             var args = new GetCommonConfigurationArgs();
-            var result = Execute<GetCommonConfigurationResult>(SystemActions.GetCommonConfiguration, args, PayloadFormat.Plain);
+            var result = await ExecuteAsync<GetCommonConfigurationResult>(SystemActions.GetCommonConfiguration, args, PayloadFormat.Plain).ConfigureAwait(false);
             var configuration = SerializeFunc.XmlToObject<CommonConfiguration>(result.CommonConfiguration);
             configuration.Initialize();
             // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
             ApiServiceOptions.Initialize(configuration.ApiPayloadOptions);
+        }
+
+        /// <summary>
+        /// 取得通用參數及環境設置，進行初始化。
+        /// </summary>
+        public void Initialize()
+        {
+            Task.Run(() =>
+                InitializeAsync()
+            ).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// 非同步執行自訂方法。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public async Task<ExecFuncResult> ExecFuncAsync(ExecFuncArgs args)
+        {
+            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFunc, args);
         }
 
         /// <summary>
@@ -103,16 +113,18 @@ namespace Bee.Connect
         /// <param name="args">傳入引數。</param>
         public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
-            return Execute<ExecFuncResult>(SystemActions.ExecFunc, args);
+            return Task.Run(() =>
+                ExecFuncAsync(args)
+            ).GetAwaiter().GetResult();
         }
 
         /// <summary>
-        /// 建立連線。
+        /// 非同步建立連線。
         /// </summary>
         /// <param name="userID">用戶帳號。</param>
         /// <param name="expiresIn">到期秒數，預設 3600 秒。</param>
         /// <param name="oneTime">一次性有效。</param>
-        public Guid CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
+        public async Task<Guid> CreateSessionAsync(string userID, int expiresIn = 3600, bool oneTime = false)
         {
             var args = new CreateSessionArgs()
             {
@@ -120,17 +132,16 @@ namespace Bee.Connect
                 ExpiresIn = expiresIn,
                 OneTime = oneTime
             };
-            var result = Execute<CreateSessionResult>(SystemActions.CreateSession, args, PayloadFormat.Plain);
+            var result = await ExecuteAsync<CreateSessionResult>(SystemActions.CreateSession, args, PayloadFormat.Plain);
             return result.AccessToken;
         }
 
         /// <summary>
-        /// 執行登入操作。
+        /// 非同步執行登入操作。
         /// </summary>
         /// <param name="userID">使用者帳號。</param>
         /// <param name="password">使用者密碼。</param>
-        /// <returns></returns>
-        public void Login(string userID, string password)
+        public async Task LoginAsync(string userID, string password)
         {
             // 產生 RSA 對稱金鑰
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
@@ -142,7 +153,7 @@ namespace Bee.Connect
                 Password = password,
                 ClientPublicKey = publicKeyXml  // 傳入 RSA 公鑰
             };
-            var result = Execute<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded);
+            var result = await ExecuteAsync<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded);
 
             // 取得存取令牌
             FrontendInfo.AccessToken = result.AccessToken;
@@ -153,6 +164,38 @@ namespace Bee.Connect
         }
 
         /// <summary>
+        /// 執行登入操作。
+        /// </summary>
+        /// <param name="userID">使用者帳號。</param>
+        /// <param name="password">使用者密碼。</param>
+        public void Login(string userID, string password)
+        {
+            Task.Run(() =>
+                LoginAsync(userID, password)
+            ).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// 非同步取得定義資料。
+        /// </summary>
+        /// <typeparam name="T">泛型型別。</typeparam>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="keys">取得定義資料的鍵值。</param>
+        public async Task<T> GetDefineAsync<T>(DefineType defineType, string[] keys = null)
+        {
+            var args = new GetDefineArgs()
+            {
+                DefineType = defineType,
+                Keys = keys
+            };
+            var result = await ExecuteAsync<GetDefineResult>(SystemActions.GetDefine, args);
+            if (StrFunc.IsNotEmpty(result.Xml))
+                return SerializeFunc.XmlToObject<T>(result.Xml);
+            else
+                return default;
+        }
+
+        /// <summary>
         /// 取得定義資料。
         /// </summary>
         /// <typeparam name="T">泛型型別。</typeparam>
@@ -160,16 +203,26 @@ namespace Bee.Connect
         /// <param name="keys">取得定義資料的鍵值。</param>
         public T GetDefine<T>(DefineType defineType, string[] keys = null)
         {
-            var args = new GetDefineArgs()
+            return Task.Run(() =>
+                GetDefineAsync<T>(defineType, keys)
+            ).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// 非同步儲存定義資料。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="defineObject">定義資料。</param>
+        /// <param name="keys">儲存定義資料的鍵值。</param>
+        public async Task SaveDefineAsync(DefineType defineType, object defineObject, string[] keys = null)
+        {
+            var args = new SaveDefineArgs()
             {
                 DefineType = defineType,
+                Xml = SerializeFunc.ObjectToXml(defineObject),
                 Keys = keys
             };
-            var result = Execute<GetDefineResult>(SystemActions.GetDefine, args);
-            if (StrFunc.IsNotEmpty(result.Xml))
-                return SerializeFunc.XmlToObject<T>(result.Xml);
-            else
-                return default;
+            await ExecuteAsync<SaveDefineResult>(SystemActions.SaveDefine, args);
         }
 
         /// <summary>
@@ -180,13 +233,9 @@ namespace Bee.Connect
         /// <param name="keys">儲存定義資料的鍵值。</param>
         public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
         {
-            var args = new SaveDefineArgs()
-            {
-                DefineType = defineType,
-                Xml = SerializeFunc.ObjectToXml(defineObject),
-                Keys = keys
-            };
-            Execute<SaveDefineResult>(SystemActions.SaveDefine, args);
+            Task.Run(() =>
+                SaveDefineAsync(defineType, defineObject, keys)
+            ).GetAwaiter().GetResult();
         }
     }
 }
