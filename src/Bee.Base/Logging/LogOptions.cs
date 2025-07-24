@@ -23,5 +23,13 @@ namespace Bee.Base
         /// </summary>
         [Description("控制 DbAccess 模組的記錄選項。")]
         public DbAccessLogOptions DbAccess { get; set; } = new DbAccessLogOptions();
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
     }
 }

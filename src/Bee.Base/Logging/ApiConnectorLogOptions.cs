@@ -40,5 +40,13 @@ namespace Bee.Base
         /// </summary>
         [Description("是否記錄 JSON-RPC 的編碼後資料（經序列化/壓縮/加密處理的二進位內容）。")]
         public bool EncodedData { get; set; }
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
     }
 }

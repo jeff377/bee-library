@@ -28,5 +28,13 @@ namespace Bee.Base
         /// </summary>
         [Description("查詢執行時間異常門檻（單位：秒），超過此秒數視為慢查詢。")]
         public int SlowQueryThreshold { get; set; } = 300;
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
     }
 }

@@ -124,7 +124,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return "BackendConfiguration";
+            return GetType().Name;
         }
     }
 }

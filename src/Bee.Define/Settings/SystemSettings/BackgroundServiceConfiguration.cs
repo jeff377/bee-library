@@ -20,7 +20,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return "BackgroundServiceConfiguration";
+            return GetType().Name;
         }
     }
 }

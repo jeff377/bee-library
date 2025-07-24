@@ -105,7 +105,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return "CommonConfiguration";
+            return GetType().Name;
         }
     }
 }

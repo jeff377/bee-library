@@ -43,5 +43,13 @@ namespace Bee.Base
         /// 可選的例外物件。
         /// </summary>
         public Exception Exception { get; set; }
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
     }
 }

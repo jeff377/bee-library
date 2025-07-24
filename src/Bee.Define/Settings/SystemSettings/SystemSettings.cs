@@ -164,5 +164,13 @@ namespace Bee.Define
             // 後端初始化
             this.BackendConfiguration.Initialize();
         }
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
     }
 }

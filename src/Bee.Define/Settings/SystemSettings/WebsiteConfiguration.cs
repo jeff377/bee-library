@@ -19,7 +19,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return "WebsiteConfiguration";
+            return GetType().Name;
         }
     }
 }

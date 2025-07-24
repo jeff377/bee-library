@@ -44,6 +44,14 @@ namespace Bee.Define
         /// </summary>
         [Description("資料庫中機敏欄位的加密金鑰（使用主金鑰加密儲存，base64 字串）。")]
         public string DatabaseEncryptionKey { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return GetType().Name;
+        }
     }
 
 }
