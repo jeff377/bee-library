@@ -57,22 +57,7 @@ namespace Bee.Connect
         /// </summary>
         public void Ping()
         {
-            try
-            {
-                var args = new PingArgs()
-                {
-                    ClientName = "Connector",
-                    TraceId = Guid.NewGuid().ToString()
-                };
-                var result = Execute<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain);
-                if (result.Status != "ok")
-                    throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
-            }
-            catch (Exception ex)
-            {
-                // 保留原始錯誤訊息供上層判斷或記錄
-                throw new ApplicationException("Connection failed during Ping.", ex);
-            }
+            Task.Run(() => PingAsync()).GetAwaiter().GetResult();
         }
 
         /// <summary>
@@ -87,7 +72,7 @@ namespace Bee.Connect
                     ClientName = "Connector",
                     TraceId = Guid.NewGuid().ToString()
                 };
-                var result = await ExecuteAsync<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain);
+                var result = await ExecuteAsync<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain).ConfigureAwait(false);
                 if (result.Status != "ok")
                     throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
             }
