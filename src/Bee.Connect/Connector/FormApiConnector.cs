@@ -45,9 +45,10 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="action">執行動作。</param>
         /// <param name="value">對應執行動作的傳入參數。</param>
-        public async Task<T> ExecuteAsync<T>(string action, object value)
+        /// <param name="format">傳輸資料的封裝格式。</param>
+        public async Task<T> ExecuteAsync<T>(string action, object value, PayloadFormat format = PayloadFormat.Encrypted)
         {
-            return await base.ExecuteAsync<T>(ProgId, action, value, PayloadFormat.Encrypted).ConfigureAwait(false);
+            return await base.ExecuteAsync<T>(ProgId, action, value, format).ConfigureAwait(false);
         }
 
         /// <summary>

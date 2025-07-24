@@ -42,6 +42,26 @@ namespace Bee.Connect
         }
 
         /// <summary>
+        /// 非同步執行自訂方法。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public async Task<ExecFuncResult> ExecFuncAsync(ExecFuncArgs args)
+        {
+            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFunc, args).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 執行自訂方法。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public ExecFuncResult ExecFunc(ExecFuncArgs args)
+        {
+            return SyncExecutor.Run(() =>
+                ExecFuncAsync(args)
+            );
+        }
+
+        /// <summary>
         /// 執行 Ping 方法，測試伺服端的連線狀態。
         /// </summary>
         public async Task PingAsync()
@@ -99,26 +119,6 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 非同步執行自訂方法。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        public async Task<ExecFuncResult> ExecFuncAsync(ExecFuncArgs args)
-        {
-            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFunc, args).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// 執行自訂方法。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        public ExecFuncResult ExecFunc(ExecFuncArgs args)
-        {
-            return SyncExecutor.Run(() =>
-                ExecFuncAsync(args)
-            );
-        }
-
-        /// <summary>
         /// 非同步建立連線。
         /// </summary>
         /// <param name="userID">用戶帳號。</param>
@@ -134,6 +134,19 @@ namespace Bee.Connect
             };
             var result = await ExecuteAsync<CreateSessionResult>(SystemActions.CreateSession, args, PayloadFormat.Plain).ConfigureAwait(false);
             return result.AccessToken;
+        }
+
+        /// <summary>
+        /// 建立連線。
+        /// </summary>
+        /// <param name="userID">用戶帳號。</param>
+        /// <param name="expiresIn">到期秒數，預設 3600 秒。</param>
+        /// <param name="oneTime">一次性有效。</param>
+        public Guid CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
+        {
+            return SyncExecutor.Run(() =>
+                CreateSessionAsync(userID, expiresIn, oneTime)
+            );
         }
 
         /// <summary>
