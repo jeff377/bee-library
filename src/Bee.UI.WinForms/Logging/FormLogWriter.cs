@@ -24,7 +24,17 @@ namespace Bee.UI.WinForms
         /// <param name="entry">日誌內容。</param>
         public void Write(LogEntry entry)
         {
-            _form.AppendLog(entry);
+            if (_form is Control control && control.InvokeRequired)
+            {
+                // 若在非 UI 執行緒，需使用 Invoke 將執行動作切回 UI 執行緒
+                // 否則會拋出 InvalidOperationException 錯誤
+                control.Invoke(new Action(() => _form.AppendLog(entry)));
+            }
+            else
+            {
+                // 若已在 UI 執行緒，則可直接更新控制項
+                _form.AppendLog(entry);
+            }
         }
     }
 

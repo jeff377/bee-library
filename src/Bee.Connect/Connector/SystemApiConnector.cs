@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Bee.Api.Core;
 using Bee.Base;
 using Bee.Define;
@@ -41,6 +42,17 @@ namespace Bee.Connect
         }
 
         /// <summary>
+        /// 非同步執行 API 方法。
+        /// </summary>
+        /// <param name="action">執行動作。</param>
+        /// <param name="value">對應執行動作的傳入參數。</param>
+        /// <param name="format">傳輸資料的封裝格式。</param>
+        public async Task<T> ExecuteAsync<T>(string action, object value, PayloadFormat format = PayloadFormat.Encrypted)
+        {
+            return await base.ExecuteAsync<T>(SysProgIds.System, action, value, format);
+        }
+
+        /// <summary>
         /// 執行 Ping 方法，測試伺服端的連線狀態。
         /// </summary>
         public void Ping()
@@ -53,6 +65,29 @@ namespace Bee.Connect
                     TraceId = Guid.NewGuid().ToString()
                 };
                 var result = Execute<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain);
+                if (result.Status != "ok")
+                    throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
+            }
+            catch (Exception ex)
+            {
+                // 保留原始錯誤訊息供上層判斷或記錄
+                throw new ApplicationException("Connection failed during Ping.", ex);
+            }
+        }
+
+        /// <summary>
+        /// 非同步執行 Ping 方法，測試伺服端的連線狀態。
+        /// </summary>
+        public async Task PingAsync()
+        {
+            try
+            {
+                var args = new PingArgs()
+                {
+                    ClientName = "Connector",
+                    TraceId = Guid.NewGuid().ToString()
+                };
+                var result = await ExecuteAsync<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain);
                 if (result.Status != "ok")
                     throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
             }
