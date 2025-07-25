@@ -3,7 +3,7 @@ name: Release BeeSettingsEditor
 on:
   push:
     tags:
-      - 'BeeSettingsEditor-v*'  # e.g. BeeSettingsEditor-v1.0.0
+      - 'BeeSettingsEditor-v*'
 
 jobs:
   build:
@@ -29,12 +29,12 @@ jobs:
       run: |
         Compress-Archive `
           -Path tools/BeeSettingsEditor/bin/Release/net8.0-windows/publish/win-x64/* `
-          -DestinationPath BeeSettingsEditor-${{ github.ref_name }}.zip
+          -DestinationPath ${{ github.ref_name }}.zip
 
     - name: Upload to GitHub Releases
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref_name }}
-        files: BeeSettingsEditor-${{ github.ref_name }}.zip
+        files: ${{ github.ref_name }}.zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
