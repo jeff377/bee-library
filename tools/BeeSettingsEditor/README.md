@@ -12,7 +12,7 @@
 
 | 版本   | 更新日期    | 說明                             | 下載連結 |
 |--------|-------------|----------------------------------|----------|
-| v1.0.0 | 2025-07-24  | 初版釋出，支援主金鑰與加密金鑰產生 | [📥 Download v1.0.0](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.0/BeeSettingsEditor-v1.0.0.zip) |
+| v1.0.0 | 2025-07-25  | 初版釋出，支援主金鑰與加密金鑰產生 | [📥 Download v1.0.0](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.0/BeeSettingsEditor-v1.0.0.zip) |
 
 ---
 

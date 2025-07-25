@@ -1,0 +1,40 @@
+name: Release BeeSettingsEditor
+
+on:
+  push:
+    tags:
+      - 'BeeSettingsEditor-v*'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Publish BeeSettingsEditor
+      run: |
+        dotnet publish tools/BeeSettingsEditor/BeeSettingsEditor.csproj `
+          -c Release `
+          /p:PublishProfile=FolderProfile `
+          /p:RestoreLockedMode=false
+
+    - name: Create zip package
+      run: |
+        Compress-Archive `
+          -Path tools/BeeSettingsEditor/bin/Release/net8.0-windows/publish/win-x64/* `
+          -DestinationPath ${{ github.ref_name }}.zip
+
+    - name: Upload to GitHub Releases
+      uses: softprops/action-gh-release@v2
+      with:
+        tag_name: ${{ github.ref_name }}
+        files: ${{ github.ref_name }}.zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
