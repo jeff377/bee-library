@@ -1,9 +1,9 @@
-name: Release BeeSettingsEditor
+name: Release BeeDbUpgrade
 
 on:
   push:
     tags:
-      - 'BeeSettingsEditor-v*'
+      - 'BeeDbUpgrade-v*'
 
 jobs:
   build:
@@ -18,9 +18,9 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Publish BeeSettingsEditor
+    - name: Publish BeeDbUpgrade
       run: |
-        dotnet publish tools/BeeSettingsEditor/BeeSettingsEditor.csproj `
+        dotnet publish tools/BeeDbUpgrade/BeeDbUpgrade.csproj `
           -c Release `
           /p:PublishProfile=FolderProfile `
           /p:RestoreLockedMode=false
@@ -28,7 +28,7 @@ jobs:
     - name: Create zip package
       run: |
         Compress-Archive `
-          -Path tools/BeeSettingsEditor/bin/Release/net8.0-windows/publish/win-x64/* `
+          -Path tools/BeeDbUpgrade/bin/Release/net8.0-windows/publish/win-x64/* `
           -DestinationPath ${{ github.ref_name }}.zip
 
     - name: Upload to GitHub Releases
