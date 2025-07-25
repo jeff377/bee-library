@@ -5,6 +5,34 @@ namespace Bee.Define
     #region 常數
 
     /// <summary>
+    /// 定義後端常用 Provider 型別的預設名稱常數。
+    /// 可用於 SystemSettings.xml 設定檔中的型別指定，或作為預設 fallback 使用。
+    /// </summary>
+    public static class DefaultProviderTypes
+    {
+        /// <summary>
+        /// 預設的 API 金鑰提供者型別。
+        /// </summary>
+        public const string ApiKeyProvider = "Bee.Business.ApiKeyProvider, Bee.Business";
+        /// <summary>
+        /// 預設的業務邏輯物件提供者型別，用於動態建立 BusinessObject。
+        /// </summary>
+        public const string BusinessObjectProvider = "Bee.Business.BusinessObjectProvider, Bee.Business";
+        /// <summary>
+        /// 預設的快取資料來源提供者型別。
+        /// </summary>
+        public const string CacheDataSourceProvider = "Bee.Business.CacheDataSourceProvider, Bee.Business";
+        /// <summary>
+        /// 預設的資料儲存物件提供者型別，用於動態建立 Repository。
+        /// </summary>
+        public const string RepositoryProvider = "Bee.Db.RepositoryProvider, Bee.Db";
+        /// <summary>
+        /// 預設的定義資料提供者型別。
+        /// </summary>
+        public const string DefineProvider = "Bee.Define.FileDefineProvider, Bee.Define";
+    }
+
+    /// <summary>
     /// SystemObject 的 Action 常數。
     /// </summary>
     public class SystemActions

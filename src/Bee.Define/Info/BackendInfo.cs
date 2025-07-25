@@ -1,5 +1,4 @@
 ﻿using System;
-using Bee.Base;
 
 namespace Bee.Define
 {
@@ -11,8 +10,8 @@ namespace Bee.Define
         private static IApiKeyProvider _apiKeyProvider = null;
         private static IBusinessObjectProvider _businessObjectProvider = null;
         private static IRepositoryProvider _repositoryProvider = null;
-        private static IDefineProvider _defineProvider = null;
         private static ICacheDataSourceProvider _cacheDataSourceProvider = null;
+        private static IDefineProvider _defineProvider = null;
 
         /// <summary>
         /// 定義資料路徑。
@@ -49,20 +48,14 @@ namespace Bee.Define
         /// </summary>
         public static string DatabaseID { get; set; } = string.Empty;
 
-
         /// <summary>
         /// API 金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。
         /// 支援共用金鑰與每次登入動態產生的 Session 金鑰。
         /// </summary>
         public static IApiKeyProvider ApiKeyProvider
         {
-            get
-            {
-                if (_apiKeyProvider == null)
-                    _apiKeyProvider = BaseFunc.CreateInstance("Bee.Business.ApiKeyProvider") as IApiKeyProvider;
-                return _apiKeyProvider;
-            }
-            set { _apiKeyProvider = value; }
+            get => _apiKeyProvider;
+            set => _apiKeyProvider = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -70,13 +63,8 @@ namespace Bee.Define
         /// </summary>
         public static IBusinessObjectProvider BusinessObjectProvider
         {
-            get
-            {
-                if (_businessObjectProvider == null)
-                    _businessObjectProvider = BaseFunc.CreateInstance("Bee.Business.BusinessObjectProvider") as IBusinessObjectProvider;
-                return _businessObjectProvider;
-            }
-            set { _businessObjectProvider = value; }
+            get => _businessObjectProvider;
+            set => _businessObjectProvider = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -84,27 +72,8 @@ namespace Bee.Define
         /// </summary>
         public static IRepositoryProvider RepositoryProvider
         {
-            get
-            {
-                if (_repositoryProvider == null)
-                    _repositoryProvider = BaseFunc.CreateInstance("Bee.Db.RepositoryProvider") as IRepositoryProvider;
-                return _repositoryProvider;
-            }
-            set { _repositoryProvider = value; }
-        }
-
-        /// <summary>
-        /// 定義資料提供者。
-        /// </summary>
-        public static IDefineProvider DefineProvider
-        {
-            get
-            {
-                if (_defineProvider == null)
-                    _defineProvider = BaseFunc.CreateInstance("Bee.Define.FileDefineProvider") as IDefineProvider;
-                return _defineProvider;
-            }
-            set { _defineProvider = value; }
+            get => _repositoryProvider;
+            set => _repositoryProvider = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>
@@ -112,13 +81,17 @@ namespace Bee.Define
         /// </summary>
         public static ICacheDataSourceProvider CacheDataSourceProvider
         {
-            get
-            {
-                if (_cacheDataSourceProvider == null)
-                    _cacheDataSourceProvider = BaseFunc.CreateInstance("Bee.Business.TCacheDataSourceProvider") as ICacheDataSourceProvider;
-                return _cacheDataSourceProvider;
-            }
-            set { _cacheDataSourceProvider = value; }
+            get => _cacheDataSourceProvider;
+            set => _cacheDataSourceProvider = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// 定義資料提供者。
+        /// </summary>
+        public static IDefineProvider DefineProvider
+        {
+            get => _defineProvider;
+            set => _defineProvider = value ?? throw new ArgumentNullException(nameof(value));
         }
     }
 }

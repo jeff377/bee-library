@@ -16,20 +16,44 @@ namespace Bee.Define
     public class BackendConfiguration
     {
         /// <summary>
-        /// 業務邏輯物件提供者型別，定義所有 BusinessObject 的取得方式。
+        /// API 金鑰提供者型別。
         /// </summary>
-        [Category("System")]
-        [Description("業務邏輯物件提供者型別，定義所有 BusinessObject 的取得方式。")]
-        [DefaultValue("")]
-        public string BusinessObjectProvider { get; set; } = string.Empty;
+        [Category("Providers")]
+        [Description("API 金鑰提供者型別，定義傳輸資料加密金鑰的取得方式。")]
+        [DefaultValue(DefaultProviderTypes.ApiKeyProvider)]
+        public string ApiKeyProvider { get; set; } = DefaultProviderTypes.ApiKeyProvider;
 
         /// <summary>
-        /// 資料儲存物件提供者型別，定義所有 Repository 的取得方式。
+        /// 業務邏輯物件提供者型別。
         /// </summary>
-        [Category("System")]
+        [Category("Providers")]
+        [Description("業務邏輯物件提供者型別，定義所有 BusinessObject 的取得方式。")]
+        [DefaultValue(DefaultProviderTypes.BusinessObjectProvider)]
+        public string BusinessObjectProvider { get; set; } = DefaultProviderTypes.BusinessObjectProvider;
+
+        /// <summary>
+        /// 資料儲存物件提供者型別。
+        /// </summary>
+        [Category("Providers")]
         [Description("資料儲存物件提供者型別，定義所有 Repository 的取得方式。")]
-        [DefaultValue("")]
-        public string RepositoryProvider { get; set; } = string.Empty;
+        [DefaultValue(DefaultProviderTypes.RepositoryProvider)]
+        public string RepositoryProvider { get; set; } = DefaultProviderTypes.RepositoryProvider;
+
+        /// <summary>
+        /// 定義資料提供者型別。
+        /// </summary>
+        [Category("Providers")]
+        [Description("定義資料提供者型別，定義系統定義檔的載入方式（如檔案、資料庫等）。")]
+        [DefaultValue(DefaultProviderTypes.DefineProvider)]
+        public string DefineProvider { get; set; } = DefaultProviderTypes.DefineProvider;
+
+        /// <summary>
+        /// 快取資料來源提供者型別。
+        /// </summary>
+        [Category("Providers")]
+        [Description("快取資料來源提供者型別，定義資料快取來源（如預先載入定義資料）。")]
+        [DefaultValue(DefaultProviderTypes.CacheDataSourceProvider)]
+        public string CacheDataSourceProvider { get; set; } = DefaultProviderTypes.CacheDataSourceProvider;
 
         /// <summary>
         /// 資料庫類型。
@@ -68,16 +92,41 @@ namespace Bee.Define
         /// </summary>
         public void Initialize()
         {
+            // 指定 API 金鑰提供者型別
+            BackendInfo.ApiKeyProvider = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(ApiKeyProvider)
+                    ? DefaultProviderTypes.ApiKeyProvider
+                    : ApiKeyProvider
+            ) as IApiKeyProvider;
+
             // 指定業務邏輯物件提供者
-            if (StrFunc.IsNotEmpty(BusinessObjectProvider))
-            {
-                BackendInfo.BusinessObjectProvider = BaseFunc.CreateInstance(BusinessObjectProvider) as IBusinessObjectProvider;
-            }
+            BackendInfo.BusinessObjectProvider = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(BusinessObjectProvider)
+                    ? DefaultProviderTypes.BusinessObjectProvider
+                    : BusinessObjectProvider
+            ) as IBusinessObjectProvider;
+
             // 指定資料儲存物件提供者型別
-            if (StrFunc.IsNotEmpty(RepositoryProvider))
-            {
-                BackendInfo.RepositoryProvider = BaseFunc.CreateInstance(RepositoryProvider) as IRepositoryProvider;
-            }
+           BackendInfo.RepositoryProvider= BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(RepositoryProvider)
+                    ? DefaultProviderTypes.RepositoryProvider
+                    : RepositoryProvider
+            ) as IRepositoryProvider;
+
+            // 指定快取資料來源提供者型別
+            BackendInfo.CacheDataSourceProvider = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(CacheDataSourceProvider)
+                    ? DefaultProviderTypes.CacheDataSourceProvider
+                    : CacheDataSourceProvider
+            ) as ICacheDataSourceProvider;
+
+            // 指定定義資料提供者型別
+            BackendInfo.DefineProvider = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(DefineProvider)
+                    ? DefaultProviderTypes.DefineProvider
+                    : DefineProvider
+            ) as IDefineProvider;
+
             // 資料庫類型
             BackendInfo.DatabaseType = DatabaseType;
             // 預設資料庫編號

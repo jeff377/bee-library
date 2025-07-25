@@ -75,7 +75,7 @@ namespace JsonRpcClient
         /// <summary>
         /// Login to the system.
         /// </summary>
-        private async Task btnLogin_Click(object sender, EventArgs e)
+        private async void btnLogin_Click(object sender, EventArgs e)
         {
             edtLog.Text = string.Empty;
             try
