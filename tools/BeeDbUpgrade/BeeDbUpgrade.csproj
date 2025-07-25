@@ -24,4 +24,23 @@
 		<ProjectReference Include="..\..\src\Bee.UI.WinForms\Bee.UI.WinForms.csproj" />
 	</ItemGroup>
 
+	<!-- 只在 Release 組態下停用 pdb/xml -->
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<DebugType>none</DebugType>
+		<GenerateDocumentationFile>false</GenerateDocumentationFile>
+	</PropertyGroup>
+
+	<Target Name="RemoveExtraArtifacts" AfterTargets="Publish">
+		<!-- 刪除 XML 文件 -->
+		<ItemGroup>
+			<XmlFilesToDelete Include="$(PublishDir)**\*.xml" Exclude="$(PublishDir)BeeSettingsEditor.xml" />
+		</ItemGroup>
+		<Delete Files="@(XmlFilesToDelete)" />
+
+		<!-- 刪除 PDB 檔案 -->
+		<ItemGroup>
+			<PdbFilesToDelete Include="$(PublishDir)**\*.pdb" Exclude="$(PublishDir)BeeSettingsEditor.pdb" />
+		</ItemGroup>
+		<Delete Files="@(PdbFilesToDelete)" />
+	</Target>
 </Project>
