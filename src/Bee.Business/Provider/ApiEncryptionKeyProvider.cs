@@ -1,5 +1,6 @@
 ﻿using System;
 using Bee.Base;
+using Bee.Cache;
 using Bee.Define;
 
 namespace Bee.Business
@@ -19,12 +20,15 @@ namespace Bee.Business
         {
             if (BaseFunc.IsEmpty(accessToken))
             {
+                // 若 AccessToken 為 Guid.Empty，則回傳共用的 API 加密金鑰
                 return BackendInfo.ApiEncryptionKey;
             }
             else
             {
-                // TODO: 支援每個 AccessToken 對應的 Session 金鑰查詢
-                throw new NotImplementedException("Session-based API key retrieval is not implemented.");
+                // 若 AccessToken 有值，則回傳 SessionInfo 中的 API 加密金鑰
+                var sessionInfo = CacheFunc.GetSessionInfo(accessToken);
+                return sessionInfo?.ApiEncryptionKey
+                    ?? throw new UnauthorizedAccessException("Access token is invalid or session key not found.");
             }
         }
     }
