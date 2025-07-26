@@ -9,9 +9,10 @@ namespace Bee.Define
     public interface IApiEncryptionKeyProvider
     {
         /// <summary>
-        /// 根據 AccessToken 取得 API 傳輸資料的加密金鑰。
+        /// 取得 API 傳輸資料的加密金鑰。
         /// </summary>
-        /// <param name="accessToken">若 AccessToken 為空，則視為共用模式。</param>
+        /// <param name="accessToken">AccessToken 或 Guid.Empty。</param>
+        /// <returns>64-byte 的合併金鑰資料（AES + HMAC）。</returns>
         byte[] GetKey(Guid accessToken);
     }
 }

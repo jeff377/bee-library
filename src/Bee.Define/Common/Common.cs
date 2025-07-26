@@ -13,7 +13,7 @@ namespace Bee.Define
         /// <summary>
         /// 預設的 API 加密金鑰提供者型別。
         /// </summary>
-        public const string ApiEncryptionKeyProvider = "Bee.Business.ApiEncryptionKeyProvider, Bee.Business";
+        public const string ApiEncryptionKeyProvider = "Bee.Business.FixedApiEncryptionKeyProvider, Bee.Business";
         /// <summary>
         /// 預設的業務邏輯物件提供者型別，用於動態建立 BusinessObject。
         /// </summary>
