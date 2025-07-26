@@ -16,12 +16,12 @@ namespace Bee.Define
     public class BackendConfiguration
     {
         /// <summary>
-        /// API 金鑰提供者型別。
+        /// API 加密金鑰提供者型別。
         /// </summary>
         [Category("Providers")]
-        [Description("API 金鑰提供者型別，定義傳輸資料加密金鑰的取得方式。")]
-        [DefaultValue(DefaultProviderTypes.ApiKeyProvider)]
-        public string ApiKeyProvider { get; set; } = DefaultProviderTypes.ApiKeyProvider;
+        [Description("API 加密金鑰提供者型別，定義傳輸資料加密金鑰的取得方式。")]
+        [DefaultValue(DefaultProviderTypes.ApiEncryptionKeyProvider)]
+        public string ApiEncryptionKeyProvider { get; set; } = DefaultProviderTypes.ApiEncryptionKeyProvider;
 
         /// <summary>
         /// 業務邏輯物件提供者型別。
@@ -92,12 +92,12 @@ namespace Bee.Define
         /// </summary>
         public void Initialize()
         {
-            // 指定 API 金鑰提供者型別
-            BackendInfo.ApiKeyProvider = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(ApiKeyProvider)
-                    ? DefaultProviderTypes.ApiKeyProvider
-                    : ApiKeyProvider
-            ) as IApiKeyProvider;
+            // 指定 API 加密金鑰提供者型別
+            BackendInfo.ApiEncryptionKeyProvider = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(ApiEncryptionKeyProvider)
+                    ? DefaultProviderTypes.ApiEncryptionKeyProvider
+                    : ApiEncryptionKeyProvider
+            ) as IApiEncryptionKeyProvider;
 
             // 指定業務邏輯物件提供者
             BackendInfo.BusinessObjectProvider = BaseFunc.CreateInstance(
@@ -143,7 +143,7 @@ namespace Bee.Define
             var settings = SecurityKeySettings;
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
 
-            // 解密 API 金鑰，如果設定中有提供。
+            // 解密 API 加密金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
             {
                 BackendInfo.ApiEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ApiEncryptionKey);

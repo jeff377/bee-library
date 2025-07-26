@@ -11,9 +11,9 @@ namespace Bee.Define
     public static class DefaultProviderTypes
     {
         /// <summary>
-        /// 預設的 API 金鑰提供者型別。
+        /// 預設的 API 加密金鑰提供者型別。
         /// </summary>
-        public const string ApiKeyProvider = "Bee.Business.ApiKeyProvider, Bee.Business";
+        public const string ApiEncryptionKeyProvider = "Bee.Business.ApiEncryptionKeyProvider, Bee.Business";
         /// <summary>
         /// 預設的業務邏輯物件提供者型別，用於動態建立 BusinessObject。
         /// </summary>

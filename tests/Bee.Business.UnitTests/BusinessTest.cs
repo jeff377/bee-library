@@ -16,7 +16,7 @@ namespace Bee.Business.UnitTests
             BackendInfo.DefinePath = @"D:\DefinePath";
             // 初始化金鑰
             var settings = CacheFunc.GetSystemSettings();
-            settings.BackendConfiguration.InitializeSecurityKeys();
+            settings.Initialize();
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // 預設資料庫編號

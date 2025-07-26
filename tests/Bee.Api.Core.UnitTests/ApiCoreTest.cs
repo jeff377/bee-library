@@ -11,9 +11,9 @@ namespace Bee.Api.Core.UnitTests
         {
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\DefinePath";
-            // 初始化金鑰
+            // 系統初始化
             var settings = CacheFunc.GetSystemSettings();
-            settings.BackendConfiguration.InitializeSecurityKeys();
+            settings.Initialize();
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // .NET 8 預設停用 BinaryFormatter，需手動啟用

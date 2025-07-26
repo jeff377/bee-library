@@ -5,10 +5,10 @@ using Bee.Define;
 namespace Bee.Business
 {
     /// <summary>
-    /// API 金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。
+    /// API 加密金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。
     /// 根據 AccessToken 決定是否回傳共用金鑰或進階的會話金鑰。
     /// </summary>
-    public class ApiKeyProvider : IApiKeyProvider
+    public class ApiEncryptionKeyProvider : IApiEncryptionKeyProvider
     {
         /// <summary>
         /// 根據 AccessToken 取得 API 傳輸資料的加密金鑰。

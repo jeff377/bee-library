@@ -1,5 +1,4 @@
-﻿using Bee.Api.AspNetCore;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace ApiService.Controllers
 {

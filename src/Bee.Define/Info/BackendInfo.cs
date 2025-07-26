@@ -7,7 +7,7 @@ namespace Bee.Define
     /// </summary>
     public static class BackendInfo
     {
-        private static IApiKeyProvider _apiKeyProvider = null;
+        private static IApiEncryptionKeyProvider _apiEncryptionKeyProvider = null;
         private static IBusinessObjectProvider _businessObjectProvider = null;
         private static IRepositoryProvider _repositoryProvider = null;
         private static ICacheDataSourceProvider _cacheDataSourceProvider = null;
@@ -52,10 +52,10 @@ namespace Bee.Define
         /// API 金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。
         /// 支援共用金鑰與每次登入動態產生的 Session 金鑰。
         /// </summary>
-        public static IApiKeyProvider ApiKeyProvider
+        public static IApiEncryptionKeyProvider ApiEncryptionKeyProvider
         {
-            get => _apiKeyProvider;
-            set => _apiKeyProvider = value ?? throw new ArgumentNullException(nameof(value));
+            get => _apiEncryptionKeyProvider;
+            set => _apiEncryptionKeyProvider = value ?? throw new ArgumentNullException(nameof(value));
         }
 
         /// <summary>

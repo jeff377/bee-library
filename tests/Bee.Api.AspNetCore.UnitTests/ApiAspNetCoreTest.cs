@@ -1,6 +1,7 @@
 using System.Text;
 using Bee.Api.Core;
 using Bee.Base;
+using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
 using Microsoft.AspNetCore.Http;
@@ -14,6 +15,9 @@ namespace Bee.Api.AspNetCore.UnitTests
         {
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\DefinePath";
+            // 系統初始化
+            var settings = CacheFunc.GetSystemSettings();
+            settings.Initialize();
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
         }

@@ -91,7 +91,7 @@ namespace Bee.Api.Core
         private byte[] GetApiEncryptionKey(PayloadFormat format)
         {
             return format == PayloadFormat.Encrypted
-                ? BackendInfo.ApiKeyProvider.GetKey(Guid.Empty)  // 未實作 Session-based API key，目前使用共用金鑰
+                ? BackendInfo.ApiEncryptionKeyProvider.GetKey(Guid.Empty)  // 未實作 Session-based API key，目前使用共用金鑰
                 : null;
         }
 
