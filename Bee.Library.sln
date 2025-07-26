@@ -64,8 +64,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonRpcServer", "samples\Js
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonRpcClient", "samples\JsonRpcClient\JsonRpcClient.csproj", "{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bee.Tests.Shared", "tests\Bee.Tests.Shared\Bee.Tests.Shared.csproj", "{AC752FC3-EE95-4CAD-9ACB-773F4E3152FD}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -164,10 +162,6 @@ Global
 		{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AC752FC3-EE95-4CAD-9ACB-773F4E3152FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC752FC3-EE95-4CAD-9ACB-773F4E3152FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC752FC3-EE95-4CAD-9ACB-773F4E3152FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC752FC3-EE95-4CAD-9ACB-773F4E3152FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -196,7 +190,6 @@ Global
 		{D880CCFE-D54C-C0F1-AFC1-DE5487A5A650} = {A7BD835F-6EE1-4575-AD25-F8205470AC4D}
 		{4ADA7DF2-F0CE-3C35-A8DD-42701483EC5C} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 		{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
-		{AC752FC3-EE95-4CAD-9ACB-773F4E3152FD} = {77848C0B-F388-489F-B772-FD982081A609}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7E07F2-83DF-4D84-82CE-C010B47BBCE6}
