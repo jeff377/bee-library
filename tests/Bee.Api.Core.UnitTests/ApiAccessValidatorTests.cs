@@ -2,6 +2,7 @@
 
 namespace Bee.Api.Core.UnitTests
 {
+    [Collection("Initialize")]
     public class ApiAccessValidatorTests
     {
         [Theory]

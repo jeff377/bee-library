@@ -5,19 +5,12 @@ using Bee.Define;
 
 namespace Bee.Api.Core.UnitTests
 {
+    [Collection("Initialize")]
     public class ApiCoreTest
     {
         static ApiCoreTest()
         {
-            // 設定定義路徑
-            BackendInfo.DefinePath = @"D:\DefinePath";
-            // 系統初始化
-            var settings = CacheFunc.GetSystemSettings();
-            settings.Initialize();
-            // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
-            // .NET 8 預設停用 BinaryFormatter，需手動啟用
-            AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
+
         }
 
         /// <summary>
