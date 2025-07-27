@@ -92,5 +92,15 @@ namespace Bee.Base.UnitTests
             var next = StrFunc.GetNextId(currentId, numberBase);
             Assert.Equal(expected, next);
         }
+
+        [Fact]
+        public void MemberPathTest()
+        {
+            // Act
+            var path = MemberPath.Of(() => SysInfo.Version);
+
+            // Assert
+            Assert.Equal("SysInfo.Version", path);
+        }
     }
 }

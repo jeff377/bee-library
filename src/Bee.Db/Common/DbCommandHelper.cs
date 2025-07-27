@@ -180,7 +180,9 @@ namespace Bee.Db
                 return databaseId;
 
             if (StrFunc.IsEmpty(BackendInfo.DatabaseId))
-                throw new InvalidOperationException("BackendInfo.DatabaseId is not set.");
+            {
+                throw new InvalidOperationException($"{MemberPath.Of(() => BackendInfo.DatabaseId)} is not set.");
+            }
 
             return BackendInfo.DatabaseId;
         }
