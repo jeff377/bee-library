@@ -2,6 +2,7 @@ using Bee.Define;
 
 namespace Bee.Cache.UnitTests
 {
+    [Collection("Initialize")]
     public class CacheTest
     {
         static CacheTest()
@@ -30,5 +31,23 @@ namespace Bee.Cache.UnitTests
                 Assert.Equal(settings, cache);
             }
         }
+        
+        [Fact]
+        public void SessionInfoCache()
+        {
+            var sessionInfo = new SessionInfo
+            {
+                AccessToken = Guid.NewGuid(),
+                UserID = "test_user",
+                UserName = "Test User"
+            };
+            CacheFunc.SetSessionInfo(sessionInfo);
+            var sessionInfoFromCache = CacheFunc.GetSessionInfo(sessionInfo.AccessToken);
+            Assert.Equal(sessionInfo.AccessToken, sessionInfoFromCache.AccessToken);
+
+            CacheFunc.RemoveSessionInfo(sessionInfo.AccessToken);
+            sessionInfo = CacheFunc.GetSessionInfo(sessionInfo.AccessToken);
+            Assert.Null(sessionInfo);
+        }   
     }
 }

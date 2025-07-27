@@ -2,7 +2,7 @@
 using Bee.Db;
 using Bee.Define;
 
-namespace Bee.Api.Core.UnitTests
+namespace Bee.Cache.UnitTests
 {
     /// <summary>
     /// 提供測試所需的全域初始化邏輯，例如資料庫、API 環境的啟動與釋放資源。

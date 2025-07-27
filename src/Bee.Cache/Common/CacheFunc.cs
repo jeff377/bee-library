@@ -91,7 +91,7 @@ namespace Bee.Cache
         /// <param name="tableName">資料表名稱。</param>
         public static DbTable GetDbTable(string tableName)
         {
-            return GetDbTable(BackendInfo.DatabaseID, tableName);
+            return GetDbTable(BackendInfo.DatabaseId, tableName);
         }
 
         /// <summary>

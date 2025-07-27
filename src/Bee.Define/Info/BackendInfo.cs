@@ -46,7 +46,7 @@ namespace Bee.Define
         /// <summary>
         /// 預設資料庫編號。
         /// </summary>
-        public static string DatabaseID { get; set; } = string.Empty;
+        public static string DatabaseId { get; set; } = string.Empty;
 
         /// <summary>
         /// API 金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。

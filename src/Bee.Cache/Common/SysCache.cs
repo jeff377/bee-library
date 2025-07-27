@@ -1,4 +1,6 @@
-﻿using System.Runtime.Caching;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
 using Bee.Base;
 
 namespace Bee.Cache
@@ -116,6 +118,17 @@ namespace Bee.Cache
         public static long GetCount()
         {
             return MemoryCache.GetCount();
+        }
+
+        /// <summary>
+        /// 取得所有快取的鍵值清單。
+        /// </summary>
+        /// <returns>快取鍵值的字串列舉。</returns>
+        public static IEnumerable<string> GetAllKeys()
+        {
+            // MemoryCache 在列舉過程中可能被其他執行緒修改
+            // 因此建議用 ToList() 先複製一份
+            return MemoryCache.Select(item => item.Key).ToList();
         }
     }
 }

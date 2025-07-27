@@ -20,7 +20,7 @@ namespace Bee.Business.UnitTests
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // 預設資料庫編號
-            BackendInfo.DatabaseID = "common";
+            BackendInfo.DatabaseId = "common";
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace Bee.Api.Core.UnitTests
+﻿namespace Bee.Cache.UnitTests
 {
     /// <summary>
     /// 定義全域測試集合，與 <see cref="GlobalFixture"/> 綁定，

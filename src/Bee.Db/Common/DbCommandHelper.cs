@@ -166,24 +166,32 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 取得執行命令的資料庫編號。
+        /// 取得有效的資料庫編號。
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        private string GetDatabaseID(string databaseID)
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。
+        /// </param>
+        /// <returns>有效的資料庫編號。</returns>
+        /// <exception cref="InvalidOperationException">
+        /// 當 <paramref name="databaseId"/> 與 <see cref="BackendInfo.DatabaseId"/> 均為空時擲出。
+        /// </exception>
+        private string GetDatabaseId(string databaseId)
         {
-            if (StrFunc.IsNotEmpty(databaseID)) { return databaseID; }
-            if (StrFunc.IsEmpty(BackendInfo.DatabaseID))
-                throw new InvalidOperationException("BackendInfo.DatabaseID is empty");
-            return BackendInfo.DatabaseID;
+            if (StrFunc.IsNotEmpty(databaseId))
+                return databaseId;
+
+            if (StrFunc.IsEmpty(BackendInfo.DatabaseId))
+                throw new InvalidOperationException("BackendInfo.DatabaseId is not set.");
+
+            return BackendInfo.DatabaseId;
         }
 
         /// <summary>
         /// 執行資料庫命令，傳回資料表。 
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        public DataTable ExecuteDataTable(string databaseID = "")
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
+        public DataTable ExecuteDataTable(string databaseId = "")
         {
-            string id = GetDatabaseID(databaseID);
+            string id = GetDatabaseId(databaseId);
             return SysDb.ExecuteDataTable(id, DbCommand);
         }
 
@@ -203,20 +211,20 @@ namespace Bee.Db
         /// <summary>
         /// 執行資料庫命令，傳回異動筆數。
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        public int ExecuteNonQuery(string databaseID = "")
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
+        public int ExecuteNonQuery(string databaseId = "")
         {
-            string id = GetDatabaseID(databaseID);
+            string id = GetDatabaseId(databaseId);
             return SysDb.ExecuteNonQuery(id, this.DbCommand);
         }
 
         /// <summary>
         /// 執行資料庫命令，傳回單一值。
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        public object ExecuteScalar(string databaseID = "")
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
+        public object ExecuteScalar(string databaseId = "")
         {
-            string id = GetDatabaseID(databaseID);
+            string id = GetDatabaseId(databaseId);
             return SysDb.ExecuteScalar(id, this.DbCommand);
         }
 
@@ -224,15 +232,13 @@ namespace Bee.Db
         /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
         /// </summary>
         /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="databaseID">
-        /// 指定資料庫編號，若未提供，則使用 <c>BackendInfo.DatabaseID</c>。
-        /// </param>
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
         /// <returns>
         /// 返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。
         /// </returns>
-        public IEnumerable<T> Query<T>(string databaseID = "")
+        public IEnumerable<T> Query<T>(string databaseId = "")
         {
-            string id = GetDatabaseID(databaseID);
+            string id = GetDatabaseId(databaseId);
             // 使用 command 執行資料庫查詢，並取得 DbDataReader
             var reader = SysDb.ExecuteReader(id, this.DbCommand);
             var mapper = ILMapper<T>.CreateMapFunc(reader);

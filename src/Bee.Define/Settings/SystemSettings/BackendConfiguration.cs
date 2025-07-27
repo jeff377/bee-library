@@ -130,7 +130,7 @@ namespace Bee.Define
             // 資料庫類型
             BackendInfo.DatabaseType = DatabaseType;
             // 預設資料庫編號
-            BackendInfo.DatabaseID = DatabaseID;
+            BackendInfo.DatabaseId = DatabaseID;
             // 初始化金鑰
             InitializeSecurityKeys();
         }

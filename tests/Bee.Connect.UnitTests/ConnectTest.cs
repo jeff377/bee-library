@@ -20,7 +20,7 @@ namespace Bee.Connect.UnitTests
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // 預設資料庫編號
-            BackendInfo.DatabaseID = "common";
+            BackendInfo.DatabaseId = "common";
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
         }
