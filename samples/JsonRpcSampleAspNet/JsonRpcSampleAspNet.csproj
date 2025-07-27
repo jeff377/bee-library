@@ -48,11 +48,11 @@
     <Reference Include="Azure.Identity, Version=1.14.0.0, Culture=neutral, PublicKeyToken=92742159e12e44c8, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Azure.Identity.1.14.0\lib\netstandard2.0\Azure.Identity.dll</HintPath>
     </Reference>
-    <Reference Include="MessagePack, Version=3.1.3.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MessagePack.3.1.3\lib\net472\MessagePack.dll</HintPath>
+    <Reference Include="MessagePack, Version=3.1.4.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MessagePack.3.1.4\lib\net472\MessagePack.dll</HintPath>
     </Reference>
-    <Reference Include="MessagePack.Annotations, Version=3.1.3.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MessagePack.Annotations.3.1.3\lib\netstandard2.0\MessagePack.Annotations.dll</HintPath>
+    <Reference Include="MessagePack.Annotations, Version=3.1.4.0, Culture=neutral, PublicKeyToken=b4a0369545f0a1be, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MessagePack.Annotations.3.1.4\lib\netstandard2.0\MessagePack.Annotations.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.6, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Bcl.AsyncInterfaces.9.0.6\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -274,13 +274,13 @@
       <ErrorText>此專案參考這部電腦上所缺少的 NuGet 套件。請啟用 NuGet 套件還原，以下載該套件。如需詳細資訊，請參閱 http://go.microsoft.com/fwlink/?LinkID=322105。缺少的檔案是 {0}。</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
-    <Error Condition="!Exists('..\..\packages\MessagePackAnalyzer.3.1.3\build\MessagePackAnalyzer.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MessagePackAnalyzer.3.1.3\build\MessagePackAnalyzer.targets'))" />
     <Error Condition="!Exists('..\..\packages\Microsoft.Data.SqlClient.SNI.6.0.2\build\net462\Microsoft.Data.SqlClient.SNI.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Data.SqlClient.SNI.6.0.2\build\net462\Microsoft.Data.SqlClient.SNI.targets'))" />
     <Error Condition="!Exists('..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MessagePackAnalyzer.3.1.4\build\MessagePackAnalyzer.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MessagePackAnalyzer.3.1.4\build\MessagePackAnalyzer.targets'))" />
   </Target>
-  <Import Project="..\..\packages\MessagePackAnalyzer.3.1.3\build\MessagePackAnalyzer.targets" Condition="Exists('..\..\packages\MessagePackAnalyzer.3.1.3\build\MessagePackAnalyzer.targets')" />
   <Import Project="..\..\packages\Microsoft.Data.SqlClient.SNI.6.0.2\build\net462\Microsoft.Data.SqlClient.SNI.targets" Condition="Exists('..\..\packages\Microsoft.Data.SqlClient.SNI.6.0.2\build\net462\Microsoft.Data.SqlClient.SNI.targets')" />
   <Import Project="..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets" Condition="Exists('..\..\packages\System.ValueTuple.4.6.1\build\net471\System.ValueTuple.targets')" />
+  <Import Project="..\..\packages\MessagePackAnalyzer.3.1.4\build\MessagePackAnalyzer.targets" Condition="Exists('..\..\packages\MessagePackAnalyzer.3.1.4\build\MessagePackAnalyzer.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

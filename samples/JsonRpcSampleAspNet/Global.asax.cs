@@ -21,13 +21,13 @@ namespace JsonRpcSampleAspNet
             BackendInfo.DefinePath = ConfigurationManager.AppSettings["DefinePath"]
                 ?? throw new InvalidOperationException("DefinePath 未設定");
             // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(EDatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
 
             // 系統設定初始化
             var settings = CacheFunc.GetSystemSettings();
             settings.Initialize();
             // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
-            ApiServiceOptions.Initialize(settings.BackendConfiguration.ApiPayloadOptions);
+            ApiServiceOptions.Initialize(settings.CommonConfiguration.ApiPayloadOptions);
         }
 
         protected void Session_Start(object sender, EventArgs e)
