@@ -27,6 +27,11 @@ namespace Bee.Define
         public Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
+        /// 登入成功後 AccessToken 的有效期限（UTC 時間）。
+        /// </summary>
+        public DateTime ExpiredAt { get; set; }
+
+        /// <summary>
         /// 用戶帳號。
         /// </summary>
         public string UserID { get; set; } = string.Empty;

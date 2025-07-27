@@ -27,6 +27,16 @@ namespace Bee.Business
             return sessionInfo?.ApiEncryptionKey
                ?? throw new UnauthorizedAccessException("Access token is invalid or session key not found.");
         }
+
+        /// <summary>
+        /// 登入時產生一組金鑰，可能是共用或隨機金鑰。
+        /// </summary>
+        /// <returns>64-byte 合併金鑰（AES + HMAC）。</returns>
+        public byte[] GenerateKeyForLogin()
+        {
+            // 登入時會自動產生或更新 SessionInfo，並設定 ApiEncryptionKey
+            return AesCbcHmacKeyGenerator.GenerateCombinedKey();
+        }
     }
 
 }

@@ -61,25 +61,37 @@ namespace Bee.Business
         /// <param name="args">傳入引數。</param>
         public virtual LoginResult Login(LoginArgs args)
         {
-            // 驗證使用者帳號與密碼是否正確
+            // 1. 驗證帳密
             if (!AuthenticateUser(args))
                 throw new UnauthorizedAccessException("Invalid username or password.");
 
-            // 若要使用 SessionKey 做為 API 加密金鑰，需建立一組隨機 AES + HMAC 金鑰，與 AccessToken 做綁定
-            // string combinedKey = AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
+            // 2. 登入時產生一組金鑰（可能是共用或隨機金鑰）
+            byte[] encryptionKey = BackendInfo.ApiEncryptionKeyProvider.GenerateKeyForLogin();
 
-            // 取得伺服端的 API 加密金鑰
-            string apiEncryptionKey = Convert.ToBase64String(BackendInfo.ApiEncryptionKey);
-            // 將伺服端建立的金鑰，使用公鑰加密回傳給用戶端
-            apiEncryptionKey = RsaCryptor.EncryptWithPublicKey(apiEncryptionKey, args.ClientPublicKey);
-
-            return new LoginResult()
+            // 3. 建立 SessionInfo 並存入快取
+            var sessionInfo = new SessionInfo
             {
                 AccessToken = Guid.NewGuid(),
-                ExpiredAt = DateTime.UtcNow.AddHours(1), // 預設為 1 小時後過期
-                ApiEncryptionKey = apiEncryptionKey
+                UserID = args.UserId,
+                ExpiredAt = DateTime.UtcNow.AddHours(1),
+                ApiEncryptionKey = encryptionKey
+            };
+            CacheFunc.SetSessionInfo(sessionInfo);
+
+            // 4. 回傳加密後的金鑰與 Token
+            string encryptedKey = RsaCryptor.EncryptWithPublicKey(
+                Convert.ToBase64String(encryptionKey),
+                args.ClientPublicKey
+            );
+
+            return new LoginResult
+            {
+                AccessToken = sessionInfo.AccessToken,
+                ExpiredAt = sessionInfo.ExpiredAt,
+                ApiEncryptionKey = encryptedKey
             };
         }
+
 
         /// <summary>
         /// 驗證使用者帳號與密碼是否正確。

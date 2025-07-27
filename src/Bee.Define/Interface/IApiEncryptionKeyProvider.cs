@@ -14,5 +14,11 @@ namespace Bee.Define
         /// <param name="accessToken">AccessToken 或 Guid.Empty。</param>
         /// <returns>64-byte 的合併金鑰資料（AES + HMAC）。</returns>
         byte[] GetKey(Guid accessToken);
+
+        /// <summary>
+        /// 登入時產生一組金鑰，可能是共用或隨機金鑰。
+        /// </summary>
+        /// <returns>64-byte 合併金鑰（AES + HMAC）。</returns>
+        byte[] GenerateKeyForLogin();
     }
 }

@@ -18,6 +18,16 @@ namespace Bee.Business
             return BackendInfo.ApiEncryptionKey
                 ?? throw new InvalidOperationException("BackendInfo.ApiEncryptionKey is not initialized.");
         }
+
+        /// <summary>
+        /// 登入時產生一組金鑰，可能是共用或隨機金鑰。
+        /// </summary>
+        /// <returns>64-byte 合併金鑰（AES + HMAC）。</returns>
+        public byte[] GenerateKeyForLogin()
+        {
+            // 固定金鑰提供者不支援登入時產生金鑰，直接回傳共用金鑰
+            return GetKey(Guid.Empty);
+        }
     }
 
 }
