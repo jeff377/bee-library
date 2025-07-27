@@ -15,20 +15,22 @@ namespace Bee.Cache
         /// <param name="key">存取令牌。</param>
         protected override SessionInfo CreateInstance(string key)
         {
-            var accessToken = BaseFunc.CGuid(key);
-            if (BaseFunc.IsEmpty(accessToken)) { return null; }
+            return null; // 目前暫不實作從資料庫或其他來源取得 SessionInfo 的邏輯
 
-            // 取得暫存連線的用戶資料
-            var user = BackendInfo.CacheDataSourceProvider.GetSessionUser(accessToken);
-            if (user == null) { return null; }
+            //var accessToken = BaseFunc.CGuid(key);
+            //if (BaseFunc.IsEmpty(accessToken)) { return null; }
 
-            // 傳回連線資訊
-            return new SessionInfo()
-            {
-                AccessToken = accessToken,
-                UserID = user.UserID,
-                UserName = user.UserName
-            };
+            //// 取得暫存連線的用戶資料
+            //var user = BackendInfo.CacheDataSourceProvider.GetSessionUser(accessToken);
+            //if (user == null) { return null; }
+
+            //// 傳回連線資訊
+            //return new SessionInfo()
+            //{
+            //    AccessToken = accessToken,
+            //    UserID = user.UserID,
+            //    UserName = user.UserName
+            //};
         }
 
         /// <summary>

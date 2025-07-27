@@ -30,14 +30,12 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得快取鍵值。
+        /// 取得快取鍵值，統一轉小寫以避免大小寫差異。
         /// </summary>
         /// <param name="key">成員鍵值。</param>
         protected virtual string GetCacheKey(string key)
         {
-            // 預設快取鍵值命名規則：型別名稱_成員鍵值
-            // 註：型別名稱去除開頭的 T
-            return StrFunc.LeftCut(typeof(T).Name, "T") + "_" + key;
+            return (typeof(T).Name + "_" + key).ToLowerInvariant();
         }
 
         /// <summary>
