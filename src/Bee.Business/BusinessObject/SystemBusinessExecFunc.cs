@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Base;
 using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
@@ -8,7 +9,7 @@ namespace Bee.Business
     /// <summary>
     /// 系統層級業務邏輯物件提供的自訂方法。
     /// </summary>
-    internal class SystemExecFunc
+    internal class SystemBusinessExecFunc
     {
         #region 建構函式
 
@@ -16,7 +17,7 @@ namespace Bee.Business
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public SystemExecFunc(Guid accessToken)
+        public SystemBusinessExecFunc(Guid accessToken)
         {
             AccessToken = accessToken;
         }
@@ -35,7 +36,7 @@ namespace Bee.Business
         /// <param name="result">傳出結果。</param>
         public void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
-            result.Parameters.Add("Hello", "Hello SystemObject");
+            result.Parameters.Add("Hello", "Hello system-level BusinessObject");
         }
 
         /// <summary>
@@ -48,9 +49,17 @@ namespace Bee.Business
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
             string dbName = args.Parameters.GetValue<string>("DbName");
             string tableName = args.Parameters.GetValue<string>("TableName");
-            var oBuilder = new TableSchemaBuilder(databaseId);
-            bool upgraded = oBuilder.Execute(dbName, tableName);
-            result.Parameters.Add("Upgraded", upgraded);  // 回傳是否已升級
+
+            // 確認必要的參數不為空
+            BaseFunc.EnsureNotNullOrWhiteSpace(
+                (databaseId, nameof(databaseId)),
+                (dbName, nameof(dbName)),
+                (tableName, nameof(tableName))
+            );
+
+            var builder = new TableSchemaBuilder(databaseId);
+            bool isUpgraded = builder.Execute(dbName, tableName);
+            result.Parameters.Add("Upgraded", isUpgraded);  // 回傳是否已升級
         }
 
         /// <summary>

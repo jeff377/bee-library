@@ -6,7 +6,7 @@ namespace Bee.Business
     /// <summary>
     /// 表單層級業務邏輯物件提供的自訂方法。
     /// </summary>
-    internal class FormExecFunc
+    internal class FormBusinessExecFunc
     {
         #region 建構函式
 
@@ -14,7 +14,7 @@ namespace Bee.Business
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public FormExecFunc(Guid accessToken)
+        public FormBusinessExecFunc(Guid accessToken)
         {
             AccessToken = accessToken;
         }
@@ -33,7 +33,7 @@ namespace Bee.Business
         /// <param name="result">傳出結果。</param>
         public void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
-            result.Parameters.Add("Hello", "Hello FormObject");
+            result.Parameters.Add("Hello", "Hello form-level BusinessObject");
         }
     }
 }

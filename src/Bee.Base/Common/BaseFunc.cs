@@ -713,5 +713,32 @@ namespace Bee.Base
             }
             return result;
         }
+
+        /// <summary>
+        /// 確認多個參數是否為 <c>null</c>，或是（如果為字串）是否為空字串或僅包含空白字元。
+        /// </summary>
+        /// <param name="parameters">
+        /// 要驗證的參數與名稱集合，格式為 <c>(value, paramName)</c>。
+        /// </param>
+        /// <exception cref="ArgumentException">
+        /// 當任一參數為 <c>null</c> 或空字串（僅適用於字串型別）時，拋出此例外，
+        /// 並包含對應的參數名稱。
+        /// </exception>
+        public static void EnsureNotNullOrWhiteSpace(params (object value, string paramName)[] parameters)
+        {
+            foreach (var p in parameters)
+            {
+                if (p.value == null)
+                {
+                    throw new ArgumentException($"{p.paramName} is required.", p.paramName);
+                }
+
+                if (p.value is string str && string.IsNullOrWhiteSpace(str))
+                {
+                    throw new ArgumentException($"{p.paramName} cannot be empty or whitespace.", p.paramName);
+                }
+            }
+        }
+
     }
 }
