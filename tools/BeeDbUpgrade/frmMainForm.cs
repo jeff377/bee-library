@@ -125,7 +125,7 @@ namespace DbUpgrade
         {
             var args = new ExecFuncArgs();
             args.FuncID = SysFuncIDs.UpgradeTableSchema;
-            args.Parameters.Add("DatabaseID", BackendInfo.DatabaseId);
+            args.Parameters.Add("DatabaseId", BackendInfo.DatabaseId);
             args.Parameters.Add("DbName", dbName);
             args.Parameters.Add("TableName", tableName);
             var result = ClientInfo.SystemApiConnector.ExecFunc(args);

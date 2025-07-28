@@ -45,16 +45,12 @@ namespace Bee.Business
         /// <param name="result">傳出結果。</param>
         public void UpgradeTableSchema(ExecFuncArgs args, ExecFuncResult result)
         {
-            TableSchemaBuilder oBuilder;
-            string sDatabaseID, sDbName, sTableName;
-            bool bUpgraded;
-
-            sDatabaseID = args.Parameters.GetValue<string>("DatabaseID");
-            sDbName = args.Parameters.GetValue<string>("DbName");
-            sTableName = args.Parameters.GetValue<string>("TableName");
-            oBuilder = new TableSchemaBuilder(sDatabaseID);
-            bUpgraded = oBuilder.Execute(sDbName, sTableName);
-            result.Parameters.Add("Upgraded", bUpgraded);  // 回傳是否已升級
+            string databaseId = args.Parameters.GetValue<string>("DatabaseId");
+            string dbName = args.Parameters.GetValue<string>("DbName");
+            string tableName = args.Parameters.GetValue<string>("TableName");
+            var oBuilder = new TableSchemaBuilder(databaseId);
+            bool upgraded = oBuilder.Execute(dbName, tableName);
+            result.Parameters.Add("Upgraded", upgraded);  // 回傳是否已升級
         }
 
         /// <summary>

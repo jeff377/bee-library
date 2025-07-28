@@ -9,17 +9,15 @@ namespace Bee.Db
     /// </summary>
     public class TableSchemaBuilder
     {
-        private readonly string _DatabaseID = string.Empty;
-
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="databaseID">資料庫編號。</param>
-        public TableSchemaBuilder(string databaseID)
+        /// <param name="databaseId">資料庫編號。</param>
+        public TableSchemaBuilder(string databaseId)
         {
-            _DatabaseID = databaseID;
+            DatabaseId = databaseId;
         }
 
         #endregion
@@ -27,10 +25,7 @@ namespace Bee.Db
         /// <summary>
         /// 資料庫編號。
         /// </summary>
-        public string DatabaseID
-        {
-            get { return _DatabaseID; }
-        }
+        public string DatabaseId { get; private set; }
 
         /// <summary>
         /// 執行資料表結構比對。
@@ -40,7 +35,7 @@ namespace Bee.Db
         public DbTable Compare(string dbName, string tableName)
         {
             // 實際的資料表結構
-            var helper = new SqlDbTableHelper(this.DatabaseID);
+            var helper = new SqlDbTableHelper(this.DatabaseId);
             var realTable = helper.CreateDbTable(tableName);
             // 定義的資料表結構
             var defineTable = CacheFunc.GetDbTable(dbName, tableName);
@@ -77,7 +72,7 @@ namespace Bee.Db
             string sql = this.GetCommandText(dbName, tableName);
             if (StrFunc.IsNotEmpty(sql))
             {
-                SysDb.ExecuteNonQuery(this.DatabaseID, sql);
+                SysDb.ExecuteNonQuery(this.DatabaseId, sql);
                 return true;
             }
             return false;

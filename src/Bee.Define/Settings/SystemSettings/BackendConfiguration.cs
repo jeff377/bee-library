@@ -58,7 +58,7 @@ namespace Bee.Define
         /// <summary>
         /// 資料庫類型。
         /// </summary>
-        [Category("System")]
+        [Category("Database")]
         [Description("資料庫類型。")]
         [DefaultValue(DatabaseType.SQLServer)]
         public DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
@@ -66,10 +66,10 @@ namespace Bee.Define
         /// <summary>
         /// 預設資料庫編號。
         /// </summary>
-        [Category("System")]
+        [Category("Database")]
         [Description("預設資料庫編號。")]
         [DefaultValue("")]
-        public string DatabaseID { get; set; } = string.Empty;
+        public string DatabaseId { get; set; } = string.Empty;
 
         /// <summary>
         /// API KEY。
@@ -130,7 +130,7 @@ namespace Bee.Define
             // 資料庫類型
             BackendInfo.DatabaseType = DatabaseType;
             // 預設資料庫編號
-            BackendInfo.DatabaseId = DatabaseID;
+            BackendInfo.DatabaseId = DatabaseId;
             // 初始化金鑰
             InitializeSecurityKeys();
         }

@@ -14,10 +14,10 @@ namespace Bee.Db
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="databaseID">資料庫編號。</param>
-        public SqlDbTableHelper(string databaseID)
+        /// <param name="databaseId">資料庫編號。</param>
+        public SqlDbTableHelper(string databaseId)
         {
-            DatabaseID = databaseID;
+            DatabaseId = databaseId;
         }
 
         #endregion
@@ -25,7 +25,7 @@ namespace Bee.Db
         /// <summary>
         /// 資料庫編號。
         /// </summary>
-        public string DatabaseID { get; }
+        public string DatabaseId { get; }
 
         /// <summary>
         /// 建立資料表結構。

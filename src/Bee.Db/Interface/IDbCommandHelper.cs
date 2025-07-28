@@ -64,37 +64,35 @@ namespace Bee.Db
         /// <summary>
         /// 執行資料庫命令，傳回資料表。 
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        DataTable ExecuteDataTable(string databaseID = "");
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
+        DataTable ExecuteDataTable(string databaseId = "");
 
         /// <summary>
         /// 執行資料庫命令，傳回一筆資料列。 
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        DataRow ExecuteDataRow(string databaseID = "");
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
+        DataRow ExecuteDataRow(string databaseId = "");
 
         /// <summary>
         /// 執行資料庫命令，傳回異動筆數。
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        int ExecuteNonQuery(string databaseID = "");
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
+        int ExecuteNonQuery(string databaseId = "");
 
         /// <summary>
         /// 執行資料庫命令，傳回單一值。
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        object ExecuteScalar(string databaseID = "");
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
+        object ExecuteScalar(string databaseId = "");
 
         /// <summary>
         /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
         /// </summary>
         /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="databaseID">
-        /// 指定資料庫編號，若未提供，則使用 <c>BackendInfo.DatabaseID</c>。
-        /// </param>
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
         /// <returns>
         /// 返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。
         /// </returns>
-        IEnumerable<T> Query<T>(string databaseID = "");
+        IEnumerable<T> Query<T>(string databaseId = "");
     }
 }

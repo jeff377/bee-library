@@ -200,10 +200,10 @@ namespace Bee.Db
         /// <summary>
         /// 執行資料庫命令，傳回一筆資料列。 
         /// </summary>
-        /// <param name="databaseID">資料庫編號，則以 BackendInfo.DatabaseID 為主。</param>
-        public DataRow ExecuteDataRow(string databaseID = "")
+        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
+        public DataRow ExecuteDataRow(string databaseId = "")
         {
-            var table = ExecuteDataTable(databaseID);
+            var table = ExecuteDataTable(databaseId);
             if (BaseFunc.IsEmpty(table))
                 return null;
             else

@@ -54,17 +54,17 @@ namespace Bee.Cache
         /// <summary>
         /// 取得資料庫項目。
         /// </summary>
-        /// <param name="databaseID">資料庫編號。</param>
-        public static DatabaseItem GetDatabaseItem(string databaseID)
+        /// <param name="databaseId">資料庫編號。</param>
+        public static DatabaseItem GetDatabaseItem(string databaseId)
         {
-            if (StrFunc.IsEmpty(databaseID))
-                throw new ArgumentNullException(nameof(databaseID));
+            if (StrFunc.IsEmpty(databaseId))
+                throw new ArgumentNullException(nameof(databaseId));
 
             var settings = GetDatabaseSettings();
-            if (!settings.Items.Contains(databaseID))
-                throw new KeyNotFoundException($"DatabaseID '{databaseID}' not found.");
+            if (!settings.Items.Contains(databaseId))
+                throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
 
-            return settings.Items[databaseID];
+            return settings.Items[databaseId];
         }
 
         /// <summary>
