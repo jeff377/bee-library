@@ -17,6 +17,11 @@ namespace Bee.UI.Core
         private static IDefineAccess _defineAccess = null;
 
         /// <summary>
+        /// 當連線方式設定完成後觸發。
+        /// </summary>
+        public static event EventHandler<ConnectTypeChangedEventArgs> ConnectTypeChanged;
+
+        /// <summary>
         /// 命令列引數。
         /// </summary>
         public static Dictionary<string, string> Arguments { get; private set; } = null;
@@ -156,9 +161,16 @@ namespace Bee.UI.Core
         {
             // 設置連線方式異動的相關靜態屬性
             ConnectFunc.SetConnectType(connectType, endpoint);
+
             // 變更連線需重置 SystemConnector 及 DefineAccess
             _systemConnector = null;
             _defineAccess = null;
+
+            // Raise event
+            ConnectTypeChanged?.Invoke(
+                null,
+                new ConnectTypeChangedEventArgs(connectType, endpoint)
+            );
         }
 
         /// <summary>
