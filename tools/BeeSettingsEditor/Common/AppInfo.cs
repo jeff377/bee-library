@@ -30,7 +30,7 @@ namespace SettingsEditor
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // 初始化金鑰
             var settings = CacheFunc.GetSystemSettings();
-            settings.BackendConfiguration.InitializeSecurityKeys();
+            settings.BackendConfiguration.InitializeSecurityKeys(true);
             // 設定為非偵錯模式
             SysInfo.IsDebugMode = false; 
             return true;

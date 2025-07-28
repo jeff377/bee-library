@@ -107,11 +107,11 @@ namespace Bee.Define
             ) as IBusinessObjectProvider;
 
             // 指定資料儲存物件提供者型別
-           BackendInfo.RepositoryProvider= BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(RepositoryProvider)
-                    ? DefaultProviderTypes.RepositoryProvider
-                    : RepositoryProvider
-            ) as IRepositoryProvider;
+            BackendInfo.RepositoryProvider = BaseFunc.CreateInstance(
+                 string.IsNullOrWhiteSpace(RepositoryProvider)
+                     ? DefaultProviderTypes.RepositoryProvider
+                     : RepositoryProvider
+             ) as IRepositoryProvider;
 
             // 指定快取資料來源提供者型別
             BackendInfo.CacheDataSourceProvider = BaseFunc.CreateInstance(
@@ -138,10 +138,11 @@ namespace Bee.Define
         /// <summary>
         /// 初始化金鑰。
         /// </summary>
-        public void InitializeSecurityKeys()
+        /// <param name="autoCreate">若主金鑰不存在，是否自動建立。</param>
+        public void InitializeSecurityKeys(bool autoCreate = false)
         {
             var settings = SecurityKeySettings;
-            byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
+            byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, autoCreate);
 
             // 解密 API 加密金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
