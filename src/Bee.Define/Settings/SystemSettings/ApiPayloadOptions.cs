@@ -17,7 +17,7 @@ namespace Bee.Define
         /// 指定序列化器名稱，例如：messagepack、binaryformatter。
         /// </summary>
         [Description("指定序列化器名稱，例如：messagepack、binaryformatter。")]
-        public string Serializer { get; set; } = "binaryformatter";
+        public string Serializer { get; set; } = "messagepack";
 
         /// <summary>
         /// 指定壓縮器名稱，例如：gzip、none。

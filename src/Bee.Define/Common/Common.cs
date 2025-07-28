@@ -50,11 +50,7 @@ namespace Bee.Define
         /// </summary>
         public const string Login = "Login";
         /// <summary>
-        /// 執行自訂方法。
-        /// </summary>
-        public const string ExecFunc = "ExecFunc";
-        /// <summary>
-        /// 建立連線。
+        /// 建立連線，此方法不啟用資料編碼。
         /// </summary>
         public const string CreateSession = "CreateSession";
         /// <summary>
@@ -65,6 +61,10 @@ namespace Bee.Define
         /// 儲存定義資料。
         /// </summary>
         public const string SaveDefine = "SaveDefine";
+        /// <summary>
+        /// 執行自訂方法。
+        /// </summary>
+        public const string ExecFunc = "ExecFunc";
     }
 
     /// <summary>
