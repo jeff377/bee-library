@@ -6,9 +6,9 @@ using System;
 namespace Bee.Business
 {
     /// <summary>
-    /// Session Key 提供者，依 AccessToken 取得對應的會話金鑰。
+    /// 動態金鑰提供者，依 AccessToken 取得對應的會話金鑰。
     /// </summary>
-    public class SessionApiEncryptionKeyProvider : IApiEncryptionKeyProvider
+    public class DynamicApiEncryptionKeyProvider : IApiEncryptionKeyProvider
     {
         /// <summary>
         /// 取得 API 傳輸資料的加密金鑰。
@@ -20,12 +20,12 @@ namespace Bee.Business
             // 如果 AccessToken 為 Guid.Empty，則拋出未授權異常
             if (BaseFunc.IsEmpty(accessToken))
             {
-                throw new UnauthorizedAccessException("Access token is required for session-based key.");
+                throw new UnauthorizedAccessException("Access token is required.");
             }
 
             var sessionInfo = CacheFunc.GetSessionInfo(accessToken);
             return sessionInfo?.ApiEncryptionKey
-               ?? throw new UnauthorizedAccessException("Access token is invalid or session key not found.");
+                ?? throw new UnauthorizedAccessException("Session key not found or expired.");
         }
 
         /// <summary>

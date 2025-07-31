@@ -4,9 +4,9 @@ using System;
 namespace Bee.Business
 {
     /// <summary>
-    /// 固定金鑰提供者，永遠回傳後端設定檔的共用金鑰。
+    /// 靜態金鑰提供者，永遠回傳後端設定檔的共用金鑰。
     /// </summary>
-    public class FixedApiEncryptionKeyProvider : IApiEncryptionKeyProvider
+    public class StaticApiEncryptionKeyProvider : IApiEncryptionKeyProvider
     {
         /// <summary>
         /// 取得 API 傳輸資料的加密金鑰。
