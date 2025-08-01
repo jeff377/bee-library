@@ -27,12 +27,12 @@ namespace Bee.Define
         /// <param name="length">字串型別的欄位長度。</param>
         public DbField Add(string fieldName, string caption, FieldDbType dbType, int length = 0)
         {
-            DbField oItem;
-
-            oItem = new DbField(fieldName, caption, dbType);
-            oItem.Length = length;  
-            this.Add(oItem);
-            return oItem;
+            var dbField = new DbField(fieldName, caption, dbType)
+            {
+                Length = length
+            };
+            this.Add(dbField);
+            return dbField;
         }
     }
 }

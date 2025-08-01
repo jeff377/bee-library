@@ -15,13 +15,6 @@ namespace Bee.Define
     [TreeNode]
     public class DbField : KeyCollectionItem, IDefineField
     {
-        private string _Caption = string.Empty;
-        private FieldDbType _DbType = FieldDbType.String;
-        private int _Length = 0;
-        private bool _AllowNull = false;
-        private string _DefaultValue = string.Empty;
-        private DbUpgradeAction _UpgradeAction = DbUpgradeAction.None;
-
         /// <summary>
         /// 建構函式。
         /// </summary>
@@ -36,9 +29,9 @@ namespace Bee.Define
         /// <param name="dbType">欄位資料型別。</param>
         public DbField(string fieldName, string caption, FieldDbType dbType)
         {
-            this.FieldName = fieldName;
-            _Caption = caption;
-            _DbType = dbType;
+            FieldName = fieldName;
+            Caption = caption;
+            DbType = dbType;
         }
 
         /// <summary>
@@ -61,11 +54,7 @@ namespace Bee.Define
         [Category(Category.Data)]
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
-        public string Caption
-        {
-            get { return _Caption; }
-            set { _Caption = value; }
-        }
+        public string Caption { get; set; } = string.Empty; 
 
         /// <summary>
         /// 資料型別。
@@ -74,11 +63,7 @@ namespace Bee.Define
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
         [Category(Category.Data)]
         [Description("資料型別。")]
-        public FieldDbType DbType
-        {
-            get { return _DbType; }
-            set { _DbType = value; }
-        }
+        public FieldDbType DbType { get; set; } = FieldDbType.String;
 
         /// <summary>
         /// 字串型別的欄位長度。
@@ -87,11 +72,7 @@ namespace Bee.Define
         [Category(Category.Data)]
         [Description("字串型別的欄位長度。")]
         [DefaultValue(0)]
-        public int Length
-        {
-            get { return _Length; }
-            set { _Length = value; }
-        }
+        public int Length { get; set; } = 0;
 
         /// <summary>
         /// 是否允許 Null 值。
@@ -100,11 +81,7 @@ namespace Bee.Define
         [Category(Category.Data)]
         [Description("是否允許 Null 值。")]
         [DefaultValue(false)]
-        public bool AllowNull
-        {
-            get { return _AllowNull; }
-            set { _AllowNull = value; }
-        }
+        public bool AllowNull { get; set; } = false;
 
         /// <summary>
         /// 預設值。
@@ -113,39 +90,30 @@ namespace Bee.Define
         [Category(Category.Data)]
         [Description("預設值。")]
         [DefaultValue("")]
-        public string DefaultValue
-        {
-            get { return _DefaultValue; }
-            set { _DefaultValue = value; }
-        }
+        public string DefaultValue { get; set; } = string.Empty;
 
         /// <summary>
-        /// 欄位結構升級動作。
+        /// 欄位結構升級動作，執行階段比對資料欄位結構使用，此屬性不做序列化。
         /// </summary>
         [XmlIgnore]
         [Browsable(false)]
         [DefaultValue(DbUpgradeAction.None)]
-        public DbUpgradeAction UpgradeAction
-        {
-            get { return _UpgradeAction; }
-            set { _UpgradeAction = value; }
-        }
+        public DbUpgradeAction UpgradeAction { get; set; } = DbUpgradeAction.None;
 
         /// <summary>
         /// 建立複本。
         /// </summary>
         public DbField Clone()
         {
-            DbField oField;
-
-            oField = new DbField();
-            oField.FieldName = this.FieldName;
-            oField.Caption = this.Caption;
-            oField.DbType = this.DbType;
-            oField.Length = this.Length;
-            oField.AllowNull = this.AllowNull;
-            oField.DefaultValue = this.DefaultValue;
-            return oField;
+            return new DbField
+            {
+                FieldName = this.FieldName,
+                Caption = this.Caption,
+                DbType = this.DbType,
+                Length = this.Length,
+                AllowNull = this.AllowNull,
+                DefaultValue = this.DefaultValue
+            };
         }
 
         /// <summary>
