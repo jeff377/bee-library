@@ -24,7 +24,6 @@ namespace Bee.Define
         /// </summary>
         public SystemSettings()
         {
-            CreateTime = DateTime.Now;
         }
 
         #endregion
@@ -70,10 +69,9 @@ namespace Bee.Define
         /// <summary>
         /// 物件建立時間。
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public DateTime CreateTime { get; private set; }
+        public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
         /// 通用參數及環境設置。

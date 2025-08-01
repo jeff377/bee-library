@@ -14,8 +14,6 @@ namespace Bee.Define
     [TreeNode]
     public class MenuItem : KeyCollectionItem, IDisplayName
     {
-        private string _DisplayName = string.Empty;
-
         #region 建構函式
 
         /// <summary>
@@ -32,7 +30,7 @@ namespace Bee.Define
         public MenuItem(string progId, string displayName)
         {
             ProgId = progId;
-            _DisplayName = displayName;
+            DisplayName = displayName;
         }
 
         #endregion
@@ -53,11 +51,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 產生物件複本。

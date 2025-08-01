@@ -15,9 +15,6 @@ namespace Bee.Define
     [TreeNode("程式清單")]
     public class ProgramSettings : IObjectSerializeFile
     {
-        private string _ObjectFilePath = string.Empty;
-        private readonly DateTime _CreateInstanceTime = DateTime.MinValue;
-        private SerializeState _SerializeState = SerializeState.None;
         private ProgramCategoryCollection _Categories = null;
 
         #region 建構函式
@@ -27,7 +24,6 @@ namespace Bee.Define
         /// </summary>
         public ProgramSettings()
         {
-            _CreateInstanceTime = DateTime.Now;
         }
 
         #endregion
@@ -37,12 +33,10 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
+        [XmlIgnore]
         [JsonIgnore]
         [Browsable(false)]
-        public SerializeState SerializeState
-        {
-            get { return _SerializeState; }
-        }
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -50,29 +44,17 @@ namespace Bee.Define
         /// <param name="serializeState">序列化狀態。</param>
         public void SetSerializeState(SerializeState serializeState)
         {
-            _SerializeState = serializeState;
+            SerializeState = serializeState;
             BaseFunc.SetSerializeState(_Categories, serializeState);
-        }
-
-        /// <summary>
-        /// 物件執行個體的建立時間。
-        /// </summary>
-        [JsonIgnore]
-        [Browsable(false)]
-        public DateTime CreateInstanceTime
-        {
-            get { return _CreateInstanceTime; }
         }
 
         /// <summary>
         /// 序列化繫結檔案。
         /// </summary>
+        [XmlIgnore]
         [JsonIgnore]
         [Browsable(false)]
-        public string ObjectFilePath
-        {
-            get { return _ObjectFilePath; }
-        }
+        public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
         /// 設定序列化/反序列化的對應檔案。
@@ -80,7 +62,7 @@ namespace Bee.Define
         /// <param name="fileName">檔案名稱。</param>
         public void SetObjectFilePath(string fileName)
         {
-            _ObjectFilePath = fileName;
+            ObjectFilePath = fileName;
         }
 
         #endregion

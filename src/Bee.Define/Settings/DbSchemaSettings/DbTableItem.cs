@@ -14,8 +14,6 @@ namespace Bee.Define
     [TreeNode]
     public class DbTableItem : KeyCollectionItem
     {
-        private string _DisplayName = string.Empty;
-
         /// <summary>
         /// 資料表名稱。
         /// </summary>
@@ -32,11 +30,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return this._DisplayName; }
-            set { this._DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 物件描述文字。

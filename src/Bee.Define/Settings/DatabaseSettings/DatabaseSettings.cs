@@ -25,7 +25,6 @@ namespace Bee.Define
         /// </summary>
         public DatabaseSettings()
         {
-            CreateTime = DateTime.Now;
         }
 
         #endregion
@@ -148,10 +147,9 @@ namespace Bee.Define
         /// <summary>
         /// 物件建立時間。
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public DateTime CreateTime { get; private set; }
+        public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
         /// 資料庫連線設定集合。

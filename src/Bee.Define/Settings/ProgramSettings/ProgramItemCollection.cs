@@ -26,11 +26,9 @@ namespace Bee.Define
         /// <param name="displayName">顯示名稱。</param>
         public ProgramItem Add(string progId, string displayName)
         {
-            ProgramItem oItem;
-
-            oItem = new ProgramItem(progId, displayName);
-            base.Add(oItem);
-            return oItem;
+            var item = new ProgramItem(progId, displayName);
+            base.Add(item);
+            return item;
         }
     }
 }

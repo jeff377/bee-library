@@ -14,14 +14,12 @@ namespace Bee.Define
     [TreeNode]
     public class DatabaseServer : KeyCollectionItem
     {
-        private string _DisplayName = string.Empty;
-
         /// <summary>
         /// 伺服器編號。
         /// </summary>
         [XmlAttribute]
         [Description("伺服器編號。")]
-        public string ID
+        public string Id
         {
             get { return base.Key; }
             set { base.Key = value; }
@@ -32,18 +30,14 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 物件描述文字。
         /// </summary>
         public override string ToString()
         {
-            return $"{this.ID} - {this.DisplayName}";
+            return $"{this.Id} - {this.DisplayName}";
         }
     }
 }

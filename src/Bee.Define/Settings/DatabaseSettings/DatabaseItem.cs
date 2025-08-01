@@ -19,7 +19,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("資料庫編號。")]
-        public string ID
+        public string Id
         {
             get { return base.Key; }
             set { base.Key = value; }
@@ -56,12 +56,12 @@ namespace Bee.Define
         public string DbName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 登入用戶，取代連線字串中的 {@UserID} 參數。
+        /// 登入用戶，取代連線字串中的 {@UserId} 參數。
         /// </summary>
         [XmlAttribute]
-        [Description("登入用戶，取代連線字串中的 {@UserID} 參數。")]
+        [Description("登入用戶，取代連線字串中的 {@UserId} 參數。")]
         [DefaultValue("")]
-        public string UserID { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
 
         /// <summary>
         /// 登入密碼，取代連線字串中的 {@Password} 參數。
@@ -79,8 +79,8 @@ namespace Bee.Define
             string connectionString = this.ConnectionString;
             if (StrFunc.IsNotEmpty(this.DbName))
                 connectionString = StrFunc.Replace(connectionString, "{@DbName}", this.DbName);
-            if (StrFunc.IsNotEmpty(this.UserID))
-                connectionString = StrFunc.Replace(connectionString, "{@UserID}", this.UserID);
+            if (StrFunc.IsNotEmpty(this.UserId))
+                connectionString = StrFunc.Replace(connectionString, "{@UserId}", this.UserId);
             if (StrFunc.IsNotEmpty(this.Password))
                 connectionString = StrFunc.Replace(connectionString, "{@Password}", this.Password);
             return connectionString;
@@ -93,12 +93,12 @@ namespace Bee.Define
         {
             return new DatabaseItem
             {
-                ID = this.ID,
+                Id = this.Id,
                 DisplayName = this.DisplayName,
                 DatabaseType = this.DatabaseType,
                 ConnectionString = this.ConnectionString,
                 DbName = this.DbName,
-                UserID = this.UserID,
+                UserId = this.UserId,
                 Password = this.Password
             };
         }

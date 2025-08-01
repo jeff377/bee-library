@@ -26,11 +26,9 @@ namespace Bee.Define
         /// <param name="displayName">顯示名稱。</param>
         public ProgramCategory Add(string id, string displayName)
         {
-            ProgramCategory oCategory;
-
-            oCategory = new ProgramCategory(id, displayName);
-            base.Add(oCategory);
-            return oCategory;
+            var category = new ProgramCategory(id, displayName);
+            base.Add(category);
+            return category;
         }
     }
 }

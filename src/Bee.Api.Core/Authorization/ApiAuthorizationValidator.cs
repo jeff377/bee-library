@@ -65,7 +65,7 @@ namespace Bee.Api.Core
                 return ApiAuthorizationResult.Fail(JsonRpcErrorCode.InvalidRequest, "Invalid Authorization format. Expected 'Bearer <token>'.");
             }
 
-            // 解析 Bearer Token，並驗證為有效的 GUID
+            // 解析 Bearer Token，並驗證為有效的 Guid
             var tokenPart = context.Authorization.Substring("Bearer ".Length).Trim();
             if (!Guid.TryParse(tokenPart, out var accessToken))
             {

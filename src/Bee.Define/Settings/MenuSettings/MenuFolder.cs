@@ -14,7 +14,6 @@ namespace Bee.Define
     [TreeNode("{0}", "DisplayName")]
     public class MenuFolder : KeyCollectionItem, IDisplayName
     {
-        private string _DisplayName = string.Empty;
         private MenuFolderCollection _Folders = null;
         private MenuItemCollection _Items = null;
 
@@ -33,8 +32,8 @@ namespace Bee.Define
         /// <param name="displayName">顯示名稱。</param>
         public MenuFolder(string folderID, string displayName)
         {
-            this.FolderID = folderID;
-            _DisplayName = displayName;
+            FolderId = folderID;
+            DisplayName = displayName;
         }
 
         #endregion
@@ -44,7 +43,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("資料夾代碼。")]
-        public string FolderID
+        public string FolderId
         {
             get { return this.Key; }
             set { this.Key = value; }
@@ -55,11 +54,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 子資料夾集合。
@@ -122,7 +117,7 @@ namespace Bee.Define
         /// <returns></returns>
         public string GetLanguageKey()
         {
-            return StrFunc.Format("MenuFolder_{0}", this.FolderID);
+            return StrFunc.Format("MenuFolder_{0}", this.FolderId);
         }
 
         /// <summary>
@@ -131,7 +126,7 @@ namespace Bee.Define
         /// <returns></returns>
         public override string ToString()
         {
-            return StrFunc.Format("{0} - {1}", this.FolderID, this.DisplayName);
+            return StrFunc.Format("{0} - {1}", this.FolderId, this.DisplayName);
         }
     }
 }

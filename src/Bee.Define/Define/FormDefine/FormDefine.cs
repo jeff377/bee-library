@@ -17,7 +17,6 @@ namespace Bee.Define
     {
         private string _ObjectFilePath = string.Empty;
         private SerializeState _SerializeState = SerializeState.None;
-        private string _FormID = string.Empty;
         private string _DisplayName = string.Empty;
         private FormTableCollection _Tables = null;
         private string _ListFields = string.Empty;
@@ -88,11 +87,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute()]
         [Description("程式代碼。")]
-        public string ProgId
-        {
-            get { return _FormID; }
-            set { _FormID = value; }
-        }
+        public string ProgId { get; set; } = string.Empty;
 
         /// <summary>
         /// 顯示名稱。

@@ -14,7 +14,6 @@ namespace Bee.Define
     [TreeNode]
     public class ProgramCategory : KeyCollectionItem
     {
-        private string _DisplayName = string.Empty;
         private ProgramItemCollection _Items = null;
 
         #region 建構函式
@@ -32,8 +31,8 @@ namespace Bee.Define
         /// <param name="displayName">顯示名稱。</param>
         public ProgramCategory(string id, string displayName)
         {
-            this.ID = id;
-            _DisplayName = displayName;
+            Id = id;
+            DisplayName = displayName;
         }
 
         #endregion
@@ -43,7 +42,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("分類代碼。")]
-        public string ID
+        public string Id
         {
             get { return base.Key; }
             set { base.Key = value; }
@@ -54,11 +53,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 程式項目集合。
@@ -92,7 +87,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.ID} - {this.DisplayName}";
+            return $"{this.Id} - {this.DisplayName}";
         }
     }
 }

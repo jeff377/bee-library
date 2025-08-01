@@ -16,12 +16,7 @@ namespace Bee.Define
     [TreeNode]
     public class MenuSettings : IObjectSerializeFile, IDisplayName
     {
-        private string _ObjectFilePath = string.Empty;
-        private readonly DateTime _CreateInstanceTime = DateTime.MinValue;
-        private SerializeState _SerializeState = SerializeState.None;
-        private string _DisplayName = string.Empty;
         private MenuFolderCollection _Folders = null;
-        private bool _IsLanguageLoaded = false;
 
         #region 建構函式
 
@@ -30,7 +25,6 @@ namespace Bee.Define
         /// </summary>
         public MenuSettings()
         {
-            _CreateInstanceTime = DateTime.Now;
         }
 
         #endregion
@@ -40,12 +34,10 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
+        [XmlIgnore]
         [JsonIgnore]
         [Browsable(false)]
-        public SerializeState SerializeState
-        {
-            get { return _SerializeState; }
-        }
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -53,29 +45,17 @@ namespace Bee.Define
         /// <param name="serializeState">序列化狀態。</param>
         public void SetSerializeState(SerializeState serializeState)
         {
-            _SerializeState = serializeState;
+            SerializeState = serializeState;
             BaseFunc.SetSerializeState(_Folders, serializeState);
-        }
-
-        /// <summary>
-        /// 物件執行個體的建立時間。
-        /// </summary>
-        [JsonIgnore]
-        [Browsable(false)]
-        public DateTime CreateInstanceTime
-        {
-            get { return _CreateInstanceTime; }
         }
 
         /// <summary>
         /// 序列化繫結檔案。
         /// </summary>
+        [XmlIgnore]
         [JsonIgnore]
         [Browsable(false)]
-        public string ObjectFilePath
-        {
-            get { return _ObjectFilePath; }
-        }
+        public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
         /// 設定序列化/反序列化的對應檔案。
@@ -83,10 +63,17 @@ namespace Bee.Define
         /// <param name="fileName">檔案名稱。</param>
         public void SetObjectFilePath(string fileName)
         {
-            _ObjectFilePath = fileName;
+            ObjectFilePath = fileName;
         }
 
         #endregion
+
+        /// <summary>
+        /// 物件建立時間。
+        /// </summary>
+        [XmlIgnore, JsonIgnore]
+        [Browsable(false)]
+        public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
         /// 顯示名稱。
@@ -94,11 +81,7 @@ namespace Bee.Define
         [XmlIgnore]
         [Browsable(false)]
         [Description("顯示名稱。")]
-        public virtual string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public virtual string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 程式資料夾集合。
@@ -114,27 +97,6 @@ namespace Bee.Define
                 if (_Folders == null) { _Folders = new MenuFolderCollection(this); }
                 return _Folders;
             }
-        }
-
-        /// <summary>
-        /// 執行階段屬性，是否已套用語系資料。
-        /// </summary>
-        [Browsable(false)]
-        [XmlIgnore]
-        [JsonIgnore]
-        public bool IsLanguageLoaded
-        {
-            get { return _IsLanguageLoaded; }
-            set { _IsLanguageLoaded = value; }
-        }
-
-        /// <summary>
-        /// 取得語系鍵值。
-        /// </summary>
-        /// <returns></returns>
-        public virtual string GetLanguageKey()
-        {
-            return "MenuSettings";
         }
 
         /// <summary>

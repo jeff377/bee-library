@@ -25,9 +25,7 @@ namespace Bee.Define
         /// <param name="displayName">顯示名稱。</param>
         public MenuItem Add(string progId, string displayName)
         {
-            MenuItem oItem;
-
-            oItem = new MenuItem(progId, displayName); ;
+            var oItem = new MenuItem(progId, displayName);
             this.Add(oItem);
             return oItem;
         }

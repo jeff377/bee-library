@@ -100,8 +100,8 @@ namespace Bee.Connect
                 var settings = new DatabaseSettings();
                 var item = new DatabaseItem()
                 {
-                    ID = "default",
-                    DisplayName = "預設資料庫"
+                    Id = "default",
+                    DisplayName = "Default Database"
                 };
                 settings.Items.Add(item);
                 settings.SetObjectFilePath(filePath);
