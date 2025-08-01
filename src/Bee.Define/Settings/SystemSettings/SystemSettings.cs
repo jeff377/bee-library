@@ -13,7 +13,7 @@ namespace Bee.Define
     [XmlType("SystemSettings")]
     [Description("系統設定。")]
     [TreeNode("System Settings")]
-    public class SystemSettings : IObjectSerializeFile, IObjectSerializeProcess
+    public class SystemSettings : IObjectSerializeFile
     {
         private PropertyCollection _ExtendedProperties = null;
 
@@ -63,34 +63,6 @@ namespace Bee.Define
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
-        }
-
-        #endregion
-
-        #region IObjectSerializeProcess 介面
-
-        /// <summary>
-        /// 執行序列化前的通知方法。
-        /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
-        public void BeforeSerialize(SerializeFormat serializeFormat)
-        {
-        }
-
-        /// <summary>
-        /// 執行序列化後的通知方法。
-        /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
-        public void AfterSerialize(SerializeFormat serializeFormat)
-        {
-        }
-
-        /// <summary>
-        /// 執行反序列化後的通知方法。
-        /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
-        public void AfterDeserialize(SerializeFormat serializeFormat)
-        {
         }
 
         #endregion
