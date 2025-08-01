@@ -130,8 +130,19 @@ namespace Bee.Business
             var result = new GetDefineResult();
             var access = new CacheDefineAccess();
             object value = access.GetDefine(args.DefineType, args.Keys);
+
             if (value != null)
+            {
+                // 如果定義資料實作 ISerializableClone，則先建立一份副本
+                // 以避免在序列化過程中污染快取
+                if (value is ISerializableClone cloneable)
+                {
+                    value = cloneable.CreateSerializableCopy();
+                }
+                // 將物件序列化為 XML
                 result.Xml = SerializeFunc.ObjectToXml(value);
+            }
+
             return result;
         }
 

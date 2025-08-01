@@ -1,4 +1,5 @@
 ﻿using Bee.Base;
+using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
 using Bee.UI.Core;
@@ -25,6 +26,12 @@ namespace DbUpgrade
             if (!ClientInfo.Initialize(new UIViewService(), SupportedConnectTypes.Local)) { return false; }
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            // 初始化金鑰
+            var settings = CacheFunc.GetSystemSettings();
+            settings.BackendConfiguration.InitializeSecurityKeys(true);
+            // 設定資料庫類型和編號
+            BackendInfo.DatabaseType = settings.BackendConfiguration.DatabaseType;
+            BackendInfo.DatabaseId = settings.BackendConfiguration.DatabaseId;
             // 設定為非偵錯模式
             SysInfo.IsDebugMode = false;
             return true;

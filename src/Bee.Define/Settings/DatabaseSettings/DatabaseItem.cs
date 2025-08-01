@@ -87,6 +87,23 @@ namespace Bee.Define
         }
 
         /// <summary>
+        /// 建立當前 <see cref="DatabaseItem"/> 的深拷貝。
+        /// </summary>
+        public DatabaseItem Clone()
+        {
+            return new DatabaseItem
+            {
+                ID = this.ID,
+                DisplayName = this.DisplayName,
+                DatabaseType = this.DatabaseType,
+                ConnectionString = this.ConnectionString,
+                DbName = this.DbName,
+                UserID = this.UserID,
+                Password = this.Password
+            };
+        }
+
+        /// <summary>
         /// 物件描述文字。
         /// </summary>
         public override string ToString()

@@ -19,7 +19,7 @@ namespace Bee.Define
         /// API 加密金鑰提供者型別。
         /// </summary>
         [Category("Providers")]
-        [Description("API 加密金鑰提供者型別，定義傳輸資料加密金鑰的取得方式。")]
+        [Description("API 加密金鑰提供者型別，定義 API 傳輸資料加密金鑰的取得方式。")]
         [DefaultValue(DefaultProviderTypes.ApiEncryptionKeyProvider)]
         public string ApiEncryptionKeyProvider { get; set; } = DefaultProviderTypes.ApiEncryptionKeyProvider;
 
@@ -92,6 +92,11 @@ namespace Bee.Define
         /// </summary>
         public void Initialize()
         {
+            // 資料庫類型
+            BackendInfo.DatabaseType = DatabaseType;
+            // 預設資料庫編號
+            BackendInfo.DatabaseId = DatabaseId;
+
             // 指定 API 加密金鑰提供者型別
             BackendInfo.ApiEncryptionKeyProvider = BaseFunc.CreateInstance(
                 string.IsNullOrWhiteSpace(ApiEncryptionKeyProvider)
@@ -127,10 +132,6 @@ namespace Bee.Define
                     : DefineProvider
             ) as IDefineProvider;
 
-            // 資料庫類型
-            BackendInfo.DatabaseType = DatabaseType;
-            // 預設資料庫編號
-            BackendInfo.DatabaseId = DatabaseId;
             // 初始化金鑰
             InitializeSecurityKeys();
         }

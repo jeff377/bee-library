@@ -70,10 +70,8 @@ namespace Bee.Db
         /// <param name="command">資料庫命令。</param>
         public static object ExecuteScalar(string databaseId, DbCommand command)
         {
-            DbAccess oDbAccess;
-
-            oDbAccess = CreateDbAcccess(databaseId);
-            return oDbAccess.ExecuteScalar(command);
+            var dbAccess = CreateDbAcccess(databaseId);
+            return dbAccess.ExecuteScalar(command);
         }
 
         /// <summary>
