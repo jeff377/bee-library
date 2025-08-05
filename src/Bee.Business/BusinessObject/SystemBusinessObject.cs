@@ -61,8 +61,8 @@ namespace Bee.Business
         /// <param name="args">傳入引數。</param>
         public virtual LoginResult Login(LoginArgs args)
         {
-            // 1. 驗證帳密
-            if (!AuthenticateUser(args, out var user))
+            // 1. 驗證帳密並取得用戶名稱
+            if (!AuthenticateUser(args, out var userName))
                 throw new UnauthorizedAccessException("Invalid username or password.");
 
             // 2. 登入時產生一組金鑰（可能是共用或隨機金鑰）
@@ -72,8 +72,8 @@ namespace Bee.Business
             var sessionInfo = new SessionInfo
             {
                 AccessToken = Guid.NewGuid(),
-                UserID = args.UserId,
-                UserName = user.UserName,
+                UserId = args.UserId,
+                UserName = userName,
                 ExpiredAt = DateTime.UtcNow.AddHours(1),
                 ApiEncryptionKey = encryptionKey
             };
@@ -89,7 +89,8 @@ namespace Bee.Business
             {
                 AccessToken = sessionInfo.AccessToken,
                 ExpiredAt = sessionInfo.ExpiredAt,
-                ApiEncryptionKey = encryptedKey
+                ApiEncryptionKey = encryptedKey,
+                UserName = sessionInfo.UserName,
             };
         }
 
@@ -97,15 +98,11 @@ namespace Bee.Business
         /// 驗證使用者帳號與密碼是否正確。
         /// </summary>
         /// <param name="args">登入引數。</param>
-        /// <param name="user">驗證成功後的使用者資訊。</param>
+        /// <param name="userName">驗證成功的使用者名稱。</param>
         /// <returns>是否驗證成功。</returns>
-        protected virtual bool AuthenticateUser(LoginArgs args, out UserInfo user)
+        protected virtual bool AuthenticateUser(LoginArgs args, out string userName)
         {
-            user = new UserInfo()
-            {
-                UserId = args.UserId,
-                UserName = "Demo User"
-            };
+            userName = "Demo User";
             return true; // 預設為通過，可由子類實作實際驗證邏輯
         }
 

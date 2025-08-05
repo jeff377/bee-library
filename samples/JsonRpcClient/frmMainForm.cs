@@ -81,8 +81,8 @@ namespace JsonRpcClient
             {
                 // Log in to the system; no real credential validation here, for demonstration purposes only
                 var connector = CreateSystemApiConnector();
-                await connector.LoginAsync("jeff", "1234");
-                MessageBox.Show($"AccessToken : {FrontendInfo.AccessToken}\nApiEncryptionKey : {Convert.ToBase64String(FrontendInfo.ApiEncryptionKey)}");
+                var result = await connector.LoginAsync("jeff", "1234");
+                MessageBox.Show($"AccessToken : {result.AccessToken}\nApiEncryptionKey : {result.ApiEncryptionKey}\nUserName : {result.UserName}");
             }
             catch (Exception ex)
             {

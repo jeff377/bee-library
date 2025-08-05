@@ -1,27 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bee.Define
+﻿namespace Bee.Define
 {
     /// <summary>
-    /// 使用者資訊。
+    /// 前端的使用者資訊。
     /// </summary>
-    public class UserInfo
+    public class UserInfo : IUserInfo
     {
         /// <summary>
         /// 使用者帳號。
         /// </summary>
-        public string UserId { get; set; }
+        public string UserId { get; set; } = string.Empty;
 
         /// <summary>
         /// 使用者名稱。
         /// </summary>
-        public string UserName { get; set; }
+        public string UserName { get; set; } = string.Empty;
 
-        // 如需擴充：
-        // public string Role { get; set; }
-        // public string Department { get; set; }
+        /// <summary>
+        /// 使用者語系（如 zh-TW, en-US）
+        /// </summary>
+        public string Culture { get; set; } = "zh-TW";
+
+        /// <summary>
+        /// 使用者時區（建議使用 IANA，如 Asia/Taipei）
+        /// </summary>
+        public string TimeZone { get; set; } = "Asia/Taipei";
     }
 
 }

@@ -4,10 +4,10 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 伺服端使用連線資訊，記錄執行階段用戶與伺服端建立連線的相關資料。
+    /// 後端的連線資訊，記錄執行階段用戶與伺服端建立連線的相關資料。
     /// </summary>
     [Serializable]
-    public class SessionInfo : IKeyObject
+    public class SessionInfo : IKeyObject, IUserInfo
     {
         #region IKeyObject 介面
 
@@ -32,14 +32,24 @@ namespace Bee.Define
         public DateTime ExpiredAt { get; set; }
 
         /// <summary>
-        /// 用戶帳號。
+        /// 使用者帳號。
         /// </summary>
-        public string UserID { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用戶名稱。
+        /// 使用者名稱。
         /// </summary>
         public string UserName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 使用者語系（如 zh-TW, en-US）
+        /// </summary>
+        public string Culture { get; set; } = "zh-TW";
+
+        /// <summary>
+        /// 使用者時區（建議使用 IANA，如 Asia/Taipei）
+        /// </summary>
+        public string TimeZone { get; set; } = "Asia/Taipei";
 
         /// <summary>
         /// API 傳輸加密金鑰，供用戶端與伺服端雙向資料傳輸時進行加解密使用。
@@ -52,7 +62,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{UserID} : {UserName}";
+            return $"{UserId} : {UserName}";
         }
     }
 }

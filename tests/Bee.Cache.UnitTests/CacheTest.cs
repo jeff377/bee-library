@@ -38,7 +38,7 @@ namespace Bee.Cache.UnitTests
             var sessionInfo = new SessionInfo
             {
                 AccessToken = Guid.NewGuid(),
-                UserID = "test_user",
+                UserId = "test_user",
                 UserName = "Test User"
             };
             CacheFunc.SetSessionInfo(sessionInfo);

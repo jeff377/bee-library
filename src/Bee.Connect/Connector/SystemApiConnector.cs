@@ -154,7 +154,7 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="userID">使用者帳號。</param>
         /// <param name="password">使用者密碼。</param>
-        public async Task LoginAsync(string userID, string password)
+        public async Task<LoginResult> LoginAsync(string userID, string password)
         {
             // 產生 RSA 對稱金鑰
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
@@ -174,6 +174,8 @@ namespace Bee.Connect
             // 用 RSA 私鑰解密，取得 API 加密金鑰
             string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
             FrontendInfo.ApiEncryptionKey = Convert.FromBase64String(sessionKey);
+
+            return result;
         }
 
         /// <summary>
@@ -181,9 +183,9 @@ namespace Bee.Connect
         /// </summary>
         /// <param name="userID">使用者帳號。</param>
         /// <param name="password">使用者密碼。</param>
-        public void Login(string userID, string password)
+        public LoginResult Login(string userID, string password)
         {
-            SyncExecutor.Run(() =>
+            return SyncExecutor.Run(() =>
                 LoginAsync(userID, password)
             );
         }
