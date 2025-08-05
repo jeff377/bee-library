@@ -28,6 +28,12 @@ namespace Bee.Define
         /// </summary>
         [Key(102)]
         public string ApiEncryptionKey { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 用戶名稱。
+        /// </summary>
+        [Key(103)]
+        public string UserName { get; set; } = string.Empty;
     }
 
 }

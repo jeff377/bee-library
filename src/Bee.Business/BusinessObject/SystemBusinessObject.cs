@@ -62,7 +62,7 @@ namespace Bee.Business
         public virtual LoginResult Login(LoginArgs args)
         {
             // 1. 驗證帳密
-            if (!AuthenticateUser(args))
+            if (!AuthenticateUser(args, out var user))
                 throw new UnauthorizedAccessException("Invalid username or password.");
 
             // 2. 登入時產生一組金鑰（可能是共用或隨機金鑰）
@@ -73,6 +73,7 @@ namespace Bee.Business
             {
                 AccessToken = Guid.NewGuid(),
                 UserID = args.UserId,
+                UserName = user.UserName,
                 ExpiredAt = DateTime.UtcNow.AddHours(1),
                 ApiEncryptionKey = encryptionKey
             };
@@ -92,14 +93,19 @@ namespace Bee.Business
             };
         }
 
-
         /// <summary>
         /// 驗證使用者帳號與密碼是否正確。
         /// </summary>
         /// <param name="args">登入引數。</param>
+        /// <param name="user">驗證成功後的使用者資訊。</param>
         /// <returns>是否驗證成功。</returns>
-        protected virtual bool AuthenticateUser(LoginArgs args)
+        protected virtual bool AuthenticateUser(LoginArgs args, out UserInfo user)
         {
+            user = new UserInfo()
+            {
+                UserId = args.UserId,
+                UserName = "Demo User"
+            };
             return true; // 預設為通過，可由子類實作實際驗證邏輯
         }
 
