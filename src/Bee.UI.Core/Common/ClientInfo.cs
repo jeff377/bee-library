@@ -135,21 +135,17 @@ namespace Bee.UI.Core
         public static bool AllowGenerateSettings { get; set; }
 
         /// <summary>
-        /// 連線資訊，需登入驗證的應用程式才會有連線資訊。
+        /// 使用者資訊。
         /// </summary>
-        public static SessionInfo SessionInfo { get; private set; }
+        public static UserInfo UserInfo { get; private set; }
 
         /// <summary>
-        /// 設定連線資訊，用戶登入後使用。
+        /// 設定使用者資訊，用戶登入後設定。
         /// </summary>
-        /// <param name="sessionInfo">連線資訊。</param>
-        public static void SetSessionInfo(SessionInfo sessionInfo)
+        /// <param name="userInfo">連線資訊。</param>
+        public static void SetUserInfo(UserInfo userInfo)
         {
-            SessionInfo = sessionInfo;
-            FrontendInfo.AccessToken = sessionInfo.AccessToken;
-            // 更新 AccessToken 需重置 SystemConnector 及 DefineAccess
-            _systemConnector = CreateSystemApiConnector();
-            _defineAccess = new ApiDefineAccess(SystemApiConnector);
+            UserInfo = userInfo;
         }
 
         /// <summary>

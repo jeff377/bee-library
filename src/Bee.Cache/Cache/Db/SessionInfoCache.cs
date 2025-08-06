@@ -1,6 +1,5 @@
-﻿using System;
-using Bee.Base;
-using Bee.Define;
+﻿using Bee.Define;
+using System;
 
 namespace Bee.Cache
 {
