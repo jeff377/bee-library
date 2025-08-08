@@ -83,10 +83,14 @@ namespace Bee.Business
             CacheFunc.SetSessionInfo(sessionInfo);
 
             // 4. 回傳加密後的金鑰與 Token
-            string encryptedKey = RsaCryptor.EncryptWithPublicKey(
-                Convert.ToBase64String(encryptionKey),
-                args.ClientPublicKey
-            );
+            string encryptedKey = string.Empty;
+            if (StrFunc.IsNotEmpty(args.ClientPublicKey))
+            {
+                encryptedKey = RsaCryptor.EncryptWithPublicKey(
+                    Convert.ToBase64String(encryptionKey),
+                    args.ClientPublicKey
+                );
+            }
 
             return new LoginResult
             {

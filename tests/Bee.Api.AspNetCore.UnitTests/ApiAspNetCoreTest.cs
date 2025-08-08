@@ -11,6 +11,8 @@ namespace Bee.Api.AspNetCore.UnitTests
 {
     public class ApiAspNetCoreTest
     {
+        private Guid _accessToken;
+
         static ApiAspNetCoreTest()
         {
             // 設定定義路徑
@@ -52,15 +54,13 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// 執行 ApiServiceController 並傳回反序列化結果。
         /// </summary>
         /// <typeparam name="TResult">回傳型別。</typeparam>
+        /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="args">JSON-RPC 傳入參數。</param>
-        /// <param name="accessToken">存取權杖。</param>
         /// <returns>反序列化後的執行結果。</returns>
-        private async Task<TResult> ExecuteRpcAsync<TResult>(string progId, string action, object args, Guid? accessToken = null)
+        private async Task<TResult> ExecuteRpcAsync<TResult>(Guid accessToken, string progId, string action, object args)
         {
-            accessToken ??= Guid.NewGuid();
-
             // 建立 JSON-RPC 請求內容
             string json = GetRpcRequestJson(progId, action, args);
 
@@ -91,6 +91,26 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
+        /// 模擬登入並取得 AccessToken。
+        /// </summary>
+        /// <returns></returns>
+        private async Task<Guid> GetAccessTokenAsync()
+        {
+            if (_accessToken == Guid.Empty)
+            {
+                // 模擬登入，實際情況應從 API 登入取得 AccessToken
+                var args = new LoginArgs()
+                {
+                    UserId = "demo",    
+                    Password = "1234"
+                };
+                var result = await ExecuteRpcAsync<LoginResult>(Guid.Empty, SysProgIds.System, "Login", args);
+                _accessToken = result.AccessToken;
+            }
+            return _accessToken;
+        }
+
+        /// <summary>
         /// 執行 Ping 方法。
         /// </summary>
         [Fact]
@@ -101,7 +121,7 @@ namespace Bee.Api.AspNetCore.UnitTests
                 ClientName = "TestClient",
                 TraceId = "001",
             };
-            var result = await ExecuteRpcAsync<PingResult>(SysProgIds.System, "Ping", args);
+            var result = await ExecuteRpcAsync<PingResult>(Guid.Empty, SysProgIds.System, "Ping", args);
             Assert.NotNull(result);
             Assert.Equal("ok", result.Status);
             Assert.Equal("001", result.TraceId);
@@ -110,8 +130,9 @@ namespace Bee.Api.AspNetCore.UnitTests
         [Fact]
         public async Task Hello()
         {
+            Guid accessToken = await GetAccessTokenAsync();
             var args = new ExecFuncArgs("Hello");
-            var result = await ExecuteRpcAsync<ExecFuncResult>(SysProgIds.System, "ExecFunc", args);
+            var result = await ExecuteRpcAsync<ExecFuncResult>(accessToken, SysProgIds.System, "ExecFunc", args);
             Assert.NotNull(result);
         }
     }

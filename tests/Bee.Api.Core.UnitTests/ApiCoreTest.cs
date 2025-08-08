@@ -8,6 +8,8 @@ namespace Bee.Api.Core.UnitTests
     [Collection("Initialize")]
     public class ApiCoreTest
     {
+        private Guid _accessToken;
+
         static ApiCoreTest()
         {
 
@@ -45,10 +47,11 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// 執行 API 方法。
         /// </summary>
+        /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">傳入資料。</param>
-        private T ApiExecute<T>(string progId, string action, object value)
+        private T ApiExecute<T>(Guid accessToken, string progId, string action, object value)
         {
             // 設定 JSON-RPC 請求模型
             var request = new JsonRpcRequest()
@@ -60,10 +63,30 @@ namespace Bee.Api.Core.UnitTests
                 },
                 Id = Guid.NewGuid().ToString()
             };
-            Guid accessToken = Guid.NewGuid();
+
             var executor = new JsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
             return (T)response.Result.Value;
+        }
+
+        /// <summary>
+        /// 模擬登入並取得 AccessToken。
+        /// </summary>
+        /// <returns></returns>
+        private Guid GetAccessToken()
+        {
+            if (_accessToken == Guid.Empty)
+            {
+                // 模擬登入，實際情況應從 API 登入取得 AccessToken
+                var args = new LoginArgs()
+                {
+                    UserId = "demo",
+                    Password = "1234"
+                };
+                var result = ApiExecute<LoginResult>(Guid.Empty, SysProgIds.System, "Login", args);
+                _accessToken = result.AccessToken;
+            }
+            return _accessToken;
         }
 
         /// <summary>
@@ -77,7 +100,7 @@ namespace Bee.Api.Core.UnitTests
                 ClientName = "TestClient",
                 TraceId = "001",
             };
-            var result = ApiExecute<PingResult>(SysProgIds.System, "Ping", args);
+            var result = ApiExecute<PingResult>(Guid.Empty, SysProgIds.System, "Ping", args);
             Assert.NotNull(result);
             Assert.Equal("ok", result.Status);
             Assert.Equal("001", result.TraceId);
@@ -90,7 +113,7 @@ namespace Bee.Api.Core.UnitTests
         public void GetCommonConfiguration()
         {
             var args = new GetCommonConfigurationArgs();
-            var result = ApiExecute<GetCommonConfigurationResult>(SysProgIds.System, SystemActions.GetCommonConfiguration, args);
+            var result = ApiExecute<GetCommonConfigurationResult>(Guid.Empty, SysProgIds.System, SystemActions.GetCommonConfiguration, args);
             Assert.NotNull(result);
             //Assert.Equal("messagepack", result.Serializer);
         }
@@ -101,8 +124,9 @@ namespace Bee.Api.Core.UnitTests
         [Fact]
         public void Hello()
         {
-            // 設定 ExecFunc 方法傳入引數
-            Guid accessToken = Guid.NewGuid();
+            // 取得 AccessToken
+            Guid accessToken = GetAccessToken();
+
             // 設定 設定 JSON-RPC 請求模型
             var request = new JsonRpcRequest()
             {
@@ -126,9 +150,10 @@ namespace Bee.Api.Core.UnitTests
         [Fact]
         public void TestDatabaseId()
         {
+            Guid accessToken = GetAccessToken();
             var args = new ExecFuncArgs("TestDatabaseId");
             args.Parameters.Add("DatabaseId", "common");
-            var result = ApiExecute<ExecFuncResult>(SysProgIds.System, "ExecFunc", args);
+            var result = ApiExecute<ExecFuncResult>(accessToken, SysProgIds.System, "ExecFunc", args);
             Assert.NotNull(result);
         }
     }

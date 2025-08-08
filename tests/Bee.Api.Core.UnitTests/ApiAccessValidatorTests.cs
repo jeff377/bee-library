@@ -53,16 +53,16 @@ namespace Bee.Api.Core.UnitTests
 
         private class DummyApi
         {
-            [ApiAccessControl(ApiProtectionLevel.Public)]
+            [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
             public void Method_Public() { }
 
-            [ApiAccessControl(ApiProtectionLevel.Encoded)]
+            [ApiAccessControl(ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous)]
             public void Method_Encoded() { }
 
-            [ApiAccessControl(ApiProtectionLevel.Encrypted)]
+            [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Anonymous)]
             public void Method_Encrypted() { }
 
-            [ApiAccessControl(ApiProtectionLevel.LocalOnly)]
+            [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous)]
             public void Method_LocalOnly() { }
         }
     }
