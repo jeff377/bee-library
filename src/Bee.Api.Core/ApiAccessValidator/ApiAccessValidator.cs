@@ -24,8 +24,8 @@ namespace Bee.Api.Core
             // 驗證是否需要 AccessToken
             if (attr.AccessRequirement == ApiAccessRequirement.Authenticated)
             {
-                // TODO: 還需驗證 AccessToken 是否有效
-                if (context.AccessToken == Guid.Empty)
+                // 驗證 AccessToken 是否有效
+                if (!IsTokenValid(context.AccessToken))
                     throw new UnauthorizedAccessException("AccessToken is required or invalid.");
             }
 
@@ -68,6 +68,21 @@ namespace Bee.Api.Core
             return baseMethod != method
                 ? baseMethod.GetCustomAttribute<ApiAccessControlAttribute>()
                 : null;
+        }
+
+        /// <summary>
+        /// 驗證 AccessToken 是否有效（空值或無效即為失敗）。
+        /// </summary>
+        private static bool IsTokenValid(Guid accessToken)
+        {
+            if (accessToken == Guid.Empty)
+                return false;
+
+            var provider = BackendInfo.AccessTokenValidationProvider;
+            if (provider == null)
+                throw new InvalidOperationException("AccessTokenValidationProvider is not configured.");
+
+            return provider.ValidateAccessToken(accessToken);
         }
     }
 
