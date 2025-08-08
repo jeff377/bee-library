@@ -56,6 +56,14 @@ namespace Bee.Define
         public string CacheDataSourceProvider { get; set; } = DefaultProviderTypes.CacheDataSourceProvider;
 
         /// <summary>
+        /// AccessToken 驗證提供者型別。
+        /// </summary>
+        [Category("Providers")]
+        [Description("AccessToken 驗證提供者型別，用於驗證 AccessToken 的有效性。")]
+        [DefaultValue(DefaultProviderTypes.AccessTokenValidationProvider)]
+        public string AccessTokenValidationProvider { get; set; } = DefaultProviderTypes.AccessTokenValidationProvider;
+
+        /// <summary>
         /// 資料庫類型。
         /// </summary>
         [Category("Database")]
@@ -131,6 +139,13 @@ namespace Bee.Define
                     ? DefaultProviderTypes.DefineProvider
                     : DefineProvider
             ) as IDefineProvider;
+
+            // 指定 AccessToken 驗證提供者型別
+            BackendInfo.AccessTokenValidationProvider = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(AccessTokenValidationProvider)
+                    ? DefaultProviderTypes.AccessTokenValidationProvider
+                    : AccessTokenValidationProvider
+            ) as IAccessTokenValidationProvider;
 
             // 初始化金鑰
             InitializeSecurityKeys();

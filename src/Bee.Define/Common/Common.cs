@@ -30,6 +30,10 @@ namespace Bee.Define
         /// 預設的定義資料提供者型別。
         /// </summary>
         public const string DefineProvider = "Bee.Define.FileDefineProvider, Bee.Define";
+        /// <summary>
+        /// 預設的 AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
+        /// </summary>
+        public const string AccessTokenValidationProvider = "Bee.Business.AccessTokenValidationProvider, Bee.Business"; 
     }
 
     /// <summary>

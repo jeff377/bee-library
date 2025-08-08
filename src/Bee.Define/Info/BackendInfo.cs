@@ -12,6 +12,7 @@ namespace Bee.Define
         private static IRepositoryProvider _repositoryProvider = null;
         private static ICacheDataSourceProvider _cacheDataSourceProvider = null;
         private static IDefineProvider _defineProvider = null;
+        private static IAccessTokenValidationProvider _accessTokenValidationProvider = null;
 
         /// <summary>
         /// 定義資料路徑。
@@ -92,6 +93,15 @@ namespace Bee.Define
         {
             get => _defineProvider;
             set => _defineProvider = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
+        /// AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
+        /// </summary>
+        public static IAccessTokenValidationProvider AccessTokenValidationProvider
+        {
+            get => _accessTokenValidationProvider;
+            set => _accessTokenValidationProvider = value ?? throw new ArgumentNullException(nameof(value));
         }
     }
 }
