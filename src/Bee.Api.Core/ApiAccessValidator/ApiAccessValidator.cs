@@ -21,6 +21,14 @@ namespace Bee.Api.Core
             if (attr == null)
                 return;
 
+            // 驗證是否需要 AccessToken
+            if (attr.AccessRequirement == ApiAccessRequirement.Authenticated)
+            {
+                // TODO: 還需驗證 AccessToken 是否有效
+                if (context.AccessToken == Guid.Empty)
+                    throw new UnauthorizedAccessException("AccessToken is required or invalid.");
+            }
+
             // 近端呼叫允許所有保護等級
             if (context.IsLocalCall)
                 return;

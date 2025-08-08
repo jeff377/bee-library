@@ -128,7 +128,7 @@ namespace Bee.Api.Core
                 throw new MissingMethodException($"Method '{action}' not found in business object '{progId}'.");
 
             // 存取驗證
-            ApiAccessValidator.ValidateAccess(method, new ApiCallContext(IsLocalCall, format));
+            ApiAccessValidator.ValidateAccess(method, new ApiCallContext(AccessToken, IsLocalCall, format));
 
             var result = method.Invoke(businessObject, new object[] { value });
 

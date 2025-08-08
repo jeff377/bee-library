@@ -34,7 +34,8 @@ namespace Bee.Api.Core.UnitTests
             var context = new ApiCallContext
             {
                 Format = format,
-                IsLocalCall = isLocal
+                IsLocalCall = isLocal,
+                AccessToken = Guid.NewGuid() // 模擬有效的 AccessToken
             };
 
             // Act & Assert

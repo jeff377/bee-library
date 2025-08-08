@@ -36,12 +36,13 @@ namespace Bee.Business
         /// <summary>
         /// 連線資訊。
         /// </summary>
-        public SessionInfo SessionInfo { get; private set; }   
+        public SessionInfo SessionInfo { get; private set; }
 
         /// <summary>
         /// 執行自訂方法。
         /// </summary>
         /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
             var result = new ExecFuncResult();

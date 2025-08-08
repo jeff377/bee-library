@@ -31,6 +31,7 @@ namespace Bee.Business
         /// Ping 方法，測試 API 服務是否可用。
         /// </summary>
         /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual PingResult Ping(PingArgs args)
         {
             return new PingResult()
@@ -46,6 +47,7 @@ namespace Bee.Business
         /// 取得通用參數及環境設置。
         /// </summary>
         /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual GetCommonConfigurationResult GetCommonConfiguration(GetCommonConfigurationArgs args)
         {
             var commonConfiguration = CacheFunc.GetSystemSettings().CommonConfiguration;
@@ -59,6 +61,7 @@ namespace Bee.Business
         /// 執行登入操作。
         /// </summary>
         /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual LoginResult Login(LoginArgs args)
         {
             // 1. 驗證帳密並取得用戶名稱
@@ -110,6 +113,7 @@ namespace Bee.Business
         /// 建立連線。
         /// </summary>
         /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
         {
             // 建立一組用戶連線
