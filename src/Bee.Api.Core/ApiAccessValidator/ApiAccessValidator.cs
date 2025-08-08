@@ -19,7 +19,10 @@ namespace Bee.Api.Core
         {
             var attr = FindAccessAttribute(method);
             if (attr == null)
-                return;
+            {
+                throw new UnauthorizedAccessException(
+                    $"API method '{method.DeclaringType?.FullName}.{method.Name}' is not accessible without {nameof(ApiAccessControlAttribute)}.");
+            }
 
             // 驗證是否需要 AccessToken
             if (attr.AccessRequirement == ApiAccessRequirement.Authenticated)
