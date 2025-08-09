@@ -66,6 +66,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Data", "Data", "{30202220-C
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Define", "Define", "{67E4CF8C-C4DA-4A4D-AA5D-433D4E78532B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonRpcServerAspNet", "samples\JsonRpcServerAspNet\JsonRpcServerAspNet.csproj", "{CFF8C017-74EB-4840-BEEE-5009D895338C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -164,6 +166,10 @@ Global
 		{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFF8C017-74EB-4840-BEEE-5009D895338C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -194,6 +200,7 @@ Global
 		{C2AEBC22-DF78-D0F5-EB34-6DCEF3199586} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 		{30202220-CD34-4DE9-8FB9-E213383C5F12} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 		{67E4CF8C-C4DA-4A4D-AA5D-433D4E78532B} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
+		{CFF8C017-74EB-4840-BEEE-5009D895338C} = {DDCBBB2B-BD0A-4D2F-95E0-86FF875D77C5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {CB7E07F2-83DF-4D84-82CE-C010B47BBCE6}
