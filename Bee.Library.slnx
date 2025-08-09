@@ -9,7 +9,10 @@
     <Project Path="samples/JsonRpcServer/JsonRpcServer.csproj" />
   </Folder>
   <Folder Name="/samples/Data/" />
-  <Folder Name="/samples/Define/" />
+  <Folder Name="/samples/Define/">
+    <File Path="samples/Define/DatabaseSettings.xml" />
+    <File Path="samples/Define/SystemSettings.xml" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Bee.Api.AspNet/Bee.Api.AspNet.csproj" />
     <Project Path="src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj" />

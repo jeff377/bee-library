@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SystemSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <CommonConfiguration>
+    <Version>1.0.0</Version>
+    <IsDebugMode>true</IsDebugMode>
+    <AllowedTypeNamespaces>Custom.Define</AllowedTypeNamespaces>
+    <ApiPayloadOptions>
+      <Serializer>messagepack</Serializer>
+      <Compressor>gzip</Compressor>
+      <Encryptor>aes-cbc-hmac</Encryptor>
+    </ApiPayloadOptions>
+    <LogOptions>
+      <ApiConnector>
+        <RawData>true</RawData>
+        <EncodedData>true</EncodedData>
+      </ApiConnector>
+      <DbAccess>
+        <Level>Warning</Level>
+        <AffectedRowThreshold>10000</AffectedRowThreshold>
+        <SlowQueryThreshold>300</SlowQueryThreshold>
+      </DbAccess>
+    </LogOptions>
+  </CommonConfiguration>
+  <BackendConfiguration>
+    <ApiEncryptionKeyProvider>Bee.Business.DynamicApiEncryptionKeyProvider, Bee.Business</ApiEncryptionKeyProvider>
+    <BusinessObjectProvider>Custom.Business.BusinessObjectProvider, Custom.Business</BusinessObjectProvider>
+    <SecurityKeySettings>
+      <MasterKeySource>
+        <Type>File</Type>
+        <Value>Master.key</Value>
+      </MasterKeySource>
+      <ApiEncryptionKey>EAAAAJfybVTkJf2mkFl+vO/978tQAAAA19r1gt4NTlgi6hnRs7OC+79Iq69cV0fLXsYsKuh4B4I1u2QUnPf7zkp6pXv7p/6+KGSeeJ7HxKKSFUh4HxsrmRPyJdHJ8VY+iNvK4JF26KyQT/gNVScfxO9QudiMyek51nAJ5kmB7cT/7XRY9YwwMw==</ApiEncryptionKey>
+      <CookieEncryptionKey>EAAAAAoO4251fm6RQDdXCedNcoVQAAAAS70nN8IKU1Zry7zuBk2QprFhbTYtp3bqX22H/hMZJJi+/GPvjaD3h637soo+NFhv1W7vr48Vps2VcpRga0LnRh3c2M1Rpk6eOM24eO9jn0RarGGCa7d4Hv1Bwx2fP599aq7SlJOeSI9v/kJpMp6aXg==</CookieEncryptionKey>
+      <ConfigEncryptionKey>EAAAAEFoBdknimXAIF3hDfSXU2JQAAAASmbuRBAVIoPBtoyuF4Xnyl8dMU7qaz/xKOvRxcXldKwwqdmSmxHSIixAXBTqxk4u2zNpH57KWGjhNNlVxlGwvc48Q/t5fIqiVx6zTeuvUxgKSGRy8nmLZwKW6DbcEl/OmSseVmXHivZZ0eDNm708zA==</ConfigEncryptionKey>
+      <DatabaseEncryptionKey>EAAAAEAMd2mxLc84NFgmgRj8kF1QAAAAS+5geJiBo5FJ5P+KB8hlEgm8dHoI3dpBTADsWXFDo8b35O/JNp7lddVGP2VBY36psUZYaxKVv8118irCpZOe29AyLZQkE9O10bjhNo1Cv8Yn0Qpuc4HkAr9M2R3UdFahd3T60o1f+FMyf1s6d57BiA==</DatabaseEncryptionKey>
+    </SecurityKeySettings>
+  </BackendConfiguration>
+  <FrontendConfiguration />
+  <WebsiteConfiguration />
+  <BackgroundServiceConfiguration />
+</SystemSettings>
