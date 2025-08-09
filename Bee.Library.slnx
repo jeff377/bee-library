@@ -1,0 +1,40 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="samples/Custom.Business/Custom.Business.csproj" />
+    <Project Path="samples/Custom.Define/Custom.Define.csproj" />
+    <Project Path="samples/JsonRpcClient/JsonRpcClient.csproj" />
+    <Project Path="samples/JsonRpcServer/JsonRpcServer.csproj" />
+  </Folder>
+  <Folder Name="/samples/Data/" />
+  <Folder Name="/samples/Define/" />
+  <Folder Name="/src/">
+    <Project Path="src/Bee.Api.AspNet/Bee.Api.AspNet.csproj" />
+    <Project Path="src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj" />
+    <Project Path="src/Bee.Api.Core/Bee.Api.Core.csproj" />
+    <Project Path="src/Bee.Base/Bee.Base.csproj" />
+    <Project Path="src/Bee.Business/Bee.Business.csproj" />
+    <Project Path="src/Bee.Cache/Bee.Cache.csproj" />
+    <Project Path="src/Bee.Connect/Bee.Connect.csproj" />
+    <Project Path="src/Bee.Db/Bee.Db.csproj" />
+    <Project Path="src/Bee.Define/Bee.Define.csproj" />
+    <Project Path="src/Bee.UI.Core/Bee.UI.Core.csproj" />
+    <Project Path="src/Bee.UI.WinForms/Bee.UI.WinForms.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Bee.Api.AspNetCore.UnitTests/Bee.Api.AspNetCore.UnitTests.csproj" />
+    <Project Path="tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj" />
+    <Project Path="tests/Bee.Base.UnitTests/Bee.Base.UnitTests.csproj" />
+    <Project Path="tests/Bee.Business.UnitTests/Bee.Business.UnitTests.csproj" />
+    <Project Path="tests/Bee.Cache.UnitTests/Bee.Cache.UnitTests.csproj" />
+    <Project Path="tests/Bee.Connect.UnitTests/Bee.Connect.UnitTests.csproj" />
+    <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
+    <Project Path="tests/Bee.Define.UnitTests/Bee.Define.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/tools/">
+    <Project Path="tools/BeeDbUpgrade/BeeDbUpgrade.csproj" />
+    <Project Path="tools/BeeSettingsEditor/BeeSettingsEditor.csproj" />
+  </Folder>
+</Solution>

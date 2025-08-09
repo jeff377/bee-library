@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
     <ProjectReference Include="..\..\src\Bee.UI.WinForms\Bee.UI.WinForms.csproj" />
     <ProjectReference Include="..\Custom.Business\Custom.Business.csproj" />
   </ItemGroup>
