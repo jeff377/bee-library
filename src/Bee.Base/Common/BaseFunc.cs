@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
+using System.Security.Cryptography;
 
 namespace Bee.Base
 {
@@ -573,16 +574,31 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 隨機取得一個整數值。
+        /// 隨機取得一個整數值（密碼學安全）。
         /// </summary>
-        /// <param name="min">最小值。</param>
-        /// <param name="max">最大值。</param>
+        /// <param name="min">最小值（含）。</param>
+        /// <param name="max">最大值（不含）。</param>
+        /// <returns>介於 min 與 max 之間的隨機整數。</returns>
         public static int RndInt(int min, int max)
         {
-            Random oRandom;
+            if (min >= max)
+                throw new ArgumentOutOfRangeException(nameof(min), "min must be less than max.");
 
-            oRandom = new Random(Guid.NewGuid().GetHashCode());
-            return oRandom.Next(min, max);
+            long diff = (long)max - min;
+            byte[] uint32Buffer = new byte[4];
+
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                while (true)
+                {
+                    rng.GetBytes(uint32Buffer);
+                    uint rand = BitConverter.ToUInt32(uint32Buffer, 0);
+
+                    long remainder = rand % diff;
+                    if (rand - remainder + (diff - 1) >= rand)
+                        return (int)(min + remainder);
+                }
+            }
         }
 
         /// <summary>

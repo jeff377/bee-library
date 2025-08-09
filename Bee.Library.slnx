@@ -8,7 +8,6 @@
     <Project Path="samples/JsonRpcClient/JsonRpcClient.csproj" />
     <Project Path="samples/JsonRpcServer/JsonRpcServer.csproj" />
   </Folder>
-  <Folder Name="/samples/Data/" />
   <Folder Name="/samples/Define/">
     <File Path="samples/Define/DatabaseSettings.xml" />
     <File Path="samples/Define/SystemSettings.xml" />

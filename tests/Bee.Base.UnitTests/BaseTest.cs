@@ -102,5 +102,18 @@ namespace Bee.Base.UnitTests
             // Assert
             Assert.Equal("SysInfo.Version", path);
         }
+
+        [Fact]
+        public void RndInt_ShouldReturnValueWithinRange()
+        {
+            int min = 1;
+            int max = 10;
+
+            for (int i = 0; i < 100; i++)
+            {
+                int value = BaseFunc.RndInt(min, max);
+                Assert.InRange(value, min, max - 1);
+            }
+        }
     }
 }
