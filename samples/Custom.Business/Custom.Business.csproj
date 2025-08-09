@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
+    <ProjectReference Include="..\Custom.Define\Custom.Define.csproj" />
+  </ItemGroup>
+
+</Project>

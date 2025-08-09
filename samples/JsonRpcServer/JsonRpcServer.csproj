@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Bee.Api.AspNetCore\Bee.Api.AspNetCore.csproj" />
     <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
+    <ProjectReference Include="..\Custom.Business\Custom.Business.csproj" />
   </ItemGroup>
 
 </Project>
