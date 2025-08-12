@@ -403,3 +403,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /samples/Define/Master.key
+/samples/Define/DatabaseSettings.xml
