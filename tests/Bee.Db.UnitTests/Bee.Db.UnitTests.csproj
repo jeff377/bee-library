@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -24,10 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Bee.Base\Bee.Base.csproj" />
-    <ProjectReference Include="..\..\src\Bee.Cache\Bee.Cache.csproj" />
-    <ProjectReference Include="..\..\src\Bee.Db\Bee.Db.csproj" />
-    <ProjectReference Include="..\..\src\Bee.Define\Bee.Define.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
   </ItemGroup>
 
   <ItemGroup>

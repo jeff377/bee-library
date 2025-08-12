@@ -4,19 +4,11 @@ using Bee.Define;
 
 namespace Bee.Db.UnitTests
 {
+    [Collection("Initialize")]
     public class DbTest
     {
         static DbTest()
         {
-            // 設定定義路徑
-            BackendInfo.DefinePath = @"D:\DefinePath";
-            // 系統初始化
-            var settings = CacheFunc.GetSystemSettings();
-            settings.Initialize();
-
-            BackendInfo.DatabaseType = DatabaseType.SQLServer;
-            // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
         }
 
         /// <summary>
