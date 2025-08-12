@@ -104,7 +104,7 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        public void RndInt_ShouldReturnValueWithinRange()
+        public void RndInt_ReturnsValueWithinRange()
         {
             int min = 1;
             int max = 10;
