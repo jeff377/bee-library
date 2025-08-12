@@ -10,9 +10,9 @@ namespace Bee.Db.UnitTests
         {
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\DefinePath";
-            // 初始化金鑰
+            // 系統初始化
             var settings = CacheFunc.GetSystemSettings();
-            settings.BackendConfiguration.InitializeSecurityKeys();
+            settings.Initialize();
 
             BackendInfo.DatabaseType = DatabaseType.SQLServer;
             // 註冊資料庫提供者
@@ -27,6 +27,32 @@ namespace Bee.Db.UnitTests
         {
             string sql = "SELECT * FROM ts_user";
             var table = SysDb.ExecuteDataTable("common", sql);
+        }
+
+
+        public class User
+        {
+            public string? UserID { get; set; }
+            public string? UserName { get; set; }
+            public DateTime InsertTime { get; set; }
+        }
+
+        public class User2
+        {
+            public string? UserID { get; set; }
+            public string? UserName { get; set; }
+            public string? AccessToken { get; set; }
+        }
+
+        [Fact]
+        public void Query()
+        {
+            var helper = DbFunc.CreateDbCommandHelper();
+            string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
+            helper.SetCommandText(sql);
+            var list = helper.Query<User>("common").ToList();
+            var list2 = helper.Query<User>("common").ToList();
+            var list3 = helper.Query<User2>("common").ToList();
         }
 
         /// <summary>
