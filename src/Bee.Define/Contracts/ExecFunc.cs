@@ -36,4 +36,13 @@ namespace Bee.Define
         public string FuncID { get; set; } = string.Empty;
 
     }
+
+    /// <summary>
+    /// 執行自訂方法的傳出結果。
+    /// </summary>
+    [MessagePackObject]
+    [Serializable]
+    public class ExecFuncResult : BusinessResult
+    {
+    }
 }
