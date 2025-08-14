@@ -278,12 +278,10 @@ namespace Bee.Define
         /// 需要編碼：允許遠端呼叫，但必須進行編碼（序列化與壓縮）
         /// </summary>
         Encoded = 1,
-
         /// <summary>
         /// 需要加密：允許遠端呼叫，必須進行編碼與加密（序列化、壓縮與加密）
         /// </summary>
         Encrypted = 2,
-
         /// <summary>
         /// 僅限近端呼叫（不驗證編碼，適用於工具程式、背景服務）
         /// </summary>
@@ -299,13 +297,11 @@ namespace Bee.Define
         /// 不需登入（Anonymous Access）
         /// </summary>
         Anonymous = 0,
-
         /// <summary>
         /// 需要登入（需驗證 AccessToken）
         /// </summary>
         Authenticated = 1
     }
-
 
     /// <summary>
     /// 定義資料類型。
