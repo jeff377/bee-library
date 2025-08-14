@@ -6,7 +6,7 @@ namespace Bee.Define
     /// 指定要檢查更新的套件查詢項目（App/Component + 目前版本 + 平台/通道）。
     /// </summary>
     [MessagePackObject]
-    public sealed class PackageUpdateQuery
+    public class PackageUpdateQuery
     {
         /// <summary>
         /// 應用程式/工具代號（例：Client、SettingsEditor、DefinitionTool、DbUpgrade、FlowService）。

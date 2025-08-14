@@ -1,7 +1,4 @@
 ﻿using MessagePack;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bee.Define
 {
@@ -9,7 +6,7 @@ namespace Bee.Define
     /// 單一查詢項目的更新資訊。
     /// </summary>
     [MessagePackObject]
-    public sealed class PackageUpdateInfo
+    public class PackageUpdateInfo
     {
         /// <summary>
         /// 對應的應用程式/工具代號。
