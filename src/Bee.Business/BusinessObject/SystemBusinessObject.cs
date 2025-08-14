@@ -178,6 +178,28 @@ namespace Bee.Business
         }
 
         /// <summary>
+        /// 檢查套件是否有更新版本。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous)]
+        public virtual CheckPackageUpdateResult CheckPackageUpdate(CheckPackageUpdateArgs args)
+        {
+            // Implemented in derived classes.
+            throw new NotSupportedException("CheckPackageUpdate is not implemented in the base class.");
+        }
+
+        /// <summary>
+        /// 取得套件資訊。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous)]
+        public virtual GetPackageResult GetPackage(GetPackageArgs args)
+        {
+            // Implemented in derived classes.
+            throw new NotSupportedException("GetPackage is not implemented in the base class.");
+        }
+
+        /// <summary>
         /// 執行 ExecFunc 方法的實作。
         /// </summary>
         /// <param name="args">傳入引數。</param>
