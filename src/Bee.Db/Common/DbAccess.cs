@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using Bee.Base;
 using Bee.Define;
@@ -189,6 +190,47 @@ namespace Bee.Db
         {
             var command = this.CreateCommand(commandText);
             return ExecuteReader(command);
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
+        /// </summary>
+        /// <typeparam name="T">要映射的目標類型。</typeparam>
+        /// <param name="command">資料庫命令。</param>
+        /// <returns>
+        /// 返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。
+        /// </returns>
+        public IEnumerable<T> Query<T>(DbCommand command)
+        {
+            // 使用 command 執行資料庫查詢，並取得 DbDataReader
+            var reader = ExecuteReader(command);
+            var mapper = ILMapper<T>.CreateMapFunc(reader);
+            // 延遲執行，不能使用 using，會造成連線被提早關閉
+            try
+            {
+                foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
+                {
+                    yield return item;
+                }
+            }
+            finally
+            {
+                reader.Dispose(); // 迭代結束後才關閉 reader
+            }
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
+        /// </summary>
+        /// <typeparam name="T">要映射的目標類型。</typeparam>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <returns>
+        /// 返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。
+        /// </returns>
+        public IEnumerable<T> Query<T>(string commandText)
+        {
+            var command = this.CreateCommand(commandText);
+            return Query<T>(command);
         }
 
         /// <summary>

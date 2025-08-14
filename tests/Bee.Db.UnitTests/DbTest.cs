@@ -39,12 +39,9 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void Query()
         {
-            var helper = DbFunc.CreateDbCommandHelper();
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
-            helper.SetCommandText(sql);
-            var list = helper.Query<User>("common").ToList();
-            var list2 = helper.Query<User>("common").ToList();
-            var list3 = helper.Query<User2>("common").ToList();
+            var list = SysDb.Query<User>("common", sql).ToList();
+            var list3 = SysDb.Query<User2>("common", sql).ToList();
         }
 
         /// <summary>

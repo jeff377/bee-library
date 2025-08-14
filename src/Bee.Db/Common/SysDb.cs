@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using Bee.Cache;
 
@@ -112,6 +113,36 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
+        /// </summary>
+        /// <typeparam name="T">要映射的目標類型。</typeparam>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="command">資料庫命令。</param>
+        /// <returns>
+        /// 返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。
+        /// </returns>
+        public static IEnumerable<T> Query<T>(string databaseId, DbCommand command)
+        {
+            var dbAccess = CreateDbAcccess(databaseId);
+            return dbAccess.Query<T>(command);
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
+        /// </summary>
+        /// <typeparam name="T">要映射的目標類型。</typeparam>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <returns>
+        /// 返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。
+        /// </returns>
+        public static IEnumerable<T> Query<T>(string databaseId, string commandText)
+        {
+            var dbAccess = CreateDbAcccess(databaseId);
+            return dbAccess.Query<T>(commandText);
+        }
+
+        /// <summary>
         /// 將 DataTable 的異動寫入資料庫。 
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>
@@ -121,10 +152,8 @@ namespace Bee.Db
         /// <param name="deleteCommand">刪除命令。</param>
         public static int UpdateDataTable(string databaseId, DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand)
         {
-            DbAccess oDbAccess;
-
-            oDbAccess = CreateDbAcccess(databaseId);
-            return oDbAccess.UpdateDataTable(dataTable, insertCommand, updateCommand, deleteCommand);
+            var dbAccess = CreateDbAcccess(databaseId);
+            return dbAccess.UpdateDataTable(dataTable, insertCommand, updateCommand, deleteCommand);
         }
     }
 }

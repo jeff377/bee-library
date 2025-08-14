@@ -241,21 +241,7 @@ namespace Bee.Db
         public IEnumerable<T> Query<T>(string databaseId = "")
         {
             string id = GetDatabaseId(databaseId);
-            // 使用 command 執行資料庫查詢，並取得 DbDataReader
-            var reader = SysDb.ExecuteReader(id, this.DbCommand);
-            var mapper = ILMapper<T>.CreateMapFunc(reader);
-            // 延遲執行，不能使用 using，會造成連線被提早關閉
-            try
-            {
-                foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
-                {
-                    yield return item;
-                }
-            }
-            finally
-            {
-                reader.Dispose(); // 迭代結束後才關閉 reader
-            }
+            return SysDb.Query<T>(id, this.DbCommand);
         }
     }
 }
