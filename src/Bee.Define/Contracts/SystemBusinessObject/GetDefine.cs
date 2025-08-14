@@ -20,6 +20,20 @@ namespace Bee.Define
         /// 取得定義資料的鍵值。
         /// </summary>
         [Key(101)]
-        public string[] Keys { get; set; } = null;  
+        public string[] Keys { get; set; } = null;
+    }
+
+    /// <summary>
+    ///  取得定義資料的傳出結果
+    /// </summary>
+    [MessagePackObject]
+    [Serializable]
+    public class GetDefineResult : BusinessResult
+    {
+        /// <summary>
+        /// 定義資料。
+        /// </summary>
+        [Key(100)]
+        public string Xml { get; set; } = string.Empty;
     }
 }

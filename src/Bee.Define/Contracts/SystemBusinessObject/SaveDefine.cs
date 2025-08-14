@@ -28,4 +28,13 @@ namespace Bee.Define
         [Key(102)]
         public string[] Keys { get; set; } = null;
     }
+
+    /// <summary>
+    ///  儲存定義資料的傳出結果
+    /// </summary>
+    [MessagePackObject]
+    [Serializable]
+    public class SaveDefineResult : BusinessResult
+    {
+    }
 }
