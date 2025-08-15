@@ -255,12 +255,14 @@ namespace Bee.Base
             DoBeforeSerialize(SerializeFormat.Binary, value);
 
             byte[] bytes = null;
+#pragma warning disable SYSLIB0011
             using (MemoryStream stream = new MemoryStream())
             {
                 var oFormatter = new BinaryFormatter();
                 oFormatter.Serialize(stream, value);
                 bytes = stream.ToArray();
             }
+#pragma warning restore SYSLIB0011
 
             // 序列化後執行作業
             DoAfterSerialize(SerializeFormat.Binary, value);
@@ -274,12 +276,14 @@ namespace Bee.Base
         public static object BinaryToObject(byte[] bytes)
         {
             object value;
+#pragma warning disable SYSLIB0011
             using (MemoryStream stream = new MemoryStream(bytes))
             {
                 var formatter = new BinaryFormatter();
                 formatter.Binder = new BinarySerializationBinder();
                 value = formatter.Deserialize(stream);
             }
+#pragma warning restore SYSLIB0011
 
             // 反序列化後執行作業
             DoAfterDeserialize(SerializeFormat.Binary, value);

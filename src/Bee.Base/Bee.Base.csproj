@@ -1,15 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Version>3.2.5</Version>
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
 		<Description>Core utilities such as serialization, encryption, and general-purpose helpers.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageTags>netstandard2.0</PackageTags>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageTags>bee-net;utilities;helpers;cryptography;encryption;hashing;serialization;compression;json</PackageTags>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageIcon>bee.png</PackageIcon>
@@ -43,7 +43,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
 </Project>

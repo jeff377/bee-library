@@ -20,10 +20,12 @@ namespace Bee.Base
         public string HashPassword(string password)
         {
             var salt = new byte[SaltSize];
+#pragma warning disable SYSLIB0023
             using (var rng = new RNGCryptoServiceProvider())
             {
                 rng.GetBytes(salt);
             }
+#pragma warning restore SYSLIB0023
 
             var hash = PBKDF2(password, salt, Iterations, HashSize);
             return $"{Iterations}.{Convert.ToBase64String(salt)}.{Convert.ToBase64String(hash)}";
@@ -61,10 +63,12 @@ namespace Bee.Base
         /// </summary>
         private static byte[] PBKDF2(string password, byte[] salt, int iterations, int outputBytes)
         {
+#pragma warning disable SYSLIB0041
             using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations))
             {
                 return pbkdf2.GetBytes(outputBytes);
             }
+#pragma warning restore SYSLIB0041
         }
 
         /// <summary>

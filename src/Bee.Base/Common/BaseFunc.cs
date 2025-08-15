@@ -581,6 +581,9 @@ namespace Bee.Base
         /// <returns>介於 min 與 max 之間的隨機整數。</returns>
         public static int RndInt(int min, int max)
         {
+        #if NET8_0_OR_GREATER
+            return RandomNumberGenerator.GetInt32(min, max);
+        #else
             if (min >= max)
                 throw new ArgumentOutOfRangeException(nameof(min), "min must be less than max.");
 
@@ -599,7 +602,9 @@ namespace Bee.Base
                         return (int)(min + remainder);
                 }
             }
+        #endif
         }
+
 
         /// <summary>
         /// 建立指定型別的執行個體。

@@ -52,7 +52,9 @@ namespace Bee.Base
             DataSet oDataSet;
 
             oDataSet = new DataSet(datasetName);
+#pragma warning disable SYSLIB0038
             oDataSet.RemotingFormat = SerializationFormat.Binary;
+#pragma warning restore SYSLIB0038
             return oDataSet;
         }
 
@@ -95,7 +97,9 @@ namespace Bee.Base
         public static DataTable CreateDataTable(string tableName)
         {
             var table = new DataTable(tableName);
+#pragma warning disable SYSLIB0038
             table.RemotingFormat = SerializationFormat.Binary;
+#pragma warning restore SYSLIB0038
             return table;
         }
 
