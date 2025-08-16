@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Version>3.2.5</Version>
 		<Company>Bee.NET</Company>		
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
 		<Description>Runtime caching of definitions and related system data to improve performance.</Description>		
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageTags>netstandard2.0;cache</PackageTags>
+		<PackageTags>Bee.NET;cache;memory;performance;data</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>		
