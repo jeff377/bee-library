@@ -8,7 +8,7 @@
 		<Product>Bee.NET</Product>
 		<Description>Core utilities such as serialization, encryption, and general-purpose helpers.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-    <PackageTags>bee-net;utilities;helpers;cryptography;encryption;hashing;serialization;compression;json</PackageTags>
+    <PackageTags>Bee.NET;utilities;helpers;cryptography;encryption;hashing;serialization;compression;json</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>

@@ -66,6 +66,7 @@ namespace Bee.Define
         /// <summary>
         /// 登入密碼，取代連線字串中的 {@Password} 參數。
         /// </summary>
+        [XmlAttribute]
         [Description("登入密碼，取代連線字串中的 {@Password} 參數。")]
         [PasswordPropertyText(true)]
         [DefaultValue("")]
