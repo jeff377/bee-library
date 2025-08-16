@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Api.Core
@@ -24,6 +25,10 @@ namespace Bee.Api.Core
                     $"API method '{method.DeclaringType?.FullName}.{method.Name}' is not accessible without {nameof(ApiAccessControlAttribute)}.");
             }
 
+            // 近端呼叫允許所有保護等級
+            if (context.IsLocalCall)
+                return;
+
             // 驗證是否需要 AccessToken
             if (attr.AccessRequirement == ApiAccessRequirement.Authenticated)
             {
@@ -31,10 +36,6 @@ namespace Bee.Api.Core
                 if (!IsTokenValid(context.AccessToken))
                     throw new UnauthorizedAccessException("AccessToken is required or invalid.");
             }
-
-            // 近端呼叫允許所有保護等級
-            if (context.IsLocalCall)
-                return;
 
             if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly && !context.IsLocalCall)
                 throw new UnauthorizedAccessException("This API is restricted to local calls only.");
