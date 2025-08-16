@@ -3,19 +3,20 @@ name: Publish NuGet Packages & Release
 on:
   push:
     tags:
-      - 'v*' # 例如 v3.2.6
+      - 'v*'   # 例如 v3.2.6
 
 permissions:
   contents: write  # 供 GitHub Release 使用
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: windows-latest
+    timeout-minutes: 45
     env:
       DOTNET_NOLOGO: true
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       NUGET_PACKAGES: ~/.nuget/packages
+      PROJECT_GLOB: "src/**/*.csproj"
 
     steps:
       - name: Checkout
@@ -30,36 +31,53 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
-          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.slnx', '**/*.csproj', '**/Directory.Packages.props', '**/global.json') }}
+          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj', '**/Directory.Packages.props', '**/global.json') }}
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      - name: Restore (solution, static graph)
-        run: dotnet restore Bee.Library.slnx -v minimal -p:RestoreUseStaticGraphEvaluation=true
-
-      # ✅ 關鍵：CI 覆寫 GeneratePackageOnBuild=false，避免 build 就打包
-      - name: Build (Release, once)
-        run: dotnet build Bee.Library.slnx -c Release --no-restore -v minimal -m \
-             -p:ContinuousIntegrationBuild=true \
-             -p:GeneratePackageOnBuild=false
-
-      - name: Define projects list
-        id: proj
+      # 逐專案平行還原（只掃描 src）
+      - name: Restore (per project, parallel)
+        shell: pwsh
         run: |
-          echo 'projects=["src/Bee.Base/Bee.Base.csproj","src/Bee.Define/Bee.Define.csproj","src/Bee.Cache/Bee.Cache.csproj","src/Bee.Db/Bee.Db.csproj","src/Bee.Business/Bee.Business.csproj","src/Bee.Connect/Bee.Connect.csproj","src/Bee.Api.Core/Bee.Api.Core.csproj","src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj","src/Bee.Api.AspNet/Bee.Api.AspNet.csproj","src/Bee.UI.Core/Bee.UI.Core.csproj","src/Bee.UI.WinForms/Bee.UI.WinForms.csproj"]' >> $GITHUB_OUTPUT
+          $projs = Get-ChildItem -Path "src" -Recurse -Filter *.csproj | ForEach-Object FullName
+          $tl = [Environment]::ProcessorCount
+          $projs | ForEach-Object -Parallel {
+            Write-Host "dotnet restore: $_"
+            dotnet restore $_ -v minimal
+          } -ThrottleLimit $tl
 
-      - name: Pack projects (parallel, no build)
+      # ✅ 關鍵：Build 階段覆寫 GeneratePackageOnBuild=false，避免 build 就打包
+      - name: Build (per project, parallel)
+        shell: pwsh
         run: |
-          echo '${{ steps.proj.outputs.projects }}' | jq -r '.[]' | xargs -I {} -P $(nproc) bash -c '
-            echo "Packing {}";
-            dotnet pack "{}" \
-              -c Release \
-              -o ./nupkgs \
-              --no-build --no-restore \
-              -v minimal \
-              -p:IncludeReferencedProjects=false \
+          $projs = Get-ChildItem -Path "src" -Recurse -Filter *.csproj | ForEach-Object FullName
+          $tl = [Environment]::ProcessorCount
+          $projs | ForEach-Object -Parallel {
+            Write-Host "dotnet build: $_"
+            dotnet build $_ -c Release --no-restore -v minimal `
+              -p:ContinuousIntegrationBuild=true `
+              -p:GeneratePackageOnBuild=false
+          } -ThrottleLimit $tl
+
+      # 平行打包（只針對 src；跳過 IsPackable=false）
+      - name: Pack (per project, parallel, no build)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path ./nupkgs | Out-Null
+          $projs = Get-ChildItem -Path "src" -Recurse -Filter *.csproj | ForEach-Object FullName
+          $tl = [Environment]::ProcessorCount
+          $projs | ForEach-Object -Parallel {
+            $proj = $_
+            $content = Get-Content -Raw -LiteralPath $proj
+            if ($content -match '<IsPackable>\s*false\s*</IsPackable>') {
+              Write-Host "Skip pack (IsPackable=false): $proj"
+              return
+            }
+            Write-Host "dotnet pack: $proj"
+            dotnet pack $proj -c Release -o ./nupkgs --no-build --no-restore -v minimal `
+              -p:IncludeReferencedProjects=false `
               -p:ContinuousIntegrationBuild=true
-          '
+          } -ThrottleLimit $tl
 
       - name: Upload nupkgs (artifact)
         uses: actions/upload-artifact@v4
@@ -69,11 +87,18 @@ jobs:
 
       - name: Publish to nuget.org
         if: startsWith(github.ref, 'refs/tags/')
-        run: dotnet nuget push "./nupkgs/*.nupkg" --api-key "${{ secrets.NUGET_API_KEY }}" --source "https://api.nuget.org/v3/index.json" --skip-duplicate
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
+          if (-not $files) { Write-Error "No packages found to push."; exit 1 }
+          dotnet nuget push "./nupkgs/*.nupkg" `
+            --api-key "${{ secrets.NUGET_API_KEY }}" `
+            --source "https://api.nuget.org/v3/index.json" `
+            --skip-duplicate
 
   release:
-    needs: publish   # 👈 先完成 NuGet 發佈
-    runs-on: ubuntu-latest
+    needs: publish   # 先完成 NuGet 發佈
+    runs-on: windows-latest
     steps:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -81,16 +106,16 @@ jobs:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
           body: |
-            自動發佈 NuGet 套件：
-            - Bee.Base
-            - Bee.Define
-            - Bee.Cache
-            - Bee.Db
-            - Bee.Business
-            - Bee.Connect
-            - Bee.Api.Core
-            - Bee.Api.AspNetCore
+            自動發佈 NuGet 套件（只打包 src 之下的專案）：
             - Bee.Api.AspNet
+            - Bee.Api.AspNetCore
+            - Bee.Api.Core
+            - Bee.Base
+            - Bee.Business
+            - Bee.Cache
+            - Bee.Connect
+            - Bee.Db
+            - Bee.Define
             - Bee.UI.Core
             - Bee.UI.WinForms
 
