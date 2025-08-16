@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Version>3.2.5</Version>
 		<Company>Bee.NET</Company>
 		<Authors>Bee.NET</Authors>
 		<Product>Bee.NET</Product>
 		<Description>Database abstraction with dynamic command generation and connection binding.</Description>
 		<Copyright>© Bee.NET. All rights reserved.</Copyright>
-		<PackageTags>netstandard2.0;dbaccess</PackageTags>
+		<PackageTags>Bee.NET;database;dbccess;orm;sql;connection;query</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
