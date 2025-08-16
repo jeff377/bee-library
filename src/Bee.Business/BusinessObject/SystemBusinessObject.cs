@@ -231,7 +231,7 @@ namespace Bee.Business
                 if (ex.InnerException != null)
                     throw ex.InnerException;
                 else
-                    throw ex;
+                    throw;
             }
         }
     }

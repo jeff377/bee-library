@@ -15,17 +15,17 @@ Bee.NET Framework is an **n-tier software architecture** designed to accelerate 
 
 | Assembly Name              | Scope         | Target Framework       | Description |
 |----------------------------|---------------|------------------------|-------------|
-| **Bee.Base.dll**           | Frontend / Backend | .NET Standard 2.0  | Core utilities such as serialization, encryption, and general-purpose helpers. |
-| **Bee.Define.dll**         | Frontend / Backend | .NET Standard 2.0  | Defines system-wide structured types for config, schema, and layout. |
-| **Bee.Cache.dll**          | Backend        | .NET Standard 2.0      | Runtime caching of definitions and related system data to improve performance. |
-| **Bee.Db.dll**             | Backend        | .NET Standard 2.0      | Database abstraction with dynamic command generation and connection binding. |
-| **Bee.Business.dll**       | Backend        | .NET Standard 2.0      | Implements core business logic and application-level workflows. |
-| **Bee.Api.Core.dll**       | Frontend / Backend | .NET Standard 2.0 | Encapsulates API support such as model definitions, encryption, and serialization. |
-| **Bee.Api.AspNetCore.dll** | Backend       | .NET 8                 | Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls. |
+| **Bee.Base.dll**           | Frontend / Backend | netstandard2.0; net8.0  | Core utilities such as serialization, encryption, and general-purpose helpers. |
+| **Bee.Define.dll**         | Frontend / Backend | netstandard2.0; net8.0  | Defines system-wide structured types for config, schema, and layout. |
+| **Bee.Cache.dll**          | Backend        | netstandard2.0; net8.0  | Runtime caching of definitions and related system data to improve performance. |
+| **Bee.Db.dll**             | Backend        | netstandard2.0; net8.0  | Database abstraction with dynamic command generation and connection binding. |
+| **Bee.Business.dll**       | Backend        | netstandard2.0; net8.0  | Implements core business logic and application-level workflows. |
+| **Bee.Api.Core.dll**       | Frontend / Backend | netstandard2.0; net8.0 | Encapsulates API support such as model definitions, encryption, and serialization. |
+| **Bee.Api.AspNetCore.dll** | Backend       | net8.0                 | Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls. |
 | **Bee.Api.AspNet.dll**     | Backend        | .NET Framework 4.8     | Provides a JSON-RPC 2.0 API HttpModule for ASP.NET, enabling unified POST endpoint for backend logic. |
-| **Bee.Connect.dll**        | Frontend       | .NET Standard 2.0      | Connector for local or remote invocation of backend logic. |
-| **Bee.UI.Core.dll**        | Frontend       | .NET Standard 2.0      | Manages client-server connection settings and states. |
-| **Bee.UI.WinForms.dll**    | Frontend       | .NET 8                 | UI components and layout management for WinForms. |
+| **Bee.Connect.dll**        | Frontend       | netstandard2.0; net8.0  | Connector for local or remote invocation of backend logic. |
+| **Bee.UI.Core.dll**        | Frontend       | netstandard2.0; net8.0  | Manages client-server connection settings and states. |
+| **Bee.UI.WinForms.dll**    | Frontend       | net8.0                | UI components and layout management for WinForms. |
 
 ## 💡 Sample Project
 
