@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using Bee.Base;
@@ -20,6 +21,9 @@ namespace Bee.Db
         /// <param name="connectionString">資料庫連線字串。</param>
         public DbAccess(DbProviderFactory provider, string connectionString)
         {
+            if (provider == null) throw new ArgumentNullException(nameof(provider));
+            if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentException("Connection string cannot be null or empty.", nameof(connectionString));
+
             Provider = provider;
             ConnectionString = connectionString;
         }
@@ -30,8 +34,12 @@ namespace Bee.Db
         /// <param name="database">資料庫連線定義。</param>
         public DbAccess(DatabaseItem database)
         {
-            Provider = DbProviderManager.GetFactory(database.DatabaseType);
+            if (database == null) throw new ArgumentNullException(nameof(database));
+            Provider = DbProviderManager.GetFactory(database.DatabaseType)
+                       ?? throw new InvalidOperationException($"Unknown database type: {database.DatabaseType}.");
             ConnectionString = database.GetConnectionString();
+            if (string.IsNullOrWhiteSpace(ConnectionString))
+                throw new InvalidOperationException("DatabaseItem.GetConnectionString() returned null or empty.");
         }
 
         #endregion
@@ -52,6 +60,9 @@ namespace Bee.Db
         public DbConnection CreateConnection()
         {
             var connection = this.Provider.CreateConnection();
+            if (connection == null)
+                throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");
+
             connection.ConnectionString = this.ConnectionString;
             return connection;
         }
@@ -62,8 +73,17 @@ namespace Bee.Db
         private DbConnection OpenConnection()
         {
             var connection = CreateConnection();
-            connection.Open();
-            return connection;
+            try
+            {
+                connection.Open();
+                return connection;
+            }
+            catch
+            {
+                // 失敗時也要確保釋放
+                connection.Dispose();
+                throw;
+            }
         }
 
         /// <summary>
@@ -95,10 +115,10 @@ namespace Bee.Db
         public DataTable ExecuteDataTable(DbCommand command)
         {
             DataTable table;
-            using (DbConnection connection = this.OpenConnection())
+            using (var connection = this.OpenConnection())
             {
                 command.Connection = connection;
-                using (DbDataAdapter adapter = this.Provider.CreateDataAdapter())
+                using (var adapter = this.Provider.CreateDataAdapter())
                 {
                     adapter.SelectCommand = command;
                     table = new DataTable("DataTable");
@@ -115,8 +135,10 @@ namespace Bee.Db
         /// <param name="commandText">SQL 陳述式。</param>
         public DataTable ExecuteDataTable(string commandText)
         {
-            var command = this.CreateCommand(commandText);
-            return ExecuteDataTable(command);
+            using (var command = CreateCommand(commandText))
+            {
+                return ExecuteDataTable(command); // command 將於此 using 結束時 Dispose
+            }
         }
 
         /// <summary>
@@ -140,8 +162,10 @@ namespace Bee.Db
         /// <param name="commandText">SQL 陳述式。</param>
         public int ExecuteNonQuery(string commandText)
         {
-            var command = this.CreateCommand(commandText);
-            return ExecuteNonQuery(command);
+            using (var command = CreateCommand(commandText))
+            {
+                return ExecuteNonQuery(command);
+            }
         }
 
         /// <summary>
@@ -165,8 +189,10 @@ namespace Bee.Db
         /// <param name="commandText">SQL 陳述式。</param>
         public object ExecuteScalar(string commandText)
         {
-            var command = this.CreateCommand(commandText);
-            return ExecuteScalar(command);
+            using (var command = CreateCommand(commandText))
+            {
+                return ExecuteScalar(command);
+            }
         }
 
         /// <summary>
@@ -176,9 +202,21 @@ namespace Bee.Db
         /// <returns>傳回 DbDataReader 物件。</returns>
         public DbDataReader ExecuteReader(DbCommand command)
         {
-            var connection = this.OpenConnection();
-            command.Connection = connection;
-            return command.ExecuteReader(CommandBehavior.CloseConnection);
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            var connection = OpenConnection();
+            try
+            {
+                command.Connection = connection;
+                // CloseConnection: reader 關閉時一併關閉 connection
+                return command.ExecuteReader(CommandBehavior.CloseConnection);
+            }
+            catch
+            {
+                // ExecuteReader 失敗要自行清理連線
+                connection.Dispose();
+                throw;
+            }
         }
 
         /// <summary>
@@ -188,7 +226,8 @@ namespace Bee.Db
         /// <returns>傳回 DbDataReader 物件。</returns>
         public DbDataReader ExecuteReader(string commandText)
         {
-            var command = this.CreateCommand(commandText);
+            // Reader 交給呼叫端釋放，因此這裡不能 using command
+            var command = CreateCommand(commandText);
             return ExecuteReader(command);
         }
 
@@ -229,8 +268,20 @@ namespace Bee.Db
         /// </returns>
         public IEnumerable<T> Query<T>(string commandText)
         {
-            var command = this.CreateCommand(commandText);
-            return Query<T>(command);
+            using (var command = CreateCommand(commandText))
+            {
+                var reader = ExecuteReader(command); // reader.Dispose 時會關 connection
+                var mapper = ILMapper<T>.CreateMapFunc(reader);
+                try
+                {
+                    foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
+                        yield return item;
+                }
+                finally
+                {
+                    reader.Dispose(); // 於列舉完成時關閉
+                }
+            } // command 於列舉完成時 Dispose
         }
 
         /// <summary>
@@ -242,16 +293,19 @@ namespace Bee.Db
         /// <param name="deleteCommand">刪除命令。</param>
         public int UpdateDataTable(DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand)
         {
-            using (DbConnection connection = this.OpenConnection())
-            {
-                if (insertCommand != null)
-                    insertCommand.Connection = connection;
-                if (updateCommand != null)
-                    updateCommand.Connection = connection;
-                if (deleteCommand != null)
-                    deleteCommand.Connection = connection;
+            if (dataTable == null) throw new ArgumentNullException(nameof(dataTable));
 
-                using (DbDataAdapter adapter = this.Provider.CreateDataAdapter())
+            using (var connection = OpenConnection())
+            {
+                if (insertCommand != null) insertCommand.Connection = connection;
+                if (updateCommand != null) updateCommand.Connection = connection;
+                if (deleteCommand != null) deleteCommand.Connection = connection;
+
+                var adapter = Provider.CreateDataAdapter();
+                if (adapter == null)
+                    throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
+
+                using (adapter)
                 {
                     adapter.InsertCommand = insertCommand;
                     adapter.UpdateCommand = updateCommand;
@@ -266,10 +320,9 @@ namespace Bee.Db
         /// </summary>
         public void TestConnection()
         {
-            using (DbConnection connection = this.CreateConnection())
+            using (var connection = CreateConnection())
             {
                 connection.Open();
-                connection.Close();
             }
         }
     }
