@@ -3,14 +3,14 @@ name: Publish NuGet Packages & Release
 on:
   push:
     tags:
-      - 'v*' # e.g. v3.2.6
+      - 'v*' # 例如 v3.2.6
 
 permissions:
   contents: write  # for GitHub Release
 
 jobs:
   publish:
-    runs-on: windows-latest           # net48 / WinForms need Windows
+    runs-on: windows-latest           # 需要建置 net48 / WinForms
     timeout-minutes: 45
     env:
       DOTNET_NOLOGO: true
@@ -30,6 +30,12 @@ jobs:
             9.0.x
             8.0.x
 
+      - name: .NET info (diagnostics)
+        shell: pwsh
+        run: |
+          dotnet --info
+          dotnet nuget list source
+
       - name: Cache NuGet
         uses: actions/cache@v4
         with:
@@ -38,7 +44,7 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      # Only pack projects under src/
+      # 只打包 src/ 下這 11 個專案
       - name: Define project list
         id: proj
         shell: pwsh
@@ -59,17 +65,23 @@ jobs:
           $json = ($projects | ConvertTo-Json -Compress)
           echo "list=$json" >> $env:GITHUB_OUTPUT
 
-      # ✅ Restore: sequential & absolute paths (most stable)
-      - name: Restore (per project, sequential)
+      # ✅ Restore：序列 + 關閉 NuGet 內部平行；失敗時自動重試一次並輸出診斷
+      - name: Restore (per project, sequential with retry)
         shell: pwsh
         run: |
           $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}') | ForEach-Object { (Resolve-Path $_).Path }
           foreach ($p in $projs) {
             Write-Host "dotnet restore: $p"
-            dotnet restore $p -v minimal -p:RestoreUseStaticGraphEvaluation=true
+            $args = @("$p","-v","minimal","--disable-parallel","-p:RestoreUseStaticGraphEvaluation=true","--source","https://api.nuget.org/v3/index.json")
+            $res = dotnet restore @args
+            if ($LASTEXITCODE -ne 0) {
+              Write-Warning "First restore failed for $p. Retrying with diagnostic logs..."
+              dotnet restore $p -v diag --disable-parallel --source https://api.nuget.org/v3/index.json -p:RestoreUseStaticGraphEvaluation=true
+              if ($LASTEXITCODE -ne 0) { throw "Restore failed for $p." }
+            }
           }
 
-      # ✅ Build: parallel, NO restore (avoid NuGet.RestoreEx.targets race)
+      # ✅ Build：平行、不要再還原（避免 NuGet.RestoreEx.targets race）
       - name: Build (per project, parallel, no-restore)
         shell: pwsh
         run: |
@@ -82,7 +94,7 @@ jobs:
               -p:GeneratePackageOnBuild=false
           } -ThrottleLimit $tl
 
-      # Pack: parallel, no build/restore; output to fixed folder
+      # 📦 Pack：平行、--no-build/--no-restore，固定輸出到 nupkgs；跳過 IsPackable=false
       - name: Pack (per project, parallel, no build)
         shell: pwsh
         run: |
@@ -105,7 +117,7 @@ jobs:
               -p:ContinuousIntegrationBuild=true
           } -ThrottleLimit $tl
 
-      # Safety net: collect any nupkg from bin/Release into ./nupkgs
+      # 🧹 保險網：把 bin/Release 可能產生的 nupkg 也收攏
       - name: Collect nupkgs from bin/Release
         shell: pwsh
         run: |
