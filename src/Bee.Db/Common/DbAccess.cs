@@ -55,6 +55,11 @@ namespace Bee.Db
         public string ConnectionString { get; private set; }
 
         /// <summary>
+        /// 使用 CreateCommand 的預設命令逾時（秒）。
+        /// </summary>
+        public int CommandTimeout { get; set; } = 30;
+
+        /// <summary>
         /// 建立資料庫連線。
         /// </summary>
         public DbConnection CreateConnection()
@@ -87,15 +92,48 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 依全域上限 <see cref="BackendInfo.MaxDbCommandTimeout"/> 套用命令逾時限制。
+        /// </summary>
+        /// <param name="timeoutSeconds">要求的逾時秒數。</param>
+        /// <returns>經上限處理後的逾時秒數。</returns>
+        private static int CapTimeoutSeconds(int timeoutSeconds)
+        {
+            int cap = BackendInfo.MaxDbCommandTimeout;
+            // 不控管 → 原值
+            if (cap <= 0) { return timeoutSeconds; }
+            // 無限或負數 → 套上限
+            if (timeoutSeconds <= 0) { return cap; }
+            // 驗證是否套上限
+            return timeoutSeconds > cap ? cap : timeoutSeconds;
+        }
+
+        /// <summary>
+        /// 對指定 <see cref="DbCommand"/> 的 <see cref="DbCommand.CommandTimeout"/> 套用全域上限。
+        /// </summary>
+        /// <param name="command">要處理的資料庫命令。</param>
+        private static void CapCommandTimeout(DbCommand command)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            command.CommandTimeout = CapTimeoutSeconds(command.CommandTimeout);
+        }
+
+        /// <summary>
         /// 建立資料庫命令。
         /// </summary>
         /// <param name="commandType">SQL 命令類型。</param>
         /// <param name="commandText">SQL 陳述式或預存程序。</param>
         private DbCommand CreateCommand(CommandType commandType, string commandText)
         {
+            if (string.IsNullOrWhiteSpace(commandText))
+                throw new ArgumentException("commandText cannot be null or empty.", nameof(commandText));
+
             var command = this.Provider.CreateCommand();
+            if (command == null)
+                throw new InvalidOperationException("DbProviderFactory.CreateCommand() returned null.");
+
             command.CommandType = commandType;
             command.CommandText = commandText;
+            command.CommandTimeout = CapTimeoutSeconds(this.CommandTimeout);
             return command;
         }
 
@@ -114,19 +152,24 @@ namespace Bee.Db
         /// <param name="command">資料庫命令。</param>
         public DataTable ExecuteDataTable(DbCommand command)
         {
-            DataTable table;
+            CapCommandTimeout(command);   // 套用命令逾時限制
+
             using (var connection = this.OpenConnection())
             {
                 command.Connection = connection;
-                using (var adapter = this.Provider.CreateDataAdapter())
+
+                var adapter = this.Provider.CreateDataAdapter()
+                    ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
+
+                using (adapter)
                 {
                     adapter.SelectCommand = command;
-                    table = new DataTable("DataTable");
+                    var table = new DataTable("DataTable");
                     adapter.Fill(table);
+                    DataSetFunc.UpperColumnName(table);
+                    return table;
                 }
             }
-            DataSetFunc.UpperColumnName(table);
-            return table;
         }
 
         /// <summary>
@@ -147,6 +190,8 @@ namespace Bee.Db
         /// <param name="command">資料庫命令。</param>
         public int ExecuteNonQuery(DbCommand command)
         {
+            CapCommandTimeout(command);   // 套用命令逾時限制
+
             int rowsAffected = 0;  // 異動筆數
             using (DbConnection connection = this.OpenConnection())
             {
@@ -174,6 +219,8 @@ namespace Bee.Db
         /// <param name="command">資料庫命令。</param>
         public object ExecuteScalar(DbCommand command)
         {
+            CapCommandTimeout(command);   // 套用命令逾時限制
+
             object value;
             using (DbConnection connection = this.OpenConnection())
             {
@@ -203,7 +250,7 @@ namespace Bee.Db
         /// <returns>傳回 DbDataReader 物件。</returns>
         public DbDataReader ExecuteReader(DbCommand command)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
+            CapCommandTimeout(command);   // 套用命令逾時限制
 
             var connection = OpenConnection();
             try
@@ -243,6 +290,8 @@ namespace Bee.Db
         /// </returns>
         public IEnumerable<T> Query<T>(DbCommand command)
         {
+            CapCommandTimeout(command);   // 套用命令逾時限制
+
             // 使用 command 執行資料庫查詢，並取得 DbDataReader
             var reader = ExecuteReader(command);
             var mapper = ILMapper<T>.CreateMapFunc(reader);
@@ -299,9 +348,9 @@ namespace Bee.Db
 
             using (var connection = OpenConnection())
             {
-                if (insertCommand != null) insertCommand.Connection = connection;
-                if (updateCommand != null) updateCommand.Connection = connection;
-                if (deleteCommand != null) deleteCommand.Connection = connection;
+                if (insertCommand != null) { CapCommandTimeout(insertCommand); insertCommand.Connection = connection; }
+                if (updateCommand != null) { CapCommandTimeout(updateCommand); updateCommand.Connection = connection; }
+                if (deleteCommand != null) { CapCommandTimeout(deleteCommand); deleteCommand.Connection = connection; }
 
                 var adapter = Provider.CreateDataAdapter();
                 if (adapter == null)

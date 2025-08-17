@@ -80,6 +80,14 @@ namespace Bee.Define
         public string DatabaseId { get; set; } = string.Empty;
 
         /// <summary>
+        /// 最大 DbCommand 逾時（秒）。0 表示不限制。
+        /// </summary>
+        [Category("Database")]
+        [Description("最大 DbCommand 逾時（秒）。0 表示不限制。")]
+        [DefaultValue(0)]
+        public int MaxDbCommandTimeout { get; set; } = 0;
+
+        /// <summary>
         /// API KEY。
         /// </summary>
         [Category("API")]
@@ -104,6 +112,8 @@ namespace Bee.Define
             BackendInfo.DatabaseType = DatabaseType;
             // 預設資料庫編號
             BackendInfo.DatabaseId = DatabaseId;
+            // 最大 DbCommand 逾時
+            BackendInfo.MaxDbCommandTimeout = MaxDbCommandTimeout;
 
             // 指定 API 加密金鑰提供者型別
             BackendInfo.ApiEncryptionKeyProvider = BaseFunc.CreateInstance(
