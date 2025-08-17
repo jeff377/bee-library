@@ -16,6 +16,7 @@
 | v1.0.1 | 2025-07-27  | 支援 `Bee.NET v3.2.1` 的 `SystemSettings` 新增功能項目  | [📥 Download v1.0.1](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.1/BeeSettingsEditor-v1.0.1.zip) |
 | v1.0.2 | 2025-07-28  | BeeSettingsEditor.exe 啟動時，主金鑰不存在會自動產生，避免因缺少主金鑰而導致應用程式中斷。  | [📥 Download v1.0.2](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.2/BeeSettingsEditor-v1.0.2.zip) |
 | v1.0.3 | 2025-08-01  | 支援 `Bee.NET v3.2.2` 的 `SystemSettings` 新增功能項目  | [📥 Download v1.0.3](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.3/BeeSettingsEditor-v1.0.3.zip) |
+| v1.0.4 | 2025-08-17  | 支援 `DatabaseSettings` 的 Password 加密  | [📥 Download v1.0.4](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.4/BeeSettingsEditor-v1.0.4.zip) |
 
 ---
 
