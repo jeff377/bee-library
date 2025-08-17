@@ -1,13 +1,16 @@
-name: Publish NuGet Packages
+name: Publish NuGet Packages & Release
 
 on:
   push:
     tags:
-      - 'v*'  # 只有推送 tag（例如 v1.2.3）時才會觸發
+      - 'v*' # 例如 v3.2.6
+
+permissions:
+  contents: write  # 給 GitHub Release 用
 
 jobs:
   publish:
-    runs-on: windows-latest           # 需要建置 net48 / WinForms
+    runs-on: windows-latest           # 需要支援 net48 / WinForms
     timeout-minutes: 45
     env:
       DOTNET_NOLOGO: true
@@ -18,10 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup .NET SDK 8.x
+      - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: |
+            9.0.x
+            8.0.x
 
       - name: Cache NuGet
         uses: actions/cache@v4
@@ -31,7 +36,7 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      # 只針對你列出的 src 專案
+      # 只打包 src/ 下這 11 個專案
       - name: Define project list
         id: proj
         shell: pwsh
@@ -49,41 +54,39 @@ jobs:
             "src/Bee.UI.Core/Bee.UI.Core.csproj",
             "src/Bee.UI.WinForms/Bee.UI.WinForms.csproj"
           )
-          # 轉成 JSON 塞到 output
           $json = ($projects | ConvertTo-Json -Compress)
           echo "list=$json" >> $env:GITHUB_OUTPUT
 
-      # Restore（逐專案平行）
-      - name: Restore (per project, parallel)
+      # ✅ Restore：改為「序列」執行，且使用絕對路徑（最穩）
+      - name: Restore (per project, sequential)
         shell: pwsh
         run: |
-          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}')
-          $tl = [Environment]::ProcessorCount
-          $projs | ForEach-Object -Parallel {
-            Write-Host "dotnet restore: $_"
-            dotnet restore $_ -v minimal
-          } -ThrottleLimit $tl
+          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}') | ForEach-Object { (Resolve-Path $_).Path }
+          foreach ($p in $projs) {
+            Write-Host "dotnet restore: $p"
+            dotnet restore $p -v minimal -p:RestoreUseStaticGraphEvaluation=true
+          }
 
-      # ✅ Build：覆寫 GeneratePackageOnBuild=false（避免 Build 就打包）
+      # Build：平行；不加 --no-restore，保留一次保險（有快取影響不大）
       - name: Build (per project, parallel)
         shell: pwsh
         run: |
-          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}')
+          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}') | ForEach-Object { (Resolve-Path $_).Path }
           $tl = [Environment]::ProcessorCount
           $projs | ForEach-Object -Parallel {
             Write-Host "dotnet build: $_"
-            dotnet build $_ -c Release --no-restore -v minimal `
+            dotnet build $_ -c Release -v minimal `
               -p:ContinuousIntegrationBuild=true `
               -p:GeneratePackageOnBuild=false
           } -ThrottleLimit $tl
 
-      # Pack：--no-build/--no-restore，輸出到固定資料夾；自動略過 IsPackable=false
+      # Pack：平行，--no-build/--no-restore，固定輸出到 nupkgs，並同時設 PackageOutputPath
       - name: Pack (per project, parallel, no build)
         shell: pwsh
         run: |
           $out = Join-Path $PWD 'nupkgs'
           New-Item -ItemType Directory -Force -Path $out | Out-Null
-          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}')
+          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}') | ForEach-Object { (Resolve-Path $_).Path }
           $tl = [Environment]::ProcessorCount
           $projs | ForEach-Object -Parallel {
             $proj = $_
@@ -100,7 +103,7 @@ jobs:
               -p:ContinuousIntegrationBuild=true
           } -ThrottleLimit $tl
 
-      # 保險網：把 bin/Release 底下可能產生的 nupkg 一併收進來
+      # 保險網：若有包產在各專案 bin/Release，收攏到 nupkgs
       - name: Collect nupkgs from bin/Release
         shell: pwsh
         run: |
@@ -128,28 +131,26 @@ jobs:
             --skip-duplicate
 
   release:
-    needs: publish # 👈 確保發佈 NuGet 完成後才進行 Release
-    runs-on: ubuntu-latest
-
+    needs: publish
+    runs-on: windows-latest
     steps:
-    - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
-      with:
-        tag_name: ${{ github.ref_name }}
-        name: Release ${{ github.ref_name }}
-        body: |
-          自動發佈 NuGet 套件：
-          - Bee.Base
-          - Bee.Define
-          - Bee.Cache
-          - Bee.Db
-          - Bee.Business
-          - Bee.Connect
-          - Bee.Api.Core
-          - Bee.Api.AspNetCore
-          - Bee.Api.AspNet
-          - Bee.UI.Core
-          - Bee.UI.WinForms
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          body: |
+            自動發佈 NuGet 套件（只打包 src 之下的專案）：
+            - Bee.Api.AspNet
+            - Bee.Api.AspNetCore
+            - Bee.Api.Core
+            - Bee.Base
+            - Bee.Business
+            - Bee.Cache
+            - Bee.Connect
+            - Bee.Db
+            - Bee.Define
+            - Bee.UI.Core
+            - Bee.UI.WinForms
 
-          如需安裝請至 NuGet.org 查詢對應版本。
-
+            如需安裝請至 NuGet.org 查詢對應版本。
