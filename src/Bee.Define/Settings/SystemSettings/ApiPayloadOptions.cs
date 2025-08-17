@@ -5,34 +5,34 @@ using System.Xml.Serialization;
 namespace Bee.Define
 {
     /// <summary>
-    /// 提供 API Payload 處理相關選項，例如序列化、壓縮與加密。
+    /// Provides API payload handling options, such as serialization, compression, and encryption.
     /// </summary>
     [Serializable]
     [XmlType("ApiPayloadOptions")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    [Description("提供 API Payload 處理相關選項，例如序列化、壓縮與加密。")]
+    [Description("Provides API payload handling options, such as serialization, compression, and encryption.")]
     public class ApiPayloadOptions
     {
         /// <summary>
-        /// 指定序列化器名稱，例如：messagepack、binaryformatter。
+        /// Specifies the serializer name, e.g., messagepack, binaryformatter.
         /// </summary>
-        [Description("指定序列化器名稱，例如：messagepack、binaryformatter。")]
+        [Description("Specifies the serializer name, e.g., messagepack, binaryformatter.")]
         public string Serializer { get; set; } = "messagepack";
 
         /// <summary>
-        /// 指定壓縮器名稱，例如：gzip、none。
+        /// Specifies the compressor name, e.g., gzip, none.
         /// </summary>
-        [Description("指定壓縮器名稱，例如：gzip、none。")]
+        [Description("Specifies the compressor name, e.g., gzip, none.")]
         public string Compressor { get; set; } = "gzip";
 
         /// <summary>
-        /// 指定加密器名稱，例如：aes-cbc-hmac、none。
+        /// Specifies the encryptor name, e.g., aes-cbc-hmac, none.
         /// </summary>
-        [Description("指定加密器名稱，例如：aes-cbc-hmac、none。")]
+        [Description("Specifies the encryptor name, e.g., aes-cbc-hmac, none.")]
         public string Encryptor { get; set; } = "aes-cbc-hmac";
 
         /// <summary>
-        /// 物件描述文字。
+        /// Object description.
         /// </summary>
         public override string ToString()
         {

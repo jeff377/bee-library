@@ -6,189 +6,189 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 後端參數及環境設置。
+    /// Backend parameters and environment settings.
     /// </summary>
     [Serializable]
     [XmlType("BackendConfiguration")]
-    [Description("後端參數及環境設置。")]
+    [Description("Backend parameters and environment settings.")]
     [TreeNode("Backend")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class BackendConfiguration
     {
         /// <summary>
-        /// API 加密金鑰提供者型別。
+        /// API encryption key provider type.
         /// </summary>
         [Category("Providers")]
-        [Description("API 加密金鑰提供者型別，定義 API 傳輸資料加密金鑰的取得方式。")]
+        [Description("API encryption key provider type, defines how to obtain the API data encryption key.")]
         [DefaultValue(DefaultProviderTypes.ApiEncryptionKeyProvider)]
         public string ApiEncryptionKeyProvider { get; set; } = DefaultProviderTypes.ApiEncryptionKeyProvider;
 
         /// <summary>
-        /// 業務邏輯物件提供者型別。
+        /// Business object provider type.
         /// </summary>
         [Category("Providers")]
-        [Description("業務邏輯物件提供者型別，定義所有 BusinessObject 的取得方式。")]
+        [Description("Business object provider type, defines how to obtain all BusinessObjects.")]
         [DefaultValue(DefaultProviderTypes.BusinessObjectProvider)]
         public string BusinessObjectProvider { get; set; } = DefaultProviderTypes.BusinessObjectProvider;
 
         /// <summary>
-        /// 資料儲存物件提供者型別。
+        /// Repository provider type.
         /// </summary>
         [Category("Providers")]
-        [Description("資料儲存物件提供者型別，定義所有 Repository 的取得方式。")]
+        [Description("Repository provider type, defines how to obtain all Repositories.")]
         [DefaultValue(DefaultProviderTypes.RepositoryProvider)]
         public string RepositoryProvider { get; set; } = DefaultProviderTypes.RepositoryProvider;
 
         /// <summary>
-        /// 定義資料提供者型別。
+        /// Define provider type.
         /// </summary>
         [Category("Providers")]
-        [Description("定義資料提供者型別，定義系統定義檔的載入方式（如檔案、資料庫等）。")]
+        [Description("Define provider type, specifies how to load system definition files (e.g., file, database, etc.).")]
         [DefaultValue(DefaultProviderTypes.DefineProvider)]
         public string DefineProvider { get; set; } = DefaultProviderTypes.DefineProvider;
 
         /// <summary>
-        /// 快取資料來源提供者型別。
+        /// Cache data source provider type.
         /// </summary>
         [Category("Providers")]
-        [Description("快取資料來源提供者型別，定義資料快取來源（如預先載入定義資料）。")]
+        [Description("Cache data source provider type, defines the source of cached data (such as preloaded definition data).")]
         [DefaultValue(DefaultProviderTypes.CacheDataSourceProvider)]
         public string CacheDataSourceProvider { get; set; } = DefaultProviderTypes.CacheDataSourceProvider;
 
         /// <summary>
-        /// AccessToken 驗證提供者型別。
+        /// AccessToken validation provider type.
         /// </summary>
         [Category("Providers")]
-        [Description("AccessToken 驗證提供者型別，用於驗證 AccessToken 的有效性。")]
+        [Description("AccessToken validation provider type, used to validate the validity of AccessTokens.")]
         [DefaultValue(DefaultProviderTypes.AccessTokenValidationProvider)]
         public string AccessTokenValidationProvider { get; set; } = DefaultProviderTypes.AccessTokenValidationProvider;
 
         /// <summary>
-        /// 資料庫類型。
+        /// Database type.
         /// </summary>
         [Category("Database")]
-        [Description("資料庫類型。")]
+        [Description("Database type.")]
         [DefaultValue(DatabaseType.SQLServer)]
         public DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
 
         /// <summary>
-        /// 預設資料庫編號。
+        /// Default database ID.
         /// </summary>
         [Category("Database")]
-        [Description("預設資料庫編號。")]
+        [Description("Default database ID.")]
         [DefaultValue("")]
         public string DatabaseId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 最大 DbCommand 逾時（秒）。0 表示不限制。
+        /// Maximum DbCommand timeout (seconds). 0 means unlimited.
         /// </summary>
         [Category("Database")]
-        [Description("最大 DbCommand 逾時（秒）。0 表示不限制。")]
+        [Description("Maximum DbCommand timeout (seconds). 0 means unlimited.")]
         [DefaultValue(0)]
         public int MaxDbCommandTimeout { get; set; } = 0;
 
         /// <summary>
-        /// API KEY。
+        /// API KEY.
         /// </summary>
         [Category("API")]
-        [Description("API KEY。")]
+        [Description("API KEY.")]
         [DefaultValue("")]
         public string ApiKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// 加密金鑰設定。
+        /// Encryption key settings.
         /// </summary>
         [Category("Security")]
-        [Description("加密金鑰設定。")]
+        [Description("Encryption key settings.")]
         [Browsable(false)]
         public SecurityKeySettings SecurityKeySettings { get; set; } = new SecurityKeySettings();
 
         /// <summary>
-        /// 初始化。
+        /// Initialization.
         /// </summary>
         public void Initialize()
         {
-            // 資料庫類型
+            // Database type
             BackendInfo.DatabaseType = DatabaseType;
-            // 預設資料庫編號
+            // Default database ID
             BackendInfo.DatabaseId = DatabaseId;
-            // 最大 DbCommand 逾時
+            // Maximum DbCommand timeout
             BackendInfo.MaxDbCommandTimeout = MaxDbCommandTimeout;
 
-            // 指定 API 加密金鑰提供者型別
+            // Specify API encryption key provider type
             BackendInfo.ApiEncryptionKeyProvider = BaseFunc.CreateInstance(
                 string.IsNullOrWhiteSpace(ApiEncryptionKeyProvider)
                     ? DefaultProviderTypes.ApiEncryptionKeyProvider
                     : ApiEncryptionKeyProvider
             ) as IApiEncryptionKeyProvider;
 
-            // 指定業務邏輯物件提供者
+            // Specify business object provider
             BackendInfo.BusinessObjectProvider = BaseFunc.CreateInstance(
                 string.IsNullOrWhiteSpace(BusinessObjectProvider)
                     ? DefaultProviderTypes.BusinessObjectProvider
                     : BusinessObjectProvider
             ) as IBusinessObjectProvider;
 
-            // 指定資料儲存物件提供者型別
+            // Specify repository provider type
             BackendInfo.RepositoryProvider = BaseFunc.CreateInstance(
                  string.IsNullOrWhiteSpace(RepositoryProvider)
                      ? DefaultProviderTypes.RepositoryProvider
                      : RepositoryProvider
              ) as IRepositoryProvider;
 
-            // 指定快取資料來源提供者型別
+            // Specify cache data source provider type
             BackendInfo.CacheDataSourceProvider = BaseFunc.CreateInstance(
                 string.IsNullOrWhiteSpace(CacheDataSourceProvider)
                     ? DefaultProviderTypes.CacheDataSourceProvider
                     : CacheDataSourceProvider
             ) as ICacheDataSourceProvider;
 
-            // 指定定義資料提供者型別
+            // Specify define provider type
             BackendInfo.DefineProvider = BaseFunc.CreateInstance(
                 string.IsNullOrWhiteSpace(DefineProvider)
                     ? DefaultProviderTypes.DefineProvider
                     : DefineProvider
             ) as IDefineProvider;
 
-            // 指定 AccessToken 驗證提供者型別
+            // Specify AccessToken validation provider type
             BackendInfo.AccessTokenValidationProvider = BaseFunc.CreateInstance(
                 string.IsNullOrWhiteSpace(AccessTokenValidationProvider)
                     ? DefaultProviderTypes.AccessTokenValidationProvider
                     : AccessTokenValidationProvider
             ) as IAccessTokenValidationProvider;
 
-            // 初始化金鑰
+            // Initialize keys
             InitializeSecurityKeys();
         }
 
         /// <summary>
-        /// 初始化金鑰。
+        /// Initialize keys.
         /// </summary>
-        /// <param name="autoCreate">若主金鑰不存在，是否自動建立。</param>
+        /// <param name="autoCreate">Whether to automatically create the master key if it does not exist.</param>
         public void InitializeSecurityKeys(bool autoCreate = false)
         {
             var settings = SecurityKeySettings;
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, autoCreate);
 
-            // 解密 API 加密金鑰，如果設定中有提供。
+            // Decrypt API encryption key if provided in settings.
             if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
             {
                 BackendInfo.ApiEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ApiEncryptionKey);
             }
 
-            // 解密 Cookie 金鑰，如果設定中有提供。
+            // Decrypt Cookie key if provided in settings.
             if (StrFunc.IsNotEmpty(settings.CookieEncryptionKey))
             {
                 BackendInfo.CookieEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.CookieEncryptionKey);
             }
 
-            // 解密設定檔金鑰，如果設定中有提供。
+            // Decrypt config file key if provided in settings.
             if (StrFunc.IsNotEmpty(settings.ConfigEncryptionKey))
             {
                 BackendInfo.ConfigEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ConfigEncryptionKey);
             }
 
-            // 解密資料庫金鑰，如果設定中有提供。
+            // Decrypt database key if provided in settings.
             if (StrFunc.IsNotEmpty(settings.DatabaseEncryptionKey))
             {
                 BackendInfo.DatabaseEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.DatabaseEncryptionKey);
@@ -196,7 +196,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Object description.
         /// </summary>
         public override string ToString()
         {

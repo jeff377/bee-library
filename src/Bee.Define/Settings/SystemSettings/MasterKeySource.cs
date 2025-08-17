@@ -1,35 +1,34 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 主金鑰來源，包含來源類型與對應參數值。
+    /// Master key source, including source type and corresponding parameter value.
     /// </summary>
     [Serializable]
     [XmlType("MasterKeySource")]
-    [Description("主金鑰來源。")]
+    [Description("Master key source.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class MasterKeySource
     {
         /// <summary>
-        /// 主金鑰來源類型。
+        /// Master key source type.
         /// </summary>
-        [Description("主金鑰來源類型")]
+        [Description("Master key source type.")]
         public MasterKeySourceType Type { get; set; } = MasterKeySourceType.File;
 
         /// <summary>
-        /// 來源參數值：檔案路徑或環境變數名稱。
-        /// 若為空白，將使用預設值。
+        /// Source parameter value: file path or environment variable name.
+        /// If empty, the default value will be used.
         /// </summary>
-        [Description("來源參數值，檔案路徑或環境變數名稱，若為空白將使用預設值")]
+        [Description("Source parameter value, file path or environment variable name. If empty, the default value will be used.")]
         [DefaultValue("")]
         public string Value { get; set; } = string.Empty;
 
         /// <summary>
-        /// 將主金鑰來源轉換為字串表示形式。
+        /// Convert the master key source to a string representation.
         /// </summary>
         public override string ToString()
         {

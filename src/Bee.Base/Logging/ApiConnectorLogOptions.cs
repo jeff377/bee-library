@@ -4,25 +4,25 @@ using System.ComponentModel;
 namespace Bee.Base
 {
     /// <summary>
-    /// ApiConnector 模組的記錄選項。
+    /// Logging options for the ApiConnector module.
     /// </summary>
     [Serializable]
-    [Description("ApiConnector 模組的記錄選項。")]
+    [Description("Logging options for the ApiConnector module.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class ApiConnectorLogOptions
     {
         /// <summary>
-        /// 建構函式。
+        /// Constructor.
         /// </summary>
         public ApiConnectorLogOptions()
         {
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Constructor.
         /// </summary>
-        /// <param name="rawData">是否記錄 JSON-RPC 的原始資料內容。</param>
-        /// <param name="encodedData">是否記錄 JSON-RPC 的編碼後資料。</param>
+        /// <param name="rawData">Whether to log the raw JSON-RPC data content.</param>
+        /// <param name="encodedData">Whether to log the encoded JSON-RPC data.</param>
         public ApiConnectorLogOptions(bool rawData, bool encodedData)
         {
             RawData = rawData;
@@ -30,19 +30,19 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 是否記錄 JSON-RPC 的原始資料內容（params.value 與 result.value，尚未序列化/壓縮/加密）。
+        /// Whether to log the raw JSON-RPC data content (params.value and result.value, before serialization/compression/encryption).
         /// </summary>
-        [Description("是否記錄 JSON-RPC 的原始資料內容（params.value 與 result.value，尚未序列化/壓縮/加密）。")]
+        [Description("Whether to log the raw JSON-RPC data content (params.value and result.value, before serialization/compression/encryption).")]
         public bool RawData { get; set; }
 
         /// <summary>
-        /// 是否記錄 JSON-RPC 的編碼後資料（經序列化/壓縮/加密處理的二進位內容）。
+        /// Whether to log the encoded JSON-RPC data (binary content after serialization/compression/encryption).
         /// </summary>
-        [Description("是否記錄 JSON-RPC 的編碼後資料（經序列化/壓縮/加密處理的二進位內容）。")]
+        [Description("Whether to log the encoded JSON-RPC data (binary content after serialization/compression/encryption).")]
         public bool EncodedData { get; set; }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Object description.
         /// </summary>
         public override string ToString()
         {

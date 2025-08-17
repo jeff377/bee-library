@@ -4,33 +4,33 @@ using System.ComponentModel;
 namespace Bee.Base
 {
     /// <summary>
-    /// DbAccess 模組的記錄選項。
+    /// Logging options for the DbAccess module.
     /// </summary>
     [Serializable]
-    [Description("DbAccess 模組的記錄選項。")]
+    [Description("Logging options for the DbAccess module.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class DbAccessLogOptions
     {
         /// <summary>
-        /// 記錄層級（Error：僅錯誤、Warning：包含異常、All：所有 SQL）。
+        /// Logging level (Error: errors only, Warning: includes exceptions, All: all SQL).
         /// </summary>
-        [Description("記錄層級（Error：僅錯誤、Warning：包含異常、All：所有 SQL）。")]
+        [Description("Logging level (Error: errors only, Warning: includes exceptions, All: all SQL).")]
         public DbAccessLogLevel Level { get; set; } = DbAccessLogLevel.Warning;
 
         /// <summary>
-        /// SQL 操作所影響的資料筆數異常門檻，超過此值視為異常（預設 10000）。
+        /// Abnormal threshold for the number of rows affected by SQL operations. Exceeding this value is considered abnormal (default: 10000).
         /// </summary>
-        [Description("SQL 操作所影響的資料筆數異常門檻，超過此值視為異常（預設 10000）。")] 
+        [Description("Abnormal threshold for the number of rows affected by SQL operations. Exceeding this value is considered abnormal (default: 10000).")] 
         public int AffectedRowThreshold { get; set; } = 10000;
 
         /// <summary>
-        /// 查詢執行時間異常門檻（單位：秒），超過此秒數視為慢查詢。
+        /// Abnormal threshold for query execution time (in seconds). Exceeding this value is considered a slow query.
         /// </summary>
-        [Description("查詢執行時間異常門檻（單位：秒），超過此秒數視為慢查詢。")]
+        [Description("Abnormal threshold for query execution time (in seconds). Exceeding this value is considered a slow query.")]
         public int SlowQueryThreshold { get; set; } = 300;
 
         /// <summary>
-        /// 物件描述文字。
+        /// Object description.
         /// </summary>
         public override string ToString()
         {

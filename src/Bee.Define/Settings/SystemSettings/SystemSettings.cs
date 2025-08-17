@@ -7,20 +7,20 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 系統設定。
+    /// System settings.
     /// </summary>
     [Serializable]
     [XmlType("SystemSettings")]
-    [Description("系統設定。")]
+    [Description("System settings.")]
     [TreeNode("System Settings")]
     public class SystemSettings : IObjectSerializeFile
     {
         private PropertyCollection _ExtendedProperties = null;
 
-        #region 建構函式
+        #region Constructor
 
         /// <summary>
-        /// 建構函式 
+        /// Constructor.
         /// </summary>
         public SystemSettings()
         {
@@ -28,10 +28,10 @@ namespace Bee.Define
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Serialization state.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -39,16 +39,16 @@ namespace Bee.Define
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Set serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">Serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Serialized binding file.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -56,9 +56,9 @@ namespace Bee.Define
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化繫結檔案。
+        /// Set serialized binding file.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">File path.</param>
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
@@ -67,57 +67,57 @@ namespace Bee.Define
         #endregion
 
         /// <summary>
-        /// 物件建立時間。
+        /// Object creation time.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
-        /// 通用參數及環境設置。
+        /// Common parameters and environment settings.
         /// </summary>
-        [Description("通用參數及環境設置。")]
+        [Description("Common parameters and environment settings.")]
         [Browsable(false)]
         public CommonConfiguration CommonConfiguration { get; set; } = new CommonConfiguration();
 
         /// <summary>
-        /// 後端參數及環境設置。
+        /// Backend parameters and environment settings.
         /// </summary>
-        [Description("後端參數及環境設置。")]
+        [Description("Backend parameters and environment settings.")]
         [Browsable(false)]
         public BackendConfiguration BackendConfiguration { get; set; } = new BackendConfiguration();
 
         /// <summary>
-        /// 前端參數及環境設置。
+        /// Frontend parameters and environment settings.
         /// </summary>
-        [Description("前端參數及環境設置。")]
+        [Description("Frontend parameters and environment settings.")]
         [Browsable(false)]
         public FrontendConfiguration FrontendConfiguration { get; set; } = new FrontendConfiguration();
 
         /// <summary>
-        /// 網站參數及環境設置。
+        /// Website parameters and environment settings.
         /// </summary>
-        [Description("網站參數及環境設置。")]
+        [Description("Website parameters and environment settings.")]
         [Browsable(false)]
         public WebsiteConfiguration WebsiteConfiguration { get; set; } = new WebsiteConfiguration();
 
         /// <summary>
-        /// 服務程式參數及環境設置。
+        /// Background service parameters and environment settings.
         /// </summary>
-        [Description("服務程式參數及環境設置。")]
+        [Description("Background service parameters and environment settings.")]
         [Browsable(false)]
         public BackgroundServiceConfiguration BackgroundServiceConfiguration { get; set; } = new BackgroundServiceConfiguration();
 
         /// <summary>
-        /// 延伸屬性集合。
+        /// Extended property collection.
         /// </summary>
-        [Description("延伸屬性集合。")]
+        [Description("Extended property collection.")]
         [DefaultValue(null)]
         public PropertyCollection ExtendedProperties
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ExtendedProperties)) { return null; }
                 if (_ExtendedProperties == null) { _ExtendedProperties = new PropertyCollection(); }
                 return _ExtendedProperties;
@@ -125,18 +125,18 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 初始化。
+        /// Initialization.
         /// </summary>
         public void Initialize()
         {
-            // 通用初始化
+            // Common initialization
             this.CommonConfiguration.Initialize();
-            // 後端初始化
+            // Backend initialization
             this.BackendConfiguration.Initialize();
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Object description.
         /// </summary>
         public override string ToString()
         {

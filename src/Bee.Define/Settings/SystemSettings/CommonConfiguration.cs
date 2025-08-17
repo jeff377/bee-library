@@ -8,82 +8,83 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 通用參數及環境設置。
+    /// Common parameters and environment settings.
     /// </summary>
     [Serializable]
     [XmlType("CommonConfiguration")]
-    [Description("通用參數及環境設置。")]
+    [Description("Common parameters and environment settings.")]
     [TreeNode("Common")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class CommonConfiguration : IObjectSerializeBase
     {
         /// <summary>
-        /// 系統主版號。
+        /// System major version.
         /// </summary>
-        [Description("系統主版號。")]
+        [Description("System major version.")]
         public string Version { get; set; } = string.Empty;
 
         /// <summary>
-        /// 是否為偵錯模式。
+        /// Indicates whether debug mode is enabled.
         /// </summary>
-        [Description("是否為偵錯模式")]
+        [Description("Indicates whether debug mode is enabled.")]
         [DefaultValue(false)]
         public bool IsDebugMode { get; set; } = false;
 
         /// <summary>
-        /// 允許 JSON-RPC 傳遞資料的型別命名空間清單（以 '|' 分隔）。
-        /// 僅允許這些命名空間中的型別進行反序列化，以確保安全性。
-        /// 設定格式範例：Custom.Module|ThirdParty.Dto
-        /// 注意：Bee.Base 與 Bee.Define 為系統內建的預設命名空間，無需額外指定。
+        /// List of allowed type namespaces for JSON-RPC data transfer (separated by '|').
+        /// Only types in these namespaces are allowed for deserialization to ensure security.
+        /// Example: Custom.Module|ThirdParty.Dto
+        /// Note: Bee.Base and Bee.Define are built-in system namespaces and do not need to be specified.
         /// </summary>
         [Category("API")]
-        [Description("允許 JSON-RPC 傳遞資料的型別命名空間清單，以 '|' 分隔。")]
+        [Description("List of allowed type namespaces for JSON-RPC data transfer, separated by '|'.")]
         [DefaultValue("")]
         public string AllowedTypeNamespaces { get; set; } = string.Empty;
 
         /// <summary>
-        /// 提供 API Payload 處理相關選項，例如序列化、壓縮與加密。
+        /// Provides API payload handling options, such as serialization, compression, and encryption.
         /// </summary>
         [Category("API")]
-        [Description("提供 API Payload 處理相關選項，例如序列化、壓縮與加密。")]
+        [Description("Provides API payload handling options, such as serialization, compression, and encryption.")]
         public ApiPayloadOptions ApiPayloadOptions { get; set; } = new ApiPayloadOptions();
 
         /// <summary>
-        /// 記錄選項，用於設定日誌記錄的相關參數。
+        /// Logging options for configuring log parameters.
         /// </summary>
         [Category("Logging")]
-        [Description("提供日誌記錄的相關選項，例如記錄層級、輸出格式等。")]
+        [Description("Provides logging options, such as log level and output format.")]
+        [Browsable(false)]
         public LogOptions LogOptions { get; set; } = new LogOptions();
 
         /// <summary>
-        /// 初始化。
+        /// Initialization.
         /// </summary>
         public void Initialize()
         {
             SysInfo.Version = Version;
             SysInfo.IsDebugMode = IsDebugMode;
-            // 解析允許的型別命名空間清單
+            // Parse allowed type namespaces list
             SysInfo.AllowedTypeNamespaces = BuildAllowedTypeNamespaces(AllowedTypeNamespaces);
-            // 記錄選項
+            // Logging options
             SysInfo.LogOptions = LogOptions;
         }
 
         /// <summary>
-        /// 解析允許的型別命名空間清單（包含系統預設與使用者設定）。
+        /// Parse the list of allowed type namespaces (including system default and user-defined).
         /// </summary>
-        /// <param name="customNamespaces">使用者自訂的命名空間字串，以 '|' 分隔。</param>
-        /// <returns>包含系統預設與使用者自訂命名空間的清單。</returns>
+        /// <param name="customNamespaces">User-defined namespace string, separated by '|'.</param>
+        /// <returns>List of namespaces including system default and user-defined.</returns>
         public static List<string> BuildAllowedTypeNamespaces(string customNamespaces)
         {
-            // 初始化 HashSet 以確保不重複
+            // Initialize HashSet to ensure no duplicates
             var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Bee.Base",
                 "Bee.Define"
             };
 
-            // 使用者自訂命名空間清單（以 '|' 分隔）
-            // 使用者設定值可能為 null、空白或帶多餘的分隔符
+            // User-defined namespace list (separated by '|')
+            // User value may be null, empty, or contain extra separators
             if (!string.IsNullOrWhiteSpace(customNamespaces))
             {
                 var parts = customNamespaces.Split('|');
@@ -101,7 +102,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Object description.
         /// </summary>
         public override string ToString()
         {

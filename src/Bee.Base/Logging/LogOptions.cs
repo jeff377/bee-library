@@ -4,28 +4,28 @@ using System.ComponentModel;
 namespace Bee.Base
 {
     /// <summary>
-    /// 記錄選項設定，用於控制各模組是否進行記錄。
+    /// Logging options for controlling whether each module logs information.
     /// </summary>
     [Serializable]
-    [Description("記錄選項設定，用於控制各模組是否進行記錄。")]
+    [Description("Logging options for controlling whether each module logs information.")]
     [TreeNode("Logging")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class LogOptions
     {
         /// <summary>
-        /// 控制 ApiConnector 模組的記錄選項。
+        /// Logging options for the ApiConnector module.
         /// </summary>
-        [Description("控制 ApiConnector 模組的記錄選項。")]
+        [Description("Logging options for the ApiConnector module.")]
         public ApiConnectorLogOptions ApiConnector { get; set; } = new ApiConnectorLogOptions();
 
         /// <summary>
-        /// 控制 DbAccess 模組的記錄選項。
+        /// Logging options for the DbAccess module.
         /// </summary>
-        [Description("控制 DbAccess 模組的記錄選項。")]
+        [Description("Logging options for the DbAccess module.")]
         public DbAccessLogOptions DbAccess { get; set; } = new DbAccessLogOptions();
 
         /// <summary>
-        /// 物件描述文字。
+        /// Object description.
         /// </summary>
         public override string ToString()
         {
