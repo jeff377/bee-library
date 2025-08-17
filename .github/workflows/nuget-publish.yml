@@ -7,58 +7,125 @@ on:
 
 jobs:
   publish:
-    runs-on: windows-latest
+    runs-on: windows-latest           # 需要建置 net48 / WinForms
+    timeout-minutes: 45
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      NUGET_PACKAGES: ~/.nuget/packages
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: |
-          8.0.x
-          6.0.x
+      - name: Setup .NET SDK 8.x
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
 
-    - name: Add MSBuild to PATH (for .NET Framework)
-      uses: microsoft/setup-msbuild@v1.3
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('src/**/*.csproj', '**/Directory.Packages.props', '**/global.json') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
 
-    - name: Restore dependencies
-      run: dotnet restore
+      # 只針對你列出的 src 專案
+      - name: Define project list
+        id: proj
+        shell: pwsh
+        run: |
+          $projects = @(
+            "src/Bee.Api.AspNet/Bee.Api.AspNet.csproj",
+            "src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj",
+            "src/Bee.Api.Core/Bee.Api.Core.csproj",
+            "src/Bee.Base/Bee.Base.csproj",
+            "src/Bee.Business/Bee.Business.csproj",
+            "src/Bee.Cache/Bee.Cache.csproj",
+            "src/Bee.Connect/Bee.Connect.csproj",
+            "src/Bee.Db/Bee.Db.csproj",
+            "src/Bee.Define/Bee.Define.csproj",
+            "src/Bee.UI.Core/Bee.UI.Core.csproj",
+            "src/Bee.UI.WinForms/Bee.UI.WinForms.csproj"
+          )
+          # 轉成 JSON 塞到 output
+          $json = ($projects | ConvertTo-Json -Compress)
+          echo "list=$json" >> $env:GITHUB_OUTPUT
 
-    - name: Build only needed projects
-      run: |
-        dotnet build src/Bee.Base/Bee.Base.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Define/Bee.Define.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Cache/Bee.Cache.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Db/Bee.Db.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Business/Bee.Business.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Connect/Bee.Connect.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Api.AspNet/Bee.Api.AspNet.csproj --configuration Release --no-restore
-        dotnet build src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --no-restore
-        dotnet build src/Bee.UI.WinForms/Bee.UI.WinForms.csproj --configuration Release --no-restore
+      # Restore（逐專案平行）
+      - name: Restore (per project, parallel)
+        shell: pwsh
+        run: |
+          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}')
+          $tl = [Environment]::ProcessorCount
+          $projs | ForEach-Object -Parallel {
+            Write-Host "dotnet restore: $_"
+            dotnet restore $_ -v minimal
+          } -ThrottleLimit $tl
 
-    - name: Pack all NuGet projects
-      run: |
-        dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Define/Bee.Define.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Cache/Bee.Cache.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Connect/Bee.Connect.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Api.AspNet/Bee.Api.AspNet.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.UI.WinForms/Bee.UI.WinForms.csproj --configuration Release --output ./nupkgs
+      # ✅ Build：覆寫 GeneratePackageOnBuild=false（避免 Build 就打包）
+      - name: Build (per project, parallel)
+        shell: pwsh
+        run: |
+          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}')
+          $tl = [Environment]::ProcessorCount
+          $projs | ForEach-Object -Parallel {
+            Write-Host "dotnet build: $_"
+            dotnet build $_ -c Release --no-restore -v minimal `
+              -p:ContinuousIntegrationBuild=true `
+              -p:GeneratePackageOnBuild=false
+          } -ThrottleLimit $tl
 
-    - name: Push to NuGet
-      run: |
-        Get-ChildItem -Path ./nupkgs -Filter *.nupkg | ForEach-Object {
-          dotnet nuget push $_.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
-        }
+      # Pack：--no-build/--no-restore，輸出到固定資料夾；自動略過 IsPackable=false
+      - name: Pack (per project, parallel, no build)
+        shell: pwsh
+        run: |
+          $out = Join-Path $PWD 'nupkgs'
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}')
+          $tl = [Environment]::ProcessorCount
+          $projs | ForEach-Object -Parallel {
+            $proj = $_
+            $content = Get-Content -Raw -LiteralPath $proj
+            if ($content -match '<IsPackable>\s*false\s*</IsPackable>') {
+              Write-Host "Skip pack (IsPackable=false): $proj"
+              return
+            }
+            Write-Host "dotnet pack: $proj"
+            dotnet pack $proj -c Release --no-build --no-restore -v minimal `
+              -o $using:out `
+              -p:PackageOutputPath="$using:out" `
+              -p:IncludeReferencedProjects=false `
+              -p:ContinuousIntegrationBuild=true
+          } -ThrottleLimit $tl
+
+      # 保險網：把 bin/Release 底下可能產生的 nupkg 一併收進來
+      - name: Collect nupkgs from bin/Release
+        shell: pwsh
+        run: |
+          $out = Join-Path $PWD 'nupkgs'
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Get-ChildItem -Path "src" -Recurse -Include *.nupkg | Copy-Item -Destination $out -Force -ErrorAction SilentlyContinue
+          Write-Host "Collected packages:"
+          Get-ChildItem $out -Filter *.nupkg | ForEach-Object { Write-Host " - $($_.FullName)" }
+
+      - name: Upload nupkgs (artifact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkgs
+          path: ./nupkgs/*.nupkg
+
+      - name: Publish to nuget.org
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Path ./nupkgs -Filter *.nupkg
+          if (-not $files) { Write-Error "No packages found to push."; exit 1 }
+          dotnet nuget push "./nupkgs/*.nupkg" `
+            --api-key "${{ secrets.NUGET_API_KEY }}" `
+            --source "https://api.nuget.org/v3/index.json" `
+            --skip-duplicate
 
   release:
     needs: publish # 👈 確保發佈 NuGet 完成後才進行 Release
