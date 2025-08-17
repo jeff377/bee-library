@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using Bee.Cache;
@@ -14,9 +15,15 @@ namespace Bee.Db
         /// 建立資料庫存取物件。
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>
-        private static DbAccess CreateDbAcccess(string databaseId)
+        private static DbAccess CreateDbAccess(string databaseId)
         {
+            if (string.IsNullOrWhiteSpace(databaseId))
+                throw new ArgumentException("databaseId cannot be null or empty.", nameof(databaseId));
+
             var database = CacheFunc.GetDatabaseItem(databaseId);
+            if (database == null)
+                throw new InvalidOperationException($"Failed to create DbAccess: DatabaseItem for id '{databaseId}' was not found.");
+
             return new DbAccess(database);
         }
 
@@ -27,7 +34,7 @@ namespace Bee.Db
         /// <param name="command">資料庫命令。</param>
         public static DataTable ExecuteDataTable(string databaseId, DbCommand command)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteDataTable(command);
         }
 
@@ -38,7 +45,7 @@ namespace Bee.Db
         /// <param name="commandText">SQL 陳述式。</param>
         public static DataTable ExecuteDataTable(string databaseId, string commandText)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteDataTable(commandText);
         }
 
@@ -49,7 +56,7 @@ namespace Bee.Db
         /// <param name="command">資料庫命令。</param>
         public static int ExecuteNonQuery(string databaseId, DbCommand command)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteNonQuery(command);
         }
 
@@ -60,7 +67,7 @@ namespace Bee.Db
         /// <param name="commandText">SQL 陳述式。</param>
         public static int ExecuteNonQuery(string databaseId, string commandText)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteNonQuery(commandText);
         }
 
@@ -71,7 +78,7 @@ namespace Bee.Db
         /// <param name="command">資料庫命令。</param>
         public static object ExecuteScalar(string databaseId, DbCommand command)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteScalar(command);
         }
 
@@ -82,33 +89,33 @@ namespace Bee.Db
         /// <param name="commandText">SQL 陳述式。</param>
         public static object ExecuteScalar(string databaseId, string commandText)
         {
-            DbAccess oDbAccess;
-
-            oDbAccess = CreateDbAcccess(databaseId);
-            return oDbAccess.ExecuteScalar(commandText);
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteScalar(commandText);
         }
 
         /// <summary>
         /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>
         /// <param name="command">資料庫命令。</param>
         /// <returns>傳回 DbDataReader 物件。</returns>
         public static DbDataReader ExecuteReader(string databaseId, DbCommand command)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteReader(command);
         }
 
         /// <summary>
         /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>
         /// <param name="commandText">SQL 陳述式。</param>
         /// <returns>傳回 DbDataReader 物件。</returns>
         public static DbDataReader ExecuteReader(string databaseId, string commandText)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteReader(commandText);
         }
 
@@ -123,7 +130,7 @@ namespace Bee.Db
         /// </returns>
         public static IEnumerable<T> Query<T>(string databaseId, DbCommand command)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.Query<T>(command);
         }
 
@@ -138,7 +145,7 @@ namespace Bee.Db
         /// </returns>
         public static IEnumerable<T> Query<T>(string databaseId, string commandText)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.Query<T>(commandText);
         }
 
@@ -152,7 +159,7 @@ namespace Bee.Db
         /// <param name="deleteCommand">刪除命令。</param>
         public static int UpdateDataTable(string databaseId, DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand)
         {
-            var dbAccess = CreateDbAcccess(databaseId);
+            var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.UpdateDataTable(dataTable, insertCommand, updateCommand, deleteCommand);
         }
     }

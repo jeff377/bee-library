@@ -197,6 +197,7 @@ namespace Bee.Db
 
         /// <summary>
         /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
         /// </summary>
         /// <param name="command">資料庫命令。</param>
         /// <returns>傳回 DbDataReader 物件。</returns>
@@ -221,6 +222,7 @@ namespace Bee.Db
 
         /// <summary>
         /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
         /// </summary>
         /// <param name="commandText">SQL 陳述式。</param>
         /// <returns>傳回 DbDataReader 物件。</returns>
