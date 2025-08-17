@@ -3,18 +3,20 @@ name: Publish NuGet Packages & Release
 on:
   push:
     tags:
-      - 'v*' # 例如 v3.2.6
+      - 'v*' # e.g. v3.2.6
 
 permissions:
-  contents: write  # 給 GitHub Release 用
+  contents: write  # for GitHub Release
 
 jobs:
   publish:
-    runs-on: windows-latest           # 需要支援 net48 / WinForms
+    runs-on: windows-latest           # net48 / WinForms need Windows
     timeout-minutes: 45
     env:
       DOTNET_NOLOGO: true
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+      DOTNET_MULTILEVEL_LOOKUP: 0
       NUGET_PACKAGES: ~/.nuget/packages
 
     steps:
@@ -36,7 +38,7 @@ jobs:
           restore-keys: |
             nuget-${{ runner.os }}-
 
-      # 只打包 src/ 下這 11 個專案
+      # Only pack projects under src/
       - name: Define project list
         id: proj
         shell: pwsh
@@ -57,7 +59,7 @@ jobs:
           $json = ($projects | ConvertTo-Json -Compress)
           echo "list=$json" >> $env:GITHUB_OUTPUT
 
-      # ✅ Restore：改為「序列」執行，且使用絕對路徑（最穩）
+      # ✅ Restore: sequential & absolute paths (most stable)
       - name: Restore (per project, sequential)
         shell: pwsh
         run: |
@@ -67,20 +69,20 @@ jobs:
             dotnet restore $p -v minimal -p:RestoreUseStaticGraphEvaluation=true
           }
 
-      # Build：平行；不加 --no-restore，保留一次保險（有快取影響不大）
-      - name: Build (per project, parallel)
+      # ✅ Build: parallel, NO restore (avoid NuGet.RestoreEx.targets race)
+      - name: Build (per project, parallel, no-restore)
         shell: pwsh
         run: |
           $projs = (ConvertFrom-Json '${{ steps.proj.outputs.list }}') | ForEach-Object { (Resolve-Path $_).Path }
           $tl = [Environment]::ProcessorCount
           $projs | ForEach-Object -Parallel {
-            Write-Host "dotnet build: $_"
-            dotnet build $_ -c Release -v minimal `
+            Write-Host "dotnet build (no-restore): $_"
+            dotnet build $_ -c Release --no-restore -v minimal `
               -p:ContinuousIntegrationBuild=true `
               -p:GeneratePackageOnBuild=false
           } -ThrottleLimit $tl
 
-      # Pack：平行，--no-build/--no-restore，固定輸出到 nupkgs，並同時設 PackageOutputPath
+      # Pack: parallel, no build/restore; output to fixed folder
       - name: Pack (per project, parallel, no build)
         shell: pwsh
         run: |
@@ -103,7 +105,7 @@ jobs:
               -p:ContinuousIntegrationBuild=true
           } -ThrottleLimit $tl
 
-      # 保險網：若有包產在各專案 bin/Release，收攏到 nupkgs
+      # Safety net: collect any nupkg from bin/Release into ./nupkgs
       - name: Collect nupkgs from bin/Release
         shell: pwsh
         run: |
