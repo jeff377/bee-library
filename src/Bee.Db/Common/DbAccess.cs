@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 using Bee.Base;
 using Bee.Define;
 
@@ -64,11 +66,11 @@ namespace Bee.Db
         /// </summary>
         public DbConnection CreateConnection()
         {
-            var connection = this.Provider.CreateConnection();
+            var connection = Provider.CreateConnection();
             if (connection == null)
                 throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");
 
-            connection.ConnectionString = this.ConnectionString;
+            connection.ConnectionString = ConnectionString;
             return connection;
         }
 
@@ -86,6 +88,24 @@ namespace Bee.Db
             catch
             {
                 // 失敗時也要確保釋放
+                connection.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 非同步開啟資料庫連線。
+        /// </summary>
+        private async Task<DbConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
+        {
+            var connection = CreateConnection();
+            try
+            {
+                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                return connection;
+            }
+            catch
+            {
                 connection.Dispose();
                 throw;
             }
@@ -127,13 +147,13 @@ namespace Bee.Db
             if (string.IsNullOrWhiteSpace(commandText))
                 throw new ArgumentException("commandText cannot be null or empty.", nameof(commandText));
 
-            var command = this.Provider.CreateCommand();
+            var command = Provider.CreateCommand();
             if (command == null)
                 throw new InvalidOperationException("DbProviderFactory.CreateCommand() returned null.");
 
             command.CommandType = commandType;
             command.CommandText = commandText;
-            command.CommandTimeout = CapTimeoutSeconds(this.CommandTimeout);
+            command.CommandTimeout = CapTimeoutSeconds(CommandTimeout);
             return command;
         }
 
@@ -154,11 +174,11 @@ namespace Bee.Db
         {
             CapCommandTimeout(command);   // 套用命令逾時限制
 
-            using (var connection = this.OpenConnection())
+            using (var connection = OpenConnection())
             {
                 command.Connection = connection;
 
-                var adapter = this.Provider.CreateDataAdapter()
+                var adapter = Provider.CreateDataAdapter()
                     ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
 
                 using (adapter)
@@ -191,14 +211,11 @@ namespace Bee.Db
         public int ExecuteNonQuery(DbCommand command)
         {
             CapCommandTimeout(command);   // 套用命令逾時限制
-
-            int rowsAffected = 0;  // 異動筆數
-            using (DbConnection connection = this.OpenConnection())
+            using (var connection = OpenConnection())
             {
                 command.Connection = connection;
-                rowsAffected = command.ExecuteNonQuery();
+                return command.ExecuteNonQuery();
             }
-            return rowsAffected;
         }
 
         /// <summary>
@@ -214,20 +231,45 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 非同步執行資料庫命令，傳回異動筆數。
+        /// </summary>
+        /// <param name="command">資料庫命令。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public async Task<int> ExecuteNonQueryAsync(DbCommand command, CancellationToken cancellationToken = default)
+        {
+            CapCommandTimeout(command);  // 套用命令逾時限制
+            using (var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                command.Connection = connection;
+                return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回異動筆數。
+        /// </summary>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public async Task<int> ExecuteNonQueryAsync(string commandText, CancellationToken cancellationToken = default)
+        {
+            using (var command = CreateCommand(commandText))
+            {
+                return await ExecuteNonQueryAsync(command, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
         /// 執行資料庫命令，傳回單一值。
         /// </summary>
         /// <param name="command">資料庫命令。</param>
         public object ExecuteScalar(DbCommand command)
         {
             CapCommandTimeout(command);   // 套用命令逾時限制
-
-            object value;
-            using (DbConnection connection = this.OpenConnection())
+            using (var connection = OpenConnection())
             {
                 command.Connection = connection;
-                value = command.ExecuteScalar();
+                return command.ExecuteScalar();
             }
-            return value;
         }
 
         /// <summary>
@@ -239,6 +281,34 @@ namespace Bee.Db
             using (var command = CreateCommand(commandText))
             {
                 return ExecuteScalar(command);
+            }
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回單一值。
+        /// </summary>
+        /// <param name="command">資料庫命令。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public async Task<object> ExecuteScalarAsync(DbCommand command, CancellationToken cancellationToken = default)
+        {
+            CapCommandTimeout(command);
+            using (var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                command.Connection = connection;
+                return await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回單一值。
+        /// </summary>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public async Task<object> ExecuteScalarAsync(string commandText, CancellationToken cancellationToken = default)
+        {
+            using (var command = CreateCommand(commandText))
+            {
+                return await ExecuteScalarAsync(command, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -278,6 +348,42 @@ namespace Bee.Db
             // Reader 交給呼叫端釋放，因此這裡不能 using command
             var command = CreateCommand(commandText);
             return ExecuteReader(command);
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
+        /// </summary>
+        /// <param name="command">資料庫命令。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <returns>傳回 DbDataReader 物件。</returns>
+        public async Task<DbDataReader> ExecuteReaderAsync(DbCommand command, CancellationToken cancellationToken = default)
+        {
+            CapCommandTimeout(command);
+            var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                command.Connection = connection;
+                return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                connection.Dispose();
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
+        /// </summary>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <returns>傳回 DbDataReader 物件。</returns>
+        public async Task<DbDataReader> ExecuteReaderAsync(string commandText, CancellationToken cancellationToken = default)
+        {
+            var command = CreateCommand(commandText);
+            return await ExecuteReaderAsync(command, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>

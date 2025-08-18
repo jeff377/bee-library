@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Threading;
+using System.Threading.Tasks;
 using Bee.Cache;
 
 namespace Bee.Db
@@ -72,6 +74,27 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 非同步執行資料庫命令，傳回異動筆數。
+        /// </summary>
+        public static Task<int> ExecuteNonQueryAsync(string databaseId, DbCommand command, CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteNonQueryAsync(command, cancellationToken);
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回異動筆數。
+        /// </summary>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public static Task<int> ExecuteNonQueryAsync(string databaseId, string commandText, CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteNonQueryAsync(commandText, cancellationToken);
+        }
+
+        /// <summary>
         /// 執行資料庫命令，傳回單一值。
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>
@@ -91,6 +114,30 @@ namespace Bee.Db
         {
             var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteScalar(commandText);
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回單一值。
+        /// </summary>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="command">資料庫命令。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public static Task<object> ExecuteScalarAsync(string databaseId, DbCommand command, CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteScalarAsync(command, cancellationToken);
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回單一值。
+        /// </summary>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public static Task<object> ExecuteScalarAsync(string databaseId, string commandText, CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteScalarAsync(commandText, cancellationToken);
         }
 
         /// <summary>
@@ -117,6 +164,34 @@ namespace Bee.Db
         {
             var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteReader(commandText);
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
+        /// </summary>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="command">資料庫命令。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <returns>傳回 DbDataReader 物件。</returns>
+        public static Task<DbDataReader> ExecuteReaderAsync(string databaseId, DbCommand command, CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteReaderAsync(command, cancellationToken);
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
+        /// </summary>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <returns>傳回 DbDataReader 物件。</returns>
+        public static Task<DbDataReader> ExecuteReaderAsync(string databaseId, string commandText, CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteReaderAsync(commandText, cancellationToken);
         }
 
         /// <summary>
