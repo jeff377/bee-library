@@ -9,7 +9,7 @@ using Bee.Cache;
 namespace Bee.Db
 {
     /// <summary>
-    /// 系統資料庫操作類別。
+    /// 資料庫命令執行器。
     /// </summary>
     public static class SysDb
     {
