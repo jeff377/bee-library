@@ -372,19 +372,6 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
-        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <returns>傳回 DbDataReader 物件。</returns>
-        public DbDataReader ExecuteReader(string commandText)
-        {
-            // Reader 交給呼叫端釋放，因此這裡不能 using command
-            var command = CreateCommand(commandText);
-            return ExecuteReader(command);
-        }
-
-        /// <summary>
         /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
         /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
         /// </summary>
@@ -405,19 +392,6 @@ namespace Bee.Db
                 connection.Dispose();
                 throw;
             }
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
-        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        /// <returns>傳回 DbDataReader 物件。</returns>
-        public async Task<DbDataReader> ExecuteReaderAsync(string commandText, CancellationToken cancellationToken = default)
-        {
-            var command = CreateCommand(commandText);
-            return await ExecuteReaderAsync(command, cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -531,18 +505,26 @@ namespace Bee.Db
             CapCommandTimeout(command);
 
             var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-            await using var _ = connection.ConfigureAwait(false); // for analyzer happiness
-            command.Connection = connection;
-
-            var reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, cancellationToken)
-                                      .ConfigureAwait(false);
-            await using var __ = reader.ConfigureAwait(false);
-
-            var mapper = ILMapper<T>.CreateMapFunc(reader);
-
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+            DbDataReader reader = null;
+            try
             {
-                yield return mapper(reader);
+                command.Connection = connection;
+                // 交由 reader 關閉連線
+                reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, cancellationToken)
+                                      .ConfigureAwait(false);
+
+                var mapper = ILMapper<T>.CreateMapFunc(reader);
+                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    yield return mapper(reader);   // ✅ 允許：try-finally，且方法內沒有任何 catch
+                }
+            }
+            finally
+            {
+                // 若 reader 已建立 → Dispose() 會連帶關閉 connection（CloseConnection）
+                // 若尚未建立就拋例外 → 這裡補關 connection，避免外洩
+                if (reader != null) reader.Dispose();
+                else connection.Dispose();
             }
         }
 

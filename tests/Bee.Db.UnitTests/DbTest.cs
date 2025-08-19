@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using System.Threading.Tasks.Sources;
 using Bee.Base;
 using Bee.Cache;
 using Bee.Define;
@@ -48,11 +49,16 @@ namespace Bee.Db.UnitTests
         public void ExecuteReader()
         {
             string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
-            using (var reader = SysDb.ExecuteReader("common", sql))
+            var helper = new DbCommandHelper(DatabaseType.SQLServer);
+            helper.SetCommandFormatText(sql);
+            using (var command = helper.DbCommand)
             {
-                Assert.True(reader.Read());
-                Assert.Equal("001", reader["sys_id"].ToString());
-                // 可依需求驗證其他欄位
+                using (var reader = SysDb.ExecuteReader("common", command))
+                {
+                    Assert.True(reader.Read());
+                    Assert.Equal("001", reader["sys_id"].ToString());
+                    // 可依需求驗證其他欄位
+                }
             }
         }
 
@@ -60,11 +66,16 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteReaderAsync()
         {
             string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
-            using (var reader = await SysDb.ExecuteReaderAsync("common", sql))
+            var helper = new DbCommandHelper(DatabaseType.SQLServer);
+            helper.SetCommandFormatText(sql);
+            using (var command = helper.DbCommand)
             {
-                Assert.True(await reader.ReadAsync());
-                Assert.Equal("001", reader["sys_id"].ToString());
-                // 可依需求驗證其他欄位
+                using (var reader = await SysDb.ExecuteReaderAsync("common", command))
+                {
+                    Assert.True(await reader.ReadAsync());
+                    Assert.Equal("001", reader["sys_id"].ToString());
+                    // 可依需求驗證其他欄位
+                }
             }
         }
 
