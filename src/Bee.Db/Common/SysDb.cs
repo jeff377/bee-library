@@ -52,6 +52,30 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 非同步執行資料庫命令，傳回資料表。
+        /// </summary>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="command">資料庫命令。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public static Task<DataTable> ExecuteDataTableAsync(string databaseId, DbCommand command, CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteDataTableAsync(command, cancellationToken);
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回資料表。
+        /// </summary>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public static Task<DataTable> ExecuteDataTableAsync(string databaseId, string commandText, CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            return dbAccess.ExecuteDataTableAsync(commandText, cancellationToken);
+        }
+
+        /// <summary>
         /// 執行資料庫命令，傳回異動筆數。
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>

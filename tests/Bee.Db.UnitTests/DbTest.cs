@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Bee.Base;
 using Bee.Cache;
 using Bee.Define;
@@ -23,12 +24,48 @@ namespace Bee.Db.UnitTests
             var table = SysDb.ExecuteDataTable("common", sql);
         }
 
+        /// <summary>
+        /// 非同步執行 SQL 查詢，並取得 DataTable。
+        /// </summary>
+        [Fact]
+        public async Task ExecuteDataTableAsync()
+        {
+            string sql = "SELECT * FROM ts_user";
+            var table = await SysDb.ExecuteDataTableAsync("common", sql);
+            Assert.NotNull(table);
+            Assert.True(table.Rows.Count > 0);
+        }
+
         [Fact]
         public void ExecuteNonQuery()
         {
             int i = BaseFunc.RndInt(0, 100);
             string sql = $"Update ts_user Set note='{i}' Where sys_id = '001'";
             int rows = SysDb.ExecuteNonQuery("common", sql);
+        }
+
+        [Fact]
+        public void ExecuteReader()
+        {
+            string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
+            using (var reader = SysDb.ExecuteReader("common", sql))
+            {
+                Assert.True(reader.Read());
+                Assert.Equal("001", reader["sys_id"].ToString());
+                // 可依需求驗證其他欄位
+            }
+        }
+
+        [Fact]
+        public async Task ExecuteReaderAsync()
+        {
+            string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
+            using (var reader = await SysDb.ExecuteReaderAsync("common", sql))
+            {
+                Assert.True(await reader.ReadAsync());
+                Assert.Equal("001", reader["sys_id"].ToString());
+                // 可依需求驗證其他欄位
+            }
         }
 
         [Fact]

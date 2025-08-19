@@ -205,6 +205,40 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 非同步執行資料庫命令，傳回資料表。
+        /// </summary>
+        /// <param name="command">資料庫命令。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public async Task<DataTable> ExecuteDataTableAsync(DbCommand command, CancellationToken cancellationToken = default)
+        {
+            CapCommandTimeout(command);
+            using (var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
+            {
+                command.Connection = connection;
+                using (var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    var table = new DataTable("DataTable");
+                    table.Load(reader);
+                    DataSetFunc.UpperColumnName(table);
+                    return table;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回資料表。
+        /// </summary>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public async Task<DataTable> ExecuteDataTableAsync(string commandText, CancellationToken cancellationToken = default)
+        {
+            using (var command = CreateCommand(commandText))
+            {
+                return await ExecuteDataTableAsync(command, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        /// <summary>
         /// 執行資料庫命令，傳回異動筆數。
         /// </summary>
         /// <param name="command">資料庫命令。</param>
