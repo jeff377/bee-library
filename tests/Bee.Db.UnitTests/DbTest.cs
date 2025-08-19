@@ -126,6 +126,20 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(list2);
         }
 
+        [Fact]
+        public async Task QueryStreamAsync()
+        {
+            string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
+            int count = 0;
+            await foreach (var user in SysDb.QueryStreamAsync<User>("common", sql))
+            {
+                Assert.NotNull(user);
+                Assert.False(string.IsNullOrEmpty(user.UserID));
+                count++;
+            }
+            Assert.True(count > 0);
+        }
+
         /// <summary>
         /// 使用參數式執行 SQL 查詢，並取得 DataTable。
         /// </summary>

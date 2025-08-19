@@ -272,6 +272,47 @@ namespace Bee.Db
             return dbAccess.QueryAsync<T>(commandText, cancellationToken);
         }
 
+#if NET8_0_OR_GREATER
+        /// <summary>
+        /// 非同步串流查詢結果，每次讀取一列並映射為 <typeparamref name="T"/>。
+        /// 注意：呼叫端需逐項列舉以完整釋放連線資源。
+        /// </summary>
+        /// <typeparam name="T">要映射的目標類型。</typeparam>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="command">資料庫命令。</param>
+        /// <param name="cancellationToken">取消權杖。</param>
+        public static async IAsyncEnumerable<T> QueryStreamAsync<T>(
+            string databaseId,
+            DbCommand command,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            await foreach (var item in dbAccess.QueryStreamAsync<T>(command, cancellationToken).ConfigureAwait(false))
+            {
+                yield return item;
+            }
+        }
+
+        /// <summary>
+        /// 非同步串流查詢結果，每次讀取一列並映射為 <typeparamref name="T"/>。
+        /// </summary>
+        /// <typeparam name="T">要映射的目標類型。</typeparam>
+        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="commandText">SQL 陳述式。</param>
+        /// <param name="cancellationToken">取消權杖。</param>
+        public static async IAsyncEnumerable<T> QueryStreamAsync<T>(
+            string databaseId,
+            string commandText,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            var dbAccess = CreateDbAccess(databaseId);
+            await foreach (var item in dbAccess.QueryStreamAsync<T>(commandText, cancellationToken).ConfigureAwait(false))
+            {
+                yield return item;
+            }
+        }
+#endif
+
         /// <summary>
         /// 將 DataTable 的異動寫入資料庫。 
         /// </summary>
