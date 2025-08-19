@@ -51,14 +51,11 @@ namespace Bee.Db.UnitTests
             string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
             var helper = new DbCommandHelper(DatabaseType.SQLServer);
             helper.SetCommandFormatText(sql);
-            using (var command = helper.DbCommand)
+            using (var reader = SysDb.ExecuteReader("common", helper.DbCommand))
             {
-                using (var reader = SysDb.ExecuteReader("common", command))
-                {
-                    Assert.True(reader.Read());
-                    Assert.Equal("001", reader["sys_id"].ToString());
-                    // 可依需求驗證其他欄位
-                }
+                Assert.True(reader.Read());
+                Assert.Equal("001", reader["sys_id"].ToString());
+                // 可依需求驗證其他欄位
             }
         }
 
@@ -68,14 +65,11 @@ namespace Bee.Db.UnitTests
             string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
             var helper = new DbCommandHelper(DatabaseType.SQLServer);
             helper.SetCommandFormatText(sql);
-            using (var command = helper.DbCommand)
+            using (var reader = await SysDb.ExecuteReaderAsync("common", helper.DbCommand))
             {
-                using (var reader = await SysDb.ExecuteReaderAsync("common", command))
-                {
-                    Assert.True(await reader.ReadAsync());
-                    Assert.Equal("001", reader["sys_id"].ToString());
-                    // 可依需求驗證其他欄位
-                }
+                Assert.True(await reader.ReadAsync());
+                Assert.Equal("001", reader["sys_id"].ToString());
+                // 可依需求驗證其他欄位
             }
         }
 
@@ -161,7 +155,7 @@ namespace Bee.Db.UnitTests
             heper.AddParameter(SysFields.Id, FieldDbType.String, "001");
             string sql = "SELECT * FROM ts_user WHERE sys_id = @sys_id";
             heper.SetCommandText(sql);
-            var table2 = heper.ExecuteDataTable("common");
+            var table = SysDb.ExecuteDataTable("common", heper.DbCommand);
         }
 
 

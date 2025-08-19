@@ -9,9 +9,9 @@ using Bee.Define;
 namespace Bee.Db
 {
     /// <summary>
-    /// 資料庫命令輔助基底類別。
+    /// 資料庫命令組裝輔助類別。
     /// </summary>
-    public class DbCommandHelper : IDbCommandHelper, IDisposable
+    public class DbCommandHelper : IDbCommandHelper
     {
         #region 建構函式
 
@@ -31,22 +31,6 @@ namespace Bee.Db
         }
 
         #endregion;
-
-        #region IDisposable 介面
-
-        /// <summary>
-        /// 釋放資源。
-        /// </summary>
-        public void Dispose()
-        {
-            if (DbCommand != null)
-            {
-                DbCommand.Dispose();
-                DbCommand = null;
-            }
-        }
-
-        #endregion
 
         /// <summary>
         /// 資料庫類型。
@@ -189,85 +173,6 @@ namespace Bee.Db
                 commandText = StrFunc.Replace(commandText, CommandTextVariable.Parameters, sb.ToString());
             }
             DbCommand.CommandText = DbFunc.SqlFormat(commandText, DbCommand.Parameters);
-        }
-
-        /// <summary>
-        /// 取得有效的資料庫編號。
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。
-        /// </param>
-        /// <returns>有效的資料庫編號。</returns>
-        /// <exception cref="InvalidOperationException">
-        /// 當 <paramref name="databaseId"/> 與 <see cref="BackendInfo.DatabaseId"/> 均為空時擲出。
-        /// </exception>
-        private string GetDatabaseId(string databaseId)
-        {
-            if (StrFunc.IsNotEmpty(databaseId))
-                return databaseId;
-
-            if (StrFunc.IsEmpty(BackendInfo.DatabaseId))
-            {
-                throw new InvalidOperationException($"{MemberPath.Of(() => BackendInfo.DatabaseId)} is not set.");
-            }
-
-            return BackendInfo.DatabaseId;
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回資料表。 
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        public DataTable ExecuteDataTable(string databaseId = "")
-        {
-            string id = GetDatabaseId(databaseId);
-            return SysDb.ExecuteDataTable(id, DbCommand);
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回一筆資料列。 
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        public DataRow ExecuteDataRow(string databaseId = "")
-        {
-            var table = ExecuteDataTable(databaseId);
-            if (BaseFunc.IsEmpty(table))
-                return null;
-            else
-                return table.Rows[0];
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回異動筆數。
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        public int ExecuteNonQuery(string databaseId = "")
-        {
-            string id = GetDatabaseId(databaseId);
-            return SysDb.ExecuteNonQuery(id, this.DbCommand);
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        public object ExecuteScalar(string databaseId = "")
-        {
-            string id = GetDatabaseId(databaseId);
-            return SysDb.ExecuteScalar(id, this.DbCommand);
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        /// <returns>
-        /// 返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。
-        /// </returns>
-        public IEnumerable<T> Query<T>(string databaseId = "")
-        {
-            string id = GetDatabaseId(databaseId);
-            return SysDb.Query<T>(id, this.DbCommand);
         }
     }
 }

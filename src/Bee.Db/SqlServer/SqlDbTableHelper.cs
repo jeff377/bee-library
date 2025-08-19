@@ -67,7 +67,7 @@ namespace Bee.Db
             helper.AddParameter("TableName", FieldDbType.String, tableName);
             string sSQL = "Select Count(*) From sys.tables A Where A.name={0}";
             helper.SetCommandFormatText(sSQL);
-            int iCount = BaseFunc.CInt(helper.ExecuteScalar());
+            int iCount = BaseFunc.CInt(SysDb.ExecuteScalar(BackendInfo.DatabaseId, helper.DbCommand));
             return (iCount > 0) ? true : false;
         }
 
@@ -92,7 +92,7 @@ namespace Bee.Db
                           "WHERE B.name={0} \n" +
                           "Order By D.is_primary_key,C.key_ordinal";
             oHelper.SetCommandFormatText(sSQL);
-            oTable = oHelper.ExecuteDataTable();
+            oTable = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, oHelper.DbCommand);
             oTable.TableName = "TableIndex";
             return oTable;
         }
@@ -195,7 +195,7 @@ namespace Bee.Db
                           "WHERE B.name={0} \n" +
                           "ORDER BY A.column_id";
             oHelper.SetCommandFormatText(sSQL);
-            oTable = oHelper.ExecuteDataTable();
+            oTable = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, oHelper.DbCommand);
             oTable.TableName = "Columns";
             return oTable;
         }

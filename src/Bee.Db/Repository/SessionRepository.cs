@@ -29,7 +29,7 @@ namespace Bee.Db
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
             helper.SetCommandFormatText(sql);
-            helper.ExecuteNonQuery();
+            SysDb.ExecuteNonQuery(BackendInfo.DatabaseId, helper.DbCommand);
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Bee.Db
             string sql = "DELETE FROM ts_session \n" +
                                  "WHERE access_token={0}";
             helper.SetCommandFormatText(sql);
-            helper.ExecuteNonQuery();
+            SysDb.ExecuteNonQuery(BackendInfo.DatabaseId, helper.DbCommand);
         }
 
         /// <summary>
@@ -58,8 +58,9 @@ namespace Bee.Db
                                  "FROM ts_session \n" +
                                  "WHERE access_token={0}";
             helper.SetCommandFormatText(sql);
-            var row = helper.ExecuteDataRow();
-            if (row == null) { return null; }
+            var table = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, helper.DbCommand);
+            if (BaseFunc.IsEmpty(table)) { return null; }
+            var row = table.Rows[0];
 
             // 若連線已到期，刪除連線資訊，並回傳 null
             DateTime endTime = BaseFunc.CDateTime(row[SysFields.InvalidTime]);
@@ -89,8 +90,9 @@ namespace Bee.Db
             string sql = "SELECT sys_id, sys_name FROM ts_user \n" +
                                  "WHERE sys_id={0}";
             helper.SetCommandFormatText(sql);
-            var row = helper.ExecuteDataRow();
-            if (row == null) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
+            var table = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, helper.DbCommand);
+            if (BaseFunc.IsEmpty(table)) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
+            var row = table.Rows[0];
 
             var user = new SessionUser()
             {

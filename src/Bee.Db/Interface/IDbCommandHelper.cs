@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
 using Bee.Base;
 using Bee.Define;
@@ -60,39 +59,5 @@ namespace Bee.Db
         /// </summary>
         /// <param name="commandText">命令字串。</param>
         void SetCommandFormatText(string commandText);
-
-        /// <summary>
-        /// 執行資料庫命令，傳回資料表。 
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        DataTable ExecuteDataTable(string databaseId = "");
-
-        /// <summary>
-        /// 執行資料庫命令，傳回一筆資料列。 
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        DataRow ExecuteDataRow(string databaseId = "");
-
-        /// <summary>
-        /// 執行資料庫命令，傳回異動筆數。
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        int ExecuteNonQuery(string databaseId = "");
-
-        /// <summary>
-        /// 執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        object ExecuteScalar(string databaseId = "");
-
-        /// <summary>
-        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="databaseId">傳入的資料庫編號。如果為空，則回傳 <see cref="BackendInfo.DatabaseId"/>。</param>
-        /// <returns>
-        /// 返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。
-        /// </returns>
-        IEnumerable<T> Query<T>(string databaseId = "");
     }
 }
