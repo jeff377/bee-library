@@ -114,6 +114,18 @@ namespace Bee.Db.UnitTests
             var list3 = SysDb.Query<User2>("common", sql).ToList();
         }
 
+        [Fact]
+        public async Task QueryAsync()
+        {
+            string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
+            var list = await SysDb.QueryAsync<User>("common", sql);
+            Assert.NotNull(list);
+            Assert.True(list.Count > 0);
+
+            var list2 = await SysDb.QueryAsync<User2>("common", sql);
+            Assert.NotNull(list2);
+        }
+
         /// <summary>
         /// 使用參數式執行 SQL 查詢，並取得 DataTable。
         /// </summary>
@@ -126,5 +138,7 @@ namespace Bee.Db.UnitTests
             heper.SetCommandText(sql);
             var table2 = heper.ExecuteDataTable("common");
         }
+
+
     }
 }
