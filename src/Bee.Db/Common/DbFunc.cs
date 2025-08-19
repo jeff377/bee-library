@@ -16,7 +16,7 @@ namespace Bee.Db
         /// <summary>
         /// 建立資料庫命令輔助類別。
         /// </summary>
-        public static IDbCommandHelper CreateDbCommandHelper(DatabaseType databaseType)
+        public static DbCommandHelper CreateDbCommandHelper(DatabaseType databaseType)
         {
             return new DbCommandHelper(databaseType);
         }
@@ -24,7 +24,7 @@ namespace Bee.Db
         /// <summary>
         /// 建立預設資料庫命令輔助類別。
         /// </summary>
-        public static IDbCommandHelper CreateDbCommandHelper()
+        public static DbCommandHelper CreateDbCommandHelper()
         {
             return CreateDbCommandHelper(BackendInfo.DatabaseType);
         }

@@ -28,6 +28,14 @@ namespace Bee.Db
         public string DatabaseId { get; }
 
         /// <summary>
+        /// 資料庫命令組裝輔助類別。
+        /// </summary>
+        private DbCommandHelper CreateDbCommandHelper()
+        {
+            return DbFunc.CreateDbCommandHelper(DatabaseType.SQLServer);
+        }
+
+        /// <summary>
         /// 建立資料表結構。
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
@@ -63,7 +71,7 @@ namespace Bee.Db
         /// <param name="tableName">資料表名稱。</param>
         private bool TableExists(string tableName)
         {
-            var helper = DbFunc.CreateDbCommandHelper();
+            var helper = CreateDbCommandHelper();
             helper.AddParameter("TableName", FieldDbType.String, tableName);
             string sSQL = "Select Count(*) From sys.tables A Where A.name={0}";
             helper.SetCommandFormatText(sSQL);
@@ -77,13 +85,9 @@ namespace Bee.Db
         /// <param name="tableName">資料表名稱。</param>
         private DataTable GetTableIndexes(string tableName)
         {
-            IDbCommandHelper oHelper;
-            string sSQL;
-            DataTable oTable;
-
-            oHelper = DbFunc.CreateDbCommandHelper();
-            oHelper.AddParameter("TableName", FieldDbType.String, tableName);
-            sSQL = "SELECT A.name as FieldName,D.is_primary_key as IsPrimaryKey,D.is_unique as IsUnique,D.name,\n" +
+            var helper = CreateDbCommandHelper();
+            helper.AddParameter("TableName", FieldDbType.String, tableName);
+            string sql = "SELECT A.name as FieldName,D.is_primary_key as IsPrimaryKey,D.is_unique as IsUnique,D.name,\n" +
                           "C.key_ordinal as KeyOrdinal,C.is_descending_key As IsDesc \n" +
                           "FROM sys.columns A  \n" +
                           "INNER JOIN sys.tables B On A.object_id=B.object_id \n" +
@@ -91,10 +95,10 @@ namespace Bee.Db
                           "LEFT JOIN sys.indexes D On A.object_id=D.object_id And C.index_id=D.index_id \n" +
                           "WHERE B.name={0} \n" +
                           "Order By D.is_primary_key,C.key_ordinal";
-            oHelper.SetCommandFormatText(sSQL);
-            oTable = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, oHelper.DbCommand);
-            oTable.TableName = "TableIndex";
-            return oTable;
+            helper.SetCommandFormatText(sql);
+            var table = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, helper.DbCommand);
+            table.TableName = "TableIndex";
+            return table;
         }
 
         /// <summary>
@@ -176,13 +180,9 @@ namespace Bee.Db
         /// <param name="tableName">資料表名稱。</param>
         private DataTable GetColumns(string tableName)
         {
-            IDbCommandHelper oHelper;
-            string sSQL;
-            DataTable oTable;
-
-            oHelper = DbFunc.CreateDbCommandHelper();
-            oHelper.AddParameter("TableName", FieldDbType.String, tableName);
-            sSQL = "SELECT A.is_nullable as AllowDBNull,A.is_identity as AutoIncrement, \n" +
+            var helper = CreateDbCommandHelper();
+            helper.AddParameter("TableName", FieldDbType.String, tableName);
+            string sql = "SELECT A.is_nullable as AllowDBNull,A.is_identity as AutoIncrement, \n" +
                           "IsNull(C.seed_value,0) as AutoIncrementSeed,IsNull(C.increment_value,0) as AutoIncrementStep, \n" +
                           "IsNull(E.name,'') as BindDefault,TYPE_NAME(A.system_type_id) as DbType,A.precision,A.scale as Decimals, \n" +
                           "IsNull(F.definition,'') as DefaultValue,A.name as FieldName,A.max_length as Length, \n" +
@@ -194,10 +194,10 @@ namespace Bee.Db
                           "LEFT JOIN sys.default_constraints F on F.parent_object_id = A.object_id and F.parent_column_id = A.column_id \n" +
                           "WHERE B.name={0} \n" +
                           "ORDER BY A.column_id";
-            oHelper.SetCommandFormatText(sSQL);
-            oTable = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, oHelper.DbCommand);
-            oTable.TableName = "Columns";
-            return oTable;
+            helper.SetCommandFormatText(sql);
+            var table = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, helper.DbCommand);
+            table.TableName = "Columns";
+            return table;
         }
 
         /// <summary>

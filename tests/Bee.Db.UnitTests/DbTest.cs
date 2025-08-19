@@ -157,7 +157,5 @@ namespace Bee.Db.UnitTests
             heper.SetCommandText(sql);
             var table = SysDb.ExecuteDataTable("common", heper.DbCommand);
         }
-
-
     }
 }

@@ -32,7 +32,7 @@ namespace Bee.Db
         /// <summary>
         /// 建立資料庫命令輔助類別。
         /// </summary>
-        private IDbCommandHelper CreateDbCommandHelper()
+        private DbCommandHelper CreateDbCommandHelper()
         {
             return DbFunc.CreateDbCommandHelper();
         }
@@ -42,52 +42,45 @@ namespace Bee.Db
         /// </summary>
         public DbCommand BuildInsertCommand()
         {
-            IDbCommandHelper oHelper;
-            StringBuilder oBuffer;
-            string sTableName;
-            int iCount;
-
-            // 建立資料庫命令輔助類別
-            oHelper = this.CreateDbCommandHelper();
-
-            oBuffer = new StringBuilder();
-            sTableName = oHelper.QuoteIdentifier(this.DbTable.TableName);
-            oBuffer.AppendLine($"Insert Into {sTableName} ");
+            var helper = this.CreateDbCommandHelper();
+            var buffer = new StringBuilder();
+            string tableName = helper.QuoteIdentifier(this.DbTable.TableName);
+            buffer.AppendLine($"Insert Into {tableName} ");
 
             // 處理 Insert 的欄位名稱
-            oBuffer.Append("(");
-            iCount = 0;
+            buffer.Append("(");
+            int count = 0;
             foreach (DbField field in this.DbTable.Fields)
             {
                 if (field.DbType != FieldDbType.Identity)
                 {
-                    if (iCount > 0)
-                        oBuffer.Append(", ");
-                    oBuffer.Append(oHelper.QuoteIdentifier(field.FieldName));
-                    iCount++;
+                    if (count > 0)
+                        buffer.Append(", ");
+                    buffer.Append(helper.QuoteIdentifier(field.FieldName));
+                    count++;
                 }
             }
-            oBuffer.AppendLine(")");
+            buffer.AppendLine(")");
 
             // 處理 Insert 的欄位值
-            oBuffer.AppendLine(" Values ");
-            oBuffer.Append("(");
-            iCount = 0;
+            buffer.AppendLine(" Values ");
+            buffer.Append("(");
+            count = 0;
             foreach (DbField field in this.DbTable.Fields)
             {
                 if (field.DbType != FieldDbType.Identity)
                 {
-                    if (iCount > 0)
-                        oBuffer.Append(", ");
-                    oBuffer.Append(oHelper.GetParameterName(field.FieldName));
-                    oHelper.AddParameter(field); // 加入命令參數
-                    iCount++;
+                    if (count > 0)
+                        buffer.Append(", ");
+                    buffer.Append(helper.GetParameterName(field.FieldName));
+                    helper.AddParameter(field); // 加入命令參數
+                    count++;
                 }
             }
-            oBuffer.AppendLine(")");
+            buffer.AppendLine(")");
 
-            oHelper.SetCommandText(oBuffer.ToString());
-            return oHelper.DbCommand;
+            helper.SetCommandText(buffer.ToString());
+            return helper.DbCommand;
         }
 
         /// <summary>
@@ -95,45 +88,38 @@ namespace Bee.Db
         /// </summary>
         public DbCommand BuildUpdateCommand()
         {
-            IDbCommandHelper oHelper;
-            StringBuilder oBuffer;
-            DbParameter oParameter;
-            DbField oKeyField;
-            string sTableName, sFieldName;
-            int iCount;
+            var helper = this.CreateDbCommandHelper();
+            var buffer = new StringBuilder();
+            string tableName = helper.QuoteIdentifier(this.DbTable.TableName);
+            buffer.AppendLine($"Update {tableName} Set ");
 
-            // 建立資料庫命令輔助類別
-            oHelper = this.CreateDbCommandHelper();
-
-            oBuffer = new StringBuilder();
-            sTableName = oHelper.QuoteIdentifier(this.DbTable.TableName);
-            oBuffer.AppendLine($"Update {sTableName} Set ");
-
+            DbParameter parameter;
+            string fieldName;
             // 取得主鍵欄位
-            oKeyField = this.DbTable.Fields[SysFields.RowId];
+            var keyField = this.DbTable.Fields[SysFields.RowId];
             // 處理 Update 的欄位名稱與值
-            iCount = 0;
+            int iCount = 0;
             foreach (DbField field in this.DbTable.Fields)
             {
-                if (field != oKeyField && field.DbType != FieldDbType.Identity)
+                if (field != keyField && field.DbType != FieldDbType.Identity)
                 {
-                    sFieldName = oHelper.QuoteIdentifier(field.FieldName);
+                    fieldName = helper.QuoteIdentifier(field.FieldName);
                     // 加入命令參數
-                    oParameter = oHelper.AddParameter(field);
+                    parameter = helper.AddParameter(field);
                     if (iCount > 0)
-                        oBuffer.Append(", ");
-                    oBuffer.Append($"{sFieldName}={oParameter.ParameterName}");
+                        buffer.Append(", ");
+                    buffer.Append($"{fieldName}={parameter.ParameterName}");
                     iCount++;
                 }
             }
             // Where 加入主鍵條件
-            sFieldName = oHelper.QuoteIdentifier(oKeyField.FieldName);
-            oParameter = oHelper.AddParameter(oKeyField, System.Data.DataRowVersion.Original);
-            oBuffer.AppendLine();
-            oBuffer.AppendLine($"Where {sFieldName}={oParameter.ParameterName}");
+            fieldName = helper.QuoteIdentifier(keyField.FieldName);
+            parameter = helper.AddParameter(keyField, System.Data.DataRowVersion.Original);
+            buffer.AppendLine();
+            buffer.AppendLine($"Where {fieldName}={parameter.ParameterName}");
 
-            oHelper.SetCommandText(oBuffer.ToString());
-            return oHelper.DbCommand; ;
+            helper.SetCommandText(buffer.ToString());
+            return helper.DbCommand; ;
         }
 
         /// <summary>
@@ -141,27 +127,19 @@ namespace Bee.Db
         /// </summary>
         public DbCommand BuildDeleteCommand()
         {
-            IDbCommandHelper oHelper;
-            StringBuilder oBuffer;
-            DbParameter oParameter;
-            DbField oKeyField;
-            string sTableName, sFieldName;
-
-            // 建立資料庫命令輔助類別
-            oHelper = this.CreateDbCommandHelper();
-
-            oBuffer = new StringBuilder();
-            sTableName = oHelper.QuoteIdentifier(this.DbTable.TableName);
-            oBuffer.AppendLine($"Delete From {sTableName} ");
+            var helper = this.CreateDbCommandHelper();
+            var buffer = new StringBuilder();
+            string sTableName = helper.QuoteIdentifier(this.DbTable.TableName);
+            buffer.AppendLine($"Delete From {sTableName} ");
 
             // Where 加入主鍵條件
-            oKeyField = this.DbTable.Fields[SysFields.RowId];
-            sFieldName = oHelper.QuoteIdentifier(oKeyField.FieldName);
-            oParameter = oHelper.AddParameter(oKeyField, System.Data.DataRowVersion.Original);
-            oBuffer.AppendLine($"Where {sFieldName}={oParameter.ParameterName}");
+            var keyField = this.DbTable.Fields[SysFields.RowId];
+            string sFieldName = helper.QuoteIdentifier(keyField.FieldName);
+            var oParameter = helper.AddParameter(keyField, System.Data.DataRowVersion.Original);
+            buffer.AppendLine($"Where {sFieldName}={oParameter.ParameterName}");
 
-            oHelper.SetCommandText(oBuffer.ToString());
-            return oHelper.DbCommand; ;
+            helper.SetCommandText(buffer.ToString());
+            return helper.DbCommand; ;
         }
     }
 }
