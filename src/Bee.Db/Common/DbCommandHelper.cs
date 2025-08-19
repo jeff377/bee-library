@@ -23,12 +23,30 @@ namespace Bee.Db
         public DbCommandHelper(DatabaseType databaseType, CommandType commandType = CommandType.Text)
         {
             DatabaseType = databaseType;
-            Provider = DbProviderManager.GetFactory(databaseType);
-            DbCommand = Provider.CreateCommand();
+            Provider = DbProviderManager.GetFactory(databaseType)
+                       ?? throw new InvalidOperationException($"Unknown database type: {databaseType}.");
+            DbCommand = Provider.CreateCommand()
+                       ?? throw new InvalidOperationException("DbProviderFactory.CreateCommand() returned null.");
             DbCommand.CommandType = commandType;
         }
 
         #endregion;
+
+        #region IDisposable 介面
+
+        /// <summary>
+        /// 釋放資源。
+        /// </summary>
+        public void Dispose()
+        {
+            if (DbCommand != null)
+            {
+                DbCommand.Dispose();
+                DbCommand = null;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// 資料庫類型。
@@ -51,7 +69,7 @@ namespace Bee.Db
         private static readonly Dictionary<DatabaseType, string> ParameterSymbols = new Dictionary<DatabaseType, string>
         {
             { DatabaseType.SQLServer, "@" },
-            { DatabaseType.MySQL, "?" },
+            { DatabaseType.MySQL, "@" },
             { DatabaseType.SQLite, "@" },
             { DatabaseType.Oracle, ":" }
         };
@@ -109,7 +127,8 @@ namespace Bee.Db
         public DbParameter AddParameter(string name, FieldDbType dbType, object value)
         {
             // 建立參數
-            var parameter = Provider.CreateParameter();
+            var parameter = Provider.CreateParameter()
+                           ?? throw new InvalidOperationException("DbProviderFactory.CreateParameter() returned null.");
             parameter.ParameterName = GetParameterName(name);
             parameter.DbType = DbFunc.ConvertToDbType(dbType);
             parameter.Value = BaseFunc.CDbFieldValue(dbType, value);
@@ -126,7 +145,8 @@ namespace Bee.Db
         public DbParameter AddParameter(DbField field, DataRowVersion sourceVersion = DataRowVersion.Current)
         {
             // 建立參數
-            var parameter = Provider.CreateParameter();
+            var parameter = Provider.CreateParameter()
+                           ?? throw new InvalidOperationException("DbProviderFactory.CreateParameter() returned null.");
             parameter.ParameterName = GetParameterName(field.FieldName);
             parameter.DbType = DbFunc.ConvertToDbType(field.DbType);
             parameter.SourceColumn = field.FieldName;
@@ -146,6 +166,9 @@ namespace Bee.Db
         /// <param name="commandText">命令字串。</param>
         public void SetCommandText(string commandText)
         {
+            if (string.IsNullOrWhiteSpace(commandText))
+                throw new ArgumentException("commandText cannot be null or empty.", nameof(commandText));
+
             DbCommand.CommandText = commandText;
         }
 
@@ -155,6 +178,9 @@ namespace Bee.Db
         /// <param name="commandText">命令字串。</param>
         public void SetCommandFormatText(string commandText)
         {
+            if (string.IsNullOrWhiteSpace(commandText))
+                throw new ArgumentException("commandText cannot be null or empty.", nameof(commandText));
+
             if (StrFunc.Contains(commandText, CommandTextVariable.Parameters))
             {
                 var sb = new StringBuilder();

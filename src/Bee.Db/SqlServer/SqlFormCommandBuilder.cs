@@ -38,10 +38,7 @@ namespace Bee.Db
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
         public DbCommand BuildSelectCommand(string tableName, string selectFields)
         {
-            SqlFormSelectCommandBuilder oBuilder;
-
-            oBuilder = new SqlFormSelectCommandBuilder(this.FormDefine);
-            return oBuilder.Execute(tableName, selectFields);
+            throw new NotSupportedException();
         }
 
         /// <summary>
