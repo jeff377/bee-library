@@ -11,7 +11,7 @@ namespace Bee.Db
     /// <summary>
     /// 資料庫命令輔助基底類別。
     /// </summary>
-    public class DbCommandHelper : IDbCommandHelper
+    public class DbCommandHelper : IDbCommandHelper, IDisposable
     {
         #region 建構函式
 
