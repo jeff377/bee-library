@@ -12,22 +12,27 @@ namespace Bee.Base
     public class DbAccessLogOptions
     {
         /// <summary>
-        /// Logging level (Error: errors only, Warning: includes exceptions, All: all SQL).
+        /// Logging level.
+        /// Error: log only errors and exceptions.
+        /// Warning: log errors, exceptions, and abnormal cases (slow queries, large updates).
+        /// All: log all SQL commands.
         /// </summary>
-        [Description("Logging level (Error: errors only, Warning: includes exceptions, All: all SQL).")]
+        [Description("Logging level (Error: only errors, Warning: includes abnormal cases, All: all SQL).")]
         public DbAccessLogLevel Level { get; set; } = DbAccessLogLevel.Warning;
 
         /// <summary>
-        /// Abnormal threshold for the number of rows affected by SQL operations. Exceeding this value is considered abnormal (default: 10000).
+        /// Threshold for the number of rows affected by SQL operations.
+        /// Exceeding this value is considered a large update (default: 10000).
         /// </summary>
-        [Description("Abnormal threshold for the number of rows affected by SQL operations. Exceeding this value is considered abnormal (default: 10000).")] 
+        [Description("Threshold for the number of rows affected by SQL operations. Exceeding this value is considered a large update (default: 10000).")]
         public int AffectedRowThreshold { get; set; } = 10000;
 
         /// <summary>
-        /// Abnormal threshold for query execution time (in seconds). Exceeding this value is considered a slow query.
+        /// Threshold for SQL command execution time (in seconds).
+        /// Exceeding this value is considered a slow execution (applies to SELECT, INSERT, UPDATE, DELETE).
         /// </summary>
-        [Description("Abnormal threshold for query execution time (in seconds). Exceeding this value is considered a slow query.")]
-        public int SlowQueryThreshold { get; set; } = 300;
+        [Description("Threshold for SQL command execution time (in seconds). Applies to SELECT, INSERT, UPDATE, DELETE.")]
+        public int ExecutionTimeThreshold { get; set; } = 300;
 
         /// <summary>
         /// Object description.
@@ -37,4 +42,5 @@ namespace Bee.Base
             return GetType().Name;
         }
     }
+
 }

@@ -149,13 +149,16 @@ namespace Bee.Db.UnitTests
         /// 使用參數式執行 SQL 查詢，並取得 DataTable。
         /// </summary>
         [Fact]
-        public void ExecuteDataTable_Parameter()
+        public void ExecuteDataTable_Parameters()
         {
-            var heper = DbFunc.CreateDbCommandHelper();
-            heper.AddParameter(SysFields.Id, FieldDbType.String, "001");
+            var helper = DbFunc.CreateDbCommandHelper();
+            helper.AddParameter(SysFields.Id, FieldDbType.String, "001");
             string sql = "SELECT * FROM ts_user WHERE sys_id = @sys_id";
-            heper.SetCommandText(sql);
-            var table = SysDb.ExecuteDataTable("common", heper.DbCommand);
+            helper.SetCommandText(sql);
+            using (var command = helper.DbCommand)
+            {
+                var table = SysDb.ExecuteDataTable("common", helper.DbCommand);
+            }
         }
     }
 }
