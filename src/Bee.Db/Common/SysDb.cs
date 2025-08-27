@@ -294,10 +294,18 @@ namespace Bee.Db
         /// <param name="insertCommand">新增命令。</param>
         /// <param name="updateCommand">更新命令。</param>
         /// <param name="deleteCommand">刪除命令。</param>
-        public static int UpdateDataTable(string databaseId, DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand)
+        /// <param name="disposeCommands">
+        /// 指定是否於方法執行完成後自動釋放 <paramref name="insertCommand"/>、
+        /// <paramref name="updateCommand"/> 與 <paramref name="deleteCommand"/>。
+        /// 若設為 <c>false</c>，表示命令物件的生命週期由呼叫端管理；
+        /// 若設為 <c>true</c>，則方法會於結束時呼叫 <see cref="IDisposable.Dispose"/> 釋放命令資源。
+        /// </param>
+        /// <returns>受影響的資料列數。</returns>
+        public static int UpdateDataTable(string databaseId, DataTable dataTable, 
+            DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand, bool disposeCommands)
         {
             var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.UpdateDataTable(dataTable, insertCommand, updateCommand, deleteCommand);
+            return dbAccess.UpdateDataTable(dataTable, insertCommand, updateCommand, deleteCommand, disposeCommands);
         }
     }
 }

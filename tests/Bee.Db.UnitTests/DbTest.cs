@@ -23,6 +23,10 @@ namespace Bee.Db.UnitTests
         {
             string sql = "SELECT * FROM ts_user";
             var table = SysDb.ExecuteDataTable("common", sql);
+
+            var helper = DbFunc.CreateDbCommandHelper();
+            helper.SetCommandText(sql);
+            var table2 = helper.ExecuteDataTable("common");
         }
 
         /// <summary>

@@ -554,28 +554,50 @@ namespace Bee.Db
         /// <param name="insertCommand">新增命令。</param>
         /// <param name="updateCommand">更新命令。</param>
         /// <param name="deleteCommand">刪除命令。</param>
-        public int UpdateDataTable(DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand)
+        /// <param name="disposeCommands">
+        /// 指定是否於方法執行完成後自動釋放 <paramref name="insertCommand"/>、
+        /// <paramref name="updateCommand"/> 與 <paramref name="deleteCommand"/>。
+        /// 若設為 <c>false</c>，表示命令物件的生命週期由呼叫端管理；
+        /// 若設為 <c>true</c>，則方法會於結束時呼叫 <see cref="IDisposable.Dispose"/> 釋放命令資源。
+        /// </param>
+        /// <returns>受影響的資料列數。</returns>
+        public int UpdateDataTable(DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand, bool disposeCommands)
         {
             if (dataTable == null) throw new ArgumentNullException(nameof(dataTable));
 
-            using (var connection = OpenConnection())
+            try
             {
-                if (insertCommand != null) { CapCommandTimeout(insertCommand); insertCommand.Connection = connection; }
-                if (updateCommand != null) { CapCommandTimeout(updateCommand); updateCommand.Connection = connection; }
-                if (deleteCommand != null) { CapCommandTimeout(deleteCommand); deleteCommand.Connection = connection; }
-
-                var adapter = Provider.CreateDataAdapter();
-                if (adapter == null)
-                    throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
-
-                using (adapter)
+                using (var connection = OpenConnection())
                 {
-                    adapter.InsertCommand = insertCommand;
-                    adapter.UpdateCommand = updateCommand;
-                    adapter.DeleteCommand = deleteCommand;
-                    return adapter.Update(dataTable);
+                    if (insertCommand != null) { CapCommandTimeout(insertCommand); insertCommand.Connection = connection; }
+                    if (updateCommand != null) { CapCommandTimeout(updateCommand); updateCommand.Connection = connection; }
+                    if (deleteCommand != null) { CapCommandTimeout(deleteCommand); deleteCommand.Connection = connection; }
+
+                    var adapter = Provider.CreateDataAdapter();
+                    if (adapter == null)
+                        throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
+
+                    using (adapter)
+                    {
+                        adapter.InsertCommand = insertCommand;
+                        adapter.UpdateCommand = updateCommand;
+                        adapter.DeleteCommand = deleteCommand;
+                        return adapter.Update(dataTable);
+                    }
                 }
             }
+            finally 
+            {
+                if (disposeCommands)
+                {
+                    if (insertCommand != null) insertCommand.Dispose();
+                    if (updateCommand != null) updateCommand.Dispose();
+                    if (deleteCommand != null) deleteCommand.Dispose();
+                }
+
+            }
+
+
         }
 
         /// <summary>
