@@ -6,7 +6,7 @@ namespace Bee.Base
     /// <summary>
     /// DataSet 的擴充方法。
     /// </summary>
-    public static class DataSetExtension
+    public static class DataSetExtensions
     {
         /// <summary>
         /// 取得主檔資料表。

@@ -6,7 +6,7 @@ namespace Bee.Base
     /// <summary>
     /// 擴充方法。
     /// </summary>
-    public static class Extension
+    public static class Extensions
     {
         /// <summary>
         /// 物件序列化為 XML 字串。
