@@ -600,15 +600,5 @@ namespace Bee.Db
 
         }
 
-        /// <summary>
-        /// 測試資料庫連線。
-        /// </summary>
-        public void TestConnection()
-        {
-            using (var connection = CreateConnection())
-            {
-                connection.Open();
-            }
-        }
     }
 }

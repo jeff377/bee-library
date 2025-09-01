@@ -52,4 +52,8 @@
 		<ProjectReference Include="..\Bee.Cache\Bee.Cache.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="DbCommand\" />
+	</ItemGroup>
+
 </Project>

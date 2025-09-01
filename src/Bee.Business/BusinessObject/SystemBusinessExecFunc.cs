@@ -68,8 +68,12 @@ namespace Bee.Business
         public void TestConnection(ExecFuncArgs args, ExecFuncResult result)
         {
             var item = args.Parameters.GetValue<DatabaseItem>("DatabaseItem");
-            var dbAccess = new DbAccess(item);
-            dbAccess.TestConnection();
+            var provider = DbProviderManager.GetFactory(item.DatabaseType);
+            using (var connection = provider.CreateConnection())
+            {
+                connection.ConnectionString = item.GetConnectionString();
+                connection.Open();
+            }
         }
 
         /// <summary>
@@ -79,8 +83,12 @@ namespace Bee.Business
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
             var item = CacheFunc.GetDatabaseItem(databaseId);
-            var dbAccess = new DbAccess(item);
-            dbAccess.TestConnection();
+            var provider = DbProviderManager.GetFactory(item.DatabaseType);
+            using (var connection = provider.CreateConnection())
+            {
+                connection.ConnectionString = item.GetConnectionString();
+                connection.Open();
+            }
         }
 
     }
