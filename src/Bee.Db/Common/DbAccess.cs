@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Bee.Base;
+using Bee.Cache;
 using Bee.Define;
 
 namespace Bee.Db
@@ -19,24 +20,16 @@ namespace Bee.Db
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="provider">資料庫來源提供者。</param>
-        /// <param name="connectionString">資料庫連線字串。</param>
-        public DbAccess(DbProviderFactory provider, string connectionString)
+        /// <param name="databaseId">資料庫編號。</param>
+        public DbAccess(string databaseId)
         {
-            if (provider == null) throw new ArgumentNullException(nameof(provider));
-            if (string.IsNullOrWhiteSpace(connectionString)) throw new ArgumentException("Connection string cannot be null or empty.", nameof(connectionString));
+            if (string.IsNullOrWhiteSpace(databaseId))
+                throw new ArgumentException("databaseId cannot be null or empty.", nameof(databaseId));
 
-            Provider = provider;
-            ConnectionString = connectionString;
-        }
+            var database = CacheFunc.GetDatabaseItem(databaseId);
+            if (database == null)
+                throw new InvalidOperationException($"Failed to create DbAccess: DatabaseItem for id '{databaseId}' was not found.");
 
-        /// <summary>
-        /// 建構函式。
-        /// </summary>
-        /// <param name="database">資料庫連線定義。</param>
-        public DbAccess(DatabaseItem database)
-        {
-            if (database == null) throw new ArgumentNullException(nameof(database));
             Provider = DbProviderManager.GetFactory(database.DatabaseType)
                        ?? throw new InvalidOperationException($"Unknown database type: {database.DatabaseType}.");
             ConnectionString = database.GetConnectionString();

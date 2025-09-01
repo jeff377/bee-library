@@ -19,14 +19,7 @@ namespace Bee.Db
         /// <param name="databaseId">資料庫編號。</param>
         private static DbAccess CreateDbAccess(string databaseId)
         {
-            if (string.IsNullOrWhiteSpace(databaseId))
-                throw new ArgumentException("databaseId cannot be null or empty.", nameof(databaseId));
-
-            var database = CacheFunc.GetDatabaseItem(databaseId);
-            if (database == null)
-                throw new InvalidOperationException($"Failed to create DbAccess: DatabaseItem for id '{databaseId}' was not found.");
-
-            return new DbAccess(database);
+            return new DbAccess(databaseId);
         }
 
         /// <summary>
