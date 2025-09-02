@@ -36,7 +36,7 @@ namespace Bee.Db
             if (externalConnection != null)
             {
                 EnsureOpenSync(externalConnection);
-                return new DbConnectionScope(externalConnection, ownsConnection: false);
+                return new DbConnectionScope(externalConnection, false);
             }
 
             if (factory == null) throw new ArgumentNullException(nameof(factory), "Factory cannot be null.");
@@ -45,7 +45,7 @@ namespace Bee.Db
                        ?? throw new InvalidOperationException("Failed to create database connection: DbProviderFactory.CreateConnection() returned null.");
             conn.ConnectionString = connectionString;
             conn.Open();
-            return new DbConnectionScope(conn, ownsConnection: true);
+            return new DbConnectionScope(conn, true);
         }
 
         /// <summary>
@@ -64,7 +64,7 @@ namespace Bee.Db
             if (externalConnection != null)
             {
                 await EnsureOpenAsync(externalConnection, cancellationToken).ConfigureAwait(false);
-                return new DbConnectionScope(externalConnection, ownsConnection: false);
+                return new DbConnectionScope(externalConnection, false);
             }
 
             if (factory == null) throw new ArgumentNullException(nameof(factory), "Factory cannot be null.");
@@ -73,7 +73,7 @@ namespace Bee.Db
                        ?? throw new InvalidOperationException("Failed to create database connection: DbProviderFactory.CreateConnection() returned null.");
             conn.ConnectionString = connectionString;
             await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
-            return new DbConnectionScope(conn, ownsConnection: true);
+            return new DbConnectionScope(conn, true);
         }
 
         /// <summary>

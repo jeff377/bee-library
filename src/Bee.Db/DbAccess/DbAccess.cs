@@ -15,6 +15,8 @@ namespace Bee.Db
     /// </summary>
     public class DbAccess
     {
+        private readonly DbConnection _externalConnection = null;
+
         #region 建構函式
 
         /// <summary>
@@ -36,6 +38,16 @@ namespace Bee.Db
             ConnectionString = database.GetConnectionString();
             if (string.IsNullOrWhiteSpace(ConnectionString))
                 throw new InvalidOperationException("DatabaseItem.GetConnectionString() returned null or empty.");
+        }
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="externalConnection">由外部提供的 DbConnection 建立 DbAccess，連線生命週期由外部管理。</param>
+        public DbAccess(DbConnection externalConnection)
+        {
+            _externalConnection = externalConnection ?? throw new ArgumentNullException(nameof(externalConnection));
+            DatabaseType = BackendInfo.DatabaseType;
         }
 
         #endregion
@@ -186,6 +198,15 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 建立連線範圍，會自動決定使用外部連線或自行建立連線。
+        /// </summary>
+        private DbConnectionScope CreateScope()
+        {
+            // 這個型別假設已有，且能依「外部連線或 provider+cs」建立對應的 scope
+            return DbConnectionScope.Create(_externalConnection, Provider, ConnectionString);
+        }
+
+        /// <summary>
         /// 執行資料庫命令。
         /// </summary>
         /// <param name="commandSpec">資料庫命令描述。</param>
@@ -212,12 +233,10 @@ namespace Bee.Db
         /// <param name="commandSpec">資料庫命令描述。</param>
         private DbCommandResult ExecuteDataTable(DbCommandSpec commandSpec)
         {
-            using (var connection = OpenConnection())
+            using (var scope = CreateScope())
             {
-                using (var cmd = commandSpec.CreateCommand(Provider, ResolveParameterPrefix()))
+                using (var cmd = commandSpec.CreateCommand(scope.Connection, ResolveParameterPrefix()))
                 {
-                    cmd.Connection = connection;
-
                     var adapter = Provider.CreateDataAdapter()
                         ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
 
@@ -239,11 +258,11 @@ namespace Bee.Db
         /// <param name="commandSpec">資料庫命令描述。</param>
         private DbCommandResult ExecuteNonQuery(DbCommandSpec commandSpec)
         {
-            using (var connection = OpenConnection())
+            using (var scope = CreateScope())
             {
-                using (var cmd = commandSpec.CreateCommand(Provider, ResolveParameterPrefix()))
+                using (var cmd = commandSpec.CreateCommand(scope.Connection, ResolveParameterPrefix()))
                 {
-                    cmd.Connection = connection;
+                    cmd.Connection = scope.Connection;
                     int rows = cmd.ExecuteNonQuery();
                     return DbCommandResult.ForRowsAffected(rows);
                 }
@@ -256,11 +275,11 @@ namespace Bee.Db
         /// <param name="commandSpec">資料庫命令描述。</param>
         public DbCommandResult ExecuteScalar(DbCommandSpec commandSpec)
         {
-            using (var connection = OpenConnection())
+            using (var scope = CreateScope())
             {
-                using (var cmd = commandSpec.CreateCommand(Provider, ResolveParameterPrefix()))
+                using (var cmd = commandSpec.CreateCommand(scope.Connection, ResolveParameterPrefix()))
                 {
-                    cmd.Connection = connection;
+                    cmd.Connection = scope.Connection;
                     var value = cmd.ExecuteScalar();
                     return DbCommandResult.ForScalar(value);
                 }

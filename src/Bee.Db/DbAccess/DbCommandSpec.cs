@@ -77,17 +77,15 @@ namespace Bee.Db
         /// <summary>
         /// 建立 <see cref="DbCommand"/> 實例，並依據目前的 <see cref="DbCommandSpec"/> 設定套用屬性與參數。
         /// </summary>
-        /// <param name="factory">提供資料庫命令與參數建立功能的 <see cref="DbProviderFactory"/>。</param>
+        /// <param name="connection">資料庫連線，用於建立命令並自動綁定。</param>
         /// <param name="parameterPrefix">參數名稱的前綴符號（例如 SQL Server 為 <c>"@"</c>、Oracle 為 <c>":"</c>）。若為 <c>null</c> 或空字串，則不自動加上前綴。</param>
-        public DbCommand CreateCommand(DbProviderFactory factory, string parameterPrefix = null)
+        public DbCommand CreateCommand(DbConnection connection, string parameterPrefix = null)
         {
-            if (factory == null) throw new ArgumentNullException(nameof(factory), "Factory cannot be null.");
+            if (connection == null) throw new ArgumentNullException(nameof(connection), "Connection cannot be null.");
             if (string.IsNullOrWhiteSpace(CommandText))
                 throw new InvalidOperationException("CommandText cannot be null or empty.");
 
-            var cmd = factory.CreateCommand()
-                      ?? throw new InvalidOperationException("DbProviderFactory.CreateCommand() returned null.");
-
+            var cmd = connection.CreateCommand();
             cmd.CommandText = CommandText;
             cmd.CommandType = CommandType;
             cmd.CommandTimeout = CommandTimeout;
@@ -108,6 +106,7 @@ namespace Bee.Db
 
             return cmd;
         }
+
 
     }
 }
