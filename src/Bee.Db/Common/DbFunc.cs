@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Reflection;
 using Bee.Base;
+using Bee.Cache;
 using Bee.Define;
 
 namespace Bee.Db
@@ -13,6 +14,21 @@ namespace Bee.Db
     /// </summary>
     public static class DbFunc
     {
+        /// <summary>
+        /// 建立資料庫連線。
+        /// </summary>
+        /// <param name="databaseId">資料庫編號。</param>
+        public static DbConnection CreateConnection(string databaseId)
+        {
+            var database = CacheFunc.GetDatabaseItem(databaseId);
+            var provider = DbProviderManager.GetFactory(database.DatabaseType)
+                    ?? throw new InvalidOperationException($"Unknown database type: {database.DatabaseType}.");
+            var connection = provider.CreateConnection()
+                    ?? throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");
+            connection.ConnectionString = database.GetConnectionString();
+            return connection;
+        }
+
         /// <summary>
         /// 建立資料庫命令輔助類別。
         /// </summary>
@@ -92,7 +108,7 @@ namespace Bee.Db
                 case FieldDbType.Text:
                     return string.Empty;
                 case FieldDbType.Boolean:
-                case FieldDbType.Integer:           
+                case FieldDbType.Integer:
                 case FieldDbType.Double:
                 case FieldDbType.Currency:
                     return "0";

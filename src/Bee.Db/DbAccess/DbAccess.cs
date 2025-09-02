@@ -48,6 +48,8 @@ namespace Bee.Db
         {
             _externalConnection = externalConnection ?? throw new ArgumentNullException(nameof(externalConnection));
             DatabaseType = BackendInfo.DatabaseType;
+            Provider = DbProviderManager.GetFactory(DatabaseType)
+                ?? throw new InvalidOperationException($"Unknown database type: {DatabaseType}.");
         }
 
         #endregion
@@ -237,6 +239,7 @@ namespace Bee.Db
             {
                 using (var cmd = commandSpec.CreateCommand(scope.Connection, ResolveParameterPrefix()))
                 {
+
                     var adapter = Provider.CreateDataAdapter()
                         ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
 

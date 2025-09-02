@@ -26,12 +26,22 @@ namespace Bee.Db.UnitTests
 
             var helper = DbFunc.CreateDbCommandHelper();
             helper.SetCommandText(sql);
-            var table2 = helper.ExecuteDataTable("common");
-
-            var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccess("common");
+            table = dbAccess.ExecuteDataTable(helper.DbCommand);
+
+            // 由 DbAccess 管理連線
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
+            dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
             Assert.NotNull(result.Table);
+
+            // 由外部管理連線
+            using (var conn = DbFunc.CreateConnection("common"))
+            {
+                dbAccess = new DbAccess(conn);
+                result = dbAccess.Execute(command);
+                Assert.NotNull(result.Table);
+            }
         }
 
         /// <summary>
