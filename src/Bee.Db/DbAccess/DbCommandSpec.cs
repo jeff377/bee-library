@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define;
+using System;
 using System.Data;
 using System.Data.Common;
 
@@ -9,13 +10,33 @@ namespace Bee.Db
     /// </summary>
     public class DbCommandSpec
     {
+        private const int DefaultTimeout = 30;  // 預設逾時秒數
+        private int _commandTimeout = DefaultTimeout;
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        public DbCommandSpec()
+        { }
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="kind">資料庫命令的執行種類。</param>
+        /// <param name="commandText">要執行的 SQL 陳述式。</param>
+        public DbCommandSpec(DbCommandKind kind, string commandText)
+        {
+            Kind = kind;
+            CommandText = commandText;
+        }
+
         /// <summary>
         /// 資料庫命令的執行種類。
         /// </summary>
         public DbCommandKind Kind { get; set; } = DbCommandKind.NonQuery;
 
         /// <summary>
-        /// 要執行的 SQL 陳述式或儲存過程名稱。
+        /// 要執行的 SQL 陳述式。
         /// </summary>
         public string CommandText { get; set; } = string.Empty;
 
@@ -26,8 +47,27 @@ namespace Bee.Db
 
         /// <summary>
         /// 執行命令的逾時（秒）。
+        /// - 小於等於 0 → 使用預設值 30 秒。
+        /// - 大於全域上限 → 套用全域上限。
+        /// - 其他正值 → 直接採用。
         /// </summary>
-        public int? CommandTimeout { get; set; }
+        public int CommandTimeout
+        {
+            get => _commandTimeout;
+            set
+            {
+                int cap = BackendInfo.MaxDbCommandTimeout;
+
+                if (value <= 0)
+                {
+                    _commandTimeout = DefaultTimeout; // 預設值
+                }
+                else
+                {
+                    _commandTimeout = (cap > 0 && value > cap) ? cap : value;
+                }
+            }
+        }
 
         /// <summary>
         /// 參數集合。
@@ -50,7 +90,7 @@ namespace Bee.Db
 
             cmd.CommandText = CommandText;
             cmd.CommandType = CommandType;
-            if (CommandTimeout.HasValue) cmd.CommandTimeout = CommandTimeout.Value;
+            cmd.CommandTimeout = CommandTimeout;
 
             foreach (var spec in Parameters)
             {

@@ -30,6 +30,7 @@ namespace Bee.Db
             if (database == null)
                 throw new InvalidOperationException($"Failed to create DbAccess: DatabaseItem for id '{databaseId}' was not found.");
 
+            DatabaseType = database.DatabaseType;
             Provider = DbProviderManager.GetFactory(database.DatabaseType)
                        ?? throw new InvalidOperationException($"Unknown database type: {database.DatabaseType}.");
             ConnectionString = database.GetConnectionString();
@@ -38,6 +39,11 @@ namespace Bee.Db
         }
 
         #endregion
+
+        /// <summary>
+        /// 資料庫類型。
+        /// </summary>
+        public DatabaseType DatabaseType { get; private set; }
 
         /// <summary>
         /// 資料庫來源提供者。
@@ -53,6 +59,17 @@ namespace Bee.Db
         /// 使用 CreateCommand 的預設命令逾時（秒）。
         /// </summary>
         public int CommandTimeout { get; set; } = 30;
+
+        /// <summary>
+        /// 參數名稱的前綴符號字典。
+        /// </summary>
+        private static readonly Dictionary<DatabaseType, string> DbParameterPrefixes = new Dictionary<DatabaseType, string>
+        {
+            { DatabaseType.SQLServer, "@" },
+            { DatabaseType.MySQL, "@" },
+            { DatabaseType.SQLite, "@" },
+            { DatabaseType.Oracle, ":" }
+        };
 
         /// <summary>
         /// 建立資料庫連線。
@@ -157,6 +174,88 @@ namespace Bee.Db
         private DbCommand CreateCommand(string commandText)
         {
             return CreateCommand(CommandType.Text, commandText);
+        }
+
+        /// <summary>
+        /// 執行資料庫命令。
+        /// </summary>
+        /// <param name="commandSpec">資料庫命令描述。</param>
+        public DbCommandResult Execute(DbCommandSpec commandSpec)
+        {
+            if (commandSpec == null) throw new ArgumentNullException(nameof(commandSpec));
+
+            switch (commandSpec.Kind)
+            {
+                case DbCommandKind.NonQuery:
+                    return ExecuteNonQuery(commandSpec);
+                case DbCommandKind.Scalar:
+                    return ExecuteScalar(commandSpec);
+                case DbCommandKind.DataTable:
+                    return ExecuteDataTable(commandSpec);
+                default:
+                    throw new NotSupportedException($"Unsupported DbCommandKind: {commandSpec.Kind}.");
+            }
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，傳回資料表。
+        /// </summary>
+        /// <param name="commandSpec">資料庫命令描述。</param>
+        private DbCommandResult ExecuteDataTable(DbCommandSpec commandSpec)
+        {
+            using (var connection = OpenConnection())
+            {
+                using (var cmd = commandSpec.CreateCommand(Provider, DbParameterPrefixes[DatabaseType]))
+                {
+                    cmd.Connection = connection;
+
+                    var adapter = Provider.CreateDataAdapter()
+                        ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
+
+                    using (adapter)
+                    {
+                        adapter.SelectCommand = cmd;
+                        var table = new DataTable("DataTable");
+                        adapter.Fill(table);
+                        DataSetFunc.UpperColumnName(table);
+                        return DbCommandResult.ForTable(table);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，傳回異動筆數。
+        /// </summary>
+        /// <param name="commandSpec">資料庫命令描述。</param>
+        private DbCommandResult ExecuteNonQuery(DbCommandSpec commandSpec)
+        {
+            using (var connection = OpenConnection())
+            {
+                using (var cmd = commandSpec.CreateCommand(Provider, DbParameterPrefixes[DatabaseType]))
+                {
+                    cmd.Connection = connection;
+                    int rows = cmd.ExecuteNonQuery();
+                    return DbCommandResult.ForRowsAffected(rows);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，傳回單一值。
+        /// </summary>
+        /// <param name="commandSpec">資料庫命令描述。</param>
+        public DbCommandResult ExecuteScalar(DbCommandSpec commandSpec)
+        {
+            using (var connection = OpenConnection())
+            {
+                using (var cmd = commandSpec.CreateCommand(Provider, DbParameterPrefixes[DatabaseType]))
+                {
+                    cmd.Connection = connection;
+                    var value = cmd.ExecuteScalar();
+                    return DbCommandResult.ForScalar(value);
+                }
+            }
         }
 
         /// <summary>
@@ -579,7 +678,7 @@ namespace Bee.Db
                     }
                 }
             }
-            finally 
+            finally
             {
                 if (disposeCommands)
                 {

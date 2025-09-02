@@ -27,6 +27,11 @@ namespace Bee.Db.UnitTests
             var helper = DbFunc.CreateDbCommandHelper();
             helper.SetCommandText(sql);
             var table2 = helper.ExecuteDataTable("common");
+
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
+            var dbAccess = new DbAccess("common");
+            var result = dbAccess.Execute(command);
+            Assert.NotNull(result.Table);
         }
 
         /// <summary>
