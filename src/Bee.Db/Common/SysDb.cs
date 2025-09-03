@@ -110,93 +110,6 @@ namespace Bee.Db
             var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.ExecuteNonQueryAsync(commandText, cancellationToken);
         }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="command">資料庫命令。</param>
-        public static object ExecuteScalar(string databaseId, DbCommand command)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.ExecuteScalar(command);
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="commandText">SQL 陳述式。</param>
-        public static object ExecuteScalar(string databaseId, string commandText)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.ExecuteScalar(commandText);
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="command">資料庫命令。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public static Task<object> ExecuteScalarAsync(string databaseId, DbCommand command, CancellationToken cancellationToken = default)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.ExecuteScalarAsync(command, cancellationToken);
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public static Task<object> ExecuteScalarAsync(string databaseId, string commandText, CancellationToken cancellationToken = default)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.ExecuteScalarAsync(commandText, cancellationToken);
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
-        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
-        /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="command">資料庫命令。</param>
-        /// <returns>傳回 DbDataReader 物件。</returns>
-        public static DbDataReader ExecuteReader(string databaseId, DbCommand command)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.ExecuteReader(command);
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
-        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
-        /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="command">資料庫命令。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        /// <returns>傳回 DbDataReader 物件。</returns>
-        public static Task<DbDataReader> ExecuteReaderAsync(string databaseId, DbCommand command, CancellationToken cancellationToken = default)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.ExecuteReaderAsync(command, cancellationToken);
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="command">資料庫命令。</param>
-        /// <returns>返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。</returns>
-        public static IEnumerable<T> Query<T>(string databaseId, DbCommand command)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.Query<T>(command);
-        }
-
         /// <summary>
         /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
         /// </summary>
@@ -215,20 +128,6 @@ namespace Bee.Db
         /// </summary>
         /// <typeparam name="T">要映射的目標類型。</typeparam>
         /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="command">資料庫命令。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        /// <returns>映射為 <see cref="List{T}"/> 的結果集合。</returns>
-        public static Task<List<T>> QueryAsync<T>(string databaseId, DbCommand command, CancellationToken cancellationToken = default)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.QueryAsync<T>(command, cancellationToken);
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的清單。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="databaseId">資料庫編號。</param>
         /// <param name="commandText">SQL 陳述式。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
         /// <returns>映射為 <see cref="List{T}"/> 的結果集合。</returns>
@@ -236,69 +135,6 @@ namespace Bee.Db
         {
             var dbAccess = CreateDbAccess(databaseId);
             return dbAccess.QueryAsync<T>(commandText, cancellationToken);
-        }
-
-#if NET8_0_OR_GREATER
-        /// <summary>
-        /// 非同步串流查詢結果，每次讀取一列並映射為 <typeparamref name="T"/>。
-        /// 注意：呼叫端需逐項列舉以完整釋放連線資源。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="command">資料庫命令。</param>
-        /// <param name="cancellationToken">取消權杖。</param>
-        public static async IAsyncEnumerable<T> QueryStreamAsync<T>(
-            string databaseId,
-            DbCommand command,
-            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            await foreach (var item in dbAccess.QueryStreamAsync<T>(command, cancellationToken).ConfigureAwait(false))
-            {
-                yield return item;
-            }
-        }
-
-        /// <summary>
-        /// 非同步串流查詢結果，每次讀取一列並映射為 <typeparamref name="T"/>。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <param name="cancellationToken">取消權杖。</param>
-        public static async IAsyncEnumerable<T> QueryStreamAsync<T>(
-            string databaseId,
-            string commandText,
-            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            await foreach (var item in dbAccess.QueryStreamAsync<T>(commandText, cancellationToken).ConfigureAwait(false))
-            {
-                yield return item;
-            }
-        }
-#endif
-
-        /// <summary>
-        /// 將 DataTable 的異動寫入資料庫。 
-        /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="dataTable">資料表。</param>
-        /// <param name="insertCommand">新增命令。</param>
-        /// <param name="updateCommand">更新命令。</param>
-        /// <param name="deleteCommand">刪除命令。</param>
-        /// <param name="disposeCommands">
-        /// 指定是否於方法執行完成後自動釋放 <paramref name="insertCommand"/>、
-        /// <paramref name="updateCommand"/> 與 <paramref name="deleteCommand"/>。
-        /// 若設為 <c>false</c>，表示命令物件的生命週期由呼叫端管理；
-        /// 若設為 <c>true</c>，則方法會於結束時呼叫 <see cref="IDisposable.Dispose"/> 釋放命令資源。
-        /// </param>
-        /// <returns>受影響的資料列數。</returns>
-        public static int UpdateDataTable(string databaseId, DataTable dataTable, 
-            DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand, bool disposeCommands)
-        {
-            var dbAccess = CreateDbAccess(databaseId);
-            return dbAccess.UpdateDataTable(dataTable, insertCommand, updateCommand, deleteCommand, disposeCommands);
         }
     }
 }

@@ -245,7 +245,6 @@ namespace Bee.Db
             {
                 using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
                 {
-                    cmd.Connection = scope.Connection;
                     int rows = cmd.ExecuteNonQuery();
                     return DbCommandResult.ForRowsAffected(rows);
                 }
@@ -262,10 +261,32 @@ namespace Bee.Db
             {
                 using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
                 {
-                    cmd.Connection = scope.Connection;
                     var value = cmd.ExecuteScalar();
                     return DbCommandResult.ForScalar(value);
                 }
+            }
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
+        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
+        /// </summary>
+        /// <param name="commandSpec">資料庫命令描述。</param>
+        /// <returns>傳回 DbDataReader 物件。</returns>
+        public DbDataReader ExecuteReader(DbCommandSpec commandSpec)
+        {
+            var scope = CreateScope();
+            try
+            {
+                var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection);
+                // CloseConnection: reader 關閉時一併關閉 connection
+                return cmd.ExecuteReader(CommandBehavior.CloseConnection);
+            }
+            catch
+            {
+                // ExecuteReader 失敗要自行清理連線
+                scope.Dispose();
+                throw;
             }
         }
 
@@ -437,19 +458,6 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 非同步執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public async Task<object> ExecuteScalarAsync(string commandText, CancellationToken cancellationToken = default)
-        {
-            using (var command = CreateCommand(commandText))
-            {
-                return await ExecuteScalarAsync(command, cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
         /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
         /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
         /// </summary>
@@ -600,14 +608,8 @@ namespace Bee.Db
         /// <param name="insertCommand">新增命令。</param>
         /// <param name="updateCommand">更新命令。</param>
         /// <param name="deleteCommand">刪除命令。</param>
-        /// <param name="disposeCommands">
-        /// 指定是否於方法執行完成後自動釋放 <paramref name="insertCommand"/>、
-        /// <paramref name="updateCommand"/> 與 <paramref name="deleteCommand"/>。
-        /// 若設為 <c>false</c>，表示命令物件的生命週期由呼叫端管理；
-        /// 若設為 <c>true</c>，則方法會於結束時呼叫 <see cref="IDisposable.Dispose"/> 釋放命令資源。
-        /// </param>
         /// <returns>受影響的資料列數。</returns>
-        public int UpdateDataTable(DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand, bool disposeCommands)
+        public int UpdateDataTable(DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand)
         {
             if (dataTable == null) throw new ArgumentNullException(nameof(dataTable));
 
@@ -634,13 +636,9 @@ namespace Bee.Db
             }
             finally
             {
-                if (disposeCommands)
-                {
-                    if (insertCommand != null) insertCommand.Dispose();
-                    if (updateCommand != null) updateCommand.Dispose();
-                    if (deleteCommand != null) deleteCommand.Dispose();
-                }
-
+                if (insertCommand != null) insertCommand.Dispose();
+                if (updateCommand != null) updateCommand.Dispose();
+                if (deleteCommand != null) deleteCommand.Dispose();
             }
 
 

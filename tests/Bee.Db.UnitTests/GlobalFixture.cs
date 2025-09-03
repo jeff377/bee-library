@@ -16,6 +16,7 @@ namespace Bee.Db.UnitTests
             // 全域初始化邏輯，例如載入設定檔、建立資料庫、啟動 API
             // 設定定義路徑
             BackendInfo.DefinePath = @"D:\DefinePath";
+            BackendInfo.DatabaseId = "common";
             // 初始化金鑰，以解密 DatabaseSettings.xml 中的加密資料
             var settings = CacheFunc.GetSystemSettings();
             settings.BackendConfiguration.InitializeSecurityKeys();

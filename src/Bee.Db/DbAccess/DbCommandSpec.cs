@@ -1,9 +1,11 @@
-﻿using Bee.Define;
+﻿using Bee.Base;
+using Bee.Define;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bee.Db
@@ -163,7 +165,16 @@ namespace Bee.Db
             if (string.IsNullOrWhiteSpace(CommandText))
                 throw new InvalidOperationException("Failed to execute SQL command: Command text is empty.");
 
-            return PlaceholderRegex.Replace(CommandText, match =>
+            string commandText = CommandText;
+            if (StrFunc.Contains(commandText, CommandTextVariable.Parameters))
+            {
+                var sb = new StringBuilder();
+                for (int N1 = 0; N1 < Parameters.Count; N1++)
+                    StrFunc.Merge(sb, "{" + N1 + "}", ",");
+                commandText = StrFunc.Replace(commandText, CommandTextVariable.Parameters, sb.ToString());
+            }
+
+            return PlaceholderRegex.Replace(commandText, match =>
             {
                 // 字面量 {{...}} → 還原成 {...}
                 var escaped = match.Groups["escaped"];

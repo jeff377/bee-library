@@ -83,10 +83,10 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void ExecuteReader()
         {
-            string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
-            var helper = new DbCommandHelper(DatabaseType.SQLServer);
-            helper.SetCommandFormatText(sql);
-            using (var reader = SysDb.ExecuteReader("common", helper.DbCommand))
+            string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = {0}";
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, "001");
+            var dbAccess = new DbAccess("common");
+            using (var reader = dbAccess.ExecuteReader(command))
             {
                 Assert.True(reader.Read());
                 Assert.Equal("001", reader["sys_id"].ToString());
@@ -100,7 +100,8 @@ namespace Bee.Db.UnitTests
             string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
             var helper = new DbCommandHelper(DatabaseType.SQLServer);
             helper.SetCommandFormatText(sql);
-            using (var reader = await SysDb.ExecuteReaderAsync("common", helper.DbCommand))
+            var dbAccess = new DbAccess("common");
+            using (var reader = await dbAccess.ExecuteReaderAsync(helper.DbCommand))
             {
                 Assert.True(await reader.ReadAsync());
                 Assert.Equal("001", reader["sys_id"].ToString());
@@ -120,16 +121,11 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void ExecuteScalar()
         {
-            string sql = $"Select note From ts_user Where sys_id = '001'";
-            var value = SysDb.ExecuteScalar("common", sql);
-        }
-
-        [Fact]
-        public async Task ExecuteScalarAsync()
-        {
-            string sql = $"Select note From ts_user Where sys_id = '001'";
-            var value = await SysDb.ExecuteScalarAsync("common", sql);
-            var value2 = await SysDb.ExecuteScalarAsync("common", sql);
+            string sql = "Select note From ts_user Where sys_id = {0}";
+            var command = new DbCommandSpec(DbCommandKind.Scalar, sql, "001");
+            var dbAccess = new DbAccess("common");
+            var result = dbAccess.Execute(command);
+            var value = result.Scalar;
         }
 
         public class User
@@ -166,35 +162,6 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(list2);
         }
 
-        [Fact]
-        public async Task QueryStreamAsync()
-        {
-            string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
-            int count = 0;
-            await foreach (var user in SysDb.QueryStreamAsync<User>("common", sql))
-            {
-                Assert.NotNull(user);
-                Assert.False(string.IsNullOrEmpty(user.UserID));
-                count++;
-            }
-            Assert.True(count > 0);
-        }
-
-        /// <summary>
-        /// 使用參數式執行 SQL 查詢，並取得 DataTable。
-        /// </summary>
-        [Fact]
-        public void ExecuteDataTable_Parameters()
-        {
-            var helper = DbFunc.CreateDbCommandHelper();
-            helper.AddParameter(SysFields.Id, FieldDbType.String, "001");
-            string sql = "SELECT * FROM ts_user WHERE sys_id = @sys_id";
-            helper.SetCommandText(sql);
-            using (var command = helper.DbCommand)
-            {
-                var table = SysDb.ExecuteDataTable("common", helper.DbCommand);
-            }
-        }
 
         [Fact]
         public void SqlDbTableTest()

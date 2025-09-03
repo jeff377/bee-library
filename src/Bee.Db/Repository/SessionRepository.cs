@@ -14,30 +14,18 @@ namespace Bee.Db
     public class SessionRepository : ISessionRepository
     {
         /// <summary>
-        /// 資料庫命令組裝輔助類別。
-        /// </summary>
-        private DbCommandHelper CreateDbCommandHelper()
-        {
-            return DbFunc.CreateDbCommandHelper();
-        }
-
-        /// <summary>
         /// 寫入連線資訊。
         /// </summary>
         /// <param name="sessionUser">連線資訊儲存的用戶資料。</param>
         private void Insert(SessionUser sessionUser)
         {
             string xml = SerializeFunc.ObjectToXml(sessionUser);
-            var helper = CreateDbCommandHelper();
-            helper.AddParameter("access_token", FieldDbType.Guid, sessionUser.AccessToken);
-            helper.AddParameter("session_user_xml", FieldDbType.Text, xml);
-            helper.AddParameter(SysFields.InsertTime, FieldDbType.DateTime, DateTime.Now);
-            helper.AddParameter(SysFields.InvalidTime, FieldDbType.DateTime, sessionUser.EndTime);
             string sql = "INSERT INTO ts_session \n" +
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
-            helper.SetCommandFormatText(sql);
-            SysDb.ExecuteNonQuery(BackendInfo.DatabaseId, helper.DbCommand);
+            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, DateTime.Now, sessionUser.EndTime);
+            var dbAccess = new DbAccess(BackendInfo.DatabaseId);
+            dbAccess.Execute(command);
         }
 
         /// <summary>
@@ -46,12 +34,11 @@ namespace Bee.Db
         /// <param name="accessToken">存取令牌。</param>
         private void Delete(Guid accessToken)
         {
-            var helper = CreateDbCommandHelper();
-            helper.AddParameter("access_token", FieldDbType.Guid, accessToken);
             string sql = "DELETE FROM ts_session \n" +
                                  "WHERE access_token={0}";
-            helper.SetCommandFormatText(sql);
-            SysDb.ExecuteNonQuery(BackendInfo.DatabaseId, helper.DbCommand);
+            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, accessToken);
+            var dbAccess = new DbAccess(BackendInfo.DatabaseId);
+            dbAccess.Execute(command);
         }
 
         /// <summary>
@@ -60,15 +47,14 @@ namespace Bee.Db
         /// <param name="accessToken">存取令牌。</param>
         public SessionUser GetSession(Guid accessToken)
         {
-            var helper = CreateDbCommandHelper();
-            helper.AddParameter("access_token", FieldDbType.Guid, accessToken);
             string sql = "SELECT session_user_xml, sys_invalid_time \n" +
                                  "FROM ts_session \n" +
                                  "WHERE access_token={0}";
-            helper.SetCommandFormatText(sql);
-            var table = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, helper.DbCommand);
-            if (BaseFunc.IsEmpty(table)) { return null; }
-            var row = table.Rows[0];
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken);
+            var dbAccess = new DbAccess(BackendInfo.DatabaseId);
+            var result = dbAccess.Execute(command);
+            if (BaseFunc.IsEmpty(result.Table)) { return null; }
+            var row = result.Table.Rows[0];
 
             // 若連線已到期，刪除連線資訊，並回傳 null
             DateTime endTime = BaseFunc.CDateTime(row[SysFields.InvalidTime]);
@@ -93,12 +79,12 @@ namespace Bee.Db
         /// <param name="oneTime">一次性有效。</param>
         public SessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
-            var helper = CreateDbCommandHelper();
-            helper.AddParameter(SysFields.Id, FieldDbType.String, userID);
             string sql = "SELECT sys_id, sys_name FROM ts_user \n" +
                                  "WHERE sys_id={0}";
-            helper.SetCommandFormatText(sql);
-            var table = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, helper.DbCommand);
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, userID);
+            var dbAccess = new DbAccess(BackendInfo.DatabaseId);
+            var result = dbAccess.Execute(command);
+            var table = result.Table;
             if (BaseFunc.IsEmpty(table)) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
             var row = table.Rows[0];
 
