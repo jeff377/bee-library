@@ -71,12 +71,12 @@ namespace Bee.Db
         /// <param name="tableName">資料表名稱。</param>
         private bool TableExists(string tableName)
         {
-            var helper = CreateDbCommandHelper();
-            helper.AddParameter("TableName", FieldDbType.String, tableName);
-            string sSQL = "Select Count(*) From sys.tables A Where A.name={0}";
-            helper.SetCommandFormatText(sSQL);
-            int iCount = BaseFunc.CInt(SysDb.ExecuteScalar(DatabaseId, helper.DbCommand));
-            return (iCount > 0) ? true : false;
+            string sql = "Select Count(*) From sys.tables A Where A.name={0}";
+            var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
+            var dbAccess = new DbAccess(DatabaseId);
+            var result = dbAccess.Execute(command);
+            int count = BaseFunc.CInt(result.Scalar);
+            return count > 0;
         }
 
         /// <summary>
@@ -85,8 +85,6 @@ namespace Bee.Db
         /// <param name="tableName">資料表名稱。</param>
         private DataTable GetTableIndexes(string tableName)
         {
-            var helper = CreateDbCommandHelper();
-            helper.AddParameter("TableName", FieldDbType.String, tableName);
             string sql = "SELECT A.name as FieldName,D.is_primary_key as IsPrimaryKey,D.is_unique as IsUnique,D.name,\n" +
                           "C.key_ordinal as KeyOrdinal,C.is_descending_key As IsDesc \n" +
                           "FROM sys.columns A  \n" +
@@ -95,8 +93,10 @@ namespace Bee.Db
                           "LEFT JOIN sys.indexes D On A.object_id=D.object_id And C.index_id=D.index_id \n" +
                           "WHERE B.name={0} \n" +
                           "Order By D.is_primary_key,C.key_ordinal";
-            helper.SetCommandFormatText(sql);
-            var table = SysDb.ExecuteDataTable(DatabaseId, helper.DbCommand);
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
+            var dbAccess = new DbAccess(DatabaseId);
+            var result = dbAccess.Execute(command);
+            var table = result.Table;
             table.TableName = "TableIndex";
             return table;
         }
@@ -194,8 +194,10 @@ namespace Bee.Db
                           "LEFT JOIN sys.default_constraints F on F.parent_object_id = A.object_id and F.parent_column_id = A.column_id \n" +
                           "WHERE B.name={0} \n" +
                           "ORDER BY A.column_id";
-            helper.SetCommandFormatText(sql);
-            var table = SysDb.ExecuteDataTable(DatabaseId, helper.DbCommand);
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
+            var dbAccess = new DbAccess(DatabaseId);
+            var result = dbAccess.Execute(command);
+            var table = result.Table;
             table.TableName = "Columns";
             return table;
         }
