@@ -392,5 +392,14 @@ namespace Bee.Db
                 }
             }
         }
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            return Provider.ToString();
+        }
     }
 }

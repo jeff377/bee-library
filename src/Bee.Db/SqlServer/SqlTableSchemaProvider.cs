@@ -28,14 +28,6 @@ namespace Bee.Db
         public string DatabaseId { get; }
 
         /// <summary>
-        /// 資料庫命令組裝輔助類別。
-        /// </summary>
-        private DbCommandHelper CreateDbCommandHelper()
-        {
-            return DbFunc.CreateDbCommandHelper(DatabaseType.SQLServer);
-        }
-
-        /// <summary>
         /// 取得資料表結構。
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
@@ -180,8 +172,6 @@ namespace Bee.Db
         /// <param name="tableName">資料表名稱。</param>
         private DataTable GetColumns(string tableName)
         {
-            var helper = CreateDbCommandHelper();
-            helper.AddParameter("TableName", FieldDbType.String, tableName);
             string sql = "SELECT A.is_nullable as AllowDBNull,A.is_identity as AutoIncrement, \n" +
                           "IsNull(C.seed_value,0) as AutoIncrementSeed,IsNull(C.increment_value,0) as AutoIncrementStep, \n" +
                           "IsNull(E.name,'') as BindDefault,TYPE_NAME(A.system_type_id) as DbType,A.precision,A.scale as Decimals, \n" +

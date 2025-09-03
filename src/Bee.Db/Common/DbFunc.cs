@@ -116,22 +116,6 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 建立資料庫命令輔助類別。
-        /// </summary>
-        public static DbCommandHelper CreateDbCommandHelper(DatabaseType databaseType)
-        {
-            return new DbCommandHelper(databaseType);
-        }
-
-        /// <summary>
-        /// 建立預設資料庫命令輔助類別。
-        /// </summary>
-        public static DbCommandHelper CreateDbCommandHelper()
-        {
-            return CreateDbCommandHelper(BackendInfo.DatabaseType);
-        }
-
-        /// <summary>
         /// 將 EFieldDbType 轉換為 DbType。
         /// </summary>
         /// <param name="fieldDbType">EFieldDbType 值</param>
