@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
     <ProjectReference Include="..\..\src\Bee.Db\Bee.Db.csproj" />
   </ItemGroup>
 

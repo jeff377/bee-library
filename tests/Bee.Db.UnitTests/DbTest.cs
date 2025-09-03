@@ -172,6 +172,35 @@ namespace Bee.Db.UnitTests
             var list2 = await dbAccess.QueryAsync<User2>(command);
         }
 
+        [Fact]
+        public void UpdateDataTable()
+        {
+            var dbAccess = new DbAccess("common");
+
+            // 1.查詢 ts_user 所有欄位
+            string sql = "SELECT * FROM ts_user";
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
+            var result = dbAccess.Execute(command);
+            var table = result.Table;
+            Assert.NotNull(table);
+            Assert.True(table.Rows.Count > 0, "ts_user 應有資料");
+
+            // 2. 修改第一筆資料
+            int i = BaseFunc.RndInt(0, 100);
+            var row = table.Rows[0];
+            row["note"] = i.ToString();
+
+            // 3. 用 DbTableCommandBuilder 產生 DataTableUpdateSpec
+            var dbTable = CacheFunc.GetDbTable("common", "ts_user");
+            var builder = new DbTableCommandBuilder(dbTable);
+            var updateSpec = builder.BuildUpdateSpec(table);
+
+            // 4. 執行 UpdateDataTable
+            int affected = dbAccess.UpdateDataTable(updateSpec);
+
+            Assert.True(affected > 0, "應有資料被更新");
+        }
+
 
         [Fact]
         public void SqlDbTableTest()
@@ -179,5 +208,7 @@ namespace Bee.Db.UnitTests
             var helper = new SqlTableSchemaProvider("common");
             var dbTable = helper.GetTableSchema("ts_user");
         }
+
+
     }
 }
