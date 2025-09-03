@@ -434,44 +434,25 @@ namespace Bee.Db
         /// 非同步執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的清單。
         /// </summary>
         /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="command">資料庫命令。</param>
+        /// <param name="commandSpec">資料庫命令描述。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
         /// <returns>映射為 <see cref="List{T}"/> 的結果集合。</returns>
-        public async Task<List<T>> QueryAsync<T>(DbCommand command, CancellationToken cancellationToken = default)
+        public async Task<List<T>> QueryAsync<T>(DbCommandSpec commandSpec, CancellationToken cancellationToken = default)
         {
-            CapCommandTimeout(command);
+            if (commandSpec == null) throw new ArgumentNullException(nameof(commandSpec));
 
-            using (var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
+            using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
+            using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
+            using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
-                command.Connection = connection;
+                var list = new List<T>();
+                var mapper = ILMapper<T>.CreateMapFunc(reader); // 以目前欄位集建立映射
 
-                using (var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    var list = new List<T>();
-                    var mapper = ILMapper<T>.CreateMapFunc(reader); // 以目前列映射
-
-                    while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                    {
-                        // 假設 mapper 以目前 reader 指向的列做映射
-                        list.Add(mapper(reader));
-                    }
-                    return list;
+                    list.Add(mapper(reader));
                 }
-            }
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的清單。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        /// <returns>映射為 <see cref="List{T}"/> 的結果集合。</returns>
-        public async Task<List<T>> QueryAsync<T>(string commandText, CancellationToken cancellationToken = default)
-        {
-            using (var command = CreateCommand(commandText))
-            {
-                return await QueryAsync<T>(command, cancellationToken).ConfigureAwait(false);
+                return list;
             }
         }
 

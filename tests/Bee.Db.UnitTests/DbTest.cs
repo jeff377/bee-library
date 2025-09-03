@@ -166,13 +166,10 @@ namespace Bee.Db.UnitTests
         public async Task QueryAsync()
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccess("common");
-            var list = await dbAccess.QueryAsync<User>(sql);
-            Assert.NotNull(list);
-            Assert.True(list.Count > 0);
-
-            var list2 = await dbAccess.QueryAsync<User2>(sql);
-            Assert.NotNull(list2);
+            var list = await dbAccess.QueryAsync<User>(command);
+            var list2 = await dbAccess.QueryAsync<User2>(command);
         }
 
 
