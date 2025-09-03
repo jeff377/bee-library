@@ -593,63 +593,6 @@ namespace Bee.Db
             }
         }
 
-#if NET8_0_OR_GREATER
-        /// <summary>
-        /// 非同步串流查詢結果，每次讀取一列並映射為 <typeparamref name="T"/>。
-        /// 注意：呼叫端需逐項列舉以完整釋放連線資源。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="command">資料庫命令。</param>
-        /// <param name="cancellationToken">取消權杖。</param>
-        public async IAsyncEnumerable<T> QueryStreamAsync<T>(
-            DbCommand command,
-            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            CapCommandTimeout(command);
-
-            var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
-            DbDataReader reader = null;
-            try
-            {
-                command.Connection = connection;
-                // 交由 reader 關閉連線
-                reader = await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, cancellationToken)
-                                      .ConfigureAwait(false);
-
-                var mapper = ILMapper<T>.CreateMapFunc(reader);
-                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    yield return mapper(reader);   // ✅ 允許：try-finally，且方法內沒有任何 catch
-                }
-            }
-            finally
-            {
-                // 若 reader 已建立 → Dispose() 會連帶關閉 connection（CloseConnection）
-                // 若尚未建立就拋例外 → 這裡補關 connection，避免外洩
-                if (reader != null) reader.Dispose();
-                else connection.Dispose();
-            }
-        }
-
-        /// <summary>
-        /// 非同步串流查詢結果，每次讀取一列並映射為 <typeparamref name="T"/>。
-        /// 注意：呼叫端需逐項列舉以完整釋放連線資源。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <param name="cancellationToken">取消權杖。</param>
-        public async IAsyncEnumerable<T> QueryStreamAsync<T>(
-            string commandText,
-            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
-        {
-            var command = CreateCommand(commandText);
-            await foreach (var item in QueryStreamAsync<T>(command, cancellationToken).ConfigureAwait(false))
-            {
-                yield return item;
-            }
-        }
-#endif
-
         /// <summary>
         /// 將 DataTable 的異動寫入資料庫。 
         /// </summary>
