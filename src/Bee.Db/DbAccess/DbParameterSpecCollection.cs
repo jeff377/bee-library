@@ -1,4 +1,5 @@
-﻿using Bee.Define;
+﻿using Bee.Base;
+using Bee.Define;
 using System;
 using System.Data;
 
@@ -24,5 +25,24 @@ namespace Bee.Db
             return parameter;
         }
 
+        /// <summary>
+        /// 加入參數。
+        /// </summary>
+        /// <param name="field">欄位結構。</param>
+        /// <param name="sourceVersion"> DataRow 取值版本。</param>
+        public DbParameterSpec Add(DbField field, DataRowVersion sourceVersion = DataRowVersion.Current)
+        {
+            var parameter = new DbParameterSpec()
+            {
+                Name = field.FieldName,
+                DbType = DbFunc.ConvertToDbType(field.DbType),
+                SourceColumn = field.FieldName,
+                SourceVersion = sourceVersion,
+                Value = field.AllowNull ? null : DataSetFunc.GetDefaultValue(field.DbType),
+                Size = (field.DbType == FieldDbType.String) ? field.Length : 0,
+            };
+            Add(parameter);
+            return parameter;
+        }
     }
 }

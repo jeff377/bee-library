@@ -30,11 +30,22 @@ namespace Bee.Db
         /// </summary>
         /// <param name="databaseType">資料庫類型。</param>
         /// <returns>參數前綴符號。</returns>
-        public static string GetDbParameterPrefix(DatabaseType databaseType)
+        public static string GetParameterPrefix(DatabaseType databaseType)
         {
             return DbParameterPrefixes.TryGetValue(databaseType, out var prefix)
                 ? prefix
                 : throw new NotSupportedException($"Unsupported database type: {databaseType}.");
+        }
+
+        /// <summary>
+        /// 取得含前綴符號的參數名稱。
+        /// </summary>
+        /// <param name="databaseType">資料庫類型。</param>
+        /// <param name="name">不含前綴符號的參數名稱。</param>
+        public static string GetParameterName(DatabaseType databaseType, string name)
+        {
+            string parameterPrefix = GetParameterPrefix(databaseType);
+            return string.IsNullOrEmpty(parameterPrefix) ? name : parameterPrefix + name;
         }
 
         /// <summary>

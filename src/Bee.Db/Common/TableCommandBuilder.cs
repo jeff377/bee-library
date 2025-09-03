@@ -16,13 +16,29 @@ namespace Bee.Db
         /// <param name="dbTable">資料表結構。</param>
         public TableCommandBuilder(DbTable dbTable)
         {
+            DatabaseType = BackendInfo.DatabaseType;
             DbTable = dbTable;
         }
+
+        /// <summary>
+        /// 資料庫類型。
+        /// </summary>
+        public DatabaseType DatabaseType { get; }
 
         /// <summary>
         /// 資料表結構。
         /// </summary>
         public DbTable DbTable { get; }
+
+        /// <summary>
+        /// 依據資料庫類型，回傳適當的識別字串跳脫格式。
+        /// </summary>
+        /// <param name="identifier">識別字名稱。</param>
+        /// <returns>跳脫後的識別字。</returns>
+        private string QuoteIdentifier(string identifier)
+        {
+            return DbFunc.QuoteIdentifier(DatabaseType, identifier);
+        }
 
         /// <summary>
         /// 建立資料庫命令輔助類別。
@@ -39,7 +55,7 @@ namespace Bee.Db
         {
             var helper = this.CreateDbCommandHelper();
             var buffer = new StringBuilder();
-            string tableName = helper.QuoteIdentifier(this.DbTable.TableName);
+            string tableName = QuoteIdentifier(this.DbTable.TableName);
             buffer.AppendLine($"Insert Into {tableName} ");
 
             // 處理 Insert 的欄位名稱
@@ -51,7 +67,7 @@ namespace Bee.Db
                 {
                     if (count > 0)
                         buffer.Append(", ");
-                    buffer.Append(helper.QuoteIdentifier(field.FieldName));
+                    buffer.Append(QuoteIdentifier(field.FieldName));
                     count++;
                 }
             }
@@ -67,7 +83,7 @@ namespace Bee.Db
                 {
                     if (count > 0)
                         buffer.Append(", ");
-                    buffer.Append(helper.GetParameterName(field.FieldName));
+                    buffer.Append(DbFunc.GetParameterName(DatabaseType, field.FieldName));
                     helper.AddParameter(field); // 加入命令參數
                     count++;
                 }
