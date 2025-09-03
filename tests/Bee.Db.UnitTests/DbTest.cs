@@ -99,36 +99,6 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        public void ExecuteReader()
-        {
-            string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = {0}";
-            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, "001");
-            var dbAccess = new DbAccess("common");
-            using (var reader = dbAccess.ExecuteReader(command))
-            {
-                Assert.True(reader.Read());
-                Assert.Equal("001", reader["sys_id"].ToString());
-                // 可依需求驗證其他欄位
-            }
-        }
-
-        [Fact]
-        public async Task ExecuteReaderAsync()
-        {
-            string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = {0}";
-            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, "001");
-            var dbAccess = new DbAccess("common");
-            using (var reader = await dbAccess.ExecuteReaderAsync(command))
-            {
-                Assert.True(await reader.ReadAsync());
-                Assert.Equal("001", reader["sys_id"].ToString());
-                // 可依需求驗證其他欄位
-            }
-        }
-
-
-
-        [Fact]
         public void ExecuteScalar()
         {
             string sql = "Select note From ts_user Where sys_id = {0}";
