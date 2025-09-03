@@ -67,7 +67,7 @@ namespace Bee.Db
         /// <summary>
         /// 資料庫連線字串。
         /// </summary>
-        public string ConnectionString { get; }
+        private string ConnectionString { get; }
 
         /// <summary>
         /// 建立連線範圍，會自動決定使用外部連線或自行建立連線。
@@ -85,7 +85,6 @@ namespace Bee.Db
         {
             return DbConnectionScope.CreateAsync(_externalConnection, Provider, ConnectionString, cancellationToken);
         }
-
 
         /// <summary>
         /// 執行資料庫命令。
