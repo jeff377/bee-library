@@ -1,24 +1,34 @@
-﻿using System.Data.Common;
-using System.Text;
-using Bee.Base;
+﻿using Bee.Base;
 using Bee.Define;
+using System.Text;
 
 namespace Bee.Db
 {
     /// <summary>
-    /// 依結構資料表為依據，產生資料庫命令。
+    /// 以 <see cref="DbTable"/> 為依據，產生 Insert、Delete、Update 的資料庫命令。
     /// </summary>
-    public class TableCommandBuilder
+    public class DbTableCommandBuilder
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
+        /// <param name="databaseType">資料表類型。</param>
         /// <param name="dbTable">資料表結構。</param>
-        public TableCommandBuilder(DbTable dbTable)
+        public DbTableCommandBuilder(DatabaseType databaseType, DbTable dbTable)
+        {
+            DatabaseType = databaseType;
+            DbTable = dbTable;
+        }
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="dbTable">資料表結構。</param>
+        public DbTableCommandBuilder(DbTable dbTable)
         {
             DatabaseType = BackendInfo.DatabaseType;
             DbTable = dbTable;
-        }
+        }        
 
         /// <summary>
         /// 資料庫類型。
@@ -41,19 +51,20 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 建立資料庫命令輔助類別。
+        /// 取得含前綴符號的參數名稱。
         /// </summary>
-        private DbCommandHelper CreateDbCommandHelper()
+        /// <param name="name">不含前綴符號的參數名稱。</param>
+        private string GetParameterName(string name)
         {
-            return DbFunc.CreateDbCommandHelper();
+            return DbFunc.GetParameterName(DatabaseType, name);
         }
 
         /// <summary>
-        /// 建立 Insert 語法的資料庫命令。
+        /// 建立 Insert 語法的資料庫命令描述。
         /// </summary>
-        public DbCommand BuildInsertCommand()
+        public DbCommandSpec BuildInsertCommand()
         {
-            var helper = this.CreateDbCommandHelper();
+            var command = new DbCommandSpec();
             var buffer = new StringBuilder();
             string tableName = QuoteIdentifier(this.DbTable.TableName);
             buffer.AppendLine($"Insert Into {tableName} ");
@@ -83,28 +94,27 @@ namespace Bee.Db
                 {
                     if (count > 0)
                         buffer.Append(", ");
-                    buffer.Append(DbFunc.GetParameterName(DatabaseType, field.FieldName));
-                    helper.AddParameter(field); // 加入命令參數
+                    buffer.Append(GetParameterName(field.FieldName));
+                    command.Parameters.Add(field); // 加入命令參數
                     count++;
                 }
             }
             buffer.AppendLine(")");
 
-            helper.SetCommandText(buffer.ToString());
-            return helper.DbCommand;
+            command.CommandText = buffer.ToString();
+            return command;
         }
 
         /// <summary>
-        /// 建立 Update 語法的資料庫命令。
+        /// 建立 Update 語法的資料庫命令描述。
         /// </summary>
-        public DbCommand BuildUpdateCommand()
+        public DbCommandSpec BuildUpdateCommand()
         {
-            var helper = this.CreateDbCommandHelper();
+            var command = new DbCommandSpec();
             var buffer = new StringBuilder();
-            string tableName = helper.QuoteIdentifier(this.DbTable.TableName);
+            string tableName = QuoteIdentifier(this.DbTable.TableName);
             buffer.AppendLine($"Update {tableName} Set ");
 
-            DbParameter parameter;
             string fieldName;
             // 取得主鍵欄位
             var keyField = this.DbTable.Fields[SysFields.RowId];
@@ -114,43 +124,43 @@ namespace Bee.Db
             {
                 if (field != keyField && field.DbType != FieldDbType.Identity)
                 {
-                    fieldName = helper.QuoteIdentifier(field.FieldName);
+                    fieldName = QuoteIdentifier(field.FieldName);
                     // 加入命令參數
-                    parameter = helper.AddParameter(field);
+                    command.Parameters.Add(field);
                     if (iCount > 0)
                         buffer.Append(", ");
-                    buffer.Append($"{fieldName}={parameter.ParameterName}");
+                    buffer.Append($"{fieldName}={GetParameterName(field.FieldName)}");
                     iCount++;
                 }
             }
             // Where 加入主鍵條件
-            fieldName = helper.QuoteIdentifier(keyField.FieldName);
-            parameter = helper.AddParameter(keyField, System.Data.DataRowVersion.Original);
+            fieldName = QuoteIdentifier(keyField.FieldName);
+            command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
             buffer.AppendLine();
-            buffer.AppendLine($"Where {fieldName}={parameter.ParameterName}");
+            buffer.AppendLine($"Where {fieldName}={GetParameterName(keyField.FieldName)}");
 
-            helper.SetCommandText(buffer.ToString());
-            return helper.DbCommand; ;
+            command.CommandText = buffer.ToString();
+            return command;
         }
 
         /// <summary>
-        /// 建立 Delete 語法的資料庫命令。
+        /// 建立 Delete 語法的資料庫命令描述。
         /// </summary>
-        public DbCommand BuildDeleteCommand()
+        public DbCommandSpec BuildDeleteCommand()
         {
-            var helper = this.CreateDbCommandHelper();
+            var command = new DbCommandSpec();
             var buffer = new StringBuilder();
-            string sTableName = helper.QuoteIdentifier(this.DbTable.TableName);
-            buffer.AppendLine($"Delete From {sTableName} ");
+            string tableName = QuoteIdentifier(this.DbTable.TableName);
+            buffer.AppendLine($"Delete From {tableName} ");
 
             // Where 加入主鍵條件
             var keyField = this.DbTable.Fields[SysFields.RowId];
-            string sFieldName = helper.QuoteIdentifier(keyField.FieldName);
-            var oParameter = helper.AddParameter(keyField, System.Data.DataRowVersion.Original);
-            buffer.AppendLine($"Where {sFieldName}={oParameter.ParameterName}");
+            string fieldName = QuoteIdentifier(keyField.FieldName);
+            command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
+            buffer.AppendLine($"Where {fieldName}={GetParameterName(keyField.FieldName)}");
 
-            helper.SetCommandText(buffer.ToString());
-            return helper.DbCommand; ;
+            command.CommandText = buffer.ToString();
+            return command;
         }
     }
 }
