@@ -68,8 +68,10 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteDataTableAsync()
         {
             string sql = "SELECT * FROM ts_user";
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccess("common");
-            var table = await dbAccess.ExecuteDataTableAsync(sql);
+            var reulst = await dbAccess.ExecuteAsync(command);
+            var table = reulst.Table;
             Assert.NotNull(table);
             Assert.True(table.Rows.Count > 0);
         }
@@ -82,6 +84,17 @@ namespace Bee.Db.UnitTests
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
             var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
+            int rows = result.RowsAffected;
+        }
+
+        [Fact]
+        public async Task ExecuteNonQueryAsync()
+        {
+            int i = BaseFunc.RndInt(0, 100);
+            string sql = "Update ts_user Set note={1} Where sys_id = {0}";
+            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
+            var dbAccess = new DbAccess("common");
+            var result = await dbAccess.ExecuteAsync(command);
             int rows = result.RowsAffected;
         }
 
@@ -102,11 +115,10 @@ namespace Bee.Db.UnitTests
         [Fact]
         public async Task ExecuteReaderAsync()
         {
-            string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = '001'";
-            var helper = new DbCommandHelper(DatabaseType.SQLServer);
-            helper.SetCommandFormatText(sql);
+            string sql = "SELECT sys_id, sys_name FROM ts_user WHERE sys_id = {0}";
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, "001");
             var dbAccess = new DbAccess("common");
-            using (var reader = await dbAccess.ExecuteReaderAsync(helper.DbCommand))
+            using (var reader = await dbAccess.ExecuteReaderAsync(command))
             {
                 Assert.True(await reader.ReadAsync());
                 Assert.Equal("001", reader["sys_id"].ToString());
@@ -114,15 +126,7 @@ namespace Bee.Db.UnitTests
             }
         }
 
-        [Fact]
-        public async Task ExecuteNonQueryAsync()
-        {
-            int i = BaseFunc.RndInt(0, 100);
-            string sql = $"Update ts_user Set note='{i}' Where sys_id = '001'";
-            var dbAccess = new DbAccess("common");
-            int rows = await dbAccess.ExecuteNonQueryAsync(sql);
-            int rows2 = await dbAccess.ExecuteNonQueryAsync(sql);
-        }
+
 
         [Fact]
         public void ExecuteScalar()

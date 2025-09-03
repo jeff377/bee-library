@@ -189,6 +189,15 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 非同步建立連線範圍，會自動決定使用外部連線或自行建立連線。
+        /// </summary>
+        private Task<DbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
+        {
+            return DbConnectionScope.CreateAsync(_externalConnection, Provider, ConnectionString, cancellationToken);
+        }
+
+
+        /// <summary>
         /// 執行資料庫命令。
         /// </summary>
         /// <param name="commandSpec">資料庫命令描述。</param>
@@ -275,6 +284,8 @@ namespace Bee.Db
         /// <returns>傳回 DbDataReader 物件。</returns>
         public DbDataReader ExecuteReader(DbCommandSpec commandSpec)
         {
+            if (commandSpec == null) throw new ArgumentNullException(nameof(commandSpec));
+
             var scope = CreateScope();
             try
             {
@@ -316,117 +327,72 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 執行資料庫命令，傳回資料表。
+        /// 非同步執行資料庫命令。
         /// </summary>
-        /// <param name="command">資料庫命令。</param>
-        public DataTable ExecuteDataTable(DbCommand command)
+        /// <param name="commandSpec">資料庫命令描述。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public async Task<DbCommandResult> ExecuteAsync(DbCommandSpec commandSpec, CancellationToken cancellationToken = default)
         {
-            CapCommandTimeout(command);   // 套用命令逾時限制
+            if (commandSpec == null) throw new ArgumentNullException(nameof(commandSpec));
 
-            using (var connection = OpenConnection())
+            switch (commandSpec.Kind)
             {
-                command.Connection = connection;
-
-                var adapter = Provider.CreateDataAdapter()
-                    ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
-
-                using (adapter)
-                {
-                    adapter.SelectCommand = command;
-                    var table = new DataTable("DataTable");
-                    adapter.Fill(table);
-                    DataSetFunc.UpperColumnName(table);
-                    return table;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回資料表。
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        public DataTable ExecuteDataTable(string commandText)
-        {
-            using (var command = CreateCommand(commandText))
-            {
-                return ExecuteDataTable(command); // command 將於此 using 結束時 Dispose
+                case DbCommandKind.NonQuery:
+                    return await ExecuteNonQueryAsync(commandSpec, cancellationToken).ConfigureAwait(false);
+                case DbCommandKind.Scalar:
+                    return await ExecuteScalarAsync(commandSpec, cancellationToken).ConfigureAwait(false);
+                case DbCommandKind.DataTable:
+                    return await ExecuteDataTableAsync(commandSpec, cancellationToken).ConfigureAwait(false);
+                default:
+                    throw new NotSupportedException($"Unsupported DbCommandKind: {commandSpec.Kind}.");
             }
         }
 
         /// <summary>
         /// 非同步執行資料庫命令，傳回資料表。
         /// </summary>
-        /// <param name="command">資料庫命令。</param>
+        /// <param name="commandSpec">資料庫命令描述。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public async Task<DataTable> ExecuteDataTableAsync(DbCommand command, CancellationToken cancellationToken = default)
+        private async Task<DbCommandResult> ExecuteDataTableAsync(DbCommandSpec commandSpec, CancellationToken cancellationToken = default)
         {
-            CapCommandTimeout(command);
-            using (var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
+            using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
+            using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
+            using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
-                command.Connection = connection;
-                using (var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    var table = new DataTable("DataTable");
-                    table.Load(reader);
-                    DataSetFunc.UpperColumnName(table);
-                    return table;
-                }
-            }
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，傳回資料表。
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public async Task<DataTable> ExecuteDataTableAsync(string commandText, CancellationToken cancellationToken = default)
-        {
-            using (var command = CreateCommand(commandText))
-            {
-                return await ExecuteDataTableAsync(command, cancellationToken).ConfigureAwait(false);
+                var table = new DataTable("DataTable");
+                table.Load(reader);
+                DataSetFunc.UpperColumnName(table);
+                return DbCommandResult.ForTable(table);
             }
         }
 
         /// <summary>
         /// 非同步執行資料庫命令，傳回異動筆數。
         /// </summary>
-        /// <param name="command">資料庫命令。</param>
+        /// <param name="commandSpec">資料庫命令描述。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public async Task<int> ExecuteNonQueryAsync(DbCommand command, CancellationToken cancellationToken = default)
+        private async Task<DbCommandResult> ExecuteNonQueryAsync(DbCommandSpec commandSpec, CancellationToken cancellationToken = default)
         {
-            CapCommandTimeout(command);  // 套用命令逾時限制
-            using (var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
+            using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
+            using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
             {
-                command.Connection = connection;
-                return await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，傳回異動筆數。
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public async Task<int> ExecuteNonQueryAsync(string commandText, CancellationToken cancellationToken = default)
-        {
-            using (var command = CreateCommand(commandText))
-            {
-                return await ExecuteNonQueryAsync(command, cancellationToken).ConfigureAwait(false);
+                int rows = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                return DbCommandResult.ForRowsAffected(rows);
             }
         }
 
         /// <summary>
         /// 非同步執行資料庫命令，傳回單一值。
         /// </summary>
-        /// <param name="command">資料庫命令。</param>
+        /// <param name="commandSpec">資料庫命令描述。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public async Task<object> ExecuteScalarAsync(DbCommand command, CancellationToken cancellationToken = default)
+        private async Task<DbCommandResult> ExecuteScalarAsync(DbCommandSpec commandSpec, CancellationToken cancellationToken = default)
         {
-            CapCommandTimeout(command);
-            using (var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false))
+            using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
+            using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
             {
-                command.Connection = connection;
-                return await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                var value = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+                return DbCommandResult.ForScalar(value);
             }
         }
 
@@ -434,21 +400,32 @@ namespace Bee.Db
         /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
         /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
         /// </summary>
-        /// <param name="command">資料庫命令。</param>
+        /// <param name="commandSpec">資料庫命令描述。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
         /// <returns>傳回 DbDataReader 物件。</returns>
-        public async Task<DbDataReader> ExecuteReaderAsync(DbCommand command, CancellationToken cancellationToken = default)
+        public async Task<DbDataReader> ExecuteReaderAsync(DbCommandSpec commandSpec, CancellationToken cancellationToken = default)
         {
-            CapCommandTimeout(command);
-            var connection = await OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
+            if (commandSpec == null) throw new ArgumentNullException(nameof(commandSpec));
+
+            // 用 Scope 統一管理連線建立/開啟；成功後不在這裡 Dispose Scope，
+            // 讓連線生命週期交由 reader（自建連線時）或外部（外部連線時）決定。
+            var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                command.Connection = connection;
-                return await command.ExecuteReaderAsync(CommandBehavior.CloseConnection, cancellationToken).ConfigureAwait(false);
+                var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection);
+
+                // 自行建立連線才使用 CloseConnection（reader.Dispose() 會關掉連線）；
+                // 若使用外部連線，避免關閉外部連線。
+                var behavior = (_externalConnection == null)
+                    ? CommandBehavior.CloseConnection
+                    : CommandBehavior.Default;
+
+                return await cmd.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
             }
             catch
             {
-                connection.Dispose();
+                // 失敗時才釋放 scope（避免連線洩漏）
+                scope.Dispose();
                 throw;
             }
         }
