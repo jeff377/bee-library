@@ -15,16 +15,16 @@ namespace Bee.Db
         /// <summary>
         /// 新增命令描述。
         /// </summary>
-        public DbCommandSpec Insert { get; set; }
+        public DbCommandSpec InsertCommand { get; set; }
 
         /// <summary>
         /// 更新命令描述。
         /// </summary>
-        public DbCommandSpec Update { get; set; }
+        public DbCommandSpec UpdateCommand { get; set; }
 
         /// <summary>
         /// 刪除命令描述。
         /// </summary>
-        public DbCommandSpec Delete { get; set; }
+        public DbCommandSpec DeleteCommand { get; set; }
     }
 }

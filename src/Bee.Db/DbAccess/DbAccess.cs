@@ -465,7 +465,7 @@ namespace Bee.Db
         {
             if (spec == null) throw new ArgumentNullException(nameof(spec));
             if (spec.DataTable == null) throw new ArgumentNullException(nameof(spec.DataTable));
-            if (spec.Insert == null && spec.Update == null && spec.Delete == null)
+            if (spec.InsertCommand == null && spec.UpdateCommand == null && spec.DeleteCommand == null)
                 throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(spec));
 
             using (var scope = CreateScope())
@@ -474,17 +474,17 @@ namespace Bee.Db
 
                 try
                 {
-                    if (spec.Insert != null)
+                    if (spec.InsertCommand != null)
                     {
-                        insert = spec.Insert.CreateCommand(DatabaseType, scope.Connection);
+                        insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection);
                     }
-                    if (spec.Update != null)
+                    if (spec.UpdateCommand != null)
                     {
-                        update = spec.Update.CreateCommand(DatabaseType, scope.Connection);
+                        update = spec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection);
                     }
-                    if (spec.Delete != null)
+                    if (spec.DeleteCommand != null)
                     {
-                        delete = spec.Delete.CreateCommand(DatabaseType, scope.Connection);
+                        delete = spec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection);
                     }
 
                     var adapter = Provider.CreateDataAdapter()

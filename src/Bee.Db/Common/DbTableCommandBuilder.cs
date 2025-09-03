@@ -1,34 +1,34 @@
 ﻿using Bee.Base;
 using Bee.Define;
+using System;
+using System.Data;
 using System.Text;
 
 namespace Bee.Db
 {
     /// <summary>
-    /// 以 <see cref="DbTable"/> 為依據，產生 Insert、Delete、Update 的資料庫命令。
+    /// 以 <see cref="DbTable"/> 為依據，產生 Insert、Update、Delete 的資料庫命令；亦可直接包裝成 <see cref="DataTableUpdateSpec"/>。
     /// </summary>
     public class DbTableCommandBuilder
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="databaseType">資料表類型。</param>
+        /// <param name="databaseType">資料庫類型。</param>
         /// <param name="dbTable">資料表結構。</param>
         public DbTableCommandBuilder(DatabaseType databaseType, DbTable dbTable)
         {
             DatabaseType = databaseType;
-            DbTable = dbTable;
+            DbTable = dbTable ?? throw new ArgumentNullException(nameof(dbTable), "DbTable cannot be null.");
         }
 
         /// <summary>
-        /// 建構函式。
+        /// 建構函式（由全域設定取得資料庫類型）。
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
         public DbTableCommandBuilder(DbTable dbTable)
-        {
-            DatabaseType = BackendInfo.DatabaseType;
-            DbTable = dbTable;
-        }        
+            : this(BackendInfo.DatabaseType, dbTable)
+        { }
 
         /// <summary>
         /// 資料庫類型。
@@ -161,6 +161,29 @@ namespace Bee.Db
 
             command.CommandText = buffer.ToString();
             return command;
+        }
+
+        /// <summary>
+        /// 直接產生 <see cref="DataTableUpdateSpec"/>，將 Insert/Update/Delete 命令與資料表一併打包。
+        /// </summary>
+        /// <param name="dataTable">要寫回資料庫的資料表。</param>
+        /// <returns>批次異動規格。</returns>
+        public DataTableUpdateSpec BuildUpdateSpec(DataTable dataTable)
+        {
+            if (dataTable == null)
+                throw new ArgumentNullException(nameof(dataTable), "DataTable cannot be null.");
+
+            var insertCmd = BuildInsertCommand();
+            var updateCmd = BuildUpdateCommand();
+            var deleteCmd = BuildDeleteCommand();
+
+            return new DataTableUpdateSpec()
+            {
+                DataTable = dataTable,
+                InsertCommand = insertCmd, 
+                UpdateCommand = updateCmd,
+                DeleteCommand = deleteCmd
+            };
         }
     }
 }
