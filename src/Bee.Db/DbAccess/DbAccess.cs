@@ -459,6 +459,58 @@ namespace Bee.Db
         /// <summary>
         /// 將 DataTable 的異動寫入資料庫。 
         /// </summary>
+        /// <param name="spec">承載 DataTable 更新所需的資料表與三個命令描。</param>
+        /// <returns>受影響的資料列數。</returns>
+        public int UpdateDataTable(DataTableUpdateSpec spec)
+        {
+            if (spec == null) throw new ArgumentNullException(nameof(spec));
+            if (spec.DataTable == null) throw new ArgumentNullException(nameof(spec.DataTable));
+            if (spec.Insert == null && spec.Update == null && spec.Delete == null)
+                throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(spec));
+
+            using (var scope = CreateScope())
+            {
+                DbCommand insert = null, update = null, delete = null;
+
+                try
+                {
+                    if (spec.Insert != null)
+                    {
+                        insert = spec.Insert.CreateCommand(DatabaseType, scope.Connection);
+                    }
+                    if (spec.Update != null)
+                    {
+                        update = spec.Update.CreateCommand(DatabaseType, scope.Connection);
+                    }
+                    if (spec.Delete != null)
+                    {
+                        delete = spec.Delete.CreateCommand(DatabaseType, scope.Connection);
+                    }
+
+                    var adapter = Provider.CreateDataAdapter()
+                                  ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
+
+                    using (adapter)
+                    {
+                        adapter.InsertCommand = insert;
+                        adapter.UpdateCommand = update;
+                        adapter.DeleteCommand = delete;
+
+                        return adapter.Update(spec.DataTable);
+                    }
+                }
+                finally
+                {
+                    if (insert != null) insert.Dispose();
+                    if (update != null) update.Dispose();
+                    if (delete != null) delete.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// 將 DataTable 的異動寫入資料庫。 
+        /// </summary>
         /// <param name="dataTable">資料表。</param>
         /// <param name="insertCommand">新增命令。</param>
         /// <param name="updateCommand">更新命令。</param>
