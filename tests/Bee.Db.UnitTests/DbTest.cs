@@ -42,6 +42,14 @@ namespace Bee.Db.UnitTests
                 result = dbAccess.Execute(command);
                 Assert.NotNull(result.Table);
             }
+
+            sql = "SELECT * FROM ts_user WHERE sys_id = {0} OR sys_id = {1} ";
+            command = new DbCommandSpec(DbCommandKind.DataTable, sql);
+            command.Parameters.Add("p1", "001");
+            command.Parameters.Add("p2", "002");
+            dbAccess = new DbAccess("common");
+            result = dbAccess.Execute(command);
+            Assert.NotNull(result.Table);
         }
 
         /// <summary>

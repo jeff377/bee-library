@@ -82,24 +82,13 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 跳脫字元字典。
-        /// </summary>
-        private static readonly Dictionary<DatabaseType, Func<string, string>> QuoteIdentifiers = new Dictionary<DatabaseType, Func<string, string>>
-        {
-            { DatabaseType.SQLServer, s => $"[{s}]" },
-            { DatabaseType.MySQL, s => $"`{s}`" },
-            { DatabaseType.SQLite, s => $"\"{s}\"" },
-            { DatabaseType.Oracle, s => $"\"{s}\"" }
-        };
-
-        /// <summary>
         /// 在資料表或欄位名稱上加上適當的跳脫字元（Quoting Identifier）。
         /// </summary>
         /// <param name="identifier">資料表或欄位名稱。</param>
         /// <returns>回傳加上跳脫字元的識別字。</returns>
         public string QuoteIdentifier(string identifier)
         {
-            return QuoteIdentifiers.TryGetValue(DatabaseType, out var quoteFunc) ? quoteFunc(identifier) : identifier;
+            return DbFunc.QuoteIdentifier(DatabaseType, identifier);
         }
 
         /// <summary>

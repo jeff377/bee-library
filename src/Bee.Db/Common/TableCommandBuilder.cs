@@ -10,24 +10,19 @@ namespace Bee.Db
     /// </summary>
     public class TableCommandBuilder
     {
-        private readonly DbTable _DbTable = null;
-
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
         public TableCommandBuilder(DbTable dbTable)
         {
-            _DbTable = dbTable;
+            DbTable = dbTable;
         }
 
         /// <summary>
         /// 資料表結構。
         /// </summary>
-        public DbTable DbTable
-        {
-            get { return _DbTable; }
-        }
+        public DbTable DbTable { get; }
 
         /// <summary>
         /// 建立資料庫命令輔助類別。

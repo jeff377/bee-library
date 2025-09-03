@@ -15,6 +15,53 @@ namespace Bee.Db
     public static class DbFunc
     {
         /// <summary>
+        /// 參數名稱的前綴符號字典。
+        /// </summary>
+        private static readonly Dictionary<DatabaseType, string> DbParameterPrefixes = new Dictionary<DatabaseType, string>
+        {
+            { DatabaseType.SQLServer, "@" },
+            { DatabaseType.MySQL, "@" },
+            { DatabaseType.SQLite, "@" },
+            { DatabaseType.Oracle, ":" }
+        };
+
+        /// <summary>
+        /// 取得參數名稱的前綴符號。
+        /// </summary>
+        /// <param name="databaseType">資料庫類型。</param>
+        /// <returns>參數前綴符號。</returns>
+        public static string GetDbParameterPrefix(DatabaseType databaseType)
+        {
+            return DbParameterPrefixes.TryGetValue(databaseType, out var prefix)
+                ? prefix
+                : throw new NotSupportedException($"Unsupported database type: {databaseType}.");
+        }
+
+        /// <summary>
+        /// 跳脫字元字典。
+        /// </summary>
+        private static readonly Dictionary<DatabaseType, Func<string, string>> QuoteIdentifiers = new Dictionary<DatabaseType, Func<string, string>>
+        {
+            { DatabaseType.SQLServer, s => $"[{s}]" },
+            { DatabaseType.MySQL, s => $"`{s}`" },
+            { DatabaseType.SQLite, s => $"\"{s}\"" },
+            { DatabaseType.Oracle, s => $"\"{s}\"" }
+        };
+
+        /// <summary>
+        /// 依據資料庫類型，回傳適當的識別字串跳脫格式。
+        /// </summary>
+        /// <param name="databaseType">資料庫類型。</param>
+        /// <param name="identifier">識別字名稱。</param>
+        /// <returns>跳脫後的識別字。</returns>
+        public static string QuoteIdentifier(DatabaseType databaseType, string identifier)
+        {
+            if (QuoteIdentifiers.TryGetValue(databaseType, out var func))
+                return func(identifier);
+            throw new NotSupportedException($"Unsupported database type: {databaseType}.");
+        }
+
+        /// <summary>
         /// 建立資料庫連線。
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>

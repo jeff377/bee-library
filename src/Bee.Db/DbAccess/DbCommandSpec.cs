@@ -2,6 +2,8 @@
 using System;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace Bee.Db
 {
@@ -78,15 +80,15 @@ namespace Bee.Db
         /// 建立 <see cref="DbCommand"/> 實例，並依據目前的 <see cref="DbCommandSpec"/> 設定套用屬性與參數。
         /// </summary>
         /// <param name="connection">資料庫連線，用於建立命令並自動綁定。</param>
-        /// <param name="parameterPrefix">參數名稱的前綴符號（例如 SQL Server 為 <c>"@"</c>、Oracle 為 <c>":"</c>）。若為 <c>null</c> 或空字串，則不自動加上前綴。</param>
-        public DbCommand CreateCommand(DbConnection connection, string parameterPrefix = null)
+        /// <param name="parameterPrefix">參數名稱的前綴符號（例如 SQL Server 為 <c>"@"</c>、Oracle 為 <c>":"</c>）。</param>
+        public DbCommand CreateCommand(DbConnection connection, string parameterPrefix)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection), "Connection cannot be null.");
             if (string.IsNullOrWhiteSpace(CommandText))
                 throw new InvalidOperationException("CommandText cannot be null or empty.");
 
             var cmd = connection.CreateCommand();
-            cmd.CommandText = CommandText;
+            cmd.CommandText = ResolveParameters(parameterPrefix);
             cmd.CommandType = CommandType;
             cmd.CommandTimeout = CommandTimeout;
 
@@ -107,6 +109,41 @@ namespace Bee.Db
             return cmd;
         }
 
+        /// <summary>
+        /// 解析 CommandText 中的 {0} 或 {Name}，並轉換成資料庫參數格式。
+        /// </summary>
+        /// <param name="parameterPrefix">資料庫參數前綴字元，例如 @ 或 :。</param>
+        /// <returns>轉換後的 SQL 指令。</returns>
+        private string ResolveParameters(string parameterPrefix)
+        {
+            if (string.IsNullOrWhiteSpace(CommandText))
+                throw new InvalidOperationException("Failed to execute SQL command: Command text is empty.");
+
+            // 尋找 {0}, {Name}
+            return Regex.Replace(CommandText, @"\{(?<key>[^\}]+)\}", match =>
+            {
+                var key = match.Groups["key"].Value;
+
+                // 數字 → 位置參數
+                if (int.TryParse(key, out var index))
+                {
+                    if (index < 0 || index >= Parameters.Count)
+                        throw new InvalidOperationException(
+                            $"Failed to resolve SQL parameter: Index {{{index}}} not found in Parameters collection.");
+
+                    return parameterPrefix + Parameters[index].Name;
+                }
+
+                // 文字 → 具名參數
+                var param = Parameters.FirstOrDefault(p =>
+                    p.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
+                if (param == null)
+                    throw new InvalidOperationException(
+                        $"Failed to resolve SQL parameter: Name {{{key}}} not found in Parameters collection.");
+
+                return parameterPrefix + param.Name;
+            });
+        }
 
     }
 }

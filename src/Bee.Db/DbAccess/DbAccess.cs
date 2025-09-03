@@ -75,23 +75,11 @@ namespace Bee.Db
         public int CommandTimeout { get; set; } = 30;
 
         /// <summary>
-        /// 參數名稱的前綴符號字典。
-        /// </summary>
-        private static readonly Dictionary<DatabaseType, string> DbParameterPrefixes = new Dictionary<DatabaseType, string>
-        {
-            { DatabaseType.SQLServer, "@" },
-            { DatabaseType.MySQL, "@" },
-            { DatabaseType.SQLite, "@" },
-            { DatabaseType.Oracle, ":" }
-        };
-
-        /// <summary>
         /// 解析參數名稱前綴符號。
         /// </summary>
         private string ResolveParameterPrefix()
         {
-            string prefix;
-            return DbParameterPrefixes.TryGetValue(DatabaseType, out prefix) ? prefix : null;
+            return DbFunc.GetDbParameterPrefix(DatabaseType);
         }
 
         /// <summary>
