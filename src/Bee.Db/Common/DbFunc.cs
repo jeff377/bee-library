@@ -62,6 +62,34 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 根據傳入值推斷 DbType。
+        /// </summary>
+        /// <param name="value">傳入值。</param>
+        public static DbType? InferDbType(object value)
+        {
+            if (value == null || value is DBNull) return null;
+
+            var type = value.GetType();
+
+            if (type == typeof(string)) return DbType.String;
+            if (type == typeof(int)) return DbType.Int32;
+            if (type == typeof(long)) return DbType.Int64;
+            if (type == typeof(short)) return DbType.Int16;
+            if (type == typeof(byte)) return DbType.Byte;
+            if (type == typeof(bool)) return DbType.Boolean;
+            if (type == typeof(DateTime)) return DbType.DateTime;
+            if (type == typeof(decimal)) return DbType.Decimal;
+            if (type == typeof(double)) return DbType.Double;
+            if (type == typeof(float)) return DbType.Single;
+            if (type == typeof(Guid)) return DbType.Guid;
+            if (type == typeof(byte[])) return DbType.Binary;
+            if (type == typeof(TimeSpan)) return DbType.Time;
+
+            // fallback：不指定，交給 Provider 自動判斷
+            return null;
+        }
+
+        /// <summary>
         /// 建立資料庫連線。
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>

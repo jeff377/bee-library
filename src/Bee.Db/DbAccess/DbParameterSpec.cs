@@ -11,6 +11,24 @@ namespace Bee.Db
     public class DbParameterSpec : KeyCollectionItem
     {
         /// <summary>
+        /// 建構函式。
+        /// </summary>
+        public DbParameterSpec()
+        { }
+
+        /// <summary>
+        /// 建構函式，根據參數值推斷 DbType。
+        /// </summary>
+        /// <param name="name">參數名稱。</param>
+        /// <param name="value">參數值。</param>
+        public DbParameterSpec(string name, object value)
+        {
+            Name= name;
+            Value= value;
+            DbType = DbFunc.InferDbType(value);
+        }
+
+        /// <summary>
         /// 參數名稱，不需包含參數前綴符號（例如 SQL Server 的 @）。
         /// </summary>
         public string Name
@@ -49,5 +67,13 @@ namespace Bee.Db
         /// 例如：<see cref="DataRowVersion.Current"/>、<see cref="DataRowVersion.Original"/>、<see cref="DataRowVersion.Proposed"/>。
         /// </summary>
         public DataRowVersion SourceVersion { get; set; } = DataRowVersion.Current;
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{Name} = {Value}";
+        }
     }
 }

@@ -50,6 +50,21 @@ namespace Bee.Db.UnitTests
             dbAccess = new DbAccess("common");
             result = dbAccess.Execute(command);
             Assert.NotNull(result.Table);
+
+            command = new DbCommandSpec(DbCommandKind.DataTable, sql, "001", "002");
+            dbAccess = new DbAccess("common");
+            result = dbAccess.Execute(command);
+            Assert.NotNull(result.Table);
+
+            var parameters = new Dictionary<string, object>
+            {
+                { "p1", "001" },
+                { "p2", "002" }
+            };
+            sql = "SELECT * FROM ts_user WHERE sys_id = {p1} OR sys_id = {p2} ";
+            command = new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
+            result = dbAccess.Execute(command);
+            Assert.NotNull(result.Table);
         }
 
         /// <summary>

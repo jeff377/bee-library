@@ -1,5 +1,6 @@
 ﻿using Bee.Define;
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Linq;
@@ -25,14 +26,49 @@ namespace Bee.Db
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// 建構函式（位置參數模式）。
         /// </summary>
         /// <param name="kind">資料庫命令的執行種類。</param>
-        /// <param name="commandText">要執行的 SQL 陳述式。</param>
-        public DbCommandSpec(DbCommandKind kind, string commandText)
+        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
+        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
+        public DbCommandSpec(DbCommandKind kind, string commandText, params object[] values)
         {
+            if (string.IsNullOrWhiteSpace(commandText))
+                throw new ArgumentNullException(nameof(commandText), "Command text cannot be null or empty.");
+
             Kind = kind;
             CommandText = commandText;
+
+            if (values != null && values.Length > 0)
+            {
+                for (int i = 0; i < values.Length; i++)
+                {
+                    Parameters.Add("p" + i, values[i]);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 建構函式（具名參數模式）。
+        /// </summary>
+        /// <param name="kind">資料庫命令的執行種類。</param>
+        /// <param name="commandText">要執行的 SQL 陳述式，可使用 {Name} 格式。</param>
+        /// <param name="parameters">具名參數集合。</param>
+        public DbCommandSpec(DbCommandKind kind, string commandText, IDictionary<string, object> parameters)
+        {
+            if (string.IsNullOrWhiteSpace(commandText))
+                throw new ArgumentNullException(nameof(commandText), "Command text cannot be null or empty.");
+
+            Kind = kind;
+            CommandText = commandText;
+
+            if (parameters != null)
+            {
+                foreach (var kv in parameters)
+                {
+                    Parameters.Add(kv.Key, kv.Value);
+                }
+            }
         }
 
         /// <summary>
@@ -165,5 +201,12 @@ namespace Bee.Db
             });
         }
 
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return CommandText;
+        }
     }
 }
