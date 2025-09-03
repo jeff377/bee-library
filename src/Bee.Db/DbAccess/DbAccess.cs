@@ -57,127 +57,17 @@ namespace Bee.Db
         /// <summary>
         /// 資料庫類型。
         /// </summary>
-        public DatabaseType DatabaseType { get; private set; }
+        public DatabaseType DatabaseType { get; }
 
         /// <summary>
         /// 資料庫來源提供者。
         /// </summary>
-        public DbProviderFactory Provider { get; private set; }
+        public DbProviderFactory Provider { get; }
 
         /// <summary>
         /// 資料庫連線字串。
         /// </summary>
-        public string ConnectionString { get; private set; }
-
-        /// <summary>
-        /// 使用 CreateCommand 的預設命令逾時（秒）。
-        /// </summary>
-        public int CommandTimeout { get; set; } = 30;
-
-        /// <summary>
-        /// 建立資料庫連線。
-        /// </summary>
-        public DbConnection CreateConnection()
-        {
-            var connection = Provider.CreateConnection();
-            if (connection == null)
-                throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");
-
-            connection.ConnectionString = ConnectionString;
-            return connection;
-        }
-
-        /// <summary>
-        /// 開啟資料庫連線。
-        /// </summary>
-        private DbConnection OpenConnection()
-        {
-            var connection = CreateConnection();
-            try
-            {
-                connection.Open();
-                return connection;
-            }
-            catch
-            {
-                // 失敗時也要確保釋放
-                connection.Dispose();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 非同步開啟資料庫連線。
-        /// </summary>
-        private async Task<DbConnection> OpenConnectionAsync(CancellationToken cancellationToken = default)
-        {
-            var connection = CreateConnection();
-            try
-            {
-                await connection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                return connection;
-            }
-            catch
-            {
-                connection.Dispose();
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// 依全域上限 <see cref="BackendInfo.MaxDbCommandTimeout"/> 套用命令逾時限制。
-        /// </summary>
-        /// <param name="timeoutSeconds">要求的逾時秒數。</param>
-        /// <returns>經上限處理後的逾時秒數。</returns>
-        private static int CapTimeoutSeconds(int timeoutSeconds)
-        {
-            int cap = BackendInfo.MaxDbCommandTimeout;
-            // 不控管 → 原值
-            if (cap <= 0) { return timeoutSeconds; }
-            // 無限或負數 → 套上限
-            if (timeoutSeconds <= 0) { return cap; }
-            // 驗證是否套上限
-            return timeoutSeconds > cap ? cap : timeoutSeconds;
-        }
-
-        /// <summary>
-        /// 對指定 <see cref="DbCommand"/> 的 <see cref="DbCommand.CommandTimeout"/> 套用全域上限。
-        /// </summary>
-        /// <param name="command">要處理的資料庫命令。</param>
-        private static void CapCommandTimeout(DbCommand command)
-        {
-            if (command == null) throw new ArgumentNullException(nameof(command));
-            command.CommandTimeout = CapTimeoutSeconds(command.CommandTimeout);
-        }
-
-        /// <summary>
-        /// 建立資料庫命令。
-        /// </summary>
-        /// <param name="commandType">SQL 命令類型。</param>
-        /// <param name="commandText">SQL 陳述式或預存程序。</param>
-        private DbCommand CreateCommand(CommandType commandType, string commandText)
-        {
-            if (string.IsNullOrWhiteSpace(commandText))
-                throw new ArgumentException("commandText cannot be null or empty.", nameof(commandText));
-
-            var command = Provider.CreateCommand();
-            if (command == null)
-                throw new InvalidOperationException("DbProviderFactory.CreateCommand() returned null.");
-
-            command.CommandType = commandType;
-            command.CommandText = commandText;
-            command.CommandTimeout = CapTimeoutSeconds(CommandTimeout);
-            return command;
-        }
-
-        /// <summary>
-        /// 建立資料庫命令。
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        private DbCommand CreateCommand(string commandText)
-        {
-            return CreateCommand(CommandType.Text, commandText);
-        }
+        public string ConnectionString { get; }
 
         /// <summary>
         /// 建立連線範圍，會自動決定使用外部連線或自行建立連線。
@@ -507,49 +397,5 @@ namespace Bee.Db
                 }
             }
         }
-
-        /// <summary>
-        /// 將 DataTable 的異動寫入資料庫。 
-        /// </summary>
-        /// <param name="dataTable">資料表。</param>
-        /// <param name="insertCommand">新增命令。</param>
-        /// <param name="updateCommand">更新命令。</param>
-        /// <param name="deleteCommand">刪除命令。</param>
-        /// <returns>受影響的資料列數。</returns>
-        public int UpdateDataTable(DataTable dataTable, DbCommand insertCommand, DbCommand updateCommand, DbCommand deleteCommand)
-        {
-            if (dataTable == null) throw new ArgumentNullException(nameof(dataTable));
-
-            try
-            {
-                using (var connection = OpenConnection())
-                {
-                    if (insertCommand != null) { CapCommandTimeout(insertCommand); insertCommand.Connection = connection; }
-                    if (updateCommand != null) { CapCommandTimeout(updateCommand); updateCommand.Connection = connection; }
-                    if (deleteCommand != null) { CapCommandTimeout(deleteCommand); deleteCommand.Connection = connection; }
-
-                    var adapter = Provider.CreateDataAdapter();
-                    if (adapter == null)
-                        throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
-
-                    using (adapter)
-                    {
-                        adapter.InsertCommand = insertCommand;
-                        adapter.UpdateCommand = updateCommand;
-                        adapter.DeleteCommand = deleteCommand;
-                        return adapter.Update(dataTable);
-                    }
-                }
-            }
-            finally
-            {
-                if (insertCommand != null) insertCommand.Dispose();
-                if (updateCommand != null) updateCommand.Dispose();
-                if (deleteCommand != null) deleteCommand.Dispose();
-            }
-
-
-        }
-
     }
 }
