@@ -255,7 +255,7 @@ namespace Bee.Db
         /// 執行資料庫命令，傳回單一值。
         /// </summary>
         /// <param name="commandSpec">資料庫命令描述。</param>
-        public DbCommandResult ExecuteScalar(DbCommandSpec commandSpec)
+        private DbCommandResult ExecuteScalar(DbCommandSpec commandSpec)
         {
             using (var scope = CreateScope())
             {
@@ -287,6 +287,31 @@ namespace Bee.Db
                 // ExecuteReader 失敗要自行清理連線
                 scope.Dispose();
                 throw;
+            }
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
+        /// </summary>
+        /// <typeparam name="T">要映射的目標類型。</typeparam>
+        /// <param name="commandSpec">資料庫命令描述。</param>
+        /// <returns>返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。</returns>
+        public IEnumerable<T> Query<T>(DbCommandSpec commandSpec)
+        {
+            // 使用 command 執行資料庫查詢，並取得 DbDataReader
+            var reader = ExecuteReader(commandSpec);
+            var mapper = ILMapper<T>.CreateMapFunc(reader);
+            // 延遲執行，不能使用 using，會造成連線被提早關閉
+            try
+            {
+                foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
+                {
+                    yield return item;
+                }
+            }
+            finally
+            {
+                reader.Dispose(); // 迭代結束後才關閉 reader
             }
         }
 
@@ -363,32 +388,6 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 執行資料庫命令，傳回異動筆數。
-        /// </summary>
-        /// <param name="command">資料庫命令。</param>
-        public int ExecuteNonQuery(DbCommand command)
-        {
-            CapCommandTimeout(command);   // 套用命令逾時限制
-            using (var connection = OpenConnection())
-            {
-                command.Connection = connection;
-                return command.ExecuteNonQuery();
-            }
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回異動筆數。
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        public int ExecuteNonQuery(string commandText)
-        {
-            using (var command = CreateCommand(commandText))
-            {
-                return ExecuteNonQuery(command);
-            }
-        }
-
-        /// <summary>
         /// 非同步執行資料庫命令，傳回異動筆數。
         /// </summary>
         /// <param name="command">資料庫命令。</param>
@@ -417,32 +416,6 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="command">資料庫命令。</param>
-        public object ExecuteScalar(DbCommand command)
-        {
-            CapCommandTimeout(command);   // 套用命令逾時限制
-            using (var connection = OpenConnection())
-            {
-                command.Connection = connection;
-                return command.ExecuteScalar();
-            }
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回單一值。
-        /// </summary>
-        /// <param name="commandText">SQL 陳述式。</param>
-        public object ExecuteScalar(string commandText)
-        {
-            using (var command = CreateCommand(commandText))
-            {
-                return ExecuteScalar(command);
-            }
-        }
-
-        /// <summary>
         /// 非同步執行資料庫命令，傳回單一值。
         /// </summary>
         /// <param name="command">資料庫命令。</param>
@@ -454,31 +427,6 @@ namespace Bee.Db
             {
                 command.Connection = connection;
                 return await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-            }
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
-        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
-        /// </summary>
-        /// <param name="command">資料庫命令。</param>
-        /// <returns>傳回 DbDataReader 物件。</returns>
-        public DbDataReader ExecuteReader(DbCommand command)
-        {
-            CapCommandTimeout(command);   // 套用命令逾時限制
-
-            var connection = OpenConnection();
-            try
-            {
-                command.Connection = connection;
-                // CloseConnection: reader 關閉時一併關閉 connection
-                return command.ExecuteReader(CommandBehavior.CloseConnection);
-            }
-            catch
-            {
-                // ExecuteReader 失敗要自行清理連線
-                connection.Dispose();
-                throw;
             }
         }
 
@@ -503,57 +451,6 @@ namespace Bee.Db
                 connection.Dispose();
                 throw;
             }
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="command">資料庫命令。</param>
-        /// <returns>返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。</returns>
-        public IEnumerable<T> Query<T>(DbCommand command)
-        {
-            CapCommandTimeout(command);   // 套用命令逾時限制
-
-            // 使用 command 執行資料庫查詢，並取得 DbDataReader
-            var reader = ExecuteReader(command);
-            var mapper = ILMapper<T>.CreateMapFunc(reader);
-            // 延遲執行，不能使用 using，會造成連線被提早關閉
-            try
-            {
-                foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
-                {
-                    yield return item;
-                }
-            }
-            finally
-            {
-                reader.Dispose(); // 迭代結束後才關閉 reader
-            }
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
-        /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="commandText">SQL 陳述式。</param>
-        /// <returns>返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。</returns>
-        public IEnumerable<T> Query<T>(string commandText)
-        {
-            using (var command = CreateCommand(commandText))
-            {
-                var reader = ExecuteReader(command); // reader.Dispose 時會關 connection
-                var mapper = ILMapper<T>.CreateMapFunc(reader);
-                try
-                {
-                    foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
-                        yield return item;
-                }
-                finally
-                {
-                    reader.Dispose(); // 於列舉完成時關閉
-                }
-            } // command 於列舉完成時 Dispose
         }
 
         /// <summary>

@@ -1,6 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Cache;
 using Bee.Define;
+using System.Runtime.InteropServices;
 
 namespace Bee.Db
 {
@@ -72,7 +73,9 @@ namespace Bee.Db
             string sql = this.GetCommandText(dbName, tableName);
             if (StrFunc.IsNotEmpty(sql))
             {
-                SysDb.ExecuteNonQuery(this.DatabaseId, sql);
+                var command = new DbCommandSpec(DbCommandKind.NonQuery, sql);
+                var dbAccess = new DbAccess(DatabaseId);
+                dbAccess.Execute(command);
                 return true;
             }
             return false;

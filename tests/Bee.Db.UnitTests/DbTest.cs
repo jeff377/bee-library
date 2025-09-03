@@ -4,6 +4,7 @@ using Bee.Base;
 using Bee.Cache;
 using Bee.Define;
 using Microsoft.Data.SqlClient;
+using Xunit.Sdk;
 
 namespace Bee.Db.UnitTests
 {
@@ -67,7 +68,8 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteDataTableAsync()
         {
             string sql = "SELECT * FROM ts_user";
-            var table = await SysDb.ExecuteDataTableAsync("common", sql);
+            var dbAccess = new DbAccess("common");
+            var table = await dbAccess.ExecuteDataTableAsync(sql);
             Assert.NotNull(table);
             Assert.True(table.Rows.Count > 0);
         }
@@ -76,8 +78,11 @@ namespace Bee.Db.UnitTests
         public void ExecuteNonQuery()
         {
             int i = BaseFunc.RndInt(0, 100);
-            string sql = $"Update ts_user Set note='{i}' Where sys_id = '001'";
-            int rows = SysDb.ExecuteNonQuery("common", sql);
+            string sql = "Update ts_user Set note={1} Where sys_id = {0}";
+            var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
+            var dbAccess = new DbAccess("common");
+            var result = dbAccess.Execute(command);
+            int rows = result.RowsAffected;
         }
 
         [Fact]
@@ -114,8 +119,9 @@ namespace Bee.Db.UnitTests
         {
             int i = BaseFunc.RndInt(0, 100);
             string sql = $"Update ts_user Set note='{i}' Where sys_id = '001'";
-            int rows = await SysDb.ExecuteNonQueryAsync("common", sql);
-            int rows2 = await SysDb.ExecuteNonQueryAsync("common", sql);
+            var dbAccess = new DbAccess("common");
+            int rows = await dbAccess.ExecuteNonQueryAsync(sql);
+            int rows2 = await dbAccess.ExecuteNonQueryAsync(sql);
         }
 
         [Fact]
@@ -146,19 +152,22 @@ namespace Bee.Db.UnitTests
         public void Query()
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
-            var list = SysDb.Query<User>("common", sql).ToList();
-            var list3 = SysDb.Query<User2>("common", sql).ToList();
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
+            var dbAccess = new DbAccess("common");
+            var list = dbAccess.Query<User>(command).ToList();
+            var list3 = dbAccess.Query<User2>(command).ToList();
         }
 
         [Fact]
         public async Task QueryAsync()
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
-            var list = await SysDb.QueryAsync<User>("common", sql);
+            var dbAccess = new DbAccess("common");
+            var list = await dbAccess.QueryAsync<User>(sql);
             Assert.NotNull(list);
             Assert.True(list.Count > 0);
 
-            var list2 = await SysDb.QueryAsync<User2>("common", sql);
+            var list2 = await dbAccess.QueryAsync<User2>(sql);
             Assert.NotNull(list2);
         }
 

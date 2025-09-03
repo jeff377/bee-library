@@ -15,7 +15,7 @@ namespace Bee.Db
         /// <summary>
         /// 受影響筆數（NonQuery）。
         /// </summary>
-        public int? RowsAffected { get; private set; }
+        public int RowsAffected { get; private set; }
 
         /// <summary>
         /// 純量結果（Scalar）。
