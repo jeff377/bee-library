@@ -14,6 +14,9 @@ namespace Bee.Db
     {
         private const int DefaultTimeout = 30;  // 預設逾時秒數
         private int _commandTimeout = DefaultTimeout;
+        // 預編譯：{key}；支援用 {{key}} 代表逃脫（輸出 {key}）
+        private static readonly Regex PlaceholderRegex =
+            new Regex(@"\{(?<key>[^\}]+)\}|\{\{(?<escaped>[^\}]+)\}\}", RegexOptions.Compiled);
 
         /// <summary>
         /// 建構函式。
@@ -88,7 +91,10 @@ namespace Bee.Db
                 throw new InvalidOperationException("CommandText cannot be null or empty.");
 
             var cmd = connection.CreateCommand();
-            cmd.CommandText = ResolveParameters(parameterPrefix);
+            // StoredProcedure 直通，不做參數解析
+            cmd.CommandText = (CommandType == CommandType.StoredProcedure)
+                ? CommandText
+                : ResolveParameters(parameterPrefix);
             cmd.CommandType = CommandType;
             cmd.CommandTimeout = CommandTimeout;
 
@@ -111,6 +117,7 @@ namespace Bee.Db
 
         /// <summary>
         /// 解析 CommandText 中的 {0} 或 {Name}，並轉換成資料庫參數格式。
+        /// 支援 {{Name}} 以輸出字面量 {Name}。
         /// </summary>
         /// <param name="parameterPrefix">資料庫參數前綴字元，例如 @ 或 :。</param>
         /// <returns>轉換後的 SQL 指令。</returns>
@@ -119,9 +126,13 @@ namespace Bee.Db
             if (string.IsNullOrWhiteSpace(CommandText))
                 throw new InvalidOperationException("Failed to execute SQL command: Command text is empty.");
 
-            // 尋找 {0}, {Name}
-            return Regex.Replace(CommandText, @"\{(?<key>[^\}]+)\}", match =>
+            return PlaceholderRegex.Replace(CommandText, match =>
             {
+                // 字面量 {{...}} → 還原成 {...}
+                var escaped = match.Groups["escaped"];
+                if (escaped.Success)
+                    return "{" + escaped.Value + "}";
+
                 var key = match.Groups["key"].Value;
 
                 // 數字 → 位置參數
@@ -131,17 +142,26 @@ namespace Bee.Db
                         throw new InvalidOperationException(
                             $"Failed to resolve SQL parameter: Index {{{index}}} not found in Parameters collection.");
 
-                    return parameterPrefix + Parameters[index].Name;
+                    var name = Parameters[index].Name;
+                    if (string.IsNullOrWhiteSpace(name))
+                        throw new InvalidOperationException(
+                            $"Failed to resolve SQL parameter: Parameter at index {index} has empty name.");
+
+                    return string.IsNullOrEmpty(parameterPrefix) ? name : parameterPrefix + name;
                 }
 
-                // 文字 → 具名參數
+                // 文字 → 具名參數（大小寫不敏感）
                 var param = Parameters.FirstOrDefault(p =>
                     p.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
                 if (param == null)
                     throw new InvalidOperationException(
                         $"Failed to resolve SQL parameter: Name {{{key}}} not found in Parameters collection.");
 
-                return parameterPrefix + param.Name;
+                if (string.IsNullOrWhiteSpace(param.Name))
+                    throw new InvalidOperationException(
+                        $"Failed to resolve SQL parameter: Parameter '{key}' has empty name.");
+
+                return string.IsNullOrEmpty(parameterPrefix) ? param.Name : parameterPrefix + param.Name;
             });
         }
 
