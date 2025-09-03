@@ -21,17 +21,10 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void ExecuteDataTable()
         {
-            string sql = "SELECT * FROM ts_user";
-            var table = SysDb.ExecuteDataTable("common", sql);
-
-            var helper = DbFunc.CreateDbCommandHelper();
-            helper.SetCommandText(sql);
-            var dbAccess = new DbAccess("common");
-            table = dbAccess.ExecuteDataTable(helper.DbCommand);
-
             // 由 DbAccess 管理連線
+            string sql = "SELECT * FROM ts_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
-            dbAccess = new DbAccess("common");
+            var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
             Assert.NotNull(result.Table);
 

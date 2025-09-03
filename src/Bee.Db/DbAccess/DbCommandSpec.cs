@@ -118,14 +118,15 @@ namespace Bee.Db
         /// <summary>
         /// 建立 <see cref="DbCommand"/> 實例，並依據目前的 <see cref="DbCommandSpec"/> 設定套用屬性與參數。
         /// </summary>
+        /// <param name="databaseType">資料庫類型。</param>
         /// <param name="connection">資料庫連線，用於建立命令並自動綁定。</param>
-        /// <param name="parameterPrefix">參數名稱的前綴符號（例如 SQL Server 為 <c>"@"</c>、Oracle 為 <c>":"</c>）。</param>
-        public DbCommand CreateCommand(DbConnection connection, string parameterPrefix)
+        public DbCommand CreateCommand(DatabaseType databaseType, DbConnection connection)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection), "Connection cannot be null.");
             if (string.IsNullOrWhiteSpace(CommandText))
                 throw new InvalidOperationException("CommandText cannot be null or empty.");
 
+            string parameterPrefix = DbFunc.GetDbParameterPrefix(databaseType);
             var cmd = connection.CreateCommand();
             // StoredProcedure 直通，不做參數解析
             cmd.CommandText = (CommandType == CommandType.StoredProcedure)

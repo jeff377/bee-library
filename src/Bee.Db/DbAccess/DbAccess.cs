@@ -75,14 +75,6 @@ namespace Bee.Db
         public int CommandTimeout { get; set; } = 30;
 
         /// <summary>
-        /// 解析參數名稱前綴符號。
-        /// </summary>
-        private string ResolveParameterPrefix()
-        {
-            return DbFunc.GetDbParameterPrefix(DatabaseType);
-        }
-
-        /// <summary>
         /// 建立資料庫連線。
         /// </summary>
         public DbConnection CreateConnection()
@@ -225,7 +217,7 @@ namespace Bee.Db
         {
             using (var scope = CreateScope())
             {
-                using (var cmd = commandSpec.CreateCommand(scope.Connection, ResolveParameterPrefix()))
+                using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
                 {
 
                     var adapter = Provider.CreateDataAdapter()
@@ -251,7 +243,7 @@ namespace Bee.Db
         {
             using (var scope = CreateScope())
             {
-                using (var cmd = commandSpec.CreateCommand(scope.Connection, ResolveParameterPrefix()))
+                using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
                 {
                     cmd.Connection = scope.Connection;
                     int rows = cmd.ExecuteNonQuery();
@@ -268,7 +260,7 @@ namespace Bee.Db
         {
             using (var scope = CreateScope())
             {
-                using (var cmd = commandSpec.CreateCommand(scope.Connection, ResolveParameterPrefix()))
+                using (var cmd = commandSpec.CreateCommand(DatabaseType, scope.Connection))
                 {
                     cmd.Connection = scope.Connection;
                     var value = cmd.ExecuteScalar();
