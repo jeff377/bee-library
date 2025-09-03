@@ -195,5 +195,12 @@ namespace Bee.Db.UnitTests
                 var table = SysDb.ExecuteDataTable("common", helper.DbCommand);
             }
         }
+
+        [Fact]
+        public void SqlDbTableTest()
+        {
+            var helper = new SqlTableSchemaProvider("common");
+            var dbTable = helper.GetTableSchema("ts_user");
+        }
     }
 }

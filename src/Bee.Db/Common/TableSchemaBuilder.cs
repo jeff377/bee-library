@@ -35,8 +35,8 @@ namespace Bee.Db
         public DbTable Compare(string dbName, string tableName)
         {
             // 實際的資料表結構
-            var helper = new SqlDbTableHelper(this.DatabaseId);
-            var realTable = helper.CreateDbTable(tableName);
+            var provider = new SqlTableSchemaProvider(this.DatabaseId);
+            var realTable = provider.GetTableSchema(tableName);
             // 定義的資料表結構
             var defineTable = CacheFunc.GetDbTable(dbName, tableName);
             // 執行比對，並傳回比對後產生的資料表結構

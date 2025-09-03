@@ -5,9 +5,9 @@ using Bee.Define;
 namespace Bee.Db
 {
     /// <summary>
-    /// SQL Server 資料庫結構輔助類別。
+    /// 提供讀取與解析 SQL Server 資料表結構的方法。
     /// </summary>
-    public class SqlDbTableHelper
+    public class SqlTableSchemaProvider
     {
         #region 建構函式
 
@@ -15,7 +15,7 @@ namespace Bee.Db
         /// 建構函式。
         /// </summary>
         /// <param name="databaseId">資料庫編號。</param>
-        public SqlDbTableHelper(string databaseId)
+        public SqlTableSchemaProvider(string databaseId)
         {
             DatabaseId = databaseId;
         }
@@ -36,10 +36,10 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 建立資料表結構。
+        /// 取得資料表結構。
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
-        public DbTable CreateDbTable(string tableName)
+        public DbTable GetTableSchema(string tableName)
         {
             // 若資料表不存在則回傳 null
             if (!TableExists(tableName)) { return null; }
@@ -75,7 +75,7 @@ namespace Bee.Db
             helper.AddParameter("TableName", FieldDbType.String, tableName);
             string sSQL = "Select Count(*) From sys.tables A Where A.name={0}";
             helper.SetCommandFormatText(sSQL);
-            int iCount = BaseFunc.CInt(SysDb.ExecuteScalar(BackendInfo.DatabaseId, helper.DbCommand));
+            int iCount = BaseFunc.CInt(SysDb.ExecuteScalar(DatabaseId, helper.DbCommand));
             return (iCount > 0) ? true : false;
         }
 
@@ -96,7 +96,7 @@ namespace Bee.Db
                           "WHERE B.name={0} \n" +
                           "Order By D.is_primary_key,C.key_ordinal";
             helper.SetCommandFormatText(sql);
-            var table = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, helper.DbCommand);
+            var table = SysDb.ExecuteDataTable(DatabaseId, helper.DbCommand);
             table.TableName = "TableIndex";
             return table;
         }
@@ -195,7 +195,7 @@ namespace Bee.Db
                           "WHERE B.name={0} \n" +
                           "ORDER BY A.column_id";
             helper.SetCommandFormatText(sql);
-            var table = SysDb.ExecuteDataTable(BackendInfo.DatabaseId, helper.DbCommand);
+            var table = SysDb.ExecuteDataTable(DatabaseId, helper.DbCommand);
             table.TableName = "Columns";
             return table;
         }
