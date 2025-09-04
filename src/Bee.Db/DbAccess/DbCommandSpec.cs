@@ -13,7 +13,7 @@ namespace Bee.Db
     /// <summary>
     /// 資料庫命令描述，作為 <see cref="DbCommand"/> 的中介類別。
     /// </summary>
-    public class DbCommandSpec
+    public class DbCommandSpec : CollectionItem
     {
         private const int DefaultTimeout = 30;  // 預設逾時秒數
         private int _commandTimeout = DefaultTimeout;

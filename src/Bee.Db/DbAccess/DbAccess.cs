@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Bee.Base;
+using Bee.Cache;
+using Bee.Define;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using Bee.Base;
-using Bee.Cache;
-using Bee.Define;
 
 namespace Bee.Db
 {
@@ -90,41 +90,18 @@ namespace Bee.Db
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            switch (command.Kind)
-            {
-                case DbCommandKind.NonQuery:
-                    return ExecuteNonQuery(command);
-                case DbCommandKind.Scalar:
-                    return ExecuteScalar(command);
-                case DbCommandKind.DataTable:
-                    return ExecuteDataTable(command);
-                default:
-                    throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
-            }
-        }
-
-        /// <summary>
-        /// 執行資料庫命令，傳回資料表。
-        /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        private DbCommandResult ExecuteDataTable(DbCommandSpec command)
-        {
             using (var scope = CreateScope())
             {
-                using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
+                switch (command.Kind)
                 {
-
-                    var adapter = Provider.CreateDataAdapter()
-                        ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
-
-                    using (adapter)
-                    {
-                        adapter.SelectCommand = cmd;
-                        var table = new DataTable("DataTable");
-                        adapter.Fill(table);
-                        DataSetFunc.UpperColumnName(table);
-                        return DbCommandResult.ForTable(table);
-                    }
+                    case DbCommandKind.NonQuery:
+                        return ExecuteNonQueryCore(command, scope.Connection, null);
+                    case DbCommandKind.Scalar:
+                        return ExecuteScalarCore(command, scope.Connection, null);
+                    case DbCommandKind.DataTable:
+                        return ExecuteDataTableCore(command, scope.Connection, null);
+                    default:
+                        throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
                 }
             }
         }
@@ -133,15 +110,16 @@ namespace Bee.Db
         /// 執行資料庫命令，傳回異動筆數。
         /// </summary>
         /// <param name="command">資料庫命令描述。</param>
-        private DbCommandResult ExecuteNonQuery(DbCommandSpec command)
+        /// <param name="connection">資料庫連線。</param>
+        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
+        private DbCommandResult ExecuteNonQueryCore(
+            DbCommandSpec command, DbConnection connection, DbTransaction transaction)
         {
-            using (var scope = CreateScope())
+            using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
-                using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
-                {
-                    int rows = cmd.ExecuteNonQuery();
-                    return DbCommandResult.ForRowsAffected(rows);
-                }
+                if (transaction != null) cmd.Transaction = transaction;
+                var rows = cmd.ExecuteNonQuery();
+                return DbCommandResult.ForRowsAffected(rows);
             }
         }
 
@@ -149,14 +127,42 @@ namespace Bee.Db
         /// 執行資料庫命令，傳回單一值。
         /// </summary>
         /// <param name="command">資料庫命令描述。</param>
-        private DbCommandResult ExecuteScalar(DbCommandSpec command)
+        /// <param name="connection">資料庫連線。</param>
+        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
+        private DbCommandResult ExecuteScalarCore(
+            DbCommandSpec command, DbConnection connection, DbTransaction transaction)
         {
-            using (var scope = CreateScope())
+            using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
-                using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
+                if (transaction != null) cmd.Transaction = transaction;
+                var value = cmd.ExecuteScalar();
+                return DbCommandResult.ForScalar(value);
+            }
+        }
+
+        /// <summary>
+        /// 執行資料庫命令，傳回資料表。
+        /// </summary>
+        /// <param name="command">資料庫命令描述。</param>
+        /// <param name="connection">資料庫連線。</param>
+        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
+        private DbCommandResult ExecuteDataTableCore(
+            DbCommandSpec command, DbConnection connection, DbTransaction transaction)
+        {
+            using (var cmd = command.CreateCommand(DatabaseType, connection))
+            {
+                if (transaction != null) cmd.Transaction = transaction;
+
+                var adapter = Provider.CreateDataAdapter()
+                    ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
+
+                using (adapter)
                 {
-                    var value = cmd.ExecuteScalar();
-                    return DbCommandResult.ForScalar(value);
+                    adapter.SelectCommand = cmd;
+                    var table = new DataTable("DataTable");
+                    adapter.Fill(table);
+                    DataSetFunc.UpperColumnName(table);
+                    return DbCommandResult.ForTable(table);
                 }
             }
         }
@@ -220,34 +226,19 @@ namespace Bee.Db
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
-            switch (command.Kind)
-            {
-                case DbCommandKind.NonQuery:
-                    return await ExecuteNonQueryAsync(command, cancellationToken).ConfigureAwait(false);
-                case DbCommandKind.Scalar:
-                    return await ExecuteScalarAsync(command, cancellationToken).ConfigureAwait(false);
-                case DbCommandKind.DataTable:
-                    return await ExecuteDataTableAsync(command, cancellationToken).ConfigureAwait(false);
-                default:
-                    throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
-            }
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，傳回資料表。
-        /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        private async Task<DbCommandResult> ExecuteDataTableAsync(DbCommandSpec command, CancellationToken cancellationToken = default)
-        {
             using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
-            using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
-            using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
-                var table = new DataTable("DataTable");
-                table.Load(reader);
-                DataSetFunc.UpperColumnName(table);
-                return DbCommandResult.ForTable(table);
+                switch (command.Kind)
+                {
+                    case DbCommandKind.NonQuery:
+                        return await ExecuteNonQueryCoreAsync(command, scope.Connection, null, cancellationToken).ConfigureAwait(false);
+                    case DbCommandKind.Scalar:
+                        return await ExecuteScalarCoreAsync(command, scope.Connection, null, cancellationToken).ConfigureAwait(false);
+                    case DbCommandKind.DataTable:
+                        return await ExecuteDataTableCoreAsync(command, scope.Connection, null, cancellationToken).ConfigureAwait(false);
+                    default:
+                        throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
+                }
             }
         }
 
@@ -255,13 +246,16 @@ namespace Bee.Db
         /// 非同步執行資料庫命令，傳回異動筆數。
         /// </summary>
         /// <param name="command">資料庫命令描述。</param>
+        /// <param name="connection">資料庫連線。</param>
+        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        private async Task<DbCommandResult> ExecuteNonQueryAsync(DbCommandSpec command, CancellationToken cancellationToken = default)
+        private async Task<DbCommandResult> ExecuteNonQueryCoreAsync(
+            DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
         {
-            using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
-            using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
+            using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
-                int rows = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+                if (transaction != null) cmd.Transaction = transaction;
+                var rows = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 return DbCommandResult.ForRowsAffected(rows);
             }
         }
@@ -270,14 +264,42 @@ namespace Bee.Db
         /// 非同步執行資料庫命令，傳回單一值。
         /// </summary>
         /// <param name="command">資料庫命令描述。</param>
+        /// <param name="connection">資料庫連線。</param>
+        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        private async Task<DbCommandResult> ExecuteScalarAsync(DbCommandSpec command, CancellationToken cancellationToken = default)
+        private async Task<DbCommandResult> ExecuteScalarCoreAsync(
+            DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
         {
-            using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
-            using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (connection == null) throw new ArgumentNullException(nameof(connection));
+
+            using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
+                if (transaction != null) cmd.Transaction = transaction;
                 var value = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
                 return DbCommandResult.ForScalar(value);
+            }
+        }
+
+        /// <summary>
+        /// 非同步執行資料庫命令，傳回資料表。
+        /// </summary>
+        /// <param name="command">資料庫命令描述。</param>
+        /// <param name="connection">資料庫連線。</param>
+        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        private async Task<DbCommandResult> ExecuteDataTableCoreAsync(
+            DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
+        {
+            using (var cmd = command.CreateCommand(DatabaseType, connection))
+            using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+            {
+                if (transaction != null) cmd.Transaction = transaction;
+
+                var table = new DataTable("DataTable");
+                table.Load(reader);
+                DataSetFunc.UpperColumnName(table);
+                return DbCommandResult.ForTable(table);
             }
         }
 
@@ -344,14 +366,14 @@ namespace Bee.Db
         /// <summary>
         /// 將 DataTable 的異動寫入資料庫。 
         /// </summary>
-        /// <param name="updateSpec">承載 DataTable 更新所需的資料表與三個命令描。</param>
+        /// <param name="spec">承載 DataTable 更新所需的資料表與三個命令描述。</param>
         /// <returns>受影響的資料列數。</returns>
-        public int UpdateDataTable(DataTableUpdateSpec updateSpec)
+        public int UpdateDataTable(DataTableUpdateSpec spec)
         {
-            if (updateSpec == null) throw new ArgumentNullException(nameof(updateSpec));
-            if (updateSpec.DataTable == null) throw new ArgumentNullException(nameof(updateSpec.DataTable));
-            if (updateSpec.InsertCommand == null && updateSpec.UpdateCommand == null && updateSpec.DeleteCommand == null)
-                throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(updateSpec));
+            if (spec == null) throw new ArgumentNullException(nameof(spec));
+            if (spec.DataTable == null) throw new ArgumentNullException(nameof(spec.DataTable));
+            if (spec.InsertCommand == null && spec.UpdateCommand == null && spec.DeleteCommand == null)
+                throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(spec));
 
             using (var scope = CreateScope())
             {
@@ -359,17 +381,17 @@ namespace Bee.Db
 
                 try
                 {
-                    if (updateSpec.InsertCommand != null)
+                    if (spec.InsertCommand != null)
                     {
-                        insert = updateSpec.InsertCommand.CreateCommand(DatabaseType, scope.Connection);
+                        insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection);
                     }
-                    if (updateSpec.UpdateCommand != null)
+                    if (spec.UpdateCommand != null)
                     {
-                        update = updateSpec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection);
+                        update = spec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection);
                     }
-                    if (updateSpec.DeleteCommand != null)
+                    if (spec.DeleteCommand != null)
                     {
-                        delete = updateSpec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection);
+                        delete = spec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection);
                     }
 
                     var adapter = Provider.CreateDataAdapter()
@@ -381,7 +403,7 @@ namespace Bee.Db
                         adapter.UpdateCommand = update;
                         adapter.DeleteCommand = delete;
 
-                        return adapter.Update(updateSpec.DataTable);
+                        return adapter.Update(spec.DataTable);
                     }
                 }
                 finally

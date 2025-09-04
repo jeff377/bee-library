@@ -1,11 +1,12 @@
-﻿using System.Data;
+﻿using Bee.Define;
+using System.Data;
 
 namespace Bee.Db
 {
     /// <summary>
     /// DbCommand 執行結果的統一包裝。
     /// </summary>
-    public class DbCommandResult
+    public class DbCommandResult : CollectionItem
     {
         /// <summary>
         /// 資料庫命令的執行種類。
