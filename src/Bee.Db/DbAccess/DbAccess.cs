@@ -125,6 +125,7 @@ namespace Bee.Db
         {
             if (batch == null) throw new ArgumentNullException(nameof(batch));
             if (batch.Commands == null) throw new ArgumentNullException(nameof(batch.Commands));
+            if (batch.Commands.Count == 0) throw new ArgumentException("Batch contains no commands.", nameof(batch));
 
             var result = new DbBatchResult();
 
@@ -176,7 +177,11 @@ namespace Bee.Db
                     }
 
                     // 全部成功才提交
-                    if (tran != null) tran.Commit();
+                    try { tran?.Commit(); }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException("Failed to commit transaction.", ex);
+                    }
                 }
                 finally
                 {
@@ -262,8 +267,14 @@ namespace Bee.Db
             try
             {
                 var cmd = command.CreateCommand(DatabaseType, scope.Connection);
-                // CloseConnection: reader 關閉時一併關閉 connection
-                return cmd.ExecuteReader(CommandBehavior.CloseConnection);
+
+                // NOTE: 對自建連線使用 CloseConnection；外部連線改用 Default，避免關閉外部連線。
+                var behavior = (_externalConnection == null)
+                    ? CommandBehavior.CloseConnection
+                    : CommandBehavior.Default;
+
+                // NOTE: scope 不在此處 Dispose；交由 behavior 與 reader.Dispose() 關閉連線（若自建）。
+                return cmd.ExecuteReader(behavior);
             }
             catch
             {
@@ -388,6 +399,7 @@ namespace Bee.Db
         {
             if (batch == null) throw new ArgumentNullException(nameof(batch));
             if (batch.Commands == null) throw new ArgumentNullException(nameof(batch.Commands));
+            if (batch.Commands.Count == 0) throw new ArgumentException("Batch contains no commands.", nameof(batch));
 
             var result = new DbBatchResult();
 
@@ -441,7 +453,11 @@ namespace Bee.Db
                     }
 
                     // 全部成功才提交
-                    if (tran != null) tran.Commit();
+                    try { tran?.Commit(); }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException("Failed to commit transaction.", ex);
+                    }
                 }
                 finally
                 {
@@ -480,9 +496,6 @@ namespace Bee.Db
         private async Task<DbCommandResult> ExecuteScalarCoreAsync(
             DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
-            if (connection == null) throw new ArgumentNullException(nameof(connection));
-
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
                 if (transaction != null) cmd.Transaction = transaction;
@@ -502,14 +515,16 @@ namespace Bee.Db
             DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
-            using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
-                if (transaction != null) cmd.Transaction = transaction;
+                if (transaction != null) cmd.Transaction = transaction; // ← 先設定交易
 
-                var table = new DataTable("DataTable");
-                table.Load(reader);
-                DataSetFunc.UpperColumnName(table);
-                return DbCommandResult.ForTable(table);
+                using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    var table = new DataTable("DataTable");
+                    table.Load(reader);
+                    DataSetFunc.UpperColumnName(table);
+                    return DbCommandResult.ForTable(table);
+                }
             }
         }
 
