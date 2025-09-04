@@ -83,6 +83,17 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 嘗試回滾交易（忽略回滾過程中的例外）。
+        /// </summary>
+        private static void TryRollbackQuiet(DbTransaction tran)
+        {
+            if (tran == null) return;
+            try { tran.Rollback(); } catch { /* ignore */ }
+        }
+
+        #region 同步方法
+
+        /// <summary>
         /// 執行資料庫命令。
         /// </summary>
         /// <param name="command">資料庫命令描述。</param>
@@ -104,6 +115,76 @@ namespace Bee.Db
                         throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
                 }
             }
+        }
+
+        /// <summary>
+        /// 批次執行多個資料庫命令；若任何一筆失敗，回滾交易並拋例外。
+        /// </summary>
+        /// <param name="batch">執行批次命令的描述。</param>
+        public DbBatchResult ExecuteBatch(DbBatchSpec batch)
+        {
+            if (batch == null) throw new ArgumentNullException(nameof(batch));
+            if (batch.Commands == null) throw new ArgumentNullException(nameof(batch.Commands));
+
+            var result = new DbBatchResult();
+
+            using (var scope = CreateScope())
+            {
+                DbTransaction tran = null;
+
+                try
+                {
+                    if (batch.UseTransaction)
+                    {
+                        tran = batch.IsolationLevel.HasValue
+                            ? scope.Connection.BeginTransaction(batch.IsolationLevel.Value)
+                            : scope.Connection.BeginTransaction();
+                    }
+
+                    for (int i = 0; i < batch.Commands.Count; i++)
+                    {
+                        var spec = batch.Commands[i];
+
+                        try
+                        {
+                            DbCommandResult item;
+                            switch (spec.Kind)
+                            {
+                                case DbCommandKind.NonQuery:
+                                    item = ExecuteNonQueryCore(spec, scope.Connection, tran);
+                                    result.RowsAffectedSum += item.RowsAffected;
+                                    break;
+                                case DbCommandKind.Scalar:
+                                    item = ExecuteScalarCore(spec, scope.Connection, tran);
+                                    break;
+                                case DbCommandKind.DataTable:
+                                    item = ExecuteDataTableCore(spec, scope.Connection, tran);
+                                    break;
+                                default:
+                                    throw new NotSupportedException($"Unsupported DbCommandKind: {spec.Kind}.");
+                            }
+
+                            result.Results.Add(item);
+                        }
+                        catch (Exception ex)
+                        {
+                            // 任何指令失敗：回滾並拋出包含索引的例外
+                            TryRollbackQuiet(tran);
+                            throw new InvalidOperationException(
+                                $"Failed to execute batch at index {i}: {spec.Kind}.", ex);
+                        }
+                    }
+
+                    // 全部成功才提交
+                    if (tran != null) tran.Commit();
+                }
+                finally
+                {
+                    if (tran != null) tran.Dispose();
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -218,6 +299,62 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 將 DataTable 的異動寫入資料庫。 
+        /// </summary>
+        /// <param name="spec">承載 DataTable 更新所需的資料表與三個命令描述。</param>
+        /// <returns>受影響的資料列數。</returns>
+        public int UpdateDataTable(DataTableUpdateSpec spec)
+        {
+            if (spec == null) throw new ArgumentNullException(nameof(spec));
+            if (spec.DataTable == null) throw new ArgumentNullException(nameof(spec.DataTable));
+            if (spec.InsertCommand == null && spec.UpdateCommand == null && spec.DeleteCommand == null)
+                throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(spec));
+
+            using (var scope = CreateScope())
+            {
+                DbCommand insert = null, update = null, delete = null;
+
+                try
+                {
+                    if (spec.InsertCommand != null)
+                    {
+                        insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection);
+                    }
+                    if (spec.UpdateCommand != null)
+                    {
+                        update = spec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection);
+                    }
+                    if (spec.DeleteCommand != null)
+                    {
+                        delete = spec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection);
+                    }
+
+                    var adapter = Provider.CreateDataAdapter()
+                                  ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
+
+                    using (adapter)
+                    {
+                        adapter.InsertCommand = insert;
+                        adapter.UpdateCommand = update;
+                        adapter.DeleteCommand = delete;
+
+                        return adapter.Update(spec.DataTable);
+                    }
+                }
+                finally
+                {
+                    if (insert != null) insert.Dispose();
+                    if (update != null) update.Dispose();
+                    if (delete != null) delete.Dispose();
+                }
+            }
+        }
+
+        #endregion
+
+        #region 非同步方法
+
+        /// <summary>
         /// 非同步執行資料庫命令。
         /// </summary>
         /// <param name="command">資料庫命令描述。</param>
@@ -240,6 +377,79 @@ namespace Bee.Db
                         throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
                 }
             }
+        }
+
+        /// <summary>
+        /// 非同步批次執行多個資料庫命令；若任何一筆失敗，回滾交易並拋例外。
+        /// </summary>
+        /// <param name="batch">執行批次命令的描述。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public async Task<DbBatchResult> ExecuteBatchAsync(DbBatchSpec batch, CancellationToken cancellationToken = default)
+        {
+            if (batch == null) throw new ArgumentNullException(nameof(batch));
+            if (batch.Commands == null) throw new ArgumentNullException(nameof(batch.Commands));
+
+            var result = new DbBatchResult();
+
+            using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
+            {
+                DbTransaction tran = null;
+
+                try
+                {
+                    if (batch.UseTransaction)
+                    {
+                        tran = batch.IsolationLevel.HasValue
+                            ? scope.Connection.BeginTransaction(batch.IsolationLevel.Value)
+                            : scope.Connection.BeginTransaction();
+                    }
+
+                    for (int i = 0; i < batch.Commands.Count; i++)
+                    {
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        var spec = batch.Commands[i];
+
+                        try
+                        {
+                            DbCommandResult item;
+                            switch (spec.Kind)
+                            {
+                                case DbCommandKind.NonQuery:
+                                    item = await ExecuteNonQueryCoreAsync(spec, scope.Connection, tran, cancellationToken).ConfigureAwait(false);
+                                    result.RowsAffectedSum += item.RowsAffected;
+                                    break;
+                                case DbCommandKind.Scalar:
+                                    item = await ExecuteScalarCoreAsync(spec, scope.Connection, tran, cancellationToken).ConfigureAwait(false);
+                                    break;
+                                case DbCommandKind.DataTable:
+                                    item = await ExecuteDataTableCoreAsync(spec, scope.Connection, tran, cancellationToken).ConfigureAwait(false);
+                                    break;
+                                default:
+                                    throw new NotSupportedException($"Unsupported DbCommandKind: {spec.Kind}.");
+                            }
+
+                            result.Results.Add(item);
+                        }
+                        catch (Exception ex)
+                        {
+                            // 任何指令失敗：回滾並拋出包含索引的例外
+                            TryRollbackQuiet(tran);
+                            throw new InvalidOperationException(
+                                $"Failed to execute batch at index {i}: {spec.Kind}.", ex);
+                        }
+                    }
+
+                    // 全部成功才提交
+                    if (tran != null) tran.Commit();
+                }
+                finally
+                {
+                    if (tran != null) tran.Dispose();
+                }
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -363,57 +573,7 @@ namespace Bee.Db
             }
         }
 
-        /// <summary>
-        /// 將 DataTable 的異動寫入資料庫。 
-        /// </summary>
-        /// <param name="spec">承載 DataTable 更新所需的資料表與三個命令描述。</param>
-        /// <returns>受影響的資料列數。</returns>
-        public int UpdateDataTable(DataTableUpdateSpec spec)
-        {
-            if (spec == null) throw new ArgumentNullException(nameof(spec));
-            if (spec.DataTable == null) throw new ArgumentNullException(nameof(spec.DataTable));
-            if (spec.InsertCommand == null && spec.UpdateCommand == null && spec.DeleteCommand == null)
-                throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(spec));
-
-            using (var scope = CreateScope())
-            {
-                DbCommand insert = null, update = null, delete = null;
-
-                try
-                {
-                    if (spec.InsertCommand != null)
-                    {
-                        insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection);
-                    }
-                    if (spec.UpdateCommand != null)
-                    {
-                        update = spec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection);
-                    }
-                    if (spec.DeleteCommand != null)
-                    {
-                        delete = spec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection);
-                    }
-
-                    var adapter = Provider.CreateDataAdapter()
-                                  ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
-
-                    using (adapter)
-                    {
-                        adapter.InsertCommand = insert;
-                        adapter.UpdateCommand = update;
-                        adapter.DeleteCommand = delete;
-
-                        return adapter.Update(spec.DataTable);
-                    }
-                }
-                finally
-                {
-                    if (insert != null) insert.Dispose();
-                    if (update != null) update.Dispose();
-                    if (delete != null) delete.Dispose();
-                }
-            }
-        }
+        #endregion
 
         /// <summary>
         /// 物件描述文字。

@@ -171,6 +171,35 @@ namespace Bee.Db.UnitTests
             Assert.True(affected > 0, "應有資料被更新");
         }
 
+        [Fact]
+        public void ExecuteBacth()
+        {
+            var batch = new DbBatchSpec();
+            batch.UseTransaction = true;
+            batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
+                    "SELECT COUNT(*) FROM ts_user WHERE sys_id = {0}", "001"));
+            int i = BaseFunc.RndInt(0, 100);
+            batch.Commands.Add(new DbCommandSpec(DbCommandKind.NonQuery,
+                     "UPDATE ts_user SET note={1} WHERE sys_id = {0}", "001", i));
+
+            var dbAccess = new DbAccess("common");
+            var result = dbAccess.ExecuteBatch(batch);
+        }
+
+        [Fact]
+        public async Task ExecuteBacthAsync()
+        {
+            var batch = new DbBatchSpec();
+            batch.UseTransaction = true;
+            batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
+                    "SELECT COUNT(*) FROM ts_user WHERE sys_id = {0}", "001"));
+            int i = BaseFunc.RndInt(0, 100);
+            batch.Commands.Add(new DbCommandSpec(DbCommandKind.NonQuery,
+                     "UPDATE ts_user SET note={1} WHERE sys_id = {0}", "001", i));
+
+            var dbAccess = new DbAccess("common");
+            var result = await dbAccess.ExecuteBatchAsync(batch);
+        }
 
         [Fact]
         public void SqlDbTableTest()
