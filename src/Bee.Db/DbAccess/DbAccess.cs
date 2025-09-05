@@ -265,22 +265,15 @@ namespace Bee.Db
 
             using (var scope = CreateScope())
             using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
+            using (var reader = cmd.ExecuteReader())
             {
-                // 對自建連線使用 CloseConnection；外部連線改用 Default，避免關閉外部連線。
-                var behavior = (_externalConnection == null)
-                    ? CommandBehavior.CloseConnection
-                    : CommandBehavior.Default;
-
-                using (var reader = cmd.ExecuteReader(behavior))
+                var list = new List<T>();
+                var mapper = ILMapper<T>.CreateMapFunc(reader);
+                foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
                 {
-                    var list = new List<T>();
-                    var mapper = ILMapper<T>.CreateMapFunc(reader);
-                    foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
-                    {
-                        list.Add(item);
-                    }
-                    return list;
+                    list.Add(item);
                 }
+                return list;
             }
         }
 
@@ -520,7 +513,6 @@ namespace Bee.Db
             {
                 var list = new List<T>();
                 var mapper = ILMapper<T>.CreateMapFunc(reader); // 以目前欄位集建立映射
-
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
                     list.Add(mapper(reader));
