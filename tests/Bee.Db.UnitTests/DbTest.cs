@@ -128,8 +128,8 @@ namespace Bee.Db.UnitTests
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccess("common");
-            var list = dbAccess.Query<User>(command).ToList();
-            var list3 = dbAccess.Query<User2>(command).ToList();
+            var list = dbAccess.Query<User>(command);
+            var list3 = dbAccess.Query<User2>(command);
         }
 
         [Fact]

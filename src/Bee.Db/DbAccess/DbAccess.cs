@@ -254,58 +254,33 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
-        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
-        /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <returns>傳回 DbDataReader 物件。</returns>
-        private DbDataReader ExecuteReader(DbCommandSpec command)
-        {
-            if (command == null) throw new ArgumentNullException(nameof(command));
-
-            var scope = CreateScope();
-            try
-            {
-                var cmd = command.CreateCommand(DatabaseType, scope.Connection);
-
-                // NOTE: 對自建連線使用 CloseConnection；外部連線改用 Default，避免關閉外部連線。
-                var behavior = (_externalConnection == null)
-                    ? CommandBehavior.CloseConnection
-                    : CommandBehavior.Default;
-
-                // NOTE: scope 不在此處 Dispose；交由 behavior 與 reader.Dispose() 關閉連線（若自建）。
-                return cmd.ExecuteReader(behavior);
-            }
-            catch
-            {
-                // ExecuteReader 失敗要自行清理連線
-                scope.Dispose();
-                throw;
-            }
-        }
-
-        /// <summary>
         /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
         /// </summary>
         /// <typeparam name="T">要映射的目標類型。</typeparam>
         /// <param name="command">資料庫命令描述。</param>
         /// <returns>返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。</returns>
-        public IEnumerable<T> Query<T>(DbCommandSpec command)
+        public List<T> Query<T>(DbCommandSpec command)
         {
-            // 使用 command 執行資料庫查詢，並取得 DbDataReader
-            var reader = ExecuteReader(command);
-            var mapper = ILMapper<T>.CreateMapFunc(reader);
-            // 延遲執行，不能使用 using，會造成連線被提早關閉
-            try
+            if (command == null) throw new ArgumentNullException(nameof(command));
+
+            using (var scope = CreateScope())
+            using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
             {
-                foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
+                // 對自建連線使用 CloseConnection；外部連線改用 Default，避免關閉外部連線。
+                var behavior = (_externalConnection == null)
+                    ? CommandBehavior.CloseConnection
+                    : CommandBehavior.Default;
+
+                using (var reader = cmd.ExecuteReader(behavior))
                 {
-                    yield return item;
+                    var list = new List<T>();
+                    var mapper = ILMapper<T>.CreateMapFunc(reader);
+                    foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
+                    {
+                        list.Add(item);
+                    }
+                    return list;
                 }
-            }
-            finally
-            {
-                reader.Dispose(); // 迭代結束後才關閉 reader
             }
         }
 
@@ -525,40 +500,6 @@ namespace Bee.Db
                     DataSetFunc.UpperColumnName(table);
                     return DbCommandResult.ForTable(table);
                 }
-            }
-        }
-
-        /// <summary>
-        /// 非同步執行資料庫命令，傳回 DbDataReader 以便進一步處理資料。
-        /// 呼叫端需在使用完畢後呼叫 reader.Dispose()
-        /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        /// <returns>傳回 DbDataReader 物件。</returns>
-        private async Task<DbDataReader> ExecuteReaderAsync(DbCommandSpec command, CancellationToken cancellationToken = default)
-        {
-            if (command == null) throw new ArgumentNullException(nameof(command));
-
-            // 用 Scope 統一管理連線建立/開啟；成功後不在這裡 Dispose Scope，
-            // 讓連線生命週期交由 reader（自建連線時）或外部（外部連線時）決定。
-            var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false);
-            try
-            {
-                var cmd = command.CreateCommand(DatabaseType, scope.Connection);
-
-                // 自行建立連線才使用 CloseConnection（reader.Dispose() 會關掉連線）；
-                // 若使用外部連線，避免關閉外部連線。
-                var behavior = (_externalConnection == null)
-                    ? CommandBehavior.CloseConnection
-                    : CommandBehavior.Default;
-
-                return await cmd.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
-            }
-            catch
-            {
-                // 失敗時才釋放 scope（避免連線洩漏）
-                scope.Dispose();
-                throw;
             }
         }
 
