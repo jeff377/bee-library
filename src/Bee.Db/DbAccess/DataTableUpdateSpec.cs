@@ -31,5 +31,10 @@ namespace Bee.Db
         /// 是否使用交易包覆整個異動（任何一筆失敗就回滾；成功則提交）。
         /// </summary>
         public bool UseTransaction { get; set; } = false;
+
+        /// <summary>
+        /// 交易隔離等級（當 <see cref="UseTransaction"/> 為 true 時可指定）。
+        /// </summary>
+        public IsolationLevel? IsolationLevel { get; set; }
     }
 }

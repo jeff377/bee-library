@@ -324,7 +324,11 @@ namespace Bee.Db
                 try
                 {
                     if (spec.UseTransaction)
-                        tran = scope.Connection.BeginTransaction();
+                    {
+                        tran = spec.IsolationLevel.HasValue
+                            ? scope.Connection.BeginTransaction(spec.IsolationLevel.Value)
+                            : scope.Connection.BeginTransaction();
+                    }
 
                     if (spec.InsertCommand != null)
                         insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection);
@@ -348,7 +352,7 @@ namespace Bee.Db
                             if (update != null) update.Transaction = tran;
                             if (delete != null) delete.Transaction = tran;
                         }
-
+     
                         int affected = adapter.Update(spec.DataTable);
 
                         tran?.Commit();
