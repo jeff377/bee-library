@@ -454,6 +454,7 @@ namespace Bee.Db
                 {
                     if (batch.UseTransaction)
                     {
+                        // .NET Standard 2.0 無 BeginTransactionAsync，此處以同步 BeginTransaction 啟動交易
                         tran = batch.IsolationLevel.HasValue
                             ? scope.Connection.BeginTransaction(batch.IsolationLevel.Value)
                             : scope.Connection.BeginTransaction();
