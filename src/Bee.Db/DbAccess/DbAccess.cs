@@ -118,6 +118,33 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 使用指定的 <see cref="DbTransaction"/> 於外部連線執行資料庫命令。
+        /// 適用於需明確控制交易範圍的情境，命令將綁定至傳入的交易物件。
+        /// </summary>
+        /// <param name="command">資料庫命令描述。</param>
+        /// <param name="transaction">必填的資料庫交易物件；命令將綁定至該交易。</param>
+        public DbCommandResult Execute(DbCommandSpec command, DbTransaction transaction)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+
+            var conn = transaction.Connection
+                       ?? throw new InvalidOperationException("Transaction has no associated connection.");
+
+            switch (command.Kind)
+            {
+                case DbCommandKind.NonQuery:
+                    return ExecuteNonQueryCore(command, conn, transaction);
+                case DbCommandKind.Scalar:
+                    return ExecuteScalarCore(command, conn, transaction);
+                case DbCommandKind.DataTable:
+                    return ExecuteDataTableCore(command, conn, transaction);
+                default:
+                    throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
+            }
+        }
+
+        /// <summary>
         /// 批次執行多個資料庫命令；若任何一筆失敗，回滾交易並拋例外。
         /// </summary>
         /// <param name="batch">執行批次命令的描述。</param>
@@ -338,7 +365,8 @@ namespace Bee.Db
         /// </summary>
         /// <param name="command">資料庫命令描述。</param>
         /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        public async Task<DbCommandResult> ExecuteAsync(DbCommandSpec command, CancellationToken cancellationToken = default)
+        public async Task<DbCommandResult> ExecuteAsync(
+            DbCommandSpec command, CancellationToken cancellationToken = default)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
 
@@ -355,6 +383,35 @@ namespace Bee.Db
                     default:
                         throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
                 }
+            }
+        }
+
+        /// <summary>
+        /// 使用指定的 <see cref="DbTransaction"/> 於外部連線非同步執行資料庫命令。
+        /// 適用於需明確控制交易範圍的情境，命令將綁定至傳入的交易物件。
+        /// </summary>
+        /// <param name="command">資料庫命令描述。</param>
+        /// <param name="transaction">必填的資料庫交易物件；命令將綁定至該交易。</param>
+        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        public Task<DbCommandResult> ExecuteAsync(
+            DbCommandSpec command, DbTransaction transaction, CancellationToken cancellationToken = default)
+        {
+            if (command == null) throw new ArgumentNullException(nameof(command));
+            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+
+            var conn = transaction.Connection
+                       ?? throw new InvalidOperationException("Transaction has no associated connection.");
+
+            switch (command.Kind)
+            {
+                case DbCommandKind.NonQuery:
+                    return ExecuteNonQueryCoreAsync(command, conn, transaction, cancellationToken);
+                case DbCommandKind.Scalar:
+                    return ExecuteScalarCoreAsync(command, conn, transaction, cancellationToken);
+                case DbCommandKind.DataTable:
+                    return ExecuteDataTableCoreAsync(command, conn, transaction, cancellationToken);
+                default:
+                    throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
             }
         }
 
@@ -529,7 +586,7 @@ namespace Bee.Db
         /// <returns></returns>
         public override string ToString()
         {
-            return Provider.ToString();
+            return $"DbAccess {{ DatabaseType = {DatabaseType}, Provider = {Provider?.GetType().Name} }}";
         }
     }
 }

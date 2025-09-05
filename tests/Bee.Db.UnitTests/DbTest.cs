@@ -1,10 +1,5 @@
-using System.Threading.Tasks;
-using System.Threading.Tasks.Sources;
 using Bee.Base;
 using Bee.Cache;
-using Bee.Define;
-using Microsoft.Data.SqlClient;
-using Xunit.Sdk;
 
 namespace Bee.Db.UnitTests
 {
