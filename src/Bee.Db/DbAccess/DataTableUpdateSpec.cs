@@ -26,5 +26,10 @@ namespace Bee.Db
         /// 刪除命令描述。
         /// </summary>
         public DbCommandSpec DeleteCommand { get; set; }
+
+        /// <summary>
+        /// 是否使用交易包覆整個異動（任何一筆失敗就回滾；成功則提交）。
+        /// </summary>
+        public bool UseTransaction { get; set; } = false;
     }
 }

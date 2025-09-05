@@ -87,7 +87,7 @@ namespace Bee.Db
         /// </summary>
         private static void TryRollbackQuiet(DbTransaction tran)
         {
-            if (tran == null) return;
+            if (tran?.Connection == null) return;
             try { tran.Rollback(); } catch { /* ignore */ }
         }
 
@@ -281,11 +281,11 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的可列舉集合。
+        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的清單。
         /// </summary>
         /// <typeparam name="T">要映射的目標類型。</typeparam>
         /// <param name="command">資料庫命令描述。</param>
-        /// <returns>返回 <see cref="IEnumerable{T}"/>，允許逐筆讀取查詢結果。</returns>
+        /// <returns>映射為 <see cref="List{T}"/> 的結果集合。</returns>
         public List<T> Query<T>(DbCommandSpec command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
@@ -319,21 +319,19 @@ namespace Bee.Db
             using (var scope = CreateScope())
             {
                 DbCommand insert = null, update = null, delete = null;
+                DbTransaction tran = null;
 
                 try
                 {
+                    if (spec.UseTransaction)
+                        tran = scope.Connection.BeginTransaction();
+
                     if (spec.InsertCommand != null)
-                    {
                         insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection);
-                    }
                     if (spec.UpdateCommand != null)
-                    {
                         update = spec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection);
-                    }
                     if (spec.DeleteCommand != null)
-                    {
                         delete = spec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection);
-                    }
 
                     var adapter = Provider.CreateDataAdapter()
                                   ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
@@ -344,14 +342,30 @@ namespace Bee.Db
                         adapter.UpdateCommand = update;
                         adapter.DeleteCommand = delete;
 
-                        return adapter.Update(spec.DataTable);
+                        if (tran != null)
+                        {
+                            if (insert != null) insert.Transaction = tran;
+                            if (update != null) update.Transaction = tran;
+                            if (delete != null) delete.Transaction = tran;
+                        }
+
+                        int affected = adapter.Update(spec.DataTable);
+
+                        tran?.Commit();
+                        return affected;
                     }
+                }
+                catch
+                {
+                    tran?.Rollback();
+                    throw;
                 }
                 finally
                 {
                     if (insert != null) insert.Dispose();
                     if (update != null) update.Dispose();
                     if (delete != null) delete.Dispose();
+                    tran?.Dispose();
                 }
             }
         }
