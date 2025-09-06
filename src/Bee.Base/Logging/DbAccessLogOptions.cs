@@ -15,9 +15,8 @@ namespace Bee.Base
         /// Logging level.
         /// Error: log only errors and exceptions.
         /// Warning: log errors, exceptions, and abnormal cases (slow queries, large updates).
-        /// All: log all SQL commands.
         /// </summary>
-        [Description("Logging level (Error: only errors, Warning: includes abnormal cases, All: all SQL).")]
+        [Description("Logging level (Error: only errors, Warning: includes abnormal cases).")]
         public DbAccessLogLevel Level { get; set; } = DbAccessLogLevel.Warning;
 
         /// <summary>

@@ -58,19 +58,13 @@
     public enum DbAccessLogLevel
     {
         /// <summary>
-        /// 只記錄錯誤。
+        /// Log only errors and exceptions.
         /// </summary>
         Error = 1,
-
         /// <summary>
-        /// 包含異常（慢查詢、筆數過多）。
+        /// Log errors, exceptions, and abnormal cases (slow queries, large updates).
         /// </summary>
-        Warning = 2,
-
-        /// <summary>
-        /// 所有 SQL 指令（完整除錯記錄）。
-        /// </summary>
-        All = 3
+        Warning = 2
     }
 
     /// <summary>
