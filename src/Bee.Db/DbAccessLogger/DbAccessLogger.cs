@@ -14,16 +14,17 @@ namespace Bee.Db
     public static class DbAccessLogger
     {
         /// <summary>
-        /// 開始記錄：只擷取 CommandText 與起始時間。
+        /// 開始記錄。
         /// </summary>
-        public static DbLogContext LogStart(DbCommandSpec spec, string databaseId = "")
+        /// <param name="command">資料庫命令描述。</param>
+        /// <param name="databaseId">資料庫識別。</param>
+        public static DbLogContext LogStart(DbCommandSpec command, string databaseId = "")
         {
-            if (spec == null) throw new ArgumentNullException(nameof(spec), "spec cannot be null.");
-            return new DbLogContext(spec.CommandText, databaseId: databaseId);
+            return new DbLogContext(command.CommandText, databaseId: databaseId);
         }
 
         /// <summary>
-        /// 結束記錄（依 Level 判斷是否針對慢執行/大量異動寫入 Warning）。
+        /// 結束記錄。
         /// </summary>
         public static void LogEnd(DbLogContext context, int affectedRows = -1)
         {
@@ -37,14 +38,14 @@ namespace Bee.Db
             bool isSlow = (opts.ExecutionTimeThreshold > 0) && (elapsedSeconds >= opts.ExecutionTimeThreshold);
             bool isLarge = (opts.AffectedRowThreshold > 0) && (affectedRows >= opts.AffectedRowThreshold);
 
-            if (opts.Level == DbAccessLogLevel.Warning && (isSlow || isLarge))
+            if (opts.Level == DbAccessAnomalyLogLevel.Warning && (isSlow || isLarge))
             {
                 WriteWarning(context, affectedRows, elapsedSeconds, isSlow, isLarge);
             }
         }
 
         /// <summary>
-        /// 記錄錯誤（總是記錄，不受 Level 限制）。
+        /// 記錄錯誤。
         /// </summary>
         public static void LogError(DbLogContext context, Exception exception)
         {

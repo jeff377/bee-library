@@ -22,7 +22,7 @@ namespace Bee.Base
         /// Logging options for the DbAccess module.
         /// </summary>
         [Description("Logging options for the DbAccess module.")]
-        public DbAccessLogOptions DbAccess { get; set; } = new DbAccessLogOptions();
+        public DbAccessAnomalyLogOptions DbAccess { get; set; } = new DbAccessAnomalyLogOptions();
 
         /// <summary>
         /// Object description.

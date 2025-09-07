@@ -17,6 +17,7 @@ namespace Bee.Db
     {
         private readonly DbConnection _externalConnection = null;
         private readonly string _connectionString = string.Empty;
+        private readonly string _databaseId = string.Empty;  // Log 使用
 
         #region 建構函式
 
@@ -39,6 +40,7 @@ namespace Bee.Db
             _connectionString = database.GetConnectionString();
             if (string.IsNullOrWhiteSpace(_connectionString))
                 throw new InvalidOperationException("DatabaseItem.GetConnectionString() returned null or empty.");
+            _databaseId = databaseId;
         }
 
         /// <summary>
@@ -51,6 +53,7 @@ namespace Bee.Db
             DatabaseType = BackendInfo.DatabaseType;
             Provider = DbProviderManager.GetFactory(DatabaseType)
                 ?? throw new InvalidOperationException($"Unknown database type: {DatabaseType}.");
+            _databaseId = string.Empty;
         }
 
         #endregion
