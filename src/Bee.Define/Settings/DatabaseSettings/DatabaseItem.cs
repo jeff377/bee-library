@@ -15,10 +15,10 @@ namespace Bee.Define
     public class DatabaseItem : KeyCollectionItem
     {
         /// <summary>
-        /// 資料庫編號。
+        /// 資料庫識別。
         /// </summary>
         [XmlAttribute]
-        [Description("資料庫編號。")]
+        [Description("資料庫識別。")]
         public string Id
         {
             get { return base.Key; }

@@ -23,7 +23,7 @@ namespace Bee.Db
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="databaseId">資料庫識別。</param>
         public DbAccess(string databaseId)
         {
             if (string.IsNullOrWhiteSpace(databaseId))

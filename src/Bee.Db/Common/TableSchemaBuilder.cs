@@ -14,7 +14,7 @@ namespace Bee.Db
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="databaseId">資料庫識別。</param>
         public TableSchemaBuilder(string databaseId)
         {
             DatabaseId = databaseId;
@@ -23,7 +23,7 @@ namespace Bee.Db
         #endregion
 
         /// <summary>
-        /// 資料庫編號。
+        /// 資料庫識別。
         /// </summary>
         public string DatabaseId { get; private set; }
 

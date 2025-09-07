@@ -103,7 +103,7 @@ namespace Bee.Db
         /// <summary>
         /// 建立資料庫連線。
         /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="databaseId">資料庫識別。</param>
         public static DbConnection CreateConnection(string databaseId)
         {
             var database = CacheFunc.GetDatabaseItem(databaseId);

@@ -54,7 +54,7 @@ namespace Bee.Cache
         /// <summary>
         /// 取得資料庫項目。
         /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
+        /// <param name="databaseId">資料庫識別。</param>
         public static DatabaseItem GetDatabaseItem(string databaseId)
         {
             if (StrFunc.IsEmpty(databaseId))

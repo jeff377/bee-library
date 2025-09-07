@@ -45,7 +45,7 @@ namespace Bee.Define
         public static DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
 
         /// <summary>
-        /// 預設資料庫編號。
+        /// 預設資料庫識別。
         /// </summary>
         public static string DatabaseId { get; set; } = string.Empty;
 
