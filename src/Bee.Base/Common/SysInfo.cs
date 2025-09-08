@@ -24,14 +24,26 @@ namespace Bee.Base
         public static ILogWriter LogWriter { get; set; } = new NullLogWriter();
 
         /// <summary>
+        /// 記錄選項，用於設定日誌記錄的相關參數。
+        /// </summary>
+        public static LogOptions LogOptions { get; set; } = new LogOptions();
+
+        /// <summary>
         /// 追蹤寫入器。
         /// </summary>
         public static ITraceWriter TraceWriter { get; set; } = new NullTraceWriter();
 
         /// <summary>
-        /// 記錄選項，用於設定日誌記錄的相關參數。
+        /// 執行流程監控器，提供系統層級的追蹤區段監控功能，
+        /// 由應用程式呼叫以記錄執行流程的開始、結束與單點事件，
+        /// 便於效能分析與異常追蹤。
         /// </summary>
-        public static LogOptions LogOptions { get; set; } = new LogOptions();
+        public static ITraceListener TraceListener { get; set; } = null;
+
+        /// <summary>
+        /// 設定追蹤層級。
+        /// </summary>
+        public static TraceLayer TraceEnabledLayers = TraceLayer.None;
 
         /// <summary>
         /// 是否為偵錯模式。
