@@ -24,6 +24,11 @@ namespace Bee.Base
         public static ILogWriter LogWriter { get; set; } = new NullLogWriter();
 
         /// <summary>
+        /// 追蹤寫入器。
+        /// </summary>
+        public static ITraceWriter TraceWriter { get; set; } = new NullTraceWriter();
+
+        /// <summary>
         /// 記錄選項，用於設定日誌記錄的相關參數。
         /// </summary>
         public static LogOptions LogOptions { get; set; } = new LogOptions();

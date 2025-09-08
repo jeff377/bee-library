@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bee.Base
+﻿namespace Bee.Base
 {
     /// <summary>
     /// 定義執行流程監控的介面，提供開始與結束追蹤的方法，

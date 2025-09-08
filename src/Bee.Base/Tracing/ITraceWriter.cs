@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bee.Base
+﻿namespace Bee.Base
 {
     /// <summary>
     /// 定義追蹤事件的輸出介面，負責將 <see cref="TraceEvent"/> 寫出至不同目的地，
