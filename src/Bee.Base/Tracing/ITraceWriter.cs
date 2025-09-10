@@ -1,7 +1,7 @@
 ﻿namespace Bee.Base
 {
     /// <summary>
-    /// 定義追蹤事件的輸出介面，負責將 <see cref="TraceEvent"/> 寫出至不同目的地，
+    /// 用於輸出的追蹤寫入介面，負責將 <see cref="TraceEvent"/> 寫出至不同目的地，
     /// 例如：WinForms 介面、檔案、Console 或外部監控系統。
     /// </summary>
     public interface ITraceWriter

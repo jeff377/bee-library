@@ -75,7 +75,7 @@ namespace Bee.Base
 
     /// <summary>
     /// 追蹤事件所屬的層級，用於區分系統中不同執行位置，
-    /// 例如 UI、API 呼叫、API 服務、業務邏輯或資料存取層。
+    /// 例如 UI、API 呼叫、API 服務、業務層或資料存取層。
     /// </summary>
     [Flags]
     public enum TraceLayer
@@ -97,18 +97,42 @@ namespace Bee.Base
         /// </summary>
         ApiServer = 1 << 2,
         /// <summary>
-        /// 業務邏輯層，例如 Service 或 Business Object 的執行。
+        /// 業務層，例如 Service 或 Domain Service 的執行。
         /// </summary>
-        Biz = 1 << 3,
+        Business = 1 << 3,
         /// <summary>
         /// 資料存取層，例如 EF Core、Dapper 或 ADO.NET 的 SQL 執行。
         /// </summary>
         Data = 1 << 4,
         /// <summary>
-        /// 所有層級（UI、API、Biz、Data 全部啟用）。
+        /// 所有層級（包含 UI、API 呼叫、API 服務、業務層與資料存取）。
         /// </summary>
-        All = UI | ApiClient | ApiServer | Biz | Data
+        All = UI | ApiClient | ApiServer | Business | Data
     }
+
+    /// <summary>
+    /// 追蹤事件的種類，用於區分開始、結束與單點事件。
+    /// </summary>
+    public enum TraceEventKind
+    {
+        /// <summary>
+        /// 代表一個追蹤區段的開始事件，
+        /// 通常由 <see cref="ITraceListener.TraceStart"/> 產生。
+        /// </summary>
+        Start = 0,
+        /// <summary>
+        /// 代表一個追蹤區段的結束事件，
+        /// 通常由 <see cref="ITraceListener.TraceEnd"/> 產生，
+        /// 並包含該區段的耗時與執行狀態。
+        /// </summary>
+        End = 1,
+        /// <summary>
+        /// 代表一個單點事件，不需要成對呼叫，
+        /// 通常由 <see cref="ITraceListener.TraceWrite"/> 產生。
+        /// </summary>
+        Point = 2
+    }
+
 
     /// <summary>
     /// 追蹤事件的執行狀態，用於標示該次追蹤的結果。

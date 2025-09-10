@@ -4,8 +4,6 @@ namespace Bee.Base
 {
     /// <summary>
     /// 表示一筆完整的追蹤事件，包含開始時間、耗時、狀態與描述，
-    /// 由 <see cref="ITraceListener.TraceEnd"/> 或 <see cref="ITraceListener.TraceWrite"/> 產生，
-    /// 並由 <see cref="ITraceWriter"/> 輸出。
     /// </summary>
     public sealed class TraceEvent
     {
@@ -33,6 +31,11 @@ namespace Bee.Base
         /// 執行耗時（毫秒）。若為 TraceWrite 單點事件則為 0。
         /// </summary>
         public double DurationMs { get; set; }
+
+        /// <summary>
+        /// 追蹤事件的種類。
+        /// </summary>
+        public TraceEventKind Kind { get; set; }
 
         /// <summary>
         /// 執行狀態，例如 Ok、Error 或 Cancelled。
