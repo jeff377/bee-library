@@ -29,6 +29,11 @@ namespace Bee.Base
         public static LogOptions LogOptions { get; set; } = new LogOptions();
 
         /// <summary>
+        /// 是否啟用追蹤。
+        /// </summary>
+        public static bool TraceEnabled { get; set; } = false;
+
+        /// <summary>
         /// 執行流程監控器，提供系統層級的追蹤區段監控功能，
         /// 由應用程式呼叫以記錄執行流程的開始、結束與單點事件，
         /// 便於效能分析與異常追蹤。
