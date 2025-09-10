@@ -42,7 +42,6 @@ namespace Bee.Base
             Layer = layer;
             Name = name ?? string.Empty;
             Detail = detail;
-
             Start = DateTimeOffset.Now; // ✅ 本地時間
             Stopwatch = System.Diagnostics.Stopwatch.StartNew();
         }

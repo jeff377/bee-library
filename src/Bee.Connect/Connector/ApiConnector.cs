@@ -63,26 +63,36 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
-            string method = progId + "." + action;
+            var ctx = Tracer.Start(TraceLayer.ApiClient);
+            try
+            {
+                // 建立 JSON-RPC 請求模型
+                var request = CreateRequest(progId, action, value);
+                TraceRequest(request);
 
-            // 建立 JSON-RPC 請求模型
-            var request = CreateRequest(progId, action, value);
-            TraceRequest(request);
+                // 將參數格式轉換為指定的 payloadFormat
+                var actualFormat = TransformRequestPayload(request, format);
 
-            // 將參數格式轉換為指定的 payloadFormat
-            var actualFormat = TransformRequestPayload(request, format);
+                // 呼叫遠端或近端 JSON-RPC 方法
+                var response = this.Provider.Execute(request);
+                TraceResponse(response);
 
-            // 呼叫遠端或近端 JSON-RPC 方法
-            var response = this.Provider.Execute(request);
-            TraceResponse(response);
+                if (response.Error != null)
+                    throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
 
-            if (response.Error != null)
-                throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
+                // 還原回應資料（若為 Encoded 或 Encrypted）
+                RestoreResponsePayload(response, actualFormat);
 
-            // 還原回應資料（若為 Encoded 或 Encrypted）
-            RestoreResponsePayload(response, actualFormat);
+                Tracer.End(ctx);
+                return (T)response.Result.Value;
+            }
+            catch (Exception ex)
+            {
+                Tracer.End(ctx, TraceStatus.Error, ex.Message);
+                throw;
+            }
 
-            return (T)response.Result.Value;
+
         }
 
         /// <summary>
@@ -99,24 +109,35 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
-            // 建立 JSON-RPC 請求模型
-            var request = CreateRequest(progId, action, value);
-            TraceRequest(request);
+            var ctx = Tracer.Start(TraceLayer.ApiClient);
+            try
+            {
 
-            // 將參數格式轉換為指定的 payloadFormat
-            var actualFormat = TransformRequestPayload(request, format);
+                // 建立 JSON-RPC 請求模型
+                var request = CreateRequest(progId, action, value);
+                TraceRequest(request);
 
-            // 呼叫遠端或近端 JSON-RPC 方法
-            var response = await this.Provider.ExecuteAsync(request).ConfigureAwait(false);
-            TraceResponse(response);
+                // 將參數格式轉換為指定的 payloadFormat
+                var actualFormat = TransformRequestPayload(request, format);
 
-            if (response.Error != null)
-                throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
+                // 呼叫遠端或近端 JSON-RPC 方法
+                var response = await this.Provider.ExecuteAsync(request).ConfigureAwait(false);
+                TraceResponse(response);
 
-            // 還原回應資料（若為 Encoded 或 Encrypted）
-            RestoreResponsePayload(response, actualFormat);
+                if (response.Error != null)
+                    throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
 
-            return (T)response.Result.Value;
+                // 還原回應資料（若為 Encoded 或 Encrypted）
+                RestoreResponsePayload(response, actualFormat);
+
+                Tracer.End(ctx);
+                return (T)response.Result.Value;
+            }
+            catch (Exception ex)
+            {
+                Tracer.End(ctx, TraceStatus.Error, ex.Message);
+                throw;
+            }
         }
 
         /// <summary>

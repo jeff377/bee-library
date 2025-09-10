@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Bee.Api.Core;
 using Bee.Base;
 using Bee.Cache;
@@ -44,8 +43,12 @@ namespace JsonRpcClient
         /// </summary>
         public void AppendTrace(TraceEvent evt)
         {
-            string message = $"Time : {evt.Time}\r\nLayer : {evt.Layer}\r\nName : {evt.Name}\r\nDetail : \r\n{evt.Detail}\r\n" +
-                                            "-------------------------------------------------------------------------\r\n";
+            string message = $"Time : {evt.Time:yyyy/MM/dd HH:mm:ss}\r\nLayer : {evt.Layer}\r\nName : {evt.Name}\r\nKind : {evt.Kind}\r\n";
+            if (StrFunc.IsNotEmpty(evt.Detail))
+                message += $"Detail : \r\n{evt.Detail}\r\n";
+            if (evt.Kind == TraceEventKind.End)
+                message += $"Duration : {evt.DurationMs:F0} ms\r\n";
+            message += "-------------------------------------------------------------------------\r\n";
             edtLog.AppendText(message + Environment.NewLine);
         }
 

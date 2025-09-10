@@ -32,7 +32,18 @@ namespace Bee.Base
         public TraceContext TraceStart(TraceLayer layer, string detail = "", [CallerMemberName] string name = "")
         {
             if (!IsEnabled(layer)) return null;
-            return new TraceContext(layer, name, detail);
+            var ctx = new TraceContext(layer, name, detail);
+
+            _writer.Write(new TraceEvent
+            {
+                Time = ctx.Start,
+                Layer = ctx.Layer,
+                Name = ctx.Name,
+                Detail = detail ?? ctx.Detail,
+                Kind = TraceEventKind.Start
+            });
+
+            return ctx;
         }
 
         /// <summary>
@@ -54,6 +65,7 @@ namespace Bee.Base
                 Name = ctx.Name,
                 Detail = detail ?? ctx.Detail,
                 DurationMs = ctx.Stopwatch.Elapsed.TotalMilliseconds,
+                Kind = TraceEventKind.End,
                 Status = status
             });
         }
@@ -76,6 +88,7 @@ namespace Bee.Base
                 Name = name,
                 Detail = detail,
                 DurationMs = 0,
+                Kind = TraceEventKind.Point,
                 Status = status
             });
         }

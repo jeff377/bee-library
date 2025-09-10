@@ -20,12 +20,12 @@ namespace Bee.Base
         /// <summary>
         /// 事件名稱。
         /// </summary>
-        public string Name { get; set; } = "";
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 事件描述，例如 SQL 語法、API 路由或業務動作摘要。
         /// </summary>
-        public string Detail { get; set; }
+        public string Detail { get; set; } = string.Empty;
 
         /// <summary>
         /// 執行耗時（毫秒）。若為 TraceWrite 單點事件則為 0。

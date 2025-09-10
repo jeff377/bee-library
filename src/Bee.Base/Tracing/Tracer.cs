@@ -23,7 +23,7 @@ namespace Bee.Base
         public static TraceContext Start(TraceLayer layer, string detail = "", [CallerMemberName] string name = "")
         {
             if (!Enabled) { return null; }
-            return SysInfo.TraceListener.TraceStart(layer, name, detail);
+            return SysInfo.TraceListener.TraceStart(layer, detail, name);
         }
 
         /// <summary>
