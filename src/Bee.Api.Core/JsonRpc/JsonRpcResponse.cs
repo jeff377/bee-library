@@ -22,8 +22,8 @@ namespace Bee.Api.Core
         /// <param name="request">JSON-RPC 請求模型。</param>
         public JsonRpcResponse(JsonRpcRequest request)
         {
-            // 設定請求的唯一識別碼
-            Id = request.Id;            
+            Method = request.Method; // 回傳呼叫方法
+            Id = request.Id;  // 設定請求的唯一識別碼            
         }
 
         #endregion
@@ -53,6 +53,12 @@ namespace Bee.Api.Core
         /// </summary>
         [JsonProperty("jsonrpc", NullValueHandling = NullValueHandling.Include)]
         public string Jsonrpc { get; set; } = "2.0";
+
+        /// <summary>
+        /// 要呼叫的方法名稱。
+        /// </summary>
+        [JsonProperty("method", NullValueHandling = NullValueHandling.Include)]
+        public string Method { get; set; }
 
         /// <summary>
         /// 方法執行的結果。

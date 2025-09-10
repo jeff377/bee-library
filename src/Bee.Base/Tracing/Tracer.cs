@@ -48,7 +48,7 @@ namespace Bee.Base
         public static void Write(TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok)
         {
             if (!Enabled) return;
-            SysInfo.TraceListener.TraceWrite(layer, name, detail, status);
+            SysInfo.TraceListener.TraceWrite(layer, detail, name, status);
         }
     }
 }

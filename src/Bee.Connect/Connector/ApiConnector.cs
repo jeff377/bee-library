@@ -63,15 +63,18 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
+            string method = progId + "." + action;
+
             // 建立 JSON-RPC 請求模型
             var request = CreateRequest(progId, action, value);
-            LogRawData(request);
+            TraceRequest(request);
 
             // 將參數格式轉換為指定的 payloadFormat
             var actualFormat = TransformRequestPayload(request, format);
+
             // 呼叫遠端或近端 JSON-RPC 方法
             var response = this.Provider.Execute(request);
-            LogRawData(response);
+            TraceResponse(response);
 
             if (response.Error != null)
                 throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
@@ -98,13 +101,14 @@ namespace Bee.Connect
 
             // 建立 JSON-RPC 請求模型
             var request = CreateRequest(progId, action, value);
-            LogRawData(request);
+            TraceRequest(request);
 
             // 將參數格式轉換為指定的 payloadFormat
             var actualFormat = TransformRequestPayload(request, format);
+
             // 呼叫遠端或近端 JSON-RPC 方法
             var response = await this.Provider.ExecuteAsync(request).ConfigureAwait(false);
-            LogRawData(response);
+            TraceResponse(response);
 
             if (response.Error != null)
                 throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
@@ -158,7 +162,7 @@ namespace Bee.Connect
             if (format != PayloadFormat.Plain)
             {
                 ApiPayloadConverter.TransformTo(request.Params, format, FrontendInfo.ApiEncryptionKey);
-                LogEncodedData(request);
+                TraceRequest(request);
             }
 
             return format;
@@ -181,50 +185,35 @@ namespace Bee.Connect
                 return;
 
             ApiPayloadConverter.RestoreFrom(response.Result, format, FrontendInfo.ApiEncryptionKey);
-            LogEncodedData(response);
-        }
-
-
-        /// <summary>
-        /// 記錄 JSON-RPC 的原始資料內容。
-        /// </summary>
-        /// <param name="value">原始資料物件。</param>
-        private void LogRawData(IObjectSerialize value)
-        {
-            if (value == null) { return; }
-            if (!SysInfo.LogOptions.ApiConnector.RawData) { return; }
-
-            string json = value.ToJson();
-            LogWrite($"Raw Data:{Environment.NewLine}{json}");
+            TraceResponse(response);
         }
 
         /// <summary>
-        /// 記錄 JSON-RPC 的編碼後資料。
+        /// 追蹤 JSON-RPC 請求模型。
         /// </summary>
-        /// <param name="value">編碼後資料物件。</param>
-        private void LogEncodedData(IObjectSerialize value)
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        private void TraceRequest(JsonRpcRequest request)
         {
-            if (value == null) { return; }
-            if (!SysInfo.LogOptions.ApiConnector.EncodedData) { return; }
+            if (!Tracer.Enabled || request == null) return;
 
-            string json = value.ToJson();
-            LogWrite($"Encoded Data:{Environment.NewLine}{json}");
+            string detail = request.ToJson();
+            string name = $"Request.{request.Method} - {request.Params.Format}";
+            Tracer.Write(TraceLayer.ApiClient, detail, name, TraceStatus.Ok);
         }
 
         /// <summary>
-        /// 寫入日誌。
+        /// 追蹤 JSON-RPC 回應模型。
         /// </summary>
-        /// <param name="message">要記錄的訊息內容。</param>
-        private void LogWrite(string message)
+        /// <param name="response">JSON-RPC 回應模型。</param>
+        private void TraceResponse(JsonRpcResponse response)
         {
-            var entry = new LogEntry()
-            {
-                Message = message,
-                Source = nameof(ApiConnector),
-                EntryType = LogEntryType.Information,
-                Timestamp = DateTime.Now
-            };
-            SysInfo.LogWriter.Write(entry);
+            if (!Tracer.Enabled || response == null) return;
+
+            string detail = response.ToJson();
+            string name = (response.Error == null) ?
+                                      $"Response.{response.Method} - {response.Result.Format}" :
+                                      $"Response.{response.Method}";
+            Tracer.Write(TraceLayer.ApiClient, detail, name, TraceStatus.Ok);
         }
 
     }

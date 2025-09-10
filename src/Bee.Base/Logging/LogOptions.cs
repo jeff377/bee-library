@@ -13,12 +13,6 @@ namespace Bee.Base
     public class LogOptions
     {
         /// <summary>
-        /// Logging options for the ApiConnector module.
-        /// </summary>
-        [Description("Logging options for the ApiConnector module.")]
-        public ApiConnectorLogOptions ApiConnector { get; set; } = new ApiConnectorLogOptions();
-
-        /// <summary>
         /// Logging options for the DbAccess module.
         /// </summary>
         [Description("Logging options for the DbAccess module.")]

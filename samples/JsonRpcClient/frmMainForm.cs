@@ -12,7 +12,7 @@ namespace JsonRpcClient
     /// <summary>
     /// Main form for the JSON-RPC client application.
     /// </summary>
-    public partial class frmMainForm : Form, ILogDisplayForm
+    public partial class frmMainForm : Form, ITraceDisplayForm
     {
         public frmMainForm()
         {
@@ -34,19 +34,17 @@ namespace JsonRpcClient
         /// </summary>
         private void frmMainForm_Load(object sender, EventArgs e)
         {
-            SysInfo.LogWriter = new FormLogWriter(this);
-            SysInfo.LogOptions = new LogOptions()
-            {
-                ApiConnector = new ApiConnectorLogOptions(true, true)
-            };
+            var writer = new FormTraceWriter(this);
+            SysInfo.TraceListener = new TraceListener(TraceLayer.ApiClient, writer);
+            SysInfo.TraceEnabled = true;
         }
 
         /// <summary>
-        /// Display a log entry in the form.
+        /// Displays a trace event in the log area of the form.
         /// </summary>
-        public void AppendLog(LogEntry entry)
+        public void AppendTrace(TraceEvent evt)
         {
-            string message = $"{entry.Timestamp:yyyy-MM-dd HH:mm:ss}\r\n{entry.Message}\r\n" +
+            string message = $"Time : {evt.Time}\r\nLayer : {evt.Layer}\r\nName : {evt.Name}\r\nDetail : \r\n{evt.Detail}\r\n" +
                                             "-------------------------------------------------------------------------\r\n";
             edtLog.AppendText(message + Environment.NewLine);
         }
