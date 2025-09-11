@@ -69,6 +69,7 @@ namespace Bee.Connect
                 // 建立 JSON-RPC 請求模型
                 var request = CreateRequest(progId, action, value);
                 TraceRequest(request);
+                //TraceRequestForPostman(request);
 
                 // 將參數格式轉換為指定的 payloadFormat
                 var actualFormat = TransformRequestPayload(request, format);
@@ -115,7 +116,8 @@ namespace Bee.Connect
 
                 // 建立 JSON-RPC 請求模型
                 var request = CreateRequest(progId, action, value);
-                TraceRequest(request);
+                //TraceRequest(request);
+                TraceRequestForCurl(request);
 
                 // 將參數格式轉換為指定的 payloadFormat
                 var actualFormat = TransformRequestPayload(request, format);
@@ -223,6 +225,38 @@ namespace Bee.Connect
         }
 
         /// <summary>
+        /// 追蹤 JSON-RPC 請求，並輸出原始 JSON 及 curl 範例（可用於 API 測試工具或命令列）。
+        /// 內容包含遮罩敏感欄位的 JSON 及對應 curl 指令，方便複製至 Postman、curl CLI 等工具進行測試。
+        /// </summary>
+        /// <param name="request">JSON-RPC 請求模型。</param>
+        private void TraceRequestForCurl(JsonRpcRequest request)
+        {
+            if (!Tracer.Enabled || request == null) return;
+
+            // 1) 建出原始 JSON（必要時遮罩）
+            var rawJson = request.ToJson();
+
+            // 2) 組 curl（若是 Local Provider，endpoint 可填 "http://localhost/..."；Remote 則用實際 endpoint）
+            var endpoint = (Provider is RemoteApiServiceProvider r) ? r.Endpoint : "http://localhost/api/jsonrpc";
+            var authHeader = $"Bearer {AccessToken}"; // 若你實作是別的 header，這裡換掉
+
+            var curl = "curl -X POST "
+                     + $"\"{endpoint}\" "
+                     + "-H \"Content-Type: application/json\" \r\n"
+                     + $"-H \"X-Api-Key: {FrontendInfo.ApiKey}\" \r\n"
+                     + $"-H \"Authorization: {authHeader}\" \r\n"
+                     + $"--data '{rawJson}'";
+
+            var detail =
+                "=== JSON-RPC (Pre-Transform / For Postman) ===\r\n"
+                + rawJson + "\r\n\r\n"
+                + "=== curl ===\r\n"
+                + curl;
+
+            Tracer.Write(TraceLayer.ApiClient, detail, $"Postman.{request.Method}", TraceStatus.Ok);
+        }
+
+        /// <summary>
         /// 追蹤 JSON-RPC 回應模型。
         /// </summary>
         /// <param name="response">JSON-RPC 回應模型。</param>
@@ -234,7 +268,8 @@ namespace Bee.Connect
             string name = (response.Error == null) ?
                                       $"Response.{response.Method} - {response.Result.Format}" :
                                       $"Response.{response.Method}";
-            Tracer.Write(TraceLayer.ApiClient, detail, name, TraceStatus.Ok);
+            var status = (response.Error == null) ? TraceStatus.Ok : TraceStatus.Error;
+            Tracer.Write(TraceLayer.ApiClient, detail, name, status);
         }
 
     }
