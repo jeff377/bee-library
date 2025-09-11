@@ -34,8 +34,7 @@ namespace JsonRpcClient
         private void frmMainForm_Load(object sender, EventArgs e)
         {
             var writer = new FormTraceWriter(this);
-            SysInfo.TraceListener = new TraceListener(TraceLayer.ApiClient, writer);
-            SysInfo.TraceEnabled = true;
+            SysInfo.TraceListener = new TraceListener(TraceLayer.All, writer);
         }
 
         /// <summary>

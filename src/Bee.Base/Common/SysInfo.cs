@@ -29,9 +29,9 @@ namespace Bee.Base
         public static LogOptions LogOptions { get; set; } = new LogOptions();
 
         /// <summary>
-        /// 是否啟用追蹤。
+        /// 是否啟用追蹤（唯讀，當 TraceListener 不為 null 時啟用）。
         /// </summary>
-        public static bool TraceEnabled { get; set; } = false;
+        public static bool TraceEnabled => TraceListener != null;
 
         /// <summary>
         /// 執行流程監控器，提供系統層級的追蹤區段監控功能，

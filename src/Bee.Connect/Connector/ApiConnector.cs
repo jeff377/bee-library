@@ -63,7 +63,7 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
-            var ctx = Tracer.Start(TraceLayer.ApiClient);
+            var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, $"Execute.{progId}.{action}");
             try
             {
                 // 建立 JSON-RPC 請求模型
@@ -110,7 +110,7 @@ namespace Bee.Connect
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
-            var ctx = Tracer.Start(TraceLayer.ApiClient);
+            var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, $"ExecuteAsync.{progId}.{action}");
             try
             {
 
@@ -253,7 +253,8 @@ namespace Bee.Connect
                 + "=== curl ===\r\n"
                 + curl;
 
-            Tracer.Write(TraceLayer.ApiClient, detail, $"Postman.{request.Method}", TraceStatus.Ok);
+            string name = $"Request.{request.Method}";
+            Tracer.Write(TraceLayer.ApiClient, detail, name, TraceStatus.Ok);
         }
 
         /// <summary>

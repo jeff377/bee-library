@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Api.Core
@@ -54,6 +55,7 @@ namespace Bee.Api.Core
         /// <param name="request">JSON-RPC 請求模型。</param>
         private async Task<JsonRpcResponse> ExecuteAsyncCore(JsonRpcRequest request)
         {
+            var ctx = Tracer.Start(TraceLayer.ApiServer, string.Empty, request.Method);
             var response = new JsonRpcResponse(request);
             try
             {
@@ -73,13 +75,13 @@ namespace Bee.Api.Core
                 response.Result = new JsonRpcResult { Value = value };
                 // 設定回應的資料格式
                 ApiPayloadConverter.TransformTo(response.Result, format, apiEncryptionKey);
+                Tracer.End(ctx);
             }
             catch (Exception ex)
             {
-                if (ex.InnerException != null)
-                    response.Error = new JsonRpcError(-1, ex.InnerException.Message);
-                else
-                    response.Error = new JsonRpcError(-1, ex.Message);
+                var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                response.Error = new JsonRpcError(-1, message);
+                Tracer.End(ctx, TraceStatus.Error, message);
             }
             return response;
         }
