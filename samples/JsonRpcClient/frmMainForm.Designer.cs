@@ -38,15 +38,15 @@
             btnHelloLocal = new Button();
             btnHelloEncrypted = new Button();
             btnHelloEncoded = new Button();
+            btnShowTraceViewer = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
             // btnInitialize
             // 
-            btnInitialize.Location = new Point(15, 71);
-            btnInitialize.Margin = new Padding(4);
+            btnInitialize.Location = new Point(12, 56);
             btnInitialize.Name = "btnInitialize";
-            btnInitialize.Size = new Size(129, 29);
+            btnInitialize.Size = new Size(100, 23);
             btnInitialize.TabIndex = 1;
             btnInitialize.Text = "Initialize";
             btnInitialize.UseVisualStyleBackColor = true;
@@ -54,10 +54,9 @@
             // 
             // btnHello
             // 
-            btnHello.Location = new Point(15, 144);
-            btnHello.Margin = new Padding(4);
+            btnHello.Location = new Point(12, 114);
             btnHello.Name = "btnHello";
-            btnHello.Size = new Size(129, 29);
+            btnHello.Size = new Size(100, 23);
             btnHello.TabIndex = 4;
             btnHello.Text = "Hello";
             btnHello.UseVisualStyleBackColor = true;
@@ -65,40 +64,36 @@
             // 
             // edtEndpoint
             // 
-            edtEndpoint.Location = new Point(15, 34);
-            edtEndpoint.Margin = new Padding(4);
+            edtEndpoint.Location = new Point(12, 27);
             edtEndpoint.Name = "edtEndpoint";
-            edtEndpoint.Size = new Size(325, 27);
+            edtEndpoint.Size = new Size(254, 23);
             edtEndpoint.TabIndex = 3;
             edtEndpoint.Text = "https://localhost:7056/api";
             // 
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(15, 11);
-            label1.Margin = new Padding(4, 0, 4, 0);
+            label1.Location = new Point(12, 9);
             label1.Name = "label1";
-            label1.Size = new Size(182, 19);
+            label1.Size = new Size(150, 15);
             label1.TabIndex = 2;
             label1.Text = "Endpoint (Local/Remote)";
             // 
             // edtLog
             // 
             edtLog.Dock = DockStyle.Fill;
-            edtLog.Location = new Point(361, 0);
-            edtLog.Margin = new Padding(4);
+            edtLog.Location = new Point(281, 0);
             edtLog.Multiline = true;
             edtLog.Name = "edtLog";
             edtLog.ScrollBars = ScrollBars.Both;
-            edtLog.Size = new Size(647, 711);
+            edtLog.Size = new Size(503, 561);
             edtLog.TabIndex = 6;
             // 
             // btnLogin
             // 
-            btnLogin.Location = new Point(15, 108);
-            btnLogin.Margin = new Padding(4);
+            btnLogin.Location = new Point(12, 85);
             btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(129, 29);
+            btnLogin.Size = new Size(100, 23);
             btnLogin.TabIndex = 7;
             btnLogin.Text = "Login";
             btnLogin.UseVisualStyleBackColor = true;
@@ -106,6 +101,7 @@
             // 
             // panel1
             // 
+            panel1.Controls.Add(btnShowTraceViewer);
             panel1.Controls.Add(btnHelloLocal);
             panel1.Controls.Add(btnHelloEncrypted);
             panel1.Controls.Add(btnHelloEncoded);
@@ -116,17 +112,15 @@
             panel1.Controls.Add(btnHello);
             panel1.Dock = DockStyle.Left;
             panel1.Location = new Point(0, 0);
-            panel1.Margin = new Padding(4);
             panel1.Name = "panel1";
-            panel1.Size = new Size(361, 711);
+            panel1.Size = new Size(281, 561);
             panel1.TabIndex = 8;
             // 
             // btnHelloLocal
             // 
-            btnHelloLocal.Location = new Point(15, 255);
-            btnHelloLocal.Margin = new Padding(4);
+            btnHelloLocal.Location = new Point(12, 201);
             btnHelloLocal.Name = "btnHelloLocal";
-            btnHelloLocal.Size = new Size(129, 29);
+            btnHelloLocal.Size = new Size(100, 23);
             btnHelloLocal.TabIndex = 10;
             btnHelloLocal.Text = "HelloLocal";
             btnHelloLocal.UseVisualStyleBackColor = true;
@@ -134,10 +128,9 @@
             // 
             // btnHelloEncrypted
             // 
-            btnHelloEncrypted.Location = new Point(15, 218);
-            btnHelloEncrypted.Margin = new Padding(4);
+            btnHelloEncrypted.Location = new Point(12, 172);
             btnHelloEncrypted.Name = "btnHelloEncrypted";
-            btnHelloEncrypted.Size = new Size(129, 29);
+            btnHelloEncrypted.Size = new Size(100, 23);
             btnHelloEncrypted.TabIndex = 9;
             btnHelloEncrypted.Text = "HelloEncrypted";
             btnHelloEncrypted.UseVisualStyleBackColor = true;
@@ -145,23 +138,31 @@
             // 
             // btnHelloEncoded
             // 
-            btnHelloEncoded.Location = new Point(15, 181);
-            btnHelloEncoded.Margin = new Padding(4);
+            btnHelloEncoded.Location = new Point(12, 143);
             btnHelloEncoded.Name = "btnHelloEncoded";
-            btnHelloEncoded.Size = new Size(129, 29);
+            btnHelloEncoded.Size = new Size(100, 23);
             btnHelloEncoded.TabIndex = 8;
             btnHelloEncoded.Text = "HelloEncoded";
             btnHelloEncoded.UseVisualStyleBackColor = true;
             btnHelloEncoded.Click += btnHelloEncoded_Click;
             // 
+            // btnShowTraceViewer
+            // 
+            btnShowTraceViewer.Location = new Point(12, 230);
+            btnShowTraceViewer.Name = "btnShowTraceViewer";
+            btnShowTraceViewer.Size = new Size(157, 23);
+            btnShowTraceViewer.TabIndex = 11;
+            btnShowTraceViewer.Text = "Show TraceViewer";
+            btnShowTraceViewer.UseVisualStyleBackColor = true;
+            btnShowTraceViewer.Click += btnShowTraceViewer_Click;
+            // 
             // frmMainForm
             // 
-            AutoScaleDimensions = new SizeF(9F, 19F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1008, 711);
+            ClientSize = new Size(784, 561);
             Controls.Add(edtLog);
             Controls.Add(panel1);
-            Margin = new Padding(4);
             Name = "frmMainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "JSON-RPC Client";
@@ -183,5 +184,6 @@
         private Button btnHelloLocal;
         private Button btnHelloEncrypted;
         private Button btnHelloEncoded;
+        private Button btnShowTraceViewer;
     }
 }

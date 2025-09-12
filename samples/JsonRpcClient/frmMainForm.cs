@@ -11,7 +11,7 @@ namespace JsonRpcClient
     /// <summary>
     /// Main form for the JSON-RPC client application.
     /// </summary>
-    public partial class frmMainForm : Form, ITraceDisplayForm
+    public partial class frmMainForm : Form
     {
         public frmMainForm()
         {
@@ -33,22 +33,7 @@ namespace JsonRpcClient
         /// </summary>
         private void frmMainForm_Load(object sender, EventArgs e)
         {
-            var writer = new FormTraceWriter(this);
-            SysInfo.TraceListener = new TraceListener(TraceLayer.All, writer);
-        }
 
-        /// <summary>
-        /// Displays a trace event in the log area of the form.
-        /// </summary>
-        public void AppendTrace(TraceEvent evt)
-        {
-            string message = $"Time : {evt.Time:yyyy/MM/dd HH:mm:ss}\r\nLayer : {evt.Layer}\r\nName : {evt.Name}\r\nKind : {evt.Kind}\r\n";
-            if (StrFunc.IsNotEmpty(evt.Detail))
-                message += $"Detail : \r\n{evt.Detail}\r\n";
-            if (evt.Kind == TraceEventKind.End)
-                message += $"Duration : {evt.DurationMs:F0} ms\r\n";
-            message += "-------------------------------------------------------------------------\r\n";
-            edtLog.AppendText(message + Environment.NewLine);
         }
 
         /// <summary>
@@ -235,6 +220,23 @@ namespace JsonRpcClient
                 return new FormApiConnector(_endpoint, FrontendInfo.AccessToken, progId);
         }
 
-
+        private void btnShowTraceViewer_Click(object sender, EventArgs e)
+        {
+            // 檢查是否已開啟 frmTraceViewer
+            foreach (Form openForm in Application.OpenForms)
+            {
+                if (openForm is frmTraceViewer traceViewer)
+                {
+                    // 已開啟，移至焦點
+                    traceViewer.WindowState = FormWindowState.Normal;
+                    traceViewer.BringToFront();
+                    traceViewer.Activate();
+                    return;
+                }
+            }
+            // 尚未開啟，建立新表單
+            var form = new frmTraceViewer();
+            form.Show();
+        }
     }
 }
