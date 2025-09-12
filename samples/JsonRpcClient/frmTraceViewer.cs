@@ -23,11 +23,16 @@ namespace JsonRpcClient
         {
             _traceTable = CreaetTraceTable();
             gvTrace.DataSource = _traceTable;
+            gvTrace.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            gvTrace.ReadOnly = true;
+            gvTrace.AllowUserToAddRows = false; 
+            
             gvTrace.SelectionChanged += gvTrace_FocusedRowChanged;
-            // 隱藏 Detail 欄位
+            gvTrace.CellFormatting += gvTrace_CellFormatting;
+
             if (gvTrace.Columns.Contains("Detail"))
                 gvTrace.Columns["Detail"].Visible = false;
-            
+
             var writer = new FormTraceWriter(this);
             SysInfo.TraceListener = new TraceListener(TraceLayer.All, writer);
 
@@ -45,7 +50,7 @@ namespace JsonRpcClient
             table.Columns.Add("Name", typeof(string));
             table.Columns.Add("Kind", typeof(string));
             table.Columns.Add("Status", typeof(string));
-            table.Columns.Add("DurationMs", typeof(double));
+            table.Columns.Add("DurationMs", typeof(int));
             table.Columns.Add("Detail", typeof(string));
             return table;
         }
@@ -100,6 +105,17 @@ namespace JsonRpcClient
             else
             {
                 edtDetail.Text = string.Empty;
+            }
+        }
+
+        private void gvTrace_CellFormatting(object? sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (gvTrace.Rows[e.RowIndex].DataBoundItem is DataRowView row)
+            {
+                if (BaseFunc.CStr(row.Row["Layer"]) == "ApiClient" && BaseFunc.CStr(row.Row["Kind"]) == "Start")
+                {
+                    if (e.CellStyle != null) e.CellStyle.ForeColor = Color.Blue;
+                }
             }
         }
 

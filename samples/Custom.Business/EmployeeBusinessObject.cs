@@ -25,6 +25,7 @@ namespace Custom.Business
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public HelloResult Hello(HelloArgs args)
         {
+            System.Threading.Thread.Sleep(500); // Simulate a delay
             return new HelloResult()
             {
                 Message = $"Hello, {args.UserName}"
