@@ -8,17 +8,14 @@ namespace Bee.Base
     /// </summary>
     public sealed class TraceListener : ITraceListener
     {
-        private readonly TraceLayer _enabledLayers;
         private readonly ITraceWriter _writer;
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="enabledLayers">要啟用的追蹤層級。</param>
         /// <param name="writer">用於輸出的追蹤寫入器。</param>
-        public TraceListener(TraceLayer enabledLayers, ITraceWriter writer)
+        public TraceListener(ITraceWriter writer)
         {
-            _enabledLayers = enabledLayers;
             _writer = writer ?? throw new ArgumentNullException(nameof(writer));
         }
 
@@ -31,7 +28,6 @@ namespace Bee.Base
         /// <returns>建立的追蹤上下文物件，若層級未啟用則為 null。</returns>
         public TraceContext TraceStart(TraceLayer layer, string detail = "", [CallerMemberName] string name = "")
         {
-            if (!IsEnabled(layer)) return null;
             var ctx = new TraceContext(layer, name, detail);
 
             _writer.Write(new TraceEvent
@@ -55,7 +51,6 @@ namespace Bee.Base
         public void TraceEnd(TraceContext ctx, TraceStatus status = TraceStatus.Ok, string detail = null)
         {
             if (ctx == null) return;
-            if (!IsEnabled(ctx.Layer)) return;
             ctx.Stopwatch.Stop();
 
             _writer.Write(new TraceEvent
@@ -79,8 +74,6 @@ namespace Bee.Base
         /// <param name="status">執行狀態。</param>
         public void TraceWrite(TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok)
         {
-            if (!IsEnabled(layer)) return;
-
             _writer.Write(new TraceEvent
             {
                 Time = DateTimeOffset.Now,
@@ -91,16 +84,6 @@ namespace Bee.Base
                 Kind = TraceEventKind.Point,
                 Status = status
             });
-        }
-
-        /// <summary>
-        /// 判斷指定的追蹤層級是否已啟用。
-        /// </summary>
-        /// <param name="layer">要檢查的追蹤層級。</param>
-        /// <returns>若該層級已啟用則回傳 true，否則回傳 false。</returns>
-        private bool IsEnabled(TraceLayer layer)
-        {
-            return (_enabledLayers & layer) != TraceLayer.None;
         }
     }
 

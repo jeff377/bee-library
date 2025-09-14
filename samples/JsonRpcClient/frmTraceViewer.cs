@@ -33,8 +33,7 @@ namespace JsonRpcClient
             if (gvTrace.Columns.Contains("Detail"))
                 gvTrace.Columns["Detail"].Visible = false;
 
-            var writer = new FormTraceWriter(this);
-            SysInfo.TraceListener = new TraceListener(TraceLayer.All, writer);
+            SysInfo.TraceListener = new TraceListener(new FormTraceWriter(this));
 
             AdjustColumnWidths();
         }
