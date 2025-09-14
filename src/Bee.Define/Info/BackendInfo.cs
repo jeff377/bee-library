@@ -50,9 +50,9 @@ namespace Bee.Define
         public static string DatabaseId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 最大 DbCommand 逾時（秒）。0 表示不限制。
+        /// 最大 DbCommand 逾時（秒），預設 60 秒，0 表示不限制。
         /// </summary>
-        public static int MaxDbCommandTimeout { get; set; } = 0;
+        public static int MaxDbCommandTimeout { get; set; } = 60;
 
         /// <summary>
         /// API 金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。

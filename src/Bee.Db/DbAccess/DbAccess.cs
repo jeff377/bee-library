@@ -457,10 +457,17 @@ namespace Bee.Db
                 {
                     if (batch.UseTransaction)
                     {
+#if NET8_0_OR_GREATER
+                        // .NET 8.0+ 有 BeginTransactionAsync
+                        tran = batch.IsolationLevel.HasValue
+                            ? await scope.Connection.BeginTransactionAsync(batch.IsolationLevel.Value, cancellationToken).ConfigureAwait(false)
+                            : await scope.Connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+#else
                         // .NET Standard 2.0 無 BeginTransactionAsync，此處以同步 BeginTransaction 啟動交易
                         tran = batch.IsolationLevel.HasValue
                             ? scope.Connection.BeginTransaction(batch.IsolationLevel.Value)
                             : scope.Connection.BeginTransaction();
+#endif
                     }
 
                     for (int i = 0; i < batch.Commands.Count; i++)

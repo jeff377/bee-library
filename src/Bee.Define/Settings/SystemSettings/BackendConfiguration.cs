@@ -80,12 +80,13 @@ namespace Bee.Define
         public string DatabaseId { get; set; } = string.Empty;
 
         /// <summary>
-        /// Maximum DbCommand timeout (seconds). 0 means unlimited.
+        /// Maximum DbCommand timeout (seconds). 
+        /// Default is 60 seconds. Set to 0 for unlimited.
         /// </summary>
         [Category("Database")]
-        [Description("Maximum DbCommand timeout (seconds). 0 means unlimited.")]
-        [DefaultValue(0)]
-        public int MaxDbCommandTimeout { get; set; } = 0;
+        [Description("Maximum DbCommand timeout (seconds). Default is 60 seconds. Set to 0 for unlimited.")]
+        [DefaultValue(60)]
+        public int MaxDbCommandTimeout { get; set; } = 60;
 
         /// <summary>
         /// API KEY.
