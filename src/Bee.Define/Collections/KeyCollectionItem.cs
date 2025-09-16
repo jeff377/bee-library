@@ -13,9 +13,8 @@ namespace Bee.Define
     [Serializable]
     public abstract class KeyCollectionItem : IKeyCollectionItem, ITagProperty, IObjectSerialize
     {
-        private string _Key = string.Empty;
-        private IKeyCollectionBase _Collection = null;
-        private SerializeState _SerializeState = SerializeState.None;
+        private string _key = string.Empty;
+        private IKeyCollectionBase _collection = null;
 
         #region IKeyCollectionItem 介面
 
@@ -28,16 +27,16 @@ namespace Bee.Define
         {
             get
             {
-                return _Key;
+                return _key;
             }
             set
             {
-                if (_Key != value)
+                if (_key != value)
                 {
                     // 變更成員鍵值
-                    if (_Collection != null && !StrFunc.IsEquals(_Key, value))
-                        _Collection.ChangeItemKey(value, this);
-                    _Key = value;
+                    if (_collection != null && !StrFunc.IsEquals(_key, value))
+                        _collection.ChangeItemKey(value, this);
+                    _key = value;
                 }
             }
         }
@@ -48,7 +47,7 @@ namespace Bee.Define
         /// <param name="collection">集合。</param>
         public void SetCollection(IKeyCollectionBase collection)
         {
-            _Collection = collection;
+            _collection = collection;
         }
 
         /// <summary>
@@ -56,8 +55,8 @@ namespace Bee.Define
         /// </summary>
         public void Remove()
         {
-            if (_Collection != null)
-                _Collection.Remove(this);
+            if (_collection != null)
+                _collection.Remove(this);
         }
 
         #endregion
@@ -80,10 +79,7 @@ namespace Bee.Define
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public SerializeState SerializeState
-        {
-            get { return _SerializeState; }
-        }
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -91,7 +87,7 @@ namespace Bee.Define
         /// <param name="serializeState">序列化狀態。</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
-            _SerializeState = serializeState;
+            SerializeState = serializeState;
         }
 
         #endregion
@@ -104,7 +100,7 @@ namespace Bee.Define
         [TreeNodeIgnore]
         public IKeyCollectionBase Collection
         {
-            get { return _Collection; }
+            get { return _collection; }
         }
     }
 }

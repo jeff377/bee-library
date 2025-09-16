@@ -13,8 +13,7 @@ namespace Bee.Define
     [Serializable]
     public abstract class CollectionItem : ICollectionItem, ITagProperty, IObjectSerialize
     {
-        private ICollectionBase _Collection = null;
-        private SerializeState _SerializeState = SerializeState.None;
+        private ICollectionBase _collection = null;
 
         #region ICollectionItem 介面
 
@@ -24,7 +23,7 @@ namespace Bee.Define
         /// <param name="collection">集合。</param>
         public void SetCollection(ICollectionBase collection)
         {
-            _Collection = collection;
+            _collection = collection;
         }
 
         /// <summary>
@@ -32,8 +31,8 @@ namespace Bee.Define
         /// </summary>
         public void Remove()
         {
-            if (_Collection != null)
-                _Collection.Remove(this);
+            if (_collection != null)
+                _collection.Remove(this);
         }
 
         #endregion
@@ -56,10 +55,7 @@ namespace Bee.Define
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public SerializeState SerializeState
-        {
-            get { return _SerializeState; }
-        }
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -67,7 +63,7 @@ namespace Bee.Define
         /// <param name="serializeState">序列化狀態。</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
-            _SerializeState = serializeState;
+            SerializeState = serializeState;
         }
 
         #endregion
@@ -80,7 +76,7 @@ namespace Bee.Define
         [TreeNodeIgnore]
         public ICollectionBase Collection
         {
-            get { return _Collection; }
+            get { return _collection; }
         }
     }
 }

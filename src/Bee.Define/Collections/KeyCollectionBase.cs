@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Bee.Base;
+using MessagePack;
+using Newtonsoft.Json;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Xml.Serialization;
-using Bee.Base;
-using MessagePack;
-using Newtonsoft.Json;
 
 namespace Bee.Define
 {
@@ -18,8 +17,6 @@ namespace Bee.Define
     public class KeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty, IMessagePackSerializationCallbackReceiver
         where T : class, IKeyCollectionItem  // 定義成員型別必須實作 IKeyCollectionItem 介面
     {
-        private SerializeState _SerializeState = SerializeState.None;
-
         #region 建構函式
 
         /// <summary>
@@ -96,10 +93,7 @@ namespace Bee.Define
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public SerializeState SerializeState
-        {
-            get { return _SerializeState; }
-        }
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -107,7 +101,7 @@ namespace Bee.Define
         /// <param name="serializeState">序列化狀態。</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
-            _SerializeState = serializeState;
+            SerializeState = serializeState;
             foreach (object item in this)
             {
                 if (item is IObjectSerialize)
