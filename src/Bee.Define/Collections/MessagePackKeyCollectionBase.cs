@@ -10,11 +10,11 @@ using System.Xml.Serialization;
 namespace Bee.Define
 {
     /// <summary>
-    /// 具鍵值的強型別集合。
+    /// 具鍵值的強型別集合，支援 MessagePack 的版本。
     /// </summary>
     /// <typeparam name="T">集合成員型別。</typeparam>
     [Serializable]
-    public class KeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty, IMessagePackSerializationCallbackReceiver
+    public class MessagePackKeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty, IMessagePackSerializationCallbackReceiver
         where T : class, IKeyCollectionItem  // 定義成員型別必須實作 IKeyCollectionItem 介面
     {
         #region 建構函式
@@ -22,7 +22,7 @@ namespace Bee.Define
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public KeyCollectionBase() : base(StringComparer.CurrentCultureIgnoreCase)
+        public MessagePackKeyCollectionBase() : base(StringComparer.CurrentCultureIgnoreCase)
         {
         }
 
@@ -30,7 +30,7 @@ namespace Bee.Define
         /// 建構函式。
         /// </summary>
         /// <param name="owner">擁有者。</param>
-        public KeyCollectionBase(object owner) : this()
+        public MessagePackKeyCollectionBase(object owner) : this()
         {
             Owner = owner;
         }

@@ -9,7 +9,7 @@ namespace Bee.Define
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class ParameterCollection : KeyCollectionBase<Parameter>
+    public class ParameterCollection : MessagePackKeyCollectionBase<Parameter>
     {
         /// <summary>
         /// 加入參數。

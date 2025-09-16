@@ -5,12 +5,12 @@ using MessagePack.Formatters;
 namespace Bee.Define
 {
     /// <summary>
-    /// 用於序列化與反序列化繼承自 <see cref="CollectionBase{T}"/> 的強型別集合格式化器。
+    /// 用於序列化與反序列化繼承自 <see cref="MessagePackCollectionBase{T}"/> 的強型別集合格式化器。
     /// </summary>
-    /// <typeparam name="TCollection">具體集合型別，需繼承自 <see cref="CollectionBase{TElement}"/>，且具備無參數建構式。</typeparam>
+    /// <typeparam name="TCollection">具體集合型別，需繼承自 <see cref="MessagePackCollectionBase{TElement}"/>，且具備無參數建構式。</typeparam>
     /// <typeparam name="TElement">集合成員型別。</typeparam>
     public class CollectionBaseFormatter<TCollection, TElement> : IMessagePackFormatter<TCollection>
-        where TCollection : CollectionBase<TElement>, new()
+        where TCollection : MessagePackCollectionBase<TElement>, new()
         where TElement : class, ICollectionItem
     {
         /// <summary>

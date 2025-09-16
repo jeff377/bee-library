@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Base;
+using System;
 using System.ComponentModel;
 
 namespace Bee.Define

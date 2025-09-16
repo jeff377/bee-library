@@ -1,12 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
-using MessagePack;
-using Newtonsoft.Json;
 
-namespace Bee.Define
+namespace Bee.Base
 {
     /// <summary>
     /// 強型別集合。
@@ -42,7 +40,7 @@ namespace Bee.Define
         /// <summary>
         ///  擁有者。
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public object Owner { get; private set; }
 
@@ -90,7 +88,7 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -115,7 +113,7 @@ namespace Bee.Define
         /// <summary>
         /// 儲存額外資訊。
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public object Tag { get; set; } = null;
 

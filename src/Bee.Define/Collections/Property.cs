@@ -12,7 +12,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("Property")]
     [Description("自訂屬性。")]
-    public class Property : KeyCollectionItem
+    public class Property : MessagePackKeyCollectionItem
     {
         #region 建構函式
 

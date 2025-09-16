@@ -8,10 +8,10 @@ using Newtonsoft.Json;
 namespace Bee.Define
 {
     /// <summary>
-    /// 強型別集合成員。
+    /// 強型別集合成員，支援 MessagePack 的版本。
     /// </summary>
     [Serializable]
-    public abstract class CollectionItem : ICollectionItem, ITagProperty, IObjectSerialize
+    public abstract class MessagePackCollectionItem : ICollectionItem, ITagProperty, IObjectSerialize
     {
         private ICollectionBase _collection = null;
 

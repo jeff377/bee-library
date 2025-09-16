@@ -11,7 +11,7 @@ namespace Bee.Define
     [MessagePackObject]
     [Serializable]
     [XmlType("ListItem")]
-    public class ListItem : KeyCollectionItem
+    public class ListItem : MessagePackKeyCollectionItem
     {
         #region 建構函式
 

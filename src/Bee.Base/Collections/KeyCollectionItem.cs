@@ -1,11 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
-using MessagePack;
 using Newtonsoft.Json;
 
-namespace Bee.Define
+namespace Bee.Base
 {
     /// <summary>
     /// 具鍵值的強型別集合成員。
@@ -21,7 +19,7 @@ namespace Bee.Define
         /// <summary>
         /// 鍵值。
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public virtual string Key
         {
@@ -66,7 +64,7 @@ namespace Bee.Define
         /// <summary>
         /// 儲存額外資訊。
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public object Tag { get; set; } = null;
 
@@ -77,7 +75,7 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -95,7 +93,7 @@ namespace Bee.Define
         /// <summary>
         /// 所屬集合。
         /// </summary>
-        [XmlIgnore, JsonIgnore, IgnoreMember]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         [TreeNodeIgnore]
         public IKeyCollectionBase Collection

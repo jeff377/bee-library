@@ -11,7 +11,7 @@ namespace Bee.Define
     [MessagePackObject]
     [Serializable]
     [Description("自訂屬性集合。")]
-    public class PropertyCollection : KeyCollectionBase<Property>
+    public class PropertyCollection : MessagePackKeyCollectionBase<Property>
     {
         /// <summary>
         /// 加入成員。

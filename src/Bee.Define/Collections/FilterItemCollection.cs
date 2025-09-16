@@ -8,7 +8,7 @@ namespace Bee.Define
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class FilterItemCollection : CollectionBase<FilterItem>
+    public class FilterItemCollection : MessagePackCollectionBase<FilterItem>
     {
         /// <summary>
         /// 加入條件。

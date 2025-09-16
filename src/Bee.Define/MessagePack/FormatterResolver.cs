@@ -42,7 +42,7 @@ namespace Bee.Define
                 // 檢查是否繼承自 TCollectionBase<T>
                 if (type.IsClass && !type.IsAbstract && type.BaseType != null &&
                     type.BaseType.IsGenericType &&
-                    type.BaseType.GetGenericTypeDefinition() == typeof(CollectionBase<>))
+                    type.BaseType.GetGenericTypeDefinition() == typeof(MessagePackCollectionBase<>))
                 {
                     var elementType = type.BaseType.GetGenericArguments()[0];
 

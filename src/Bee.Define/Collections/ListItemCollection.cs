@@ -10,7 +10,7 @@ namespace Bee.Define
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class ListItemCollection : KeyCollectionBase<ListItem>
+    public class ListItemCollection : MessagePackKeyCollectionBase<ListItem>
     {
         #region 建構函式
 

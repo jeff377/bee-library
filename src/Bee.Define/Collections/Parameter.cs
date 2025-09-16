@@ -14,7 +14,7 @@ namespace Bee.Define
     [Serializable]
     [XmlType("Parameter")]
     [DefaultProperty("Value")]
-    public class Parameter : KeyCollectionItem
+    public class Parameter : MessagePackKeyCollectionItem
     {
         #region 建構函式
 

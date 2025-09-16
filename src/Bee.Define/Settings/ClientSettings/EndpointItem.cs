@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Base;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 

@@ -11,7 +11,7 @@ namespace Bee.Define
     [MessagePackObject]
     [Serializable]
     [XmlType("FilterItem")]
-    public class FilterItem : CollectionItem
+    public class FilterItem : MessagePackCollectionItem
     {
         #region 建構函式
 
