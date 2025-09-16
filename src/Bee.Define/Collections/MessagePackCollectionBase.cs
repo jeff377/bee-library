@@ -141,7 +141,7 @@ namespace Bee.Define
         protected override void RemoveItem(int index)
         {
             // 移除成員的集合類別
-            (this[index] as ICollectionItem).SetCollection(null);
+            this[index].SetCollection(null);
             // 移除成員
             base.RemoveItem(index);
         }

@@ -125,7 +125,7 @@ namespace Bee.Base
         /// <param name="item">成員。</param>
         protected override string GetKeyForItem(T item)
         {
-            return (item as IKeyCollectionItem).Key;
+            return item.Key;
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace Bee.Base
         protected override void InsertItem(int index, T item)
         {
             base.InsertItem(index, item);
-            (item as IKeyCollectionItem).SetCollection(this);
+            item.SetCollection(this);
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Bee.Base
         /// <param name="index">索引。</param>
         protected override void RemoveItem(int index)
         {
-            (this[index] as IKeyCollectionItem).SetCollection(null);
+            this[index].SetCollection(null);
             base.RemoveItem(index);
         }
 

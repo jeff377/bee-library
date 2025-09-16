@@ -179,7 +179,7 @@ namespace Bee.Define
         protected override void InsertItem(int index, T item)
         {
             base.InsertItem(index, item);
-            (item as IKeyCollectionItem).SetCollection(this);
+            item.SetCollection(this);
         }
 
         /// <summary>
@@ -188,7 +188,7 @@ namespace Bee.Define
         /// <param name="index">索引。</param>
         protected override void RemoveItem(int index)
         {
-            (this[index] as IKeyCollectionItem).SetCollection(null);
+            this[index].SetCollection(null);
             base.RemoveItem(index);
         }
 
