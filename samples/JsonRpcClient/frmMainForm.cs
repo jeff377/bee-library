@@ -3,7 +3,6 @@ using Bee.Base;
 using Bee.Cache;
 using Bee.Connect;
 using Bee.Define;
-using Bee.UI.WinForms;
 using Custom.Define;
 
 namespace JsonRpcClient
@@ -41,7 +40,6 @@ namespace JsonRpcClient
         /// </summary>
         private async void btnInitialize_Click(object sender, EventArgs e)
         {
-            edtLog.Text = string.Empty;
             if (!ValidateAndApplyEndpoint()) { return; }
 
             try
@@ -50,11 +48,11 @@ namespace JsonRpcClient
                 var connector = CreateSystemApiConnector();
                 await connector.InitializeAsync();
                 _isInitialized = true;
-                MessageBox.Show("Initialization complete.");
+                AddMessage("Initialization complete.");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}");
+                AddMessage($"Error: {ex.Message}");
             }
         }
 
@@ -63,7 +61,6 @@ namespace JsonRpcClient
         /// </summary>
         private async void btnLogin_Click(object sender, EventArgs e)
         {
-            edtLog.Text = string.Empty;
             if (!ValidateInitialize()) { return; }
 
             try
@@ -71,11 +68,11 @@ namespace JsonRpcClient
                 // Log in to the system; no real credential validation here, for demonstration purposes only
                 var connector = CreateSystemApiConnector();
                 await connector.LoginAsync("jeff", "1234");
-                MessageBox.Show($"AccessToken : {FrontendInfo.AccessToken}\nApiEncryptionKey : {Convert.ToBase64String(FrontendInfo.ApiEncryptionKey)}");
+                AddMessage($"AccessToken : {FrontendInfo.AccessToken}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}");
+                AddMessage($"Error: {ex.Message}");
             }
         }
 
@@ -120,7 +117,6 @@ namespace JsonRpcClient
         /// <param name="format">Payload format, e.g., PayloadFormat.Plain or PayloadFormat.Encoded.</param>
         private async Task CallEmployeeHelloAsync(string method, PayloadFormat format)
         {
-            edtLog.Text = string.Empty;
             if (!ValidateInitialize()) { return; }
 
             try
@@ -130,11 +126,11 @@ namespace JsonRpcClient
                 var args = new HelloArgs { UserName = "Jeff" };
 
                 var result = await connector.ExecuteAsync<HelloResult>(method, args, format);
-                MessageBox.Show($"Message: {result.Message}");
+                AddMessage($"Message: {result.Message}");
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}");
+                AddMessage($"Error: {ex.Message}");
             }
         }
 
@@ -145,7 +141,7 @@ namespace JsonRpcClient
         {
             if (!_isInitialized)
             {
-                MessageBox.Show("Please initialize first.");
+                AddMessage("Please initialize first.");
                 return false;
             }
             return true;
@@ -160,7 +156,7 @@ namespace JsonRpcClient
             string endpoint = edtEndpoint.Text;
             if (string.IsNullOrWhiteSpace(endpoint))
             {
-                MessageBox.Show("Please enter a valid endpoint.");
+                AddMessage("Please enter a valid endpoint.");
                 return false;
             }
 
@@ -237,6 +233,11 @@ namespace JsonRpcClient
             // 尚未開啟，建立新表單
             var form = new frmTraceViewer();
             form.Show();
+        }
+
+        private void AddMessage(string message)
+        {
+            edtMessage.Items.Add(message);
         }
     }
 }
