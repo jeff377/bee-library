@@ -38,7 +38,7 @@ namespace Bee.Define
         /// 欄位名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("欄位名稱。")]
         public string FieldName
@@ -51,7 +51,7 @@ namespace Bee.Define
         /// 標題文字。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
         public string Caption { get; set; } = string.Empty; 
@@ -61,7 +61,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("資料型別。")]
         public FieldDbType DbType { get; set; } = FieldDbType.String;
 
@@ -69,7 +69,7 @@ namespace Bee.Define
         /// 字串型別的欄位長度。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("字串型別的欄位長度。")]
         [DefaultValue(0)]
         public int Length { get; set; } = 0;
@@ -78,7 +78,7 @@ namespace Bee.Define
         /// 是否允許 Null 值。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("是否允許 Null 值。")]
         [DefaultValue(false)]
         public bool AllowNull { get; set; } = false;
@@ -87,7 +87,7 @@ namespace Bee.Define
         /// 預設值。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("預設值。")]
         [DefaultValue("")]
         public string DefaultValue { get; set; } = string.Empty;

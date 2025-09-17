@@ -61,7 +61,7 @@ namespace Bee.Define
         /// <summary>
         /// 欄位數。
         /// </summary>
-        [Category(Category.Layout)]
+        [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [Description("欄位數。")]
         public int ColumnCount

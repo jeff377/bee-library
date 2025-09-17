@@ -93,7 +93,7 @@ namespace Bee.Define
         /// 顯示名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("顯示名稱。")]
         public string DisplayName
         {
@@ -105,7 +105,7 @@ namespace Bee.Define
         /// 清單欄位集合字串，以逗點分隔多個欄位。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("清單欄位集合字串，以逗點分隔多個欄位。")]
         public string ListFields
         {

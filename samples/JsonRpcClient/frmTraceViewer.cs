@@ -1,11 +1,13 @@
-﻿using Bee.Base;
+﻿using Bee.Api.Core;
+using Bee.Base;
+using Bee.Define;
 using Bee.UI.WinForms;
 using System.Data;
 
 namespace JsonRpcClient
 {
     /// <summary>
-    /// Trace Viewer。
+    /// Trace Viewer.
     /// </summary>
     public partial class frmTraceViewer : Form, ITraceDisplayForm
     {
@@ -68,6 +70,13 @@ namespace JsonRpcClient
         public void AppendTrace(TraceEvent evt)
         {
             if (_traceTable == null) return;
+
+            if (evt.Category != TraceCategories.JsonRpc) { return; }
+
+            string detail = evt.Detail;
+            if (evt.Tag is JsonRpcRequest request) 
+                detail = GetJsonRpcRequest(request);
+
             var row = _traceTable.NewRow();
             row["Time"] = evt.Time.DateTime;
             row["Layer"] = evt.Layer.ToString();
@@ -75,16 +84,35 @@ namespace JsonRpcClient
             row["Kind"] = evt.Kind.ToString();
             row["Status"] = evt.Status.ToString();
             row["DurationMs"] = evt.DurationMs;
-            row["Detail"] = evt.Detail;
+            row["Detail"] = detail;
             _traceTable.Rows.Add(row);
+        }
 
-            //string message = $"Time : {evt.Time:yyyy/MM/dd HH:mm:ss}\r\nLayer : {evt.Layer}\r\nName : {evt.Name}\r\nKind : {evt.Kind}\r\n";
-            //if (StrFunc.IsNotEmpty(evt.Detail))
-            //    message += $"Detail : \r\n{evt.Detail}\r\n";
-            //if (evt.Kind == TraceEventKind.End)
-            //    message += $"Duration : {evt.DurationMs:F0} ms\r\n";
-            //message += "-------------------------------------------------------------------------\r\n";
-            //edtLog.AppendText(message + Environment.NewLine);
+        /// <summary>
+        /// Converts a JsonRpcRequest to a detailed string including raw JSON and curl command.
+        /// </summary>
+        private string GetJsonRpcRequest(JsonRpcRequest request)
+        {
+            // Build raw JSON
+            var rawJson = request.ToJson();
+
+            // Build curl command
+            var endpoint = StrFunc.IsNotEmpty(FrontendInfo.Endpoint) ? FrontendInfo.Endpoint : "http://localhost/api/jsonrpc";
+            var authHeader = $"Bearer {FrontendInfo.AccessToken}"; 
+
+            var curl = "curl -X POST "
+                     + $"\"{endpoint}\" "
+                     + "-H \"Content-Type: application/json\" \r\n"
+                     + $"-H \"X-Api-Key: {FrontendInfo.ApiKey}\" \r\n"
+                     + $"-H \"Authorization: {authHeader}\" \r\n"
+                     + $"--data '{rawJson}'";
+
+            var detail =
+                "=== JSON-RPC ===\n"
+                + rawJson + "\r\n\r\n"
+                + "=== curl ===\r\n"
+                + curl;
+            return detail;
         }
 
         private void gvTrace_FocusedRowChanged(object? sender, EventArgs e)
@@ -118,11 +146,14 @@ namespace JsonRpcClient
             }
         }
 
+        /// <summary>
+        /// Adjusts the column widths of the DataGridView based on content and header.
+        /// </summary>
         private void AdjustColumnWidths()
         {
             foreach (DataGridViewColumn column in gvTrace.Columns)
             {
-                // 自動調整欄寬，根據內容與標題
+                // Auto adjust column width based on content and header
                 column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             }
         }

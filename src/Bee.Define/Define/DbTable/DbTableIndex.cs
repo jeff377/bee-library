@@ -23,7 +23,7 @@ namespace Bee.Define
         /// 索引名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("索引名稱。")]
         public string Name
@@ -36,7 +36,7 @@ namespace Bee.Define
         /// 是否具有唯一性。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("是否具有唯一性。")]
         [DefaultValue(false)]
         public bool Unique
@@ -49,7 +49,7 @@ namespace Bee.Define
         /// 是否為主鍵。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("是否為主鍵。")]
         [DefaultValue(false)]
         public bool PrimaryKey

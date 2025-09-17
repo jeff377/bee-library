@@ -47,7 +47,7 @@ namespace Bee.Define
         /// <summary>
         /// 欄位名稱。
         /// </summary>
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [NotifyParentProperty(true)]
         [Description("欄位名稱。")]
@@ -60,7 +60,7 @@ namespace Bee.Define
         /// <summary>
         /// 標題文字。
         /// </summary>
-        [Category(Category.Layout)]
+        [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
@@ -74,7 +74,7 @@ namespace Bee.Define
         /// <summary>
         /// 控制項類型。
         /// </summary>
-        [Category(Category.Layout)]
+        [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [Description("控制項類型。")]
         public ColumnControlType ControlType
@@ -86,7 +86,7 @@ namespace Bee.Define
         /// <summary>
         /// 關連程式代碼。
         /// </summary>
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [Description("關連程式代碼。")]
         [DefaultValue("")]
@@ -95,7 +95,7 @@ namespace Bee.Define
         /// <summary>
         /// 是否顯示。
         /// </summary>
-        [Category(Category.Layout)]
+        [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [Description("是否顯示。")]
         [DefaultValue(true)]
@@ -108,7 +108,7 @@ namespace Bee.Define
         /// <summary>
         /// 是否唯讀。
         /// </summary>
-        [Category(Category.Appearance)]
+        [Category(PropertyCategories.Appearance)]
         [XmlAttribute]
         [Description("是否唯讀。")]
         [DefaultValue(false)]
@@ -121,7 +121,7 @@ namespace Bee.Define
         /// <summary>
         /// 欄寬，設定值大於 0 才有效。
         /// </summary>
-        [Category(Category.Layout)]
+        [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [Description("欄寬，設定值大於 0 才有效。")]
         [DefaultValue(0)]
@@ -134,7 +134,7 @@ namespace Bee.Define
         /// <summary>
         /// 顯示格式化。
         /// </summary>
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [Description("顯示格式化。")]
         [DefaultValue("")]
@@ -147,7 +147,7 @@ namespace Bee.Define
         /// <summary>
         /// 數值格式化。
         /// </summary>
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [Description("數值格式化。")]
         [DefaultValue("")]
@@ -160,7 +160,7 @@ namespace Bee.Define
         /// <summary>
         /// 清單項目集合。
         /// </summary>
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("清單項目集合。")]
         [DefaultValue(null)]
         public ListItemCollection ListItems

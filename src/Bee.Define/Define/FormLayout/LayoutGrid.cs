@@ -43,7 +43,7 @@ namespace Bee.Define
         /// <summary>
         /// 資料表名稱。
         /// </summary>
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [NotifyParentProperty(true)]
         [Description("資料表名稱。")]

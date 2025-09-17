@@ -36,7 +36,7 @@ namespace Bee.Define
         /// 欄位名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("欄位名稱。")]
         public string FieldName
         {
@@ -48,7 +48,7 @@ namespace Bee.Define
         /// 排序方式。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("排序方式。")]
         [DefaultValue(SortDirection.Asc)]
         public SortDirection SortDirection

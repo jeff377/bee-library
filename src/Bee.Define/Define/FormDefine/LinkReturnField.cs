@@ -41,7 +41,7 @@ namespace Bee.Define
         /// 來源欄位。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("來源欄位。")]
         public string SourceField
         {
@@ -53,7 +53,7 @@ namespace Bee.Define
         /// 目的欄位。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("目的欄位。")]
         public string DestinationField
         {

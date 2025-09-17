@@ -7,7 +7,7 @@ namespace Bee.Base
     /// <summary>
     /// 屬性視窗的顯示分類常數。
     /// </summary>
-    public class Category
+    public class PropertyCategories
     {
         /// <summary>
         /// 行為。
@@ -29,6 +29,17 @@ namespace Bee.Base
         /// 動作。
         /// </summary>
         public const string Action = "Action";
+    }
+
+    /// <summary>
+    /// 定義常用的追蹤分類常數，供 TraceEvent.Category 使用。
+    /// </summary>
+    public static class TraceCategories
+    {
+        /// <summary>
+        /// JSON-RPC 請求或回應模型。
+        /// </summary>
+        public const string JsonRpc = "JsonRpc";
     }
 
     #endregion

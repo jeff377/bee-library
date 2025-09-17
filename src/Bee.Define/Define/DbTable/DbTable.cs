@@ -95,7 +95,7 @@ namespace Bee.Define
         /// 資料庫名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("資料庫名稱。")]
         public string DbName
         {
@@ -107,7 +107,7 @@ namespace Bee.Define
         /// 資料表名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("資料表名稱。")]
         public string TableName
@@ -120,7 +120,7 @@ namespace Bee.Define
         /// 顯示名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("顯示名稱。")]
         public string DisplayName

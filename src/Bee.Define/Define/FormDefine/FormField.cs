@@ -54,7 +54,7 @@ namespace Bee.Define
         /// 欄位名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("欄位名稱。")]
         public string FieldName
@@ -67,7 +67,7 @@ namespace Bee.Define
         /// 標題文字。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
         public string Caption
@@ -81,7 +81,7 @@ namespace Bee.Define
         /// </summary>
         [XmlAttribute]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("資料型別。")]
         public FieldDbType DbType
         {
@@ -93,7 +93,7 @@ namespace Bee.Define
         /// 欄位類型。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("欄位類型。")]
         [DefaultValue(FieldType.DbField)]
         public FieldType Type
@@ -106,7 +106,7 @@ namespace Bee.Define
         /// 控制項類型。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Layout)]
+        [Category(PropertyCategories.Layout)]
         [Description("控制項類型。")]
         public ControlType ControlType
         {
@@ -118,7 +118,7 @@ namespace Bee.Define
         /// 字串最大長度。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("字串最大長度。")]
         [DefaultValue(0)]
         public int MaxLength
@@ -131,7 +131,7 @@ namespace Bee.Define
         /// 預設值。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("預設值。")]
         [DefaultValue("")]
         public string DefaultValue
@@ -143,7 +143,7 @@ namespace Bee.Define
         /// <summary>
         /// 顯示格式化。
         /// </summary>
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [Description("顯示格式化。")]
         [DefaultValue("")]
@@ -156,7 +156,7 @@ namespace Bee.Define
         /// <summary>
         /// 數值格式化。
         /// </summary>
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [Description("數值格式化。")]
         [DefaultValue("")]
@@ -221,7 +221,7 @@ namespace Bee.Define
         /// <summary>
         /// 欄寬，設定值大於 0 才有效。
         /// </summary>
-        [Category(Category.Layout)]
+        [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [Description("欄寬，設定值大於 0 才有效。")]
         [DefaultValue(0)]

@@ -43,7 +43,7 @@ namespace Bee.Define
         /// 資料表名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("資料表名稱。")]
         public string TableName
@@ -56,7 +56,7 @@ namespace Bee.Define
         /// 資料庫的資料表名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [Description("資料庫的資料表名稱。")]
         public string DbTableName
         {
@@ -68,7 +68,7 @@ namespace Bee.Define
         /// 顯示名稱。
         /// </summary>
         [XmlAttribute]
-        [Category(Category.Data)]
+        [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("顯示名稱。")]
         public string DisplayName
