@@ -12,6 +12,7 @@ namespace JsonRpcClient
     public partial class frmTraceViewer : Form, ITraceDisplayForm
     {
         private DataTable? _traceTable = null;
+        private bool _enableTrace = false;
 
         public frmTraceViewer()
         {
@@ -23,12 +24,17 @@ namespace JsonRpcClient
         /// </summary>
         private void frmTraceViewer_Load(object sender, EventArgs e)
         {
+            edtTraceCategory.Items.Clear();
+            edtTraceCategory.Items.Add(TraceCategories.General);
+            edtTraceCategory.Items.Add(TraceCategories.JsonRpc);
+            edtTraceCategory.SelectedIndex = 0;
+
             _traceTable = CreaetTraceTable();
             gvTrace.DataSource = _traceTable;
             gvTrace.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             gvTrace.ReadOnly = true;
-            gvTrace.AllowUserToAddRows = false; 
-            
+            gvTrace.AllowUserToAddRows = false;
+
             gvTrace.SelectionChanged += gvTrace_FocusedRowChanged;
             gvTrace.CellFormatting += gvTrace_CellFormatting;
 
@@ -69,12 +75,18 @@ namespace JsonRpcClient
         /// </summary>
         public void AppendTrace(TraceEvent evt)
         {
-            if (_traceTable == null) return;
+            if (!_enableTrace || _traceTable == null) return;
 
-            if (evt.Category != TraceCategories.JsonRpc) { return; }
+            bool isMatch;
+            if (edtTraceCategory.Text == TraceCategories.General)
+                isMatch = evt.Category == string.Empty || evt.Category.Equals(TraceCategories.General);
+            else
+                isMatch = evt.Category.Equals(TraceCategories.JsonRpc);
+
+            if (!isMatch) { return; }
 
             string detail = evt.Detail;
-            if (evt.Tag is JsonRpcRequest request) 
+            if (evt.Tag is JsonRpcRequest request)
                 detail = GetJsonRpcRequest(request);
 
             var row = _traceTable.NewRow();
@@ -98,7 +110,7 @@ namespace JsonRpcClient
 
             // Build curl command
             var endpoint = StrFunc.IsNotEmpty(FrontendInfo.Endpoint) ? FrontendInfo.Endpoint : "http://localhost/api/jsonrpc";
-            var authHeader = $"Bearer {FrontendInfo.AccessToken}"; 
+            var authHeader = $"Bearer {FrontendInfo.AccessToken}";
 
             var curl = "curl -X POST "
                      + $"\"{endpoint}\" "
@@ -157,6 +169,26 @@ namespace JsonRpcClient
                 column.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
             }
         }
+
+        private void btnStartTrace_Click(object sender, EventArgs e)
+        {
+            _enableTrace = true;
+            btnStartTrace.Visible = false;
+            edtTraceCategory.Enabled = false;
+        }
+
+        private void btnStopTrace_Click(object sender, EventArgs e)
+        {
+            _enableTrace = false;
+            btnStartTrace.Visible = true;
+            edtTraceCategory.Enabled = true;
+        }
+
+        private void btnClearTrace_Click(object sender, EventArgs e)
+        {
+            _traceTable?.Rows.Clear();
+        }
+
 
     }
 }

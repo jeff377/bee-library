@@ -37,6 +37,10 @@ namespace Bee.Base
     public static class TraceCategories
     {
         /// <summary>
+        /// 一般用途。
+        /// </summary>
+        public const string General = "General";
+        /// <summary>
         /// JSON-RPC 請求或回應模型。
         /// </summary>
         public const string JsonRpc = "JsonRpc";
