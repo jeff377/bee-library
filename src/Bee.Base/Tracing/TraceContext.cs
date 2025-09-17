@@ -35,15 +35,27 @@ namespace Bee.Base
         public System.Diagnostics.Stopwatch Stopwatch { get; }
 
         /// <summary>
+        /// 追蹤分類，可用於 Trace Viewer 依分類解析 Tag。
+        /// </summary>
+        public string Category { get; }
+
+        /// <summary>
+        /// 追蹤物件，依 Category 解析內容。
+        /// </summary>
+        public object Tag { get; }
+
+        /// <summary>
         /// 僅允許 <see cref="TraceListener"/> 建立 TraceContext。
         /// </summary>
-        internal TraceContext(TraceLayer layer, string name, string detail)
+        internal TraceContext(TraceLayer layer, string name, string detail, string category = "", object tag = null)
         {
             Layer = layer;
             Name = name ?? string.Empty;
             Detail = detail;
-            Start = DateTimeOffset.Now; // ✅ 本地時間
+            Start = DateTimeOffset.Now; // 本地時間
             Stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            Category = category ?? string.Empty;
+            Tag = tag;
         }
     }
 

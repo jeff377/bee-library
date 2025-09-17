@@ -33,6 +33,16 @@ namespace Bee.Base
         public double DurationMs { get; set; }
 
         /// <summary>
+        /// 追蹤分類，可用於 Trace Viewer 依分類解析 Tag。
+        /// </summary>
+        public string Category { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 追蹤物件，依 Category 解析內容。
+        /// </summary>
+        public object Tag { get; set; }
+
+        /// <summary>
         /// 追蹤事件的種類。
         /// </summary>
         public TraceEventKind Kind { get; set; }

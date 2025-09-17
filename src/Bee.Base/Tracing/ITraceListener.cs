@@ -14,8 +14,11 @@ namespace Bee.Base
         /// <param name="layer">所屬追蹤層級。</param>
         /// <param name="detail">額外描述，例如 SQL 語法或 API 路由。</param>
         /// <param name="name">監控名稱，例如方法名稱或事件名稱，若未設定自動帶入呼叫者方法名稱。</param>
-        /// <returns>建立的追蹤上下文物件，若層級未啟用則為 null。</returns>
-        TraceContext TraceStart(TraceLayer layer, string detail = "", [CallerMemberName] string name = "");
+        /// <param name="category">追蹤分類，可用於 Trace Viewer 依分類解析 Tag。</param>
+        /// <param name="tag">追蹤物件，依 Category 解析內容。</param>
+        TraceContext TraceStart(
+            TraceLayer layer, string detail = "", [CallerMemberName] string name = "",
+            string category = "", object tag = null);
 
         /// <summary>
         /// 結束指定的追蹤區段，並輸出對應的 <see cref="TraceEvent"/>。
@@ -32,6 +35,10 @@ namespace Bee.Base
         /// <param name="detail">事件描述。</param>
         /// <param name="name">監控名稱，例如方法名稱或事件名稱，若未設定自動帶入呼叫者方法名稱。</param>
         /// <param name="status">執行狀態。</param>
-        void TraceWrite(TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok);
+        /// <param name="category">追蹤分類，可用於 Trace Viewer 依分類解析 Tag。</param>
+        /// <param name="tag">追蹤物件，依 Category 解析內容。</param>
+        void TraceWrite(
+            TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok,
+            string category = "", object tag = null);
     }
 }

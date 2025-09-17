@@ -25,10 +25,13 @@ namespace Bee.Base
         /// <param name="layer">所屬追蹤層級。</param>
         /// <param name="detail">額外描述，例如 SQL 語法或 API 路由。</param>
         /// <param name="name">監控名稱，例如方法名稱或事件名稱，若未設定自動帶入呼叫者方法名稱。</param>
-        /// <returns>建立的追蹤上下文物件，若層級未啟用則為 null。</returns>
-        public TraceContext TraceStart(TraceLayer layer, string detail = "", [CallerMemberName] string name = "")
+        /// <param name="category">追蹤分類，可用於 Trace Viewer 依分類解析 Tag。</param>
+        /// <param name="tag">追蹤物件，依 Category 解析內容。</param>
+        public TraceContext TraceStart(
+            TraceLayer layer, string detail = "", [CallerMemberName] string name = "",
+            string category = "", object tag = null)
         {
-            var ctx = new TraceContext(layer, name, detail);
+            var ctx = new TraceContext(layer, name, detail, category, tag);
 
             _writer.Write(new TraceEvent
             {
@@ -36,6 +39,8 @@ namespace Bee.Base
                 Layer = ctx.Layer,
                 Name = ctx.Name,
                 Detail = detail ?? ctx.Detail,
+                Category = ctx.Category,
+                Tag = ctx.Tag,
                 Kind = TraceEventKind.Start
             });
 
@@ -60,6 +65,8 @@ namespace Bee.Base
                 Name = ctx.Name,
                 Detail = detail ?? ctx.Detail,
                 DurationMs = ctx.Stopwatch.Elapsed.TotalMilliseconds,
+                Category = ctx.Category,
+                Tag = ctx.Tag,
                 Kind = TraceEventKind.End,
                 Status = status
             });
@@ -72,7 +79,11 @@ namespace Bee.Base
         /// <param name="detail">事件描述。</param>
         /// <param name="name">監控名稱，例如方法名稱或事件名稱，若未設定自動帶入呼叫者方法名稱。</param>
         /// <param name="status">執行狀態。</param>
-        public void TraceWrite(TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok)
+        /// <param name="category">追蹤分類，可用於 Trace Viewer 依分類解析 Tag。</param>
+        /// <param name="tag">追蹤物件，依 Category 解析內容。</param>
+        public void TraceWrite(
+            TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok,
+            string category = "", object tag = null)
         {
             _writer.Write(new TraceEvent
             {
@@ -81,6 +92,8 @@ namespace Bee.Base
                 Name = name,
                 Detail = detail,
                 DurationMs = 0,
+                Category = category,
+                Tag = tag,
                 Kind = TraceEventKind.Point,
                 Status = status
             });
