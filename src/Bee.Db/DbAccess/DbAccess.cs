@@ -355,7 +355,7 @@ namespace Bee.Db
                             if (update != null) update.Transaction = tran;
                             if (delete != null) delete.Transaction = tran;
                         }
-     
+
                         int affected = adapter.Update(spec.DataTable);
 
                         tran?.Commit();
@@ -375,6 +375,46 @@ namespace Bee.Db
                     tran?.Dispose();
                 }
             }
+        }
+
+        #endregion
+
+        #region 同步版本的簡易方法
+
+        /// <summary>
+        /// 執行 SQL 指令，傳回異動筆數。
+        /// </summary>
+        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
+        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
+        /// <returns>受影響的資料列數。</returns>
+        public int ExecuteNonQuery(string commandText, params object[] values)
+        {
+            var spec = new DbCommandSpec(DbCommandKind.NonQuery, commandText, values);
+            return Execute(spec).RowsAffected;
+        }
+
+        /// <summary>
+        /// 執行 SQL 指令，傳回單一值。
+        /// </summary>
+        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
+        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
+        /// <returns>查詢結果的第一個欄位值。</returns>
+        public object ExecuteScalar(string commandText, params object[] values)
+        {
+            var spec = new DbCommandSpec(DbCommandKind.Scalar, commandText, values);
+            return Execute(spec).Scalar;
+        }
+
+        /// <summary>
+        /// 執行 SQL 指令，傳回資料表。
+        /// </summary>
+        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
+        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
+        /// <returns>查詢結果的 <see cref="DataTable"/>。</returns>
+        public DataTable ExecuteDataTable(string commandText, params object[] values)
+        {
+            var spec = new DbCommandSpec(DbCommandKind.DataTable, commandText, values);
+            return Execute(spec).Table;
         }
 
         #endregion
@@ -605,6 +645,46 @@ namespace Bee.Db
                 }
                 return list;
             }
+        }
+
+        #endregion
+
+        #region 非同步版本的簡易方法
+
+        /// <summary>
+        /// 非同步執行 SQL 指令，傳回異動筆數。
+        /// </summary>
+        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
+        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
+        /// <returns>受影響的資料列數。</returns>
+        public async Task<int> ExecuteNonQueryAsync(string commandText, params object[] values)
+        {
+            var spec = new DbCommandSpec(DbCommandKind.NonQuery, commandText, values);
+            return (await ExecuteAsync(spec)).RowsAffected;
+        }
+
+        /// <summary>
+        /// 非同步執行 SQL 指令，傳回單一值。
+        /// </summary>
+        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
+        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
+        /// <returns>查詢結果的第一個欄位值。</returns>
+        public async Task<object> ExecuteScalarAsync(string commandText, params object[] values)
+        {
+            var spec = new DbCommandSpec(DbCommandKind.Scalar, commandText, values);
+            return (await ExecuteAsync(spec)).Scalar;
+        }
+
+        /// <summary>
+        /// 非同步執行 SQL 指令，傳回資料表。
+        /// </summary>
+        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
+        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
+        /// <returns>查詢結果的 <see cref="DataTable"/>。</returns>
+        public async Task<DataTable> ExecuteDataTableAsync(string commandText, params object[] values)
+        {
+            var spec = new DbCommandSpec(DbCommandKind.DataTable, commandText, values);
+            return (await ExecuteAsync(spec)).Table;
         }
 
         #endregion
