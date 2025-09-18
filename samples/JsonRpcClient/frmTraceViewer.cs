@@ -88,6 +88,8 @@ namespace JsonRpcClient
             string detail = evt.Detail;
             if (evt.Tag is JsonRpcRequest request)
                 detail = GetJsonRpcRequest(request);
+            else if (evt.Tag is JsonRpcResponse response)
+                detail = GetJsonRpcResponse(response);
 
             var row = _traceTable.NewRow();
             row["Time"] = evt.Time.DateTime;
@@ -114,17 +116,30 @@ namespace JsonRpcClient
 
             var curl = "curl -X POST "
                      + $"\"{endpoint}\" "
-                     + "-H \"Content-Type: application/json\" \r\n"
-                     + $"-H \"X-Api-Key: {FrontendInfo.ApiKey}\" \r\n"
-                     + $"-H \"Authorization: {authHeader}\" \r\n"
+                     + "-H \"Content-Type: application/json\" \n"
+                     + $"-H \"X-Api-Key: {FrontendInfo.ApiKey}\" \n"
+                     + $"-H \"Authorization: {authHeader}\" \n"
                      + $"--data '{rawJson}'";
 
             var detail =
                 "=== JSON-RPC ===\n"
-                + rawJson + "\r\n\r\n"
-                + "=== curl ===\r\n"
+                + rawJson + "\n\n"
+                + "=== curl ===\n"
                 + curl;
-            return detail;
+            return detail.Replace("\n", Environment.NewLine);
+        }
+
+        /// <summary>
+        /// Formats a JSON-RPC response object into a detailed string representation.
+        /// </summary>
+        private string GetJsonRpcResponse(JsonRpcResponse response)
+        {
+            // Build raw JSON
+            var rawJson = response.ToJson();
+            var detail =
+                "=== JSON-RPC ===\n"
+                + rawJson;
+            return detail.Replace("\n", Environment.NewLine); ;
         }
 
         private void gvTrace_FocusedRowChanged(object? sender, EventArgs e)
