@@ -53,7 +53,7 @@ namespace Bee.Db
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken);
             var dbAccess = new DbAccess(BackendInfo.DatabaseId);
             var result = dbAccess.Execute(command);
-            if (BaseFunc.IsEmpty(result.Table)) { return null; }
+            if (result.Table.IsEmpty()) { return null; }
             var row = result.Table.Rows[0];
 
             // 若連線已到期，刪除連線資訊，並回傳 null
@@ -85,7 +85,7 @@ namespace Bee.Db
             var dbAccess = new DbAccess(BackendInfo.DatabaseId);
             var result = dbAccess.Execute(command);
             var table = result.Table;
-            if (BaseFunc.IsEmpty(table)) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
+            if (table.IsEmpty()) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
             var row = table.Rows[0];
 
             var user = new SessionUser()

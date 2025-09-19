@@ -1,5 +1,4 @@
-﻿using System;
-using System.Data;
+﻿using System.Data;
 
 namespace Bee.Base
 {
@@ -14,7 +13,11 @@ namespace Bee.Base
         /// <param name="dataSet">資料集。</param>
         public static DataTable GetMasterTable(this DataSet dataSet)
         {
-            return DataSetFunc.GetMasterTable(dataSet);
+            if (dataSet == null) { return null; }
+            if (StrFunc.IsEmpty(dataSet.DataSetName)) { return null; }
+            if (!dataSet.Tables.Contains(dataSet.DataSetName)) { return null; }
+            // 主檔資料表 TableName 等於 DataSetName，視為主檔資料表
+            return dataSet.Tables[dataSet.DataSetName];
         }
 
         /// <summary>
@@ -23,105 +26,22 @@ namespace Bee.Base
         /// <param name="dataSet">資料集。</param>
         public static DataRow GetMasterRow(this DataSet dataSet)
         {
-            return DataSetFunc.GetMasterRow(dataSet);
+            var table = GetMasterTable(dataSet);
+            if (table.IsEmpty()) { return null; }
+            return table.Rows[0];
         }
 
         /// <summary>
-        /// 設定資料表的主索引鍵。
+        /// 判斷資料集是否無資料。
         /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldNames">主索引鍵的欄位集合字串，以逗點分隔多個欄位。</param>
-        public static void SetPrimaryKey(this DataTable table, string fieldNames)
+        /// <param name="dataSet">要判斷的資料集。</param>
+        public static bool IsEmpty(this DataSet dataSet)
         {
-            int iIndex = 0;
-            string[] fieldNameArray = StrFunc.Split(fieldNames, ",");
-            DataColumn[] dataColumns = new DataColumn[fieldNameArray.Length];
-            foreach (string fieldName in fieldNameArray)
-            {
-                dataColumns[iIndex] = table.Columns[fieldName];
-                iIndex++;
-            }
-            table.PrimaryKey = dataColumns;
-        }
-
-        /// <summary>
-        /// 建立欄位並加入資料表中。
-        /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">欄位標題。</param>
-        /// <param name="dataType">資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
-        /// <param name="dateTimeMode">設定資料行的 DateTimeMode。</param>
-        private static DataColumn AddColumn(this DataTable table, string fieldName, string caption, Type dataType, object defaultValue, DataSetDateTime dateTimeMode = DataSetDateTime.Unspecified)
-        {
-            // 欄位名稱全轉為大寫
-            var column = new DataColumn(fieldName.ToUpper(), dataType);
-            column.DefaultValue = defaultValue;
-
-            if (dataType == typeof(DateTime))
-                column.DateTimeMode = dateTimeMode;
-
-            if (!BaseFunc.IsNullOrDBNull(defaultValue))
-                column.AllowDBNull = false;
-
-            if (StrFunc.IsNotEmpty(caption))
-                column.Caption = caption;
-
-            table.Columns.Add(column);
-            return column;
-        }
-
-        /// <summary>
-        /// 建立欄位並加入資料表中。
-        /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="dataType">資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
-        private static DataColumn AddColumn(this DataTable table, string fieldName, Type dataType, object defaultValue)
-        {
-            return AddColumn(table, fieldName, string.Empty, dataType, defaultValue);
-        }
-
-        /// <summary>
-        /// 建立欄位並加入資料表。
-        /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="dbType">欄位資料型別。</param>
-        public static DataColumn AddColumn(this DataTable table, string fieldName, FieldDbType dbType)
-        {
-            Type dataType = DbTypeConverter.ToType(dbType);
-            object defaultValue = DataSetFunc.GetDefaultValue(dbType);
-            return AddColumn(table, fieldName, dataType, defaultValue);
-        }
-
-        /// <summary>
-        /// 建立欄位並加入資料表。
-        /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="dbType">欄位資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
-        public static DataColumn AddColumn(this DataTable table, string fieldName, FieldDbType dbType, object defaultValue)
-        {
-            Type dataType = DbTypeConverter.ToType(dbType);
-            return AddColumn(table, fieldName, dataType, defaultValue);
-        }
-
-        /// <summary>
-        /// 建立欄位並加入資料表中。
-        /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">欄位標題。</param>
-        /// <param name="dbType">欄位資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
-        public static DataColumn AddColumn(this DataTable table, string fieldName, string caption, FieldDbType dbType, object defaultValue)
-        {
-            Type dataType = DbTypeConverter.ToType(dbType);
-            return AddColumn(table, fieldName, caption, dataType, defaultValue);
+            // 資料集為 null 或無資料表，皆視為無資料
+            if (dataSet == null || (dataSet.Tables.Count == 0)) { return true; }
+            // 主檔資料表無資料時，也視為無資料
+            var table = GetMasterTable(dataSet);
+            return table.IsEmpty();
         }
     }
 }

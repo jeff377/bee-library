@@ -12,7 +12,7 @@ namespace Bee.Base
         /// 將指定型別轉換為 TypeCode 列舉型別。
         /// </summary>
         /// <param name="type">型別。</param>
-        public static TypeCode ToTypeCode(this Type type)
+        public static TypeCode ToTypeCode(Type type)
         {
             if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Nullable<>)))
                 type = type.GetGenericArguments()[0];
@@ -27,9 +27,8 @@ namespace Bee.Base
         /// <param name="type">型別。</param>
         public static FieldDbType ToFieldDbType(Type type)
         {
-            TypeCode oTypeCode;
 
-            oTypeCode = ToTypeCode(type);
+            var oTypeCode = ToTypeCode(type);
             switch (oTypeCode)
             {
                 case TypeCode.Boolean:

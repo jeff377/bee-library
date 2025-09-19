@@ -128,15 +128,6 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷資料表是否無資料。
-        /// </summary>
-        /// <param name="table">要判斷的資料表。</param>
-        public static bool IsEmpty(DataTable table)
-        {
-            return DataSetFunc.IsEmpty(table);
-        }
-
-        /// <summary>
         /// 取得列舉成員的名稱。
         /// </summary>
         /// <param name="value">列舉值。</param>

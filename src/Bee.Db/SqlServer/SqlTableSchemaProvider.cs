@@ -103,11 +103,11 @@ namespace Bee.Db
             DbTableIndex oTableIndex;
             IndexField oIndexField;
 
-            if (DataSetFunc.IsEmpty(table)) { return; }
+            if (table.IsEmpty()) { return; }
 
             table.DefaultView.RowFilter = "IsPrimaryKey=true";
             table.DefaultView.Sort = "KeyOrdinal";
-            if (DataSetFunc.IsEmpty(table.DefaultView)) { return; }
+            if (table.DefaultView.IsEmpty()) { return; }
 
             // 取得索引名稱
             string name = BaseFunc.CStr(table.DefaultView[0]["name"]);
@@ -141,7 +141,7 @@ namespace Bee.Db
             string sName;
             bool bUnique;
 
-            while (!DataSetFunc.IsEmpty(table))
+            while (!table.IsEmpty())
             {
                 oRow = table.Rows[0];
                 sName = BaseFunc.CStr(oRow["Name"]);  // 取得索引名稱
