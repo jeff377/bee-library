@@ -10,7 +10,7 @@ namespace Bee.Db
     /// </summary>
     public class SqlCreateTableCommandBuilder : ICreateTableCommandBuilder
     {
-        private DbTable _DbTable = null;
+        private DbTable _dbTable = null;
 
         #region 建構函式
 
@@ -27,7 +27,7 @@ namespace Bee.Db
         /// </summary>
         private DbTable DbTable
         {
-            get { return _DbTable; }
+            get { return _dbTable; }
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Bee.Db
         /// <param name="dbTable">資料表結構。</param>
         public string GetCommandText(DbTable dbTable)
         {
-            _DbTable = dbTable;
+            _dbTable = dbTable;
 
             if (this.DbTable.UpgradeAction == DbUpgradeAction.Upgrade)
                 return $"-- 升級 {this.TableName} 資料表\r\n{this.GetUpgradeCommandText()}";
@@ -57,35 +57,30 @@ namespace Bee.Db
         /// </summary>
         private string GetUpgradeCommandText()
         {
-            StringBuilder oBuffer;
-            string sNewTableName;
-            string sSQL;
-
-            oBuffer = new StringBuilder();
-
-            sNewTableName = $"tmp_{this.TableName}";
+            var sb = new StringBuilder();
+            string tmpTableName = $"tmp_{this.TableName}";
             // 刪除暫存資料表
-            sSQL = GetDropTableCommandText(sNewTableName);
-            oBuffer.AppendLine("-- 刪除暫存資料表");
-            oBuffer.AppendLine(sSQL);
+            string sql = GetDropTableCommandText(tmpTableName);
+            sb.AppendLine("-- 刪除暫存資料表");
+            sb.AppendLine(sql);
             // 建立暫存資料表
-            sSQL = GetCreateTableCommandText(sNewTableName);
-            oBuffer.AppendLine("-- 建立暫存資料表");
-            oBuffer.AppendLine(sSQL);
+            sql = GetCreateTableCommandText(tmpTableName);
+            sb.AppendLine("-- 建立暫存資料表");
+            sb.AppendLine(sql);
             // 搬移資料
-            sSQL = GetInsertTableCommandText(this.TableName, sNewTableName);
-            oBuffer.AppendLine("-- 搬移資料");
-            oBuffer.AppendLine(sSQL);
+            sql = GetInsertTableCommandText(this.TableName, tmpTableName);
+            sb.AppendLine("-- 搬移資料");
+            sb.AppendLine(sql);
             // 刪除舊資料表
-            sSQL = GetDropTableCommandText(this.TableName);
-            oBuffer.AppendLine("-- 刪除舊資料表");
-            oBuffer.AppendLine(sSQL);
+            sql = GetDropTableCommandText(this.TableName);
+            sb.AppendLine("-- 刪除舊資料表");
+            sb.AppendLine(sql);
             // 暫存資料表更名
-            oBuffer.AppendLine("-- 暫存資料表更名");
-            sSQL = GetRenameTableCommandText(sNewTableName, this.TableName);
-            oBuffer.AppendLine(sSQL);
+            sb.AppendLine("-- 暫存資料表更名");
+            sql = GetRenameTableCommandText(tmpTableName, this.TableName);
+            sb.AppendLine(sql);
 
-            return oBuffer.ToString();
+            return sb.ToString();
         }
 
         /// <summary>
@@ -105,24 +100,21 @@ namespace Bee.Db
         /// <param name="newTableName">新資料表名稱。</param>
         private string GetInsertTableCommandText(string tableName, string newTableName)
         {
-            string sSQL;
-            string sFields;
-
-            // 取得要搬除的欄位清單
-            sFields = string.Empty;
+           // 取得要搬除的欄位清單
+            string fields = string.Empty;
             foreach (DbField field in this.DbTable.Fields)
             {
                 if (field.UpgradeAction != DbUpgradeAction.New && field.DbType != FieldDbType.Identity)
                 {
-                    if (StrFunc.IsNotEmpty(sFields))
-                        sFields += ", ";
-                    sFields += $"[{field.FieldName}]";
+                    if (StrFunc.IsNotEmpty(fields))
+                        fields += ", ";
+                    fields += $"[{field.FieldName}]";
                 }
             }
             // 組成  INSERT INTO SELECT 語法
-            sSQL = $"INSERT INTO [{newTableName}] ({sFields}) \n" +
-                          $"SELECT {sFields} FROM [{tableName}];";
-            return sSQL;
+            string  sql = $"INSERT INTO [{newTableName}] ({fields}) \n" +
+                                  $"SELECT {fields} FROM [{tableName}];";
+            return sql;
         }
 
         /// <summary>
@@ -151,31 +143,25 @@ namespace Bee.Db
         /// <param name="tableName">資料表名稱。</param>
         private string GetCreateTableCommandText(string tableName = "")
         {
-            StringBuilder oBuffer;
-            string sTableName;
-            string sFields;
-            string sPrimaryKey;
-            string sIndexs;
-
             // 資料表名稱
-            sTableName = StrFunc.IsNotEmpty(tableName) ? tableName : this.DbTable.TableName;
+            string dbTableName = StrFunc.IsNotEmpty(tableName) ? tableName : this.DbTable.TableName;
             // 取得建立欄位結構的語法
-            sFields = GetFieldsCommandText();
+            string fields = GetFieldsCommandText();
             // 取得建立主索引的命令語法
-            sPrimaryKey = GetPrimaryKeyCommandText(sTableName);
+            string primaryKey = GetPrimaryKeyCommandText(dbTableName);
             // 取得建立索引的命令語法
-            sIndexs = GetIndexsCommandText(sTableName);
+            string indexs = GetIndexsCommandText(dbTableName);
 
-            oBuffer = new StringBuilder();
+            var sb = new StringBuilder();
             // 組成 Create Table 的語法
-            oBuffer.Append($"CREATE TABLE [{sTableName}] (\r\n{sFields}");
-            if (StrFunc.IsNotEmpty(sPrimaryKey))
-                oBuffer.Append($",\r\n  {sPrimaryKey}");
-            oBuffer.Append("\r\n);");
+            sb.Append($"CREATE TABLE [{dbTableName}] (\r\n{fields}");
+            if (StrFunc.IsNotEmpty(primaryKey))
+                sb.Append($",\r\n  {primaryKey}");
+            sb.Append("\r\n);");
             // 加上建立索引語法
-            if (StrFunc.IsNotEmpty(sIndexs))
-                oBuffer.Append($"\r\n{sIndexs}");
-            return oBuffer.ToString();
+            if (StrFunc.IsNotEmpty(indexs))
+                sb.Append($"\r\n{indexs}");
+            return sb.ToString();
         }
 
         /// <summary>
@@ -205,26 +191,22 @@ namespace Bee.Db
         /// <param name="field">欄位結構。</param>
         private string GetFieldCommandText(DbField field)
         {
-            string sDbType;  // 欄位型別
-            string sAllowNull;  // 是否允許 Null
-            string sDefault;  // 預設值
-            string sDefaultValue;
-
             // 欄位型別
-            sDbType = ConverDbType(field);
+            string dbType = ConverDbType(field);
             // 是否允許 Null
-            sAllowNull = field.AllowNull ? "NULL" : "NOT NULL";
+            string allowNull = field.AllowNull ? "NULL" : "NOT NULL";
             // 預設值
-            sDefaultValue = GetDefaultValue(field);
-            if (StrFunc.IsNotEmpty(sDefaultValue))
-                sDefault = $"DEFAULT ({sDefaultValue})";
+            string defaultValue = GetDefaultValue(field);
+            string defaultText;
+            if (StrFunc.IsNotEmpty(defaultValue))
+                defaultText = $"DEFAULT ({defaultValue})";
             else
-                sDefault = string.Empty;
+                defaultText = string.Empty;
 
-            if (StrFunc.IsEmpty(sDefault))
-                return $"[{field.FieldName}] {sDbType} {sAllowNull}";
+            if (StrFunc.IsEmpty(defaultText))
+                return $"[{field.FieldName}] {dbType} {allowNull}";
             else
-                return $"[{field.FieldName}] {sDbType} {sAllowNull} {sDefault}";
+                return $"[{field.FieldName}] {dbType} {allowNull} {defaultText}";
         }
 
         /// <summary>

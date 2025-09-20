@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Reflection;
 
 namespace Bee.Db
 {
@@ -13,6 +14,36 @@ namespace Bee.Db
     /// </summary>
     public static class DbFunc
     {
+        /// <summary>
+        /// 找出 IDataReader 與 T 類別皆存在的欄位與屬性，傳回包含屬性名稱與對應欄位索引的字典。
+        /// </summary>
+        /// <typeparam name="T">目標類型。</typeparam>
+        /// <param name="reader">資料庫查詢結果的 DbDataReader。</param>
+        /// <returns>包含屬性名稱與對應欄位索引的字典。</returns>
+        public static Dictionary<string, int> GetMatchingFieldIndexes<T>(DbDataReader reader)
+        {
+            var fieldIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase); // 不分大小寫比較
+            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);  // 取得 T 類別的所有可寫屬性名稱
+
+            // 建立 DbDataReader 欄位名稱的 Dictionary
+            var readerFields = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                readerFields[reader.GetName(i)] = i;
+            }
+
+            // 只取交集 (T 的屬性名稱 & DbDataReader 欄位名稱)
+            foreach (var prop in properties)
+            {
+                if (prop.CanWrite && readerFields.TryGetValue(prop.Name, out int index))
+                {
+                    fieldIndexes[prop.Name] = index;
+                }
+            }
+
+            return fieldIndexes;
+        }
+
         /// <summary>
         /// 參數名稱的前綴符號字典。
         /// </summary>
