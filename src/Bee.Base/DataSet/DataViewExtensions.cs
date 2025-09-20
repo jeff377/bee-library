@@ -8,6 +8,20 @@ namespace Bee.Base
     public static class DataViewExtensions
     {
         /// <summary>
+        /// 刪除檢視表中所有的資料列。
+        /// </summary>
+        /// <param name="dataView">檢視表。</param>
+        /// <param name="acceptChanges">是否同意變更。</param>
+        public static void DeleteRows(this DataView dataView, bool acceptChanges)
+        {
+            for (int N1 = dataView.Count - 1; N1 >= 0; N1 += -1)
+                dataView.Delete(N1);
+
+            if (acceptChanges)
+                dataView.Table.AcceptChanges();
+        }
+
+        /// <summary>
         /// 判斷是否有指定欄位。
         /// </summary>
         /// <param name="dataView">檢視資料表。</param>

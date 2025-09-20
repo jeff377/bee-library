@@ -118,38 +118,5 @@ namespace Bee.Base
                     return DBNull.Value;
             }
         }
-
-        /// <summary>
-        /// 刪除檢視表中所有的資料列。
-        /// </summary>
-        /// <param name="dataView">檢視表。</param>
-        /// <param name="acceptChanges">是否同意變更。</param>
-        public static void DeleteRows(DataView dataView, bool acceptChanges)
-        {
-            for (int N1 = dataView.Count - 1; N1 >= 0; N1 += -1)
-                dataView.Delete(N1);
-
-            if (acceptChanges)
-                dataView.Table.AcceptChanges();
-        }
-
-        /// <summary>
-        /// 刪除檢視表中所有的資料列。
-        /// </summary>
-        /// <param name="dataView">檢視表。</param>
-        public static void DeleteRows(DataView dataView)
-        {
-            DeleteRows(dataView, false);
-        }
-
-        /// <summary>
-        /// 刪除資料表中所有的資料列。
-        /// </summary>
-        /// <param name="dataTable">資料表。</param>
-        /// <param name="acceptChanges">是否同意變更。</param>
-        public static void DeleteRows(DataTable dataTable, bool acceptChanges)
-        {
-            DeleteRows(dataTable.DefaultView, acceptChanges);
-        }
     }
 }

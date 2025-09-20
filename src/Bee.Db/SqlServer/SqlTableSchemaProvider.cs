@@ -100,9 +100,6 @@ namespace Bee.Db
         /// <param name="table">索引資料表。</param>
         private void ParsePrimaryKey(DbTable dbTable, DataTable table)
         {
-            DbTableIndex oTableIndex;
-            IndexField oIndexField;
-
             if (table.IsEmpty()) { return; }
 
             table.DefaultView.RowFilter = "IsPrimaryKey=true";
@@ -112,20 +109,20 @@ namespace Bee.Db
             // 取得索引名稱
             string name = BaseFunc.CStr(table.DefaultView[0]["name"]);
             // 取得主索引
-            oTableIndex = new DbTableIndex();
-            oTableIndex.PrimaryKey = true;
-            oTableIndex.Name = name;
-            oTableIndex.Unique = true;
-            dbTable.Indexes.Add(oTableIndex);
+            var tableIndex = new DbTableIndex();
+            tableIndex.PrimaryKey = true;
+            tableIndex.Name = name;
+            tableIndex.Unique = true;
+            dbTable.Indexes.Add(tableIndex);
             foreach (DataRowView row in table.DefaultView)
             {
-                oIndexField = new IndexField();
-                oIndexField.FieldName = BaseFunc.CStr(row["FieldName"]);
-                oIndexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
-                oTableIndex.IndexFields.Add(oIndexField);
+                var indexField = new IndexField();
+                indexField.FieldName = BaseFunc.CStr(row["FieldName"]);
+                indexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
+                tableIndex.IndexFields.Add(indexField);
             }
             // 刪除已處理的主索引鍵資料
-            DataSetFunc.DeleteRows(table.DefaultView, true);
+            table.DefaultView.DeleteRows(true);
         }
 
         /// <summary>
@@ -135,34 +132,28 @@ namespace Bee.Db
         /// <param name="table">索引資料表。</param>
         private void ParseIndexes(DbTable dbTable, DataTable table)
         {
-            DbTableIndex oTableIndex;
-            IndexField oIndexField;
-            DataRow oRow;
-            string sName;
-            bool bUnique;
-
             while (!table.IsEmpty())
             {
-                oRow = table.Rows[0];
-                sName = BaseFunc.CStr(oRow["Name"]);  // 取得索引名稱
-                bUnique = BaseFunc.CBool(oRow["IsUnique"]);
+                var oRow = table.Rows[0];
+                string name = BaseFunc.CStr(oRow["Name"]);  // 取得索引名稱
+                bool isUnique = BaseFunc.CBool(oRow["IsUnique"]);
 
-                oTableIndex = new DbTableIndex();
-                oTableIndex.Name = sName;
-                oTableIndex.Unique = bUnique;
-                dbTable.Indexes.Add(oTableIndex);
+                var tableIndex = new DbTableIndex();
+                tableIndex.Name = name;
+                tableIndex.Unique = isUnique;
+                dbTable.Indexes.Add(tableIndex);
 
-                table.DefaultView.RowFilter = $"Name='{sName}'";
+                table.DefaultView.RowFilter = $"Name='{name}'";
                 table.DefaultView.Sort = "Name,KeyOrdinal";
-                foreach (DataRowView row in table.DefaultView)
+                foreach (DataRowView rowView in table.DefaultView)
                 {
-                    oIndexField = new IndexField();
-                    oIndexField.FieldName = BaseFunc.CStr(row["FieldName"]);
-                    oIndexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
-                    oTableIndex.IndexFields.Add(oIndexField);
+                    var indexField = new IndexField();
+                    indexField.FieldName = BaseFunc.CStr(rowView["FieldName"]);
+                    indexField.SortDirection = BaseFunc.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
+                    tableIndex.IndexFields.Add(indexField);
                 }
                 // 刪除已處理的索引鍵資料
-                DataSetFunc.DeleteRows(table.DefaultView, true);
+                table.DefaultView.DeleteRows(true);
             }
         }
 
