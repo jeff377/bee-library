@@ -244,7 +244,7 @@ namespace Bee.Db
                 case "DECIMAL":
                     if (dataPrecision == 19 && dataScale == 4)
                         return FieldDbType.Currency;
-                    throw new NotSupportedException();
+                    return FieldDbType.Unknown;
                 case "DATE":
                     return FieldDbType.Date;
                 case "DATETIME":
@@ -254,7 +254,7 @@ namespace Bee.Db
                 case "VARBINARY":
                     return FieldDbType.Binary;
                 default:
-                    return FieldDbType.String;
+                    return FieldDbType.Unknown;
             }
         }
 

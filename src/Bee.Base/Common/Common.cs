@@ -250,7 +250,11 @@ namespace Bee.Base
         /// <summary>
         /// 二進位資料。
         /// </summary>
-        Binary
+        Binary,
+        /// <summary>
+        /// 未知。
+        /// </summary>
+        Unknown
     }
 
     /// <summary>
