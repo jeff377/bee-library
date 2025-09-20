@@ -1,7 +1,6 @@
-﻿using System;
-using System.Data;
-using Bee.Base;
+﻿using Bee.Base;
 using Bee.Define;
+using System.Data;
 
 namespace Bee.Db
 {
@@ -191,29 +190,29 @@ namespace Bee.Db
         private DbField ParseDbField(DataRow row)
         {
             var dbField = new DbField();
-            dbField.FieldName = BaseFunc.CStr(row["FieldName"]);
-            dbField.Caption = BaseFunc.CStr(row["Description"]);
-            dbField.AllowNull = BaseFunc.CBool(row["AllowDBNull"]);
+            dbField.FieldName = row.GetFieldValue<string>("FieldName");
+            dbField.Caption = row.GetFieldValue<string>("Description");
+            dbField.AllowNull = row.GetFieldValue<bool>("AllowDBNull");
 
-            if (BaseFunc.CBool(row["AutoIncrement"]))
+            if (row.GetFieldValue<bool>("AutoIncrement"))
                 dbField.DbType = FieldDbType.Identity;
             else
                 dbField.DbType = GetFieldDbType(
-                    BaseFunc.CStr(row["DbType"]), 
-                    BaseFunc.CInt(row["precision"]), 
-                    BaseFunc.CInt(row["Decimals"]), 
-                    BaseFunc.CInt(row["Length"]));
+                    row.GetFieldValue<string>("DbType"),
+                    row.GetFieldValue<int>("precision"),
+                    row.GetFieldValue<int>("Decimals"),
+                    row.GetFieldValue<int>("Length"));
 
             if (dbField.DbType == FieldDbType.String)
             {
-                if (StrFunc.ToUpper(BaseFunc.CStr(row["DbType"])) == "NVARCHAR")
-                    dbField.Length = BaseFunc.CInt(row["Length"]) / 2;
+                if (StrFunc.ToUpper(row.GetFieldValue<string>("DbType")) == "NVARCHAR")
+                    dbField.Length = row.GetFieldValue<int>("Length") / 2;
                 else
-                    dbField.Length = BaseFunc.CInt(row["Length"]);
+                    dbField.Length = row.GetFieldValue<int>("Length");
             }
 
             string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbField.DbType);  // 取得內定預設值
-            dbField.DefaultValue = this.ParseDBDefaultValue(BaseFunc.CStr(row["DbType"]), BaseFunc.CStr(row["DefaultValue"]), originalDefaultValue);
+            dbField.DefaultValue = this.ParseDBDefaultValue(row.GetFieldValue<string>("DbType"), row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
             return dbField;
         }
 

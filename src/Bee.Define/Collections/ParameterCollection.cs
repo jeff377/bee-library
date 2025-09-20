@@ -47,12 +47,12 @@ namespace Bee.Define
         /// <typeparam name="T">參數型別。</typeparam>
         /// <param name="name">參數名稱。</param>
         /// <param name="defaultValue">預設值。</param>
-        public T GetValue<T>(string name, object defaultValue)
+        public T GetValue<T>(string name, T defaultValue)
         {
             if (this.Contains(name))
                 return (T)this[name].Value;
             else
-                return (T)defaultValue;
+                return defaultValue;
         }
     }
 }
