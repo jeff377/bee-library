@@ -230,7 +230,7 @@ namespace Bee.Db
                 case FieldDbType.Double:
                     return "[float]";
                 case FieldDbType.Currency:
-                    return "[money]";
+                    return "[decimal](19,4)";
                 case FieldDbType.Date:
                     return "[date]";
                 case FieldDbType.DateTime:

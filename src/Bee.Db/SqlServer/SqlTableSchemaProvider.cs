@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System;
+using System.Data;
 using Bee.Base;
 using Bee.Define;
 
@@ -197,7 +198,11 @@ namespace Bee.Db
             if (BaseFunc.CBool(row["AutoIncrement"]))
                 dbField.DbType = FieldDbType.Identity;
             else
-                dbField.DbType = GetFieldDbType(BaseFunc.CStr(row["DbType"]), BaseFunc.CInt(row["precision"]), BaseFunc.CInt(row["Length"]));
+                dbField.DbType = GetFieldDbType(
+                    BaseFunc.CStr(row["DbType"]), 
+                    BaseFunc.CInt(row["precision"]), 
+                    BaseFunc.CInt(row["Decimals"]), 
+                    BaseFunc.CInt(row["Length"]));
 
             if (dbField.DbType == FieldDbType.String)
             {
@@ -207,7 +212,8 @@ namespace Bee.Db
                     dbField.Length = BaseFunc.CInt(row["Length"]);
             }
 
-            dbField.DefaultValue = this.ParseDBDefaultValue(BaseFunc.CStr(row["DbType"]), BaseFunc.CStr(row["DefaultValue"]));
+            string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbField.DbType);  // 取得內定預設值
+            dbField.DefaultValue = this.ParseDBDefaultValue(BaseFunc.CStr(row["DbType"]), BaseFunc.CStr(row["DefaultValue"]), originalDefaultValue);
             return dbField;
         }
 
@@ -216,8 +222,9 @@ namespace Bee.Db
         /// </summary>
         /// <param name="dataType">資料型別。</param>
         /// <param name="dataPrecision">精確度。</param>
+        /// <param name="dataScale">小數位數。</param>
         /// <param name="length">資料長度。</param>
-        public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int length)
+        public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
             switch (StrFunc.ToUpper(dataType))
             {
@@ -234,8 +241,10 @@ namespace Bee.Db
                     return FieldDbType.Integer;
                 case "FLOAT":
                     return FieldDbType.Double;
-                case "MONEY":
-                    return FieldDbType.Currency;
+                case "DECIMAL":
+                    if (dataPrecision == 19 && dataScale == 4)
+                        return FieldDbType.Currency;
+                    throw new NotSupportedException();
                 case "DATE":
                     return FieldDbType.Date;
                 case "DATETIME":
@@ -253,13 +262,10 @@ namespace Bee.Db
         /// 解析從資料庫取回的欄位預設值，如果跟程式內定的預設值相同，則回傳空白。
         /// </summary>
         /// <param name="dataType"></param>
-        /// <param name="defaultValue"></param>
-        /// <returns></returns>
-        public string ParseDBDefaultValue(string dataType, string defaultValue)
+        /// <param name="defaultValue">實際預設值。</param>
+        /// <param name="originalDefaultValue">內定預設值。</param>
+        public string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
         {
-            FieldDbType dbType = GetFieldDbType(dataType, 0, 0);
-            string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbType);
-
             switch (StrFunc.ToUpper(dataType))
             {
                 case "CHAR":
@@ -287,7 +293,7 @@ namespace Bee.Db
                     break;
             }
 
-            //檢查資料庫的預設值跟程式內定的預設值是否相同。
+            // 檢查資料庫的預設值跟程式內定的預設值是否相同。
             if (StrFunc.Equals(originalDefaultValue, defaultValue))
                 return string.Empty;
             else
