@@ -24,7 +24,7 @@ namespace Bee.Db
         public static Func<DbDataReader, T> CreateMapFunc(DbDataReader reader)
         {
             // 找出 IDataReader 與 T 類別皆存在的欄位與屬性，傳回包含屬性名稱與對應欄位索引的字典
-            var fieldIndexes = DbFunc.GetMatchingFieldIndexes<T>(reader);
+            var fieldIndexes = GetMatchingFieldIndexes<T>(reader);
             // 取得 T 類型與欄位索引的複合鍵值
             var key = (typeof(T), string.Join(",", fieldIndexes.Select(kv => $"{kv.Key}:{kv.Value}")));
             // 若映射函式已快取，則直接回傳
@@ -148,6 +148,35 @@ namespace Bee.Db
             return readerType.GetMethod("GetValue", new[] { typeof(int) }); // 其他類型仍使用 `GetValue`
         }
 
+        /// <summary>
+        /// 找出 IDataReader 與 T 類別皆存在的欄位與屬性，傳回包含屬性名稱與對應欄位索引的字典。
+        /// </summary>
+        /// <typeparam name="T">目標類型。</typeparam>
+        /// <param name="reader">資料庫查詢結果的 DbDataReader。</param>
+        /// <returns>包含屬性名稱與對應欄位索引的字典。</returns>
+        private static Dictionary<string, int> GetMatchingFieldIndexes<T>(DbDataReader reader)
+        {
+            var fieldIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase); // 不分大小寫比較
+            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);  // 取得 T 類別的所有可寫屬性名稱
+
+            // 建立 DbDataReader 欄位名稱的 Dictionary
+            var readerFields = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                readerFields[reader.GetName(i)] = i;
+            }
+
+            // 只取交集 (T 的屬性名稱 & DbDataReader 欄位名稱)
+            foreach (var prop in properties)
+            {
+                if (prop.CanWrite && readerFields.TryGetValue(prop.Name, out int index))
+                {
+                    fieldIndexes[prop.Name] = index;
+                }
+            }
+
+            return fieldIndexes;
+        }
 
     }
 }

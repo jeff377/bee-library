@@ -100,7 +100,7 @@ namespace Bee.Base
             switch (dbType)
             {
                 case FieldDbType.String:
-                case FieldDbType.Text:
+                case FieldDbType.Memo:
                     return string.Empty;
                 case FieldDbType.Boolean:
                     return false;

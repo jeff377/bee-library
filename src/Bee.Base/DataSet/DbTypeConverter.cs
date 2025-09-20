@@ -65,7 +65,7 @@ namespace Bee.Base
             {
                 case FieldDbType.String:
                     return DbType.String;
-                case FieldDbType.Text:
+                case FieldDbType.Memo:
                     return DbType.String;
                 case FieldDbType.Boolean:
                     return DbType.Boolean;
@@ -98,7 +98,7 @@ namespace Bee.Base
             {
                 case FieldDbType.String:
                     return typeof(string);
-                case FieldDbType.Text:
+                case FieldDbType.Memo:
                     return typeof(string);
                 case FieldDbType.Boolean:
                     return typeof(bool);

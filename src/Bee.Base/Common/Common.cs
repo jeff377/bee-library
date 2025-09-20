@@ -214,7 +214,7 @@ namespace Bee.Base
         /// <summary>
         /// 備註。
         /// </summary>
-        Text,
+        Memo,
         /// <summary>
         /// 布林。
         /// </summary>

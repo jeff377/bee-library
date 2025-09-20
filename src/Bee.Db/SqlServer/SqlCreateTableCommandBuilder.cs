@@ -237,7 +237,7 @@ namespace Bee.Db
             {
                 case FieldDbType.String:
                     return $"[nvarchar]({field.Length})";
-                case FieldDbType.Text:
+                case FieldDbType.Memo:
                     return "[nvarchar](max)";
                 case FieldDbType.Boolean:
                     return "[bit]";
@@ -286,7 +286,7 @@ namespace Bee.Db
             switch (dbType)
             {
                 case FieldDbType.String:
-                case FieldDbType.Text:
+                case FieldDbType.Memo:
                     return StrFunc.Format("N'{0}'", StrFunc.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue);
                 case FieldDbType.Identity:
                     return string.Empty;
