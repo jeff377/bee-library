@@ -39,26 +39,16 @@ namespace Bee.Business
         public SessionInfo SessionInfo { get; private set; }
 
         /// <summary>
-        /// 執行自訂方法。
+        /// 執行自訂方法，開放方法，要求登入。
         /// </summary>
         /// <param name="args">傳入引數。</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
             var result = new ExecFuncResult();
-            DoBeforeExecFunc(args, result);
             DoExecFunc(args, result);
-            DoAfterExecFunc(args, result);
             return result;
         }
-
-        /// <summary>
-        /// 執行 ExecFunc 前的呼叫方法。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
-        protected virtual  void DoBeforeExecFunc(ExecFuncArgs args, ExecFuncResult result)
-        { }
 
         /// <summary>
         /// 執行 ExecFunc 方法的實作。
@@ -69,11 +59,43 @@ namespace Bee.Business
         { }
 
         /// <summary>
-        /// 執行 ExecFunc 後的呼叫方法。
+        /// 執行自訂方法，開放方法，匿名存取。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
+        public ExecFuncResult ExecFuncAnonymous(ExecFuncArgs args)
+        {
+            var result = new ExecFuncResult();
+            DoExecFuncAnonymous(args, result);
+            return result;
+        }
+
+        /// <summary>
+        /// 執行 ExecFuncAuth 方法的實作。
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        protected virtual void DoAfterExecFunc(ExecFuncArgs args, ExecFuncResult result)
+        protected virtual void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
+        { }
+
+        /// <summary>
+        /// 執行自訂方法，僅限近端呼叫。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous)]
+        public ExecFuncResult ExecFuncLocal(ExecFuncArgs args)
+        {
+            var result = new ExecFuncResult();
+            DoExecFuncLocal(args, result);
+            return result;
+        }
+
+        /// <summary>
+        /// 執行 ExecFuncLoca 方法的實作。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        /// <param name="result">傳出結果。</param>
+        protected virtual void DoExecFuncLocal(ExecFuncArgs args, ExecFuncResult result)
         { }
     }
 }

@@ -273,7 +273,6 @@ namespace Bee.Define
         /// 一般開放：允許任何呼叫（不強制編碼，開放給第三方）
         /// </summary>
         Public = 0,
-
         /// <summary>
         /// 需要編碼：允許遠端呼叫，但必須進行編碼（序列化與壓縮）
         /// </summary>
