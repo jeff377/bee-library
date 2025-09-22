@@ -16,14 +16,12 @@ namespace Bee.Base
         /// <param name="typeName">型別名稱。</param>
         public override Type BindToType(string assemblyName, string typeName)
         {
-            Type oType;
-
             // 驗證參數型別是否合法
             if (!ValidateType(typeName))
                 throw new InvalidOperationException($"Type name '{typeName}' is not allowed.");
             // 傳回序列化型別
-            oType = Type.GetType(String.Format("{0}, {1}", typeName, assemblyName));
-            return oType;
+            var type = Type.GetType(String.Format("{0}, {1}", typeName, assemblyName));
+            return type;
         }
 
         /// <summary>

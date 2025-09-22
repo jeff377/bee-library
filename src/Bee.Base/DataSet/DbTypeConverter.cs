@@ -27,9 +27,8 @@ namespace Bee.Base
         /// <param name="type">型別。</param>
         public static FieldDbType ToFieldDbType(Type type)
         {
-
-            var oTypeCode = ToTypeCode(type);
-            switch (oTypeCode)
+            var typeCode = ToTypeCode(type);
+            switch (typeCode)
             {
                 case TypeCode.Boolean:
                     return FieldDbType.Boolean;
