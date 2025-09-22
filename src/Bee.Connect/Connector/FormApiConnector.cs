@@ -70,5 +70,23 @@ namespace Bee.Connect
                 ExecFuncAsync(args)
             );
         }
+
+        /// <summary>
+        /// 非同步執行自訂方法，匿名存取。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public async Task<ExecFuncResult> ExecFuncAnonymousAsync(ExecFuncArgs args)
+        {
+            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFuncAnonymous, args).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 非同步執行自訂方法，僅限近端呼叫。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        public async Task<ExecFuncResult> ExecFuncLocalAsync(ExecFuncArgs args)
+        {
+            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFuncLocal, args).ConfigureAwait(false);
+        }
     }
 }

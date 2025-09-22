@@ -208,5 +208,15 @@ namespace Bee.Business
         {
             BusinessFunc.InvokeExecFunc(new SystemExecFuncHandler(AccessToken), args, result);
         }
+
+        /// <summary>
+        /// 執行 ExecFuncAnonymou 方法的實作。
+        /// </summary>
+        /// <param name="args">傳入引數。</param>
+        /// <param name="result">傳出結果。</param>
+        protected override void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
+        {
+  
+        }
     }
 }

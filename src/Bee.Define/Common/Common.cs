@@ -33,7 +33,7 @@ namespace Bee.Define
         /// <summary>
         /// 預設的 AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
         /// </summary>
-        public const string AccessTokenValidationProvider = "Bee.Business.AccessTokenValidationProvider, Bee.Business"; 
+        public const string AccessTokenValidationProvider = "Bee.Business.AccessTokenValidationProvider, Bee.Business";
     }
 
     /// <summary>
@@ -69,6 +69,14 @@ namespace Bee.Define
         /// 執行自訂方法。
         /// </summary>
         public const string ExecFunc = "ExecFunc";
+        /// <summary>
+        /// 執行自訂方法，匿名存取。
+        /// </summary>
+        public const string ExecFuncAnonymous = "ExecFuncAnonymous";
+        /// <summary>
+        /// 執行自訂方法，僅限近端呼叫。
+        /// </summary>
+        public const string ExecFuncLocal = "ExecFuncLocal";
     }
 
     /// <summary>
