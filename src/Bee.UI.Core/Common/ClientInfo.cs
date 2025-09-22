@@ -29,7 +29,7 @@ namespace Bee.UI.Core
         /// <summary>
         /// 服務端點儲存區。
         /// </summary>
-        public static IEndpointStorage EndpointStorage { get; private set; } = new EndpointStorage();
+        public static IEndpointStorage EndpointStorage { get; set; } = new EndpointStorage();
 
         /// <summary>
         /// 用戶端設定。
