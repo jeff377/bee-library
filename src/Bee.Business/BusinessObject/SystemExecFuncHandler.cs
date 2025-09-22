@@ -9,7 +9,7 @@ namespace Bee.Business
     /// <summary>
     /// 系統層級業務邏輯物件提供的自訂方法。
     /// </summary>
-    internal class SystemBusinessExecFunc
+    internal class SystemExecFuncHandler : IExecFuncHandler
     {
         #region 建構函式
 
@@ -17,7 +17,7 @@ namespace Bee.Business
         /// 建構函式。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public SystemBusinessExecFunc(Guid accessToken)
+        public SystemExecFuncHandler(Guid accessToken)
         {
             AccessToken = accessToken;
         }
