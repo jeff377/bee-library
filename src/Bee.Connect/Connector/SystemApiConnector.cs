@@ -67,7 +67,7 @@ namespace Bee.Connect
         /// <param name="args">傳入引數。</param>
         public async Task<ExecFuncResult> ExecFuncAnonymousAsync(ExecFuncArgs args)
         {
-            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFuncAnonymous, args).ConfigureAwait(false);
+            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFuncAnonymous, args, PayloadFormat.Encoded).ConfigureAwait(false);
         }
 
         /// <summary>
