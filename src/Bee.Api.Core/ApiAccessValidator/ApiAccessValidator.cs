@@ -36,9 +36,8 @@ namespace Bee.Api.Core
                     throw new UnauthorizedAccessException("AccessToken is required or invalid.");
             }
 
-            // TODO : 暫時註解 LocalOnly 的驗證
-            // if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly && !context.IsLocalCall)
-            //    throw new UnauthorizedAccessException("This API is restricted to local calls only.");
+            if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly && !context.IsLocalCall)
+                throw new UnauthorizedAccessException("This API is restricted to local calls only.");
 
             // 依照呼叫端的 Format 判斷是否符合存取等級
             switch (context.Format)
