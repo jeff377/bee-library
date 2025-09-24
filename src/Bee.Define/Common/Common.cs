@@ -62,9 +62,17 @@ namespace Bee.Define
         /// </summary>
         public const string GetDefine = "GetDefine";
         /// <summary>
+        /// 取得定義資料（僅限本機）。
+        /// </summary>
+        public const string GetLocalDefine = "GetLocalDefine";
+        /// <summary>
         /// 儲存定義資料。
         /// </summary>
         public const string SaveDefine = "SaveDefine";
+        /// <summary>
+        /// 儲存定義資料（僅限本機）。
+        /// </summary>
+        public const string SaveLocalDefine = "SaveLocalDefine";
         /// <summary>
         /// 執行自訂方法。
         /// </summary>

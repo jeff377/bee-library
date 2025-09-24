@@ -242,6 +242,39 @@ namespace Bee.Connect
         }
 
         /// <summary>
+        /// 非同步取得定義資料（僅限本機）。
+        /// </summary>
+        /// <typeparam name="T">泛型型別。</typeparam>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="keys">取得定義資料的鍵值。</param>
+        public async Task<T> GetLocalDefineAsync<T>(DefineType defineType, string[] keys = null)
+        {
+            var args = new GetDefineArgs()
+            {
+                DefineType = defineType,
+                Keys = keys
+            };
+            var result = await ExecuteAsync<GetDefineResult>(SystemActions.GetLocalDefine, args).ConfigureAwait(false);
+            if (StrFunc.IsNotEmpty(result.Xml))
+                return SerializeFunc.XmlToObject<T>(result.Xml);
+            else
+                return default;
+        }
+
+        /// <summary>
+        /// 取得定義資料（僅限本機）。
+        /// </summary>
+        /// <typeparam name="T">泛型型別。</typeparam>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="keys">取得定義資料的鍵值。</param>
+        public T GetLocalDefine<T>(DefineType defineType, string[] keys = null)
+        {
+            return SyncExecutor.Run(() =>
+                GetLocalDefineAsync<T>(defineType, keys)
+            );
+        }
+
+        /// <summary>
         /// 非同步儲存定義資料。
         /// </summary>
         /// <param name="defineType">定義資料類型。</param>
@@ -268,6 +301,36 @@ namespace Bee.Connect
         {
             SyncExecutor.Run(() =>
                 SaveDefineAsync(defineType, defineObject, keys)
+            );
+        }
+
+        /// <summary>
+        /// 非同步儲存定義資料（僅限本機）。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="defineObject">定義資料。</param>
+        /// <param name="keys">儲存定義資料的鍵值。</param>
+        public async Task SaveLocalDefineAsync(DefineType defineType, object defineObject, string[] keys = null)
+        {
+            var args = new SaveDefineArgs()
+            {
+                DefineType = defineType,
+                Xml = SerializeFunc.ObjectToXml(defineObject),
+                Keys = keys
+            };
+            await ExecuteAsync<SaveDefineResult>(SystemActions.SaveLocalDefine, args).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// 儲存定義資料（僅限本機）。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="defineObject">定義資料。</param>
+        /// <param name="keys">儲存定義資料的鍵值。</param>
+        public void SaveLocalDefine(DefineType defineType, object defineObject, string[] keys = null)
+        {
+            SyncExecutor.Run(() =>
+                SaveLocalDefineAsync(defineType, defineObject, keys)
             );
         }
     }
