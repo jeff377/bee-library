@@ -23,11 +23,11 @@ namespace Bee.UI.WinForms
         private void frmConnect_Load(object sender, EventArgs e)
         {
             edtEndpoint.Text = ClientInfo.GetEndpoint();
-            if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
+            if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
             {
                 Text += " (Local Only)";
             }
-            else if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
+            else if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
             {
                 Text += " (Remote Only)";
             }

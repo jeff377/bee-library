@@ -181,7 +181,7 @@ namespace Bee.Connect
 
             if (format != PayloadFormat.Plain)
             {
-                ApiPayloadConverter.TransformTo(request.Params, format, FrontendInfo.ApiEncryptionKey);
+                ApiPayloadConverter.TransformTo(request.Params, format, ApiClientContext.ApiEncryptionKey);
             }
 
             return format;
@@ -203,7 +203,7 @@ namespace Bee.Connect
             if (format == PayloadFormat.Plain)
                 return;
 
-            ApiPayloadConverter.RestoreFrom(response.Result, format, FrontendInfo.ApiEncryptionKey);
+            ApiPayloadConverter.RestoreFrom(response.Result, format, ApiClientContext.ApiEncryptionKey);
         }
 
         /// <summary>

@@ -20,19 +20,19 @@ namespace Bee.Connect
             if (connectType == ConnectType.Local)
             {
                 // 設定近端連線相關屬性
-                FrontendInfo.ConnectType = ConnectType.Local;
-                FrontendInfo.Endpoint = string.Empty;
+                ApiClientContext.ConnectType = ConnectType.Local;
+                ApiClientContext.Endpoint = string.Empty;
                 BackendInfo.DefinePath = endpoint;
             }
             else
             {
                 // 設定遠端連線相關屬性
-                FrontendInfo.ConnectType = ConnectType.Remote;
-                FrontendInfo.Endpoint = endpoint;
+                ApiClientContext.ConnectType = ConnectType.Remote;
+                ApiClientContext.Endpoint = endpoint;
                 BackendInfo.DefinePath = string.Empty;
             }
             // 設定存取權杖令牌為空，因為連線方式變更後需要重新登入
-            FrontendInfo.AccessToken = Guid.Empty;
+            ApiClientContext.AccessToken = Guid.Empty;
         }
     }
 }

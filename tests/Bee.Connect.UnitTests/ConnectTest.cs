@@ -16,7 +16,7 @@ namespace Bee.Connect.UnitTests
             var settings = CacheFunc.GetSystemSettings();
             settings.Initialize();
             // 設定前端 API 金鑰
-            FrontendInfo.ApiEncryptionKey = BackendInfo.ApiEncryptionKey;
+            ApiClientContext.ApiEncryptionKey = BackendInfo.ApiEncryptionKey;
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // 預設資料庫識別

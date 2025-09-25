@@ -73,7 +73,7 @@ namespace Bee.Connect
         {
             return new NameValueCollection
             {
-                { ApiHeaders.ApiKey, FrontendInfo.ApiKey },
+                { ApiHeaders.ApiKey, ApiClientContext.ApiKey },
                 { ApiHeaders.Authorization, $"Bearer {AccessToken}" }
             };
         }

@@ -48,7 +48,7 @@ namespace Bee.Connect
         private void ValidateLocal(string definePath, bool allowGenerateSettings)
         {
             // 驗證程式是否支援近端連線
-            if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
+            if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
                 throw new InvalidOperationException("Local connections are not supported.");
             if (StrFunc.IsEmpty(definePath))
                 throw new ArgumentException("Definition path must be specified.", nameof(definePath));
@@ -116,7 +116,7 @@ namespace Bee.Connect
         private void ValidateRemote(string endpoint)
         {
             // 驗證程式是否支援遠端連線
-            if (!FrontendInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
+            if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
                 throw new InvalidOperationException("Remote connections are not supported.");
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));

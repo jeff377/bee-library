@@ -91,10 +91,10 @@ namespace Bee.UI.Core
         /// <returns></returns>
         private static SystemApiConnector CreateSystemApiConnector()
         {
-            if (FrontendInfo.ConnectType == ConnectType.Local)
-                return new SystemApiConnector(FrontendInfo.AccessToken);
+            if (ApiClientContext.ConnectType == ConnectType.Local)
+                return new SystemApiConnector(ApiClientContext.AccessToken);
             else
-                return new SystemApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken);
+                return new SystemApiConnector(ApiClientContext.Endpoint, ApiClientContext.AccessToken);
         }
 
         /// <summary>
@@ -103,10 +103,10 @@ namespace Bee.UI.Core
         /// <param name="progId">程式代碼。</param>
         public static FormApiConnector CreateFormApiConnector(string progId)
         {
-            if (FrontendInfo.ConnectType == ConnectType.Local)
-                return new FormApiConnector(FrontendInfo.AccessToken, progId);
+            if (ApiClientContext.ConnectType == ConnectType.Local)
+                return new FormApiConnector(ApiClientContext.AccessToken, progId);
             else
-                return new FormApiConnector(FrontendInfo.Endpoint, FrontendInfo.AccessToken, progId);
+                return new FormApiConnector(ApiClientContext.Endpoint, ApiClientContext.AccessToken, progId);
         }
 
         /// <summary>
@@ -200,7 +200,7 @@ namespace Bee.UI.Core
         /// <param name="supportedConnectTypes">程式支援的服務連線方式。</param>
         private static bool InitializeConnect(SupportedConnectTypes supportedConnectTypes)
         {
-            FrontendInfo.SupportedConnectTypes = supportedConnectTypes;
+            ApiClientContext.SupportedConnectTypes = supportedConnectTypes;
             var validator = new ApiConnectValidator();
             try
             {

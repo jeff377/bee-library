@@ -111,13 +111,13 @@ namespace JsonRpcClient
             var rawJson = request.ToJson();
 
             // Build curl command
-            var endpoint = StrFunc.IsNotEmpty(FrontendInfo.Endpoint) ? FrontendInfo.Endpoint : "http://localhost/api/jsonrpc";
-            var authHeader = $"Bearer {FrontendInfo.AccessToken}";
+            var endpoint = StrFunc.IsNotEmpty(ApiClientContext.Endpoint) ? ApiClientContext.Endpoint : "http://localhost/api/jsonrpc";
+            var authHeader = $"Bearer {ApiClientContext.AccessToken}";
 
             var curl = "curl -X POST "
                      + $"\"{endpoint}\" "
                      + "-H \"Content-Type: application/json\" \n"
-                     + $"-H \"X-Api-Key: {FrontendInfo.ApiKey}\" \n"
+                     + $"-H \"X-Api-Key: {ApiClientContext.ApiKey}\" \n"
                      + $"-H \"Authorization: {authHeader}\" \n"
                      + $"--data '{rawJson}'";
 

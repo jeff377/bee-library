@@ -120,10 +120,10 @@ namespace Bee.UI.WinForms
         /// </summary>
         public static string GetConnectText()
         {
-            if (FrontendInfo.ConnectType == ConnectType.Local)
+            if (ApiClientContext.ConnectType == ConnectType.Local)
                 return $"Local : {BackendInfo.DefinePath}";
             else
-                return $"Remote : {FrontendInfo.Endpoint}";
+                return $"Remote : {ApiClientContext.Endpoint}";
         }
     }
 }

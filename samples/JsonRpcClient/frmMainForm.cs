@@ -68,7 +68,7 @@ namespace JsonRpcClient
                 // Log in to the system; no real credential validation here, for demonstration purposes only
                 var connector = CreateSystemApiConnector();
                 await connector.LoginAsync("jeff", "1234");
-                AddMessage($"AccessToken : {FrontendInfo.AccessToken}");
+                AddMessage($"AccessToken : {ApiClientContext.AccessToken}");
             }
             catch (Exception ex)
             {
@@ -198,10 +198,10 @@ namespace JsonRpcClient
         /// </summary>
         private SystemApiConnector CreateSystemApiConnector()
         {
-            if (FrontendInfo.ConnectType == ConnectType.Local)
-                return new SystemApiConnector(FrontendInfo.AccessToken);
+            if (ApiClientContext.ConnectType == ConnectType.Local)
+                return new SystemApiConnector(ApiClientContext.AccessToken);
             else
-                return new SystemApiConnector(_endpoint, FrontendInfo.AccessToken);
+                return new SystemApiConnector(_endpoint, ApiClientContext.AccessToken);
         }
 
         /// <summary>
@@ -210,10 +210,10 @@ namespace JsonRpcClient
         /// <param name="progId">Program ID used to identify the function or form.</param>
         private FormApiConnector CreateFormApiConnector(string progId)
         {
-            if (FrontendInfo.ConnectType == ConnectType.Local)
-                return new FormApiConnector(FrontendInfo.AccessToken, progId);
+            if (ApiClientContext.ConnectType == ConnectType.Local)
+                return new FormApiConnector(ApiClientContext.AccessToken, progId);
             else
-                return new FormApiConnector(_endpoint, FrontendInfo.AccessToken, progId);
+                return new FormApiConnector(_endpoint, ApiClientContext.AccessToken, progId);
         }
 
         private void btnShowTraceViewer_Click(object sender, EventArgs e)

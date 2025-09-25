@@ -3,9 +3,10 @@
 namespace Bee.Define
 {
     /// <summary>
-    /// 前端資訊，記錄用戶端在運行期間的參數及環境設置。
+    /// API 用戶端應用層級的運行設定（跨 WinForms/Web/App 共用）。
+    /// 僅存放「應用層級」與「連線」相關設定，不包含使用者會話狀態。
     /// </summary>
-    public class FrontendInfo
+    public class ApiClientContext
     {
         /// <summary>
         /// 程式支援的服務連線方式。
