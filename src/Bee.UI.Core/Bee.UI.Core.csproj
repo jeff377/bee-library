@@ -6,16 +6,6 @@
 		<PackageTags>bee;client;settings;api;core;ui</PackageTags>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<DocumentationFile></DocumentationFile>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-		<DocumentationFile></DocumentationFile>
-	</PropertyGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\Bee.Connect\Bee.Connect.csproj" />
 	</ItemGroup>

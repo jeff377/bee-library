@@ -1,22 +1,36 @@
 ﻿<Project>
   <PropertyGroup>
-    <!-- NuGet Package 版本 -->
+    <!-- 版本資訊 -->
     <Version>3.4.9</Version>
-    <!-- 固定大版號，避免相依破版 -->
     <AssemblyVersion>3.0.0.0</AssemblyVersion>
-    <!-- 反映實際 build 次數或 patch -->
     <FileVersion>3.4.9.0</FileVersion>
 
+    <!-- 套件 Metadata -->
     <Company>Bee.NET</Company>
     <Authors>Bee.NET</Authors>
     <Product>Bee.NET</Product>
     <Copyright>© Bee.NET. All rights reserved.</Copyright>
-
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/jeff377/bee-library</PackageProjectUrl>
     <PackageIcon>bee.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!-- 打包 -->
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+    <!-- 文件 -->
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+
+    <!-- 健康檢查 -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Deterministic>true</Deterministic>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <RepositoryUrl>https://github.com/jeff377/bee-library</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>    
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,24 +38,6 @@
     <None Include="$(SolutionDir)README.md" Pack="true" PackagePath="\" />
     <None Include="$(SolutionDir)LICENSE.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <!-- SourceLink -->
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-
-    <!-- 產生 snupkg -->
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-
-    <!-- Repository -->
-    <RepositoryUrl>https://github.com/jeff377/bee-library</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-
-    <!-- Health: Deterministic -->
-    <Deterministic>true</Deterministic>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-  </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All"/>
