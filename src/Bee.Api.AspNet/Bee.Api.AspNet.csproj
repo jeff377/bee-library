@@ -2,12 +2,7 @@
 	
 	<PropertyGroup>
 		<TargetFramework>net48</TargetFramework>
-		<Version>3.4.8</Version>
-		<Company>Bee.NET</Company>
-		<Authors>Bee.NET</Authors>
-		<Product>Bee.NET</Product>
 		<Description>Provides a JSON-RPC 2.0 API HttpModule for ASP.NET, enabling a unified HTTP POST endpoint for invoking backend methods via the JSON-RPC protocol.</Description>
-		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageTags>aspnet;api;webapi;jsonrpc;httpmodule;dynamicapi;service</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
@@ -19,7 +14,6 @@
 		<RepositoryUrl>https://github.com/jeff377/bee-library</RepositoryUrl>
 
 		<OutputType>Library</OutputType>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

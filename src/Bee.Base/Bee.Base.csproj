@@ -2,12 +2,7 @@
 
 	<PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-		<Version>3.4.8</Version>
-		<Company>Bee.NET</Company>
-		<Authors>Bee.NET</Authors>
-		<Product>Bee.NET</Product>
 		<Description>Core utilities such as serialization, encryption, and general-purpose helpers.</Description>
-		<Copyright>© Bee.NET. All rights reserved.</Copyright>
     <PackageTags>Bee.NET;utilities;helpers;cryptography;encryption;hashing;serialization;compression;json</PackageTags>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 		

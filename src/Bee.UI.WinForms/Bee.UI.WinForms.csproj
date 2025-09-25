@@ -2,12 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net8.0-windows</TargetFramework>
-		<Version>3.4.8</Version>
-		<Company>Bee.NET</Company>
-		<Authors>Bee.NET</Authors>
-		<Product>Bee.NET</Product>
 		<Description>UI components and layout management for WinForms.</Description>
-		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageTags>winforms;ui;layout;form designer;runtime ui;dynamic ui;bee.net</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 

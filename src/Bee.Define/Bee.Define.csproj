@@ -2,12 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-		<Version>3.4.8</Version>
-		<Company>Bee.NET</Company>
-		<Authors>Bee.NET</Authors>
-		<Product>Bee.NET</Product>
 		<Description>Defines system-wide structured types for config, schema, and layout.</Description>
-		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageTags>Bee.NET;config;schema;layout;formdefine;enterprise;</PackageTags>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 

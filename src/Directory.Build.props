@@ -2,6 +2,10 @@
   <PropertyGroup>
     <!-- NuGet Package 版本 -->
     <Version>3.4.9</Version>
+    <!-- 固定大版號，避免相依破版 -->
+    <AssemblyVersion>3.0.0.0</AssemblyVersion>
+    <!-- 反映實際 build 次數或 patch -->
+    <FileVersion>3.4.9.0</FileVersion>
 
     <Company>Bee.NET</Company>
     <Authors>Bee.NET</Authors>

@@ -2,12 +2,7 @@
 
 	<PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
-		<Version>3.4.8</Version>
-		<Company>Bee.NET</Company>
-		<Authors>Bee.NET</Authors>
-		<Product>Bee.NET</Product>
 		<Description>Implements core business logic and application-level workflows.</Description>
-		<Copyright>© Bee.NET. All rights reserved.</Copyright>
 		<PackageTags>netstandard2.0</PackageTags>		
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
