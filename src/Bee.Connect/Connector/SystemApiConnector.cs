@@ -186,9 +186,6 @@ namespace Bee.Connect
             };
             var result = await ExecuteAsync<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded).ConfigureAwait(false);
 
-            // 取得存取令牌
-            ApiClientContext.AccessToken = result.AccessToken;
-
             // 用 RSA 私鑰解密，取得 API 加密金鑰
             string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
             ApiClientContext.ApiEncryptionKey = Convert.FromBase64String(sessionKey);

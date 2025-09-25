@@ -31,8 +31,6 @@ namespace Bee.Connect
                 ApiClientContext.Endpoint = endpoint;
                 BackendInfo.DefinePath = string.Empty;
             }
-            // 設定存取權杖令牌為空，因為連線方式變更後需要重新登入
-            ApiClientContext.AccessToken = Guid.Empty;
         }
     }
 }

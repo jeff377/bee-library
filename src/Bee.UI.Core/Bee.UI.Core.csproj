@@ -48,4 +48,8 @@
 		<ProjectReference Include="..\Bee.Connect\Bee.Connect.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Event\" />
+	</ItemGroup>
+
 </Project>

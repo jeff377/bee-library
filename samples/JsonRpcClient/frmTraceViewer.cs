@@ -2,6 +2,7 @@
 using Bee.Base;
 using Bee.Connect;
 using Bee.Define;
+using Bee.UI.Core;
 using Bee.UI.WinForms;
 using System.Data;
 
@@ -113,7 +114,7 @@ namespace JsonRpcClient
 
             // Build curl command
             var endpoint = StrFunc.IsNotEmpty(ApiClientContext.Endpoint) ? ApiClientContext.Endpoint : "http://localhost/api/jsonrpc";
-            var authHeader = $"Bearer {ApiClientContext.AccessToken}";
+            var authHeader = $"Bearer {ClientInfo.AccessToken}";
 
             var curl = "curl -X POST "
                      + $"\"{endpoint}\" "

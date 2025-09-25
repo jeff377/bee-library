@@ -23,6 +23,11 @@ namespace JsonRpcClient
         private string _endpoint = string.Empty;
 
         /// <summary>
+        /// Access token, obtained after login.
+        /// </summary>
+        private static Guid _accessToken { get; set; } = Guid.Empty;
+
+        /// <summary>
         /// Indicates whether the object has been initialized.
         /// </summary>
         private bool _isInitialized = false;
@@ -67,8 +72,9 @@ namespace JsonRpcClient
             {
                 // Log in to the system; no real credential validation here, for demonstration purposes only
                 var connector = CreateSystemApiConnector();
-                await connector.LoginAsync("jeff", "1234");
-                AddMessage($"AccessToken : {ApiClientContext.AccessToken}");
+                var result =  await connector.LoginAsync("jeff", "1234");
+                _accessToken = result.AccessToken;
+                AddMessage($"AccessToken : {_accessToken}");
             }
             catch (Exception ex)
             {
@@ -199,9 +205,9 @@ namespace JsonRpcClient
         private SystemApiConnector CreateSystemApiConnector()
         {
             if (ApiClientContext.ConnectType == ConnectType.Local)
-                return new SystemApiConnector(ApiClientContext.AccessToken);
+                return new SystemApiConnector(_accessToken);
             else
-                return new SystemApiConnector(_endpoint, ApiClientContext.AccessToken);
+                return new SystemApiConnector(_endpoint, _accessToken);
         }
 
         /// <summary>
@@ -211,9 +217,9 @@ namespace JsonRpcClient
         private FormApiConnector CreateFormApiConnector(string progId)
         {
             if (ApiClientContext.ConnectType == ConnectType.Local)
-                return new FormApiConnector(ApiClientContext.AccessToken, progId);
+                return new FormApiConnector(_accessToken, progId);
             else
-                return new FormApiConnector(_endpoint, ApiClientContext.AccessToken, progId);
+                return new FormApiConnector(_endpoint, _accessToken, progId);
         }
 
         private void btnShowTraceViewer_Click(object sender, EventArgs e)

@@ -29,12 +29,8 @@ namespace Bee.Connect
         public static string ApiKey { get; set; } = "46CA0967-EC64-4F96-B502-139BE8FF8DAC";
 
         /// <summary>
-        /// 存取令牌，登入後取得存取令牌。
-        /// </summary>
-        public static Guid AccessToken { get; set; } = Guid.Empty;
-
-        /// <summary>
         /// API 傳輸加密金鑰，通過 RSA 公鑰交換的金鑰。
+        /// 在近端連線場景中通常不使用。
         /// </summary>
         public static byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
 

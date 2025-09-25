@@ -12,14 +12,10 @@ namespace Bee.UI.Core
     /// </summary>
     public class ClientInfo
     {
+
         private static ClientSettings _clientSettings = null;
         private static SystemApiConnector _systemConnector = null;
         private static IDefineAccess _defineAccess = null;
-
-        /// <summary>
-        /// 當連線方式設定完成後觸發。
-        /// </summary>
-        public static event EventHandler<ConnectTypeChangedEventArgs> ConnectTypeChanged;
 
         /// <summary>
         /// 命令列引數。
@@ -70,6 +66,11 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
+        /// 存取令牌，登入後取得存取令牌。
+        /// </summary>
+        public static Guid AccessToken { get; set; } = Guid.Empty;
+
+        /// <summary>
         /// 系統層級 API 服務連接器，服務端點異動時需重新建立。
         /// </summary>
         public static SystemApiConnector SystemApiConnector
@@ -92,9 +93,9 @@ namespace Bee.UI.Core
         private static SystemApiConnector CreateSystemApiConnector()
         {
             if (ApiClientContext.ConnectType == ConnectType.Local)
-                return new SystemApiConnector(ApiClientContext.AccessToken);
+                return new SystemApiConnector(AccessToken);
             else
-                return new SystemApiConnector(ApiClientContext.Endpoint, ApiClientContext.AccessToken);
+                return new SystemApiConnector(ApiClientContext.Endpoint, AccessToken);
         }
 
         /// <summary>
@@ -104,9 +105,9 @@ namespace Bee.UI.Core
         public static FormApiConnector CreateFormApiConnector(string progId)
         {
             if (ApiClientContext.ConnectType == ConnectType.Local)
-                return new FormApiConnector(ApiClientContext.AccessToken, progId);
+                return new FormApiConnector(AccessToken, progId);
             else
-                return new FormApiConnector(ApiClientContext.Endpoint, ApiClientContext.AccessToken, progId);
+                return new FormApiConnector(ApiClientContext.Endpoint, AccessToken, progId);
         }
 
         /// <summary>
@@ -158,15 +159,12 @@ namespace Bee.UI.Core
             // 設置連線方式異動的相關靜態屬性
             ConnectFunc.SetConnectType(connectType, endpoint);
 
+            // 設定存取權杖令牌為空，因為連線方式變更後需要重新登入
+            AccessToken = Guid.Empty;
+
             // 變更連線需重置 SystemConnector 及 DefineAccess
             _systemConnector = null;
             _defineAccess = null;
-
-            // Raise event
-            ConnectTypeChanged?.Invoke(
-                null,
-                new ConnectTypeChangedEventArgs(connectType, endpoint)
-            );
         }
 
         /// <summary>
