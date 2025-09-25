@@ -1,5 +1,6 @@
 ﻿using Bee.Api.Core;
 using Bee.Base;
+using Bee.Connect;
 using Bee.Define;
 using Bee.UI.WinForms;
 using System.Data;

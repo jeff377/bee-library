@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bee.Define;
+using Bee.Connect;
 
 namespace Bee.UI.Core
 {

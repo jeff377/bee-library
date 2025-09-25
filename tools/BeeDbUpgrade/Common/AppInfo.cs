@@ -1,5 +1,6 @@
 ﻿using Bee.Base;
 using Bee.Cache;
+using Bee.Connect;
 using Bee.Db;
 using Bee.Define;
 using Bee.UI.Core;

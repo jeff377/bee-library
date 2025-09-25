@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Define
+namespace Bee.Connect
 {
     /// <summary>
     /// API 用戶端應用層級的運行設定（跨 WinForms/Web/App 共用）。

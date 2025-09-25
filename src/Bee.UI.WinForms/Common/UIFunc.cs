@@ -1,4 +1,5 @@
 ﻿using Bee.Base;
+using Bee.Connect;
 using Bee.Define;
 
 namespace Bee.UI.WinForms
