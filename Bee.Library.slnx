@@ -12,6 +12,7 @@
     <File Path="samples/Define/SystemSettings.xml" />
   </Folder>
   <Folder Name="/src/">
+    <File Path="src/Directory.Build.props" />
     <Project Path="src/Bee.Api.AspNet/Bee.Api.AspNet.csproj" />
     <Project Path="src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj" />
     <Project Path="src/Bee.Api.Core/Bee.Api.Core.csproj" />

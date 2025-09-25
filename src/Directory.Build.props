@@ -1,0 +1,11 @@
+﻿<Project>
+  <PropertyGroup>
+    <!-- NuGet Package 版本 -->
+    <Version>3.4.9</Version>
+
+    <Company>Bee.NET</Company>
+    <Authors>Bee.NET</Authors>
+    <Product>Bee.NET</Product>
+    <Copyright>© Bee.NET. All rights reserved.</Copyright>
+  </PropertyGroup>
+</Project>
