@@ -97,6 +97,7 @@ namespace Bee.Business
                 AccessToken = sessionInfo.AccessToken,
                 ExpiredAt = sessionInfo.ExpiredAt,
                 ApiEncryptionKey = encryptedKey,
+                UserId = sessionInfo.UserId,
                 UserName = sessionInfo.UserName,
             };
         }

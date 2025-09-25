@@ -12,10 +12,10 @@ namespace Bee.UI.Core
     /// </summary>
     public class ClientInfo
     {
-
         private static ClientSettings _clientSettings = null;
         private static SystemApiConnector _systemConnector = null;
         private static IDefineAccess _defineAccess = null;
+        private static Guid _accessToken = Guid.Empty;
 
         /// <summary>
         /// 命令列引數。
@@ -68,7 +68,20 @@ namespace Bee.UI.Core
         /// <summary>
         /// 存取令牌，登入後取得存取令牌。
         /// </summary>
-        public static Guid AccessToken { get; set; } = Guid.Empty;
+        public static Guid AccessToken
+        {
+            get { return _accessToken; }
+            private set
+            {
+                // 重設 AccessToken 時，需重置 SystemConnector 及 DefineAccess
+                if (value != _accessToken)
+                {
+                    _accessToken = value;
+                    _systemConnector = null;
+                    _defineAccess = null;
+                }
+            }
+        }
 
         /// <summary>
         /// 系統層級 API 服務連接器，服務端點異動時需重新建立。
@@ -141,15 +154,6 @@ namespace Bee.UI.Core
         public static UserInfo UserInfo { get; private set; }
 
         /// <summary>
-        /// 設定使用者資訊，用戶登入後設定。
-        /// </summary>
-        /// <param name="userInfo">連線資訊。</param>
-        public static void SetUserInfo(UserInfo userInfo)
-        {
-            UserInfo = userInfo;
-        }
-
-        /// <summary>
         /// 設置連線方式，連線設定時使用。
         /// </summary>
         /// <param name="connectType">服務連線方式。</param>
@@ -158,13 +162,8 @@ namespace Bee.UI.Core
         {
             // 設置連線方式異動的相關靜態屬性
             ConnectFunc.SetConnectType(connectType, endpoint);
-
             // 設定存取權杖令牌為空，因為連線方式變更後需要重新登入
             AccessToken = Guid.Empty;
-
-            // 變更連線需重置 SystemConnector 及 DefineAccess
-            _systemConnector = null;
-            _defineAccess = null;
         }
 
         /// <summary>
@@ -242,6 +241,23 @@ namespace Bee.UI.Core
                 if (!UIViewService.ShowApiConnect()) { return false; }
             }
             return true;
+        }
+
+        /// <summary>
+        /// 登入成功後，設定相關屬性（AccessToken、UserInfo 等）。
+        /// </summary>
+        /// <param name="loginResult">登入結果。</param>
+        public static void ApplyLoginResult(LoginResult loginResult)
+        {
+            if (loginResult == null) throw new ArgumentNullException(nameof(loginResult));
+
+            AccessToken = loginResult.AccessToken;
+            UserInfo = new UserInfo()
+            {
+                UserId = loginResult.UserId,
+                UserName = loginResult.UserName
+            };
+            // TODO: 未來如有其他登入後需設定的屬性，請於此處擴充
         }
     }
 }

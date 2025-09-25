@@ -56,9 +56,15 @@ namespace Bee.Define
         public string ApiEncryptionKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用戶名稱。
+        /// 使用者帳號。
         /// </summary>
         [Key(103)]
+        public string UserId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 用戶名稱。
+        /// </summary>
+        [Key(104)]
         public string UserName { get; set; } = string.Empty;
     }
 }
