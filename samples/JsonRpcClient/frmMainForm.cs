@@ -1,8 +1,5 @@
 using Bee.Api.Core;
-using Bee.Base;
-using Bee.Cache;
-using Bee.Connect;
-using Bee.Define;
+using Bee.UI.Core;
 using Custom.Define;
 
 namespace JsonRpcClient
@@ -18,16 +15,6 @@ namespace JsonRpcClient
         }
 
         /// <summary>
-        /// Endpoint for the API service.
-        /// </summary>
-        private string _endpoint = string.Empty;
-
-        /// <summary>
-        /// Access token, obtained after login.
-        /// </summary>
-        private static Guid _accessToken { get; set; } = Guid.Empty;
-
-        /// <summary>
         /// Indicates whether the object has been initialized.
         /// </summary>
         private bool _isInitialized = false;
@@ -37,21 +24,19 @@ namespace JsonRpcClient
         /// </summary>
         private void frmMainForm_Load(object sender, EventArgs e)
         {
-
         }
 
         /// <summary>
         /// Initialize the system settings and API service options.
         /// </summary>
-        private async void btnInitialize_Click(object sender, EventArgs e)
+        private void btnInitialize_Click(object sender, EventArgs e)
         {
-            if (!ValidateAndApplyEndpoint()) { return; }
+            string endpoint = edtEndpoint.Text;
 
             try
             {
-                // Retrieve general parameters and environment settings, and initialize the system
-                var connector = CreateSystemApiConnector();
-                await connector.InitializeAsync();
+                // Specify the service endpoint for initialization
+                ClientInfo.Initialize(endpoint);
                 _isInitialized = true;
                 AddMessage("Initialization complete.");
             }
@@ -64,17 +49,17 @@ namespace JsonRpcClient
         /// <summary>
         /// Login to the system.
         /// </summary>
-        private async void btnLogin_Click(object sender, EventArgs e)
+        private void btnLogin_Click(object sender, EventArgs e)
         {
             if (!ValidateInitialize()) { return; }
 
             try
             {
                 // Log in to the system; no real credential validation here, for demonstration purposes only
-                var connector = CreateSystemApiConnector();
-                var result =  await connector.LoginAsync("jeff", "1234");
-                _accessToken = result.AccessToken;
-                AddMessage($"AccessToken : {_accessToken}");
+                var result = ClientInfo.SystemApiConnector.Login("jeff", "1234");
+                // After successful login, set related properties (AccessToken, UserInfo, etc.)
+                ClientInfo.ApplyLoginResult(result);
+                AddMessage("Login complete.");
             }
             catch (Exception ex)
             {
@@ -128,7 +113,7 @@ namespace JsonRpcClient
             try
             {
                 // Create a form-level API connector. ProgId = "Employee" corresponds to the TEmployeeBusinessObject logic class.
-                var connector = CreateFormApiConnector("Employee");
+                var connector = ClientInfo.CreateFormApiConnector("Employee");
                 var args = new HelloArgs { UserName = "Jeff" };
 
                 var result = await connector.ExecuteAsync<HelloResult>(method, args, format);
@@ -153,90 +138,18 @@ namespace JsonRpcClient
             return true;
         }
 
-        /// <summary>
-        /// Validate and apply the endpoint. Used during initialization.
-        /// </summary>
-        /// <returns>True if applied successfully, otherwise false.</returns>
-        private bool ValidateAndApplyEndpoint()
-        {
-            string endpoint = edtEndpoint.Text;
-            if (string.IsNullOrWhiteSpace(endpoint))
-            {
-                AddMessage("Please enter a valid endpoint.");
-                return false;
-            }
-
-            if (StrFunc.Equals(_endpoint, endpoint))
-            {
-                return true;
-            }
-
-            var validator = new ApiConnectValidator();
-            var connectType = validator.Validate(endpoint);
-
-            // Set the connection type
-            SetConnectType(connectType, endpoint);
-            return true;
-        }
-
-        /// <summary>
-        /// Set the connection type. Used during initialization.
-        /// </summary>
-        /// <param name="connectType">Connection type for the service.</param>
-        /// <param name="endpoint">Service endpoint. URL for remote, local path for local mode.</param>
-        private void SetConnectType(ConnectType connectType, string endpoint)
-        {
-            _endpoint = endpoint;
-
-            // Set static connection information
-            ConnectFunc.SetConnectType(connectType, endpoint);
-
-            // If it is a local connection, simulate server initialization on the client
-            if (connectType == ConnectType.Local)
-            {
-                var settings = CacheFunc.GetSystemSettings();
-                settings.Initialize();
-            }
-        }
-
-        /// <summary>
-        /// Create a system-level API connector.
-        /// </summary>
-        private SystemApiConnector CreateSystemApiConnector()
-        {
-            if (ApiClientContext.ConnectType == ConnectType.Local)
-                return new SystemApiConnector(_accessToken);
-            else
-                return new SystemApiConnector(_endpoint, _accessToken);
-        }
-
-        /// <summary>
-        /// Create a form-level API connector.
-        /// </summary>
-        /// <param name="progId">Program ID used to identify the function or form.</param>
-        private FormApiConnector CreateFormApiConnector(string progId)
-        {
-            if (ApiClientContext.ConnectType == ConnectType.Local)
-                return new FormApiConnector(_accessToken, progId);
-            else
-                return new FormApiConnector(_endpoint, _accessToken, progId);
-        }
-
         private void btnShowTraceViewer_Click(object sender, EventArgs e)
         {
-            // 檢查是否已開啟 frmTraceViewer
             foreach (Form openForm in Application.OpenForms)
             {
                 if (openForm is frmTraceViewer traceViewer)
                 {
-                    // 已開啟，移至焦點
                     traceViewer.WindowState = FormWindowState.Normal;
                     traceViewer.BringToFront();
                     traceViewer.Activate();
                     return;
                 }
             }
-            // 尚未開啟，建立新表單
             var form = new frmTraceViewer();
             form.Show();
         }

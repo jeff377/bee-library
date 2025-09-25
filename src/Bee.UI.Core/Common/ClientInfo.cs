@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Bee.Base;
+﻿using Bee.Base;
 using Bee.Connect;
 using Bee.Define;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Bee.UI.Core
 {
@@ -241,6 +241,15 @@ namespace Bee.UI.Core
                 if (!UIViewService.ShowApiConnect()) { return false; }
             }
             return true;
+        }
+
+        /// <summary>
+        /// 指定服務端點做初始化。
+        /// </summary>
+        /// <param name="endpoint">服務端點位置，遠端連線為網址，近端連線為本地路徑。</param>
+        public static void Initialize(string endpoint)
+        {
+            SetEndpoint(endpoint);
         }
 
         /// <summary>
