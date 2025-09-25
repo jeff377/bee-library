@@ -4,14 +4,6 @@
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Core utilities such as serialization, encryption, and general-purpose helpers.</Description>
     <PackageTags>Bee.NET;utilities;helpers;cryptography;encryption;hashing;serialization;compression;json</PackageTags>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageIcon>bee.png</PackageIcon>
-		<PackageReleaseNotes></PackageReleaseNotes>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RepositoryUrl>https://github.com/jeff377/bee-library</RepositoryUrl>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -21,21 +13,6 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<DocumentationFile></DocumentationFile>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<None Include="..\..\bee.png">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\LICENSE.txt">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-	</ItemGroup>
 
 	<ItemGroup>
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />

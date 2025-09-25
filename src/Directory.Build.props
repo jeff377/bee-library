@@ -11,5 +11,18 @@
     <Authors>Bee.NET</Authors>
     <Product>Bee.NET</Product>
     <Copyright>© Bee.NET. All rights reserved.</Copyright>
+
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>bee.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <RepositoryUrl>https://github.com/jeff377/bee-library</RepositoryUrl>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(SolutionDir)bee.png" Pack="true" PackagePath="\" />
+    <None Include="$(SolutionDir)README.md" Pack="true" PackagePath="\" />
+    <None Include="$(SolutionDir)LICENSE.txt" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

@@ -4,14 +4,6 @@
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Runtime caching of definitions and related system data to improve performance.</Description>		
 		<PackageTags>Bee.NET;cache;memory;performance;data</PackageTags>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>		
-		<PackageIcon>bee.png</PackageIcon>
-		<PackageReleaseNotes></PackageReleaseNotes>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RepositoryUrl>https://github.com/jeff377/bee-library</RepositoryUrl>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -23,21 +15,6 @@
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<DocumentationFile></DocumentationFile>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<None Include="..\..\bee.png">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\LICENSE.txt">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="System.Runtime.Caching" Version="9.0.9" />

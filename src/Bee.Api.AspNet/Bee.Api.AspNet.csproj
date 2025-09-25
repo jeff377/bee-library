@@ -4,14 +4,6 @@
 		<TargetFramework>net48</TargetFramework>
 		<Description>Provides a JSON-RPC 2.0 API HttpModule for ASP.NET, enabling a unified HTTP POST endpoint for invoking backend methods via the JSON-RPC protocol.</Description>
 		<PackageTags>aspnet;api;webapi;jsonrpc;httpmodule;dynamicapi;service</PackageTags>
-		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageIcon>bee.png</PackageIcon>
-		<PackageReleaseNotes></PackageReleaseNotes>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<GenerateDocumentationFile>True</GenerateDocumentationFile>
-		<RepositoryUrl>https://github.com/jeff377/bee-library</RepositoryUrl>
 
 		<OutputType>Library</OutputType>
 	</PropertyGroup>
@@ -25,21 +17,6 @@
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<DocumentationFile></DocumentationFile>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<None Include="..\..\bee.png">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\LICENSE.txt">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
