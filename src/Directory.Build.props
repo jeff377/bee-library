@@ -34,9 +34,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="$(SolutionDir)bee.png" Pack="true" PackagePath="\" />
-    <None Include="$(SolutionDir)README.md" Pack="true" PackagePath="\" />
-    <None Include="$(SolutionDir)LICENSE.txt" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)..\bee.png" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)..\LICENSE.txt" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>
