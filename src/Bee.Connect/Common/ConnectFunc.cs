@@ -10,27 +10,5 @@ namespace Bee.Connect
     /// </summary>
     public static class ConnectFunc
     {
-        /// <summary>
-        /// 設置連線方式異動的相關靜態屬性。
-        /// </summary>
-        /// <param name="connectType">服務連線方式。</param>
-        /// <param name="endpoint">服端端點，遠端連線為網址，近端連線為本地路徑。</param>
-        public static void SetConnectType(ConnectType connectType, string endpoint)
-        {
-            if (connectType == ConnectType.Local)
-            {
-                // 設定近端連線相關屬性
-                ApiClientContext.ConnectType = ConnectType.Local;
-                ApiClientContext.Endpoint = string.Empty;
-                BackendInfo.DefinePath = endpoint;
-            }
-            else
-            {
-                // 設定遠端連線相關屬性
-                ApiClientContext.ConnectType = ConnectType.Remote;
-                ApiClientContext.Endpoint = endpoint;
-                BackendInfo.DefinePath = string.Empty;
-            }
-        }
     }
 }

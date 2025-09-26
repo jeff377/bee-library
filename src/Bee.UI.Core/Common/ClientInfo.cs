@@ -160,8 +160,20 @@ namespace Bee.UI.Core
         /// <param name="endpoint">服端端點，遠端連線為網址，近端連線為本地路徑。</param>
         private static void SetConnectType(ConnectType connectType, string endpoint)
         {
-            // 設置連線方式異動的相關靜態屬性
-            ConnectFunc.SetConnectType(connectType, endpoint);
+            if (connectType == ConnectType.Local)
+            {
+                // 設定近端連線相關屬性
+                ApiClientContext.ConnectType = ConnectType.Local;
+                ApiClientContext.Endpoint = string.Empty;
+                BackendInfo.DefinePath = endpoint;
+            }
+            else
+            {
+                // 設定遠端連線相關屬性
+                ApiClientContext.ConnectType = ConnectType.Remote;
+                ApiClientContext.Endpoint = endpoint;
+                BackendInfo.DefinePath = string.Empty;
+            }
             // 設定存取權杖令牌為空，因為連線方式變更後需要重新登入
             AccessToken = Guid.Empty;
         }
@@ -219,7 +231,7 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
-        /// 初始化。
+        /// 由設定檔進行初始化，若服務端點未設定或無法連線，會顯示服務端點設定界面。
         /// </summary>
         /// <param name="service">UI 相關的視窗 (View) 服務。</param>
         /// <param name="connectTypes">程式支援的服務連線方式。</param>
@@ -240,16 +252,26 @@ namespace Bee.UI.Core
                 // 初始化連線設置失敗，要求重新設定連線
                 if (!UIViewService.ShowApiConnect()) { return false; }
             }
+            // 近端連線時，模擬伺服端的初始化
+            if (ApiClientContext.ConnectType == ConnectType.Local)
+            {
+                InitializeLocalConnect();
+            }
             return true;
         }
 
         /// <summary>
-        /// 指定服務端點做初始化。
+        /// 指定服務端點進行初始化。
         /// </summary>
         /// <param name="endpoint">服務端點位置，遠端連線為網址，近端連線為本地路徑。</param>
         public static void Initialize(string endpoint)
         {
             SetEndpoint(endpoint);
+            // 近端連線時，模擬伺服端的初始化
+            if (ApiClientContext.ConnectType == ConnectType.Local)
+            {
+                InitializeLocalConnect();
+            }
         }
 
         /// <summary>
@@ -267,6 +289,17 @@ namespace Bee.UI.Core
                 UserName = loginResult.UserName
             };
             // TODO: 未來如有其他登入後需設定的屬性，請於此處擴充
+        }
+
+        /// <summary>
+        /// 近端連線時，模擬伺服端的初始化。
+        /// </summary>
+        private static void InitializeLocalConnect()
+        {
+            if (SysInfo.IsToolMode) { return; }
+
+            var settings = DefineAccess.GetSystemSettings();
+            settings.Initialize();
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Bee.Api.Core;
+﻿using Bee.Api.Core;
 using Bee.Base;
-using Bee.Define;
+using System;
+using System.Threading.Tasks;
 
 namespace Bee.Connect
 {
@@ -174,9 +173,16 @@ namespace Bee.Connect
         /// <returns>實際執行後的資料格式（根據執行環境可能會降級為 Plain）。</returns>
         private PayloadFormat TransformRequestPayload(JsonRpcRequest request, PayloadFormat format)
         {
+            // 若為本地服務提供者且非除錯模式，則強制將資料格式設為 Plain，避免進行編碼或加密處理，提升效能。
             if (this.Provider is LocalApiServiceProvider && !SysInfo.IsDebugMode)
             {
                 format = PayloadFormat.Plain; // 本地非除錯模式下不進行編碼
+            }
+
+            // 若要求加密但未設定加密金鑰，則自動降級為編碼格式（Encoded），避免加密失敗。
+            if (format == PayloadFormat.Encrypted && BaseFunc.IsEmpty(ApiClientContext.ApiEncryptionKey))
+            {
+                format = PayloadFormat.Encoded;
             }
 
             if (format != PayloadFormat.Plain)
