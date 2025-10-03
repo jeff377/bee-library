@@ -1,5 +1,7 @@
-﻿using Bee.Define;
+﻿using Bee.Base;
+using Bee.Define;
 using System;
+using System.Runtime.ExceptionServices;
 
 namespace Bee.Business
 {
@@ -12,9 +14,14 @@ namespace Bee.Business
         /// 使用反射，執行 ExecFunc 方法。
         /// </summary>
         /// <param name="execFunc">定義處理指定 FuncID 的執行功能之介面。</param>
+        /// <param name="currentRequirement">目前呼叫的授權需求。</param>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
-        public static void InvokeExecFunc(IExecFuncHandler execFunc, ExecFuncArgs args, ExecFuncResult result)
+        public static void InvokeExecFunc(
+            IExecFuncHandler execFunc,
+            ApiAccessRequirement currentRequirement,
+            ExecFuncArgs args, 
+            ExecFuncResult result)
         {
             try
             {
@@ -22,15 +29,25 @@ namespace Bee.Business
                 var method = execFunc.GetType().GetMethod(args.FuncID);
                 if (method == null)
                     throw new MissingMethodException($"Method {args.FuncID} not found.");
+
+                // 取得 ExecFuncAccessControlAttribute
+                var attr = (ExecFuncAccessControlAttribute)Attribute.GetCustomAttribute(
+                      method, typeof(ExecFuncAccessControlAttribute));
+
+                // 沒有標註時，預設只允許 Authenticated
+                var required = attr?.AccessRequirement ?? ApiAccessRequirement.Authenticated;
+
+                // 判斷授權需求
+                if (required == ApiAccessRequirement.Authenticated && currentRequirement == ApiAccessRequirement.Anonymous)
+                    throw new UnauthorizedAccessException($"FuncID '{args.FuncID}' requires authentication.");
+
                 method.Invoke(execFunc, new object[] { args, result });
             }
             catch (Exception ex)
             {
-                // 使用反射時，需抓取 InnerException 才是原始例外錯誤
-                if (ex.InnerException != null)
-                    throw ex.InnerException;
-                else
-                    throw;
+                var rootEx = BaseFunc.UnwrapException(ex);
+                ExceptionDispatchInfo.Capture(rootEx).Throw();  // 拋出指定的 Exception，並保留它原始的 stack trace
+                throw; // 不會執行到，純粹為了編譯器
             }
         }
     }

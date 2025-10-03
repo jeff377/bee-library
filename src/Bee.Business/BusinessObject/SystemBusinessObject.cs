@@ -249,21 +249,19 @@ namespace Bee.Business
         /// <summary>
         /// 執行 ExecFunc 方法的實作。
         /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
         protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
-            BusinessFunc.InvokeExecFunc(new SystemExecFuncHandler(AccessToken), args, result);
+            var handler = new SystemExecFuncHandler(AccessToken);
+            BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Authenticated, args, result);
         }
 
         /// <summary>
         /// 執行 ExecFuncAnonymou 方法的實作。
         /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
         protected override void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
         {
-
+            var handler = new SystemExecFuncHandler(AccessToken);
+            BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Anonymous, args, result);
         }
     }
 }

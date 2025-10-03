@@ -34,6 +34,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="args">傳入引數。</param>
         /// <param name="result">傳出結果。</param>
+        [ExecFuncAccessControl(ApiAccessRequirement.Anonymous)]
         public void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Hello", "Hello system-level BusinessObject");

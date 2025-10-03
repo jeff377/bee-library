@@ -37,6 +37,7 @@ namespace Bee.Business
         /// 連線資訊。
         /// </summary>
         public SessionInfo SessionInfo { get; private set; }
+        public bool IsLocalCall { get; } = false;
 
         /// <summary>
         /// 執行自訂方法，開放方法，要求登入。
@@ -78,24 +79,5 @@ namespace Bee.Business
         protected virtual void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
         { }
 
-        /// <summary>
-        /// 執行自訂方法，僅限近端呼叫。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous)]
-        public ExecFuncResult ExecFuncLocal(ExecFuncArgs args)
-        {
-            var result = new ExecFuncResult();
-            DoExecFuncLocal(args, result);
-            return result;
-        }
-
-        /// <summary>
-        /// 執行 ExecFuncLoca 方法的實作。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
-        protected virtual void DoExecFuncLocal(ExecFuncArgs args, ExecFuncResult result)
-        { }
     }
 }
