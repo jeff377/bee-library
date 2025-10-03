@@ -79,7 +79,8 @@ namespace Bee.Api.Core
             }
             catch (Exception ex)
             {
-                var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                var rootEx = BaseFunc.UnwrapException(ex);    
+                string message = rootEx.Message;
                 response.Error = new JsonRpcError(-1, message);
                 Tracer.End(ctx, TraceStatus.Error, message);
             }

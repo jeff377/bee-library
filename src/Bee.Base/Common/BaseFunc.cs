@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Reflection;
 using System.Security.Cryptography;
 
 namespace Bee.Base
@@ -571,9 +572,9 @@ namespace Bee.Base
         /// <returns>介於 min 與 max 之間的隨機整數。</returns>
         public static int RndInt(int min, int max)
         {
-        #if NET8_0_OR_GREATER
+#if NET8_0_OR_GREATER
             return RandomNumberGenerator.GetInt32(min, max);
-        #else
+#else
             if (min >= max)
                 throw new ArgumentOutOfRangeException(nameof(min), "min must be less than max.");
 
@@ -592,7 +593,7 @@ namespace Bee.Base
                         return (int)(min + remainder);
                 }
             }
-        #endif
+#endif
         }
 
 
@@ -726,15 +727,9 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 確認多個參數是否為 <c>null</c>，或是（如果為字串）是否為空字串或僅包含空白字元。
+        /// 確認多個參數是否為 null，或是（如果為字串）是否為空字串或僅包含空白字元。
         /// </summary>
-        /// <param name="parameters">
-        /// 要驗證的參數與名稱集合，格式為 <c>(value, paramName)</c>。
-        /// </param>
-        /// <exception cref="ArgumentException">
-        /// 當任一參數為 <c>null</c> 或空字串（僅適用於字串型別）時，拋出此例外，
-        /// 並包含對應的參數名稱。
-        /// </exception>
+        /// <param name="parameters">要驗證的參數與名稱集合，格式為 (value, paramName)。</param>
         public static void EnsureNotNullOrWhiteSpace(params (object value, string paramName)[] parameters)
         {
             foreach (var p in parameters)
@@ -748,6 +743,38 @@ namespace Bee.Base
                 {
                     throw new ArgumentException($"{p.paramName} cannot be empty or whitespace.", p.paramName);
                 }
+            }
+        }
+
+
+        /// <summary>
+        /// 取得例外的核心物件，移除常見的包裝層。
+        /// <list type="bullet">
+        /// <item><description>如果是 AggregateException，回傳第一個 InnerException。</description></item>
+        /// <item><description>如果是 TargetInvocationException，回傳其 InnerException。</description></item>
+        /// <item><description>否則直接回傳自己。</description></item>
+        /// </list>
+        /// </summary>
+        /// <param name="ex">要處理的例外。</param>
+        /// <returns>回傳最內層的例外，不會為 null。</returns>
+        public static Exception UnwrapException(Exception ex)
+        {
+            if (ex == null)
+                throw new ArgumentNullException(nameof(ex));
+
+            while (true)
+            {
+                if (ex is AggregateException aex && aex.InnerExceptions.Count > 0)
+                {
+                    ex = aex.Flatten().InnerExceptions[0];
+                    continue;
+                }
+                if (ex is TargetInvocationException tie && tie.InnerException != null)
+                {
+                    ex = tie.InnerException;
+                    continue;
+                }
+                return ex;
             }
         }
 

@@ -1,4 +1,6 @@
-﻿namespace Bee.UI.WinForms
+﻿using Bee.Base;
+
+namespace Bee.UI.WinForms
 {
     /// <summary>
     /// 應用程式全域例外處理器。
@@ -43,13 +45,12 @@
         /// <param name="exception">例外錯誤。</param>
         private static void ShowException(Exception exception)
         {
-            var message = $"Exception Message: {exception.Message}\n\n" +
-                          $"Stack Trace: {exception.StackTrace}";
+            // 取得最根本的例外
+            var rootEx = BaseFunc.UnwrapException(exception);
 
-            if (exception.InnerException != null)
-            {
-                message += $"\n\nInner Exception: {exception.InnerException.Message}";
-            }
+            var message = $"Exception Type: {rootEx.GetType().FullName}\n" +
+                          $"Exception Message: {rootEx.Message}\n\n" +
+                          $"Stack Trace: {rootEx.StackTrace}";
 
             UIFunc.ErrorMsgBox(message);
         }

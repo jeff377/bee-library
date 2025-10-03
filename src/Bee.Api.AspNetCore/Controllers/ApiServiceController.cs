@@ -136,8 +136,9 @@ namespace Bee.Api.AspNetCore
             }
             catch (Exception ex)
             {
-                var message = IsDevelopment
-                    ? ex.InnerException?.Message ?? ex.Message
+                var rootEx = BaseFunc.UnwrapException(ex);
+                string message = IsDevelopment
+                    ? rootEx.Message
                     : string.Empty;
 
                 return CreateErrorResponse(StatusCodes.Status500InternalServerError, JsonRpcErrorCode.InternalError,
