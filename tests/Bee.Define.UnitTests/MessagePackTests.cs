@@ -383,7 +383,7 @@ namespace Bee.Define.UnitTests
             // 建立 TExecFuncArgs 並指定屬性與參數
             var args = new ExecFuncArgs
             {
-                FuncID = "CustomFunction123"
+                FuncId = "CustomFunction123"
             };
             args.Parameters.Add("Key1", "Value1");
             args.Parameters.Add("Key2", 42);

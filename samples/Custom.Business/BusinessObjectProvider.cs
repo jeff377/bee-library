@@ -19,9 +19,10 @@ namespace Custom.Business
         /// Creates a system-level business logic object.
         /// </summary>
         /// <param name="accessToken">Access token.</param>
-        public ISystemBusinessObject CreateSystemBusinessObject(Guid accessToken)
+        /// <param name="isLocalCall">Indicates whether the call is from a local source.</param>
+        public ISystemBusinessObject CreateSystemBusinessObject(Guid accessToken, bool isLocalCall = true)
         {
-            return new SystemBusinessObject(accessToken);
+            return new SystemBusinessObject(accessToken, isLocalCall);
         }
 
         /// <summary>
@@ -29,14 +30,15 @@ namespace Custom.Business
         /// </summary>
         /// <param name="accessToken">Access token.</param>
         /// <param name="progId">Program ID.</param>
-        public IFormBusinessObject CreateFormBusinessObject(Guid accessToken, string progId)
+        /// <param name="isLocalCall">Indicates whether the call is from a local source.</param>
+        public IFormBusinessObject CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
         {
             switch (progId)
             {
                 case "Employee": 
-                    return new EmployeeBusinessObject(accessToken, progId);
+                    return new EmployeeBusinessObject(accessToken, progId, isLocalCall);
                 default:
-                    return new FormBusinessObject(accessToken, progId);
+                    return new FormBusinessObject(accessToken, progId, isLocalCall);
             }
         }
     }

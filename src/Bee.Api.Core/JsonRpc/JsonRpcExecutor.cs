@@ -79,7 +79,7 @@ namespace Bee.Api.Core
             }
             catch (Exception ex)
             {
-                var rootEx = BaseFunc.UnwrapException(ex);    
+                var rootEx = BaseFunc.UnwrapException(ex);
                 string message = rootEx.Message;
                 response.Error = new JsonRpcError(-1, message);
                 Tracer.End(ctx, TraceStatus.Error, message);
@@ -163,9 +163,9 @@ namespace Bee.Api.Core
                 throw new ArgumentException("ProgId cannot be null or empty.", nameof(progId));
 
             if (progId == SysProgIds.System)
-                return BackendInfo.BusinessObjectProvider.CreateSystemBusinessObject(accessToken);
+                return BackendInfo.BusinessObjectProvider.CreateSystemBusinessObject(accessToken, IsLocalCall);
             else
-                return BackendInfo.BusinessObjectProvider.CreateFormBusinessObject(accessToken, progId);
+                return BackendInfo.BusinessObjectProvider.CreateFormBusinessObject(accessToken, progId, IsLocalCall);
         }
     }
 

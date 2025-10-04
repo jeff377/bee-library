@@ -124,7 +124,7 @@ namespace DbUpgrade
         private bool UpgradeTableSchema(string dbName, string tableName)
         {
             var args = new ExecFuncArgs();
-            args.FuncID = SysFuncIDs.UpgradeTableSchema;
+            args.FuncId = SysFuncIDs.UpgradeTableSchema;
             args.Parameters.Add("DatabaseId", BackendInfo.DatabaseId);
             args.Parameters.Add("DbName", dbName);
             args.Parameters.Add("TableName", tableName);

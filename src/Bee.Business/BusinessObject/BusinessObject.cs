@@ -13,17 +13,13 @@ namespace Bee.Business
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public BusinessObject()
-        { }
-
-        /// <summary>
-        /// 建構函式。
-        /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public BusinessObject(Guid accessToken)
+        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        public BusinessObject(Guid accessToken, bool isLocalCall = true)
         {
             AccessToken = accessToken;
             // SessionInfo = CacheFunc.GetSessionInfo(accessToken);
+            IsLocalCall = isLocalCall;
         }
 
         #endregion
@@ -31,12 +27,16 @@ namespace Bee.Business
         /// <summary>
         /// 存取令牌。
         /// </summary>
-        public Guid AccessToken { get; private set; }
+        public Guid AccessToken { get; }
 
         /// <summary>
         /// 連線資訊。
         /// </summary>
-        public SessionInfo SessionInfo { get; private set; }
+        public SessionInfo SessionInfo { get; }
+
+        /// <summary>
+        /// 呼叫是否為近端來源（例如與伺服器同一進程或主機）。
+        /// </summary>
         public bool IsLocalCall { get; } = false;
 
         /// <summary>

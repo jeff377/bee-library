@@ -30,7 +30,7 @@ namespace Bee.Business.UnitTests
         public void CreateSession()
         {
             // Arrange
-            var business = new SystemBusinessObject();
+            var business = new SystemBusinessObject(Guid.Empty);
             var args = new CreateSessionArgs
             {
                 UserID = "001",
@@ -57,7 +57,7 @@ namespace Bee.Business.UnitTests
             // 產生 RSA 對稱金鑰
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
 
-            var sbo = new SystemBusinessObject();
+            var sbo = new SystemBusinessObject(Guid.Empty);
             var args = new LoginArgs
             {
                 UserId = "testuser",

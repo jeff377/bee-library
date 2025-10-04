@@ -1,7 +1,5 @@
 ﻿using Bee.Define;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Bee.Business
 {

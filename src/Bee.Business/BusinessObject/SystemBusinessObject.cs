@@ -15,14 +15,10 @@ namespace Bee.Business
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public SystemBusinessObject() : base()
-        { }
-
-        /// <summary>
-        /// 建構函式。
-        /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public SystemBusinessObject(Guid accessToken) : base(accessToken)
+        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        public SystemBusinessObject(Guid accessToken, bool isLocalCall = true)
+            : base(accessToken, isLocalCall)
         { }
 
         #endregion

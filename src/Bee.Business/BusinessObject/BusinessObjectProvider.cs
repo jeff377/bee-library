@@ -18,9 +18,10 @@ namespace Bee.Business
         /// 建立系統層級業務邏輯物件。
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
-        public ISystemBusinessObject CreateSystemBusinessObject(Guid accessToken)
+        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        public ISystemBusinessObject CreateSystemBusinessObject(Guid accessToken, bool isLocalCall = true)
         {
-            return new SystemBusinessObject(accessToken);
+            return new SystemBusinessObject(accessToken, isLocalCall);
         }
 
         /// <summary>
@@ -28,9 +29,10 @@ namespace Bee.Business
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        public IFormBusinessObject CreateFormBusinessObject(Guid accessToken, string progId)
+        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        public IFormBusinessObject CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
         {
-            return new FormBusinessObject(accessToken, progId);
+            return new FormBusinessObject(accessToken, progId, isLocalCall);
         }
     }
 }

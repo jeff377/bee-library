@@ -15,7 +15,9 @@ namespace Custom.Business
         /// </summary>
         /// <param name="sessionID">Session ID.</param>
         /// <param name="progId">Program ID.</param>
-        public EmployeeBusinessObject(Guid sessionID, string progId) : base(sessionID, progId)
+        /// <param name="isLocalCall">Indicates whether the call is from a local source.</param>
+        public EmployeeBusinessObject(Guid sessionID, string progId, bool isLocalCall)
+            : base(sessionID, progId, isLocalCall)
         {
         }
 

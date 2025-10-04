@@ -20,15 +20,15 @@ namespace Bee.Business
         public static void InvokeExecFunc(
             IExecFuncHandler execFunc,
             ApiAccessRequirement currentRequirement,
-            ExecFuncArgs args, 
+            ExecFuncArgs args,
             ExecFuncResult result)
         {
             try
             {
                 // 使用反射，執行 FuncID 對應的自訂方法
-                var method = execFunc.GetType().GetMethod(args.FuncID);
+                var method = execFunc.GetType().GetMethod(args.FuncId);
                 if (method == null)
-                    throw new MissingMethodException($"Method {args.FuncID} not found.");
+                    throw new MissingMethodException($"Method {args.FuncId} not found.");
 
                 // 取得 ExecFuncAccessControlAttribute
                 var attr = (ExecFuncAccessControlAttribute)Attribute.GetCustomAttribute(
@@ -39,7 +39,7 @@ namespace Bee.Business
 
                 // 判斷授權需求
                 if (required == ApiAccessRequirement.Authenticated && currentRequirement == ApiAccessRequirement.Anonymous)
-                    throw new UnauthorizedAccessException($"FuncID '{args.FuncID}' requires authentication.");
+                    throw new UnauthorizedAccessException($"FuncID '{args.FuncId}' requires authentication.");
 
                 method.Invoke(execFunc, new object[] { args, result });
             }

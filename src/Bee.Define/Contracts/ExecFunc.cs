@@ -24,7 +24,7 @@ namespace Bee.Define
         /// <param name="funcID">自訂方法識別編號。</param>
         public ExecFuncArgs(string funcID)
         {
-            FuncID = funcID;
+            FuncId = funcID;
         }
 
         #endregion
@@ -33,7 +33,7 @@ namespace Bee.Define
         /// 自訂方法識別編號。
         /// </summary>
         [Key(100)]
-        public string FuncID { get; set; } = string.Empty;
+        public string FuncId { get; set; } = string.Empty;
 
     }
 

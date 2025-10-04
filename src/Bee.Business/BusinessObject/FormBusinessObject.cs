@@ -15,7 +15,9 @@ namespace Bee.Business
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
-        public FormBusinessObject(Guid accessToken, string progId) : base(accessToken)
+        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        public FormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
+            : base(accessToken, isLocalCall)
         {
             this.ProgId = progId;
         }
