@@ -160,20 +160,11 @@ namespace Bee.Business
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual GetDefineResult GetDefine(GetDefineArgs args)
         {
-            // 禁止取得 SystemSettings 與 DatabaseSettings
+            // 非近端呼叫，禁止取得 SystemSettings 與 DatabaseSettings
             if (args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings)
-                throw new NotSupportedException("The specified DefineType is not supported.");
-
-            return GetDefineCore(args);
-        }
-
-        /// <summary>
-        /// 取得定義資料（僅限本機）。可取得所有定義，包含機敏設定。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous)]
-        public virtual GetDefineResult GetLocalDefine(GetDefineArgs args)
-        {
+            {
+                if (!IsLocalCall) throw new NotSupportedException("The specified DefineType is not supported.");
+            }
             return GetDefineCore(args);
         }
 
@@ -207,16 +198,6 @@ namespace Bee.Business
             if (args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings)
                 throw new NotSupportedException("The specified DefineType is not supported.");
 
-            return SaveDefineCore(args);
-        }
-
-        /// <summary>
-        /// 儲存定義資料（僅限本機）。可取得所有定義，包含機敏設定。
-        /// </summary>
-        /// <param name="args">傳入引數。</param>
-        [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous)]
-        public virtual SaveDefineResult SaveLocalDefine(SaveDefineArgs args)
-        {
             return SaveDefineCore(args);
         }
 

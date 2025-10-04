@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Base
+namespace Bee.Define
 {
     /// <summary>
     /// 將日誌輸出至 Console 的實作。

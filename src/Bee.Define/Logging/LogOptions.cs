@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Bee.Base;
+using System;
 using System.ComponentModel;
 
-namespace Bee.Base
+namespace Bee.Define
 {
     /// <summary>
     /// Logging options for controlling whether each module logs information.

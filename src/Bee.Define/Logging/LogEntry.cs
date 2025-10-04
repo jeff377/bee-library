@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Bee.Base
+namespace Bee.Define
 {
     /// <summary>
     /// 系統日誌事件的記錄物件，參照 EventLogEntry 設計。

@@ -15,6 +15,16 @@ namespace Bee.Define
         private static IAccessTokenValidationProvider _accessTokenValidationProvider = null;
 
         /// <summary>
+        /// 日誌寫入器。
+        /// </summary>
+        public static ILogWriter LogWriter { get; set; } = new NullLogWriter();
+
+        /// <summary>
+        /// 記錄選項，用於設定日誌記錄的相關參數。
+        /// </summary>
+        public static LogOptions LogOptions { get; set; } = new LogOptions();
+
+        /// <summary>
         /// 定義資料路徑。
         /// </summary>
         public static string DefinePath { get; set; } = string.Empty;

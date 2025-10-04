@@ -89,6 +89,14 @@ namespace Bee.Define
         public int MaxDbCommandTimeout { get; set; } = 60;
 
         /// <summary>
+        /// Logging options for configuring log parameters.
+        /// </summary>
+        [Category("Logging")]
+        [Description("Provides logging options, such as log level and output format.")]
+        [Browsable(false)]
+        public LogOptions LogOptions { get; set; } = new LogOptions();
+
+        /// <summary>
         /// API KEY.
         /// </summary>
         [Category("API")]
@@ -115,6 +123,8 @@ namespace Bee.Define
             BackendInfo.DatabaseId = DatabaseId;
             // Maximum DbCommand timeout
             BackendInfo.MaxDbCommandTimeout = MaxDbCommandTimeout;
+            // Logging options
+            BackendInfo.LogOptions = LogOptions;
 
             // Specify API encryption key provider type
             BackendInfo.ApiEncryptionKeyProvider = BaseFunc.CreateInstance(

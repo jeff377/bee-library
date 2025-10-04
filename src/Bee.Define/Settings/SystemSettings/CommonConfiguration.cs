@@ -49,14 +49,6 @@ namespace Bee.Define
         public ApiPayloadOptions ApiPayloadOptions { get; set; } = new ApiPayloadOptions();
 
         /// <summary>
-        /// Logging options for configuring log parameters.
-        /// </summary>
-        [Category("Logging")]
-        [Description("Provides logging options, such as log level and output format.")]
-        [Browsable(false)]
-        public LogOptions LogOptions { get; set; } = new LogOptions();
-
-        /// <summary>
         /// Initialization.
         /// </summary>
         public void Initialize()
@@ -65,8 +57,6 @@ namespace Bee.Define
             SysInfo.IsDebugMode = IsDebugMode;
             // Parse allowed type namespaces list
             SysInfo.AllowedTypeNamespaces = BuildAllowedTypeNamespaces(AllowedTypeNamespaces);
-            // Logging options
-            SysInfo.LogOptions = LogOptions;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿namespace Bee.Base
+﻿namespace Bee.Define
 {
     /// <summary>
     /// 系統日誌寫入介面。

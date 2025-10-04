@@ -76,9 +76,7 @@ namespace Bee.Connect
             else
             {
                 // 下載定義資料，並加入集合
-                defineObject = (ApiClientContext.ConnectType == ConnectType.Local) ?
-                            this.Connector.GetLocalDefine<T>(defineType, keys) :
-                            this.Connector.GetDefine<T>(defineType, keys);
+                defineObject = this.Connector.GetDefine<T>(defineType, keys);
                 this.List.Add(cacheKey, defineObject);
             }
             return (T)defineObject;
@@ -92,10 +90,7 @@ namespace Bee.Connect
         /// <param name="keys">儲存定義資料的鍵值。</param>
         private void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
         {
-            if (ApiClientContext.ConnectType ==  ConnectType.Local)
-                this.Connector.SaveLocalDefine(defineType, defineObject, keys);
-            else
-                this.Connector.SaveDefine(defineType, defineObject, keys);
+            this.Connector.SaveDefine(defineType, defineObject, keys);
         }
 
         /// <summary>

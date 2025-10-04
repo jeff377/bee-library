@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 using Bee.Base;
+using Bee.Define;
 
 namespace Bee.Db
 {
@@ -31,7 +32,7 @@ namespace Bee.Db
             if (context == null) throw new ArgumentNullException(nameof(context), "context cannot be null.");
             context.Stopwatch.Stop();
 
-            var opts = SysInfo.LogOptions == null ? null : SysInfo.LogOptions.DbAccess;
+            var opts = BackendInfo.LogOptions == null ? null : BackendInfo.LogOptions.DbAccess;
             if (opts == null) return;
 
             var elapsedSeconds = context.Stopwatch.Elapsed.TotalSeconds;

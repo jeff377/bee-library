@@ -51,44 +51,6 @@ namespace Bee.Base
     #region 列舉型別
 
     /// <summary>
-    /// 日誌事件的類型。
-    /// </summary>
-    public enum LogEntryType
-    {
-        /// <summary>
-        /// 一般訊息，表示系統正常執行的資訊。
-        /// </summary>
-        Information,
-        /// <summary>
-        /// 警告訊息，表示可能的異常狀況但系統仍可繼續執行。
-        /// </summary>
-        Warning,
-        /// <summary>
-        /// 錯誤訊息，表示系統執行時發生異常或失敗。
-        /// </summary>
-        Error
-    }
-
-    /// <summary>
-    /// Logging level for abnormal SQL executions.
-    /// </summary>
-    public enum DbAccessAnomalyLogLevel
-    {
-        /// <summary>
-        /// Disable abnormal logging completely.
-        /// </summary>
-        None = 0,
-        /// <summary>
-        /// Log only errors and exceptions.
-        /// </summary>
-        Error = 1,
-        /// <summary>
-        /// Log errors, exceptions, and abnormal cases (slow queries, large updates, large result sets).
-        /// </summary>
-        Warning = 2
-    }
-
-    /// <summary>
     /// 追蹤事件所屬的層級，用於區分系統中不同執行位置，
     /// 例如 UI、API 呼叫、API 服務、業務層或資料存取層。
     /// </summary>

@@ -19,16 +19,6 @@ namespace Bee.Base
         public static string Version { get; set; } = string.Empty;
 
         /// <summary>
-        /// 日誌寫入器。
-        /// </summary>
-        public static ILogWriter LogWriter { get; set; } = new NullLogWriter();
-
-        /// <summary>
-        /// 記錄選項，用於設定日誌記錄的相關參數。
-        /// </summary>
-        public static LogOptions LogOptions { get; set; } = new LogOptions();
-
-        /// <summary>
         /// 是否啟用追蹤（唯讀，當 TraceListener 不為 null 時啟用）。
         /// </summary>
         public static bool TraceEnabled => TraceListener != null;
