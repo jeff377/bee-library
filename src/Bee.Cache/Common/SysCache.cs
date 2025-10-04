@@ -33,9 +33,7 @@ namespace Bee.Cache
         /// <param name="key">快取鍵值。</param>
         public static bool Contains(string key)
         {
-            string sKey;
-
-            sKey = GetKey(key);
+            string sKey = GetKey(key);
             return MemoryCache.Contains(sKey);
         }
 
@@ -45,7 +43,7 @@ namespace Bee.Cache
         /// <param name="item">快取項目。</param>
         /// <param name="policy">快取項目到期條件。</param>
         /// <remarks>如果快取資料不存在，則會建立它。 如果快取資料存在，則會更新，</remarks>
-        public static void Set(CacheItem item, System.Runtime.Caching.CacheItemPolicy policy)
+        private static void Set(CacheItem item, System.Runtime.Caching.CacheItemPolicy policy)
         {
             item.Key = GetKey(item.Key);
             MemoryCache.Set(item, policy);
@@ -60,12 +58,9 @@ namespace Bee.Cache
         /// <remarks>如果快取資料不存在，則會建立它。 如果快取資料存在，則會更新，</remarks>
         public static void Set(string key, object value, CacheItemPolicy policy)
         {
-            CacheItem oItem;
-            System.Runtime.Caching.CacheItemPolicy oPolicy;
-
-            oItem = new CacheItem(key, value);
-            oPolicy = CacheFunc.CreateCachePolicy(policy);
-            Set(oItem, oPolicy);
+            var cacheItem = new CacheItem(key, value);
+            var cachePolicy = CacheFunc.CreateCachePolicy(policy);
+            Set(cacheItem, cachePolicy);
         }
 
         /// <summary>
@@ -74,10 +69,8 @@ namespace Bee.Cache
         /// <param name="key">快取鍵值。</param>
         public static object Get(string key)
         {
-            string sKey;
-
-            sKey = GetKey(key);
-            return MemoryCache.Get(sKey);
+            string cacheKey = GetKey(key);
+            return MemoryCache.Get(cacheKey);
         }
 
         /// <summary>
@@ -87,10 +80,8 @@ namespace Bee.Cache
         /// <returns>傳回移除的快取項目，若快取項目不存在則傳回 null。</returns>
         public static object Remove(string key)
         {
-            string sKey;
-
-            sKey = GetKey(key);
-            return MemoryCache.Remove(sKey);
+            string cacheKey = GetKey(key);
+            return MemoryCache.Remove(cacheKey);
         }
 
         /// <summary>

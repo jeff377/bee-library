@@ -1,9 +1,8 @@
-﻿using System;
+﻿using Bee.Define;
+using System;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
-using Bee.Base;
-using Bee.Define;
 
 namespace Bee.Db
 {

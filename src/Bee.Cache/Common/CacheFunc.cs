@@ -142,20 +142,20 @@ namespace Bee.Cache
         /// <summary>
         /// 儲存頁面狀態至快取。
         /// </summary>
-        /// <param name="uniqueGUID">頁面識別。</param>
+        /// <param name="uniqueGuid">頁面識別。</param>
         /// <param name="viewState">頁面狀態。</param>
-        public static void SaveViewState(Guid uniqueGUID, object viewState)
+        public static void SaveViewState(Guid uniqueGuid, object viewState)
         {
-            CacheContainer.ViewState.Set(uniqueGUID, viewState);
+            CacheContainer.ViewState.Set(uniqueGuid, viewState);
         }
 
         /// <summary>
         /// 由快取載入頁面狀態。
         /// </summary>
-        /// <param name="uniqueGUID">頁面識別。</param>
-        public static object LoadViewState(Guid uniqueGUID)
+        /// <param name="uniqueGuid">頁面識別。</param>
+        public static object LoadViewState(Guid uniqueGuid)
         {
-            return CacheContainer.ViewState.Get(uniqueGUID);
+            return CacheContainer.ViewState.Get(uniqueGuid);
         }
     }
 }

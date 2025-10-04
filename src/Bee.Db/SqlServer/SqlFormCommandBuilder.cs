@@ -9,8 +9,6 @@ namespace Bee.Db
     /// </summary>
     public class SqlFormCommandBuilder : IFormCommandBuilder
     {
-        private readonly FormDefine _FormDefine = null;
-
         #region 建構函式
 
         /// <summary>
@@ -18,7 +16,7 @@ namespace Bee.Db
         /// </summary>
         public SqlFormCommandBuilder(FormDefine formDefine)
         {
-            _FormDefine = formDefine;
+            FormDefine = formDefine;
         }
 
         #endregion
@@ -26,10 +24,7 @@ namespace Bee.Db
         /// <summary>
         /// 表單定義。
         /// </summary>
-        public FormDefine FormDefine
-        {
-            get { return _FormDefine; }
-        }
+        public FormDefine FormDefine { get; } = null;
 
         /// <summary>
         /// 建立 Select 語法的資料庫命令。
