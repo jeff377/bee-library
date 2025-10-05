@@ -19,6 +19,7 @@
 | v1.0.4 | 2025-08-17  | 支援 `DatabaseSettings` 的 Password 加密  | [📥 Download v1.0.4](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.4/BeeSettingsEditor-v1.0.4.zip) |
 | v1.0.5 | 2025-08-18  | 屬性視窗描述文字改為英文  | [📥 Download v1.0.5](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.5/BeeSettingsEditor-v1.0.5.zip) |
 | v1.0.6 | 2025-09-24  | 支援 `Bee.NET v3.2.8` 的 `SystemSettings` 新增功能項目  | [📥 Download v1.0.6](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.6/BeeSettingsEditor-v1.0.6.zip) |
+| v1.0.7 | 2025-10-05  | 支援 `Bee.NET v3.5.1` 的 `SystemSettings` 新增功能項目  | [📥 Download v1.0.7](https://github.com/jeff377/bee-library/releases/download/BeeSettingsEditor-v1.0.7/BeeSettingsEditor-v1.0.7.zip) |
 
 ---
 
