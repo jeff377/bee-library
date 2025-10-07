@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bee.Base;
+using Newtonsoft.Json;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Newtonsoft.Json;
-using Bee.Base;
 
 namespace Bee.Define
 {

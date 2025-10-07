@@ -1,6 +1,5 @@
-﻿using System;
-using System.Data.Common;
-using Bee.Define;
+﻿using Bee.Define;
+using System;
 
 namespace Bee.Db
 {
@@ -16,7 +15,7 @@ namespace Bee.Db
         /// </summary>
         public SqlFormCommandBuilder(FormDefine formDefine)
         {
-            FormDefine = formDefine;
+            FormDefine = formDefine ?? throw new ArgumentNullException(nameof(formDefine));
         }
 
         #endregion
@@ -24,7 +23,7 @@ namespace Bee.Db
         /// <summary>
         /// 表單定義。
         /// </summary>
-        public FormDefine FormDefine { get; } = null;
+        private FormDefine FormDefine { get; }
 
         /// <summary>
         /// 建立 Select 語法的資料庫命令。
@@ -33,7 +32,8 @@ namespace Bee.Db
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
         public DbCommandSpec BuildSelectCommand(string tableName, string selectFields)
         {
-            throw new NotSupportedException();
+            var builder = new SqlSelectCommandBuilder(FormDefine);
+            return builder.Build(tableName, selectFields);  
         }
 
         /// <summary>
