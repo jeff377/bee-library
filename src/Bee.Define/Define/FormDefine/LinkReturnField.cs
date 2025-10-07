@@ -13,9 +13,6 @@ namespace Bee.Define
     [Description("關連取回欄位。")]
     public class LinkReturnField : CollectionItem
     {
-        private string _SourceField = string.Empty;
-        private string _DestinationField = string.Empty;
-
         #region 建構函式
 
         /// <summary>
@@ -31,8 +28,8 @@ namespace Bee.Define
         /// <param name="destinationField">目的欄位。</param>
         public LinkReturnField(string sourceField, string destinationField)
         {
-            _SourceField = sourceField;
-            _DestinationField = destinationField;
+            SourceField = sourceField;
+            DestinationField = destinationField;
         }
 
         #endregion
@@ -43,11 +40,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [Description("來源欄位。")]
-        public string SourceField
-        {
-            get { return _SourceField; }
-            set { _SourceField = value; }
-        }
+        public string SourceField { get; set; } = string.Empty;
 
         /// <summary>
         /// 目的欄位。
@@ -55,10 +48,6 @@ namespace Bee.Define
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [Description("目的欄位。")]
-        public string DestinationField
-        {
-            get { return _DestinationField; }
-            set { _DestinationField = value; }
-        }
+        public string DestinationField { get; set; } = string.Empty;
     }
 }

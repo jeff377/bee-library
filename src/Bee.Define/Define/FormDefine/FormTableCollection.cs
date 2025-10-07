@@ -27,11 +27,9 @@ namespace Bee.Define
         /// <param name="displayName">顯示名稱。</param>
         public FormTable Add(string tableName, string displayName)
         {
-            FormTable oTable;
-
-            oTable = new FormTable(tableName, displayName);
-            base.Add(oTable);
-            return oTable;
+            var table = new FormTable(tableName, displayName);
+            base.Add(table);
+            return table;
         }
     }
 }

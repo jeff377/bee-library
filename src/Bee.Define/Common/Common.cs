@@ -261,29 +261,6 @@ namespace Bee.Define
     }
 
     /// <summary>
-    /// 用戶輸入的服務端點類型。
-    /// </summary>
-    public enum EndpointType
-    {
-        /// <summary>
-        /// 服務網址。
-        /// </summary>
-        Url,
-        /// <summary>
-        /// 本機路徑。
-        /// </summary>
-        LocalPath,
-        /// <summary>
-        /// 網路路徑。
-        /// </summary>
-        NetworkPath,
-        /// <summary>
-        /// 無效輸入。
-        /// </summary>
-        Invalid
-    }
-
-    /// <summary>
     /// API 存取保護等級。
     /// </summary>
     public enum ApiProtectionLevel

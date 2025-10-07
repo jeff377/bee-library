@@ -194,9 +194,11 @@ namespace Bee.Business
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual SaveDefineResult SaveDefine(SaveDefineArgs args)
         {
-            // 禁止儲存 SystemSettings 與 DatabaseSettings
+            // 非近端呼叫，禁止儲存 SystemSettings 與 DatabaseSettings
             if (args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings)
-                throw new NotSupportedException("The specified DefineType is not supported.");
+            {
+                if (!IsLocalCall) throw new NotSupportedException("The specified DefineType is not supported.");
+            }
 
             return SaveDefineCore(args);
         }

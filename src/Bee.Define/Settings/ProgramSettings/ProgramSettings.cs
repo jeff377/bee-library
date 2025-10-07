@@ -15,7 +15,7 @@ namespace Bee.Define
     [TreeNode("程式清單")]
     public class ProgramSettings : IObjectSerializeFile
     {
-        private ProgramCategoryCollection _Categories = null;
+        private ProgramCategoryCollection _categories = null;
 
         #region 建構函式
 
@@ -45,7 +45,7 @@ namespace Bee.Define
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_Categories, serializeState);
+            BaseFunc.SetSerializeState(_categories, serializeState);
         }
 
         /// <summary>
@@ -77,9 +77,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Categories)) { return null; }
-                if (_Categories == null) { _Categories = new ProgramCategoryCollection(this); }
-                return _Categories;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _categories)) { return null; }
+                if (_categories == null) { _categories = new ProgramCategoryCollection(this); }
+                return _categories;
             }
         }
     }

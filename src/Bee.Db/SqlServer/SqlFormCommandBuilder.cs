@@ -31,7 +31,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        public DbCommand BuildSelectCommand(string tableName, string selectFields)
+        public DbCommandSpec BuildSelectCommand(string tableName, string selectFields)
         {
             throw new NotSupportedException();
         }
@@ -39,7 +39,7 @@ namespace Bee.Db
         /// <summary>
         /// 建立 Insert 語法的資料庫命令。
         /// </summary>
-        public DbCommand BuildInsertCommand()
+        public DbCommandSpec BuildInsertCommand()
         {
             throw new NotSupportedException();
         }
@@ -47,7 +47,7 @@ namespace Bee.Db
         /// <summary>
         /// 建立 Update 語法的資料庫命令。
         /// </summary>
-        public DbCommand BuildUpdateCommand()
+        public DbCommandSpec BuildUpdateCommand()
         {
             throw new NotSupportedException();
         }
@@ -55,7 +55,7 @@ namespace Bee.Db
         /// <summary>
         /// 建立 Delete 語法的資料庫命令。
         /// </summary>
-        public DbCommand BuildDeleteCommand()
+        public DbCommandSpec BuildDeleteCommand()
         {
             throw new NotSupportedException();
         }

@@ -13,8 +13,6 @@ namespace Bee.Define
     [Description("索引欄位。")]
     public class IndexField : KeyCollectionItem
     {
-        private SortDirection _SortDirection = SortDirection.Asc;
-
         /// <summary>
         /// 建構函式。
         /// </summary>
@@ -29,7 +27,7 @@ namespace Bee.Define
         public IndexField(string fieldName, SortDirection sortDirection)
         {
             this.FieldName = fieldName;
-            _SortDirection = sortDirection;
+            SortDirection = sortDirection;
         }
 
         /// <summary>
@@ -51,23 +49,17 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [Description("排序方式。")]
         [DefaultValue(SortDirection.Asc)]
-        public SortDirection SortDirection
-        {
-            get { return this._SortDirection; }
-            set { this._SortDirection = value; }
-        }
+        public SortDirection SortDirection { get; set; } = SortDirection.Asc;
 
         /// <summary>
         /// 建立複本。
         /// </summary>
         public IndexField Clone()
         {
-            IndexField oIndexField;
-
-            oIndexField = new IndexField();
-            oIndexField.FieldName = this.FieldName;
-            oIndexField.SortDirection = this.SortDirection;
-            return oIndexField;
+            var indexField = new IndexField();
+            indexField.FieldName = this.FieldName;
+            indexField.SortDirection = this.SortDirection;
+            return indexField;
         }
     }
 }

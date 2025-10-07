@@ -15,11 +15,7 @@ namespace Bee.Define
     [TreeNode]
     public class FormLayout : IObjectSerializeFile
     {
-        private string _ObjectFilePath = string.Empty;
-        private SerializeState _SerializeState = SerializeState.None;
-        private DateTime _CreateTime = DateTime.MinValue;
-        private string _DisplayName = string.Empty;
-        private LayoutGroupCollection _Groups = null;
+        private LayoutGroupCollection _groups = null;
 
         #region 建構函式
 
@@ -28,7 +24,6 @@ namespace Bee.Define
         /// </summary>
         public FormLayout()
         {
-            _CreateTime = DateTime.Now;
         }
 
         #endregion
@@ -38,12 +33,9 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public SerializeState SerializeState
-        {
-            get { return _SerializeState; }
-        }
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -51,19 +43,16 @@ namespace Bee.Define
         /// <param name="serializeState">序列化狀態。</param>
         public void SetSerializeState(SerializeState serializeState)
         {
-            _SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_Groups, serializeState);
+            SerializeState = serializeState;
+            BaseFunc.SetSerializeState(_groups, serializeState);
         }
 
         /// <summary>
         /// 序列化繫結檔案。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public string ObjectFilePath
-        {
-            get { return _ObjectFilePath; }
-        }
+        public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
         /// 設定序列化繫結檔案。
@@ -71,7 +60,7 @@ namespace Bee.Define
         /// <param name="filePath">檔案路徑。</param>
         public void SetObjectFilePath(string filePath)
         {
-            _ObjectFilePath = filePath;
+            ObjectFilePath = filePath;
         }
 
         #endregion
@@ -79,12 +68,9 @@ namespace Bee.Define
         /// <summary>
         /// 物件建立時間。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public DateTime CreateTime
-        {
-            get { return _CreateTime; }
-        }
+        public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
         /// 表單版面代碼。
@@ -100,11 +86,7 @@ namespace Bee.Define
         [XmlAttribute]
         [NotifyParentProperty(true)]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 佈局群組集合。
@@ -117,9 +99,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Groups)) { return null; }
-                if (_Groups == null) { _Groups = new LayoutGroupCollection(); }
-                return _Groups;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _groups)) { return null; }
+                if (_groups == null) { _groups = new LayoutGroupCollection(); }
+                return _groups;
             }
         }
 

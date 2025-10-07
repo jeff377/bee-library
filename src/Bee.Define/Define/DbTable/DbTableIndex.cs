@@ -14,10 +14,7 @@ namespace Bee.Define
     [TreeNode]
     public class DbTableIndex : KeyCollectionItem
     {
-        private bool _Unique = false;
-        private bool _PrimaryKey = false;
-        private IndexFieldCollection _IndexFields = null;
-        private DbUpgradeAction _UpgradeAction = DbUpgradeAction.None;
+        private IndexFieldCollection _indexFields = null;
 
         /// <summary>
         /// 索引名稱。
@@ -39,11 +36,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [Description("是否具有唯一性。")]
         [DefaultValue(false)]
-        public bool Unique
-        {
-            get { return _Unique; }
-            set { _Unique = value; }
-        }
+        public bool Unique { get; set; } = false;
 
         /// <summary>
         /// 是否為主鍵。
@@ -52,11 +45,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [Description("是否為主鍵。")]
         [DefaultValue(false)]
-        public bool PrimaryKey
-        {
-            get { return _PrimaryKey; }
-            set { _PrimaryKey = value; }
-        }
+        public bool PrimaryKey { get; set; } = false;
 
         /// <summary>
         /// 索引欄位集合。
@@ -69,9 +58,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _IndexFields)) { return null; }
-                if (_IndexFields == null) { _IndexFields = new IndexFieldCollection(); }
-                return _IndexFields;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _indexFields)) { return null; }
+                if (_indexFields == null) { _indexFields = new IndexFieldCollection(); }
+                return _indexFields;
             }
         }
 
@@ -82,7 +71,7 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_IndexFields, serializeState);
+            BaseFunc.SetSerializeState(_indexFields, serializeState);
         }
 
         /// <summary>
@@ -91,26 +80,20 @@ namespace Bee.Define
         [XmlIgnore]
         [Browsable(false)]
         [DefaultValue(DbUpgradeAction.None)]
-        public DbUpgradeAction UpgradeAction
-        {
-            get { return _UpgradeAction; }
-            set { _UpgradeAction = value; }
-        }
+        public DbUpgradeAction UpgradeAction { get; set; } = DbUpgradeAction.None;
 
         /// <summary>
         /// 建立複本。
         /// </summary>
         public DbTableIndex Clone()
         {
-            DbTableIndex oIndex;
-
-            oIndex = new DbTableIndex();
-            oIndex.Name = this.Name;
-            oIndex.PrimaryKey = this.PrimaryKey;
-            oIndex.Unique = this.Unique;
+            var index = new DbTableIndex();
+            index.Name = this.Name;
+            index.PrimaryKey = this.PrimaryKey;
+            index.Unique = this.Unique;
             foreach (IndexField indexField in this.IndexFields)
-                oIndex.IndexFields.Add(indexField.Clone());
-            return oIndex;
+                index.IndexFields.Add(indexField.Clone());
+            return index;
         }
 
         /// <summary>

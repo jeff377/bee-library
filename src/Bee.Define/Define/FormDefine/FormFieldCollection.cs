@@ -27,11 +27,9 @@ namespace Bee.Define
         /// <param name="dbType">欄位資料型別。</param>
         public FormField Add(string fieldName, string caption, FieldDbType dbType)
         {
-            FormField oField;
-
-            oField = new FormField(fieldName, caption, dbType);
-            base.Add(oField);
-            return oField;
+            var field = new FormField(fieldName, caption, dbType);
+            base.Add(field);
+            return field;
         }
 
         /// <summary>
@@ -42,12 +40,10 @@ namespace Bee.Define
         /// <param name="maxLength">字串最大長度。</param>
         public FormField AddStringField(string fieldName, string caption, int maxLength)
         {
-            FormField oField;
-
-            oField = new FormField(fieldName, caption, FieldDbType.String);
-            oField.MaxLength = maxLength;
-            base.Add(oField);
-            return oField;
+            var field = new FormField(fieldName, caption, FieldDbType.String);
+            field.MaxLength = maxLength;
+            base.Add(field);
+            return field;
         }
     }
 }

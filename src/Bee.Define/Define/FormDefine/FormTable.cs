@@ -14,9 +14,7 @@ namespace Bee.Define
     [TreeNode]
     public class FormTable : KeyCollectionItem
     {
-        private string _DbTableName = string.Empty;
-        private string _DisplayName = string.Empty;
-        private FormFieldCollection _Fields = null;
+        private FormFieldCollection _fields = null;
 
         #region 建構函式
 
@@ -34,7 +32,7 @@ namespace Bee.Define
         public FormTable(string tableName, string displayName)
         {
             this.TableName = tableName;
-            _DisplayName = displayName;
+            DisplayName = displayName;
         }
 
         #endregion
@@ -46,11 +44,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("資料表名稱。")]
-        public string TableName
-        {
-            get { return this.Key; }
-            set { this.Key = value; }
-        }
+        public string TableName { get; set; } = string.Empty;
 
         /// <summary>
         /// 資料庫的資料表名稱。
@@ -58,11 +52,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [Description("資料庫的資料表名稱。")]
-        public string DbTableName
-        {
-            get { return _DbTableName; }
-            set { _DbTableName = value; }
-        }
+        public string DbTableName { get; set; } = string.Empty;
 
         /// <summary>
         /// 顯示名稱。
@@ -71,11 +61,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 欄位集合。
@@ -87,9 +73,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Fields)) { return null; }
-                if (_Fields == null) { _Fields = new FormFieldCollection(this); }
-                return _Fields;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _fields)) { return null; }
+                if (_fields == null) { _fields = new FormFieldCollection(this); }
+                return _fields;
             }
         }
 
@@ -100,7 +86,7 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_Fields, serializeState);
+            BaseFunc.SetSerializeState(_fields, serializeState);
         }
 
         /// <summary>

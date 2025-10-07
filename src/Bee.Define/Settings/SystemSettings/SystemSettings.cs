@@ -33,8 +33,7 @@ namespace Bee.Define
         /// <summary>
         /// Serialization state.
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
@@ -50,8 +49,7 @@ namespace Bee.Define
         /// <summary>
         /// Serialized binding file.
         /// </summary>
-        [XmlIgnore]
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 

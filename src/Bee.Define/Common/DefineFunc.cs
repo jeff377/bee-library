@@ -10,39 +10,6 @@ namespace Bee.Define
     public static class DefineFunc
     {
         /// <summary>
-        /// 取得用戶輸入服務端點的類型。
-        /// </summary>
-        /// <param name="input">用戶輸入的服務端點。</param>
-        public static EndpointType GetEndpointType(string input)
-        {
-            if (string.IsNullOrWhiteSpace(input))
-            {
-                return EndpointType.Invalid;
-            }
-
-            // 判斷是否為網址
-            if (Uri.TryCreate(input, UriKind.Absolute, out Uri uriResult) &&
-                (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
-            {
-                return EndpointType.Url;
-            }
-
-            // 判斷是否為本機路徑
-            if (FileFunc.DirectoryExists(input))
-            {
-                return EndpointType.LocalPath;
-            }
-
-            // 判斷是否為網芳路徑（網路路徑）
-            if (Regex.IsMatch(input, @"^\\\\[a-zA-Z0-9_\.]+\\[a-zA-Z0-9_\.\\]+$"))
-            {
-                return EndpointType.NetworkPath;
-            }
-
-            return EndpointType.Invalid;
-        }
-
-        /// <summary>
         /// 取得定義型別。
         /// </summary>
         /// <param name="defineType">定資資料類別。</param>
@@ -111,18 +78,15 @@ namespace Bee.Define
         /// <param name="field">表單欄位。</param>
         internal static LayoutColumn ToLayoutColumn(FormField field)
         {
-            LayoutColumn oColumn;
-            ColumnControlType oControlType;
-
-            oControlType = DefineFunc.ToColumnControlType(field.ControlType);
-            oColumn = new LayoutColumn(field.FieldName, field.Caption, oControlType);
+            var controlType = DefineFunc.ToColumnControlType(field.ControlType);
+            var column = new LayoutColumn(field.FieldName, field.Caption, controlType);
             if (field.Width > 0)
-                oColumn.Width = field.Width;
+                column.Width = field.Width;
             else
-                oColumn.Width = 120;
-            oColumn.DisplayFormat = field.DisplayFormat;
-            oColumn.NumberFormat = field.NumberFormat;
-            return oColumn;
+                column.Width = 120;
+            column.DisplayFormat = field.DisplayFormat;
+            column.NumberFormat = field.NumberFormat;
+            return column;
         }
 
         /// <summary>
@@ -131,30 +95,24 @@ namespace Bee.Define
         /// <param name="formDefine">表單定義。</param>
         internal static LayoutGrid GetListLayout(FormDefine formDefine)
         {
-            FormTable oTable;
-            FormField oField;
-            LayoutGrid oGrid;
-            LayoutColumn oColumn;
-            string[] oFieldNames;
+            var table = formDefine.MasterTable;
+            string[] fieldNames = StrFunc.Split(formDefine.ListFields, ",");
 
-            oTable = formDefine.MasterTable;
-            oFieldNames = StrFunc.Split(formDefine.ListFields, ",");
-
-            oGrid = new LayoutGrid();
-            oGrid.TableName = formDefine.ProgId;
+            var grid = new LayoutGrid();
+            grid.TableName = formDefine.ProgId;
             // 加入 sys_RowID 隱藏欄位
-            oGrid.Columns.Add(SysFields.RowId, "列識別", ColumnControlType.TextEdit).Visible = false;
+            grid.Columns.Add(SysFields.RowId, "列識別", ColumnControlType.TextEdit).Visible = false;
             // 加入清單顯示欄位
-            foreach (string fieldName in oFieldNames)
+            foreach (string fieldName in fieldNames)
             {
-                oField = oTable.Fields[fieldName];
-                if (oField != null)
+                var field = table.Fields[fieldName];
+                if (field != null)
                 {
-                    oColumn = ToLayoutColumn(oField);
-                    oGrid.Columns.Add(oColumn);
+                    var column = ToLayoutColumn(field);
+                    grid.Columns.Add(column);
                 }
             }
-            return oGrid;
+            return grid;
         }
     }
 }

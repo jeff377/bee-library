@@ -14,16 +14,8 @@ namespace Bee.Define
     [TreeNode]
     public class LayoutColumn : CollectionItem
     {
-        private string _FieldName = string.Empty;
-        private string _Caption = string.Empty;
-        private ColumnControlType _ControlType = ColumnControlType.TextEdit;
-        private bool _Visible = true;
-        private bool _ReadOnly = false;
-        private int _Width = 0;
-        private string _DisplayFormat = string.Empty;
-        private string _NumberFormat = string.Empty;
-        private ListItemCollection _ListItems = null;
-        private PropertyCollection _ExtendedProperties = null;
+        private ListItemCollection _listItems = null;
+        private PropertyCollection _extendedProperties = null;
 
         /// <summary>
         /// 建構函式。
@@ -39,9 +31,9 @@ namespace Bee.Define
         /// <param name="controlType">控制項類型。</param>
         public LayoutColumn(string fieldName, string caption, ColumnControlType controlType)
         {
-            _FieldName = fieldName;
-            _Caption = caption;
-            _ControlType = controlType;
+            FieldName = fieldName;
+            Caption = caption;
+            ControlType = controlType;
         }
 
         /// <summary>
@@ -51,11 +43,7 @@ namespace Bee.Define
         [XmlAttribute]
         [NotifyParentProperty(true)]
         [Description("欄位名稱。")]
-        public string FieldName
-        {
-            get { return _FieldName; }
-            set { _FieldName = value; }
-        }
+        public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
         /// 標題文字。
@@ -65,11 +53,7 @@ namespace Bee.Define
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
         [DefaultValue("")]
-        public string Caption
-        {
-            get { return _Caption; }
-            set { _Caption = value; }
-        }
+        public string Caption { get; set; } = string.Empty;
 
         /// <summary>
         /// 控制項類型。
@@ -77,11 +61,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [Description("控制項類型。")]
-        public ColumnControlType ControlType
-        {
-            get { return _ControlType; }
-            set { _ControlType = value; }
-        }
+        public ColumnControlType ControlType { get; set; } = ColumnControlType.TextEdit;
 
         /// <summary>
         /// 關連程式代碼。
@@ -99,11 +79,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("是否顯示。")]
         [DefaultValue(true)]
-        public bool Visible
-        {
-            get { return _Visible; }
-            set { _Visible = value; }
-        }
+        public bool Visible { get; set; } = true;
 
         /// <summary>
         /// 是否唯讀。
@@ -112,11 +88,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("是否唯讀。")]
         [DefaultValue(false)]
-        public bool ReadOnly
-        {
-            get { return _ReadOnly; }
-            set { _ReadOnly = value; }
-        }
+        public bool ReadOnly { get; set; } = false;
 
         /// <summary>
         /// 欄寬，設定值大於 0 才有效。
@@ -125,11 +97,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("欄寬，設定值大於 0 才有效。")]
         [DefaultValue(0)]
-        public int Width
-        {
-            get { return _Width; }
-            set { _Width = value; }
-        }
+        public int Width { get; set; } = 0;
 
         /// <summary>
         /// 顯示格式化。
@@ -138,11 +106,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("顯示格式化。")]
         [DefaultValue("")]
-        public string DisplayFormat
-        {
-            get { return _DisplayFormat; }
-            set { _DisplayFormat = value; }
-        }
+        public string DisplayFormat { get; set; } = string.Empty;
 
         /// <summary>
         /// 數值格式化。
@@ -151,11 +115,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("數值格式化。")]
         [DefaultValue("")]
-        public string NumberFormat
-        {
-            get { return _NumberFormat; }
-            set { _NumberFormat = value; }
-        }
+        public string NumberFormat { get; set; } = string.Empty;
 
         /// <summary>
         /// 清單項目集合。
@@ -168,9 +128,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ListItems)) { return null; }
-                if (_ListItems == null) { _ListItems = new ListItemCollection(); }
-                return _ListItems;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _listItems)) { return null; }
+                if (_listItems == null) { _listItems = new ListItemCollection(); }
+                return _listItems;
             }
         }
 
@@ -184,9 +144,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ExtendedProperties)) { return null; }
-                if (_ExtendedProperties == null) { _ExtendedProperties = new PropertyCollection(); }
-                return _ExtendedProperties;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _extendedProperties)) { return null; }
+                if (_extendedProperties == null) { _extendedProperties = new PropertyCollection(); }
+                return _extendedProperties;
             }
         }
 
@@ -197,8 +157,8 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_ListItems, serializeState);
-            BaseFunc.SetSerializeState(_ExtendedProperties, serializeState);
+            BaseFunc.SetSerializeState(_listItems, serializeState);
+            BaseFunc.SetSerializeState(_extendedProperties, serializeState);
         }
 
         /// <summary>

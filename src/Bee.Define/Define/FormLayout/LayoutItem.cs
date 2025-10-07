@@ -14,16 +14,10 @@ namespace Bee.Define
     [TreeNode]
     public class LayoutItem : LayoutItemBase
     {
-        private string _FieldName = string.Empty;
-        private string _Caption = string.Empty;
-        private ControlType _ControlType = ControlType.TextEdit;
-        private int _RowSpan = 1;
-        private int _ColumnSpan = 1;
-        private bool _ReadOnly = false;
-        private string _DisplayFormat = string.Empty;
-        private string _NumberFormat = string.Empty;
-        private ListItemCollection _ListItems = null;
-        private PropertyCollection _ExtendedProperties = null;
+        private int _rowSpan = 1;
+        private int _columnSpan = 1;
+        private ListItemCollection _listItems = null;
+        private PropertyCollection _extendedProperties = null;
 
         /// <summary>
         /// 欄位名稱。
@@ -32,11 +26,7 @@ namespace Bee.Define
         [XmlAttribute]
         [NotifyParentProperty(true)]
         [Description("欄位名稱。")]
-        public string FieldName
-        {
-            get { return _FieldName; }
-            set { _FieldName = value; }
-        }
+        public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
         /// 標題文字。
@@ -46,11 +36,7 @@ namespace Bee.Define
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
         [DefaultValue("")]
-        public string Caption
-        {
-            get { return _Caption; }
-            set { _Caption = value; }
-        }
+        public string Caption { get; set; } = string.Empty;
 
         /// <summary>
         /// 控制項類型。
@@ -58,11 +44,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [Description("控制項類型。")]
-        public ControlType ControlType
-        {
-            get { return _ControlType; }
-            set { _ControlType = value; }
-        }
+        public ControlType ControlType { get; set; } = ControlType.TextEdit;
 
         /// <summary>
         /// 合併列數。
@@ -73,11 +55,11 @@ namespace Bee.Define
         [DefaultValue(1)]
         public int RowSpan
         {
-            get { return _RowSpan; }
+            get { return _rowSpan; }
             set
             {
                 if (value < 1) { value = 1; }
-                _RowSpan = value;
+                _rowSpan = value;
             }
         }
 
@@ -90,11 +72,11 @@ namespace Bee.Define
         [DefaultValue(1)]
         public int ColumnSpan
         {
-            get { return _ColumnSpan; }
+            get { return _columnSpan; }
             set
             {
                 if (value < 1) { value = 1; }
-                _ColumnSpan = value;
+                _columnSpan = value;
             }
         }
 
@@ -114,11 +96,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("是否唯讀。")]
         [DefaultValue(false)]
-        public bool ReadOnly
-        {
-            get { return _ReadOnly; }
-            set { _ReadOnly = value; }
-        }
+        public bool ReadOnly { get; set; } = false;
 
         /// <summary>
         /// 顯示格式化。
@@ -127,11 +105,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("顯示格式化。")]
         [DefaultValue("")]
-        public string DisplayFormat
-        {
-            get { return _DisplayFormat; }
-            set { _DisplayFormat = value; }
-        }
+        public string DisplayFormat { get; set; } = string.Empty;
 
         /// <summary>
         /// 數值格式化。
@@ -140,11 +114,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("數值格式化。")]
         [DefaultValue("")]
-        public string NumberFormat
-        {
-            get { return _NumberFormat; }
-            set { _NumberFormat = value; }
-        }
+        public string NumberFormat { get; set; } = string.Empty;
 
         /// <summary>
         /// 清單項目集合。
@@ -157,9 +127,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ListItems)) { return null; }
-                if (_ListItems == null) { _ListItems = new ListItemCollection(); }
-                return _ListItems;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _listItems)) { return null; }
+                if (_listItems == null) { _listItems = new ListItemCollection(); }
+                return _listItems;
             }
         }
 
@@ -173,9 +143,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ExtendedProperties)) { return null; }
-                if (_ExtendedProperties == null) { _ExtendedProperties = new PropertyCollection(); }
-                return _ExtendedProperties;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _extendedProperties)) { return null; }
+                if (_extendedProperties == null) { _extendedProperties = new PropertyCollection(); }
+                return _extendedProperties;
             }
         }
 
@@ -186,8 +156,8 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_ListItems, serializeState);
-            BaseFunc.SetSerializeState(_ExtendedProperties, serializeState);
+            BaseFunc.SetSerializeState(_listItems, serializeState);
+            BaseFunc.SetSerializeState(_extendedProperties, serializeState);
         }
 
         /// <summary>

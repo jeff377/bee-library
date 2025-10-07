@@ -20,11 +20,9 @@ namespace Bee.Define
         /// <param name="controlType">控制項類型。</param>
         public LayoutColumn Add(string fieldName, string caption, ColumnControlType controlType)
         {
-            LayoutColumn oColumn;
-
-            oColumn = new LayoutColumn(fieldName, caption, controlType);
-            this.Add(oColumn);
-            return oColumn;
+            var column = new LayoutColumn(fieldName, caption, controlType);
+            this.Add(column);
+            return column;
         }
     }
 }

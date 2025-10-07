@@ -16,7 +16,7 @@ namespace Bee.Define
     [TreeNode]
     public class MenuSettings : IObjectSerializeFile, IDisplayName
     {
-        private MenuFolderCollection _Folders = null;
+        private MenuFolderCollection _folders = null;
 
         #region 建構函式
 
@@ -46,7 +46,7 @@ namespace Bee.Define
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_Folders, serializeState);
+            BaseFunc.SetSerializeState(_folders, serializeState);
         }
 
         /// <summary>
@@ -93,9 +93,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Folders)) { return null; }
-                if (_Folders == null) { _Folders = new MenuFolderCollection(this); }
-                return _Folders;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _folders)) { return null; }
+                if (_folders == null) { _folders = new MenuFolderCollection(this); }
+                return _folders;
             }
         }
 

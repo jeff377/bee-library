@@ -16,11 +16,9 @@ namespace Bee.Define
         /// <param name="sortDirection">排序方式。</param>
         public IndexField Add(string fieldName, SortDirection sortDirection = SortDirection.Asc)
         {
-            IndexField oItem;
-
-            oItem = new IndexField(fieldName, sortDirection);
-            this.Add(oItem);
-            return oItem;
+            var indexFIeld = new IndexField(fieldName, sortDirection);
+            this.Add(indexFIeld);
+            return indexFIeld;
         }
     }
 }

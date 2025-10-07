@@ -15,7 +15,7 @@ namespace Bee.Define
     [TreeNode("資料庫結構")]
     public class DbSchemaSettings : IObjectSerializeFile
     {
-        private DbSchemaCollection _Databases = null;
+        private DbSchemaCollection _databases = null;
 
         #region 建構函式
 
@@ -45,7 +45,7 @@ namespace Bee.Define
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_Databases, serializeState);
+            BaseFunc.SetSerializeState(_databases, serializeState);
         }
 
         /// <summary>
@@ -84,9 +84,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Databases)) { return null; }
-                if (_Databases == null) { _Databases = new DbSchemaCollection(this); }
-                return _Databases;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _databases)) { return null; }
+                if (_databases == null) { _databases = new DbSchemaCollection(this); }
+                return _databases;
             }
         }
     }

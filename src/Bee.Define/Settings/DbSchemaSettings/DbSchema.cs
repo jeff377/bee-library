@@ -14,7 +14,7 @@ namespace Bee.Define
     [TreeNode]
     public class DbSchema : KeyCollectionItem
     {
-        private DbTableItemCollection _Tables = null;
+        private DbTableItemCollection _tables = null;
 
         /// <summary>
         /// 資料庫名稱。
@@ -45,9 +45,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Tables)) { return null; }
-                if (_Tables == null) { _Tables = new DbTableItemCollection(this); }
-                return _Tables;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _tables)) { return null; }
+                if (_tables == null) { _tables = new DbTableItemCollection(this); }
+                return _tables;
             }
         }
 
@@ -58,7 +58,7 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_Tables, serializeState);
+            BaseFunc.SetSerializeState(_tables, serializeState);
         }
 
         /// <summary>

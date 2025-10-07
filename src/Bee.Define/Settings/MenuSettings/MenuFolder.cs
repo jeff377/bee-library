@@ -14,8 +14,8 @@ namespace Bee.Define
     [TreeNode("{0}", "DisplayName")]
     public class MenuFolder : KeyCollectionItem, IDisplayName
     {
-        private MenuFolderCollection _Folders = null;
-        private MenuItemCollection _Items = null;
+        private MenuFolderCollection _folders = null;
+        private MenuItemCollection _items = null;
 
         #region 建構函式
 
@@ -66,9 +66,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Items)) { return null; }
-                if (_Items == null) { _Folders = new MenuFolderCollection(this); }
-                return _Folders;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (_items == null) { _folders = new MenuFolderCollection(this); }
+                return _folders;
             }
         }
 
@@ -82,9 +82,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Items)) { return null; }
-                if (_Items == null) { _Items = new MenuItemCollection(this); }
-                return _Items;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (_items == null) { _items = new MenuItemCollection(this); }
+                return _items;
             }
         }
 

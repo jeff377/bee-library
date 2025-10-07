@@ -15,15 +15,8 @@ namespace Bee.Define
     [TreeNode]
     public class DbTable : IObjectSerializeFile
     {
-        private string _ObjectFilePath = string.Empty;
-        private SerializeState _SerializeState = SerializeState.None;
-        private DateTime _CreateTime = DateTime.MinValue;
-        private string _DbName = string.Empty;
-        private string _TableName = string.Empty;
-        private string _DisplayName = string.Empty;
-        private DbFieldCollection _Fields = null;
-        private DbTableIndexCollection _Indexes = null;
-        private DbUpgradeAction _UpgradeAction = DbUpgradeAction.None;
+        private DbFieldCollection _fields = null;
+        private DbTableIndexCollection _indexes = null;
 
         #region 建構函式
 
@@ -32,7 +25,6 @@ namespace Bee.Define
         /// </summary>
         public DbTable()
         {
-            _CreateTime = DateTime.Now;
         }
 
         #endregion
@@ -42,12 +34,9 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public SerializeState SerializeState
-        {
-            get { return _SerializeState; }
-        }
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -55,20 +44,17 @@ namespace Bee.Define
         /// <param name="serializeState">序列化狀態。</param>
         public void SetSerializeState(SerializeState serializeState)
         {
-            _SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_Fields, serializeState);
-            BaseFunc.SetSerializeState(_Indexes, serializeState);
+            SerializeState = serializeState;
+            BaseFunc.SetSerializeState(_fields, serializeState);
+            BaseFunc.SetSerializeState(_indexes, serializeState);
         }
 
         /// <summary>
         /// 序列化繫結檔案。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public string ObjectFilePath
-        {
-            get { return _ObjectFilePath; }
-        }
+        public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
         /// 設定序列化繫結檔案。
@@ -76,7 +62,7 @@ namespace Bee.Define
         /// <param name="filePath">檔案路徑。</param>
         public void SetObjectFilePath(string filePath)
         {
-            _ObjectFilePath = filePath;
+            ObjectFilePath = filePath;
         }
 
         #endregion
@@ -84,24 +70,9 @@ namespace Bee.Define
         /// <summary>
         /// 物件建立時間。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public DateTime CreateTime
-        {
-            get { return _CreateTime; }
-        }
-
-        /// <summary>
-        /// 資料庫名稱。
-        /// </summary>
-        [XmlAttribute]
-        [Category(PropertyCategories.Data)]
-        [Description("資料庫名稱。")]
-        public string DbName
-        {
-            get { return _DbName; }
-            set { _DbName = value; }
-        }
+        public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
         /// 資料表名稱。
@@ -110,11 +81,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("資料表名稱。")]
-        public string TableName
-        {
-            get { return _TableName; }
-            set { _TableName = value; }
-        }
+        public string TableName { get; set; } = string.Empty;
 
         /// <summary>
         /// 顯示名稱。
@@ -123,11 +90,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 欄位集合。
@@ -140,9 +103,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Fields)) { return null; }
-                if (_Fields == null) { _Fields = new DbFieldCollection(this); }
-                return _Fields;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _fields)) { return null; }
+                if (_fields == null) { _fields = new DbFieldCollection(this); }
+                return _fields;
             }
         }
 
@@ -157,9 +120,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Indexes)) { return null; }
-                if (_Indexes == null) { _Indexes = new DbTableIndexCollection(this); }
-                return _Indexes;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _indexes)) { return null; }
+                if (_indexes == null) { _indexes = new DbTableIndexCollection(this); }
+                return _indexes;
             }
         }
 
@@ -182,27 +145,21 @@ namespace Bee.Define
         [XmlIgnore]
         [Browsable(false)]
         [DefaultValue(DbUpgradeAction.None)]
-        public DbUpgradeAction UpgradeAction
-        {
-            get { return _UpgradeAction; }
-            set { _UpgradeAction = value; }
-        }
+        public DbUpgradeAction UpgradeAction { get; set; } = DbUpgradeAction.None;
 
         /// <summary>
         /// 建立複本。
         /// </summary>
         public DbTable Clone()
         {
-            DbTable oTable;
-
-            oTable = new DbTable();
-            oTable.TableName = this.TableName;
-            oTable.DisplayName = this.DisplayName;
+            var table = new DbTable();
+            table.TableName = this.TableName;
+            table.DisplayName = this.DisplayName;
             foreach (DbTableIndex index in this.Indexes)
-                oTable.Indexes.Add(index.Clone());
+                table.Indexes.Add(index.Clone());
             foreach (DbField field in this.Fields)
-                oTable.Fields.Add(field.Clone());
-            return oTable;
+                table.Fields.Add(field.Clone());
+            return table;
         }
 
         /// <summary>

@@ -16,11 +16,9 @@ namespace Bee.Define
         /// <param name="endpoint">服務端點位置，遠端連線為網址，近端連線為本地路徑。</param>
         public EndpointItem Add(string name, string endpoint)
         {
-            EndpointItem oItem;
-
-            oItem = new EndpointItem(name, endpoint);
-            this.Add(oItem);
-            return oItem;
+            var item = new EndpointItem(name, endpoint);
+            this.Add(item);
+            return item;
         }
     }
 }

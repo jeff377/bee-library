@@ -12,21 +12,21 @@ namespace Bee.Db
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        DbCommand BuildSelectCommand(string tableName, string selectFields);
+        DbCommandSpec BuildSelectCommand(string tableName, string selectFields);
 
         /// <summary>
         /// 建立 Insert 語法的資料庫命令。
         /// </summary>
-        DbCommand BuildInsertCommand();
+        DbCommandSpec BuildInsertCommand();
 
         /// <summary>
         /// 建立 Update 語法的資料庫命令。
         /// </summary>
-        DbCommand BuildUpdateCommand();
+        DbCommandSpec BuildUpdateCommand();
 
         /// <summary>
         /// 建立 Delete 語法的資料庫命令。
         /// </summary>
-        DbCommand BuildDeleteCommand();
+        DbCommandSpec BuildDeleteCommand();
     }
 }

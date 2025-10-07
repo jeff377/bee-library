@@ -14,10 +14,7 @@ namespace Bee.Define
     [TreeNode]
     public class LayoutGrid : LayoutItemBase
     {
-        private string _TableName = string.Empty;
-        private string _DisplayName = string.Empty;
-        private GridControlAllowActions _AllowActions = GridControlAllowActions.All;
-        private LayoutColumnCollection _Columns = null;
+        private LayoutColumnCollection _columns = null;
 
         #region 建構函式
 
@@ -34,8 +31,8 @@ namespace Bee.Define
         /// <param name="displayName">顯示名稱。</param>
         public LayoutGrid(string tableName, string displayName)
         {
-            _TableName = tableName;
-            _DisplayName = displayName;
+            TableName = tableName;
+            DisplayName = displayName;
         }
 
         #endregion
@@ -47,11 +44,7 @@ namespace Bee.Define
         [XmlAttribute]
         [NotifyParentProperty(true)]
         [Description("資料表名稱。")]
-        public string TableName
-        {
-            get { return _TableName; }
-            set { _TableName = value; }
-        }
+        public string TableName { get; set; } = string.Empty;
 
         /// <summary>
         /// 顯示名稱。
@@ -59,11 +52,7 @@ namespace Bee.Define
         [XmlAttribute]
         [NotifyParentProperty(true)]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// Grid 控制項允許執行的動作。
@@ -71,11 +60,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("Grid 控制項允許執行的動作。")]
         [DefaultValue(GridControlAllowActions.All)]
-        public GridControlAllowActions AllowActions
-        {
-            get { return _AllowActions; }
-            set { _AllowActions = value; }
-        }
+        public GridControlAllowActions AllowActions { get; set; } = GridControlAllowActions.All;
 
         /// <summary>
         /// 欄位集合。
@@ -88,9 +73,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Columns)) { return null; }
-                if (_Columns == null) { _Columns = new LayoutColumnCollection(); }
-                return _Columns;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _columns)) { return null; }
+                if (_columns == null) { _columns = new LayoutColumnCollection(); }
+                return _columns;
             }
         }
 
@@ -101,7 +86,7 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_Columns, serializeState);
+            BaseFunc.SetSerializeState(_columns, serializeState);
         }
 
         /// <summary>

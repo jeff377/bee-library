@@ -15,11 +15,7 @@ namespace Bee.Define
     [TreeNode("表單定義")]
     public class FormDefine : IObjectSerializeFile
     {
-        private string _ObjectFilePath = string.Empty;
-        private SerializeState _SerializeState = SerializeState.None;
-        private string _DisplayName = string.Empty;
-        private FormTableCollection _Tables = null;
-        private string _ListFields = string.Empty;
+        private FormTableCollection _tables = null;
 
         #region 建構函式
 
@@ -37,12 +33,9 @@ namespace Bee.Define
         /// <summary>
         /// 序列化狀態。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public SerializeState SerializeState
-        {
-            get { return _SerializeState; }
-        }
+        public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
         /// 設定序列化狀態。
@@ -50,19 +43,16 @@ namespace Bee.Define
         /// <param name="serializeState">序列化狀態。</param>
         public void SetSerializeState(SerializeState serializeState)
         {
-            _SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_Tables, serializeState);
+            SerializeState = serializeState;
+            BaseFunc.SetSerializeState(_tables, serializeState);
         }
 
         /// <summary>
         /// 序列化繫結檔案。
         /// </summary>
-        [JsonIgnore]
+        [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public string ObjectFilePath
-        {
-            get { return _ObjectFilePath; }
-        }
+        public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
         /// 設定序列化繫結檔案。
@@ -70,7 +60,7 @@ namespace Bee.Define
         /// <param name="filePath">檔案路徑。</param>
         public void SetObjectFilePath(string filePath)
         {
-            _ObjectFilePath = filePath;
+            ObjectFilePath = filePath;
         }
 
         #endregion
@@ -95,11 +85,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [Description("顯示名稱。")]
-        public string DisplayName
-        {
-            get { return _DisplayName; }
-            set { _DisplayName = value; }
-        }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// 清單欄位集合字串，以逗點分隔多個欄位。
@@ -107,11 +93,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [Description("清單欄位集合字串，以逗點分隔多個欄位。")]
-        public string ListFields
-        {
-            get { return _ListFields; }
-            set { _ListFields = value; }
-        }
+        public string ListFields { get; set; } = string.Empty;
 
         /// <summary>
         /// 資料表集合。
@@ -123,9 +105,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Tables)) { return null; }
-                if (_Tables == null) { _Tables = new FormTableCollection(this); }
-                return _Tables;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _tables)) { return null; }
+                if (_tables == null) { _tables = new FormTableCollection(this); }
+                return _tables;
             }
         }
 

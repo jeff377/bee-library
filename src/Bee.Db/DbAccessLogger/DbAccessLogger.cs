@@ -25,7 +25,10 @@ namespace Bee.Db
 
         /// <summary>
         /// 結束記錄。
+        /// 停止計時，並根據設定判斷是否需記錄慢查詢或大量異動的警告。
         /// </summary>
+        /// <param name="context">資料庫存取日誌的上下文資訊。</param>
+        /// <param name="affectedRows">受影響的資料列數，預設為 -1 表示未知。</param>
         public static void LogEnd(DbLogContext context, int affectedRows = -1)
         {
             if (context == null) throw new ArgumentNullException(nameof(context), "context cannot be null.");
@@ -45,8 +48,11 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 記錄錯誤。
+        /// 記錄資料庫存取錯誤。
+        /// 停止計時器，並記錄例外資訊、執行時間、資料庫識別與 SQL 命令內容。
         /// </summary>
+        /// <param name="context">資料庫存取日誌的上下文資訊。</param>
+        /// <param name="exception">發生的例外物件。</param>
         public static void LogError(DbLogContext context, Exception exception)
         {
             if (context == null) throw new ArgumentNullException(nameof(context), "context cannot be null.");
@@ -72,13 +78,13 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 記錄異常。
+        /// 寫入異常警告日誌。
         /// </summary>
-        /// <param name="ctx"></param>
-        /// <param name="affectedRows"></param>
-        /// <param name="elapsedSeconds"></param>
-        /// <param name="isSlow"></param>
-        /// <param name="isLarge"></param>
+        /// <param name="ctx">資料庫存取日誌的上下文資訊。</param>
+        /// <param name="affectedRows">受影響的資料列數。</param>
+        /// <param name="elapsedSeconds">執行所花費的秒數。</param>
+        /// <param name="isSlow">是否為慢查詢。</param>
+        /// <param name="isLarge">是否為大量異動。</param>
         private static void WriteWarning(DbLogContext ctx, int affectedRows, double elapsedSeconds, bool isSlow, bool isLarge)
         {
             var sb = new StringBuilder(300);

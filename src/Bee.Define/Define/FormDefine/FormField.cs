@@ -15,17 +15,7 @@ namespace Bee.Define
     [TreeNode]
     public class FormField : KeyCollectionItem
     {
-        private string _Caption = string.Empty;
-        private FieldDbType _DbType = FieldDbType.String;
-        private FieldType _Type = FieldType.DbField;
-        private ControlType _ControlType = ControlType.TextEdit;
-        private int _MaxLength = 0;
-        private string _DefaultValue = string.Empty;
-        private string _DisplayFormat = string.Empty;
-        private string _NumberFormat = string.Empty;
-        private string _LinkFieldName = string.Empty;
-        private LinkReturnFieldCollection _LinkReturnFields = null;
-        private int _Width = 0;
+        private LinkReturnFieldCollection _linkReturnFields = null;
 
         #region 建構函式
 
@@ -44,8 +34,8 @@ namespace Bee.Define
         public FormField(string fieldName, string caption, FieldDbType dbType)
         {
             this.FieldName = fieldName;
-            _Caption = caption;
-            _DbType = dbType;
+            Caption = caption;
+            DbType = dbType;
         }
 
         #endregion
@@ -70,11 +60,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
-        public string Caption
-        {
-            get { return _Caption; }
-            set { _Caption = value; }
-        }
+        public string Caption { get; set; } = string.Empty;
 
         /// <summary>
         /// 資料型別。
@@ -83,11 +69,7 @@ namespace Bee.Define
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
         [Category(PropertyCategories.Data)]
         [Description("資料型別。")]
-        public FieldDbType DbType
-        {
-            get { return _DbType; }
-            set { _DbType = value; }
-        }
+        public FieldDbType DbType { get; set; } = FieldDbType.String;
 
         /// <summary>
         /// 欄位類型。
@@ -96,11 +78,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [Description("欄位類型。")]
         [DefaultValue(FieldType.DbField)]
-        public FieldType Type
-        {
-            get { return _Type; }
-            set { _Type = value; }
-        }
+        public FieldType Type { get; set; } = FieldType.DbField;
 
         /// <summary>
         /// 控制項類型。
@@ -108,11 +86,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Category(PropertyCategories.Layout)]
         [Description("控制項類型。")]
-        public ControlType ControlType
-        {
-            get { return _ControlType; }
-            set { _ControlType = value; }
-        }
+        public ControlType ControlType { get; set; } = ControlType.TextEdit;
 
         /// <summary>
         /// 字串最大長度。
@@ -121,11 +95,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [Description("字串最大長度。")]
         [DefaultValue(0)]
-        public int MaxLength
-        {
-            get { return _MaxLength; }
-            set { _MaxLength = value; }
-        }
+        public int MaxLength { get; set; } = 0;
 
         /// <summary>
         /// 預設值。
@@ -134,11 +104,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [Description("預設值。")]
         [DefaultValue("")]
-        public string DefaultValue
-        {
-            get { return _DefaultValue; }
-            set { _DefaultValue = value; }
-        }
+        public string DefaultValue { get; set; } = string.Empty;
 
         /// <summary>
         /// 顯示格式化。
@@ -147,11 +113,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("顯示格式化。")]
         [DefaultValue("")]
-        public string DisplayFormat
-        {
-            get { return _DisplayFormat; }
-            set { _DisplayFormat = value; }
-        }
+        public string DisplayFormat { get; set; } = string.Empty;
 
         /// <summary>
         /// 數值格式化。
@@ -160,11 +122,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("數值格式化。")]
         [DefaultValue("")]
-        public string NumberFormat
-        {
-            get { return _NumberFormat; }
-            set { _NumberFormat = value; }
-        }
+        public string NumberFormat { get; set; } = string.Empty;
 
         /// <summary>
         /// 欄位關連的程式代碼。
@@ -186,9 +144,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _LinkReturnFields)) { return null; }
-                if (_LinkReturnFields == null) { _LinkReturnFields = new LinkReturnFieldCollection(); }
-                return _LinkReturnFields;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _linkReturnFields)) { return null; }
+                if (_linkReturnFields == null) { _linkReturnFields = new LinkReturnFieldCollection(); }
+                return _linkReturnFields;
             }
         }
 
@@ -199,11 +157,7 @@ namespace Bee.Define
         [Category("Link")]
         [Description("關連欄位必填屬性，設定 Select 語法中，關連欄位是由那個來源欄位一併取回。")]
         [DefaultValue("")]
-        public string LinkFieldName
-        {
-            get { return _LinkFieldName; }
-            set { _LinkFieldName = value; }
-        }
+        public string LinkFieldName { get; set; } = string.Empty;
 
         /// <summary>
         /// 取得建立關連的來源欄位。
@@ -225,11 +179,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("欄寬，設定值大於 0 才有效。")]
         [DefaultValue(0)]
-        public int Width
-        {
-            get { return _Width; }
-            set { _Width = value; }
-        }
+        public int Width { get; set; } = 0;
 
         /// <summary>
         /// 所屬資料表。
@@ -274,7 +224,7 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_LinkReturnFields, serializeState);
+            BaseFunc.SetSerializeState(_linkReturnFields, serializeState);
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace Bee.Define
     [TreeNode]
     public class ProgramCategory : KeyCollectionItem
     {
-        private ProgramItemCollection _Items = null;
+        private ProgramItemCollection _items = null;
 
         #region 建構函式
 
@@ -66,9 +66,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Items)) { return null; }
-                if (_Items == null) { _Items = new ProgramItemCollection(this); }
-                return _Items;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (_items == null) { _items = new ProgramItemCollection(this); }
+                return _items;
             }
         }
 
@@ -79,7 +79,7 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_Items, serializeState);
+            BaseFunc.SetSerializeState(_items, serializeState);
         }
 
         /// <summary>

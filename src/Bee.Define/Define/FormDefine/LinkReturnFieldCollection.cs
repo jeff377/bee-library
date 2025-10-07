@@ -16,11 +16,9 @@ namespace Bee.Define
         /// <param name="destinationField">目的欄位。</param>
         public LinkReturnField Add(string sourceField, string destinationField)
         {
-            LinkReturnField oField;
-
-            oField = new LinkReturnField(sourceField, destinationField);
-            base.Add(oField);
-            return oField;
+            var field = new LinkReturnField(sourceField, destinationField);
+            base.Add(field);
+            return field;
         }
 
         /// <summary>

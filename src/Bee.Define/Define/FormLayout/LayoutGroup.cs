@@ -14,11 +14,8 @@ namespace Bee.Define
     [TreeNode]
     public class LayoutGroup : CollectionItem
     {
-        private string _Name = string.Empty;
-        private string _Caption = string.Empty;
-        private bool _ShowCaption = true;
-        private int _ColumnCount = 1;
-        private LayoutItemCollection _Items = null;
+        private int _columnCount = 1;
+        private LayoutItemCollection _items = null;
 
         /// <summary>
         /// 群組名稱。
@@ -27,11 +24,7 @@ namespace Bee.Define
         [NotifyParentProperty(true)]
         [Description("群組名稱。")]
         [DefaultValue("")]
-        public string Name
-        {
-            get { return _Name; }
-            set { _Name = value; }
-        }
+        public string Name { get; set; } = string.Empty;
 
         /// <summary>
         /// 標題文字。
@@ -40,11 +33,7 @@ namespace Bee.Define
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
         [DefaultValue("")]
-        public string Caption
-        {
-            get { return _Caption; }
-            set { _Caption = value; }
-        }
+        public string Caption { get; set; } = string.Empty;
 
         /// <summary>
         /// 是否顯示標題。
@@ -52,11 +41,7 @@ namespace Bee.Define
         [XmlAttribute]
         [Description("是否顯示標題。")]
         [DefaultValue(true)]
-        public bool ShowCaption
-        {
-            get { return this._ShowCaption; }
-            set { this._ShowCaption = value; }
-        }
+        public bool ShowCaption { get; set; } = true;
 
         /// <summary>
         /// 欄位數。
@@ -66,11 +51,11 @@ namespace Bee.Define
         [Description("欄位數。")]
         public int ColumnCount
         {
-            get { return _ColumnCount; }
+            get { return _columnCount; }
             set
             {
                 if (value < 1) { value = 1; }
-                _ColumnCount = value;
+                _columnCount = value;
             }
         }
 
@@ -87,9 +72,9 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _Items)) { return null; }
-                if (_Items == null) { _Items = new LayoutItemCollection(); }
-                return _Items;
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (_items == null) { _items = new LayoutItemCollection(); }
+                return _items;
             }
         }
 
@@ -117,7 +102,7 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_Items, serializeState);
+            BaseFunc.SetSerializeState(_items, serializeState);
         }
 
         /// <summary>

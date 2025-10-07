@@ -23,18 +23,15 @@ namespace Bee.Define
         /// <param name="fields">欄位名稱集合字串，以逗點分隔。</param>
         public DbTableIndex AddPrimaryKey(string fields)
         {
-            DbTableIndex oIndex;
-            string[] oFields;
-
-            oIndex = new DbTableIndex();
-            oIndex.Name = "PK";
-            oIndex.Unique = true;
-            oIndex.PrimaryKey = true;
-            oFields = StrFunc.Split(fields, ",");
-            foreach (string fieldName in oFields)
-                oIndex.IndexFields.Add(fieldName);
-            this.Add(oIndex);
-            return oIndex;
+            var index = new DbTableIndex();
+            index.Name = "PK";
+            index.Unique = true;
+            index.PrimaryKey = true;
+            string[] fieldNames = StrFunc.Split(fields, ",");
+            foreach (string fieldName in fieldNames)
+                index.IndexFields.Add(fieldName);
+            this.Add(index);
+            return index;
         }
 
         /// <summary>
