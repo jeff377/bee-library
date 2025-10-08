@@ -31,7 +31,7 @@ namespace Bee.Define
         /// <param name="displayName">顯示名稱。</param>
         public FormTable(string tableName, string displayName)
         {
-            this.TableName = tableName;
+            TableName = tableName;
             DisplayName = displayName;
         }
 
@@ -73,7 +73,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _fields)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _fields)) { return null; }
                 if (_fields == null) { _fields = new FormFieldCollection(this); }
                 return _fields;
             }
@@ -94,7 +94,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.TableName} - {this.DisplayName}";
+            return $"{TableName} - {DisplayName}";
         }
     }
 }
