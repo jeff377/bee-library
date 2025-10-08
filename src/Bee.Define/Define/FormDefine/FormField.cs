@@ -16,6 +16,7 @@ namespace Bee.Define
     public class FormField : KeyCollectionItem
     {
         private FieldMappingCollection _relationFieldMappings = null;
+        private FieldMappingCollection _lookupFieldMappings = null;
 
         #region 建構函式
 
@@ -135,7 +136,6 @@ namespace Bee.Define
 
         /// <summary>
         /// 關聯來源欄位與本表欄位的對應集合。
-        /// 本表欄位應該
         /// </summary>
         [Category("Relation")]
         [Description("關聯來源欄位與本表欄位的對應集合。")]
@@ -148,6 +148,34 @@ namespace Bee.Define
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _relationFieldMappings)) { return null; }
                 if (_relationFieldMappings == null) { _relationFieldMappings = new FieldMappingCollection(); }
                 return _relationFieldMappings;
+            }
+        }
+
+        /// <summary>
+        /// 指定 UI 查詢/選取（Lookup）視窗的程式代碼（ProgID）。
+        /// 當欄位需要透過彈出視窗選取資料時，設定此屬性以決定開啟哪個查詢/選取視窗。
+        /// </summary>
+        [XmlAttribute]
+        [Category("Relation")]
+        [Description("指定 UI 查詢/選取（Lookup）視窗的程式代碼。")]
+        [DefaultValue("")]
+        public string LookupProgId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 查詢/選取（Lookup）視窗回填欄位對應集合。
+        /// 用於定義從查詢/選取視窗取回資料後，來源欄位與本表欄位的對應關係，將選取結果自動回填至本表指定欄位。
+        /// </summary>
+        [Category("Relation")]
+        [Description("查詢/選取（Lookup）視窗回填欄位對應集合。")]
+        [DefaultValue(null)]
+        public FieldMappingCollection LookupFieldMappings
+        {
+            get
+            {
+                // 序列化時，若集合無資料則傳回 null
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _lookupFieldMappings)) { return null; }
+                if (_lookupFieldMappings == null) { _lookupFieldMappings = new FieldMappingCollection(); }
+                return _lookupFieldMappings;
             }
         }
 
