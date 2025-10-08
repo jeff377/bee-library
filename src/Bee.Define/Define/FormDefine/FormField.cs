@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bee.Base;
+using Newtonsoft.Json;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
-using Newtonsoft.Json;
 
 namespace Bee.Define
 {
@@ -128,7 +128,7 @@ namespace Bee.Define
         /// 欄位關連的程式代碼。
         /// </summary>
         [XmlAttribute]
-        [Category("Link")]
+        [Category("Relation")]
         [Description("欄位關連的程式代碼。")]
         [DefaultValue("")]
         public string RelationProgId { get; set; } = string.Empty;
@@ -137,7 +137,7 @@ namespace Bee.Define
         /// 關聯來源欄位與本表欄位的對應集合。
         /// 本表欄位應該
         /// </summary>
-        [Category("Link")]
+        [Category("Relation")]
         [Description("關聯來源欄位與本表欄位的對應集合。")]
         [DefaultValue(null)]
         public FieldMappingCollection RelationFieldMappings
@@ -170,30 +170,9 @@ namespace Bee.Define
         {
             get
             {
-                if (this.Collection == null) { return null; }
-                return (this.Collection as FormFieldCollection).Owner as FormTable;
+                if (Collection == null) { return null; }
+                return (Collection as FormFieldCollection).Owner as FormTable;
             }
-        }
-
-        /// <summary>
-        /// 加入關連取回設定。
-        /// </summary>
-        /// <param name="linkProgId">欄位關連的程式代碼。</param>
-        /// <param name="sourceFields">來源欄位集合字串，以逗點分隔多個欄位。</param>
-        /// <param name="destinationFields">目的欄位集合字串，以逗點分隔多個欄位。</param>
-        public void AddLinkReturn(string linkProgId, string sourceFields, string destinationFields)
-        {
-            string[] oSourceFields, oDestinationFields;
-
-            oSourceFields = StrFunc.Split(sourceFields, ",");
-            oDestinationFields = StrFunc.Split(destinationFields, ",");
-            if (oSourceFields.Length != oDestinationFields.Length)
-                throw new InvalidOperationException("Source and destination fields must have the same number.");
-
-            this.RelationProgId = linkProgId;
-            this.RelationFieldMappings.Clear();
-            for (int N1 = 0; N1 < oSourceFields.Length; N1++)
-                this.RelationFieldMappings.Add(oSourceFields[N1], oDestinationFields[N1]);
         }
 
         /// <summary>
@@ -211,7 +190,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.FieldName} - {this.Caption}";
+            return $"{FieldName} - {Caption}";
         }
     }
 }
