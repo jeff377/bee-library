@@ -14,13 +14,11 @@ namespace Bee.Base
         /// <param name="datasetName">資料集名稱。</param>
         public static DataSet CreateDataSet(string datasetName)
         {
-            DataSet oDataSet;
-
-            oDataSet = new DataSet(datasetName);
+            var dataSet = new DataSet(datasetName);
 #pragma warning disable SYSLIB0038
-            oDataSet.RemotingFormat = SerializationFormat.Binary;
+            dataSet.RemotingFormat = SerializationFormat.Binary;
 #pragma warning restore SYSLIB0038
-            return oDataSet;
+            return dataSet;
         }
 
         /// <summary>

@@ -387,7 +387,7 @@ namespace Bee.Define
         /// <summary>
         /// 通過 JOIN 操作從其他表取得的關連欄位。
         /// </summary>
-        LinkField,
+        RelationField,
         /// <summary>
         /// 使用計算或表達式生成的虛擬欄位。
         /// </summary>

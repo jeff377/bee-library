@@ -6,19 +6,19 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 關連取回欄位。
+    /// 欄位對應。
     /// </summary>
     [Serializable]
-    [XmlType("LinkReturnField")]
-    [Description("關連取回欄位。")]
-    public class LinkReturnField : CollectionItem
+    [XmlType("FieldMapping")]
+    [Description("欄位對應。")]
+    public class FieldMapping : CollectionItem
     {
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public LinkReturnField()
+        public FieldMapping()
         { }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Bee.Define
         /// </summary>
         /// <param name="sourceField">來源欄位。</param>
         /// <param name="destinationField">目的欄位。</param>
-        public LinkReturnField(string sourceField, string destinationField)
+        public FieldMapping(string sourceField, string destinationField)
         {
             SourceField = sourceField;
             DestinationField = destinationField;

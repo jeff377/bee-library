@@ -15,7 +15,7 @@ namespace Bee.Define
     [TreeNode]
     public class FormField : KeyCollectionItem
     {
-        private LinkReturnFieldCollection _linkReturnFields = null;
+        private FieldMappingCollection _relationFieldMappings = null;
 
         #region 建構函式
 
@@ -131,45 +131,24 @@ namespace Bee.Define
         [Category("Link")]
         [Description("欄位關連的程式代碼。")]
         [DefaultValue("")]
-        public string LinkProgId { get; set; } = string.Empty;
+        public string RelationProgId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 關連取回欄位集合。
+        /// 關聯來源欄位與本表欄位的對應集合。
+        /// 本表欄位應該
         /// </summary>
         [Category("Link")]
-        [Description("關連取回欄位集合。")]
+        [Description("關聯來源欄位與本表欄位的對應集合。")]
         [DefaultValue(null)]
-        public LinkReturnFieldCollection LinkReturnFields
+        public FieldMappingCollection RelationFieldMappings
         {
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _linkReturnFields)) { return null; }
-                if (_linkReturnFields == null) { _linkReturnFields = new LinkReturnFieldCollection(); }
-                return _linkReturnFields;
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _relationFieldMappings)) { return null; }
+                if (_relationFieldMappings == null) { _relationFieldMappings = new FieldMappingCollection(); }
+                return _relationFieldMappings;
             }
-        }
-
-        /// <summary>
-        /// 關連欄位必填屬性，設定 Select 語法中，關連欄位是由那個來源欄位一併取回。
-        /// </summary>
-        [XmlAttribute]
-        [Category("Link")]
-        [Description("關連欄位必填屬性，設定 Select 語法中，關連欄位是由那個來源欄位一併取回。")]
-        [DefaultValue("")]
-        public string LinkFieldName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 取得建立關連的來源欄位。
-        /// </summary>
-        public FormField GetLinkField()
-        {
-            if (StrFunc.IsNotEmpty(this.LinkFieldName))
-                return this.Table.Fields[this.LinkFieldName];
-            else if (StrFunc.IsNotEmpty(this.LinkProgId))
-                return this;
-            else
-                return null;
         }
 
         /// <summary>
@@ -211,10 +190,10 @@ namespace Bee.Define
             if (oSourceFields.Length != oDestinationFields.Length)
                 throw new InvalidOperationException("Source and destination fields must have the same number.");
 
-            this.LinkProgId = linkProgId;
-            this.LinkReturnFields.Clear();
+            this.RelationProgId = linkProgId;
+            this.RelationFieldMappings.Clear();
             for (int N1 = 0; N1 < oSourceFields.Length; N1++)
-                this.LinkReturnFields.Add(oSourceFields[N1], oDestinationFields[N1]);
+                this.RelationFieldMappings.Add(oSourceFields[N1], oDestinationFields[N1]);
         }
 
         /// <summary>
@@ -224,7 +203,7 @@ namespace Bee.Define
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_linkReturnFields, serializeState);
+            BaseFunc.SetSerializeState(_relationFieldMappings, serializeState);
         }
 
         /// <summary>
