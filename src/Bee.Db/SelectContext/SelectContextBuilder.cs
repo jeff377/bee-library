@@ -25,3 +25,4 @@ namespace Bee.Db
             return context;
         }
     }
+}
