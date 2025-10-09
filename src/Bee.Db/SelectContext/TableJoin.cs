@@ -1,12 +1,22 @@
 ﻿using System.Collections.Generic;
+using Bee.Base;
 
 namespace Bee.Db
 {
     /// <summary>
     /// 描述兩個資料表之間的 Join 關係。
     /// </summary>
-    public class TableJoin
+    public class TableJoin : KeyCollectionItem
     {
+        /// <summary>
+        /// 鍵值，記錄建立 Join 關係的參考來源的唯一鍵值。
+        /// </summary>
+        public override string Key
+        {
+            get { return base.Key; }
+            set { base.Key = value; }
+        }
+
         /// <summary>
         /// Join 類型。
         /// </summary>
