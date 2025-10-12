@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -15,6 +16,7 @@ namespace Bee.Define
     public class FormTable : KeyCollectionItem
     {
         private FormFieldCollection _fields = null;
+        private Dictionary<FormField> _destinationFieldMap = null;
 
         #region 建構函式
 
@@ -80,6 +82,51 @@ namespace Bee.Define
         }
 
         /// <summary>
+        /// 取得所有 RelationField 的 DestinationField 與來源 FormField 的對應集合。
+        /// </summary>
+        [Browsable(false)]
+        [XmlIgnore]
+        public Dictionary<FormField> DestinationFieldMap
+        {
+            get
+            {
+                if (_destinationFieldMap == null)
+                    _destinationFieldMap = CreateDestinationFieldMap();
+                return _destinationFieldMap;
+            }
+        }
+
+        /// <summary>
+        /// 建立所有 RelationField 的 DestinationField 與來源 FormField 的對應集合。
+        /// DestinationField 為唯一鍵值，若重複則拋出例外。
+        /// </summary>
+        private Dictionary<FormField> CreateDestinationFieldMap()
+        {
+            var map = new Dictionary<FormField>();
+
+            foreach (var field in Fields)
+            {
+                if (field.Type != FieldType.DbField ||
+                    StrFunc.IsEmpty(field.RelationProgId) ||
+                    BaseFunc.IsEmpty(field.RelationFieldMappings))
+                    continue;
+
+                foreach (var mapping in field.RelationFieldMappings)
+                {
+                    string destField = mapping.DestinationField;
+                    if (!Fields.Contains(destField))
+                        throw new KeyNotFoundException($"DestinationField '{destField}' does not exist in the form field collection.");
+                    if (map.ContainsKey(destField))
+                        throw new InvalidOperationException($"DestinationField '{destField}' is already used by '{map[destField].FieldName}' and cannot be duplicated in RelationField mapping.");
+
+                    map[destField] = field;
+                }
+            }
+
+            return map;
+        }
+
+        /// <summary>
         /// 設定序列化狀態。
         /// </summary>
         /// <param name="serializeState">序列化狀態。</param>
@@ -96,5 +143,7 @@ namespace Bee.Define
         {
             return $"{TableName} - {DisplayName}";
         }
+
+
     }
 }
