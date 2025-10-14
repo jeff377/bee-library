@@ -17,12 +17,12 @@ namespace Bee.Define
         /// </summary>
         /// <param name="fieldName">關聯欄位的名稱。</param>
         /// <param name="sourceProgId">關聯來源的程式代碼。</param>
-        /// <param name="sourceFieldName">關聯來源的欄位名稱。</param>
-        public RelationFieldReference(string fieldName, string sourceProgId, string sourceFieldName)
+        /// <param name="sourceField">關聯來源的欄位名稱。</param>
+        public RelationFieldReference(string fieldName, string sourceProgId, string sourceField)
         {
             FieldName = fieldName;
             SourceProgId = sourceProgId;
-            SourceFieldName = sourceFieldName;
+            SourceField = sourceField;
         }
 
         /// <summary>
@@ -42,6 +42,6 @@ namespace Bee.Define
         /// <summary>
         /// 關聯來源的欄位名稱。
         /// </summary>
-        public string SourceFieldName { get; set; }
+        public string SourceField { get; set; }
     }
 }

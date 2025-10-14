@@ -62,7 +62,7 @@ namespace Bee.Db
             var srcFormDefine = CacheFunc.GetFormDefine(reference.SourceProgId);
             var srcTable = srcFormDefine.MasterTable;
 
-            var srcField = srcTable.Fields[reference.SourceFieldName];
+            var srcField = srcTable.Fields[reference.SourceField];
             var destField = _formTable.Fields[reference.FieldName];
 
             // 檢查是否已存在對應的欄位對應
@@ -95,7 +95,7 @@ namespace Bee.Db
                 {
                     FieldName = reference.FieldName,
                     SourceAlias = tableJoin.RightAlias,
-                    SourceField = tableJoin.Conditions[0].RightField
+                    SourceField = reference.SourceField
                 };
                 context.FieldMappings.Add(fieldMapping);
             }
