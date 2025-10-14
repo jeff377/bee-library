@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bee.Db
+﻿namespace Bee.Db
 {
     /// <summary>
     /// 描述一次 Select 查詢時所需的欄位來源與 Join 關係集合。

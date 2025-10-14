@@ -49,5 +49,14 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [Description("目的欄位。")]
         public string DestinationField { get; set; } = string.Empty;
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{SourceField} -> {DestinationField}"
+            ;
+        }
     }
 }

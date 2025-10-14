@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bee.Base;
+﻿using Bee.Base;
 
 namespace Bee.Db
 {
     /// <summary>
     /// 描述查詢中欄位與其原始資料來源的對應關係。
-    /// 查詢欄位包含 Select 或 Where 子句使用到的欄位。
+    /// 查詢欄位包含 Select、 Where 及 Order 子句使用到的欄位。
     /// </summary>
     public class QueryFieldMapping : KeyCollectionItem
     {

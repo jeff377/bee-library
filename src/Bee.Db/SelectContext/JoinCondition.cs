@@ -6,6 +6,23 @@
     public class JoinCondition
     {
         /// <summary>
+        /// 建構函式。
+        /// </summary>
+        public JoinCondition()
+        { }
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="leftField">左側欄位。</param>
+        /// <param name="rightField">右側欄位。</param>
+        public JoinCondition(string leftField, string rightField)
+        {
+            LeftField = leftField;
+            RightField = rightField;
+        }
+
+        /// <summary>
         /// 左側欄位（包含別名）。
         /// </summary>
         public string LeftField { get; set; }
