@@ -16,7 +16,7 @@ namespace Bee.Define
     public class FormTable : KeyCollectionItem
     {
         private FormFieldCollection _fields = null;
-        private Dictionary<FormField> _destinationFieldMap = null;
+        private RelationFieldReferenceCollection _relationFieldReferences = null;
 
         #region 建構函式
 
@@ -82,27 +82,26 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得所有 RelationField 的 DestinationField 與來源 FormField 的對應集合。
+        /// 取得關聯欄位的參照來源集合。
         /// </summary>
         [Browsable(false)]
         [XmlIgnore]
-        public Dictionary<FormField> DestinationFieldMap
+        public RelationFieldReferenceCollection RelationFieldReferences
         {
             get
             {
-                if (_destinationFieldMap == null)
-                    _destinationFieldMap = CreateDestinationFieldMap();
-                return _destinationFieldMap;
+                if (_relationFieldReferences == null)
+                    _relationFieldReferences = CreateRelationFieldReferences();
+                return _relationFieldReferences;
             }
         }
 
         /// <summary>
-        /// 建立所有 RelationField 的 DestinationField 與來源 FormField 的對應集合。
-        /// DestinationField 為唯一鍵值，若重複則拋出例外。
+        /// 建立關聯欄位的參照來源集合。
         /// </summary>
-        private Dictionary<FormField> CreateDestinationFieldMap()
+        private RelationFieldReferenceCollection CreateRelationFieldReferences()
         {
-            var map = new Dictionary<FormField>();
+            var reference = new RelationFieldReferenceCollection();
 
             foreach (var field in Fields)
             {
@@ -116,14 +115,14 @@ namespace Bee.Define
                     string destField = mapping.DestinationField;
                     if (!Fields.Contains(destField))
                         throw new KeyNotFoundException($"DestinationField '{destField}' does not exist in the form field collection.");
-                    if (map.ContainsKey(destField))
-                        throw new InvalidOperationException($"DestinationField '{destField}' is already used by '{map[destField].FieldName}' and cannot be duplicated in RelationField mapping.");
+                    if (reference.Contains(destField))
+                        throw new InvalidOperationException($"DestinationField '{destField}' has duplicate data in RelationFieldReferences.");
 
-                    map[destField] = field;
+                    reference.Add(new RelationFieldReference(destField, field.RelationProgId, mapping.SourceField));
                 }
             }
 
-            return map;
+            return reference;
         }
 
         /// <summary>

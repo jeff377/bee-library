@@ -49,9 +49,9 @@ namespace Bee.Define.UnitTests
                 Type = FieldType.RelationField
             });
 
-            var destFieldMap = table.DestinationFieldMap;
+            var references = table.RelationFieldReferences;
 
-            Assert.NotNull(destFieldMap);
+            Assert.NotNull(references);
         }
     }
 }

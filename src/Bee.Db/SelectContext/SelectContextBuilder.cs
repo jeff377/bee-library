@@ -36,13 +36,12 @@ namespace Bee.Db
                 var field = _formTable.Fields[fieldName];
                 if (field != null && field.Type == FieldType.RelationField)
                 {
-                    if (_formTable.DestinationFieldMap.ContainsKey(fieldName))
-                    {                       
-                        var foreignKeyField = _formTable.DestinationFieldMap[fieldName];
+                    if (_formTable.RelationFieldReferences.Contains(fieldName))
+                    {
+                        var reference = _formTable.RelationFieldReferences[fieldName];
                         string tableAlias = "A";
-                        string relationProgId = _formTable.DestinationFieldMap[fieldName].RelationProgId;
-                        string key = $"{_formTable.TableName}.{field.FieldName}.{relationProgId}";
-                        AddTableJoin(context, key, _formTable.DbTableName, tableAlias, fieldName, foreignKeyField);
+                        string key = $"{_formTable.TableName}.{fieldName}.{reference.SourceProgId}";
+                        AddTableJoin(context, key, _formTable.DbTableName, tableAlias, reference);
                     }
                 }
             }
@@ -57,38 +56,49 @@ namespace Bee.Db
         /// <param name="key">Join 關係的唯一鍵值。</param>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="tableAlias">資料表別名。</param>
-        /// <param name="fieldName">要取回的欄位名稱。</param>
-        /// <param name="foreignKeyField">對應外部表的主鍵欄位。</param>
-        private void AddTableJoin(SelectContext context, string key, string tableName, string tableAlias, string fieldName, FormField foreignKeyField)
+        /// <param name="reference">關連欄位的參照來源。</param>
+        private void AddTableJoin(SelectContext context, string key, string tableName, string tableAlias, RelationFieldReference reference)
         {
-            var formDefine = CacheFunc.GetFormDefine(foreignKeyField.RelationProgId);
-            var formTable = formDefine.MasterTable;
+            var srcFormDefine = CacheFunc.GetFormDefine(reference.SourceProgId);
+            var srcTable = srcFormDefine.MasterTable;
 
-            foreach (var mapping in foreignKeyField.RelationFieldMappings)
+            var srcField = srcTable.Fields[reference.SourceFieldName];
+            var destField = _formTable.Fields[reference.FieldName];
+
+            // 檢查是否已存在對應的欄位對應
+            var tableJoin = context.Joins[key];
+            if (tableJoin == null)
             {
-                var sourceField = formTable.Fields[mapping.SourceField];
-                var destField = _formTable.Fields[mapping.DestinationField];
-
-                // 檢查是否已存在對應的欄位對應
-                if (!context.FieldMappings.Contains(key))
+                tableJoin = new TableJoin()
                 {
-                    // 加入欄位對應 (假設 sourceField.FieldName 為來源欄位, key 為目的欄位)
-                    var join = new TableJoin()
-                    {
-                        Key = key,
-                        LeftTable = tableName,
-                        LeftAlias = tableAlias,
-                        RightTable = formTable.DbTableName,
-                        RightAlias = GetNextTableAlias(tableAlias)
-                    };
-                    string leftFIeld = $"{join.LeftAlias},{foreignKeyField.FieldName}";
-                    string rightField = $"{join.RightAlias},{SysFields.RowId}";
-                    join.Conditions.Add(new JoinCondition(leftFIeld, rightField));
-                }
+                    Key = key,
+                    LeftTable = tableName,
+                    LeftAlias = tableAlias,
+                    RightTable = srcTable.DbTableName,
+                    RightAlias = GetNextTableAlias(tableAlias)
+                };
+                string leftFIeld = $"{tableJoin.LeftAlias},{reference.FieldName}";
+                string rightField = $"{tableJoin.RightAlias},{SysFields.RowId}";
+                tableJoin.Conditions.Add(new JoinCondition(leftFIeld, rightField));
             }
 
-
-
+            if (srcField.Type == FieldType.RelationField)
+            {
+                // 若來源欄位是 RelationField，則需往上階找原始關連來源
+                var srcReference = srcTable.RelationFieldReferences[srcField.FieldName];
+                string srcKey = key + "." + srcReference.SourceProgId;
+                AddTableJoin(context, srcKey, tableJoin.RightTable, tableJoin.RightAlias, srcReference);
+            }
+            else
+            {
+                var fieldMapping = new QueryFieldMapping()
+                {
+                    FieldName = reference.FieldName,
+                    SourceAlias = tableJoin.RightAlias,
+                    SourceField = tableJoin.Conditions[0].RightField
+                };
+                context.FieldMappings.Add(fieldMapping);
+            }
         }
 
 
