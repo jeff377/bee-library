@@ -34,6 +34,7 @@
     <Project Path="tests/Bee.Connect.UnitTests/Bee.Connect.UnitTests.csproj" />
     <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
     <Project Path="tests/Bee.Define.UnitTests/Bee.Define.UnitTests.csproj" />
+    <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />
   </Folder>
   <Folder Name="/tools/">
     <Project Path="tools/BeeDbUpgrade/BeeDbUpgrade.csproj" />

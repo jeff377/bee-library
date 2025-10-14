@@ -1,8 +1,6 @@
 ﻿using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
-using System;
-using Xunit;
 
 namespace Bee.Tests.Shared
 {
@@ -23,7 +21,7 @@ namespace Bee.Tests.Shared
             var settings = CacheFunc.GetSystemSettings();
             settings.Initialize();
             // 註冊資料庫提供者
-            //DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
 

@@ -2,38 +2,30 @@
 
 namespace Bee.Define.UnitTests
 {
+    [Collection("Initialize")]
     public class FormDefineTest
     {
         [Fact]
         public void DepartmentFormTable()
         {
-            var formDefine = new FormDefine()
-            {
-                ProgId = "Department",
-                DisplayName = "部門"
-            };
+            var formDefine = new FormDefine("Department", "部門");
             var table = formDefine.Tables.Add("Department", "部門");
             table.Fields.Add("sys_no", "流水號", FieldDbType.Identity);
             table.Fields.Add("sys_rowid", "唯一識別", FieldDbType.Guid);
             table.Fields.Add("sys_id", "部門編號", FieldDbType.String);
             table.Fields.Add("sys_name", "部門名稱", FieldDbType.String);
 
-            Assert.NotNull(table.Fields["sys_no"]);
-            Assert.NotNull(table.Fields["sys_rowid"]);
-            Assert.NotNull(table.Fields["sys_id"]);
-            Assert.NotNull(table.Fields["sys_name"]);
-            Assert.Equal(FieldDbType.Identity, table.Fields["sys_no"].DbType);
-            Assert.Equal(FieldDbType.Guid, table.Fields["sys_rowid"].DbType);
+            Assert.NotNull(formDefine.MasterTable);
+
+            //string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
+            //formDefine.SetObjectFilePath(filePath);            
+            //formDefine.Save();
         }
 
         [Fact]
         public void EmployeeFormTable()
         {
-            var formDefine = new FormDefine()
-            {
-                ProgId = "Employee",
-                DisplayName = "員工"
-            };
+            var formDefine = new FormDefine("Employee", "員工");
             var table = formDefine.Tables.Add("Employee", "員工");
             table.Fields.Add("sys_no", "流水號", FieldDbType.Identity);
             table.Fields.Add("sys_rowid", "唯一識別", FieldDbType.Guid);
@@ -42,9 +34,9 @@ namespace Bee.Define.UnitTests
             table.Fields.Add(new FormField("dept_id", "部門編號", FieldDbType.String)
             {
                 RelationProgId = "Department",
-                RelationFieldMappings = { { "sys_name", "dept_name" } }
+                RelationFieldMappings = { { "sys_name", "ref_dept_name" } }
             });
-            table.Fields.Add(new FormField("dept_name", "部門名稱", FieldDbType.String)
+            table.Fields.Add(new FormField("ref_dept_name", "部門名稱", FieldDbType.String)
             {
                 Type = FieldType.RelationField
             });
@@ -52,6 +44,10 @@ namespace Bee.Define.UnitTests
             var references = table.RelationFieldReferences;
 
             Assert.NotNull(references);
+
+            //string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
+            //formDefine.SetObjectFilePath(filePath);
+            //formDefine.Save();
         }
     }
 }

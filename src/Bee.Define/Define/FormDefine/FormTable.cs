@@ -46,7 +46,11 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("資料表名稱。")]
-        public string TableName { get; set; } = string.Empty;
+        public string TableName
+        {
+            get { return this.Key; }
+            set { this.Key = value; }
+        }
 
         /// <summary>
         /// 資料庫的資料表名稱。

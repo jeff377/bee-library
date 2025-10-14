@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Bee.Base\Bee.Base.csproj" />
     <ProjectReference Include="..\..\src\Bee.Define\Bee.Define.csproj" />
+    <ProjectReference Include="..\Bee.Tests.Shared\Bee.Tests.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

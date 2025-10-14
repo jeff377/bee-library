@@ -5,6 +5,7 @@ using Bee.Define;
 
 namespace Bee.Business.UnitTests
 {
+    [Collection("Initialize")]
     public class BusinessTest
     {
         /// <summary>
@@ -12,15 +13,6 @@ namespace Bee.Business.UnitTests
         /// </summary>
         public BusinessTest()
         {
-            // 設定定義路徑
-            BackendInfo.DefinePath = @"D:\DefinePath";
-            // 初始化金鑰
-            var settings = CacheFunc.GetSystemSettings();
-            settings.Initialize();
-            // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
-            // 預設資料庫識別
-            BackendInfo.DatabaseId = "common";
         }
 
         /// <summary>

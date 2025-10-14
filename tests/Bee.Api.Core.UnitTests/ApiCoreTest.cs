@@ -1,6 +1,4 @@
 using Bee.Base;
-using Bee.Cache;
-using Bee.Db;
 using Bee.Define;
 
 namespace Bee.Api.Core.UnitTests

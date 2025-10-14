@@ -26,6 +26,17 @@ namespace Bee.Define
         {
         }
 
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="progId">程式代碼。</param>
+        /// <param name="displayName">顯示名稱。</param>
+        public FormDefine(string progId, string displayName)
+        { 
+            ProgId= progId;
+            DisplayName = displayName;
+        }
+
         #endregion
 
         #region IObjectSerializeFile 介面
