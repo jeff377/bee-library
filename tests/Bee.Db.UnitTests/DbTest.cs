@@ -208,8 +208,7 @@ namespace Bee.Db.UnitTests
         {
             var formDefine = CacheFunc.GetFormDefine("Employee");
             var builder = new SelectContextBuilder(formDefine.MasterTable);
-            string[] fieldNames = new string[] { "sys_no", "sys_id", "sys_name", "dept_id", "ref_dept_name" };
-            var context = builder.Build(fieldNames);
+            var context = builder.Build();
         }
     }
 }

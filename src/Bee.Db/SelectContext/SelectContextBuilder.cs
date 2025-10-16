@@ -1,8 +1,6 @@
-﻿using System.Collections.Generic;
-using Bee.Base;
+﻿using Bee.Base;
 using Bee.Cache;
 using Bee.Define;
-using MessagePack.Resolvers;
 
 namespace Bee.Db
 {
@@ -26,24 +24,24 @@ namespace Bee.Db
         /// <summary>
         /// 產生 SelectContext。
         /// </summary>
-        /// <param name="fieldNames">欄位清單（包含 Select、Where 及 Order 子句欄位）。</param>
-        public SelectContext Build(IEnumerable<string> fieldNames)
+        public SelectContext Build()
         {
             var context = new SelectContext();
 
-            foreach (string fieldName in fieldNames)
+            // 主表固定 A
+            string mainAlias = "A";
+
+            foreach (var field in _formTable.Fields)
             {
-                var field = _formTable.Fields[fieldName];
-                if (field != null && field.Type == FieldType.RelationField)
-                {
-                    if (_formTable.RelationFieldReferences.Contains(fieldName))
-                    {
-                        var reference = _formTable.RelationFieldReferences[fieldName];
-                        string tableAlias = "A";
-                        string key = $"{_formTable.TableName}.{fieldName}.{reference.SourceProgId}";
-                        AddTableJoin(context, key, _formTable.DbTableName, tableAlias, reference);
-                    }
-                }
+                if (field.Type != FieldType.RelationField) continue;
+
+                var fieldName = field.FieldName;
+                if (!_formTable.RelationFieldReferences.Contains(fieldName)) continue;
+
+                var reference = _formTable.RelationFieldReferences[fieldName];
+                // 以「主表名.欄位名.SourceProgId」當 Join 唯一鍵
+                string key = $"{_formTable.TableName}.{fieldName}.{reference.SourceProgId}";
+                AddTableJoin(context, key, _formTable.DbTableName, mainAlias, reference);
             }
             return context;
         }
@@ -65,7 +63,7 @@ namespace Bee.Db
             var srcField = srcTable.Fields[reference.SourceField];
             var destField = _formTable.Fields[reference.FieldName];
 
-            // 檢查是否已存在對應的欄位對應
+            // 若尚未存在對應的 Join，就建立
             var join = context.Joins.GetOrDefault(key);
             if (join == null)
             {
@@ -82,9 +80,9 @@ namespace Bee.Db
                 context.Joins.Add(join);
             }
 
+            // 遞迴處理多層 RelationField（若來源欄位仍是關聯）
             if (srcField.Type == FieldType.RelationField)
             {
-                // 若來源欄位是 RelationField，則需往上階找原始關連來源
                 var srcReference = srcTable.RelationFieldReferences[srcField.FieldName];
                 string srcKey = key + "." + srcReference.SourceProgId;
                 AddTableJoin(context, srcKey, join.RightTable, join.RightAlias, srcReference);
@@ -111,7 +109,7 @@ namespace Bee.Db
             string baseValues = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             string nextAlias = StrFunc.GetNextId(tableAlias, baseValues);
             // 若資料表別名為關鍵字，則重取資料表別名
-            if (StrFunc.IsEqualsOr(nextAlias, "AS", "BY", "IF", "IN", "IS", "OF", "OR", "TO"))
+            if (StrFunc.IsEqualsOr(nextAlias, "AS", "BY", "IF", "IN", "IS", "OF", "OR", "TO", "ON"))
                 nextAlias = StrFunc.GetNextId(tableAlias, baseValues);
             return nextAlias;
         }
