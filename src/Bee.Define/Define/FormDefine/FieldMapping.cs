@@ -55,8 +55,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{SourceField} -> {DestinationField}"
-            ;
+            return $"{SourceField} -> {DestinationField}";
         }
     }
 }

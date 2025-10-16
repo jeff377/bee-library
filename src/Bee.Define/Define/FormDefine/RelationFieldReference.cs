@@ -43,5 +43,13 @@ namespace Bee.Define
         /// 關聯來源的欄位名稱。
         /// </summary>
         public string SourceField { get; set; }
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{SourceProgId}.{SourceField} -> {FieldName}";
+        }
     }
 }

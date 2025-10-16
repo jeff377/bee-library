@@ -203,6 +203,13 @@ namespace Bee.Db.UnitTests
             var dbTable = helper.GetTableSchema("ts_user");
         }
 
-
+        [Fact]
+        public void SelectContextTest()
+        {
+            var formDefine = CacheFunc.GetFormDefine("Employee");
+            var builder = new SelectContextBuilder(formDefine.MasterTable);
+            string[] fieldNames = new string[] { "sys_no", "sys_id", "sys_name", "dept_id", "ref_dept_name" };
+            var context = builder.Build(fieldNames);
+        }
     }
 }

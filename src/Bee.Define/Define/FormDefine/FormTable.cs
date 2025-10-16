@@ -105,7 +105,7 @@ namespace Bee.Define
         /// </summary>
         private RelationFieldReferenceCollection CreateRelationFieldReferences()
         {
-            var reference = new RelationFieldReferenceCollection();
+            var references = new RelationFieldReferenceCollection();
 
             foreach (var field in Fields)
             {
@@ -119,14 +119,14 @@ namespace Bee.Define
                     string destField = mapping.DestinationField;
                     if (!Fields.Contains(destField))
                         throw new KeyNotFoundException($"DestinationField '{destField}' does not exist in the form field collection.");
-                    if (reference.Contains(destField))
+                    if (references.Contains(destField))
                         throw new InvalidOperationException($"DestinationField '{destField}' has duplicate data in RelationFieldReferences.");
 
-                    reference.Add(new RelationFieldReference(destField, field.RelationProgId, mapping.SourceField));
+                    references.Add(new RelationFieldReference(destField, field.RelationProgId, mapping.SourceField));
                 }
             }
 
-            return reference;
+            return references;
         }
 
         /// <summary>

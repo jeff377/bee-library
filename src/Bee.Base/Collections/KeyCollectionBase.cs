@@ -149,5 +149,16 @@ namespace Bee.Base
             base.RemoveItem(index);
         }
 
+        /// <summary>
+        /// 依鍵值取得成員，若不存在則回傳 null。
+        /// </summary>
+        /// <param name="key">鍵值。</param>
+        public T GetOrDefault(string key)
+        {
+            if (Contains(key))
+                return this[key];
+            else
+                return default;
+        }
     }
 }

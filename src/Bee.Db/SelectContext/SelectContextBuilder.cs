@@ -66,10 +66,10 @@ namespace Bee.Db
             var destField = _formTable.Fields[reference.FieldName];
 
             // 檢查是否已存在對應的欄位對應
-            var tableJoin = context.Joins[key];
-            if (tableJoin == null)
+            var join = context.Joins.GetOrDefault(key);
+            if (join == null)
             {
-                tableJoin = new TableJoin()
+                join = new TableJoin()
                 {
                     Key = key,
                     LeftTable = tableName,
@@ -77,9 +77,10 @@ namespace Bee.Db
                     RightTable = srcTable.DbTableName,
                     RightAlias = GetNextTableAlias(tableAlias)
                 };
-                string leftFIeld = $"{tableJoin.LeftAlias},{reference.FieldName}";
-                string rightField = $"{tableJoin.RightAlias},{SysFields.RowId}";
-                tableJoin.Conditions.Add(new JoinCondition(leftFIeld, rightField));
+                string leftFIeld = $"{join.LeftAlias},{reference.FieldName}";
+                string rightField = $"{join.RightAlias},{SysFields.RowId}";
+                join.Conditions.Add(new JoinCondition(leftFIeld, rightField));
+                context.Joins.Add(join);
             }
 
             if (srcField.Type == FieldType.RelationField)
@@ -87,14 +88,14 @@ namespace Bee.Db
                 // 若來源欄位是 RelationField，則需往上階找原始關連來源
                 var srcReference = srcTable.RelationFieldReferences[srcField.FieldName];
                 string srcKey = key + "." + srcReference.SourceProgId;
-                AddTableJoin(context, srcKey, tableJoin.RightTable, tableJoin.RightAlias, srcReference);
+                AddTableJoin(context, srcKey, join.RightTable, join.RightAlias, srcReference);
             }
             else
             {
                 var fieldMapping = new QueryFieldMapping()
                 {
                     FieldName = reference.FieldName,
-                    SourceAlias = tableJoin.RightAlias,
+                    SourceAlias = join.RightAlias,
                     SourceField = reference.SourceField
                 };
                 context.FieldMappings.Add(fieldMapping);
