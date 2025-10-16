@@ -26,5 +26,13 @@ namespace Bee.Db
         /// 原始資料表欄位名稱。
         /// </summary>
         public string SourceField { get; set; }
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            return $"{SourceAlias}.{SourceField} AS {FieldName}";
+        }
     }
 }

@@ -20,7 +20,7 @@ namespace Bee.Db
         /// <summary>
         /// Join 類型。
         /// </summary>
-        public JoinType JoinType { get; set; }
+        public JoinType JoinType { get; set; } = JoinType.Left;
 
         /// <summary>
         /// 左側資料表名稱。
@@ -33,6 +33,11 @@ namespace Bee.Db
         public string LeftAlias { get; set; }
 
         /// <summary>
+        /// 左側欄位名稱。
+        /// </summary>
+        public string LeftField { get; set; }
+
+        /// <summary>
         /// 右側資料表名稱。
         /// </summary>
         public string RightTable { get; set; }
@@ -43,19 +48,17 @@ namespace Bee.Db
         public string RightAlias { get; set; }
 
         /// <summary>
-        /// Join 條件清單。
+        /// 右側欄位名稱。
         /// </summary>
-        public List<JoinCondition> Conditions { get; set; } = new List<JoinCondition>();
+        public string RightField { get; set; }
 
         /// <summary>
-        /// 轉換為 SQL JOIN 語法。
+        /// 物件描述文字。
         /// </summary>
-        /// <returns>完整的 JOIN 子句字串。</returns>
-        public string ToSql()
+        public override string ToString()
         {
             var joinKeyword = JoinType.ToString().ToUpperInvariant() + " JOIN";
-            var conditionSql = string.Join(" AND ", Conditions.ConvertAll(c => c.ToSql()));
-            return $"{joinKeyword} {RightTable} {RightAlias} ON {conditionSql}";
+            return $"{joinKeyword} {RightTable} {RightAlias} ON {LeftAlias}.{LeftField} = {RightAlias}.{RightField}";
         }
     }
 

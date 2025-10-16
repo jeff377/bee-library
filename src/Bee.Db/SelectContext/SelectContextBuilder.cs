@@ -74,12 +74,11 @@ namespace Bee.Db
                     Key = key,
                     LeftTable = tableName,
                     LeftAlias = tableAlias,
+                    LeftField = reference.FieldName,
                     RightTable = srcTable.DbTableName,
-                    RightAlias = GetNextTableAlias(tableAlias)
+                    RightAlias = GetNextTableAlias(tableAlias),
+                    RightField = SysFields.RowId
                 };
-                string leftFIeld = $"{join.LeftAlias},{reference.FieldName}";
-                string rightField = $"{join.RightAlias},{SysFields.RowId}";
-                join.Conditions.Add(new JoinCondition(leftFIeld, rightField));
                 context.Joins.Add(join);
             }
 
