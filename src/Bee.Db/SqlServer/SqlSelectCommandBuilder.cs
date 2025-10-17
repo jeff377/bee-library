@@ -2,6 +2,7 @@ using Bee.Base;
 using Bee.Define;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Bee.Db
@@ -56,8 +57,11 @@ namespace Bee.Db
                     if (mapping == null)
                         throw new InvalidOperationException($"Field mapping for '{fieldName}' is null.");
                     selectParts.Add($"    {mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)} AS {QuoteIdentifier(fieldName)}");
-                    if (!joins.Contains(mapping.TableJoin.Key))
-                        joins.Add(mapping.TableJoin);
+
+                    AddTableJoin(selectContext, joins, mapping.TableJoin);
+
+                    //if (!joins.Contains(mapping.TableJoin.Key))
+                    //    joins.Add(mapping.TableJoin);
                 }
             }
 
@@ -65,7 +69,8 @@ namespace Bee.Db
             sb.AppendLine(string.Join(",\n", selectParts));
             sb.AppendLine($"FROM {QuoteIdentifier(dbTableName)} A");
 
-            foreach (var join in joins)
+            var joinList = joins.OrderBy(j => j.RightAlias);
+            foreach (var join in joinList)
             {
                 var joinKeyword = join.JoinType.ToString().ToUpperInvariant() + " JOIN";
                 sb.AppendLine($"{joinKeyword} {QuoteIdentifier(join.RightTable)} {join.RightAlias} ON {join.LeftAlias}.{QuoteIdentifier(join.LeftField)} = {join.RightAlias}.{QuoteIdentifier(join.RightField)}");
@@ -73,6 +78,33 @@ namespace Bee.Db
 
             string sql = sb.ToString();
             return new DbCommandSpec(DbCommandKind.DataTable, sql);
+        }
+
+        /// <summary>
+        /// 將資料表 Join 關係加入集合。
+        /// 防止因環狀 Join 關係造成無窮遞迴。
+        /// </summary>
+        /// <param name="context">描述 Select 查詢時所需的欄位來源與 Join 關係集合。</param>
+        /// <param name="joins">資料表 Join 關係集合。</param>
+        /// <param name="join">要加入資料表 Join 關係。</param>
+        /// <param name="visited">已遞迴過的 Join Key 集合，用於防止環狀參照造成無窮遞迴。呼叫端可不傳，預設自動建立。</param>
+        private void AddTableJoin(SelectContext context, TableJoinCollection joins, TableJoin join, HashSet<string> visited = null)
+        {
+            if (visited == null)
+                visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            if (visited.Contains(join.Key)) { return; }
+            visited.Add(join.Key);
+
+            if (joins.Contains(join.Key)) { return; }
+
+            joins.Add(join);
+            if (join.LeftAlias == "A") { return; }
+
+            // 如果 LeftAlias 不為 A，表示左側非主表，要加入中間的 JOIN 關係
+            var srcJoin = context.Joins.FindRightAlias(join.LeftAlias);
+            if (srcJoin != null)
+                AddTableJoin(context, joins, srcJoin, visited);
         }
 
         /// <summary>
