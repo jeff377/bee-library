@@ -225,6 +225,7 @@ namespace Bee.Db.UnitTests
             var formDefine = CacheFunc.GetFormDefine("Employee");
             var builder = new SqlFormCommandBuilder(formDefine);
             var command = builder.BuildSelectCommand("Employee", string.Empty);
+            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_supervisor_name");
         }
     }
 }

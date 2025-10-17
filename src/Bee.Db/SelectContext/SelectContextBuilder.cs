@@ -11,6 +11,7 @@ namespace Bee.Db
     public class SelectContextBuilder
     {
         private FormTable _formTable;
+        private string _currentTableAlias = "A";  // 目前使用的資料表別名
 
         /// <summary>
         /// 建構函式。
@@ -28,40 +29,35 @@ namespace Bee.Db
         {
             var context = new SelectContext();
 
-            // 主表固定 A
-            string mainAlias = "A";
+            // 主表的資料表別名為 A
+            _currentTableAlias = "A";
 
             foreach (var field in _formTable.Fields)
             {
-                if (field.Type != FieldType.RelationField) continue;
-
-                var fieldName = field.FieldName;
-                if (!_formTable.RelationFieldReferences.Contains(fieldName)) continue;
-
-                var reference = _formTable.RelationFieldReferences[fieldName];
-                // 以「主表名.欄位名.SourceProgId」當 Join 唯一鍵
-                string key = $"{_formTable.TableName}.{fieldName}.{reference.SourceProgId}";
-                AddTableJoin(context, key, _formTable.DbTableName, mainAlias, reference);
+                // 針對外鍵欄位，建立資料表之間的 Join 關係
+                if (field.Type == FieldType.DbField && StrFunc.IsNotEmpty(field.RelationProgId))
+                {
+                    // 以「主表名.欄位名.SourceProgId」當 Join 唯一鍵
+                    string key = $"{_formTable.TableName}.{field.FieldName}.{field.RelationProgId}";
+                    AddTableJoin(context, key, field, _formTable.DbTableName, _currentTableAlias);
+                }
             }
             return context;
         }
 
         /// <summary>
-        /// 加入兩個資料表之間的 Join 關係到 SelectContext。
-        /// 若尚未存在對應的 Join，則建立並加入 Joins 集合。
+        /// 依據外鍵欄位，將兩個資料表之間的 Join 關係加入至 SelectContext。
         /// </summary>
         /// <param name="context">SelectContext 實例。</param>
         /// <param name="key">Join 關係的唯一鍵值。</param>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <param name="tableAlias">資料表別名。</param>
-        /// <param name="reference">關連欄位的參照來源。</param>
-        private void AddTableJoin(SelectContext context, string key, string tableName, string tableAlias, RelationFieldReference reference)
+        /// <param name="foreignKeyField">外鍵欄位。</param>
+        /// <param name="leftTable">左側資料表名稱。</param>
+        /// <param name="leftAlias">左側資料表別名。</param>
+        /// <param name="queryFieldName">指定建立 QueryFieldMapping 的欄位名稱。</param>
+        private void AddTableJoin(SelectContext context, string key, FormField foreignKeyField, string leftTable, string leftAlias, string queryFieldName = "")
         {
-            var srcFormDefine = CacheFunc.GetFormDefine(reference.SourceProgId);
+            var srcFormDefine = CacheFunc.GetFormDefine(foreignKeyField.RelationProgId);
             var srcTable = srcFormDefine.MasterTable;
-
-            var srcField = srcTable.Fields[reference.SourceField];
-            var destField = _formTable.Fields[reference.FieldName];
 
             // 若尚未存在對應的 Join，就建立
             var join = context.Joins.GetOrDefault(key);
@@ -70,33 +66,38 @@ namespace Bee.Db
                 join = new TableJoin()
                 {
                     Key = key,
-                    LeftTable = tableName,
-                    LeftAlias = tableAlias,
-                    LeftField = reference.FieldName,
+                    LeftTable = leftTable,
+                    LeftAlias = leftAlias,
+                    LeftField = foreignKeyField.FieldName,
                     RightTable = srcTable.DbTableName,
-                    RightAlias = GetNextTableAlias(tableAlias),
+                    RightAlias = GetActiveTableAlias(),
                     RightField = SysFields.RowId
                 };
                 context.Joins.Add(join);
             }
 
-            // 遞迴處理多層 RelationField（若來源欄位仍是關聯）
-            if (srcField.Type == FieldType.RelationField)
+            foreach (var mapping in foreignKeyField.RelationFieldMappings)
             {
-                var srcReference = srcTable.RelationFieldReferences[srcField.FieldName];
-                string srcKey = key + "." + srcReference.SourceProgId;
-                AddTableJoin(context, srcKey, join.RightTable, join.RightAlias, srcReference);
-            }
-            else
-            {
-                var fieldMapping = new QueryFieldMapping()
+                var srcField = srcTable.Fields[mapping.SourceField];
+
+                // 遞迴處理多層 RelationField（若來源欄位仍是關聯）
+                if (srcField.Type == FieldType.RelationField)
                 {
-                    FieldName = reference.FieldName,
-                    SourceAlias = join.RightAlias,
-                    SourceField = reference.SourceField,
-                    TableJoin = join
-                };
-                context.FieldMappings.Add(fieldMapping);
+                    var reference = srcTable.RelationFieldReferences[srcField.FieldName];
+                    string srcKey = key + "." + reference.ForeignKeyField.RelationProgId;
+                    AddTableJoin(context, srcKey, reference.ForeignKeyField, join.RightTable, join.RightAlias, mapping.DestinationField);
+                }
+                else
+                {
+                    var fieldMapping = new QueryFieldMapping()
+                    {
+                        FieldName = StrFunc.IsEmpty(queryFieldName) ? mapping.DestinationField : queryFieldName,
+                        SourceAlias = join.RightAlias,
+                        SourceField = srcField.FieldName,
+                        TableJoin = join
+                    };
+                    context.FieldMappings.Add(fieldMapping);
+                }
             }
         }
 
@@ -115,6 +116,13 @@ namespace Bee.Db
             return nextAlias;
         }
 
-
+        /// <summary>
+        /// 取得作用的資料表別名。
+        /// </summary>
+        private string GetActiveTableAlias()
+        {
+            _currentTableAlias = GetNextTableAlias(_currentTableAlias);
+            return _currentTableAlias;
+        }
     }
 }

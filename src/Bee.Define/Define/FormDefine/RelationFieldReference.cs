@@ -16,11 +16,13 @@ namespace Bee.Define
         /// 建構函式。
         /// </summary>
         /// <param name="fieldName">關聯欄位的名稱。</param>
+        /// <param name="foreignKeyField">外鍵欄位。</param>
         /// <param name="sourceProgId">關聯來源的程式代碼。</param>
         /// <param name="sourceField">關聯來源的欄位名稱。</param>
-        public RelationFieldReference(string fieldName, string sourceProgId, string sourceField)
+        public RelationFieldReference(string fieldName, FormField foreignKeyField, string sourceProgId, string sourceField)
         {
             FieldName = fieldName;
+            ForeignKeyField = foreignKeyField;
             SourceProgId = sourceProgId;
             SourceField = sourceField;
         }
@@ -33,6 +35,11 @@ namespace Bee.Define
             get { return this.Key; }
             set { this.Key = value; }
         }
+
+        /// <summary>
+        /// 外鍵欄位。
+        /// </summary>
+        public FormField ForeignKeyField { get; set; }
 
         /// <summary>
         /// 關聯來源的程式代碼。

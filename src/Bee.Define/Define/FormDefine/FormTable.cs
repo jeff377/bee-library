@@ -122,7 +122,7 @@ namespace Bee.Define
                     if (references.Contains(destField))
                         throw new InvalidOperationException($"DestinationField '{destField}' has duplicate data in RelationFieldReferences.");
 
-                    references.Add(new RelationFieldReference(destField, field.RelationProgId, mapping.SourceField));
+                    references.Add(new RelationFieldReference(destField, field, field.RelationProgId, mapping.SourceField));
                 }
             }
 
