@@ -1,6 +1,4 @@
-﻿using System.Data.Common;
-
-namespace Bee.Db
+﻿namespace Bee.Db
 {
     /// <summary>
     /// 建立表單相關命令語法產生器，包含 Select、Insert、Update、Delete 語法。
