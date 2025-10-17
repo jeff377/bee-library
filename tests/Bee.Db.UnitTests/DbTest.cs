@@ -207,8 +207,16 @@ namespace Bee.Db.UnitTests
         public void SelectContextTest()
         {
             var formDefine = CacheFunc.GetFormDefine("Employee");
-            var builder = new SelectContextBuilder(formDefine.MasterTable);
+            var builder = new SelectContextBuilder(formDefine.MasterTable);         
             var context = builder.Build();
+        }
+
+        [Fact]
+        public void SelectCommandTest()
+        {
+            var formDefine = CacheFunc.GetFormDefine("Employee");
+            var builder = new SqlSelectCommandBuilder(formDefine);
+            var command = builder.Build("Employee", string.Empty);
         }
     }
 }

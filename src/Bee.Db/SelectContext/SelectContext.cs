@@ -1,7 +1,7 @@
 ﻿namespace Bee.Db
 {
     /// <summary>
-    /// 描述一次 Select 查詢時所需的欄位來源與 Join 關係集合。
+    /// 描述 Select 查詢時所需的欄位來源與 Join 關係集合。
     /// 包含查詢中所有使用到的欄位對應（Select、Where 等）及相關的 TableJoin 設定，
     /// 以便組合完整的 SQL 查詢語法。
     /// </summary>

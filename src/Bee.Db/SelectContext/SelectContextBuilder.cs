@@ -93,7 +93,8 @@ namespace Bee.Db
                 {
                     FieldName = reference.FieldName,
                     SourceAlias = join.RightAlias,
-                    SourceField = reference.SourceField
+                    SourceField = reference.SourceField,
+                    TableJoin = join
                 };
                 context.FieldMappings.Add(fieldMapping);
             }

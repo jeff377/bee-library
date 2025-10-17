@@ -28,6 +28,11 @@ namespace Bee.Db
         public string SourceField { get; set; }
 
         /// <summary>
+        /// 查詢欄位所屬的 Join 關聯資訊。
+        /// </summary>
+        public TableJoin TableJoin { get; set; }
+
+        /// <summary>
         /// 物件描述文字。
         /// </summary>
         public override string ToString()
