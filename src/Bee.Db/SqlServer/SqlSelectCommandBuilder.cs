@@ -50,7 +50,9 @@ namespace Bee.Db
                 if (field == null)
                     throw new InvalidOperationException($"Field '{fieldName}' does not exist in table '{formTable.TableName}'.");
                 if (field.Type == FieldType.DbField)
+                {
                     selectParts.Add($"    A.{QuoteIdentifier(fieldName)}");
+                }
                 else
                 {
                     var mapping = selectContext.FieldMappings.GetOrDefault(fieldName);
@@ -58,10 +60,8 @@ namespace Bee.Db
                         throw new InvalidOperationException($"Field mapping for '{fieldName}' is null.");
                     selectParts.Add($"    {mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)} AS {QuoteIdentifier(fieldName)}");
 
+                    // 將使用的資料表 Join 關係加入集合
                     AddTableJoin(selectContext, joins, mapping.TableJoin);
-
-                    //if (!joins.Contains(mapping.TableJoin.Key))
-                    //    joins.Add(mapping.TableJoin);
                 }
             }
 
@@ -81,8 +81,7 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 將資料表 Join 關係加入集合。
-        /// 防止因環狀 Join 關係造成無窮遞迴。
+        /// 將使用的資料表 Join 關係加入集合。
         /// </summary>
         /// <param name="context">描述 Select 查詢時所需的欄位來源與 Join 關係集合。</param>
         /// <param name="joins">資料表 Join 關係集合。</param>

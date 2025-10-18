@@ -409,64 +409,6 @@ namespace Bee.Define
         Desc
     }
 
-    /// <summary>
-    /// 結合運算子。
-    /// </summary>
-    public enum CombineOperator
-    {
-        /// <summary>
-        /// 而且。
-        /// </summary>
-        And,
-        /// <summary>
-        /// 或者。
-        /// </summary>
-        Or
-    }
-
-    /// <summary>
-    /// 比較運算子。
-    /// </summary>
-    public enum ComparisonOperator
-    {
-        /// <summary>
-        /// 等於。
-        /// </summary>
-        Equal,
-        /// <summary>
-        /// 不等於。
-        /// </summary>
-        NotEqual,
-        /// <summary>
-        /// 小於。
-        /// </summary>
-        Less,
-        /// <summary>
-        /// 小於等於。
-        /// </summary>
-        LessOrEqual,
-        /// <summary>
-        /// 大於。
-        /// </summary>
-        Greater,
-        /// <summary>
-        /// 大於等於。
-        /// </summary>
-        GreaterOrEqual,
-        /// <summary>
-        /// 包含。
-        /// </summary>
-        Like,
-        /// <summary>
-        /// 區間。
-        /// </summary>
-        Between,
-        /// <summary>
-        /// 包含。 
-        /// </summary>
-        In
-    }
-
     #endregion
 
     #region Layout 相關列舉型別

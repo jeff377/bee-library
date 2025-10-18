@@ -197,40 +197,6 @@ namespace Bee.Define.UnitTests
         }
 
         /// <summary>
-        /// 測試 TFilterItemCollection 類別的序列化與反序列化。
-        /// </summary>
-        [Fact(DisplayName = "TFilterItemCollection 序列化")]
-        public void TFilterItemCollection_Serialize()
-        {
-            // 建立集合並加入條件
-            var original = new FilterItemCollection();
-            original.Add("Age", ComparisonOperator.GreaterOrEqual, "18");
-            original.Add("Gender", ComparisonOperator.Equal, "Male");
-
-            // 設定結合運算子，驗證欄位也能序列化
-            original[0].Combine = CombineOperator.And;
-            original[1].Combine = CombineOperator.Or;
-
-            // 序列化集合
-            byte[] bytes = MessagePackHelper.Serialize(original);
-
-            // 反序列化集合
-            var restored = MessagePackHelper.Deserialize<FilterItemCollection>(bytes);
-
-            // 驗證集合數量
-            Assert.Equal(original.Count, restored.Count);
-
-            // 驗證每筆內容
-            for (int i = 0; i < original.Count; i++)
-            {
-                Assert.Equal(original[i].FieldName, restored[i].FieldName);
-                Assert.Equal(original[i].Comparison, restored[i].Comparison);
-                Assert.Equal(original[i].Value, restored[i].Value);
-                Assert.Equal(original[i].Combine, restored[i].Combine);
-            }
-        }
-
-        /// <summary>
         /// 測試 TParameterCollection 支援多種型別的序列化與反序列化。
         /// </summary>
         [Fact(DisplayName = "TParameterCollection 多型別序列化")]
