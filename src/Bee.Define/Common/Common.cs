@@ -409,6 +409,91 @@ namespace Bee.Define
         Desc
     }
 
+    /// <summary>
+    /// 過濾節點種類。
+    /// </summary>
+    public enum FilterNodeKind
+    {
+        /// <summary>單一欄位條件。</summary>
+        Condition = 0,
+        /// <summary>條件群組。</summary>
+        Group = 1
+    }
+
+    /// <summary>
+    /// 表示邏輯運算子，用於群組或串接查詢/條件表達式。
+    /// </summary>
+    /// <remarks>
+    /// 用於描述多個條件之間如何組合（例如查詢條件的 AND/OR）。
+    /// </remarks>
+    public enum LogicalOperator
+    {
+        /// <summary>
+        /// 且（AND）。
+        /// </summary>
+        And = 0,
+        /// <summary>
+        /// 或（OR）。
+        /// </summary>
+        Or = 1
+    }
+
+    /// <summary>
+    /// 比較運算子。
+    /// 表示查詢或條件中可使用的各種比較操作類型。
+    /// </summary>
+    public enum ComparisonOperator
+    {
+        /// <summary>
+        /// 等於，對應 SQL 的 "="。
+        /// </summary>
+        Equal = 0,
+        /// <summary>
+        /// 不等於，對應 SQL 的 "&lt;&gt;" 或 "!="。
+        /// </summary>
+        NotEqual = 1,
+        /// <summary>
+        /// 大於，對應 SQL 的 "&gt;"。
+        /// </summary>
+        GreaterThan = 2,
+        /// <summary>
+        /// 大於或等於，對應 SQL 的 "&gt;="。
+        /// </summary>
+        GreaterThanOrEqual = 3,
+        /// <summary>
+        /// 小於，對應 SQL 的 "&lt;"。
+        /// </summary>
+        LessThan = 4,
+        /// <summary>
+        /// 小於或等於，對應 SQL 的 "&lt;="。
+        /// </summary>
+        LessThanOrEqual = 5,
+        /// <summary>
+        /// 模糊匹配，對應 SQL 的 "LIKE"（使用者需提供適當的通配字元）。
+        /// </summary>
+        Like = 6,
+        /// <summary>
+        /// 集合包含，對應 SQL 的 "IN ( ... )"。
+        /// </summary>
+        In = 7,
+        /// <summary>
+        /// 介於範圍，對應 SQL 的 "BETWEEN ... AND ..."。
+        /// </summary>
+        Between = 8,
+        /// <summary>
+        /// 開頭匹配，相當於 SQL 的 "LIKE 'value%'"。
+        /// </summary>
+        StartsWith = 9,
+        /// <summary>
+        /// 結尾匹配，相當於 SQL 的 "LIKE '%value'"。
+        /// </summary>
+        EndsWith = 10,
+        /// <summary>
+        /// 包含匹配，相當於 SQL 的 "LIKE '%value%'"。
+        /// </summary>
+        Contains = 11
+    }
+
     #endregion
 
     #region Layout 相關列舉型別
