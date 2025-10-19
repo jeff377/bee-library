@@ -1,4 +1,5 @@
 ﻿using MessagePack;
+using System;
 using System.Collections.Generic;
 
 namespace Bee.Define
@@ -7,6 +8,7 @@ namespace Bee.Define
     /// 單一欄位條件（例如 Name LIKE '%Lee%'、Age &gt; 18）。
     /// </summary>
     [MessagePackObject]
+    [Serializable]
     public sealed class FilterCondition : FilterNode
     {
         /// <summary>

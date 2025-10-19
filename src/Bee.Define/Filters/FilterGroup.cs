@@ -1,4 +1,5 @@
 ﻿using MessagePack;
+using System;
 using System.Collections.Generic;
 
 namespace Bee.Define
@@ -7,6 +8,7 @@ namespace Bee.Define
     /// 條件群組（以 AND/OR 串接多個節點）。
     /// </summary>
     [MessagePackObject]
+    [Serializable]
     public sealed class FilterGroup : FilterNode
     {
         /// <summary>

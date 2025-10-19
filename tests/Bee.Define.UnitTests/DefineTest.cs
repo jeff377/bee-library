@@ -31,7 +31,7 @@ namespace Bee.Define.UnitTests
         /// <param name="isBinary">執行二進位序列化。</param>
         /// <param name="isXml">執行 XML 序列化。</param>
         /// <param name="isJson">執行 JSON 序列化。</param>
-        private  void SerializeObject<T>(object value, bool isBinary = true, bool isXml = true, bool isJson = true)
+        private void SerializeObject<T>(object value, bool isBinary = true, bool isXml = true, bool isJson = true)
         {
             object? value2;
             // 二進位序列化
@@ -146,6 +146,23 @@ namespace Bee.Define.UnitTests
             };
             // 測試序列化
             SerializeObject<PingResult>(result, true, false, true);
+        }
+
+        /// <summary>
+        /// 測試 Filters 可正確序列化與還原屬性集合資料。
+        /// </summary>
+        [Fact(DisplayName = "Filters 序列化")]
+        public void Filters_Serialize()
+        {
+            var root = FilterGroup.All(
+                FilterCondition.Equal("DeptId", 10),
+                FilterGroup.Any(
+                    FilterCondition.Contains("Name", "Lee"),
+                    FilterCondition.Between("HireDate", new DateTime(2024, 1, 1), new DateTime(2024, 12, 31))
+                )
+            );
+            // 測試序列化
+            SerializeObject<FilterGroup>(root, true, true, true);
         }
     }
 }

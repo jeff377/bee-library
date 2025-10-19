@@ -1,4 +1,6 @@
 ﻿using MessagePack;
+using System;
+using System.Xml.Serialization;
 
 namespace Bee.Define
 {
@@ -6,9 +8,12 @@ namespace Bee.Define
     /// 節點基底類別。
     /// </summary>
     [MessagePackObject]
+    [Serializable]
     [Union(0, typeof(FilterCondition))]
     [Union(1, typeof(FilterGroup))]
-    public abstract class FilterNode
+    [XmlInclude(typeof(FilterCondition))]
+    [XmlInclude(typeof(FilterGroup))]
+    public abstract class FilterNode : MessagePackKeyCollectionItem
     {
         /// <summary>
         /// 節點種類。
