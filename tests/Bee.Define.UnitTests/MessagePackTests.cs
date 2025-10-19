@@ -308,6 +308,54 @@ namespace Bee.Define.UnitTests
         }
 
         /// <summary>
+        /// 測試 Filters 可正確序列化與還原屬性集合資料。
+        /// </summary>
+        [Fact(DisplayName = "Filters 序列化")]
+        public void Filters_Serialize()
+        {
+            var root = FilterGroup.All(
+                FilterCondition.Equal("DeptId", 10),
+                FilterGroup.Any(
+                    FilterCondition.Contains("Name", "Lee"),
+                    FilterCondition.Between("HireDate", new DateTime(2024, 1, 1), new DateTime(2024, 12, 31))
+                )
+            );
+
+            // MessagePack 序列化
+            var bytes = MessagePackHelper.Serialize(root);
+
+            // 反序列化
+            var restored = MessagePackHelper.Deserialize<FilterGroup>(bytes);
+
+            // 驗證結構與內容
+            Assert.NotNull(restored);
+            Assert.Equal(2, restored.Nodes.Count);
+
+            var cond1 = restored.Nodes[0] as FilterCondition;
+            Assert.NotNull(cond1);
+            Assert.Equal("DeptId", cond1.Field);
+            Assert.Equal(ComparisonOperator.Equal, cond1.Operator);
+            Assert.Equal(10, cond1.Value);
+
+            var group2 = restored.Nodes[1] as FilterGroup;
+            Assert.NotNull(group2);
+            Assert.Equal(2, group2.Nodes.Count);
+
+            var cond2 = group2.Nodes[0] as FilterCondition;
+            Assert.NotNull(cond2);
+            Assert.Equal("Name", cond2.Field);
+            Assert.Equal(ComparisonOperator.Contains, cond2.Operator);
+            Assert.Equal("Lee", cond2.Value);
+
+            var cond3 = group2.Nodes[1] as FilterCondition;
+            Assert.NotNull(cond3);
+            Assert.Equal("HireDate", cond3.Field);
+            Assert.Equal(ComparisonOperator.Between, cond3.Operator);
+            Assert.Equal(new DateTime(2024, 1, 1), cond3.Value);
+            Assert.Equal(new DateTime(2024, 12, 31), cond3.SecondValue);
+        }
+
+        /// <summary>
         /// 測試 Ping 方法傳遞參數的序列化。
         /// </summary>
         [Fact(DisplayName = "Ping 方法傳遞參數的序列化")]
