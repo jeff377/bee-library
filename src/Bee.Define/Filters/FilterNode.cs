@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 namespace Bee.Define
 {
     /// <summary>
-    /// 節點基底類別。
+    /// 過濾節點基底類別。
     /// </summary>
     [MessagePackObject]
     [Serializable]

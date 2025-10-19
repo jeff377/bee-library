@@ -40,7 +40,6 @@ namespace Bee.Define
         /// 建立 AND 群組。
         /// </summary>
         /// <param name="nodes">成員節點。</param>
-        /// <returns>新的 <see cref="FilterGroup"/>。</returns>
         public static FilterGroup All(params FilterNode[] nodes)
         {
             var g = new FilterGroup();
@@ -53,7 +52,6 @@ namespace Bee.Define
         /// 建立 OR 群組。
         /// </summary>
         /// <param name="nodes">成員節點。</param>
-        /// <returns>新的 <see cref="FilterGroup"/>。</returns>
         public static FilterGroup Any(params FilterNode[] nodes)
         {
             var g = new FilterGroup();
