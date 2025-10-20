@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 using MessagePack;
+using Newtonsoft.Json;
 
 namespace Bee.Define
 {
@@ -36,6 +37,7 @@ namespace Bee.Define
         [Key(101)]
         [XmlArrayItem(typeof(FilterCondition))]
         [XmlArrayItem(typeof(FilterGroup))]
+        [JsonConverter(typeof(FilterNodeCollectionJsonConverter))]
         public FilterNodeCollection Nodes { get; set; }
 
         /// <summary>
