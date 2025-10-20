@@ -395,7 +395,7 @@ namespace Bee.Define
     }
 
     /// <summary>
-    /// 排序方式。
+    /// 表示排序方向。
     /// </summary>
     public enum SortDirection
     {

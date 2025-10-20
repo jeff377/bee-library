@@ -18,7 +18,7 @@ namespace Bee.Define
         /// <summary>
         /// 節點種類。
         /// </summary>
-        [Key(0)]
+        [Key(10)]
         public abstract FilterNodeKind Kind { get; }
     }
 }
