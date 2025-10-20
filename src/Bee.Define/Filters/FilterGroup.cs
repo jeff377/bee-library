@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Xml.Serialization;
 using MessagePack;
 
 namespace Bee.Define
@@ -33,6 +34,8 @@ namespace Bee.Define
         /// 子節點集合。
         /// </summary>
         [Key(101)]
+        [XmlArrayItem(typeof(FilterCondition))]
+        [XmlArrayItem(typeof(FilterGroup))]
         public FilterNodeCollection Nodes { get; set; }
 
         /// <summary>
