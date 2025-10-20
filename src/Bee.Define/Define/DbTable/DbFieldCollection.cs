@@ -31,7 +31,7 @@ namespace Bee.Define
             {
                 Length = length
             };
-            this.Add(dbField);
+            Add(dbField);
             return dbField;
         }
     }

@@ -103,7 +103,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _fields)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _fields)) { return null; }
                 if (_fields == null) { _fields = new DbFieldCollection(this); }
                 return _fields;
             }
@@ -120,7 +120,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _indexes)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _indexes)) { return null; }
                 if (_indexes == null) { _indexes = new DbTableIndexCollection(this); }
                 return _indexes;
             }
@@ -131,7 +131,7 @@ namespace Bee.Define
         /// </summary>
         public DbTableIndex GetPrimaryKey()
         {
-            foreach (DbTableIndex index in this.Indexes)
+            foreach (DbTableIndex index in Indexes)
             {
                 if (index.PrimaryKey)
                     return index;
@@ -153,11 +153,11 @@ namespace Bee.Define
         public DbTable Clone()
         {
             var table = new DbTable();
-            table.TableName = this.TableName;
-            table.DisplayName = this.DisplayName;
-            foreach (DbTableIndex index in this.Indexes)
+            table.TableName = TableName;
+            table.DisplayName = DisplayName;
+            foreach (DbTableIndex index in Indexes)
                 table.Indexes.Add(index.Clone());
-            foreach (DbField field in this.Fields)
+            foreach (DbField field in Fields)
                 table.Fields.Add(field.Clone());
             return table;
         }
@@ -167,7 +167,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.TableName} - {this.DisplayName}";
+            return $"{TableName} - {DisplayName}";
         }
     }
 }

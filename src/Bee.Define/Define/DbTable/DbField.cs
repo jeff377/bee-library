@@ -54,7 +54,7 @@ namespace Bee.Define
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
         [Description("標題文字。")]
-        public string Caption { get; set; } = string.Empty; 
+        public string Caption { get; set; } = string.Empty;
 
         /// <summary>
         /// 資料型別。
@@ -107,12 +107,12 @@ namespace Bee.Define
         {
             return new DbField
             {
-                FieldName = this.FieldName,
-                Caption = this.Caption,
-                DbType = this.DbType,
-                Length = this.Length,
-                AllowNull = this.AllowNull,
-                DefaultValue = this.DefaultValue
+                FieldName = FieldName,
+                Caption = Caption,
+                DbType = DbType,
+                Length = Length,
+                AllowNull = AllowNull,
+                DefaultValue = DefaultValue
             };
         }
 
@@ -123,14 +123,14 @@ namespace Bee.Define
         public bool Compare(DbField source)
         {
             // 比對資料型別
-            if (this.DbType != source.DbType) { return false; }
+            if (DbType != source.DbType) { return false; }
             // 比對是否允許 Null
-            if (this.AllowNull != source.AllowNull) { return false; }
+            if (AllowNull != source.AllowNull) { return false; }
             // 比對文字型別的欄位長度
-            if ((this.DbType == FieldDbType.String) && (this.Length != source.Length))
+            if ((DbType == FieldDbType.String) && (Length != source.Length))
                 return false;
             // 比較預設值
-            if (!StrFunc.IsEquals(this.DefaultValue, source.DefaultValue)) { return false; }
+            if (!StrFunc.IsEquals(DefaultValue, source.DefaultValue)) { return false; }
 
             return true;
         }
@@ -140,7 +140,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.FieldName} - {this.Caption}";
+            return $"{FieldName} - {Caption}";
         }
     }
 }

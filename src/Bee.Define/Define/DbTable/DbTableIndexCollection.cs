@@ -30,7 +30,7 @@ namespace Bee.Define
             string[] fieldNames = StrFunc.Split(fields, ",");
             foreach (string fieldName in fieldNames)
                 index.IndexFields.Add(fieldName);
-            this.Add(index);
+            Add(index);
             return index;
         }
 
@@ -51,7 +51,7 @@ namespace Bee.Define
             oFields = StrFunc.Split(fields, ",");
             foreach (string fieldName in oFields)
                 oIndex.IndexFields.Add(fieldName);
-            this.Add(oIndex);
+            Add(oIndex);
             return oIndex;
         }
     }

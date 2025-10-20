@@ -84,7 +84,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _databases)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _databases)) { return null; }
                 if (_databases == null) { _databases = new DbSchemaCollection(this); }
                 return _databases;
             }

@@ -212,7 +212,7 @@ namespace Bee.Db
             }
 
             string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbField.DbType);  // 取得內定預設值
-            dbField.DefaultValue = this.ParseDBDefaultValue(row.GetFieldValue<string>("DbType"), row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
+            dbField.DefaultValue = ParseDBDefaultValue(row.GetFieldValue<string>("DbType"), row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
             return dbField;
         }
 

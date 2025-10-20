@@ -77,13 +77,13 @@ namespace Bee.Define
         /// </summary>
         public string GetConnectionString()
         {
-            string connectionString = this.ConnectionString;
-            if (StrFunc.IsNotEmpty(this.DbName))
-                connectionString = StrFunc.Replace(connectionString, "{@DbName}", this.DbName);
-            if (StrFunc.IsNotEmpty(this.UserId))
-                connectionString = StrFunc.Replace(connectionString, "{@UserId}", this.UserId);
-            if (StrFunc.IsNotEmpty(this.Password))
-                connectionString = StrFunc.Replace(connectionString, "{@Password}", this.Password);
+            string connectionString =   ConnectionString;
+            if (StrFunc.IsNotEmpty(DbName))
+                connectionString = StrFunc.Replace(connectionString, "{@DbName}", DbName);
+            if (StrFunc.IsNotEmpty(UserId))
+                connectionString = StrFunc.Replace(connectionString, "{@UserId}", UserId);
+            if (StrFunc.IsNotEmpty(Password))
+                connectionString = StrFunc.Replace(connectionString, "{@Password}", Password);
             return connectionString;
         }
 
@@ -94,13 +94,13 @@ namespace Bee.Define
         {
             return new DatabaseItem
             {
-                Id = this.Id,
-                DisplayName = this.DisplayName,
-                DatabaseType = this.DatabaseType,
-                ConnectionString = this.ConnectionString,
-                DbName = this.DbName,
-                UserId = this.UserId,
-                Password = this.Password
+                Id = Id,
+                DisplayName = DisplayName,
+                DatabaseType = DatabaseType,
+                ConnectionString = ConnectionString,
+                DbName = DbName,
+                UserId = UserId,
+                Password = Password
             };
         }
 

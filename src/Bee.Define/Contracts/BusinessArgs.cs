@@ -42,7 +42,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _parameters)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _parameters)) { return null; }
                 if (_parameters == null) { _parameters = new ParameterCollection(); }
                 return _parameters;
             }

@@ -45,7 +45,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _tables)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _tables)) { return null; }
                 if (_tables == null) { _tables = new DbTableItemCollection(this); }
                 return _tables;
             }
@@ -66,7 +66,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.DbName} - {this.DisplayName}";
+            return $"{DbName} - {DisplayName}";
         }
     }
 }

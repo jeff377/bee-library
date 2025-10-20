@@ -30,7 +30,7 @@ namespace Bee.Define
         public ListItem Add(string value, string text)
         {
             var item = new ListItem(value, text);
-            this.Add(item);
+            Add(item);
             return item;
         }
 

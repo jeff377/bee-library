@@ -37,7 +37,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return $"{this.Id} - {this.DisplayName}";
+            return $"{Id} - {DisplayName}";
         }
     }
 }

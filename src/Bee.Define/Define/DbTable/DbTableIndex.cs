@@ -58,7 +58,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _indexFields)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _indexFields)) { return null; }
                 if (_indexFields == null) { _indexFields = new IndexFieldCollection(); }
                 return _indexFields;
             }
@@ -88,10 +88,10 @@ namespace Bee.Define
         public DbTableIndex Clone()
         {
             var index = new DbTableIndex();
-            index.Name = this.Name;
-            index.PrimaryKey = this.PrimaryKey;
-            index.Unique = this.Unique;
-            foreach (IndexField indexField in this.IndexFields)
+            index.Name = Name;
+            index.PrimaryKey = PrimaryKey;
+            index.Unique = Unique;
+            foreach (IndexField indexField in IndexFields)
                 index.IndexFields.Add(indexField.Clone());
             return index;
         }
@@ -103,11 +103,11 @@ namespace Bee.Define
         public bool Compare(DbTableIndex source)
         {
             // 唯一性不同，傳回 false
-            if (this.Unique != source.Unique) { return false; }
+            if (Unique != source.Unique) { return false; }
             // 索引欄位數不同，傳回 falase
-            if (this.IndexFields.Count != source.IndexFields.Count) { return false; }
+            if (IndexFields.Count != source.IndexFields.Count) { return false; }
             // 比對每個索引欄位結構
-            foreach (IndexField indexField in this.IndexFields)
+            foreach (IndexField indexField in IndexFields)
             {
                 // 索引欄位不存在，傳回 false
                 if (!source.IndexFields.Contains(indexField.FieldName)) { return false; }
@@ -125,7 +125,7 @@ namespace Bee.Define
         /// </summary>
         public override string ToString()
         {
-            return this.Name;
+            return Name;
         }
     }
 }

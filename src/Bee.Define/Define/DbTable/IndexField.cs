@@ -26,7 +26,7 @@ namespace Bee.Define
         /// <param name="sortDirection">排序方式。</param>
         public IndexField(string fieldName, SortDirection sortDirection)
         {
-            this.FieldName = fieldName;
+            FieldName = fieldName;
             SortDirection = sortDirection;
         }
 
@@ -57,8 +57,8 @@ namespace Bee.Define
         public IndexField Clone()
         {
             var indexField = new IndexField();
-            indexField.FieldName = this.FieldName;
-            indexField.SortDirection = this.SortDirection;
+            indexField.FieldName = FieldName;
+            indexField.SortDirection = SortDirection;
             return indexField;
         }
     }

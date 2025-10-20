@@ -81,7 +81,7 @@ namespace Bee.Define
 
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
-            foreach (DatabaseItem item in this.Items)
+            foreach (DatabaseItem item in Items)
             {
                 if (StrFunc.IsNotEmpty(item.Password) && !item.Password.StartsWith("enc:"))
                 {
@@ -111,7 +111,7 @@ namespace Bee.Define
 
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
-            foreach (DatabaseItem item in this.Items)
+            foreach (DatabaseItem item in Items)
             {
                 if (StrFunc.IsNotEmpty(item.Password) && item.Password.StartsWith("enc:"))
                 {
@@ -161,7 +161,7 @@ namespace Bee.Define
             get
             {
                 // 序列化時，若集合無資料則傳回 null
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _items)) { return null; }
                 if (_items == null) { _items = new DatabaseItemCollection(); }
                 return _items;
             }
@@ -174,7 +174,7 @@ namespace Bee.Define
         {
             var copy = new DatabaseSettings();
             // 深拷貝 Items 集合
-            foreach (var item in this.Items)
+            foreach (var item in Items)
             {
                 copy.Items.Add(item.Clone());
             }
