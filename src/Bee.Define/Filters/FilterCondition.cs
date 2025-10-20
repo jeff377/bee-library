@@ -101,5 +101,80 @@ namespace Bee.Define
         {
             return new FilterCondition { Field = field, Operator = ComparisonOperator.In, Value = values };
         }
+
+        /// <summary>
+        /// 物件描述文字。
+        /// </summary>
+        public override string ToString()
+        {
+            string op;
+            switch (Operator)
+            {
+                case ComparisonOperator.Equal:
+                    op = "=";
+                    break;
+                case ComparisonOperator.NotEqual:
+                    op = "<>";
+                    break;
+                case ComparisonOperator.GreaterThan:
+                    op = ">";
+                    break;
+                case ComparisonOperator.GreaterThanOrEqual:
+                    op = ">=";
+                    break;
+                case ComparisonOperator.LessThan:
+                    op = "<";
+                    break;
+                case ComparisonOperator.LessThanOrEqual:
+                    op = "<=";
+                    break;
+                case ComparisonOperator.Like:
+                    op = "LIKE";
+                    break;
+                case ComparisonOperator.In:
+                    op = "IN";
+                    break;
+                case ComparisonOperator.Between:
+                    op = "BETWEEN";
+                    break;
+                case ComparisonOperator.StartsWith:
+                case ComparisonOperator.EndsWith:
+                case ComparisonOperator.Contains:
+                    op = "LIKE";
+                    break;
+                default:
+                    op = Operator.ToString();
+                    break;
+            }
+
+            string valueStr;
+            if (Operator == ComparisonOperator.In && Value is IEnumerable<object> values)
+            {
+                valueStr = $"({string.Join(", ", values)})";
+            }
+            else if (Value is string s)
+            {
+                valueStr = $"'{s}'";
+            }
+            else
+            {
+                valueStr = Value?.ToString();
+            }
+
+            if (Operator == ComparisonOperator.Between)
+            {
+                string fromStr = Value is string fs ? $"'{fs}'" : Value?.ToString();
+                string toStr = SecondValue is string ts ? $"'{ts}'" : SecondValue?.ToString();
+                return $"{Field} {op} {fromStr} AND {toStr}";
+            }
+            if (Operator == ComparisonOperator.StartsWith)
+                valueStr = $"'{Value}%'";
+            else if (Operator == ComparisonOperator.EndsWith)
+                valueStr = $"'%{Value}'";
+            else if (Operator == ComparisonOperator.Contains)
+                valueStr = $"'%{Value}%'";
+
+            return $"{Field} {op} {valueStr}";
+        }
     }
 }

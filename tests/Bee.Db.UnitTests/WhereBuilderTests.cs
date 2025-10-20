@@ -62,5 +62,15 @@ namespace Bee.Db.UnitTests
             var builder = new SqlServerWhereBuilder();
             var result = builder.Build(root, includeWhereKeyword: false);
         }
+
+        [Fact]
+        public void EmptyFilterGroup_ShouldReturnEmptyWhereClause()
+        {
+            var root = new FilterGroup(); // 預設 Nodes 為空
+            var builder = new SqlServerWhereBuilder();
+            var result = builder.Build(root);
+            Assert.Equal(string.Empty, result.WhereClause);
+        }
+
     }
 }
