@@ -1,6 +1,5 @@
-﻿using MessagePack;
-using System;
-using System.Collections.Generic;
+﻿using System;
+using MessagePack;
 
 namespace Bee.Define
 {
@@ -11,6 +10,14 @@ namespace Bee.Define
     [Serializable]
     public sealed class FilterGroup : FilterNode
     {
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        public FilterGroup()
+        {
+            Nodes = new FilterNodeCollection();
+        }
+
         /// <summary>
         /// 節點種類。
         /// </summary>
@@ -26,14 +33,17 @@ namespace Bee.Define
         /// 子節點集合。
         /// </summary>
         [Key(101)]
-        public List<FilterNode> Nodes { get; set; }
+        public FilterNodeCollection Nodes { get; set; }
 
         /// <summary>
-        /// 建構函式。
+        /// 判斷是否應序列化 Nodes 屬性。
         /// </summary>
-        public FilterGroup()
+        /// <returns>
+        /// XmlSerializer 會自動偵測 ShouldSerialize[PropertyName]() 方法，若回傳 false，該屬性就不會被序列化。
+        /// </returns>
+        public bool ShouldSerializeNodes()
         {
-            Nodes = new List<FilterNode>();
+            return Nodes != null && Nodes.Count > 0;
         }
 
         /// <summary>

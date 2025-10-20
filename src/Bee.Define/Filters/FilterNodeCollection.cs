@@ -9,8 +9,14 @@ namespace Bee.Define
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class FilterNodeCollection : MessagePackKeyCollectionBase<FilterNode>
+    public class FilterNodeCollection : MessagePackCollectionBase<FilterNode>
     {
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        public FilterNodeCollection()
+        { }
+
         /// <summary>
         /// 批次加入多個 <see cref="FilterNode"/> 成員。
         /// </summary>

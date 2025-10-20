@@ -13,7 +13,7 @@ namespace Bee.Define
     [Union(1, typeof(FilterGroup))]
     [XmlInclude(typeof(FilterCondition))]
     [XmlInclude(typeof(FilterGroup))]
-    public abstract class FilterNode : MessagePackKeyCollectionItem
+    public abstract class FilterNode : MessagePackCollectionItem
     {
         /// <summary>
         /// 節點種類。
