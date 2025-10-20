@@ -1,5 +1,6 @@
 using Bee.Base;
 using Bee.Cache;
+using Bee.Define;
 
 namespace Bee.Db.UnitTests
 {
@@ -226,6 +227,29 @@ namespace Bee.Db.UnitTests
             var builder = new SqlFormCommandBuilder(formDefine);
             var command = builder.BuildSelectCommand("Employee", string.Empty);
             var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_supervisor_name");
+        }
+
+        [Fact]
+        public void FormCommandBuildWithFilterNodeTest()
+        {
+            var formDefine = CacheFunc.GetFormDefine("Employee");
+            var builder = new SqlFormCommandBuilder(formDefine);
+
+            // 建立一個 FilterCondition 篩選 sys_id = '001'
+            var filter = new FilterCondition
+            {
+                Field = "sys_id",
+                Operator =  ComparisonOperator.Equal,
+                Value = "001"
+            };
+
+            // 傳入 filter node 給 BuildSelectCommand
+            var command = builder.BuildSelectCommand("Employee", string.Empty, filter);
+            Assert.NotNull(command);
+
+            // 也可測試多欄位與 filter
+            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_supervisor_name", filter);
+            Assert.NotNull(command2);
         }
     }
 }

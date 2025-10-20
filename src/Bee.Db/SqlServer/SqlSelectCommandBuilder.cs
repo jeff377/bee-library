@@ -28,7 +28,8 @@ namespace Bee.Db
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        public DbCommandSpec Build(string tableName, string selectFields)
+        /// <param name="filter">過濾條件 FilterNode，若為 null 則不加 WHERE。</param>
+        public DbCommandSpec Build(string tableName, string selectFields, FilterNode filter = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentException("tableName cannot be null or whitespace.", nameof(tableName));
@@ -76,8 +77,23 @@ namespace Bee.Db
                 sb.AppendLine($"{joinKeyword} {QuoteIdentifier(join.RightTable)} {join.RightAlias} ON {join.LeftAlias}.{QuoteIdentifier(join.LeftField)} = {join.RightAlias}.{QuoteIdentifier(join.RightField)}");
             }
 
+            IReadOnlyDictionary<string, object> parameters = null;
+            if (filter != null)
+            {
+                var whereBuilder = new SqlServerWhereBuilder();
+                var whereResult = whereBuilder.Build(filter, true);
+                if (!string.IsNullOrWhiteSpace(whereResult.WhereClause))
+                {
+                    sb.AppendLine(whereResult.WhereClause);
+                    parameters = whereResult.Parameters;
+                }
+            }
+
             string sql = sb.ToString();
-            return new DbCommandSpec(DbCommandKind.DataTable, sql);
+            if (parameters != null && parameters.Count > 0)
+                return new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
+            else
+                return new DbCommandSpec(DbCommandKind.DataTable, sql);
         }
 
         /// <summary>
