@@ -9,7 +9,7 @@ namespace Bee.Db
     /// </summary>
     internal static class InternalWhereBuilder
     {
-        public static string BuildNode(FilterNode node, IParameterCollector parameters, string quoteLeft, string quoteRight)
+        public static string BuildNode(FilterNode node, IParameterCollector parameters)
         {
             var group = node as FilterGroup;
             if (group != null)
@@ -18,7 +18,7 @@ namespace Bee.Db
                 for (int i = 0; i < group.Nodes.Count; i++)
                 {
                     var child = group.Nodes[i];
-                    var s = BuildNode(child, parameters, quoteLeft, quoteRight);
+                    var s = BuildNode(child, parameters);
                     if (!string.IsNullOrEmpty(s)) parts.Add(s);
                 }
                 if (parts.Count == 0) return string.Empty;
@@ -27,17 +27,17 @@ namespace Bee.Db
             }
 
             var cond = node as FilterCondition;
-            if (cond != null) return BuildCondition(cond, parameters, quoteLeft, quoteRight);
+            if (cond != null) return BuildCondition(cond, parameters);
 
             throw new NotSupportedException("Unknown filter node type.");
         }
 
-        private static string BuildCondition(FilterCondition c, IParameterCollector parameters, string quoteLeft, string quoteRight)
+        private static string BuildCondition(FilterCondition c, IParameterCollector parameters)
         {
             if (string.IsNullOrEmpty(c.Field))
                 throw new InvalidOperationException("Field name cannot be null or empty.");
 
-            var field = quoteLeft + c.Field + quoteRight;
+            var field = c.Field;
 
             if (c.Value == null)
             {

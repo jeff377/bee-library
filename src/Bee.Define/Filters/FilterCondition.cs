@@ -12,6 +12,26 @@ namespace Bee.Define
     public sealed class FilterCondition : FilterNode
     {
         /// <summary>
+        /// 建構函式。
+        /// </summary>
+        public FilterCondition() { }
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="field">欄位名稱。</param>
+        /// <param name="operator">比較運算子。</param>
+        /// <param name="value">主要值。</param>
+        /// <param name="secondValue">第二值（Between 條件使用）。</param>
+        public FilterCondition(string field, ComparisonOperator @operator, object value, object secondValue = null)
+        {
+            Field = field;
+            Operator = @operator;
+            Value = value;
+            SecondValue = secondValue;
+        }
+
+        /// <summary>
         /// 節點種類。
         /// </summary>
         public override FilterNodeKind Kind { get { return FilterNodeKind.Condition; } }

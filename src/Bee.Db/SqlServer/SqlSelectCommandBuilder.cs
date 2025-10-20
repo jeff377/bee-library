@@ -80,8 +80,9 @@ namespace Bee.Db
             IReadOnlyDictionary<string, object> parameters = null;
             if (filter != null)
             {
+                var remappedFilter = RemapFilterNodeFields(filter, selectContext);
                 var whereBuilder = new SqlServerWhereBuilder();
-                var whereResult = whereBuilder.Build(filter, true);
+                var whereResult = whereBuilder.Build(remappedFilter, true);
                 if (!string.IsNullOrWhiteSpace(whereResult.WhereClause))
                 {
                     sb.AppendLine(whereResult.WhereClause);
@@ -164,6 +165,44 @@ namespace Bee.Db
         {
             var builder = new SelectContextBuilder(formTable);
             return builder.Build();
+        }
+
+        /// <summary>
+        /// 重新映射過濾節點中的欄位名稱為 SQL 查詢所需的格式（加上資料表別名）。
+        /// </summary>
+        /// <param name="node">要重新映射的過濾節點。</param>
+        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
+        /// <returns>重新映射後的過濾節點。</returns>
+        private FilterNode RemapFilterNodeFields(FilterNode node, SelectContext selectContext)
+        {
+            if (node.Kind == FilterNodeKind.Condition)
+            {
+                var cond = (FilterCondition)node;
+                var mapping = selectContext.FieldMappings.GetOrDefault(cond.Field);
+                string fieldExpr;
+                if (mapping != null)
+                {
+                    fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
+                }
+                else
+                {
+                    // 本表欄位，預設別名 A
+                    fieldExpr = $"A.{QuoteIdentifier(cond.Field)}";
+                }
+                return new FilterCondition(fieldExpr, cond.Operator, cond.Value);
+            }
+            else if (node.Kind == FilterNodeKind.Group)
+            {
+                var group = (FilterGroup)node;
+                var newGroup = new FilterGroup(group.Operator);
+                foreach (var child in group.Nodes)
+                    newGroup.Nodes.Add(RemapFilterNodeFields(child, selectContext));
+                return newGroup;
+            }
+            else
+            {
+                return node;
+            }
         }
 
 

@@ -21,6 +21,16 @@ namespace Bee.Define
         }
 
         /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="operator">群組邏輯運算子。</param>
+        public FilterGroup(LogicalOperator @operator)
+        {
+            Operator = @operator;
+            Nodes = new FilterNodeCollection();
+        }
+
+        /// <summary>
         /// 節點種類。
         /// </summary>
         public override FilterNodeKind Kind { get { return FilterNodeKind.Group; } }

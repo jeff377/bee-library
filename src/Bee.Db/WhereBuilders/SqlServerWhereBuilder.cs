@@ -8,9 +8,6 @@ namespace Bee.Db
     /// </summary>
     public sealed class SqlServerWhereBuilder : IWhereBuilder
     {
-        private const string QuoteLeft = "[";
-        private const string QuoteRight = "]";
-
         /// <summary>
         /// 由結構化條件節點建置 WHERE 子句。
         /// </summary>
@@ -21,7 +18,7 @@ namespace Bee.Db
             if (root == null) throw new ArgumentNullException("root", "Filter root cannot be null.");
 
             var parameters = new DefaultParameterCollector("@");
-            var core = InternalWhereBuilder.BuildNode(root, parameters, QuoteLeft, QuoteRight);
+            var core = InternalWhereBuilder.BuildNode(root, parameters);
             var sql = includeWhereKeyword && !string.IsNullOrEmpty(core) ? "WHERE " + core : core;
 
             return new WhereBuildResult
