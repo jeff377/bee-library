@@ -10,27 +10,25 @@ namespace Bee.Db
     public sealed class SqlServerSortBuilder : ISortBuilder
     {
         /// <summary>
-        /// 根據指定的排序項目集合，產生 SQL 的 ORDER BY 子句（包含前綴關鍵字）。
+        /// 根據指定的排序欄位集合，產生 SQL 的 ORDER BY 子句（包含前綴關鍵字）。
         /// </summary>
-        /// <param name="sorts">排序項目集合。</param>
-        public string Build(SortItemCollection sorts)
+        /// <param name="sortFields">排序欄位集合。</param>
+        public string Build(SortFIeldCollection sortFields)
         {
-            if (sorts == null)
-            {
-                throw new ArgumentNullException(nameof(sorts), "Sort collection cannot be null.");
-            }
+            if (sortFields == null)
+                throw new ArgumentNullException(nameof(sortFields), "Sort field collection cannot be null.");
 
-            if (sorts.Count == 0)
+            if (sortFields.Count == 0)
             {
                 return string.Empty;
             }
 
-            var parts = new List<string>(sorts.Count);
-            for (int i = 0; i < sorts.Count; i++)
+            var parts = new List<string>(sortFields.Count);
+            for (int i = 0; i < sortFields.Count; i++)
             {
-                var item = sorts[i];
+                var item = sortFields[i];
                 var dir = (item.Direction == SortDirection.Desc) ? "DESC" : "ASC";
-                parts.Add(item.Field + " " + dir);
+                parts.Add(item.FieldName + " " + dir);
             }
 
             return "ORDER BY " + string.Join(", ", parts);

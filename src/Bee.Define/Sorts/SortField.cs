@@ -4,31 +4,29 @@ using MessagePack;
 namespace Bee.Define
 {
     /// <summary>
-    /// 表示單一排序項目。
+    /// 排序欄位。
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public sealed class SortItem : MessagePackCollectionItem
+    public sealed class SortField : MessagePackCollectionItem
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public SortItem()
+        public SortField()
         { }
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="field">欄位名稱。</param>
+        /// <param name="fieldName">欄位名稱。</param>
         /// <param name="direction">排序方向。</param>
-        public SortItem(string field, SortDirection direction)
+        public SortField(string fieldName, SortDirection direction)
         {
-            if (string.IsNullOrWhiteSpace(field))
-            {
-                throw new ArgumentException("Field cannot be null or empty.", nameof(field));
-            }
+            if (string.IsNullOrWhiteSpace(fieldName))
+                throw new ArgumentException("Field cannot be null or empty.", nameof(fieldName));
 
-            Field = field;
+            FieldName = fieldName;
             Direction = direction;
         }
 
@@ -36,7 +34,7 @@ namespace Bee.Define
         /// 欄位名稱或 SQL 運算式。
         /// </summary>
         [Key(100)]
-        public string Field { get; set; }
+        public string FieldName { get; set; }
 
         /// <summary>
         /// 排序方向。

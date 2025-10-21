@@ -15,7 +15,7 @@ namespace Bee.Db.UnitTests
         public void Build_EmptySorts_ReturnsEmptyString()
         {
             var builder = new SqlServerSortBuilder();
-            var result = builder.Build(new SortItemCollection());
+            var result = builder.Build(new SortFIeldCollection());
             Assert.Equal(string.Empty, result);
         }
 
@@ -23,9 +23,9 @@ namespace Bee.Db.UnitTests
         public void Build_SingleSortItem_ReturnsCorrectOrderByClause()
         {
             var builder = new SqlServerSortBuilder();
-            var sorts = new SortItemCollection()
+            var sorts = new SortFIeldCollection()
             {
-                new SortItem("Name", SortDirection.Asc)
+                new SortField("Name", SortDirection.Asc)
             };
             var result = builder.Build(sorts);
             Assert.Equal("ORDER BY Name ASC", result);
@@ -35,10 +35,10 @@ namespace Bee.Db.UnitTests
         public void Build_MultipleSortItems_ReturnsCorrectOrderByClause()
         {
             var builder = new SqlServerSortBuilder();
-            var sorts = new SortItemCollection()
+            var sorts = new SortFIeldCollection()
             {
-                new SortItem("Name", SortDirection.Asc),
-                new SortItem("Age", SortDirection.Desc)
+                new SortField("Name", SortDirection.Asc),
+                new SortField("Age", SortDirection.Desc)
             };
             var result = builder.Build(sorts);
             Assert.Equal("ORDER BY Name ASC, Age DESC", result);
@@ -48,9 +48,9 @@ namespace Bee.Db.UnitTests
         public void Build_SortItemWithSqlExpression_ReturnsCorrectOrderByClause()
         {
             var builder = new SqlServerSortBuilder();
-            var sorts = new SortItemCollection()
+            var sorts = new SortFIeldCollection()
             {
-                new SortItem("LEN(Name)", SortDirection.Desc)
+                new SortField("LEN(Name)", SortDirection.Desc)
             };
             var result = builder.Build(sorts);
             Assert.Equal("ORDER BY LEN(Name) DESC", result);

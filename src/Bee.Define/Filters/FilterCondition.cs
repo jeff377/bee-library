@@ -19,13 +19,13 @@ namespace Bee.Define
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="field">欄位名稱。</param>
+        /// <param name="fieldName">欄位名稱。</param>
         /// <param name="operator">比較運算子。</param>
         /// <param name="value">主要值。</param>
         /// <param name="secondValue">第二值（Between 條件使用）。</param>
-        public FilterCondition(string field, ComparisonOperator @operator, object value, object secondValue = null)
+        public FilterCondition(string fieldName, ComparisonOperator @operator, object value, object secondValue = null)
         {
-            Field = field;
+            FieldName = fieldName;
             Operator = @operator;
             Value = value;
             SecondValue = secondValue;
@@ -37,10 +37,10 @@ namespace Bee.Define
         public override FilterNodeKind Kind { get { return FilterNodeKind.Condition; } }
 
         /// <summary>
-        /// 欄位名稱（邏輯欄位；需由後端白名單映射為實體欄位）。
+        /// 欄位名稱。
         /// </summary>
         [Key(100)]
-        public string Field { get; set; }
+        public string FieldName { get; set; }
 
         /// <summary>
         /// 比較運算子。
@@ -69,49 +69,49 @@ namespace Bee.Define
         /// <summary>
         /// 建立等於條件。
         /// </summary>
-        public static FilterCondition Equal(string field, object value, bool ignoreIfNull = false)
+        public static FilterCondition Equal(string fieldName, object value, bool ignoreIfNull = false)
         {
-            return new FilterCondition { Field = field, Operator = ComparisonOperator.Equal, Value = value, IgnoreIfNull = ignoreIfNull };
+            return new FilterCondition { FieldName = fieldName, Operator = ComparisonOperator.Equal, Value = value, IgnoreIfNull = ignoreIfNull };
         }
 
         /// <summary>
         /// 建立不等於條件。
         /// </summary>
-        public static FilterCondition NotEqual(string field, object value, bool ignoreIfNull = false)
+        public static FilterCondition NotEqual(string fieldName, object value, bool ignoreIfNull = false)
         {
-            return new FilterCondition { Field = field, Operator = ComparisonOperator.NotEqual, Value = value, IgnoreIfNull = ignoreIfNull };
+            return new FilterCondition { FieldName = fieldName, Operator = ComparisonOperator.NotEqual, Value = value, IgnoreIfNull = ignoreIfNull };
         }
 
         /// <summary>
-        /// 建立 LIKE 條件（會自動加入萬用字元，請搭配 Contains/StartsWith/EndsWith）。
+        /// 建立 LIKE 條件。
         /// </summary>
-        public static FilterCondition Contains(string field, string keyword)
+        public static FilterCondition Contains(string fieldName, string keyword)
         {
-            return new FilterCondition { Field = field, Operator = ComparisonOperator.Contains, Value = keyword };
+            return new FilterCondition { FieldName = fieldName, Operator = ComparisonOperator.Contains, Value = keyword };
         }
 
         /// <summary>
         /// 建立以指定前綴開頭的 LIKE 條件（相當於 SQL 的 LIKE 'value%'）。
         /// </summary>
-        public static FilterCondition StartsWith(string field, string prefix)
+        public static FilterCondition StartsWith(string fieldName, string prefix)
         {
-            return new FilterCondition { Field = field, Operator = ComparisonOperator.StartsWith, Value = prefix };
+            return new FilterCondition { FieldName = fieldName, Operator = ComparisonOperator.StartsWith, Value = prefix };
         }
 
         /// <summary>
         /// 建立以指定後綴結尾的 LIKE 條件（相當於 SQL 的 LIKE '%value'）。
         /// </summary>
-        public static FilterCondition EndsWith(string field, string suffix)
+        public static FilterCondition EndsWith(string fieldName, string suffix)
         {
-            return new FilterCondition { Field = field, Operator = ComparisonOperator.EndsWith, Value = suffix };
+            return new FilterCondition { FieldName = fieldName, Operator = ComparisonOperator.EndsWith, Value = suffix };
         }
 
         /// <summary>
         /// 建立 Between 條件。
         /// </summary>
-        public static FilterCondition Between(string field, object from, object to, bool ignoreIfNull = false)
+        public static FilterCondition Between(string fieldName, object from, object to, bool ignoreIfNull = false)
         {
-            return new FilterCondition { Field = field, Operator = ComparisonOperator.Between, Value = from, SecondValue = to, IgnoreIfNull = ignoreIfNull };
+            return new FilterCondition { FieldName = fieldName, Operator = ComparisonOperator.Between, Value = from, SecondValue = to, IgnoreIfNull = ignoreIfNull };
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Bee.Define
         /// </summary>
         public static FilterCondition In(string field, IEnumerable<object> values)
         {
-            return new FilterCondition { Field = field, Operator = ComparisonOperator.In, Value = values };
+            return new FilterCondition { FieldName = field, Operator = ComparisonOperator.In, Value = values };
         }
 
         /// <summary>
@@ -185,7 +185,7 @@ namespace Bee.Define
             {
                 string fromStr = Value is string fs ? $"'{fs}'" : Value?.ToString();
                 string toStr = SecondValue is string ts ? $"'{ts}'" : SecondValue?.ToString();
-                return $"{Field} {op} {fromStr} AND {toStr}";
+                return $"{FieldName} {op} {fromStr} AND {toStr}";
             }
             if (Operator == ComparisonOperator.StartsWith)
                 valueStr = $"'{Value}%'";
@@ -194,7 +194,7 @@ namespace Bee.Define
             else if (Operator == ComparisonOperator.Contains)
                 valueStr = $"'%{Value}%'";
 
-            return $"{Field} {op} {valueStr}";
+            return $"{FieldName} {op} {valueStr}";
         }
     }
 }

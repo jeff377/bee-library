@@ -333,7 +333,7 @@ namespace Bee.Define.UnitTests
 
             var cond1 = restored.Nodes[0] as FilterCondition;
             Assert.NotNull(cond1);
-            Assert.Equal("DeptId", cond1.Field);
+            Assert.Equal("DeptId", cond1.FieldName);
             Assert.Equal(ComparisonOperator.Equal, cond1.Operator);
             Assert.Equal(10, cond1.Value);
 
@@ -343,13 +343,13 @@ namespace Bee.Define.UnitTests
 
             var cond2 = group2.Nodes[0] as FilterCondition;
             Assert.NotNull(cond2);
-            Assert.Equal("Name", cond2.Field);
+            Assert.Equal("Name", cond2.FieldName);
             Assert.Equal(ComparisonOperator.Contains, cond2.Operator);
             Assert.Equal("Lee", cond2.Value);
 
             var cond3 = group2.Nodes[1] as FilterCondition;
             Assert.NotNull(cond3);
-            Assert.Equal("HireDate", cond3.Field);
+            Assert.Equal("HireDate", cond3.FieldName);
             Assert.Equal(ComparisonOperator.Between, cond3.Operator);
             Assert.Equal(new DateTime(2024, 1, 1), cond3.Value);
             Assert.Equal(new DateTime(2024, 12, 31), cond3.SecondValue);

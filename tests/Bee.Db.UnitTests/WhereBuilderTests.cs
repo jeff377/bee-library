@@ -38,7 +38,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void NullEquals_ShouldBecomeIsNull()
         {
-            var root = new FilterCondition { Field = "Memo", Operator = ComparisonOperator.Equal, Value = null };
+            var root = new FilterCondition { FieldName = "Memo", Operator = ComparisonOperator.Equal, Value = null };
             var builder = new SqlServerWhereBuilder();
             var result = builder.Build(root);
         }
@@ -47,7 +47,7 @@ namespace Bee.Db.UnitTests
         public void IgnoreIfNull_ShouldDropCondition()
         {
             var root = FilterGroup.All(
-                new FilterCondition { Field = "Keyword", Operator = ComparisonOperator.Contains, Value = null, IgnoreIfNull = true },
+                new FilterCondition { FieldName = "Keyword", Operator = ComparisonOperator.Contains, Value = null, IgnoreIfNull = true },
                 FilterCondition.Equal("DeptId", 1)
             );
 

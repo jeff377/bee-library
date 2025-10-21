@@ -238,7 +238,7 @@ namespace Bee.Db.UnitTests
             // 建立一個 FilterCondition 篩選 sys_id = '001'
             var filter = new FilterCondition
             {
-                Field = "sys_id",
+                FieldName = "sys_id",
                 Operator =  ComparisonOperator.Equal,
                 Value = "001"
             };

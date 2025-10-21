@@ -34,10 +34,10 @@ namespace Bee.Db
 
         private static string BuildCondition(FilterCondition c, IParameterCollector parameters)
         {
-            if (string.IsNullOrEmpty(c.Field))
+            if (string.IsNullOrEmpty(c.FieldName))
                 throw new InvalidOperationException("Field name cannot be null or empty.");
 
-            var field = c.Field;
+            var field = c.FieldName;
 
             if (c.Value == null)
             {

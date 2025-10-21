@@ -178,7 +178,7 @@ namespace Bee.Db
             if (node.Kind == FilterNodeKind.Condition)
             {
                 var cond = (FilterCondition)node;
-                var mapping = selectContext.FieldMappings.GetOrDefault(cond.Field);
+                var mapping = selectContext.FieldMappings.GetOrDefault(cond.FieldName);
                 string fieldExpr;
                 if (mapping != null)
                 {
@@ -187,7 +187,7 @@ namespace Bee.Db
                 else
                 {
                     // 本表欄位，預設別名 A
-                    fieldExpr = $"A.{QuoteIdentifier(cond.Field)}";
+                    fieldExpr = $"A.{QuoteIdentifier(cond.FieldName)}";
                 }
                 return new FilterCondition(fieldExpr, cond.Operator, cond.Value);
             }

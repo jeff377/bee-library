@@ -4,16 +4,16 @@ using MessagePack;
 namespace Bee.Define
 {
     /// <summary>
-    /// 排序項目集合。
+    /// 排序欄位集合。
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class SortItemCollection : MessagePackCollectionBase<SortItem>
+    public class SortFIeldCollection : MessagePackCollectionBase<SortField>
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public SortItemCollection()
+        public SortFIeldCollection()
         { }
     }
 }
