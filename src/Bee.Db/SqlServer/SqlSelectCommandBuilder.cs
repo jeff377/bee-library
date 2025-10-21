@@ -1,4 +1,4 @@
-using Bee.Base;
+ï»¿using Bee.Base;
 using Bee.Define;
 using System;
 using System.Collections.Generic;
@@ -8,28 +8,28 @@ using System.Text;
 namespace Bee.Db
 {
     /// <summary>
-    /// SQL Server ¸ê®Æ®w«Ø¥ß Select ©R¥O²£¥ÍªºÃş§O¡C
+    /// SQL Server è³‡æ–™åº«å»ºç«‹ Select å‘½ä»¤ç”¢ç”Ÿçš„é¡åˆ¥ã€‚
     /// </summary>
     public class SqlSelectCommandBuilder
     {
         private readonly FormDefine _formDefine;
 
         /// <summary>
-        /// «Øºc¨ç¦¡¡C
+        /// å»ºæ§‹å‡½å¼ã€‚
         /// </summary>
-        /// <param name="formDefine">ªí³æ©w¸q¡C</param>
+        /// <param name="formDefine">è¡¨å–®å®šç¾©ã€‚</param>
         public SqlSelectCommandBuilder(FormDefine formDefine)
         {
             _formDefine = formDefine;
         }
 
         /// <summary>
-        /// «Ø¥ß Select »yªkªº DbCommandSpec¡C
+        /// å»ºç«‹ Select èªæ³•çš„ DbCommandSpecã€‚
         /// </summary>
-        /// <param name="tableName">¸ê®Æªí¦WºÙ¡C</param>
-        /// <param name="selectFields">­n¨ú±oªºÄæ¦ì¶°¦X¦r¦ê¡A¥H³rÂI¤À¹jÄæ¦ì¦WºÙ¡AªÅ¦r¦êªí¥Ü¨ú±o©Ò¦³Äæ¦ì¡C</param>
-        /// <param name="filter">¹LÂo±ø¥ó¡C</param>
-        /// <param name="sortFields">±Æ§ÇÄæ¦ì¶°¦X¡C</param>
+        /// <param name="tableName">è³‡æ–™è¡¨åç¨±ã€‚</param>
+        /// <param name="selectFields">è¦å–å¾—çš„æ¬„ä½é›†åˆå­—ä¸²ï¼Œä»¥é€—é»åˆ†éš”æ¬„ä½åç¨±ï¼Œç©ºå­—ä¸²è¡¨ç¤ºå–å¾—æ‰€æœ‰æ¬„ä½ã€‚</param>
+        /// <param name="filter">éæ¿¾æ¢ä»¶ã€‚</param>
+        /// <param name="sortFields">æ’åºæ¬„ä½é›†åˆã€‚</param>
         public DbCommandSpec Build(string tableName, string selectFields, FilterNode filter = null, SortFIeldCollection sortFields = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
@@ -44,7 +44,7 @@ namespace Bee.Db
             var selectFieldNames = GetSelectFields(formTable, selectFields);
             var joins = new TableJoinCollection();
 
-            // ¥ı³B²z Where/Sort Äæ¦ì¡AÅı joins ¶°¦X§¹¾ã
+            // å…ˆè™•ç† Where/Sort æ¬„ä½ï¼Œè®“ joins é›†åˆå®Œæ•´
             FilterNode remappedFilter = null;
             if (filter != null)
             {
@@ -58,6 +58,39 @@ namespace Bee.Db
             }
 
             var sb = new StringBuilder();
+            sb.AppendLine(BuildSelectClause(formTable, selectFieldNames, selectContext, joins));
+            sb.AppendLine(BuildFromClause(dbTableName));
+            sb.Append(BuildJoinClauses(joins));
+
+            IReadOnlyDictionary<string, object> parameters = null;
+            var whereClause = BuildWhereClause(remappedFilter, out parameters);
+            if (!string.IsNullOrWhiteSpace(whereClause))
+            {
+                sb.AppendLine(whereClause);
+            }
+
+            var orderByClause = BuildOrderByClause(remappedSortFields);
+            if (!string.IsNullOrWhiteSpace(orderByClause))
+            {
+                sb.AppendLine(orderByClause);
+            }
+
+            string sql = sb.ToString();
+            if (parameters != null && parameters.Count > 0)
+                return new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
+            else
+                return new DbCommandSpec(DbCommandKind.DataTable, sql);
+        }
+
+        /// <summary>
+        /// å»ºç«‹ SELECT å­å¥ã€‚
+        /// </summary>
+        /// <param name="formTable">è¡¨å–®è³‡æ–™è¡¨ã€‚</param>
+        /// <param name="selectFieldNames">è¦é¸å–çš„æ¬„ä½åç¨±é›†åˆã€‚</param>
+        /// <param name="selectContext">æŸ¥è©¢æ¬„ä½ä¾†æºèˆ‡ Join é—œä¿‚é›†åˆã€‚</param>
+        /// <param name="joins">è³‡æ–™è¡¨ Join é—œä¿‚é›†åˆã€‚</param>
+        private string BuildSelectClause(FormTable formTable, StringHashSet selectFieldNames, SelectContext selectContext, TableJoinCollection joins)
+        {
             var selectParts = new List<string>();
             foreach (var fieldName in selectFieldNames)
             {
@@ -74,60 +107,87 @@ namespace Bee.Db
                     if (mapping == null)
                         throw new InvalidOperationException($"Field mapping for '{fieldName}' is null.");
                     selectParts.Add($"    {mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)} AS {QuoteIdentifier(fieldName)}");
-
-                    // ±N¨Ï¥Îªº¸ê®Æªí Join Ãö«Y¥[¤J¶°¦X
                     AddTableJoin(selectContext, joins, mapping.TableJoin);
                 }
             }
+            return "SELECT\n" + string.Join(",\n", selectParts);
+        }
 
-            sb.AppendLine("SELECT");
-            sb.AppendLine(string.Join(",\n", selectParts));
-            sb.AppendLine($"FROM {QuoteIdentifier(dbTableName)} A");
+        /// <summary>
+        /// å»ºç«‹ FROM å­å¥ã€‚
+        /// </summary>
+        /// <param name="dbTableName">è³‡æ–™åº«çš„è³‡æ–™è¡¨åç¨±ã€‚</param>
+        /// <returns>FROM å­å¥å­—ä¸²ã€‚</returns>
+        private string BuildFromClause(string dbTableName)
+        {
+            return $"FROM {QuoteIdentifier(dbTableName)} A";
+        }
 
+        /// <summary>
+        /// å»ºç«‹ JOIN å­å¥ã€‚
+        /// </summary>
+        /// <param name="joins">è³‡æ–™è¡¨ Join é—œä¿‚é›†åˆã€‚</param>
+        /// <returns>JOIN å­å¥å­—ä¸²ã€‚</returns>
+        private string BuildJoinClauses(TableJoinCollection joins)
+        {
+            var sb = new StringBuilder();
             var joinList = joins.OrderBy(j => j.RightAlias);
             foreach (var join in joinList)
             {
                 var joinKeyword = join.JoinType.ToString().ToUpperInvariant() + " JOIN";
                 sb.AppendLine($"{joinKeyword} {QuoteIdentifier(join.RightTable)} {join.RightAlias} ON {join.LeftAlias}.{QuoteIdentifier(join.LeftField)} = {join.RightAlias}.{QuoteIdentifier(join.RightField)}");
             }
+            return sb.ToString();
+        }
 
-            IReadOnlyDictionary<string, object> parameters = null;
+        /// <summary>
+        /// å»ºç«‹ WHERE å­å¥ã€‚
+        /// </summary>
+        /// <param name="remappedFilter">é‡æ–°æ˜ å°„å¾Œçš„éæ¿¾æ¢ä»¶ç¯€é»ã€‚</param>
+        /// <param name="parameters">å›å‚³çš„åƒæ•¸é›†åˆã€‚</param>
+        /// <returns>WHERE å­å¥å­—ä¸²ï¼Œè‹¥ç„¡æ¢ä»¶å‰‡å›å‚³ nullã€‚</returns>
+        private string BuildWhereClause(FilterNode remappedFilter, out IReadOnlyDictionary<string, object> parameters)
+        {
+            parameters = null;
             if (remappedFilter != null)
             {
                 var whereBuilder = new SqlServerWhereBuilder();
                 var whereResult = whereBuilder.Build(remappedFilter, true);
                 if (!string.IsNullOrWhiteSpace(whereResult.WhereClause))
                 {
-                    sb.AppendLine(whereResult.WhereClause);
                     parameters = whereResult.Parameters;
+                    return whereResult.WhereClause;
                 }
             }
+            return null;
+        }
 
-            // ¨Ï¥Î SqlServerSortBuilder ³B²z±Æ§Ç
+        /// <summary>
+        /// å»ºç«‹ ORDER BY å­å¥ã€‚
+        /// </summary>
+        /// <param name="remappedSortFields">é‡æ–°æ˜ å°„å¾Œçš„æ’åºæ¬„ä½é›†åˆã€‚</param>
+        /// <returns>ORDER BY å­å¥å­—ä¸²ï¼Œè‹¥ç„¡æ’åºå‰‡å›å‚³ nullã€‚</returns>
+        private string BuildOrderByClause(SortFIeldCollection remappedSortFields)
+        {
             if (remappedSortFields != null && remappedSortFields.Count > 0)
             {
                 var sortBuilder = new SqlServerSortBuilder();
                 var orderByClause = sortBuilder.Build(remappedSortFields);
                 if (!string.IsNullOrWhiteSpace(orderByClause))
                 {
-                    sb.AppendLine(orderByClause);
+                    return orderByClause;
                 }
             }
-
-            string sql = sb.ToString();
-            if (parameters != null && parameters.Count > 0)
-                return new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
-            else
-                return new DbCommandSpec(DbCommandKind.DataTable, sql);
+            return null;
         }
 
         /// <summary>
-        /// ±N¨Ï¥Îªº¸ê®Æªí Join Ãö«Y¥[¤J¶°¦X¡C
+        /// å°‡ä½¿ç”¨çš„è³‡æ–™è¡¨ Join é—œä¿‚åŠ å…¥é›†åˆã€‚
         /// </summary>
-        /// <param name="context">´y­z Select ¬d¸ß®É©Ò»İªºÄæ¦ì¨Ó·½»P Join Ãö«Y¶°¦X¡C</param>
-        /// <param name="joins">¸ê®Æªí Join Ãö«Y¶°¦X¡C</param>
-        /// <param name="join">­n¥[¤J¸ê®Æªí Join Ãö«Y¡C</param>
-        /// <param name="visited">¤w»¼°j¹Lªº Join Key ¶°¦X¡A¥Î©ó¨¾¤îÀôª¬°Ñ·Ó³y¦¨µL½a»¼°j¡C©I¥sºİ¥i¤£¶Ç¡A¹w³]¦Û°Ê«Ø¥ß¡C</param>
+        /// <param name="context">æè¿° Select æŸ¥è©¢æ™‚æ‰€éœ€çš„æ¬„ä½ä¾†æºèˆ‡ Join é—œä¿‚é›†åˆã€‚</param>
+        /// <param name="joins">è³‡æ–™è¡¨ Join é—œä¿‚é›†åˆã€‚</param>
+        /// <param name="join">è¦åŠ å…¥è³‡æ–™è¡¨ Join é—œä¿‚ã€‚</param>
+        /// <param name="visited">å·²éè¿´éçš„ Join Key é›†åˆï¼Œç”¨æ–¼é˜²æ­¢ç’°ç‹€åƒç…§é€ æˆç„¡çª®é€’è¿´ã€‚å‘¼å«ç«¯å¯ä¸å‚³ï¼Œé è¨­è‡ªå‹•å»ºç«‹ã€‚</param>
         private void AddTableJoin(SelectContext context, TableJoinCollection joins, TableJoin join, HashSet<string> visited = null)
         {
             if (visited == null)
@@ -141,33 +201,32 @@ namespace Bee.Db
             joins.Add(join);
             if (join.LeftAlias == "A") { return; }
 
-            // ¦pªG LeftAlias ¤£¬° A¡Aªí¥Ü¥ª°¼«D¥Dªí¡A­n¥[¤J¤¤¶¡ªº JOIN Ãö«Y
+            // å¦‚æœ LeftAlias ä¸ç‚º Aï¼Œè¡¨ç¤ºå·¦å´éä¸»è¡¨ï¼Œè¦åŠ å…¥ä¸­é–“çš„ JOIN é—œä¿‚
             var srcJoin = context.Joins.FindRightAlias(join.LeftAlias);
             if (srcJoin != null)
                 AddTableJoin(context, joins, srcJoin, visited);
         }
 
         /// <summary>
-        /// ¨Ì¾Ú¸ê®Æ®wÃş«¬¡A¦^¶Ç¾A·íªºÃÑ§O¦r¦ê¸õ²æ®æ¦¡¡C
+        /// ä¾æ“šè³‡æ–™åº«é¡å‹ï¼Œå›å‚³é©ç•¶çš„è­˜åˆ¥å­—ä¸²è·³è„«æ ¼å¼ã€‚
         /// </summary>
-        /// <param name="identifier">ÃÑ§O¦r¦WºÙ¡C</param>
-        /// <returns>¸õ²æ«áªºÃÑ§O¦r¡C</returns>
+        /// <param name="identifier">è­˜åˆ¥å­—åç¨±ã€‚</param>
         private string QuoteIdentifier(string identifier)
         {
             return DbFunc.QuoteIdentifier(DatabaseType.SQLServer, identifier);
         }
 
         /// <summary>
-        /// ¨ú±o Select ªºÄæ¦ì¶°¦X¡C
+        /// å–å¾— Select çš„æ¬„ä½é›†åˆã€‚
         /// </summary>
-        /// <param name="formTable">ªí³æ¸ê®Æªí¡C</param>
-        /// <param name="selectFields">­n¨ú±oªºÄæ¦ì¶°¦X¦r¦ê¡A¥H³rÂI¤À¹jÄæ¦ì¦WºÙ¡AªÅ¦r¦êªí¥Ü¨ú±o©Ò¦³Äæ¦ì</param>
+        /// <param name="formTable">è¡¨å–®è³‡æ–™è¡¨ã€‚</param>
+        /// <param name="selectFields">è¦å–å¾—çš„æ¬„ä½é›†åˆå­—ä¸²ï¼Œä»¥é€—é»åˆ†éš”æ¬„ä½åç¨±ï¼Œç©ºå­—ä¸²è¡¨ç¤ºå–å¾—æ‰€æœ‰æ¬„ä½</param>
         private StringHashSet GetSelectFields(FormTable formTable, string selectFields)
         {
             var set = new StringHashSet();
             if (string.IsNullOrWhiteSpace(selectFields))
             {
-                // ¨ú±o©Ò¦³Äæ¦ì
+                // å–å¾—æ‰€æœ‰æ¬„ä½
                 foreach (var field in formTable.Fields)
                 {
                     set.Add(field.FieldName);
@@ -175,16 +234,16 @@ namespace Bee.Db
             }
             else
             {
-                // ¥u¨ú«ü©wÄæ¦ì
+                // åªå–æŒ‡å®šæ¬„ä½
                 set.Add(selectFields, ",");
             }
             return set;
         }
 
         /// <summary>
-        /// ¨ú±o Select ¬d¸ß®É©Ò»İªºÄæ¦ì¨Ó·½»P Join Ãö«Y¶°¦X¡C
+        /// å–å¾— Select æŸ¥è©¢æ™‚æ‰€éœ€çš„æ¬„ä½ä¾†æºèˆ‡ Join é—œä¿‚é›†åˆã€‚
         /// </summary>
-        /// <param name="formTable">ªí³æ¸ê®Æªí¡C</param>
+        /// <param name="formTable">è¡¨å–®è³‡æ–™è¡¨ã€‚</param>
         private SelectContext GetSelectContext(FormTable formTable)
         {
             var builder = new SelectContextBuilder(formTable);
@@ -192,12 +251,12 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// ­«·s¬M®g¹LÂo¸`ÂI¤¤ªºÄæ¦ì¦WºÙ¬° SQL ¬d¸ß©Ò»İªº®æ¦¡¡]¥[¤W¸ê®Æªí§O¦W¡^¡C
+        /// é‡æ–°æ˜ å°„éæ¿¾ç¯€é»ä¸­çš„æ¬„ä½åç¨±ç‚º SQL æŸ¥è©¢æ‰€éœ€çš„æ ¼å¼ï¼ˆåŠ ä¸Šè³‡æ–™è¡¨åˆ¥åï¼‰ã€‚
         /// </summary>
-        /// <param name="node">­n­«·s¬M®gªº¹LÂo¸`ÂI¡C</param>
-        /// <param name="selectContext">¬d¸ßÄæ¦ì¨Ó·½»P Join Ãö«Y¶°¦X¡C</param>
-        /// <param name="joins">¨Ï¥Îªº¸ê®Æªí Join Ãö«Y¡C</param>
-        /// <returns>­«·s¬M®g«áªº¹LÂo¸`ÂI¡C</returns>
+        /// <param name="node">è¦é‡æ–°æ˜ å°„çš„éæ¿¾ç¯€é»ã€‚</param>
+        /// <param name="selectContext">æŸ¥è©¢æ¬„ä½ä¾†æºèˆ‡ Join é—œä¿‚é›†åˆã€‚</param>
+        /// <param name="joins">ä½¿ç”¨çš„è³‡æ–™è¡¨ Join é—œä¿‚ã€‚</param>
+        /// <returns>é‡æ–°æ˜ å°„å¾Œçš„éæ¿¾ç¯€é»ã€‚</returns>
         private FilterNode RemapFilterNodeFields(FilterNode node, SelectContext selectContext, TableJoinCollection joins)
         {
             if (node.Kind == FilterNodeKind.Condition)
@@ -212,7 +271,7 @@ namespace Bee.Db
                 }
                 else
                 {
-                    // ¥»ªíÄæ¦ì¡A¹w³]§O¦W A
+                    // æœ¬è¡¨æ¬„ä½ï¼Œé è¨­åˆ¥å A
                     fieldExpr = $"A.{QuoteIdentifier(cond.FieldName)}";
                 }
                 return new FilterCondition(fieldExpr, cond.Operator, cond.Value);
@@ -232,11 +291,11 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// ¨Ì¾Ú¬d¸ßÄæ¦ì¨Ó·½¡A²£¥Í SortFIeldCollection ªº½Æ¥»¨Ã¥[¤W¥¿½Tªº SQL Äæ¦ìªí¹F¦¡¡C
+        /// ä¾æ“šæŸ¥è©¢æ¬„ä½ä¾†æºï¼Œç”¢ç”Ÿ SortFIeldCollection çš„è¤‡æœ¬ä¸¦åŠ ä¸Šæ­£ç¢ºçš„ SQL æ¬„ä½è¡¨é”å¼ã€‚
         /// </summary>
-        /// <param name="sortFields">­ì©l±Æ§ÇÄæ¦ì¶°¦X¡C</param>
-        /// <param name="selectContext">¬d¸ßÄæ¦ì¨Ó·½»P Join Ãö«Y¶°¦X¡C</param>
-        /// <param name="joins">¨Ï¥Îªº¸ê®Æªí Join Ãö«Y¡C</param>
+        /// <param name="sortFields">åŸå§‹æ’åºæ¬„ä½é›†åˆã€‚</param>
+        /// <param name="selectContext">æŸ¥è©¢æ¬„ä½ä¾†æºèˆ‡ Join é—œä¿‚é›†åˆã€‚</param>
+        /// <param name="joins">ä½¿ç”¨çš„è³‡æ–™è¡¨ Join é—œä¿‚ã€‚</param>
         private SortFIeldCollection RemapSortFields(SortFIeldCollection sortFields, SelectContext selectContext, TableJoinCollection joins)
         {
             var result = new SortFIeldCollection();
