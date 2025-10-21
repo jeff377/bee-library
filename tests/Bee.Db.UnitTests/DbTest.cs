@@ -254,6 +254,16 @@ namespace Bee.Db.UnitTests
             // 也可測試多欄位與 filter 與 sortFields
             var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_supervisor_name", filter, sortFields);
             Assert.NotNull(command2);
+
+            // 測試 filter 非 Select 欄位，是否能正確建立 Join
+            filter = new FilterCondition
+            {
+                FieldName = "ref_supervisor_id",
+                Operator = ComparisonOperator.Equal,
+                Value = "U001"
+            };
+            var command3 = builder.BuildSelectCommand("Employee", "sys_id,sys_name", filter, sortFields);
+            Assert.NotNull(command2);
         }
     }
 }

@@ -44,6 +44,19 @@ namespace Bee.Db
             var selectFieldNames = GetSelectFields(formTable, selectFields);
             var joins = new TableJoinCollection();
 
+            // 先處理 Where/Sort 欄位，讓 joins 集合完整
+            FilterNode remappedFilter = null;
+            if (filter != null)
+            {
+                remappedFilter = RemapFilterNodeFields(filter, selectContext, joins);
+            }
+
+            SortFIeldCollection remappedSortFields = null;
+            if (sortFields != null && sortFields.Count > 0)
+            {
+                remappedSortFields = RemapSortFields(sortFields, selectContext, joins);
+            }
+
             var sb = new StringBuilder();
             var selectParts = new List<string>();
             foreach (var fieldName in selectFieldNames)
@@ -79,9 +92,8 @@ namespace Bee.Db
             }
 
             IReadOnlyDictionary<string, object> parameters = null;
-            if (filter != null)
+            if (remappedFilter != null)
             {
-                var remappedFilter = RemapFilterNodeFields(filter, selectContext);
                 var whereBuilder = new SqlServerWhereBuilder();
                 var whereResult = whereBuilder.Build(remappedFilter, true);
                 if (!string.IsNullOrWhiteSpace(whereResult.WhereClause))
@@ -92,9 +104,8 @@ namespace Bee.Db
             }
 
             // 使用 SqlServerSortBuilder 處理排序
-            if (sortFields != null && sortFields.Count > 0)
+            if (remappedSortFields != null && remappedSortFields.Count > 0)
             {
-                var remappedSortFields = RemapSortFields(sortFields, selectContext);
                 var sortBuilder = new SqlServerSortBuilder();
                 var orderByClause = sortBuilder.Build(remappedSortFields);
                 if (!string.IsNullOrWhiteSpace(orderByClause))
@@ -108,32 +119,6 @@ namespace Bee.Db
                 return new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
             else
                 return new DbCommandSpec(DbCommandKind.DataTable, sql);
-        }
-
-        /// <summary>
-        /// 依據查詢欄位來源，產生 SortFIeldCollection 的複本並加上正確的 SQL 欄位表達式。
-        /// </summary>
-        /// <param name="sortFields">原始排序欄位集合。</param>
-        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        /// <returns>已加上 SQL 欄位表達式的排序欄位集合。</returns>
-        private SortFIeldCollection RemapSortFields(SortFIeldCollection sortFields, SelectContext selectContext)
-        {
-            var result = new SortFIeldCollection();
-            foreach (var sortField in sortFields)
-            {
-                var mapping = selectContext.FieldMappings.GetOrDefault(sortField.FieldName);
-                string fieldExpr;
-                if (mapping != null)
-                {
-                    fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
-                }
-                else
-                {
-                    fieldExpr = $"A.{QuoteIdentifier(sortField.FieldName)}";
-                }
-                result.Add(new SortField(fieldExpr, sortField.Direction));
-            }
-            return result;
         }
 
         /// <summary>
@@ -211,8 +196,9 @@ namespace Bee.Db
         /// </summary>
         /// <param name="node">要重新映射的過濾節點。</param>
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
+        /// <param name="joins">使用的資料表 Join 關係。</param>
         /// <returns>重新映射後的過濾節點。</returns>
-        private FilterNode RemapFilterNodeFields(FilterNode node, SelectContext selectContext)
+        private FilterNode RemapFilterNodeFields(FilterNode node, SelectContext selectContext, TableJoinCollection joins)
         {
             if (node.Kind == FilterNodeKind.Condition)
             {
@@ -222,6 +208,7 @@ namespace Bee.Db
                 if (mapping != null)
                 {
                     fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
+                    AddTableJoin(selectContext, joins, mapping.TableJoin);
                 }
                 else
                 {
@@ -235,7 +222,7 @@ namespace Bee.Db
                 var group = (FilterGroup)node;
                 var newGroup = new FilterGroup(group.Operator);
                 foreach (var child in group.Nodes)
-                    newGroup.Nodes.Add(RemapFilterNodeFields(child, selectContext));
+                    newGroup.Nodes.Add(RemapFilterNodeFields(child, selectContext, joins));
                 return newGroup;
             }
             else
@@ -244,6 +231,31 @@ namespace Bee.Db
             }
         }
 
-
+        /// <summary>
+        /// 依據查詢欄位來源，產生 SortFIeldCollection 的複本並加上正確的 SQL 欄位表達式。
+        /// </summary>
+        /// <param name="sortFields">原始排序欄位集合。</param>
+        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
+        /// <param name="joins">使用的資料表 Join 關係。</param>
+        private SortFIeldCollection RemapSortFields(SortFIeldCollection sortFields, SelectContext selectContext, TableJoinCollection joins)
+        {
+            var result = new SortFIeldCollection();
+            foreach (var sortField in sortFields)
+            {
+                var mapping = selectContext.FieldMappings.GetOrDefault(sortField.FieldName);
+                string fieldExpr;
+                if (mapping != null)
+                {
+                    fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
+                    AddTableJoin(selectContext, joins, mapping.TableJoin);
+                }
+                else
+                {
+                    fieldExpr = $"A.{QuoteIdentifier(sortField.FieldName)}";
+                }
+                result.Add(new SortField(fieldExpr, sortField.Direction));
+            }
+            return result;
+        }
     }
 }
