@@ -217,7 +217,7 @@ namespace Bee.Db.UnitTests
         {
             var formDefine = CacheFunc.GetFormDefine("Employee");
             var builder = new SqlSelectCommandBuilder(formDefine);
-            var command = builder.Build("Employee", string.Empty);
+            var command = builder.Build("Employee",string.Empty, null, null);
         }
 
         [Fact]
@@ -239,16 +239,20 @@ namespace Bee.Db.UnitTests
             var filter = new FilterCondition
             {
                 FieldName = "sys_id",
-                Operator =  ComparisonOperator.Equal,
+                Operator = ComparisonOperator.Equal,
                 Value = "001"
             };
 
-            // 傳入 filter node 給 BuildSelectCommand
-            var command = builder.BuildSelectCommand("Employee", string.Empty, filter);
+            // 建立排序欄位集合
+            var sortFields = new SortFIeldCollection();
+            sortFields.Add(new SortField("sys_id",  SortDirection.Asc)); // 依 sys_id 遞增排序
+
+            // 傳入 filter node 與 sortFields 給 BuildSelectCommand
+            var command = builder.BuildSelectCommand("Employee", string.Empty, filter, sortFields);
             Assert.NotNull(command);
 
-            // 也可測試多欄位與 filter
-            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_supervisor_name", filter);
+            // 也可測試多欄位與 filter 與 sortFields
+            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_supervisor_name", filter, sortFields);
             Assert.NotNull(command2);
         }
     }

@@ -30,11 +30,12 @@ namespace Bee.Db
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="filter">過濾條件 FilterNode，若為 null 則不加 WHERE。</param>
-        public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode filter = null)
+        /// <param name="filter">過濾條件。</param>
+        /// <param name="sortFields">排序欄位集合。</param>
+        public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode filter = null, SortFIeldCollection sortFields = null)
         {
             var builder = new SqlSelectCommandBuilder(FormDefine);
-            return builder.Build(tableName, selectFields, filter);  
+            return builder.Build(tableName, selectFields, filter, sortFields);  
         }
 
         /// <summary>

@@ -28,8 +28,9 @@ namespace Bee.Db
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="filter">過濾條件 FilterNode，若為 null 則不加 WHERE。</param>
-        public DbCommandSpec Build(string tableName, string selectFields, FilterNode filter = null)
+        /// <param name="filter">過濾條件。</param>
+        /// <param name="sortFields">排序欄位集合。</param>
+        public DbCommandSpec Build(string tableName, string selectFields, FilterNode filter = null, SortFIeldCollection sortFields = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentException("tableName cannot be null or whitespace.", nameof(tableName));
@@ -90,11 +91,49 @@ namespace Bee.Db
                 }
             }
 
+            // 使用 SqlServerSortBuilder 處理排序
+            if (sortFields != null && sortFields.Count > 0)
+            {
+                var remappedSortFields = RemapSortFields(sortFields, selectContext);
+                var sortBuilder = new SqlServerSortBuilder();
+                var orderByClause = sortBuilder.Build(remappedSortFields);
+                if (!string.IsNullOrWhiteSpace(orderByClause))
+                {
+                    sb.AppendLine(orderByClause);
+                }
+            }
+
             string sql = sb.ToString();
             if (parameters != null && parameters.Count > 0)
                 return new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
             else
                 return new DbCommandSpec(DbCommandKind.DataTable, sql);
+        }
+
+        /// <summary>
+        /// 依據查詢欄位來源，產生 SortFIeldCollection 的複本並加上正確的 SQL 欄位表達式。
+        /// </summary>
+        /// <param name="sortFields">原始排序欄位集合。</param>
+        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
+        /// <returns>已加上 SQL 欄位表達式的排序欄位集合。</returns>
+        private SortFIeldCollection RemapSortFields(SortFIeldCollection sortFields, SelectContext selectContext)
+        {
+            var result = new SortFIeldCollection();
+            foreach (var sortField in sortFields)
+            {
+                var mapping = selectContext.FieldMappings.GetOrDefault(sortField.FieldName);
+                string fieldExpr;
+                if (mapping != null)
+                {
+                    fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
+                }
+                else
+                {
+                    fieldExpr = $"A.{QuoteIdentifier(sortField.FieldName)}";
+                }
+                result.Add(new SortField(fieldExpr, sortField.Direction));
+            }
+            return result;
         }
 
         /// <summary>
