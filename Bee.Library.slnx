@@ -33,6 +33,7 @@
     <Project Path="tests/Bee.Business.UnitTests/Bee.Business.UnitTests.csproj" />
     <Project Path="tests/Bee.Cache.UnitTests/Bee.Cache.UnitTests.csproj" />
     <Project Path="tests/Bee.Connect.UnitTests/Bee.Connect.UnitTests.csproj" />
+    <Project Path="tests/Bee.Contracts.UnitTests/Bee.Contracts.UnitTests.csproj" Id="3a3e8eb7-95e4-4590-811e-149f003ee48e" />
     <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
     <Project Path="tests/Bee.Define.UnitTests/Bee.Define.UnitTests.csproj" />
     <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />

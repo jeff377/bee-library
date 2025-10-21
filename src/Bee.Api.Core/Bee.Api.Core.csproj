@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Bee.Define\Bee.Define.csproj" />
+	  <ProjectReference Include="..\Bee.Contracts\Bee.Contracts.csproj" />
 	</ItemGroup>
 
 </Project>
