@@ -20,6 +20,7 @@
     <Project Path="src/Bee.Business/Bee.Business.csproj" />
     <Project Path="src/Bee.Cache/Bee.Cache.csproj" />
     <Project Path="src/Bee.Connect/Bee.Connect.csproj" />
+    <Project Path="src/Bee.Contracts/Bee.Contracts.csproj" Id="65478f73-2ad9-433b-b2f2-dee9c49677f3" />
     <Project Path="src/Bee.Db/Bee.Db.csproj" />
     <Project Path="src/Bee.Define/Bee.Define.csproj" />
     <Project Path="src/Bee.UI.Core/Bee.UI.Core.csproj" />

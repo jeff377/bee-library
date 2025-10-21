@@ -10,7 +10,7 @@ namespace Bee.Base
         static SysInfo()
         {
             // 預設加入允許 JSON-RPC 傳遞資料的型別命名空間
-            AllowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Define" };
+            AllowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Define", "Bee.Contracts" };
         }
 
         /// <summary>

@@ -21,7 +21,7 @@ Bee.NET Framework is an **n-tier software architecture** designed to accelerate 
 | **Bee.Db.dll**             | Backend        | netstandard2.0; net8.0  | Database abstraction with dynamic command generation and connection binding. |
 | **Bee.Abstractions.dll**   | Backend        | netstandard2.0; net8.0  | Defines shared backend interfaces and abstract types (such as Repository and Service interfaces). |
 | **Bee.Repository.dll**      | Backend        | netstandard2.0; net8.0  | Implements Repository classes for each feature, responsible for database interaction. |
-| **Bee.Contracts.dll**       | Frontend / Backend | netstandard2.0; net8.0  | Defines shared data transfer models for frontend and backend. |
+| **Bee.Contracts.dll**       | Frontend / Backend | netstandard2.0; net8.0  | Shared data contracts between frontend and backend. |
 | **Bee.Business.dll**       | Backend        | netstandard2.0; net8.0  | Implements core business logic and application-level workflows. |
 | **Bee.Api.Core.dll**       | Frontend / Backend | netstandard2.0; net8.0 | Encapsulates API support such as model definitions, encryption, and serialization. |
 | **Bee.Api.AspNetCore.dll** | Backend       | net8.0                 | Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls. |
@@ -66,7 +66,7 @@ Bee.NET Framework 是一套 **多層式（N-Tier）應用架構**，旨在加速
 | **Bee.Db.dll**               | 後端           | netstandard2.0; net8.0  | 封裝資料庫操作邏輯，支援 SQL 命令組合與動態連線綁定。 |
 | **Bee.Abstractions.dll** | 後端           | netstandard2.0; net8.0  | 定義後端共用介面與抽象型別（如 Repository、Service 介面）。 |
 | **Bee.Repository**      | 後端           | netstandard2.0; net8.0  | 實作各功能的 Repository 類別，負責與資料庫互動。 |
-| **Bee.Contracts**         | 前端 / 後端    | netstandard2.0; net8.0  | 定義前後端共用的資料傳輸模型。 |
+| **Bee.Contracts**         | 前端 / 後端    | netstandard2.0; net8.0  | 前後端共用的資料契約。 |
 | **Bee.Business.dll**      | 後端           | netstandard2.0; net8.0  | 實作應用層業務邏輯，處理表單流程與業務規則。 |
 | **Bee.Api.Core.dll**      | 前端 / 後端    | netstandard2.0; net8.0  | 提供 API 核心支援，包含資料模型、加解密、序列化等功能。 |
 | **Bee.Api.AspNetCore.dll** | 後端           | net8.0                 | 提供 ASP.NET Core 的 JSON-RPC 2.0 API 控制器，作為統一入口處理後端方法呼叫。 |

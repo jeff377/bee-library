@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <Description>Shared data contracts between frontend and backend.</Description>
+    <PackageTags>Bee.NET;contracts;dto;shared;api;frontend;backend</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Define\Bee.Define.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Common\" />
+    <Folder Include="Form\" />
+    <Folder Include="System\" />
+  </ItemGroup>
+
+</Project>
