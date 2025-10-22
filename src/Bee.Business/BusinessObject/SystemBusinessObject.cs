@@ -1,6 +1,7 @@
 ﻿using System;
 using Bee.Base;
 using Bee.Cache;
+using Bee.Contracts;
 using Bee.Define;
 
 namespace Bee.Business

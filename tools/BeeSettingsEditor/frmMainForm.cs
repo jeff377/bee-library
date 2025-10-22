@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Contracts;
 using Bee.Define;
 using Bee.UI.Core;
 using Bee.UI.WinForms;

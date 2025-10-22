@@ -2,6 +2,7 @@ using System.Text;
 using Bee.Api.Core;
 using Bee.Base;
 using Bee.Cache;
+using Bee.Contracts;
 using Bee.Db;
 using Bee.Define;
 using Microsoft.AspNetCore.Http;

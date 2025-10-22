@@ -1,7 +1,7 @@
 ﻿using System;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Contracts
 {
     /// <summary>
     /// Ping 方法的傳入引數。

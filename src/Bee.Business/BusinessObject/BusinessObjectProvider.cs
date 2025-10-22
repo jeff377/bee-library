@@ -19,7 +19,7 @@ namespace Bee.Business
         /// </summary>
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="isLocalCall">呼叫是否為近端來源。</param>
-        public ISystemBusinessObject CreateSystemBusinessObject(Guid accessToken, bool isLocalCall = true)
+        public object CreateSystemBusinessObject(Guid accessToken, bool isLocalCall = true)
         {
             return new SystemBusinessObject(accessToken, isLocalCall);
         }
@@ -30,7 +30,7 @@ namespace Bee.Business
         /// <param name="accessToken">存取令牌。</param>
         /// <param name="progId">程式代碼。</param>
         /// <param name="isLocalCall">呼叫是否為近端來源。</param>
-        public IFormBusinessObject CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
+        public object CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
         {
             return new FormBusinessObject(accessToken, progId, isLocalCall);
         }

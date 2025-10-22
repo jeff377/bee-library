@@ -1,7 +1,7 @@
 ﻿using System;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Contracts
 {
     /// <summary>
     /// 建立連線的傳入引數。

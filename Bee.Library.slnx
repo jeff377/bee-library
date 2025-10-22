@@ -4,7 +4,7 @@
   </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/Custom.Business/Custom.Business.csproj" />
-    <Project Path="samples/Custom.Define/Custom.Define.csproj" />
+    <Project Path="samples/Custom.Contracts/Custom.Contracts.csproj" />
     <Project Path="samples/JsonRpcClient/JsonRpcClient.csproj" />
     <Project Path="samples/JsonRpcServer/JsonRpcServer.csproj" />
   </Folder>

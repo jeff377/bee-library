@@ -1,4 +1,4 @@
-﻿namespace Bee.Define
+﻿namespace Bee.Contracts
 {
     /// <summary>
     /// 業務邏輯物件基底介面。

@@ -1,15 +1,16 @@
 ﻿using System;
 using Bee.Base;
+using Bee.Define;
 using MessagePack;
 using Newtonsoft.Json;
 
-namespace Bee.Define
+namespace Bee.Contracts
 {
     /// <summary>
-    /// 業務邏輯物件方法傳入引數基底類別。
+    /// 業務邏輯物件方法傳出結果基底類別。
     /// </summary>
     [Serializable]
-    public abstract class BusinessArgs : IObjectSerialize
+    public abstract class BusinessResult : IObjectSerialize
     {
         private ParameterCollection _parameters = null;
 
@@ -34,7 +35,7 @@ namespace Bee.Define
         #endregion
 
         /// <summary>
-        /// 傳入參數集合。
+        /// 傳出參數集合。
         /// </summary>
         [Key(0)]
         public ParameterCollection Parameters

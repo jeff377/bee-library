@@ -1,14 +1,15 @@
 ﻿using System;
+using Bee.Define;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Contracts
 {
     /// <summary>
-    /// 儲存定義資料的傳入引數。
+    /// 取得定義資料的傳入引數。
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class SaveDefineArgs : BusinessArgs
+    public class GetDefineArgs : BusinessArgs
     {
         /// <summary>
         /// 定義資料類型。
@@ -17,24 +18,23 @@ namespace Bee.Define
         public DefineType DefineType { get; set; }
 
         /// <summary>
-        /// 定義資料。
+        /// 取得定義資料的鍵值。
         /// </summary>
         [Key(101)]
-        public string Xml { get; set; } = string.Empty;
-
-        /// <summary>
-        /// 儲存定義資料的鍵值。
-        /// </summary>
-        [Key(102)]
         public string[] Keys { get; set; } = null;
     }
 
     /// <summary>
-    ///  儲存定義資料的傳出結果
+    ///  取得定義資料的傳出結果
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class SaveDefineResult : BusinessResult
+    public class GetDefineResult : BusinessResult
     {
+        /// <summary>
+        /// 定義資料。
+        /// </summary>
+        [Key(100)]
+        public string Xml { get; set; } = string.Empty;
     }
 }

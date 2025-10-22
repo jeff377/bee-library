@@ -1,4 +1,5 @@
 ﻿using Bee.Base;
+using Bee.Contracts;
 using Bee.Define;
 using System;
 using System.Runtime.ExceptionServices;

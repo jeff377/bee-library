@@ -14,4 +14,8 @@
 		<ProjectReference Include="..\Bee.Base\Bee.Base.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Contracts\SystemBusinessObject\" />
+	</ItemGroup>
+
 </Project>

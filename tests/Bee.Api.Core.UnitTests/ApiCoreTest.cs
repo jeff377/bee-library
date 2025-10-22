@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Contracts;
 using Bee.Define;
 
 namespace Bee.Api.Core.UnitTests

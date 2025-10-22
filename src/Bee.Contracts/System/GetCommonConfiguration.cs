@@ -1,7 +1,7 @@
 ﻿using System;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Contracts
 {
     /// <summary>
     /// 取得通用參數及環境設置的傳入引數。

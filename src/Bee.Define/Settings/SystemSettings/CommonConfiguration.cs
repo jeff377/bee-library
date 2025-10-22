@@ -70,7 +70,8 @@ namespace Bee.Define
             var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 "Bee.Base",
-                "Bee.Define"
+                "Bee.Define",
+                "Bee.Contracts"
             };
 
             // User-defined namespace list (separated by '|')

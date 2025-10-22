@@ -1,6 +1,6 @@
-﻿using System;
-using Bee.Define;
+﻿using Bee.Contracts;
 using MessagePack;
+using System;
 
 namespace Custom.Define
 {

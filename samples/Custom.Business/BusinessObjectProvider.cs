@@ -20,7 +20,7 @@ namespace Custom.Business
         /// </summary>
         /// <param name="accessToken">Access token.</param>
         /// <param name="isLocalCall">Indicates whether the call is from a local source.</param>
-        public ISystemBusinessObject CreateSystemBusinessObject(Guid accessToken, bool isLocalCall = true)
+        public object CreateSystemBusinessObject(Guid accessToken, bool isLocalCall = true)
         {
             return new SystemBusinessObject(accessToken, isLocalCall);
         }
@@ -31,7 +31,7 @@ namespace Custom.Business
         /// <param name="accessToken">Access token.</param>
         /// <param name="progId">Program ID.</param>
         /// <param name="isLocalCall">Indicates whether the call is from a local source.</param>
-        public IFormBusinessObject CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
+        public object CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
         {
             switch (progId)
             {

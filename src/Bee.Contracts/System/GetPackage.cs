@@ -1,6 +1,6 @@
 ﻿using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Contracts
 {
     /// <summary>
     /// 取得單一套件（ZIP）的引數；以 AppId + ComponentId + Version + Platform + Channel 精準定位。

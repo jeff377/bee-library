@@ -1,7 +1,7 @@
 ﻿using MessagePack;
 using System.Collections.Generic;
 
-namespace Bee.Define
+namespace Bee.Contracts
 {
     /// <summary>
     /// 套件發佈方式。序列化時以整數值表示（0/1），請勿變更既有成員的數值。
