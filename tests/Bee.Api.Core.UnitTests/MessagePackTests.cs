@@ -1,8 +1,9 @@
 ﻿using System.Data;
 using Bee.Base;
 using Bee.Contracts;
+using Bee.Define;
 
-namespace Bee.Define.UnitTests
+namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
     /// MessagePack 序列化測試。
@@ -284,7 +285,7 @@ namespace Bee.Define.UnitTests
         public void TPropertyCollection_Serialize()
         {
             // 建立屬性集合
-            var properties = new PropertyCollection();
+            var properties = new Define.PropertyCollection();
             properties.Add("AppName", "BeeERP");
             properties.Add("Enabled", "true");
             properties.Add("RetryCount", "3");
@@ -293,7 +294,7 @@ namespace Bee.Define.UnitTests
             var bytes = MessagePackHelper.Serialize(properties);
 
             // 反序列化
-            var restored = MessagePackHelper.Deserialize<PropertyCollection>(bytes);
+            var restored = MessagePackHelper.Deserialize<Define.PropertyCollection>(bytes);
 
             // 驗證內容是否正確還原
             Assert.NotNull(restored);

@@ -1,6 +1,7 @@
 ﻿using Bee.Contracts;
+using Bee.Define;
 
-namespace Bee.Define.Tests
+namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
     /// 驗證 Bee.Define 合約型別的 MessagePack 序列化與反序列化行為。
