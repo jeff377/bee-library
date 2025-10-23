@@ -1,17 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
 using Bee.Base;
-using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
     /// 自訂屬性集合。
     /// </summary>
-    [MessagePackObject]
     [Serializable]
     [Description("自訂屬性集合。")]
-    public class PropertyCollection : MessagePackKeyCollectionBase<Property>
+    public class PropertyCollection : KeyCollectionBase<Property>
     {
         /// <summary>
         /// 加入成員。

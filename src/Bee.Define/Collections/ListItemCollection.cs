@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Data;
 using Bee.Base;
-using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
     /// 清單項目集合。
     /// </summary>
-    [MessagePackObject]
     [Serializable]
-    public class ListItemCollection : MessagePackKeyCollectionBase<ListItem>
+    public class ListItemCollection : KeyCollectionBase<ListItem>
     {
         #region 建構函式
 

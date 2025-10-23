@@ -1,17 +1,16 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using MessagePack;
+using Bee.Base;
 
 namespace Bee.Define
 {
     /// <summary>
     /// 清單項目。
     /// </summary>
-    [MessagePackObject]
     [Serializable]
     [XmlType("ListItem")]
-    public class ListItem : MessagePackKeyCollectionItem
+    public class ListItem : KeyCollectionItem
     {
         #region 建構函式
 
@@ -38,7 +37,6 @@ namespace Bee.Define
         /// 項目值。
         /// </summary>
         [XmlAttribute]
-        [Key(100)]
         [Description("項目值。")]
         public string Value
         {
@@ -50,7 +48,6 @@ namespace Bee.Define
         /// 顯示文字。
         /// </summary>
         [XmlAttribute]
-        [Key(101)]
         [Description("顯示文字。")]
         public string Text { get; set; } = string.Empty;
 
