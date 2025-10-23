@@ -2,12 +2,12 @@
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 用於序列化與反序列化 DataSet 的格式化器。
     /// </summary>
-    public class DataSetFormatter : IMessagePackFormatter<DataSet>
+    internal class DataSetFormatter : IMessagePackFormatter<DataSet>
     {
         /// <summary>
         /// 序列化 DataSet 物件。

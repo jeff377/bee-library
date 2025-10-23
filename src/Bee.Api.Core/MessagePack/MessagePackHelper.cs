@@ -3,7 +3,7 @@ using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 提供 MessagePack 序列化與反序列化的靜態方法，並使用自訂的格式化器與解析器。

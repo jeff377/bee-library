@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 可序列化的資料關聯，用於描述資料表之間的父子關係。

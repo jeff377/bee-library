@@ -2,12 +2,12 @@
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 用於序列化與反序列化 DataTable 的格式化器。
     /// </summary>
-    public class DataTableFormatter : IMessagePackFormatter<DataTable>
+    internal class DataTableFormatter : IMessagePackFormatter<DataTable>
     {
         /// <summary>
         /// 序列化 DataTable 物件。

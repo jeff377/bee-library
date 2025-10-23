@@ -4,7 +4,7 @@ using System.Data;
 using System.Linq;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 可序列化的資料表物件，用於傳輸 DataTable 結構與資料。

@@ -3,7 +3,7 @@ using System.Data;
 using System.Linq;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 可序列化的 DataSet 物件，用於支援跨平台傳輸與儲存。

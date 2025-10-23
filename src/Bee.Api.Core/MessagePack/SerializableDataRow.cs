@@ -2,7 +2,7 @@
 using System.Data;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 可序列化的資料列，包含目前值與原始值，用於支援資料狀態與修改追蹤。

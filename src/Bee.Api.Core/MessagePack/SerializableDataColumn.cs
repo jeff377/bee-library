@@ -1,6 +1,6 @@
 ﻿using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 可序列化的資料欄位定義，用於描述 DataColumn 屬性。

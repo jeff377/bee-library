@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Data;
+using Bee.Define;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
 
-namespace Bee.Define
+namespace Bee.Api.Core
 {
     /// <summary>
     /// 自訂的 MessagePack 格式化器解析器，註冊 DataSet、DataTable 和 TCollectionBase 專用格式化器。
     /// </summary>
-    public class FormatterResolver : IFormatterResolver
+    internal class FormatterResolver : IFormatterResolver
     {
         /// <summary>
         /// Singleton 實例。
