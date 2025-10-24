@@ -3,6 +3,7 @@ using Bee.Base;
 using Bee.Cache;
 using Bee.Contracts;
 using Bee.Define;
+using Bee.Repository.Abstractions;
 
 namespace Bee.Business
 {
@@ -119,7 +120,7 @@ namespace Bee.Business
         public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
         {
             // 建立一組用戶連線
-            var repo = BackendInfo.RepositoryProvider.SessionRepository;
+            var repo = RepositoryInfo.SystemProvider.SessionRepository;
             var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
             // 回傳存取令牌
             return new CreateSessionResult()

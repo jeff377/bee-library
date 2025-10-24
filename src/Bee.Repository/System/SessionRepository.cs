@@ -1,8 +1,10 @@
 ﻿using System;
 using Bee.Base;
+using Bee.Db;
 using Bee.Define;
+using Bee.Repository.Abstractions;
 
-namespace Bee.Db
+namespace Bee.Repository
 {
     /// <summary>
     /// 連線資訊的資料存取物件，封裝存取 ts_session 與 ts_user 資料表的操作邏輯。

@@ -1,5 +1,6 @@
 ﻿using System;
 using Bee.Define;
+using Bee.Repository.Abstractions;
 
 namespace Bee.Business
 {
@@ -20,7 +21,7 @@ namespace Bee.Business
         /// <param name="accessToken">存取令牌。</param>
         public SessionUser GetSessionUser(Guid accessToken)
         {
-            var repo = BackendInfo.RepositoryProvider.SessionRepository;
+            var repo = RepositoryInfo.SystemProvider.SessionRepository;
             return repo.GetSession(accessToken);
         }
     }

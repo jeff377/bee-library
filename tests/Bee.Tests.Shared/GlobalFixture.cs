@@ -22,11 +22,10 @@ namespace Bee.Tests.Shared
             // 系統初始化
             var settings = CacheFunc.GetSystemSettings();
             settings.Initialize();
+            // 儲存庫初始化
+            RepositoryInfo.Initialize(settings.BackendConfiguration);
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
-            // 指定儲存庫提供者
-            RepositoryInfo.SystemProvider = new SystemRepositoryProvider();
-            RepositoryInfo.FormProvider = new FormRepositoryProvider();
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
 

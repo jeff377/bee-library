@@ -23,10 +23,6 @@ namespace Bee.Define
         /// </summary>
         public const string CacheDataSourceProvider = "Bee.Business.CacheDataSourceProvider, Bee.Business";
         /// <summary>
-        /// 預設的資料儲存物件提供者型別，用於動態建立 Repository。
-        /// </summary>
-        public const string RepositoryProvider = "Bee.Db.RepositoryProvider, Bee.Db";
-        /// <summary>
         /// 預設的定義資料提供者型別。
         /// </summary>
         public const string DefineProvider = "Bee.Define.FileDefineProvider, Bee.Define";
@@ -34,6 +30,14 @@ namespace Bee.Define
         /// 預設的 AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
         /// </summary>
         public const string AccessTokenValidationProvider = "Bee.Business.AccessTokenValidationProvider, Bee.Business";
+        /// <summary>
+        /// 預設的系統儲存庫提供者型別。
+        /// </summary>
+        public const string SystemRepositoryProvider = "Bee.Repository.SystemRepositoryProvider, Bee.Repository";
+        /// <summary>
+        /// 預設的表單儲存庫提供者型別。
+        /// </summary>
+        public const string FormRepositoryProvider = "Bee.Repository.FormRepositoryProvider, Bee.Repository";
     }
 
     /// <summary>

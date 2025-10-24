@@ -31,23 +31,15 @@ namespace ApiService.Extensions
                 throw new DirectoryNotFoundException($"DefinePath 指定的目錄不存在：{absolutePath}");
 
             BackendInfo.DefinePath = absolutePath;
-
-            // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
-            // 指定儲存庫提供者
-            RepositoryInfo.SystemProvider = new SystemRepositoryProvider();
-            RepositoryInfo.FormProvider = new FormRepositoryProvider();
-
-            // ⚠️ 注意：BinaryFormatter 已於 .NET 8 停用，僅限於相容性用途，建議移除或改為 MessagePack。
-            // .NET 8 預設停用 BinaryFormatter，需手動啟用
-            // AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
-
             // 系統設定初始化
             var settings = CacheFunc.GetSystemSettings();
             settings.Initialize();
+            // 儲存庫初始化
+            RepositoryInfo.Initialize(settings.BackendConfiguration);
             // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
             ApiServiceOptions.Initialize(settings.CommonConfiguration.ApiPayloadOptions);
-
+            // 註冊資料庫提供者
+            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             return app;
         }
     }

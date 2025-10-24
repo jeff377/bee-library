@@ -38,6 +38,7 @@
     <Project Path="tests/Bee.Contracts.UnitTests/Bee.Contracts.UnitTests.csproj" Id="3a3e8eb7-95e4-4590-811e-149f003ee48e" />
     <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
     <Project Path="tests/Bee.Define.UnitTests/Bee.Define.UnitTests.csproj" />
+    <Project Path="tests/Bee.Repository.UnitTests/Bee.Repository.UnitTests.csproj" Id="37be88f7-d67a-40a7-91a3-23583c6b85f1" />
     <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />
   </Folder>
   <Folder Name="/tools/">

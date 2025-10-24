@@ -9,5 +9,10 @@
         /// 資料庫儲存庫。
         /// </summary>
         IDatabaseRepository DatabaseRepository { get; set; }
+
+        /// <summary>
+        /// 連線資訊儲存庫。
+        /// </summary>
+        ISessionRepository SessionRepository { get; set; }
     }
 }

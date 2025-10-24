@@ -32,14 +32,6 @@ namespace Bee.Define
         public string BusinessObjectProvider { get; set; } = DefaultProviderTypes.BusinessObjectProvider;
 
         /// <summary>
-        /// Repository provider type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("Repository provider type, defines how to obtain all Repositories.")]
-        [DefaultValue(DefaultProviderTypes.RepositoryProvider)]
-        public string RepositoryProvider { get; set; } = DefaultProviderTypes.RepositoryProvider;
-
-        /// <summary>
         /// Define provider type.
         /// </summary>
         [Category("Providers")]
@@ -62,6 +54,22 @@ namespace Bee.Define
         [Description("AccessToken validation provider type, used to validate the validity of AccessTokens.")]
         [DefaultValue(DefaultProviderTypes.AccessTokenValidationProvider)]
         public string AccessTokenValidationProvider { get; set; } = DefaultProviderTypes.AccessTokenValidationProvider;
+
+        /// <summary>
+        /// System level repository provider type.
+        /// </summary>
+        [Category("Providers")]
+        [Description("System level Repository provider type.")]
+        [DefaultValue(DefaultProviderTypes.SystemRepositoryProvider)]
+        public string SystemRepositoryProvider { get; set; } = DefaultProviderTypes.SystemRepositoryProvider;
+
+        /// <summary>
+        /// Form level repository provider type.
+        /// </summary>
+        [Category("Providers")]
+        [Description("Form level Repository provider type.")]
+        [DefaultValue(DefaultProviderTypes.SystemRepositoryProvider)]
+        public string FormRepositoryProvider { get; set; } = DefaultProviderTypes.FormRepositoryProvider;
 
         /// <summary>
         /// Database type.
@@ -139,13 +147,6 @@ namespace Bee.Define
                     ? DefaultProviderTypes.BusinessObjectProvider
                     : BusinessObjectProvider
             ) as IBusinessObjectProvider;
-
-            // Specify repository provider type
-            BackendInfo.RepositoryProvider = BaseFunc.CreateInstance(
-                 string.IsNullOrWhiteSpace(RepositoryProvider)
-                     ? DefaultProviderTypes.RepositoryProvider
-                     : RepositoryProvider
-             ) as IRepositoryProvider;
 
             // Specify cache data source provider type
             BackendInfo.CacheDataSourceProvider = BaseFunc.CreateInstance(
