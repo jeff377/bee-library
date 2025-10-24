@@ -40,6 +40,8 @@ jobs:
         dotnet build src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --no-restore
         dotnet build src/Bee.UI.WinForms/Bee.UI.WinForms.csproj --configuration Release --no-restore
         dotnet build src/Bee.Contracts/Bee.Contracts.csproj --configuration Release --no-restore
+        dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore
+        dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore
 
     - name: Pack all NuGet projects
       run: |
@@ -55,6 +57,8 @@ jobs:
         dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.UI.WinForms/Bee.UI.WinForms.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.Contracts/Bee.Contracts.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs
 
     - name: Push to NuGet
       run: |
@@ -86,6 +90,8 @@ jobs:
           - Bee.UI.Core
           - Bee.UI.WinForms
           - Bee.Contracts
+          - Bee.Repository.Abstractions
+          - Bee.Repository
 
           如需安裝請至 NuGet.org 查詢對應版本。
 
