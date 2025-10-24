@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Manages client-server connection settings and states.</Description>
-		<PackageTags>bee;client;settings;api;core;ui</PackageTags>
+		<PackageTags>bee.net;client;settings;api;core;ui</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

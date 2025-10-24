@@ -3,7 +3,7 @@
 	<PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Encapsulates API support such as model definitions, encryption, and serialization.</Description>
-		<PackageTags>api;core;service;dynamicapi</PackageTags>
+		<PackageTags>bee.net;api;core;service;dynamicapi</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

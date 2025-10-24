@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<Description>UI components and layout management for WinForms.</Description>
-		<PackageTags>winforms;ui;layout;form designer;runtime ui;dynamic ui;bee.net</PackageTags>
+		<PackageTags>bee.net;winforms;ui;layout;form designer;runtime ui;dynamic ui</PackageTags>
 
 		<OutputType>Library</OutputType>
 		<UseWindowsForms>true</UseWindowsForms>

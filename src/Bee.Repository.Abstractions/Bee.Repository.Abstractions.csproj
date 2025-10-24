@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+		<Description>Defines the interface contracts for the business layer to access the data layer, serving as the boundary between the business logic layer and the data access layer.</Description>
+		<PackageTags>bee.net;repository;abstractions;dataaccess;contract;backend</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Bee.Define\Bee.Define.csproj" />
+	</ItemGroup>
+
+</Project>

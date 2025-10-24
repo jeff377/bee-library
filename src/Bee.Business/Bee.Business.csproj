@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Implements core business logic and application-level workflows.</Description>
-		<PackageTags>netstandard2.0</PackageTags>		
+		<PackageTags>bee.net;business;application;backend;contracts;repository;json-rpc</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Defines system-wide structured types for config, schema, and layout.</Description>
-		<PackageTags>Bee.NET;config;schema;layout;formdefine;enterprise;</PackageTags>
+		<PackageTags>bee.net;config;schema;layout;formdefine;enterprise</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

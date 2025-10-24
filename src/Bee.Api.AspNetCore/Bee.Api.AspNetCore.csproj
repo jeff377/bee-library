@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
 		<Description>Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls via JSON-RPC protocol.</Description>
-		<PackageTags>aspnetcore;api;webapi;jsonrpc;dynamicapi,service</PackageTags>
+		<PackageTags>bee.net;aspnetcore;api;webapi;jsonrpc;dynamicapi,service</PackageTags>
 
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>

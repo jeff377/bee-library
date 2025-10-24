@@ -23,6 +23,8 @@
     <Project Path="src/Bee.Contracts/Bee.Contracts.csproj" Id="65478f73-2ad9-433b-b2f2-dee9c49677f3" />
     <Project Path="src/Bee.Db/Bee.Db.csproj" />
     <Project Path="src/Bee.Define/Bee.Define.csproj" />
+    <Project Path="src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj" Id="30b306b6-0aab-475e-8df0-e1a0801e56a6" />
+    <Project Path="src/Bee.Repository/Bee.Repository.csproj" Id="f78f3849-45b9-426e-a7b0-6edbd7fe256d" />
     <Project Path="src/Bee.UI.Core/Bee.UI.Core.csproj" />
     <Project Path="src/Bee.UI.WinForms/Bee.UI.WinForms.csproj" />
   </Folder>

@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Connector for local or remote invocation of backend logic.</Description>
-		<PackageTags>netstandard2.0;connector</PackageTags>
+		<PackageTags>bee.net;connector;bee;api;remote;local</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

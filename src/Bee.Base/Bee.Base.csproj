@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Core utilities such as serialization, encryption, and general-purpose helpers.</Description>
-    <PackageTags>Bee.NET;utilities;helpers;cryptography;encryption;hashing;serialization;compression;json</PackageTags>
+		<PackageTags>bee.net;utilities;helpers;cryptography;encryption;hashing;serialization;compression;json</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 	</ItemGroup>
 
 </Project>

@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net48</TargetFramework>
 		<Description>Provides a JSON-RPC 2.0 API HttpModule for ASP.NET, enabling a unified HTTP POST endpoint for invoking backend methods via the JSON-RPC protocol.</Description>
-		<PackageTags>aspnet;api;webapi;jsonrpc;httpmodule;dynamicapi;service</PackageTags>
+		<PackageTags>bee.net;aspnet;api;webapi;jsonrpc;httpmodule;dynamicapi;service</PackageTags>
 
 		<OutputType>Library</OutputType>
 	</PropertyGroup>

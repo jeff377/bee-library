@@ -3,7 +3,7 @@
 	<PropertyGroup>
     <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Description>Runtime caching of definitions and related system data to improve performance.</Description>		
-		<PackageTags>Bee.NET;cache;memory;performance;data</PackageTags>
+		<PackageTags>bee.net;cache;memory;performance;data</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
