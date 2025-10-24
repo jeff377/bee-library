@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Repository\Bee.Repository.csproj" />
     <ProjectReference Include="..\Custom.Contracts\Custom.Contracts.csproj" />
   </ItemGroup>
 

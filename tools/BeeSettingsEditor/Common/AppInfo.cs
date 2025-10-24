@@ -3,6 +3,7 @@ using Bee.Cache;
 using Bee.Connect;
 using Bee.Db;
 using Bee.Define;
+using Bee.Repository.Abstractions;
 using Bee.UI.Core;
 using Bee.UI.WinForms;
 
@@ -23,6 +24,7 @@ namespace SettingsEditor
             // 因為發佈為單一執行檔，無法動態載入物件，需由程式碼建立
             BackendInfo.DefineProvider = new FileDefineProvider();
             BackendInfo.BusinessObjectProvider = new Bee.Business.BusinessObjectProvider();
+            RepositoryInfo.SystemProvider = new Bee.Repository.SystemRepositoryProvider();
             // 允許產生設定檔
             ClientInfo.AllowGenerateSettings = true;  
             // 用戶端初始化

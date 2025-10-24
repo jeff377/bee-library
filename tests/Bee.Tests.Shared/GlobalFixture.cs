@@ -1,6 +1,8 @@
 ﻿using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
+using Bee.Repository;
+using Bee.Repository.Abstractions;
 
 namespace Bee.Tests.Shared
 {
@@ -22,6 +24,9 @@ namespace Bee.Tests.Shared
             settings.Initialize();
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            // 指定儲存庫提供者
+            RepositoryInfo.SystemProvider = new SystemRepositoryProvider();
+            RepositoryInfo.FormProvider = new FormRepositoryProvider();
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
 

@@ -9,6 +9,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Bee.Contracts\Bee.Contracts.csproj" />
 		<ProjectReference Include="..\Bee.Db\Bee.Db.csproj" />
+		<ProjectReference Include="..\Bee.Repository.Abstractions\Bee.Repository.Abstractions.csproj" />
 	</ItemGroup>
 
 </Project>

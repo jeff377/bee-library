@@ -2,6 +2,8 @@
 using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
+using Bee.Repository;
+using Bee.Repository.Abstractions;
 
 namespace ApiService.Extensions
 {
@@ -32,6 +34,9 @@ namespace ApiService.Extensions
 
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            // 指定儲存庫提供者
+            RepositoryInfo.SystemProvider = new SystemRepositoryProvider();
+            RepositoryInfo.FormProvider = new FormRepositoryProvider();
 
             // ⚠️ 注意：BinaryFormatter 已於 .NET 8 停用，僅限於相容性用途，建議移除或改為 MessagePack。
             // .NET 8 預設停用 BinaryFormatter，需手動啟用

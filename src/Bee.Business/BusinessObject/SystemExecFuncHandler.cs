@@ -4,6 +4,7 @@ using Bee.Cache;
 using Bee.Contracts;
 using Bee.Db;
 using Bee.Define;
+using Bee.Repository.Abstractions;
 
 namespace Bee.Business
 {
@@ -52,16 +53,8 @@ namespace Bee.Business
             string dbName = args.Parameters.GetValue<string>("DbName");
             string tableName = args.Parameters.GetValue<string>("TableName");
 
-            // 確認必要的參數不為空
-            BaseFunc.EnsureNotNullOrWhiteSpace(
-                (databaseId, nameof(databaseId)),
-                (dbName, nameof(dbName)),
-                (tableName, nameof(tableName))
-            );
-
-            var builder = new TableSchemaBuilder(databaseId);
-            bool isUpgraded = builder.Execute(dbName, tableName);
-            result.Parameters.Add("Upgraded", isUpgraded);  // 回傳是否已升級
+            var repo = RepositoryInfo.SystemProvider.DatabaseRepository;
+            repo.UpgradeTableSchema(databaseId, dbName, tableName);
         }
 
         /// <summary>
@@ -70,12 +63,9 @@ namespace Bee.Business
         public void TestConnection(ExecFuncArgs args, ExecFuncResult result)
         {
             var item = args.Parameters.GetValue<DatabaseItem>("DatabaseItem");
-            var provider = DbProviderManager.GetFactory(item.DatabaseType);
-            using (var connection = provider.CreateConnection())
-            {
-                connection.ConnectionString = item.GetConnectionString();
-                connection.Open();
-            }
+
+            var repo = RepositoryInfo.SystemProvider.DatabaseRepository;
+            repo.TestConnection(item);
         }
 
         /// <summary>
@@ -85,12 +75,9 @@ namespace Bee.Business
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
             var item = CacheFunc.GetDatabaseItem(databaseId);
-            var provider = DbProviderManager.GetFactory(item.DatabaseType);
-            using (var connection = provider.CreateConnection())
-            {
-                connection.ConnectionString = item.GetConnectionString();
-                connection.Open();
-            }
+
+            var repo = RepositoryInfo.SystemProvider.DatabaseRepository;
+            repo.TestConnection(item);
         }
 
     }
