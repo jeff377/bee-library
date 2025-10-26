@@ -28,7 +28,7 @@ namespace Bee.Business
         /// <summary>
         /// 程式代碼。
         /// </summary>
-        public string ProgId { get; private set; }
+        public string ProgId { get; }
 
         /// <summary>
         /// 執行 ExecFunc 方法的實作。
