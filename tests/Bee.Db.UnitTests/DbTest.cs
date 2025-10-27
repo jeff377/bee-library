@@ -1,5 +1,4 @@
 using Bee.Base;
-using Bee.Cache;
 using Bee.Define;
 
 namespace Bee.Db.UnitTests
@@ -157,7 +156,7 @@ namespace Bee.Db.UnitTests
             row["note"] = i.ToString();
 
             // 3. 用 DbTableCommandBuilder 產生 DataTableUpdateSpec
-            var dbTable = CacheFunc.GetDbTable("common", "ts_user");
+            var dbTable =  BackendInfo.DefineAccess.GetDbTable("common", "ts_user");
             var builder = new DbTableCommandBuilder(dbTable);
             var updateSpec = builder.BuildUpdateSpec(table);
 
@@ -207,7 +206,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void SelectContextTest()
         {
-            var formDefine = CacheFunc.GetFormDefine("Employee");
+            var formDefine = BackendInfo.DefineAccess.GetFormDefine("Employee");
             var builder = new SelectContextBuilder(formDefine.MasterTable);         
             var context = builder.Build();
         }
@@ -215,7 +214,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void SelectCommandTest()
         {
-            var formDefine = CacheFunc.GetFormDefine("Employee");
+            var formDefine = BackendInfo.DefineAccess.GetFormDefine("Employee");
             var builder = new SqlSelectCommandBuilder(formDefine);
             var command = builder.Build("Employee",string.Empty, null, null);
         }
@@ -223,7 +222,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void FormCommandBuildTest()
         {
-            var formDefine = CacheFunc.GetFormDefine("Employee");
+            var formDefine = BackendInfo.DefineAccess.GetFormDefine("Employee");
             var builder = new SqlFormCommandBuilder(formDefine);
             var command = builder.BuildSelectCommand("Employee", string.Empty);
             var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_supervisor_name");
@@ -232,7 +231,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void FormCommandBuildWithFilterNodeTest()
         {
-            var formDefine = CacheFunc.GetFormDefine("Employee");
+            var formDefine = BackendInfo.DefineAccess.GetFormDefine("Employee");
             var builder = new SqlFormCommandBuilder(formDefine);
 
             // 建立一個 FilterCondition 篩選 sys_id = '001'

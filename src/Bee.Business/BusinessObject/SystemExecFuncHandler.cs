@@ -1,5 +1,4 @@
 ﻿using System;
-using Bee.Cache;
 using Bee.Contracts;
 using Bee.Define;
 using Bee.Repository.Abstractions;

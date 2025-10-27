@@ -1,8 +1,5 @@
 using Bee.Base;
-using Bee.Cache;
 using Bee.Contracts;
-using Bee.Db;
-using Bee.Define;
 
 namespace Bee.Business.UnitTests
 {
