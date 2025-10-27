@@ -6,6 +6,21 @@
     public interface IDefineAccess
     {
         /// <summary>
+        /// 取得定義資料。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="keys">取得定義資料的鍵值。</param>
+        object GetDefine(DefineType defineType, string[] keys = null);
+
+        /// <summary>
+        /// 儲存定義資料。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="defineObject">定義資料。</param>
+        /// <param name="keys">儲存定義資料的鍵值。</param>
+        void SaveDefine(DefineType defineType, object defineObject, string[] keys = null);
+
+        /// <summary>
         /// 取得系統設定。
         /// </summary>
         SystemSettings GetSystemSettings();

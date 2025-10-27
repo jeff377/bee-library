@@ -89,7 +89,7 @@ namespace Bee.Define
         {
             get => _cacheDataSourceProvider;
             set => _cacheDataSourceProvider = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        }       
 
         /// <summary>
         /// 定義資料提供者。
@@ -99,6 +99,11 @@ namespace Bee.Define
             get => _defineProvider;
             set => _defineProvider = value ?? throw new ArgumentNullException(nameof(value));
         }
+
+        /// <summary>
+        /// 定義資料存取。
+        /// </summary>
+        public static IDefineAccess DefineAccess { get; set; }
 
         /// <summary>
         /// AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。

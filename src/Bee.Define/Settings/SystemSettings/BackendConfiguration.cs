@@ -40,6 +40,14 @@ namespace Bee.Define
         public string DefineProvider { get; set; } = DefaultProviderTypes.DefineProvider;
 
         /// <summary>
+        /// Define access type.
+        /// </summary>
+        [Category("Providers")]
+        [Description("Define access type.")]
+        [DefaultValue(DefaultProviderTypes.DefineAccess)]
+        public string DefineAccess { get; set; } = DefaultProviderTypes.DefineAccess;
+
+        /// <summary>
         /// Cache data source provider type.
         /// </summary>
         [Category("Providers")]
@@ -161,6 +169,13 @@ namespace Bee.Define
                     ? DefaultProviderTypes.DefineProvider
                     : DefineProvider
             ) as IDefineProvider;
+
+            // Specify define access type
+            BackendInfo.DefineAccess = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(DefineAccess)
+                    ? DefaultProviderTypes.DefineAccess
+                    : DefineAccess
+            ) as IDefineAccess;
 
             // Specify AccessToken validation provider type
             BackendInfo.AccessTokenValidationProvider = BaseFunc.CreateInstance(

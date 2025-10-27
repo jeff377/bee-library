@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using System;
+using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Connect
@@ -83,12 +84,55 @@ namespace Bee.Connect
         }
 
         /// <summary>
+        /// 取得定義資料。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="keys">取得定義資料的鍵值。</param>
+        public object GetDefine(DefineType defineType, string[] keys = null)
+        {
+            switch (defineType)
+            {
+                case DefineType.SystemSettings:
+                    return this.GetSystemSettings();
+                case DefineType.DatabaseSettings:
+                    return this.GetDatabaseSettings();
+                case DefineType.ProgramSettings:
+                    return this.GetProgramSettings();
+                case DefineType.DbSchemaSettings:
+                    return this.GetDbSchemaSettings();
+                case DefineType.DbTable:
+                    ValidateKeys(defineType, keys, 2);
+                    return this.GetDbTable(keys[0], keys[1]);
+                case DefineType.FormDefine:
+                    ValidateKeys(defineType, keys, 1);
+                    return this.GetFormDefine(keys[0]);
+                case DefineType.FormLayout:
+                    ValidateKeys(defineType, keys, 1);
+                    return this.GetFormLayout(keys[0]);
+                default:
+                    throw new NotSupportedException($"DefineType '{defineType}' is not supported.");
+            }
+        }
+
+        /// <summary>
+        /// 驗證鍵值的長度。
+        /// </summary>
+        /// <param name="defineType">定義資料類型。</param>
+        /// <param name="keys">取得定義資料的鍵值。</param>
+        /// <param name="expectedLength">正確鍵值的長度。</param>
+        private void ValidateKeys(DefineType defineType, string[] keys, int expectedLength)
+        {
+            if (keys == null || keys.Length != expectedLength)
+                throw new ArgumentException($"{defineType} keys verification error. Input: {string.Join(",", keys ?? new string[0])}");
+        }
+
+        /// <summary>
         /// 儲存定義資料。
         /// </summary>
         /// <param name="defineType">定義資料類型。</param>
         /// <param name="defineObject">定義資料。</param>
         /// <param name="keys">儲存定義資料的鍵值。</param>
-        private void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
+        public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
         {
             this.Connector.SaveDefine(defineType, defineObject, keys);
         }
