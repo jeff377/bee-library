@@ -80,6 +80,22 @@ namespace Bee.Define
         public string FormRepositoryProvider { get; set; } = DefaultProviderTypes.FormRepositoryProvider;
 
         /// <summary>
+        /// Session info service type.
+        /// </summary>
+        [Category("Providers")]
+        [Description("Session info service type.")]
+        [DefaultValue(DefaultProviderTypes.SessionInfoService)]
+        public string SessionInfoService { get; set; } = DefaultProviderTypes.SessionInfoService;
+
+        /// <summary>
+        /// Unified access service type for commonly used enterprise business objects.
+        /// </summary>
+        [Category("Providers")]
+        [Description("Unified access service type for commonly used enterprise business objects.")]
+        [DefaultValue(DefaultProviderTypes.EnterpriseObjectService)]
+        public string EnterpriseObjectService { get; set; } = DefaultProviderTypes.EnterpriseObjectService;
+
+        /// <summary>
         /// Database type.
         /// </summary>
         [Category("Database")]
@@ -183,6 +199,20 @@ namespace Bee.Define
                     ? DefaultProviderTypes.AccessTokenValidationProvider
                     : AccessTokenValidationProvider
             ) as IAccessTokenValidationProvider;
+
+            // 指定 SessionInfoService 型別
+            BackendInfo.SessionInfoService = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(SessionInfoService)
+                    ? DefaultProviderTypes.SessionInfoService
+                    : SessionInfoService
+            ) as ISessionInfoService;
+
+            // 指定 EnterpriseObjectService 型別
+            BackendInfo.EnterpriseObjectService = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(EnterpriseObjectService)
+                    ? DefaultProviderTypes.EnterpriseObjectService
+                    : EnterpriseObjectService
+            ) as IEnterpriseObjectService;
 
             // Initialize keys
             InitializeSecurityKeys();

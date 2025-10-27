@@ -1,5 +1,4 @@
 ﻿using Bee.Base;
-using Bee.Cache;
 using Bee.Define;
 using System;
 
@@ -23,7 +22,7 @@ namespace Bee.Business
                 throw new UnauthorizedAccessException("Access token is required.");
             }
 
-            var sessionInfo = CacheFunc.GetSessionInfo(accessToken);
+            var sessionInfo = BackendInfo.SessionInfoService.Get(accessToken);
             if (sessionInfo == null) 
                 throw new UnauthorizedAccessException("Session key not found or expired.");
 

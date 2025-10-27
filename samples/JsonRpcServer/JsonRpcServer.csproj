@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Bee.Api.AspNetCore\Bee.Api.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Cache\Bee.Cache.csproj" />
     <ProjectReference Include="..\Custom.Business\Custom.Business.csproj" />
   </ItemGroup>
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using Bee.Base;
-using Bee.Cache;
 using Bee.Contracts;
 using Bee.Define;
 using Bee.Repository.Abstractions;
@@ -79,7 +78,7 @@ namespace Bee.Business
                 ExpiredAt = DateTime.UtcNow.AddHours(1),
                 ApiEncryptionKey = encryptionKey
             };
-            CacheFunc.SetSessionInfo(sessionInfo);
+            BackendInfo.SessionInfoService.Set(sessionInfo);
 
             // 4. 回傳加密後的金鑰與 Token
             string encryptedKey = string.Empty;

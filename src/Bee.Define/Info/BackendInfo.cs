@@ -73,6 +73,15 @@ namespace Bee.Define
         }
 
         /// <summary>
+        /// AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
+        /// </summary>
+        public static IAccessTokenValidationProvider AccessTokenValidationProvider
+        {
+            get => _accessTokenValidationProvider;
+            set => _accessTokenValidationProvider = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        /// <summary>
         /// 業務邏輯物件提供者，定義所有 BusinessObject 的取得方式。
         /// </summary>
         public static IBusinessObjectProvider BusinessObjectProvider
@@ -101,12 +110,13 @@ namespace Bee.Define
         public static IDefineAccess DefineAccess { get; set; }
 
         /// <summary>
-        /// AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
+        /// 連線資訊存取服務。
         /// </summary>
-        public static IAccessTokenValidationProvider AccessTokenValidationProvider
-        {
-            get => _accessTokenValidationProvider;
-            set => _accessTokenValidationProvider = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public static ISessionInfoService SessionInfoService { get; set; }
+
+        /// <summary>
+        /// 提供企業系統中常用業務物件的統一存取服務。
+        /// </summary>
+        public static IEnterpriseObjectService EnterpriseObjectService { get; set; }
     }
 }

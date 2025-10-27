@@ -42,6 +42,14 @@ namespace Bee.Define
         /// 預設的表單儲存庫提供者型別。
         /// </summary>
         public const string FormRepositoryProvider = "Bee.Repository.FormRepositoryProvider, Bee.Repository";
+        /// <summary>
+        /// 預設的連線資訊存取服務型別。
+        /// </summary>
+        public const string SessionInfoService = "Bee.Cache.SessionInfoService, Bee.Cache";
+        /// <summary>
+        /// 預設的提供企業系統中常用業務物件的統一存取服務型別。
+        /// </summary>
+        public const string EnterpriseObjectService = "Bee.Cache.EnterpriseObjectService, Bee.Cache";
     }
 
     /// <summary>
