@@ -4,9 +4,11 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 檔案定義資料提供者。
+    /// 以檔案為儲存媒介，實作定義資料的讀取與儲存。
+    /// 提供資料庫結構、資料表結構、表單定義及表單版面配置等物件的檔案存取功能。
+    /// 主要透過 XML 檔案序列化與反序列化方式，管理各類定義資料的持久化。
     /// </summary>
-    public class FileDefineProvider : IDefineProvider
+    public class FileDefineStorage : IDefineStorage
     {
         /// <summary>
         /// 取得資料表清單。

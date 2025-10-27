@@ -17,7 +17,7 @@ namespace Bee.Cache
             string layoutId = key;
             // 預設為相對時間 20 分鐘
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            if (BackendInfo.DefineProvider is FileDefineProvider)
+            if (BackendInfo.DefineStorage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormLayoutFilePath(layoutId) };
             return policy;
         }
@@ -30,7 +30,7 @@ namespace Bee.Cache
         {
             // 表單版面代碼
             string layoutId = key;
-            return BackendInfo.DefineProvider.GetFormLayout(layoutId);
+            return BackendInfo.DefineStorage.GetFormLayout(layoutId);
         }
     }
 }

@@ -175,7 +175,7 @@ namespace Bee.Cache
             DbSchemaSettingsCache oCache;
 
             // 儲存資料庫結構設定後，移除快取
-            BackendInfo.DefineProvider.SaveDbSchemaSettings(settings);
+            BackendInfo.DefineStorage.SaveDbSchemaSettings(settings);
             oCache = new DbSchemaSettingsCache();
             oCache.Remove();
         }
@@ -200,7 +200,7 @@ namespace Bee.Cache
             DbTableCache oCache;
 
             // 儲存資料表結構後，移除快取
-            BackendInfo.DefineProvider.SaveDbTable(dbName, dbTable);
+            BackendInfo.DefineStorage.SaveDbTable(dbName, dbTable);
             oCache = new DbTableCache();
             oCache.Remove(dbName, dbTable.TableName);
         }
@@ -223,7 +223,7 @@ namespace Bee.Cache
             FormDefineCache oCache;
 
             // 儲存資料表結構後，移除快取
-            BackendInfo.DefineProvider.SaveFormDefine(formDefine);
+            BackendInfo.DefineStorage.SaveFormDefine(formDefine);
             oCache = new FormDefineCache();
             oCache.Remove(formDefine.ProgId);
         }
@@ -246,7 +246,7 @@ namespace Bee.Cache
             FormLayoutCache oCache;
 
             // 儲存表單版面配置後，移除快取
-            BackendInfo.DefineProvider.SaveFormLayout(formLayout);
+            BackendInfo.DefineStorage.SaveFormLayout(formLayout);
             oCache = new FormLayoutCache();
             oCache.Remove(formLayout.LayoutId);
         }

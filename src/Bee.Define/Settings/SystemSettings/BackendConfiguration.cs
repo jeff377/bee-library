@@ -32,12 +32,12 @@ namespace Bee.Define
         public string BusinessObjectProvider { get; set; } = DefaultProviderTypes.BusinessObjectProvider;
 
         /// <summary>
-        /// Define provider type.
+        /// Define storage type.
         /// </summary>
         [Category("Providers")]
-        [Description("Define provider type, specifies how to load system definition files (e.g., file, database, etc.).")]
-        [DefaultValue(DefaultProviderTypes.DefineProvider)]
-        public string DefineProvider { get; set; } = DefaultProviderTypes.DefineProvider;
+        [Description("Define storage type, specifies how to load system definition files (e.g., file, database, etc.).")]
+        [DefaultValue(DefaultProviderTypes.DefineStorage)]
+        public string DefineStorage { get; set; } = DefaultProviderTypes.DefineStorage;
 
         /// <summary>
         /// Define access type.
@@ -164,11 +164,11 @@ namespace Bee.Define
             ) as ICacheDataSourceProvider;
 
             // Specify define provider type
-            BackendInfo.DefineProvider = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(DefineProvider)
-                    ? DefaultProviderTypes.DefineProvider
-                    : DefineProvider
-            ) as IDefineProvider;
+            BackendInfo.DefineStorage = BaseFunc.CreateInstance(
+                string.IsNullOrWhiteSpace(DefineStorage)
+                    ? DefaultProviderTypes.DefineStorage
+                    : DefineStorage
+            ) as IDefineStorage;
 
             // Specify define access type
             BackendInfo.DefineAccess = BaseFunc.CreateInstance(

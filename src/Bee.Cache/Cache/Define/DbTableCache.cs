@@ -19,7 +19,7 @@ namespace Bee.Cache
 
             // 預設為相對時間 20 分鐘
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            if (BackendInfo.DefineProvider is FileDefineProvider)
+            if (BackendInfo.DefineStorage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbTableFilePath(dbName, tableName) };
             return policy;
         }
@@ -32,7 +32,7 @@ namespace Bee.Cache
         {
             // 拆解成員鍵值，取得資料庫名稱及資料表名稱
             StrFunc.SplitLeft(key, ".", out string dbName, out string tableName);
-            return BackendInfo.DefineProvider.GetDbTable(dbName, tableName);
+            return BackendInfo.DefineStorage.GetDbTable(dbName, tableName);
         }
 
         /// <summary>

@@ -1,9 +1,9 @@
 ﻿namespace Bee.Define
 {
     /// <summary>
-    /// 定義資料提供者介面。
+    /// 定義資料儲存區介面。
     /// </summary>
-    public interface IDefineProvider
+    public interface IDefineStorage
     {
         /// <summary>
         /// 取得資料庫結構設定。

@@ -23,9 +23,9 @@ namespace Bee.Define
         /// </summary>
         public const string CacheDataSourceProvider = "Bee.Business.CacheDataSourceProvider, Bee.Business";
         /// <summary>
-        /// 預設的定義資料提供者型別。
+        /// 預設的定義資料儲存區型別。
         /// </summary>
-        public const string DefineProvider = "Bee.Define.FileDefineProvider, Bee.Define";
+        public const string DefineStorage = "Bee.Define.FileDefineStorage, Bee.Define";
         /// <summary>
         /// 預設的定義資料存取型別。
         /// </summary>

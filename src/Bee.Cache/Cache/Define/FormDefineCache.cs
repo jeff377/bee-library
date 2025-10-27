@@ -17,7 +17,7 @@ namespace Bee.Cache
             string progId = key;
             // 預設為相對時間 20 分鐘
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            if (BackendInfo.DefineProvider is FileDefineProvider)
+            if (BackendInfo.DefineStorage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormDefineFilePath(progId) };
             return policy;
         }
@@ -30,7 +30,7 @@ namespace Bee.Cache
         {
             // 程式代碼
             string progId = key;
-            return BackendInfo.DefineProvider.GetFormDefine(progId);
+            return BackendInfo.DefineStorage.GetFormDefine(progId);
         }
     }
 }

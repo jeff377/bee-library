@@ -10,7 +10,6 @@ namespace Bee.Define
         private static IApiEncryptionKeyProvider _apiEncryptionKeyProvider = null;
         private static IBusinessObjectProvider _businessObjectProvider = null;
         private static ICacheDataSourceProvider _cacheDataSourceProvider = null;
-        private static IDefineProvider _defineProvider = null;
         private static IAccessTokenValidationProvider _accessTokenValidationProvider = null;
 
         /// <summary>
@@ -89,16 +88,12 @@ namespace Bee.Define
         {
             get => _cacheDataSourceProvider;
             set => _cacheDataSourceProvider = value ?? throw new ArgumentNullException(nameof(value));
-        }       
+        }
 
         /// <summary>
-        /// 定義資料提供者。
+        /// 定義資料儲存區。
         /// </summary>
-        public static IDefineProvider DefineProvider
-        {
-            get => _defineProvider;
-            set => _defineProvider = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public static IDefineStorage DefineStorage { get; set; }
 
         /// <summary>
         /// 定義資料存取。

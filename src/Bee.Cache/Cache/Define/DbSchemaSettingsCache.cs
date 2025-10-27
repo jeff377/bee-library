@@ -13,7 +13,7 @@ namespace Bee.Cache
         protected override CacheItemPolicy GetPolicy()
         {
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            if (BackendInfo.DefineProvider is FileDefineProvider)
+            if (BackendInfo.DefineStorage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbTableSettingsFilePath() };
             return policy;
         }
@@ -23,7 +23,7 @@ namespace Bee.Cache
         /// </summary>
         protected override DbSchemaSettings CreateInstance()
         {
-            return BackendInfo.DefineProvider.GetDbSchemaSettings();
+            return BackendInfo.DefineStorage.GetDbSchemaSettings();
         }
     }
 }
