@@ -5,9 +5,9 @@ using Bee.Define;
 namespace Bee.Connect
 {
     /// <summary>
-    /// 透過 API 進行定義資料存取。
+    /// 遠端定義資料存取，透過 API 進行定義資料存取。
     /// </summary>
-    public class ApiDefineAccess : IDefineAccess
+    public class RemoteDefineAccess : IDefineAccess
     {
         private readonly SystemApiConnector _connector = null;
         private readonly Dictionary<object> _list = null;
@@ -18,7 +18,7 @@ namespace Bee.Connect
         /// 建構函式。
         /// </summary>
         /// <param name="connector">系統層級 API 服務連接器。</param>
-        public ApiDefineAccess(SystemApiConnector connector)
+        public RemoteDefineAccess(SystemApiConnector connector)
         {
             _connector = connector;
             _list = new Dictionary<object>();

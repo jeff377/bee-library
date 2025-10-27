@@ -29,7 +29,7 @@ namespace Bee.Define
         /// <summary>
         /// 預設的定義資料存取型別。
         /// </summary>
-        public const string DefineAccess = "Bee.Cache.CacheDefineAccess, Bee.Cache";
+        public const string DefineAccess = "Bee.Cache.LocalDefineAccess, Bee.Cache";
         /// <summary>
         /// 預設的 AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
         /// </summary>

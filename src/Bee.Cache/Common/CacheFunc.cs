@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Runtime.Caching;
-using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Cache

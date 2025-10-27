@@ -5,9 +5,9 @@ using Bee.Define;
 namespace Bee.Cache
 {
     /// <summary>
-    /// 透過 Cache 進行定義資料存取。
+    /// 近端定義資料存取，透過快取進行定義資料存取。
     /// </summary>
-    public class CacheDefineAccess : IDefineAccess
+    public class LocalDefineAccess : IDefineAccess
     {
         /// <summary>
         /// 取得定義資料。

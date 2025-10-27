@@ -22,7 +22,7 @@ namespace DbUpgrade
             SysInfo.IsToolMode = true;
             // 因為發佈為單一執行檔，無法動態載入物件，需由程式碼建立
             BackendInfo.DefineProvider = new FileDefineProvider();
-            BackendInfo.DefineAccess = new CacheDefineAccess();
+            BackendInfo.DefineAccess = new LocalDefineAccess();
             BackendInfo.BusinessObjectProvider = new Bee.Business.BusinessObjectProvider();
             // 用戶端初始化
             if (!ClientInfo.Initialize(new UIViewService(), SupportedConnectTypes.Local)) { return false; }

@@ -133,7 +133,7 @@ namespace Bee.UI.Core
             {
                 if (_defineAccess == null)
                 {
-                    _defineAccess = new ApiDefineAccess(SystemApiConnector);
+                    _defineAccess = new RemoteDefineAccess(SystemApiConnector);
                 }
                 return _defineAccess;
             }
