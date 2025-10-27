@@ -11,7 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Bee.Cache\Bee.Cache.csproj" />
+	  <ProjectReference Include="..\Bee.Define\Bee.Define.csproj" />
 	</ItemGroup>
 
 </Project>

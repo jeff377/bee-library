@@ -1,12 +1,11 @@
-﻿using Bee.Base;
-using Bee.Cache;
-using Bee.Define;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
+using Bee.Base;
+using Bee.Define;
 
 namespace Bee.Db
 {
@@ -30,7 +29,7 @@ namespace Bee.Db
             if (string.IsNullOrWhiteSpace(databaseId))
                 throw new ArgumentException("databaseId cannot be null or empty.", nameof(databaseId));
 
-            var database = CacheFunc.GetDatabaseItem(databaseId);
+            var database = DbFunc.GetDatabaseItem(databaseId);
             if (database == null)
                 throw new InvalidOperationException($"Failed to create DbAccess: DatabaseItem for id '{databaseId}' was not found.");
 

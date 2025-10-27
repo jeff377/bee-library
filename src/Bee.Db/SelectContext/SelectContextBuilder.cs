@@ -1,5 +1,4 @@
 ﻿using Bee.Base;
-using Bee.Cache;
 using Bee.Define;
 
 namespace Bee.Db
@@ -56,7 +55,7 @@ namespace Bee.Db
         /// <param name="queryFieldName">指定建立 QueryFieldMapping 的欄位名稱。</param>
         private void AddTableJoin(SelectContext context, string key, FormField foreignKeyField, string leftTable, string leftAlias, string queryFieldName = "")
         {
-            var srcFormDefine = CacheFunc.GetFormDefine(foreignKeyField.RelationProgId);
+            var srcFormDefine = BackendInfo.DefineAccess.GetFormDefine(foreignKeyField.RelationProgId);
             var srcTable = srcFormDefine.MasterTable;
 
             // 若尚未存在對應的 Join，就建立

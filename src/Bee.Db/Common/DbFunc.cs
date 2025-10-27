@@ -1,10 +1,9 @@
-﻿using Bee.Base;
-using Bee.Cache;
-using Bee.Define;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using Bee.Base;
+using Bee.Define;
 
 namespace Bee.Db
 {
@@ -13,6 +12,22 @@ namespace Bee.Db
     /// </summary>
     public static class DbFunc
     {
+        /// <summary>
+        /// 取得資料庫項目。
+        /// </summary>
+        /// <param name="databaseId">資料庫識別。</param>
+        public static DatabaseItem GetDatabaseItem(string databaseId)
+        {
+            if (StrFunc.IsEmpty(databaseId))
+                throw new ArgumentNullException(nameof(databaseId));
+
+            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            if (!settings.Items.Contains(databaseId))
+                throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
+
+            return settings.Items[databaseId];
+        }
+
         /// <summary>
         /// 參數名稱的前綴符號字典。
         /// </summary>
@@ -105,7 +120,7 @@ namespace Bee.Db
         /// <param name="databaseId">資料庫識別。</param>
         public static DbConnection CreateConnection(string databaseId)
         {
-            var database = CacheFunc.GetDatabaseItem(databaseId);
+            var database = DbFunc.GetDatabaseItem(databaseId);
             var provider = DbProviderManager.GetFactory(database.DatabaseType)
                     ?? throw new InvalidOperationException($"Unknown database type: {database.DatabaseType}.");
             var connection = provider.CreateConnection()

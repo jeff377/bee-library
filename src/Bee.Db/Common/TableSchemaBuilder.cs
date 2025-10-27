@@ -1,5 +1,4 @@
 ﻿using Bee.Base;
-using Bee.Cache;
 using Bee.Define;
 
 namespace Bee.Db
@@ -38,7 +37,7 @@ namespace Bee.Db
             var provider = new SqlTableSchemaProvider(this.DatabaseId);
             var realTable = provider.GetTableSchema(tableName);
             // 定義的資料表結構
-            var defineTable = CacheFunc.GetDbTable(dbName, tableName);
+            var defineTable = BackendInfo.DefineAccess.GetDbTable(dbName, tableName);
             // 執行比對，並傳回比對後產生的資料表結構
             var comparer = new TableSchemaComparer(defineTable, realTable);
             return comparer.Compare();

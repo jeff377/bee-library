@@ -2,6 +2,7 @@
 using Bee.Contracts;
 using Bee.Define;
 using System;
+using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 
 namespace Bee.Business
@@ -11,6 +12,22 @@ namespace Bee.Business
     /// </summary>
     public static class BusinessFunc
     {
+        /// <summary>
+        /// 取得資料庫項目。
+        /// </summary>
+        /// <param name="databaseId">資料庫識別。</param>
+        public static DatabaseItem GetDatabaseItem(string databaseId)
+        {
+            if (StrFunc.IsEmpty(databaseId))
+                throw new ArgumentNullException(nameof(databaseId));
+
+            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            if (!settings.Items.Contains(databaseId))
+                throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
+
+            return settings.Items[databaseId];
+        }
+
         /// <summary>
         /// 使用反射，執行 ExecFunc 方法。
         /// </summary>
@@ -51,5 +68,7 @@ namespace Bee.Business
                 throw; // 不會執行到，純粹為了編譯器
             }
         }
+
+
     }
 }

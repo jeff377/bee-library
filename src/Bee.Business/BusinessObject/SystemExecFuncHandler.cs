@@ -72,7 +72,7 @@ namespace Bee.Business
         public void TestDatabaseId(ExecFuncArgs args, ExecFuncResult result)
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
-            var item = CacheFunc.GetDatabaseItem(databaseId);
+            var item = BusinessFunc.GetDatabaseItem(databaseId);
 
             var repo = RepositoryInfo.SystemProvider.DatabaseRepository;
             repo.TestConnection(item);

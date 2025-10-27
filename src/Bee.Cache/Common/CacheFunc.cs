@@ -52,22 +52,6 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得資料庫項目。
-        /// </summary>
-        /// <param name="databaseId">資料庫識別。</param>
-        public static DatabaseItem GetDatabaseItem(string databaseId)
-        {
-            if (StrFunc.IsEmpty(databaseId))
-                throw new ArgumentNullException(nameof(databaseId));
-
-            var settings = GetDatabaseSettings();
-            if (!settings.Items.Contains(databaseId))
-                throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
-
-            return settings.Items[databaseId];
-        }
-
-        /// <summary>
         /// 取得資料庫結構設定。
         /// </summary>
         public static DbSchemaSettings GetDbSchemaSettings()
