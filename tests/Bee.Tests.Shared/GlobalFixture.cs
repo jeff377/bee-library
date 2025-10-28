@@ -23,7 +23,7 @@ namespace Bee.Tests.Shared
             var settings = CacheFunc.GetSystemSettings();
             SysInfo.Initialize(settings.CommonConfiguration);
             BackendInfo.Initialize(settings.BackendConfiguration);
-            RepositoryInfo.Initialize(settings.BackendConfiguration);
+            //RepositoryInfo.Initialize(settings.BackendConfiguration);
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // .NET 8 預設停用 BinaryFormatter，需手動啟用

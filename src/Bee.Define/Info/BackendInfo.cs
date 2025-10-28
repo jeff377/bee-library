@@ -103,18 +103,20 @@ namespace Bee.Define
         /// 初始化。
         /// </summary>
         /// <param name="configuration">後端參數與環境設置。</param>
-        /// <param name="initializeComponents">是否初始化後端服務的實例。</param>
         /// <param name="autoCreateMasterKey">若主金鑰不存在時是否自動建立。</param>
-        public static void Initialize(BackendConfiguration configuration, bool initializeComponents, bool autoCreateMasterKey)
+        public static void Initialize(BackendConfiguration configuration, bool autoCreateMasterKey)
         {
             DatabaseType = configuration.DatabaseType;
             DatabaseId = configuration.DatabaseId;
             MaxDbCommandTimeout = configuration.MaxDbCommandTimeout;
             LogOptions = configuration.LogOptions;
-
-            // 初始化後端服務的實例
-            if (initializeComponents )
+                       
+            if (!SysInfo.IsSingleFile)
+            {
+                // 初始化後端服務的實例
                 InitializeComponents(configuration);
+            }
+  
             // 初始化安全性金鑰
             InitializeSecurityKeys(configuration, autoCreateMasterKey);
         }
@@ -125,7 +127,7 @@ namespace Bee.Define
         /// <param name="configuration">後端參數與環境設置。</param>
         public static void Initialize(BackendConfiguration configuration)
         {
-            Initialize(configuration, true, false);
+            Initialize(configuration, false);
         }
 
         /// <summary>

@@ -2,7 +2,6 @@
 using Bee.Connect;
 using Bee.Contracts;
 using Bee.Define;
-using Bee.Repository.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -302,7 +301,9 @@ namespace Bee.UI.Core
 
             var settings = DefineAccess.GetSystemSettings();
             BackendInfo.Initialize(settings.BackendConfiguration);
-            RepositoryInfo.Initialize(settings.BackendConfiguration);
+
+            BackendInfo.DefineAccess.GetSystemSettings();
+            //RepositoryInfo.Initialize(settings.BackendConfiguration);
         }
     }
 }

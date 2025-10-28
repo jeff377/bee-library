@@ -35,7 +35,6 @@ namespace ApiService.Extensions
             var settings = CacheFunc.GetSystemSettings();
             SysInfo.Initialize(settings.CommonConfiguration);
             BackendInfo.Initialize(settings.BackendConfiguration);
-            RepositoryInfo.Initialize(settings.BackendConfiguration);
             // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
             ApiServiceOptions.Initialize(settings.CommonConfiguration.ApiPayloadOptions);
             // 註冊資料庫提供者

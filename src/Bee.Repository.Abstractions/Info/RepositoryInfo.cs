@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using System;
+using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Repository.Abstractions
@@ -8,6 +9,16 @@ namespace Bee.Repository.Abstractions
     /// </summary>
     public static class RepositoryInfo
     {
+        static RepositoryInfo()
+        {
+            if (SysInfo.IsSingleFile) { return; }
+            if (BackendInfo.DefineAccess == null)
+                throw new InvalidOperationException("BackendInfo.DefineAccess cannot be null. Please ensure the backend configuration is properly initialized.");
+
+            var settings = BackendInfo.DefineAccess.GetSystemSettings();
+            Initialize(settings.BackendConfiguration);
+        }
+
         /// <summary>
         /// 取得或設定系統儲存庫提供者。
         /// </summary>
@@ -21,7 +32,7 @@ namespace Bee.Repository.Abstractions
         /// <summary>
         /// 初始化。
         /// </summary>
-        public static void Initialize(BackendConfiguration configuration)
+        private static void Initialize(BackendConfiguration configuration)
         {
             var components = configuration.Components;
             // 設定系統儲存庫提供者

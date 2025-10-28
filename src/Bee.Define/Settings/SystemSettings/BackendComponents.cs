@@ -95,32 +95,5 @@ namespace Bee.Define
         [DefaultValue(BackendDefaultTypes.FormRepositoryProvider)]
         public string FormRepositoryProvider { get; set; } = BackendDefaultTypes.FormRepositoryProvider;
 
-        /// <summary>
-        /// 套用目前設定，將指定的型別實例化並指派至 <see cref="BackendInfo"/>。
-        /// </summary>
-        public void Apply()
-        {
-            BackendInfo.ApiEncryptionKeyProvider = CreateOrDefault<IApiEncryptionKeyProvider>(ApiEncryptionKeyProvider, BackendDefaultTypes.ApiEncryptionKeyProvider);
-            BackendInfo.AccessTokenValidationProvider = CreateOrDefault<IAccessTokenValidationProvider>(AccessTokenValidationProvider, BackendDefaultTypes.AccessTokenValidationProvider);
-            BackendInfo.BusinessObjectProvider = CreateOrDefault<IBusinessObjectProvider>(BusinessObjectProvider, BackendDefaultTypes.BusinessObjectProvider);
-            BackendInfo.CacheDataSourceProvider = CreateOrDefault<ICacheDataSourceProvider>(CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider);
-            BackendInfo.DefineStorage = CreateOrDefault<IDefineStorage>(DefineStorage, BackendDefaultTypes.DefineStorage);
-            BackendInfo.DefineAccess = CreateOrDefault<IDefineAccess>(DefineAccess, BackendDefaultTypes.DefineAccess);
-            BackendInfo.SessionInfoService = CreateOrDefault<ISessionInfoService>(SessionInfoService, BackendDefaultTypes.SessionInfoService);
-            BackendInfo.EnterpriseObjectService = CreateOrDefault<IEnterpriseObjectService>(EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService);
-        }
-
-        /// <summary>
-        /// 建立指定型別的實例，若 <paramref name="configured"/> 為空則使用 <paramref name="fallback"/>。
-        /// </summary>
-        /// <typeparam name="T">要建立的型別，必須為 class。</typeparam>
-        /// <param name="configured">組態指定的型別名稱。</param>
-        /// <param name="fallback">預設型別名稱。</param>
-        /// <returns>型別 <typeparamref name="T"/> 的實例，若建立失敗則回傳 null。</returns>
-        private static T CreateOrDefault<T>(string configured, string fallback) where T : class
-        {
-            var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
-            return BaseFunc.CreateInstance(typeName) as T;
-        }
     }
 }
