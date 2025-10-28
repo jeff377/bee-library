@@ -1,4 +1,5 @@
-﻿using Bee.Cache;
+﻿using Bee.Base;
+using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
 using Bee.Repository.Abstractions;
@@ -20,8 +21,8 @@ namespace Bee.Tests.Shared
             BackendInfo.DefinePath = @"D:\DefinePath";
             // 系統初始化
             var settings = CacheFunc.GetSystemSettings();
-            settings.Initialize();
-            // 儲存庫初始化
+            SysInfo.Initialize(settings.CommonConfiguration);
+            BackendInfo.Initialize(settings.BackendConfiguration);
             RepositoryInfo.Initialize(settings.BackendConfiguration);
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);

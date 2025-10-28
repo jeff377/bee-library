@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Base;
 
 namespace Bee.Define
 {
@@ -97,5 +98,93 @@ namespace Bee.Define
         /// 提供企業系統中常用業務物件的統一存取服務。
         /// </summary>
         public static IEnterpriseObjectService EnterpriseObjectService { get; set; }
+
+        /// <summary>
+        /// 初始化。
+        /// </summary>
+        /// <param name="configuration">後端參數與環境設置。</param>
+        /// <param name="initializeComponents">是否初始化後端服務的實例。</param>
+        /// <param name="autoCreateMasterKey">若主金鑰不存在時是否自動建立。</param>
+        public static void Initialize(BackendConfiguration configuration, bool initializeComponents, bool autoCreateMasterKey)
+        {
+            DatabaseType = configuration.DatabaseType;
+            DatabaseId = configuration.DatabaseId;
+            MaxDbCommandTimeout = configuration.MaxDbCommandTimeout;
+            LogOptions = configuration.LogOptions;
+
+            // 初始化後端服務的實例
+            if (initializeComponents )
+                InitializeComponents(configuration);
+            // 初始化安全性金鑰
+            InitializeSecurityKeys(configuration, autoCreateMasterKey);
+        }
+
+        /// <summary>
+        /// 初始化。
+        /// </summary>
+        /// <param name="configuration">後端參數與環境設置。</param>
+        public static void Initialize(BackendConfiguration configuration)
+        {
+            Initialize(configuration, true, false);
+        }
+
+        /// <summary>
+        /// 初始化後端服務的實例。
+        /// </summary>
+        /// <param name="configuration">後端參數與環境設置。</param>
+        private static void InitializeComponents(BackendConfiguration configuration)
+        {
+            var Components = configuration.Components;
+            ApiEncryptionKeyProvider = CreateOrDefault<IApiEncryptionKeyProvider>
+                (Components.ApiEncryptionKeyProvider, BackendDefaultTypes.ApiEncryptionKeyProvider);
+            AccessTokenValidationProvider = CreateOrDefault<IAccessTokenValidationProvider>
+                (Components.AccessTokenValidationProvider, BackendDefaultTypes.AccessTokenValidationProvider);
+            BusinessObjectProvider = CreateOrDefault<IBusinessObjectProvider>
+                (Components.BusinessObjectProvider, BackendDefaultTypes.BusinessObjectProvider);
+            CacheDataSourceProvider = CreateOrDefault<ICacheDataSourceProvider>
+                (Components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider);
+            DefineStorage = CreateOrDefault<IDefineStorage>
+                (Components.DefineStorage, BackendDefaultTypes.DefineStorage);
+            DefineAccess = CreateOrDefault<IDefineAccess>
+                (Components.DefineAccess, BackendDefaultTypes.DefineAccess);
+            SessionInfoService = CreateOrDefault<ISessionInfoService>
+                (Components.SessionInfoService, BackendDefaultTypes.SessionInfoService);
+            EnterpriseObjectService = CreateOrDefault<IEnterpriseObjectService>
+                (Components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService);
+        }
+
+        /// <summary>
+        /// 建立指定型別的實例，若 <paramref name="configured"/> 為空則使用 <paramref name="fallback"/>。
+        /// </summary>
+        /// <param name="configured">組態指定的型別名稱。</param>
+        /// <param name="fallback">預設型別名稱。</param>
+        private static T CreateOrDefault<T>(string configured, string fallback) where T : class
+        {
+            var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
+            return BaseFunc.CreateInstance(typeName) as T;
+        }
+
+        /// <summary>
+        /// 初始化安全性金鑰。
+        /// </summary>
+        /// <param name="configuration">後端參數與環境設置。</param>
+        /// <param name="autoCreateMasterKey">若主金鑰不存在時是否自動建立。</param>
+        private static void InitializeSecurityKeys(BackendConfiguration configuration, bool autoCreateMasterKey)
+        {
+            var settings = configuration.SecurityKeySettings;
+            byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, autoCreateMasterKey);
+
+            if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
+                BackendInfo.ApiEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ApiEncryptionKey);
+
+            if (StrFunc.IsNotEmpty(settings.CookieEncryptionKey))
+                BackendInfo.CookieEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.CookieEncryptionKey);
+
+            if (StrFunc.IsNotEmpty(settings.ConfigEncryptionKey))
+                BackendInfo.ConfigEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ConfigEncryptionKey);
+
+            if (StrFunc.IsNotEmpty(settings.DatabaseEncryptionKey))
+                BackendInfo.DatabaseEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.DatabaseEncryptionKey);
+        }
     }
 }

@@ -123,16 +123,6 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// Initialization.
-        /// </summary>
-        public void Initialize()
-        {
-            SysInfo.Initialize(CommonConfiguration);
-            // Backend initialization
-            this.BackendConfiguration.Initialize();
-        }
-
-        /// <summary>
         /// Object description.
         /// </summary>
         public override string ToString()
