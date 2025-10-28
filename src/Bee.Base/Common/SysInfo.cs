@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Bee.Base
 {
@@ -62,6 +64,50 @@ namespace Bee.Base
             }
 
             return typeName == "System.Byte[]";
+        }
+
+        /// <summary>
+        /// 初始化。
+        /// </summary>
+        /// <param name="configuration">提供 SysInfo 的相關設定值。</param>
+        public static void Initialize(ISysInfoConfiguration configuration)
+        {
+            Version = configuration.Version;
+            IsDebugMode = configuration.IsDebugMode;
+            AllowedTypeNamespaces = BuildAllowedTypeNamespaces(configuration.AllowedTypeNamespaces);
+        }
+
+        /// <summary>
+        /// Parse the list of allowed type namespaces (including system default and user-defined).
+        /// </summary>
+        /// <param name="customNamespaces">User-defined namespace string, separated by '|'.</param>
+        /// <returns>List of namespaces including system default and user-defined.</returns>
+        public static List<string> BuildAllowedTypeNamespaces(string customNamespaces)
+        {
+            // Initialize HashSet to ensure no duplicates
+            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "Bee.Base",
+                "Bee.Define",
+                "Bee.Contracts"
+            };
+
+            // User-defined namespace list (separated by '|')
+            // User value may be null, empty, or contain extra separators
+            if (!string.IsNullOrWhiteSpace(customNamespaces))
+            {
+                var parts = customNamespaces.Split('|');
+                foreach (var ns in parts)
+                {
+                    var trimmed = ns.Trim().TrimEnd('.');
+                    if (!string.IsNullOrEmpty(trimmed))
+                    {
+                        allowed.Add(trimmed);
+                    }
+                }
+            }
+
+            return allowed.ToList();
         }
     }
 }

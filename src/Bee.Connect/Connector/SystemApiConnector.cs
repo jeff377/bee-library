@@ -122,7 +122,7 @@ namespace Bee.Connect
             var args = new GetCommonConfigurationArgs();
             var result = await ExecuteAsync<GetCommonConfigurationResult>(SystemActions.GetCommonConfiguration, args, PayloadFormat.Plain).ConfigureAwait(false);
             var configuration = SerializeFunc.XmlToObject<CommonConfiguration>(result.CommonConfiguration);
-            configuration.Initialize();
+            SysInfo.Initialize(configuration);
             // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
             ApiServiceOptions.Initialize(configuration.ApiPayloadOptions);
         }

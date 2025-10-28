@@ -127,8 +127,7 @@ namespace Bee.Define
         /// </summary>
         public void Initialize()
         {
-            // Common initialization
-            this.CommonConfiguration.Initialize();
+            SysInfo.Initialize(CommonConfiguration);
             // Backend initialization
             this.BackendConfiguration.Initialize();
         }

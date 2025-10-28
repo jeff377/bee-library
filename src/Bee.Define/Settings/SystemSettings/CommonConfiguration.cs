@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 using System.Xml.Serialization;
 using Bee.Base;
 
@@ -15,7 +13,7 @@ namespace Bee.Define
     [Description("Common parameters and environment settings.")]
     [TreeNode("Common")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class CommonConfiguration : IObjectSerializeBase
+    public class CommonConfiguration : IObjectSerializeBase, ISysInfoConfiguration
     {
         /// <summary>
         /// System major version.
@@ -47,50 +45,6 @@ namespace Bee.Define
         [Category("API")]
         [Description("Provides API payload handling options, such as serialization, compression, and encryption.")]
         public ApiPayloadOptions ApiPayloadOptions { get; set; } = new ApiPayloadOptions();
-
-        /// <summary>
-        /// Initialization.
-        /// </summary>
-        public void Initialize()
-        {
-            SysInfo.Version = Version;
-            SysInfo.IsDebugMode = IsDebugMode;
-            // Parse allowed type namespaces list
-            SysInfo.AllowedTypeNamespaces = BuildAllowedTypeNamespaces(AllowedTypeNamespaces);
-        }
-
-        /// <summary>
-        /// Parse the list of allowed type namespaces (including system default and user-defined).
-        /// </summary>
-        /// <param name="customNamespaces">User-defined namespace string, separated by '|'.</param>
-        /// <returns>List of namespaces including system default and user-defined.</returns>
-        public static List<string> BuildAllowedTypeNamespaces(string customNamespaces)
-        {
-            // Initialize HashSet to ensure no duplicates
-            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-            {
-                "Bee.Base",
-                "Bee.Define",
-                "Bee.Contracts"
-            };
-
-            // User-defined namespace list (separated by '|')
-            // User value may be null, empty, or contain extra separators
-            if (!string.IsNullOrWhiteSpace(customNamespaces))
-            {
-                var parts = customNamespaces.Split('|');
-                foreach (var ns in parts)
-                {
-                    var trimmed = ns.Trim().TrimEnd('.');
-                    if (!string.IsNullOrEmpty(trimmed))
-                    {
-                        allowed.Add(trimmed);
-                    }
-                }
-            }
-
-            return allowed.ToList();
-        }
 
         /// <summary>
         /// Object description.
