@@ -9,21 +9,16 @@
       <Compressor>gzip</Compressor>
       <Encryptor>aes-cbc-hmac</Encryptor>
     </ApiPayloadOptions>
+  </CommonConfiguration>
+  <BackendConfiguration>
     <LogOptions>
-      <ApiConnector>
-        <RawData>true</RawData>
-        <EncodedData>true</EncodedData>
-      </ApiConnector>
       <DbAccess>
         <Level>Warning</Level>
         <AffectedRowThreshold>10000</AffectedRowThreshold>
-        <SlowQueryThreshold>300</SlowQueryThreshold>
+        <ResultRowThreshold>10000</ResultRowThreshold>
+        <ExecutionTimeThreshold>300</ExecutionTimeThreshold>
       </DbAccess>
     </LogOptions>
-  </CommonConfiguration>
-  <BackendConfiguration>
-    <ApiEncryptionKeyProvider>Bee.Business.DynamicApiEncryptionKeyProvider, Bee.Business</ApiEncryptionKeyProvider>
-    <BusinessObjectProvider>Custom.Business.BusinessObjectProvider, Custom.Business</BusinessObjectProvider>
     <SecurityKeySettings>
       <MasterKeySource>
         <Type>File</Type>
@@ -34,6 +29,9 @@
       <ConfigEncryptionKey>EAAAAEFoBdknimXAIF3hDfSXU2JQAAAASmbuRBAVIoPBtoyuF4Xnyl8dMU7qaz/xKOvRxcXldKwwqdmSmxHSIixAXBTqxk4u2zNpH57KWGjhNNlVxlGwvc48Q/t5fIqiVx6zTeuvUxgKSGRy8nmLZwKW6DbcEl/OmSseVmXHivZZ0eDNm708zA==</ConfigEncryptionKey>
       <DatabaseEncryptionKey>EAAAAEAMd2mxLc84NFgmgRj8kF1QAAAAS+5geJiBo5FJ5P+KB8hlEgm8dHoI3dpBTADsWXFDo8b35O/JNp7lddVGP2VBY36psUZYaxKVv8118irCpZOe29AyLZQkE9O10bjhNo1Cv8Yn0Qpuc4HkAr9M2R3UdFahd3T60o1f+FMyf1s6d57BiA==</DatabaseEncryptionKey>
     </SecurityKeySettings>
+    <Components>
+      <BusinessObjectProvider>Custom.Business.BusinessObjectProvider, Custom.Business</BusinessObjectProvider>
+    </Components>
   </BackendConfiguration>
   <FrontendConfiguration />
   <WebsiteConfiguration />

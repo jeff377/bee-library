@@ -5,15 +5,20 @@ namespace Bee.Define
     #region 常數
 
     /// <summary>
-    /// 定義後端常用 Provider 型別的預設名稱常數。
+    /// 定義後端常用實作型別的預設名稱常數。
     /// 可用於 SystemSettings.xml 設定檔中的型別指定，或作為預設 fallback 使用。
     /// </summary>
-    public static class DefaultProviderTypes
+    public static class BackendDefaultTypes
     {
+        // ---------------- Providers 群 ----------------
         /// <summary>
         /// 預設的 API 加密金鑰提供者型別。
         /// </summary>
-        public const string ApiEncryptionKeyProvider = "Bee.Business.StaticApiEncryptionKeyProvider, Bee.Business";
+        public const string ApiEncryptionKeyProvider = "Bee.Business.DynamicApiEncryptionKeyProvider, Bee.Business";
+        /// <summary>
+        /// 預設的 AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
+        /// </summary>
+        public const string AccessTokenValidationProvider = "Bee.Business.AccessTokenValidationProvider, Bee.Business";
         /// <summary>
         /// 預設的業務邏輯物件提供者型別，用於動態建立 BusinessObject。
         /// </summary>
@@ -22,6 +27,8 @@ namespace Bee.Define
         /// 預設的快取資料來源提供者型別。
         /// </summary>
         public const string CacheDataSourceProvider = "Bee.Business.CacheDataSourceProvider, Bee.Business";
+
+        // ---------------- Define 群 ----------------
         /// <summary>
         /// 預設的定義資料儲存區型別。
         /// </summary>
@@ -30,18 +37,8 @@ namespace Bee.Define
         /// 預設的定義資料存取型別。
         /// </summary>
         public const string DefineAccess = "Bee.Cache.LocalDefineAccess, Bee.Cache";
-        /// <summary>
-        /// 預設的 AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
-        /// </summary>
-        public const string AccessTokenValidationProvider = "Bee.Business.AccessTokenValidationProvider, Bee.Business";
-        /// <summary>
-        /// 預設的系統儲存庫提供者型別。
-        /// </summary>
-        public const string SystemRepositoryProvider = "Bee.Repository.SystemRepositoryProvider, Bee.Repository";
-        /// <summary>
-        /// 預設的表單儲存庫提供者型別。
-        /// </summary>
-        public const string FormRepositoryProvider = "Bee.Repository.FormRepositoryProvider, Bee.Repository";
+
+        // ---------------- Service 群 ----------------
         /// <summary>
         /// 預設的連線資訊存取服務型別。
         /// </summary>
@@ -50,6 +47,16 @@ namespace Bee.Define
         /// 預設的提供企業系統中常用業務物件的統一存取服務型別。
         /// </summary>
         public const string EnterpriseObjectService = "Bee.Cache.EnterpriseObjectService, Bee.Cache";
+
+        // ---------------- Repository 群 ----------------
+        /// <summary>
+        /// 預設的系統儲存庫提供者型別。
+        /// </summary>
+        public const string SystemRepositoryProvider = "Bee.Repository.SystemRepositoryProvider, Bee.Repository";
+        /// <summary>
+        /// 預設的表單儲存庫提供者型別。
+        /// </summary>
+        public const string FormRepositoryProvider = "Bee.Repository.FormRepositoryProvider, Bee.Repository";
     }
 
     /// <summary>

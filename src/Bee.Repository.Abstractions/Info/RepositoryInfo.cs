@@ -23,19 +23,24 @@ namespace Bee.Repository.Abstractions
         /// </summary>
         public static void Initialize(BackendConfiguration configuration)
         {
+            var components = configuration.Components;
             // 設定系統儲存庫提供者
-            SystemProvider = BaseFunc.CreateInstance(
-                 string.IsNullOrWhiteSpace(configuration.SystemRepositoryProvider)
-                     ? DefaultProviderTypes.SystemRepositoryProvider
-                     : configuration.SystemRepositoryProvider
-             ) as ISystemRepositoryProvider;
-
+            SystemProvider = CreateOrDefault<ISystemRepositoryProvider>
+                (components.SystemRepositoryProvider, BackendDefaultTypes.SystemRepositoryProvider);
             // 設定表單儲存庫提供者
-            FormProvider = BaseFunc.CreateInstance(
-                 string.IsNullOrWhiteSpace(configuration.FormRepositoryProvider)
-                     ? DefaultProviderTypes.FormRepositoryProvider
-                     : configuration.FormRepositoryProvider
-             ) as IFormRepositoryProvider;
+            FormProvider = CreateOrDefault<IFormRepositoryProvider>
+                (components.FormRepositoryProvider, BackendDefaultTypes.FormRepositoryProvider);
+        }
+
+        /// <summary>
+        /// 建立指定型別的實例，若 <paramref name="configured"/> 為空則使用 <paramref name="fallback"/>。
+        /// </summary>
+        /// <param name="configured">組態指定的型別名稱。</param>
+        /// <param name="fallback">預設型別名稱。</param>
+        private static T CreateOrDefault<T>(string configured, string fallback) where T : class
+        {
+            var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
+            return BaseFunc.CreateInstance(typeName) as T;
         }
     }
 }

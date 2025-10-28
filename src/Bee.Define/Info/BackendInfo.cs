@@ -7,11 +7,6 @@ namespace Bee.Define
     /// </summary>
     public static class BackendInfo
     {
-        private static IApiEncryptionKeyProvider _apiEncryptionKeyProvider = null;
-        private static IBusinessObjectProvider _businessObjectProvider = null;
-        private static ICacheDataSourceProvider _cacheDataSourceProvider = null;
-        private static IAccessTokenValidationProvider _accessTokenValidationProvider = null;
-
         /// <summary>
         /// 日誌寫入器。
         /// </summary>
@@ -66,38 +61,22 @@ namespace Bee.Define
         /// API 金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。
         /// 支援共用金鑰與每次登入動態產生的 Session 金鑰。
         /// </summary>
-        public static IApiEncryptionKeyProvider ApiEncryptionKeyProvider
-        {
-            get => _apiEncryptionKeyProvider;
-            set => _apiEncryptionKeyProvider = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public static IApiEncryptionKeyProvider ApiEncryptionKeyProvider { get; set; }
 
         /// <summary>
         /// AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
         /// </summary>
-        public static IAccessTokenValidationProvider AccessTokenValidationProvider
-        {
-            get => _accessTokenValidationProvider;
-            set => _accessTokenValidationProvider = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public static IAccessTokenValidationProvider AccessTokenValidationProvider { get; set; }
 
         /// <summary>
         /// 業務邏輯物件提供者，定義所有 BusinessObject 的取得方式。
         /// </summary>
-        public static IBusinessObjectProvider BusinessObjectProvider
-        {
-            get => _businessObjectProvider;
-            set => _businessObjectProvider = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public static IBusinessObjectProvider BusinessObjectProvider { get; set; }
 
         /// <summary>
         /// 快取資料來源提供者。
         /// </summary>
-        public static ICacheDataSourceProvider CacheDataSourceProvider
-        {
-            get => _cacheDataSourceProvider;
-            set => _cacheDataSourceProvider = value ?? throw new ArgumentNullException(nameof(value));
-        }
+        public static ICacheDataSourceProvider CacheDataSourceProvider { get; set; }
 
         /// <summary>
         /// 定義資料儲存區。

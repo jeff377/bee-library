@@ -16,86 +16,6 @@ namespace Bee.Define
     public class BackendConfiguration
     {
         /// <summary>
-        /// API encryption key provider type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("API encryption key provider type, defines how to obtain the API data encryption key.")]
-        [DefaultValue(DefaultProviderTypes.ApiEncryptionKeyProvider)]
-        public string ApiEncryptionKeyProvider { get; set; } = DefaultProviderTypes.ApiEncryptionKeyProvider;
-
-        /// <summary>
-        /// Business object provider type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("Business object provider type, defines how to obtain all BusinessObjects.")]
-        [DefaultValue(DefaultProviderTypes.BusinessObjectProvider)]
-        public string BusinessObjectProvider { get; set; } = DefaultProviderTypes.BusinessObjectProvider;
-
-        /// <summary>
-        /// Define storage type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("Define storage type, specifies how to load system definition files (e.g., file, database, etc.).")]
-        [DefaultValue(DefaultProviderTypes.DefineStorage)]
-        public string DefineStorage { get; set; } = DefaultProviderTypes.DefineStorage;
-
-        /// <summary>
-        /// Define access type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("Define access type.")]
-        [DefaultValue(DefaultProviderTypes.DefineAccess)]
-        public string DefineAccess { get; set; } = DefaultProviderTypes.DefineAccess;
-
-        /// <summary>
-        /// Cache data source provider type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("Cache data source provider type, defines the source of cached data (such as preloaded definition data).")]
-        [DefaultValue(DefaultProviderTypes.CacheDataSourceProvider)]
-        public string CacheDataSourceProvider { get; set; } = DefaultProviderTypes.CacheDataSourceProvider;
-
-        /// <summary>
-        /// AccessToken validation provider type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("AccessToken validation provider type, used to validate the validity of AccessTokens.")]
-        [DefaultValue(DefaultProviderTypes.AccessTokenValidationProvider)]
-        public string AccessTokenValidationProvider { get; set; } = DefaultProviderTypes.AccessTokenValidationProvider;
-
-        /// <summary>
-        /// System level repository provider type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("System level Repository provider type.")]
-        [DefaultValue(DefaultProviderTypes.SystemRepositoryProvider)]
-        public string SystemRepositoryProvider { get; set; } = DefaultProviderTypes.SystemRepositoryProvider;
-
-        /// <summary>
-        /// Form level repository provider type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("Form level Repository provider type.")]
-        [DefaultValue(DefaultProviderTypes.SystemRepositoryProvider)]
-        public string FormRepositoryProvider { get; set; } = DefaultProviderTypes.FormRepositoryProvider;
-
-        /// <summary>
-        /// Session info service type.
-        /// </summary>
-        [Category("Providers")]
-        [Description("Session info service type.")]
-        [DefaultValue(DefaultProviderTypes.SessionInfoService)]
-        public string SessionInfoService { get; set; } = DefaultProviderTypes.SessionInfoService;
-
-        /// <summary>
-        /// Unified access service type for commonly used enterprise business objects.
-        /// </summary>
-        [Category("Providers")]
-        [Description("Unified access service type for commonly used enterprise business objects.")]
-        [DefaultValue(DefaultProviderTypes.EnterpriseObjectService)]
-        public string EnterpriseObjectService { get; set; } = DefaultProviderTypes.EnterpriseObjectService;
-
-        /// <summary>
         /// Database type.
         /// </summary>
         [Category("Database")]
@@ -145,6 +65,14 @@ namespace Bee.Define
         public SecurityKeySettings SecurityKeySettings { get; set; } = new SecurityKeySettings();
 
         /// <summary>
+        /// 後端可替換組。
+        /// </summary>
+        [Category("Components")]
+        [Description("後端可替換組")]
+        [Browsable(false)]
+        public BackendComponents Components { get; set; } = new BackendComponents();
+
+        /// <summary>
         /// Initialization.
         /// </summary>
         public void Initialize()
@@ -157,65 +85,44 @@ namespace Bee.Define
             BackendInfo.MaxDbCommandTimeout = MaxDbCommandTimeout;
             // Logging options
             BackendInfo.LogOptions = LogOptions;
-
-            // Specify API encryption key provider type
-            BackendInfo.ApiEncryptionKeyProvider = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(ApiEncryptionKeyProvider)
-                    ? DefaultProviderTypes.ApiEncryptionKeyProvider
-                    : ApiEncryptionKeyProvider
-            ) as IApiEncryptionKeyProvider;
-
-            // Specify business object provider
-            BackendInfo.BusinessObjectProvider = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(BusinessObjectProvider)
-                    ? DefaultProviderTypes.BusinessObjectProvider
-                    : BusinessObjectProvider
-            ) as IBusinessObjectProvider;
-
-            // Specify cache data source provider type
-            BackendInfo.CacheDataSourceProvider = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(CacheDataSourceProvider)
-                    ? DefaultProviderTypes.CacheDataSourceProvider
-                    : CacheDataSourceProvider
-            ) as ICacheDataSourceProvider;
-
-            // Specify define provider type
-            BackendInfo.DefineStorage = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(DefineStorage)
-                    ? DefaultProviderTypes.DefineStorage
-                    : DefineStorage
-            ) as IDefineStorage;
-
-            // Specify define access type
-            BackendInfo.DefineAccess = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(DefineAccess)
-                    ? DefaultProviderTypes.DefineAccess
-                    : DefineAccess
-            ) as IDefineAccess;
-
-            // Specify AccessToken validation provider type
-            BackendInfo.AccessTokenValidationProvider = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(AccessTokenValidationProvider)
-                    ? DefaultProviderTypes.AccessTokenValidationProvider
-                    : AccessTokenValidationProvider
-            ) as IAccessTokenValidationProvider;
-
-            // 指定 SessionInfoService 型別
-            BackendInfo.SessionInfoService = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(SessionInfoService)
-                    ? DefaultProviderTypes.SessionInfoService
-                    : SessionInfoService
-            ) as ISessionInfoService;
-
-            // 指定 EnterpriseObjectService 型別
-            BackendInfo.EnterpriseObjectService = BaseFunc.CreateInstance(
-                string.IsNullOrWhiteSpace(EnterpriseObjectService)
-                    ? DefaultProviderTypes.EnterpriseObjectService
-                    : EnterpriseObjectService
-            ) as IEnterpriseObjectService;
-
+            // 初始化後端服務的實例
+            InitializeComponents();
             // Initialize keys
             InitializeSecurityKeys();
+        }
+
+        /// <summary>
+        /// 初始化後端服務的實例。
+        /// </summary>
+        public void InitializeComponents()
+        {
+            BackendInfo.ApiEncryptionKeyProvider = CreateOrDefault<IApiEncryptionKeyProvider>
+                (Components.ApiEncryptionKeyProvider, BackendDefaultTypes.ApiEncryptionKeyProvider);
+            BackendInfo.AccessTokenValidationProvider = CreateOrDefault<IAccessTokenValidationProvider>
+                (Components.AccessTokenValidationProvider, BackendDefaultTypes.AccessTokenValidationProvider);
+            BackendInfo.BusinessObjectProvider = CreateOrDefault<IBusinessObjectProvider>
+                (Components.BusinessObjectProvider, BackendDefaultTypes.BusinessObjectProvider);
+            BackendInfo.CacheDataSourceProvider = CreateOrDefault<ICacheDataSourceProvider>
+                (Components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider);
+            BackendInfo.DefineStorage = CreateOrDefault<IDefineStorage>
+                (Components.DefineStorage, BackendDefaultTypes.DefineStorage);
+            BackendInfo.DefineAccess = CreateOrDefault<IDefineAccess>
+                (Components.DefineAccess, BackendDefaultTypes.DefineAccess);
+            BackendInfo.SessionInfoService = CreateOrDefault<ISessionInfoService>
+                (Components.SessionInfoService, BackendDefaultTypes.SessionInfoService);
+            BackendInfo.EnterpriseObjectService = CreateOrDefault<IEnterpriseObjectService>
+                (Components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService);
+        }
+
+        /// <summary>
+        /// 建立指定型別的實例，若 <paramref name="configured"/> 為空則使用 <paramref name="fallback"/>。
+        /// </summary>
+        /// <param name="configured">組態指定的型別名稱。</param>
+        /// <param name="fallback">預設型別名稱。</param>
+        private static T CreateOrDefault<T>(string configured, string fallback) where T : class
+        {
+            var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
+            return BaseFunc.CreateInstance(typeName) as T;
         }
 
         /// <summary>
