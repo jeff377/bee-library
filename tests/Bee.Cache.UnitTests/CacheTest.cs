@@ -12,10 +12,10 @@ namespace Bee.Cache.UnitTests
         [Fact]
         public void SystemSettingsCache()
         {
-            var settings = CacheFunc.GetSystemSettings();
+            var settings = BackendInfo.DefineAccess.GetSystemSettings();
             for (int i = 0; i < 10; i++)
             {
-                var cache = CacheFunc.GetSystemSettings();
+                var cache = BackendInfo.DefineAccess.GetSystemSettings();
                 Assert.Equal(settings, cache);
             }
         }
@@ -23,10 +23,10 @@ namespace Bee.Cache.UnitTests
         [Fact]
         public void DatabaseSettingsCache()
         {
-            var settings = CacheFunc.GetDatabaseSettings();
+            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
             for (int i = 0; i < 10; i++)
             {
-                var cache = CacheFunc.GetDatabaseSettings();
+                var cache = BackendInfo.DefineAccess.GetDatabaseSettings();
                 Assert.Equal(settings, cache);
             }
         }
@@ -40,12 +40,12 @@ namespace Bee.Cache.UnitTests
                 UserId = "test_user",
                 UserName = "Test User"
             };
-            CacheFunc.SetSessionInfo(sessionInfo);
+            BackendInfo.SessionInfoService.Set(sessionInfo);
             var sessionInfoFromCache = CacheFunc.GetSessionInfo(sessionInfo.AccessToken);
             Assert.Equal(sessionInfo.AccessToken, sessionInfoFromCache.AccessToken);
 
-            CacheFunc.RemoveSessionInfo(sessionInfo.AccessToken);
-            sessionInfo = CacheFunc.GetSessionInfo(sessionInfo.AccessToken);
+            BackendInfo.SessionInfoService.Remove(sessionInfo.AccessToken);
+            sessionInfo = BackendInfo.SessionInfoService.Get(sessionInfo.AccessToken);
             Assert.Null(sessionInfo);
         }   
     }

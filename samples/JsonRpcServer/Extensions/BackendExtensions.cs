@@ -31,8 +31,9 @@ namespace ApiService.Extensions
                 throw new DirectoryNotFoundException($"DefinePath 指定的目錄不存在：{absolutePath}");
 
             BackendInfo.DefinePath = absolutePath;
+            BackendInfo.DefineAccess = new LocalDefineAccess();
             // 系統設定初始化
-            var settings = CacheFunc.GetSystemSettings();
+            var settings = BackendInfo.DefineAccess.GetSystemSettings();
             SysInfo.Initialize(settings.CommonConfiguration);
             BackendInfo.Initialize(settings.BackendConfiguration);
             // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
