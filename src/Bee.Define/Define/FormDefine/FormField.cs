@@ -34,9 +34,24 @@ namespace Bee.Define
         /// <param name="dbType">欄位資料型別。</param>
         public FormField(string fieldName, string caption, FieldDbType dbType)
         {
-            this.FieldName = fieldName;
+            FieldName = fieldName;
             Caption = caption;
             DbType = dbType;
+        }
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="fieldName">欄位名稱。</param>
+        /// <param name="caption">標題文字。</param>
+        /// <param name="dbType">欄位資料型別。</param>
+        /// <param name="type">欄位類型。</param>
+        public FormField(string fieldName, string caption, FieldDbType dbType, FieldType type)
+        {
+            FieldName = fieldName;
+            Caption = caption;
+            DbType = dbType;
+            Type = type;
         }
 
         #endregion
@@ -87,7 +102,8 @@ namespace Bee.Define
         [XmlAttribute]
         [Category(PropertyCategories.Layout)]
         [Description("控制項類型。")]
-        public ControlType ControlType { get; set; } = ControlType.TextEdit;
+        [DefaultValue(ControlType.Auto)]
+        public ControlType ControlType { get; set; } = ControlType.Auto;
 
         /// <summary>
         /// 字串最大長度。
@@ -211,6 +227,7 @@ namespace Bee.Define
         {
             base.SetSerializeState(serializeState);
             BaseFunc.SetSerializeState(_relationFieldMappings, serializeState);
+            BaseFunc.SetSerializeState(_lookupFieldMappings, serializeState);
         }
 
         /// <summary>

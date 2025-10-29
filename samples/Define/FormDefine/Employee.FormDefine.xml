@@ -3,20 +3,20 @@
   <Tables>
     <FormTable TableName="Employee" DbTableName="ft_employee" DisplayName="員工">
       <Fields>
-        <FormField FieldName="sys_no" Caption="流水號" DbType="Identity" ControlType="TextEdit" />
-        <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" ControlType="TextEdit" />
-        <FormField FieldName="sys_id" Caption="員工編號" DbType="String" ControlType="TextEdit" />
-        <FormField FieldName="sys_name" Caption="員工姓名" DbType="String" ControlType="TextEdit" />
-        <FormField FieldName="dept_id" Caption="部門編號" DbType="String" ControlType="TextEdit" RelationProgId="Department">
+        <FormField FieldName="sys_no" Caption="流水號" DbType="Identity" />
+        <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+        <FormField FieldName="sys_id" Caption="員工編號" DbType="String" />
+        <FormField FieldName="sys_name" Caption="員工姓名" DbType="String" />
+        <FormField FieldName="dept_id" Caption="部門編號" DbType="String" RelationProgId="Department">
           <RelationFieldMappings>
             <FieldMapping SourceField="sys_name" DestinationField="ref_dept_name" />
             <FieldMapping SourceField="manager_id" DestinationField="ref_supervisor_id" />
             <FieldMapping SourceField="ref_manager_name" DestinationField="ref_supervisor_name" />
           </RelationFieldMappings>
         </FormField>
-        <FormField FieldName="ref_dept_name" Caption="部門名稱" DbType="String" Type="RelationField" ControlType="TextEdit" />
-        <FormField FieldName="ref_supervisor_id" Caption="直屬主管編號" DbType="String" Type="RelationField" ControlType="TextEdit" />
-        <FormField FieldName="ref_supervisor_name" Caption="直屬主管名稱" DbType="String" Type="RelationField" ControlType="TextEdit" />
+        <FormField FieldName="ref_dept_name" Caption="部門名稱" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_supervisor_id" Caption="直屬主管編號" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_supervisor_name" Caption="直屬主管名稱" DbType="String" Type="RelationField" />
       </Fields>
     </FormTable>
   </Tables>

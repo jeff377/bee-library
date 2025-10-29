@@ -14,7 +14,6 @@ namespace Bee.Define
         /// 取得定義型別。
         /// </summary>
         /// <param name="defineType">定資資料類別。</param>
-        /// <exception cref="NotSupportedException"></exception>
         public static Type GetDefineType(DefineType defineType)
         {
             // 取得型別名稱

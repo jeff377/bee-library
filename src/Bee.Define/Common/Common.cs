@@ -546,6 +546,10 @@ namespace Bee.Define
     public enum ControlType
     {
         /// <summary>
+        /// 自動判別。
+        /// </summary>
+        Auto,
+        /// <summary>
         /// 文字框。
         /// </summary>
         TextEdit,
@@ -580,6 +584,10 @@ namespace Bee.Define
     /// </summary>
     public enum ColumnControlType
     {
+        /// <summary>
+        /// 自動判別。
+        /// </summary>
+        Auto,
         /// <summary>
         /// 文字框。
         /// </summary>

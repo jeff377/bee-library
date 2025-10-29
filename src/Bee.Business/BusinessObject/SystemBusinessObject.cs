@@ -177,7 +177,7 @@ namespace Bee.Business
         private SaveDefineResult SaveDefineCore(SaveDefineArgs args)
         {
             // 將 XML 轉換為物件
-            Type type = DefineFunc.GetDefineType(args.DefineType);
+            var type = DefineFunc.GetDefineType(args.DefineType);
             object defineObject = SerializeFunc.XmlToObject(args.Xml, type);
             if (defineObject == null)
                 throw new InvalidOperationException($"Failed to deserialize XML to {type.Name} object.");
