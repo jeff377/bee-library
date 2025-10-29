@@ -104,7 +104,7 @@ namespace Bee.Db
             string fields = string.Empty;
             foreach (DbField field in this.DbTable.Fields)
             {
-                if (field.UpgradeAction != DbUpgradeAction.New && field.DbType != FieldDbType.Identity)
+                if (field.UpgradeAction != DbUpgradeAction.New && field.DbType != FieldDbType.AutoIncrement)
                 {
                     if (StrFunc.IsNotEmpty(fields))
                         fields += ", ";
@@ -223,7 +223,7 @@ namespace Bee.Db
                     return "[nvarchar](max)";
                 case FieldDbType.Boolean:
                     return "[bit]";
-                case FieldDbType.Identity:
+                case FieldDbType.AutoIncrement:
                     return "[int] IDENTITY(1,1)";
                 case FieldDbType.Integer:
                     return "[int]";
@@ -270,7 +270,7 @@ namespace Bee.Db
                 case FieldDbType.String:
                 case FieldDbType.Memo:
                     return StrFunc.Format("N'{0}'", StrFunc.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue);
-                case FieldDbType.Identity:
+                case FieldDbType.AutoIncrement:
                     return string.Empty;
                 default:
                     return StrFunc.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue;

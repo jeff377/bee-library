@@ -182,9 +182,9 @@ namespace Bee.Base
         /// </summary>
         Boolean,
         /// <summary>
-        /// 自動編號。
+        /// 自動遞增整數。
         /// </summary>
-        Identity,
+        AutoIncrement,
         /// <summary>
         /// 整數。
         /// </summary>

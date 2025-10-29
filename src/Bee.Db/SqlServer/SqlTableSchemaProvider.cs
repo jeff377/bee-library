@@ -195,7 +195,7 @@ namespace Bee.Db
             dbField.AllowNull = row.GetFieldValue<bool>("AllowDBNull");
 
             if (row.GetFieldValue<bool>("AutoIncrement"))
-                dbField.DbType = FieldDbType.Identity;
+                dbField.DbType = FieldDbType.AutoIncrement;
             else
                 dbField.DbType = GetFieldDbType(
                     row.GetFieldValue<string>("DbType"),

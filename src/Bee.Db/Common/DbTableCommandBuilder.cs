@@ -74,7 +74,7 @@ namespace Bee.Db
             int count = 0;
             foreach (DbField field in this.DbTable.Fields)
             {
-                if (field.DbType != FieldDbType.Identity)
+                if (field.DbType != FieldDbType.AutoIncrement)
                 {
                     if (count > 0)
                         buffer.Append(", ");
@@ -90,7 +90,7 @@ namespace Bee.Db
             count = 0;
             foreach (DbField field in this.DbTable.Fields)
             {
-                if (field.DbType != FieldDbType.Identity)
+                if (field.DbType != FieldDbType.AutoIncrement)
                 {
                     if (count > 0)
                         buffer.Append(", ");
@@ -122,7 +122,7 @@ namespace Bee.Db
             int iCount = 0;
             foreach (DbField field in this.DbTable.Fields)
             {
-                if (field != keyField && field.DbType != FieldDbType.Identity)
+                if (field != keyField && field.DbType != FieldDbType.AutoIncrement)
                 {
                     fieldName = QuoteIdentifier(field.FieldName);
                     // 加入命令參數

@@ -143,7 +143,7 @@ namespace Bee.Db
                     return DbType.String; 
                 case FieldDbType.Boolean:
                     return DbType.Boolean;
-                case FieldDbType.Identity:
+                case FieldDbType.AutoIncrement:
                 case FieldDbType.Integer:
                     return DbType.Int32;
                 case FieldDbType.Double:

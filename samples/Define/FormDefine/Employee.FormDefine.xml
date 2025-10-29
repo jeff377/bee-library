@@ -3,7 +3,7 @@
   <Tables>
     <FormTable TableName="Employee" DbTableName="ft_employee" DisplayName="員工">
       <Fields>
-        <FormField FieldName="sys_no" Caption="流水號" DbType="Identity" />
+        <FormField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
         <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
         <FormField FieldName="sys_id" Caption="員工編號" DbType="String" />
         <FormField FieldName="sys_name" Caption="員工姓名" DbType="String" />

@@ -11,7 +11,7 @@ namespace Bee.Define.UnitTests
             var formDefine = new FormDefine("Department", "部門");
             var table = formDefine.Tables.Add("Department", "部門");
             table.DbTableName = "ft_department";
-            table.Fields.Add("sys_no", "流水號", FieldDbType.Identity);
+            table.Fields.Add("sys_no", "流水號", FieldDbType.AutoIncrement);
             table.Fields.Add("sys_rowid", "唯一識別", FieldDbType.Guid);
             table.Fields.Add("sys_id", "部門編號", FieldDbType.String);
             table.Fields.Add("sys_name", "部門名稱", FieldDbType.String);
@@ -28,9 +28,9 @@ namespace Bee.Define.UnitTests
 
             Assert.NotNull(formDefine.MasterTable);
 
-            //string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
-            //formDefine.SetObjectFilePath(filePath);
-            //formDefine.Save();
+            string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
+            formDefine.SetObjectFilePath(filePath);
+            formDefine.Save();
         }
 
         [Fact]
@@ -39,7 +39,7 @@ namespace Bee.Define.UnitTests
             var formDefine = new FormDefine("Employee", "員工");
             var table = formDefine.Tables.Add("Employee", "員工");
             table.DbTableName = "ft_employee";
-            table.Fields.Add("sys_no", "流水號", FieldDbType.Identity);
+            table.Fields.Add("sys_no", "流水號", FieldDbType.AutoIncrement);
             table.Fields.Add("sys_rowid", "唯一識別", FieldDbType.Guid);
             table.Fields.Add("sys_id", "員工編號", FieldDbType.String);
             table.Fields.Add("sys_name", "員工姓名", FieldDbType.String);
@@ -62,9 +62,9 @@ namespace Bee.Define.UnitTests
 
             Assert.NotNull(references);
 
-            //string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
-            //formDefine.SetObjectFilePath(filePath);
-            //formDefine.Save();
+            string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
+            formDefine.SetObjectFilePath(filePath);
+            formDefine.Save();
         }
     }
 }
