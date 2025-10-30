@@ -1,19 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.2" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Bee.Api.AspNetCore\Bee.Api.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\src\Bee.Cache\Bee.Cache.csproj" />
-    <ProjectReference Include="..\Custom.Business\Custom.Business.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Bee.Api.AspNetCore\Bee.Api.AspNetCore.csproj" />
+		<ProjectReference Include="..\..\src\Bee.Cache\Bee.Cache.csproj" />
+		<ProjectReference Include="..\Custom.Business\Custom.Business.csproj" />
+	</ItemGroup>
 
+	<ItemGroup>
+		<!-- 自動包含 Define 資料夾下所有檔案並在專案中顯示 -->
+		<None Include="..\Define\**\*.*">
+			<Link>Define\%(RecursiveDir)%(Filename)%(Extension)</Link>
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 </Project>
