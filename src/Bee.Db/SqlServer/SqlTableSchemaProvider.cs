@@ -231,7 +231,7 @@ namespace Bee.Db
                     return FieldDbType.String;
                 case "NVARCHAR":
                     if (length == -1)
-                        return FieldDbType.Memo;
+                        return FieldDbType.Text;
                     else
                         return FieldDbType.String;
                 case "BIT":

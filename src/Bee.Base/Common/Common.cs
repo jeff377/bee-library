@@ -166,6 +166,7 @@ namespace Bee.Base
 
     /// <summary>
     /// 欄位資料型別。
+    /// 中介層抽象定義的資料型別，對應至不同
     /// </summary>
     public enum FieldDbType
     {
@@ -174,9 +175,9 @@ namespace Bee.Base
         /// </summary>
         String,
         /// <summary>
-        /// 備註。
+        /// 長文字。
         /// </summary>
-        Memo,
+        Text,
         /// <summary>
         /// 布林。
         /// </summary>

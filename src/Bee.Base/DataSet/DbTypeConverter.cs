@@ -55,7 +55,7 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 將 EFieldDbType 轉型為 DbType 型別。
+        /// 將 FieldDbType 轉型為 DbType 型別。
         /// </summary>
         /// <param name="fieldDbType">欄位資料型別。</param>
         public static DbType ToDbType(FieldDbType fieldDbType)
@@ -63,11 +63,11 @@ namespace Bee.Base
             switch (fieldDbType)
             {
                 case FieldDbType.String:
-                    return DbType.String;
-                case FieldDbType.Memo:
+                case FieldDbType.Text:
                     return DbType.String;
                 case FieldDbType.Boolean:
                     return DbType.Boolean;
+                case FieldDbType.AutoIncrement:
                 case FieldDbType.Integer:
                     return DbType.Int32;
                 case FieldDbType.Double:
@@ -83,7 +83,7 @@ namespace Bee.Base
                 case FieldDbType.Binary:
                     return DbType.Binary;
                 default:
-                    throw new InvalidOperationException($"{fieldDbType} can't convert to DbType");
+                    throw new ArgumentOutOfRangeException(nameof(fieldDbType), $"Unsupported EFieldDbType: {fieldDbType}");
             }
         }
 
@@ -97,10 +97,12 @@ namespace Bee.Base
             {
                 case FieldDbType.String:
                     return typeof(string);
-                case FieldDbType.Memo:
+                case FieldDbType.Text:
                     return typeof(string);
                 case FieldDbType.Boolean:
                     return typeof(bool);
+                case FieldDbType.AutoIncrement:
+                    return typeof(int);
                 case FieldDbType.Integer:
                     return typeof(int);
                 case FieldDbType.Double:

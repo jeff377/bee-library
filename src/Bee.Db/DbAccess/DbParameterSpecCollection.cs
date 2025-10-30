@@ -35,7 +35,7 @@ namespace Bee.Db
             var parameter = new DbParameterSpec()
             {
                 Name = field.FieldName,
-                DbType = DbFunc.ConvertToDbType(field.DbType),
+                DbType = DbTypeConverter.ToDbType(field.DbType),
                 SourceColumn = field.FieldName,
                 SourceVersion = sourceVersion,
                 Value = field.AllowNull ? null : DataSetFunc.GetDefaultValue(field.DbType),

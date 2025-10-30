@@ -130,40 +130,6 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 將 EFieldDbType 轉換為 DbType。
-        /// </summary>
-        /// <param name="fieldDbType">EFieldDbType 值</param>
-        /// <returns>對應的 DbType</returns>
-        public static DbType ConvertToDbType(FieldDbType fieldDbType)
-        {
-            switch (fieldDbType)
-            {
-                case FieldDbType.String:
-                case FieldDbType.Memo:
-                    return DbType.String; 
-                case FieldDbType.Boolean:
-                    return DbType.Boolean;
-                case FieldDbType.AutoIncrement:
-                case FieldDbType.Integer:
-                    return DbType.Int32;
-                case FieldDbType.Double:
-                    return DbType.Double;
-                case FieldDbType.Currency:
-                    return DbType.Currency;
-                case FieldDbType.Date:
-                    return DbType.Date;
-                case FieldDbType.DateTime:
-                    return DbType.DateTime;
-                case FieldDbType.Guid:
-                    return DbType.Guid;
-                case FieldDbType.Binary:
-                    return DbType.Binary;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(fieldDbType), $"Unsupported EFieldDbType: {fieldDbType}");
-            }
-        }
-
-        /// <summary>
         /// SQL 命令文字格式化。
         /// </summary>
         /// <param name="s">SQL 命令文字。</param>
@@ -187,7 +153,7 @@ namespace Bee.Db
             switch (dbType)
             {
                 case FieldDbType.String:
-                case FieldDbType.Memo:
+                case FieldDbType.Text:
                     return string.Empty;
                 case FieldDbType.Boolean:
                 case FieldDbType.Integer:

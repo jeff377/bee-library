@@ -219,7 +219,7 @@ namespace Bee.Db
             {
                 case FieldDbType.String:
                     return $"[nvarchar]({field.Length})";
-                case FieldDbType.Memo:
+                case FieldDbType.Text:
                     return "[nvarchar](max)";
                 case FieldDbType.Boolean:
                     return "[bit]";
@@ -268,7 +268,7 @@ namespace Bee.Db
             switch (dbType)
             {
                 case FieldDbType.String:
-                case FieldDbType.Memo:
+                case FieldDbType.Text:
                     return StrFunc.Format("N'{0}'", StrFunc.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue);
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
