@@ -484,8 +484,7 @@ namespace Bee.Base
                     return CBool(value);
                 case FieldDbType.Integer:
                     return CInt(value);
-                case FieldDbType.Double:
-                    return CDouble(value);
+                case FieldDbType.Decimal:
                 case FieldDbType.Currency:
                     return CDecimal(value);
                 case FieldDbType.Date:

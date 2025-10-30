@@ -38,10 +38,9 @@ namespace Bee.Base
                 case TypeCode.DateTime:
                     return FieldDbType.DateTime;
                 case TypeCode.Decimal:
-                    return FieldDbType.Currency;
                 case TypeCode.Double:
                 case TypeCode.Single:
-                    return FieldDbType.Double;
+                    return FieldDbType.Decimal;
                 case TypeCode.Int16:
                 case TypeCode.Int32:
                 case TypeCode.Int64:
@@ -70,8 +69,8 @@ namespace Bee.Base
                 case FieldDbType.AutoIncrement:
                 case FieldDbType.Integer:
                     return DbType.Int32;
-                case FieldDbType.Double:
-                    return DbType.Double;
+                case FieldDbType.Decimal:
+                    return DbType.Decimal;
                 case FieldDbType.Currency:
                     return DbType.Currency;
                 case FieldDbType.Date:
@@ -105,8 +104,8 @@ namespace Bee.Base
                     return typeof(int);
                 case FieldDbType.Integer:
                     return typeof(int);
-                case FieldDbType.Double:
-                    return typeof(double);
+                case FieldDbType.Decimal:
+                    return typeof(decimal);
                 case FieldDbType.Currency:
                     return typeof(decimal);
                 case FieldDbType.Date:

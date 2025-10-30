@@ -157,7 +157,7 @@ namespace Bee.Db
                     return string.Empty;
                 case FieldDbType.Boolean:
                 case FieldDbType.Integer:
-                case FieldDbType.Double:
+                case FieldDbType.Decimal:
                 case FieldDbType.Currency:
                     return "0";
                 case FieldDbType.Date:

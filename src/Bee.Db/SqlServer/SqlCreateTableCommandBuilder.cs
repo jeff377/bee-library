@@ -227,8 +227,12 @@ namespace Bee.Db
                     return "[int] IDENTITY(1,1)";
                 case FieldDbType.Integer:
                     return "[int]";
-                case FieldDbType.Double:
-                    return "[float]";
+                case FieldDbType.Decimal:
+                    {
+                        int precision = field.Precision > 0 ? field.Precision : 18;
+                        int scale = field.Scale > 0 ? field.Scale : 0;
+                        return $"[decimal]({precision},{scale})";
+                    }
                 case FieldDbType.Currency:
                     return "[decimal](19,4)";
                 case FieldDbType.Date:

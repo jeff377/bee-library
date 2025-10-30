@@ -191,9 +191,9 @@ namespace Bee.Base
         /// </summary>
         Integer,
         /// <summary>
-        /// 浮點數。
+        /// 十進位數值（高精度）。
         /// </summary>
-        Double,
+        Decimal,
         /// <summary>
         /// 貨幣。
         /// </summary>

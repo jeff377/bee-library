@@ -203,12 +203,20 @@ namespace Bee.Db
                     row.GetFieldValue<int>("Decimals"),
                     row.GetFieldValue<int>("Length"));
 
+            // 設定 String 的長度
             if (dbField.DbType == FieldDbType.String)
             {
                 if (StrFunc.ToUpper(row.GetFieldValue<string>("DbType")) == "NVARCHAR")
                     dbField.Length = row.GetFieldValue<int>("Length") / 2;
                 else
                     dbField.Length = row.GetFieldValue<int>("Length");
+            }
+
+            // 設定 Decimal 的精度和小數位數
+            if (dbField.DbType == FieldDbType.Decimal)
+            {
+                dbField.Precision = row.GetFieldValue<int>("Precision");
+                dbField.Scale = row.GetFieldValue<int>("Decimals");
             }
 
             string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbField.DbType);  // 取得內定預設值
@@ -239,11 +247,12 @@ namespace Bee.Db
                 case "INT":
                     return FieldDbType.Integer;
                 case "FLOAT":
-                    return FieldDbType.Double;
+                    return FieldDbType.Decimal;
                 case "DECIMAL":
                     if (dataPrecision == 19 && dataScale == 4)
                         return FieldDbType.Currency;
-                    return FieldDbType.Unknown;
+                    else
+                        return FieldDbType.Decimal;
                 case "DATE":
                     return FieldDbType.Date;
                 case "DATETIME":
