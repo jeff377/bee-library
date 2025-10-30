@@ -1,6 +1,4 @@
-﻿using Bee.Base;
-
-namespace Bee.Cache
+﻿namespace Bee.Cache
 {
     /// <summary>
     /// 物件快取基底類別。

@@ -23,6 +23,12 @@ namespace Bee.Define
         /// 預設的業務邏輯物件提供者型別，用於動態建立 BusinessObject。
         /// </summary>
         public const string BusinessObjectProvider = "Bee.Business.BusinessObjectProvider, Bee.Business";
+
+        // ---------------- Cache 群 ----------------
+        /// <summary>
+        /// 預設的快取提供者型別。
+        /// </summary>
+        public const string CacheProvider = "Bee.Cache.MemoryCacheProvider, Bee.Cache";
         /// <summary>
         /// 預設的快取資料來源提供者型別。
         /// </summary>

@@ -2,7 +2,6 @@
 using Bee.Cache;
 using Bee.Db;
 using Bee.Define;
-using Bee.Repository.Abstractions;
 
 namespace Bee.Tests.Shared
 {

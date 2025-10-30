@@ -40,9 +40,17 @@ namespace Bee.Define
         public string BusinessObjectProvider { get; set; } = BackendDefaultTypes.BusinessObjectProvider;
 
         /// <summary>
+        /// Cache provider type.
+        /// </summary>
+        [Category("Cache")]
+        [Description("Cache provider type, defines the cache mechanism implementation (e.g., MemoryCache, Redis).")]
+        [DefaultValue(BackendDefaultTypes.CacheProvider)]
+        public string CacheProvider { get; set; } = BackendDefaultTypes.CacheProvider;
+
+        /// <summary>
         /// Cache data source provider type.
         /// </summary>
-        [Category("Providers")]
+        [Category("Cache")]
         [Description("Cache data source provider type, defines the source of cached data (such as preloaded definition data).")]
         [DefaultValue(BackendDefaultTypes.CacheDataSourceProvider)]
         public string CacheDataSourceProvider { get; set; } = BackendDefaultTypes.CacheDataSourceProvider;
@@ -94,6 +102,7 @@ namespace Bee.Define
         [Description("Form level Repository provider type.")]
         [DefaultValue(BackendDefaultTypes.FormRepositoryProvider)]
         public string FormRepositoryProvider { get; set; } = BackendDefaultTypes.FormRepositoryProvider;
+
 
     }
 }
