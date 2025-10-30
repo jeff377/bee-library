@@ -244,8 +244,12 @@ namespace Bee.Db
                         return FieldDbType.String;
                 case "BIT":
                     return FieldDbType.Boolean;
+                case "SMALLINT":
+                    return FieldDbType.Short;
                 case "INT":
                     return FieldDbType.Integer;
+                case "BIGINT":
+                    return FieldDbType.Long;
                 case "FLOAT":
                     return FieldDbType.Decimal;
                 case "DECIMAL":

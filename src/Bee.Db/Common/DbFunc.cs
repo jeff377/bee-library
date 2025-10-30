@@ -156,7 +156,9 @@ namespace Bee.Db
                 case FieldDbType.Text:
                     return string.Empty;
                 case FieldDbType.Boolean:
+                case FieldDbType.Short:
                 case FieldDbType.Integer:
+                case FieldDbType.Long:
                 case FieldDbType.Decimal:
                 case FieldDbType.Currency:
                     return "0";

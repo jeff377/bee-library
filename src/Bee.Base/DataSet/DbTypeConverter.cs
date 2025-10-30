@@ -42,12 +42,14 @@ namespace Bee.Base
                 case TypeCode.Single:
                     return FieldDbType.Decimal;
                 case TypeCode.Int16:
-                case TypeCode.Int32:
-                case TypeCode.Int64:
                 case TypeCode.UInt16:
+                    return FieldDbType.Short;
+                case TypeCode.Int32:
                 case TypeCode.UInt32:
-                case TypeCode.UInt64:
                     return FieldDbType.Integer;
+                case TypeCode.Int64:
+                case TypeCode.UInt64:
+                    return FieldDbType.Long;
                 default:
                     throw new InvalidOperationException($"{type.Name} can't convert to FieldDbType");
             }
@@ -69,6 +71,10 @@ namespace Bee.Base
                 case FieldDbType.AutoIncrement:
                 case FieldDbType.Integer:
                     return DbType.Int32;
+                case FieldDbType.Short:
+                    return DbType.Int16;
+                case FieldDbType.Long:
+                    return DbType.Int64;
                 case FieldDbType.Decimal:
                     return DbType.Decimal;
                 case FieldDbType.Currency:
@@ -102,8 +108,12 @@ namespace Bee.Base
                     return typeof(bool);
                 case FieldDbType.AutoIncrement:
                     return typeof(int);
+                case FieldDbType.Short:
+                    return typeof(short);
                 case FieldDbType.Integer:
                     return typeof(int);
+                case FieldDbType.Long:
+                    return typeof(long);
                 case FieldDbType.Decimal:
                     return typeof(decimal);
                 case FieldDbType.Currency:

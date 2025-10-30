@@ -187,9 +187,17 @@ namespace Bee.Base
         /// </summary>
         AutoIncrement,
         /// <summary>
-        /// 整數。
+        /// 16 位元整數 (-32,768 到 32,767)。
+        /// </summary>
+        Short,
+        /// <summary>
+        /// 32 位元整數 (-2,147,483,648 到 2,147,483,647)。
         /// </summary>
         Integer,
+        /// <summary>
+        /// 64 位元整數 (Long)。
+        /// </summary>
+        Long,
         /// <summary>
         /// 十進位數值（高精度）。
         /// </summary>

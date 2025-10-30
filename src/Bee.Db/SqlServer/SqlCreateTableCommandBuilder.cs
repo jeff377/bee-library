@@ -225,8 +225,12 @@ namespace Bee.Db
                     return "[bit]";
                 case FieldDbType.AutoIncrement:
                     return "[int] IDENTITY(1,1)";
+                case FieldDbType.Short:
+                    return "[smallint]";
                 case FieldDbType.Integer:
                     return "[int]";
+                case FieldDbType.Long:
+                    return "[bigint]";
                 case FieldDbType.Decimal:
                     {
                         int precision = field.Precision > 0 ? field.Precision : 18;
