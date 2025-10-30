@@ -18,7 +18,7 @@ namespace Bee.Db.UnitTests
         public void ExecuteDataTable()
         {
             // 由 DbAccess 管理連線
-            string sql = "SELECT * FROM ts_user";
+            string sql = "SELECT * FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
@@ -32,7 +32,7 @@ namespace Bee.Db.UnitTests
                 Assert.NotNull(result.Table);
             }
 
-            sql = "SELECT * FROM ts_user WHERE sys_id = {0} OR sys_id = {1} ";
+            sql = "SELECT * FROM st_user WHERE sys_id = {0} OR sys_id = {1} ";
             command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             command.Parameters.Add("p1", "001");
             command.Parameters.Add("p2", "002");
@@ -50,7 +50,7 @@ namespace Bee.Db.UnitTests
                 { "p1", "001" },
                 { "p2", "002" }
             };
-            sql = "SELECT * FROM ts_user WHERE sys_id = {p1} OR sys_id = {p2} ";
+            sql = "SELECT * FROM st_user WHERE sys_id = {p1} OR sys_id = {p2} ";
             command = new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
             result = dbAccess.Execute(command);
             Assert.NotNull(result.Table);
@@ -62,7 +62,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public async Task ExecuteDataTableAsync()
         {
-            string sql = "SELECT * FROM ts_user";
+            string sql = "SELECT * FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccess("common");
             var reulst = await dbAccess.ExecuteAsync(command);
@@ -75,7 +75,7 @@ namespace Bee.Db.UnitTests
         public void ExecuteNonQuery()
         {
             int i = BaseFunc.RndInt(0, 100);
-            string sql = "Update ts_user Set note={1} Where sys_id = {0}";
+            string sql = "Update st_user Set note={1} Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
             var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
@@ -86,7 +86,7 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteNonQueryAsync()
         {
             int i = BaseFunc.RndInt(0, 100);
-            string sql = "Update ts_user Set note={1} Where sys_id = {0}";
+            string sql = "Update st_user Set note={1} Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
             var dbAccess = new DbAccess("common");
             var result = await dbAccess.ExecuteAsync(command);
@@ -96,7 +96,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void ExecuteScalar()
         {
-            string sql = "Select note From ts_user Where sys_id = {0}";
+            string sql = "Select note From st_user Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, "001");
             var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
@@ -120,7 +120,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void Query()
         {
-            string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
+            string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccess("common");
             var list = dbAccess.Query<User>(command);
@@ -130,7 +130,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public async Task QueryAsync()
         {
-            string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM ts_user";
+            string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccess("common");
             var list = await dbAccess.QueryAsync<User>(command);
@@ -142,13 +142,13 @@ namespace Bee.Db.UnitTests
         {
             var dbAccess = new DbAccess("common");
 
-            // 1.查詢 ts_user 所有欄位
-            string sql = "SELECT * FROM ts_user";
+            // 1.查詢 st_user 所有欄位
+            string sql = "SELECT * FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var result = dbAccess.Execute(command);
             var table = result.Table;
             Assert.NotNull(table);
-            Assert.True(table.Rows.Count > 0, "ts_user 應有資料");
+            Assert.True(table.Rows.Count > 0, "st_user 應有資料");
 
             // 2. 修改第一筆資料
             int i = BaseFunc.RndInt(0, 100);
@@ -156,7 +156,7 @@ namespace Bee.Db.UnitTests
             row["note"] = i.ToString();
 
             // 3. 用 DbTableCommandBuilder 產生 DataTableUpdateSpec
-            var dbTable =  BackendInfo.DefineAccess.GetDbTable("common", "ts_user");
+            var dbTable =  BackendInfo.DefineAccess.GetDbTable("common", "st_user");
             var builder = new DbTableCommandBuilder(dbTable);
             var updateSpec = builder.BuildUpdateSpec(table);
 
@@ -172,10 +172,10 @@ namespace Bee.Db.UnitTests
             var batch = new DbBatchSpec();
             batch.UseTransaction = true;
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
-                    "SELECT COUNT(*) FROM ts_user WHERE sys_id = {0}", "001"));
+                    "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001"));
             int i = BaseFunc.RndInt(0, 100);
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.NonQuery,
-                     "UPDATE ts_user SET note={1} WHERE sys_id = {0}", "001", i));
+                     "UPDATE st_user SET note={1} WHERE sys_id = {0}", "001", i));
 
             var dbAccess = new DbAccess("common");
             var result = dbAccess.ExecuteBatch(batch);
@@ -187,10 +187,10 @@ namespace Bee.Db.UnitTests
             var batch = new DbBatchSpec();
             batch.UseTransaction = true;
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
-                    "SELECT COUNT(*) FROM ts_user WHERE sys_id = {0}", "001"));
+                    "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001"));
             int i = BaseFunc.RndInt(0, 100);
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.NonQuery,
-                     "UPDATE ts_user SET note={1} WHERE sys_id = {0}", "001", i));
+                     "UPDATE st_user SET note={1} WHERE sys_id = {0}", "001", i));
 
             var dbAccess = new DbAccess("common");
             var result = await dbAccess.ExecuteBatchAsync(batch);
@@ -200,7 +200,7 @@ namespace Bee.Db.UnitTests
         public void SqlDbTableTest()
         {
             var helper = new SqlTableSchemaProvider("common");
-            var dbTable = helper.GetTableSchema("ts_user");
+            var dbTable = helper.GetTableSchema("st_user");
         }
 
         [Fact]

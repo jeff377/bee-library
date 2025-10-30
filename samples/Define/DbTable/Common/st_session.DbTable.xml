@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DbTable xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="common" TableName="st_session" DisplayName="連線資訊">
+	<Fields>
+		<DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+		<DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+		<DbField FieldName="access_token" Caption="存取令牌" DbType="Guid" />
+		<DbField FieldName="session_user_xml" Caption="連線用戶" DbType="Text" />
+		<DbField FieldName="sys_insert_time" DisplayName="寫入時間" DbType="DateTime" />
+		<DbField FieldName="sys_invalid_time" DisplayName="失效時間" DbType="DateTime" AllowNull="true" />
+	</Fields>
+	<Indexes>
+		<DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+			<IndexFields>
+				<IndexField FieldName="sys_no" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="rx_{0}" Unique="true">
+			<IndexFields>
+				<IndexField FieldName="sys_rowid" />
+			</IndexFields>
+		</DbTableIndex>
+		<DbTableIndex Name="ux_{0}" Unique="true">
+			<IndexFields>
+				<IndexField FieldName="access_token" />
+			</IndexFields>
+		</DbTableIndex>
+	</Indexes>
+</DbTable>

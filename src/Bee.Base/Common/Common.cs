@@ -166,7 +166,7 @@ namespace Bee.Base
 
     /// <summary>
     /// 欄位資料型別。
-    /// 中介層抽象定義的資料型別，對應至不同
+    /// 抽象資料欄位型別（跨資料庫對應）。
     /// </summary>
     public enum FieldDbType
     {

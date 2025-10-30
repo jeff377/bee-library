@@ -51,7 +51,8 @@ namespace Bee.Business
             string tableName = args.Parameters.GetValue<string>("TableName");
 
             var repo = RepositoryInfo.SystemProvider.DatabaseRepository;
-            repo.UpgradeTableSchema(databaseId, dbName, tableName);
+            bool upgraded = repo.UpgradeTableSchema(databaseId, dbName, tableName);
+            result.Parameters.Add("Upgraded", upgraded);
         }
 
         /// <summary>

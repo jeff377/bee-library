@@ -11,6 +11,7 @@
     </ApiPayloadOptions>
   </CommonConfiguration>
   <BackendConfiguration>
+    <DatabaseId>common</DatabaseId>
     <LogOptions>
       <DbAccess>
         <Level>Warning</Level>
@@ -24,14 +25,12 @@
         <Type>File</Type>
         <Value>Master.key</Value>
       </MasterKeySource>
-      <ApiEncryptionKey>EAAAAJfybVTkJf2mkFl+vO/978tQAAAA19r1gt4NTlgi6hnRs7OC+79Iq69cV0fLXsYsKuh4B4I1u2QUnPf7zkp6pXv7p/6+KGSeeJ7HxKKSFUh4HxsrmRPyJdHJ8VY+iNvK4JF26KyQT/gNVScfxO9QudiMyek51nAJ5kmB7cT/7XRY9YwwMw==</ApiEncryptionKey>
-      <CookieEncryptionKey>EAAAAAoO4251fm6RQDdXCedNcoVQAAAAS70nN8IKU1Zry7zuBk2QprFhbTYtp3bqX22H/hMZJJi+/GPvjaD3h637soo+NFhv1W7vr48Vps2VcpRga0LnRh3c2M1Rpk6eOM24eO9jn0RarGGCa7d4Hv1Bwx2fP599aq7SlJOeSI9v/kJpMp6aXg==</CookieEncryptionKey>
-      <ConfigEncryptionKey>EAAAAEFoBdknimXAIF3hDfSXU2JQAAAASmbuRBAVIoPBtoyuF4Xnyl8dMU7qaz/xKOvRxcXldKwwqdmSmxHSIixAXBTqxk4u2zNpH57KWGjhNNlVxlGwvc48Q/t5fIqiVx6zTeuvUxgKSGRy8nmLZwKW6DbcEl/OmSseVmXHivZZ0eDNm708zA==</ConfigEncryptionKey>
-      <DatabaseEncryptionKey>EAAAAEAMd2mxLc84NFgmgRj8kF1QAAAAS+5geJiBo5FJ5P+KB8hlEgm8dHoI3dpBTADsWXFDo8b35O/JNp7lddVGP2VBY36psUZYaxKVv8118irCpZOe29AyLZQkE9O10bjhNo1Cv8Yn0Qpuc4HkAr9M2R3UdFahd3T60o1f+FMyf1s6d57BiA==</DatabaseEncryptionKey>
+      <ApiEncryptionKey>EAAAAIOIukYk4Tf4GCPHzQyDCkNQAAAAe/UOW+voPWikgJbQy+BDZlmonGc3BlTquKCIPWtnWv8K7UuLN4XRs3oMsFdT3vTpsCD5W8P38PivKOvrnbwQ9mGsxagBG/Ohx+DgzLSsdlD79uvbkfUbWfw7CIxjufTlPkM1CnFqbnqNLlZgxfw7GQ==</ApiEncryptionKey>
+      <CookieEncryptionKey>EAAAAEuBQN+nx+XaRxJ72LXYNERQAAAA96GzQTHRBSyMCoBUaRgh6a0RdB3LuA106zIt/w2+vfRnJQ/HxFR/khZVWjGM7z3vZPg8iSYoKsutG6QUgJ5FLCGKgMcUoCyr2YZMiw5VKqwJ7B6Rmt+vv86Cl2GJvLPkmZ6QaVOwets/js38Gib0aA==</CookieEncryptionKey>
+      <ConfigEncryptionKey>EAAAAP5ot7vreCJ2p4iz8uKV+IBQAAAAKWPaGWYF4hQDpU90MBjX7WfLQJBqsD73qWkg1Kwfn8Zq1Sr1FOTyCk/IbMm8k5lKS2FAbkAWsUVa+E8KO2Q6eMo3noHIhn7zPxyD/BxXu+p5MLLC4Ln+96ONkMhRpu2KI6INimlCAZrW1NbRV1e7wQ==</ConfigEncryptionKey>
+      <DatabaseEncryptionKey>EAAAAEgMKPIIzBHMRXaImZRG12FQAAAAk+sXJ/4bTNINPqlTzFsnhvQb9zNZnvH9PVdHBeQVPvADLTI0rxPpZWOjUAAeTxZ1Q1/fWDvhEDpwm7SxDUkd0qdbGfeNxrX/nBWBYroIT7iS6Xal7mYp4vBbEO4BqadOtPzPxSxN1WJMZopnXe1Ktg==</DatabaseEncryptionKey>
     </SecurityKeySettings>
-    <Components>
-      <BusinessObjectProvider>Custom.Business.BusinessObjectProvider, Custom.Business</BusinessObjectProvider>
-    </Components>
+    <Components />
   </BackendConfiguration>
   <FrontendConfiguration />
   <WebsiteConfiguration />

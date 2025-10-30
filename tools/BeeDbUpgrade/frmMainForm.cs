@@ -79,7 +79,7 @@ namespace DbUpgrade
                 {
                     oTable = database.Tables[N1];
                     SetMessage($"{N1 + 1}/{totalCount} : {oTable.TableName}");
-                    if (this.UpgradeTableSchema(item.DbName, oTable.TableName))
+                    if (UpgradeTableSchema(item.DbName, oTable.TableName))
                     {
                         upgradeCount++;
                         _buffer.AppendLine($"{oTable.TableName} : µ²ºc¤É¯Å");

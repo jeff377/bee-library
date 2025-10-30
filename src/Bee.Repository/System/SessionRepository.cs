@@ -7,7 +7,7 @@ using Bee.Repository.Abstractions;
 namespace Bee.Repository
 {
     /// <summary>
-    /// 連線資訊的資料存取物件，封裝存取 ts_session 與 ts_user 資料表的操作邏輯。
+    /// 連線資訊的資料存取物件，封裝存取 st_session 與 st_user 資料表的操作邏輯。
     /// </summary>
     /// <remarks>
     /// 此類別負責建立、查詢與刪除 Session 使用者資料，並以 <see cref="SessionUser"/> 為資料模型。
@@ -22,7 +22,7 @@ namespace Bee.Repository
         private void Insert(SessionUser sessionUser)
         {
             string xml = SerializeFunc.ObjectToXml(sessionUser);
-            string sql = "INSERT INTO ts_session \n" +
+            string sql = "INSERT INTO st_session \n" +
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, DateTime.Now, sessionUser.EndTime);
@@ -36,7 +36,7 @@ namespace Bee.Repository
         /// <param name="accessToken">存取令牌。</param>
         private void Delete(Guid accessToken)
         {
-            string sql = "DELETE FROM ts_session \n" +
+            string sql = "DELETE FROM st_session \n" +
                                  "WHERE access_token={0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, accessToken);
             var dbAccess = new DbAccess(BackendInfo.DatabaseId);
@@ -50,7 +50,7 @@ namespace Bee.Repository
         public SessionUser GetSession(Guid accessToken)
         {
             string sql = "SELECT session_user_xml, sys_invalid_time \n" +
-                                 "FROM ts_session \n" +
+                                 "FROM st_session \n" +
                                  "WHERE access_token={0}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken);
             var dbAccess = new DbAccess(BackendInfo.DatabaseId);
@@ -81,7 +81,7 @@ namespace Bee.Repository
         /// <param name="oneTime">一次性有效。</param>
         public SessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
-            string sql = "SELECT sys_id, sys_name FROM ts_user \n" +
+            string sql = "SELECT sys_id, sys_name FROM st_user \n" +
                                  "WHERE sys_id={0}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, userID);
             var dbAccess = new DbAccess(BackendInfo.DatabaseId);
