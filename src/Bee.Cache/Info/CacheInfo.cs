@@ -26,7 +26,7 @@ namespace Bee.Cache
         /// <summary>
         /// 快取提供者。
         /// </summary>
-        public static ICacheProvider CacheProvider { get; set; } = new MemoryCacheProvider();
+        public static ICacheProvider Provider { get; set; } = new MemoryCacheProvider();
 
         /// <summary>
         /// 初始化。
@@ -35,7 +35,7 @@ namespace Bee.Cache
         {
             var components = configuration.Components;
             // 快取提供者
-            CacheProvider = CreateOrDefault<ICacheProvider>
+            Provider = CreateOrDefault<ICacheProvider>
                 (components.CacheProvider, BackendDefaultTypes.CacheProvider);
         }
 

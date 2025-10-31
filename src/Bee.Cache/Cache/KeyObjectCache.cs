@@ -56,14 +56,14 @@ namespace Bee.Cache
             // 取得快取鍵值
             string cacheKey = GetCacheKey(key);
             // 若物件存在於快取區，則直接回傳該快取物件
-            if (CacheInfo.CacheProvider.Contains(cacheKey))
-                return (T)CacheInfo.CacheProvider.Get(cacheKey);
+            if (CacheInfo.Provider.Contains(cacheKey))
+                return (T)CacheInfo.Provider.Get(cacheKey);
 
             // 建立物件置入快取區，並回傳該物件
             var value = CreateInstance(key);
             if (value != null)
             {
-                CacheInfo.CacheProvider.Set(cacheKey, value, GetPolicy(key));
+                CacheInfo.Provider.Set(cacheKey, value, GetPolicy(key));
             }
             return value;
         }
@@ -76,7 +76,7 @@ namespace Bee.Cache
         public virtual void Set(string key, T value)
         {
             string cacheKey = GetCacheKey(key);
-            CacheInfo.CacheProvider.Set(cacheKey, value, GetPolicy(key));
+            CacheInfo.Provider.Set(cacheKey, value, GetPolicy(key));
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Bee.Cache
         public virtual void Remove(string key)
         {
             string cacheKey = GetCacheKey(key);
-            CacheInfo.CacheProvider.Remove(cacheKey);
+            CacheInfo.Provider.Remove(cacheKey);
         }
     }
 }

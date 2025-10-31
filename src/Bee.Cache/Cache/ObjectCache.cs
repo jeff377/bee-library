@@ -49,14 +49,14 @@
             // 取得快取鍵值
             string key = GetKey();
             // 若物件存在於快取區，則直接回傳該快取物件
-            if (CacheInfo.CacheProvider.Contains(key))               
-                return (T)CacheInfo.CacheProvider.Get(key);
+            if (CacheInfo.Provider.Contains(key))               
+                return (T)CacheInfo.Provider.Get(key);
 
             // 建立物件置入快取區，並回傳該物件
             var value = CreateInstance();
             if (value != null)
             {
-                CacheInfo.CacheProvider.Set(key, value, GetPolicy());
+                CacheInfo.Provider.Set(key, value, GetPolicy());
             }
             return value;
         }
@@ -68,7 +68,7 @@
         public virtual void Set(T value)
         {
             string key = GetKey();
-            CacheInfo.CacheProvider.Set(key, value, GetPolicy());
+            CacheInfo.Provider.Set(key, value, GetPolicy());
         }
 
         /// <summary>
@@ -77,7 +77,7 @@
         public virtual void Remove()
         {
             string key = GetKey();
-            CacheInfo.CacheProvider.Remove(key);
+            CacheInfo.Provider.Remove(key);
         }
     }
 }
