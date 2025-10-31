@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace Bee.Cache
 {
     /// <summary>
-    /// 快取提供者介面,定義快取操作的統一契約。
+    /// 快取提供者介面，定義快取操作的統一契約。
     /// </summary>
     public interface ICacheProvider
     {

@@ -23,10 +23,10 @@ namespace SettingsEditor
             SysInfo.IsToolMode = true;
             // 發佈為單一執行檔
             SysInfo.IsSingleFile = true;
-            // 因為發佈為單一執行檔，無法動態載入物件，需由程式碼建立
+            // 因為發佈為單一執行檔，無法動態載入物件，需由程式碼建立            
             BackendInfo.DefineStorage = new FileDefineStorage();
             BackendInfo.DefineAccess = new LocalDefineAccess();
-            BackendInfo.BusinessObjectProvider = new Bee.Business.BusinessObjectProvider();
+            BackendInfo.BusinessObjectProvider = new Bee.Business.BusinessObjectProvider();            
             RepositoryInfo.SystemProvider = new Bee.Repository.SystemRepositoryProvider();
             // 允許產生設定檔
             ClientInfo.AllowGenerateSettings = true;  

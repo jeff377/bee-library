@@ -1,18 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using Bee.Base;
 using Bee.Define;
 
-namespace Bee.Repository.Abstractions
+namespace Bee.Cache
 {
     /// <summary>
-    /// 提供存取系統儲存庫與表單儲存庫的靜態介面。
+    /// 提供存取快取提供者的靜態介面。
     /// </summary>
-    public static class RepositoryInfo
+    public static class CacheInfo
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        static RepositoryInfo()
+        static CacheInfo()
         {
             if (SysInfo.IsSingleFile) { return; }
             if (BackendInfo.DefineAccess == null)
@@ -21,16 +23,10 @@ namespace Bee.Repository.Abstractions
             var settings = BackendInfo.DefineAccess.GetSystemSettings();
             Initialize(settings.BackendConfiguration);
         }
-
         /// <summary>
-        /// 取得或設定系統儲存庫提供者。
+        /// 快取提供者。
         /// </summary>
-        public static ISystemRepositoryProvider SystemProvider { get; set; }
-
-        /// <summary>
-        /// 取得或設定表單儲存庫提供者。
-        /// </summary>
-        public static IFormRepositoryProvider FormProvider { get; set; }
+        public static ICacheProvider CacheProvider { get; set; } = new MemoryCacheProvider();
 
         /// <summary>
         /// 初始化。
@@ -38,12 +34,9 @@ namespace Bee.Repository.Abstractions
         private static void Initialize(BackendConfiguration configuration)
         {
             var components = configuration.Components;
-            // 設定系統儲存庫提供者
-            SystemProvider = CreateOrDefault<ISystemRepositoryProvider>
-                (components.SystemRepositoryProvider, BackendDefaultTypes.SystemRepositoryProvider);
-            // 設定表單儲存庫提供者
-            FormProvider = CreateOrDefault<IFormRepositoryProvider>
-                (components.FormRepositoryProvider, BackendDefaultTypes.FormRepositoryProvider);
+            // 快取提供者
+            CacheProvider = CreateOrDefault<ICacheProvider>
+                (components.CacheProvider, BackendDefaultTypes.CacheProvider);
         }
 
         /// <summary>
