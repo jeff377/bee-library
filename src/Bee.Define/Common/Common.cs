@@ -178,6 +178,17 @@ namespace Bee.Define
         /// </summary>
         public const string Name = "sys_name";
 
+        // ---- 操作者資訊 ----
+        /// <summary>
+        /// 建立者唯一識別（外鍵，指向使用者表 sys_rowid）。
+        /// </summary>
+        public const string InsertUserRowId = "sys_insert_user_rowid";
+        /// <summary>
+        /// 更新者唯一識別（外鍵，指向使用者表 sys_rowid）。
+        /// </summary>
+        public const string UpdateUserRowId = "sys_update_user_rowid";
+
+
         // ---- 生命週期 ----
         /// <summary>
         /// 資料寫入時間。
