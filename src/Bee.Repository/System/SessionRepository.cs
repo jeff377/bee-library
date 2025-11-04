@@ -59,7 +59,7 @@ namespace Bee.Repository
             var row = result.Table.Rows[0];
 
             // 若連線已到期，刪除連線資訊，並回傳 null
-            DateTime endTime = BaseFunc.CDateTime(row[SysFields.InvalidTime]);
+            DateTime endTime = BaseFunc.CDateTime(row[SysFields.InvalidDate]);
             if (endTime < DateTime.Now)
             {
                 this.Delete(accessToken);

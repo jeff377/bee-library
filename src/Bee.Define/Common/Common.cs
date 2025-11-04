@@ -149,44 +149,58 @@ namespace Bee.Define
     /// <summary>
     /// 系統欄位名稱常數。
     /// </summary>
-    public class SysFields
+    public static class SysFields
     {
+        // ---- 系統列識別 ----
         /// <summary>
-        /// 列序號，自動遞增。
+        /// 流水號，自動遞增。
         /// </summary>
         public const string No = "sys_no";
         /// <summary>
-        /// 列識別。
+        /// 唯一識別。
         /// </summary>
         public const string RowId = "sys_rowid";
         /// <summary>
-        /// 主檔列識別。
+        /// 主檔唯一識別。
+        /// 明細關聯到主檔的外鍵欄位，指向主檔 (Master) 資料表中對應列的 <see cref="RowId"/>。
         /// </summary>
         public const string MasterRowId = "sys_master_rowid";
+
+        // ---- 基本資料欄位 ----
         /// <summary>
         /// 編號。
+        /// 基本資料編號或單據號碼。
         /// </summary>
         public const string Id = "sys_id";
         /// <summary>
         /// 名稱。
+        /// 基本資料名稱，如員工姓名、部門名稱。
         /// </summary>
         public const string Name = "sys_name";
+
+        // ---- 生命週期 ----
         /// <summary>
-        /// 寫入時間。
+        /// 資料寫入時間。
         /// </summary>
         public const string InsertTime = "sys_insert_time";
         /// <summary>
-        /// 更新時間。
+        /// 資料更新時間。
         /// </summary>
         public const string UpdateTime = "sys_update_time";
         /// <summary>
-        /// 資料生效時間（該筆資料從何時開始有效）。
+        /// 資料生效日期。
+        /// 該筆資料自此日期起開始有效。生效日「當天」開始生效（含當日）。
+        /// 查詢有效資料時可使用條件：
+        /// <c>CURRENT_DATE >= sys_valid_date</c>
         /// </summary>
-        public const string ValidTime = "sys_valid_time";
+        public const string ValidDate = "sys_valid_date";
         /// <summary>
-        /// 資料失效時間（該筆資料從何時開始無效，若 NULL 表示仍有效）。
+        /// 資料失效日期。
+        /// 該筆資料自此日期起停止有效；NULL 表示仍有效。失效日「當天」不再有效（不含當日)。
+        /// 查詢有效資料時可使用條件：
+        /// <c>sys_invalid_date IS NULL OR CURRENT_DATE &lt; sys_invalid_date</c>
         /// </summary>
-        public const string InvalidTime = "sys_invalid_time";
+        public const string InvalidDate = "sys_invalid_date";
     }
 
     #endregion
