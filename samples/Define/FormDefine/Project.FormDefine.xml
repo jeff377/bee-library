@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormDefine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Project" DisplayName="專案" ListFields="sys_id,sys_name">
+  <Tables>
+    <FormTable TableName="Project" DbTableName="ft_project" DisplayName="專案">
+      <Fields>
+        <!-- 基本 -->
+        <FormField FieldName="sys_no" DbType="AutoIncrement" Caption="流水號"/>
+        <FormField FieldName="sys_rowid" DbType="Guid" Caption="唯一識別"/>
+        <FormField FieldName="sys_id" DbType="String" Caption="專案代碼"/>
+        <FormField FieldName="sys_name" DbType="String" Caption="專案名稱"/>
+
+        <!-- 關聯：負責部門 -->
+        <FormField FieldName="owner_dept_rowid" DbType="Guid" Caption="負責部門" RelationProgId="Department">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_owner_dept_id"/>
+            <FieldMapping SourceField="sys_name" DestinationField="ref_owner_dept_name"/>
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_owner_dept_id" DbType="String" Caption="負責部門代碼" Type="RelationField"/>
+        <FormField FieldName="ref_owner_dept_name" DbType="String" Caption="負責部門名稱" Type="RelationField"/>
+
+        <!-- 關聯：專案經理（員工） -->
+        <FormField FieldName="pm_rowid" DbType="Guid" Caption="專案經理" RelationProgId="Employee">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="pm_id"/>
+            <FieldMapping SourceField="sys_name" DestinationField="pm_name"/>
+
+            <!-- 假設 Employee 內部已把自己的部門映回為 ref_dept_id/ref_dept_name -->
+            <FieldMapping SourceField="ref_dept_id" DestinationField="pm_dept_id"/>
+            <FieldMapping SourceField="ref_dept_name" DestinationField="pm_dept_name"/>
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="pm_id" DbType="String" Caption="PM 員工代碼" Type="RelationField"/>
+        <FormField FieldName="pm_name" DbType="String" Caption="PM 姓名" Type="RelationField"/>
+        <FormField FieldName="pm_dept_id" DbType="String" Caption="PM 部門代碼" Type="RelationField"/>
+        <FormField FieldName="pm_dept_name" DbType="String" Caption="PM 部門名稱" Type="RelationField"/>
+
+        <!-- 其他欄位（示意） -->
+        <FormField FieldName="start_date" DbType="Date" Caption="開始日"/>
+        <FormField FieldName="end_date" DbType="Date" Caption="結束日"/>
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormDefine>

@@ -11,6 +11,17 @@ namespace Bee.Db
         #region 建構函式
 
         /// <summary>
+        /// 建構函式 
+        /// </summary>
+        /// <param name="progID">程式代碼。</param>
+        public SqlFormCommandBuilder(string progID)
+        {
+            FormDefine = BackendInfo.DefineAccess.GetFormDefine(progID);
+            if (FormDefine == null)
+                throw new ArgumentException($"Form definition not found for program ID '{progID}'.", nameof(progID));
+        }
+
+        /// <summary>
         /// 建構函式。
         /// </summary>
         public SqlFormCommandBuilder(FormDefine formDefine)

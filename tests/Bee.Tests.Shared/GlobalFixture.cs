@@ -17,7 +17,7 @@ namespace Bee.Tests.Shared
         {
             // 全域初始化邏輯，例如載入設定檔、建立資料庫、啟動 API
             // 設定定義路徑
-            BackendInfo.DefinePath = @"D:\DefinePath";
+            BackendInfo.DefinePath = @"D:\Git\bee-library\samples\Define";
             BackendInfo.DefineAccess = new LocalDefineAccess();
             // 系統初始化
             var settings = BackendInfo.DefineAccess.GetSystemSettings();

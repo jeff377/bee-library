@@ -264,5 +264,12 @@ namespace Bee.Db.UnitTests
             var command3 = builder.BuildSelectCommand("Employee", "sys_id,sys_name", filter, sortFields);
             Assert.NotNull(command2);
         }
+
+        [Fact]
+        public void BuildSelectCommand()
+        {
+            //var builder = new SqlFormCommandBuilder("Project");
+            //var command = builder.BuildSelectCommand("Project", "sys_id,sys_name");
+        }
     }
 }

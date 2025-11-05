@@ -7,7 +7,7 @@
         <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
         <FormField FieldName="sys_id" Caption="員工編號" DbType="String" />
         <FormField FieldName="sys_name" Caption="員工姓名" DbType="String" />
-        <FormField FieldName="dept_rowid" Caption="部門唯一識別" DbType="Guid" RelationProgId="Department">
+        <FormField FieldName="dept_id" Caption="部門編號" DbType="String" RelationProgId="Department">
           <RelationFieldMappings>
             <FieldMapping SourceField="sys_name" DestinationField="ref_dept_name" />
             <FieldMapping SourceField="manager_id" DestinationField="ref_supervisor_id" />

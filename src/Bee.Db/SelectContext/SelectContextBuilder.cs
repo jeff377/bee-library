@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using System;
+using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Db
@@ -77,7 +78,13 @@ namespace Bee.Db
 
             foreach (var mapping in foreignKeyField.RelationFieldMappings)
             {
-                var srcField = srcTable.Fields[mapping.SourceField];
+                var srcField = srcTable.Fields.GetOrDefault(mapping.SourceField);
+                if (srcField == null)
+                {
+                    throw new InvalidOperationException(
+                        $"Source field '{mapping.SourceField}' not found in table '{srcTable.TableName}' " +
+                        $"for foreign key field '{foreignKeyField.FieldName}' in relation '{foreignKeyField.RelationProgId}'.");
+                }
 
                 // 遞迴處理多層 RelationField（若來源欄位仍是關聯）
                 if (srcField.Type == FieldType.RelationField)
