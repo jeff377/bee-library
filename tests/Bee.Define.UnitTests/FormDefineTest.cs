@@ -16,21 +16,23 @@ namespace Bee.Define.UnitTests
             table.Fields.Add("sys_id", "部門編號", FieldDbType.String);
             table.Fields.Add("sys_name", "部門名稱", FieldDbType.String);
             table.Fields.Add(
-                new FormField("manager_id", "部門主管編號", FieldDbType.String)
+                new FormField("manager_rowid", "部門主管唯一識別", FieldDbType.String)
                 {
                     RelationProgId = "Employee",
                     RelationFieldMappings =
                     {
+                        { "sys_id", "ref_manager_id" },
                         { "sys_name", "ref_manager_name" }
                     }
                 });
+            table.Fields.Add(new FormField("ref_manager_id", "部門主管編號", FieldDbType.String, FieldType.RelationField));
             table.Fields.Add(new FormField("ref_manager_name", "部門主管名稱", FieldDbType.String, FieldType.RelationField));
 
             Assert.NotNull(formDefine.MasterTable);
 
-            string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
-            formDefine.SetObjectFilePath(filePath);
-            formDefine.Save();
+            //string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
+            //formDefine.SetObjectFilePath(filePath);
+            //formDefine.Save();
         }
 
         [Fact]
@@ -44,16 +46,18 @@ namespace Bee.Define.UnitTests
             table.Fields.Add("sys_id", "員工編號", FieldDbType.String);
             table.Fields.Add("sys_name", "員工姓名", FieldDbType.String);
             table.Fields.Add(
-                new FormField("dept_id", "部門編號", FieldDbType.String)
+                new FormField("dept_rowid", "部門唯一識別", FieldDbType.String)
                 {
                     RelationProgId = "Department",
                     RelationFieldMappings =
                     {
+                        { "sys_id", "ref_dept_id" },
                         { "sys_name", "ref_dept_name" },
                         { "manager_id", "ref_supervisor_id" },
                         { "ref_manager_name", "ref_supervisor_name" }
                     }
                 });
+            table.Fields.Add(new FormField("ref_dept_id", "部門編號", FieldDbType.String, FieldType.RelationField));
             table.Fields.Add(new FormField("ref_dept_name", "部門名稱", FieldDbType.String, FieldType.RelationField));
             table.Fields.Add(new FormField("ref_supervisor_id", "直屬主管編號", FieldDbType.String, FieldType.RelationField));
             table.Fields.Add(new FormField("ref_supervisor_name", "直屬主管名稱", FieldDbType.String, FieldType.RelationField));
@@ -62,9 +66,9 @@ namespace Bee.Define.UnitTests
 
             Assert.NotNull(references);
 
-            string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
-            formDefine.SetObjectFilePath(filePath);
-            formDefine.Save();
+            //string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
+            //formDefine.SetObjectFilePath(filePath);
+            //formDefine.Save();
         }
     }
 }

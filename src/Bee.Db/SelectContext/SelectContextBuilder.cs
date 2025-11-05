@@ -53,8 +53,10 @@ namespace Bee.Db
         /// <param name="foreignKeyField">外鍵欄位。</param>
         /// <param name="leftTable">左側資料表名稱。</param>
         /// <param name="leftAlias">左側資料表別名。</param>
-        /// <param name="queryFieldName">指定建立 QueryFieldMapping 的欄位名稱。</param>
-        private void AddTableJoin(SelectContext context, string key, FormField foreignKeyField, string leftTable, string leftAlias, string queryFieldName = "")
+        /// <param name="fieldMappings">指定欄位對應集合，遞迴處理多層關連時需指定。</param>
+        /// <param name="queryFieldName">指定建立 QueryFieldMapping 的欄位名稱，遞迴處理多層關連時需指定。</param>
+        private void AddTableJoin(SelectContext context, string key, FormField foreignKeyField, string leftTable, string leftAlias,
+            FieldMappingCollection fieldMappings = null, string queryFieldName = "")
         {
             var srcFormDefine = BackendInfo.DefineAccess.GetFormDefine(foreignKeyField.RelationProgId);
             var srcTable = srcFormDefine.MasterTable;
@@ -76,7 +78,9 @@ namespace Bee.Db
                 context.Joins.Add(join);
             }
 
-            foreach (var mapping in foreignKeyField.RelationFieldMappings)
+            var mappings = fieldMappings ?? foreignKeyField.RelationFieldMappings;
+
+            foreach (var mapping in mappings)
             {
                 var srcField = srcTable.Fields.GetOrDefault(mapping.SourceField);
                 if (srcField == null)
@@ -91,7 +95,8 @@ namespace Bee.Db
                 {
                     var reference = srcTable.RelationFieldReferences[srcField.FieldName];
                     string srcKey = key + "." + reference.ForeignKeyField.RelationProgId;
-                    AddTableJoin(context, srcKey, reference.ForeignKeyField, join.RightTable, join.RightAlias, mapping.DestinationField);
+                    var srcMappings = CreateSingleFieldMappings(reference.ForeignKeyField.RelationFieldMappings, reference.FieldName);
+                    AddTableJoin(context, srcKey, reference.ForeignKeyField, join.RightTable, join.RightAlias, srcMappings, mapping.DestinationField);
                 }
                 else
                 {
@@ -107,6 +112,18 @@ namespace Bee.Db
             }
         }
 
+        /// <summary>
+        /// 建立只包含單一欄位對應的集合。
+        /// </summary>
+        /// <param name="sourceMappings">來源對應集合。</param>
+        /// <param name="destinationField">目標欄位名稱。</param>
+        private FieldMappingCollection CreateSingleFieldMappings(FieldMappingCollection sourceMappings, string destinationField)
+        {
+            var fieldMapping = sourceMappings.FindByDestination(destinationField);
+            var mappings = new FieldMappingCollection();
+            mappings.Add(fieldMapping.SourceField, fieldMapping.DestinationField);
+            return mappings;
+        }
 
         /// <summary>
         /// 取得下一個資料表別名。

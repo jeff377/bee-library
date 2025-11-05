@@ -258,8 +258,8 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void BuildSelectCommand()
         {
-            //var builder = new SqlFormCommandBuilder("Project");
-            //var command = builder.BuildSelectCommand("Project", "sys_id,sys_name");
+            var builder = new SqlFormCommandBuilder("Project");
+            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name");
         }
     }
 }
