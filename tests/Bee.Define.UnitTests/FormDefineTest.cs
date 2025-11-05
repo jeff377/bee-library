@@ -53,7 +53,7 @@ namespace Bee.Define.UnitTests
                     {
                         { "sys_id", "ref_dept_id" },
                         { "sys_name", "ref_dept_name" },
-                        { "manager_id", "ref_supervisor_id" },
+                        { "ref_manager_id", "ref_supervisor_id" },
                         { "ref_manager_name", "ref_supervisor_name" }
                     }
                 });
