@@ -18,9 +18,10 @@
 
 	<ItemGroup>
 		<!-- 自動包含 Define 資料夾下所有檔案並在專案中顯示 -->
-		<None Include="..\Define\**\*.*">
+		<None Include="..\Define\**">
 			<Link>Define\%(RecursiveDir)%(Filename)%(Extension)</Link>
 			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+			<Visible>true</Visible>
 		</None>
 	</ItemGroup>
 </Project>
