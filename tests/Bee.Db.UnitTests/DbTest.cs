@@ -212,18 +212,9 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        public void SelectCommandTest()
-        {
-            var formDefine = BackendInfo.DefineAccess.GetFormDefine("Employee");
-            var builder = new SqlSelectCommandBuilder(formDefine);
-            var command = builder.Build("Employee",string.Empty, null, null);
-        }
-
-        [Fact]
         public void FormCommandBuildTest()
         {
-            var formDefine = BackendInfo.DefineAccess.GetFormDefine("Employee");
-            var builder = new SqlFormCommandBuilder(formDefine);
+            var builder = new SqlFormCommandBuilder("Employee");
             var command = builder.BuildSelectCommand("Employee", string.Empty);
             var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name");
         }
@@ -231,8 +222,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void FormCommandBuildWithFilterNodeTest()
         {
-            var formDefine = BackendInfo.DefineAccess.GetFormDefine("Employee");
-            var builder = new SqlFormCommandBuilder(formDefine);
+            var builder = new SqlFormCommandBuilder("Employee");
 
             // 建立一個 FilterCondition 篩選 sys_id = '001'
             var filter = new FilterCondition
