@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bee.Base;
 using Bee.Define;
 
@@ -59,6 +60,11 @@ namespace Bee.Db
             FieldMappingCollection fieldMappings = null, string queryFieldName = "")
         {
             var srcFormDefine = BackendInfo.DefineAccess.GetFormDefine(foreignKeyField.RelationProgId);
+            if (srcFormDefine == null)
+            {
+                throw new InvalidOperationException(
+                    $"Form definition '{foreignKeyField.RelationProgId}' not found for field '{foreignKeyField.FieldName}'.");
+            }
             var srcTable = srcFormDefine.MasterTable;
 
             // 若尚未存在對應的 Join，就建立
@@ -90,9 +96,9 @@ namespace Bee.Db
                         $"for foreign key field '{foreignKeyField.FieldName}' in relation '{foreignKeyField.RelationProgId}'.");
                 }
 
-                // 遞迴處理多層 RelationField（若來源欄位仍是關聯）
                 if (srcField.Type == FieldType.RelationField)
                 {
+                    // 若來源欄位仍是關聯，使用遞迴處理巢狀關聯
                     var reference = srcTable.RelationFieldReferences[srcField.FieldName];
                     string srcKey = key + "." + reference.ForeignKeyField.RelationProgId;
                     var srcMappings = CreateSingleFieldMappings(reference.ForeignKeyField.RelationFieldMappings, reference.FieldName);
@@ -126,16 +132,28 @@ namespace Bee.Db
         }
 
         /// <summary>
+        /// 關鍵字關鍵字集合。
+        /// </summary>
+        private static readonly HashSet<string> SqlKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "AS", "BY", "IF", "IN", "IS", "OF", "OR", "TO", "ON",
+            "GO", "NO", "DO", "AT", "IT"
+        };
+
+        /// <summary>
         /// 取得下一個資料表別名。
         /// </summary>
         /// <param name="tableAlias">目前資料表別名。</param>
-        public static string GetNextTableAlias(string tableAlias)
+        private static string GetNextTableAlias(string tableAlias)
         {
+            // 採用 26 進位，A → B → C ... → Z → ZA → ZB ... （多位數展開）
             string baseValues = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             string nextAlias = StrFunc.GetNextId(tableAlias, baseValues);
             // 若資料表別名為關鍵字，則重取資料表別名
-            if (StrFunc.IsEqualsOr(nextAlias, "AS", "BY", "IF", "IN", "IS", "OF", "OR", "TO", "ON"))
-                nextAlias = StrFunc.GetNextId(tableAlias, baseValues);
+            while (SqlKeywords.Contains(nextAlias))
+            {
+                nextAlias = StrFunc.GetNextId(nextAlias, baseValues);
+            }
             return nextAlias;
         }
 
