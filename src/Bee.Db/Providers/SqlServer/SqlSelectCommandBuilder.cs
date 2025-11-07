@@ -88,25 +88,8 @@ namespace Bee.Db
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
         private string BuildSelectClause(FormTable formTable, StringHashSet selectFieldNames, SelectContext selectContext)
         {
-            var selectParts = new List<string>();
-            foreach (var fieldName in selectFieldNames)
-            {
-                var field = formTable.Fields.GetOrDefault(fieldName);
-                if (field == null)
-                    throw new InvalidOperationException($"Field '{fieldName}' does not exist in table '{formTable.TableName}'.");
-                if (field.Type == FieldType.DbField)
-                {
-                    selectParts.Add($"    A.{QuoteIdentifier(fieldName)}");
-                }
-                else
-                {
-                    var mapping = selectContext.FieldMappings.GetOrDefault(fieldName);
-                    if (mapping == null)
-                        throw new InvalidOperationException($"Field mapping for '{fieldName}' is null.");
-                    selectParts.Add($"    {mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)} AS {QuoteIdentifier(fieldName)}");
-                }
-            }
-            return "SELECT\n" + string.Join(",\n", selectParts);
+            var builder = new SelectBuilder(DatabaseType.SQLServer);
+            return builder.Build(formTable, selectFieldNames, selectContext);
         }
 
         /// <summary>

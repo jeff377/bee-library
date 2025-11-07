@@ -1,6 +1,4 @@
 ﻿using Bee.Define;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -9,7 +7,7 @@ namespace Bee.Db
     /// <summary>
     /// FROM 子句建置器。
     /// </summary>
-    public class FromBuilder
+    public class FromBuilder : IFromBuilder
     {
         private readonly DatabaseType _databaseType;
 
