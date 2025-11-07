@@ -151,7 +151,7 @@ namespace Bee.Db
             parameters = null;
             if (remappedFilter != null)
             {
-                var whereBuilder = new SqlServerWhereBuilder();
+                var whereBuilder = new WhereBuilder();
                 var whereResult = whereBuilder.Build(remappedFilter, true);
                 if (!string.IsNullOrWhiteSpace(whereResult.WhereClause))
                 {
@@ -171,7 +171,7 @@ namespace Bee.Db
         {
             if (remappedSortFields != null && remappedSortFields.Count > 0)
             {
-                var sortBuilder = new SqlServerSortBuilder();
+                var sortBuilder = new SortBuilder();
                 var orderByClause = sortBuilder.Build(remappedSortFields);
                 if (!string.IsNullOrWhiteSpace(orderByClause))
                 {
@@ -315,6 +315,73 @@ namespace Bee.Db
                 result.Add(new SortField(fieldExpr, sortField.Direction));
             }
             return result;
+        }
+
+        /// <summary>
+        /// 取得 selectFields、filter、sortFields 中使用到的不重覆的欄位名稱集合。
+        /// </summary>
+        /// <param name="formTable">表單資料表。</param>
+        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
+        /// <param name="filter">過濾條件。</param>
+        /// <param name="sortFields">排序欄位集合。</param>
+        /// <returns>不重覆的欄位名稱集合。</returns>
+        private HashSet<string> GetUsedFieldNames(FormTable formTable, string selectFields, FilterNode filter, SortFIeldCollection sortFields)
+        {
+            var fieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // selectFields
+            if (string.IsNullOrWhiteSpace(selectFields))
+            {
+                foreach (var field in formTable.Fields)
+                {
+                    fieldNames.Add(field.FieldName);
+                }
+            }
+            else
+            {
+                var selectFieldArr = selectFields.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (var field in selectFieldArr)
+                {
+                    fieldNames.Add(field.Trim());
+                }
+            }
+
+            // filter
+            CollectFilterFields(filter, fieldNames);
+
+            // sortFields
+            if (sortFields != null)
+            {
+                foreach (var sortField in sortFields)
+                {
+                    if (!string.IsNullOrWhiteSpace(sortField.FieldName))
+                        fieldNames.Add(sortField.FieldName);
+                }
+            }
+
+            return fieldNames;
+        }
+
+        /// <summary>
+        /// 遞迴收集 FilterNode 中使用到的欄位名稱。
+        /// </summary>
+        /// <param name="node">過濾條件節點。</param>
+        /// <param name="fieldNames">欄位名稱集合。</param>
+        private void CollectFilterFields(FilterNode node, HashSet<string> fieldNames)
+        {
+            if (node == null) return;
+            if (node.Kind == FilterNodeKind.Condition)
+            {
+                var cond = (FilterCondition)node;
+                if (!string.IsNullOrWhiteSpace(cond.FieldName))
+                    fieldNames.Add(cond.FieldName);
+            }
+            else if (node.Kind == FilterNodeKind.Group)
+            {
+                var group = (FilterGroup)node;
+                foreach (var child in group.Nodes)
+                    CollectFilterFields(child, fieldNames);
+            }
         }
     }
 }

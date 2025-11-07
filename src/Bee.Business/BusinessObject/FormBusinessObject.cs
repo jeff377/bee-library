@@ -20,7 +20,7 @@ namespace Bee.Business
         public FormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
             : base(accessToken, isLocalCall)
         {
-            this.ProgId = progId;
+            ProgId = progId;
         }
 
         #endregion

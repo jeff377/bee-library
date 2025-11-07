@@ -7,14 +7,14 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void Build_NullSorts_ThrowsArgumentNullException()
         {
-            var builder = new SqlServerSortBuilder();
+            var builder = new SortBuilder();
             Assert.Throws<ArgumentNullException>(() => builder.Build(null));
         }
 
         [Fact]
         public void Build_EmptySorts_ReturnsEmptyString()
         {
-            var builder = new SqlServerSortBuilder();
+            var builder = new SortBuilder();
             var result = builder.Build(new SortFIeldCollection());
             Assert.Equal(string.Empty, result);
         }
@@ -22,7 +22,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void Build_SingleSortItem_ReturnsCorrectOrderByClause()
         {
-            var builder = new SqlServerSortBuilder();
+            var builder = new SortBuilder();
             var sorts = new SortFIeldCollection()
             {
                 new SortField("Name", SortDirection.Asc)
@@ -34,7 +34,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void Build_MultipleSortItems_ReturnsCorrectOrderByClause()
         {
-            var builder = new SqlServerSortBuilder();
+            var builder = new SortBuilder();
             var sorts = new SortFIeldCollection()
             {
                 new SortField("Name", SortDirection.Asc),
@@ -47,7 +47,7 @@ namespace Bee.Db.UnitTests
         [Fact]
         public void Build_SortItemWithSqlExpression_ReturnsCorrectOrderByClause()
         {
-            var builder = new SqlServerSortBuilder();
+            var builder = new SortBuilder();
             var sorts = new SortFIeldCollection()
             {
                 new SortField("LEN(Name)", SortDirection.Desc)

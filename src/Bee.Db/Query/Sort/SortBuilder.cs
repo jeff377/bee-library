@@ -5,9 +5,9 @@ using Bee.Define;
 namespace Bee.Db
 {
     /// <summary>
-    /// SQL Server 的 ORDER BY 子句建置器
+    /// ORDER BY 子句建置器。
     /// </summary>
-    public sealed class SqlServerSortBuilder : ISortBuilder
+    public sealed class SortBuilder : ISortBuilder
     {
         /// <summary>
         /// 根據指定的排序欄位集合，產生 SQL 的 ORDER BY 子句（包含前綴關鍵字）。

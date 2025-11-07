@@ -4,9 +4,9 @@ using System;
 namespace Bee.Db
 {
     /// <summary>
-    /// SQL Server 的 WHERE 子句建置器。
+    /// WHERE 子句建置器。
     /// </summary>
-    public sealed class SqlServerWhereBuilder : IWhereBuilder
+    public sealed class WhereBuilder : IWhereBuilder
     {
         /// <summary>
         /// 由結構化條件節點建置 WHERE 子句。

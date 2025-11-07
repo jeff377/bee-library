@@ -8,7 +8,7 @@ namespace Bee.Db.UnitTests
         public void EqualCondition_ShouldBuildSqlServerWhere()
         {
             var root = FilterCondition.Equal("DeptId", 10);
-            var builder = new SqlServerWhereBuilder();
+            var builder = new WhereBuilder();
             var result = builder.Build(root);
         }
 
@@ -16,7 +16,7 @@ namespace Bee.Db.UnitTests
         public void LikeContains_ShouldAddWildcards()
         {
             var root = FilterCondition.Contains("Name", "Lee");
-            var builder = new SqlServerWhereBuilder();
+            var builder = new WhereBuilder();
             var result = builder.Build(root, includeWhereKeyword: false);
         }
 
@@ -31,7 +31,7 @@ namespace Bee.Db.UnitTests
                 )
             );
 
-            var builder = new SqlServerWhereBuilder();
+            var builder = new WhereBuilder();
             var result = builder.Build(root);
         }
 
@@ -39,7 +39,7 @@ namespace Bee.Db.UnitTests
         public void NullEquals_ShouldBecomeIsNull()
         {
             var root = new FilterCondition { FieldName = "Memo", Operator = ComparisonOperator.Equal, Value = null };
-            var builder = new SqlServerWhereBuilder();
+            var builder = new WhereBuilder();
             var result = builder.Build(root);
         }
 
@@ -51,7 +51,7 @@ namespace Bee.Db.UnitTests
                 FilterCondition.Equal("DeptId", 1)
             );
 
-            var builder = new SqlServerWhereBuilder();
+            var builder = new WhereBuilder();
             var result = builder.Build(root);
         }
 
@@ -59,7 +59,7 @@ namespace Bee.Db.UnitTests
         public void InWithEmpty_ShouldBeFalseConstant()
         {
             var root = FilterCondition.In("Id", new List<object>());
-            var builder = new SqlServerWhereBuilder();
+            var builder = new WhereBuilder();
             var result = builder.Build(root, includeWhereKeyword: false);
         }
 
@@ -67,7 +67,7 @@ namespace Bee.Db.UnitTests
         public void InWithMultiple_ShouldBuildCorrectly()
         {
             var root = FilterCondition.In("Id", new List<object> { 1, 2, 3, 4 });
-            var builder = new SqlServerWhereBuilder();
+            var builder = new WhereBuilder();
             var result = builder.Build(root, includeWhereKeyword: false);
         }
 
@@ -75,7 +75,7 @@ namespace Bee.Db.UnitTests
         public void EmptyFilterGroup_ShouldReturnEmptyWhereClause()
         {
             var root = new FilterGroup(); // 預設 Nodes 為空
-            var builder = new SqlServerWhereBuilder();
+            var builder = new WhereBuilder();
             var result = builder.Build(root);
             Assert.Equal(string.Empty, result.WhereClause);
         }
