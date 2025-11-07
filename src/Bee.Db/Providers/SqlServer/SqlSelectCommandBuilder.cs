@@ -43,12 +43,6 @@ namespace Bee.Db
             var selectContext = GetSelectContext(formTable, usedFieldNames);
             var selectFieldNames = GetSelectFields(formTable, selectFields);
 
-            SortFieldCollection remappedSortFields = null;
-            if (sortFields != null && sortFields.Count > 0)
-            {
-                remappedSortFields = RemapSortFields(sortFields, selectContext);
-            }
-
             var sb = new StringBuilder();
             sb.AppendLine(BuildSelectClause(formTable, selectFieldNames, selectContext));
             sb.AppendLine(BuildFromClause(dbTableName, selectContext.Joins));
@@ -60,7 +54,7 @@ namespace Bee.Db
                 sb.AppendLine(whereClause);
             }
 
-            var orderByClause = BuildOrderByClause(remappedSortFields);
+            var orderByClause = BuildOrderByClause(sortFields, selectContext);
             if (!string.IsNullOrWhiteSpace(orderByClause))
             {
                 sb.AppendLine(orderByClause);
@@ -123,29 +117,21 @@ namespace Bee.Db
         /// <summary>
         /// 建立 ORDER BY 子句。
         /// </summary>
-        /// <param name="remappedSortFields">重新映射後的排序欄位集合。</param>
+        /// <param name="sortFields">排序欄位集合。</param>
+        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
         /// <returns>ORDER BY 子句字串，若無排序則回傳 null。</returns>
-        private string BuildOrderByClause(SortFieldCollection remappedSortFields)
+        private string BuildOrderByClause(SortFieldCollection sortFields, SelectContext selectContext)
         {
-            if (remappedSortFields != null && remappedSortFields.Count > 0)
+            if (sortFields != null && sortFields.Count > 0)
             {
-                var sortBuilder = new SortBuilder();
-                var orderByClause = sortBuilder.Build(remappedSortFields);
+                var sortBuilder = new SortBuilder(DatabaseType.SQLServer);
+                var orderByClause = sortBuilder.Build(sortFields, selectContext);
                 if (!string.IsNullOrWhiteSpace(orderByClause))
                 {
                     return orderByClause;
                 }
             }
             return null;
-        }
-
-        /// <summary>
-        /// 依據資料庫類型，回傳適當的識別字串跳脫格式。
-        /// </summary>
-        /// <param name="identifier">識別字名稱。</param>
-        private string QuoteIdentifier(string identifier)
-        {
-            return DbFunc.QuoteIdentifier(DatabaseType.SQLServer, identifier);
         }
 
         /// <summary>
@@ -181,31 +167,6 @@ namespace Bee.Db
         {
             var builder = new SelectContextBuilder(formTable, usedFieldNames);
             return builder.Build();
-        }
-
-        /// <summary>
-        /// 依據查詢欄位來源，產生 SortFIeldCollection 的複本並加上正確的 SQL 欄位表達式。
-        /// </summary>
-        /// <param name="sortFields">原始排序欄位集合。</param>
-        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        private SortFieldCollection RemapSortFields(SortFieldCollection sortFields, SelectContext selectContext)
-        {
-            var result = new SortFieldCollection();
-            foreach (var sortField in sortFields)
-            {
-                var mapping = selectContext.FieldMappings.GetOrDefault(sortField.FieldName);
-                string fieldExpr;
-                if (mapping != null)
-                {
-                    fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
-                }
-                else
-                {
-                    fieldExpr = $"A.{QuoteIdentifier(sortField.FieldName)}";
-                }
-                result.Add(new SortField(fieldExpr, sortField.Direction));
-            }
-            return result;
         }
 
         /// <summary>

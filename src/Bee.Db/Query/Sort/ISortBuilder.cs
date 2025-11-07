@@ -11,6 +11,7 @@ namespace Bee.Db
         /// 根據指定的排序欄位集合，產生 SQL 的 ORDER BY 子句（包含前綴關鍵字）。
         /// </summary>
         /// <param name="sortFields">排序欄位集合。</param>
-        string Build(SortFieldCollection sortFields);
+        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
+        string Build(SortFieldCollection sortFields, SelectContext selectContext);
     }
 }
