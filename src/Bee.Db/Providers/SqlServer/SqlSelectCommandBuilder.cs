@@ -43,13 +43,6 @@ namespace Bee.Db
             var selectContext = GetSelectContext(formTable, usedFieldNames);
             var selectFieldNames = GetSelectFields(formTable, selectFields);
 
-            // 先處理 Where/Sort 欄位，讓 joins 集合完整
-            FilterNode remappedFilter = null;
-            if (filter != null)
-            {
-                remappedFilter = RemapFilterNodeFields(filter, selectContext);
-            }
-
             SortFieldCollection remappedSortFields = null;
             if (sortFields != null && sortFields.Count > 0)
             {
@@ -61,7 +54,7 @@ namespace Bee.Db
             sb.AppendLine(BuildFromClause(dbTableName, selectContext.Joins));
 
             IReadOnlyDictionary<string, object> parameters = null;
-            var whereClause = BuildWhereClause(remappedFilter, out parameters);
+            var whereClause = BuildWhereClause(filter, selectContext, out parameters);
             if (!string.IsNullOrWhiteSpace(whereClause))
             {
                 sb.AppendLine(whereClause);
@@ -107,16 +100,17 @@ namespace Bee.Db
         /// <summary>
         /// 建立 WHERE 子句。
         /// </summary>
-        /// <param name="remappedFilter">重新映射後的過濾條件節點。</param>
+        /// <param name="filter">過濾條件。</param>
+        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
         /// <param name="parameters">回傳的參數集合。</param>
         /// <returns>WHERE 子句字串，若無條件則回傳 null。</returns>
-        private string BuildWhereClause(FilterNode remappedFilter, out IReadOnlyDictionary<string, object> parameters)
+        private string BuildWhereClause(FilterNode filter, SelectContext selectContext, out IReadOnlyDictionary<string, object> parameters)
         {
             parameters = null;
-            if (remappedFilter != null)
+            if (filter != null)
             {
-                var whereBuilder = new WhereBuilder();
-                var whereResult = whereBuilder.Build(remappedFilter, true);
+                var whereBuilder = new WhereBuilder(DatabaseType.SQLServer);
+                var whereResult = whereBuilder.Build(filter, selectContext, true);
                 if (!string.IsNullOrWhiteSpace(whereResult.WhereClause))
                 {
                     parameters = whereResult.Parameters;
@@ -187,44 +181,6 @@ namespace Bee.Db
         {
             var builder = new SelectContextBuilder(formTable, usedFieldNames);
             return builder.Build();
-        }
-
-        /// <summary>
-        /// 重新映射過濾節點中的欄位名稱為 SQL 查詢所需的格式（加上資料表別名）。
-        /// </summary>
-        /// <param name="node">要重新映射的過濾節點。</param>
-        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        /// <returns>重新映射後的過濾節點。</returns>
-        private FilterNode RemapFilterNodeFields(FilterNode node, SelectContext selectContext)
-        {
-            if (node.Kind == FilterNodeKind.Condition)
-            {
-                var cond = (FilterCondition)node;
-                var mapping = selectContext.FieldMappings.GetOrDefault(cond.FieldName);
-                string fieldExpr;
-                if (mapping != null)
-                {
-                    fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
-                }
-                else
-                {
-                    // 本表欄位，預設別名 A
-                    fieldExpr = $"A.{QuoteIdentifier(cond.FieldName)}";
-                }
-                return new FilterCondition(fieldExpr, cond.Operator, cond.Value);
-            }
-            else if (node.Kind == FilterNodeKind.Group)
-            {
-                var group = (FilterGroup)node;
-                var newGroup = new FilterGroup(group.Operator);
-                foreach (var child in group.Nodes)
-                    newGroup.Nodes.Add(RemapFilterNodeFields(child, selectContext));
-                return newGroup;
-            }
-            else
-            {
-                return node;
-            }
         }
 
         /// <summary>

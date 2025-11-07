@@ -1,21 +1,21 @@
 ﻿namespace Bee.Db
 {
     /// <summary>
-    /// 描述 Select 查詢時所需的欄位來源與 Join 關係集合。
-    /// 包含查詢中所有使用到的欄位對應（Select、Where 等）及相關的 TableJoin 設定，
-    /// 以便組合完整的 SQL 查詢語法。
+    /// 表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。
+    /// 此類別用於記錄查詢過程中所有涉及的欄位對應（如 Select、Where、Order 子句）及相關的 TableJoin 設定，
+    /// 以便組合出完整且正確的 SQL 查詢語法。
     /// </summary>
     public class SelectContext
     {
         /// <summary>
-        /// 查詢中所有使用到的欄位來源對應集合。
-        /// 每個項目描述查詢欄位與其原始資料來源的關係。
+        /// 查詢所使用的所有欄位來源對應集合。
+        /// 每個項目描述查詢欄位與其原始資料表、欄位及 Join 關係的對應資訊。
         /// </summary>
         public QueryFieldMappingCollection FieldMappings { get; set; } = new QueryFieldMappingCollection();
 
         /// <summary>
-        /// 查詢中所需的所有 TableJoin 關係集合。
-        /// 用於描述資料表之間的 Join 條件與結構。
+        /// 查詢所需的所有資料表 Join 關係集合。
+        /// 用於記錄資料表之間的 Join 條件、結構及別名等資訊。
         /// </summary>
         public TableJoinCollection Joins { get; set; } = new TableJoinCollection();
     }

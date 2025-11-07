@@ -38,7 +38,8 @@ namespace Bee.Db
             foreach (var join in joinList)
             {
                 var joinKeyword = join.JoinType.ToString().ToUpperInvariant() + " JOIN";
-                sb.AppendLine($"{joinKeyword} {QuoteIdentifier(join.RightTable)} {join.RightAlias} ON {join.LeftAlias}.{QuoteIdentifier(join.LeftField)} = {join.RightAlias}.{QuoteIdentifier(join.RightField)}");
+                sb.AppendLine();
+                sb.Append($"{joinKeyword} {QuoteIdentifier(join.RightTable)} {join.RightAlias} ON {join.LeftAlias}.{QuoteIdentifier(join.LeftField)} = {join.RightAlias}.{QuoteIdentifier(join.RightField)}");
             }
             return sb.ToString();
         }
