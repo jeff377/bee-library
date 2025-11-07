@@ -204,14 +204,6 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        public void SelectContextTest()
-        {
-            var formDefine = BackendInfo.DefineAccess.GetFormDefine("Employee");
-            var builder = new SelectContextBuilder(formDefine.MasterTable);         
-            var context = builder.Build();
-        }
-
-        [Fact]
         public void FormCommandBuildTest()
         {
             var builder = new SqlFormCommandBuilder("Employee");

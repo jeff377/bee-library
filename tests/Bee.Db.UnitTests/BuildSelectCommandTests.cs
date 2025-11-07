@@ -41,7 +41,7 @@ namespace Bee.Db.UnitTests
             var builder = new SqlFormCommandBuilder("Project");
             // 以 PM 姓名做排序
             var sortFields = new SortFIeldCollection();
-            sortFields.Add(new SortField("ref_pm_name", SortDirection.Asc));
+            sortFields.Add(new SortField("ref_pm_dept_name", SortDirection.Asc));
 
             var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", null, sortFields);
 

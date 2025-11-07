@@ -40,27 +40,27 @@ namespace Bee.Db
                 throw new InvalidOperationException($"Cannot find the specified table: {tableName}");
 
             var dbTableName = !string.IsNullOrWhiteSpace(formTable.DbTableName) ? formTable.DbTableName : formTable.TableName;
-            var selectContext = GetSelectContext(formTable);
+            var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
+            var selectContext = GetSelectContext(formTable, usedFieldNames);
             var selectFieldNames = GetSelectFields(formTable, selectFields);
-            var joins = new TableJoinCollection();
 
             // 先處理 Where/Sort 欄位，讓 joins 集合完整
             FilterNode remappedFilter = null;
             if (filter != null)
             {
-                remappedFilter = RemapFilterNodeFields(filter, selectContext, joins);
+                remappedFilter = RemapFilterNodeFields(filter, selectContext);
             }
 
             SortFIeldCollection remappedSortFields = null;
             if (sortFields != null && sortFields.Count > 0)
             {
-                remappedSortFields = RemapSortFields(sortFields, selectContext, joins);
+                remappedSortFields = RemapSortFields(sortFields, selectContext);
             }
 
             var sb = new StringBuilder();
-            sb.AppendLine(BuildSelectClause(formTable, selectFieldNames, selectContext, joins));
+            sb.AppendLine(BuildSelectClause(formTable, selectFieldNames, selectContext));
             sb.AppendLine(BuildFromClause(dbTableName));
-            sb.Append(BuildJoinClauses(joins));
+            sb.Append(BuildJoinClauses(selectContext.Joins));
 
             IReadOnlyDictionary<string, object> parameters = null;
             var whereClause = BuildWhereClause(remappedFilter, out parameters);
@@ -88,8 +88,7 @@ namespace Bee.Db
         /// <param name="formTable">表單資料表。</param>
         /// <param name="selectFieldNames">要選取的欄位名稱集合。</param>
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        /// <param name="joins">資料表 Join 關係集合。</param>
-        private string BuildSelectClause(FormTable formTable, StringHashSet selectFieldNames, SelectContext selectContext, TableJoinCollection joins)
+        private string BuildSelectClause(FormTable formTable, StringHashSet selectFieldNames, SelectContext selectContext)
         {
             var selectParts = new List<string>();
             foreach (var fieldName in selectFieldNames)
@@ -107,7 +106,6 @@ namespace Bee.Db
                     if (mapping == null)
                         throw new InvalidOperationException($"Field mapping for '{fieldName}' is null.");
                     selectParts.Add($"    {mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)} AS {QuoteIdentifier(fieldName)}");
-                    AddTableJoin(selectContext, joins, mapping.TableJoin);
                 }
             }
             return "SELECT\n" + string.Join(",\n", selectParts);
@@ -182,32 +180,6 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 將使用的資料表 Join 關係加入集合。
-        /// </summary>
-        /// <param name="context">描述 Select 查詢時所需的欄位來源與 Join 關係集合。</param>
-        /// <param name="joins">資料表 Join 關係集合。</param>
-        /// <param name="join">要加入資料表 Join 關係。</param>
-        /// <param name="visited">已遞迴過的 Join Key 集合，用於防止環狀參照造成無窮递迴。呼叫端可不傳，預設自動建立。</param>
-        private void AddTableJoin(SelectContext context, TableJoinCollection joins, TableJoin join, HashSet<string> visited = null)
-        {
-            if (visited == null)
-                visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-            if (visited.Contains(join.Key)) { return; }
-            visited.Add(join.Key);
-
-            if (joins.Contains(join.Key)) { return; }
-
-            joins.Add(join);
-            if (join.LeftAlias == "A") { return; }
-
-            // 如果 LeftAlias 不為 A，表示左側非主表，要加入中間的 JOIN 關係
-            var srcJoin = context.Joins.FindRightAlias(join.LeftAlias);
-            if (srcJoin != null)
-                AddTableJoin(context, joins, srcJoin, visited);
-        }
-
-        /// <summary>
         /// 依據資料庫類型，回傳適當的識別字串跳脫格式。
         /// </summary>
         /// <param name="identifier">識別字名稱。</param>
@@ -244,9 +216,10 @@ namespace Bee.Db
         /// 取得 Select 查詢時所需的欄位來源與 Join 關係集合。
         /// </summary>
         /// <param name="formTable">表單資料表。</param>
-        private SelectContext GetSelectContext(FormTable formTable)
+        /// <param name="usedFieldNames">查詢使用到的欄位名稱集合。</param>
+        private SelectContext GetSelectContext(FormTable formTable, HashSet<string> usedFieldNames)
         {
-            var builder = new SelectContextBuilder(formTable);
+            var builder = new SelectContextBuilder(formTable, usedFieldNames);
             return builder.Build();
         }
 
@@ -255,9 +228,8 @@ namespace Bee.Db
         /// </summary>
         /// <param name="node">要重新映射的過濾節點。</param>
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        /// <param name="joins">使用的資料表 Join 關係。</param>
         /// <returns>重新映射後的過濾節點。</returns>
-        private FilterNode RemapFilterNodeFields(FilterNode node, SelectContext selectContext, TableJoinCollection joins)
+        private FilterNode RemapFilterNodeFields(FilterNode node, SelectContext selectContext)
         {
             if (node.Kind == FilterNodeKind.Condition)
             {
@@ -267,7 +239,6 @@ namespace Bee.Db
                 if (mapping != null)
                 {
                     fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
-                    AddTableJoin(selectContext, joins, mapping.TableJoin);
                 }
                 else
                 {
@@ -281,7 +252,7 @@ namespace Bee.Db
                 var group = (FilterGroup)node;
                 var newGroup = new FilterGroup(group.Operator);
                 foreach (var child in group.Nodes)
-                    newGroup.Nodes.Add(RemapFilterNodeFields(child, selectContext, joins));
+                    newGroup.Nodes.Add(RemapFilterNodeFields(child, selectContext));
                 return newGroup;
             }
             else
@@ -295,8 +266,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="sortFields">原始排序欄位集合。</param>
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        /// <param name="joins">使用的資料表 Join 關係。</param>
-        private SortFIeldCollection RemapSortFields(SortFIeldCollection sortFields, SelectContext selectContext, TableJoinCollection joins)
+        private SortFIeldCollection RemapSortFields(SortFIeldCollection sortFields, SelectContext selectContext)
         {
             var result = new SortFIeldCollection();
             foreach (var sortField in sortFields)
@@ -306,7 +276,6 @@ namespace Bee.Db
                 if (mapping != null)
                 {
                     fieldExpr = $"{mapping.SourceAlias}.{QuoteIdentifier(mapping.SourceField)}";
-                    AddTableJoin(selectContext, joins, mapping.TableJoin);
                 }
                 else
                 {
