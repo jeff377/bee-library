@@ -3,7 +3,7 @@
 namespace Bee.Db
 {
     /// <summary>
-    /// WHERE 子句建置器介面（可因資料庫方言擴充）。
+    /// 定義用於產生 SQL 語法 WHERE 子句的介面。
     /// </summary>
     public interface IWhereBuilder
     {

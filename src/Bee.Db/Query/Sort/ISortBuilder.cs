@@ -3,7 +3,7 @@
 namespace Bee.Db
 {
     /// <summary>
-    /// 定義用於產生 SQL ORDER BY 子句的介面。
+    /// 定義用於產生 SQL 語法 ORDER BY 子句的介面。
     /// </summary>
     public interface ISortBuilder
     {

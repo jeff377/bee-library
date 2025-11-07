@@ -36,19 +36,19 @@ namespace Bee.Db
             // 主表的資料表別名為 A
             _currentTableAlias = "A";
 
+            // 針對外鍵欄位，建立資料表之間的 Join 關係
             foreach (var field in _formTable.Fields)
             {
-                // 針對外鍵欄位，建立資料表之間的 Join 關係
-                if (field.Type == FieldType.DbField && StrFunc.IsNotEmpty(field.RelationProgId))
-                {
-                    // 由外鍵欄位關連取回的參照欄位對應集合
-                    var fieldMappings = GetUsedRelationFieldMappings(field);
-                    if (BaseFunc.IsEmpty(fieldMappings)) { continue; }
+                // 非外鍵欄位則略濄
+                if (field.Type != FieldType.DbField || StrFunc.IsEmpty(field.RelationProgId)) { continue; }
 
-                    // 以「主表名.欄位名.SourceProgId」當 Join 唯一鍵
-                    string key = $"{_formTable.TableName}.{field.FieldName}.{field.RelationProgId}";
-                    AddTableJoin(context, key, field, fieldMappings, _formTable.DbTableName, _currentTableAlias);
-                }
+                // 由外鍵欄位關連取回的參照欄位對應集合
+                var fieldMappings = GetUsedRelationFieldMappings(field);
+                if (BaseFunc.IsEmpty(fieldMappings)) { continue; }
+
+                // 以「主表名.欄位名.SourceProgId」當 Join 唯一鍵
+                string key = $"{_formTable.TableName}.{field.FieldName}.{field.RelationProgId}";
+                AddTableJoin(context, key, field, fieldMappings, _formTable.DbTableName, _currentTableAlias);
             }
             return context;
         }

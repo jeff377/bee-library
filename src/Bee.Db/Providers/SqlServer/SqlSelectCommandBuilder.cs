@@ -128,14 +128,8 @@ namespace Bee.Db
         /// <returns>JOIN 子句字串。</returns>
         private string BuildJoinClauses(TableJoinCollection joins)
         {
-            var sb = new StringBuilder();
-            var joinList = joins.OrderBy(j => j.RightAlias);
-            foreach (var join in joinList)
-            {
-                var joinKeyword = join.JoinType.ToString().ToUpperInvariant() + " JOIN";
-                sb.AppendLine($"{joinKeyword} {QuoteIdentifier(join.RightTable)} {join.RightAlias} ON {join.LeftAlias}.{QuoteIdentifier(join.LeftField)} = {join.RightAlias}.{QuoteIdentifier(join.RightField)}");
-            }
-            return sb.ToString();
+            var joinBuilder = new JoinBuilder(DatabaseType.SQLServer);
+            return joinBuilder.Build(joins);
         }
 
         /// <summary>
