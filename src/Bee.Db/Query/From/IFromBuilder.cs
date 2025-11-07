@@ -1,9 +1,9 @@
 ﻿namespace Bee.Db
 {
     /// <summary>
-    /// 定義用於產生 SQL 語法 JOIN 子句的介面。
+    /// 定義用於產生 SQL 語法 FROM 子句的介面。
     /// </summary>
-    public interface IJoinBuilder
+    public interface IFromBuilder
     {
         /// <summary>
         /// 建立 JOIN 子句。

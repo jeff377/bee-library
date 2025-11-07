@@ -7,9 +7,9 @@ using System.Text;
 namespace Bee.Db
 {
     /// <summary>
-    /// ORDER BY 子句建置器。
+    /// FROM 子句建置器。
     /// </summary>
-    public class JoinBuilder
+    public class FromBuilder
     {
         private readonly DatabaseType _databaseType;
 
@@ -17,22 +17,25 @@ namespace Bee.Db
         /// 建構函式。
         /// </summary>
         /// <param name="databaseType">資料庫類型。</param>
-        public JoinBuilder(DatabaseType databaseType)
+        public FromBuilder(DatabaseType databaseType)
         {
             _databaseType = databaseType;
         }
 
         /// <summary>
-        /// 建立 JOIN 子句。
+        /// 建立 FROM 子句。
         /// </summary>
+        /// <param name="mainTableName">主資料表名稱。</param>
         /// <param name="joins">資料表 Join 關係集合。</param>
         /// <returns>JOIN 子句字串。</returns>
-        public string Build(TableJoinCollection joins)
+        public string Build(string mainTableName, TableJoinCollection joins)
         {
-            if (joins == null || joins.Count == 0)
-                return string.Empty;
-
             var sb = new StringBuilder();
+            sb.Append($"FROM {QuoteIdentifier(mainTableName)} A");
+
+            if (joins == null || joins.Count == 0)
+                return sb.ToString();
+
             var joinList = joins.OrderBy(j => j.RightAlias);
             foreach (var join in joinList)
             {

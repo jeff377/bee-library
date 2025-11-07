@@ -2,7 +2,6 @@
 using Bee.Define;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace Bee.Db
@@ -59,8 +58,7 @@ namespace Bee.Db
 
             var sb = new StringBuilder();
             sb.AppendLine(BuildSelectClause(formTable, selectFieldNames, selectContext));
-            sb.AppendLine(BuildFromClause(dbTableName));
-            sb.Append(BuildJoinClauses(selectContext.Joins));
+            sb.AppendLine(BuildFromClause(dbTableName, selectContext.Joins));
 
             IReadOnlyDictionary<string, object> parameters = null;
             var whereClause = BuildWhereClause(remappedFilter, out parameters);
@@ -114,22 +112,13 @@ namespace Bee.Db
         /// <summary>
         /// 建立 FROM 子句。
         /// </summary>
-        /// <param name="dbTableName">資料庫的資料表名稱。</param>
-        /// <returns>FROM 子句字串。</returns>
-        private string BuildFromClause(string dbTableName)
-        {
-            return $"FROM {QuoteIdentifier(dbTableName)} A";
-        }
-
-        /// <summary>
-        /// 建立 JOIN 子句。
-        /// </summary>
+        /// <param name="mainTableName">主資料表名稱。</param>
         /// <param name="joins">資料表 Join 關係集合。</param>
-        /// <returns>JOIN 子句字串。</returns>
-        private string BuildJoinClauses(TableJoinCollection joins)
+        /// <returns>FROM 子句字串。</returns>
+        private string BuildFromClause(string mainTableName, TableJoinCollection joins)
         {
-            var joinBuilder = new JoinBuilder(DatabaseType.SQLServer);
-            return joinBuilder.Build(joins);
+            var builder = new FromBuilder(DatabaseType.SQLServer);
+            return builder.Build(mainTableName, joins);
         }
 
         /// <summary>
