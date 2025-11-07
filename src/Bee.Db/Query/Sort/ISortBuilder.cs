@@ -11,6 +11,6 @@ namespace Bee.Db
         /// 根據指定的排序欄位集合，產生 SQL 的 ORDER BY 子句（包含前綴關鍵字）。
         /// </summary>
         /// <param name="sortFields">排序欄位集合。</param>
-        string Build(SortFIeldCollection sortFields);
+        string Build(SortFieldCollection sortFields);
     }
 }

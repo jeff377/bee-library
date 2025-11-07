@@ -43,7 +43,7 @@ namespace Bee.Db
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
         /// <param name="filter">過濾條件。</param>
         /// <param name="sortFields">排序欄位集合。</param>
-        public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode filter = null, SortFIeldCollection sortFields = null)
+        public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode filter = null, SortFieldCollection sortFields = null)
         {
             var builder = new SqlSelectCommandBuilder(FormDefine);
             return builder.Build(tableName, selectFields, filter, sortFields);  

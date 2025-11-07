@@ -225,7 +225,7 @@ namespace Bee.Db.UnitTests
             };
 
             // 建立排序欄位集合
-            var sortFields = new SortFIeldCollection();
+            var sortFields = new SortFieldCollection();
             sortFields.Add(new SortField("sys_id",  SortDirection.Asc)); // 依 sys_id 遞增排序
 
             // 傳入 filter node 與 sortFields 給 BuildSelectCommand

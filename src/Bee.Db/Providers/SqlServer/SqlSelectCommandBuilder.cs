@@ -30,7 +30,7 @@ namespace Bee.Db
         /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
         /// <param name="filter">過濾條件。</param>
         /// <param name="sortFields">排序欄位集合。</param>
-        public DbCommandSpec Build(string tableName, string selectFields, FilterNode filter = null, SortFIeldCollection sortFields = null)
+        public DbCommandSpec Build(string tableName, string selectFields, FilterNode filter = null, SortFieldCollection sortFields = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentException("tableName cannot be null or whitespace.", nameof(tableName));
@@ -51,7 +51,7 @@ namespace Bee.Db
                 remappedFilter = RemapFilterNodeFields(filter, selectContext);
             }
 
-            SortFIeldCollection remappedSortFields = null;
+            SortFieldCollection remappedSortFields = null;
             if (sortFields != null && sortFields.Count > 0)
             {
                 remappedSortFields = RemapSortFields(sortFields, selectContext);
@@ -165,7 +165,7 @@ namespace Bee.Db
         /// </summary>
         /// <param name="remappedSortFields">重新映射後的排序欄位集合。</param>
         /// <returns>ORDER BY 子句字串，若無排序則回傳 null。</returns>
-        private string BuildOrderByClause(SortFIeldCollection remappedSortFields)
+        private string BuildOrderByClause(SortFieldCollection remappedSortFields)
         {
             if (remappedSortFields != null && remappedSortFields.Count > 0)
             {
@@ -266,9 +266,9 @@ namespace Bee.Db
         /// </summary>
         /// <param name="sortFields">原始排序欄位集合。</param>
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        private SortFIeldCollection RemapSortFields(SortFIeldCollection sortFields, SelectContext selectContext)
+        private SortFieldCollection RemapSortFields(SortFieldCollection sortFields, SelectContext selectContext)
         {
-            var result = new SortFIeldCollection();
+            var result = new SortFieldCollection();
             foreach (var sortField in sortFields)
             {
                 var mapping = selectContext.FieldMappings.GetOrDefault(sortField.FieldName);
@@ -294,7 +294,7 @@ namespace Bee.Db
         /// <param name="filter">過濾條件。</param>
         /// <param name="sortFields">排序欄位集合。</param>
         /// <returns>不重覆的欄位名稱集合。</returns>
-        private HashSet<string> GetUsedFieldNames(FormTable formTable, string selectFields, FilterNode filter, SortFIeldCollection sortFields)
+        private HashSet<string> GetUsedFieldNames(FormTable formTable, string selectFields, FilterNode filter, SortFieldCollection sortFields)
         {
             var fieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

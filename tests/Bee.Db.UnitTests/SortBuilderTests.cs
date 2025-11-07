@@ -15,7 +15,7 @@ namespace Bee.Db.UnitTests
         public void Build_EmptySorts_ReturnsEmptyString()
         {
             var builder = new SortBuilder();
-            var result = builder.Build(new SortFIeldCollection());
+            var result = builder.Build(new SortFieldCollection());
             Assert.Equal(string.Empty, result);
         }
 
@@ -23,7 +23,7 @@ namespace Bee.Db.UnitTests
         public void Build_SingleSortItem_ReturnsCorrectOrderByClause()
         {
             var builder = new SortBuilder();
-            var sorts = new SortFIeldCollection()
+            var sorts = new SortFieldCollection()
             {
                 new SortField("Name", SortDirection.Asc)
             };
@@ -35,7 +35,7 @@ namespace Bee.Db.UnitTests
         public void Build_MultipleSortItems_ReturnsCorrectOrderByClause()
         {
             var builder = new SortBuilder();
-            var sorts = new SortFIeldCollection()
+            var sorts = new SortFieldCollection()
             {
                 new SortField("Name", SortDirection.Asc),
                 new SortField("Age", SortDirection.Desc)
@@ -48,7 +48,7 @@ namespace Bee.Db.UnitTests
         public void Build_SortItemWithSqlExpression_ReturnsCorrectOrderByClause()
         {
             var builder = new SortBuilder();
-            var sorts = new SortFIeldCollection()
+            var sorts = new SortFieldCollection()
             {
                 new SortField("LEN(Name)", SortDirection.Desc)
             };

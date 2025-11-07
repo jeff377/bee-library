@@ -8,12 +8,12 @@ namespace Bee.Define
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class SortFIeldCollection : MessagePackCollectionBase<SortField>
+    public class SortFieldCollection : MessagePackCollectionBase<SortField>
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public SortFIeldCollection()
+        public SortFieldCollection()
         { }
     }
 }

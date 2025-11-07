@@ -13,7 +13,7 @@ namespace Bee.Db
         /// 根據指定的排序欄位集合，產生 SQL 的 ORDER BY 子句（包含前綴關鍵字）。
         /// </summary>
         /// <param name="sortFields">排序欄位集合。</param>
-        public string Build(SortFIeldCollection sortFields)
+        public string Build(SortFieldCollection sortFields)
         {
             if (sortFields == null)
                 throw new ArgumentNullException(nameof(sortFields), "Sort field collection cannot be null.");

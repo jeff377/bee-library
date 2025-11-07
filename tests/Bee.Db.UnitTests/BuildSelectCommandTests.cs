@@ -40,7 +40,7 @@ namespace Bee.Db.UnitTests
             // 測試：Select 主檔欄位，但 Order By 使用參考欄位，應只 JOIN 該參考表
             var builder = new SqlFormCommandBuilder("Project");
             // 以 PM 姓名做排序
-            var sortFields = new SortFIeldCollection();
+            var sortFields = new SortFieldCollection();
             sortFields.Add(new SortField("ref_pm_dept_name", SortDirection.Asc));
 
             var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", null, sortFields);
@@ -82,7 +82,7 @@ namespace Bee.Db.UnitTests
                 FilterCondition.Equal("ref_pm_name", "張三")
             );
 
-            var sortFields = new SortFIeldCollection
+            var sortFields = new SortFieldCollection
             {
                 new SortField("sys_id", SortDirection.Asc)
             };
