@@ -25,10 +25,11 @@ namespace Bee.Db
         /// 建立 SELECT 子句。
         /// </summary>
         /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFieldNames">要選取的欄位名稱集合。</param>
+        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        public string Build(FormTable formTable, StringHashSet selectFieldNames, SelectContext selectContext)
+        public string Build(FormTable formTable, string selectFields, SelectContext selectContext)
         {
+            var selectFieldNames = GetSelectFields(formTable, selectFields);
             var selectParts = new List<string>();
             foreach (var fieldName in selectFieldNames)
             {
@@ -48,6 +49,30 @@ namespace Bee.Db
                 }
             }
             return "SELECT\n" + string.Join(",\n", selectParts);
+        }
+
+        /// <summary>
+        /// 取得 Select 的欄位集合。
+        /// </summary>
+        /// <param name="formTable">表單資料表。</param>
+        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位</param>
+        private StringHashSet GetSelectFields(FormTable formTable, string selectFields)
+        {
+            var set = new StringHashSet();
+            if (string.IsNullOrWhiteSpace(selectFields))
+            {
+                // 取得所有欄位
+                foreach (var field in formTable.Fields)
+                {
+                    set.Add(field.FieldName);
+                }
+            }
+            else
+            {
+                // 只取指定欄位
+                set.Add(selectFields, ",");
+            }
+            return set;
         }
 
         private string QuoteIdentifier(string identifier)

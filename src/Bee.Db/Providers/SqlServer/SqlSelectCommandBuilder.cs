@@ -1,5 +1,4 @@
-﻿using Bee.Base;
-using Bee.Define;
+﻿using Bee.Define;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -41,10 +40,9 @@ namespace Bee.Db
             var dbTableName = !string.IsNullOrWhiteSpace(formTable.DbTableName) ? formTable.DbTableName : formTable.TableName;
             var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
             var selectContext = GetSelectContext(formTable, usedFieldNames);
-            var selectFieldNames = GetSelectFields(formTable, selectFields);
 
             var sb = new StringBuilder();
-            sb.AppendLine(BuildSelectClause(formTable, selectFieldNames, selectContext));
+            sb.AppendLine(BuildSelectClause(formTable, selectFields, selectContext));
             sb.AppendLine(BuildFromClause(dbTableName, selectContext.Joins));
 
             IReadOnlyDictionary<string, object> parameters = null;
@@ -71,12 +69,12 @@ namespace Bee.Db
         /// 建立 SELECT 子句。
         /// </summary>
         /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFieldNames">要選取的欄位名稱集合。</param>
+        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
-        private string BuildSelectClause(FormTable formTable, StringHashSet selectFieldNames, SelectContext selectContext)
+        private string BuildSelectClause(FormTable formTable, string selectFields, SelectContext selectContext)
         {
             var builder = new SelectBuilder(DatabaseType.SQLServer);
-            return builder.Build(formTable, selectFieldNames, selectContext);
+            return builder.Build(formTable, selectFields, selectContext);
         }
 
         /// <summary>
@@ -122,40 +120,8 @@ namespace Bee.Db
         /// <returns>ORDER BY 子句字串，若無排序則回傳 null。</returns>
         private string BuildOrderByClause(SortFieldCollection sortFields, SelectContext selectContext)
         {
-            if (sortFields != null && sortFields.Count > 0)
-            {
-                var sortBuilder = new SortBuilder(DatabaseType.SQLServer);
-                var orderByClause = sortBuilder.Build(sortFields, selectContext);
-                if (!string.IsNullOrWhiteSpace(orderByClause))
-                {
-                    return orderByClause;
-                }
-            }
-            return null;
-        }
-
-        /// <summary>
-        /// 取得 Select 的欄位集合。
-        /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位</param>
-        private StringHashSet GetSelectFields(FormTable formTable, string selectFields)
-        {
-            var set = new StringHashSet();
-            if (string.IsNullOrWhiteSpace(selectFields))
-            {
-                // 取得所有欄位
-                foreach (var field in formTable.Fields)
-                {
-                    set.Add(field.FieldName);
-                }
-            }
-            else
-            {
-                // 只取指定欄位
-                set.Add(selectFields, ",");
-            }
-            return set;
+            var sortBuilder = new SortBuilder(DatabaseType.SQLServer);
+            return sortBuilder.Build(sortFields, selectContext);
         }
 
         /// <summary>
