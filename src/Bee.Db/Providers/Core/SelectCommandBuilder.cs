@@ -6,19 +6,22 @@ using System.Text;
 namespace Bee.Db
 {
     /// <summary>
-    /// SQL Server 資料庫建立 Select 命令產生的類別。
+    /// 建立 Select 命令產生的類別。
     /// </summary>
-    public class SqlSelectCommandBuilder
+    public class SelectCommandBuilder
     {
         private readonly FormDefine _formDefine;
+        private readonly DatabaseType _databaseType;
 
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="formDefine">表單定義。</param>
-        public SqlSelectCommandBuilder(FormDefine formDefine)
+        /// <param name="databaseType">資料庫類型。</param>
+        public SelectCommandBuilder(FormDefine formDefine, DatabaseType databaseType)
         {
             _formDefine = formDefine;
+            _databaseType = databaseType;
         }
 
         /// <summary>
@@ -73,7 +76,7 @@ namespace Bee.Db
         /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
         private string BuildSelectClause(FormTable formTable, string selectFields, SelectContext selectContext)
         {
-            var builder = new SelectBuilder(DatabaseType.SQLServer);
+            var builder = new SelectBuilder(_databaseType);
             return builder.Build(formTable, selectFields, selectContext);
         }
 
@@ -85,7 +88,7 @@ namespace Bee.Db
         /// <returns>FROM 子句字串。</returns>
         private string BuildFromClause(string mainTableName, TableJoinCollection joins)
         {
-            var builder = new FromBuilder(DatabaseType.SQLServer);
+            var builder = new FromBuilder(_databaseType);
             return builder.Build(mainTableName, joins);
         }
 
@@ -101,7 +104,7 @@ namespace Bee.Db
             parameters = null;
             if (filter != null)
             {
-                var whereBuilder = new WhereBuilder(DatabaseType.SQLServer);
+                var whereBuilder = new WhereBuilder(_databaseType);
                 var whereResult = whereBuilder.Build(filter, selectContext, true);
                 if (!string.IsNullOrWhiteSpace(whereResult.WhereClause))
                 {
@@ -120,7 +123,7 @@ namespace Bee.Db
         /// <returns>ORDER BY 子句字串，若無排序則回傳 null。</returns>
         private string BuildOrderByClause(SortFieldCollection sortFields, SelectContext selectContext)
         {
-            var sortBuilder = new SortBuilder(DatabaseType.SQLServer);
+            var sortBuilder = new SortBuilder(_databaseType);
             return sortBuilder.Build(sortFields, selectContext);
         }
 

@@ -45,7 +45,7 @@ namespace Bee.Db
         /// <param name="sortFields">排序欄位集合。</param>
         public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode filter = null, SortFieldCollection sortFields = null)
         {
-            var builder = new SqlSelectCommandBuilder(FormDefine);
+            var builder = new SelectCommandBuilder(FormDefine, DatabaseType.SQLServer);
             return builder.Build(tableName, selectFields, filter, sortFields);  
         }
 
