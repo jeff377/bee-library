@@ -27,7 +27,7 @@ namespace Bee.Db
         /// <param name="includeWhereKeyword">是否在結果前加入 "WHERE "。</param>
         public WhereBuildResult Build(FilterNode root, SelectContext selectContext = null, bool includeWhereKeyword = true)
         {
-            if (root == null) throw new ArgumentNullException("root", "Filter root cannot be null.");
+            if (root == null) { return new WhereBuildResult(); }
 
             var filter = (selectContext != null)
                                ? RemapFilterNodeFields(root, selectContext)

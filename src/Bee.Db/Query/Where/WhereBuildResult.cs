@@ -8,9 +8,9 @@ namespace Bee.Db
     public sealed class WhereBuildResult
     {
         /// <summary>WHERE 子句字串（可含或不含 "WHERE" 關鍵字）。</summary>
-        public string WhereClause { get; set; }
+        public string WhereClause { get; set; } = string.Empty;
 
         /// <summary>具名參數。</summary>
-        public IReadOnlyDictionary<string, object> Parameters { get; set; }
+        public IReadOnlyDictionary<string, object> Parameters { get; set; } = null;
     }
 }

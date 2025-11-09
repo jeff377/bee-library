@@ -44,28 +44,35 @@ namespace Bee.Db
             var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
             var selectContext = GetSelectContext(formTable, usedFieldNames);
 
-            var sb = new StringBuilder();
-            sb.AppendLine(BuildSelectClause(formTable, selectFields, selectContext));
-            sb.AppendLine(BuildFromClause(dbTableName, selectContext.Joins));
+            var sqlParts = new List<string>();
+            sqlParts.Add(BuildSelectClause(formTable, selectFields, selectContext));
+            sqlParts.Add(BuildFromClause(dbTableName, selectContext.Joins));
 
-            IReadOnlyDictionary<string, object> parameters = null;
-            var whereClause = BuildWhereClause(filter, selectContext, out parameters);
+            var (whereClause, parameters) = BuildWhereClause(filter, selectContext);
             if (!string.IsNullOrWhiteSpace(whereClause))
             {
-                sb.AppendLine(whereClause);
+                sqlParts.Add(whereClause);
             }
 
             var orderByClause = BuildOrderByClause(sortFields, selectContext);
             if (!string.IsNullOrWhiteSpace(orderByClause))
             {
-                sb.AppendLine(orderByClause);
+                sqlParts.Add(orderByClause);
             }
 
-            string sql = sb.ToString();
-            if (parameters != null && parameters.Count > 0)
-                return new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
-            else
-                return new DbCommandSpec(DbCommandKind.DataTable, sql);
+            string sql = string.Join(Environment.NewLine, sqlParts);
+            return new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
+        }
+
+        /// <summary>
+        /// 取得 Select 查詢時所需的欄位來源與 Join 關係集合。
+        /// </summary>
+        /// <param name="formTable">表單資料表。</param>
+        /// <param name="usedFieldNames">查詢使用到的欄位名稱集合。</param>
+        private SelectContext GetSelectContext(FormTable formTable, HashSet<string> usedFieldNames)
+        {
+            var builder = new SelectContextBuilder(formTable, usedFieldNames);
+            return builder.Build();
         }
 
         /// <summary>
@@ -97,22 +104,12 @@ namespace Bee.Db
         /// </summary>
         /// <param name="filter">過濾條件。</param>
         /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
-        /// <param name="parameters">回傳的參數集合。</param>
-        /// <returns>WHERE 子句字串，若無條件則回傳 null。</returns>
-        private string BuildWhereClause(FilterNode filter, SelectContext selectContext, out IReadOnlyDictionary<string, object> parameters)
+        /// <returns>包含 WHERE 子句字串和參數集合的元組。</returns>
+        private (string WhereClause, IReadOnlyDictionary<string, object> Parameters) BuildWhereClause(FilterNode filter, SelectContext selectContext)
         {
-            parameters = null;
-            if (filter != null)
-            {
-                var whereBuilder = new WhereBuilder(_databaseType);
-                var whereResult = whereBuilder.Build(filter, selectContext, true);
-                if (!string.IsNullOrWhiteSpace(whereResult.WhereClause))
-                {
-                    parameters = whereResult.Parameters;
-                    return whereResult.WhereClause;
-                }
-            }
-            return null;
+            var whereBuilder = new WhereBuilder(_databaseType);
+            var whereResult = whereBuilder.Build(filter, selectContext, true);
+            return (whereResult.WhereClause, whereResult.Parameters);
         }
 
         /// <summary>
@@ -125,17 +122,6 @@ namespace Bee.Db
         {
             var sortBuilder = new SortBuilder(_databaseType);
             return sortBuilder.Build(sortFields, selectContext);
-        }
-
-        /// <summary>
-        /// 取得 Select 查詢時所需的欄位來源與 Join 關係集合。
-        /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="usedFieldNames">查詢使用到的欄位名稱集合。</param>
-        private SelectContext GetSelectContext(FormTable formTable, HashSet<string> usedFieldNames)
-        {
-            var builder = new SelectContextBuilder(formTable, usedFieldNames);
-            return builder.Build();
         }
 
         /// <summary>
