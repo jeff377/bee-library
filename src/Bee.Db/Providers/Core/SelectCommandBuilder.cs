@@ -105,7 +105,7 @@ namespace Bee.Db
         /// <param name="filter">過濾條件。</param>
         /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
         /// <returns>包含 WHERE 子句字串和參數集合的元組。</returns>
-        private (string WhereClause, IReadOnlyDictionary<string, object> Parameters) BuildWhereClause(FilterNode filter, SelectContext selectContext)
+        private (string WhereClause, IDictionary<string, object> Parameters) BuildWhereClause(FilterNode filter, SelectContext selectContext)
         {
             var whereBuilder = new WhereBuilder(_databaseType);
             var whereResult = whereBuilder.Build(filter, selectContext, true);

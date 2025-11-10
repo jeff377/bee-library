@@ -39,7 +39,7 @@ namespace Bee.Db
         }
 
         /// <inheritdoc/>
-        public IReadOnlyDictionary<string, object> GetAll()
+        public IDictionary<string, object> GetAll()
         {
             return _parameters;
         }

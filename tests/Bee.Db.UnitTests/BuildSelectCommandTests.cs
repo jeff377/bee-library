@@ -96,6 +96,8 @@ namespace Bee.Db.UnitTests
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
+            // 驗證 WHERE 條件產生了兩個參數
+            Assert.Equal(2, command.Parameters.Count);
             // 驗證只 JOIN ref_pm_name 相關的表（因為 Select 不需要其他參考欄位）
             Assert.Contains("JOIN", command.CommandText, StringComparison.OrdinalIgnoreCase);
         }

@@ -11,6 +11,6 @@ namespace Bee.Db
         string Add(object value);
 
         /// <summary>取得已加入的參數字典。</summary>
-        IReadOnlyDictionary<string, object> GetAll();
+        IDictionary<string, object> GetAll();
     }
 }

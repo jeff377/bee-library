@@ -11,6 +11,6 @@ namespace Bee.Db
         public string WhereClause { get; set; } = string.Empty;
 
         /// <summary>具名參數。</summary>
-        public IReadOnlyDictionary<string, object> Parameters { get; set; } = null;
+        public IDictionary<string, object> Parameters { get; set; } = null;
     }
 }
