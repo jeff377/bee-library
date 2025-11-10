@@ -1,7 +1,6 @@
 ﻿using Bee.Define;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Bee.Db
 {
@@ -40,13 +39,11 @@ namespace Bee.Db
             if (formTable == null)
                 throw new InvalidOperationException($"Cannot find the specified table: {tableName}");
 
-            var dbTableName = !string.IsNullOrWhiteSpace(formTable.DbTableName) ? formTable.DbTableName : formTable.TableName;
-            var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
-            var selectContext = GetSelectContext(formTable, usedFieldNames);
+            var selectContext = GetSelectContext(formTable, selectFields, filter, sortFields);
 
             var sqlParts = new List<string>();
             sqlParts.Add(BuildSelectClause(formTable, selectFields, selectContext));
-            sqlParts.Add(BuildFromClause(dbTableName, selectContext.Joins));
+            sqlParts.Add(BuildFromClause(formTable, selectContext.Joins));
 
             var (whereClause, parameters) = BuildWhereClause(filter, selectContext);
             if (!string.IsNullOrWhiteSpace(whereClause))
@@ -68,9 +65,12 @@ namespace Bee.Db
         /// 取得 Select 查詢時所需的欄位來源與 Join 關係集合。
         /// </summary>
         /// <param name="formTable">表單資料表。</param>
-        /// <param name="usedFieldNames">查詢使用到的欄位名稱集合。</param>
-        private SelectContext GetSelectContext(FormTable formTable, HashSet<string> usedFieldNames)
+        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
+        /// <param name="filter">過濾條件。</param>
+        /// <param name="sortFields">排序欄位集合。</param>
+        private SelectContext GetSelectContext(FormTable formTable, string selectFields, FilterNode filter, SortFieldCollection sortFields)
         {
+            var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
             var builder = new SelectContextBuilder(formTable, usedFieldNames);
             return builder.Build();
         }
@@ -88,13 +88,14 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 建立 FROM 子句。
+        ///  建立 FROM 子句。
         /// </summary>
-        /// <param name="mainTableName">主資料表名稱。</param>
+        /// <param name="formTable">表單資料表。</param>
         /// <param name="joins">資料表 Join 關係集合。</param>
         /// <returns>FROM 子句字串。</returns>
-        private string BuildFromClause(string mainTableName, TableJoinCollection joins)
+        private string BuildFromClause(FormTable formTable, TableJoinCollection joins)
         {
+            string mainTableName = !string.IsNullOrWhiteSpace(formTable.DbTableName) ? formTable.DbTableName : formTable.TableName;
             var builder = new FromBuilder(_databaseType);
             return builder.Build(mainTableName, joins);
         }
