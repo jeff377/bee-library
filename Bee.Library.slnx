@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/docs/">
+    <File Path="docs/資料庫命名規範.md" />
     <File Path="README.md" />
   </Folder>
   <Folder Name="/samples/">

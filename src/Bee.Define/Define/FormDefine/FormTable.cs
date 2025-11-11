@@ -147,6 +147,14 @@ namespace Bee.Define
             return $"{TableName} - {DisplayName}";
         }
 
-
+        /// <summary>
+        /// 生成資料庫資料表。
+        /// </summary>
+        /// <returns>資料庫資料表。</returns>
+        public DbTable GenerateDbTable()
+        {
+            var generator = new DbTableGenerator();
+            return generator.Generate(this);
+        }
     }
 }
