@@ -7,10 +7,14 @@ namespace Bee.Db
     /// </summary>
     public sealed class WhereBuildResult
     {
-        /// <summary>WHERE 子句字串（可含或不含 "WHERE" 關鍵字）。</summary>
+        /// <summary>
+        /// WHERE 子句字串（可含或不含 "WHERE" 關鍵字）。
+        /// </summary>
         public string WhereClause { get; set; } = string.Empty;
 
-        /// <summary>具名參數。</summary>
+        /// <summary>
+        /// 具名參數。
+        /// </summary>
         public IDictionary<string, object> Parameters { get; set; } = null;
     }
 }

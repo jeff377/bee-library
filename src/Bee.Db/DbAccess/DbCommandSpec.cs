@@ -140,7 +140,9 @@ namespace Bee.Db
             foreach (var spec in Parameters)
             {
                 var p = cmd.CreateParameter();
-                p.ParameterName = string.IsNullOrEmpty(parameterPrefix) ? spec.Name : parameterPrefix + spec.Name;
+                p.ParameterName = (string.IsNullOrEmpty(parameterPrefix) || spec.Name.StartsWith(parameterPrefix))
+                    ? spec.Name
+                    : parameterPrefix + spec.Name;
                 p.Value = spec.Value ?? DBNull.Value;
                 if (spec.DbType.HasValue) p.DbType = spec.DbType.Value;
                 if (spec.Size.HasValue && spec.Size.Value > 0) p.Size = spec.Size.Value;

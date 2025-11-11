@@ -9,6 +9,12 @@ namespace Bee.Db
     /// </summary>
     internal static class InternalWhereBuilder
     {
+        /// <summary>
+        /// 將過濾節點轉換為 SQL 條件字串。
+        /// </summary>
+        /// <param name="node">要轉換的過濾節點（可能是 FilterGroup 或 FilterCondition）。</param>
+        /// <param name="parameters">參數收集器，用於收集 SQL 參數值。</param>
+        /// <returns>產生的 SQL 條件字串；如果節點為空或所有子節點為空，則返回空字串。</returns>
         public static string BuildNode(FilterNode node, IParameterCollector parameters)
         {
             var group = node as FilterGroup;

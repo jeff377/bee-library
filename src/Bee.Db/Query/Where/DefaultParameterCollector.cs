@@ -30,6 +30,11 @@ namespace Bee.Db
         }
 
         /// <inheritdoc/>
+        /// <summary>
+        /// 加入一個參數值，回傳參數名稱（含前綴符號）。
+        /// </summary>
+        /// <param name="value">要加入的參數值。</param>
+        /// <returns>生成的參數名稱，格式為「前綴 + 'p' + 索引」（例如：@p0, @p1）。</returns>
         public string Add(object value)
         {
             var name = Prefix + "p" + _index.ToString();

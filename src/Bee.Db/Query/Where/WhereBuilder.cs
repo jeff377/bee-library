@@ -32,7 +32,8 @@ namespace Bee.Db
             var filter = (selectContext != null)
                                ? RemapFilterNodeFields(root, selectContext)
                                : root;
-            var parameters = new DefaultParameterCollector("@");
+            var prefix = DbFunc.GetParameterPrefix(_databaseType);
+            var parameters = new DefaultParameterCollector(prefix);
             var core = InternalWhereBuilder.BuildNode(filter, parameters);
             var sql = includeWhereKeyword && !string.IsNullOrEmpty(core) ? "WHERE " + core : core;
 
