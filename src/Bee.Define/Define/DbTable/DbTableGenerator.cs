@@ -81,7 +81,7 @@ namespace Bee.Define
                 if (StrFunc.IsNotEmpty(field.RelationProgId))
                 {
                     // 包含欄位名稱以避免衝突
-                    dbTable.Indexes.Add($"fk_{{0}}_{field.FieldName}", field.FieldName, false);
+                    dbTable.Indexes.Add("fk_{0}_{field.FieldName}", field.FieldName, false);
                 }
             }
 
