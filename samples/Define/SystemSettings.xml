@@ -3,7 +3,7 @@
   <CommonConfiguration>
     <Version>1.0.0</Version>
     <IsDebugMode>true</IsDebugMode>
-    <AllowedTypeNamespaces>Custom.Define</AllowedTypeNamespaces>
+    <AllowedTypeNamespaces>Custom.Contracts</AllowedTypeNamespaces>
     <ApiPayloadOptions>
       <Serializer>messagepack</Serializer>
       <Compressor>gzip</Compressor>

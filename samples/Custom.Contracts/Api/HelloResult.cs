@@ -2,7 +2,7 @@
 using MessagePack;
 using System;
 
-namespace Custom.Define
+namespace Custom.Contracts
 {
     [MessagePackObject]
     [Serializable]
