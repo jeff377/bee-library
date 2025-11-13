@@ -30,7 +30,9 @@
       <ConfigEncryptionKey>EAAAAP5ot7vreCJ2p4iz8uKV+IBQAAAAKWPaGWYF4hQDpU90MBjX7WfLQJBqsD73qWkg1Kwfn8Zq1Sr1FOTyCk/IbMm8k5lKS2FAbkAWsUVa+E8KO2Q6eMo3noHIhn7zPxyD/BxXu+p5MLLC4Ln+96ONkMhRpu2KI6INimlCAZrW1NbRV1e7wQ==</ConfigEncryptionKey>
       <DatabaseEncryptionKey>EAAAAEgMKPIIzBHMRXaImZRG12FQAAAAk+sXJ/4bTNINPqlTzFsnhvQb9zNZnvH9PVdHBeQVPvADLTI0rxPpZWOjUAAeTxZ1Q1/fWDvhEDpwm7SxDUkd0qdbGfeNxrX/nBWBYroIT7iS6Xal7mYp4vBbEO4BqadOtPzPxSxN1WJMZopnXe1Ktg==</DatabaseEncryptionKey>
     </SecurityKeySettings>
-    <Components />
+    <Components>
+      <BusinessObjectProvider>Custom.Business.BusinessObjectProvider, Custom.Business</BusinessObjectProvider>
+    </Components>
   </BackendConfiguration>
   <FrontendConfiguration />
   <WebsiteConfiguration />
