@@ -29,16 +29,12 @@ namespace Bee.Db
             if (string.IsNullOrWhiteSpace(databaseId))
                 throw new ArgumentException("databaseId cannot be null or empty.", nameof(databaseId));
 
-            var database = DbFunc.GetDatabaseItem(databaseId);
-            if (database == null)
-                throw new InvalidOperationException($"Failed to create DbAccess: DatabaseItem for id '{databaseId}' was not found.");
+            // 從 DbConnectionManager 取得快取的連線資訊
+            var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
 
-            DatabaseType = database.DatabaseType;
-            Provider = DbProviderManager.GetFactory(database.DatabaseType)
-                       ?? throw new InvalidOperationException($"Unknown database type: {database.DatabaseType}.");
-            _connectionString = database.GetConnectionString();
-            if (string.IsNullOrWhiteSpace(_connectionString))
-                throw new InvalidOperationException("DatabaseItem.GetConnectionString() returned null or empty.");
+            DatabaseType = connInfo.DatabaseType;
+            Provider = connInfo.Provider;
+            _connectionString = connInfo.ConnectionString;
             _databaseId = databaseId;
         }
 
