@@ -1,4 +1,5 @@
-﻿using Bee.Define;
+﻿using Bee.Base;
+using Bee.Define;
 using System;
 using System.Collections.Concurrent;
 
@@ -54,18 +55,59 @@ namespace Bee.Db
         /// <exception cref="InvalidOperationException">當資料庫項目不存在、未註冊提供者或連線字串無效時拋出。</exception>
         private static DbConnectionInfo CreateConnectionInfo(string databaseId)
         {
-            var database = DbFunc.GetDatabaseItem(databaseId);
-            if (database == null)
+            // 取得資料庫設定（透過 DefineAccess，內部會使用快取）
+            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
+
+            // 取得資料庫項目
+            var databaseItem = settings.Items[databaseId];
+            if (databaseItem == null)
                 throw new InvalidOperationException($"DatabaseItem for id '{databaseId}' was not found.");
 
-            var provider = DbProviderManager.GetFactory(database.DatabaseType)
-                ?? throw new InvalidOperationException($"Unknown database type: {database.DatabaseType}.");
+            // 預設使用 DatabaseItem 的設定
+            var databaseType = databaseItem.DatabaseType;
+            string connectionString = databaseItem.ConnectionString;
+            string userId = databaseItem.UserId;
+            string password = databaseItem.Password;
+            string dbName = databaseItem.DbName;
 
-            var connectionString = database.GetConnectionString();
+            // 如果有設定 ServerId，從對應的 Server 取得連線字串模板
+            if (StrFunc.IsNotEmpty(databaseItem.ServerId))
+            {
+                var server = settings.Servers[databaseItem.ServerId];
+                if (server == null)
+                {
+                    throw new InvalidOperationException(
+                        $"DatabaseServer '{databaseItem.ServerId}' referenced by DatabaseItem '{databaseId}' was not found.");
+                }
+
+                // 使用 Server 的設定作為基礎
+                connectionString = server.ConnectionString;
+                databaseType = server.DatabaseType;
+
+                // DatabaseItem 可以覆蓋 Server 的 UserId/Password（如果有設定）
+                if (StrFunc.IsEmpty(userId))
+                    userId = server.UserId;
+                if (StrFunc.IsEmpty(password))
+                    password = server.Password;
+            }
+
+            // 替換連線字串中的參數
+            if (StrFunc.IsNotEmpty(dbName))
+                connectionString = StrFunc.Replace(connectionString, "{@DbName}", dbName);
+            if (StrFunc.IsNotEmpty(userId))
+                connectionString = StrFunc.Replace(connectionString, "{@UserId}", userId);
+            if (StrFunc.IsNotEmpty(password))
+                connectionString = StrFunc.Replace(connectionString, "{@Password}", password);
+
+            // 驗證連線字串
             if (string.IsNullOrWhiteSpace(connectionString))
-                throw new InvalidOperationException("DatabaseItem.GetConnectionString() returned null or empty.");
+                throw new InvalidOperationException($"Connection string for database '{databaseId}' is null or empty.");
 
-            return new DbConnectionInfo(database.DatabaseType, provider, connectionString);
+            // 取得資料庫提供者
+            var provider = DbProviderManager.GetFactory(databaseType)
+                ?? throw new InvalidOperationException($"Unknown database type: {databaseType}.");
+
+            return new DbConnectionInfo(databaseType, provider, connectionString);
         }
 
         /// <summary>

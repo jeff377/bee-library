@@ -16,6 +16,7 @@ namespace Bee.Define
     [TreeNode("Database Settings")]
     public class DatabaseSettings : IObjectSerializeFile, IObjectSerializeProcess, ISerializableClone
     {
+        private DatabaseServerCollection _servers = null;
         private DatabaseItemCollection _items = null;
 
         #region 建構函式
@@ -46,6 +47,7 @@ namespace Bee.Define
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
+            BaseFunc.SetSerializeState(_servers, serializeState);
             BaseFunc.SetSerializeState(_items, serializeState);
         }
 
@@ -152,6 +154,22 @@ namespace Bee.Define
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
+        /// 資料庫伺服器集合。
+        /// </summary>
+        [Description("資料庫伺服器集合。")]
+        [DefaultValue(null)]
+        public DatabaseServerCollection Servers
+        {
+            get
+            {
+                // 序列化時，若集合無資料則傳回 null
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _servers)) { return null; }
+                if (_servers == null) { _servers = new DatabaseServerCollection(); }
+                return _servers;
+            }
+        }
+
+        /// <summary>
         /// 資料庫連線設定集合。
         /// </summary>
         [Description("資料庫連線設定集合。")]
@@ -168,16 +186,18 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 建立當前 <see cref="DatabaseSettings"/> 的深拷貝 (Deep Clone)。
+        /// 建立此物件的複本。
         /// </summary>
         public DatabaseSettings Clone()
         {
             var copy = new DatabaseSettings();
-            // 深拷貝 Items 集合
+            
+            foreach (var server in Servers)
+                copy.Servers.Add(server.Clone());
+
             foreach (var item in Items)
-            {
                 copy.Items.Add(item.Clone());
-            }
+
             return copy;
         }
 

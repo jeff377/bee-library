@@ -40,6 +40,14 @@ namespace Bee.Define
         public DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
 
         /// <summary>
+        /// 資料庫伺服器編號，若有設定取用對應伺服器的連線字串。
+        /// </summary>
+        [XmlAttribute]
+        [Description("資料庫伺服器編號，若有設定取用對應伺服器的連線字串。")]
+        [DefaultValue("")]
+        public string ServerId { get; set; } = string.Empty;
+
+        /// <summary>
         /// 資料庫連線字串。
         /// </summary>
         [XmlAttribute]
@@ -88,7 +96,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 建立當前 <see cref="DatabaseItem"/> 的深拷貝。
+        /// 建立此物件的複本。
         /// </summary>
         public DatabaseItem Clone()
         {
@@ -97,6 +105,7 @@ namespace Bee.Define
                 Id = Id,
                 DisplayName = DisplayName,
                 DatabaseType = DatabaseType,
+                ServerId = ServerId,
                 ConnectionString = ConnectionString,
                 DbName = DbName,
                 UserId = UserId,
