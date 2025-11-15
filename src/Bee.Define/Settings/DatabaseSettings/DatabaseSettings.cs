@@ -83,7 +83,17 @@ namespace Bee.Define
 
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
-            foreach (DatabaseItem item in Items)
+            foreach (var server in Servers)
+            {
+                if (StrFunc.IsNotEmpty(server.Password) && !server.Password.StartsWith("enc:"))
+                {
+                    byte[] plainBytes = Encoding.UTF8.GetBytes(server.Password);
+                    byte[] encrypted = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
+                    server.Password = "enc:" + Convert.ToBase64String(encrypted);
+                }
+            }
+
+            foreach (var item in Items)
             {
                 if (StrFunc.IsNotEmpty(item.Password) && !item.Password.StartsWith("enc:"))
                 {
@@ -113,7 +123,25 @@ namespace Bee.Define
 
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
-            foreach (DatabaseItem item in Items)
+            foreach (var server in Servers)
+            {
+                if (StrFunc.IsNotEmpty(server.Password) && server.Password.StartsWith("enc:"))
+                {
+                    try
+                    {
+                        string base64 = server.Password.Substring(4);
+                        byte[] encrypted = Convert.FromBase64String(base64);
+                        byte[] plain = AesCbcHmacCryptor.Decrypt(encrypted, aesKey, hmacKey);
+                        server.Password = Encoding.UTF8.GetString(plain);
+                    }
+                    catch
+                    {
+                        server.Password = string.Empty; // 解密失敗時保護資料
+                    }
+                }
+            }
+
+            foreach (var item in Items)
             {
                 if (StrFunc.IsNotEmpty(item.Password) && item.Password.StartsWith("enc:"))
                 {
