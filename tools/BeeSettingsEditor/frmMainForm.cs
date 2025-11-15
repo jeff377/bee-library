@@ -154,10 +154,27 @@ namespace SettingsEditor
         /// <param name="databaseItem">資料庫項目。</param>
         private void TestConnection(DatabaseItem databaseItem)
         {
+            var settings = treeView.Tag as DatabaseSettings;
+            if (settings == null) { return; }
+            var item = databaseItem.Clone();
+            if (StrFunc.IsNotEmpty(item.ServerId))
+            {
+                var server = settings.Servers[item.ServerId];
+                if (server != null)
+                {
+                    item.DatabaseType = server.DatabaseType;
+                    item.ConnectionString = server.ConnectionString;
+                    if (StrFunc.IsEmpty(item.UserId))
+                        item.UserId = server.UserId;
+                    if (StrFunc.IsEmpty(item.Password))
+                        item.Password = server.Password;
+                }
+            }
+
             try
             {
                 var args = new ExecFuncArgs(SysFuncIDs.TestConnection);
-                args.Parameters.Add("DatabaseItem", databaseItem);
+                args.Parameters.Add("DatabaseItem", item);
                 ClientInfo.SystemApiConnector.ExecFunc(args);
                 UIFunc.MsgBox("Database connection test succeeded.");
             }
@@ -223,7 +240,7 @@ namespace SettingsEditor
 
             var settings = treeView.Tag as SystemSettings;
             if (settings == null) { return; }
-            var keySettings = settings.BackendConfiguration.SecurityKeySettings;    
+            var keySettings = settings.BackendConfiguration.SecurityKeySettings;
             switch (keyType)
             {
                 case "Api":
@@ -286,7 +303,7 @@ namespace SettingsEditor
             menuGenApiEncryptionKey.Visible = isSystemSettings;
             menuGenCookieEncryptionKey.Visible = isSystemSettings;
             menuGenConfigEncryptionKey.Visible = isSystemSettings;
-            menuGenDatabaseEncryptionKey.Visible = isSystemSettings;  
+            menuGenDatabaseEncryptionKey.Visible = isSystemSettings;
         }
 
 

@@ -9,7 +9,7 @@ namespace Bee.Define
     /// </summary>
     [Serializable]
     [Description("資料庫項目集合。")]
-    [TreeNode("資料庫", true)]
+    [TreeNode("Databases", true)]
     public class DatabaseItemCollection : KeyCollectionBase<DatabaseItem>
     {
     }
