@@ -17,9 +17,18 @@ namespace Bee.Repository
         public void TestConnection(DatabaseItem item)
         {
             var provider = DbProviderManager.GetFactory(item.DatabaseType);
+
+            var connectionString = item.ConnectionString;
+            if (StrFunc.IsNotEmpty(item.DbName))
+                connectionString = StrFunc.Replace(connectionString, "{@DbName}", item.DbName);
+            if (StrFunc.IsNotEmpty(item.UserId))
+                connectionString = StrFunc.Replace(connectionString, "{@UserId}", item.UserId);
+            if (StrFunc.IsNotEmpty(item.Password))
+                connectionString = StrFunc.Replace(connectionString, "{@Password}", item.Password);
+
             using (var connection = provider.CreateConnection())
             {
-                connection.ConnectionString = item.GetConnectionString();
+                connection.ConnectionString = connectionString;
                 connection.Open();
             }
         }

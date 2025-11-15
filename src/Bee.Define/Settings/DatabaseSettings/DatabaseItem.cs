@@ -81,21 +81,6 @@ namespace Bee.Define
         public string Password { get; set; } = string.Empty;
 
         /// <summary>
-        /// 取得資料庫連線字串。
-        /// </summary>
-        public string GetConnectionString()
-        {
-            string connectionString =   ConnectionString;
-            if (StrFunc.IsNotEmpty(DbName))
-                connectionString = StrFunc.Replace(connectionString, "{@DbName}", DbName);
-            if (StrFunc.IsNotEmpty(UserId))
-                connectionString = StrFunc.Replace(connectionString, "{@UserId}", UserId);
-            if (StrFunc.IsNotEmpty(Password))
-                connectionString = StrFunc.Replace(connectionString, "{@Password}", Password);
-            return connectionString;
-        }
-
-        /// <summary>
         /// 建立此物件的複本。
         /// </summary>
         public DatabaseItem Clone()

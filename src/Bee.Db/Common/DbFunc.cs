@@ -13,22 +13,6 @@ namespace Bee.Db
     public static class DbFunc
     {
         /// <summary>
-        /// 取得資料庫項目。
-        /// </summary>
-        /// <param name="databaseId">資料庫識別。</param>
-        public static DatabaseItem GetDatabaseItem(string databaseId)
-        {
-            if (StrFunc.IsEmpty(databaseId))
-                throw new ArgumentNullException(nameof(databaseId));
-
-            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
-            if (!settings.Items.Contains(databaseId))
-                throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
-
-            return settings.Items[databaseId];
-        }
-
-        /// <summary>
         /// 參數名稱的前綴符號字典。
         /// </summary>
         private static readonly Dictionary<DatabaseType, string> DbParameterPrefixes = new Dictionary<DatabaseType, string>
@@ -120,12 +104,13 @@ namespace Bee.Db
         /// <param name="databaseId">資料庫識別。</param>
         public static DbConnection CreateConnection(string databaseId)
         {
-            var database = DbFunc.GetDatabaseItem(databaseId);
-            var provider = DbProviderManager.GetFactory(database.DatabaseType)
-                    ?? throw new InvalidOperationException($"Unknown database type: {database.DatabaseType}.");
+            var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
+
+            var provider = DbProviderManager.GetFactory(connInfo.DatabaseType)
+                    ?? throw new InvalidOperationException($"Unknown database type: {connInfo.DatabaseType}.");
             var connection = provider.CreateConnection()
                     ?? throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");
-            connection.ConnectionString = database.GetConnectionString();
+            connection.ConnectionString = connInfo.ConnectionString;
             return connection;
         }
 
