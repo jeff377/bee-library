@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define;
+using System;
 using System.Collections.Concurrent;
 
 namespace Bee.Db
@@ -9,6 +10,20 @@ namespace Bee.Db
     /// </summary>
     public static class DbConnectionManager
     {
+        /// <summary>
+        /// 靜態建構函式，在類別首次被引用時執行
+        /// </summary>
+        static DbConnectionManager()
+        {
+            // 訂閱資料庫設定變更事件
+            GlobalEvents.DatabaseSettingsChanged += OnDatabaseSettingsChanged;
+        }
+
+        private static void OnDatabaseSettingsChanged(object sender, EventArgs e)
+        {
+            Clear();
+        }
+
         /// <summary>
         /// 連線資訊快取（執行緒安全）。
         /// </summary>

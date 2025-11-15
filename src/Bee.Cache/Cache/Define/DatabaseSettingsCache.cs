@@ -28,7 +28,12 @@ namespace Bee.Cache
             if (!FileFunc.FileExists(filePath))
                 throw new FileNotFoundException($"The file {filePath} does not exist.");
 
-            return  SerializeFunc.XmlFileToObject<DatabaseSettings>(filePath);
+            var settings =  SerializeFunc.XmlFileToObject<DatabaseSettings>(filePath);
+
+            // 觸發全域事件
+            GlobalEvents.RaiseDatabaseSettingsChanged();
+
+            return settings;
         }
     }
 }
