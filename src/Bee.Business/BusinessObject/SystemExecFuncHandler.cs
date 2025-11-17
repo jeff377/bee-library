@@ -66,17 +66,5 @@ namespace Bee.Business
             repo.TestConnection(item);
         }
 
-        /// <summary>
-        /// 指定 DatabaseId 測試資料庫連線。
-        /// </summary>
-        public void TestDatabaseId(ExecFuncArgs args, ExecFuncResult result)
-        {
-            string databaseId = args.Parameters.GetValue<string>("DatabaseId");
-            var item = BusinessFunc.GetDatabaseItem(databaseId);
-
-            var repo = RepositoryInfo.SystemProvider.DatabaseRepository;
-            repo.TestConnection(item);
-        }
-
     }
 }

@@ -146,14 +146,5 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null
         }
 
-        [Fact]
-        public void TestDatabaseId()
-        {
-            Guid accessToken = GetAccessToken();
-            var args = new ExecFuncArgs("TestDatabaseId");
-            args.Parameters.Add("DatabaseId", "common");
-            var result = ApiExecute<ExecFuncResult>(accessToken, SysProgIds.System, "ExecFunc", args);
-            Assert.NotNull(result);
-        }
     }
 }
