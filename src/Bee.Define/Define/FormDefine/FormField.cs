@@ -196,6 +196,15 @@ namespace Bee.Define
         }
 
         /// <summary>
+        /// 是否為可視欄位。
+        /// </summary>
+        [Category(PropertyCategories.Layout)]
+        [XmlAttribute]
+        [Description("是否為可視欄位。")]
+        [DefaultValue(true)]
+        public bool Visible { get; set; } = true;
+
+        /// <summary>
         /// 欄寬，設定值大於 0 才有效。
         /// </summary>
         [Category(PropertyCategories.Layout)]
