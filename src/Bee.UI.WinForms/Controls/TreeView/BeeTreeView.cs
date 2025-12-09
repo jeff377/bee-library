@@ -20,7 +20,7 @@ namespace Bee.UI.WinForms
         /// </summary>
         [Description("建立物件樹狀節點前引發的事件。")]
         [Category("ObjectTree")]
-        public event ObjectTreeNodeCreatingEventHandler ObjectTreeNodeCreating;
+        public event EventHandler<ObjectTreeNodeCreatingEventArgs> ObjectTreeNodeCreating;
 
         /// <summary>
         /// 引發 ObjectTreeNodeCreating 事件。
@@ -35,11 +35,11 @@ namespace Bee.UI.WinForms
         #region ObjectTreeNodeCreated 事件
 
         /// <summary>
-        /// 建立物件的樹狀節點事件。
+        /// 建立物件的樹狀節點的事件。
         /// </summary>
-        [Description("建立物件的樹狀節點事件。")]
+        [Description("建立物件的樹狀節點的事件。")]
         [Category("ObjectTree")]
-        public event ObjectTreeNodeCreatedEventHandler ObjectTreeNodeCreated;
+        public event EventHandler<ObjectTreeNodeCreatedEventArgs> ObjectTreeNodeCreated;
 
         /// <summary>
         /// 引發 ObjectTreeNodeCreated 事件。

@@ -1,12 +1,7 @@
 ﻿namespace Bee.UI.WinForms
 {
     /// <summary>
-    /// ObjectTreeNodeCreated 事件委派宣告，建立物件樹狀節點後引發的事件。
-    /// </summary>
-    public delegate void ObjectTreeNodeCreatedEventHandler(object sender, ObjectTreeNodeCreatedEventArgs e);
-
-    /// <summary>
-    /// ObjectTreeNodeCreated 事件引數。
+    /// 建立物件的樹狀節點的事件引數。
     /// </summary>
     public class ObjectTreeNodeCreatedEventArgs : EventArgs
     {
