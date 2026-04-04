@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using Bee.Define.Settings;
+using Bee.Base;
 using Bee.Define;
 using System;
 

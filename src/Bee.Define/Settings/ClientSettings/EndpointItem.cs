@@ -4,7 +4,7 @@ using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 服務端點清單項目。

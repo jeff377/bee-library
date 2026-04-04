@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define.Settings;
+using System;
 using Bee.Define;
 
 namespace Bee.Api.Core

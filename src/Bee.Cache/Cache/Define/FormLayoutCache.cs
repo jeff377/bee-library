@@ -1,4 +1,6 @@
-﻿using Bee.Define;
+﻿using Bee.Define.Layouts;
+using Bee.Define.Storage;
+using Bee.Define;
 
 namespace Bee.Cache
 {

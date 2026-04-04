@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Bee.Define
+namespace Bee.Define.Filters
 {
     /// <summary>
     /// FilterNodeCollection 的自訂 JSON 轉換器。

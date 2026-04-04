@@ -2,7 +2,7 @@
 using Bee.Base;
 using Bee.Base.Security;
 
-namespace Bee.Define
+namespace Bee.Define.Security
 {
     /// <summary>
     /// 使用主金鑰進行金鑰資料的加密與解密。

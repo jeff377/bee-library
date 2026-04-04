@@ -6,7 +6,7 @@ using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using Newtonsoft.Json;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 程式清單。

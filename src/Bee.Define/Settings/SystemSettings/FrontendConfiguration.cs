@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 前端參數及環境設置。

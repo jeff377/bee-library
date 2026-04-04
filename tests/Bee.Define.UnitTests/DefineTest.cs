@@ -1,3 +1,7 @@
+using Bee.Define.Collections;
+using Bee.Define.Filters;
+using Bee.Define.Forms;
+using Bee.Define.Settings;
 using System.Data;
 using Bee.Base;
 using Bee.Base.Serialization;

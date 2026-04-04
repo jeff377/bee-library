@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// Master key source, including source type and corresponding parameter value.

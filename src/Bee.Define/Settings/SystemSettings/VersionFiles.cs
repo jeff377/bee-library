@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 版號及相關檔案。

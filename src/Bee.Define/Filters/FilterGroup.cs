@@ -3,7 +3,7 @@ using System.Xml.Serialization;
 using MessagePack;
 using Newtonsoft.Json;
 
-namespace Bee.Define
+namespace Bee.Define.Filters
 {
     /// <summary>
     /// 條件群組（以 AND/OR 串接多個節點）。

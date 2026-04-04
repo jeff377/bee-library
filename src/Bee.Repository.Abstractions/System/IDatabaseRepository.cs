@@ -1,4 +1,5 @@
-﻿using Bee.Define;
+﻿using Bee.Define.Settings;
+using Bee.Define;
 
 namespace Bee.Repository.Abstractions
 {

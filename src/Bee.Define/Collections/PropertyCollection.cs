@@ -3,7 +3,7 @@ using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Collections;
 
-namespace Bee.Define
+namespace Bee.Define.Collections
 {
     /// <summary>
     /// 自訂屬性集合。

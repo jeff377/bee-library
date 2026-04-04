@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define.Settings;
+using System;
 using System.Threading.Tasks;
 using Bee.Api.Core;
 using Bee.Base;

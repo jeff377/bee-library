@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Xml.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Collections
 {
     /// <summary>
     /// 具鍵值的強型別集合，支援 MessagePack 的版本。

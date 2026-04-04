@@ -1,4 +1,6 @@
-﻿using System.Data;
+﻿using Bee.Define.Collections;
+using Bee.Define.Filters;
+using System.Data;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Collections;
@@ -287,7 +289,7 @@ namespace Bee.Api.Core.UnitTests
         public void TPropertyCollection_Serialize()
         {
             // 建立屬性集合
-            var properties = new Define.PropertyCollection();
+            var properties = new Bee.Define.Collections.PropertyCollection();
             properties.Add("AppName", "BeeERP");
             properties.Add("Enabled", "true");
             properties.Add("RetryCount", "3");
@@ -296,7 +298,7 @@ namespace Bee.Api.Core.UnitTests
             var bytes = MessagePackHelper.Serialize(properties);
 
             // 反序列化
-            var restored = MessagePackHelper.Deserialize<Define.PropertyCollection>(bytes);
+            var restored = MessagePackHelper.Deserialize<Bee.Define.Collections.PropertyCollection>(bytes);
 
             // 驗證內容是否正確還原
             Assert.NotNull(restored);

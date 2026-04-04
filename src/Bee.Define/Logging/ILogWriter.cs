@@ -1,4 +1,4 @@
-﻿namespace Bee.Define
+﻿namespace Bee.Define.Logging
 {
     /// <summary>
     /// 系統日誌寫入介面。

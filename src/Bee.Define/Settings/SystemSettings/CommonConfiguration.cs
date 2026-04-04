@@ -5,7 +5,7 @@ using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// Common parameters and environment settings.

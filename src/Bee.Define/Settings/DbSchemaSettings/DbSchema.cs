@@ -6,7 +6,7 @@ using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 資料庫結構。

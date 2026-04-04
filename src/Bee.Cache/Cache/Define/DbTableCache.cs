@@ -1,4 +1,6 @@
-﻿using Bee.Base;
+﻿using Bee.Define.Database;
+using Bee.Define.Storage;
+using Bee.Base;
 using Bee.Define;
 
 namespace Bee.Cache

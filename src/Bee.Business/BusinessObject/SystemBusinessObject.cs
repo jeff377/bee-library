@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define.Settings;
+using System;
 using Bee.Base;
 using Bee.Base.Security;
 using Bee.Base.Serialization;

@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// Encryption key settings for storing encryption information in configuration files.

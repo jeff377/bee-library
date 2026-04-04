@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using Bee.Define.Storage;
+using Bee.Base;
 using Bee.Cache;
 using Bee.Connect;
 using Bee.Db;

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define.Collections;
+using System;
 using System.Collections.Concurrent;
 using System.Data;
 using Bee.Define;

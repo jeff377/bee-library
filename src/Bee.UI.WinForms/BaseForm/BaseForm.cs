@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using Bee.Define.Collections;
+using System.ComponentModel;
 using Bee.Define;
 
 namespace Bee.UI.WinForms

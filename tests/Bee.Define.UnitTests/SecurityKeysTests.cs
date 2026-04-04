@@ -1,4 +1,6 @@
-﻿using Bee.Base;
+﻿using Bee.Define.Security;
+using Bee.Define.Settings;
+using Bee.Base;
 using Bee.Base.Security;
 
 namespace Bee.Define.UnitTests

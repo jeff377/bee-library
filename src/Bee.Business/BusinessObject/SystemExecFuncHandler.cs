@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define.Settings;
+using System;
 using Bee.Contracts;
 using Bee.Define;
 using Bee.Repository.Abstractions;

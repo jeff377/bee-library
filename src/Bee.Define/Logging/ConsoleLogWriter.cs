@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Define
+namespace Bee.Define.Logging
 {
     /// <summary>
     /// 將日誌輸出至 Console 的實作。

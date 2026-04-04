@@ -1,3 +1,4 @@
+using Bee.Define.Settings;
 using Bee.Base;
 using Bee.Base.Security;
 using Bee.Contracts;

@@ -8,7 +8,7 @@ using Bee.Base.Collections;
 using MessagePack;
 using Newtonsoft.Json;
 
-namespace Bee.Define
+namespace Bee.Define.Collections
 {
     /// <summary>
     /// 具鍵值的強型別集合成員。

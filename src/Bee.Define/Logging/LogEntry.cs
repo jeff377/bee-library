@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Define
+namespace Bee.Define.Logging
 {
     /// <summary>
     /// 系統日誌事件的記錄物件，參照 EventLogEntry 設計。

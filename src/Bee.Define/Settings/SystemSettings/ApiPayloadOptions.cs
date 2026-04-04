@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// Provides API payload handling options, such as serialization, compression, and encryption.

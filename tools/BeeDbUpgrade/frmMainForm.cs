@@ -1,3 +1,4 @@
+using Bee.Define.Settings;
 using System.Text;
 using Bee.Base;
 using Bee.Contracts;

@@ -1,9 +1,10 @@
-﻿using System;
+﻿using Bee.Define.Settings;
+using System;
 using System.IO;
 using Bee.Base;
 using Bee.Base.Security;
 
-namespace Bee.Define
+namespace Bee.Define.Security
 {
     /// <summary>
     /// 主金鑰提供者，從設定來源載入主金鑰。

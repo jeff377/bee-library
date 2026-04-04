@@ -1,8 +1,9 @@
-﻿using MessagePack;
+﻿using Bee.Define.Collections;
+using MessagePack;
 using System;
 using System.Xml.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Filters
 {
     /// <summary>
     /// 過濾節點基底類別。

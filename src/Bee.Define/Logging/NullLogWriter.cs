@@ -1,4 +1,4 @@
-﻿namespace Bee.Define
+﻿namespace Bee.Define.Logging
 {
     /// <summary>
     /// 空的日誌寫入器，不執行任何操作。

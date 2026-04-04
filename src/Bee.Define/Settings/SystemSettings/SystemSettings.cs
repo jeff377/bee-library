@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define.Collections;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
@@ -6,7 +7,7 @@ using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// System settings.

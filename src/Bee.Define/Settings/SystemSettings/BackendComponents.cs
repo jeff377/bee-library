@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 後端可替換組件的設定，定義各種後端服務的型別名稱。

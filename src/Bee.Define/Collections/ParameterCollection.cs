@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MessagePack;
 
-namespace Bee.Define
+namespace Bee.Define.Collections
 {
     /// <summary>
     ///  參數項目集合，支援序列化。

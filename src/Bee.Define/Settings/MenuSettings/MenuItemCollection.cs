@@ -3,7 +3,7 @@ using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Collections;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 選單項目集合。

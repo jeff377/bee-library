@@ -3,7 +3,7 @@ using Bee.Base.Attributes;
 using System;
 using System.ComponentModel;
 
-namespace Bee.Define
+namespace Bee.Define.Logging
 {
     /// <summary>
     /// Logging options for controlling whether each module logs information.

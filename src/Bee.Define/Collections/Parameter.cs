@@ -6,7 +6,7 @@ using Bee.Base.Collections;
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Bee.Define
+namespace Bee.Define.Collections
 {
     /// <summary>
     /// 參數項目。

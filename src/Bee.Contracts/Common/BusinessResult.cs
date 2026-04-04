@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bee.Define.Collections;
+using System;
 using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Define;

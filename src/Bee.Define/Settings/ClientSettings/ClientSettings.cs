@@ -5,7 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 用戶端設定。

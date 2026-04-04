@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Bee.Define
+namespace Bee.Define.Filters
 {
     /// <summary>
     /// 單一欄位條件（例如 Name LIKE '%Lee%'、Age &gt; 18）。

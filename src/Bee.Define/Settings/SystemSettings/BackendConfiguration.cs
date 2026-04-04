@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Bee.Define.Logging;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// Backend parameters and environment settings.

@@ -2,7 +2,7 @@
 using System;
 using System.ComponentModel;
 
-namespace Bee.Define
+namespace Bee.Define.Logging
 {
     /// <summary>
     /// Options for logging abnormal SQL executions in the DbAccess module.

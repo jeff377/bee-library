@@ -8,7 +8,7 @@ using Bee.Base.Collections;
 using MessagePack;
 using Newtonsoft.Json;
 
-namespace Bee.Define
+namespace Bee.Define.Collections
 {
     /// <summary>
     /// 強型別集合，支援 MessagePack 的版本。

@@ -2,7 +2,7 @@
 using Bee.Base.Collections;
 using System;
 
-namespace Bee.Define
+namespace Bee.Define.Settings
 {
     /// <summary>
     /// 服務端點清單項目集合。

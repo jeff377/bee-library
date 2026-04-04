@@ -1,4 +1,5 @@
-﻿using Bee.Define;
+﻿using Bee.Define.Security;
+using Bee.Define;
 using System;
 
 namespace Bee.Business
