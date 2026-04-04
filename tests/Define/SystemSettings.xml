@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SystemSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <CommonConfiguration>
+    <Version>1.0.0</Version>
+    <IsDebugMode>true</IsDebugMode>
+    <AllowedTypeNamespaces>Custom.Contracts</AllowedTypeNamespaces>
+    <ApiPayloadOptions>
+      <Serializer>messagepack</Serializer>
+      <Compressor>gzip</Compressor>
+      <Encryptor>aes-cbc-hmac</Encryptor>
+    </ApiPayloadOptions>
+  </CommonConfiguration>
+  <BackendConfiguration>
+    <DatabaseId>common</DatabaseId>
+    <LogOptions>
+      <DbAccess>
+        <Level>Warning</Level>
+        <AffectedRowThreshold>10000</AffectedRowThreshold>
+        <ResultRowThreshold>10000</ResultRowThreshold>
+        <ExecutionTimeThreshold>300</ExecutionTimeThreshold>
+      </DbAccess>
+    </LogOptions>
+    <SecurityKeySettings>
+      <MasterKeySource>
+        <Type>File</Type>
+        <Value>Master.key</Value>
+      </MasterKeySource>
+    </SecurityKeySettings>
+    <Components>
+      <BusinessObjectProvider>Custom.Business.BusinessObjectProvider, Custom.Business</BusinessObjectProvider>
+    </Components>
+  </BackendConfiguration>
+  <FrontendConfiguration />
+  <WebsiteConfiguration />
+  <BackgroundServiceConfiguration />
+</SystemSettings>

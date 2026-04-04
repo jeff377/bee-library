@@ -404,3 +404,7 @@ FodyWeavers.xsd
 *.sln.iml
 /samples/Define/Master.key
 /samples/Define/DatabaseSettings.xml
+
+# macOS
+.DS_Store
+**/.DS_Store

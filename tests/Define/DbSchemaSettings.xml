@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DbSchemaSettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Databases>
+		<DbSchema DbName="common" DisplayName="共用資料庫">
+			<Tables>
+				<DbTableItem TableName="st_user" DisplayName="用戶" />
+				<DbTableItem TableName="st_session" DisplayName="連線資料" />
+			</Tables>
+		</DbSchema>
+	</Databases>
+</DbSchemaSettings>

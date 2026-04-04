@@ -16,20 +16,33 @@ namespace Bee.Tests.Shared
         public GlobalFixture()
         {
             // 全域初始化邏輯，例如載入設定檔、建立資料庫、啟動 API
-            // 設定定義路徑
-            BackendInfo.DefinePath = @"D:\Git\bee-library\samples\Define";
+            // 設定定義路徑（相對於測試輸出目錄往上找 tests/Bee.Tests.Shared/Define）
+            var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
+            BackendInfo.DefinePath = Path.Combine(repoRoot, "tests", "Define");
             BackendInfo.DefineAccess = new LocalDefineAccess();
             // 系統初始化
             var settings = BackendInfo.DefineAccess.GetSystemSettings();
             settings.BackendConfiguration.Components.BusinessObjectProvider = BackendDefaultTypes.BusinessObjectProvider;
             SysInfo.Initialize(settings.CommonConfiguration);
-            BackendInfo.Initialize(settings.BackendConfiguration);
+            BackendInfo.Initialize(settings.BackendConfiguration, autoCreateMasterKey: true);
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             // .NET 8 預設停用 BinaryFormatter，需手動啟用
             AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
 
             Console.WriteLine("GlobalFixture Initialized");
+        }
+
+        private static string FindRepoRoot(string startDir)
+        {
+            var dir = new DirectoryInfo(startDir);
+            while (dir != null)
+            {
+                if (dir.GetDirectories(".git").Length > 0)
+                    return dir.FullName;
+                dir = dir.Parent;
+            }
+            throw new InvalidOperationException($"Cannot find repo root from: {startDir}");
         }
 
         /// <summary>
