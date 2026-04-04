@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
 		<Description>Core utilities such as serialization, encryption, and general-purpose helpers.</Description>
 		<PackageTags>bee.net;utilities;helpers;cryptography;encryption;hashing;serialization;compression;json</PackageTags>
 	</PropertyGroup>

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
 		<Description>Runtime caching of definitions and related system data to improve performance.</Description>		
 		<PackageTags>bee.net;cache;memory;performance;data</PackageTags>
 	</PropertyGroup>
