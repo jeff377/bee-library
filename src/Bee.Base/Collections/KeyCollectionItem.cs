@@ -2,8 +2,10 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Newtonsoft.Json;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
 
-namespace Bee.Base
+namespace Bee.Base.Collections
 {
     /// <summary>
     /// 具鍵值的強型別集合成員。

@@ -1,4 +1,6 @@
 ﻿using Bee.Base;
+using Bee.Base.Serialization;
+using Bee.Base.Collections;
 using Bee.Connect;
 using Bee.Contracts;
 using Bee.Define;

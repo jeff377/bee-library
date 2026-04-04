@@ -1,6 +1,7 @@
 ﻿using System;
 using Xunit;
 using Bee.Base;
+using Bee.Base.Security;
 
 namespace Bee.Base.UnitTests
 {

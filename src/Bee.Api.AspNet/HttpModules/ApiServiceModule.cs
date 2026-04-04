@@ -3,6 +3,7 @@ using System.IO;
 using System.Web;
 using Bee.Api.Core;
 using Bee.Base;
+using Bee.Base.Serialization;
 
 namespace Bee.Api.AspNet
 {

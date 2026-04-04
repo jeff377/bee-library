@@ -1,4 +1,6 @@
 ﻿using Bee.Base;
+using Bee.Base.Data;
+using Bee.Base.Collections;
 using Bee.Define;
 using System;
 using System.Data;

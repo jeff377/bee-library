@@ -3,8 +3,9 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using Bee.Base.Serialization;
 
-namespace Bee.Base
+namespace Bee.Base.Collections
 {
     /// <summary>
     /// 具鍵值的強型別集合。

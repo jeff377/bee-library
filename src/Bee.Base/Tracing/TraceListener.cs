@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace Bee.Base
+namespace Bee.Base.Tracing
 {
     /// <summary>
     /// 預設執行流程監控器。

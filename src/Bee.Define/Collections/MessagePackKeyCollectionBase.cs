@@ -1,4 +1,6 @@
 ﻿using Bee.Base;
+using Bee.Base.Serialization;
+using Bee.Base.Collections;
 using MessagePack;
 using Newtonsoft.Json;
 using System;

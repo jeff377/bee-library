@@ -1,5 +1,7 @@
 ﻿using System;
 using Bee.Base;
+using Bee.Base.Data;
+using Bee.Base.Serialization;
 using Bee.Db;
 using Bee.Define;
 using Bee.Repository.Abstractions;

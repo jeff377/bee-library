@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
+using Bee.Base.Attributes;
 
 namespace Bee.Define
 {

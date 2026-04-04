@@ -3,6 +3,9 @@ using System.ComponentModel;
 using System.Text;
 using System.Xml.Serialization;
 using Bee.Base;
+using Bee.Base.Security;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
 using Newtonsoft.Json;
 
 namespace Bee.Define

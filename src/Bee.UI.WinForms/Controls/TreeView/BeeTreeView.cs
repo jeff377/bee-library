@@ -1,6 +1,7 @@
 ﻿#nullable disable
 using System.ComponentModel;
 using Bee.Base;
+using Bee.Base.Attributes;
 
 namespace Bee.UI.WinForms
 {

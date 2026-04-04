@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Bee.Base
+namespace Bee.Base.Security
 {
     /// <summary>
     /// 提供 RSA 加密與解密、金鑰產生與匯出功能的靜態工具類別。

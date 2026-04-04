@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Headers;
 using Bee.Api.Core;
 using Bee.Base;
+using Bee.Base.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;

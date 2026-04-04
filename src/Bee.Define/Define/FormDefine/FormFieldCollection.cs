@@ -1,6 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using Bee.Base;
+using Bee.Base.Attributes;
+using Bee.Base.Data;
+using Bee.Base.Collections;
 
 namespace Bee.Define
 {

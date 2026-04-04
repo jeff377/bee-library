@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Base
+namespace Bee.Base.Tracing
 {
     /// <summary>
     /// 表示一筆完整的追蹤事件，包含開始時間、耗時、狀態與描述，

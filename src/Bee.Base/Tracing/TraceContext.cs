@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Base
+namespace Bee.Base.Tracing
 {
     /// <summary>
     /// 表示一次追蹤區段的執行上下文，

@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Bee.Base
+namespace Bee.Base.Tracing
 {
     /// <summary>
     /// 定義執行流程監控的介面，提供開始與結束追蹤的方法，

@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using Bee.Base;
+using Bee.Base.Serialization;
 
 namespace Bee.Define
 {

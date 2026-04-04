@@ -1,3 +1,4 @@
+using Bee.Base.Serialization;
 ﻿using System.Text;
 
 namespace Bee.Base.UnitTests

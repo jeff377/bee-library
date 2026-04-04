@@ -1,6 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 
-namespace Bee.Base
+namespace Bee.Base.Tracing
 {
     /// <summary>
     /// 追蹤器靜態類別。

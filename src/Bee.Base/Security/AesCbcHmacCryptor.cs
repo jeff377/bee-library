@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace Bee.Base
+namespace Bee.Base.Security
 {
     /// <summary>
     /// AES-CBC 加密與 HMAC 驗證的加解密工具。

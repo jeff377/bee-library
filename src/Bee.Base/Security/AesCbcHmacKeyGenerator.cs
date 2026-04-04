@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography;
 
-namespace Bee.Base
+namespace Bee.Base.Security
 {
     /// <summary>
     /// AES-CBC 與 HMAC 金鑰的產生器，用於產生或還原加密所需的組合金鑰（64 bytes）。

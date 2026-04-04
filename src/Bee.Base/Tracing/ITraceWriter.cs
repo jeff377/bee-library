@@ -1,4 +1,4 @@
-﻿namespace Bee.Base
+﻿namespace Bee.Base.Tracing
 {
     /// <summary>
     /// 用於輸出的追蹤寫入介面，負責將 <see cref="TraceEvent"/> 寫出至不同目的地，

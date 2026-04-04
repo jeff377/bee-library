@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Bee.Base;
+using Bee.Base.Tracing;
 using Bee.Define;
 
 namespace Bee.Api.Core

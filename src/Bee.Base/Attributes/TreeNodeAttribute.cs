@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Base
+namespace Bee.Base.Attributes
 {
     /// <summary>
     /// 套用於類別，描述物件繫結於樹狀節點呈現方式的自訂屬性。

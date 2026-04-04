@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.Contracts;
 using Bee.Define;
 

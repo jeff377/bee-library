@@ -1,3 +1,4 @@
+using Bee.Base.Security;
 ﻿using System.Security.Cryptography;
 using System.Text;
 

@@ -2,6 +2,9 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
+using Bee.Base.Collections;
 using MessagePack;
 using Newtonsoft.Json;
 

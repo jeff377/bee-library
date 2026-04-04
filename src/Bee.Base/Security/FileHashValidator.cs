@@ -2,7 +2,7 @@
 using System.IO;
 using System.Security.Cryptography;
 
-namespace Bee.Base
+namespace Bee.Base.Security
 {
     /// <summary>
     /// 提供檔案雜湊值的計算與驗證功能。

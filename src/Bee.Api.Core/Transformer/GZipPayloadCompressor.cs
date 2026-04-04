@@ -1,4 +1,5 @@
 ﻿using Bee.Base;
+using Bee.Base.Serialization;
 
 namespace Bee.Api.Core
 {

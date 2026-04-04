@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Base.Security;
 using Bee.Contracts;
 
 namespace Bee.Business.UnitTests

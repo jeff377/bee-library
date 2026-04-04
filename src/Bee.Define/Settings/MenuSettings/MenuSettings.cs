@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
 using Newtonsoft.Json;
 
 namespace Bee.Define

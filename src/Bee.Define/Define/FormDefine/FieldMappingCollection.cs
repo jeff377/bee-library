@@ -1,5 +1,6 @@
 ﻿using System;
 using Bee.Base;
+using Bee.Base.Collections;
 
 namespace Bee.Define
 {

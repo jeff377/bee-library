@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Base
+namespace Bee.Base.Attributes
 {
     /// <summary>
     /// 套用於屬性，表示忽略樹狀結構生成的自訂屬性。

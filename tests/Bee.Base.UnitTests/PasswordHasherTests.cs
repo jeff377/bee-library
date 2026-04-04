@@ -1,3 +1,4 @@
+using Bee.Base.Security;
 ﻿namespace Bee.Base.UnitTests
 {
     /// <summary>

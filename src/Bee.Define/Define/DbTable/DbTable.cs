@@ -1,4 +1,6 @@
 ﻿using Bee.Base;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel;

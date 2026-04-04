@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bee.Base
+namespace Bee.Base.Collections
 {
     /// <summary>
     /// 索引鍵和值的集合(鍵值不區分大小寫)。

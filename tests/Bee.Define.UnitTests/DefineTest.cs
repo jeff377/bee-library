@@ -1,5 +1,6 @@
 using System.Data;
 using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.Contracts;
 
 namespace Bee.Define.UnitTests

@@ -3,8 +3,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
 
-namespace Bee.Base
+namespace Bee.Base.Collections
 {
     /// <summary>
     /// 強型別集合。

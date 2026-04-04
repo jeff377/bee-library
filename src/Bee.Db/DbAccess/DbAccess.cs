@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 using Bee.Base;
+using Bee.Base.Data;
 using Bee.Define;
 
 namespace Bee.Db

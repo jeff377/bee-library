@@ -1,4 +1,5 @@
 ﻿using Bee.Base;
+using Bee.Base.Data;
 
 namespace Bee.Define.UnitTests
 {

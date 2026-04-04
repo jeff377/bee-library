@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using Bee.Base;
+using Bee.Base.Data;
 using Bee.Define;
 
 namespace Bee.Db

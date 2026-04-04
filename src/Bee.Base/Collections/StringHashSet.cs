@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bee.Base
+namespace Bee.Base.Collections
 {
     /// <summary>
     /// 不允許重覆的字串集合，字串忽略大小寫。

@@ -1,5 +1,6 @@
 ﻿using System;
 using Bee.Base;
+using Bee.Base.Security;
 
 namespace Bee.Define
 {

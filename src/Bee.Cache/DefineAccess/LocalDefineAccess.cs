@@ -1,5 +1,6 @@
 ﻿using System;
 using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.Define;
 
 namespace Bee.Cache
