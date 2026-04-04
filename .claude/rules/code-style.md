@@ -32,14 +32,14 @@ Bee.<Module>/
 
 ## XML 文件註解
 
-所有 `public` API 必須加 XML 文件，使用**繁體中文**撰寫：
+所有 `public` API 必須加 XML 文件，使用**英文**撰寫（套件公開發布於 NuGet，英文確保 IntelliSense 與外部使用者皆可閱讀）：
 
 ```csharp
 /// <summary>
-/// 驗證存取令牌的有效性。
+/// Validates the access token.
 /// </summary>
-/// <param name="token">存取令牌。</param>
-/// <returns>驗證結果。</returns>
+/// <param name="token">The access token to validate.</param>
+/// <returns>True if the token is valid; otherwise, false.</returns>
 public bool ValidateToken(string token) { ... }
 ```
 
