@@ -5,7 +5,6 @@
   <Folder Name="/samples/">
     <Project Path="samples/Custom.Business/Custom.Business.csproj" />
     <Project Path="samples/Custom.Contracts/Custom.Contracts.csproj" />
-    <Project Path="samples/JsonRpcClient/JsonRpcClient.csproj" />
     <Project Path="samples/JsonRpcServer/JsonRpcServer.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
@@ -15,7 +14,6 @@
   </Folder>
   <Folder Name="/src/">
     <File Path="src/Directory.Build.props" />
-    <Project Path="src/Bee.Api.AspNet/Bee.Api.AspNet.csproj" />
     <Project Path="src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj" />
     <Project Path="src/Bee.Api.Core/Bee.Api.Core.csproj" />
     <Project Path="src/Bee.Base/Bee.Base.csproj" />
@@ -27,8 +25,6 @@
     <Project Path="src/Bee.Define/Bee.Define.csproj" />
     <Project Path="src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj" Id="30b306b6-0aab-475e-8df0-e1a0801e56a6" />
     <Project Path="src/Bee.Repository/Bee.Repository.csproj" Id="f78f3849-45b9-426e-a7b0-6edbd7fe256d" />
-    <Project Path="src/Bee.UI.Core/Bee.UI.Core.csproj" />
-    <Project Path="src/Bee.UI.WinForms/Bee.UI.WinForms.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Bee.Api.AspNetCore.UnitTests/Bee.Api.AspNetCore.UnitTests.csproj" />
@@ -42,9 +38,5 @@
     <Project Path="tests/Bee.Define.UnitTests/Bee.Define.UnitTests.csproj" />
     <Project Path="tests/Bee.Repository.UnitTests/Bee.Repository.UnitTests.csproj" Id="37be88f7-d67a-40a7-91a3-23583c6b85f1" />
     <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />
-  </Folder>
-  <Folder Name="/tools/">
-    <Project Path="tools/BeeDbUpgrade/BeeDbUpgrade.csproj" />
-    <Project Path="tools/BeeSettingsEditor/BeeSettingsEditor.csproj" />
   </Folder>
 </Solution>
