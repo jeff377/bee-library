@@ -1,4 +1,6 @@
-﻿namespace Bee.Repository.Abstractions
+﻿using Bee.Repository.Abstractions.System;
+
+namespace Bee.Repository.Abstractions.Provider
 {
     /// <summary>
     /// 系統儲存庫提供者的介面。

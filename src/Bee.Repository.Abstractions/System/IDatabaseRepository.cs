@@ -1,7 +1,7 @@
 ﻿using Bee.Define.Settings;
 using Bee.Define;
 
-namespace Bee.Repository.Abstractions
+namespace Bee.Repository.Abstractions.System
 {
     /// <summary>
     /// 資料庫操作的抽象介面。

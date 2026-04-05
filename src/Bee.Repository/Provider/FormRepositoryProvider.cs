@@ -1,4 +1,5 @@
-﻿using Bee.Repository.Abstractions;
+﻿using Bee.Repository.Abstractions.Form;
+using Bee.Repository.Abstractions.Provider;
 using System;
 
 namespace Bee.Repository

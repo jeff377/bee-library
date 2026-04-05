@@ -1,4 +1,4 @@
-﻿using Bee.Repository.Abstractions;
+﻿using Bee.Repository.Abstractions.Form;
 
 namespace Bee.Repository
 {

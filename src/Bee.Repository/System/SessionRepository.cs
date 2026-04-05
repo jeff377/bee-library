@@ -4,7 +4,7 @@ using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db;
 using Bee.Define;
-using Bee.Repository.Abstractions;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.Repository
 {

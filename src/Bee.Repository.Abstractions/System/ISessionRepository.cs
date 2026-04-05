@@ -1,7 +1,7 @@
 ﻿using System;
 using Bee.Define;
 
-namespace Bee.Repository.Abstractions
+namespace Bee.Repository.Abstractions.System
 {
     /// <summary>
     /// 連線資訊資料存取介面。

@@ -1,7 +1,8 @@
-﻿using Bee.Define.Settings;
+using Bee.Define.Settings;
 using System;
 using Bee.Base;
 using Bee.Define;
+using Bee.Repository.Abstractions.Provider;
 
 namespace Bee.Repository.Abstractions
 {

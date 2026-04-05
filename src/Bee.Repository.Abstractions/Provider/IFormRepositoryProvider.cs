@@ -1,4 +1,6 @@
-﻿namespace Bee.Repository.Abstractions
+﻿using Bee.Repository.Abstractions.Form;
+
+namespace Bee.Repository.Abstractions.Provider
 {
     /// <summary>
     /// 表單儲存庫提供者的介面。

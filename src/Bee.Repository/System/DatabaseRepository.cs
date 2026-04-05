@@ -2,7 +2,7 @@
 using Bee.Base;
 using Bee.Db;
 using Bee.Define;
-using Bee.Repository.Abstractions;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.Repository
 {
