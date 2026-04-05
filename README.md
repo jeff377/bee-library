@@ -17,7 +17,7 @@ Bee.NET Framework is an **n-tier software architecture** designed to accelerate 
 |----------------------------|---------------|------------------------|-------------|
 | **Bee.Base.dll**           | Frontend / Backend | netstandard2.0; net10.0  | Core utilities such as serialization, encryption, and general-purpose helpers. |
 | **Bee.Define.dll**         | Frontend / Backend | netstandard2.0; net10.0  | Defines system-wide structured types for config, schema, and layout. |
-| **Bee.Contracts.dll**       | Frontend / Backend | netstandard2.0; net10.0  | Shared data contracts between frontend and backend. |
+| **Bee.Api.Contracts.dll**   | Frontend / Backend | netstandard2.0; net10.0  | Shared data contracts between frontend and backend. |
 | **Bee.Repository.Abstractions.dll**   | Backend        | netstandard2.0; net10.0  | Defines the interface contracts for the business layer to access the data layer, serving as the boundary between the business logic layer and the data access layer. |
 | **Bee.Cache.dll**          | Backend        | netstandard2.0; net10.0  | Runtime caching of definitions and related system data to improve performance. |
 | **Bee.Db.dll**             | Backend        | netstandard2.0; net10.0  | Database abstraction with dynamic command generation and connection binding. |
@@ -62,7 +62,7 @@ Bee.NET Framework 是一套 **多層式（N-Tier）應用架構**，旨在加速
 |----------------------------|----------------|------------------------|------|
 | **Bee.Base.dll**            | 前端 / 後端    | netstandard2.0; net10.0  | 提供基礎函式與工具（序列化、加密等），作為共通基礎模組。 |
 | **Bee.Define.dll**         | 前端 / 後端    | netstandard2.0; net10.0  | 定義系統結構化資料，如設定、資料表結構、表單配置。 |
-| **Bee.Contracts.dll**   | 前端 / 後端    | netstandard2.0; net10.0  | 前後端共用的資料契約。 |
+| **Bee.Api.Contracts.dll** | 前端 / 後端    | netstandard2.0; net10.0  | 前後端共用的資料契約。 |
 | **Bee.Repository.Abstractions.dll** | 後端           | netstandard2.0; net10.0  | 定義業務層存取資料層的介面契約，作為業務邏輯層與資料存取層之間的邊界。 |
 | **Bee.Cache.dll**          | 後端           | netstandard2.0; net10.0  | 執行階段快取模組，快取定義資料與衍生資料以提升效能。 |
 | **Bee.Db.dll**               | 後端           | netstandard2.0; net10.0  | 封裝資料庫操作邏輯，支援 SQL 命令組合與動態連線綁定。 |
