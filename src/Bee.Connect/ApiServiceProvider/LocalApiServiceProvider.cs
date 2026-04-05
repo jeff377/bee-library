@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Bee.Api.Core.JsonRpc;
 
-namespace Bee.Connect
+namespace Bee.Connect.ApiServiceProvider
 {
     /// <summary>
     /// 近端 API 服務提供者（在同一進程內直接存取後端業務邏輯）。

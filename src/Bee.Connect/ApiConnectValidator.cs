@@ -1,8 +1,9 @@
-﻿using Bee.Define.Settings;
+using Bee.Define.Settings;
 using System;
 using System.IO;
 using Bee.Base;
 using Bee.Base.Serialization;
+using Bee.Connect.Connectors;
 using Bee.Define;
 
 namespace Bee.Connect

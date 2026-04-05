@@ -6,8 +6,9 @@ using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Define;
+using Bee.Connect;
 
-namespace Bee.Connect
+namespace Bee.Connect.ApiServiceProvider
 {
     /// <summary>
     /// 遠端 API 服務提供者（透過網路存取後端業務邏輯）。

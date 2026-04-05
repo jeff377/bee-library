@@ -1,3 +1,5 @@
+using Bee.Connect.Connectors;
+
 namespace Bee.Connect.UnitTests
 {
     [Collection("Initialize")]
@@ -15,11 +17,11 @@ namespace Bee.Connect.UnitTests
             var validator = new ApiConnectValidator();
             var connectType = validator.Validate(apiUrl);
 
-            Assert.Equal(ConnectType.Remote, connectType);  // ½T»{³s½u¤è¦¡¬°»·ºÝ³s½u
+            Assert.Equal(ConnectType.Remote, connectType);  // ï¿½Tï¿½{ï¿½sï¿½uï¿½è¦¡ï¿½ï¿½ï¿½ï¿½ï¿½Ý³sï¿½u
         }
 
         /// <summary>
-        /// ´ú¸Õ SystemApiConnector ªº CreateSession ¤èªk¡C
+        /// ï¿½ï¿½ï¿½ï¿½ SystemApiConnector ï¿½ï¿½ CreateSession ï¿½ï¿½kï¿½C
         /// </summary>
         [Fact]
         public void SystemConnector_CreateSession()
@@ -29,7 +31,7 @@ namespace Bee.Connect.UnitTests
             int expiresIn = 600;
             bool oneTime = false;
 
-            // ²£¥Í¤@­ÓÀH¾÷ Guid §@¬° accessToken¡]¶È¥Î©óªì©l¤Æ¡ACreateSession ·|¦^¶Ç·sªº token¡^
+            // ï¿½ï¿½ï¿½Í¤@ï¿½ï¿½ï¿½Hï¿½ï¿½ Guid ï¿½@ï¿½ï¿½ accessTokenï¿½]ï¿½È¥Î©ï¿½ï¿½lï¿½Æ¡ACreateSession ï¿½|ï¿½^ï¿½Ç·sï¿½ï¿½ tokenï¿½^
             Guid accessToken = Guid.NewGuid();
             var connector = new SystemApiConnector(accessToken);
 
@@ -37,7 +39,7 @@ namespace Bee.Connect.UnitTests
             Guid newToken = connector.CreateSession(userId, expiresIn, oneTime);
 
             // Assert
-            Assert.NotEqual(Guid.Empty, newToken); // À³¨ú±o¦³®Äªº accessToken
+            Assert.NotEqual(Guid.Empty, newToken); // ï¿½ï¿½ï¿½ï¿½ï¿½oï¿½ï¿½ï¿½Äªï¿½ accessToken
         }
     }
 }

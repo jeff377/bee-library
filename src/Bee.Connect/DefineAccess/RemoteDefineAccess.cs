@@ -5,9 +5,10 @@ using Bee.Define.Settings;
 using System;
 using Bee.Base;
 using Bee.Base.Collections;
+using Bee.Connect.Connectors;
 using Bee.Define;
 
-namespace Bee.Connect
+namespace Bee.Connect.DefineAccess
 {
     /// <summary>
     /// 遠端定義資料存取，透過 API 進行定義資料存取。

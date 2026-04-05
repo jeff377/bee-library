@@ -1,11 +1,12 @@
-﻿using Bee.Api.Core;
+using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Tracing;
+using Bee.Connect.ApiServiceProvider;
 using System;
 using System.Threading.Tasks;
 
-namespace Bee.Connect
+namespace Bee.Connect.Connectors
 {
     /// <summary>
     /// API 服務連接器基底類別。

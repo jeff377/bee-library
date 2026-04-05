@@ -1,4 +1,4 @@
-﻿using Bee.Define.Settings;
+using Bee.Define.Settings;
 using System;
 using System.Threading.Tasks;
 using Bee.Api.Core;
@@ -9,7 +9,7 @@ using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 using Bee.Define;
 
-namespace Bee.Connect
+namespace Bee.Connect.Connectors
 {
     /// <summary>
     /// 系統層級 API 服務連接器。

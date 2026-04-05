@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Bee.Api.Core;
 using Bee.Api.Contracts;
 using Bee.Define;
 
-namespace Bee.Connect
+namespace Bee.Connect.Connectors
 {
     /// <summary>
     /// 表單層級 API 服務連接器。

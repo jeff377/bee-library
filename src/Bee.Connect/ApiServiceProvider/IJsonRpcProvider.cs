@@ -1,8 +1,7 @@
-﻿
 using System.Threading.Tasks;
 using Bee.Api.Core.JsonRpc;
 
-namespace Bee.Connect
+namespace Bee.Connect.ApiServiceProvider
 {
     /// <summary>
     /// JSON-RPC 服務提供者介面。
