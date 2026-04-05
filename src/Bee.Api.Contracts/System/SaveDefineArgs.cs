@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using Bee.Define;
 using MessagePack;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts.System
 {
     /// <summary>
     /// 儲存定義資料的傳入引數。
@@ -28,14 +28,5 @@ namespace Bee.Api.Contracts
         /// </summary>
         [Key(102)]
         public string[] Keys { get; set; } = null;
-    }
-
-    /// <summary>
-    ///  儲存定義資料的傳出結果
-    /// </summary>
-    [MessagePackObject]
-    [Serializable]
-    public class SaveDefineResult : BusinessResult
-    {
     }
 }

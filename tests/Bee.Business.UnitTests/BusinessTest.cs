@@ -1,6 +1,7 @@
 using Bee.Base;
 using Bee.Base.Security;
 using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 
 namespace Bee.Business.UnitTests
 {
@@ -8,14 +9,14 @@ namespace Bee.Business.UnitTests
     public class BusinessTest
     {
         /// <summary>
-        /// «Øºc¨ç¦¡¡C
+        /// ï¿½Øºcï¿½ç¦¡ï¿½C
         /// </summary>
         public BusinessTest()
         {
         }
 
         /// <summary>
-        /// «Ø¥ß³s½u¡C
+        /// ï¿½Ø¥ß³sï¿½uï¿½C
         /// </summary>
         [Fact]
         public void CreateSession()
@@ -39,13 +40,13 @@ namespace Bee.Business.UnitTests
         }
 
         /// <summary>
-        /// µn¤J¨t²Î¨ÃÅçÃÒ RSA ¥[±Kªº·|¸Üª÷Æ_¡C
+        /// ï¿½nï¿½Jï¿½tï¿½Î¨ï¿½ï¿½ï¿½ï¿½ï¿½ RSA ï¿½[ï¿½Kï¿½ï¿½ï¿½|ï¿½Üªï¿½ï¿½_ï¿½C
         /// </summary>
         [Fact]
         public void Login()
         {
             // Arrange
-            // ²£¥Í RSA ¹ïºÙª÷Æ_
+            // ï¿½ï¿½ï¿½ï¿½ RSA ï¿½ï¿½Ùªï¿½ï¿½_
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
 
             var sbo = new SystemBusinessObject(Guid.Empty);
@@ -63,7 +64,7 @@ namespace Bee.Business.UnitTests
             Assert.NotNull(result);
             Assert.NotEmpty(result.ApiEncryptionKey);
 
-            // ¥Î¨pÆ_¸Ñ±K EncryptedSessionKey
+            // ï¿½Î¨pï¿½_ï¿½Ñ±K EncryptedSessionKey
             string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
             Assert.False(string.IsNullOrWhiteSpace(sessionKey));
         }

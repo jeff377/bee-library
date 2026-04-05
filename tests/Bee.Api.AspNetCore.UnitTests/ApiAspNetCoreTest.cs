@@ -3,6 +3,7 @@ using Bee.Api.Core;
 using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 using Bee.Define;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -19,19 +20,19 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// ´ú¸Õ¥Îªº ApiServiceController Ãþ§O¡C
+        /// ï¿½ï¿½ï¿½Õ¥Îªï¿½ ApiServiceController ï¿½ï¿½ï¿½Oï¿½C
         /// </summary>
         public class ApiServiceController : AspNetCore.ApiServiceController { }
 
         /// <summary>
-        /// ¨ú±o JSON-RPC ½Ð¨D¼Ò«¬ªº JSON ¦r¦ê¡C
+        /// ï¿½ï¿½ï¿½o JSON-RPC ï¿½Ð¨Dï¿½Ò«ï¿½ï¿½ï¿½ JSON ï¿½rï¿½ï¿½C
         /// </summary>
-        /// <param name="progId">µ{¦¡¥N½X¡C</param>
-        /// <param name="action">°õ¦æ°Ê§@¡C</param>
-        /// <param name="args">¶Ç¤J¸ê®Æ¡C</param>
+        /// <param name="progId">ï¿½{ï¿½ï¿½ï¿½Nï¿½Xï¿½C</param>
+        /// <param name="action">ï¿½ï¿½ï¿½ï¿½Ê§@ï¿½C</param>
+        /// <param name="args">ï¿½Ç¤Jï¿½ï¿½Æ¡C</param>
         private string GetRpcRequestJson(string progId, string action, object args)
         {
-            // ³]©w JSON-RPC ½Ð¨D¼Ò«¬
+            // ï¿½]ï¿½w JSON-RPC ï¿½Ð¨Dï¿½Ò«ï¿½
             var request = new JsonRpcRequest()
             {
                 Method = $"{progId}.{action}",
@@ -45,17 +46,17 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// °õ¦æ ApiServiceController ¨Ã¶Ç¦^¤Ï§Ç¦C¤Æµ²ªG¡C
+        /// ï¿½ï¿½ï¿½ï¿½ ApiServiceController ï¿½Ã¶Ç¦^ï¿½Ï§Ç¦Cï¿½Æµï¿½ï¿½Gï¿½C
         /// </summary>
-        /// <typeparam name="TResult">¦^¶Ç«¬§O¡C</typeparam>
-        /// <param name="accessToken">¦s¨ú¥OµP¡C</param>
-        /// <param name="progId">µ{¦¡¥N½X¡C</param>
-        /// <param name="action">°õ¦æ°Ê§@¡C</param>
-        /// <param name="args">JSON-RPC ¶Ç¤J°Ñ¼Æ¡C</param>
-        /// <returns>¤Ï§Ç¦C¤Æ«áªº°õ¦æµ²ªG¡C</returns>
+        /// <typeparam name="TResult">ï¿½^ï¿½Ç«ï¿½ï¿½Oï¿½C</typeparam>
+        /// <param name="accessToken">ï¿½sï¿½ï¿½ï¿½Oï¿½Pï¿½C</param>
+        /// <param name="progId">ï¿½{ï¿½ï¿½ï¿½Nï¿½Xï¿½C</param>
+        /// <param name="action">ï¿½ï¿½ï¿½ï¿½Ê§@ï¿½C</param>
+        /// <param name="args">JSON-RPC ï¿½Ç¤Jï¿½Ñ¼Æ¡C</param>
+        /// <returns>ï¿½Ï§Ç¦Cï¿½Æ«áªºï¿½ï¿½ï¿½æµ²ï¿½Gï¿½C</returns>
         private async Task<TResult> ExecuteRpcAsync<TResult>(Guid accessToken, string progId, string action, object args)
         {
-            // «Ø¥ß JSON-RPC ½Ð¨D¤º®e
+            // ï¿½Ø¥ï¿½ JSON-RPC ï¿½Ð¨Dï¿½ï¿½ï¿½e
             string json = GetRpcRequestJson(progId, action, args);
 
             var requestBody = new MemoryStream(Encoding.UTF8.GetBytes(json));
@@ -73,7 +74,7 @@ namespace Bee.Api.AspNetCore.UnitTests
                 }
             };
 
-            // °õ¦æ API
+            // ï¿½ï¿½ï¿½ï¿½ API
             var result = await controller.PostAsync();
             var contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(StatusCodes.Status200OK, contentResult.StatusCode);
@@ -85,14 +86,14 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// ¼ÒÀÀµn¤J¨Ã¨ú±o AccessToken¡C
+        /// ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½Jï¿½Ã¨ï¿½ï¿½o AccessTokenï¿½C
         /// </summary>
         /// <returns></returns>
         private async Task<Guid> GetAccessTokenAsync()
         {
             if (_accessToken == Guid.Empty)
             {
-                // ¼ÒÀÀµn¤J¡A¹ê»Ú±¡ªpÀ³±q API µn¤J¨ú±o AccessToken
+                // ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½Jï¿½Aï¿½ï¿½Ú±ï¿½ï¿½pï¿½ï¿½ï¿½q API ï¿½nï¿½Jï¿½ï¿½ï¿½o AccessToken
                 var args = new LoginArgs()
                 {
                     UserId = "demo",    
@@ -105,7 +106,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// °õ¦æ Ping ¤èªk¡C
+        /// ï¿½ï¿½ï¿½ï¿½ Ping ï¿½ï¿½kï¿½C
         /// </summary>
         [Fact]
         public async Task Ping()

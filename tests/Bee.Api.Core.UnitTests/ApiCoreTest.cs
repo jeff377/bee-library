@@ -1,6 +1,7 @@
 using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 using Bee.Define;
 
 namespace Bee.Api.Core.UnitTests
@@ -16,7 +17,7 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// JSON-RPC ½Ð¨D¼Ò«¬§Ç¦C¤Æ¡C
+        /// JSON-RPC ï¿½Ð¨Dï¿½Ò«ï¿½ï¿½Ç¦Cï¿½Æ¡C
         /// </summary>
         [Fact]
         public void JsonRpcRequestSerialize()
@@ -33,27 +34,27 @@ namespace Bee.Api.Core.UnitTests
             string json = request.ToJson();
             Assert.NotEmpty(json);
 
-            // ´ú¸Õ½s½X
+            // ï¿½ï¿½ï¿½Õ½sï¿½X
             ApiPayloadConverter.TransformTo(request.Params, PayloadFormat.Encoded);
             string encodedJson = request.ToJson();
             Assert.NotEmpty(encodedJson);
 
-            // ´ú¸Õ¸Ñ½X
+            // ï¿½ï¿½ï¿½Õ¸Ñ½X
             ApiPayloadConverter.RestoreFrom(request.Params, PayloadFormat.Encoded);
             string decodedJson = request.ToJson();
             Assert.NotEmpty(decodedJson);
         }
 
         /// <summary>
-        /// °õ¦æ API ¤èªk¡C
+        /// ï¿½ï¿½ï¿½ï¿½ API ï¿½ï¿½kï¿½C
         /// </summary>
-        /// <param name="accessToken">¦s¨ú¥OµP¡C</param>
-        /// <param name="progId">µ{¦¡¥N½X¡C</param>
-        /// <param name="action">°õ¦æ°Ê§@¡C</param>
-        /// <param name="value">¶Ç¤J¸ê®Æ¡C</param>
+        /// <param name="accessToken">ï¿½sï¿½ï¿½ï¿½Oï¿½Pï¿½C</param>
+        /// <param name="progId">ï¿½{ï¿½ï¿½ï¿½Nï¿½Xï¿½C</param>
+        /// <param name="action">ï¿½ï¿½ï¿½ï¿½Ê§@ï¿½C</param>
+        /// <param name="value">ï¿½Ç¤Jï¿½ï¿½Æ¡C</param>
         private T ApiExecute<T>(Guid accessToken, string progId, string action, object value)
         {
-            // ³]©w JSON-RPC ½Ð¨D¼Ò«¬
+            // ï¿½]ï¿½w JSON-RPC ï¿½Ð¨Dï¿½Ò«ï¿½
             var request = new JsonRpcRequest()
             {
                 Method = $"{progId}.{action}",
@@ -70,14 +71,14 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// ¼ÒÀÀµn¤J¨Ã¨ú±o AccessToken¡C
+        /// ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½Jï¿½Ã¨ï¿½ï¿½o AccessTokenï¿½C
         /// </summary>
         /// <returns></returns>
         private Guid GetAccessToken()
         {
             if (_accessToken == Guid.Empty)
             {
-                // ¼ÒÀÀµn¤J¡A¹ê»Ú±¡ªpÀ³±q API µn¤J¨ú±o AccessToken
+                // ï¿½ï¿½ï¿½ï¿½ï¿½nï¿½Jï¿½Aï¿½ï¿½Ú±ï¿½ï¿½pï¿½ï¿½ï¿½q API ï¿½nï¿½Jï¿½ï¿½ï¿½o AccessToken
                 var args = new LoginArgs()
                 {
                     UserId = "demo",
@@ -90,7 +91,7 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// ³z¹L API °õ¦æ Ping ¤èªk¡C
+        /// ï¿½zï¿½L API ï¿½ï¿½ï¿½ï¿½ Ping ï¿½ï¿½kï¿½C
         /// </summary>
         [Fact]
         public void Ping()
@@ -107,7 +108,7 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// °õ¦æ GetCommonConfiguration ¤èªk¡C
+        /// ï¿½ï¿½ï¿½ï¿½ GetCommonConfiguration ï¿½ï¿½kï¿½C
         /// </summary>
         [Fact]
         public void GetCommonConfiguration()
@@ -119,15 +120,15 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// ³z¹L API °õ¦æ Hello ¤èªk¡C
+        /// ï¿½zï¿½L API ï¿½ï¿½ï¿½ï¿½ Hello ï¿½ï¿½kï¿½C
         /// </summary>
         [Fact]
         public void Hello()
         {
-            // ¨ú±o AccessToken
+            // ï¿½ï¿½ï¿½o AccessToken
             Guid accessToken = GetAccessToken();
 
-            // ³]©w ³]©w JSON-RPC ½Ð¨D¼Ò«¬
+            // ï¿½]ï¿½w ï¿½]ï¿½w JSON-RPC ï¿½Ð¨Dï¿½Ò«ï¿½
             var request = new JsonRpcRequest()
             {
                 Method = $"{SysProgIds.System}.ExecFunc",
@@ -139,12 +140,12 @@ namespace Bee.Api.Core.UnitTests
             };
 
             string json = request.ToJson();
-            // °õ¦æ API ¤èªk
+            // ï¿½ï¿½ï¿½ï¿½ API ï¿½ï¿½k
             var executor = new JsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
-            // ¨ú±o ExecFunc ¤èªk¶Ç¥Xµ²ªG
+            // ï¿½ï¿½ï¿½o ExecFunc ï¿½ï¿½kï¿½Ç¥Xï¿½ï¿½ï¿½G
             var execFuncResult = response.Result.Value as ExecFuncResult;
-            Assert.NotNull(execFuncResult);  // ½T»{ ExecFunc ¤èªk¶Ç¥Xµ²ªG¤£¬° null
+            Assert.NotNull(execFuncResult);  // ï¿½Tï¿½{ ExecFunc ï¿½ï¿½kï¿½Ç¥Xï¿½ï¿½ï¿½Gï¿½ï¿½ï¿½ï¿½ null
         }
 
     }

@@ -1,4 +1,4 @@
-﻿namespace Bee.Api.Contracts
+namespace Bee.Api.Contracts
 {
     /// <summary>
     /// 表單層級業務邏輯物件介面。

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MessagePack;
 
 namespace Bee.Api.Contracts
@@ -35,14 +35,5 @@ namespace Bee.Api.Contracts
         [Key(100)]
         public string FuncId { get; set; } = string.Empty;
 
-    }
-
-    /// <summary>
-    /// 執行自訂方法的傳出結果。
-    /// </summary>
-    [MessagePackObject]
-    [Serializable]
-    public class ExecFuncResult : BusinessResult
-    {
     }
 }

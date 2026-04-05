@@ -4,6 +4,7 @@ using Bee.Base;
 using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Api.Contracts;
+using Bee.Api.Contracts.System;
 using Bee.Define;
 using Bee.Repository.Abstractions;
 
