@@ -4,23 +4,23 @@ using Bee.Define;
 namespace Bee.Repository.Abstractions.System
 {
     /// <summary>
-    /// 資料庫操作的抽象介面。
+    /// Abstraction interface for database operations.
     /// </summary>
     public interface IDatabaseRepository
     {
         /// <summary>
-        /// 測試資料庫連線，失敗時丟出例外。
+        /// Tests the database connection and throws an exception on failure.
         /// </summary>
-        /// <param name="item">資料庫設定項。</param>
+        /// <param name="item">The database configuration item.</param>
         void TestConnection(DatabaseItem item);
 
         /// <summary>
-        /// 升級資料表結構。
+        /// Upgrades the table schema for the specified table.
         /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <remarks>回傳是否已升級。</remarks>
+        /// <param name="databaseId">The database identifier.</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
+        /// <remarks>Returns whether the schema was upgraded.</remarks>
         bool UpgradeTableSchema(string databaseId, string dbName, string tableName);
     }
 }

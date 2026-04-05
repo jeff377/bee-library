@@ -4,22 +4,22 @@ using Bee.Define;
 namespace Bee.Repository.Abstractions.System
 {
     /// <summary>
-    /// 連線資訊資料存取介面。
+    /// Data access interface for session information.
     /// </summary>
     public interface ISessionRepository
     {
         /// <summary>
-        /// 取得連線資訊。
+        /// Gets the session information for the specified access token.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         SessionUser GetSession(Guid accessToken);
 
         /// <summary>
-        /// 建立一組用戶連線。
+        /// Creates a new user session.
         /// </summary>
-        /// <param name="userID">用戶帳號。</param>
-        /// <param name="expiresIn">到期秒數。</param>
-        /// <param name="oneTime">一次性有效。</param>
+        /// <param name="userID">The user account identifier.</param>
+        /// <param name="expiresIn">The expiration time in seconds.</param>
+        /// <param name="oneTime">Whether the session is valid for one-time use only.</param>
         SessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false);
     }
 }

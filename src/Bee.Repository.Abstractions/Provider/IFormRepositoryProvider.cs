@@ -3,20 +3,20 @@
 namespace Bee.Repository.Abstractions.Provider
 {
     /// <summary>
-    /// 表單儲存庫提供者的介面。
+    /// Interface for the form repository provider.
     /// </summary>
     public interface IFormRepositoryProvider
     {
         /// <summary>
-        /// 依據 ProgId 取得對應的 IDataFormRepository。
+        /// Gets the <see cref="IDataFormRepository"/> corresponding to the specified ProgId.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program identifier.</param>
         IDataFormRepository GetDataFormRepository(string progId);
 
         /// <summary>
-        /// 依據 ProgId 取得對應的 IReportFormRepository。
+        /// Gets the <see cref="IReportFormRepository"/> corresponding to the specified ProgId.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program identifier.</param>
         IReportFormRepository GetReportFormRepository(string progId);
     }
 }

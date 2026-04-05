@@ -1,7 +1,7 @@
 ﻿namespace Bee.Repository.Abstractions.Form
 {
     /// <summary>
-    /// 報表表單儲存庫介面。
+    /// Repository interface for report forms.
     /// </summary>
     public interface IReportFormRepository
     {

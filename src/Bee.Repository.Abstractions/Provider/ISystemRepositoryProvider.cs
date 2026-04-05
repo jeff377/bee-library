@@ -3,17 +3,17 @@
 namespace Bee.Repository.Abstractions.Provider
 {
     /// <summary>
-    /// 系統儲存庫提供者的介面。
+    /// Interface for the system repository provider.
     /// </summary>
     public interface ISystemRepositoryProvider
     {
         /// <summary>
-        /// 資料庫儲存庫。
+        /// Gets or sets the database repository.
         /// </summary>
         IDatabaseRepository DatabaseRepository { get; set; }
 
         /// <summary>
-        /// 連線資訊儲存庫。
+        /// Gets or sets the session repository.
         /// </summary>
         ISessionRepository SessionRepository { get; set; }
     }
