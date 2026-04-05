@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
     /// JSON-RPC 錯誤模型。

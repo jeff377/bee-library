@@ -1,4 +1,5 @@
 ﻿using Bee.Api.Core;
+using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Tracing;
 using System;

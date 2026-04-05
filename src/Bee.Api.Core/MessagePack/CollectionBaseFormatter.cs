@@ -5,7 +5,7 @@ using Bee.Define;
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// 用於序列化與反序列化繼承自 <see cref="MessagePackCollectionBase{T}"/> 的強型別集合格式化器。

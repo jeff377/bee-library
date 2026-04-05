@@ -3,7 +3,7 @@ using Bee.Base;
 using Bee.Base.Serialization;
 using Newtonsoft.Json;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
     /// JSON-RPC 請求模型。 

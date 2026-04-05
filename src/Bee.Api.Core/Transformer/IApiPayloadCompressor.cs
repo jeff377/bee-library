@@ -1,4 +1,4 @@
-﻿namespace Bee.Api.Core
+namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// API 傳輸層資料壓縮策略介面。
@@ -25,5 +25,4 @@
         /// <returns>解壓縮後的位元組資料。</returns>
         byte[] Decompress(byte[] bytes);
     }
-
 }

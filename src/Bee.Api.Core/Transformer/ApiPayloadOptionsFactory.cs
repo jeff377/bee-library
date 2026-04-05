@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// 提供依據設定值建立 API Payload 編碼元件的工廠類別。

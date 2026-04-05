@@ -7,7 +7,7 @@ using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// 自訂的 MessagePack 格式化器解析器，註冊 DataSet、DataTable 和 TCollectionBase 專用格式化器。

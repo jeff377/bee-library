@@ -1,4 +1,4 @@
-﻿namespace Bee.Api.Core
+﻿namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// 不執行任何壓縮或解壓縮操作的壓縮器實作。

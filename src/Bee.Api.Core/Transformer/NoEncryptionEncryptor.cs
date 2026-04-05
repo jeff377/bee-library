@@ -1,6 +1,6 @@
 ﻿using Bee.Base;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// 不執行任何加密或解密操作的加密器實作。

@@ -1,6 +1,7 @@
 ﻿using System;
+using Bee.Api.Core;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// 預設 API 傳輸資料的處理器，提供資料序列化、壓縮與加解密等轉換功能。

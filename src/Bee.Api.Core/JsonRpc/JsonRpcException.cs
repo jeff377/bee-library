@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
     /// 表示處理 JSON-RPC 請求時所發生的例外狀況。

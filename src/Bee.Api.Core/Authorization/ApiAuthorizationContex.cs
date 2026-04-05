@@ -1,4 +1,4 @@
-﻿namespace Bee.Api.Core
+﻿namespace Bee.Api.Core.Authorization
 {
     /// <summary>
     /// API 授權驗證內容。

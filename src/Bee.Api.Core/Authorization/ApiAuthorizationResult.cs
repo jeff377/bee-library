@@ -1,6 +1,7 @@
 ﻿using System;
+using Bee.Api.Core.JsonRpc;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Authorization
 {
     /// <summary>
     /// API 授權驗證結果。

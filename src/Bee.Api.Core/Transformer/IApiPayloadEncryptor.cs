@@ -1,6 +1,4 @@
-﻿using Bee.Base;
-
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// API 傳輸層資料加解密策略介面。
@@ -29,5 +27,4 @@ namespace Bee.Api.Core
         /// <returns>解密後的位元組資料。</returns>
         byte[] Decrypt(byte[] bytes, byte[] encryptionKey);
     }
-
 }

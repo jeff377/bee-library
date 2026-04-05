@@ -2,7 +2,7 @@
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// 用於序列化與反序列化 DataSet 的格式化器。

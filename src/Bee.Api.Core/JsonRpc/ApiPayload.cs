@@ -3,7 +3,9 @@ using Bee.Base;
 using Bee.Base.Serialization;
 using Newtonsoft.Json;
 
-namespace Bee.Api.Core
+using Bee.Api.Core;
+
+namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
     /// 表示 API 傳遞的標準資料結構，支援序列化、壓縮與加密處理。

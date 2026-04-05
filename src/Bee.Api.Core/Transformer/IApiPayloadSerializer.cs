@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// API 傳輸層 payload 專用序列化策略介面。

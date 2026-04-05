@@ -1,7 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Base.Serialization;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// 使用 GZip 的 API 傳輸層資料壓縮器。

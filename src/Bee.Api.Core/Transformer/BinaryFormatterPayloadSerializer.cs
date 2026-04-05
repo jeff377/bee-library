@@ -2,7 +2,7 @@
 using Bee.Base;
 using Bee.Base.Serialization;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// 使用 BinaryFormatter 的 API Payload 序列化器。

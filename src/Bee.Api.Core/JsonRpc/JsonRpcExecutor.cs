@@ -4,7 +4,9 @@ using Bee.Base;
 using Bee.Base.Tracing;
 using Bee.Define;
 
-namespace Bee.Api.Core
+using Bee.Api.Core;
+
+namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
     /// JSON-RPC 請求執行器。

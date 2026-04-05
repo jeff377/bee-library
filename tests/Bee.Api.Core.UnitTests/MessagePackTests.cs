@@ -1,4 +1,5 @@
-﻿using Bee.Define.Collections;
+﻿using Bee.Api.Core.MessagePack;
+using Bee.Define.Collections;
 using Bee.Define.Filters;
 using System.Data;
 using Bee.Base;

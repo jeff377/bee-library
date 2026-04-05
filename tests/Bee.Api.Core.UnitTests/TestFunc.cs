@@ -1,4 +1,6 @@
-﻿using Bee.Define.Collections;
+﻿using Bee.Api.Core.MessagePack;
+using MessagePack;
+using Bee.Define.Collections;
 using System.Reflection;
 using Bee.Base;
 using Bee.Base.Serialization;
@@ -25,7 +27,7 @@ namespace Bee.Api.Core.UnitTests
             foreach (var property in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 // 檢查屬性是否有 [Key] 標記
-                var keyAttribute = property.GetCustomAttributes(typeof(MessagePack.KeyAttribute), inherit: true).FirstOrDefault();
+                var keyAttribute = property.GetCustomAttributes(typeof(global::MessagePack.KeyAttribute), inherit: true).FirstOrDefault();
                 if (keyAttribute != null && property.CanRead)
                 {
                     var originalValue = property.GetValue(obj);

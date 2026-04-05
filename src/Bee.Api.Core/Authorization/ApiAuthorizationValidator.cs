@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using Bee.Api.Core.JsonRpc;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Authorization
 {
     /// <summary>
     /// 提供預設的 API 金鑰與授權驗證邏輯。

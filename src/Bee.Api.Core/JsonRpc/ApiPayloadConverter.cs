@@ -1,7 +1,9 @@
 ﻿using System;
 using Bee.Base;
 
-namespace Bee.Api.Core
+using Bee.Api.Core;
+
+namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
     /// 處理 <see cref="ApiPayload"/> 的格式轉換（序列化、壓縮與加密）工具類別。

@@ -1,4 +1,4 @@
-﻿namespace Bee.Api.Core
+namespace Bee.Api.Core.Authorization
 {
     /// <summary>
     /// 提供 API 金鑰與授權驗證的擴充介面。
@@ -10,5 +10,4 @@
         /// </summary>
         ApiAuthorizationResult Validate(ApiAuthorizationContext context);
     }
-
 }

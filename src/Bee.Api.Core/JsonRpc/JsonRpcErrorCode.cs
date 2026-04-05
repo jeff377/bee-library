@@ -1,25 +1,6 @@
-﻿
-namespace Bee.Api.Core
-{
-    /// <summary>
-    /// API Header 鍵值。
-    /// </summary>
-    public class ApiHeaders
-    {
-        /// <summary>
-        /// API KEY。
-        /// </summary>
-        public const string ApiKey = "X-Api-Key";
-        /// <summary>
-        /// Authorization，用於身份驗證或授權。
-        /// </summary>
-        public const string Authorization = "Authorization";
-        /// <summary>
-        /// Content-Type，指定請求或回應的內容類型。
-        /// </summary>
-        public const string ContentType = "Content-Type";
-    }
 
+namespace Bee.Api.Core.JsonRpc
+{
     /// <summary>
     /// 定義 JSON-RPC 標準錯誤代碼，用於表示請求處理過程中的錯誤狀況。
     /// </summary>
@@ -54,26 +35,5 @@ namespace Bee.Api.Core
         /// 未授權的存取，通常是憑證驗證失敗（-32001）。
         /// </summary>
         Unauthorized = -32001
-    }
-
-    /// <summary>
-    /// 傳輸資料的封裝格式。
-    /// </summary>
-    public enum PayloadFormat
-    {
-        /// <summary>
-        /// 原始格式（未經編碼或加密）。
-        /// </summary>
-        Plain,
-
-        /// <summary>
-        /// 編碼格式（已序列化並壓縮）。
-        /// </summary>
-        Encoded,
-
-        /// <summary>
-        /// 加密格式（序列化 + 壓縮 + 加密）。
-        /// </summary>
-        Encrypted
     }
 }
