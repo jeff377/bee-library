@@ -1,4 +1,6 @@
-﻿namespace Bee.Repository.UnitTests
+﻿using Bee.Repository.System;
+
+namespace Bee.Repository.UnitTests
 {
     [Collection("Initialize")]
     public class SessionRepositoryTests

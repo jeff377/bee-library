@@ -6,7 +6,7 @@ using Bee.Db.Schema;
 using Bee.Define;
 using Bee.Repository.Abstractions.System;
 
-namespace Bee.Repository
+namespace Bee.Repository.System
 {
     /// <summary>
     /// 資料庫操作。

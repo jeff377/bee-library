@@ -1,7 +1,8 @@
 ﻿using Bee.Repository.Abstractions.Provider;
 using Bee.Repository.Abstractions.System;
+using Bee.Repository.System;
 
-namespace Bee.Repository
+namespace Bee.Repository.Provider
 {
     /// <summary>
     /// 系統儲存庫提供者。

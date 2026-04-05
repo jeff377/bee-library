@@ -8,7 +8,7 @@ using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 using Bee.Define;
 using Bee.Repository.Abstractions.System;
 
-namespace Bee.Repository
+namespace Bee.Repository.System
 {
     /// <summary>
     /// 連線資訊的資料存取物件，封裝存取 st_session 與 st_user 資料表的操作邏輯。

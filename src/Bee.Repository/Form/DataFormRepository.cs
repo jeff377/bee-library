@@ -1,6 +1,6 @@
 ﻿using Bee.Repository.Abstractions.Form;
 
-namespace Bee.Repository
+namespace Bee.Repository.Form
 {
     /// <summary>
     /// 資料表單儲存庫。

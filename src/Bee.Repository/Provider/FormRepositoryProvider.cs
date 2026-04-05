@@ -1,8 +1,9 @@
 ﻿using Bee.Repository.Abstractions.Form;
 using Bee.Repository.Abstractions.Provider;
+using Bee.Repository.Form;
 using System;
 
-namespace Bee.Repository
+namespace Bee.Repository.Provider
 {
     /// <summary>
     /// 表單儲存庫提供者。
