@@ -1,4 +1,5 @@
 using System.Text;
+using Bee.Api.AspNetCore.Controllers;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Serialization;
@@ -22,7 +23,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// <summary>
         /// ���եΪ� ApiServiceController ���O�C
         /// </summary>
-        public class ApiServiceController : AspNetCore.ApiServiceController { }
+        public class ApiServiceController : Controllers.ApiServiceController { }
 
         /// <summary>
         /// ���o JSON-RPC �ШD�ҫ��� JSON �r��C

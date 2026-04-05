@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Bee.Api.AspNetCore
+namespace Bee.Api.AspNetCore.Controllers
 {
     /// <summary>
     /// 提供 JSON-RPC API 處理的控制器基底類別，適用於 ASP.NET Core。

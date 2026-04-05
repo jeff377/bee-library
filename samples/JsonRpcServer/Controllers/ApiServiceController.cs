@@ -8,7 +8,7 @@ namespace ApiService.Controllers
     [ApiController]
     [Route("api")]
     [Produces("application/json")]
-    public class ApiServiceController : Bee.Api.AspNetCore.ApiServiceController
+    public class ApiServiceController : Bee.Api.AspNetCore.Controllers.ApiServiceController
     {
     }
 
