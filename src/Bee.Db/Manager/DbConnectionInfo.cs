@@ -1,7 +1,7 @@
 ﻿using Bee.Define;
 using System.Data.Common;
 
-namespace Bee.Db
+namespace Bee.Db.Manager
 {
     /// <summary>
     /// 資料庫連線資訊。

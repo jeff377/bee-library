@@ -7,7 +7,9 @@ using Bee.Define;
 using System;
 using System.Data;
 
-namespace Bee.Db
+using Bee.Db;
+
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 資料庫命令參數描述集合。

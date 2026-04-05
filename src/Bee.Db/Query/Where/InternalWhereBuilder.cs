@@ -3,7 +3,7 @@ using Bee.Define;
 using System;
 using System.Collections.Generic;
 
-namespace Bee.Db
+namespace Bee.Db.Query
 {
     /// <summary>
     /// 內部共用的節點轉 SQL 工具。

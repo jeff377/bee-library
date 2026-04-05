@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Bee.Db
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 承載 DataTable 更新所需的資料表與三個命令描述。

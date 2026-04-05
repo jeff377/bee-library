@@ -1,6 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Cache;
 using Bee.Db;
+using Bee.Db.Manager;
 using Bee.Define;
 
 namespace Bee.Tests.Shared

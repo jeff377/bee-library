@@ -8,7 +8,10 @@ using Bee.Base;
 using Bee.Base.Data;
 using Bee.Define;
 
-namespace Bee.Db
+using Bee.Db;
+using Bee.Db.Manager;
+
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 資料庫存取物件。

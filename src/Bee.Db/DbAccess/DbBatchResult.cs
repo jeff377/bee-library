@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bee.Db
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 執行批次命令的輸出結果。

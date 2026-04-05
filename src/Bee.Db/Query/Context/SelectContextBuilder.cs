@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using Bee.Base;
 using Bee.Define;
 
-namespace Bee.Db
+namespace Bee.Db.Query
 {
     /// <summary>
     /// 負責依據查詢需求產生完整 SelectContext 內容的建構類別。

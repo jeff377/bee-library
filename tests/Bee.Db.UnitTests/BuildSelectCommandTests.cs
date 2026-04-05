@@ -1,5 +1,6 @@
 ﻿using Bee.Define.Filters;
 using Bee.Define;
+using Bee.Db.Providers.SqlServer;
 
 namespace Bee.Db.UnitTests
 {

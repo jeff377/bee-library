@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bee.Db
+namespace Bee.Db.Query
 {
     /// <summary>
     /// WHERE 組合結果。

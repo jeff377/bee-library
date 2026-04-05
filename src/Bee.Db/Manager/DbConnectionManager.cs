@@ -5,7 +5,7 @@ using Bee.Define;
 using System;
 using System.Collections.Concurrent;
 
-namespace Bee.Db
+namespace Bee.Db.Manager
 {
     /// <summary>
     /// 資料庫連線管理類別，統一管理資料庫連線資訊的快取。

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using Bee.Base;
+using Bee.Db.Manager;
 using Bee.Base.Data;
 using Bee.Base.Collections;
 using Bee.Define;

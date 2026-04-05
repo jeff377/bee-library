@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bee.Db
+namespace Bee.Db.Query
 {
     /// <summary>
     /// 預設參數收集器，以 @p0, @p1, ... 生成參數名（或自訂前綴）。

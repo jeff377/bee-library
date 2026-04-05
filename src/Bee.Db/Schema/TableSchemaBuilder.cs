@@ -2,7 +2,12 @@
 using Bee.Base;
 using Bee.Define;
 
-namespace Bee.Db
+using Bee.Db.DbAccess;
+using DbAccessObject = Bee.Db.DbAccess.DbAccess;
+using Bee.Db.Providers;
+using Bee.Db.Providers.SqlServer;
+
+namespace Bee.Db.Schema
 {
     /// <summary>
     /// 資料表結構產生器。
@@ -73,7 +78,7 @@ namespace Bee.Db
             if (StrFunc.IsNotEmpty(sql))
             {
                 var command = new DbCommandSpec(DbCommandKind.NonQuery, sql);
-                var dbAccess = new DbAccess(DatabaseId);
+                var dbAccess = new DbAccessObject(DatabaseId);
                 dbAccess.Execute(command);
                 return true;
             }

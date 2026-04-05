@@ -1,4 +1,5 @@
 ﻿using Bee.Define;
+using Bee.Db.Query;
 
 namespace Bee.Db.UnitTests
 {

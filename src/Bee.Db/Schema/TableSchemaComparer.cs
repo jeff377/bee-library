@@ -2,7 +2,7 @@
 using Bee.Base;
 using Bee.Define;
 
-namespace Bee.Db
+namespace Bee.Db.Schema
 {
     /// <summary>
     /// 資料表結構比對。

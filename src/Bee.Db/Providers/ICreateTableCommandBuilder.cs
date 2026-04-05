@@ -1,7 +1,7 @@
 ﻿using Bee.Define.Database;
 using Bee.Define;
 
-namespace Bee.Db
+namespace Bee.Db.Providers
 {
     /// <summary>
     /// 建立資料表命令語法產生器介面。

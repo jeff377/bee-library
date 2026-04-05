@@ -2,6 +2,7 @@
 using Bee.Base;
 using Bee.Cache;
 using Bee.Db;
+using Bee.Db.Manager;
 using Bee.Define;
 using Bee.Repository.Abstractions;
 

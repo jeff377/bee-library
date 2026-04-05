@@ -3,6 +3,8 @@ using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db;
+using Bee.Db.DbAccess;
+using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 using Bee.Define;
 using Bee.Repository.Abstractions.System;
 
@@ -28,7 +30,7 @@ namespace Bee.Repository
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, DateTime.Now, sessionUser.EndTime);
-            var dbAccess = new DbAccess(BackendInfo.DatabaseId);
+            var dbAccess = new DbAccessObject(BackendInfo.DatabaseId);
             dbAccess.Execute(command);
         }
 
@@ -41,7 +43,7 @@ namespace Bee.Repository
             string sql = "DELETE FROM st_session \n" +
                                  "WHERE access_token={0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, accessToken);
-            var dbAccess = new DbAccess(BackendInfo.DatabaseId);
+            var dbAccess = new DbAccessObject(BackendInfo.DatabaseId);
             dbAccess.Execute(command);
         }
 
@@ -55,7 +57,7 @@ namespace Bee.Repository
                                  "FROM st_session \n" +
                                  "WHERE access_token={0}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken);
-            var dbAccess = new DbAccess(BackendInfo.DatabaseId);
+            var dbAccess = new DbAccessObject(BackendInfo.DatabaseId);
             var result = dbAccess.Execute(command);
             if (result.Table.IsEmpty()) { return null; }
             var row = result.Table.Rows[0];
@@ -86,7 +88,7 @@ namespace Bee.Repository
             string sql = "SELECT sys_id, sys_name FROM st_user \n" +
                                  "WHERE sys_id={0}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, userID);
-            var dbAccess = new DbAccess(BackendInfo.DatabaseId);
+            var dbAccess = new DbAccessObject(BackendInfo.DatabaseId);
             var result = dbAccess.Execute(command);
             var table = result.Table;
             if (table.IsEmpty()) { throw new InvalidOperationException($"UserID='{userID}' not found"); }

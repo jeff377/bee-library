@@ -8,6 +8,7 @@ using System.Web.SessionState;
 using Bee.Api.Core;
 using Bee.Cache;
 using Bee.Db;
+using Bee.Db.Manager;
 using Bee.Define;
 
 

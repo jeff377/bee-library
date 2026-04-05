@@ -2,7 +2,9 @@
 using Bee.Base.Collections;
 using System.Data;
 
-namespace Bee.Db
+using Bee.Db;
+
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// DbCommand 執行結果的統一包裝。

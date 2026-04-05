@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Bee.Db
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 執行批次命令的描述。

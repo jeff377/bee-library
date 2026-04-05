@@ -1,7 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Base.Collections;
 
-namespace Bee.Db
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 資料庫命令描述集合。

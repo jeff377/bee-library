@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bee.Db
+namespace Bee.Db.Query
 {
     /// <summary>
     /// 參數收集器介面（供 Builder 產生具名參數）。

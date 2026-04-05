@@ -5,7 +5,10 @@ using Bee.Base;
 using Bee.Base.Data;
 using Bee.Define;
 
-namespace Bee.Db
+using Bee.Db;
+using Bee.Db.Providers;
+
+namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
     /// SQL Server 資料庫建立資料表命令語法產生器。

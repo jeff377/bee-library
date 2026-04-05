@@ -1,4 +1,4 @@
-﻿namespace Bee.Db
+﻿namespace Bee.Db.Query
 {
     /// <summary>
     /// 表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。

@@ -2,7 +2,9 @@
 using Bee.Define;
 using System;
 
-namespace Bee.Db
+using Bee.Db;
+
+namespace Bee.Db.Query
 {
     /// <summary>
     /// WHERE 子句建置器。

@@ -4,7 +4,10 @@ using Bee.Base.Data;
 using Bee.Define;
 using System.Data;
 
-namespace Bee.Db
+using Bee.Db.DbAccess;
+using DbAccessObject = Bee.Db.DbAccess.DbAccess;
+
+namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
     /// 提供讀取與解析 SQL Server 資料表結構的方法。
@@ -67,7 +70,7 @@ namespace Bee.Db
         {
             string sql = "Select Count(*) From sys.tables A Where A.name={0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = new DbAccessObject(DatabaseId);
             var result = dbAccess.Execute(command);
             int count = BaseFunc.CInt(result.Scalar);
             return count > 0;
@@ -88,7 +91,7 @@ namespace Bee.Db
                           "WHERE B.name={0} \n" +
                           "Order By D.is_primary_key,C.key_ordinal";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = new DbAccessObject(DatabaseId);
             var result = dbAccess.Execute(command);
             var table = result.Table;
             table.TableName = "TableIndex";
@@ -178,7 +181,7 @@ namespace Bee.Db
                           "WHERE B.name={0} \n" +
                           "ORDER BY A.column_id";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = new DbAccessObject(DatabaseId);
             var result = dbAccess.Execute(command);
             var table = result.Table;
             table.TableName = "Columns";

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using Bee.Define;
 
-namespace Bee.Db
+namespace Bee.Db.Manager
 {
     /// <summary>
     /// DbProvider 管理類別，統一管理不同資料庫的 Factory。

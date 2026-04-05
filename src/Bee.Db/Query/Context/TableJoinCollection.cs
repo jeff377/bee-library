@@ -1,7 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Base.Collections;
 
-namespace Bee.Db
+namespace Bee.Db.Query
 {
     /// <summary>
     /// 描述兩個資料表之間的 Join 關係的集合。

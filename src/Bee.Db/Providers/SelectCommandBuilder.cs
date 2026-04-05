@@ -4,7 +4,11 @@ using Bee.Define;
 using System;
 using System.Collections.Generic;
 
-namespace Bee.Db
+using Bee.Db;
+using Bee.Db.DbAccess;
+using Bee.Db.Query;
+
+namespace Bee.Db.Providers
 {
     /// <summary>
     /// 建立 Select 命令產生的類別。

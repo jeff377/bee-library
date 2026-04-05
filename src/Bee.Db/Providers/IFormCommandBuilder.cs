@@ -1,7 +1,9 @@
 ﻿using Bee.Define.Filters;
 using Bee.Define;
 
-namespace Bee.Db
+using Bee.Db.DbAccess;
+
+namespace Bee.Db.Providers
 {
     /// <summary>
     /// 建立表單相關命令語法產生器，包含 Select、Insert、Update、Delete 語法。

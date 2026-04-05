@@ -4,7 +4,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bee.Db
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 統一管理資料庫連線生命週期的範圍物件。若由本類別建立連線則在 Dispose() 關閉；

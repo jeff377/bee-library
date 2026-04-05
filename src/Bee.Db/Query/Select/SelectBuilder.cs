@@ -5,7 +5,9 @@ using Bee.Define;
 using System;
 using System.Collections.Generic;
 
-namespace Bee.Db
+using Bee.Db;
+
+namespace Bee.Db.Query
 {
     /// <summary>
     /// SELECT 子句建置器。

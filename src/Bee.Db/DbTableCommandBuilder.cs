@@ -2,6 +2,7 @@
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Define;
+using Bee.Db.DbAccess;
 using System;
 using System.Data;
 using System.Text;

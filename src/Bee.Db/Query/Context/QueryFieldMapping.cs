@@ -1,7 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Base.Collections;
 
-namespace Bee.Db
+namespace Bee.Db.Query
 {
     /// <summary>
     /// 描述查詢中欄位與其原始資料來源的對應關係。

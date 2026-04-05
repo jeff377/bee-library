@@ -1,7 +1,7 @@
 ﻿using Bee.Define.Filters;
 using Bee.Define;
 
-namespace Bee.Db
+namespace Bee.Db.Query
 {
     /// <summary>
     /// 定義用於產生 SQL 語法 WHERE 子句的介面。

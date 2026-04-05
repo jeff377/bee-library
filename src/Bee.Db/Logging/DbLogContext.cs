@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 
-namespace Bee.Db
+namespace Bee.Db.Logging
 {
     /// <summary>
     /// 資料庫存取日誌的上下文資訊。

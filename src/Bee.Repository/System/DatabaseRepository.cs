@@ -1,6 +1,8 @@
 ﻿using Bee.Define.Settings;
 using Bee.Base;
 using Bee.Db;
+using Bee.Db.Manager;
+using Bee.Db.Schema;
 using Bee.Define;
 using Bee.Repository.Abstractions.System;
 

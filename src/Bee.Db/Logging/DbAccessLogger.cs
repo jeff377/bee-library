@@ -4,7 +4,9 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 
-namespace Bee.Db
+using Bee.Db.DbAccess;
+
+namespace Bee.Db.Logging
 {
     /// <summary>
     /// 提供資料庫存取的日誌記錄功能。

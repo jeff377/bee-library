@@ -4,7 +4,9 @@ using System;
 using System.Data;
 using System.Data.Common;
 
-namespace Bee.Db
+using Bee.Db;
+
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 資料庫命令參數描述，作為 <see cref="DbParameter"/> 的中介類別。

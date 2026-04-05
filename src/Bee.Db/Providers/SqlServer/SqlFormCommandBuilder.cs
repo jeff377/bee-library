@@ -3,7 +3,10 @@ using Bee.Define.Forms;
 using Bee.Define;
 using System;
 
-namespace Bee.Db
+using Bee.Db.DbAccess;
+using Bee.Db.Providers;
+
+namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
     /// SQL Server 資料庫建立表單相關命令語法產生器，包含 Select、Insert、Update、Delete 語法。

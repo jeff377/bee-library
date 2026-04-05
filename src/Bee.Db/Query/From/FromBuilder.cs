@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Text;
 
-namespace Bee.Db
+using Bee.Db;
+
+namespace Bee.Db.Query
 {
     /// <summary>
     /// FROM 子句建置器。

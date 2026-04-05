@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using Bee.Base;
 using Bee.Define;
 
-namespace Bee.Db
+using Bee.Db;
+
+namespace Bee.Db.Query
 {
     /// <summary>
     /// ORDER BY 子句建置器。

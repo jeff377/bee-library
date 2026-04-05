@@ -10,7 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace Bee.Db
+using Bee.Db;
+
+namespace Bee.Db.DbAccess
 {
     /// <summary>
     /// 資料庫命令描述，作為 <see cref="DbCommand"/> 的中介類別。
