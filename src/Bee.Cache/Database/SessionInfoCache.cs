@@ -1,7 +1,8 @@
-﻿using Bee.Define;
+﻿using Bee.Cache;
+using Bee.Define;
 using System;
 
-namespace Bee.Cache
+namespace Bee.Cache.Database
 {
     /// <summary>
     /// 連線資訊快取。

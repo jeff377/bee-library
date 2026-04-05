@@ -1,8 +1,9 @@
-﻿using Bee.Define.Layouts;
-using Bee.Define.Storage;
+﻿using Bee.Cache;
 using Bee.Define;
+using Bee.Define.Layouts;
+using Bee.Define.Storage;
 
-namespace Bee.Cache
+namespace Bee.Cache.Define
 {
     /// <summary>
     /// 表單版面配置快取。

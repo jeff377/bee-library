@@ -1,6 +1,7 @@
-﻿using System;
+﻿using Bee.Cache;
+using System;
 
-namespace Bee.Cache
+namespace Bee.Cache.Runtime
 {
     /// <summary>
     /// 頁面狀態快取。

@@ -1,23 +1,17 @@
-﻿using System;
-
 namespace Bee.Cache
 {
-    #region 列舉型別
-
     /// <summary>
-    /// 快取條件相依的時間類型。
+    /// Cache condition dependency time type.
     /// </summary>
     public enum CacheTimeKind
     {
         /// <summary>
-        /// 相對時間。
+        /// Sliding expiration time.
         /// </summary>
         SlidingTime,
         /// <summary>
-        /// 絕對時間。
+        /// Absolute expiration time.
         /// </summary>
         AbsoluteTime
     }
-
-    #endregion
 }

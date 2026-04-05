@@ -1,8 +1,9 @@
-﻿using Bee.Define.Settings;
-using Bee.Define.Storage;
+﻿using Bee.Cache;
 using Bee.Define;
+using Bee.Define.Settings;
+using Bee.Define.Storage;
 
-namespace Bee.Cache
+namespace Bee.Cache.Define
 {
     /// <summary>
     /// 資料庫結構設定快取。

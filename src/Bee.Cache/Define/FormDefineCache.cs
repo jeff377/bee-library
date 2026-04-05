@@ -1,8 +1,9 @@
-﻿using Bee.Define.Forms;
-using Bee.Define.Storage;
+﻿using Bee.Cache;
 using Bee.Define;
+using Bee.Define.Forms;
+using Bee.Define.Storage;
 
-namespace Bee.Cache
+namespace Bee.Cache.Define
 {
     /// <summary>
     /// 表單定義快取。

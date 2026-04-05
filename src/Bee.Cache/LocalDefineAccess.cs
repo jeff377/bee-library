@@ -1,11 +1,12 @@
-﻿using Bee.Define.Database;
+﻿using Bee.Base;
+using Bee.Base.Serialization;
+using Bee.Cache.Define;
+using Bee.Define;
+using Bee.Define.Database;
 using Bee.Define.Forms;
 using Bee.Define.Layouts;
 using Bee.Define.Settings;
 using System;
-using Bee.Base;
-using Bee.Base.Serialization;
-using Bee.Define;
 
 namespace Bee.Cache
 {

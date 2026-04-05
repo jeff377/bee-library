@@ -1,6 +1,7 @@
-﻿using Bee.Define.Settings;
-using Bee.Base;
+﻿using Bee.Base;
+using Bee.Cache.Providers;
 using Bee.Define;
+using Bee.Define.Settings;
 using System;
 
 namespace Bee.Cache

@@ -1,10 +1,11 @@
-﻿using Bee.Define.Settings;
-using System.IO;
-using Bee.Base;
+﻿using Bee.Base;
 using Bee.Base.Serialization;
+using Bee.Cache;
 using Bee.Define;
+using Bee.Define.Settings;
+using System.IO;
 
-namespace Bee.Cache
+namespace Bee.Cache.Define
 {
     /// <summary>
     /// 資料庫設定快取。

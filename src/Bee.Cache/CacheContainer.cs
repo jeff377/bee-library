@@ -1,7 +1,6 @@
-﻿using Bee.Define.Database;
-using Bee.Define.Forms;
-using Bee.Define.Layouts;
-using Bee.Define.Settings;
+﻿using Bee.Cache.Database;
+using Bee.Cache.Define;
+using Bee.Cache.Runtime;
 using System;
 
 namespace Bee.Cache

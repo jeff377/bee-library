@@ -1,7 +1,8 @@
 ﻿using System;
+using Bee.Cache;
 using Bee.Define;
 
-namespace Bee.Cache
+namespace Bee.Cache.Services
 {
     /// <summary>
     /// 連線資訊存取服務。

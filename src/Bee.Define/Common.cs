@@ -28,7 +28,7 @@ namespace Bee.Define
         /// <summary>
         /// 預設的快取提供者型別。
         /// </summary>
-        public const string CacheProvider = "Bee.Cache.MemoryCacheProvider, Bee.Cache";
+        public const string CacheProvider = "Bee.Cache.Providers.MemoryCacheProvider, Bee.Cache";
         /// <summary>
         /// 預設的快取資料來源提供者型別。
         /// </summary>
@@ -48,11 +48,11 @@ namespace Bee.Define
         /// <summary>
         /// 預設的連線資訊存取服務型別。
         /// </summary>
-        public const string SessionInfoService = "Bee.Cache.SessionInfoService, Bee.Cache";
+        public const string SessionInfoService = "Bee.Cache.Services.SessionInfoService, Bee.Cache";
         /// <summary>
         /// 預設的提供企業系統中常用業務物件的統一存取服務型別。
         /// </summary>
-        public const string EnterpriseObjectService = "Bee.Cache.EnterpriseObjectService, Bee.Cache";
+        public const string EnterpriseObjectService = "Bee.Cache.Services.EnterpriseObjectService, Bee.Cache";
 
         // ---------------- Repository 群 ----------------
         /// <summary>

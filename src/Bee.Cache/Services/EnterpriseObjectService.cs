@@ -1,6 +1,6 @@
 ﻿using Bee.Define;
 
-namespace Bee.Cache
+namespace Bee.Cache.Services
 {
     /// <summary>
     /// 提供企業系統中常用業務物件的統一存取服務。

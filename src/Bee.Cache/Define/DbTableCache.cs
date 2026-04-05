@@ -1,9 +1,10 @@
-﻿using Bee.Define.Database;
-using Bee.Define.Storage;
-using Bee.Base;
+﻿using Bee.Base;
+using Bee.Cache;
 using Bee.Define;
+using Bee.Define.Database;
+using Bee.Define.Storage;
 
-namespace Bee.Cache
+namespace Bee.Cache.Define
 {
     /// <summary>
     /// 資料表結構快取。
