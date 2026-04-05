@@ -46,6 +46,15 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 | 資料存取層 | Bee.Repository, Bee.Repository.Abstractions, Bee.Db |
 | 基礎設施 | Bee.Base, Bee.Define, Bee.Cache, Bee.Connect |
 
+## 工作流程
+
+### 執行前先擬計畫
+
+任何需要事先規劃的任務（重構、新功能、架構調整等），必須：
+
+1. 將計畫寫成 md 文件，存至 `docs/` 目錄，檔名格式：`plan-<主題>.md`
+2. 等待使用者確認後，才開始執行
+
 ## 規則導入
 
 @rules/code-style.md
