@@ -12,7 +12,7 @@ using Microsoft.Extensions.Hosting;
 namespace Bee.Api.AspNetCore.Controllers
 {
     /// <summary>
-    /// 提供 JSON-RPC API 處理的控制器基底類別，適用於 ASP.NET Core。
+    /// Base controller class for handling JSON-RPC API requests in ASP.NET Core.
     /// </summary>
     [ApiController]
     [Route("api")]
@@ -20,18 +20,18 @@ namespace Bee.Api.AspNetCore.Controllers
     public abstract class ApiServiceController : ControllerBase
     {
         /// <summary>
-        /// 判斷當前環境是否為開發環境。
+        /// Gets a value indicating whether the current environment is the development environment.
         /// </summary>
         protected bool IsDevelopment =>
             HttpContext.RequestServices.GetRequiredService<IHostEnvironment>().IsDevelopment();
 
         /// <summary>
-        /// 處理 HTTP POST 請求，並執行相應的 API 服務。
+        /// Handles HTTP POST requests and executes the corresponding API service.
         /// </summary>
         [HttpPost]
         public async Task<IActionResult> PostAsync()
         {
-            // 讀取並解析 JSON-RPC 請求
+            // Read and parse the JSON-RPC request
             JsonRpcRequest request;
             try
             {
@@ -42,22 +42,22 @@ namespace Bee.Api.AspNetCore.Controllers
                 return CreateErrorResponse(ex.HttpStatusCode, ex.ErrorCode, ex.RpcMessage);
             }
 
-            // 驗證 API 金鑰與授權
+            // Validate the API key and authorization
             var result = ValidateAuthorization(request);
             if (!result.IsValid)
             {
                 return CreateErrorResponse(StatusCodes.Status401Unauthorized, result.Code, result.ErrorMessage, request.Id);
             }
 
-            // 執行相應的 API 方法
+            // Execute the corresponding API method
             return await HandleRequestAsync(result.AccessToken, request);
         }
 
         /// <summary>
-        /// 讀取並解析 JSON-RPC 請求。
+        /// Reads and parses the JSON-RPC request from the HTTP request body.
         /// </summary>
-        /// <returns>成功解析的 <see cref="JsonRpcRequest"/> 實例。</returns>
-        /// <exception cref="JsonRpcException">當內容為空或格式錯誤時拋出。</exception>
+        /// <returns>A successfully parsed <see cref="JsonRpcRequest"/> instance.</returns>
+        /// <exception cref="JsonRpcException">Thrown when the body is empty or the format is invalid.</exception>
         protected virtual async Task<JsonRpcRequest> ReadRequestAsync()
         {
             if (!MediaTypeHeaderValue.TryParse(HttpContext.Request.ContentType, out var mediaType) ||
@@ -99,10 +99,10 @@ namespace Bee.Api.AspNetCore.Controllers
         }
 
         /// <summary>
-        /// 驗證 API 授權資訊。
+        /// Validates the API authorization information.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求。</param>
-        /// <returns>驗證結果。</returns>
+        /// <param name="request">The JSON-RPC request.</param>
+        /// <returns>The authorization validation result.</returns>
         protected virtual ApiAuthorizationResult ValidateAuthorization(JsonRpcRequest request)
         {
             var apiKey = HttpContext.Request.Headers[ApiHeaders.ApiKey].ToString();
@@ -120,10 +120,10 @@ namespace Bee.Api.AspNetCore.Controllers
         }
 
         /// <summary>
-        /// 處理 JSON-RPC 請求，並執行相應的 API 方法。
+        /// Handles the JSON-RPC request and executes the corresponding API method.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         protected virtual async Task<IActionResult> HandleRequestAsync(Guid accessToken, JsonRpcRequest request)
         {
             try
@@ -150,14 +150,14 @@ namespace Bee.Api.AspNetCore.Controllers
         }
 
         /// <summary>
-        /// 建立 JSON-RPC 格式的錯誤回應物件。
+        /// Creates a JSON-RPC formatted error response.
         /// </summary>
-        /// <param name="httpStatusCode">HTTP 狀態碼。</param>
-        /// <param name="code">JSON-RPC 錯誤代碼。</param>
-        /// <param name="message">錯誤訊息。</param>
-        /// <param name="id">對應的請求 ID，可為 null。</param>
-        /// <param name="data">額外錯誤資料，可為 null。</param>
-        /// <returns>回傳帶有錯誤資訊的 IActionResult。</returns>
+        /// <param name="httpStatusCode">The HTTP status code.</param>
+        /// <param name="code">The JSON-RPC error code.</param>
+        /// <param name="message">The error message.</param>
+        /// <param name="id">The corresponding request ID, or null if not applicable.</param>
+        /// <param name="data">Additional error data, or null if not applicable.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the error information.</returns>
         protected virtual IActionResult CreateErrorResponse(int httpStatusCode, JsonRpcErrorCode code, string message, string? id = null, string? data = null)
         {
             var response = new JsonRpcResponse
