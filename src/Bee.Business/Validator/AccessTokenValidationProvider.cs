@@ -3,7 +3,7 @@ using Bee.Base;
 using Bee.Define;
 using System;
 
-namespace Bee.Business
+namespace Bee.Business.Validator
 {
     /// <summary>
     /// AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。

@@ -5,10 +5,11 @@ using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
+using Bee.Business;
 using Bee.Define;
 using Bee.Repository.Abstractions;
 
-namespace Bee.Business
+namespace Bee.Business.BusinessObjects
 {
     /// <summary>
     /// 系統層級業務邏輯物件。

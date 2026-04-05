@@ -1,8 +1,9 @@
 ﻿using System;
 using Bee.Api.Contracts;
+using Bee.Business;
 using Bee.Define;
 
-namespace Bee.Business
+namespace Bee.Business.BusinessObjects
 {
     /// <summary>
     /// 表單層級業務邏輯物件。

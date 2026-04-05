@@ -1,7 +1,7 @@
 ﻿using Bee.Define;
 using System;
 
-namespace Bee.Business
+namespace Bee.Business.BusinessObjects
 {
     /// <summary>
     /// 業務邏輯物件提供者。

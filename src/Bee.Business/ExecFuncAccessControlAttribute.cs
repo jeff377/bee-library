@@ -1,4 +1,4 @@
-﻿using Bee.Define;
+using Bee.Define;
 using System;
 
 namespace Bee.Business

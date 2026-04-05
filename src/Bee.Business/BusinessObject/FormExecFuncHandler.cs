@@ -1,7 +1,7 @@
 ﻿using Bee.Api.Contracts;
 using System;
 
-namespace Bee.Business
+namespace Bee.Business.BusinessObjects
 {
     /// <summary>
     /// 表單層級業務邏輯物件提供的自訂方法。

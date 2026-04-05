@@ -1,5 +1,6 @@
 ﻿using System;
 using Bee.Business;
+using Bee.Business.BusinessObjects;
 using Bee.Define;
 
 namespace Custom.Business

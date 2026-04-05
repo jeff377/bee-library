@@ -2,7 +2,7 @@
 using Bee.Define;
 using System;
 
-namespace Bee.Business
+namespace Bee.Business.Provider
 {
     /// <summary>
     /// 靜態金鑰提供者，永遠回傳後端設定檔的共用金鑰。

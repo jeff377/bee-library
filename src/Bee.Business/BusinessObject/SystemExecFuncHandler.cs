@@ -1,10 +1,11 @@
 ﻿using Bee.Define.Settings;
 using System;
 using Bee.Api.Contracts;
+using Bee.Business;
 using Bee.Define;
 using Bee.Repository.Abstractions;
 
-namespace Bee.Business
+namespace Bee.Business.BusinessObjects
 {
     /// <summary>
     /// 系統層級業務邏輯物件提供的自訂方法。

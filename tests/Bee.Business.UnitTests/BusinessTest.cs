@@ -2,6 +2,7 @@ using Bee.Base;
 using Bee.Base.Security;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
+using Bee.Business.BusinessObjects;
 
 namespace Bee.Business.UnitTests
 {

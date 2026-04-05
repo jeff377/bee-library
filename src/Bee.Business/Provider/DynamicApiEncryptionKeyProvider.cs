@@ -4,7 +4,7 @@ using Bee.Base.Security;
 using Bee.Define;
 using System;
 
-namespace Bee.Business
+namespace Bee.Business.Provider
 {
     /// <summary>
     /// 動態金鑰提供者，依 AccessToken 取得對應的會話金鑰。

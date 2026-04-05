@@ -2,7 +2,7 @@
 using Bee.Define;
 using Bee.Repository.Abstractions;
 
-namespace Bee.Business
+namespace Bee.Business.Provider
 {
     /// <summary>
     /// 快取資料來源提供者。

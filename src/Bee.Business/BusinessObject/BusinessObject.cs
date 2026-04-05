@@ -2,7 +2,7 @@
 using Bee.Api.Contracts;
 using Bee.Define;
 
-namespace Bee.Business
+namespace Bee.Business.BusinessObjects
 {
     /// <summary>
     /// 業務邏輯物件基底類別。

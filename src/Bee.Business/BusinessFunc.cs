@@ -1,6 +1,7 @@
-﻿using Bee.Define.Settings;
+using Bee.Define.Settings;
 using Bee.Base;
 using Bee.Api.Contracts;
+using Bee.Business.BusinessObjects;
 using Bee.Define;
 using System;
 using System.Collections.Generic;
