@@ -4,7 +4,7 @@ using System.Data;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Collections;
-using Bee.Contracts;
+using Bee.Api.Contracts;
 using Bee.Define;
 
 namespace Bee.Api.Core.UnitTests

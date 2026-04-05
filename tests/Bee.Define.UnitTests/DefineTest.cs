@@ -5,7 +5,7 @@ using Bee.Define.Settings;
 using System.Data;
 using Bee.Base;
 using Bee.Base.Serialization;
-using Bee.Contracts;
+using Bee.Api.Contracts;
 
 namespace Bee.Define.UnitTests
 {

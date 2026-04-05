@@ -3,7 +3,7 @@ using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
 using Bee.Connect;
-using Bee.Contracts;
+using Bee.Api.Contracts;
 using Bee.Define;
 using System;
 using System.Collections.Generic;

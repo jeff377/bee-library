@@ -1,6 +1,6 @@
 ﻿using Bee.Define.Settings;
 using Bee.Base;
-using Bee.Contracts;
+using Bee.Api.Contracts;
 using Bee.Define;
 using System;
 using System.Collections.Generic;

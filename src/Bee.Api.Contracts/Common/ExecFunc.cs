@@ -1,0 +1,48 @@
+﻿using System;
+using MessagePack;
+
+namespace Bee.Api.Contracts
+{
+    /// <summary>
+    /// 執行自訂方法的傳入引數。
+    /// </summary>
+    [MessagePackObject]
+    [Serializable]
+    public class ExecFuncArgs : BusinessArgs
+    {
+        #region 建構函式
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        public ExecFuncArgs()
+        { }
+
+        /// <summary>
+        /// 建構函式。
+        /// </summary>
+        /// <param name="funcID">自訂方法識別編號。</param>
+        public ExecFuncArgs(string funcID)
+        {
+            FuncId = funcID;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// 自訂方法識別編號。
+        /// </summary>
+        [Key(100)]
+        public string FuncId { get; set; } = string.Empty;
+
+    }
+
+    /// <summary>
+    /// 執行自訂方法的傳出結果。
+    /// </summary>
+    [MessagePackObject]
+    [Serializable]
+    public class ExecFuncResult : BusinessResult
+    {
+    }
+}

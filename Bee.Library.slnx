@@ -20,7 +20,7 @@
     <Project Path="src/Bee.Business/Bee.Business.csproj" />
     <Project Path="src/Bee.Cache/Bee.Cache.csproj" />
     <Project Path="src/Bee.Connect/Bee.Connect.csproj" />
-    <Project Path="src/Bee.Contracts/Bee.Contracts.csproj" Id="65478f73-2ad9-433b-b2f2-dee9c49677f3" />
+    <Project Path="src/Bee.Api.Contracts/Bee.Api.Contracts.csproj" Id="65478f73-2ad9-433b-b2f2-dee9c49677f3" />
     <Project Path="src/Bee.Db/Bee.Db.csproj" />
     <Project Path="src/Bee.Define/Bee.Define.csproj" />
     <Project Path="src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj" Id="30b306b6-0aab-475e-8df0-e1a0801e56a6" />
@@ -33,7 +33,7 @@
     <Project Path="tests/Bee.Business.UnitTests/Bee.Business.UnitTests.csproj" />
     <Project Path="tests/Bee.Cache.UnitTests/Bee.Cache.UnitTests.csproj" />
     <Project Path="tests/Bee.Connect.UnitTests/Bee.Connect.UnitTests.csproj" />
-    <Project Path="tests/Bee.Contracts.UnitTests/Bee.Contracts.UnitTests.csproj" Id="3a3e8eb7-95e4-4590-811e-149f003ee48e" />
+    <Project Path="tests/Bee.Api.Contracts.UnitTests/Bee.Api.Contracts.UnitTests.csproj" Id="3a3e8eb7-95e4-4590-811e-149f003ee48e" />
     <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
     <Project Path="tests/Bee.Define.UnitTests/Bee.Define.UnitTests.csproj" />
     <Project Path="tests/Bee.Repository.UnitTests/Bee.Repository.UnitTests.csproj" Id="37be88f7-d67a-40a7-91a3-23583c6b85f1" />

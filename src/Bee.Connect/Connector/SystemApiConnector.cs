@@ -5,7 +5,7 @@ using Bee.Api.Core;
 using Bee.Base;
 using Bee.Base.Security;
 using Bee.Base.Serialization;
-using Bee.Contracts;
+using Bee.Api.Contracts;
 using Bee.Define;
 
 namespace Bee.Connect

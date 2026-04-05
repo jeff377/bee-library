@@ -1,6 +1,6 @@
 using Bee.Base;
 using Bee.Base.Security;
-using Bee.Contracts;
+using Bee.Api.Contracts;
 
 namespace Bee.Business.UnitTests
 {

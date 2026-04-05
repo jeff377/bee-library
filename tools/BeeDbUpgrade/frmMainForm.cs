@@ -1,7 +1,7 @@
 using Bee.Define.Settings;
 using System.Text;
 using Bee.Base;
-using Bee.Contracts;
+using Bee.Api.Contracts;
 using Bee.Define;
 using Bee.UI.Core;
 using Bee.UI.WinForms;
