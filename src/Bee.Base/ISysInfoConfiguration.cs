@@ -1,7 +1,7 @@
 ﻿namespace Bee.Base
 {
     /// <summary>
-    /// 提供 SysInfo 的相關設定值的介面。
+    /// Interface for providing configuration values for <see cref="SysInfo"/>.
     /// </summary>
     public interface ISysInfoConfiguration
     {

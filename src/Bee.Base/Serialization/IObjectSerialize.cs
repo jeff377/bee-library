@@ -1,19 +1,19 @@
 ﻿namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 物件處理序列化介面。
+    /// Interface for objects that support serialization state management.
     /// </summary>
     public interface IObjectSerialize : IObjectSerializeBase
     {
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the current serialization state.
         /// </summary>
         SerializeState SerializeState { get; }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state to set.</param>
         void SetSerializeState(SerializeState serializeState);
     }
 }

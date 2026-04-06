@@ -1,20 +1,20 @@
 namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 序列化格式。
+    /// Specifies the serialization format.
     /// </summary>
     public enum SerializeFormat
     {
         /// <summary>
-        /// Xml 格式。
+        /// XML format.
         /// </summary>
         Xml,
         /// <summary>
-        /// Json 格式。
+        /// JSON format.
         /// </summary>
         Json,
         /// <summary>
-        /// 二進位格式。
+        /// Binary format.
         /// </summary>
         Binary,
     }

@@ -11,42 +11,42 @@ using Bee.Base.Serialization;
 namespace Bee.Base
 {
     /// <summary>
-    /// 基本函式庫。
+    /// Core utility library.
     /// </summary>
     public static class BaseFunc
     {
         /// <summary>
-        /// 是否為 DBNull 值。
+        /// Determines whether the specified value is DBNull.
         /// </summary>
-        /// <param name="value">要判斷的值。</param>
+        /// <param name="value">The value to check.</param>
         public static bool IsDBNull(object value)
         {
             return Convert.IsDBNull(value);
         }
 
         /// <summary>
-        /// 是否為 null 或 DBNull 值。
+        /// Determines whether the specified value is null or DBNull.
         /// </summary>
-        /// <param name="value">要判斷的值。</param>
+        /// <param name="value">The value to check.</param>
         public static bool IsNullOrDBNull(object value)
         {
             return value == null || Convert.IsDBNull(value);
         }
 
         /// <summary>
-        /// 判斷指定的位元組陣列是否為 null 或長度為 0。
+        /// Determines whether the specified byte array is null or has zero length.
         /// </summary>
-        /// <param name="bytes">要檢查的位元組陣列。</param>
-        /// <returns>若為 null 或長度為 0，則傳回 true；否則傳回 false。</returns>
+        /// <param name="bytes">The byte array to check.</param>
+        /// <returns>True if null or empty; otherwise, false.</returns>
         public static bool IsNullOrEmpty(byte[] bytes)
         {
             return bytes == null || bytes.Length == 0;
         }
 
         /// <summary>
-        /// 是否為空值，Null 或 DBNull 皆視為空值。
+        /// Determines whether the specified value is empty; null and DBNull are both treated as empty.
         /// </summary>
-        /// <param name="value">要判斷的值。</param>
+        /// <param name="value">The value to check.</param>
         public static bool IsEmpty(object value)
         {
             switch (value)
@@ -67,38 +67,38 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷字串是否為空字串。
+        /// Determines whether the specified string is empty.
         /// </summary>
-        /// <param name="value">要判斷的字串。</param>
+        /// <param name="value">The string to check.</param>
         public static bool IsEmpty(string value)
         {
             return StrFunc.IsEmpty(value, true);
         }
 
         /// <summary>
-        /// 判斷 Guid 值是否為空值。
+        /// Determines whether the specified Guid value is empty.
         /// </summary>
-        /// <param name="value">要判斷的 Guid 值。</param>
+        /// <param name="value">The Guid value to check.</param>
         public static bool IsEmpty(Guid value)
         {
             return (value == Guid.Empty);
         }
 
         /// <summary>
-        /// 判斷日期值是否為空值。
+        /// Determines whether the specified date value is empty.
         /// </summary>
-        /// <param name="value">要判斷的日期值。</param>
+        /// <param name="value">The date value to check.</param>
         public static bool IsEmpty(DateTime value)
         {
-            // SQL 資料庫的 DateTime 最小值為 1753/1/1，小於此值視為空值
-            // 日期為 Null、DbNull、DateTime.MinValue 皆視為空值
+            // The minimum DateTime value in SQL databases is 1753/1/1; values earlier than this are treated as empty
+            // Null, DbNull, and DateTime.MinValue are all treated as empty
             return (IsNullOrDBNull(value) || value < new DateTime(1753, 1, 1));
         }
 
         /// <summary>
-        /// 判斷 IList 型別的集合是否無資料。
+        /// Determines whether the specified IList collection has no elements.
         /// </summary>
-        /// <param name="value">要判斷的集合。</param>
+        /// <param name="value">The collection to check.</param>
         public static bool IsEmpty(IList value)
         {
             if (value != null && value.Count != 0)
@@ -108,67 +108,67 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷 IEnumerable 型別的集合是否無資料。
+        /// Determines whether the specified IEnumerable collection has no elements.
         /// </summary>
-        /// <param name="enumerable">要判斷的集合。</param>
+        /// <param name="enumerable">The collection to check.</param>
         public static bool IsEmpty(IEnumerable enumerable)
         {
             if (enumerable == null) return true;
 
             var enumerator = enumerable.GetEnumerator();
-            return !enumerator.MoveNext(); // 判斷是否有至少一筆資料
+            return !enumerator.MoveNext(); // Check whether there is at least one element
         }
 
         /// <summary>
-        /// 檢查指定的位元組陣列是否為空（null 或長度為 0）。
+        /// Determines whether the specified byte array is empty (null or zero length).
         /// </summary>
-        /// <param name="data">位元組陣列。</param>
-        /// <returns>若為 null 或空陣列則回傳 true，否則為 false。</returns>
+        /// <param name="data">The byte array to check.</param>
+        /// <returns>True if null or empty; otherwise, false.</returns>
         public static bool IsEmpty(byte[] data)
         {
             return data == null || data.Length == 0;
         }
 
         /// <summary>
-        /// 取得列舉成員的名稱。
+        /// Gets the name of the specified enum member.
         /// </summary>
-        /// <param name="value">列舉值。</param>
+        /// <param name="value">The enum value.</param>
         public static string GetEnumName(Enum value)
         {
             return Enum.GetName(value.GetType(), value);
         }
 
         /// <summary>
-        /// 轉型為文字。
+        /// Converts the specified value to a string.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="defaultValue">無法成功轉型的預設值。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The default value returned when conversion fails.</param>
         public static string CStr(object value, string defaultValue)
         {
-            // 若為 null  或 DBNull 值，則傳回預設值
+            // Return the default value if null or DBNull
             if (BaseFunc.IsNullOrDBNull(value))
                 return defaultValue;
-            // 若為列舉型別，則傳回列舉名稱
+            // Return the enum name if the value is an enum type
             if (value is Enum e)
                 return GetEnumName(e);
-            // 轉型為文字
+            // Convert to string
             return value.ToString();
         }
 
         /// <summary>
-        /// 轉型為文字。
+        /// Converts the specified value to a string.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
+        /// <param name="value">The value to convert.</param>
         public static string CStr(object value)
         {
             return BaseFunc.CStr(value, string.Empty);
         }
 
         /// <summary>
-        /// 轉型為布林值。
+        /// Converts the specified value to a boolean.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The default value.</param>
         public static bool CBool(string value, bool defaultValue = false)
         {
             if (StrFunc.IsEmpty(value))
@@ -180,55 +180,55 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為布林值。
+        /// Converts the specified value to a boolean.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The default value.</param>
         public static bool CBool(object value, bool defaultValue = false)
         {
             return value is bool ? (bool)value : CBool(CStr(value), defaultValue);
         }
 
         /// <summary>
-        /// 轉型為列舉值。
+        /// Converts the specified string to an enum value.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="type">列舉型別。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="type">The enum type.</param>
         public static object CEnum(string value, Type type)
         {
             return Enum.Parse(type, value, true);
         }
 
         /// <summary>
-        /// 轉型為列舉值。
+        /// Converts the specified string to an enum value.
         /// </summary>
-        /// <typeparam name="T">列舉型別。</typeparam>
-        /// <param name="value">要轉型的值。</param>
+        /// <typeparam name="T">The enum type.</typeparam>
+        /// <param name="value">The value to convert.</param>
         public static T CEnum<T>(string value)
         {
             return (T)CEnum(value, typeof(T));
         }
 
         /// <summary>
-        /// 判斷指定的物件是否可被視為數值（支援 string、bool、enum）。
+        /// Determines whether the specified object can be treated as a numeric value (supports string, bool, and enum).
         /// </summary>
-        /// <param name="value">要判斷的值。</param>
-        /// <returns>若能轉型為數值則回傳 true。</returns>
+        /// <param name="value">The value to check.</param>
+        /// <returns>True if the value can be converted to a number.</returns>
         public static bool IsNumeric(object value)
         {
             if (value == null)
                 return false;
 
-            // bool 與 enum 視為可轉為數值
+            // bool and enum are treated as convertible to numeric
             if (value is bool || value is Enum)
                 return true;
 
-            // 針對 string 做特殊處理
+            // Special handling for string
             var s = value as string;
             if (s != null)
                 return double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out _);
 
-            // 基本數值型別
+            // Primitive numeric types
             if (value is byte || value is sbyte ||
                 value is short || value is ushort ||
                 value is int || value is uint ||
@@ -236,16 +236,16 @@ namespace Bee.Base
                 value is float || value is double || value is decimal)
                 return true;
 
-            // 最後一線防守：ToString 後再判斷（防止反射動態物件等）
+            // Last resort: convert to string and try parsing (handles reflection/dynamic objects)
             return double.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out _);
         }
 
 
         /// <summary>
-        /// 判斷字串是否為指定長度的數值。
+        /// Determines whether the specified string is a numeric value of the given length.
         /// </summary>
-        /// <param name="value">要判斷的值。</param>
-        /// <param name="length">長度。</param>
+        /// <param name="value">The value to check.</param>
+        /// <param name="length">The expected length.</param>
         public static bool IsNumeric(string value, int length)
         {
             if (BaseFunc.IsNumeric(value) && StrFunc.Length(value) == length)
@@ -255,12 +255,12 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 將傳入的物件轉換為數值型別。支援 string、bool、enum 與各種數值型別。
-        /// 若無法轉換，將拋出 InvalidCastException。
+        /// Converts the specified object to a numeric type. Supports string, bool, enum, and standard numeric types.
+        /// Throws <see cref="InvalidCastException"/> if conversion is not possible.
         /// </summary>
-        /// <param name="value">要轉型的值，可為 string、bool、enum 或數值型別。</param>
-        /// <returns>轉換後的數值。string 會轉為 double，bool 轉為 1 或 0，enum 轉為整數。</returns>
-        /// <exception cref="InvalidCastException">若無法轉換為數值，則拋出此例外。</exception>
+        /// <param name="value">The value to convert; can be string, bool, enum, or a numeric type.</param>
+        /// <returns>The converted number. Strings are converted to double, bools to 1 or 0, and enums to their integer value.</returns>
+        /// <exception cref="InvalidCastException">Thrown when the value cannot be converted to a number.</exception>
         public static object ConvertToNumber(object value)
         {
             if (IsNullOrDBNull(value))
@@ -298,10 +298,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為整數，若無法轉換則傳回預設值。
+        /// Converts the specified value to an integer; returns the default value if conversion fails.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The default value.</param>
         public static int CInt(object value, int defaultValue = 0)
         {
             if (BaseFunc.IsNullOrDBNull(value)) { return defaultValue; }
@@ -320,10 +320,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為 double 型別浮點數，若無法轉換則傳回預設值。
+        /// Converts the specified value to a double; returns the default value if conversion fails.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The default value.</param>
         public static double CDouble(object value, double defaultValue = 0)
         {
             if (BaseFunc.IsNullOrDBNull(value)) { return defaultValue; }
@@ -339,10 +339,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為 decimal 型別浮點數，精確度高達 28-29 個數字，若無法轉換則傳回預設值。
+        /// Converts the specified value to a decimal with up to 28-29 significant digits; returns the default value if conversion fails.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The default value.</param>
         public static decimal CDecimal(object value, decimal defaultValue = 0)
         {
             if (BaseFunc.IsNullOrDBNull(value)) { return defaultValue; }
@@ -358,10 +358,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為日期時間值。
+        /// Converts the specified value to a DateTime.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The default value.</param>
         public static DateTime CDateTime(object value, DateTime defaultValue = default)
         {
             string sValue;
@@ -372,7 +372,7 @@ namespace Bee.Base
 
             try
             {
-                // 轉換為字串，並去除日期分隔符號
+                // Convert to string and strip date separator characters
                 sValue = BaseFunc.CStr(value);
                 return StrToDate(sValue);
             }
@@ -383,42 +383,42 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 字串轉型為日期。
+        /// Converts a string to a date value.
         /// </summary>
-        /// <param name="value">描述日期的字串。</param>
+        /// <param name="value">The string describing a date.</param>
         private static DateTime StrToDate(string value)
         {
             string sValue;
             string sDate;
             int iLen;
 
-            // 去除日期分隔符號
+            // Remove date separator characters
             sValue = value.Replace("/", string.Empty);
             sValue = sValue.Replace("-", string.Empty);
-            // 全為數值才是允許轉換日期的格式
+            // Only all-numeric strings are valid for date conversion
             if (!BaseFunc.IsNumeric(sValue)) { return DateTime.MinValue; }
-            // 依字串長度，嘗試做日期轉換
+            // Attempt date conversion based on the string length
             iLen = StrFunc.Length(sValue);
             switch (iLen)
             {
-                case 8: // 8碼西元日期，例如 20150312
+                case 8: // 8-digit Gregorian date, e.g. 20150312
                     sDate = sValue.Insert(4, "-").Insert(7, "-");
                     break;
-                case 7: // 7碼民國日期，例如 1040312
+                case 7: // 7-digit ROC date, e.g. 1040312
                     sDate = StrFunc.Format("{0}-{1}-{2}", BaseFunc.CInt(StrFunc.Left(sValue, 3)) + 1911,
                         StrFunc.Substring(sValue, 3, 2), StrFunc.Substring(sValue, 5, 2));
                     break;
-                case 6: // 6碼西元年月，例如 201503
+                case 6: // 6-digit Gregorian year-month, e.g. 201503
                     sDate = BaseFunc.CStr(value).Insert(4, "-") + "-01";
                     break;
-                case 5: // 5碼民國年月，例如 10403
+                case 5: // 5-digit ROC year-month, e.g. 10403
                     sDate = StrFunc.Format("{0}-{1}-01", BaseFunc.CInt(StrFunc.Left(sValue, 3)) + 1911,
                         StrFunc.Substring(sValue, 3, 2));
                     break;
-                case 4: // 4碼西元年，例如 2015
+                case 4: // 4-digit Gregorian year, e.g. 2015
                     sDate = StrFunc.Format("{0}-01-01", sValue);
                     break;
-                case 3: // 3碼民國年，例如 104
+                case 3: // 3-digit ROC year, e.g. 104
                     sDate = StrFunc.Format("{0}-01-01", BaseFunc.CInt(sValue) + 1911);
                     break;
                 default:
@@ -433,19 +433,19 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為日期值。
+        /// Converts the specified value to a date (date portion only).
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="value">The value to convert.</param>
+        /// <param name="defaultValue">The default value.</param>
         public static DateTime CDate(object value, DateTime defaultValue = default)
         {
             return CDateTime(value, defaultValue).Date;
         }
 
         /// <summary>
-        /// 轉型為 Guid 值。
+        /// Converts the specified string to a Guid value.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
+        /// <param name="value">The value to convert.</param>
         public static Guid CGuid(string value)
         {
             if (IsEmpty(value))
@@ -455,9 +455,9 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為 Guid 值。
+        /// Converts the specified object to a Guid value.
         /// </summary>
-        /// <param name="value">要轉型的值。</param>
+        /// <param name="value">The value to convert.</param>
         public static Guid CGuid(object value)
         {
             if (IsNullOrDBNull(value))
@@ -471,10 +471,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為欄位資料型別的值。
+        /// Converts the specified value to the appropriate field data type.
         /// </summary>
-        /// <param name="dbType">欄位資料型別。</param>
-        /// <param name="value">傳入值。</param>
+        /// <param name="dbType">The field data type.</param>
+        /// <param name="value">The input value.</param>
         public static object CFieldValue(FieldDbType dbType, object value)
         {
             switch (dbType)
@@ -501,10 +501,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 轉型為要儲存至資料庫的值。
+        /// Converts the specified value to a database-ready field value.
         /// </summary>
-        /// <param name="dbType">欄位資料型別。</param>
-        /// <param name="value">傳入值。</param>
+        /// <param name="dbType">The field data type.</param>
+        /// <param name="value">The input value.</param>
         public static object CDbFieldValue(FieldDbType dbType, object value)
         {
             if (value is DateTime)
@@ -516,20 +516,20 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state on the specified object.
         /// </summary>
-        /// <param name="objectSerialize">物件序列化介面。</param>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="objectSerialize">The object serialization interface.</param>
+        /// <param name="serializeState">The serialization state to set.</param>
         public static void SetSerializeState(IObjectSerialize objectSerialize, SerializeState serializeState)
         {
             objectSerialize?.SetSerializeState(serializeState);
         }
 
         /// <summary>
-        /// 序列化時是否為空值，Null 或 DBNull 皆視為空值。
+        /// Determines whether the value is empty during serialization; null and DBNull are both treated as empty.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
-        /// <param name="value">要判斷的值。</param>
+        /// <param name="serializeState">The serialization state.</param>
+        /// <param name="value">The value to check.</param>
         public static bool IsSerializeEmpty(SerializeState serializeState, object value)
         {
             if (serializeState != SerializeState.Serialize) { return false; }
@@ -550,7 +550,7 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 產生新的 Guid 值。
+        /// Generates a new Guid value.
         /// </summary>
         public static Guid NewGuid()
         {
@@ -558,7 +558,7 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 產生新的 Guid 值字串。
+        /// Generates a new Guid value as a string.
         /// </summary>
         public static string NewGuidString()
         {
@@ -566,11 +566,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 隨機取得一個整數值（密碼學安全）。
+        /// Returns a cryptographically secure random integer.
         /// </summary>
-        /// <param name="min">最小值（含）。</param>
-        /// <param name="max">最大值（不含）。</param>
-        /// <returns>介於 min 與 max 之間的隨機整數。</returns>
+        /// <param name="min">The inclusive minimum value.</param>
+        /// <param name="max">The exclusive maximum value.</param>
+        /// <returns>A random integer between min (inclusive) and max (exclusive).</returns>
         public static int RndInt(int min, int max)
         {
 #if NET8_0_OR_GREATER
@@ -599,42 +599,42 @@ namespace Bee.Base
 
 
         /// <summary>
-        /// 建立指定型別的執行個體。
+        /// Creates an instance of the specified type.
         /// </summary>
-        /// <param name="assemblyName">組件名稱。</param>
-        /// <param name="typeName">型別名稱。</param>
-        /// <param name="args">建構函式引數。</param>
+        /// <param name="assemblyName">The assembly name.</param>
+        /// <param name="typeName">The type name.</param>
+        /// <param name="args">Constructor arguments.</param>
         public static object CreateInstance(string assemblyName, string typeName, params object[] args)
         {
             return AssemblyLoader.CreateInstance(assemblyName, typeName, args);
         }
 
         /// <summary>
-        /// 建立指定型別的執行個體。
+        /// Creates an instance of the specified type.
         /// </summary>
-        /// <param name="typeName">型別名稱，格式為 "Bee.Business.TBusinessObject, Bee.Business" 或 "Bee.Business.TBusinessObject"。</param>
-        /// <param name="args">建構函式引數。</param>
+        /// <param name="typeName">The type name, in the format "Bee.Business.TBusinessObject, Bee.Business" or "Bee.Business.TBusinessObject".</param>
+        /// <param name="args">Constructor arguments.</param>
         public static object CreateInstance(string typeName, params object[] args)
         {
             return AssemblyLoader.CreateInstance(typeName, args);
         }
 
         /// <summary>
-        /// 取得元件的指定 Attribute。
+        /// Gets the specified attribute from a component.
         /// </summary>
-        /// <param name="component">元件。</param>
-        /// <param name="attributeType">Attribute 型別。</param>
+        /// <param name="component">The component.</param>
+        /// <param name="attributeType">The attribute type.</param>
         public static Attribute GetAttribute(object component, Type attributeType)
         {
             return TypeDescriptor.GetAttributes(component)[attributeType];
         }
 
         /// <summary>
-        /// 取得屬性的指定 Attribute。
+        /// Gets the specified attribute from a property of a component.
         /// </summary>
-        /// <param name="component">元件。</param>
-        /// <param name="propertyName">屬性名稱。</param>
-        /// <param name="attributeType">Attribute 型別。</param>
+        /// <param name="component">The component.</param>
+        /// <param name="propertyName">The property name.</param>
+        /// <param name="attributeType">The attribute type.</param>
         public static Attribute GetPropertyAttribute(object component, string propertyName, Type attributeType)
         {
             var property = TypeDescriptor.GetProperties(component)[propertyName];
@@ -642,10 +642,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得元件的指定屬性值。
+        /// Gets the value of the specified property from a component.
         /// </summary>
-        /// <param name="component">元件。</param>
-        /// <param name="propertyName">屬性名稱。</param>
+        /// <param name="component">The component.</param>
+        /// <param name="propertyName">The property name.</param>
         public static object GetPropertyValue(object component, string propertyName)
         {
             var property = TypeDescriptor.GetProperties(component)[propertyName];
@@ -653,21 +653,21 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 設定元件的指定屬性值。
+        /// Sets the value of the specified property on a component.
         /// </summary>
-        /// <param name="component">物件。</param>
-        /// <param name="propertyName">屬性名稱。</param>
-        /// <param name="propertyValue">要寫入的屬性值。</param>
+        /// <param name="component">The object.</param>
+        /// <param name="propertyName">The property name.</param>
+        /// <param name="propertyValue">The property value to set.</param>
         public static void SetPropertyValue(object component, string propertyName, object propertyValue)
         {
             TypeDescriptor.GetProperties(component)[propertyName].SetValue(component, propertyValue);
         }
 
         /// <summary>
-        /// 判斷傳入值是否為指定的泛型型別。
+        /// Determines whether the specified value is of the given generic type.
         /// </summary>
-        /// <param name="value">傳入值。</param>
-        /// <param name="genericType">泛型型別。</param>
+        /// <param name="value">The value to check.</param>
+        /// <param name="genericType">The generic type.</param>
         public static bool IsGenericType(object value, Type genericType)
         {
             if (value == null)
@@ -677,11 +677,11 @@ namespace Bee.Base
 
             Type type = value.GetType();
 
-            // 檢查該型別是否為指定的泛型型別
+            // Check whether this type is the specified generic type
             if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)
                 return true;
 
-            // 檢查該型別是否繼承自某個指定的泛型型別
+            // Check whether this type inherits from the specified generic type
             while ((type = type.BaseType) != null && type != typeof(object))
             {
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)
@@ -692,10 +692,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 驗證物件的型別是否符合。
+        /// Verifies whether the object's type matches any of the specified types.
         /// </summary>
-        /// <param name="value">要驗證的物件。</param>
-        /// <param name="types">要判斷的型別陣列。</param>
+        /// <param name="value">The object to verify.</param>
+        /// <param name="types">An array of types to check against.</param>
         public static bool CheckTypes(object value, params Type[] types)
         {
             foreach (Type type in types)
@@ -707,19 +707,19 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得命令列引數。
+        /// Gets the command-line arguments as a dictionary.
         /// </summary>
         public static Dictionary<string, string> GetCommandLineArgs()
         {
             string[] args = Environment.GetCommandLineArgs();
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 1; i < args.Length; i++) // 跳過 args[0]（執行檔名）
+            for (int i = 1; i < args.Length; i++) // Skip args[0] (the executable name)
             {
                 if (!args[i].StartsWith("--")) continue;
 
-                string key = args[i].Substring(2); // 去掉 "--"
-                // 若下一個參數 (i + 1) 存在且不是以 "-" 開頭 (代表不是新的選項)，則取該參數作為值，並讓 i 前進一格；
-                // 否則，預設值為 "true"（適用於類似 "--flag" 這樣的開關選項）。
+                string key = args[i].Substring(2); // Strip the "--" prefix
+                // If the next argument (i + 1) exists and does not start with "-" (i.e., it's not a new option),
+                // use it as the value and advance i; otherwise, default to "true" (for flag-style options like "--flag").
                 string value = (i + 1 < args.Length && !args[i + 1].StartsWith("-")) ? args[++i] : "true";
 
                 result[key] = value;
@@ -728,9 +728,9 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 確認多個參數是否為 null，或是（如果為字串）是否為空字串或僅包含空白字元。
+        /// Validates that multiple parameters are not null, or (if strings) not empty or whitespace-only.
         /// </summary>
-        /// <param name="parameters">要驗證的參數與名稱集合，格式為 (value, paramName)。</param>
+        /// <param name="parameters">The collection of parameters and names to validate, as (value, paramName) tuples.</param>
         public static void EnsureNotNullOrWhiteSpace(params (object value, string paramName)[] parameters)
         {
             foreach (var p in parameters)
@@ -749,15 +749,15 @@ namespace Bee.Base
 
 
         /// <summary>
-        /// 取得例外的核心物件，移除常見的包裝層。
+        /// Unwraps an exception to its core cause by removing common wrapper layers.
         /// <list type="bullet">
-        /// <item><description>如果是 AggregateException，回傳第一個 InnerException。</description></item>
-        /// <item><description>如果是 TargetInvocationException，回傳其 InnerException。</description></item>
-        /// <item><description>否則直接回傳自己。</description></item>
+        /// <item><description>If the exception is an <see cref="AggregateException"/>, returns the first inner exception.</description></item>
+        /// <item><description>If the exception is a <see cref="System.Reflection.TargetInvocationException"/>, returns its inner exception.</description></item>
+        /// <item><description>Otherwise, returns the exception itself.</description></item>
         /// </list>
         /// </summary>
-        /// <param name="ex">要處理的例外。</param>
-        /// <returns>回傳最內層的例外，不會為 null。</returns>
+        /// <param name="ex">The exception to process.</param>
+        /// <returns>The innermost exception; never null.</returns>
         public static Exception UnwrapException(Exception ex)
         {
             if (ex == null)

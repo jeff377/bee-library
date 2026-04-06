@@ -4,22 +4,22 @@ using System.Data;
 namespace Bee.Base.Data
 {
     /// <summary>
-    /// DataTable 的擴充方法。
+    /// Extension methods for <see cref="DataTable"/>.
     /// </summary>
     public static class DataTableExtensions
     {
         /// <summary>
-        /// 建立欄位並加入資料表中。
+        /// Creates a column with the specified settings and adds it to the table.
         /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">欄位標題。</param>
-        /// <param name="dataType">資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
-        /// <param name="dateTimeMode">設定資料行的 DateTimeMode。</param>
+        /// <param name="table">The target table.</param>
+        /// <param name="fieldName">The column name.</param>
+        /// <param name="caption">The column caption.</param>
+        /// <param name="dataType">The data type of the column.</param>
+        /// <param name="defaultValue">The default value for the column.</param>
+        /// <param name="dateTimeMode">The <see cref="DataSetDateTime"/> mode for DateTime columns.</param>
         private static DataColumn AddColumn(this DataTable table, string fieldName, string caption, Type dataType, object defaultValue, DataSetDateTime dateTimeMode = DataSetDateTime.Unspecified)
         {
-            // 欄位名稱全轉為大寫
+            // Column names are stored in uppercase
             var column = new DataColumn(fieldName.ToUpper(), dataType);
             column.DefaultValue = defaultValue;
 
@@ -37,23 +37,23 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 建立欄位並加入資料表中。
+        /// Creates a column with the specified type and default value and adds it to the table.
         /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="dataType">資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="table">The target table.</param>
+        /// <param name="fieldName">The column name.</param>
+        /// <param name="dataType">The data type of the column.</param>
+        /// <param name="defaultValue">The default value for the column.</param>
         private static DataColumn AddColumn(this DataTable table, string fieldName, Type dataType, object defaultValue)
         {
             return AddColumn(table, fieldName, string.Empty, dataType, defaultValue);
         }
 
         /// <summary>
-        /// 建立欄位並加入資料表。
+        /// Creates a column for the specified field database type and adds it to the table.
         /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="dbType">欄位資料型別。</param>
+        /// <param name="table">The target table.</param>
+        /// <param name="fieldName">The column name.</param>
+        /// <param name="dbType">The field database type.</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, FieldDbType dbType)
         {
             var dataType = DbTypeConverter.ToType(dbType);
@@ -62,12 +62,12 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 建立欄位並加入資料表。
+        /// Creates a column for the specified field database type with an explicit default value and adds it to the table.
         /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="dbType">欄位資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="table">The target table.</param>
+        /// <param name="fieldName">The column name.</param>
+        /// <param name="dbType">The field database type.</param>
+        /// <param name="defaultValue">The default value for the column.</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, FieldDbType dbType, object defaultValue)
         {
             var dataType = DbTypeConverter.ToType(dbType);
@@ -75,13 +75,13 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 建立欄位並加入資料表中。
+        /// Creates a column with a caption for the specified field database type and adds it to the table.
         /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">欄位標題。</param>
-        /// <param name="dbType">欄位資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="table">The target table.</param>
+        /// <param name="fieldName">The column name.</param>
+        /// <param name="caption">The column caption.</param>
+        /// <param name="dbType">The field database type.</param>
+        /// <param name="defaultValue">The default value for the column.</param>
         public static DataColumn AddColumn(this DataTable table, string fieldName, string caption, FieldDbType dbType, object defaultValue)
         {
             var dataType = DbTypeConverter.ToType(dbType);
@@ -89,20 +89,20 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 判斷是否有指定欄位。
+        /// Determines whether the table contains the specified column.
         /// </summary>
-        /// <param name="dataTable">資料表。</param>
-        /// <param name="fieldName">欄位名稱。</param>
+        /// <param name="dataTable">The target table.</param>
+        /// <param name="fieldName">The column name to check.</param>
         public static bool HasField(this DataTable dataTable, string fieldName)
         {
             return dataTable.Columns.Contains(fieldName);
         }
 
         /// <summary>
-        /// 設定資料表的主索引鍵。
+        /// Sets the primary key of the table using a comma-separated list of column names.
         /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="fieldNames">主索引鍵的欄位集合字串，以逗點分隔多個欄位。</param>
+        /// <param name="table">The target table.</param>
+        /// <param name="fieldNames">A comma-separated string of column names that form the primary key.</param>
         public static void SetPrimaryKey(this DataTable table, string fieldNames)
         {
             string[] fieldNameArray = StrFunc.Split(fieldNames, ",");
@@ -117,12 +117,12 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 判斷資料表是否無資料。
+        /// Determines whether the table contains no rows.
         /// </summary>
-        /// <param name="dataTable">資料表。</param>
+        /// <param name="dataTable">The target table.</param>
         public static bool IsEmpty(this DataTable dataTable)
         {
-            // 資料表為 Null 或資料列數為零，皆視為無資料
+            // A null table or a table with zero rows is considered empty
             return dataTable == null || (dataTable.Rows.Count == 0);
         }
     }

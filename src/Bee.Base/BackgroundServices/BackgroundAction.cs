@@ -4,15 +4,15 @@ using System.Threading;
 namespace Bee.Base.BackgroundServices
 {
     /// <summary>
-    /// 背景工作的委派方法。
+    /// Represents a delegate action for a background task.
     /// </summary>
     public class BackgroundAction
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="BackgroundAction"/>.
         /// </summary>
-        /// <param name="action">委派方法。</param>
-        /// <param name="timeout">逾時取消工作的時間間隔，以毫秒為單位。</param>
+        /// <param name="action">The delegate to execute.</param>
+        /// <param name="timeout">The timeout interval in milliseconds after which the task will be cancelled.</param>
         public BackgroundAction(Action<CancellationToken> action, int timeout)
         {
             Action = action;
@@ -20,12 +20,12 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 委派方法。
+        /// Gets the delegate to execute.
         /// </summary>
         public Action<CancellationToken> Action { get; private set; }
 
         /// <summary>
-        /// 逾時取消工作的時間間隔，以毫秒為單位。
+        /// Gets the timeout interval in milliseconds after which the task will be cancelled.
         /// </summary>
         public int Timeout { get; private set; } = 0;
     }

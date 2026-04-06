@@ -1,20 +1,20 @@
 namespace Bee.Base.Tracing
 {
     /// <summary>
-    /// 追蹤事件的執行狀態，用於標示該次追蹤的結果。
+    /// Execution status of a trace event, used to indicate the result of a trace.
     /// </summary>
     public enum TraceStatus
     {
         /// <summary>
-        /// 成功完成，無錯誤或中斷。
+        /// Completed successfully with no errors or interruptions.
         /// </summary>
         Ok,
         /// <summary>
-        /// 發生錯誤，例如例外或執行失敗。
+        /// An error occurred, such as an exception or execution failure.
         /// </summary>
         Error,
         /// <summary>
-        /// 執行被取消，例如使用者中斷或系統中止。
+        /// Execution was cancelled, e.g. by user interruption or system abort.
         /// </summary>
         Cancelled
     }

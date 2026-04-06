@@ -3,27 +3,27 @@
 namespace Bee.Base.Data
 {
     /// <summary>
-    /// DataSet 的擴充方法。
+    /// Extension methods for <see cref="DataSet"/>.
     /// </summary>
     public static class DataSetExtensions
     {
         /// <summary>
-        /// 取得主檔資料表。
+        /// Gets the master table from the dataset.
         /// </summary>
-        /// <param name="dataSet">資料集。</param>
+        /// <param name="dataSet">The dataset.</param>
         public static DataTable GetMasterTable(this DataSet dataSet)
         {
             if (dataSet == null) { return null; }
             if (StrFunc.IsEmpty(dataSet.DataSetName)) { return null; }
             if (!dataSet.Tables.Contains(dataSet.DataSetName)) { return null; }
-            // 主檔資料表 TableName 等於 DataSetName，視為主檔資料表
+            // The master table is the one whose TableName equals the DataSetName
             return dataSet.Tables[dataSet.DataSetName];
         }
 
         /// <summary>
-        /// 取得主檔資料列。
+        /// Gets the first row of the master table.
         /// </summary>
-        /// <param name="dataSet">資料集。</param>
+        /// <param name="dataSet">The dataset.</param>
         public static DataRow GetMasterRow(this DataSet dataSet)
         {
             var table = GetMasterTable(dataSet);
@@ -32,14 +32,14 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 判斷資料集是否無資料。
+        /// Determines whether the dataset contains no data.
         /// </summary>
-        /// <param name="dataSet">要判斷的資料集。</param>
+        /// <param name="dataSet">The dataset to check.</param>
         public static bool IsEmpty(this DataSet dataSet)
         {
-            // 資料集為 null 或無資料表，皆視為無資料
+            // A null dataset or one with no tables is considered empty
             if (dataSet == null || (dataSet.Tables.Count == 0)) { return true; }
-            // 主檔資料表無資料時，也視為無資料
+            // Also considered empty if the master table has no rows
             var table = GetMasterTable(dataSet);
             return table.IsEmpty();
         }

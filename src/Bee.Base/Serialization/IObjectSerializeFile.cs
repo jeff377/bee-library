@@ -1,19 +1,19 @@
 ﻿namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 物件支援序列化至檔案的介面。
+    /// Interface for objects that support serialization to a file.
     /// </summary>
     public interface IObjectSerializeFile : IObjectSerialize
     {
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the serialization-bound file path.
         /// </summary>
         string ObjectFilePath { get; }
 
         /// <summary>
-        /// 設定序列化繫結檔案。
+        /// Sets the serialization-bound file path.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         void SetObjectFilePath(string filePath);
     }
 }

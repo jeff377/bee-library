@@ -8,26 +8,26 @@ using Bee.Base.Serialization;
 namespace Bee.Base.Collections
 {
     /// <summary>
-    /// 具鍵值的強型別集合。
+    /// Base class for strongly-typed keyed collections.
     /// </summary>
-    /// <typeparam name="T">集合成員型別。</typeparam>
+    /// <typeparam name="T">The type of the collection items.</typeparam>
     [Serializable]
     public class KeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty
-        where T : class, IKeyCollectionItem  // 定義成員型別必須實作 IKeyCollectionItem 介面
+        where T : class, IKeyCollectionItem  // Item type must implement IKeyCollectionItem
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="KeyCollectionBase{T}"/>.
         /// </summary>
         public KeyCollectionBase() : base(StringComparer.CurrentCultureIgnoreCase)
         {
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="KeyCollectionBase{T}"/> with the specified owner.
         /// </summary>
-        /// <param name="owner">擁有者。</param>
+        /// <param name="owner">The owner of this collection.</param>
         public KeyCollectionBase(object owner) : this()
         {
             Owner = owner;
@@ -35,48 +35,48 @@ namespace Bee.Base.Collections
 
         #endregion
 
-        #region IKeyCollectionBase 介面
+        #region IKeyCollectionBase Interface
 
         /// <summary>
-        ///  擁有者。
+        /// Gets the owner of this collection.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public object Owner { get; } = null;
 
         /// <summary>
-        /// 變更成員鍵值。 
+        /// Changes the key of an existing item in the collection.
         /// </summary>
-        /// <param name="key">鍵值。</param>
-        /// <param name="value">成員。</param>
+        /// <param name="key">The new key.</param>
+        /// <param name="value">The item whose key should be changed.</param>
         public void ChangeItemKey(string key, IKeyCollectionItem value)
         {
             base.ChangeItemKey((T)value, key);
         }
 
         /// <summary>
-        /// 移除成員。
+        /// Removes the specified item from the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to remove.</param>
         public void Remove(IKeyCollectionItem value)
         {
             base.Remove(value.Key);
         }
 
         /// <summary>
-        /// 加入成員。
+        /// Adds the specified item to the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to add.</param>
         public void Add(IKeyCollectionItem value)
         {
             base.Add((T)value);
         }
 
         /// <summary>
-        /// 插入成員。
+        /// Inserts the specified item at the given index.
         /// </summary>
-        /// <param name="index">索引位置。</param>
-        /// <param name="value">成員。</param>
+        /// <param name="index">The zero-based index at which to insert the item.</param>
+        /// <param name="value">The item to insert.</param>
         public void Insert(int index, IKeyCollectionItem value)
         {
             base.Insert(index, (T)value);
@@ -84,19 +84,19 @@ namespace Bee.Base.Collections
 
         #endregion
 
-        #region IObjectSerialize 介面
+        #region IObjectSerialize Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the current serialization state.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state for this collection and all of its items.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state to set.</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -109,10 +109,10 @@ namespace Bee.Base.Collections
 
         #endregion
 
-        #region ITagProperty 介面
+        #region ITagProperty Interface
 
         /// <summary>
-        /// 儲存額外資訊。
+        /// Gets or sets an arbitrary object for storing additional information.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
@@ -121,19 +121,19 @@ namespace Bee.Base.Collections
         #endregion
 
         /// <summary>
-        /// 取得成員鍵值。
+        /// Returns the key for the specified item.
         /// </summary>
-        /// <param name="item">成員。</param>
+        /// <param name="item">The item whose key to retrieve.</param>
         protected override string GetKeyForItem(T item)
         {
             return item.Key;
         }
 
         /// <summary>
-        /// 覆寫 InsertItem 方法。
+        /// Overrides the <see cref="KeyedCollection{TKey,TItem}.InsertItem"/> method to set the owning collection on the inserted item.
         /// </summary>
-        /// <param name="index">索引。</param>
-        /// <param name="item">成員。</param>
+        /// <param name="index">The zero-based index at which to insert the item.</param>
+        /// <param name="item">The item to insert.</param>
         protected override void InsertItem(int index, T item)
         {
             base.InsertItem(index, item);
@@ -141,9 +141,9 @@ namespace Bee.Base.Collections
         }
 
         /// <summary>
-        /// 覆寫 RemoveItem 方法。
+        /// Overrides the <see cref="KeyedCollection{TKey,TItem}.RemoveItem"/> method to clear the owning collection reference before removal.
         /// </summary>
-        /// <param name="index">索引。</param>
+        /// <param name="index">The zero-based index of the item to remove.</param>
         protected override void RemoveItem(int index)
         {
             this[index].SetCollection(null);
@@ -151,9 +151,9 @@ namespace Bee.Base.Collections
         }
 
         /// <summary>
-        /// 依鍵值取得成員，若不存在則回傳 null。
+        /// Returns the item with the specified key, or the default value if not found.
         /// </summary>
-        /// <param name="key">鍵值。</param>
+        /// <param name="key">The key to look up.</param>
         public T GetOrDefault(string key)
         {
             if (Contains(key))

@@ -6,62 +6,62 @@ using Bee.Base.Tracing;
 namespace Bee.Base
 {
     /// <summary>
-    /// 系統資訊，前端及後端通用的參數及環境設置。
+    /// System information; shared parameters and environment settings for both frontend and backend.
     /// </summary>
     public static class SysInfo
     {
         static SysInfo()
         {
-            // 預設加入允許 JSON-RPC 傳遞資料的型別命名空間
+            // Add the default allowed type namespaces for JSON-RPC data transfer
             AllowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Define", "Bee.Contracts" };
         }
 
         /// <summary>
-        /// 系統主版號。
+        /// Gets or sets the system major version number.
         /// </summary>
         public static string Version { get; set; } = string.Empty;
 
         /// <summary>
-        /// 是否啟用追蹤（唯讀，當 TraceListener 不為 null 時啟用）。
+        /// Gets a value indicating whether tracing is enabled (read-only; enabled when TraceListener is not null).
         /// </summary>
         public static bool TraceEnabled => TraceListener != null;
 
         /// <summary>
-        /// 執行流程監控器，提供系統層級的追蹤區段監控功能，
-        /// 由應用程式呼叫以記錄執行流程的開始、結束與單點事件，
-        /// 便於效能分析與異常追蹤。
+        /// Gets or sets the execution flow monitor, which provides system-level trace segment monitoring.
+        /// Called by the application to record the start, end, and individual events in the execution flow,
+        /// enabling performance analysis and exception tracing.
         /// </summary>
         public static ITraceListener TraceListener { get; set; } = null;
 
         /// <summary>
-        /// 是否為偵錯模式。
+        /// Gets or sets a value indicating whether debug mode is enabled.
         /// </summary>
         public static bool IsDebugMode { get; set; } = false;
 
         /// <summary>
-        /// 是否為工具程式模式（例如 SettingsEditor.exe）。
-        /// 此屬性只能由程式啟動階段指定，不允許從設定檔載入。
-        /// 用於允許近端執行且不需 AccessToken 的驗證流程。
+        /// Gets or sets a value indicating whether the application is running in tool mode (e.g. SettingsEditor.exe).
+        /// This property can only be set during application startup and cannot be loaded from a configuration file.
+        /// Used to allow local execution without requiring AccessToken authentication.
         /// </summary>
         public static bool IsToolMode { get; set; } = false;
 
         /// <summary>
-        /// 是否發佈為單一執行檔（例如 SettingsEditor.exe）。
-        /// 若應用程式發佈為單一執行檔時，無法動態載入物件，需由程式碼建立。
+        /// Gets or sets a value indicating whether the application is published as a single-file executable (e.g. SettingsEditor.exe).
+        /// When published as a single file, dynamic object loading is not available and objects must be created via code.
         /// </summary>
         public static bool IsSingleFile { get; set; } = false;
 
         /// <summary>
-        /// 允許 JSON-RPC 傳遞資料的型別命名空間清單。
-        /// 僅允許這些命名空間中的型別進行反序列化，以確保安全性。
-        /// 注意：Bee.Base 與 Bee.Define 為系統內建的預設命名空間，無需額外指定。
+        /// Gets or sets the list of type namespaces allowed for JSON-RPC data transfer.
+        /// Only types in these namespaces are permitted for deserialization to ensure security.
+        /// Note: Bee.Base and Bee.Define are built-in default namespaces and do not need to be specified.
         /// </summary>
         public static List<string> AllowedTypeNamespaces { get; set; }
 
         /// <summary>
-        /// 驗證是否為允許的型別命名空間。
+        /// Validates whether the specified type name is in an allowed namespace.
         /// </summary>
-        /// <param name="typeName">型別名稱。</param>
+        /// <param name="typeName">The type name to validate.</param>
         public static bool IsTypeNameAllowed(string typeName)
         {
             foreach (var ns in AllowedTypeNamespaces)
@@ -74,9 +74,9 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 初始化。
+        /// Initializes SysInfo with the provided configuration values.
         /// </summary>
-        /// <param name="configuration">提供 SysInfo 的相關設定值。</param>
+        /// <param name="configuration">The configuration values for SysInfo.</param>
         public static void Initialize(ISysInfoConfiguration configuration)
         {
             Version = configuration.Version;

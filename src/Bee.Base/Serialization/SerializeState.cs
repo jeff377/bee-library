@@ -1,16 +1,16 @@
 namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 序列化狀態。
+    /// Serialization state.
     /// </summary>
     public enum SerializeState
     {
         /// <summary>
-        /// 無。
+        /// None.
         /// </summary>
         None,
         /// <summary>
-        /// 序列化。
+        /// Serializing.
         /// </summary>
         Serialize,
     }

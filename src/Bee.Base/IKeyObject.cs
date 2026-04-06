@@ -1,12 +1,12 @@
 ﻿namespace Bee.Base
 {
     /// <summary>
-    /// 同類型物件具有鍵值的介面。
+    /// Interface for objects of the same type that have a key value.
     /// </summary>
     public interface IKeyObject
     {
         /// <summary>
-        /// 取得成員鍵值。
+        /// Gets the key value of the member.
         /// </summary>
         string GetKey();
     }

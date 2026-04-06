@@ -4,29 +4,29 @@ using System.Runtime.CompilerServices;
 namespace Bee.Base.Tracing
 {
     /// <summary>
-    /// 預設執行流程監控器。
+    /// Default execution flow monitor.
     /// </summary>
     public sealed class TraceListener : ITraceListener
     {
         private readonly ITraceWriter _writer;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TraceListener"/>.
         /// </summary>
-        /// <param name="writer">用於輸出的追蹤寫入器。</param>
+        /// <param name="writer">The trace writer used for output.</param>
         public TraceListener(ITraceWriter writer)
         {
             _writer = writer ?? throw new ArgumentNullException(nameof(writer));
         }
 
         /// <summary>
-        /// 開始追蹤一個監控區段，回傳對應的 <see cref="TraceContext"/>。
+        /// Starts a trace segment and returns the corresponding <see cref="TraceContext"/>.
         /// </summary>
-        /// <param name="layer">所屬追蹤層級。</param>
-        /// <param name="detail">額外描述，例如 SQL 語法或 API 路由。</param>
-        /// <param name="name">監控名稱，例如方法名稱或事件名稱，若未設定自動帶入呼叫者方法名稱。</param>
-        /// <param name="category">追蹤分類，可用於 Trace Viewer 依分類解析 Tag。</param>
-        /// <param name="tag">追蹤物件，依 Category 解析內容。</param>
+        /// <param name="layer">The trace layer this segment belongs to.</param>
+        /// <param name="detail">Additional description, e.g. a SQL statement or API route.</param>
+        /// <param name="name">The monitor name, e.g. a method or event name; automatically populated with the caller's method name if not set.</param>
+        /// <param name="category">The trace category, used by the Trace Viewer to parse the Tag by category.</param>
+        /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         public TraceContext TraceStart(
             TraceLayer layer, string detail = "", [CallerMemberName] string name = "",
             string category = "", object tag = null)
@@ -48,11 +48,11 @@ namespace Bee.Base.Tracing
         }
 
         /// <summary>
-        /// 結束指定的追蹤區段，並輸出對應的 <see cref="TraceEvent"/>。
+        /// Ends the specified trace segment and emits the corresponding <see cref="TraceEvent"/>.
         /// </summary>
-        /// <param name="ctx">開始追蹤時建立的上下文。</param>
-        /// <param name="status">執行狀態，例如 Ok、Error 或 Cancelled。</param>
-        /// <param name="detail">額外描述，可覆寫開始時的 Detail。</param>
+        /// <param name="ctx">The context created when the trace was started.</param>
+        /// <param name="status">The execution status, e.g. Ok, Error, or Cancelled.</param>
+        /// <param name="detail">Additional description; overrides the Detail set at start if provided.</param>
         public void TraceEnd(TraceContext ctx, TraceStatus status = TraceStatus.Ok, string detail = null)
         {
             if (ctx == null) return;
@@ -73,14 +73,14 @@ namespace Bee.Base.Tracing
         }
 
         /// <summary>
-        /// 在任意位置寫入單點追蹤事件，不需成對呼叫。
+        /// Writes a single-point trace event at any position without requiring a paired start/end call.
         /// </summary>
-        /// <param name="layer">所屬層級。</param>
-        /// <param name="detail">事件描述。</param>
-        /// <param name="name">監控名稱，例如方法名稱或事件名稱，若未設定自動帶入呼叫者方法名稱。</param>
-        /// <param name="status">執行狀態。</param>
-        /// <param name="category">追蹤分類，可用於 Trace Viewer 依分類解析 Tag。</param>
-        /// <param name="tag">追蹤物件，依 Category 解析內容。</param>
+        /// <param name="layer">The layer this event belongs to.</param>
+        /// <param name="detail">The event description.</param>
+        /// <param name="name">The monitor name, e.g. a method or event name; automatically populated with the caller's method name if not set.</param>
+        /// <param name="status">The execution status.</param>
+        /// <param name="category">The trace category, used by the Trace Viewer to parse the Tag by category.</param>
+        /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         public void TraceWrite(
             TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok,
             string category = "", object tag = null)

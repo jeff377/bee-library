@@ -1,21 +1,21 @@
 ﻿namespace Bee.Base
 {
     /// <summary>
-    /// 測試連線結果類別。
+    /// Represents the result of a connection test.
     /// </summary>
     public class ConnectionTestResult
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ConnectionTestResult"/>.
         /// </summary>
         public ConnectionTestResult()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ConnectionTestResult"/>.
         /// </summary>
-        /// <param name="isSuccess">是否成功。</param>
-        /// <param name="message">錯誤或狀態訊息。</param>
+        /// <param name="isSuccess">Whether the connection test succeeded.</param>
+        /// <param name="message">The error or status message.</param>
         public ConnectionTestResult(bool isSuccess, string message)
         {
             this.IsSuccess = isSuccess;
@@ -23,12 +23,12 @@
         }
 
         /// <summary>
-        /// 是否成功。
+        /// Gets or sets a value indicating whether the connection test succeeded.
         /// </summary>
         public bool IsSuccess { get; set; } = false;
 
         /// <summary>
-        /// 錯誤或狀態訊息。
+        /// Gets or sets the error or status message.
         /// </summary>
         public string Message { get; set; } = string.Empty;
     }

@@ -4,14 +4,14 @@ using System.Security.Cryptography;
 namespace Bee.Base.Security
 {
     /// <summary>
-    /// AES-CBC 與 HMAC 金鑰的產生器，用於產生或還原加密所需的組合金鑰（64 bytes）。
+    /// Generator for AES-CBC and HMAC keys; generates or restores the combined key (64 bytes) required for encryption.
     /// </summary>
     public static class AesCbcHmacKeyGenerator
     {
         /// <summary>
-        /// 建立一組新的 AES 金鑰與 HMAC 金鑰，合併為 64 bytes。
+        /// Generates a new AES key and HMAC key, combined into 64 bytes.
         /// </summary>
-        /// <returns>合併後的金鑰資料（前 32 bytes 為 AES Key，後 32 bytes 為 HMAC Key）。</returns>
+        /// <returns>The combined key data (first 32 bytes are the AES key, next 32 bytes are the HMAC key).</returns>
         public static byte[] GenerateCombinedKey()
         {
             var aesKey = new byte[32];
@@ -30,9 +30,9 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 建立一組新的 AES 與 HMAC 金鑰，並以 Base64 編碼字串回傳。
+        /// Generates a new AES and HMAC key pair and returns it as a Base64-encoded string.
         /// </summary>
-        /// <returns>Base64 編碼的合併金鑰字串。</returns>
+        /// <returns>The Base64-encoded combined key string.</returns>
         public static string GenerateBase64CombinedKey()
         {
             var combined = GenerateCombinedKey();
@@ -40,12 +40,12 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 從 64 bytes 的合併金鑰中還原 AES 與 HMAC 金鑰。
+        /// Extracts the AES and HMAC keys from a 64-byte combined key.
         /// </summary>
-        /// <param name="combinedKey">合併後的金鑰資料（長度必須為 64 bytes）。</param>
-        /// <param name="aesKey">還原出的 AES 對稱加密金鑰。</param>
-        /// <param name="hmacKey">還原出的 HMAC 驗證用金鑰。</param>
-        /// <exception cref="ArgumentException">若金鑰長度不為 64 bytes 時擲出。</exception>
+        /// <param name="combinedKey">The combined key data (must be exactly 64 bytes).</param>
+        /// <param name="aesKey">The extracted AES symmetric encryption key.</param>
+        /// <param name="hmacKey">The extracted HMAC verification key.</param>
+        /// <exception cref="ArgumentException">Thrown when the key length is not 64 bytes.</exception>
         public static void FromCombinedKey(byte[] combinedKey, out byte[] aesKey, out byte[] hmacKey)
         {
             if (combinedKey == null || combinedKey.Length != 64)
@@ -58,12 +58,12 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 從 Base64 編碼的合併金鑰還原 AES 與 HMAC 金鑰。
+        /// Extracts the AES and HMAC keys from a Base64-encoded combined key string.
         /// </summary>
-        /// <param name="base64">Base64 編碼的金鑰字串。</param>
-        /// <param name="aesKey">還原出的 AES 對稱加密金鑰。</param>
-        /// <param name="hmacKey">還原出的 HMAC 驗證用金鑰。</param>
-        /// <exception cref="ArgumentException">若金鑰長度不為 64 bytes 時擲出。</exception>
+        /// <param name="base64">The Base64-encoded key string.</param>
+        /// <param name="aesKey">The extracted AES symmetric encryption key.</param>
+        /// <param name="hmacKey">The extracted HMAC verification key.</param>
+        /// <exception cref="ArgumentException">Thrown when the key length is not 64 bytes.</exception>
         public static void FromBase64CombinedKey(string base64, out byte[] aesKey, out byte[] hmacKey)
         {
             var combinedKey = Convert.FromBase64String(base64);

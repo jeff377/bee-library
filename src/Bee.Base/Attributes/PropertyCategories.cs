@@ -1,28 +1,28 @@
 namespace Bee.Base.Attributes
 {
     /// <summary>
-    /// 屬性視窗的顯示分類常數。
+    /// Display category constants for property windows.
     /// </summary>
     public class PropertyCategories
     {
         /// <summary>
-        /// 行為。
+        /// Behavior category.
         /// </summary>
         public const string Behavior = "Behavior";
         /// <summary>
-        /// 資料。
+        /// Data category.
         /// </summary>
         public const string Data = "Data";
         /// <summary>
-        /// 外觀。
+        /// Appearance category.
         /// </summary>
         public const string Appearance = "Appearance";
         /// <summary>
-        /// 配置。
+        /// Layout category.
         /// </summary>
         public const string Layout = "Layout";
         /// <summary>
-        /// 動作。
+        /// Action category.
         /// </summary>
         public const string Action = "Action";
     }

@@ -4,16 +4,16 @@ using System.Linq.Expressions;
 namespace Bee.Base
 {
     /// <summary>
-    /// 提供屬性或欄位的完整路徑解析工具，
-    /// 可將 Lambda 表示式轉換為「類別.成員」字串，支援巢狀結構。
+    /// Provides a utility for resolving the full path of a property or field,
+    /// converting a lambda expression to a "Class.Member" string with support for nested structures.
     /// </summary>
     public static class MemberPath
     {
         /// <summary>
-        /// 取得屬性或欄位的完整路徑 (支援巢狀)。
+        /// Gets the full path of a property or field (supports nesting).
         /// </summary>
-        /// <typeparam name="T">屬性或欄位類型。</typeparam>
-        /// <param name="expression">Lambda，例如：() => Config.Database.ServerName。</param>
+        /// <typeparam name="T">The type of the property or field.</typeparam>
+        /// <param name="expression">A lambda expression, e.g.: () => Config.Database.ServerName.</param>
         public static string Of<T>(Expression<Func<T>> expression)
         {
             if (expression.Body is MemberExpression member)
@@ -27,11 +27,11 @@ namespace Bee.Base
 
         private static string GetFullPath(MemberExpression member)
         {
-            // 有父層就遞迴組路徑
+            // If there is a parent, recurse to build the full path
             if (member.Expression is MemberExpression parent)
                 return $"{GetFullPath(parent)}.{member.Member.Name}";
 
-            // 到最上層（static class 或 instance 類別）
+            // Reached the top level (static class or instance class)
             return $"{member.Member.DeclaringType?.Name}.{member.Member.Name}";
         }
     }

@@ -3,24 +3,24 @@
 namespace Bee.Base
 {
     /// <summary>
-    /// 日期時間函式庫。
+    /// Utility library for date and time operations.
     /// </summary>
     public static class DateTimeFunc
     {
         /// <summary>
-        /// 判斷日期時間值是否為未設定。
+        /// Determines whether the specified date/time value is empty (not set).
         /// </summary>
-        /// <param name="dateValue">日期時間值。</param>
+        /// <param name="dateValue">The date/time value to check.</param>
         public static bool IsEmpty(DateTime dateValue)
         {
-            // SQL 資料庫的 DateTime 最小值為 1753/1/1，小於此值視為空值
+            // The minimum DateTime value in SQL databases is 1753/1/1; values earlier than this are treated as empty
             return dateValue < new DateTime(1753, 1, 1);
         }
 
         /// <summary>
-        /// 判斷傳入值是否為日期格式。
+        /// Determines whether the specified value is a valid date.
         /// </summary>
-        /// <param name="value">要判斷的值。</param>
+        /// <param name="value">The value to check.</param>
         public static bool IsDate(object value)
         {
             if (value is DateTime) { return true; }
@@ -28,19 +28,19 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 日期時間值格式化。
+        /// Formats a date/time value using the specified format string.
         /// </summary>
-        /// <param name="dateValue">日期時間值。</param>
-        /// <param name="format">格式化字串。</param>
+        /// <param name="dateValue">The date/time value to format.</param>
+        /// <param name="format">The format string.</param>
         public static string Format(DateTime dateValue, string format)
         {
             return dateValue.ToString(format);
         }
 
         /// <summary>
-        /// 取得傳入日期的年月。
+        /// Gets the year and month portion of the specified date value.
         /// </summary>
-        /// <param name="value">日期值。</param>
+        /// <param name="value">The date value.</param>
         public static DateTime GetYearMonth(DateTime value)
         {
             return new DateTime(value.Year, value.Month, 1);

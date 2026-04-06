@@ -6,25 +6,25 @@ using System.Text.RegularExpressions;
 namespace Bee.Base
 {
     /// <summary>
-    /// 檔案存取函式庫。
+    /// Utility library for file access operations.
     /// </summary>
     public static class FileFunc
     {
-        #region 檔案相關方法
+        #region File Methods
 
         /// <summary>
-        /// 判斷指定檔案是否存在。
+        /// Determines whether the specified file exists.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public static bool FileExists(string filePath)
         {
             return File.Exists(filePath);
         }
 
         /// <summary>
-        /// 檔案刪除。
+        /// Deletes the specified file.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public static void FileDelele(string filePath)
         {
             if (FileFunc.FileExists(filePath))
@@ -32,47 +32,47 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 檔案轉為二進位資料。
+        /// Reads a file and returns its contents as a byte array.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public static byte[] FileToBytes(string filePath)
         {
             return File.ReadAllBytes(filePath);
         }
 
         /// <summary>
-        /// 二進位資料轉為檔案。
+        /// Writes a byte array to the specified file.
         /// </summary>
-        /// <param name="bytes">二進位資料。</param>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="bytes">The binary data.</param>
+        /// <param name="filePath">The file path.</param>
         public static void BytesToFile(byte[] bytes, string filePath)
         {
-            // 判斷目錄是否存在，不存在則建立
+            // Verify the directory exists; create it if not
             DirectoryCheck(filePath, true);
-            // 二進位資料寫入檔案
+            // Write binary data to the file
             File.WriteAllBytes(filePath, bytes);
         }
 
         /// <summary>
-        /// 檔案轉為串流。
+        /// Opens a file as a stream.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public static Stream FileToStream(string filePath)
         {
             return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         }
 
         /// <summary>
-        /// 串流轉為檔案。
+        /// Writes a stream to the specified file.
         /// </summary>
-        /// <param name="stream">串流。</param>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="stream">The stream.</param>
+        /// <param name="filePath">The file path.</param>
         public static void StreamToFile(Stream stream, string filePath)
         {
-            // 判斷目錄是否存在，不存在則建立
+            // Verify the directory exists; create it if not
             DirectoryCheck(filePath, true);
 
-            // 設置資料流的起始位置
+            // Set the stream position to the beginning
             stream.Seek(0, SeekOrigin.Begin);
             using (FileStream fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
             {
@@ -81,34 +81,34 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 寫入文字檔，然後關閉檔案。若檔案已存在則覆蓋，預設編碼為 UTF8。
+        /// Writes text to a file and closes it. Overwrites the file if it exists. Default encoding is UTF-8.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
-        /// <param name="contents">要寫入檔案的字串。</param>
+        /// <param name="filePath">The file path.</param>
+        /// <param name="contents">The string to write to the file.</param>
         public static void FileWriteText(string filePath, string contents)
         {
-            // UTF8Encoding(false) 為不含位元組順序標記（BOM）的 UTF-8 編碼
+            // UTF8Encoding(false) is UTF-8 encoding without a byte order mark (BOM)
             FileWriteText(filePath, contents, new UTF8Encoding(false));
         }
 
         /// <summary>
-        /// 寫入文字檔，然後關閉檔案。若檔案已存在則覆蓋。
+        /// Writes text to a file and closes it. Overwrites the file if it exists.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
-        /// <param name="contents">要寫入檔案的字串。</param>
-        /// <param name="encoding">編碼方式。</param>
+        /// <param name="filePath">The file path.</param>
+        /// <param name="contents">The string to write to the file.</param>
+        /// <param name="encoding">The encoding to use.</param>
         public static void FileWriteText(string filePath, string contents, Encoding encoding)
         {
-            // 判斷目錄是否存在，不存在則建立
+            // Verify the directory exists; create it if not
             DirectoryCheck(filePath, true);
 
             File.WriteAllText(filePath, contents, encoding);
         }
 
         /// <summary>
-        /// 讀取文字檔。
+        /// Reads the contents of a text file.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public static string FileReadText(string filePath)
         {
             if (!FileFunc.FileExists(filePath))
@@ -119,90 +119,90 @@ namespace Bee.Base
 
         #endregion
 
-        #region 目錄相關方法
+        #region Directory Methods
 
         /// <summary>
-        /// 判斷目錄是否存在。
+        /// Determines whether the specified directory exists.
         /// </summary>
-        /// <param name="path">要檢查的目錄。</param>
+        /// <param name="path">The directory path to check.</param>
         public static bool DirectoryExists(string path)
         {
             return Directory.Exists(path);
         }
 
         /// <summary>
-        /// 建立目錄。
+        /// Creates the specified directory.
         /// </summary>
-        /// <param name="path">指定路徑。</param>
+        /// <param name="path">The path to create.</param>
         public static void DirectoryCreate(string path)
         {
             Directory.CreateDirectory(path);
         }
 
         /// <summary>
-        /// 判斷目錄是否存在，不存在則建立。
+        /// Checks whether the specified directory exists; creates it if it does not.
         /// </summary>
-        /// <param name="path">要檢查的路徑。</param>
-        /// <param name="isFilePath">傳入是否為檔案路徑，檔案路徑要先取得目錄，再判斷目錄是否存在。</param>
+        /// <param name="path">The path to check.</param>
+        /// <param name="isFilePath">Whether the path is a file path; if so, the directory is extracted first before checking.</param>
         public static void DirectoryCheck(string path, bool isFilePath = false)
         {
             string sPath;
 
-            // 取得目錄路徑
+            // Get the directory path
             sPath = (isFilePath) ? GetDirectory(path) : path;
-            // 判斷目錄是否存在，不存在則建立
+            // Check if directory exists; create if not
             if (!DirectoryExists(sPath))
                 DirectoryCreate(sPath);
         }
 
         #endregion
 
-        #region 路徑相關方法
+        #region Path Methods
 
         /// <summary>
-        /// 判斷是否為本地路徑。
+        /// Determines whether the specified input is a local path.
         /// </summary>
-        /// <param name="input">輸入路徑。</param>
+        /// <param name="input">The input path.</param>
         public static bool IsLocalPath(string input)
         {
-            // 判斷是否為 Windows 路徑或 UNC 網芳路徑
+            // Check whether it is a Windows path or UNC network path
             string pattern = @"^([a-zA-Z]:\\|\\\\)";
             return Regex.IsMatch(input, pattern);
         }
 
         /// <summary>
-        /// 判斷指定的路徑是否為絕對路徑。
+        /// Determines whether the specified path is an absolute (rooted) path.
         /// </summary>
-        /// <param name="path">要判斷的路徑字串。</param>
-        /// <returns>若為絕對路徑則傳回 true，否則傳回 false。</returns>
+        /// <param name="path">The path string to check.</param>
+        /// <returns>True if the path is absolute; otherwise, false.</returns>
         public static bool IsPathRooted(string path)
         {
             return Path.IsPathRooted(path);
         }
 
         /// <summary>
-        /// 取得目錄。
+        /// Gets the directory portion of the specified path.
         /// </summary>
-        /// <param name="path">路徑字串。</param>
+        /// <param name="path">The path string.</param>
         public static string GetDirectory(string path)
         {
            return Path.GetDirectoryName(path);
         }
 
         /// <summary>
-        /// 取得上一層目錄。
+        /// Gets the parent directory of the specified path.
         /// </summary>
-        /// <param name="path">路徑字串。</param>
+        /// <param name="path">The path string.</param>
         public static string GetParentDirectory(string path)
         {
             return Directory.GetParent(path).FullName;
         }
 
         /// <summary>
-        /// 取得路徑字串的檔名及副檔名。
+        /// Gets the file name and extension from the specified path.
         /// </summary>
-        /// <param name="path">路徑字串。</param>
-        /// <param name="isExtension">是否包含附檔名。</param>
+        /// <param name="path">The path string.</param>
+        /// <param name="isExtension">Whether to include the file extension.</param>
         public static string GetFileName(string path, bool isExtension = true)
         {
             if (isExtension)
@@ -212,28 +212,28 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得檔案路徑的副檔名。
+        /// Gets the file extension from the specified file path.
         /// </summary>
-        /// <param name="path">檔案路徑。</param>
+        /// <param name="path">The file path.</param>
         public static string GetExtension(string path)
         {
             return Path.GetExtension(path);
         }
 
         /// <summary>
-        /// 將一個字串陣列合併為單一路徑。
+        /// Combines an array of path strings into a single path.
         /// </summary>
-        /// <param name="paths">路徑中各部分的陣列。</param>
-        /// <remarks>合併的路徑。</remarks>
+        /// <param name="paths">An array of path components.</param>
+        /// <remarks>Returns the combined path.</remarks>
         public static string PathCombine(params string[] paths)
         {
             return Path.Combine(paths);
         }
 
         /// <summary>
-        /// 取得應用程式路徑或子路徑。
+        /// Gets the application base path, or a sub-path beneath it.
         /// </summary>
-        /// <param name="subPath">子路徑。</param>
+        /// <param name="subPath">The sub-path to append.</param>
         public static string GetAppPath(string subPath ="")
         {
             string path = AppDomain.CurrentDomain.BaseDirectory;
@@ -243,11 +243,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得應用程式私用組件目錄。
+        /// Gets the application's private assembly directory.
         /// </summary>
         public static string GetAssemblyPath()
         {
-            // 取得程式組件路徑
+            // Get the assembly path
             if (StrFunc.IsEmpty(AppDomain.CurrentDomain.RelativeSearchPath))
                 return AppDomain.CurrentDomain.BaseDirectory;
             else

@@ -1,18 +1,18 @@
 ﻿namespace Bee.Base.Collections
 {
     /// <summary>
-    /// 強型別集合成員介面。
+    /// Interface for strongly-typed collection items.
     /// </summary>
     public interface ICollectionItem
     {
         /// <summary>
-        /// 設定所屬集合。
+        /// Sets the collection that owns this item.
         /// </summary>
-        /// <param name="collection">集合。</param>
+        /// <param name="collection">The owning collection.</param>
         void SetCollection(ICollectionBase collection);
 
         /// <summary>
-        /// 由集合中移除此成員。
+        /// Removes this item from its owning collection.
         /// </summary>
         void Remove();
     }

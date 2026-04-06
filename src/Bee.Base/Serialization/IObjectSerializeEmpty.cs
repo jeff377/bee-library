@@ -1,12 +1,12 @@
 ﻿namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 物件序化列時，判斷是否為空資料介面。
+    /// Interface for determining whether an object has empty data during serialization.
     /// </summary>
     public interface IObjectSerializeEmpty
     {
         /// <summary>
-        /// 序化列時是否為空資料。
+        /// Gets a value indicating whether the object has empty data during serialization.
         /// </summary>
         bool IsSerializeEmpty { get; }
     }

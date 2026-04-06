@@ -5,16 +5,16 @@ using System.Security.Cryptography;
 namespace Bee.Base.Security
 {
     /// <summary>
-    /// 提供檔案雜湊值的計算與驗證功能。
+    /// Provides file hash computation and verification functionality.
     /// </summary>
     public static class FileHashValidator
     {
         /// <summary>
-        /// 驗證檔案的 SHA256 是否與指定的雜湊值相符。
+        /// Verifies whether the SHA-256 hash of the specified file matches the expected value.
         /// </summary>
-        /// <param name="filePath">要驗證的檔案完整路徑。</param>
-        /// <param name="expectedSha256Hex">預期的 SHA256（十六進位字串，不分大小寫）。</param>
-        /// <returns>相符則為 true，否則為 false。</returns>
+        /// <param name="filePath">The full path of the file to verify.</param>
+        /// <param name="expectedSha256Hex">The expected SHA-256 hash as a hexadecimal string (case-insensitive).</param>
+        /// <returns>True if the hashes match; otherwise, false.</returns>
         public static bool VerifySha256(string filePath, string expectedSha256Hex)
         {
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))
@@ -30,10 +30,10 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 計算檔案的 SHA256 雜湊值（十六進位字串）。
+        /// Computes the SHA-256 hash of the specified file and returns it as a hexadecimal string.
         /// </summary>
-        /// <param name="filePath">檔案完整路徑。</param>
-        /// <returns>檔案 SHA256（十六進位字串）。</returns>
+        /// <param name="filePath">The full path of the file.</param>
+        /// <returns>The SHA-256 hash of the file as a hexadecimal string.</returns>
         public static string ComputeSha256(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath) || !File.Exists(filePath))

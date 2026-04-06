@@ -1,65 +1,64 @@
 namespace Bee.Base.Data
 {
     /// <summary>
-    /// 欄位資料型別。
-    /// 抽象資料欄位型別（跨資料庫對應）。
+    /// Abstract field database type for cross-database mapping.
     /// </summary>
     public enum FieldDbType
     {
         /// <summary>
-        /// 字串。
+        /// String value.
         /// </summary>
         String,
         /// <summary>
-        /// 長文字。
+        /// Long text value.
         /// </summary>
         Text,
         /// <summary>
-        /// 布林。
+        /// Boolean value.
         /// </summary>
         Boolean,
         /// <summary>
-        /// 自動遞增整數。
+        /// Auto-increment integer.
         /// </summary>
         AutoIncrement,
         /// <summary>
-        /// 16 位元整數 (-32,768 到 32,767)。
+        /// 16-bit integer (-32,768 to 32,767).
         /// </summary>
         Short,
         /// <summary>
-        /// 32 位元整數 (-2,147,483,648 到 2,147,483,647)。
+        /// 32-bit integer (-2,147,483,648 to 2,147,483,647).
         /// </summary>
         Integer,
         /// <summary>
-        /// 64 位元整數 (Long)。
+        /// 64-bit integer (long).
         /// </summary>
         Long,
         /// <summary>
-        /// 十進位數值（高精度）。
+        /// High-precision decimal value.
         /// </summary>
         Decimal,
         /// <summary>
-        /// 貨幣。
+        /// Currency value.
         /// </summary>
         Currency,
         /// <summary>
-        /// 日期。
+        /// Date value.
         /// </summary>
         Date,
         /// <summary>
-        /// 日期時間。
+        /// Date and time value.
         /// </summary>
         DateTime,
         /// <summary>
-        /// Guid 值。
+        /// GUID value.
         /// </summary>
         Guid,
         /// <summary>
-        /// 二進位資料。
+        /// Binary data.
         /// </summary>
         Binary,
         /// <summary>
-        /// 未知。
+        /// Unknown type.
         /// </summary>
         Unknown
     }

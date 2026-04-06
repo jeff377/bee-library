@@ -5,23 +5,23 @@ using Bee.Base.Serialization;
 namespace Bee.Base
 {
     /// <summary>
-    /// 執行 API 方法的例外錯誤。
+    /// Represents an exception error that occurred during an API method call.
     /// </summary>
     [Serializable]
     public class ApiException : IObjectSerializeBase
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ApiException"/>.
         /// </summary>
         public ApiException()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ApiException"/>.
         /// </summary>
-        /// <param name="exception">執行期間的例外錯誤。</param>
+        /// <param name="exception">The exception that occurred at runtime.</param>
         public ApiException(Exception exception)
         {
             Message = exception.Message;
@@ -31,26 +31,26 @@ namespace Bee.Base
         #endregion
 
         /// <summary>
-        /// 例外錯誤訊息。
+        /// Gets or sets the exception error message.
         /// </summary>
         [DefaultValue("")]
         public string Message { get; set; } = string.Empty;
 
         /// <summary>
-        /// 呼叫堆疊。
+        /// Gets or sets the call stack trace.
         /// </summary>
         [DefaultValue("")]
         public string StackTrace { get; set; } = string.Empty;
 
         /// <summary>
-        /// 是否為已處理的例外。
+        /// Gets or sets a value indicating whether the exception has been handled.
         /// </summary>
-        [Description("是否為已處理的例外。")]
+        [Description("Gets or sets a value indicating whether the exception has been handled.")]
         [DefaultValue(false)]
         public bool IsHandle { get; set; } = false;
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

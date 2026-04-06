@@ -5,20 +5,20 @@ using System.Xml.Serialization;
 namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 提供 <see cref="XmlSerializer"/> 快取功能，以提升序列化效能。
+    /// Provides caching for <see cref="XmlSerializer"/> instances to improve serialization performance.
     /// </summary>
     public static class XmlSerializerCache
     {
         /// <summary>
-        /// 快取已建立的 <see cref="XmlSerializer"/> 實例。
+        /// Cache of previously created <see cref="XmlSerializer"/> instances.
         /// </summary>
         private static readonly ConcurrentDictionary<Type, XmlSerializer> _cache = new ConcurrentDictionary<Type, XmlSerializer>();
 
         /// <summary>
-        /// 取得指定型別的 <see cref="XmlSerializer"/> 實例，若尚未建立則自動加入快取。
+        /// Gets the <see cref="XmlSerializer"/> instance for the specified type, creating and caching it if not already present.
         /// </summary>
-        /// <param name="type">目標序列化型別。</param>
-        /// <returns>對應型別的 <see cref="XmlSerializer"/> 實例。</returns>
+        /// <param name="type">The target serialization type.</param>
+        /// <returns>The <see cref="XmlSerializer"/> instance for the specified type.</returns>
         public static XmlSerializer Get(Type type)
         {
             return _cache.GetOrAdd(type, t => new XmlSerializer(t));

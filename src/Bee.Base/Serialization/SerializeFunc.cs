@@ -7,60 +7,60 @@ using Newtonsoft.Json.Serialization;
 namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 序列化函式庫。
+    /// Utility library for serialization operations.
     /// </summary>
     public static class SerializeFunc
     {
         /// <summary>
-        /// 序列化前執行作業。
+        /// Performs pre-serialization operations.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
-        /// <param name="value">物件。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
+        /// <param name="value">The object to serialize.</param>
         private static void DoBeforeSerialize(SerializeFormat serializeFormat, object value)
         {
-            // 序列化前的通知方法
+            // Notify before serialization
             if (value is IObjectSerializeProcess serializeProcess) { serializeProcess.BeforeSerialize(serializeFormat); }
-            // 標記開始序列化狀態
+            // Mark serialization state as started
             if (value is IObjectSerialize objectSerialize) { objectSerialize.SetSerializeState(SerializeState.Serialize); }
         }
 
         /// <summary>
-        /// 序列化後執行作業。
+        /// Performs post-serialization operations.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
-        /// <param name="value">物件。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
+        /// <param name="value">The object that was serialized.</param>
         private static void DoAfterSerialize(SerializeFormat serializeFormat, object value)
         {
-            // 標記結束序列化
+            // Mark serialization state as ended
             if (value is IObjectSerialize objectSerialize) { objectSerialize.SetSerializeState(SerializeState.None); }
-            // 序列化後的通知方法
+            // Notify after serialization
             if (value is IObjectSerializeProcess objectSerializeProcess) { objectSerializeProcess.AfterSerialize(serializeFormat); }
         }
 
         /// <summary>
-        /// 反序列化後執行作業。
+        /// Performs post-deserialization operations.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
-        /// <param name="value">物件。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
+        /// <param name="value">The deserialized object.</param>
         private static void DoAfterDeserialize(SerializeFormat serializeFormat, object value)
         {
-            // 反序列化後的通知方法
+            // Notify after deserialization
             if (value is IObjectSerializeProcess objectSerializeProcess) { objectSerializeProcess.AfterDeserialize(serializeFormat); }
         }
 
         /// <summary>
-        /// 將物件序列化為 XML 字串。
+        /// Serializes an object to an XML string.
         /// </summary>
-        /// <param name="value">物件。</param>
+        /// <param name="value">The object to serialize.</param>
         public static string ObjectToXml(object value)
         {
             if (value == null)
                 return string.Empty;
 
-            // 序列化前執行作業
+            // Pre-serialization operations
             DoBeforeSerialize(SerializeFormat.Xml, value);
 
-            // 執行序列化寫入字串
+            // Serialize and write to string
             string xml = string.Empty;
             using (UTF8StringWriter writer = new UTF8StringWriter())
             {
@@ -69,26 +69,26 @@ namespace Bee.Base.Serialization
                 xml = writer.ToString();
             }
 
-            // 序列化後執行作業
+            // Post-serialization operations
             DoAfterSerialize(SerializeFormat.Xml, value);
             return xml;
         }
 
         /// <summary>
-        /// 將 XML 字串反序列化為物件。
+        /// Deserializes an XML string to an object.
         /// </summary>
-        /// <typeparam name="T">泛型型別。</typeparam>
-        /// <param name="xml">XML 字串。</param>
+        /// <typeparam name="T">The generic type.</typeparam>
+        /// <param name="xml">The XML string.</param>
         public static T XmlToObject<T>(string xml)
         {
             return (T)XmlToObject(xml, typeof(T));
         }
 
         /// <summary>
-        /// 將 XML 字串反序列化為物件。
+        /// Deserializes an XML string to an object.
         /// </summary>
-        /// <param name="xml">XML 字串。</param>
-        /// <param name="type">物件型別。</param>
+        /// <param name="xml">The XML string.</param>
+        /// <param name="type">The object type.</param>
         public static object XmlToObject(string xml, Type type)
         {
             if (StrFunc.IsEmpty(xml))
@@ -101,39 +101,39 @@ namespace Bee.Base.Serialization
                 value = serializer.Deserialize(reader);
             }
 
-            // 反序列化後執行作業
+            // Post-deserialization operations
             DoAfterDeserialize(SerializeFormat.Xml, value);
             return value;
         }
 
         /// <summary>
-        /// 將物件序列化為 XML 檔案。
+        /// Serializes an object to an XML file.
         /// </summary>
-        /// <param name="value">物件。</param>
-        /// <param name="filePath">XML 檔案路徑。</param>
+        /// <param name="value">The object to serialize.</param>
+        /// <param name="filePath">The XML file path.</param>
         public static void ObjectToXmlFile(object value, string filePath)
         {
             string sXml;
 
             sXml = ObjectToXml(value);
             FileFunc.FileWriteText(filePath, sXml);
-            // 設定序列化繫結檔案
+            // Set the serialization-bound file
             if (value is IObjectSerializeFile) { (value as IObjectSerializeFile).SetObjectFilePath(filePath); }
         }
 
         /// <summary>
-        /// 將 XML 檔案反序列化為物件。
+        /// Deserializes an XML file to an object.
         /// </summary>
-        /// <typeparam name="T">泛型型別。</typeparam>
-        /// <param name="filePath">XML 檔案路徑。</param>
+        /// <typeparam name="T">The generic type.</typeparam>
+        /// <param name="filePath">The XML file path.</param>
         public static T XmlFileToObject<T>(string filePath)
         {
             try
             {
-                // 讀取檔案內容，將 XML 字串反序列化為物件
+                // Read file contents and deserialize the XML string to an object
                 string xml = FileFunc.FileReadText(filePath);
                 T value = XmlToObject<T>(xml);
-                // 設定序列化繫結檔案
+                // Set the serialization-bound file
                 if (value is IObjectSerializeFile objSerializeFile) { objSerializeFile.SetObjectFilePath(filePath); }
                 return value;
             }
@@ -144,11 +144,11 @@ namespace Bee.Base.Serialization
         }
 
         /// <summary>
-        /// 取得 JSON 序列化設定。
+        /// Gets the JSON serializer settings.
         /// </summary>
-        /// <param name="ignoreDefaultValue">是否忽略預設值。</param>
-        /// <param name="ignoreNullValue">是否忽略 Null 值。</param>
-        /// <param name="includeTypeName">是否包含型別名稱。</param>
+        /// <param name="ignoreDefaultValue">Whether to ignore default values.</param>
+        /// <param name="ignoreNullValue">Whether to ignore null values.</param>
+        /// <param name="includeTypeName">Whether to include type names.</param>
         private static JsonSerializerSettings GetJsonSerializerSettings(bool ignoreDefaultValue, bool ignoreNullValue, bool includeTypeName)
         {
             var settings = new JsonSerializerSettings()
@@ -156,86 +156,86 @@ namespace Bee.Base.Serialization
                 Formatting = Formatting.Indented,
                 ContractResolver = new CamelCasePropertyNamesContractResolver()
             };
-            // 忽略預設值
+            // Ignore default values
             if (ignoreDefaultValue)
                 settings.DefaultValueHandling = DefaultValueHandling.Ignore;
-            // 忽略 Null 值
+            // Ignore null values
             if (ignoreNullValue)
                 settings.NullValueHandling = NullValueHandling.Ignore;
-            // 加入型別名稱
+            // Include type names
             if (includeTypeName)
             {
                 settings.TypeNameHandling = TypeNameHandling.Auto;
                 settings.SerializationBinder = new JsonSerializationBinder();
             }
-            // 列舉型別使用字串
+            // Use string representation for enum types
             settings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
 
             return settings;
         }
 
         /// <summary>
-        /// 將物件序列化為 JSON 字串。
+        /// Serializes an object to a JSON string.
         /// </summary>
-        /// <param name="value">物件。</param>
-        /// <param name="ignoreDefaultValue">是否忽略預設值。</param>
-        /// <param name="ignoreNullValue">是否忽略 Null 值。</param>
-        /// <param name="includeTypeName">是否包含型別名稱。</param>
+        /// <param name="value">The object to serialize.</param>
+        /// <param name="ignoreDefaultValue">Whether to ignore default values.</param>
+        /// <param name="ignoreNullValue">Whether to ignore null values.</param>
+        /// <param name="includeTypeName">Whether to include type names.</param>
         public static string ObjectToJson(object value, bool ignoreDefaultValue = true, bool ignoreNullValue = true, bool includeTypeName = true)
         {
-            // 序列化前執行作業
+            // Pre-serialization operations
             DoBeforeSerialize(SerializeFormat.Json, value);
 
-            // 序列化為 JSON 字串
+            // Serialize to JSON string
             var settings = GetJsonSerializerSettings(ignoreDefaultValue, ignoreNullValue, includeTypeName);
             string json = JsonConvert.SerializeObject(value, settings);
 
-            // 序列化後執行作業
+            // Post-serialization operations
             DoAfterSerialize(SerializeFormat.Json, value);
             return json;
         }
 
         /// <summary>
-        /// 將 JOSN 字串反序列化為物件。
+        /// Deserializes a JSON string to an object.
         /// </summary>
-        /// <typeparam name="T">泛型型別。</typeparam>
-        /// <param name="json">JSON 字串。</param>
-        /// <param name="includeTypeName">是否包含型別名稱。</param>
+        /// <typeparam name="T">The generic type.</typeparam>
+        /// <param name="json">The JSON string.</param>
+        /// <param name="includeTypeName">Whether to include type names.</param>
         public static T JsonToObject<T>(string json, bool includeTypeName = true)
         {
-            // 反序列化 JSON 字串
+            // Deserialize the JSON string
             var settings = GetJsonSerializerSettings(true, false, includeTypeName);
             object value = JsonConvert.DeserializeObject(json, typeof(T), settings);
-            // 反序列化後執行作業
+            // Post-deserialization operations
             DoAfterDeserialize(SerializeFormat.Json, value);
             return (T)value;
         }
 
         /// <summary>
-        /// 將物件序列化為 JSON 檔案。
+        /// Serializes an object to a JSON file.
         /// </summary>
-        /// <param name="value">物件。</param>
-        /// <param name="filePath">JSON 檔案路徑。</param>
+        /// <param name="value">The object to serialize.</param>
+        /// <param name="filePath">The JSON file path.</param>
         public static void ObjectToJsonFile(object value, string filePath)
         {
             string json = ObjectToJson(value, true);
             FileFunc.FileWriteText(filePath, json);
-            // 設定序列化繫結檔案
+            // Set the serialization-bound file
             if (value is IObjectSerializeFile objectSerializeFile) { objectSerializeFile.SetObjectFilePath(filePath); }
         }
 
         /// <summary>
-        /// 將 JOSN 檔案反序列化為物件。
+        /// Deserializes a JSON file to an object.
         /// </summary>
-        /// <typeparam name="T">泛型型別。</typeparam>
-        /// <param name="filePath">JSON 檔案路徑。</param>
+        /// <typeparam name="T">The generic type.</typeparam>
+        /// <param name="filePath">The JSON file path.</param>
         public static T JsonFileToObject<T>(string filePath)
         {
             try
             {
                 string json = FileFunc.FileReadText(filePath);
                 T value = JsonToObject<T>(json);
-                // 設定序列化繫結檔案
+                // Set the serialization-bound file
                 if (value is IObjectSerializeFile objectSerializeFile) { objectSerializeFile.SetObjectFilePath(filePath); }
                 return value;
             }
@@ -246,12 +246,12 @@ namespace Bee.Base.Serialization
         }
 
         /// <summary>
-        /// 將物件序列化為二進位資料。
+        /// Serializes an object to a binary byte array.
         /// </summary>
-        /// <param name="value">物件。</param>
+        /// <param name="value">The object to serialize.</param>
         public static byte[] ObjectToBinary(object value)
         {
-            // 序列化前執行作業
+            // Pre-serialization operations
             DoBeforeSerialize(SerializeFormat.Binary, value);
 
             byte[] bytes = null;
@@ -264,15 +264,15 @@ namespace Bee.Base.Serialization
             }
 #pragma warning restore SYSLIB0011
 
-            // 序列化後執行作業
+            // Post-serialization operations
             DoAfterSerialize(SerializeFormat.Binary, value);
             return bytes;
         }
 
         /// <summary>
-        /// 將二進位資料反序列化為物件。
+        /// Deserializes a binary byte array to an object.
         /// </summary>
-        /// <param name="bytes">二進位資料。</param>
+        /// <param name="bytes">The binary data.</param>
         public static object BinaryToObject(byte[] bytes)
         {
             object value;
@@ -285,16 +285,16 @@ namespace Bee.Base.Serialization
             }
 #pragma warning restore SYSLIB0011
 
-            // 反序列化後執行作業
+            // Post-deserialization operations
             DoAfterDeserialize(SerializeFormat.Binary, value);
             return value;
         }
 
         /// <summary>
-        /// 將二進位資料反序列化為物件。
+        /// Deserializes a binary byte array to an object.
         /// </summary>
-        /// <typeparam name="T">泛型型別。</typeparam>
-        /// <param name="bytes">二進位資料。</param>
+        /// <typeparam name="T">The generic type.</typeparam>
+        /// <param name="bytes">The binary data.</param>
         public static T BinaryToObject<T>(byte[] bytes)
         {
             object value = BinaryToObject(bytes);

@@ -5,35 +5,35 @@ using System.Text;
 namespace Bee.Base.Security
 {
     /// <summary>
-    /// 提供 RSA 加密與解密、金鑰產生與匯出功能的靜態工具類別。
+    /// Static utility class providing RSA encryption, decryption, key generation, and export functionality.
     /// </summary>
     /// <remarks>
-    /// 支援以 RSA 公私鑰進行字串加解密，並可匯出/匯入 XML 格式的金鑰資料。
-    /// 適用於登入憑證、Session 金鑰交換等非對稱加密應用情境。
+    /// Supports string encryption and decryption using RSA public/private keys, with XML key export/import.
+    /// Suitable for asymmetric encryption scenarios such as login credentials and session key exchange.
     /// </remarks>
     public static class RsaCryptor
     {
         /// <summary>
-        /// 產生 RSA 對稱金鑰（XML 格式）
+        /// Generates an RSA key pair in XML format.
         /// </summary>
-        /// <param name="publicKeyXml">輸出公鑰 XML</param>
-        /// <param name="privateKeyXml">輸出私鑰 XML</param>
+        /// <param name="publicKeyXml">The output public key XML.</param>
+        /// <param name="privateKeyXml">The output private key XML.</param>
         public static void GenerateRsaKeyPair(out string publicKeyXml, out string privateKeyXml)
         {
             using (var rsa = new RSACryptoServiceProvider(2048))
             {
                 rsa.PersistKeyInCsp = false;
-                publicKeyXml = rsa.ToXmlString(false); // 公鑰
-                privateKeyXml = rsa.ToXmlString(true); // 私鑰
+                publicKeyXml = rsa.ToXmlString(false); // Public key
+                privateKeyXml = rsa.ToXmlString(true); // Private key
             }
         }
 
         /// <summary>
-        /// 使用 RSA 公鑰加密資料（Base64）
+        /// Encrypts data using an RSA public key and returns the result as a Base64 string.
         /// </summary>
-        /// <param name="plainText">要加密的明文字串。</param>
-        /// <param name="publicKeyXml">RSA 公鑰（XML 格式，僅含公開參數）。</param>
-        /// <returns>加密後的資料，為 Base64 編碼字串。</returns>
+        /// <param name="plainText">The plaintext string to encrypt.</param>
+        /// <param name="publicKeyXml">The RSA public key in XML format (public parameters only).</param>
+        /// <returns>The encrypted data as a Base64-encoded string.</returns>
         public static string EncryptWithPublicKey(string plainText, string publicKeyXml)
         {
             using (var rsa = new RSACryptoServiceProvider(2048))
@@ -47,11 +47,11 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 使用 RSA 私鑰解密資料（Base64）
+        /// Decrypts Base64-encoded data using an RSA private key.
         /// </summary>
-        /// <param name="base64CipherText">要解密的密文，為 Base64 編碼格式。</param>
-        /// <param name="privateKeyXml">RSA 私鑰（XML 格式，包含公開與私密參數）。</param>
-        /// <returns>解密後的明文字串。</returns>
+        /// <param name="base64CipherText">The ciphertext to decrypt, in Base64-encoded format.</param>
+        /// <param name="privateKeyXml">The RSA private key in XML format (includes both public and private parameters).</param>
+        /// <returns>The decrypted plaintext string.</returns>
         public static string DecryptWithPrivateKey(string base64CipherText, string privateKeyXml)
         {
             using (var rsa = new RSACryptoServiceProvider(2048))

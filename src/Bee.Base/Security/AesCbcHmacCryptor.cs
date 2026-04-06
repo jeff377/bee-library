@@ -5,19 +5,19 @@ using System.Security.Cryptography;
 namespace Bee.Base.Security
 {
     /// <summary>
-    /// AES-CBC 加密與 HMAC 驗證的加解密工具。
-    /// 使用 256-bit AES 金鑰與 256-bit HMAC-SHA256 金鑰，
-    /// 每次加密皆使用隨機 IV 並附帶完整性驗證碼（HMAC）。
+    /// Encryption and decryption utility using AES-CBC and HMAC authentication.
+    /// Uses a 256-bit AES key and a 256-bit HMAC-SHA256 key;
+    /// every encryption uses a random IV and appends an integrity verification code (HMAC).
     /// </summary>
     public static class AesCbcHmacCryptor
     {
         /// <summary>
-        /// 進行 AES-CBC 加密，並附加 HMAC 驗證碼。
+        /// Encrypts data using AES-CBC and appends an HMAC authentication code.
         /// </summary>
-        /// <param name="plainBytes">原始資料的位元組陣列。</param>
-        /// <param name="aesKey">AES 對稱加密金鑰（32 bytes）。</param>
-        /// <param name="hmacKey">HMAC 驗證用金鑰（32 bytes）。</param>
-        /// <returns>加密後的位元組資料，格式包含 IV、密文與 HMAC。</returns>
+        /// <param name="plainBytes">The byte array of the original data.</param>
+        /// <param name="aesKey">The AES symmetric encryption key (32 bytes).</param>
+        /// <param name="hmacKey">The HMAC verification key (32 bytes).</param>
+        /// <returns>The encrypted byte data, containing the IV, ciphertext, and HMAC.</returns>
         public static byte[] Encrypt(byte[] plainBytes, byte[] aesKey, byte[] hmacKey)
         {
             using (var aes = Aes.Create())
@@ -53,13 +53,13 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 解密 AES-CBC 加密資料，並驗證 HMAC 是否一致。
+        /// Decrypts AES-CBC encrypted data and verifies the HMAC.
         /// </summary>
-        /// <param name="encryptedData">加密後的資料。</param>
-        /// <param name="aesKey">AES 對稱加密金鑰（32 bytes）。</param>
-        /// <param name="hmacKey">HMAC 驗證用金鑰（32 bytes）。</param>
-        /// <returns>解密後的原始資料。</returns>
-        /// <exception cref="CryptographicException">HMAC 驗證失敗或資料格式錯誤。</exception>
+        /// <param name="encryptedData">The encrypted data.</param>
+        /// <param name="aesKey">The AES symmetric encryption key (32 bytes).</param>
+        /// <param name="hmacKey">The HMAC verification key (32 bytes).</param>
+        /// <returns>The decrypted original data.</returns>
+        /// <exception cref="CryptographicException">Thrown when HMAC validation fails or the data format is invalid.</exception>
         public static byte[] Decrypt(byte[] encryptedData, byte[] aesKey, byte[] hmacKey)
         {
             using (var ms = new MemoryStream(encryptedData))
@@ -69,7 +69,7 @@ namespace Bee.Base.Security
                 byte[] iv = reader.ReadBytes(ivLength);
                 int cipherLength = reader.ReadInt32();
                 byte[] cipherBytes = reader.ReadBytes(cipherLength);
-                byte[] hmacBytes = reader.ReadBytes(32); // SHA-256 長度
+                byte[] hmacBytes = reader.ReadBytes(32); // SHA-256 length
 
                 byte[] dataToVerify = new byte[ivLength + cipherLength + 8];
                 Array.Copy(encryptedData, 0, dataToVerify, 0, dataToVerify.Length);
@@ -97,7 +97,7 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 合併兩個位元組陣列。
+        /// Combines two byte arrays into one.
         /// </summary>
         private static byte[] Combine(byte[] a, byte[] b)
         {
@@ -108,7 +108,7 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 安全比較兩組位元組內容是否相同。
+        /// Compares two byte arrays using constant-time comparison to prevent timing attacks.
         /// </summary>
         private static bool CompareBytes(byte[] a, byte[] b)
         {

@@ -5,24 +5,24 @@ using System.Reflection;
 namespace Bee.Base
 {
     /// <summary>
-    /// 組件動態載入器。
+    /// Dynamic assembly loader.
     /// </summary>
     public static class AssemblyLoader
     {
-        // 快取已載入的組件，避免重複載入
+        // Cache loaded assemblies to avoid reloading
         private static readonly Dictionary<string, Assembly> _loadedAssemblies = new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
-        /// 尋找組件。
+        /// Finds the specified assembly.
         /// </summary>
-        /// <param name="assemblyName">組件名稱。</param>
+        /// <param name="assemblyName">The assembly name.</param>
         public static Assembly FindAssembly(string assemblyName)
         {
-            // 先從快取中找
+            // Check the cache first
             if (_loadedAssemblies.TryGetValue(assemblyName, out var cached))
                 return cached;
 
-            // 從目前 AppDomain 中查找
+            // Search in the current AppDomain
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 if (StrFunc.IsEquals(assembly.ManifestModule.Name, assemblyName))
@@ -36,34 +36,34 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷組件是否已載入。
+        /// Determines whether the specified assembly has been loaded.
         /// </summary>
-        /// <param name="assemblyName">組件名稱。</param>
+        /// <param name="assemblyName">The assembly name.</param>
         public static bool IsAssemblyLoaded(string assemblyName)
         {
             return FindAssembly(assemblyName) != null;
         }
 
         /// <summary>
-        /// 載入組件。
+        /// Loads the specified assembly.
         /// </summary>
-        /// <param name="assemblyName">組件名稱。</param>
-        /// <returns>已載入的組件。</returns>
+        /// <param name="assemblyName">The assembly name.</param>
+        /// <returns>The loaded assembly.</returns>
         public static Assembly LoadAssembly(string assemblyName)
         {
-            // 若組件已載入，則直接回傳
+            // Return the cached assembly if already loaded
             var assembly = FindAssembly(assemblyName);
             if (assembly != null)
                 return assembly;
 
-            // 取得組件的完整路徑
+            // Resolve the full path of the assembly
             string assemblyFile;
             if (StrFunc.IsEmpty(FileFunc.GetDirectory(assemblyName)))
                 assemblyFile = FileFunc.PathCombine(FileFunc.GetAssemblyPath(), assemblyName);
             else
                 assemblyFile = assemblyName;
 
-            // 載入組件
+            // Load the assembly
             assembly = Assembly.LoadFrom(assemblyFile);
             _loadedAssemblies[assemblyName] = assembly;
 
@@ -71,37 +71,37 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 建立指定型別的執行個體。
+        /// Creates an instance of the specified type.
         /// </summary>
-        /// <param name="assemblyName">組件名稱。</param>
-        /// <param name="typeName">型別名稱。</param>
-        /// <param name="args">建構函式引數。</param>
+        /// <param name="assemblyName">The assembly name.</param>
+        /// <param name="typeName">The type name.</param>
+        /// <param name="args">Constructor arguments.</param>
         public static object CreateInstance(string assemblyName, string typeName, params object[] args)
         {
-            // 載入組件
+            // Load the assembly
             var assembly = LoadAssembly(assemblyName);
-            // 建立執行個體
+            // Create an instance
             return assembly.CreateInstance(typeName, true, BindingFlags.CreateInstance, null, args, null, null);
         }
 
         /// <summary>
-        /// 建立指定型別的執行個體。
+        /// Creates an instance of the specified type.
         /// </summary>
-        /// <param name="fullTypeName">完整型別名稱，格式為 "Bee.Business.TBusinessObject, Bee.Business" 或 "Bee.Business.TBusinessObject"。</param>
-        /// <param name="args">建構函式引數。</param>
+        /// <param name="fullTypeName">The fully qualified type name, e.g. "Bee.Business.TBusinessObject, Bee.Business" or "Bee.Business.TBusinessObject".</param>
+        /// <param name="args">Constructor arguments.</param>
         public static object CreateInstance(string fullTypeName, params object[] args)
         {
-            // 取得正確的組件名稱及型別名稱
+            // Resolve the assembly name and type name
             GetAssemblyAndType(fullTypeName, out string assemblyName, out string typeName);
-            // 建立指定型別的執行個體
+            // Create an instance of the specified type
             return CreateInstance(assemblyName, typeName, args);
         }
 
         /// <summary>
-        /// 取得類型宣告。
+        /// Gets the type declaration for the specified type.
         /// </summary>
-        /// <param name="assemblyName">組件名稱。</param>
-        /// <param name="typeName">型別名稱。</param>
+        /// <param name="assemblyName">The assembly name.</param>
+        /// <param name="typeName">The type name.</param>
         public static Type GetType(string assemblyName, string typeName)
         {
             var assembly = LoadAssembly(assemblyName);
@@ -109,35 +109,35 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得類型宣告。
+        /// Gets the type declaration for the specified fully qualified type name.
         /// </summary>
-        /// <param name="fullTypeName">完整型別名稱。</param>
+        /// <param name="fullTypeName">The fully qualified type name.</param>
         public static Type GetType(string fullTypeName)
         {
-            // 取得正確的組件名稱及型別名稱
+            // Resolve the assembly name and type name
             GetAssemblyAndType(fullTypeName, out string assemblyName, out string typeName);
             return GetType(assemblyName, typeName);
         }
 
         /// <summary>
-        /// 由傳入型別名稱取得正確的組件名稱及型別名稱。
+        /// Resolves the assembly name and type name from the given fully qualified type name.
         /// </summary>
-        /// <param name="fullTypeName">完整型別名稱。</param>
-        /// <param name="assemblyName">組件名稱。</param>
-        /// <param name="typeName">型別名稱。</param>
+        /// <param name="fullTypeName">The fully qualified type name.</param>
+        /// <param name="assemblyName">The output assembly name.</param>
+        /// <param name="typeName">The output type name.</param>
         private static void GetAssemblyAndType(string fullTypeName, out string assemblyName, out string typeName)
         {
             string leftPart, rightPart;
             if (StrFunc.Contains(fullTypeName, ","))
             {
-                // 範例為 "Bee.Business.TBusinessObject, Bee.Business"
+                // Example: "Bee.Business.TBusinessObject, Bee.Business"
                 StrFunc.SplitLeft(fullTypeName, ",", out leftPart, out rightPart);
                 assemblyName = StrFunc.Format("{0}.dll", StrFunc.Trim(rightPart));
                 typeName = leftPart;
             }
             else
             {
-                // 範例為 "Bee.Business.TBusinessObject"
+                // Example: "Bee.Business.TBusinessObject"
                 StrFunc.SplitRight(fullTypeName, ".", out leftPart, out rightPart);
                 assemblyName = StrFunc.Format("{0}.dll", leftPart);
                 typeName = fullTypeName;

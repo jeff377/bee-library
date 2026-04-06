@@ -4,7 +4,7 @@ using Newtonsoft.Json.Serialization;
 namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// JSON 序列化驗證型別合法性。
+    /// Validates type legality during JSON serialization.
     /// </summary>
     internal class JsonSerializationBinder : ISerializationBinder
     {
@@ -12,21 +12,21 @@ namespace Bee.Base.Serialization
         private static readonly bool IsNetCore = !System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription.Contains(".NET Framework");
 
         /// <summary>
-        /// 控制序列化對象與類型的綁定。
+        /// Controls the binding between serialized objects and types.
         /// </summary>
-        /// <param name="serializedType">序列化對象型別。</param>
-        /// <param name="assemblyName">組件名稱。</param>
-        /// <param name="typeName">型別名稱。</param>
+        /// <param name="serializedType">The serialized object type.</param>
+        /// <param name="assemblyName">The assembly name.</param>
+        /// <param name="typeName">The type name.</param>
         public void BindToName(Type serializedType, out string assemblyName, out string typeName)
         {
             Binder.BindToName(serializedType, out assemblyName, out typeName);
         }
 
         /// <summary>
-        /// 控制序列化對象與類型的綁定。
+        /// Controls the binding between serialized objects and types.
         /// </summary>
-        /// <param name="assemblyName">組件名稱。</param>
-        /// <param name="typeName">型別名稱。</param>
+        /// <param name="assemblyName">The assembly name.</param>
+        /// <param name="typeName">The type name.</param>
         public Type BindToType(string assemblyName, string typeName)
         {
             // .NET Framework 4.8 → .NET 8
@@ -47,9 +47,9 @@ namespace Bee.Base.Serialization
         }
 
         /// <summary>
-        /// 驗證序列化型別合法性。
+        /// Validates the legality of a serialized type.
         /// </summary>
-        /// <param name="typeName">型別名稱。</param>
+        /// <param name="typeName">The type name to validate.</param>
         private bool ValidateType(string typeName)
         {
             return SysInfo.IsTypeNameAllowed(typeName);

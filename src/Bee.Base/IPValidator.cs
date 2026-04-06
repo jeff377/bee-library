@@ -6,11 +6,11 @@ using System.Net;
 namespace Bee.Base
 {
     /// <summary>
-    /// IP 位址合法性驗證器。
+    /// Validates the legality of an IP address.
     /// </summary>
     /// <remarks>
-    /// 支援星號 (*) 來表示通配符，例如 192.168.1.*
-    /// 支援子網掩碼 (/) 來表示 IP 範圍，例如 192.168.2.0/24
+    /// Supports asterisk (*) as a wildcard, e.g. 192.168.1.*
+    /// Supports subnet mask notation (/) to specify IP ranges, e.g. 192.168.2.0/24
     /// </remarks>
     public class IPValidator
     {
@@ -18,10 +18,10 @@ namespace Bee.Base
         private readonly List<string> _blacklist;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="IPValidator"/>.
         /// </summary>
-        /// <param name="whitelist">白名單 IP 位址模式的列表。</param>
-        /// <param name="blacklist">黑名單 IP 位址模式的列表。</param>
+        /// <param name="whitelist">A list of whitelist IP address patterns.</param>
+        /// <param name="blacklist">A list of blacklist IP address patterns.</param>
         public IPValidator(List<string> whitelist, List<string> blacklist)
         {
             _whitelist = whitelist ?? new List<string>();
@@ -29,7 +29,7 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 白名單 IP 位址模式的列表。
+        /// Gets the list of whitelist IP address patterns.
         /// </summary>
         public List<string> Whitelist
         {
@@ -37,7 +37,7 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 黑名單 IP 位址模式的列表。
+        /// Gets the list of blacklist IP address patterns.
         /// </summary>
         public List<string> Blacklist
         {
@@ -45,27 +45,27 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 檢查給定的 IP 位址是否被允許（基於白名單和黑名單）。
+        /// Checks whether the given IP address is allowed based on the whitelist and blacklist.
         /// </summary>
-        /// <param name="ipAddress">要檢查的 IP 位址。</param>
-        /// <returns>如果 IP 位址被允許則返回 true，否則返回 false。</returns>
+        /// <param name="ipAddress">The IP address to check.</param>
+        /// <returns>True if the IP address is allowed; otherwise, false.</returns>
         public bool IsIpAllowed(string ipAddress)
         {
-            // 檢查 IP 位址是否在黑名單中
+            // Check whether the IP address is in the blacklist
             if (IsIpBlacklisted(ipAddress))
             {
                 return false;
             }
 
-            // 檢查 IP 位址是否在白名單中
+            // Check whether the IP address is in the whitelist
             return IsIpWhitelisted(ipAddress);
         }
 
         /// <summary>
-        /// 檢查給定的 IP 位址是否在白名單中。
+        /// Checks whether the given IP address is in the whitelist.
         /// </summary>
-        /// <param name="ipAddress">要檢查的 IP 位址。</param>
-        /// <returns>如果 IP 位址在白名單中則返回 true，否則返回 false。</returns>
+        /// <param name="ipAddress">The IP address to check.</param>
+        /// <returns>True if the IP address is in the whitelist; otherwise, false.</returns>
         private bool IsIpWhitelisted(string ipAddress)
         {
             foreach (string pattern in this.Whitelist)
@@ -79,10 +79,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 檢查給定的 IP 位址是否在黑名單中。
+        /// Checks whether the given IP address is in the blacklist.
         /// </summary>
-        /// <param name="ipAddress">要檢查的 IP 位址。</param>
-        /// <returns>如果 IP 位址在黑名單中則返回 true，否則返回 false。</returns>
+        /// <param name="ipAddress">The IP address to check.</param>
+        /// <returns>True if the IP address is in the blacklist; otherwise, false.</returns>
         private bool IsIpBlacklisted(string ipAddress)
         {
             foreach (string pattern in this.Blacklist)
@@ -96,29 +96,29 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 檢查給定的 IP 位址是否符合指定的模式（支持通配符和 CIDR 表示法）。
+        /// Checks whether the given IP address matches the specified pattern (supports wildcards and CIDR notation).
         /// </summary>
-        /// <param name="ipAddress">要檢查的 IP 位址。</param>
-        /// <param name="pattern">要匹配的模式。</param>
-        /// <returns>如果 IP 位址符合模式則返回 true，否則返回 false。</returns>
+        /// <param name="ipAddress">The IP address to check.</param>
+        /// <param name="pattern">The pattern to match against.</param>
+        /// <returns>True if the IP address matches the pattern; otherwise, false.</returns>
         private bool IsMatch(string ipAddress, string pattern)
         {
-            // 檢查模式是否為 CIDR 表示法
+            // Check whether the pattern is CIDR notation
             if (pattern.Contains('/'))
             {
                 return IsInSubnet(IPAddress.Parse(ipAddress), pattern);
             }
 
-            // 否則，使用通配符匹配
+            // Otherwise, use wildcard matching
             return IsWildcardMatch(ipAddress, pattern);
         }
 
         /// <summary>
-        /// 檢查給定的 IP 位址是否符合通配符模式。
+        /// Checks whether the given IP address matches the wildcard pattern.
         /// </summary>
-        /// <param name="ipAddress">要檢查的 IP 位址。</param>
-        /// <param name="pattern">要匹配的通配符模式。</param>
-        /// <returns>如果 IP 位址符合通配符模式則返回 true，否則返回 false。</returns>
+        /// <param name="ipAddress">The IP address to check.</param>
+        /// <param name="pattern">The wildcard pattern to match against.</param>
+        /// <returns>True if the IP address matches the wildcard pattern; otherwise, false.</returns>
         private bool IsWildcardMatch(string ipAddress, string pattern)
         {
             string[] ipParts = ipAddress.Split('.');
@@ -133,11 +133,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 檢查給定的 IP 位址是否在指定的 CIDR 子網內。
+        /// Checks whether the given IP address is within the specified CIDR subnet.
         /// </summary>
-        /// <param name="address">要檢查的 IP 位址。</param>
-        /// <param name="cidr">要匹配的 CIDR 子網模式。</param>
-        /// <returns>如果 IP 位址在子網內則返回 true，否則返回 false。</returns>
+        /// <param name="address">The IP address to check.</param>
+        /// <param name="cidr">The CIDR subnet pattern to match against.</param>
+        /// <returns>True if the IP address is within the subnet; otherwise, false.</returns>
         private bool IsInSubnet(IPAddress address, string cidr)
         {
             string[] parts = cidr.Split('/');

@@ -4,12 +4,12 @@ using System.Text;
 namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 字串寫入器，使用 UTF8 編碼。
+    /// String writer that uses UTF-8 encoding.
     /// </summary>
     public class UTF8StringWriter : StringWriter
     {
         /// <summary>
-        /// 預設為 UTF8 編碼。
+        /// Gets the default UTF-8 encoding (without BOM).
         /// </summary>
         public override Encoding Encoding
         {

@@ -1,12 +1,12 @@
 ﻿namespace Bee.Base
 {
     /// <summary>
-    /// 顯示名稱介面。
+    /// Interface for objects that have a display name.
     /// </summary>
     public interface IDisplayName
     {
         /// <summary>
-        /// 顯示名稱．
+        /// Gets or sets the display name.
         /// </summary>
         string DisplayName { get; set; }
     }

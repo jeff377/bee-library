@@ -4,13 +4,13 @@ using System.Collections.Generic;
 namespace Bee.Base.Collections
 {
     /// <summary>
-    /// 索引鍵和值的集合(鍵值不區分大小寫)。
+    /// A key-value collection with case-insensitive string keys.
     /// </summary>
-    /// <typeparam name="T">成員型別。</typeparam>
+    /// <typeparam name="T">The type of the values.</typeparam>
     public class Dictionary<T> : Dictionary<string, T>
     {
         /// <summary>
-        /// 建構函式
+        /// Initializes a new instance of <see cref="Dictionary{T}"/>.
         /// </summary>
         public Dictionary() : base(StringComparer.CurrentCultureIgnoreCase) { }
     }

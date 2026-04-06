@@ -1,24 +1,24 @@
 namespace Bee.Base.Tracing
 {
     /// <summary>
-    /// 追蹤事件的種類，用於區分開始、結束與單點事件。
+    /// The kind of trace event, used to distinguish start, end, and point events.
     /// </summary>
     public enum TraceEventKind
     {
         /// <summary>
-        /// 代表一個追蹤區段的開始事件，
-        /// 通常由 <see cref="ITraceListener.TraceStart"/> 產生。
+        /// Represents the start event of a trace segment;
+        /// typically produced by <see cref="ITraceListener.TraceStart"/>.
         /// </summary>
         Start = 0,
         /// <summary>
-        /// 代表一個追蹤區段的結束事件，
-        /// 通常由 <see cref="ITraceListener.TraceEnd"/> 產生，
-        /// 並包含該區段的耗時與執行狀態。
+        /// Represents the end event of a trace segment;
+        /// typically produced by <see cref="ITraceListener.TraceEnd"/>,
+        /// and includes the elapsed time and execution status of the segment.
         /// </summary>
         End = 1,
         /// <summary>
-        /// 代表一個單點事件，不需要成對呼叫，
-        /// 通常由 <see cref="ITraceListener.TraceWrite"/> 產生。
+        /// Represents a single-point event that does not require a paired start/end call;
+        /// typically produced by <see cref="ITraceListener.TraceWrite"/>.
         /// </summary>
         Point = 2
     }

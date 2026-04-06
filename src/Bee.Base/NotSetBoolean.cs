@@ -1,20 +1,20 @@
 namespace Bee.Base
 {
     /// <summary>
-    /// 含未設定的布林列舉。
+    /// A boolean enumeration that includes a "not set" state.
     /// </summary>
     public enum NotSetBoolean
     {
         /// <summary>
-        /// 未設定。
+        /// Not set.
         /// </summary>
         NotSet,
         /// <summary>
-        /// True。
+        /// True.
         /// </summary>
         True,
         /// <summary>
-        /// False。
+        /// False.
         /// </summary>
         False
     }

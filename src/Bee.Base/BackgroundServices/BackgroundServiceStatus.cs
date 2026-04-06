@@ -1,24 +1,24 @@
 namespace Bee.Base.BackgroundServices
 {
     /// <summary>
-    /// 背景服務狀態。
+    /// Background service status.
     /// </summary>
     public enum BackgroundServiceStatus
     {
         /// <summary>
-        /// 停止。
+        /// Stopped.
         /// </summary>
         Stopped,
         /// <summary>
-        /// 正在啟動。
+        /// Starting up.
         /// </summary>
         StartPending,
         /// <summary>
-        /// 正在停止。
+        /// Stopping.
         /// </summary>
         StopPending,
         /// <summary>
-        /// 執行中。
+        /// Running.
         /// </summary>
         Running
     }

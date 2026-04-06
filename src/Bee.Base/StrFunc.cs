@@ -7,15 +7,15 @@ using System.Globalization;
 namespace Bee.Base
 {
     /// <summary>
-    /// 字串處理函式庫。
+    /// Utility library for string operations.
     /// </summary>
     public static class StrFunc
     {
         /// <summary>
-        /// 判斷是否為空字串，若為 null 也會視為空字串。
+        /// Determines whether the specified string is empty; null is also treated as empty.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="isTrim">是否去除左右空白。</param>
+        /// <param name="s">The string to check.</param>
+        /// <param name="isTrim">Whether to trim leading and trailing whitespace before checking.</param>
         public static bool IsEmpty(string s, bool isTrim = true)
         {
             if (BaseFunc.IsNullOrDBNull(s))
@@ -26,49 +26,49 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 先轉型為字串再判斷是否為空字串，若為 null 也會視為空字串。
+        /// Casts the value to a string, then determines whether it is empty; null is also treated as empty.
         /// </summary>
-        /// <param name="s">字串。</param>
+        /// <param name="s">The value to check.</param>
         public static bool IsEmpty(object s)
         {
             return IsEmpty(BaseFunc.CStr(s));
         }
 
         /// <summary>
-        /// 判斷是否不為空字串。
+        /// Determines whether the specified string is not empty.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="isTrim">是否去除左右空白。</param>
+        /// <param name="s">The string to check.</param>
+        /// <param name="isTrim">Whether to trim leading and trailing whitespace before checking.</param>
         public static bool IsNotEmpty(string s, bool isTrim = true)
         {
             return !IsEmpty(s, isTrim);
         }
 
         /// <summary>
-        /// 先轉型為字串再判斷是否為空字串，若為 null 也會視為空字串。
+        /// Casts the value to a string, then determines whether it is not empty; null is also treated as empty.
         /// </summary>
-        /// <param name="s">字串。</param>
+        /// <param name="s">The value to check.</param>
         public static bool IsNotEmpty(object s)
         {
             return IsNotEmpty(BaseFunc.CStr(s));
         }
 
         /// <summary>
-        /// 字串格式化。
+        /// Formats a string using the specified arguments.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="args">參數陣列。</param>
+        /// <param name="s">The format string.</param>
+        /// <param name="args">An array of arguments.</param>
         public static string Format(string s, params object[] args)
         {
             return string.Format(s, args);
         }
 
         /// <summary>
-        /// 字串格式化。
+        /// Formats a string using values from a data row.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="row">資料列。</param>
-        /// <param name="args">欄位名稱參數陣列。</param>
+        /// <param name="s">The format string.</param>
+        /// <param name="row">The data row.</param>
+        /// <param name="args">An array of column name arguments.</param>
         public static string Format(string s, DataRow row, params string[] args)
         {
             object[] oValues;
@@ -82,12 +82,12 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷二個字串是否相等。
+        /// Determines whether two strings are equal.
         /// </summary>
-        /// <param name="s1">第一個字串。</param>
-        /// <param name="s2">第二個字串。</param>
-        /// <param name="isTrim">比對前是否先去除左右空白。</param>
-        /// <param name="ignoreCase">是否忽略大小寫。</param>
+        /// <param name="s1">The first string.</param>
+        /// <param name="s2">The second string.</param>
+        /// <param name="isTrim">Whether to trim leading and trailing whitespace before comparing.</param>
+        /// <param name="ignoreCase">Whether to ignore case.</param>
         public static bool IsEquals(string s1, string s2, bool isTrim = false, bool ignoreCase = true)
         {
             if (s1 == null)
@@ -108,10 +108,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷字串是否等於比對的字串陣列中任一成員。
+        /// Determines whether the string equals any member of the comparison string array.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="values">比對的字串陣列。</param>
+        /// <param name="s">The string to check.</param>
+        /// <param name="values">The array of strings to compare against.</param>
         public static bool IsEqualsOr(string s, params string[] values)
         {
             foreach (string value in values)
@@ -123,9 +123,9 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 將字串轉為大寫。
+        /// Converts a string to uppercase.
         /// </summary>
-        /// <param name="s">字串。</param>
+        /// <param name="s">The string to convert.</param>
         public static string ToUpper(string s)
         {
             if (s == null)
@@ -135,9 +135,9 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 將字串轉為小寫。
+        /// Converts a string to lowercase.
         /// </summary>
-        /// <param name="s">字串。</param>
+        /// <param name="s">The string to convert.</param>
         public static string ToLower(string s)
         {
             if (s == null)
@@ -147,17 +147,17 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 字串取代。
+        /// Replaces occurrences of a substring within a string.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="search">要搜尋的子字串。</param>
-        /// <param name="replacement">取代子字串。</param>
-        /// <param name="ignoreCase">是否忽略大小寫。</param>
+        /// <param name="s">The string to process.</param>
+        /// <param name="search">The substring to search for.</param>
+        /// <param name="replacement">The replacement substring.</param>
+        /// <param name="ignoreCase">Whether to ignore case.</param>
         public static string Replace(string s, string search, string replacement, bool ignoreCase = true)
         {
             RegexOptions oOptions;
 
-            // 空字串直接回傳
+            // Return empty string directly if the input is empty
             if (IsEmpty(s)) { return string.Empty; }
 
             oOptions = (ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None;
@@ -165,10 +165,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 將字串依分隔符號折解成陣列。
+        /// Splits a string into an array using the specified delimiter.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="delimiter">分隔符號。</param>
+        /// <param name="s">The string to split.</param>
+        /// <param name="delimiter">The delimiter.</param>
         public static string[] Split(string s, string delimiter)
         {
             if (IsEmpty(s))
@@ -178,24 +178,24 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 將字串依換行符號拆解成陣列。
+        /// Splits a string into an array using newline characters as delimiters.
         /// </summary>
-        /// <param name="s">字串。</param>
+        /// <param name="s">The string to split.</param>
         public static string[] SplitNewLine(string s)
         {
             if (StrFunc.IsEmpty(s))
                 return new string[0];
-            // 先將 \r 取代為空字串，然後用 \n 為分隔符號，拆解成陣列
+            // Replace \r with empty string first, then split using \n as the delimiter
             return s.Replace("\r", "").Split(new char[] { '\n' });
         }
 
         /// <summary>
-        /// 由左邊開始尋找分隔符號，拆解成左右二字串。
+        /// Searches for the delimiter from the left and splits the string into left and right parts.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="delimiter">分隔符號。</param>
-        /// <param name="left">傳出左邊的字串。</param>
-        /// <param name="right">傳出右邊的字串。</param>
+        /// <param name="s">The string to split.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <param name="left">The output left portion of the string.</param>
+        /// <param name="right">The output right portion of the string.</param>
         public static void SplitLeft(string s, string delimiter, out string left, out string right)
         {
             int iPos;
@@ -206,12 +206,12 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 由右邊開始尋找分隔符號，拆解成左右二字串。
+        /// Searches for the delimiter from the right and splits the string into left and right parts.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="delimiter">分隔符號。</param>
-        /// <param name="left">傳出左邊的字串。</param>
-        /// <param name="right">傳出右邊的字串。</param>
+        /// <param name="s">The string to split.</param>
+        /// <param name="delimiter">The delimiter.</param>
+        /// <param name="left">The output left portion of the string.</param>
+        /// <param name="right">The output right portion of the string.</param>
         public static void SplitRight(string s, string delimiter, out string left, out string right)
         {
             int iPos;
@@ -222,11 +222,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 加入字串及分隔符號。
+        /// Appends a string and delimiter to the buffer.
         /// </summary>
-        /// <param name="buffer">字串暫存區。</param>
-        /// <param name="s">要加入的新字串。</param>
-        /// <param name="delimiter">分隔符號。</param>
+        /// <param name="buffer">The string buffer.</param>
+        /// <param name="s">The new string to append.</param>
+        /// <param name="delimiter">The delimiter.</param>
         public static void Append(StringBuilder buffer, string s, string delimiter)
         {
             if (buffer.Length > 0)
@@ -235,11 +235,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 依分隔符號合併二個字串。
+        /// Merges two strings using the specified delimiter.
         /// </summary>
-        /// <param name="s1">第一個字串。</param>
-        /// <param name="s2">第二個字串。</param>
-        /// <param name="delimiter">分隔符號。</param>
+        /// <param name="s1">The first string.</param>
+        /// <param name="s2">The second string.</param>
+        /// <param name="delimiter">The delimiter.</param>
         public static string Merge(string s1, string s2, string delimiter)
         {
             if (IsNotEmpty(s1))
@@ -248,11 +248,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 在暫存區加入分隔符號及字串。
+        /// Appends a delimiter and string to the buffer.
         /// </summary>
-        /// <param name="buffer">暫存區。</param>
-        /// <param name="s">字串。</param>
-        /// <param name="delimiter">分隔符號。</param>
+        /// <param name="buffer">The buffer.</param>
+        /// <param name="s">The string to append.</param>
+        /// <param name="delimiter">The delimiter.</param>
         public static void Merge(StringBuilder buffer, string s, string delimiter)
         {
             if (buffer.Length > 0)
@@ -261,10 +261,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得字串左邊指定長度的子字串。 
+        /// Gets a substring of the specified length from the left side of the string.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="length">長度。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="length">The length.</param>
         public static string Left(string s, int length)
         {
             if (IsEmpty(s) || (length <= 0))
@@ -274,27 +274,27 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得字串右邊指定長度的子字串。
+        /// Gets a substring of the specified length from the right side of the string.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="length">長度。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="length">The length.</param>
         public static string Right(string s, int length)
         {
             int iStartIndex;
 
             if (IsEmpty(s) || (length <= 0)) { return string.Empty; }
 
-            //計算擷取字串的起始位置
+            // Calculate the starting position for extraction
             iStartIndex = s.Length - length;
-            //在字串中擷取指定起始位置後子字串
+            // Extract the substring from the calculated start index
             return Substring(s, iStartIndex);
         }
 
         /// <summary>
-        /// 字串左邊開頭是否符合指定字串。
+        /// Determines whether the string starts with the specified value.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="value">判斷符合的指定字串。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="value">The value to check against.</param>
         public static bool LeftWith(string s, string value)
         {
             if (IsEmpty(s))
@@ -304,10 +304,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 字串右方結尾是否符合指定字串。
+        /// Determines whether the string ends with the specified value.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="value">判斷符合的指定字串。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="value">The value to check against.</param>
         public static bool RightWith(string s, string value)
         {
             if (IsEmpty(s))
@@ -317,20 +317,20 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 字串左邊去除指定長度的字元。
+        /// Removes the specified number of characters from the left side of the string.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="length">長度。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="length">The number of characters to remove.</param>
         public static string LeftCut(string s, int length)
         {
             return Substring(s, length);
         }
 
         /// <summary>
-        /// 判斷字串左邊是否有指定字串，有得話則去除該指定字串。
+        /// Removes the specified prefix string from the left side if present.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="value">判斷的指定字串。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="value">The prefix string to remove.</param>
         public static string LeftCut(string s, string value)
         {
             if (LeftWith(s, value))
@@ -340,20 +340,20 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 去除字串右邊指定長度的字串。 
+        /// Removes the specified number of characters from the right side of the string.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="length">要去除的長度。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="length">The number of characters to remove.</param>
         public static string RightCut(string s, int length)
         {
             return Left(s, s.Length - length);
         }
 
         /// <summary>
-        /// 判斷字串右邊是否有指定字串，有得話則去除該指定字串。
+        /// Removes the specified suffix string from the right side if present.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="value">判斷的指定字串。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="value">The suffix string to remove.</param>
         public static string RightCut(string s, string value)
         {
             if (RightWith(s, value))
@@ -363,11 +363,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 字串左右二邊去除指定字串。
+        /// Removes the specified strings from both the left and right sides of the string.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="leftValue">左邊指定字串。</param>
-        /// <param name="rightValue">右邊指定字串。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="leftValue">The left-side string to remove.</param>
+        /// <param name="rightValue">The right-side string to remove.</param>
         public static string LeftRightCut(string s, string leftValue, string rightValue)
         {
             string sValue;
@@ -378,33 +378,33 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 在字串中擷取指定起始位置後子字串。
+        /// Extracts a substring starting from the specified index.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="startIndex">以零為起始，擷取子字串的起始位置，若起始位置小於零，會強制設為零。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="startIndex">The zero-based start index; if less than zero, it is forced to zero.</param>
         public static string Substring(string s, int startIndex)
         {
             if (IsEmpty(s)) { return string.Empty; }
 
-            //計算擷取字串的起始位置，若起始位置小於零，則強制設為零
+            // Calculate the start index; force to zero if less than zero
             if (startIndex < 0) { startIndex = 0; }
             return s.Substring(startIndex);
         }
 
         /// <summary>
-        /// 在字串中擷取指定起始位置及長度的子字串。
+        /// Extracts a substring of the specified length starting from the specified index.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="startIndex">以零為起始，擷取子字串的起始位置，若起始位置小於零，會強制設為零。</param>
-        /// <param name="length">擷取長度。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="startIndex">The zero-based start index; if less than zero, it is forced to zero.</param>
+        /// <param name="length">The length of the substring to extract.</param>
         public static string Substring(string s, int startIndex, int length)
         {
             if (IsEmpty(s) || (length <= 0)) { return string.Empty; }
 
-            //計算擷取字串的起始位置，若起始位置小於零，則強制設為零
+            // Calculate the start index; force to zero if less than zero
             if (startIndex < 0) { startIndex = 0; }
 
-            //若擷取長度大於範圍，則取起始位置後的子字串，忽略擷取長度
+            // If the extraction length exceeds the range, return the substring from the start index, ignoring the length
             if ((startIndex + length) > s.Length)
                 return s.Substring(startIndex);
             else
@@ -412,23 +412,23 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 在字串中判斷子字串的起始位置，若無指定子字串會傳回 -1。
+        /// Finds the starting position of a substring within the string; returns -1 if not found.
         /// </summary>
-        /// <param name="s">字串。</param>
-        ///<param name="subString">子字串。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="subString">The substring to find.</param>
         public static int Pos(string s, string subString)
         {
             if (IsEmpty(s))
                 return -1;
-            //忽略大小寫，故先轉為大寫後，再判斷子字串位置
+            // Case-insensitive: convert to uppercase before finding the substring position
             return ToUpper(s).IndexOf(ToUpper(subString));
         }
 
         /// <summary>
-        /// 由字串右邊開始尋找子字串的位置，若無指定子字串會傳回 -1。
+        /// Finds the position of a substring by searching from the right; returns -1 if not found.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="subString">子字串。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="subString">The substring to find.</param>
         public static int PosRev(string s, string subString)
         {
             if (IsEmpty(s))
@@ -438,10 +438,10 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 判斷字串是否包含指定的子字串。
+        /// Determines whether the string contains the specified substring.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="subString">子字串。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="subString">The substring to look for.</param>
         public static bool Contains(string s, string subString)
         {
             if (Pos(s, subString) == -1)
@@ -451,12 +451,12 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 去除字串左右空白。
+        /// Trims leading and trailing whitespace from the string.
         /// </summary>
-        /// <param name="s">字串。</param>
+        /// <param name="s">The string to trim.</param>
         public static string Trim(string s)
         {
-            // 去除 ZERO WIDTH SPACE (U+200B) 與 ZERO WIDTH NO-BREAK SPACE (U+FEFF) 不可視字元
+            // Also removes invisible characters: ZERO WIDTH SPACE (U+200B) and ZERO WIDTH NO-BREAK SPACE (U+FEFF)
             // http://blog.miniasp.com/post/2014/01/15/C-Sharp-String-Trim-ZWSP-Zero-width-space.aspx
             if (s == null)
                 return string.Empty;
@@ -465,9 +465,9 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得字串長度。
+        /// Gets the length of the string.
         /// </summary>
-        /// <param name="s">字串。</param>        
+        /// <param name="s">The string.</param>
         public static int Length(string s)
         {
             if (IsEmpty(s))
@@ -477,43 +477,43 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 以指定字元填補左邊至指定長度。
+        /// Left-pads the string to the specified length using the specified character.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="length">指定長度。</param>
-        /// <param name="paddingChar">填補字元。</param>
+        /// <param name="s">The string.</param>
+        /// <param name="length">The target length.</param>
+        /// <param name="paddingChar">The padding character.</param>
         public static string PadLeft(string s, int length, char paddingChar)
         {
             return s.PadLeft(length, paddingChar);
         }
 
         /// <summary>
-        /// 重覆指定字元組件的字串。
+        /// Returns a string consisting of the specified character repeated the specified number of times.
         /// </summary>
-        /// <param name="number">重覆次數。</param>
-        /// <param name="character">字元。</param>
+        /// <param name="number">The number of repetitions.</param>
+        /// <param name="character">The character to repeat.</param>
         public static string Dup(int number, char character)
         {
             return PadLeft(string.Empty, number, character);
         }
 
         /// <summary>
-        /// 模仿 VB 的 LikeString 方法，支援 *, ?, # 萬用字元的字串比對。
+        /// Mimics VB's LikeString method, supporting *, ?, # wildcards for string matching.
         /// </summary>
-        /// <param name="source">來源字串。</param>
-        /// <param name="pattern">比對模式，使用 VB Like 語法。</param>
-        /// <param name="compareOption">比對選項（如 IgnoreCase）。</param>
-        /// <returns>是否符合指定模式。</returns>
+        /// <param name="source">The source string.</param>
+        /// <param name="pattern">The match pattern using VB Like syntax.</param>
+        /// <param name="compareOption">The comparison option (e.g. IgnoreCase).</param>
+        /// <returns>True if the source matches the specified pattern; otherwise, false.</returns>
         public static bool Like(string source, string pattern, CompareOptions compareOption = CompareOptions.IgnoreCase)
         {
             if (source == null || pattern == null)
                 return false;
 
-            // Escape 正規式，再將萬用字元還原為 Regex 語法
+            // Escape regex, then restore wildcards to Regex syntax
             var regexPattern = "^" + Regex.Escape(pattern)
-                .Replace(@"\*", ".*")     // *：任意長度字串
-                .Replace(@"\?", ".")      // ?：任一字元
-                .Replace(@"\#", "[0-9]")  // #：任一數字
+                .Replace(@"\*", ".*")     // *: any sequence of characters
+                .Replace(@"\?", ".")      // ?: any single character
+                .Replace(@"\#", "[0-9]")  // #: any single digit
                 + "$";
 
             var options = RegexOptions.Compiled;
@@ -524,11 +524,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得下一個流水號（支援 2~36 進位）。
+        /// Gets the next sequential ID (supports base 2 to 36).
         /// </summary>
-        /// <param name="value">目前編號。</param>
-        /// <param name="numberBase">流水號進位基底（2-36）。</param>
-        /// <returns>下一個流水號。</returns>
+        /// <param name="value">The current ID.</param>
+        /// <param name="numberBase">The base for the sequential ID (2-36).</param>
+        /// <returns>The next sequential ID.</returns>
         public static string GetNextId(string value, int numberBase)
         {
             if (numberBase < 2 || numberBase > 36)
@@ -539,11 +539,11 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// 取得下一個流水號，依據自訂字元集遞增。
+        /// Gets the next sequential ID, incrementing according to a custom character set.
         /// </summary>
-        /// <param name="value">目前編號。</param>
-        /// <param name="baseValues">進位基底字元集。</param>
-        /// <returns>下一個流水號。</returns>
+        /// <param name="value">The current ID.</param>
+        /// <param name="baseValues">The character set defining the base.</param>
+        /// <returns>The next sequential ID.</returns>
         public static string GetNextId(string value, string baseValues)
         {
             if (string.IsNullOrEmpty(baseValues))
@@ -570,7 +570,7 @@ namespace Bee.Base
                 current[i] = digits[0];
             }
 
-            // 全部 overflow，進位補首碼（使用第一個非零字元）
+            // All digits overflowed; carry over by prepending the first non-zero character
             return digits[1] + new string(current);
         }
     }

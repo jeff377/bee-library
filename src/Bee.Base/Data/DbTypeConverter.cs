@@ -4,14 +4,14 @@ using System.Data;
 namespace Bee.Base.Data
 {
     /// <summary>
-    /// 資料型別轉換。
+    /// Utility class for converting between database and .NET type representations.
     /// </summary>
     public static class DbTypeConverter
     {
         /// <summary>
-        /// 將指定型別轉換為 TypeCode 列舉型別。
+        /// Converts the specified <see cref="Type"/> to its corresponding <see cref="TypeCode"/>.
         /// </summary>
-        /// <param name="type">型別。</param>
+        /// <param name="type">The type to convert.</param>
         public static TypeCode ToTypeCode(Type type)
         {
             if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Nullable<>)))
@@ -22,9 +22,9 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 將指定型別轉換為 FieldDbType 列舉型別。
+        /// Converts the specified <see cref="Type"/> to its corresponding <see cref="FieldDbType"/>.
         /// </summary>
-        /// <param name="type">型別。</param>
+        /// <param name="type">The type to convert.</param>
         public static FieldDbType ToFieldDbType(Type type)
         {
             var typeCode = ToTypeCode(type);
@@ -56,9 +56,9 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 將 FieldDbType 轉型為 DbType 型別。
+        /// Converts a <see cref="FieldDbType"/> value to the corresponding <see cref="DbType"/>.
         /// </summary>
-        /// <param name="fieldDbType">欄位資料型別。</param>
+        /// <param name="fieldDbType">The field database type.</param>
         public static DbType ToDbType(FieldDbType fieldDbType)
         {
             switch (fieldDbType)
@@ -93,9 +93,9 @@ namespace Bee.Base.Data
         }
 
         /// <summary>
-        /// 將 EFieldDbType 轉型為 System.Type。
+        /// Converts a <see cref="FieldDbType"/> value to the corresponding <see cref="System.Type"/>.
         /// </summary>
-        /// <param name="fieldDbType">欄位資料型別。</param>
+        /// <param name="fieldDbType">The field database type.</param>
         public static Type ToType(FieldDbType fieldDbType)
         {
             switch (fieldDbType)

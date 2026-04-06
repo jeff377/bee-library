@@ -1,39 +1,39 @@
 ﻿namespace Bee.Base.Collections
 {
     /// <summary>
-    /// 具鍵值的強型別集合介面。
+    /// Interface for a strongly-typed keyed collection.
     /// </summary>
     public interface IKeyCollectionBase
     {
         /// <summary>
-        /// 擁有者。
+        /// Gets the owner of this collection.
         /// </summary>
         object Owner { get; }
 
         /// <summary>
-        /// 變更成員鍵值。
+        /// Changes the key of an existing item in the collection.
         /// </summary>
-        /// <param name="key">鍵值。</param>
-        /// <param name="value">成員。</param>
+        /// <param name="key">The new key.</param>
+        /// <param name="value">The item whose key should be changed.</param>
         void ChangeItemKey(string key, IKeyCollectionItem value);
 
         /// <summary>
-        /// 移除成員。
+        /// Removes the specified item from the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to remove.</param>
         void Remove(IKeyCollectionItem value);
 
         /// <summary>
-        /// 加入成員。
+        /// Adds the specified item to the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to add.</param>
         void Add(IKeyCollectionItem value);
 
         /// <summary>
-        /// 插入成員。
+        /// Inserts the specified item at the given index.
         /// </summary>
-        /// <param name="index">索引位置。</param>
-        /// <param name="value">成員。</param>
+        /// <param name="index">The zero-based index at which to insert the item.</param>
+        /// <param name="value">The item to insert.</param>
         void Insert(int index, IKeyCollectionItem value);
     }
 }

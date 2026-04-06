@@ -9,17 +9,17 @@ using Bee.Base.Serialization;
 namespace Bee.Base.Collections
 {
     /// <summary>
-    /// 強型別集合。
+    /// Base class for strongly-typed collections.
     /// </summary>
-    /// <typeparam name="T">集合成員型別。</typeparam>
+    /// <typeparam name="T">The type of the collection items.</typeparam>
     [Serializable]
     public abstract class CollectionBase<T> : Collection<T>, ICollectionBase, IObjectSerialize, ITagProperty
-        where T : class, ICollectionItem  // 定義成員型別必須實作 ICollectionItem 介面
+        where T : class, ICollectionItem  // Item type must implement ICollectionItem
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="CollectionBase{T}"/>.
         /// </summary>
         public CollectionBase() : base()
         {
@@ -27,9 +27,9 @@ namespace Bee.Base.Collections
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="CollectionBase{T}"/> with the specified owner.
         /// </summary>
-        /// <param name="owner">擁有者。</param>
+        /// <param name="owner">The owner of this collection.</param>
         public CollectionBase(object owner) : base()
         {
             Owner = owner;
@@ -37,47 +37,47 @@ namespace Bee.Base.Collections
 
         #endregion
 
-        #region ICollectionBase 介面
+        #region ICollectionBase Interface
 
         /// <summary>
-        ///  擁有者。
+        /// Gets the owner of this collection.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public object Owner { get; private set; }
 
         /// <summary>
-        /// 設定擁有者。
+        /// Sets the owner of this collection.
         /// </summary>
-        /// <param name="owner">擁有者。</param>
+        /// <param name="owner">The owner object.</param>
         protected void SetOwner(object owner)
         {
             Owner = owner;
         }
 
         /// <summary>
-        /// 移除成員。
+        /// Removes the specified item from the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to remove.</param>
         public void Remove(ICollectionItem value)
         {
             base.Remove((T)value);
         }
 
         /// <summary>
-        /// 加入成員。
+        /// Adds the specified item to the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to add.</param>
         public void Add(ICollectionItem value)
         {
             base.Add((T)value);
         }
 
         /// <summary>
-        /// 插入成員。
+        /// Inserts the specified item at the given index.
         /// </summary>
-        /// <param name="index">索引位置。</param>
-        /// <param name="value">成員。</param>
+        /// <param name="index">The zero-based index at which to insert the item.</param>
+        /// <param name="value">The item to insert.</param>
         public void Insert(int index, ICollectionItem value)
         {
             base.Insert(index, (T)value);
@@ -85,19 +85,19 @@ namespace Bee.Base.Collections
 
         #endregion
 
-        #region IObjectSerialize 介面
+        #region IObjectSerialize Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the current serialization state.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state for this collection and all of its items.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state to set.</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -110,10 +110,10 @@ namespace Bee.Base.Collections
 
         #endregion
 
-        #region ITagProperty 介面
+        #region ITagProperty Interface
 
         /// <summary>
-        /// 儲存額外資訊。
+        /// Gets or sets an arbitrary object for storing additional information.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
@@ -122,27 +122,27 @@ namespace Bee.Base.Collections
         #endregion
 
         /// <summary>
-        /// 覆寫 InsertItem 方法。
+        /// Overrides the <see cref="Collection{T}.InsertItem"/> method to set the owning collection on the inserted item.
         /// </summary>
-        /// <param name="index">索引。</param>
-        /// <param name="item">成員。</param>
+        /// <param name="index">The zero-based index at which to insert the item.</param>
+        /// <param name="item">The item to insert.</param>
         protected override void InsertItem(int index, T item)
         {
-            // 加入成員
+            // Add the item to the collection
             base.InsertItem(index, item);
-            // 設定成員的集合類別
+            // Set the owning collection on the item
             item.SetCollection(this);
         }
 
         /// <summary>
-        /// 覆寫 RemoveItem 方法。
+        /// Overrides the <see cref="Collection{T}.RemoveItem"/> method to clear the owning collection reference before removal.
         /// </summary>
-        /// <param name="index">索引。</param>
+        /// <param name="index">The zero-based index of the item to remove.</param>
         protected override void RemoveItem(int index)
         {
-            // 移除成員的集合類別
+            // Clear the owning collection reference on the item
             this[index].SetCollection(null);
-            // 移除成員
+            // Remove the item
             base.RemoveItem(index);
         }
     }

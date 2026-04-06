@@ -3,38 +3,38 @@ using System;
 namespace Bee.Base.Tracing
 {
     /// <summary>
-    /// 追蹤事件所屬的層級，用於區分系統中不同執行位置，
-    /// 例如 UI、API 呼叫、API 服務、業務層或資料存取層。
+    /// The layer a trace event belongs to, used to distinguish different execution positions in the system,
+    /// such as UI, API client, API server, business layer, or data access layer.
     /// </summary>
     [Flags]
     public enum TraceLayer
     {
         /// <summary>
-        /// 無層級（預設值）。
+        /// No layer (default value).
         /// </summary>
         None = 0,
         /// <summary>
-        /// 使用者介面層，例如 WinForms、Blazor 或 MAUI 的操作。
+        /// User interface layer, e.g. WinForms, Blazor, or MAUI interactions.
         /// </summary>
         UI = 1 << 0,
         /// <summary>
-        /// API 呼叫層，例如前端或外部系統呼叫 API。
+        /// API client layer, e.g. frontend or external system calling an API.
         /// </summary>
         ApiClient = 1 << 1,
         /// <summary>
-        /// API 服務層，例如後端 API Controller 或 Middleware。
+        /// API server layer, e.g. backend API Controller or Middleware.
         /// </summary>
         ApiServer = 1 << 2,
         /// <summary>
-        /// 業務層，例如 Service 或 Domain Service 的執行。
+        /// Business layer, e.g. execution of a Service or Domain Service.
         /// </summary>
         Business = 1 << 3,
         /// <summary>
-        /// 資料存取層，例如 EF Core、Dapper 或 ADO.NET 的 SQL 執行。
+        /// Data access layer, e.g. SQL execution via EF Core, Dapper, or ADO.NET.
         /// </summary>
         Data = 1 << 4,
         /// <summary>
-        /// 所有層級（包含 UI、API 呼叫、API 服務、業務層與資料存取）。
+        /// All layers (includes UI, API client, API server, business, and data access).
         /// </summary>
         All = UI | ApiClient | ApiServer | Business | Data
     }

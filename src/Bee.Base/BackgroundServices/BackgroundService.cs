@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 namespace Bee.Base.BackgroundServices
 {
     /// <summary>
-    /// 背景服務基底類別。
-    /// </summary>    
+    /// Base class for background services.
+    /// </summary>
     public abstract class BackgroundService
     {
         private System.Timers.Timer _Timer = null;
@@ -19,10 +19,10 @@ namespace Bee.Base.BackgroundServices
         private DateTime _NextTime = DateTime.MinValue;
         private int _Interval = 10000;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="BackgroundService"/>.
         /// </summary>
         public BackgroundService()
         {
@@ -32,15 +32,15 @@ namespace Bee.Base.BackgroundServices
 
         #endregion
 
-        #region StatusChanged 事件
+        #region StatusChanged Event
 
         /// <summary>
-        /// 背景服務狀態變更引發的事件。
+        /// Event raised when the background service status changes.
         /// </summary>
         public event BackgroundServiceStatusChangedEventHandler StatusChanged;
 
         /// <summary>
-        /// 引發 StatusChanged 事件。
+        /// Raises the StatusChanged event.
         /// </summary>
         public void OnStatusChanged(BackgroundServiceStatusChangedEventArgs e)
         {
@@ -50,7 +50,7 @@ namespace Bee.Base.BackgroundServices
         #endregion
 
         /// <summary>
-        /// 計時器。
+        /// Gets the internal timer.
         /// </summary>
         private System.Timers.Timer Timer
         {
@@ -58,7 +58,7 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 背景服務狀態。
+        /// Gets the current background service status.
         /// </summary>
         public BackgroundServiceStatus Status
         {
@@ -66,9 +66,9 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 設定背景服務狀態，並引發 StatusChanged 事件。
+        /// Sets the background service status and raises the StatusChanged event.
         /// </summary>
-        /// <param name="status">背景服務狀態。</param>
+        /// <param name="status">The new background service status.</param>
         private void SetStatus(BackgroundServiceStatus status)
         {
             BackgroundServiceStatusChangedEventArgs oArgs;
@@ -80,7 +80,7 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 使用線程數。
+        /// Gets or sets the number of threads to use.
         /// </summary>
         public int ThreadCount
         {
@@ -89,7 +89,7 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 工作佇列。
+        /// Gets the task queue.
         /// </summary>
         public ConcurrentQueue<BackgroundAction> TaskQueue
         {
@@ -97,7 +97,7 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 線程號誌。
+        /// Gets the thread semaphore.
         /// </summary>
         public SemaphoreSlim Semaphore
         {
@@ -105,7 +105,7 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 處理工作加入佇列的時間標記。
+        /// Gets the timestamp for the next task queue loading.
         /// </summary>
         public DateTime NextTime
         {
@@ -113,7 +113,7 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 處理工作加入佇列的時間間隔。
+        /// Gets or sets the interval (in milliseconds) between task queue loading cycles.
         /// </summary>
         public int Interval
         {
@@ -122,13 +122,13 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 初始化。
+        /// Initializes the background service.
         /// </summary>
         public void Initialize()
         {
             try
             {
-                // 初始化的實作方法
+                // Call the initialization implementation
                 OnInitialize();
                 _TaskQueue = new ConcurrentQueue<BackgroundAction>();
                 _Semaphore = new SemaphoreSlim(this.ThreadCount);
@@ -140,23 +140,23 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 初始化的實作方法。
+        /// Override to provide custom initialization logic.
         /// </summary>
         protected virtual void OnInitialize()
         { }
 
         /// <summary>
-        /// 啟動。
+        /// Starts the background service.
         /// </summary>
         public void Start()
         {
             try
             {
-                // 狀態設為正在啟動
+                // Set status to starting
                 SetStatus(BackgroundServiceStatus.StartPending);
-                // 啟動計時器
+                // Enable the timer
                 this.Timer.Enabled = true;
-                // 啟動的實作方法
+                // Call the start implementation
                 OnStart();
             }
             catch (Exception ex)
@@ -166,23 +166,23 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 啟動的實作方法。
+        /// Override to provide custom start logic.
         /// </summary>
         protected virtual void OnStart()
         { }
 
         /// <summary>
-        /// 停止。
+        /// Stops the background service.
         /// </summary>
         public void Stop()
         {
             try
             {
-            // 狀態設為正在停止
+            // Set status to stopping
             _Status = BackgroundServiceStatus.StopPending;
-            // 停止計時器
+            // Disable the timer
             this.Timer.Enabled = false;
-            // 停止的實作方法
+            // Call the stop implementation
             OnStop();
             }
             catch (Exception ex)
@@ -192,71 +192,71 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 停止的實作方法。
+        /// Override to provide custom stop logic.
         /// </summary>
         protected virtual void OnStop()
         { }
 
         /// <summary>
-        /// 計時器時間到達事件處理方式。
+        /// Handles the timer elapsed event.
         /// </summary>
         private void Elapsed_EventHandler(object sender, System.Timers.ElapsedEventArgs e)
         {
-            // 停止計時器
+            // Stop the timer
             this.Timer.Enabled = false;
-            // 執行服務
+            // Run the service
             Run();
         }
 
         /// <summary>
-        /// 執行服務。
+        /// Runs the service loop.
         /// </summary>
         private void Run()
         {
-            // 狀態設為執行中
+            // Set status to running
             SetStatus(BackgroundServiceStatus.Running);
-            // 執行無窮迴圈，以線程執行排程工作
+            // Run an infinite loop to execute scheduled tasks on threads
             while (true)
             {
-                // 若狀態非執行中，則跳出迴圈
+                // Break out of the loop if status is no longer Running
                 if (this.Status != BackgroundServiceStatus.Running) { break; }
                 try
                 {
-                    // 工作加入佇列
+                    // Enqueue tasks
                     AddTasks();
-                    // 執行佇列工作
+                    // Execute queued tasks
                     ExecuteTasks();
                 }
                 catch (Exception ex)
                 {
-                    // 處理迴圈發生的例外錯誤，防止因例外錯誤跳出迴圈，造成服務無法正常運行
+                    // Handle exceptions in the loop to prevent service interruption
                     OnError(ex, BackgroundServiceAction.Run);
                 }
-                // 迴圈暫停 500 豪秒，防止佔用過多 CPU 效能
+                // Pause the loop for 500 ms to avoid excessive CPU usage
                 Thread.Sleep(500);
             }
 
-            // 狀態設為停止
+            // Set status to stopped
             SetStatus(BackgroundServiceStatus.Stopped);
         }
 
         /// <summary>
-        /// 工作加入佇列。
+        /// Enqueues tasks for processing.
         /// </summary>
         protected virtual void AddTasks()
         {
-            // 若佇列數目大於線程數，則離開
+            // Exit if the queue already has tasks equal to or exceeding the thread count
             if (this.TaskQueue.Count >= this.ThreadCount) { return; }
-            // 還未到載入時間，則離開
+            // Exit if it is not yet time to load tasks
             if (DateTime.Now < this.NextTime) { return; }
-            // 載入待處理工作實作
+            // Call the task-loading implementation
             OnAddTasks();
-            // 計算下次載入時間
+            // Calculate the next load time
             _NextTime = DateTime.Now.AddMilliseconds(this.Interval);
         }
 
         /// <summary>
-        /// 工作加入佇列的實作方法。
+        /// Override to provide custom task-loading logic.
         /// </summary>
         protected virtual void OnAddTasks()
         {
@@ -264,28 +264,28 @@ namespace Bee.Base.BackgroundServices
         }
 
         /// <summary>
-        /// 執行佇列工作。
+        /// Executes queued tasks.
         /// </summary>
         protected void ExecuteTasks()
         {
-            // 當服務狀態為執行中時，以多線程執行佇列中的工作
+            // Execute queued tasks on multiple threads while the service is running
             while (this.Status == BackgroundServiceStatus.Running && this.TaskQueue.Count > 0 && this.TaskQueue.TryDequeue(out BackgroundAction backgroundAction))
             {
-                Debug.WriteLine($"可用線程數 : {this.Semaphore.CurrentCount}");
-                this.Semaphore.Wait(); // 控制最大並行任務數量
-                // 為每個任務創建 CancellationTokenSource 來設置逾時時間
+                Debug.WriteLine($"Available thread count: {this.Semaphore.CurrentCount}");
+                this.Semaphore.Wait(); // Limit maximum concurrency
+                // Create a CancellationTokenSource for each task to set a timeout
                 CancellationTokenSource cts = new CancellationTokenSource(backgroundAction.Timeout);
 
                 Task.Run(() =>
                 {
                     try
                     {
-                        // 以線程執行委派方法
+                        // Execute the delegate on a thread
                         backgroundAction.Action.Invoke(cts.Token);
                     }
                     catch (OperationCanceledException)
                     {
-                        Debug.WriteLine("Task 逾時取消");
+                        Debug.WriteLine("Task timed out and was cancelled");
                     }
                     finally
                     {
@@ -295,27 +295,27 @@ namespace Bee.Base.BackgroundServices
                 {
                     if (t.IsFaulted)
                     {
-                        Debug.WriteLine($"Task 發生例外錯誤: {t.Exception?.Message}");
+                        Debug.WriteLine($"Task faulted with exception: {t.Exception?.Message}");
                     }
                 });
             }
         }
 
         /// <summary>
-        /// 添加新工作到佇列。
+        /// Adds a new task to the queue.
         /// </summary>
-        /// <param name="action">委派方法。</param>
-        /// <param name="timeout">逾時取消工作的時間間隔，以毫秒為單位。</param>
+        /// <param name="action">The delegate to execute.</param>
+        /// <param name="timeout">The timeout interval in milliseconds after which the task will be cancelled.</param>
         public void AddTask(Action<CancellationToken> action, int timeout)
         {
             this.TaskQueue.Enqueue(new BackgroundAction(action, timeout));
         }
 
         /// <summary>
-        /// 錯誤處理方法。
+        /// Error handler method.
         /// </summary>
-        /// <param name="e">例外錯誤。</param>
-        /// <param name="action">背景服務執行動作。</param>
+        /// <param name="e">The exception that occurred.</param>
+        /// <param name="action">The background service action during which the error occurred.</param>
         protected virtual void OnError(Exception e, BackgroundServiceAction action)
         { }
     }

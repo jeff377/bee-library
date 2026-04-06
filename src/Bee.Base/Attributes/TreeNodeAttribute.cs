@@ -3,33 +3,33 @@
 namespace Bee.Base.Attributes
 {
     /// <summary>
-    /// 套用於類別，描述物件繫結於樹狀節點呈現方式的自訂屬性。
+    /// Custom attribute applied to a class to describe how the object is presented as a tree node.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class TreeNodeAttribute : Attribute
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TreeNodeAttribute"/>.
         /// </summary>
         public TreeNodeAttribute()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TreeNodeAttribute"/> with a display format string.
         /// </summary>
-        /// <param name="displayFormat">顯示名稱。</param>
+        /// <param name="displayFormat">The display name or format string.</param>
         public TreeNodeAttribute(string displayFormat)
         {
             DisplayFormat = displayFormat;
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TreeNodeAttribute"/> with a format string and a property name.
         /// </summary>
-        /// <param name="displayFormat">顯示的格式化字串。</param>
-        /// <param name="propertyName">取代格式化字串中 {0} 的屬性名稱。</param>
+        /// <param name="displayFormat">The display format string.</param>
+        /// <param name="propertyName">The property name used to replace <c>{0}</c> in the format string.</param>
         public TreeNodeAttribute(string displayFormat, string propertyName)
         {
             DisplayFormat = displayFormat;
@@ -37,10 +37,10 @@ namespace Bee.Base.Attributes
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TreeNodeAttribute"/> with a display format and a collection folder flag.
         /// </summary>
-        /// <param name="displayFormat">顯示名稱。</param>
-        /// <param name="collectionFolder">集合屬性是否顯示資料夾節點。</param>
+        /// <param name="displayFormat">The display name or format string.</param>
+        /// <param name="collectionFolder">Whether to show a folder node for collection properties.</param>
         public TreeNodeAttribute(string displayFormat, bool collectionFolder)
         {
             DisplayFormat = displayFormat;
@@ -50,35 +50,35 @@ namespace Bee.Base.Attributes
         #endregion
 
         /// <summary>
-        /// 顯示的格式化字串。
+        /// Gets the display format string.
         /// </summary>
         public string DisplayFormat { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 取代格式化字串中 {0} 的屬性名稱。
+        /// Gets the property name used to replace <c>{0}</c> in the format string.
         /// </summary>
         public string PropertyName { get; private set; } = string.Empty ;
 
         /// <summary>
-        /// 集合屬性是否顯示資料夾節點。
+        /// Gets whether collection properties should display a folder node.
         /// </summary>
         public bool CollectionFolder { get; private set; } = false;
 
         /// <summary>
-        /// 取得套用 TreeNodeAttribute 的顯示文字。
+        /// Gets the display text for the object that has <see cref="TreeNodeAttribute"/> applied.
         /// </summary>
-        /// <param name="value"></param>
+        /// <param name="value">The object instance.</param>
         public static string GetDisplayText(object value)
         {
-            // 取得元件的 TreeNodeAttribute
+            // Get the TreeNodeAttribute from the object
             var attribute = (TreeNodeAttribute)BaseFunc.GetAttribute(value, typeof(TreeNodeAttribute));
-            // 若無 Attribute 則回傳物件描述文字
+            // If no attribute is found, return the object's string representation
             if (attribute == null) { return value.ToString(); }
 
             string displayText;
             if (StrFunc.IsNotEmpty(attribute.PropertyName))
             {
-                // DisplayFormat 為格式化字串
+                // DisplayFormat is a composite format string
                 var names = StrFunc.Split(attribute.PropertyName, ",");
                 var args = new object[names.Length];
                 for (int N1 = 0; N1 < names.Length; N1++)
@@ -87,7 +87,7 @@ namespace Bee.Base.Attributes
             }
             else
             {
-                // DisplayFormat 為指定字串
+                // DisplayFormat is a literal string
                 displayText = attribute.DisplayFormat;
             }
 

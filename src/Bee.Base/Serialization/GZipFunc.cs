@@ -4,14 +4,14 @@ using System.IO.Compression;
 namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// GZip 壓縮函式庫。
+    /// Utility library for GZip compression and decompression.
     /// </summary>
     public static class GZipFunc
     {
         /// <summary>
-        /// 執行壓縮。
+        /// Compresses the specified byte array using GZip.
         /// </summary>
-        /// <param name="bytes">原始位元組資料。</param>
+        /// <param name="bytes">The raw byte data to compress.</param>
         public static byte[] Compress(byte[] bytes)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -20,14 +20,14 @@ namespace Bee.Base.Serialization
                 {
                     gZipStream.Write(bytes, 0, bytes.Length);
                 }
-                return stream.ToArray(); // 確保所有資料都被寫入並轉換為位元組陣列
+                return stream.ToArray(); // Ensure all data is flushed and converted to a byte array
             }
         }
 
         /// <summary>
-        /// 執行解壓縮。
+        /// Decompresses the specified GZip-compressed byte array.
         /// </summary>
-        /// <param name="bytes">壓縮後的位元組資料。</param>
+        /// <param name="bytes">The compressed byte data to decompress.</param>
         public static byte[] Decompress(byte[] bytes)
         {
             byte[] buffer = new byte[4096];

@@ -1,26 +1,26 @@
 ﻿namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 物件序列化處理程序介面。
+    /// Interface for object serialization process callbacks.
     /// </summary>
     public interface IObjectSerializeProcess
     {
         /// <summary>
-        /// 執行序列化前的通知方法。
+        /// Callback invoked before serialization.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
         void BeforeSerialize(SerializeFormat serializeFormat);
 
         /// <summary>
-        /// 執行序列化後的通知方法。
+        /// Callback invoked after serialization.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
         void AfterSerialize(SerializeFormat serializeFormat);
 
         /// <summary>
-        /// 執行反序列化後的通知方法。
+        /// Callback invoked after deserialization.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
         void AfterDeserialize(SerializeFormat serializeFormat);
     }
 }

@@ -4,14 +4,14 @@ using System.Collections.Generic;
 namespace Bee.Base.Collections
 {
     /// <summary>
-    /// 不允許重覆的字串集合，字串忽略大小寫。
+    /// A case-insensitive string collection that does not allow duplicate entries.
     /// </summary>
     public class StringHashSet : HashSet<string>
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="StringHashSet"/>.
         /// </summary>
         public StringHashSet() : base(StringComparer.InvariantCultureIgnoreCase)
         { }
@@ -19,10 +19,10 @@ namespace Bee.Base.Collections
         #endregion
 
         /// <summary>
-        /// 加入集合字串為成員。
+        /// Splits the given string by the specified delimiter and adds each token as a member.
         /// </summary>
-        /// <param name="s">字串。</param>
-        /// <param name="delimiter">分隔符號。</param>
+        /// <param name="s">The string to split and add.</param>
+        /// <param name="delimiter">The delimiter character or string.</param>
         public void Add(string s, string delimiter)
         {
             string[] oValues;

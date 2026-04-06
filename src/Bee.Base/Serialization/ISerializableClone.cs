@@ -1,12 +1,12 @@
 ﻿namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 定義資料在序列化前需要複製的標記介面。
+    /// Marker interface indicating that the object must be deep-copied before serialization.
     /// </summary>
     public interface ISerializableClone
     {
         /// <summary>
-        /// 複製出一份序列化用的物件 (深拷貝)。
+        /// Creates a deep copy of the object for use during serialization.
         /// </summary>
         object CreateSerializableCopy();
     }

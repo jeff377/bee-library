@@ -3,52 +3,52 @@
 namespace Bee.Base.Tracing
 {
     /// <summary>
-    /// 表示一筆完整的追蹤事件，包含開始時間、耗時、狀態與描述，
+    /// Represents a complete trace event including start time, elapsed time, status, and description.
     /// </summary>
     public sealed class TraceEvent
     {
         /// <summary>
-        /// 事件發生時間（對於 TraceEnd 事件為開始時間）。
+        /// Gets or sets the time the event occurred (for TraceEnd events, this is the start time).
         /// </summary>
         public DateTimeOffset Time { get; set; } = DateTimeOffset.Now;
 
         /// <summary>
-        /// 所屬層級，例如 UI、API、Biz 或 Data。
+        /// Gets or sets the layer this event belongs to, e.g. UI, API, Biz, or Data.
         /// </summary>
         public TraceLayer Layer { get; set; }
 
         /// <summary>
-        /// 事件名稱。
+        /// Gets or sets the event name.
         /// </summary>
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// 事件描述，例如 SQL 語法、API 路由或業務動作摘要。
+        /// Gets or sets the event description, e.g. a SQL statement, API route, or business action summary.
         /// </summary>
         public string Detail { get; set; } = string.Empty;
 
         /// <summary>
-        /// 執行耗時（毫秒）。若為 TraceWrite 單點事件則為 0。
+        /// Gets or sets the elapsed execution time in milliseconds. Zero for single-point TraceWrite events.
         /// </summary>
         public double DurationMs { get; set; }
 
         /// <summary>
-        /// 追蹤分類，可用於 Trace Viewer 依分類解析 Tag。
+        /// Gets or sets the trace category, used by the Trace Viewer to parse the Tag by category.
         /// </summary>
         public string Category { get; set; } = string.Empty;
 
         /// <summary>
-        /// 追蹤物件，依 Category 解析內容。
+        /// Gets or sets the trace object; content is interpreted based on Category.
         /// </summary>
         public object Tag { get; set; }
 
         /// <summary>
-        /// 追蹤事件的種類。
+        /// Gets or sets the kind of trace event.
         /// </summary>
         public TraceEventKind Kind { get; set; }
 
         /// <summary>
-        /// 執行狀態，例如 Ok、Error 或 Cancelled。
+        /// Gets or sets the execution status, e.g. Ok, Error, or Cancelled.
         /// </summary>
         public TraceStatus Status { get; set; } = TraceStatus.Ok;
     }

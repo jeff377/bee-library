@@ -1,23 +1,23 @@
 ﻿namespace Bee.Base.Collections
 {
     /// <summary>
-    /// 具鍵值的強型別集合成員介面。
+    /// Interface for an item in a strongly-typed keyed collection.
     /// </summary>
     public interface IKeyCollectionItem
     {
         /// <summary>
-        /// 鍵值。
+        /// Gets or sets the key of this item.
         /// </summary>
         string Key { get; set; }
 
         /// <summary>
-        /// 設定所屬集合。
+        /// Sets the collection that owns this item.
         /// </summary>
-        /// <param name="collection">集合。</param>
+        /// <param name="collection">The owning collection.</param>
         void SetCollection(IKeyCollectionBase collection);
 
         /// <summary>
-        /// 由集合中移除此成員。
+        /// Removes this item from its owning collection.
         /// </summary>
         void Remove();
     }

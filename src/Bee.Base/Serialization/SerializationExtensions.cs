@@ -4,61 +4,61 @@ using Bee.Base;
 namespace Bee.Base.Serialization
 {
     /// <summary>
-    /// 序列化擴充方法。
+    /// Extension methods for serialization.
     /// </summary>
     public static class SerializationExtensions
     {
         /// <summary>
-        /// 物件序列化為 XML 字串。
+        /// Serializes the object to an XML string.
         /// </summary>
-        /// <param name="value">物件。</param>
+        /// <param name="value">The object to serialize.</param>
         public static string ToXml(this IObjectSerializeBase value)
         {
             return SerializeFunc.ObjectToXml(value);
         }
 
         /// <summary>
-        /// 將物件序列化為 JSON 字串。
+        /// Serializes the object to a JSON string.
         /// </summary>
-        /// <param name="value">物件。</param>
+        /// <param name="value">The object to serialize.</param>
         public static string ToJson(this IObjectSerializeBase value)
         {
             return SerializeFunc.ObjectToJson(value);
         }
 
         /// <summary>
-        /// 將物件序列化為二進位資料。
+        /// Serializes the object to a binary byte array.
         /// </summary>
-        /// <param name="value">物件。</param>
+        /// <param name="value">The object to serialize.</param>
         public static byte[] ToBinary(this IObjectSerializeBase value)
         {
             return SerializeFunc.ObjectToBinary(value);
         }
 
         /// <summary>
-        /// 將物件序列化為 XML 檔案。
+        /// Serializes the object to an XML file.
         /// </summary>
-        /// <param name="value">物件。</param>
-        /// <param name="filePath">XML 檔案路徑。</param>
+        /// <param name="value">The object to serialize.</param>
+        /// <param name="filePath">The XML file path.</param>
         public static void ToXmlFile(this IObjectSerializeFile value, string filePath)
         {
             SerializeFunc.ObjectToXmlFile(value, filePath);
         }
 
         /// <summary>
-        /// 將物件序列化為 JSON 檔案。
+        /// Serializes the object to a JSON file.
         /// </summary>
-        /// <param name="value">物件。</param>
-        /// <param name="filePath">XML 檔案路徑。</param>
+        /// <param name="value">The object to serialize.</param>
+        /// <param name="filePath">The JSON file path.</param>
         public static void ToJsonFile(this IObjectSerializeFile value, string filePath)
         {
             SerializeFunc.ObjectToJsonFile(value, filePath);
         }
 
         /// <summary>
-        /// 將物件序列化存成檔案
+        /// Saves the object to its bound file path.
         /// </summary>
-        /// <param name="value">物件。</param>
+        /// <param name="value">The object to save.</param>
         public static void Save(this IObjectSerializeFile value)
         {
             string sExtension;

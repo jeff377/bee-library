@@ -1,20 +1,20 @@
 namespace Bee.Base
 {
     /// <summary>
-    /// 含預設值的布林列舉。
+    /// A boolean enumeration that includes a default value.
     /// </summary>
     public enum DefaultBoolean
     {
         /// <summary>
-        /// 預設。
+        /// Default.
         /// </summary>
         Default,
         /// <summary>
-        /// True。
+        /// True.
         /// </summary>
         True,
         /// <summary>
-        /// False。
+        /// False.
         /// </summary>
         False
     }

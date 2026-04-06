@@ -3,56 +3,56 @@
 namespace Bee.Base.Tracing
 {
     /// <summary>
-    /// 表示一次追蹤區段的執行上下文，
-    /// 在 <see cref="ITraceListener.TraceStart"/> 建立，
-    /// 並於 <see cref="ITraceListener.TraceEnd"/> 使用以計算耗時與狀態。
+    /// Represents the execution context of a trace segment.
+    /// Created by <see cref="ITraceListener.TraceStart"/> and consumed by <see cref="ITraceListener.TraceEnd"/>
+    /// to calculate elapsed time and status.
     /// </summary>
     public sealed class TraceContext
     {
         /// <summary>
-        /// 追蹤所屬的層級，例如 UI、API、Biz 或 Data。
+        /// Gets the layer this trace belongs to, e.g. UI, API, Biz, or Data.
         /// </summary>
         public TraceLayer Layer { get; }
 
         /// <summary>
-        /// 追蹤名稱，例如方法名稱或事件名稱。
+        /// Gets the trace name, e.g. a method name or event name.
         /// </summary>
         public string Name { get; }
 
         /// <summary>
-        /// 額外描述，例如 SQL 語法或 API 路由。
+        /// Gets additional description, e.g. a SQL statement or API route.
         /// </summary>
         public string Detail { get; }
 
         /// <summary>
-        /// 追蹤開始時間（本地時間）。
+        /// Gets the trace start time (local time).
         /// </summary>
         public DateTimeOffset Start { get; }
 
         /// <summary>
-        /// 用於計算執行耗時的計時器。
+        /// Gets the stopwatch used to measure elapsed execution time.
         /// </summary>
         public System.Diagnostics.Stopwatch Stopwatch { get; }
 
         /// <summary>
-        /// 追蹤分類，可用於 Trace Viewer 依分類解析 Tag。
+        /// Gets the trace category, used by the Trace Viewer to parse the Tag by category.
         /// </summary>
         public string Category { get; }
 
         /// <summary>
-        /// 追蹤物件，依 Category 解析內容。
+        /// Gets the trace object; content is interpreted based on Category.
         /// </summary>
         public object Tag { get; }
 
         /// <summary>
-        /// 僅允許 <see cref="TraceListener"/> 建立 TraceContext。
+        /// Initializes a new instance of <see cref="TraceContext"/>. Only <see cref="TraceListener"/> may create instances.
         /// </summary>
         internal TraceContext(TraceLayer layer, string name, string detail, string category = "", object tag = null)
         {
             Layer = layer;
             Name = name ?? string.Empty;
             Detail = detail;
-            Start = DateTimeOffset.Now; // 本地時間
+            Start = DateTimeOffset.Now; // Local time
             Stopwatch = System.Diagnostics.Stopwatch.StartNew();
             Category = category ?? string.Empty;
             Tag = tag;

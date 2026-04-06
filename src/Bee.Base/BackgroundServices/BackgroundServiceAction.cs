@@ -1,24 +1,24 @@
 namespace Bee.Base.BackgroundServices
 {
     /// <summary>
-    /// 背景服務執行動作。
+    /// Background service execution action.
     /// </summary>
     public enum BackgroundServiceAction
     {
         /// <summary>
-        /// 初始化。
+        /// Initialize.
         /// </summary>
         Initialize,
         /// <summary>
-        /// 啟動。
+        /// Start.
         /// </summary>
         Start,
         /// <summary>
-        /// 執行。
+        /// Run.
         /// </summary>
         Run,
         /// <summary>
-        /// 停止。
+        /// Stop.
         /// </summary>
         Stop
     }

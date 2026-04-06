@@ -3,16 +3,16 @@
 namespace Bee.Base.Data
 {
     /// <summary>
-    /// 提供 DataTable 比對的靜態方法，用來判斷兩個資料表是否在資料列狀態與欄位值上完全一致。
+    /// Provides static methods for comparing two DataTables by row state and column values.
     /// </summary>
     public static class DataTableComparer
     {
         /// <summary>
-        /// 比對兩個 DataTable 是否在 RowState 狀態與欄位值上完全相同。
+        /// Determines whether two DataTables are identical in terms of row state and column values.
         /// </summary>
-        /// <param name="dt1">第一個 DataTable。</param>
-        /// <param name="dt2">第二個 DataTable。</param>
-        /// <returns>若兩者完全一致，回傳 true，否則回傳 false。</returns>
+        /// <param name="dt1">The first DataTable.</param>
+        /// <param name="dt2">The second DataTable.</param>
+        /// <returns><c>true</c> if both tables are identical; otherwise, <c>false</c>.</returns>
         public static bool IsEqual(DataTable dt1, DataTable dt2)
         {
             if (dt1 == null || dt2 == null) return false;
@@ -20,7 +20,7 @@ namespace Bee.Base.Data
             if (dt1.Columns.Count != dt2.Columns.Count) return false;
             if (dt1.Rows.Count != dt2.Rows.Count) return false;
 
-            // 比對欄位名稱與資料型別
+            // Compare column names and data types
             for (int i = 0; i < dt1.Columns.Count; i++)
             {
                 var col1 = dt1.Columns[i];
@@ -29,7 +29,7 @@ namespace Bee.Base.Data
                     return false;
             }
 
-            // 比對每一筆資料列的狀態與資料內容
+            // Compare row state and column values for each row
             for (int i = 0; i < dt1.Rows.Count; i++)
             {
                 var row1 = dt1.Rows[i];
@@ -44,7 +44,7 @@ namespace Bee.Base.Data
 
                     if (row1.RowState == DataRowState.Deleted)
                     {
-                        // 比對刪除列的原始值
+                        // Compare original values for deleted rows
                         var v1 = row1[colName, DataRowVersion.Original];
                         var v2 = row2[colName, DataRowVersion.Original];
                         if (!Equals(v1, v2))
@@ -52,7 +52,7 @@ namespace Bee.Base.Data
                     }
                     else if (row1.RowState == DataRowState.Modified)
                     {
-                        // 比對修改列的原始值與目前值
+                        // Compare both current and original values for modified rows
                         var curr1 = row1[colName, DataRowVersion.Current];
                         var curr2 = row2[colName, DataRowVersion.Current];
                         if (!Equals(curr1, curr2))
@@ -65,7 +65,7 @@ namespace Bee.Base.Data
                     }
                     else
                     {
-                        // 比對新增或未變更列的目前值
+                        // Compare current values for added or unchanged rows
                         var v1 = row1[colName];
                         var v2 = row2[colName];
                         if (!Equals(v1, v2))

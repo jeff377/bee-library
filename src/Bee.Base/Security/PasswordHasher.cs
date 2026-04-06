@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 namespace Bee.Base.Security
 {
     /// <summary>
-    /// 使用 PBKDF2 演算法進行密碼雜湊與驗證的工具類別。
+    /// Utility class for password hashing and verification using the PBKDF2 algorithm.
     /// </summary>
     public class PasswordHasher
     {
@@ -13,10 +13,10 @@ namespace Bee.Base.Security
         private const int Iterations = 100000;
 
         /// <summary>
-        /// 建立雜湊後的密碼字串（格式：{iterations}.{saltBase64}.{hashBase64}）。
+        /// Creates a hashed password string in the format: {iterations}.{saltBase64}.{hashBase64}.
         /// </summary>
-        /// <param name="password">原始密碼</param>
-        /// <returns>雜湊後的密碼字串</returns>
+        /// <param name="password">The original password.</param>
+        /// <returns>The hashed password string.</returns>
         public string HashPassword(string password)
         {
             var salt = new byte[SaltSize];
@@ -32,11 +32,11 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 驗證提供的密碼是否與儲存的雜湊值一致。
+        /// Verifies whether the provided password matches the stored hash.
         /// </summary>
-        /// <param name="password">用戶輸入的密碼</param>
-        /// <param name="hashedPassword">儲存的雜湊密碼字串（格式：{iterations}.{salt}.{hash}）</param>
-        /// <returns>是否驗證成功</returns>
+        /// <param name="password">The password entered by the user.</param>
+        /// <param name="hashedPassword">The stored hashed password string (format: {iterations}.{salt}.{hash}).</param>
+        /// <returns>True if the password matches; otherwise, false.</returns>
         public bool VerifyPassword(string password, string hashedPassword)
         {
             try
@@ -59,7 +59,7 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 使用 PBKDF2 演算法生成密碼雜湊值。
+        /// Generates a password hash using the PBKDF2 algorithm.
         /// </summary>
         private static byte[] PBKDF2(string password, byte[] salt, int iterations, int outputBytes)
         {
@@ -74,7 +74,7 @@ namespace Bee.Base.Security
         }
 
         /// <summary>
-        /// 使用固定時間比較以防止時間攻擊。
+        /// Performs a constant-time comparison to prevent timing attacks.
         /// </summary>
         private static bool FixedTimeEquals(byte[] a, byte[] b)
         {

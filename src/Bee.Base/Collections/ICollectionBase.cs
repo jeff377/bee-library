@@ -1,32 +1,32 @@
 ﻿namespace Bee.Base.Collections
 {
     /// <summary>
-    /// 強型別集合介面。
+    /// Interface for strongly-typed collections.
     /// </summary>
     public interface ICollectionBase
     {
         /// <summary>
-        /// 擁有者。
+        /// Gets the owner of this collection.
         /// </summary>
         object Owner { get; }
 
         /// <summary>
-        /// 移除成員。
+        /// Removes the specified item from the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to remove.</param>
         void Remove(ICollectionItem value);
 
         /// <summary>
-        /// 加入成員。
+        /// Adds the specified item to the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to add.</param>
         void Add(ICollectionItem value);
 
         /// <summary>
-        /// 插入成員。
+        /// Inserts the specified item at the given index.
         /// </summary>
-        /// <param name="index">索引位置。</param>
-        /// <param name="value">成員。</param>
+        /// <param name="index">The zero-based index at which to insert the item.</param>
+        /// <param name="value">The item to insert.</param>
         void Insert(int index, ICollectionItem value);
     }
 }

@@ -3,17 +3,17 @@
 namespace Bee.Base.BackgroundServices
 {
     /// <summary>
-    /// BackgroundServiceStatusChanged 事件委派宣告，背景服務狀態變更引發的事件。
+    /// Delegate declaration for the BackgroundServiceStatusChanged event, raised when the background service status changes.
     /// </summary>
     public delegate void BackgroundServiceStatusChangedEventHandler(object sender, BackgroundServiceStatusChangedEventArgs e);
 
     /// <summary>
-    /// BackgroundServiceStatusChanged 事件引數。
+    /// Event arguments for the BackgroundServiceStatusChanged event.
     /// </summary>
     public class BackgroundServiceStatusChangedEventArgs : EventArgs
     {
         /// <summary>
-        /// 背景服務狀態。
+        /// Gets or sets the background service status.
         /// </summary>
         public BackgroundServiceStatus Status { get; set; } = BackgroundServiceStatus.Stopped;
     }

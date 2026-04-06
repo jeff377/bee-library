@@ -1,16 +1,16 @@
 namespace Bee.Base.Tracing
 {
     /// <summary>
-    /// 定義常用的追蹤分類常數，供 TraceEvent.Category 使用。
+    /// Defines commonly used trace category constants for use with <see cref="TraceEvent.Category"/>.
     /// </summary>
     public static class TraceCategories
     {
         /// <summary>
-        /// 一般用途。
+        /// General purpose.
         /// </summary>
         public const string General = "General";
         /// <summary>
-        /// JSON-RPC 請求或回應模型。
+        /// JSON-RPC request or response model.
         /// </summary>
         public const string JsonRpc = "JsonRpc";
     }
