@@ -4,7 +4,7 @@ using Bee.Base.Collections;
 namespace Bee.Db.DbAccess
 {
     /// <summary>
-    /// 資料庫命令描述集合。
+    /// A collection of <see cref="DbCommandSpec"/> instances.
     /// </summary>
     public class DbCommandSpecCollection : CollectionBase<DbCommandSpec>
     {

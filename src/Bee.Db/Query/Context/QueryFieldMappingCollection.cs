@@ -4,7 +4,7 @@ using Bee.Base.Collections;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 描述查詢中欄位與其原始資料來源的對應關係的集合。
+    /// A collection of <see cref="QueryFieldMapping"/> instances describing query field-to-source mappings.
     /// </summary>
     public class QueryFieldMappingCollection : KeyCollectionBase<QueryFieldMapping>
     {

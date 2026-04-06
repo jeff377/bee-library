@@ -4,16 +4,16 @@ using Bee.Define;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 定義用於產生 SQL 語法 SELECT 子句的介面。
+    /// Defines the interface for building a SQL SELECT clause.
     /// </summary>
     public interface ISelectBuilder
     {
         /// <summary>
-        /// 建立 SELECT 子句。
+        /// Builds the SELECT clause.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
+        /// <param name="formTable">The form table.</param>
+        /// <param name="selectFields">A comma-separated string of field names to retrieve; an empty string retrieves all fields.</param>
+        /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
         string Build(FormTable formTable, string selectFields, SelectContext selectContext);
     }
 }

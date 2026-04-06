@@ -4,16 +4,16 @@ using Bee.Define;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 定義用於產生 SQL 語法 WHERE 子句的介面。
+    /// Defines the interface for building a SQL WHERE clause.
     /// </summary>
     public interface IWhereBuilder
     {
         /// <summary>
-        /// 由結構化條件節點建置 WHERE 子句。
+        /// Builds the WHERE clause from a structured filter node tree.
         /// </summary>
-        /// <param name="root">條件根節點（可為群組或單一條件）。</param>
-        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
-        /// <param name="includeWhereKeyword">是否在結果前加入 "WHERE "。</param>
+        /// <param name="root">The root filter node (may be a group or a single condition).</param>
+        /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
+        /// <param name="includeWhereKeyword">Whether to prepend the "WHERE " keyword to the result.</param>
         WhereBuildResult Build(FilterNode root, SelectContext selectContext, bool includeWhereKeyword = true);
     }
 }

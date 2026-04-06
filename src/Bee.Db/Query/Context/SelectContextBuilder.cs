@@ -7,20 +7,21 @@ using Bee.Define;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 負責依據查詢需求產生完整 SelectContext 內容的建構類別。
-    /// 依據指定的查詢欄位、條件、排序等，建立對應的 QueryFieldMapping 與 TableJoin 集合。
+    /// Builds a complete <see cref="SelectContext"/> based on the query requirements.
+    /// Constructs the corresponding <see cref="QueryFieldMapping"/> and <see cref="TableJoin"/> collections
+    /// from the specified query fields, conditions, sort orders, and other criteria.
     /// </summary>
     public class SelectContextBuilder
     {
         private FormTable _formTable;
         private HashSet<string> _usedFieldNames;
-        private string _currentTableAlias = "A";  // 目前使用的資料表別名
+        private string _currentTableAlias = "A";  // Current table alias in use
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SelectContextBuilder"/>.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="usedFieldNames">查詢使用到的欄位名稱集合。</param>
+        /// <param name="formTable">The form table.</param>
+        /// <param name="usedFieldNames">The set of field names used by the query.</param>
         public SelectContextBuilder(FormTable formTable, HashSet<string> usedFieldNames)
         {
             _formTable = formTable;
@@ -28,26 +29,26 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 產生 SelectContext。
+        /// Builds and returns the <see cref="SelectContext"/>.
         /// </summary>
         public SelectContext Build()
         {
             var context = new SelectContext();
 
-            // 主表的資料表別名為 A
+            // The main table uses alias "A"
             _currentTableAlias = "A";
 
-            // 針對外鍵欄位，建立資料表之間的 Join 關係
+            // For foreign key fields, build JOIN relationships between tables
             foreach (var field in _formTable.Fields)
             {
-                // 非外鍵欄位則略濄
+                // Skip non-foreign-key fields
                 if (field.Type != FieldType.DbField || StrFunc.IsEmpty(field.RelationProgId)) { continue; }
 
-                // 由外鍵欄位關連取回的參照欄位對應集合
+                // Retrieve the referenced field mappings resolved through this foreign key field
                 var fieldMappings = GetUsedRelationFieldMappings(field);
                 if (BaseFunc.IsEmpty(fieldMappings)) { continue; }
 
-                // 以「主表名.欄位名.SourceProgId」當 Join 唯一鍵
+                // Use "<MainTable>.<FieldName>.<SourceProgId>" as the unique JOIN key
                 string key = $"{_formTable.TableName}.{field.FieldName}.{field.RelationProgId}";
                 AddTableJoin(context, key, field, fieldMappings, _formTable.DbTableName, _currentTableAlias);
             }
@@ -55,15 +56,15 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 依據外鍵欄位，將兩個資料表之間的 Join 關係加入至 SelectContext。
+        /// Adds the JOIN relationship between two tables to the <see cref="SelectContext"/> based on a foreign key field.
         /// </summary>
-        /// <param name="context">SelectContext 實例。</param>
-        /// <param name="key">Join 關係的唯一鍵值。</param>
-        /// <param name="foreignKeyField">外鍵欄位。</param>
-        /// <param name="fieldMappings">由外鍵欄位關連取回的參照欄位對應集合。</param>
-        /// <param name="leftTable">左側資料表名稱。</param>
-        /// <param name="leftAlias">左側資料表別名。</param>
-        /// <param name="queryFieldName">指定建立 QueryFieldMapping 的欄位名稱，遞迴處理多層關連時需指定。</param>
+        /// <param name="context">The <see cref="SelectContext"/> instance.</param>
+        /// <param name="key">The unique key identifying the JOIN relationship.</param>
+        /// <param name="foreignKeyField">The foreign key field.</param>
+        /// <param name="fieldMappings">The referenced field mappings resolved through the foreign key field.</param>
+        /// <param name="leftTable">The left-side table name.</param>
+        /// <param name="leftAlias">The left-side table alias.</param>
+        /// <param name="queryFieldName">The field name to use when creating a <see cref="QueryFieldMapping"/>; required when handling nested relations recursively.</param>
         private void AddTableJoin(SelectContext context, string key, FormField foreignKeyField, FieldMappingCollection fieldMappings,
             string leftTable, string leftAlias, string queryFieldName = "")
         {
@@ -75,7 +76,7 @@ namespace Bee.Db.Query
             }
             var srcTable = srcFormDefine.MasterTable;
 
-            // 若尚未存在對應的 Join，就建立
+            // Create the JOIN entry if it does not already exist
             var join = context.Joins.GetOrDefault(key);
             if (join == null)
             {
@@ -104,7 +105,7 @@ namespace Bee.Db.Query
 
                 if (srcField.Type == FieldType.RelationField)
                 {
-                    // 若來源欄位仍是關聯，使用遞迴處理巢狀關聯
+                    // If the source field is itself a relation field, recurse to handle nested relations
                     var reference = srcTable.RelationFieldReferences[srcField.FieldName];
                     string srcKey = key + "." + reference.ForeignKeyField.RelationProgId;
                     var srcMappings = GetSingleRelationFieldMappings(reference.ForeignKeyField, reference.FieldName);
@@ -125,7 +126,7 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 關鍵字關鍵字集合。
+        /// A set of reserved SQL keywords used to avoid alias collisions.
         /// </summary>
         private static readonly HashSet<string> SqlKeywords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -134,15 +135,15 @@ namespace Bee.Db.Query
         };
 
         /// <summary>
-        /// 取得下一個資料表別名。
+        /// Returns the next available table alias after the specified one.
         /// </summary>
-        /// <param name="tableAlias">目前資料表別名。</param>
+        /// <param name="tableAlias">The current table alias.</param>
         private static string GetNextTableAlias(string tableAlias)
         {
-            // 採用 26 進位，A → B → C ... → Z → ZA → ZB ... （多位數展開）
+            // Uses base-26 progression: A → B → C ... → Z → ZA → ZB ... (multi-character expansion)
             string baseValues = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             string nextAlias = StrFunc.GetNextId(tableAlias, baseValues);
-            // 若資料表別名為關鍵字，則重取資料表別名
+            // If the generated alias is a reserved SQL keyword, advance to the next one
             while (SqlKeywords.Contains(nextAlias))
             {
                 nextAlias = StrFunc.GetNextId(nextAlias, baseValues);
@@ -151,7 +152,7 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 取得作用的資料表別名。
+        /// Advances to and returns the next active table alias.
         /// </summary>
         private string GetActiveTableAlias()
         {
@@ -160,10 +161,11 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 針對指定外鍵欄位，判斷 _usedFieldNames 中哪些欄位為其關連取回欄位，並回傳新的欄位對應集合。
+        /// For the specified foreign key field, returns a new field mapping collection containing only
+        /// the relation fields that are present in <c>_usedFieldNames</c>.
         /// </summary>
-        /// <param name="foreignKeyField">外鍵欄位。</param>
-        /// <returns>符合條件的欄位對應集合。</returns>
+        /// <param name="foreignKeyField">The foreign key field.</param>
+        /// <returns>The matching field mapping collection.</returns>
         private FieldMappingCollection GetUsedRelationFieldMappings(FormField foreignKeyField)
         {
             var result = new FieldMappingCollection();
@@ -172,7 +174,7 @@ namespace Bee.Db.Query
 
             foreach (var mapping in foreignKeyField.RelationFieldMappings)
             {
-                // 判斷 _usedFieldNames 是否包含此關連欄位
+                // Include the mapping only if _usedFieldNames contains this relation field
                 if (_usedFieldNames.Contains(mapping.DestinationField))
                 {
                     result.Add(mapping.SourceField, mapping.DestinationField);
@@ -182,10 +184,10 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 取得指定外鍵欄位的單一目的欄位對應集合。
+        /// Returns a single-entry field mapping collection for the specified foreign key field and destination field.
         /// </summary>
-        /// <param name="foreignKeyField">外鍵欄位。</param>
-        /// <param name="destinationField">目標欄位名稱。</param>
+        /// <param name="foreignKeyField">The foreign key field.</param>
+        /// <param name="destinationField">The destination field name.</param>
         private FieldMappingCollection GetSingleRelationFieldMappings(FormField foreignKeyField, string destinationField)
         {
             var fieldMapping = foreignKeyField.RelationFieldMappings.FindByDestination(destinationField);

@@ -10,16 +10,16 @@ using Bee.Db.Providers.SqlServer;
 namespace Bee.Db.Schema
 {
     /// <summary>
-    /// 資料表結構產生器。
+    /// Compares and builds table schema upgrade commands.
     /// </summary>
     public class TableSchemaBuilder
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TableSchemaBuilder"/>.
         /// </summary>
-        /// <param name="databaseId">資料庫識別。</param>
+        /// <param name="databaseId">The database identifier.</param>
         public TableSchemaBuilder(string databaseId)
         {
             DatabaseId = databaseId;
@@ -28,35 +28,35 @@ namespace Bee.Db.Schema
         #endregion
 
         /// <summary>
-        /// 資料庫識別。
+        /// Gets the database identifier.
         /// </summary>
         public string DatabaseId { get; private set; }
 
         /// <summary>
-        /// 執行資料表結構比對。
+        /// Compares the actual table schema with the defined schema and returns the comparison result.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         public TableSchema Compare(string dbName, string tableName)
         {
-            // 實際的資料表結構
+            // Actual table schema from the database
             var provider = new SqlTableSchemaProvider(this.DatabaseId);
             var realTable = provider.GetTableSchema(tableName);
-            // 定義的資料表結構
+            // Defined table schema from the form definitions
             var defineTable = BackendInfo.DefineAccess.GetTableSchema(dbName, tableName);
-            // 執行比對，並傳回比對後產生的資料表結構
+            // Compare and return the resulting table schema
             var comparer = new TableSchemaComparer(defineTable, realTable);
             return comparer.Compare();
         }
 
         /// <summary>
-        /// 進行資料表結構比對，產生資料庫命令。
+        /// Compares the table schema and returns the SQL command text required for the upgrade.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         public string GetCommandText(string dbName, string tableName)
         {
-            // 執行資料表結構比對後，回傳要升級的資料表結構
+            // Compare table schemas and retrieve the schema that requires upgrading
             var dbTable = this.Compare(dbName, tableName);
             if (dbTable.UpgradeAction != DbUpgradeAction.None)
             {
@@ -67,11 +67,11 @@ namespace Bee.Db.Schema
         }
 
         /// <summary>
-        /// 執行資料表結構比對並進行升級。
+        /// Compares the table schema and executes the upgrade if differences are found.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <remarks>結構有差異執行升級傳回 true，反之傳回 false。</remarks>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
+        /// <remarks>Returns <c>true</c> if an upgrade was performed; otherwise <c>false</c>.</remarks>
         public bool Execute(string dbName, string tableName)
         {
             string sql = this.GetCommandText(dbName, tableName);

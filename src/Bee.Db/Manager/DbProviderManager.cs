@@ -6,21 +6,21 @@ using Bee.Define;
 namespace Bee.Db.Manager
 {
     /// <summary>
-    /// DbProvider 管理類別，統一管理不同資料庫的 Factory。
+    /// Manages <see cref="DbProviderFactory"/> instances for different database types.
     /// </summary>
     public static class DbProviderManager
     {
         /// <summary>
-        /// 存放已註冊的 DbProviderFactory。
+        /// Stores the registered <see cref="DbProviderFactory"/> instances.
         /// </summary>
         private static readonly Dictionary<DatabaseType, DbProviderFactory> _factories = new Dictionary<DatabaseType, DbProviderFactory>();
 
         /// <summary>
-        /// 註冊新的資料庫提供者。
+        /// Registers a new database provider factory.
         /// </summary>
-        /// <param name="type">資料庫類型</param>
-        /// <param name="factory">對應的 DbProviderFactory</param>
-        /// <exception cref="ArgumentNullException">當 factory 為 null 時拋出異常</exception>
+        /// <param name="type">The database type.</param>
+        /// <param name="factory">The corresponding <see cref="DbProviderFactory"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="factory"/> is null.</exception>
         public static void RegisterProvider(DatabaseType type, DbProviderFactory factory)
         {
             if (factory == null)
@@ -30,11 +30,11 @@ namespace Bee.Db.Manager
         }
 
         /// <summary>
-        /// 取得指定類型的 DbProviderFactory。
+        /// Gets the <see cref="DbProviderFactory"/> registered for the specified database type.
         /// </summary>
-        /// <param name="type">資料庫類型</param>
-        /// <returns>對應的 DbProviderFactory</returns>
-        /// <exception cref="KeyNotFoundException">當指定類型未註冊時拋出異常</exception>
+        /// <param name="type">The database type.</param>
+        /// <returns>The corresponding <see cref="DbProviderFactory"/>.</returns>
+        /// <exception cref="KeyNotFoundException">Thrown when the specified type has not been registered.</exception>
         public static DbProviderFactory GetFactory(DatabaseType type)
         {
             if (_factories.TryGetValue(type, out var factory))

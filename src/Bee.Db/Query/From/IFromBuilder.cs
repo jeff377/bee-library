@@ -1,16 +1,16 @@
 ﻿namespace Bee.Db.Query
 {
     /// <summary>
-    /// 定義用於產生 SQL 語法 FROM 子句的介面。
+    /// Defines the interface for building a SQL FROM clause.
     /// </summary>
     public interface IFromBuilder
     {
         /// <summary>
-        /// 建立 FROM 子句。
+        /// Builds the FROM clause, including any JOIN statements.
         /// </summary>
-        /// <param name="mainTableName">主資料表名稱。</param>
-        /// <param name="joins">資料表 Join 關係集合。</param>
-        /// <returns>JOIN 子句字串。</returns>
+        /// <param name="mainTableName">The main table name.</param>
+        /// <param name="joins">The collection of table JOIN relationships.</param>
+        /// <returns>The FROM clause string.</returns>
         string Build(string mainTableName, TableJoinCollection joins);
     }
 }

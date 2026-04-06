@@ -10,27 +10,27 @@ using Bee.Db;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// SELECT 子句建置器。
+    /// Builds the SQL SELECT clause.
     /// </summary>
     public class SelectBuilder : ISelectBuilder
     {
         private readonly DatabaseType _databaseType;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SelectBuilder"/>.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
+        /// <param name="databaseType">The database type.</param>
         public SelectBuilder(DatabaseType databaseType)
         {
             _databaseType = databaseType;
         }
 
         /// <summary>
-        /// 建立 SELECT 子句。
+        /// Builds the SELECT clause.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
+        /// <param name="formTable">The form table.</param>
+        /// <param name="selectFields">A comma-separated string of field names to retrieve; an empty string retrieves all fields.</param>
+        /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
         public string Build(FormTable formTable, string selectFields, SelectContext selectContext)
         {
             var selectFieldNames = GetSelectFields(formTable, selectFields);
@@ -56,16 +56,16 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 取得 Select 的欄位集合。
+        /// Returns the set of field names to include in the SELECT clause.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位</param>
+        /// <param name="formTable">The form table.</param>
+        /// <param name="selectFields">A comma-separated string of field names to retrieve; an empty string retrieves all fields.</param>
         private StringHashSet GetSelectFields(FormTable formTable, string selectFields)
         {
             var set = new StringHashSet();
             if (string.IsNullOrWhiteSpace(selectFields))
             {
-                // 取得所有欄位
+                // Retrieve all fields
                 foreach (var field in formTable.Fields)
                 {
                     set.Add(field.FieldName);
@@ -73,7 +73,7 @@ namespace Bee.Db.Query
             }
             else
             {
-                // 只取指定欄位
+                // Retrieve only the specified fields
                 set.Add(selectFields, ",");
             }
             return set;

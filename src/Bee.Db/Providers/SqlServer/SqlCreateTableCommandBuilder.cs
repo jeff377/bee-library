@@ -11,7 +11,7 @@ using Bee.Db.Providers;
 namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
-    /// SQL Server 資料庫建立資料表命令語法產生器。
+    /// Generates CREATE TABLE SQL statements for SQL Server.
     /// </summary>
     public class SqlCreateTableCommandBuilder : ICreateTableCommandBuilder
     {
@@ -20,7 +20,7 @@ namespace Bee.Db.Providers.SqlServer
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SqlCreateTableCommandBuilder"/>.
         /// </summary>
         public SqlCreateTableCommandBuilder()
         { }
@@ -28,7 +28,7 @@ namespace Bee.Db.Providers.SqlServer
         #endregion
 
         /// <summary>
-        /// 資料表結構。
+        /// Gets the table schema definition.
         /// </summary>
         private TableSchema TableSchema
         {
@@ -36,7 +36,7 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 資料表名稱。
+        /// Gets the table name.
         /// </summary>
         private string TableName
         {
@@ -44,44 +44,44 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得 Create Table 的 SQL 語法。
+        /// Gets the SQL statement for creating or upgrading a table.
         /// </summary>
-        /// <param name="dbTable">資料表結構。</param>
+        /// <param name="dbTable">The table schema definition.</param>
         public string GetCommandText(TableSchema dbTable)
         {
             _dbTable = dbTable;
 
             if (this.TableSchema.UpgradeAction == DbUpgradeAction.Upgrade)
-                return $"-- 升級 {this.TableName} 資料表\r\n{this.GetUpgradeCommandText()}";
+                return $"-- Upgrade table {this.TableName}\r\n{this.GetUpgradeCommandText()}";
             else
-                return $"-- 建立 {this.TableName} 資料表\r\n{this.GetCreateTableCommandText()}";
+                return $"-- Create table {this.TableName}\r\n{this.GetCreateTableCommandText()}";
         }
 
         /// <summary>
-        /// 取得升級舊資料表的 SQL 語法。
+        /// Gets the SQL script for upgrading an existing table.
         /// </summary>
         private string GetUpgradeCommandText()
         {
             var sb = new StringBuilder();
             string tmpTableName = $"tmp_{this.TableName}";
-            // 刪除暫存資料表
+            // Drop the temporary table
             string sql = GetDropTableCommandText(tmpTableName);
-            sb.AppendLine("-- 刪除暫存資料表");
+            sb.AppendLine("-- Drop temporary table");
             sb.AppendLine(sql);
-            // 建立暫存資料表
+            // Create the temporary table
             sql = GetCreateTableCommandText(tmpTableName);
-            sb.AppendLine("-- 建立暫存資料表");
+            sb.AppendLine("-- Create temporary table");
             sb.AppendLine(sql);
-            // 搬移資料
+            // Move data
             sql = GetInsertTableCommandText(this.TableName, tmpTableName);
-            sb.AppendLine("-- 搬移資料");
+            sb.AppendLine("-- Move data");
             sb.AppendLine(sql);
-            // 刪除舊資料表
+            // Drop the old table
             sql = GetDropTableCommandText(this.TableName);
-            sb.AppendLine("-- 刪除舊資料表");
+            sb.AppendLine("-- Drop old table");
             sb.AppendLine(sql);
-            // 暫存資料表更名
-            sb.AppendLine("-- 暫存資料表更名");
+            // Rename the temporary table
+            sb.AppendLine("-- Rename temporary table");
             sql = GetRenameTableCommandText(tmpTableName, this.TableName);
             sb.AppendLine(sql);
 
@@ -89,9 +89,9 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得刪除資料表的命令文字。
+        /// Gets the SQL command text for dropping a table if it exists.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         private string GetDropTableCommandText(string tableName)
         {
             return $"IF (SELECT COUNT(*) From sys.tables WHERE name=N'{tableName}')>0\n" +
@@ -99,13 +99,13 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得搬移資料的 INSERT INTO SELECT 的 SQL 語法。
+        /// Gets the INSERT INTO ... SELECT SQL statement for migrating data from the old table to the new table.
         /// </summary>
-        /// <param name="tableName">舊資料表名稱。</param>
-        /// <param name="newTableName">新資料表名稱。</param>
+        /// <param name="tableName">The source (old) table name.</param>
+        /// <param name="newTableName">The destination (new) table name.</param>
         private string GetInsertTableCommandText(string tableName, string newTableName)
         {
-           // 取得要搬除的欄位清單
+           // Build the list of fields to migrate
             string fields = string.Empty;
             foreach (DbField field in this.TableSchema.Fields)
             {
@@ -116,69 +116,69 @@ namespace Bee.Db.Providers.SqlServer
                     fields += $"[{field.FieldName}]";
                 }
             }
-            // 組成  INSERT INTO SELECT 語法
+            // Build the INSERT INTO ... SELECT statement
             string  sql = $"INSERT INTO [{newTableName}] ({fields}) \n" +
                                   $"SELECT {fields} FROM [{tableName}];";
             return sql;
         }
 
         /// <summary>
-        /// 取得資料表更名的命令文字。
+        /// Gets the SQL command text for renaming a table.
         /// </summary>
-        /// <param name="tableName">舊資料表名稱。</param>
-        /// <param name="newTableName">新資料表名稱。</param>
+        /// <param name="tableName">The current (old) table name.</param>
+        /// <param name="newTableName">The target (new) table name.</param>
         private string GetRenameTableCommandText(string tableName, string newTableName)
         {
             var sb = new StringBuilder();
-            // 索引更名
+            // Rename indexes
             foreach (TableSchemaIndex index in this.TableSchema.Indexes)
             {
-                string oldName = StrFunc.Format(index.Name, tableName);  // 舊索引名稱
-                string newName = StrFunc.Format(index.Name, newTableName);  // 新索引名稱 
+                string oldName = StrFunc.Format(index.Name, tableName);  // Old index name
+                string newName = StrFunc.Format(index.Name, newTableName);  // New index name
                 sb.Append($"EXEC sp_rename N'dbo.{tableName}.{oldName}', N'{newName}', N'INDEX';\n");
             }
-            // 資料表更名
+            // Rename the table
             sb.Append($"EXEC sp_rename N'{tableName}', N'{newTableName}';\n");
             return sb.ToString();
         }
 
         /// <summary>
-        /// 取得 Create Table 的 SQL 語法。
+        /// Gets the CREATE TABLE SQL statement.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name; uses the schema table name if empty.</param>
         private string GetCreateTableCommandText(string tableName = "")
         {
-            // 資料表名稱
+            // Table name
             string dbTableName = StrFunc.IsNotEmpty(tableName) ? tableName : this.TableSchema.TableName;
-            // 取得建立欄位結構的語法
+            // Build the column definitions clause
             string fields = GetFieldsCommandText();
-            // 取得建立主索引的命令語法
+            // Build the primary key constraint clause
             string primaryKey = GetPrimaryKeyCommandText(dbTableName);
-            // 取得建立索引的命令語法
+            // Build the index creation clause
             string indexs = GetIndexsCommandText(dbTableName);
 
             var sb = new StringBuilder();
-            // 組成 Create Table 的語法
+            // Assemble the CREATE TABLE statement
             sb.Append($"CREATE TABLE [{dbTableName}] (\r\n{fields}");
             if (StrFunc.IsNotEmpty(primaryKey))
                 sb.Append($",\r\n  {primaryKey}");
             sb.Append("\r\n);");
-            // 加上建立索引語法
+            // Append the index creation statements
             if (StrFunc.IsNotEmpty(indexs))
                 sb.Append($"\r\n{indexs}");
             return sb.ToString();
         }
 
         /// <summary>
-        /// 取得建立欄位結構的語法。
+        /// Gets the SQL fragment for all column definitions.
         /// </summary>
         private string GetFieldsCommandText()
         {
-            // 取得建立欄位結構的語法
+            // Build the column definitions
             var sb = new StringBuilder();
             foreach (DbField field in this.TableSchema.Fields)
             {
-                // 取得欄位結構的命令語法
+                // Get the SQL fragment for this column
                 string text = GetFieldCommandText(field);
                 if (StrFunc.IsNotEmpty(text))
                 {
@@ -191,16 +191,16 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得單一欄位結構的命令語法。
+        /// Gets the SQL fragment for a single column definition.
         /// </summary>
-        /// <param name="field">欄位結構。</param>
+        /// <param name="field">The field definition.</param>
         private string GetFieldCommandText(DbField field)
         {
-            // 欄位型別
+            // Column type
             string dbType = ConverDbType(field);
-            // 是否允許 Null
+            // Nullability
             string allowNull = field.AllowNull ? "NULL" : "NOT NULL";
-            // 預設值
+            // Default value
             string defaultValue = GetDefaultValue(field);
             string defaultText;
             if (StrFunc.IsNotEmpty(defaultValue))
@@ -215,9 +215,9 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 轉換為 SQL Server 資料庫的欄位型別。
+        /// Converts a field definition to the corresponding SQL Server column type string.
         /// </summary>
-        /// <param name="field">欄位結構。</param>
+        /// <param name="field">The field definition.</param>
         private string ConverDbType(DbField field)
         {
             switch (field.DbType)
@@ -258,9 +258,9 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得欄位預設值。
+        /// Gets the default value expression for a field.
         /// </summary>
-        /// <param name="dbField">欄位結構。</param>
+        /// <param name="dbField">The field definition.</param>
         private string GetDefaultValue(DbField dbField)
         {
             if (dbField.AllowNull)
@@ -270,10 +270,10 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得欄位預設值。
+        /// Gets the default value expression for a given data type and raw default value.
         /// </summary>
-        /// <param name="dbType">欄位資料型別。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="dbType">The field data type.</param>
+        /// <param name="defaultValue">The raw default value.</param>
         private string GetDefaultValue(FieldDbType dbType, string defaultValue)
         {
             string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbType);
@@ -291,15 +291,15 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得主索引鍵的的命令文字。
+        /// Gets the primary key constraint SQL fragment.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         private string GetPrimaryKeyCommandText(string tableName)
         {
             var index = this.TableSchema.GetPrimaryKey();
             if (index == null) { return string.Empty; }
 
-            // 索引欄位
+            // Build the index field list
             string fields = string.Empty;
             foreach (IndexField field in index.IndexFields)
             {
@@ -313,9 +313,9 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得建立索引的命令語法。
+        /// Gets the SQL statements for creating all non-primary-key indexes.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         private string GetIndexsCommandText(string tableName)
         {
             var sb = new StringBuilder();
@@ -328,15 +328,15 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得索引的命令文字。
+        /// Gets the SQL statement for creating a single index.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <param name="index">資料表索引。</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="index">The table schema index definition.</param>
         private string GetIndexCommandText(string tableName, TableSchemaIndex index)
         {
-            // 索引名稱
+            // Index name
             string name = StrFunc.Format(index.Name, tableName);
-            // 索引欄位
+            // Index fields
             string fields = string.Empty;
             foreach (IndexField field in index.IndexFields)
             {
@@ -344,7 +344,7 @@ namespace Bee.Db.Providers.SqlServer
                     fields += ", ";
                 fields += $"[{field.FieldName}] {field.SortDirection.ToString().ToUpper()}";
             }
-            // 產生建立索引的語法
+            // Generate the CREATE INDEX statement
             if (index.Unique)
                 return $"CREATE UNIQUE INDEX [{name}] ON [{tableName}] ({fields});";
             else

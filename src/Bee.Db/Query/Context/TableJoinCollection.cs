@@ -4,14 +4,14 @@ using Bee.Base.Collections;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 描述兩個資料表之間的 Join 關係的集合。
+    /// A collection of <see cref="TableJoin"/> instances describing JOIN relationships between tables.
     /// </summary>
     public class TableJoinCollection : KeyCollectionBase<TableJoin>
     {
         /// <summary>
-        /// 依據右側資料表別名尋找 Join 關係。
+        /// Finds a JOIN relationship by the right-side table alias.
         /// </summary>
-        /// <param name="rightAlias">右側資料表別名。</param>
+        /// <param name="rightAlias">The right-side table alias.</param>
         public TableJoin FindRightAlias(string rightAlias)
         {
             if (string.IsNullOrEmpty(rightAlias))

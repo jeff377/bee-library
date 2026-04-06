@@ -6,16 +6,16 @@ using System.Collections.Generic;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 內部共用的節點轉 SQL 工具。
+    /// Internal shared utility for converting filter nodes to SQL condition strings.
     /// </summary>
     internal static class InternalWhereBuilder
     {
         /// <summary>
-        /// 將過濾節點轉換為 SQL 條件字串。
+        /// Converts a filter node to a SQL condition string.
         /// </summary>
-        /// <param name="node">要轉換的過濾節點（可能是 FilterGroup 或 FilterCondition）。</param>
-        /// <param name="parameters">參數收集器，用於收集 SQL 參數值。</param>
-        /// <returns>產生的 SQL 條件字串；如果節點為空或所有子節點為空，則返回空字串。</returns>
+        /// <param name="node">The filter node to convert (may be a <see cref="FilterGroup"/> or <see cref="FilterCondition"/>).</param>
+        /// <param name="parameters">The parameter collector used to gather SQL parameter values.</param>
+        /// <returns>The generated SQL condition string; returns an empty string if the node is empty or all child nodes are empty.</returns>
         public static string BuildNode(FilterNode node, IParameterCollector parameters)
         {
             var group = node as FilterGroup;

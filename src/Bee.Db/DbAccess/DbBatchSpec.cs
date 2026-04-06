@@ -3,22 +3,22 @@
 namespace Bee.Db.DbAccess
 {
     /// <summary>
-    /// 執行批次命令的描述。
+    /// Describes a batch of database commands to execute.
     /// </summary>
     public class DbBatchSpec
     {
         /// <summary>
-        /// 要執行的命令集合（依序執行）。
+        /// Gets or sets the collection of commands to execute (executed in order).
         /// </summary>
         public DbCommandSpecCollection Commands { get; set; } = new DbCommandSpecCollection();
 
         /// <summary>
-        /// 是否使用交易包覆整個批次（任何一筆失敗就回滾；成功則提交）。
+        /// Gets or sets whether to wrap the entire batch in a transaction (rolls back on any failure; commits on success).
         /// </summary>
         public bool UseTransaction { get; set; } = false;
 
         /// <summary>
-        /// 交易隔離等級（當 <see cref="UseTransaction"/> 為 true 時可指定）。
+        /// Gets or sets the transaction isolation level (applicable when <see cref="UseTransaction"/> is <c>true</c>).
         /// </summary>
         public IsolationLevel? IsolationLevel { get; set; }
     }

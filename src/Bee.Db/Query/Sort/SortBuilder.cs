@@ -8,26 +8,26 @@ using Bee.Db;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// ORDER BY 子句建置器。
+    /// Builds the SQL ORDER BY clause.
     /// </summary>
     public sealed class SortBuilder : ISortBuilder
     {
         private readonly DatabaseType _databaseType;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SortBuilder"/>.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
+        /// <param name="databaseType">The database type.</param>
         public SortBuilder(DatabaseType databaseType)
         {
             _databaseType = databaseType;
         }
 
         /// <summary>
-        /// 根據指定的排序欄位集合，產生 SQL 的 ORDER BY 子句（包含前綴關鍵字）。
+        /// Builds the SQL ORDER BY clause (including the keyword prefix) from the specified sort fields.
         /// </summary>
-        /// <param name="sortFields">排序欄位集合。</param>
-        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
+        /// <param name="sortFields">The collection of sort fields.</param>
+        /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
         public string Build(SortFieldCollection sortFields, SelectContext selectContext = null)
         {
             if (BaseFunc.IsEmpty(sortFields)) { return string.Empty; }
@@ -48,10 +48,10 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 依據查詢欄位來源，產生 SortFIeldCollection 的複本並加上正確的 SQL 欄位表達式。
+        /// Creates a copy of the <see cref="SortFieldCollection"/> with field names remapped to their correct SQL expressions based on the query field sources.
         /// </summary>
-        /// <param name="sortFields">原始排序欄位集合。</param>
-        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
+        /// <param name="sortFields">The original sort field collection.</param>
+        /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
         private SortFieldCollection RemapSortFields(SortFieldCollection sortFields, SelectContext selectContext)
         {
             var result = new SortFieldCollection();

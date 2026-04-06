@@ -10,15 +10,16 @@ using System.Text;
 namespace Bee.Db
 {
     /// <summary>
-    /// 以 <see cref="TableSchema"/> 為依據，產生 Insert、Update、Delete 的資料庫命令；亦可直接包裝成 <see cref="DataTableUpdateSpec"/>。
+    /// Generates Insert, Update, and Delete database commands based on a <see cref="TableSchema"/>;
+    /// can also package them directly into a <see cref="DataTableUpdateSpec"/>.
     /// </summary>
     public class TableSchemaCommandBuilder
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TableSchemaCommandBuilder"/>.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
-        /// <param name="tableSchema">資料表結構。</param>
+        /// <param name="databaseType">The database type.</param>
+        /// <param name="tableSchema">The table schema definition.</param>
         public TableSchemaCommandBuilder(DatabaseType databaseType, TableSchema tableSchema)
         {
             DatabaseType = databaseType;
@@ -26,44 +27,44 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 建構函式（由全域設定取得資料庫類型）。
+        /// Initializes a new instance of <see cref="TableSchemaCommandBuilder"/> using the globally configured database type.
         /// </summary>
-        /// <param name="tableSchema">資料表結構。</param>
+        /// <param name="tableSchema">The table schema definition.</param>
         public TableSchemaCommandBuilder(TableSchema tableSchema)
             : this(BackendInfo.DatabaseType, tableSchema)
         { }
 
         /// <summary>
-        /// 資料庫類型。
+        /// Gets the database type.
         /// </summary>
         public DatabaseType DatabaseType { get; }
 
         /// <summary>
-        /// 資料表結構。
+        /// Gets the table schema definition.
         /// </summary>
         public TableSchema TableSchema { get; }
 
         /// <summary>
-        /// 依據資料庫類型，回傳適當的識別字串跳脫格式。
+        /// Returns the properly quoted identifier string for the current database type.
         /// </summary>
-        /// <param name="identifier">識別字名稱。</param>
-        /// <returns>跳脫後的識別字。</returns>
+        /// <param name="identifier">The identifier name to quote.</param>
+        /// <returns>The quoted identifier.</returns>
         private string QuoteIdentifier(string identifier)
         {
             return DbFunc.QuoteIdentifier(DatabaseType, identifier);
         }
 
         /// <summary>
-        /// 取得含前綴符號的參數名稱。
+        /// Gets the full parameter name including its prefix character.
         /// </summary>
-        /// <param name="name">不含前綴符號的參數名稱。</param>
+        /// <param name="name">The parameter name without the prefix character.</param>
         private string GetParameterName(string name)
         {
             return DbFunc.GetParameterName(DatabaseType, name);
         }
 
         /// <summary>
-        /// 建立 Insert 語法的資料庫命令描述。
+        /// Builds the INSERT command specification.
         /// </summary>
         public DbCommandSpec BuildInsertCommand()
         {
@@ -72,7 +73,7 @@ namespace Bee.Db
             string tableName = QuoteIdentifier(this.TableSchema.TableName);
             buffer.AppendLine($"Insert Into {tableName} ");
 
-            // 處理 Insert 的欄位名稱
+            // Build the INSERT column list
             buffer.Append("(");
             int count = 0;
             foreach (DbField field in this.TableSchema.Fields)
@@ -87,7 +88,7 @@ namespace Bee.Db
             }
             buffer.AppendLine(")");
 
-            // 處理 Insert 的欄位值
+            // Build the INSERT values list
             buffer.AppendLine(" Values ");
             buffer.Append("(");
             count = 0;
@@ -98,7 +99,7 @@ namespace Bee.Db
                     if (count > 0)
                         buffer.Append(", ");
                     buffer.Append(GetParameterName(field.FieldName));
-                    command.Parameters.Add(field); // 加入命令參數
+                    command.Parameters.Add(field); // Add command parameter
                     count++;
                 }
             }
@@ -109,7 +110,7 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 建立 Update 語法的資料庫命令描述。
+        /// Builds the UPDATE command specification.
         /// </summary>
         public DbCommandSpec BuildUpdateCommand()
         {
@@ -119,16 +120,16 @@ namespace Bee.Db
             buffer.AppendLine($"Update {tableName} Set ");
 
             string fieldName;
-            // 取得主鍵欄位
+            // Get the primary key field
             var keyField = this.TableSchema.Fields[SysFields.RowId];
-            // 處理 Update 的欄位名稱與值
+            // Build the SET clause with field names and parameter values
             int iCount = 0;
             foreach (DbField field in this.TableSchema.Fields)
             {
                 if (field != keyField && field.DbType != FieldDbType.AutoIncrement)
                 {
                     fieldName = QuoteIdentifier(field.FieldName);
-                    // 加入命令參數
+                    // Add command parameter
                     command.Parameters.Add(field);
                     if (iCount > 0)
                         buffer.Append(", ");
@@ -136,7 +137,7 @@ namespace Bee.Db
                     iCount++;
                 }
             }
-            // Where 加入主鍵條件
+            // Add primary key condition to WHERE clause
             fieldName = QuoteIdentifier(keyField.FieldName);
             command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
             buffer.AppendLine();
@@ -147,7 +148,7 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 建立 Delete 語法的資料庫命令描述。
+        /// Builds the DELETE command specification.
         /// </summary>
         public DbCommandSpec BuildDeleteCommand()
         {
@@ -156,7 +157,7 @@ namespace Bee.Db
             string tableName = QuoteIdentifier(this.TableSchema.TableName);
             buffer.AppendLine($"Delete From {tableName} ");
 
-            // Where 加入主鍵條件
+            // Add primary key condition to WHERE clause
             var keyField = this.TableSchema.Fields[SysFields.RowId];
             string fieldName = QuoteIdentifier(keyField.FieldName);
             command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
@@ -167,10 +168,10 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 直接產生 <see cref="DataTableUpdateSpec"/>，將 Insert/Update/Delete 命令與資料表一併打包。
+        /// Builds a <see cref="DataTableUpdateSpec"/> by packaging the Insert, Update, and Delete commands together with the specified DataTable.
         /// </summary>
-        /// <param name="dataTable">要寫回資料庫的資料表。</param>
-        /// <returns>批次異動規格。</returns>
+        /// <param name="dataTable">The DataTable to write back to the database.</param>
+        /// <returns>A <see cref="DataTableUpdateSpec"/> containing the three command specifications.</returns>
         public DataTableUpdateSpec BuildUpdateSpec(DataTable dataTable)
         {
             if (dataTable == null)

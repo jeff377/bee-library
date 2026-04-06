@@ -12,15 +12,15 @@ using Bee.Db;
 namespace Bee.Db.DbAccess
 {
     /// <summary>
-    /// 資料庫命令參數描述集合。
+    /// A collection of <see cref="DbParameterSpec"/> instances.
     /// </summary>
     public class DbParameterSpecCollection : KeyCollectionBase<DbParameterSpec>
     {
         /// <summary>
-        /// 加入參數，根據物件值推斷 DbType。
+        /// Adds a parameter, inferring the DbType from the value.
         /// </summary>
-        /// <param name="name">參數名稱。</param>
-        /// <param name="value">參數值。</param>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="value">The parameter value.</param>
         public DbParameterSpec Add(string name, object value)
         {
             if (string.IsNullOrWhiteSpace(name))
@@ -32,10 +32,10 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 加入參數。
+        /// Adds a parameter based on a field definition.
         /// </summary>
-        /// <param name="field">欄位結構。</param>
-        /// <param name="sourceVersion"> DataRow 取值版本。</param>
+        /// <param name="field">The field definition.</param>
+        /// <param name="sourceVersion">The DataRow version to use when reading the value.</param>
         public DbParameterSpec Add(DbField field, DataRowVersion sourceVersion = DataRowVersion.Current)
         {
             var parameter = new DbParameterSpec()

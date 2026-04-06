@@ -15,28 +15,28 @@ using Bee.Db;
 namespace Bee.Db.DbAccess
 {
     /// <summary>
-    /// 資料庫命令描述，作為 <see cref="DbCommand"/> 的中介類別。
+    /// Describes a database command as an intermediary for <see cref="DbCommand"/>.
     /// </summary>
     public class DbCommandSpec : CollectionItem
     {
-        private const int DefaultTimeout = 30;  // 預設逾時秒數
+        private const int DefaultTimeout = 30;  // Default timeout in seconds
         private int _commandTimeout = DefaultTimeout;
-        // 預編譯：{key}；支援用 {{key}} 代表逃脫（輸出 {key}）
+        // Pre-compiled placeholder regex: {key}; supports {{key}} as an escape (outputs {key})
         private static readonly Regex PlaceholderRegex =
             new Regex(@"\{(?<key>[^\}]+)\}|\{\{(?<escaped>[^\}]+)\}\}", RegexOptions.Compiled);
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new empty instance of <see cref="DbCommandSpec"/>.
         /// </summary>
         public DbCommandSpec()
         { }
 
         /// <summary>
-        /// 建構函式（位置參數模式）。
+        /// Initializes a new instance of <see cref="DbCommandSpec"/> using positional parameters.
         /// </summary>
-        /// <param name="kind">資料庫命令的執行種類。</param>
-        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
-        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
+        /// <param name="kind">The execution kind of the database command.</param>
+        /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
+        /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
         public DbCommandSpec(DbCommandKind kind, string commandText, params object[] values)
         {
             if (string.IsNullOrWhiteSpace(commandText))
@@ -55,11 +55,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 建構函式（具名參數模式）。
+        /// Initializes a new instance of <see cref="DbCommandSpec"/> using named parameters.
         /// </summary>
-        /// <param name="kind">資料庫命令的執行種類。</param>
-        /// <param name="commandText">要執行的 SQL 陳述式，可使用 {Name} 格式。</param>
-        /// <param name="parameters">具名參數集合。</param>
+        /// <param name="kind">The execution kind of the database command.</param>
+        /// <param name="commandText">The SQL statement to execute; use {Name} named placeholders.</param>
+        /// <param name="parameters">A dictionary of named parameter values.</param>
         public DbCommandSpec(DbCommandKind kind, string commandText, IDictionary<string, object> parameters)
         {
             if (string.IsNullOrWhiteSpace(commandText))
@@ -78,25 +78,25 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 資料庫命令的執行種類。
+        /// Gets or sets the execution kind of the database command.
         /// </summary>
         public DbCommandKind Kind { get; set; } = DbCommandKind.NonQuery;
 
         /// <summary>
-        /// 要執行的 SQL 陳述式。
+        /// Gets or sets the SQL statement to execute.
         /// </summary>
         public string CommandText { get; set; } = string.Empty;
 
         /// <summary>
-        /// 命令的類型，預設為 <see cref="CommandType.Text"/>。
+        /// Gets or sets the command type; defaults to <see cref="CommandType.Text"/>.
         /// </summary>
         public CommandType CommandType { get; set; } = CommandType.Text;
 
         /// <summary>
-        /// 執行命令的逾時（秒）。
-        /// - 小於等於 0 → 使用預設值 30 秒。
-        /// - 大於全域上限 → 套用全域上限。
-        /// - 其他正值 → 直接採用。
+        /// Gets or sets the command execution timeout in seconds.
+        /// - 0 or negative → uses the default value of 30 seconds.
+        /// - Greater than the global cap → the global cap is applied.
+        /// - Any other positive value → used as-is.
         /// </summary>
         public int CommandTimeout
         {
@@ -107,7 +107,7 @@ namespace Bee.Db.DbAccess
 
                 if (value <= 0)
                 {
-                    _commandTimeout = DefaultTimeout; // 預設值
+                    _commandTimeout = DefaultTimeout; // Default value
                 }
                 else
                 {
@@ -117,15 +117,15 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 參數集合。
+        /// Gets the parameter specifications for this command.
         /// </summary>
         public DbParameterSpecCollection Parameters { get; } = new DbParameterSpecCollection();
 
         /// <summary>
-        /// 建立 <see cref="DbCommand"/> 實例，並依據目前的 <see cref="DbCommandSpec"/> 設定套用屬性與參數。
+        /// Creates a <see cref="DbCommand"/> instance configured with the current <see cref="DbCommandSpec"/> settings.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
-        /// <param name="connection">資料庫連線，用於建立命令並自動綁定。</param>
+        /// <param name="databaseType">The database type.</param>
+        /// <param name="connection">The database connection used to create and bind the command.</param>
         public DbCommand CreateCommand(DatabaseType databaseType, DbConnection connection)
         {
             if (connection == null) throw new ArgumentNullException(nameof(connection), "Connection cannot be null.");
@@ -134,7 +134,7 @@ namespace Bee.Db.DbAccess
 
             string parameterPrefix = DbFunc.GetParameterPrefix(databaseType);
             var cmd = connection.CreateCommand();
-            // StoredProcedure 直通，不做參數解析
+            // Pass through for StoredProcedure; skip parameter resolution
             cmd.CommandText = (CommandType == CommandType.StoredProcedure)
                 ? CommandText
                 : ResolveParameters(parameterPrefix);
@@ -161,11 +161,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 解析 CommandText 中的 {0} 或 {Name}，並轉換成資料庫參數格式。
-        /// 支援 {{Name}} 以輸出字面量 {Name}。
+        /// Resolves {0} or {Name} placeholders in CommandText and converts them to the database parameter format.
+        /// Use {{Name}} to output a literal {Name}.
         /// </summary>
-        /// <param name="parameterPrefix">資料庫參數前綴字元，例如 @ 或 :。</param>
-        /// <returns>轉換後的 SQL 指令。</returns>
+        /// <param name="parameterPrefix">The database parameter prefix character, e.g., @ or :.</param>
+        /// <returns>The resolved SQL command text.</returns>
         private string ResolveParameters(string parameterPrefix)
         {
             if (string.IsNullOrWhiteSpace(CommandText))
@@ -182,14 +182,14 @@ namespace Bee.Db.DbAccess
 
             return PlaceholderRegex.Replace(commandText, match =>
             {
-                // 字面量 {{...}} → 還原成 {...}
+                // Escaped literal {{...}} → restore as {...}
                 var escaped = match.Groups["escaped"];
                 if (escaped.Success)
                     return "{" + escaped.Value + "}";
 
                 var key = match.Groups["key"].Value;
 
-                // 數字 → 位置參數
+                // Numeric key → positional parameter
                 if (int.TryParse(key, out var index))
                 {
                     if (index < 0 || index >= Parameters.Count)
@@ -204,7 +204,7 @@ namespace Bee.Db.DbAccess
                     return string.IsNullOrEmpty(parameterPrefix) ? name : parameterPrefix + name;
                 }
 
-                // 文字 → 具名參數（大小寫不敏感）
+                // Text key → named parameter (case-insensitive)
                 var param = Parameters.FirstOrDefault(p =>
                     p.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
                 if (param == null)
@@ -220,7 +220,7 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

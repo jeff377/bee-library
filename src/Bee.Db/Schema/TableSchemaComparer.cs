@@ -5,15 +5,15 @@ using Bee.Define;
 namespace Bee.Db.Schema
 {
     /// <summary>
-    /// 資料表結構比對。
+    /// Compares a defined table schema against the actual database table schema.
     /// </summary>
     public class TableSchemaComparer
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TableSchemaComparer"/>.
         /// </summary>
-        /// <param name="defineTable">定義的資料表結構。</param>
-        /// <param name="realTable">實際的資料表結構。</param>
+        /// <param name="defineTable">The defined table schema.</param>
+        /// <param name="realTable">The actual table schema from the database.</param>
         public TableSchemaComparer(TableSchema defineTable, TableSchema realTable)
         {
             DefineTable = defineTable;
@@ -21,44 +21,44 @@ namespace Bee.Db.Schema
         }
 
         /// <summary>
-        /// 定義的資料表結構。
+        /// Gets the defined table schema.
         /// </summary>
-        public TableSchema DefineTable { get; } = null;    
+        public TableSchema DefineTable { get; } = null;
 
         /// <summary>
-        /// 實際的資料表結構。
+        /// Gets the actual table schema from the database.
         /// </summary>
         public TableSchema RealTable { get; } = null;
 
         /// <summary>
-        /// 執行比對，並傳回比對後產生的資料表結構。
+        /// Executes the comparison and returns the resulting table schema with upgrade actions set.
         /// </summary>
         public TableSchema Compare()
         {
-            // 建立定義的資料表結構複本，作為比對的回傳結果
+            // Create a clone of the defined table schema to use as the comparison result
             var compareTable = this.DefineTable.Clone();
-            // 無實體的資料表結構，直接回傳定義的資料表結構
+            // No actual table exists; mark the entire table as new
             if (this.RealTable == null)
             {
                 compareTable.UpgradeAction = DbUpgradeAction.New;
                 return compareTable;
             }
-            // 比對欄位結構
+            // Compare field definitions
             if (!CompareFields(compareTable))
                 compareTable.UpgradeAction = DbUpgradeAction.Upgrade;
-            // 比對索引
+            // Compare indexes
             if (!CompareIndexes(compareTable))
                 compareTable.UpgradeAction = DbUpgradeAction.Upgrade;
-            // 加入實體資料表的額外欄位
+            // Append extra fields from the actual table
             if (compareTable.UpgradeAction != DbUpgradeAction.None)
                 AddExtensionFields(compareTable);
             return compareTable;
         }
 
         /// <summary>
-        /// 比對欄位結構。
+        /// Compares field definitions between the defined and actual table schemas.
         /// </summary>
-        /// <param name="compareTable">比對回傳的資料表結構。</param>
+        /// <param name="compareTable">The table schema used as the comparison result.</param>
         private bool CompareFields(TableSchema compareTable)
         {
             bool isMatch = true;
@@ -68,14 +68,14 @@ namespace Bee.Db.Schema
                 {
                     if (!field.Compare(this.RealTable.Fields[field.FieldName]))
                     {
-                        // 已存在欄位，升級模式為異動
+                        // Field exists but differs; mark as upgrade
                         field.UpgradeAction = DbUpgradeAction.Upgrade;
                         isMatch = false;
                     }
                 }
                 else
                 {
-                    // 不存在欄位，升級模式為新增
+                    // Field does not exist; mark as new
                     field.UpgradeAction = DbUpgradeAction.New;
                     isMatch = false;
                 }
@@ -84,12 +84,12 @@ namespace Bee.Db.Schema
         }
 
         /// <summary>
-        /// 比對索引。
+        /// Compares indexes between the defined and actual table schemas.
         /// </summary>
-        /// <param name="compareTable">比對回傳的資料表結構。</param>
+        /// <param name="compareTable">The table schema used as the comparison result.</param>
         private bool CompareIndexes(TableSchema compareTable)
         {
-            // 有任一索引比對不符，則直接回傳 false
+            // Return false immediately if any index does not match
             foreach (TableSchemaIndex index in compareTable.Indexes)
             {
                 string name = StrFunc.Format(index.Name, compareTable.TableName);
@@ -97,14 +97,14 @@ namespace Bee.Db.Schema
                 {
                     if (!index.Compare(this.RealTable.Indexes[name]))
                     {
-                        // 已存在索引，升級模式為異動
+                        // Index exists but differs; mark as upgrade
                         index.UpgradeAction = DbUpgradeAction.Upgrade;
                         return false;
                     }
                 }
                 else
                 {
-                    // 不存在欄位，升級模式為新增
+                    // Index does not exist; mark as new
                     index.UpgradeAction = DbUpgradeAction.New;
                     return false;
                 }
@@ -113,9 +113,9 @@ namespace Bee.Db.Schema
         }
 
         /// <summary>
-        /// 加入實體資料表的額外欄位。
+        /// Appends extra fields from the actual table that are not present in the defined schema.
         /// </summary>
-        /// <param name="compareTable">比對回傳的資料表結構。</param>
+        /// <param name="compareTable">The table schema used as the comparison result.</param>
         private void AddExtensionFields(TableSchema compareTable)
         {
             foreach (DbField field in this.RealTable.Fields)

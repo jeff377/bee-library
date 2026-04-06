@@ -9,16 +9,16 @@ using Bee.Db.Providers;
 namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
-    /// SQL Server 資料庫建立表單相關命令語法產生器，包含 Select、Insert、Update、Delete 語法。
+    /// SQL Server form-related SQL command builder, generating Select, Insert, Update, and Delete statements.
     /// </summary>
     public class SqlFormCommandBuilder : IFormCommandBuilder
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式 
+        /// Initializes a new instance of <see cref="SqlFormCommandBuilder"/> using the specified program ID.
         /// </summary>
-        /// <param name="progID">程式代碼。</param>
+        /// <param name="progID">The program identifier.</param>
         public SqlFormCommandBuilder(string progID)
         {
             FormSchema = BackendInfo.DefineAccess.GetFormSchema(progID);
@@ -27,7 +27,7 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SqlFormCommandBuilder"/> using the specified form schema.
         /// </summary>
         public SqlFormCommandBuilder(FormSchema formDefine)
         {
@@ -37,17 +37,17 @@ namespace Bee.Db.Providers.SqlServer
         #endregion
 
         /// <summary>
-        /// 表單結構定義。
+        /// Gets the form schema definition.
         /// </summary>
         private FormSchema FormSchema { get; }
 
         /// <summary>
-        /// 建立 Select 語法的資料庫命令。
+        /// Builds the SELECT command specification.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="filter">過濾條件。</param>
-        /// <param name="sortFields">排序欄位集合。</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
+        /// <param name="filter">The filter condition.</param>
+        /// <param name="sortFields">The sort field collection.</param>
         public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode filter = null, SortFieldCollection sortFields = null)
         {
             var builder = new SelectCommandBuilder(FormSchema, DatabaseType.SQLServer);
@@ -55,7 +55,7 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 建立 Insert 語法的資料庫命令。
+        /// Builds the INSERT command specification.
         /// </summary>
         public DbCommandSpec BuildInsertCommand()
         {
@@ -63,7 +63,7 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 建立 Update 語法的資料庫命令。
+        /// Builds the UPDATE command specification.
         /// </summary>
         public DbCommandSpec BuildUpdateCommand()
         {
@@ -71,7 +71,7 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 建立 Delete 語法的資料庫命令。
+        /// Builds the DELETE command specification.
         /// </summary>
         public DbCommandSpec BuildDeleteCommand()
         {

@@ -11,7 +11,7 @@ using Bee.Db.Query;
 namespace Bee.Db.Providers
 {
     /// <summary>
-    /// 建立 Select 命令產生的類別。
+    /// Builds SELECT command specifications from a form schema.
     /// </summary>
     public class SelectCommandBuilder
     {
@@ -19,10 +19,10 @@ namespace Bee.Db.Providers
         private readonly DatabaseType _databaseType;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SelectCommandBuilder"/>.
         /// </summary>
-        /// <param name="formDefine">表單結構定義。</param>
-        /// <param name="databaseType">資料庫類型。</param>
+        /// <param name="formDefine">The form schema definition.</param>
+        /// <param name="databaseType">The database type.</param>
         public SelectCommandBuilder(FormSchema formDefine, DatabaseType databaseType)
         {
             _formDefine = formDefine;
@@ -30,12 +30,12 @@ namespace Bee.Db.Providers
         }
 
         /// <summary>
-        /// 建立 Select 語法的 DbCommandSpec。
+        /// Builds a SELECT <see cref="DbCommandSpec"/>.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="filter">過濾條件。</param>
-        /// <param name="sortFields">排序欄位集合。</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="selectFields">A comma-separated list of field names to retrieve; empty string retrieves all fields.</param>
+        /// <param name="filter">The filter condition.</param>
+        /// <param name="sortFields">The sort field collection.</param>
         public DbCommandSpec Build(string tableName, string selectFields, FilterNode filter = null, SortFieldCollection sortFields = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
@@ -68,12 +68,12 @@ namespace Bee.Db.Providers
         }
 
         /// <summary>
-        /// 取得 Select 查詢時所需的欄位來源與 Join 關係集合。
+        /// Gets the field source mappings and JOIN relationships required for a SELECT query.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="filter">過濾條件。</param>
-        /// <param name="sortFields">排序欄位集合。</param>
+        /// <param name="formTable">The form table definition.</param>
+        /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
+        /// <param name="filter">The filter condition.</param>
+        /// <param name="sortFields">The sort field collection.</param>
         private SelectContext GetSelectContext(FormTable formTable, string selectFields, FilterNode filter, SortFieldCollection sortFields)
         {
             var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
@@ -82,11 +82,11 @@ namespace Bee.Db.Providers
         }
 
         /// <summary>
-        /// 建立 SELECT 子句。
+        /// Builds the SELECT clause.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="selectContext">查詢欄位來源與 Join 關係集合。</param>
+        /// <param name="formTable">The form table definition.</param>
+        /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
+        /// <param name="selectContext">The field source mappings and JOIN relationships.</param>
         private string BuildSelectClause(FormTable formTable, string selectFields, SelectContext selectContext)
         {
             var builder = new SelectBuilder(_databaseType);
@@ -94,11 +94,11 @@ namespace Bee.Db.Providers
         }
 
         /// <summary>
-        ///  建立 FROM 子句。
+        /// Builds the FROM clause.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="joins">資料表 Join 關係集合。</param>
-        /// <returns>FROM 子句字串。</returns>
+        /// <param name="formTable">The form table definition.</param>
+        /// <param name="joins">The table JOIN relationship collection.</param>
+        /// <returns>The FROM clause string.</returns>
         private string BuildFromClause(FormTable formTable, TableJoinCollection joins)
         {
             string mainTableName = !string.IsNullOrWhiteSpace(formTable.DbTableName) ? formTable.DbTableName : formTable.TableName;
@@ -107,11 +107,11 @@ namespace Bee.Db.Providers
         }
 
         /// <summary>
-        /// 建立 WHERE 子句。
+        /// Builds the WHERE clause.
         /// </summary>
-        /// <param name="filter">過濾條件。</param>
-        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
-        /// <returns>包含 WHERE 子句字串和參數集合的元組。</returns>
+        /// <param name="filter">The filter condition.</param>
+        /// <param name="selectContext">The field source mappings and JOIN relationships for the query.</param>
+        /// <returns>A tuple containing the WHERE clause string and the parameter dictionary.</returns>
         private (string WhereClause, IDictionary<string, object> Parameters) BuildWhereClause(FilterNode filter, SelectContext selectContext)
         {
             var whereBuilder = new WhereBuilder(_databaseType);
@@ -120,11 +120,11 @@ namespace Bee.Db.Providers
         }
 
         /// <summary>
-        /// 建立 ORDER BY 子句。
+        /// Builds the ORDER BY clause.
         /// </summary>
-        /// <param name="sortFields">排序欄位集合。</param>
-        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
-        /// <returns>ORDER BY 子句字串，若無排序則回傳 null。</returns>
+        /// <param name="sortFields">The sort field collection.</param>
+        /// <param name="selectContext">The field source mappings and JOIN relationships for the query.</param>
+        /// <returns>The ORDER BY clause string, or null if no sort fields are specified.</returns>
         private string BuildOrderByClause(SortFieldCollection sortFields, SelectContext selectContext)
         {
             var sortBuilder = new SortBuilder(_databaseType);
@@ -132,13 +132,13 @@ namespace Bee.Db.Providers
         }
 
         /// <summary>
-        /// 取得 selectFields、filter、sortFields 中使用到的不重覆的欄位名稱集合。
+        /// Returns the unique set of field names used across selectFields, filter, and sortFields.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="filter">過濾條件。</param>
-        /// <param name="sortFields">排序欄位集合。</param>
-        /// <returns>不重覆的欄位名稱集合。</returns>
+        /// <param name="formTable">The form table definition.</param>
+        /// <param name="selectFields">A comma-separated list of field names; empty string means all fields.</param>
+        /// <param name="filter">The filter condition.</param>
+        /// <param name="sortFields">The sort field collection.</param>
+        /// <returns>A deduplicated set of field names.</returns>
         private HashSet<string> GetUsedFieldNames(FormTable formTable, string selectFields, FilterNode filter, SortFieldCollection sortFields)
         {
             var fieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -177,10 +177,10 @@ namespace Bee.Db.Providers
         }
 
         /// <summary>
-        /// 遞迴收集 FilterNode 中使用到的欄位名稱。
+        /// Recursively collects all field names used within a <see cref="FilterNode"/>.
         /// </summary>
-        /// <param name="node">過濾條件節點。</param>
-        /// <param name="fieldNames">欄位名稱集合。</param>
+        /// <param name="node">The filter condition node.</param>
+        /// <param name="fieldNames">The set to add field names to.</param>
         private void CollectFilterFields(FilterNode node, HashSet<string> fieldNames)
         {
             if (node == null) return;

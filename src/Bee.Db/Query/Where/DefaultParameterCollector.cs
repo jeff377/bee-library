@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 預設參數收集器，以 @p0, @p1, ... 生成參數名（或自訂前綴）。
+    /// Default parameter collector that generates parameter names as @p0, @p1, ... (or with a custom prefix).
     /// </summary>
     public sealed class DefaultParameterCollector : IParameterCollector
     {
@@ -12,14 +12,14 @@ namespace Bee.Db.Query
         private int _index;
 
         /// <summary>
-        /// 參數前綴，SQL Server 使用 '@'，Oracle 可使用 ':'。
+        /// Gets the parameter prefix. SQL Server uses '@'; Oracle may use ':'.
         /// </summary>
         public string Prefix { get; }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DefaultParameterCollector"/>.
         /// </summary>
-        /// <param name="prefix"></param>
+        /// <param name="prefix">The parameter prefix character (e.g., "@" for SQL Server).</param>
         public DefaultParameterCollector(string prefix)
         {
             if (string.IsNullOrEmpty(prefix))
@@ -31,10 +31,10 @@ namespace Bee.Db.Query
 
         /// <inheritdoc/>
         /// <summary>
-        /// 加入一個參數值，回傳參數名稱（含前綴符號）。
+        /// Adds a parameter value and returns the generated parameter name (including the prefix).
         /// </summary>
-        /// <param name="value">要加入的參數值。</param>
-        /// <returns>生成的參數名稱，格式為「前綴 + 'p' + 索引」（例如：@p0, @p1）。</returns>
+        /// <param name="value">The parameter value to add.</param>
+        /// <returns>The generated parameter name in the format "prefix + 'p' + index" (e.g., @p0, @p1).</returns>
         public string Add(object value)
         {
             var name = Prefix + "p" + _index.ToString();

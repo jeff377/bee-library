@@ -11,12 +11,12 @@ using Bee.Define;
 namespace Bee.Db
 {
     /// <summary>
-    /// 資料庫存取函式庫。
+    /// Utility library for database access operations.
     /// </summary>
     public static class DbFunc
     {
         /// <summary>
-        /// 參數名稱的前綴符號字典。
+        /// Dictionary mapping database types to their parameter name prefix characters.
         /// </summary>
         private static readonly Dictionary<DatabaseType, string> DbParameterPrefixes = new Dictionary<DatabaseType, string>
         {
@@ -27,10 +27,10 @@ namespace Bee.Db
         };
 
         /// <summary>
-        /// 取得參數名稱的前綴符號。
+        /// Gets the parameter name prefix character for the specified database type.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
-        /// <returns>參數前綴符號。</returns>
+        /// <param name="databaseType">The database type.</param>
+        /// <returns>The parameter prefix character.</returns>
         public static string GetParameterPrefix(DatabaseType databaseType)
         {
             return DbParameterPrefixes.TryGetValue(databaseType, out var prefix)
@@ -39,10 +39,10 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 取得含前綴符號的參數名稱。
+        /// Gets the full parameter name including its prefix character.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
-        /// <param name="name">不含前綴符號的參數名稱。</param>
+        /// <param name="databaseType">The database type.</param>
+        /// <param name="name">The parameter name without the prefix character.</param>
         public static string GetParameterName(DatabaseType databaseType, string name)
         {
             string parameterPrefix = GetParameterPrefix(databaseType);
@@ -50,7 +50,7 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 跳脫字元字典。
+        /// Dictionary mapping database types to their identifier quoting functions.
         /// </summary>
         private static readonly Dictionary<DatabaseType, Func<string, string>> QuoteIdentifiers = new Dictionary<DatabaseType, Func<string, string>>
         {
@@ -61,11 +61,11 @@ namespace Bee.Db
         };
 
         /// <summary>
-        /// 依據資料庫類型，回傳適當的識別字串跳脫格式。
+        /// Returns the properly quoted identifier string for the specified database type.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
-        /// <param name="identifier">識別字名稱。</param>
-        /// <returns>跳脫後的識別字。</returns>
+        /// <param name="databaseType">The database type.</param>
+        /// <param name="identifier">The identifier name to quote.</param>
+        /// <returns>The quoted identifier.</returns>
         public static string QuoteIdentifier(DatabaseType databaseType, string identifier)
         {
             if (QuoteIdentifiers.TryGetValue(databaseType, out var func))
@@ -74,9 +74,9 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 根據傳入值推斷 DbType。
+        /// Infers the <see cref="DbType"/> from the given value.
         /// </summary>
-        /// <param name="value">傳入值。</param>
+        /// <param name="value">The value to infer the type from.</param>
         public static DbType? InferDbType(object value)
         {
             if (value == null || value is DBNull) return null;
@@ -97,14 +97,14 @@ namespace Bee.Db
             if (type == typeof(byte[])) return DbType.Binary;
             if (type == typeof(TimeSpan)) return DbType.Time;
 
-            // fallback：不指定，交給 Provider 自動判斷
+            // Fallback: let the provider infer the type automatically
             return null;
         }
 
         /// <summary>
-        /// 建立資料庫連線。
+        /// Creates a database connection for the specified database identifier.
         /// </summary>
-        /// <param name="databaseId">資料庫識別。</param>
+        /// <param name="databaseId">The database identifier.</param>
         public static DbConnection CreateConnection(string databaseId)
         {
             var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
@@ -118,10 +118,10 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// SQL 命令文字格式化。
+        /// Formats a SQL command text by substituting parameter names.
         /// </summary>
-        /// <param name="s">SQL 命令文字。</param>
-        /// <param name="parameters">命令參數集合。</param>
+        /// <param name="s">The SQL command text.</param>
+        /// <param name="parameters">The command parameter collection.</param>
         public static string SqlFormat(string s, DbParameterCollection parameters)
         {
             string[] oArgs;
@@ -133,9 +133,9 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 取得 SQL Server 資料庫的欄位預設值。
+        /// Gets the default SQL Server column value for the specified field type.
         /// </summary>
-        /// <param name="dbType">欄位資料型別。</param>
+        /// <param name="dbType">The field data type.</param>
         internal static string GetSqlDefaultValue(FieldDbType dbType)
         {
             switch (dbType)

@@ -6,31 +6,31 @@ using Bee.Db.DbAccess;
 namespace Bee.Db.Providers
 {
     /// <summary>
-    /// 建立表單相關命令語法產生器，包含 Select、Insert、Update、Delete 語法。
+    /// Defines a form-related SQL command builder that generates Select, Insert, Update, and Delete statements.
     /// </summary>
     public interface IFormCommandBuilder
     {
         /// <summary>
-        /// 建立 Select 語法的資料庫命令。
+        /// Builds the SELECT command specification.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <param name="selectFields">要取得的欄位集合字串，以逗點分隔欄位名稱，空字串表示取得所有欄位。</param>
-        /// <param name="filter">過濾條件。</param>
-        /// <param name="sortFields">排序欄位集合。</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="selectFields">A comma-separated list of field names to retrieve; empty string retrieves all fields.</param>
+        /// <param name="filter">The filter condition.</param>
+        /// <param name="sortFields">The sort field collection.</param>
         DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode filter, SortFieldCollection sortFields);
 
         /// <summary>
-        /// 建立 Insert 語法的資料庫命令。
+        /// Builds the INSERT command specification.
         /// </summary>
         DbCommandSpec BuildInsertCommand();
 
         /// <summary>
-        /// 建立 Update 語法的資料庫命令。
+        /// Builds the UPDATE command specification.
         /// </summary>
         DbCommandSpec BuildUpdateCommand();
 
         /// <summary>
-        /// 建立 Delete 語法的資料庫命令。
+        /// Builds the DELETE command specification.
         /// </summary>
         DbCommandSpec BuildDeleteCommand();
     }

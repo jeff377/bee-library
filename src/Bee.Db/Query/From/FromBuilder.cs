@@ -7,27 +7,27 @@ using Bee.Db;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// FROM 子句建置器。
+    /// Builds the SQL FROM clause, including any JOIN statements.
     /// </summary>
     public class FromBuilder : IFromBuilder
     {
         private readonly DatabaseType _databaseType;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FromBuilder"/>.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
+        /// <param name="databaseType">The database type.</param>
         public FromBuilder(DatabaseType databaseType)
         {
             _databaseType = databaseType;
         }
 
         /// <summary>
-        /// 建立 FROM 子句。
+        /// Builds the FROM clause, including any JOIN statements.
         /// </summary>
-        /// <param name="mainTableName">主資料表名稱。</param>
-        /// <param name="joins">資料表 Join 關係集合。</param>
-        /// <returns>JOIN 子句字串。</returns>
+        /// <param name="mainTableName">The main table name.</param>
+        /// <param name="joins">The collection of table JOIN relationships.</param>
+        /// <returns>The FROM clause string.</returns>
         public string Build(string mainTableName, TableJoinCollection joins)
         {
             var sb = new StringBuilder();

@@ -4,13 +4,13 @@ using Bee.Base.Collections;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 描述查詢中欄位與其原始資料來源的對應關係。
-    /// 查詢欄位包含 Select、 Where 及 Order 子句使用到的欄位。
+    /// Describes the mapping between a query field and its original data source.
+    /// Query fields include those used in Select, Where, and Order By clauses.
     /// </summary>
     public class QueryFieldMapping : KeyCollectionItem
     {
         /// <summary>
-        /// 查詢中使用的欄位名稱。
+        /// Gets or sets the field name used in the query.
         /// </summary>
         public string FieldName
         {
@@ -19,22 +19,22 @@ namespace Bee.Db.Query
         }
 
         /// <summary>
-        /// 原始資料表別名。
+        /// Gets or sets the source table alias.
         /// </summary>
         public string SourceAlias { get; set; }
 
         /// <summary>
-        /// 原始資料表欄位名稱。
+        /// Gets or sets the source table column name.
         /// </summary>
         public string SourceField { get; set; }
 
         /// <summary>
-        /// 查詢欄位所屬的 Join 關聯資訊。
+        /// Gets or sets the JOIN relationship associated with this query field.
         /// </summary>
         public TableJoin TableJoin { get; set; }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

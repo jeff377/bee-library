@@ -14,26 +14,26 @@ using Bee.Db.Manager;
 namespace Bee.Db.DbAccess
 {
     /// <summary>
-    /// 資料庫存取物件。
+    /// Provides database access operations including query execution, batch commands, and DataTable updates.
     /// </summary>
     public class DbAccess
     {
         private readonly DbConnection _externalConnection = null;
         private readonly string _connectionString = string.Empty;
-        private readonly string _databaseId = string.Empty;  // Log 使用
+        private readonly string _databaseId = string.Empty;  // Used for logging
 
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbAccess"/> for the specified database identifier.
         /// </summary>
-        /// <param name="databaseId">資料庫識別。</param>
+        /// <param name="databaseId">The database identifier.</param>
         public DbAccess(string databaseId)
         {
             if (string.IsNullOrWhiteSpace(databaseId))
                 throw new ArgumentException("databaseId cannot be null or empty.", nameof(databaseId));
 
-            // 從 DbConnectionManager 取得快取的連線資訊
+            // Retrieve cached connection information from DbConnectionManager
             var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
 
             DatabaseType = connInfo.DatabaseType;
@@ -43,9 +43,10 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbAccess"/> using an externally managed <see cref="DbConnection"/>.
+        /// The connection lifetime is managed by the caller.
         /// </summary>
-        /// <param name="externalConnection">由外部提供的 DbConnection 建立 DbAccess，連線生命週期由外部管理。</param>
+        /// <param name="externalConnection">The externally provided database connection.</param>
         public DbAccess(DbConnection externalConnection)
         {
             _externalConnection = externalConnection ?? throw new ArgumentNullException(nameof(externalConnection));
@@ -58,26 +59,25 @@ namespace Bee.Db.DbAccess
         #endregion
 
         /// <summary>
-        /// 資料庫類型。
+        /// Gets the database type.
         /// </summary>
         public DatabaseType DatabaseType { get; }
 
         /// <summary>
-        /// 資料庫來源提供者。
+        /// Gets the database provider factory.
         /// </summary>
         public DbProviderFactory Provider { get; }
 
         /// <summary>
-        /// 建立連線範圍，會自動決定使用外部連線或自行建立連線。
+        /// Creates a connection scope, automatically choosing between the external connection and a newly created one.
         /// </summary>
         private DbConnectionScope CreateScope()
         {
-            // 這個型別假設已有，且能依「外部連線或 provider+cs」建立對應的 scope
             return DbConnectionScope.Create(_externalConnection, Provider, _connectionString);
         }
 
         /// <summary>
-        /// 非同步建立連線範圍，會自動決定使用外部連線或自行建立連線。
+        /// Asynchronously creates a connection scope, automatically choosing between the external connection and a newly created one.
         /// </summary>
         private Task<DbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
         {
@@ -85,7 +85,7 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 嘗試回滾交易（忽略回滾過程中的例外）。
+        /// Attempts to roll back a transaction, silently ignoring any exceptions during rollback.
         /// </summary>
         private static void TryRollbackQuiet(DbTransaction tran)
         {
@@ -96,9 +96,9 @@ namespace Bee.Db.DbAccess
         #region 同步方法
 
         /// <summary>
-        /// 執行資料庫命令。
+        /// Executes a database command.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
+        /// <param name="command">The database command specification.</param>
         public DbCommandResult Execute(DbCommandSpec command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
@@ -120,11 +120,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 使用指定的 <see cref="DbTransaction"/> 於外部連線執行資料庫命令。
-        /// 適用於需明確控制交易範圍的情境，命令將綁定至傳入的交易物件。
+        /// Executes a database command using the specified <see cref="DbTransaction"/> on an external connection.
+        /// Use this overload when you need explicit transaction control; the command is bound to the given transaction.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="transaction">必填的資料庫交易物件；命令將綁定至該交易。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="transaction">The required database transaction; the command is bound to this transaction.</param>
         public DbCommandResult Execute(DbCommandSpec command, DbTransaction transaction)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
@@ -147,9 +147,9 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 批次執行多個資料庫命令；若任何一筆失敗，回滾交易並拋例外。
+        /// Executes multiple database commands as a batch; rolls back the transaction and throws on any failure.
         /// </summary>
-        /// <param name="batch">執行批次命令的描述。</param>
+        /// <param name="batch">The batch command specification.</param>
         public DbBatchResult ExecuteBatch(DbBatchSpec batch)
         {
             if (batch == null) throw new ArgumentNullException(nameof(batch));
@@ -198,14 +198,14 @@ namespace Bee.Db.DbAccess
                         }
                         catch (Exception ex)
                         {
-                            // 任何指令失敗：回滾並拋出包含索引的例外
+                            // Any command failure: roll back and throw with the command index
                             TryRollbackQuiet(tran);
                             throw new InvalidOperationException(
                                 $"Failed to execute batch at index {i}: {spec.Kind}.", ex);
                         }
                     }
 
-                    // 全部成功才提交
+                    // Commit only after all commands succeed
                     try { tran?.Commit(); }
                     catch (Exception ex)
                     {
@@ -222,11 +222,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 執行資料庫命令，傳回異動筆數。
+        /// Executes a NonQuery database command and returns the number of rows affected.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="connection">資料庫連線。</param>
-        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         private DbCommandResult ExecuteNonQueryCore(
             DbCommandSpec command, DbConnection connection, DbTransaction transaction)
         {
@@ -239,11 +239,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 執行資料庫命令，傳回單一值。
+        /// Executes a Scalar database command and returns the single result value.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="connection">資料庫連線。</param>
-        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         private DbCommandResult ExecuteScalarCore(
             DbCommandSpec command, DbConnection connection, DbTransaction transaction)
         {
@@ -256,11 +256,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 執行資料庫命令，傳回資料表。
+        /// Executes a DataTable database command and returns the result set.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="connection">資料庫連線。</param>
-        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         private DbCommandResult ExecuteDataTableCore(
             DbCommandSpec command, DbConnection connection, DbTransaction transaction)
         {
@@ -283,11 +283,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的清單。
+        /// Executes a database command and maps each result row to an instance of type <typeparamref name="T"/>.
         /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <returns>映射為 <see cref="List{T}"/> 的結果集合。</returns>
+        /// <typeparam name="T">The target mapping type.</typeparam>
+        /// <param name="command">The database command specification.</param>
+        /// <returns>A <see cref="List{T}"/> containing the mapped results.</returns>
         public List<T> Query<T>(DbCommandSpec command)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
@@ -307,10 +307,10 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 將 DataTable 的異動寫入資料庫。 
+        /// Writes DataTable changes back to the database.
         /// </summary>
-        /// <param name="spec">承載 DataTable 更新所需的資料表與三個命令描述。</param>
-        /// <returns>受影響的資料列數。</returns>
+        /// <param name="spec">The DataTable update specification containing the table and its three command specifications.</param>
+        /// <returns>The number of rows affected.</returns>
         public int UpdateDataTable(DataTableUpdateSpec spec)
         {
             if (spec == null) throw new ArgumentNullException(nameof(spec));
@@ -381,11 +381,11 @@ namespace Bee.Db.DbAccess
         #region 同步版本的簡易方法
 
         /// <summary>
-        /// 執行 SQL 指令，傳回異動筆數。
+        /// Executes a SQL statement and returns the number of rows affected.
         /// </summary>
-        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
-        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
-        /// <returns>受影響的資料列數。</returns>
+        /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
+        /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
+        /// <returns>The number of rows affected.</returns>
         public int ExecuteNonQuery(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.NonQuery, commandText, values);
@@ -393,11 +393,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 執行 SQL 指令，傳回單一值。
+        /// Executes a SQL statement and returns a single scalar value.
         /// </summary>
-        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
-        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
-        /// <returns>查詢結果的第一個欄位值。</returns>
+        /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
+        /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
+        /// <returns>The first column value of the first result row.</returns>
         public object ExecuteScalar(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.Scalar, commandText, values);
@@ -405,11 +405,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 執行 SQL 指令，傳回資料表。
+        /// Executes a SQL statement and returns the result as a <see cref="DataTable"/>.
         /// </summary>
-        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
-        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
-        /// <returns>查詢結果的 <see cref="DataTable"/>。</returns>
+        /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
+        /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
+        /// <returns>The query result as a <see cref="DataTable"/>.</returns>
         public DataTable ExecuteDataTable(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.DataTable, commandText, values);
@@ -421,10 +421,10 @@ namespace Bee.Db.DbAccess
         #region 非同步方法
 
         /// <summary>
-        /// 非同步執行資料庫命令。
+        /// Asynchronously executes a database command.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         public async Task<DbCommandResult> ExecuteAsync(
             DbCommandSpec command, CancellationToken cancellationToken = default)
         {
@@ -447,12 +447,12 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 使用指定的 <see cref="DbTransaction"/> 於外部連線非同步執行資料庫命令。
-        /// 適用於需明確控制交易範圍的情境，命令將綁定至傳入的交易物件。
+        /// Asynchronously executes a database command using the specified <see cref="DbTransaction"/> on an external connection.
+        /// Use this overload when you need explicit transaction control; the command is bound to the given transaction.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="transaction">必填的資料庫交易物件；命令將綁定至該交易。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="transaction">The required database transaction; the command is bound to this transaction.</param>
+        /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         public Task<DbCommandResult> ExecuteAsync(
             DbCommandSpec command, DbTransaction transaction, CancellationToken cancellationToken = default)
         {
@@ -476,10 +476,10 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 非同步批次執行多個資料庫命令；若任何一筆失敗，回滾交易並拋例外。
+        /// Asynchronously executes multiple database commands as a batch; rolls back the transaction and throws on any failure.
         /// </summary>
-        /// <param name="batch">執行批次命令的描述。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <param name="batch">The batch command specification.</param>
+        /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         public async Task<DbBatchResult> ExecuteBatchAsync(DbBatchSpec batch, CancellationToken cancellationToken = default)
         {
             if (batch == null) throw new ArgumentNullException(nameof(batch));
@@ -497,12 +497,12 @@ namespace Bee.Db.DbAccess
                     if (batch.UseTransaction)
                     {
 #if NET8_0_OR_GREATER
-                        // .NET 8.0+ 有 BeginTransactionAsync
+                        // .NET 8.0+ supports BeginTransactionAsync
                         tran = batch.IsolationLevel.HasValue
                             ? await scope.Connection.BeginTransactionAsync(batch.IsolationLevel.Value, cancellationToken).ConfigureAwait(false)
                             : await scope.Connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
 #else
-                        // .NET Standard 2.0 無 BeginTransactionAsync，此處以同步 BeginTransaction 啟動交易
+                        // .NET Standard 2.0 does not have BeginTransactionAsync; fall back to synchronous BeginTransaction
                         tran = batch.IsolationLevel.HasValue
                             ? scope.Connection.BeginTransaction(batch.IsolationLevel.Value)
                             : scope.Connection.BeginTransaction();
@@ -538,14 +538,14 @@ namespace Bee.Db.DbAccess
                         }
                         catch (Exception ex)
                         {
-                            // 任何指令失敗：回滾並拋出包含索引的例外
+                            // Any command failure: roll back and throw with the command index
                             TryRollbackQuiet(tran);
                             throw new InvalidOperationException(
                                 $"Failed to execute batch at index {i}: {spec.Kind}.", ex);
                         }
                     }
 
-                    // 全部成功才提交
+                    // Commit only after all commands succeed
                     try { tran?.Commit(); }
                     catch (Exception ex)
                     {
@@ -562,12 +562,12 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 非同步執行資料庫命令，傳回異動筆數。
+        /// Asynchronously executes a NonQuery database command and returns the number of rows affected.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="connection">資料庫連線。</param>
-        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
+        /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         private async Task<DbCommandResult> ExecuteNonQueryCoreAsync(
             DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
         {
@@ -580,12 +580,12 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 非同步執行資料庫命令，傳回單一值。
+        /// Asynchronously executes a Scalar database command and returns the single result value.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="connection">資料庫連線。</param>
-        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
+        /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         private async Task<DbCommandResult> ExecuteScalarCoreAsync(
             DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
         {
@@ -598,18 +598,18 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 非同步執行資料庫命令，傳回資料表。
+        /// Asynchronously executes a DataTable database command and returns the result set.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="connection">資料庫連線。</param>
-        /// <param name="transaction">可選的資料庫交易物件，若為 null 則不使用交易。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="connection">The database connection.</param>
+        /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
+        /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         private async Task<DbCommandResult> ExecuteDataTableCoreAsync(
             DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
-                if (transaction != null) cmd.Transaction = transaction; // ← 先設定交易
+                if (transaction != null) cmd.Transaction = transaction; // Set the transaction first
 
                 using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
                 {
@@ -622,12 +622,12 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 非同步執行資料庫命令，並將結果逐筆映射為指定類型 <typeparamref name="T"/> 的清單。
+        /// Asynchronously executes a database command and maps each result row to an instance of type <typeparamref name="T"/>.
         /// </summary>
-        /// <typeparam name="T">要映射的目標類型。</typeparam>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="cancellationToken">取消權杖，可於長時間執行的命令中用於取消等待。</param>
-        /// <returns>映射為 <see cref="List{T}"/> 的結果集合。</returns>
+        /// <typeparam name="T">The target mapping type.</typeparam>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
+        /// <returns>A <see cref="List{T}"/> containing the mapped results.</returns>
         public async Task<List<T>> QueryAsync<T>(DbCommandSpec command, CancellationToken cancellationToken = default)
         {
             if (command == null) throw new ArgumentNullException(nameof(command));
@@ -637,7 +637,7 @@ namespace Bee.Db.DbAccess
             using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
                 var list = new List<T>();
-                var mapper = ILMapper<T>.CreateMapFunc(reader); // 以目前欄位集建立映射
+                var mapper = ILMapper<T>.CreateMapFunc(reader); // Build a mapper based on the current column set
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {
                     list.Add(mapper(reader));
@@ -651,11 +651,11 @@ namespace Bee.Db.DbAccess
         #region 非同步版本的簡易方法
 
         /// <summary>
-        /// 非同步執行 SQL 指令，傳回異動筆數。
+        /// Asynchronously executes a SQL statement and returns the number of rows affected.
         /// </summary>
-        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
-        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
-        /// <returns>受影響的資料列數。</returns>
+        /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
+        /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> ExecuteNonQueryAsync(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.NonQuery, commandText, values);
@@ -663,11 +663,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 非同步執行 SQL 指令，傳回單一值。
+        /// Asynchronously executes a SQL statement and returns a single scalar value.
         /// </summary>
-        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
-        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
-        /// <returns>查詢結果的第一個欄位值。</returns>
+        /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
+        /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
+        /// <returns>The first column value of the first result row.</returns>
         public async Task<object> ExecuteScalarAsync(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.Scalar, commandText, values);
@@ -675,11 +675,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 非同步執行 SQL 指令，傳回資料表。
+        /// Asynchronously executes a SQL statement and returns the result as a <see cref="DataTable"/>.
         /// </summary>
-        /// <param name="commandText">要執行的 SQL 陳述式，只能使用 {0}, {1} 格式。</param>
-        /// <param name="values">位置參數值，依序對應 {0}, {1} ...</param>
-        /// <returns>查詢結果的 <see cref="DataTable"/>。</returns>
+        /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
+        /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
+        /// <returns>The query result as a <see cref="DataTable"/>.</returns>
         public async Task<DataTable> ExecuteDataTableAsync(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.DataTable, commandText, values);
@@ -689,9 +689,8 @@ namespace Bee.Db.DbAccess
         #endregion
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             return $"DbAccess {{ DatabaseType = {DatabaseType}, Provider = {Provider?.GetType().Name} }}";

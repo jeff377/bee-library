@@ -7,27 +7,27 @@ using Bee.Db;
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// WHERE 子句建置器。
+    /// Builds the SQL WHERE clause.
     /// </summary>
     public sealed class WhereBuilder : IWhereBuilder
     {
         private readonly DatabaseType _databaseType;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="WhereBuilder"/>.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
+        /// <param name="databaseType">The database type.</param>
         public WhereBuilder(DatabaseType databaseType)
         {
             _databaseType = databaseType;
         }
 
         /// <summary>
-        /// 由結構化條件節點建置 WHERE 子句。
+        /// Builds the WHERE clause from a structured filter node tree.
         /// </summary>
-        /// <param name="root">條件根節點（可為群組或單一條件）。</param>
-        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
-        /// <param name="includeWhereKeyword">是否在結果前加入 "WHERE "。</param>
+        /// <param name="root">The root filter node (may be a group or a single condition).</param>
+        /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
+        /// <param name="includeWhereKeyword">Whether to prepend the "WHERE " keyword to the result.</param>
         public WhereBuildResult Build(FilterNode root, SelectContext selectContext = null, bool includeWhereKeyword = true)
         {
             if (root == null) { return new WhereBuildResult(); }
@@ -49,11 +49,11 @@ namespace Bee.Db.Query
 
 
         /// <summary>
-        /// 重新映射過濾節點中的欄位名稱為 SQL 查詢所需的格式（加上資料表別名）。
+        /// Remaps field names in the filter node to the SQL-qualified format required by the query (prefixed with table alias).
         /// </summary>
-        /// <param name="node">要重新映射的過濾節點。</param>
-        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
-        /// <returns>重新映射後的過濾節點。</returns>
+        /// <param name="node">The filter node to remap.</param>
+        /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
+        /// <returns>The remapped filter node.</returns>
         private FilterNode RemapFilterNodeFields(FilterNode node, SelectContext selectContext)
         {
             if (node.Kind == FilterNodeKind.Condition)
@@ -67,7 +67,7 @@ namespace Bee.Db.Query
                 }
                 else
                 {
-                    // 本表欄位，預設別名 A
+                    // Field belongs to the main table; default alias is A
                     fieldExpr = $"A.{QuoteIdentifier(cond.FieldName)}";
                 }
                 return new FilterCondition(fieldExpr, cond.Operator, cond.Value);

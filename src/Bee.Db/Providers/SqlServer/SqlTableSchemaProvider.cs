@@ -10,16 +10,16 @@ using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
-    /// 提供讀取與解析 SQL Server 資料表結構的方法。
+    /// Provides methods for reading and parsing SQL Server table schemas.
     /// </summary>
     public class SqlTableSchemaProvider
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SqlTableSchemaProvider"/>.
         /// </summary>
-        /// <param name="databaseId">資料庫識別。</param>
+        /// <param name="databaseId">The database identifier.</param>
         public SqlTableSchemaProvider(string databaseId)
         {
             DatabaseId = databaseId;
@@ -28,30 +28,30 @@ namespace Bee.Db.Providers.SqlServer
         #endregion
 
         /// <summary>
-        /// 資料庫識別。
+        /// Gets the database identifier.
         /// </summary>
         public string DatabaseId { get; }
 
         /// <summary>
-        /// 取得資料表結構。
+        /// Gets the schema definition for the specified table.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         public TableSchema GetTableSchema(string tableName)
         {
-            // 若資料表不存在則回傳 null
+            // Return null if the table does not exist
             if (!TableExists(tableName)) { return null; }
 
             var dbTable = new TableSchema();
             dbTable.TableName = tableName;
 
-            // 取得索引的資料來源
+            // Retrieve the index data source
             var indexes = GetTableIndexes(tableName);
-            // 解析主索引鍵
+            // Parse the primary key
             ParsePrimaryKey(dbTable, indexes);
-            // 解析索引集合
+            // Parse the remaining indexes
             ParseIndexes(dbTable, indexes);
 
-            // 取得欄位結構的資料來源
+            // Retrieve the column data source
             var columns = GetColumns(tableName);
             foreach (DataRow row in columns.Rows)
             {
@@ -63,9 +63,9 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 判斷是否存在指定資料表。
+        /// Determines whether the specified table exists in the database.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         private bool TableExists(string tableName)
         {
             string sql = "Select Count(*) From sys.tables A Where A.name={0}";
@@ -77,9 +77,9 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 取得指定資料表索引。
+        /// Gets the index information for the specified table.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         private DataTable GetTableIndexes(string tableName)
         {
             string sql = "SELECT A.name as FieldName,D.is_primary_key as IsPrimaryKey,D.is_unique as IsUnique,D.name,\n" +
@@ -99,10 +99,10 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 解析主索引鍵。
+        /// Parses and populates the primary key from the index data.
         /// </summary>
-        /// <param name="dbTable">資料表結構。</param>
-        /// <param name="table">索引資料表。</param>
+        /// <param name="dbTable">The table schema to populate.</param>
+        /// <param name="table">The index data table.</param>
         private void ParsePrimaryKey(TableSchema dbTable, DataTable table)
         {
             if (table.IsEmpty()) { return; }
@@ -111,7 +111,7 @@ namespace Bee.Db.Providers.SqlServer
             table.DefaultView.Sort = "KeyOrdinal";
             if (table.DefaultView.IsEmpty()) { return; }
 
-            // 取得索引名稱
+            // Get the index name
             string name = BaseFunc.CStr(table.DefaultView[0]["name"]);
             // 取得主索引
             var tableIndex = new TableSchemaIndex();
@@ -126,21 +126,21 @@ namespace Bee.Db.Providers.SqlServer
                 indexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
                 tableIndex.IndexFields.Add(indexField);
             }
-            // 刪除已處理的主索引鍵資料
+            // Remove the processed primary key rows
             table.DefaultView.DeleteRows(true);
         }
 
         /// <summary>
-        /// 解析索引集合。
+        /// Parses and populates all remaining indexes from the index data.
         /// </summary>
-        /// <param name="dbTable">資料表結構。</param>
-        /// <param name="table">索引資料表。</param>
+        /// <param name="dbTable">The table schema to populate.</param>
+        /// <param name="table">The index data table.</param>
         private void ParseIndexes(TableSchema dbTable, DataTable table)
         {
             while (!table.IsEmpty())
             {
                 var oRow = table.Rows[0];
-                string name = BaseFunc.CStr(oRow["Name"]);  // 取得索引名稱
+                string name = BaseFunc.CStr(oRow["Name"]);  // Get the index name
                 bool isUnique = BaseFunc.CBool(oRow["IsUnique"]);
 
                 var tableIndex = new TableSchemaIndex();
@@ -157,15 +157,15 @@ namespace Bee.Db.Providers.SqlServer
                     indexField.SortDirection = BaseFunc.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
                     tableIndex.IndexFields.Add(indexField);
                 }
-                // 刪除已處理的索引鍵資料
+                // Remove the processed index rows
                 table.DefaultView.DeleteRows(true);
             }
         }
 
         /// <summary>
-        /// 取得指定資料表的欄位清單。
+        /// Gets the column list for the specified table.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         private DataTable GetColumns(string tableName)
         {
             string sql = "SELECT A.is_nullable as AllowDBNull,A.is_identity as AutoIncrement, \n" +
@@ -189,9 +189,9 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 建立欄位結構。
+        /// Creates a field definition from the column data row.
         /// </summary>
-        /// <param name="row">欄位資訊的資料列。</param>
+        /// <param name="row">The data row containing column information.</param>
         private DbField ParseDbField(DataRow row)
         {
             var dbField = new DbField();
@@ -208,7 +208,7 @@ namespace Bee.Db.Providers.SqlServer
                     row.GetFieldValue<int>("Decimals"),
                     row.GetFieldValue<int>("Length"));
 
-            // 設定 String 的長度
+            // Set the String field length
             if (dbField.DbType == FieldDbType.String)
             {
                 if (StrFunc.ToUpper(row.GetFieldValue<string>("DbType")) == "NVARCHAR")
@@ -217,25 +217,25 @@ namespace Bee.Db.Providers.SqlServer
                     dbField.Length = row.GetFieldValue<int>("Length");
             }
 
-            // 設定 Decimal 的精度和小數位數
+            // Set the Decimal precision and scale
             if (dbField.DbType == FieldDbType.Decimal)
             {
                 dbField.Precision = row.GetFieldValue<int>("Precision");
                 dbField.Scale = row.GetFieldValue<int>("Decimals");
             }
 
-            string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbField.DbType);  // 取得內定預設值
+            string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbField.DbType);  // Get the built-in default value
             dbField.DefaultValue = ParseDBDefaultValue(row.GetFieldValue<string>("DbType"), row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
             return dbField;
         }
 
         /// <summary>
-        /// 將資料型別轉型為 EFieldDbType 列舉型別。
+        /// Converts a SQL Server data type string to the corresponding <see cref="FieldDbType"/> enum value.
         /// </summary>
-        /// <param name="dataType">資料型別。</param>
-        /// <param name="dataPrecision">精確度。</param>
-        /// <param name="dataScale">小數位數。</param>
-        /// <param name="length">資料長度。</param>
+        /// <param name="dataType">The SQL Server data type name.</param>
+        /// <param name="dataPrecision">The numeric precision.</param>
+        /// <param name="dataScale">The number of decimal places.</param>
+        /// <param name="length">The data length.</param>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
             switch (StrFunc.ToUpper(dataType))
@@ -276,11 +276,12 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// 解析從資料庫取回的欄位預設值，如果跟程式內定的預設值相同，則回傳空白。
+        /// Parses the field default value retrieved from the database.
+        /// Returns an empty string if the value matches the built-in default.
         /// </summary>
-        /// <param name="dataType"></param>
-        /// <param name="defaultValue">實際預設值。</param>
-        /// <param name="originalDefaultValue">內定預設值。</param>
+        /// <param name="dataType">The SQL Server data type name.</param>
+        /// <param name="defaultValue">The actual default value from the database.</param>
+        /// <param name="originalDefaultValue">The built-in default value.</param>
         public string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
         {
             switch (StrFunc.ToUpper(dataType))
@@ -310,7 +311,7 @@ namespace Bee.Db.Providers.SqlServer
                     break;
             }
 
-            // 檢查資料庫的預設值跟程式內定的預設值是否相同。
+            // Return empty if the database default matches the built-in default.
             if (StrFunc.Equals(originalDefaultValue, defaultValue))
                 return string.Empty;
             else

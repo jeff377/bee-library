@@ -9,40 +9,40 @@ using System.Reflection.Emit;
 namespace Bee.Db
 {
     /// <summary>
-    /// 提供從 <see cref="DbDataReader"/> 到類型 <typeparamref name="T"/> 的映射功能。
+    /// Provides IL-based mapping functionality from <see cref="DbDataReader"/> to type <typeparamref name="T"/>.
     /// </summary>
-    /// <typeparam name="T">目標類型。</typeparam>
+    /// <typeparam name="T">The target type.</typeparam>
     public static class ILMapper<T>
     {
         private static readonly ConcurrentDictionary<(Type, string), Delegate> _cache =
             new ConcurrentDictionary<(Type, string), Delegate>();
 
         /// <summary>
-        /// 建立一個對應的映射函式，可用於 DbDataReader 轉換為 T 類型。
+        /// Creates a mapping function that converts a <see cref="DbDataReader"/> row to type <typeparamref name="T"/>.
         /// </summary>
-        /// <param name="reader">資料庫查詢結果的 DbDataReader。</param>
+        /// <param name="reader">The DbDataReader containing the query results.</param>
         public static Func<DbDataReader, T> CreateMapFunc(DbDataReader reader)
         {
-            // 找出 IDataReader 與 T 類別皆存在的欄位與屬性，傳回包含屬性名稱與對應欄位索引的字典
+            // Identify fields present in both the DbDataReader and type T, returning a dictionary of property names to column indexes
             var fieldIndexes = GetMatchingFieldIndexes(reader);
-            // 取得 T 類型與欄位索引的複合鍵值
+            // Build a composite cache key from the type T and the field index mapping
             var key = (typeof(T), string.Join(",", fieldIndexes.Select(kv => $"{kv.Key}:{kv.Value}")));
-            // 若映射函式已快取，則直接回傳
+            // Return the cached mapper if it already exists
             if (_cache.TryGetValue(key, out var cachedDelegate))
             {
                 return (Func<DbDataReader, T>)cachedDelegate;
             }
-            // 建立映射函式加入快取，並回傳映射函式
+            // Build the mapper, store it in the cache, and return it
             var mapper = CreateMapper(fieldIndexes);
             _cache[key] = mapper;
             return mapper;
         }
 
         /// <summary>
-        /// 使用指定映射函式轉換 DbDataReader 為 List。
+        /// Maps all rows from a <see cref="DbDataReader"/> to a <see cref="List{T}"/> using the specified mapper function.
         /// </summary>
-        /// <param name="mapper">映射函式。</param>
-        /// <param name="reader">資料庫查詢結果的 DbDataReader。</param>
+        /// <param name="mapper">The mapping function.</param>
+        /// <param name="reader">The DbDataReader containing the query results.</param>
         public static List<T> MapToList(DbDataReader reader, Func<DbDataReader, T> mapper)
         {
             var list = new List<T>();
@@ -54,10 +54,10 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 使用指定的映射函式轉換 DbDataReader 為 IEnumerable。
+        /// Maps all rows from a <see cref="DbDataReader"/> to an <see cref="IEnumerable{T}"/> using the specified mapper function.
         /// </summary>
-        /// <param name="mapper">映射函式。</param>
-        /// <param name="reader">資料庫查詢結果的 DbDataReader。</param>
+        /// <param name="mapper">The mapping function.</param>
+        /// <param name="reader">The DbDataReader containing the query results.</param>
         public static IEnumerable<T> MapToEnumerable(DbDataReader reader, Func<DbDataReader, T> mapper)
         {
             while (reader.Read())
@@ -67,11 +67,11 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 建立一個對應的映射函式，可用於 DbDataReader 轉換為 T 類型。
+        /// Creates a mapping function that converts a <see cref="DbDataReader"/> row to type <typeparamref name="T"/>.
         /// </summary>
-        /// <param name="fieldIndexes">欄位名稱與索引的映射表</param>
-        /// <returns>轉換函式 Func&lt;DbDataReader, T&gt;</returns>
-        /// <exception cref="InvalidOperationException">如果 T 類型沒有無參建構子，則拋出異常</exception>
+        /// <param name="fieldIndexes">A dictionary mapping property names to column indexes.</param>
+        /// <returns>A <see cref="Func{DbDataReader, T}"/> delegate.</returns>
+        /// <exception cref="InvalidOperationException">Thrown when type <typeparamref name="T"/> has no parameterless constructor.</exception>
         private static Func<DbDataReader, T> CreateMapper(Dictionary<string, int> fieldIndexes)
         {
             var type = typeof(T);
@@ -99,13 +99,13 @@ namespace Bee.Db
                 }
 
                 var fieldType = prop.PropertyType;
-                var dbReaderMethod = GetDbReaderMethod(fieldType); // 取得最佳 `GetXXX()` 方法
+                var dbReaderMethod = GetDbReaderMethod(fieldType); // Get the best-matching GetXXX() method
 
                 if (dbReaderMethod != null)
                 {
                     var endIfLabel = il.DefineLabel();
 
-                    // `if (!reader.IsDBNull(fieldIndex))` 檢查是否為 `DBNull`
+                    // Check for DBNull: if (!reader.IsDBNull(fieldIndex))
                     il.Emit(OpCodes.Ldarg_0);
                     il.Emit(OpCodes.Ldc_I4, fieldIndex);
                     il.Emit(OpCodes.Callvirt, isDBNullMethod);
@@ -129,7 +129,7 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// 根據 `PropertyType` 取得最佳 `DbDataReader.GetXXX(int index)` 方法。
+        /// Returns the best-matching <c>DbDataReader.GetXXX(int index)</c> method for the given <paramref name="fieldType"/>.
         /// </summary>
         private static MethodInfo GetDbReaderMethod(Type fieldType)
         {
@@ -145,27 +145,27 @@ namespace Bee.Db
             if (fieldType == typeof(long)) return readerType.GetMethod("GetInt64", new[] { typeof(int) });
             if (fieldType == typeof(short)) return readerType.GetMethod("GetInt16", new[] { typeof(int) });
 
-            return readerType.GetMethod("GetValue", new[] { typeof(int) }); // 其他類型仍使用 `GetValue`
+            return readerType.GetMethod("GetValue", new[] { typeof(int) }); // Fall back to GetValue for other types
         }
 
         /// <summary>
-        /// 找出 IDataReader 與 T 類別皆存在的欄位與屬性，傳回包含屬性名稱與對應欄位索引的字典。
+        /// Returns a dictionary of property names to column indexes for fields that exist in both the <see cref="DbDataReader"/> and type <typeparamref name="T"/>.
         /// </summary>
-        /// <param name="reader">資料庫查詢結果的 DbDataReader。</param>
-        /// <returns>包含屬性名稱與對應欄位索引的字典。</returns>
+        /// <param name="reader">The DbDataReader containing the query results.</param>
+        /// <returns>A dictionary mapping property names to their corresponding column indexes.</returns>
         private static Dictionary<string, int> GetMatchingFieldIndexes(DbDataReader reader)
         {
-            var fieldIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase); // 不分大小寫比較
-            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);  // 取得 T 類別的所有可寫屬性名稱
+            var fieldIndexes = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase); // Case-insensitive comparison
+            var properties = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);  // Get all writable public properties of T
 
-            // 建立 DbDataReader 欄位名稱的 Dictionary
+            // Build a dictionary of DbDataReader column names to their ordinal indexes
             var readerFields = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < reader.FieldCount; i++)
             {
                 readerFields[reader.GetName(i)] = i;
             }
 
-            // 只取交集 (T 的屬性名稱 & DbDataReader 欄位名稱)
+            // Keep only the intersection of T's property names and the DbDataReader column names
             foreach (var prop in properties)
             {
                 if (prop.CanWrite && readerFields.TryGetValue(prop.Name, out int index))

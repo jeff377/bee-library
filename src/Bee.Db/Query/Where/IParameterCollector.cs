@@ -3,14 +3,14 @@
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 參數收集器介面（供 Builder 產生具名參數）。
+    /// Defines the interface for a parameter collector used by query builders to generate named parameters.
     /// </summary>
     public interface IParameterCollector
     {
-        /// <summary>加入一個參數值，回傳參數名稱（含前綴符號）。</summary>
+        /// <summary>Adds a parameter value and returns the generated parameter name (including the prefix).</summary>
         string Add(object value);
 
-        /// <summary>取得已加入的參數字典。</summary>
+        /// <summary>Returns a dictionary of all collected parameters.</summary>
         IDictionary<string, object> GetAll();
     }
 }

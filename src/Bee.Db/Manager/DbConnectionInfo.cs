@@ -4,16 +4,16 @@ using System.Data.Common;
 namespace Bee.Db.Manager
 {
     /// <summary>
-    /// 資料庫連線資訊。
+    /// Holds database connection information.
     /// </summary>
     public class DbConnectionInfo
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbConnectionInfo"/>.
         /// </summary>
-        /// <param name="databaseType">資料庫類型。</param>
-        /// <param name="provider">資料庫提供者。</param>
-        /// <param name="connectionString">連線字串。</param>
+        /// <param name="databaseType">The database type.</param>
+        /// <param name="provider">The database provider factory.</param>
+        /// <param name="connectionString">The connection string.</param>
         internal DbConnectionInfo(DatabaseType databaseType, DbProviderFactory provider, string connectionString)
         {
             DatabaseType = databaseType;
@@ -22,17 +22,17 @@ namespace Bee.Db.Manager
         }
 
         /// <summary>
-        /// 資料庫類型。
+        /// Gets the database type.
         /// </summary>
         public DatabaseType DatabaseType { get; }
 
         /// <summary>
-        /// 資料庫提供者。
+        /// Gets the database provider factory.
         /// </summary>
         public DbProviderFactory Provider { get; }
 
         /// <summary>
-        /// 資料庫連線字串。
+        /// Gets the database connection string.
         /// </summary>
         public string ConnectionString { get; }
     }

@@ -4,16 +4,16 @@ using System.Diagnostics;
 namespace Bee.Db.Logging
 {
     /// <summary>
-    /// 資料庫存取日誌的上下文資訊。
-    /// 用於記錄命令內容、資料庫識別、執行計時與開始時間等資訊。
+    /// Context information for a database access log entry.
+    /// Records the command text, database identifier, execution timer, and start time.
     /// </summary>
     public sealed class DbLogContext
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbLogContext"/>.
         /// </summary>
-        /// <param name="commandText">SQL 命令內容。</param>
-        /// <param name="databaseId">資料庫識別。</param>
+        /// <param name="commandText">The SQL command text.</param>
+        /// <param name="databaseId">The database identifier.</param>
         internal DbLogContext(string commandText, string databaseId)
         {
             CommandText = commandText ?? string.Empty;
@@ -23,22 +23,22 @@ namespace Bee.Db.Logging
         }
 
         /// <summary>
-        /// SQL 命令內容。
+        /// Gets the SQL command text.
         /// </summary>
         public string CommandText { get; }
 
         /// <summary>
-        /// 資料庫識別。
+        /// Gets the database identifier.
         /// </summary>
         public string DatabaseId { get; }
 
         /// <summary>
-        /// 執行計時器，記錄命令執行所花費的時間。
+        /// Gets the stopwatch that records the elapsed time of command execution.
         /// </summary>
         public Stopwatch Stopwatch { get; }
 
         /// <summary>
-        /// 命令開始執行的 UTC 時間。
+        /// Gets the UTC timestamp at which the command started executing.
         /// </summary>
         public DateTime StartedAtUtc { get; }
     }

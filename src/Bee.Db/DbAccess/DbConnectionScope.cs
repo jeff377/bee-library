@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 namespace Bee.Db.DbAccess
 {
     /// <summary>
-    /// 統一管理資料庫連線生命週期的範圍物件。若由本類別建立連線則在 Dispose() 關閉；
-    /// 若使用外部傳入的連線則不關閉，僅確保可用（必要時幫忙開啟）。 
+    /// Manages the lifetime of a database connection within a scoped context.
+    /// If the connection is created by this class, it is closed on Dispose();
+    /// if an external connection is supplied, it is not closed — only opened if necessary.
     /// </summary>
     public sealed class DbConnectionScope : IDisposable
     {
         /// <summary>
-        /// 取得目前使用的資料庫連線。
+        /// Gets the current database connection.
         /// </summary>
         public DbConnection Connection { get; private set; }
 
@@ -26,11 +27,11 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 以同步方式建立連線範圍。
+        /// Creates a connection scope synchronously.
         /// </summary>
-        /// <param name="externalConnection">外部提供的連線；若為 null 則會自行建立。</param>
-        /// <param name="factory">資料庫提供者工廠。</param>
-        /// <param name="connectionString">連線字串（僅在自行建立時使用）。</param>
+        /// <param name="externalConnection">An external connection to reuse; if null, a new connection will be created.</param>
+        /// <param name="factory">The database provider factory.</param>
+        /// <param name="connectionString">The connection string (used only when creating a new connection).</param>
         public static DbConnectionScope Create(DbConnection externalConnection, DbProviderFactory factory, string connectionString)
         {
             if (externalConnection != null)
@@ -49,12 +50,12 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 以非同步方式建立連線範圍。
+        /// Creates a connection scope asynchronously.
         /// </summary>
-        /// <param name="externalConnection">外部提供的連線；若為 null 則會自行建立。</param>
-        /// <param name="factory">資料庫提供者工廠。</param>
-        /// <param name="connectionString">連線字串（僅在自行建立時使用）。</param>
-        /// <param name="cancellationToken">取消權杖。</param>
+        /// <param name="externalConnection">An external connection to reuse; if null, a new connection will be created.</param>
+        /// <param name="factory">The database provider factory.</param>
+        /// <param name="connectionString">The connection string (used only when creating a new connection).</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
         public static async Task<DbConnectionScope> CreateAsync(
             DbConnection externalConnection,
             DbProviderFactory factory,
@@ -77,7 +78,7 @@ namespace Bee.Db.DbAccess
         }
 
         /// <summary>
-        /// 釋放資源。僅當連線為本類別建立時，才會關閉。
+        /// Releases resources. The connection is closed only if it was created by this scope.
         /// </summary>
         public void Dispose()
         {
@@ -90,7 +91,7 @@ namespace Bee.Db.DbAccess
 
         private static void EnsureOpenSync(DbConnection connection)
         {
-            // Broken 視同需重開；Closed 則直接 Open
+            // Treat Broken the same as Closed; re-open if needed
             if (connection.State == ConnectionState.Closed || connection.State == ConnectionState.Broken)
             {
                 connection.Open();

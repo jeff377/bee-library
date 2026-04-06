@@ -1,24 +1,24 @@
 namespace Bee.Db
 {
     /// <summary>
-    /// Join 類型列舉。
+    /// Specifies the type of SQL JOIN operation.
     /// </summary>
     public enum JoinType
     {
         /// <summary>
-        /// 內部連接（Inner Join）。
+        /// Inner join.
         /// </summary>
         Inner,
         /// <summary>
-        /// 左外部連接（Left Outer Join）。
+        /// Left outer join.
         /// </summary>
         Left,
         /// <summary>
-        /// 右外部連接（Right Outer Join）。
+        /// Right outer join.
         /// </summary>
         Right,
         /// <summary>
-        /// 完全外部連接（Full Outer Join）。
+        /// Full outer join.
         /// </summary>
         Full
     }

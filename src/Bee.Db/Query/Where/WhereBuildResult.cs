@@ -3,17 +3,17 @@
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// WHERE 組合結果。
+    /// Represents the result of building a WHERE clause.
     /// </summary>
     public sealed class WhereBuildResult
     {
         /// <summary>
-        /// WHERE 子句字串（可含或不含 "WHERE" 關鍵字）。
+        /// Gets or sets the WHERE clause string (with or without the "WHERE" keyword).
         /// </summary>
         public string WhereClause { get; set; } = string.Empty;
 
         /// <summary>
-        /// 具名參數。
+        /// Gets or sets the named parameters generated for the WHERE clause.
         /// </summary>
         public IDictionary<string, object> Parameters { get; set; } = null;
     }

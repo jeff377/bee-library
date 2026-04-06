@@ -9,28 +9,28 @@ using Bee.Db.DbAccess;
 namespace Bee.Db.Logging
 {
     /// <summary>
-    /// 提供資料庫存取的日誌記錄功能。
-    /// 包含命令執行起始、結束、異常與錯誤的記錄，
-    /// 可用於追蹤 SQL 執行效能、異常行為與錯誤分析。
+    /// Provides logging functionality for database access operations.
+    /// Covers command start, end, anomaly, and error logging,
+    /// useful for tracking SQL performance, anomalies, and error analysis.
     /// </summary>
     public static class DbAccessLogger
     {
         /// <summary>
-        /// 開始記錄。
+        /// Starts logging a database command execution.
         /// </summary>
-        /// <param name="command">資料庫命令描述。</param>
-        /// <param name="databaseId">資料庫識別。</param>
+        /// <param name="command">The database command specification.</param>
+        /// <param name="databaseId">The database identifier.</param>
         public static DbLogContext LogStart(DbCommandSpec command, string databaseId = "")
         {
             return new DbLogContext(command.CommandText, databaseId: databaseId);
         }
 
         /// <summary>
-        /// 結束記錄。
-        /// 停止計時，並根據設定判斷是否需記錄慢查詢或大量異動的警告。
+        /// Ends logging for a database command execution.
+        /// Stops the timer and logs a slow query or large update warning based on configured thresholds.
         /// </summary>
-        /// <param name="context">資料庫存取日誌的上下文資訊。</param>
-        /// <param name="affectedRows">受影響的資料列數，預設為 -1 表示未知。</param>
+        /// <param name="context">The database access log context.</param>
+        /// <param name="affectedRows">The number of rows affected; defaults to -1 (unknown).</param>
         public static void LogEnd(DbLogContext context, int affectedRows = -1)
         {
             if (context == null) throw new ArgumentNullException(nameof(context), "context cannot be null.");
@@ -50,11 +50,11 @@ namespace Bee.Db.Logging
         }
 
         /// <summary>
-        /// 記錄資料庫存取錯誤。
-        /// 停止計時器，並記錄例外資訊、執行時間、資料庫識別與 SQL 命令內容。
+        /// Logs a database access error.
+        /// Stops the timer and records the exception, elapsed time, database identifier, and SQL command text.
         /// </summary>
-        /// <param name="context">資料庫存取日誌的上下文資訊。</param>
-        /// <param name="exception">發生的例外物件。</param>
+        /// <param name="context">The database access log context.</param>
+        /// <param name="exception">The exception that occurred.</param>
         public static void LogError(DbLogContext context, Exception exception)
         {
             if (context == null) throw new ArgumentNullException(nameof(context), "context cannot be null.");
@@ -75,18 +75,18 @@ namespace Bee.Db.Logging
             sb.Append("Message=").Append(exception.Message).Append("; ");
             sb.Append("CommandText=").Append(context.CommandText);
 
-            // 寫入錯誤記錄
+            // Write error log
             // SysInfo.LogWriter?.WriteError(sb.ToString());
         }
 
         /// <summary>
-        /// 寫入異常警告日誌。
+        /// Writes an anomaly warning log entry.
         /// </summary>
-        /// <param name="ctx">資料庫存取日誌的上下文資訊。</param>
-        /// <param name="affectedRows">受影響的資料列數。</param>
-        /// <param name="elapsedSeconds">執行所花費的秒數。</param>
-        /// <param name="isSlow">是否為慢查詢。</param>
-        /// <param name="isLarge">是否為大量異動。</param>
+        /// <param name="ctx">The database access log context.</param>
+        /// <param name="affectedRows">The number of rows affected.</param>
+        /// <param name="elapsedSeconds">The elapsed execution time in seconds.</param>
+        /// <param name="isSlow">Whether the query was considered slow.</param>
+        /// <param name="isLarge">Whether the operation affected a large number of rows.</param>
         private static void WriteWarning(DbLogContext ctx, int affectedRows, double elapsedSeconds, bool isSlow, bool isLarge)
         {
             var sb = new StringBuilder(300);
@@ -101,15 +101,15 @@ namespace Bee.Db.Logging
             if (affectedRows >= 0) sb.Append("Rows=").Append(affectedRows).Append("; ");
             sb.Append("CommandText=").Append(ctx.CommandText);
 
-            // TODO : 寫入錯誤記錄
+            // TODO: Write warning log
             // SysInfo.LogWriter?.WriteError(sb.ToString());
         }
 
         /// <summary>
-        /// 取得資料庫例外的錯誤代碼與錯誤編號（如有）。
+        /// Extracts the error code and error number from a database exception (if available).
         /// </summary>
-        /// <param name="ex">例外物件。</param>
-        /// <returns>Tuple：Item1 為 ErrorCode，Item2 為 Number（如有）。</returns>
+        /// <param name="ex">The exception object.</param>
+        /// <returns>A tuple where Item1 is the ErrorCode and Item2 is the Number (if available).</returns>
         private static Tuple<int?, int?> GetDbErrorInfo(Exception ex)
         {
             int? errorCode = null;

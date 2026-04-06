@@ -3,15 +3,15 @@
 namespace Bee.Db.Query
 {
     /// <summary>
-    /// 定義用於產生 SQL 語法 ORDER BY 子句的介面。
+    /// Defines the interface for building a SQL ORDER BY clause.
     /// </summary>
     public interface ISortBuilder
     {
         /// <summary>
-        /// 根據指定的排序欄位集合，產生 SQL 的 ORDER BY 子句（包含前綴關鍵字）。
+        /// Builds the SQL ORDER BY clause (including the keyword prefix) from the specified sort fields.
         /// </summary>
-        /// <param name="sortFields">排序欄位集合。</param>
-        /// <param name="selectContext">表示 SQL 查詢所需的欄位來源與資料表 Join 關係集合。</param>
+        /// <param name="sortFields">The collection of sort fields.</param>
+        /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
         string Build(SortFieldCollection sortFields, SelectContext selectContext);
     }
 }
