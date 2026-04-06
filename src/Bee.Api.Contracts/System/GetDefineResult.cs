@@ -4,14 +4,14 @@ using MessagePack;
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
-    /// 取得定義資料的傳出結果。
+    /// Output result for retrieving definition data.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public class GetDefineResult : BusinessResult
     {
         /// <summary>
-        /// 定義資料。
+        /// Gets or sets the definition data as an XML string.
         /// </summary>
         [Key(100)]
         public string Xml { get; set; } = string.Empty;

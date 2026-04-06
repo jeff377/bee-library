@@ -3,71 +3,71 @@ using MessagePack;
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
-    /// 單一查詢項目的更新資訊。
+    /// Update information for a single query item.
     /// </summary>
     [MessagePackObject]
     public class PackageUpdateInfo
     {
         /// <summary>
-        /// 對應的應用程式/工具代號。
+        /// Gets or sets the corresponding application or tool identifier.
         /// </summary>
         [Key(0)]
         public string AppId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 對應的元件代號。
+        /// Gets or sets the corresponding component identifier.
         /// </summary>
         [Key(1)]
         public string ComponentId { get; set; } = "Main";
 
         /// <summary>
-        /// 是否有可用更新。
+        /// Gets or sets a value indicating whether an update is available.
         /// </summary>
         [Key(2)]
         public bool UpdateAvailable { get; set; }
 
         /// <summary>
-        /// 最新版本字串（例：1.2.4）。
+        /// Gets or sets the latest version string (e.g., 1.2.4).
         /// </summary>
         [Key(3)]
         public string LatestVersion { get; set; } = string.Empty;
 
         /// <summary>
-        /// 是否為強制更新（true 代表必須升級後才能繼續使用）。
+        /// Gets or sets a value indicating whether the update is mandatory (true means the user must upgrade before continuing).
         /// </summary>
         [Key(4)]
         public bool Mandatory { get; set; }
 
         /// <summary>
-        /// 套件大小（位元組）。
+        /// Gets or sets the package size in bytes.
         /// </summary>
         [Key(5)]
         public long PackageSize { get; set; }
 
         /// <summary>
-        /// 套件檔案的 SHA256（十六進位字串），供下載後完整性驗證。
+        /// Gets or sets the SHA256 hash of the package file (hex string) for post-download integrity verification.
         /// </summary>
         [Key(6)]
         public string Sha256 { get; set; } = string.Empty;
 
         /// <summary>
-        /// 發佈方式（Url / Api）。
+        /// Gets or sets the delivery mode (Url or Api).
         /// </summary>
         [Key(7)]
         public PackageDelivery Delivery { get; set; } = PackageDelivery.Url;
 
         /// <summary>
-        /// 若為 Url 發佈，提供短時效下載連結。
+        /// Gets or sets the short-lived download URL when Delivery is Url.
         /// </summary>
         [Key(8)]
         public string PackageUrl { get; set; } = string.Empty;
 
         /// <summary>
-        /// 版本摘要/釋出說明（可為純文字或 Markdown）。
+        /// Gets or sets the release summary or release notes (plain text or Markdown).
         /// </summary>
         [Key(9)]
         public string ReleaseNotes { get; set; } = string.Empty;
 
-        // 之後新增欄位請從 Key(10) 往後排
+        // Add new fields starting from Key(10)
     }
 }

@@ -1,16 +1,16 @@
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
-    /// 套件發佈方式。序列化時以整數值表示（0/1），請勿變更既有成員的數值。
+    /// Package delivery mode. Serialized as integer values (0/1); do not change the numeric values of existing members.
     /// </summary>
     public enum PackageDelivery : int
     {
         /// <summary>
-        /// 回傳短時效 URL 供直接下載（建議用於大檔）。
+        /// Returns a short-lived URL for direct download (recommended for large files).
         /// </summary>
         Url = 0,
         /// <summary>
-        /// 由 API 直接傳回位元組內容（小檔或內部環境）。
+        /// Returns the file content as bytes directly via the API (suitable for small files or internal environments).
         /// </summary>
         Api = 1
     }

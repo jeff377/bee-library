@@ -4,21 +4,21 @@ using MessagePack;
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
-    /// 建立連線的傳出結果。
+    /// Output result for creating a user session.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public class CreateSessionResult : BusinessResult
     {
         /// <summary>
-        /// 存取令牌（AccessToken），後續呼叫 API 用於身份驗證。
+        /// Gets or sets the access token used for authenticating subsequent API calls.
         /// </summary>
         [Key(100)]
         public Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 建立連線成功後 AccessToken 的有效期限（UTC 時間）。
-        /// 用戶端應在此時間之前完成所有受保護的 API 呼叫。
+        /// Gets or sets the expiration time of the AccessToken in UTC.
+        /// The client should complete all protected API calls before this time.
         /// </summary>
         [Key(101)]
         public DateTime ExpiredAt { get; set; }

@@ -5,20 +5,20 @@ using MessagePack;
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
-    /// 取得定義資料的傳入引數。
+    /// Input arguments for retrieving definition data.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public class GetDefineArgs : BusinessArgs
     {
         /// <summary>
-        /// 定義資料類型。
+        /// Gets or sets the definition data type.
         /// </summary>
         [Key(100)]
         public DefineType DefineType { get; set; }
 
         /// <summary>
-        /// 取得定義資料的鍵值。
+        /// Gets or sets the keys used to locate the definition data.
         /// </summary>
         [Key(101)]
         public string[] Keys { get; set; } = null;

@@ -4,20 +4,20 @@ using MessagePack;
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
-    /// Ping 方法的傳入引數。
+    /// Input arguments for the Ping method.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public class PingArgs : BusinessArgs
     {
         /// <summary>
-        /// 用戶端識別名稱，可選。
+        /// Gets or sets the client identifier name (optional).
         /// </summary>
         [Key(100)]
         public string ClientName { get; set; }
 
         /// <summary>
-        /// 呼叫追蹤 ID，可選。
+        /// Gets or sets the call trace ID (optional).
         /// </summary>
         [Key(101)]
         public string TraceId { get; set; }

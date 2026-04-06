@@ -4,32 +4,32 @@ using MessagePack;
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
-    /// Ping 方法的傳回結果。
+    /// Output result for the Ping method.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public class PingResult : BusinessResult
     {
         /// <summary>
-        /// 狀態，通常為 "ok" 或 "pong"。
+        /// Gets or sets the status, typically "ok" or "pong".
         /// </summary>
         [Key(100)]
         public string Status { get; set; } = "ok";
 
         /// <summary>
-        /// 伺服器當下的 UTC 時間。
+        /// Gets or sets the current server UTC time.
         /// </summary>
         [Key(101)]
         public DateTime ServerTime { get; set; } = DateTime.UtcNow;
 
         /// <summary>
-        /// 可選的版本資訊。
+        /// Gets or sets the optional version information.
         /// </summary>
         [Key(102)]
         public string Version { get; set; }
 
         /// <summary>
-        /// 回傳追蹤 ID（如有）。
+        /// Gets or sets the echoed trace ID (if provided).
         /// </summary>
         [Key(103)]
         public string TraceId { get; set; }

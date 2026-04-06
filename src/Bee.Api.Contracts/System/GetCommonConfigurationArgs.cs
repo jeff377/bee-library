@@ -4,7 +4,7 @@ using MessagePack;
 namespace Bee.Api.Contracts.System
 {
     /// <summary>
-    /// 取得通用參數及環境設置的傳入引數。
+    /// Input arguments for retrieving common parameters and environment configuration.
     /// </summary>
     [MessagePackObject]
     [Serializable]

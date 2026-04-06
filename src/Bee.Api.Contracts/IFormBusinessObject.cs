@@ -1,7 +1,7 @@
 namespace Bee.Api.Contracts
 {
     /// <summary>
-    /// 表單層級業務邏輯物件介面。
+    /// Interface for form-level business logic objects.
     /// </summary>
     public interface IFormBusinessObject : IBusinessObject
     {

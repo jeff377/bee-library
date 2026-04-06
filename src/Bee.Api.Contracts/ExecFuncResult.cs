@@ -4,7 +4,7 @@ using MessagePack;
 namespace Bee.Api.Contracts
 {
     /// <summary>
-    /// 執行自訂方法的傳出結果。
+    /// Output result for executing a custom method.
     /// </summary>
     [MessagePackObject]
     [Serializable]

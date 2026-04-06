@@ -4,7 +4,7 @@ using MessagePack;
 namespace Bee.Api.Contracts
 {
     /// <summary>
-    /// 執行自訂方法的傳入引數。
+    /// Input arguments for executing a custom method.
     /// </summary>
     [MessagePackObject]
     [Serializable]
@@ -13,15 +13,15 @@ namespace Bee.Api.Contracts
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="ExecFuncArgs"/> class.
         /// </summary>
         public ExecFuncArgs()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="ExecFuncArgs"/> class with the specified function identifier.
         /// </summary>
-        /// <param name="funcID">自訂方法識別編號。</param>
+        /// <param name="funcID">The custom method identifier.</param>
         public ExecFuncArgs(string funcID)
         {
             FuncId = funcID;
@@ -30,7 +30,7 @@ namespace Bee.Api.Contracts
         #endregion
 
         /// <summary>
-        /// 自訂方法識別編號。
+        /// Gets or sets the custom method identifier.
         /// </summary>
         [Key(100)]
         public string FuncId { get; set; } = string.Empty;

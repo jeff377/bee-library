@@ -3,26 +3,26 @@ using Bee.Api.Contracts.System;
 namespace Bee.Api.Contracts
 {
     /// <summary>
-    /// 系統層級業務邏輯物件介面。
+    /// Interface for system-level business logic objects.
     /// </summary>
     public interface ISystemBusinessObject : IBusinessObject
     {
         /// <summary>
-        /// 建立連線。
+        /// Creates a new user session.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         CreateSessionResult CreateSession(CreateSessionArgs args);
 
         /// <summary>
-        /// 取得定義資料。
+        /// Gets definition data.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         GetDefineResult GetDefine(GetDefineArgs args);
 
         /// <summary>
-        /// 儲存定義資料。
+        /// Saves definition data.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         SaveDefineResult SaveDefine(SaveDefineArgs args);
     }
 }

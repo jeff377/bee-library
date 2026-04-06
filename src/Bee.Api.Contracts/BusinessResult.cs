@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 namespace Bee.Api.Contracts
 {
     /// <summary>
-    /// 業務邏輯物件方法傳出結果基底類別。
+    /// Base class for output results of business logic object methods.
     /// </summary>
     [Serializable]
     public abstract class BusinessResult : IObjectSerialize
@@ -19,15 +19,15 @@ namespace Bee.Api.Contracts
         #region IObjectSerialize 介面
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [JsonIgnore, IgnoreMember]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -37,14 +37,14 @@ namespace Bee.Api.Contracts
         #endregion
 
         /// <summary>
-        /// 傳出參數集合。
+        /// Gets or sets the output parameter collection.
         /// </summary>
         [Key(0)]
         public ParameterCollection Parameters
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null when the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _parameters)) { return null; }
                 if (_parameters == null) { _parameters = new ParameterCollection(); }
                 return _parameters;

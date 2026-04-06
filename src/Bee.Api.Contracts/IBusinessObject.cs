@@ -1,20 +1,20 @@
 namespace Bee.Api.Contracts
 {
     /// <summary>
-    /// 業務邏輯物件基底介面。
+    /// Base interface for business logic objects.
     /// </summary>
     public interface IBusinessObject
     {
         /// <summary>
-        /// 執行自訂方法，開放方法，要求登入。
+        /// Executes a custom method; requires authentication.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         ExecFuncResult ExecFunc(ExecFuncArgs args);
 
         /// <summary>
-        /// 執行自訂方法，開放方法，匿名存取。
+        /// Executes a custom method; allows anonymous access.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         ExecFuncResult ExecFuncAnonymous(ExecFuncArgs args);
     }
 }
