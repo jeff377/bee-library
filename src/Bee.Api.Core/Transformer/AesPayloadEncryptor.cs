@@ -4,41 +4,41 @@ using Bee.Base.Security;
 namespace Bee.Api.Core.Transformer
 {
     /// <summary>
-    /// 使用 AES 的 API 傳輸層資料加密器。
+    /// AES-based API transport layer data encryptor.
     /// </summary>
     public class AesPayloadEncryptor : IApiPayloadEncryptor
     {
         /// <summary>
-        /// 加密演算法的識別字串。
+        /// Gets the identifier string for the encryption algorithm.
         /// </summary>
         public string EncryptionMethod => "aes-cbc-hmac";
 
         /// <summary>
-        /// 將加密過的位元組資料還原為原始資料。
+        /// Encrypts the specified byte data.
         /// </summary>
-        /// <param name="bytes">加密後的位元組資料。</param>
-        /// <param name="encryptionKey">加密金鑰。</param>
-        /// <returns>解密後的位元組資料。</returns>
+        /// <param name="bytes">The raw byte data to encrypt.</param>
+        /// <param name="encryptionKey">The encryption key.</param>
+        /// <returns>The encrypted byte data.</returns>
         public byte[] Encrypt(byte[] bytes, byte[] encryptionKey)
         {
-            // 如果沒有提供加密金鑰組，則直接返回原始位元組資料
+            // If no encryption key is provided, return the original byte data unchanged
             if (encryptionKey == null || encryptionKey.Length == 0) { return bytes; }
-            // 進行 AES-CBC 加密
+            // Perform AES-CBC encryption
             AesCbcHmacKeyGenerator.FromCombinedKey(encryptionKey, out var aesKey, out var hmacKey);
             return AesCbcHmacCryptor.Encrypt(bytes, aesKey, hmacKey);
         }
 
         /// <summary>
-        /// 將原始位元組資料進行加密處理。
+        /// Decrypts the specified encrypted byte data back to its original form.
         /// </summary>
-        /// <param name="bytes">原始位元組資料。</param>
-        /// <param name="encryptionKey">加密金鑰。</param> 
-        /// <returns>加密後的位元組資料。</returns>
+        /// <param name="bytes">The encrypted byte data.</param>
+        /// <param name="encryptionKey">The encryption key.</param>
+        /// <returns>The decrypted byte data.</returns>
         public byte[] Decrypt(byte[] bytes, byte[] encryptionKey)
         {
-            // 如果沒有提供加密金鑰組，則直接返回原始位元組資料
+            // If no encryption key is provided, return the original byte data unchanged
             if (encryptionKey == null || encryptionKey.Length == 0) { return bytes; }
-            // 進行 AES-CBC 解密
+            // Perform AES-CBC decryption
             AesCbcHmacKeyGenerator.FromCombinedKey(encryptionKey, out var aesKey, out var hmacKey);
             return AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
         }

@@ -6,31 +6,31 @@ using MessagePack;
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
-    /// 可序列化的 DataSet 物件，用於支援跨平台傳輸與儲存。
+    /// Serializable DataSet object used to support cross-platform transmission and storage.
     /// </summary>
     [MessagePackObject]
     public class SerializableDataSet
     {
         /// <summary>
-        /// 資料集名稱。
+        /// Gets or sets the dataset name.
         /// </summary>
         [Key(0)]
         public string DataSetName { get; set; }
 
         /// <summary>
-        /// 所有的資料表集合。
+        /// Gets or sets the collection of all tables.
         /// </summary>
         [Key(1)]
         public List<SerializableDataTable> Tables { get; set; }
 
         /// <summary>
-        /// 資料表之間的關聯定義集合。
+        /// Gets or sets the collection of relation definitions between tables.
         /// </summary>
         [Key(2)]
         public List<SerializableDataRelation> Relations { get; set; }
 
         /// <summary>
-        /// 建構函式，初始化集合。
+        /// Initializes a new instance of the <see cref="SerializableDataSet"/> class and initializes the collections.
         /// </summary>
         public SerializableDataSet()
         {
@@ -39,10 +39,10 @@ namespace Bee.Api.Core.MessagePack
         }
 
         /// <summary>
-        /// 將標準 DataSet 轉換為可序列化物件。
+        /// Converts a standard DataSet to a serializable object.
         /// </summary>
-        /// <param name="ds">來源 DataSet。</param>
-        /// <returns>可序列化的資料集物件。</returns>
+        /// <param name="ds">The source DataSet.</param>
+        /// <returns>The serializable dataset object.</returns>
         public static SerializableDataSet FromDataSet(DataSet ds)
         {
             var sds = new SerializableDataSet
@@ -69,10 +69,10 @@ namespace Bee.Api.Core.MessagePack
         }
 
         /// <summary>
-        /// 將可序列化資料集還原為標準 DataSet。
+        /// Restores a serializable dataset back to a standard DataSet.
         /// </summary>
-        /// <param name="sds">可序列化的資料集。</param>
-        /// <returns>還原後的標準 DataSet。</returns>
+        /// <param name="sds">The serializable dataset.</param>
+        /// <returns>The restored standard DataSet.</returns>
         public static DataSet ToDataSet(SerializableDataSet sds)
         {
             var ds = new DataSet(sds.DataSetName);

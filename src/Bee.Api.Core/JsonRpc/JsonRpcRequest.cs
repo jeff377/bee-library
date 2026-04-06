@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// JSON-RPC 請求模型。 
+    /// JSON-RPC request model.
     /// </summary>
     [Serializable]
     public class JsonRpcRequest : IObjectSerialize
@@ -14,7 +14,7 @@ namespace Bee.Api.Core.JsonRpc
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="JsonRpcRequest"/> class.
         /// </summary>
         public JsonRpcRequest()
         { }
@@ -24,15 +24,15 @@ namespace Bee.Api.Core.JsonRpc
         #region IObjectSerialize 介面
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [JsonIgnore]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -42,25 +42,25 @@ namespace Bee.Api.Core.JsonRpc
         #endregion
 
         /// <summary>
-        /// 指定 JSON-RPC 的版本。
+        /// Gets or sets the JSON-RPC version.
         /// </summary>
         [JsonProperty("jsonrpc", NullValueHandling = NullValueHandling.Include)]
         public string Jsonrpc { get; set; } = "2.0";
 
         /// <summary>
-        /// 要呼叫的方法名稱。
+        /// Gets or sets the name of the method to invoke.
         /// </summary>
         [JsonProperty("method", NullValueHandling = NullValueHandling.Include)]
         public string Method { get; set; }
 
         /// <summary>
-        /// 方法的引數。
+        /// Gets or sets the method parameters.
         /// </summary>
         [JsonProperty("params")]
         public JsonRpcParams Params { get; set; } = new JsonRpcParams();
 
         /// <summary>
-        /// 請求的唯一識別碼。
+        /// Gets or sets the unique identifier for the request.
         /// </summary>
         [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
         public string Id { get; set; }

@@ -9,15 +9,15 @@ using Bee.Api.Core;
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// JSON-RPC 請求執行器。
+    /// JSON-RPC request executor.
     /// </summary>
     public class JsonRpcExecutor
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="JsonRpcExecutor"/> class.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="isLocalCall">Indicates whether the call originates from a local source.</param>
         public JsonRpcExecutor(Guid accessToken, bool isLocalCall = false)
         {
             AccessToken = accessToken;
@@ -25,58 +25,58 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// 存取令牌，用於識別目前使用者或工作階段。
+        /// Gets or sets the access token used to identify the current user or session.
         /// </summary>
         public Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 呼叫是否為近端來源（例如與伺服器同一進程或主機）。
+        /// Gets or sets a value indicating whether the call originates from a local source (e.g., the same process or host as the server).
         /// </summary>
         public bool IsLocalCall { get; set; } = false;
 
         /// <summary>
-        /// 執行 API 方法。
+        /// Executes an API method.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         public JsonRpcResponse Execute(JsonRpcRequest request)
         {
             return ExecuteAsyncCore(request).GetAwaiter().GetResult();
         }
 
         /// <summary>
-        /// 非同步執行 API 方法。
+        /// Asynchronously executes an API method.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         public Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request)
         {
             return ExecuteAsyncCore(request);
         }
 
         /// <summary>
-        /// 內部非同步執行核心邏輯。
+        /// Internal asynchronous execution core logic.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         private async Task<JsonRpcResponse> ExecuteAsyncCore(JsonRpcRequest request)
         {
             var ctx = Tracer.Start(TraceLayer.ApiServer, string.Empty, request.Method);
             var response = new JsonRpcResponse(request);
             try
             {
-                // 傳輸資料格式
+                // Payload transmission format
                 var format = request.Params.Format;
-                // 取得 API 加密金鑰
+                // Get the API encryption key
                 byte[] apiEncryptionKey = GetApiEncryptionKey(format);
-                // 還原請求資料內容
+                // Restore the request payload content
                 ApiPayloadConverter.RestoreFrom(request.Params, format, apiEncryptionKey);
 
-                // 從 Method 屬性解析出 ProgId 與 Action
+                // Parse the ProgId and Action from the Method property
                 var (progId, action) = ParseMethod(request.Method);
-                // 建立業務邏輯物件，執行指定方法
+                // Create the business object and invoke the specified method
                 var value = await ExecuteMethodAsync(progId, action, request.Params.Value, format);
 
-                // 傳出結果
+                // Return the result
                 response.Result = new JsonRpcResult { Value = value };
-                // 設定回應的資料格式
+                // Set the response payload format
                 ApiPayloadConverter.TransformTo(response.Result, format, apiEncryptionKey);
                 Tracer.End(ctx);
             }
@@ -91,9 +91,9 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// 取得 API 加密金鑰。
+        /// Gets the API encryption key.
         /// </summary>
-        /// <param name="format">傳輸資料的封裝格式。</param>
+        /// <param name="format">The payload encoding format for transmission.</param>
         private byte[] GetApiEncryptionKey(PayloadFormat format)
         {
             return format == PayloadFormat.Encrypted
@@ -102,9 +102,9 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// 從 Method 屬性解析出 progId 與 Action。
+        /// Parses the progId and action from the Method property.
         /// </summary>
-        /// <returns>Tuple，包含 progId 與 Action。若格式錯誤則回傳空字串。</returns>
+        /// <returns>A tuple containing the progId and action. Throws if the format is invalid.</returns>
         private (string progId, string action) ParseMethod(string method)
         {
             if (!string.IsNullOrEmpty(method))
@@ -119,31 +119,31 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// 建立業務邏輯物件，非同步執行指定方法。
+        /// Creates the business object and asynchronously executes the specified method.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="action">執行動作。</param>
-        /// <param name="value">執行動作的傳入引數。</param>
-        /// <param name="format">傳輸資料的封裝格式。</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="action">The action to execute.</param>
+        /// <param name="value">The input argument for the action.</param>
+        /// <param name="format">The payload encoding format for transmission.</param>
         private async Task<object> ExecuteMethodAsync(string progId, string action, object value, PayloadFormat format)
         {
-            // 建立指定 progId 的業務邏輯物件實例
+            // Create an instance of the business object for the specified progId
             var businessObject = CreateBusinessObject(AccessToken, progId);
             var method = businessObject.GetType().GetMethod(action);
             if (method == null)
                 throw new MissingMethodException($"Method '{action}' not found in business object '{progId}'.");
 
-            // 存取驗證
+            // Access validation
             ApiAccessValidator.ValidateAccess(method, new ApiCallContext(AccessToken, IsLocalCall, format));
 
             var result = method.Invoke(businessObject, new object[] { value });
 
-            // 若方法為非同步方法（Task 或 Task<T>），則進行 await
+            // If the method is asynchronous (Task or Task<T>), await it
             if (result is Task task)
             {
-                // 等待該非同步任務完成，（避免死鎖，在後端環境推薦使用）
+                // Await the asynchronous task to completion (ConfigureAwait(false) recommended in server-side environments to avoid deadlocks)
                 await task.ConfigureAwait(false);
-                // 若為 Task<T> 則取出 Result；否則為 Task (void)，回傳 null
+                // If it is Task<T>, extract the Result; otherwise it is Task (void) and returns null
                 var taskType = task.GetType();
                 var isGeneric = taskType.IsGenericType && taskType.GetGenericTypeDefinition() == typeof(Task<>);
                 return isGeneric
@@ -155,11 +155,11 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// 建立指定 progId 的業務邏輯物件實例。
+        /// Creates an instance of the business object for the specified progId.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="progId">程式代碼。</param>
-        /// <returns>業務邏輯物件實例。</returns>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <returns>The business object instance.</returns>
         private object CreateBusinessObject(Guid accessToken, string progId)
         {
             if (string.IsNullOrWhiteSpace(progId))

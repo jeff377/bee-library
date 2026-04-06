@@ -8,20 +8,20 @@ using MessagePack.Formatters;
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
-    /// 用於序列化與反序列化繼承自 <see cref="MessagePackCollectionBase{T}"/> 的強型別集合格式化器。
+    /// MessagePack formatter for serializing and deserializing strongly-typed collections that inherit from <see cref="MessagePackCollectionBase{T}"/>.
     /// </summary>
-    /// <typeparam name="TCollection">具體集合型別，需繼承自 <see cref="MessagePackCollectionBase{TElement}"/>，且具備無參數建構式。</typeparam>
-    /// <typeparam name="TElement">集合成員型別。</typeparam>
+    /// <typeparam name="TCollection">The concrete collection type, which must inherit from <see cref="MessagePackCollectionBase{TElement}"/> and have a parameterless constructor.</typeparam>
+    /// <typeparam name="TElement">The type of items in the collection.</typeparam>
     internal class CollectionBaseFormatter<TCollection, TElement> : IMessagePackFormatter<TCollection>
         where TCollection : MessagePackCollectionBase<TElement>, new()
         where TElement : class, ICollectionItem
     {
         /// <summary>
-        /// 將集合物件序列化為 MessagePack 格式資料。
+        /// Serializes the collection object to MessagePack format.
         /// </summary>
-        /// <param name="writer">MessagePack 寫入器。</param>
-        /// <param name="value">要序列化的集合。</param>
-        /// <param name="options">序列化選項。</param>
+        /// <param name="writer">The MessagePack writer.</param>
+        /// <param name="value">The collection to serialize.</param>
+        /// <param name="options">The serialization options.</param>
         public void Serialize(ref MessagePackWriter writer, TCollection value, MessagePackSerializerOptions options)
         {
             writer.WriteArrayHeader(value.Count);
@@ -33,11 +33,11 @@ namespace Bee.Api.Core.MessagePack
         }
 
         /// <summary>
-        /// 將 MessagePack 格式資料反序列化為集合物件。
+        /// Deserializes MessagePack format data into a collection object.
         /// </summary>
-        /// <param name="reader">MessagePack 讀取器。</param>
-        /// <param name="options">反序列化選項。</param>
-        /// <returns>反序列化後的集合物件。</returns>
+        /// <param name="reader">The MessagePack reader.</param>
+        /// <param name="options">The deserialization options.</param>
+        /// <returns>The deserialized collection object.</returns>
         public TCollection Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             var count = reader.ReadArrayHeader();

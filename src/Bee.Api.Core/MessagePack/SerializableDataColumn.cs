@@ -3,49 +3,49 @@
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
-    /// 可序列化的資料欄位定義，用於描述 DataColumn 屬性。
+    /// Serializable column definition used to describe DataColumn properties.
     /// </summary>
     [MessagePackObject]
     public class SerializableDataColumn
     {
         /// <summary>
-        /// 欄位名稱。
+        /// Gets or sets the column name.
         /// </summary>
         [Key(0)]
         public string ColumnName { get; set; }
 
         /// <summary>
-        /// 資料型別（AssemblyQualifiedName）。
+        /// Gets or sets the data type (AssemblyQualifiedName).
         /// </summary>
         [Key(1)]
         public string DataType { get; set; }
 
         /// <summary>
-        /// 顯示名稱（Caption）。
+        /// Gets or sets the display name (Caption).
         /// </summary>
         [Key(2)]
         public string DisplayName { get; set; }
 
         /// <summary>
-        /// 是否允許 NULL 值。
+        /// Gets or sets a value indicating whether null values are allowed.
         /// </summary>
         [Key(3)]
         public bool AllowDBNull { get; set; }
 
         /// <summary>
-        /// 是否為唯讀欄位。
+        /// Gets or sets a value indicating whether the column is read-only.
         /// </summary>
         [Key(4)]
         public bool ReadOnly { get; set; }
 
         /// <summary>
-        /// 最大長度（僅對字串型別有效）。
+        /// Gets or sets the maximum column length (applicable to string types only).
         /// </summary>
         [Key(5)]
         public int MaxLength { get; set; }
 
         /// <summary>
-        /// 預設值。
+        /// Gets or sets the default value.
         /// </summary>
         [Key(6)]
         public object DefaultValue { get; set; }

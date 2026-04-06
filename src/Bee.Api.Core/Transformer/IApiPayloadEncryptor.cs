@@ -1,30 +1,30 @@
 namespace Bee.Api.Core.Transformer
 {
     /// <summary>
-    /// API 傳輸層資料加解密策略介面。
-    /// 提供位元組資料的加密與解密功能，用以保護傳輸過程中的資料安全。
+    /// Interface for the API transport layer data encryption and decryption strategy.
+    /// Provides byte data encryption and decryption to protect data security during transmission.
     /// </summary>
     public interface IApiPayloadEncryptor
     {
         /// <summary>
-        /// 加密演算法的識別字串，例如 "aes"、"rsa"。
+        /// Gets the identifier string for the encryption algorithm, e.g., "aes" or "rsa".
         /// </summary>
         string EncryptionMethod { get; }
 
         /// <summary>
-        /// 將原始位元組資料進行加密處理。
+        /// Encrypts the specified raw byte data.
         /// </summary>
-        /// <param name="bytes">原始位元組資料。</param>
-        /// <param name="encryptionKey">加密金鑰。</param>
-        /// <returns>加密後的位元組資料。</returns>
+        /// <param name="bytes">The raw byte data.</param>
+        /// <param name="encryptionKey">The encryption key.</param>
+        /// <returns>The encrypted byte data.</returns>
         byte[] Encrypt(byte[] bytes, byte[] encryptionKey);
 
         /// <summary>
-        /// 將加密過的位元組資料還原為原始資料。
+        /// Decrypts the specified encrypted byte data back to its original form.
         /// </summary>
-        /// <param name="bytes">加密後的位元組資料。</param>
-        /// <param name="encryptionKey">加密金鑰。</param>
-        /// <returns>解密後的位元組資料。</returns>
+        /// <param name="bytes">The encrypted byte data.</param>
+        /// <param name="encryptionKey">The encryption key.</param>
+        /// <returns>The decrypted byte data.</returns>
         byte[] Decrypt(byte[] bytes, byte[] encryptionKey);
     }
 }

@@ -5,12 +5,12 @@ using Bee.Api.Core.JsonRpc;
 namespace Bee.Api.Core.Authorization
 {
     /// <summary>
-    /// 提供預設的 API 金鑰與授權驗證邏輯。
+    /// Provides default API key and authorization validation logic.
     /// </summary>
     public class ApiAuthorizationValidator : IApiAuthorizationValidator
     {
         /// <summary>
-        /// 不需授權的方法清單（大小寫敏感）。
+        /// The set of methods that do not require authorization (case-sensitive).
         /// </summary>
         private static readonly HashSet<string> NoAuthMethods = new HashSet<string>
         {
@@ -20,60 +20,60 @@ namespace Bee.Api.Core.Authorization
         };
 
         /// <summary>
-        /// 判斷指定的 JSON-RPC 方法是否需要授權。
+        /// Determines whether the specified JSON-RPC method requires authorization.
         /// </summary>
-        /// <param name="method">JSON-RPC 方法名稱（大小寫敏感）。</param>
-        /// <returns>需要授權則回傳 true，否則 false。</returns>
+        /// <param name="method">The JSON-RPC method name (case-sensitive).</param>
+        /// <returns><c>true</c> if authorization is required; otherwise, <c>false</c>.</returns>
         protected virtual bool IsAuthorizationRequired(string method)
         {
             return !NoAuthMethods.Contains(method);
         }
 
         /// <summary>
-        /// 驗證 API 金鑰與授權資訊。
+        /// Validates the API key and authorization information.
         /// </summary>
-        /// <param name="context">API 授權驗證上下文。</param>
-        /// <returns>授權驗證結果。</returns>
+        /// <param name="context">The API authorization validation context.</param>
+        /// <returns>The authorization validation result.</returns>
         public ApiAuthorizationResult Validate(ApiAuthorizationContext context)
         {
-            // 驗證輸入參數是否為 null
+            // Validate that the input context is not null
             if (context == null)
             {
                 return ApiAuthorizationResult.Fail(JsonRpcErrorCode.InvalidRequest, "Invalid authorization context.");
             }
 
-            // 驗證是否有 API 金鑰
+            // Validate that an API key is present
             if (string.IsNullOrWhiteSpace(context.ApiKey))
             {
                 return ApiAuthorizationResult.Fail(JsonRpcErrorCode.InvalidRequest, "Missing or invalid API key.");
             }
 
-            // 若為免授權的方法，直接回傳成功且不附帶 access token
+            // For methods that do not require authorization, return success without an access token
             if (!IsAuthorizationRequired(context.Method))
             {
                 return ApiAuthorizationResult.Success(Guid.Empty);
             }
 
-            // 需授權的方法，檢查 Authorization 標頭
+            // For methods requiring authorization, validate the Authorization header
             if (string.IsNullOrWhiteSpace(context.Authorization))
             {
                 return ApiAuthorizationResult.Fail(JsonRpcErrorCode.InvalidRequest, "Missing Authorization header.");
             }
 
-            // 確認 Authorization 格式為 Bearer Token
+            // Verify that the Authorization header uses the Bearer token format
             if (!context.Authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
                 return ApiAuthorizationResult.Fail(JsonRpcErrorCode.InvalidRequest, "Invalid Authorization format. Expected 'Bearer <token>'.");
             }
 
-            // 解析 Bearer Token，並驗證為有效的 Guid
+            // Parse the Bearer token and validate it as a valid Guid
             var tokenPart = context.Authorization.Substring("Bearer ".Length).Trim();
             if (!Guid.TryParse(tokenPart, out var accessToken))
             {
                 return ApiAuthorizationResult.Fail(JsonRpcErrorCode.InvalidRequest, "Invalid access token.");
             }
 
-            // 此處可擴充驗證邏輯，例如存取資料庫確認 access token 是否有效
+            // Additional validation logic can be added here, such as checking the access token against the database
             return ApiAuthorizationResult.Success(accessToken);
         }
     }

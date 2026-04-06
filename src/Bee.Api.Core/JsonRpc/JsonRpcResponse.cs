@@ -5,26 +5,26 @@ using Newtonsoft.Json;
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// JSON-RPC 回應模型。 
+    /// JSON-RPC response model.
     /// </summary>
     public class JsonRpcResponse : IObjectSerialize
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="JsonRpcResponse"/> class.
         /// </summary>
         public JsonRpcResponse()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="JsonRpcResponse"/> class based on the specified request.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         public JsonRpcResponse(JsonRpcRequest request)
         {
-            Method = request.Method; // 回傳呼叫方法
-            Id = request.Id;  // 設定請求的唯一識別碼            
+            Method = request.Method; // Echo back the invoked method name
+            Id = request.Id;  // Set the unique identifier from the request
         }
 
         #endregion
@@ -32,15 +32,15 @@ namespace Bee.Api.Core.JsonRpc
         #region IObjectSerialize 介面
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [JsonIgnore]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -50,31 +50,31 @@ namespace Bee.Api.Core.JsonRpc
         #endregion
 
         /// <summary>
-        /// 指定 JSON-RPC 的版本。
+        /// Gets or sets the JSON-RPC version.
         /// </summary>
         [JsonProperty("jsonrpc", NullValueHandling = NullValueHandling.Include)]
         public string Jsonrpc { get; set; } = "2.0";
 
         /// <summary>
-        /// 要呼叫的方法名稱。
+        /// Gets or sets the name of the invoked method.
         /// </summary>
         [JsonProperty("method", NullValueHandling = NullValueHandling.Include)]
         public string Method { get; set; }
 
         /// <summary>
-        /// 方法執行的結果。
+        /// Gets or sets the method execution result.
         /// </summary>
         [JsonProperty("result")]
         public JsonRpcResult Result { get; set; }
 
         /// <summary>
-        /// 錯誤訊息。
+        /// Gets or sets the error information.
         /// </summary>
         [JsonProperty("error")]
         public JsonRpcError Error { get; set; }
 
         /// <summary>
-        /// 請求的唯一識別碼。
+        /// Gets or sets the unique identifier for the request.
         /// </summary>
         [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
         public string Id { get; set; }

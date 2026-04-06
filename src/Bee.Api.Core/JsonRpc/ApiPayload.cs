@@ -8,22 +8,22 @@ using Bee.Api.Core;
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// 表示 API 傳遞的標準資料結構，支援序列化、壓縮與加密處理。
+    /// Represents the standard API data structure, supporting serialization, compression, and encryption.
     /// </summary>
     public abstract class ApiPayload : IObjectSerialize
     {
         #region IObjectSerialize 介面
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [JsonIgnore]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -36,19 +36,19 @@ namespace Bee.Api.Core.JsonRpc
         #endregion
 
         /// <summary>
-        /// 傳遞資料的格式（原始、編碼或加密）。
+        /// Gets or sets the payload format (plain, encoded, or encrypted).
         /// </summary>
         [JsonProperty("format")]
         public PayloadFormat Format { get; internal set; } = PayloadFormat.Plain;
 
         /// <summary>
-        /// 傳遞資料。
+        /// Gets or sets the payload value.
         /// </summary>
         [JsonProperty("value")]
         public object Value { get; set; }
 
         /// <summary>
-        /// 傳遞資料的型別名稱，用於反序列化還原時指定型別。
+        /// Gets or sets the type name of the payload value, used to specify the target type during deserialization.
         /// </summary>
         [JsonProperty("type")]
         [DefaultValue("")]

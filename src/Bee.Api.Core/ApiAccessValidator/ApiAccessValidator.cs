@@ -5,16 +5,17 @@ using Bee.Define;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 提供 API 方法的存取驗證邏輯，支援繼承基底方法的存取條件。
+    /// Provides access validation logic for API methods, supporting access conditions inherited from base method definitions.
     /// </summary>
     public static class ApiAccessValidator
     {
         /// <summary>
-        /// 驗證指定方法是否符合存取條件（近端、編碼、加密），若不符合則擲出例外。
-        /// 若方法未標記 <see cref="ApiAccessControlAttribute"/> 則視為不限制。
+        /// Validates whether the specified method satisfies the access conditions (local, encoded, encrypted),
+        /// and throws an exception if the conditions are not met.
+        /// If the method is not marked with <see cref="ApiAccessControlAttribute"/>, access is treated as unrestricted.
         /// </summary>
-        /// <param name="method">要驗證的 API 方法</param>
-        /// <param name="context">目前的 API 呼叫上下文</param>
+        /// <param name="method">The API method to validate.</param>
+        /// <param name="context">The current API call context.</param>
         public static void ValidateAccess(MethodInfo method, ApiCallContext context)
         {
             var attr = FindAccessAttribute(method);
@@ -24,14 +25,14 @@ namespace Bee.Api.Core
                     $"API method '{method.DeclaringType?.FullName}.{method.Name}' is not accessible without {nameof(ApiAccessControlAttribute)}.");
             }
 
-            // 近端呼叫允許所有保護等級
+            // Local calls are allowed regardless of protection level
             if (context.IsLocalCall)
                 return;
 
-            // 驗證是否需要 AccessToken
+            // Check whether an AccessToken is required
             if (attr.AccessRequirement == ApiAccessRequirement.Authenticated)
             {
-                // 驗證 AccessToken 是否有效
+                // Validate the AccessToken
                 if (!IsTokenValid(context.AccessToken))
                     throw new UnauthorizedAccessException("AccessToken is required or invalid.");
             }
@@ -39,11 +40,11 @@ namespace Bee.Api.Core
             if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly && !context.IsLocalCall)
                 throw new UnauthorizedAccessException("This API is restricted to local calls only.");
 
-            // 依照呼叫端的 Format 判斷是否符合存取等級
+            // Validate the access level based on the caller's payload format
             switch (context.Format)
             {
                 case PayloadFormat.Encrypted:
-                    // 可呼叫任何非 LocalOnly API
+                    // Encrypted calls may invoke any non-LocalOnly API
                     return;
 
                 case PayloadFormat.Encoded:
@@ -60,10 +61,10 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 嘗試從方法或其基底定義中取得 <see cref="ApiAccessControlAttribute"/>。
+        /// Attempts to retrieve the <see cref="ApiAccessControlAttribute"/> from the method or its base definition.
         /// </summary>
-        /// <param name="method">目標方法</param>
-        /// <returns>取得的屬性，若無則為 null</returns>
+        /// <param name="method">The target method.</param>
+        /// <returns>The attribute if found; otherwise, null.</returns>
         private static ApiAccessControlAttribute FindAccessAttribute(MethodInfo method)
         {
             var attr = method.GetCustomAttribute<ApiAccessControlAttribute>();
@@ -77,7 +78,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 驗證 AccessToken 是否有效（空值或無效即為失敗）。
+        /// Validates the AccessToken. Returns false if the token is empty or invalid.
         /// </summary>
         private static bool IsTokenValid(Guid accessToken)
         {

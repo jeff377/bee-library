@@ -2,20 +2,20 @@
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// API Header 鍵值。
+    /// API header key constants.
     /// </summary>
     public class ApiHeaders
     {
         /// <summary>
-        /// API KEY。
+        /// The API key header name.
         /// </summary>
         public const string ApiKey = "X-Api-Key";
         /// <summary>
-        /// Authorization，用於身份驗證或授權。
+        /// The Authorization header, used for authentication or authorization.
         /// </summary>
         public const string Authorization = "Authorization";
         /// <summary>
-        /// Content-Type，指定請求或回應的內容類型。
+        /// The Content-Type header, specifying the media type of the request or response body.
         /// </summary>
         public const string ContentType = "Content-Type";
     }

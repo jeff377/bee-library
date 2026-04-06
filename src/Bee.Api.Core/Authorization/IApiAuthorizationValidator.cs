@@ -1,12 +1,12 @@
 namespace Bee.Api.Core.Authorization
 {
     /// <summary>
-    /// 提供 API 金鑰與授權驗證的擴充介面。
+    /// Defines the interface for API key and authorization validation.
     /// </summary>
     public interface IApiAuthorizationValidator
     {
         /// <summary>
-        /// 驗證 API 金鑰與授權。
+        /// Validates the API key and authorization information.
         /// </summary>
         ApiAuthorizationResult Validate(ApiAuthorizationContext context);
     }

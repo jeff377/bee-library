@@ -3,22 +3,22 @@
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 呼叫上下文，描述目前 API 呼叫的狀態。
+    /// Represents the context of the current API call, describing its state.
     /// </summary>
     public class ApiCallContext
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="ApiCallContext"/> class.
         /// </summary>
         public ApiCallContext()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="ApiCallContext"/> class.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
-        /// <param name="format">傳輸資料的封裝格式。</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="isLocalCall">Indicates whether the call originates from a local source.</param>
+        /// <param name="format">The payload encoding format for transmission.</param>
         public ApiCallContext(Guid accessToken, bool isLocalCall, PayloadFormat format)
         {
             AccessToken = accessToken;
@@ -27,22 +27,22 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 存取令牌，用於識別目前使用者或工作階段。
+        /// Gets or sets the access token used to identify the current user or session.
         /// </summary>
         public Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 呼叫是否為近端來源（例如與伺服器同一進程或主機）。
+        /// Gets or sets a value indicating whether the call originates from a local source (e.g., the same process or host as the server).
         /// </summary>
         public bool IsLocalCall { get; set; }
 
         /// <summary>
-        /// 呼叫的有效負載格式。
+        /// Gets or sets the payload format of the call.
         /// </summary>
         public PayloadFormat Format { get; set; }
 
         /// <summary>
-        /// 是否應該驗證編碼（只有遠端呼叫才需驗證）。
+        /// Gets a value indicating whether encoding should be validated (only required for remote calls).
         /// </summary>
         public bool ShouldValidateEncoding => !IsLocalCall;
     }

@@ -3,31 +3,31 @@ using System;
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// 表示處理 JSON-RPC 請求時所發生的例外狀況。
+    /// Represents an exception that occurs while processing a JSON-RPC request.
     /// </summary>
     public class JsonRpcException : Exception
     {
         /// <summary>
-        /// 取得 HTTP 錯誤狀態碼。
+        /// Gets the HTTP error status code.
         /// </summary>
         public int HttpStatusCode { get; }
 
         /// <summary>
-        /// 取得 JSON-RPC 錯誤代碼。
+        /// Gets the JSON-RPC error code.
         /// </summary>
         public JsonRpcErrorCode ErrorCode { get; }
 
         /// <summary>
-        /// 取得 JSON-RPC 錯誤訊息。
+        /// Gets the JSON-RPC error message.
         /// </summary>
         public string RpcMessage { get; }
 
         /// <summary>
-        /// 使用指定的錯誤狀態碼、錯誤代碼與錯誤訊息，初始化 <see cref="JsonRpcException"/> 類別的新執行個體。
+        /// Initializes a new instance of the <see cref="JsonRpcException"/> class with the specified HTTP status code, error code, and error message.
         /// </summary>
-        /// <param name="httpStatusCode">HTTP 狀態碼。</param>
-        /// <param name="errorCode">JSON-RPC 錯誤代碼。</param>
-        /// <param name="rpcMessage">JSON-RPC 錯誤訊息。</param>
+        /// <param name="httpStatusCode">The HTTP status code.</param>
+        /// <param name="errorCode">The JSON-RPC error code.</param>
+        /// <param name="rpcMessage">The JSON-RPC error message.</param>
         public JsonRpcException(int httpStatusCode, JsonRpcErrorCode errorCode, string rpcMessage)
             : base(rpcMessage)
         {

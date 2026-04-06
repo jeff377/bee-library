@@ -1,7 +1,7 @@
 ﻿namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// JSON-RPC 執行方法的傳出結果。
+    /// Represents the return result of a JSON-RPC method invocation.
     /// </summary>
     public class JsonRpcResult : ApiPayload
     {

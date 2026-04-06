@@ -5,31 +5,31 @@ using MessagePack;
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
-    /// 可序列化的資料列，包含目前值與原始值，用於支援資料狀態與修改追蹤。
+    /// Serializable data row containing current and original values, used to support data state and change tracking.
     /// </summary>
     [MessagePackObject]
     public class SerializableDataRow
     {
         /// <summary>
-        /// 資料列目前的值集合（欄位名稱對應值）。
+        /// Gets or sets the current values of the row (column name to value mapping).
         /// </summary>
         [Key(0)]
         public Dictionary<string, object> CurrentValues { get; set; }
 
         /// <summary>
-        /// 原始值集合（適用於已修改或已刪除的資料列）。
+        /// Gets or sets the original values of the row (applicable to modified or deleted rows).
         /// </summary>
         [Key(1)]
         public Dictionary<string, object> OriginalValues { get; set; }
 
         /// <summary>
-        /// 資料列的狀態（Added、Modified、Deleted、Unchanged）。
+        /// Gets or sets the row state (Added, Modified, Deleted, or Unchanged).
         /// </summary>
         [Key(2)]
         public DataRowState RowState { get; set; }
 
         /// <summary>
-        /// 建構函式，初始化字典。
+        /// Initializes a new instance of the <see cref="SerializableDataRow"/> class and initializes the dictionaries.
         /// </summary>
         public SerializableDataRow()
         {

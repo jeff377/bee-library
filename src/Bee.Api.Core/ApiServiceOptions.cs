@@ -7,21 +7,21 @@ using Bee.Api.Core.Transformer;
 namespace Bee.Api.Core
 {
     /// <summary>
-    /// 提供 JSON-RPC 框架可自訂的元件設定，包含授權驗證、資料轉換與序列化策略。
-    /// 使用者可於應用程式啟動時設定替代實作，以符合自訂需求。
+    /// Provides customizable component settings for the JSON-RPC framework, including authorization validation, data transformation, and serialization strategies.
+    /// Users can configure alternative implementations at application startup to meet custom requirements.
     /// </summary>
     public static class ApiServiceOptions
     {
-        private static IApiAuthorizationValidator _authorizationValidator = new ApiAuthorizationValidator(); // 預設實作
-        private static IApiPayloadTransformer _payloadTransformer = new ApiPayloadTransformer(); // 預設實作
-        private static IApiPayloadSerializer _payloadSerializer = new MessagePackPayloadSerializer(); // 預設實作
-        private static IApiPayloadCompressor _payloadCompressor = new GZipPayloadCompressor(); // 預設實作
-        private static IApiPayloadEncryptor _payloadEncryptor = new AesPayloadEncryptor(); // 預設實作
+        private static IApiAuthorizationValidator _authorizationValidator = new ApiAuthorizationValidator(); // Default implementation
+        private static IApiPayloadTransformer _payloadTransformer = new ApiPayloadTransformer(); // Default implementation
+        private static IApiPayloadSerializer _payloadSerializer = new MessagePackPayloadSerializer(); // Default implementation
+        private static IApiPayloadCompressor _payloadCompressor = new GZipPayloadCompressor(); // Default implementation
+        private static IApiPayloadEncryptor _payloadEncryptor = new AesPayloadEncryptor(); // Default implementation
 
         /// <summary>
-        /// 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作。
+        /// Initializes the API service options by configuring the serializer, compressor, and encryptor implementations.
         /// </summary>
-        /// <param name="payloadOptions">提供 API Payload 處理相關選項，例如序列化、壓縮與加密。</param>
+        /// <param name="payloadOptions">Provides options related to API payload processing, such as serialization, compression, and encryption.</param>
         public static void Initialize(ApiPayloadOptions payloadOptions)
         {
             PayloadSerializer = ApiPayloadOptionsFactory.CreateSerializer(payloadOptions.Serializer);
@@ -30,12 +30,12 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 初始化 API Payload 編碼元件，直接指定序列化器、壓縮器與加密器的實作。
-        /// 此方法可取代使用 Factory 的預設建立方式，適合進階自訂場景。
+        /// Initializes the API payload encoding components by directly specifying the serializer, compressor, and encryptor implementations.
+        /// This overload can replace the default factory-based creation and is suitable for advanced customization scenarios.
         /// </summary>
-        /// <param name="serializer">自訂序列化器。</param>
-        /// <param name="compressor">自訂壓縮器。</param>
-        /// <param name="encryptor">自訂加密器。</param>
+        /// <param name="serializer">The custom serializer.</param>
+        /// <param name="compressor">The custom compressor.</param>
+        /// <param name="encryptor">The custom encryptor.</param>
         public static void Initialize(
             IApiPayloadSerializer serializer,
             IApiPayloadCompressor compressor,
@@ -48,7 +48,7 @@ namespace Bee.Api.Core
 
 
         /// <summary>
-        /// API 金鑰與授權驗證器。
+        /// Gets or sets the API key and authorization validator.
         /// </summary>
         public static IApiAuthorizationValidator AuthorizationValidator
         {
@@ -57,7 +57,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// API 傳輸資料的處理器，提供資料加解密、序列化與壓縮等轉換功能。
+        /// Gets or sets the API payload transformer, which provides data encryption, decryption, serialization, and compression.
         /// </summary>
         public static IApiPayloadTransformer PayloadTransformer
         {
@@ -66,7 +66,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// API 傳輸層 payload 專用序列化器。
+        /// Gets or sets the payload serializer for the API transport layer.
         /// </summary>
         public static IApiPayloadSerializer PayloadSerializer
         {
@@ -75,7 +75,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// API 傳輸層 payload 專用壓縮器。
+        /// Gets or sets the payload compressor for the API transport layer.
         /// </summary>
         public static IApiPayloadCompressor PayloadCompressor
         {
@@ -84,7 +84,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// API 傳輸層 payload 專用加密器。
+        /// Gets or sets the payload encryptor for the API transport layer.
         /// </summary>
         public static IApiPayloadEncryptor PayloadEncryptor
         {
@@ -93,7 +93,7 @@ namespace Bee.Api.Core
         }
 
         /// <summary>
-        /// 取得當前的設定摘要，包含序列化器、壓縮器與加密器的使用狀態。
+        /// Gets a summary of the current settings, including the active serializer, compressor, and encryptor.
         /// </summary>
         public static string CurrentSettingsSummary =>
             $"Serializer: {PayloadSerializer.SerializationMethod}, " +

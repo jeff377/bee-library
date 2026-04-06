@@ -4,30 +4,30 @@ using Bee.Base.Serialization;
 namespace Bee.Api.Core.Transformer
 {
     /// <summary>
-    /// 使用 GZip 的 API 傳輸層資料壓縮器。
+    /// GZip-based API transport layer data compressor.
     /// </summary>
     public class GZipPayloadCompressor : IApiPayloadCompressor
     {
         /// <summary>
-        /// 壓縮演算法的識別字串。
+        /// Gets the identifier string for the compression algorithm.
         /// </summary>
         public string CompressionMethod => "gzip";
 
         /// <summary>
-        /// 將原始位元組資料進行壓縮處理。
+        /// Compresses the specified raw byte data.
         /// </summary>
-        /// <param name="bytes">原始位元組資料。</param>
-        /// <returns>壓縮後的位元組資料。</returns>
+        /// <param name="bytes">The raw byte data.</param>
+        /// <returns>The compressed byte data.</returns>
         public byte[] Compress(byte[] bytes)
         {
             return GZipFunc.Compress(bytes);
         }
 
         /// <summary>
-        /// 將壓縮過的位元組資料還原為原始資料。
+        /// Decompresses the specified compressed byte data back to its original form.
         /// </summary>
-        /// <param name="bytes">壓縮後的位元組資料。</param>
-        /// <returns>解壓縮後的位元組資料。</returns>
+        /// <param name="bytes">The compressed byte data.</param>
+        /// <returns>The decompressed byte data.</returns>
         public byte[] Decompress(byte[] bytes)
         {
             return GZipFunc.Decompress(bytes);

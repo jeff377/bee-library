@@ -7,37 +7,37 @@ using MessagePack;
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
-    /// 可序列化的資料表物件，用於傳輸 DataTable 結構與資料。
+    /// Serializable DataTable object used to transport DataTable structure and data.
     /// </summary>
     [MessagePackObject]
     public class SerializableDataTable
     {
         /// <summary>
-        /// 資料表名稱。
+        /// Gets or sets the table name.
         /// </summary>
         [Key(0)]
         public string TableName { get; set; }
 
         /// <summary>
-        /// 資料表的欄位集合。
+        /// Gets or sets the column definitions for the table.
         /// </summary>
         [Key(1)]
         public List<SerializableDataColumn> Columns { get; set; }
 
         /// <summary>
-        /// 資料列資料集合。
+        /// Gets or sets the row data collection.
         /// </summary>
         [Key(2)]
         public List<SerializableDataRow> Rows { get; set; }
 
         /// <summary>
-        /// 主索引鍵欄位名稱集合。
+        /// Gets or sets the primary key column names.
         /// </summary>
         [Key(3)]
         public List<string> PrimaryKeys { get; set; }
 
         /// <summary>
-        /// 建構函式，初始化集合。
+        /// Initializes a new instance of the <see cref="SerializableDataTable"/> class and initializes the collections.
         /// </summary>
         public SerializableDataTable()
         {
@@ -47,10 +47,10 @@ namespace Bee.Api.Core.MessagePack
         }
 
         /// <summary>
-        /// 將 DataTable 轉換為可序列化格式。
+        /// Converts a DataTable to a serializable format.
         /// </summary>
-        /// <param name="table">來源 DataTable。</param>
-        /// <returns>可序列化資料表。</returns>
+        /// <param name="table">The source DataTable.</param>
+        /// <returns>The serializable DataTable.</returns>
         public static SerializableDataTable FromDataTable(DataTable table)
         {
             var sdt = new SerializableDataTable
@@ -58,7 +58,7 @@ namespace Bee.Api.Core.MessagePack
                 TableName = table.TableName
             };
 
-            // 處理欄位定義
+            // Process column definitions
             foreach (DataColumn col in table.Columns)
             {
                 sdt.Columns.Add(new SerializableDataColumn
@@ -73,10 +73,10 @@ namespace Bee.Api.Core.MessagePack
                 });
             }
 
-            // 主鍵欄位
+            // Primary key columns
             sdt.PrimaryKeys.AddRange(table.PrimaryKey.Select(pk => pk.ColumnName));
 
-            // 處理資料列
+            // Process data rows
             foreach (DataRow row in table.Rows)
             {
                 var current = new Dictionary<string, object>();
@@ -109,7 +109,7 @@ namespace Bee.Api.Core.MessagePack
                         break;
 
                     default:
-                        // Detached 或其他狀態略過或紀錄警告（可視情況擴充）
+                        // Skip Detached or other states (can be extended as needed)
                         continue;
                 }
 
@@ -125,15 +125,15 @@ namespace Bee.Api.Core.MessagePack
         }
 
         /// <summary>
-        /// 將可序列化資料表還原為標準 DataTable。
+        /// Restores a serializable DataTable back to a standard DataTable.
         /// </summary>
-        /// <param name="sdt">可序列化資料表。</param>
-        /// <returns>標準 DataTable。</returns>
+        /// <param name="sdt">The serializable DataTable.</param>
+        /// <returns>The standard DataTable.</returns>
         public static DataTable ToDataTable(SerializableDataTable sdt)
         {
             var dt = new DataTable(sdt.TableName);
 
-            // 建立欄位結構
+            // Build the column structure
             foreach (var col in sdt.Columns)
             {
                 var type = Type.GetType(col.DataType) ?? typeof(string);
@@ -148,7 +148,7 @@ namespace Bee.Api.Core.MessagePack
                 dt.Columns.Add(dc);
             }
 
-            // 設定主鍵
+            // Set primary keys
             if (sdt.PrimaryKeys.Count > 0)
             {
                 var primaryCols = sdt.PrimaryKeys
@@ -160,7 +160,7 @@ namespace Bee.Api.Core.MessagePack
                     dt.PrimaryKey = primaryCols;
             }
 
-            // 逐筆還原
+            // Restore each row
             foreach (var srow in sdt.Rows)
             {
                 DataRow row = dt.NewRow();
@@ -182,21 +182,21 @@ namespace Bee.Api.Core.MessagePack
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;
                         }
                         dt.Rows.Add(row);
-                        // 不呼叫 AcceptChanges，保持 Added 狀態
+                        // Do not call AcceptChanges to preserve the Added state
                         break;
 
                     case DataRowState.Modified:
-                        // 先寫入修改前的值
+                        // Write the pre-modification (original) values first
                         foreach (var kvp in srow.OriginalValues)
                         {
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;
                         }
                         dt.Rows.Add(row);
 
-                        // 接受變更，狀態為 Unchanged
+                        // Accept changes so the state becomes Unchanged
                         row.AcceptChanges();
 
-                        // 再寫入修改後的值，會自動標記為 Modified
+                        // Write the modified values; the row will be automatically marked as Modified
                         foreach (var kvp in srow.CurrentValues)
                         {
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;
@@ -204,7 +204,7 @@ namespace Bee.Api.Core.MessagePack
                         break;
 
                     case DataRowState.Deleted:
-                        // 用原始值建立列，加入，AcceptChanges，然後刪除
+                        // Create the row with original values, add it, accept changes, then delete it
                         foreach (var kvp in srow.OriginalValues)
                         {
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;

@@ -3,40 +3,40 @@ using System;
 namespace Bee.Api.Core.Transformer
 {
     /// <summary>
-    /// 定義 API 傳輸資料的處理器介面，提供資料序列化、壓縮與加解密功能。
+    /// Defines the interface for the API payload transformer, providing data serialization, compression, and encryption/decryption.
     /// </summary>
     public interface IApiPayloadTransformer
     {
         /// <summary>
-        /// 將指定的物件進行序列化與壓縮處理。
+        /// Serializes and compresses the specified object.
         /// </summary>
-        /// <param name="payload">要處理的原始資料物件。</param>
-        /// <param name="type">物件的型別。</param>
-        /// <returns>處理後的資料（通常為位元組陣列）。</returns>
+        /// <param name="payload">The raw data object to process.</param>
+        /// <param name="type">The type of the object.</param>
+        /// <returns>The processed data (typically a byte array).</returns>
         byte[] Encode(object payload, Type type);
 
         /// <summary>
-        /// 將序列化與壓縮後的資料還原為原始物件。
+        /// Decompresses and deserializes the processed data back to the original object.
         /// </summary>
-        /// <param name="payload">已處理的資料（通常為位元組陣列）。</param>
-        /// <param name="type">目標物件型別。</param>
-        /// <returns>還原後的原始資料物件。</returns>
+        /// <param name="payload">The processed data (typically a byte array).</param>
+        /// <param name="type">The target object type.</param>
+        /// <returns>The restored original data object.</returns>
         object Decode(object payload, Type type);
 
         /// <summary>
-        /// 僅對指定的位元組資料進行加密。
+        /// Encrypts the specified byte data only.
         /// </summary>
-        /// <param name="rawBytes">原始位元組資料。</param>
-        /// <param name="encryptionKey">加密金鑰。</param>
-        /// <returns>加密後的資料。</returns>
+        /// <param name="rawBytes">The raw byte data.</param>
+        /// <param name="encryptionKey">The encryption key.</param>
+        /// <returns>The encrypted data.</returns>
         byte[] Encrypt(byte[] rawBytes, byte[] encryptionKey);
 
         /// <summary>
-        /// 僅對指定的位元組資料進行解密。
+        /// Decrypts the specified byte data only.
         /// </summary>
-        /// <param name="encryptedBytes">加密後的資料。</param>
-        /// <param name="encryptionKey">加密金鑰。</param>
-        /// <returns>解密後的原始資料。</returns>
+        /// <param name="encryptedBytes">The encrypted data.</param>
+        /// <param name="encryptionKey">The encryption key.</param>
+        /// <returns>The decrypted raw data.</returns>
         byte[] Decrypt(byte[] encryptedBytes, byte[] encryptionKey);
     }
 }

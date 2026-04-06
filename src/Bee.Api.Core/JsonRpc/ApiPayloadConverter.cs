@@ -6,18 +6,18 @@ using Bee.Api.Core;
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// 處理 <see cref="ApiPayload"/> 的格式轉換（序列化、壓縮與加密）工具類別。
+    /// Utility class for handling <see cref="ApiPayload"/> format conversion (serialization, compression, and encryption).
     /// </summary>
     public static class ApiPayloadConverter
     {
         /// <summary>
-        /// 將指定的 Payload 物件轉換為目標格式（編碼或加密）。
+        /// Converts the specified payload object to the target format (encoded or encrypted).
         /// </summary>
-        /// <param name="payload">要轉換的 Payload 物件。</param>
-        /// <param name="targetFormat">欲轉換的目標格式，例如 Encoded 或 Encrypted。</param>
-        /// <param name="encryptionKey">加密金鑰，僅當 <paramref name="targetFormat"/> 為 Encrypted 時必須指定。</param>
+        /// <param name="payload">The payload object to convert.</param>
+        /// <param name="targetFormat">The target format, such as Encoded or Encrypted.</param>
+        /// <param name="encryptionKey">The encryption key; required only when <paramref name="targetFormat"/> is Encrypted.</param>
         /// <exception cref="InvalidOperationException">
-        /// 當 <paramref name="targetFormat"/> 為 Encrypted 但未提供金鑰，或 Payload.Value 為 null 時發生。
+        /// Thrown when <paramref name="targetFormat"/> is Encrypted but no key is provided, or when Payload.Value is null.
         /// </exception>
         public static void TransformTo(ApiPayload payload, PayloadFormat targetFormat, byte[] encryptionKey = null)
         {
@@ -49,15 +49,15 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// 將指定格式的 Payload 還原為原始物件（解密與解碼）。
+        /// Restores the specified payload object from its encoded or encrypted format back to the original object.
         /// </summary>
-        /// <param name="payload">要還原的 Payload 物件。</param>
-        /// <param name="sourceFormat">來源格式，應為 Encoded 或 Encrypted。</param>
-        /// <param name="encryptionKey">解密所需的金鑰，僅當 <paramref name="sourceFormat"/> 為 Encrypted 時必須指定。</param>
+        /// <param name="payload">The payload object to restore.</param>
+        /// <param name="sourceFormat">The source format; should be Encoded or Encrypted.</param>
+        /// <param name="encryptionKey">The decryption key; required only when <paramref name="sourceFormat"/> is Encrypted.</param>
         /// <exception cref="InvalidOperationException">
-        /// 當 <paramref name="sourceFormat"/> 為 Encrypted 但未提供金鑰，或無法載入 TypeName 時發生。
+        /// Thrown when <paramref name="sourceFormat"/> is Encrypted but no key is provided, or when TypeName cannot be resolved.
         /// </exception>
-        /// <exception cref="InvalidCastException">當 Payload.Value 不是 byte[] 類型時發生。</exception>
+        /// <exception cref="InvalidCastException">Thrown when Payload.Value is not of type byte[].</exception>
         public static void RestoreFrom(ApiPayload payload, PayloadFormat sourceFormat, byte[] encryptionKey = null)
         {
             if (sourceFormat == PayloadFormat.Plain)

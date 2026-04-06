@@ -3,22 +3,22 @@
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// JSON-RPC 錯誤模型。
+    /// JSON-RPC error model.
     /// </summary>
     public class JsonRpcError
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="JsonRpcError"/> class.
         /// </summary>
         public JsonRpcError()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="JsonRpcError"/> class.
         /// </summary>
-        /// <param name="code">錯誤代碼。</param>
-        /// <param name="message">錯誤訊息。</param>
-        /// <param name="data">用於提供附加的錯誤訊息。</param>
+        /// <param name="code">The error code.</param>
+        /// <param name="message">The error message.</param>
+        /// <param name="data">Additional error information.</param>
         public JsonRpcError(int code, string message, object data = null)
         {
             Code = code;
@@ -27,19 +27,19 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// 錯誤代碼。
+        /// Gets or sets the error code.
         /// </summary>
-        [JsonProperty("code")]  
+        [JsonProperty("code")]
         public int Code { get; set; }
 
         /// <summary>
-        /// 錯誤訊息。
+        /// Gets or sets the error message.
         /// </summary>
         [JsonProperty("message")]
         public string Message { get; set; }
 
         /// <summary>
-        /// 用於提供附加的錯誤訊息。
+        /// Gets or sets additional error information.
         /// </summary>
         [JsonProperty("data")]
         public object Data { get; set; }

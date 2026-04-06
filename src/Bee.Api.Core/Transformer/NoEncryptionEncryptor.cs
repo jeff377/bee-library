@@ -3,17 +3,17 @@
 namespace Bee.Api.Core.Transformer
 {
     /// <summary>
-    /// 不執行任何加密或解密操作的加密器實作。
+    /// An encryptor implementation that performs no encryption or decryption.
     /// </summary>
     public class NoEncryptionEncryptor : IApiPayloadEncryptor
     {
         /// <summary>
-        /// 加密演算法的識別字串, ，none 表示不進行加密。
+        /// Gets the identifier string for the encryption algorithm. "none" indicates no encryption is applied.
         /// </summary>
         public string EncryptionMethod => "none";
 
         /// <summary>
-        /// 傳回原始資料，未進行加密。
+        /// Returns the original data unchanged; no encryption is performed.
         /// </summary>
         public byte[] Encrypt(byte[] bytes, byte[] encryptionKey)
         {
@@ -21,7 +21,7 @@ namespace Bee.Api.Core.Transformer
         }
 
         /// <summary>
-        /// 傳回原始資料，未進行解密。
+        /// Returns the original data unchanged; no decryption is performed.
         /// </summary>
         public byte[] Decrypt(byte[] bytes, byte[] encryptionKey)
         {

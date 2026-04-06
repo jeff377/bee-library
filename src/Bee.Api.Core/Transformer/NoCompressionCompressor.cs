@@ -1,17 +1,17 @@
 ﻿namespace Bee.Api.Core.Transformer
 {
     /// <summary>
-    /// 不執行任何壓縮或解壓縮操作的壓縮器實作。
+    /// A compressor implementation that performs no compression or decompression.
     /// </summary>
     public class NoCompressionCompressor : IApiPayloadCompressor
     {
         /// <summary>
-        /// 壓縮演算法的識別字串，none 表示不進行壓縮。
+        /// Gets the identifier string for the compression algorithm. "none" indicates no compression is applied.
         /// </summary>
         public string CompressionMethod => "none";
 
         /// <summary>
-        /// 傳回原始資料，未進行壓縮。
+        /// Returns the original data unchanged; no compression is performed.
         /// </summary>
         public byte[] Compress(byte[] bytes)
         {
@@ -19,7 +19,7 @@
         }
 
         /// <summary>
-        /// 傳回原始資料，未進行解壓縮。
+        /// Returns the original data unchanged; no decompression is performed.
         /// </summary>
         public byte[] Decompress(byte[] bytes)
         {

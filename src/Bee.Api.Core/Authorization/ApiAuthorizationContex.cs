@@ -1,29 +1,29 @@
 ﻿namespace Bee.Api.Core.Authorization
 {
     /// <summary>
-    /// API 授權驗證內容。
+    /// API authorization validation context.
     /// </summary>
     public class ApiAuthorizationContext
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="ApiAuthorizationContext"/> class.
         /// </summary>
         public ApiAuthorizationContext()
         {
         }
 
         /// <summary>
-        /// API 金鑰。
+        /// Gets or sets the API key.
         /// </summary>
         public string ApiKey { get; set; } = string.Empty;
 
         /// <summary>
-        /// 授權標頭。
+        /// Gets or sets the Authorization header value.
         /// </summary>
         public string Authorization { get; set; } = string.Empty;
 
         /// <summary>
-        /// JSON-RPC 方法名稱。
+        /// Gets or sets the JSON-RPC method name.
         /// </summary>
         public string Method { get; set; } = string.Empty;
     }

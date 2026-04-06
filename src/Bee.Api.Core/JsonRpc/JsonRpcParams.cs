@@ -1,7 +1,7 @@
 ﻿namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>
-    /// JSON-RPC 執行方法的傳入引數。
+    /// Represents the input parameters for a JSON-RPC method invocation.
     /// </summary>
     public class JsonRpcParams : ApiPayload
     {

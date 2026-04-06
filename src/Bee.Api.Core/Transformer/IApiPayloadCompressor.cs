@@ -1,28 +1,28 @@
 namespace Bee.Api.Core.Transformer
 {
     /// <summary>
-    /// API 傳輸層資料壓縮策略介面。
-    /// 提供位元組資料的壓縮與還原功能，可用於縮小傳輸體積。
+    /// Interface for the API transport layer data compression strategy.
+    /// Provides byte data compression and decompression to reduce transmission size.
     /// </summary>
     public interface IApiPayloadCompressor
     {
         /// <summary>
-        /// 壓縮演算法的識別字串，例如 "gzip"、"brotli"。
+        /// Gets the identifier string for the compression algorithm, e.g., "gzip" or "brotli".
         /// </summary>
         string CompressionMethod { get; }
 
         /// <summary>
-        /// 將原始位元組資料進行壓縮處理。
+        /// Compresses the specified raw byte data.
         /// </summary>
-        /// <param name="bytes">原始位元組資料。</param>
-        /// <returns>壓縮後的位元組資料。</returns>
+        /// <param name="bytes">The raw byte data.</param>
+        /// <returns>The compressed byte data.</returns>
         byte[] Compress(byte[] bytes);
 
         /// <summary>
-        /// 將壓縮過的位元組資料還原為原始資料。
+        /// Decompresses the specified compressed byte data back to its original form.
         /// </summary>
-        /// <param name="bytes">壓縮後的位元組資料。</param>
-        /// <returns>解壓縮後的位元組資料。</returns>
+        /// <param name="bytes">The compressed byte data.</param>
+        /// <returns>The decompressed byte data.</returns>
         byte[] Decompress(byte[] bytes);
     }
 }

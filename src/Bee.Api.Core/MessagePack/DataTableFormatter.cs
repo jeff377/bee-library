@@ -5,16 +5,16 @@ using MessagePack.Formatters;
 namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
-    /// 用於序列化與反序列化 DataTable 的格式化器。
+    /// MessagePack formatter for serializing and deserializing DataTable objects.
     /// </summary>
     internal class DataTableFormatter : IMessagePackFormatter<DataTable>
     {
         /// <summary>
-        /// 序列化 DataTable 物件。
+        /// Serializes the DataTable object to MessagePack format.
         /// </summary>
-        /// <param name="writer">MessagePack 寫入器。</param>
-        /// <param name="value">要序列化的 DataTable 物件。</param>
-        /// <param name="options">序列化選項。</param>
+        /// <param name="writer">The MessagePack writer.</param>
+        /// <param name="value">The DataTable object to serialize.</param>
+        /// <param name="options">The serialization options.</param>
         public void Serialize(ref MessagePackWriter writer, DataTable value, MessagePackSerializerOptions options)
         {
             if (value == null)
@@ -25,16 +25,16 @@ namespace Bee.Api.Core.MessagePack
 
             var sdt = SerializableDataTable.FromDataTable(value);
 
-            // 序列化 TSerializableDataTable
+            // Serialize the SerializableDataTable
             MessagePackSerializer.Serialize(ref writer, sdt, options);
         }
 
         /// <summary>
-        /// 反序列化 DataTable 物件。
+        /// Deserializes a DataTable object from MessagePack format.
         /// </summary>
-        /// <param name="reader">MessagePack 讀取器。</param>
-        /// <param name="options">序列化選項。</param>
-        /// <returns>還原的 DataTable 物件。</returns>
+        /// <param name="reader">The MessagePack reader.</param>
+        /// <param name="options">The serialization options.</param>
+        /// <returns>The restored DataTable object.</returns>
         public DataTable Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())

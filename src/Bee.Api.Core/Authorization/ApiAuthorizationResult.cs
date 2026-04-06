@@ -4,34 +4,34 @@ using Bee.Api.Core.JsonRpc;
 namespace Bee.Api.Core.Authorization
 {
     /// <summary>
-    /// API 授權驗證結果。
+    /// API authorization validation result.
     /// </summary>
     public class ApiAuthorizationResult
     {
         /// <summary>
-        /// 是否驗證成功。
+        /// Gets or sets a value indicating whether validation succeeded.
         /// </summary>
         public bool IsValid { get; set; }
 
         /// <summary>
-        /// 錯誤代碼。
+        /// Gets or sets the error code.
         /// </summary>
         public JsonRpcErrorCode Code { get; set; }
 
         /// <summary>
-        /// 驗證失敗的錯誤訊息。
+        /// Gets or sets the error message when validation fails.
         /// </summary>
         public string ErrorMessage { get; set; } = string.Empty;
 
         /// <summary>
-        /// 成功驗證後的存取權杖。
+        /// Gets or sets the access token returned upon successful validation.
         /// </summary>
         public Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 建立驗證成功的結果。
+        /// Creates a successful authorization result.
         /// </summary>
-        /// <param name="accessToken">存取權杖。</param>
+        /// <param name="accessToken">The access token.</param>
         public static ApiAuthorizationResult Success(Guid accessToken)
         {
             return new ApiAuthorizationResult
@@ -42,10 +42,10 @@ namespace Bee.Api.Core.Authorization
         }
 
         /// <summary>
-        /// 建立驗證失敗的結果。
+        /// Creates a failed authorization result.
         /// </summary>
-        /// <param name="code">錯誤代碼。</param>
-        /// <param name="errorMessage">錯誤訊息。</param>
+        /// <param name="code">The error code.</param>
+        /// <param name="errorMessage">The error message.</param>
         public static ApiAuthorizationResult Fail(JsonRpcErrorCode code,  string errorMessage)
         {
             return new ApiAuthorizationResult
