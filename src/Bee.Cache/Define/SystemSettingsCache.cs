@@ -8,12 +8,12 @@ using System.IO;
 namespace Bee.Cache.Define
 {
     /// <summary>
-    /// 系統設定快取。
+    /// System settings cache.
     /// </summary>
     internal class SystemSettingsCache : ObjectCache<SystemSettings>
     {
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
         protected override CacheItemPolicy GetPolicy()
         {
@@ -23,9 +23,9 @@ namespace Bee.Cache.Define
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the system settings.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The system settings instance.</returns>
         protected override SystemSettings CreateInstance()
         {
             string sFilePath = DefinePathInfo.GetSystemSettingsFilePath();

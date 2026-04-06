@@ -5,8 +5,8 @@ using System;
 
 namespace Bee.Cache
 {
-    /// <summary>  
-    /// 快取實體容器，集中管理所有快取類別的單一實例，使用 <see cref="Lazy{T}"/> 實現延遲初始化。   
+    /// <summary>
+    /// Cache instance container that centrally manages singleton instances of all cache classes, using <see cref="Lazy{T}"/> for deferred initialization.
     /// </summary>
     internal class CacheContainer
     {

@@ -6,14 +6,14 @@ using Bee.Base;
 namespace Bee.Cache.Providers
 {
     /// <summary>
-    /// ��� MemoryCache ���֨����Ѫ̹�@�C
+    /// Cache provider implementation that uses <see cref="MemoryCache"/>.
     /// </summary>
     public class MemoryCacheProvider : ICacheProvider
     {
         private readonly MemoryCache _memoryCache;
 
         /// <summary>
-        /// �غc�禡,�ϥιw�]�� MemoryCache�C
+        /// Initializes a new instance of the <see cref="MemoryCacheProvider"/> class using the default <see cref="MemoryCache"/>.
         /// </summary>
         public MemoryCacheProvider()
         {
@@ -21,27 +21,27 @@ namespace Bee.Cache.Providers
         }
 
         /// <summary>
-        /// �غc�禡,�ϥΫ��w�� MemoryCache�C
+        /// Initializes a new instance of the <see cref="MemoryCacheProvider"/> class using the specified <see cref="MemoryCache"/>.
         /// </summary>
-        /// <param name="memoryCache">�O����֨���ҡC</param>
+        /// <param name="memoryCache">The memory cache instance to use.</param>
         public MemoryCacheProvider(MemoryCache memoryCache)
         {
             _memoryCache = memoryCache;
         }
 
         /// <summary>
-        /// ���o�����j�p�g���֨���ȡC
+        /// Gets the case-insensitive cache key.
         /// </summary>
-        /// <param name="key">��l��ȡC</param>
+        /// <param name="key">The original key.</param>
         private string GetCacheKey(string key)
         {
             return StrFunc.ToUpper(key);
         }
 
         /// <summary>
-        /// �P�_�֨����جO�_�s�b��֨����C
+        /// Determines whether a cache entry with the specified key exists in the cache.
         /// </summary>
-        /// <param name="key">�֨���ȡC</param>
+        /// <param name="key">The cache key.</param>
         public bool Contains(string key)
         {
             string cacheKey = GetCacheKey(key);
@@ -49,11 +49,11 @@ namespace Bee.Cache.Providers
         }
 
         /// <summary>
-        /// �N�֨����ظm�J�֨��Ϥ��C
+        /// Inserts a cache entry into the cache.
         /// </summary>
-        /// <param name="key">�֨���ȡC</param>
-        /// <param name="value">�n�m�J�֨�������C</param>
-        /// <param name="policy">�֨����ب������C</param>
+        /// <param name="key">The cache key.</param>
+        /// <param name="value">The object to insert into the cache.</param>
+        /// <param name="policy">The expiration policy for the cache entry.</param>
         public void Set(string key, object value, CacheItemPolicy policy)
         {
             var cacheKey = GetCacheKey(key);
@@ -63,9 +63,9 @@ namespace Bee.Cache.Providers
         }
 
         /// <summary>
-        /// �q�֨��Ǧ^���ءC
+        /// Returns the cache entry for the specified key.
         /// </summary>
-        /// <param name="key">�֨���ȡC</param>
+        /// <param name="key">The cache key.</param>
         public object Get(string key)
         {
             string cacheKey = GetCacheKey(key);
@@ -73,10 +73,10 @@ namespace Bee.Cache.Providers
         }
 
         /// <summary>
-        /// �����֨����ءC
+        /// Removes the cache entry with the specified key.
         /// </summary>
-        /// <param name="key">�֨���ȡC</param>
-        /// <returns>�Ǧ^�������֨�����,�Y�֨����ؤ��s�b�h�Ǧ^ null�C</returns>
+        /// <param name="key">The cache key.</param>
+        /// <returns>The removed cache entry, or null if the entry does not exist.</returns>
         public object Remove(string key)
         {
             string cacheKey = GetCacheKey(key);
@@ -84,17 +84,17 @@ namespace Bee.Cache.Providers
         }
 
         /// <summary>
-        /// �q�֨����󲾰����w�ʤ��񪺧֨����ءC
+        /// Removes a specified percentage of cache entries from the cache.
         /// </summary>
-        /// <param name="percent">�������ت��ƥئb�֨������`�Ƥ��Ҧ����ʤ���C</param>
-        /// <returns>�q�֨��Ϥ����������ؼƶq�C</returns>
+        /// <param name="percent">The percentage of total cache entries to remove.</param>
+        /// <returns>The number of cache entries removed.</returns>
         public long Trim(int percent)
         {
             return _memoryCache.Trim(percent);
         }
 
         /// <summary>
-        /// �Ǧ^�֨������֨������`�ơC
+        /// Returns the total number of cache entries in the cache.
         /// </summary>
         public long GetCount()
         {
@@ -102,13 +102,13 @@ namespace Bee.Cache.Providers
         }
 
         /// <summary>
-        /// ���o�Ҧ��֨�����ȲM��C
+        /// Returns a collection of all keys currently in the cache.
         /// </summary>
-        /// <returns>�֨���Ȫ��r��C�|�C</returns>
+        /// <returns>A collection of cache key strings.</returns>
         public IEnumerable<string> GetAllKeys()
         {
-            // MemoryCache �b�C�|�L�{���i��Q��L������ק�
-            // �]����ĳ�� ToList() ���ƻs�@��
+            // MemoryCache may be modified by other threads during enumeration;
+            // ToList() is recommended to take a snapshot first
             return _memoryCache.Select(item => item.Key).ToList();
         }
     }

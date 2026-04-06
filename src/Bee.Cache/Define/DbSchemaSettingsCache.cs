@@ -6,12 +6,12 @@ using Bee.Define.Storage;
 namespace Bee.Cache.Define
 {
     /// <summary>
-    /// 資料庫結構設定快取。
+    /// Database schema settings cache.
     /// </summary>
     internal class DbSchemaSettingsCache : ObjectCache<DbSchemaSettings>
     {
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
         protected override CacheItemPolicy GetPolicy()
         {
@@ -22,7 +22,7 @@ namespace Bee.Cache.Define
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the database schema settings.
         /// </summary>
         protected override DbSchemaSettings CreateInstance()
         {

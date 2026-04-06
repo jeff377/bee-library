@@ -8,12 +8,12 @@ using System.IO;
 namespace Bee.Cache.Define
 {
     /// <summary>
-    /// 程式清單快取。
+    /// Program settings cache.
     /// </summary>
     internal class ProgramSettingsCache : ObjectCache<ProgramSettings>
     {
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
         protected override CacheItemPolicy GetPolicy()
         {
@@ -23,7 +23,7 @@ namespace Bee.Cache.Define
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the program settings.
         /// </summary>
         protected override ProgramSettings CreateInstance()
         {

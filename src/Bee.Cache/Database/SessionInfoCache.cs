@@ -5,17 +5,17 @@ using System;
 namespace Bee.Cache.Database
 {
     /// <summary>
-    /// 連線資訊快取。
+    /// Session information cache.
     /// </summary>
     internal class SessionInfoCache : KeyObjectCache<SessionInfo>
     {
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the session information.
         /// </summary>
-        /// <param name="key">存取令牌。</param>
+        /// <param name="key">The access token.</param>
         protected override SessionInfo CreateInstance(string key)
         {
-            return null; // 目前暫不實作從資料庫或其他來源取得 SessionInfo 的邏輯
+            return null; // Loading SessionInfo from the database or other sources is not yet implemented
 
             //var accessToken = BaseFunc.CGuid(key);
             //if (BaseFunc.IsEmpty(accessToken)) { return null; }
@@ -34,18 +34,18 @@ namespace Bee.Cache.Database
         }
 
         /// <summary>
-        /// 取得連線資訊。
+        /// Gets the session information for the specified access token.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public SessionInfo Get(Guid accessToken)
         {
             return Get(accessToken.ToString());
         }
 
         /// <summary>
-        /// 由快取區移除連線資訊。
+        /// Removes the session information from the cache.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public void Remove(Guid accessToken)
         {
             Remove(accessToken.ToString());

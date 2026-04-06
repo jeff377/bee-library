@@ -5,12 +5,12 @@ using Bee.Define;
 namespace Bee.Cache.Services
 {
     /// <summary>
-    /// 連線資訊存取服務。
+    /// Session information access service.
     /// </summary>
     public class SessionInfoService : ISessionInfoService
     {
         /// <summary>
-        /// 由快取（未命中可回退至資料庫）取得連線資訊。
+        /// Gets the session information from the cache, falling back to the database on a cache miss.
         /// </summary>
         public SessionInfo Get(Guid accessToken)
         {
@@ -18,7 +18,7 @@ namespace Bee.Cache.Services
         }
 
         /// <summary>
-        /// 將連線資訊置入快取（必要時一併持久化）。
+        /// Stores the session information in the cache, persisting it if necessary.
         /// </summary>
         public void Set(SessionInfo sessionInfo)
         {
@@ -26,7 +26,7 @@ namespace Bee.Cache.Services
         }
 
         /// <summary>
-        /// 自快取移除指定連線資訊（必要時一併失效持久化狀態）。
+        /// Removes the specified session information from the cache, invalidating any persisted state if necessary.
         /// </summary>
         public void Remove(Guid accessToken)
         {

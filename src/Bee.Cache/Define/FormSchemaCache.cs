@@ -6,19 +6,19 @@ using Bee.Define.Storage;
 namespace Bee.Cache.Define
 {
     /// <summary>
-    /// 表單結構定義快取。
+    /// Form schema definition cache.
     /// </summary>
     internal class FormSchemaCache : KeyObjectCache<FormSchema>
     {
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         protected override CacheItemPolicy GetPolicy(string key)
         {
-            // 程式代碼
+            // Program identifier
             string progId = key;
-            // 預設為相對時間 20 分鐘
+            // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineStorage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormSchemaFilePath(progId) };
@@ -26,12 +26,12 @@ namespace Bee.Cache.Define
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the form schema.
         /// </summary>
-        /// <param name="key">成員鍵值為 [程式代碼]。</param>
+        /// <param name="key">The member key, which is the program identifier.</param>
         protected override FormSchema CreateInstance(string key)
         {
-            // 程式代碼
+            // Program identifier
             string progId = key;
             return BackendInfo.DefineStorage.GetFormSchema(progId);
         }

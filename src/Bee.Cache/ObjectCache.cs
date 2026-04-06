@@ -1,14 +1,14 @@
 ﻿namespace Bee.Cache
 {
     /// <summary>
-    /// 物件快取基底類別。
+    /// Base class for single-object caches.
     /// </summary>
     public abstract class ObjectCache<T>
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="ObjectCache{T}"/> class.
         /// </summary>
         public ObjectCache()
         { }
@@ -16,17 +16,17 @@
         #endregion
 
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
         protected virtual CacheItemPolicy GetPolicy()
         {
-            // 預設為相對時間 20 分鐘
+            // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             return policy;
         }
 
         /// <summary>
-        /// 取得快取鍵值。
+        /// Gets the cache key.
         /// </summary>
         protected virtual string GetKey()
         {
@@ -34,7 +34,7 @@
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the cached object.
         /// </summary>
         protected virtual T CreateInstance()
         {
@@ -42,17 +42,17 @@
         }
 
         /// <summary>
-        /// 取得物件。
+        /// Gets the cached object.
         /// </summary>
         public virtual T Get()
         {
-            // 取得快取鍵值
+            // Get the cache key
             string key = GetKey();
-            // 若物件存在於快取區，則直接回傳該快取物件
-            if (CacheInfo.Provider.Contains(key))               
+            // Return the cached object if it already exists in the cache
+            if (CacheInfo.Provider.Contains(key))
                 return (T)CacheInfo.Provider.Get(key);
 
-            // 建立物件置入快取區，並回傳該物件
+            // Create and insert the object into the cache, then return it
             var value = CreateInstance();
             if (value != null)
             {
@@ -62,9 +62,9 @@
         }
 
         /// <summary>
-        /// 將物件置入快取中。
+        /// Stores the object in the cache.
         /// </summary>
-        /// <param name="value">要置入快取的物件。</param>
+        /// <param name="value">The object to store in the cache.</param>
         public virtual void Set(T value)
         {
             string key = GetKey();
@@ -72,7 +72,7 @@
         }
 
         /// <summary>
-        /// 由快取區移除。
+        /// Removes the object from the cache.
         /// </summary>
         public virtual void Remove()
         {

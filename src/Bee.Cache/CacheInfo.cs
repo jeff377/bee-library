@@ -7,16 +7,18 @@ using System;
 namespace Bee.Cache
 {
     /// <summary>
-    /// 提供存取快取提供者的靜態介面。
+    /// Provides a static interface for accessing the cache provider.
     /// </summary>
     /// <remarks>
-    /// 此類別負責初始化和管理快取提供者的實例，並提供一個靜態屬性 `Provider` 來存取該實例。
-    /// 它會根據後端組態來決定使用哪一個快取提供者，若未指定則使用預設的 `MemoryCacheProvider`。
+    /// This class is responsible for initializing and managing the cache provider instance,
+    /// and exposes a static <c>Provider</c> property for accessing it.
+    /// The cache provider is determined based on the backend configuration; if none is specified,
+    /// the default <c>MemoryCacheProvider</c> is used.
     /// </remarks>
     public static class CacheInfo
     {
         /// <summary>
-        /// 靜態建構函式，用於初始化快取提供者。
+        /// Static constructor that initializes the cache provider.
         /// </summary>
         static CacheInfo()
         {
@@ -29,32 +31,32 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 快取提供者的靜態屬性。
+        /// Gets or sets the cache provider instance.
         /// </summary>
         /// <value>
-        /// 預設為 `MemoryCacheProvider`，但可以根據後端組態進行覆寫。
+        /// Defaults to <c>MemoryCacheProvider</c>, but can be overridden based on the backend configuration.
         /// </value>
         public static ICacheProvider Provider { get; set; } = new MemoryCacheProvider();
 
         /// <summary>
-        /// 初始化快取提供者。
+        /// Initializes the cache provider based on the backend configuration.
         /// </summary>
-        /// <param name="configuration">後端組態資訊。</param>
+        /// <param name="configuration">The backend configuration.</param>
         private static void Initialize(BackendConfiguration configuration)
         {
             var components = configuration.Components;
-            // 根據組態或預設值建立快取提供者
+            // Create the cache provider from configuration or fall back to the default
             Provider = CreateOrDefault<ICacheProvider>
                 (components.CacheProvider, BackendDefaultTypes.CacheProvider);
         }
 
         /// <summary>
-        /// 建立指定型別的實例，若 <paramref name="configured"/> 為空則使用 <paramref name="fallback"/>。
+        /// Creates an instance of the specified type, using <paramref name="fallback"/> if <paramref name="configured"/> is empty.
         /// </summary>
-        /// <typeparam name="T">要建立的實例型別。</typeparam>
-        /// <param name="configured">組態中指定的型別名稱。</param>
-        /// <param name="fallback">若未指定型別時使用的預設型別名稱。</param>
-        /// <returns>建立的實例，或 null（若型別無法建立）。</returns>
+        /// <typeparam name="T">The type of instance to create.</typeparam>
+        /// <param name="configured">The type name specified in the configuration.</param>
+        /// <param name="fallback">The default type name to use when no type is configured.</param>
+        /// <returns>The created instance, or null if the type cannot be instantiated.</returns>
         private static T CreateOrDefault<T>(string configured, string fallback) where T : class
         {
             var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;

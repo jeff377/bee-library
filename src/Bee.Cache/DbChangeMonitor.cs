@@ -6,7 +6,7 @@ using Bee.Base;
 namespace Bee.Cache
 {
     /// <summary>
-    /// 監控資料庫 ST_Cahce 資料表異動，並通知快取受監控項目發生變更的資訊。
+    /// Monitors changes to the ST_Cache database table and notifies the cache when monitored items have changed.
     /// </summary>
     public class DbChangeMonitor : ChangeMonitor
     {
@@ -16,9 +16,9 @@ namespace Bee.Cache
         private Timer _Timer = null;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="DbChangeMonitor"/> class.
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">The cache dependency key.</param>
         private DbChangeMonitor(string key)
         {
             _UniqueId = BaseFunc.NewGuidString();
@@ -31,7 +31,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 識別項。
+        /// Gets the unique identifier for this change monitor.
         /// </summary>
         public override string UniqueId
         {
@@ -39,7 +39,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 資料庫快取相依資料的參照鍵值。
+        /// Gets the reference key for the database cache dependency data.
         /// </summary>
         public string Key
         {
@@ -47,9 +47,9 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 資料庫快取相依資料的更新時間。
+        /// Gets or sets the last update time of the database cache dependency data.
         /// </summary>
-        /// <remarks>例如公司組織需快取，即組織相關資料(如部門、員工)的更新時間</remarks>
+        /// <remarks>For example, if the company organization data is cached, this represents the update time of organization-related data such as departments and employees.</remarks>
         public DateTime UpdateTime
         {
             get { return _UpdateTime; }
@@ -57,9 +57,9 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得快取相依資料的更新時間。
+        /// Gets the update time of the cache dependency data.
         /// </summary>
-        /// <param name="key">鍵值。</param>
+        /// <param name="key">The cache key.</param>
         private DateTime GetUpdateTime(string key)
         {
             // TODO : 實作取得資料庫相關資料的更新時間
@@ -67,7 +67,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 計時器。
+        /// Gets the timer used to poll for changes.
         /// </summary>
         public Timer Timer
         {
@@ -75,24 +75,24 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// Timer Elapsed 事件處理方法。
+        /// Handles the Timer Elapsed event.
         /// </summary>
         private void Elapsed_EventHandler(object sender, ElapsedEventArgs e)
         {
             DateTime oUpdateTime;
 
-            // 相依資料的更新時間若不同，表示原始資料有異動，需釋放快取
+            // If the update time of the dependency data has changed, the source data has been modified and the cache must be invalidated
             oUpdateTime = GetUpdateTime(this.Key);
             if (this.UpdateTime != oUpdateTime)
             {
                 this.UpdateTime = oUpdateTime;
-                // 有異動要呼叫 OnChanged 方法，通知 Cache 相依變更
+                // Call OnChanged to notify the cache of a dependency change
                 base.OnChanged(this.Key);
             }
         }
 
         /// <summary>
-        /// 解構函式。
+        /// Releases resources used by this change monitor.
         /// </summary>
         protected override void Dispose(bool disposing)
         {

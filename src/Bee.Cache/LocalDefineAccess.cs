@@ -11,15 +11,15 @@ using System;
 namespace Bee.Cache
 {
     /// <summary>
-    /// 近端定義資料存取，透過快取進行定義資料存取。
+    /// Local definition data access that retrieves and saves definition data via the cache.
     /// </summary>
     public class LocalDefineAccess : IDefineAccess
     {
         /// <summary>
-        /// 取得定義資料。
+        /// Gets definition data.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">取得定義資料的鍵值。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="keys">The keys used to locate the definition data.</param>
         public object GetDefine(DefineType defineType, string[] keys = null)
         {
             switch (defineType)
@@ -47,11 +47,11 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 驗證鍵值的長度。
+        /// Validates that the keys array has the expected length.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">取得定義資料的鍵值。</param>
-        /// <param name="expectedLength">正確鍵值的長度。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="keys">The keys to validate.</param>
+        /// <param name="expectedLength">The expected number of keys.</param>
         private void ValidateKeys(DefineType defineType, string[] keys, int expectedLength)
         {
             if (keys == null || keys.Length != expectedLength)
@@ -59,11 +59,11 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 儲存定義資料。
+        /// Saves definition data.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="defineObject">定義資料。</param>
-        /// <param name="keys">儲存定義資料的鍵值。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="defineObject">The definition data object.</param>
+        /// <param name="keys">The keys used to locate where the definition data is saved.</param>
         public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
         {
             switch (defineType)
@@ -94,7 +94,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得系統設定。
+        /// Gets the system settings.
         /// </summary>
         public SystemSettings GetSystemSettings()
         {
@@ -102,21 +102,21 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 儲存系統設定。
+        /// Saves the system settings.
         /// </summary>
-        /// <param name="settings">系統設定。</param>
+        /// <param name="settings">The system settings.</param>
         public void SaveSystemSettings(SystemSettings settings)
         {
-            // 儲存系統設定
+            // Save system settings to file
             string filePath = DefinePathInfo.GetSystemSettingsFilePath();
             SerializeFunc.ObjectToXmlFile(settings, filePath);
-            // 移除快取
+            // Invalidate the cache
             var cache = new SystemSettingsCache();
             cache.Remove();
         }
 
         /// <summary>
-        /// 取得資料庫設定。
+        /// Gets the database settings.
         /// </summary>
         public DatabaseSettings GetDatabaseSettings()
         {
@@ -124,24 +124,24 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 儲存資料庫設定。
+        /// Saves the database settings.
         /// </summary>
-        /// <param name="settings">資料庫設定。</param>
+        /// <param name="settings">The database settings.</param>
         public void SaveDatabaseSettings(DatabaseSettings settings)
         {
             DatabaseSettingsCache oCache;
             string sFilePath;
 
-            // 儲存資料庫設定後
+            // Save database settings to file
             sFilePath = DefinePathInfo.GetDatabaseSettingsFilePath();
             SerializeFunc.ObjectToXmlFile(settings, sFilePath);
-            // 移除快取
+            // Invalidate the cache
             oCache = new DatabaseSettingsCache();
             oCache.Remove();
         }
 
         /// <summary>
-        /// 取得程式清單。
+        /// Gets the program settings.
         /// </summary>
         public ProgramSettings GetProgramSettings()
         {
@@ -149,15 +149,15 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 儲存程式清單。
+        /// Saves the program settings.
         /// </summary>
-        /// <param name="settings">程式清單。</param>
+        /// <param name="settings">The program settings.</param>
         public void SaveProgramSettings(ProgramSettings settings)
         {
             ProgramSettingsCache oCache;
             string sFilePath;
 
-            // 儲存程式清單後，移除快取
+            // Save program settings to file, then invalidate the cache
             sFilePath = DefinePathInfo.GetProgramSettingsFilePath();
             SerializeFunc.ObjectToXmlFile(settings, sFilePath);
             oCache = new ProgramSettingsCache();
@@ -165,7 +165,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得資料庫結構設定。
+        /// Gets the database schema settings.
         /// </summary>
         public DbSchemaSettings GetDbSchemaSettings()
         {
@@ -173,85 +173,85 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 儲存資料庫結構設定。
+        /// Saves the database schema settings.
         /// </summary>
-        /// <param name="settings">資料庫結構設定。</param>
+        /// <param name="settings">The database schema settings.</param>
         public void SaveDbSchemaSettings(DbSchemaSettings settings)
         {
             DbSchemaSettingsCache oCache;
 
-            // 儲存資料庫結構設定後，移除快取
+            // Save database schema settings, then invalidate the cache
             BackendInfo.DefineStorage.SaveDbSchemaSettings(settings);
             oCache = new DbSchemaSettingsCache();
             oCache.Remove();
         }
 
         /// <summary>
-        /// 取得資料表結構。
+        /// Gets the table schema for the specified database and table.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         public TableSchema GetTableSchema(string dbName, string tableName)
         {
             return CacheFunc.GetTableSchema(dbName, tableName);
         }
 
         /// <summary>
-        /// 儲存資料表結構。
+        /// Saves the table schema.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableSchema">資料表結構。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableSchema">The table schema.</param>
         public void SaveTableSchema(string dbName, TableSchema tableSchema)
         {
             TableSchemaCache oCache;
 
-            // 儲存資料表結構後，移除快取
+            // Save the table schema, then invalidate the cache
             BackendInfo.DefineStorage.SaveTableSchema(dbName, tableSchema);
             oCache = new TableSchemaCache();
             oCache.Remove(dbName, tableSchema.TableName);
         }
 
         /// <summary>
-        /// 取得表單結構定義。
+        /// Gets the form schema definition for the specified program.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program identifier.</param>
         public FormSchema GetFormSchema(string progId)
         {
             return CacheFunc.GetFormSchema(progId);
         }
 
         /// <summary>
-        /// 儲存表單結構定義。
+        /// Saves the form schema definition.
         /// </summary>
-        /// <param name="formSchema">表單結構定義。</param>
+        /// <param name="formSchema">The form schema.</param>
         public void SaveFormSchema(FormSchema formSchema)
         {
             FormSchemaCache oCache;
 
-            // 儲存資料表結構後，移除快取
+            // Save the form schema, then invalidate the cache
             BackendInfo.DefineStorage.SaveFormSchema(formSchema);
             oCache = new FormSchemaCache();
             oCache.Remove(formSchema.ProgId);
         }
 
         /// <summary>
-        /// 取得表單版面配置。
+        /// Gets the form layout for the specified layout identifier.
         /// </summary>
-        /// <param name="layoutId">表單版面代碼。</param>
+        /// <param name="layoutId">The layout identifier.</param>
         public FormLayout GetFormLayout(string layoutId)
         {
             return CacheFunc.GetFormLayout(layoutId);
         }
 
         /// <summary>
-        /// 儲存表單版面配置。
+        /// Saves the form layout.
         /// </summary>
-        /// <param name="formLayout">表單版面配置。</param>
+        /// <param name="formLayout">The form layout.</param>
         public void SaveFormLayout(FormLayout formLayout)
         {
             FormLayoutCache oCache;
 
-            // 儲存表單版面配置後，移除快取
+            // Save the form layout, then invalidate the cache
             BackendInfo.DefineStorage.SaveFormLayout(formLayout);
             oCache = new FormLayoutCache();
             oCache.Remove(formLayout.LayoutId);

@@ -7,20 +7,20 @@ using Bee.Define.Storage;
 namespace Bee.Cache.Define
 {
     /// <summary>
-    /// 資料表結構快取。
+    /// Table schema cache.
     /// </summary>
     internal class TableSchemaCache : KeyObjectCache<TableSchema>
     {
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         protected override CacheItemPolicy GetPolicy(string key)
         {
-            // 拆解成員鍵值，取得資料庫名稱及資料表名稱
+            // Parse the member key to extract the database name and table name
             StrFunc.SplitLeft(key, ".", out string dbName, out string tableName);
 
-            // 預設為相對時間 20 分鐘
+            // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineStorage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetTableSchemaFilePath(dbName, tableName) };
@@ -28,21 +28,21 @@ namespace Bee.Cache.Define
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the table schema.
         /// </summary>
-        /// <param name="key">成員鍵值為 [資料表分類.資料表名稱]。</param>
+        /// <param name="key">The member key, in the format [database name].[table name].</param>
         protected override TableSchema CreateInstance(string key)
         {
-            // 拆解成員鍵值，取得資料庫名稱及資料表名稱
+            // Parse the member key to extract the database name and table name
             StrFunc.SplitLeft(key, ".", out string dbName, out string tableName);
             return BackendInfo.DefineStorage.GetTableSchema(dbName, tableName);
         }
 
         /// <summary>
-        /// 取得資料表結構。
+        /// Gets the table schema for the specified database and table.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         public TableSchema Get(string dbName, string tableName)
         {
             string key = $"{dbName}.{tableName}";
@@ -50,10 +50,10 @@ namespace Bee.Cache.Define
         }
 
         /// <summary>
-        /// 由快取區移除成員。
+        /// Removes the table schema entry from the cache.
         /// </summary>
-        /// <param name="categoryID">資料表分類。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="categoryID">The database category identifier.</param>
+        /// <param name="tableName">The table name.</param>
         public void Remove(string categoryID, string tableName)
         {
             string key = $"{categoryID}.{tableName}";

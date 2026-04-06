@@ -3,7 +3,7 @@
 namespace Bee.Cache.Services
 {
     /// <summary>
-    /// 提供企業系統中常用業務物件的統一存取服務。
+    /// Provides unified access to commonly used business objects in the enterprise system.
     /// </summary>
     public class EnterpriseObjectService : IEnterpriseObjectService
     {

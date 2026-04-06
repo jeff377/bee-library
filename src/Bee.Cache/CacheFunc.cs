@@ -9,14 +9,14 @@ using Bee.Define;
 namespace Bee.Cache
 {
     /// <summary>
-    /// 快取函式庫。
+    /// Cache utility library.
     /// </summary>
     public static class CacheFunc
     {
         /// <summary>
-        /// 建立快取項目的回收條件。
+        /// Creates the eviction policy for a cache item.
         /// </summary>
-        /// <param name="policy">快取項目的回收條件。</param>
+        /// <param name="policy">The eviction policy for the cache item.</param>
         internal static System.Runtime.Caching.CacheItemPolicy CreateCachePolicy(CacheItemPolicy policy)
         {
             var cachePolicy = new System.Runtime.Caching.CacheItemPolicy();
@@ -30,7 +30,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得系統設定。
+        /// Gets the system settings.
         /// </summary>
         public static SystemSettings GetSystemSettings()
         {
@@ -38,7 +38,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得資料庫設定。
+        /// Gets the database settings.
         /// </summary>
         public static DatabaseSettings GetDatabaseSettings()
         {
@@ -46,7 +46,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得程式清單。
+        /// Gets the program settings.
         /// </summary>
         public static ProgramSettings GetProgramSettings()
         {
@@ -54,7 +54,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得資料庫結構設定。
+        /// Gets the database schema settings.
         /// </summary>
         public static DbSchemaSettings GetDbSchemaSettings()
         {
@@ -62,83 +62,83 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得資料表結構。
+        /// Gets the table schema for the specified table.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         public static TableSchema GetTableSchema(string dbName, string tableName)
         {
             return CacheContainer.TableSchema.Get(dbName, tableName);
         }
 
         /// <summary>
-        /// 取得預設資料庫的資料表結構。
+        /// Gets the table schema for the specified table in the default database.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         public static TableSchema GetTableSchema(string tableName)
         {
             return GetTableSchema(BackendInfo.DatabaseId, tableName);
         }
 
         /// <summary>
-        /// 取得表單結構定義。
+        /// Gets the form schema definition for the specified program.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program identifier.</param>
         public static FormSchema GetFormSchema(string progId)
         {
             return CacheContainer.FormSchema.Get(progId);
         }
 
         /// <summary>
-        /// 取得表單版面配置。
+        /// Gets the form layout for the specified layout identifier.
         /// </summary>
-        /// <param name="layoutId">表單版面代碼。</param>
+        /// <param name="layoutId">The layout identifier.</param>
         public static FormLayout GetFormLayout(string layoutId)
         {
             return CacheContainer.FormLayout.Get(layoutId);
         }
 
         /// <summary>
-        /// 由快取區取得連線資訊。
+        /// Gets the session information from the cache.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public static SessionInfo GetSessionInfo(Guid accessToken)
         {
             return CacheContainer.SessionInfo.Get(accessToken);
         }
 
         /// <summary>
-        /// 將連線資訊置入快取。
+        /// Stores the session information in the cache.
         /// </summary>
-        /// <param name="sessionInfo">連線資訊。</param>
+        /// <param name="sessionInfo">The session information.</param>
         public static void SetSessionInfo(SessionInfo sessionInfo)
         {
             CacheContainer.SessionInfo.Set(sessionInfo);
         }
 
         /// <summary>
-        /// 由快取區移除連線資訊。
+        /// Removes the session information from the cache.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public static void RemoveSessionInfo(Guid accessToken)
         {
             CacheContainer.SessionInfo.Remove(accessToken);
         }
 
         /// <summary>
-        /// 儲存頁面狀態至快取。
+        /// Saves the view state to the cache.
         /// </summary>
-        /// <param name="uniqueGuid">頁面識別。</param>
-        /// <param name="viewState">頁面狀態。</param>
+        /// <param name="uniqueGuid">The page identifier.</param>
+        /// <param name="viewState">The view state.</param>
         public static void SaveViewState(Guid uniqueGuid, object viewState)
         {
             CacheContainer.ViewState.Set(uniqueGuid, viewState);
         }
 
         /// <summary>
-        /// 由快取載入頁面狀態。
+        /// Loads the view state from the cache.
         /// </summary>
-        /// <param name="uniqueGuid">頁面識別。</param>
+        /// <param name="uniqueGuid">The page identifier.</param>
         public static object LoadViewState(Guid uniqueGuid)
         {
             return CacheContainer.ViewState.Get(uniqueGuid);

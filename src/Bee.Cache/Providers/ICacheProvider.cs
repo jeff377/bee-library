@@ -3,53 +3,53 @@ using System.Collections.Generic;
 namespace Bee.Cache.Providers
 {
     /// <summary>
-    /// �֨����Ѫ̤����A�w�q�֨��ާ@���Τ@�����C
+    /// Defines the contract for a cache provider, specifying the operations supported by the cache.
     /// </summary>
     public interface ICacheProvider
     {
         /// <summary>
-        /// �P�_�֨����جO�_�s�b��֨����C
+        /// Determines whether a cache entry with the specified key exists in the cache.
         /// </summary>
-        /// <param name="key">�֨���ȡC</param>
+        /// <param name="key">The cache key.</param>
         bool Contains(string key);
 
         /// <summary>
-        /// �N�֨����ظm�J�֨��Ϥ��C
+        /// Inserts a cache entry into the cache.
         /// </summary>
-        /// <param name="key">�֨���ȡC</param>
-        /// <param name="value">�n�m�J�֨�������C</param>
-        /// <param name="policy">�֨����ب������C</param>
+        /// <param name="key">The cache key.</param>
+        /// <param name="value">The object to insert into the cache.</param>
+        /// <param name="policy">The expiration policy for the cache entry.</param>
         void Set(string key, object value, CacheItemPolicy policy);
 
         /// <summary>
-        /// �q�֨��Ǧ^���ءC
+        /// Returns the cache entry for the specified key.
         /// </summary>
-        /// <param name="key">�֨���ȡC</param>
+        /// <param name="key">The cache key.</param>
         object Get(string key);
 
         /// <summary>
-        /// �����֨����ءC
+        /// Removes the cache entry with the specified key.
         /// </summary>
-        /// <param name="key">�֨���ȡC</param>
-        /// <returns>�Ǧ^�������֨�����,�Y�֨����ؤ��s�b�h�Ǧ^ null�C</returns>
+        /// <param name="key">The cache key.</param>
+        /// <returns>The removed cache entry, or null if the entry does not exist.</returns>
         object Remove(string key);
 
         /// <summary>
-        /// �q�֨����󲾰����w�ʤ��񪺧֨����ءC
+        /// Removes a specified percentage of cache entries from the cache.
         /// </summary>
-        /// <param name="percent">�������ت��ƥئb�֨������`�Ƥ��Ҧ����ʤ���C</param>
-        /// <returns>�q�֨��Ϥ����������ؼƶq�C</returns>
+        /// <param name="percent">The percentage of total cache entries to remove.</param>
+        /// <returns>The number of cache entries removed.</returns>
         long Trim(int percent);
 
         /// <summary>
-        /// �Ǧ^�֨������֨������`�ơC
+        /// Returns the total number of cache entries in the cache.
         /// </summary>
         long GetCount();
 
         /// <summary>
-        /// ���o�Ҧ��֨�����ȲM��C
+        /// Returns a collection of all keys currently in the cache.
         /// </summary>
-        /// <returns>�֨���Ȫ��r��C�|�C</returns>
+        /// <returns>A collection of cache key strings.</returns>
         IEnumerable<string> GetAllKeys();
     }
 }

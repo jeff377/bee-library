@@ -4,33 +4,33 @@ using System;
 namespace Bee.Cache.Runtime
 {
     /// <summary>
-    /// 頁面狀態快取。
+    /// View state cache.
     /// </summary>
     internal class ViewStateCache : KeyObjectCache<object>
     {
         /// <summary>
-        /// 取得快取鍵值。
+        /// Gets the cache key for the specified member key.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         protected override string GetCacheKey(string key)
         {
             return "ViewState_" + key;
         }
 
         /// <summary>
-        /// 將頁面狀態置入快取區。
+        /// Stores the view state in the cache.
         /// </summary>
-        /// <param name="uniqueGUID">頁面識別。</param>
-        /// <param name="viewState">頁面狀態。</param>
+        /// <param name="uniqueGUID">The page identifier.</param>
+        /// <param name="viewState">The view state.</param>
         public void Set(Guid uniqueGUID, object viewState)
         {
             base.Set(uniqueGUID.ToString(), viewState);
         }
 
         /// <summary>
-        /// 由快取區取得頁面狀態。
+        /// Gets the view state from the cache.
         /// </summary>
-        /// <param name="uniqueGUID">頁面識別。</param>
+        /// <param name="uniqueGUID">The page identifier.</param>
         public object Get(Guid uniqueGUID)
         {
             return base.Get(uniqueGUID.ToString());

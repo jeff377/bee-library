@@ -8,12 +8,12 @@ using System.IO;
 namespace Bee.Cache.Define
 {
     /// <summary>
-    /// 資料庫設定快取。
+    /// Database settings cache.
     /// </summary>
     internal class DatabaseSettingsCache : ObjectCache<DatabaseSettings>
     {
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
         protected override CacheItemPolicy GetPolicy()
         {
@@ -23,7 +23,7 @@ namespace Bee.Cache.Define
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the database settings.
         /// </summary>
         protected override DatabaseSettings CreateInstance()
         {
@@ -33,7 +33,7 @@ namespace Bee.Cache.Define
 
             var settings =  SerializeFunc.XmlFileToObject<DatabaseSettings>(filePath);
 
-            // 觸發全域事件
+            // Raise the global database settings changed event
             GlobalEvents.RaiseDatabaseSettingsChanged();
 
             return settings;

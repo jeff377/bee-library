@@ -4,14 +4,14 @@ using Bee.Base;
 namespace Bee.Cache
 {
     /// <summary>
-    /// 透過鍵值存取同類型物件快取基底類別.。
+    /// Base class for caching same-type objects accessed by key.
     /// </summary>
     public abstract class KeyObjectCache<T>
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="KeyObjectCache{T}"/> class.
         /// </summary>
         public KeyObjectCache()
         { }
@@ -19,47 +19,47 @@ namespace Bee.Cache
         #endregion
 
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         protected virtual CacheItemPolicy GetPolicy(string key)
         {
-            // 預設為相對時間 20 分鐘
+            // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             return policy;
         }
 
         /// <summary>
-        /// 取得快取鍵值，統一轉小寫以避免大小寫差異。
+        /// Gets the cache key, normalized to lowercase to avoid case-sensitivity issues.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         protected virtual string GetCacheKey(string key)
         {
             return (typeof(T).Name + "_" + key).ToLowerInvariant();
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance for the specified key.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         protected virtual T CreateInstance(string key)
         {
             return default;
         }
 
         /// <summary>
-        /// 依成員鍵值取得物件。
+        /// Gets the object associated with the specified member key.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         public virtual T Get(string key)
         {
-            // 取得快取鍵值
+            // Get the cache key
             string cacheKey = GetCacheKey(key);
-            // 若物件存在於快取區，則直接回傳該快取物件
+            // Return the cached object if it already exists in the cache
             if (CacheInfo.Provider.Contains(cacheKey))
                 return (T)CacheInfo.Provider.Get(cacheKey);
 
-            // 建立物件置入快取區，並回傳該物件
+            // Create and insert the object into the cache, then return it
             var value = CreateInstance(key);
             if (value != null)
             {
@@ -69,10 +69,10 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 將物件置入快取中。
+        /// Stores the object in the cache under the specified key.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
-        /// <param name="value">要置入快取的物件。</param>
+        /// <param name="key">The member key.</param>
+        /// <param name="value">The object to store in the cache.</param>
         public virtual void Set(string key, T value)
         {
             string cacheKey = GetCacheKey(key);
@@ -80,9 +80,9 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 將物件置入快取中，物件需具有 IKeyObject 介面才能取得成員鍵值。
+        /// Stores the object in the cache. The object must implement <see cref="IKeyObject"/> to provide the member key.
         /// </summary>
-        /// <param name="value">要置入快取的物件。</param>
+        /// <param name="value">The object to store in the cache.</param>
         public virtual void Set(T value)
         {
             if (value is IKeyObject c)
@@ -92,9 +92,9 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 由快取區移除成員。
+        /// Removes the entry with the specified key from the cache.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         public virtual void Remove(string key)
         {
             string cacheKey = GetCacheKey(key);

@@ -6,19 +6,19 @@ using Bee.Define.Storage;
 namespace Bee.Cache.Define
 {
     /// <summary>
-    /// 表單版面配置快取。
+    /// Form layout cache.
     /// </summary>
     internal class FormLayoutCache : KeyObjectCache<FormLayout>
     {
         /// <summary>
-        /// 取得快取項目到期條件。
+        /// Gets the cache item expiration policy.
         /// </summary>
-        /// <param name="key">成員鍵值。</param>
+        /// <param name="key">The member key.</param>
         protected override CacheItemPolicy GetPolicy(string key)
         {
-            // 表單版面代碼
+            // Layout identifier
             string layoutId = key;
-            // 預設為相對時間 20 分鐘
+            // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineStorage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormLayoutFilePath(layoutId) };
@@ -26,12 +26,12 @@ namespace Bee.Cache.Define
         }
 
         /// <summary>
-        /// 建立執行個體。
+        /// Creates an instance of the form layout.
         /// </summary>
-        /// <param name="key">成員鍵值為 [表單版面代碼]。</param>
+        /// <param name="key">The member key, which is the layout identifier.</param>
         protected override FormLayout CreateInstance(string key)
         {
-            // 表單版面代碼
+            // Layout identifier
             string layoutId = key;
             return BackendInfo.DefineStorage.GetFormLayout(layoutId);
         }
