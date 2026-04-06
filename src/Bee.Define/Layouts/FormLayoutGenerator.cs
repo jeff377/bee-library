@@ -14,7 +14,7 @@ namespace Bee.Define.Layouts
         /// <summary>
         /// 生成表單版面配置。
         /// </summary>
-        /// <param name="formDefine">表單定義。</param>
+        /// <param name="formDefine">表單結構定義。</param>
         /// <returns>表單版面配置。</returns>
         public FormLayout Generate(FormSchema formDefine)
         {

@@ -10,7 +10,7 @@ namespace Bee.Define.Storage
 {
     /// <summary>
     /// 以檔案為儲存媒介，實作定義資料的讀取與儲存。
-    /// 提供資料庫結構、資料表結構、表單定義及表單版面配置等物件的檔案存取功能。
+    /// 提供資料庫結構、資料表結構、表單結構定義及表單版面配置等物件的檔案存取功能。
     /// 主要透過 XML 檔案序列化與反序列化方式，管理各類定義資料的持久化。
     /// </summary>
     public class FileDefineStorage : IDefineStorage
@@ -59,7 +59,7 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 取得表單定義。
+        /// 取得表單結構定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
         public FormSchema GetFormSchema(string progId)
@@ -70,9 +70,9 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 儲存表單定義。
+        /// 儲存表單結構定義。
         /// </summary>
-        /// <param name="formSchema">表單定義。</param>
+        /// <param name="formSchema">表單結構定義。</param>
         public void SaveFormSchema(FormSchema formSchema)
         {
             string filePath = DefinePathInfo.GetFormSchemaFilePath(formSchema.ProgId);

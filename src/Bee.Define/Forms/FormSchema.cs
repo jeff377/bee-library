@@ -10,12 +10,12 @@ using Newtonsoft.Json;
 namespace Bee.Define.Forms
 {
     /// <summary>
-    /// 表單定義。
+    /// 表單結構定義。
     /// </summary>
     [Serializable]
     [XmlType("FormSchema")]
-    [Description("表單定義。")]
-    [TreeNode("表單定義")]
+    [Description("表單結構定義。")]
+    [TreeNode("表單結構定義")]
     public class FormSchema : IObjectSerializeFile
     {
         private FormTableCollection _tables = null;

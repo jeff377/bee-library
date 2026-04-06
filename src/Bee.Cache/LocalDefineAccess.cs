@@ -212,7 +212,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得表單定義。
+        /// 取得表單結構定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
         public FormSchema GetFormSchema(string progId)
@@ -221,9 +221,9 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 儲存表單定義。
+        /// 儲存表單結構定義。
         /// </summary>
-        /// <param name="formSchema">表單定義。</param>
+        /// <param name="formSchema">表單結構定義。</param>
         public void SaveFormSchema(FormSchema formSchema)
         {
             FormSchemaCache oCache;

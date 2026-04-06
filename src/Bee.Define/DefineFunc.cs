@@ -105,7 +105,7 @@ namespace Bee.Define
         /// <summary>
         /// 取得清單版面。
         /// </summary>
-        /// <param name="formDefine">表單定義。</param>
+        /// <param name="formDefine">表單結構定義。</param>
         internal static LayoutGrid GetListLayout(FormSchema formDefine)
         {
             var table = formDefine.MasterTable;

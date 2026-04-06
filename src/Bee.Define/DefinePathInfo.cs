@@ -74,7 +74,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得表單定義的檔案路徑。
+        /// 取得表單結構定義的檔案路徑。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
         public static string GetFormSchemaFilePath(string progId)

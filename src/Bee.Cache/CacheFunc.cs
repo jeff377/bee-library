@@ -81,7 +81,7 @@ namespace Bee.Cache
         }
 
         /// <summary>
-        /// 取得表單定義。
+        /// 取得表單結構定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
         public static FormSchema GetFormSchema(string progId)

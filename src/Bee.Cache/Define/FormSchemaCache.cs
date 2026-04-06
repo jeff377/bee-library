@@ -6,7 +6,7 @@ using Bee.Define.Storage;
 namespace Bee.Cache.Define
 {
     /// <summary>
-    /// 表單定義快取。
+    /// 表單結構定義快取。
     /// </summary>
     internal class FormSchemaCache : KeyObjectCache<FormSchema>
     {

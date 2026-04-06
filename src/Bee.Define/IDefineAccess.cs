@@ -83,15 +83,15 @@ namespace Bee.Define
         void SaveTableSchema(string dbName, TableSchema tableSchema);
 
         /// <summary>
-        /// 取得表單定義。
+        /// 取得表單結構定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
         FormSchema GetFormSchema(string progId);
 
         /// <summary>
-        /// 儲存表單定義。
+        /// 儲存表單結構定義。
         /// </summary>
-        /// <param name="formSchema">表單定義。</param>
+        /// <param name="formSchema">表單結構定義。</param>
         void SaveFormSchema(FormSchema formSchema);
 
         /// <summary>

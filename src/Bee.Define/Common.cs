@@ -378,7 +378,7 @@ namespace Bee.Define
         /// </summary>
         TableSchema,
         /// <summary>
-        /// 表單定義。
+        /// 表單結構定義。
         /// </summary>
         FormSchema,
         /// <summary>

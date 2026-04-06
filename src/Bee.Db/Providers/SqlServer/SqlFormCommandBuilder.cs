@@ -37,7 +37,7 @@ namespace Bee.Db.Providers.SqlServer
         #endregion
 
         /// <summary>
-        /// 表單定義。
+        /// 表單結構定義。
         /// </summary>
         private FormSchema FormSchema { get; }
 
