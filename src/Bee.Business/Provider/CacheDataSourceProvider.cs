@@ -5,20 +5,20 @@ using Bee.Repository.Abstractions;
 namespace Bee.Business.Provider
 {
     /// <summary>
-    /// 快取資料來源提供者。
+    /// Cache data source provider.
     /// </summary>
     public class CacheDataSourceProvider : ICacheDataSourceProvider
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="CacheDataSourceProvider"/> class.
         /// </summary>
         public CacheDataSourceProvider()
         { }
 
         /// <summary>
-        /// 取得暫存連線的用戶資料。
+        /// Gets the session user data for the specified access token.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public SessionUser GetSessionUser(Guid accessToken)
         {
             var repo = RepositoryInfo.SystemProvider.SessionRepository;

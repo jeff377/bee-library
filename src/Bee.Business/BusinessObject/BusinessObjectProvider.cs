@@ -4,32 +4,32 @@ using System;
 namespace Bee.Business.BusinessObjects
 {
     /// <summary>
-    /// 業務邏輯物件提供者。
+    /// Provider for creating business logic objects.
     /// </summary>
     public class BusinessObjectProvider : IBusinessObjectProvider
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="BusinessObjectProvider"/> class.
         /// </summary>
         public BusinessObjectProvider()
         { }
 
         /// <summary>
-        /// 建立系統層級業務邏輯物件。
+        /// Creates a system-level business logic object.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
         public object CreateSystemBusinessObject(Guid accessToken, bool isLocalCall = true)
         {
             return new SystemBusinessObject(accessToken, isLocalCall);
         }
 
         /// <summary>
-        /// 建立表單層級業務邏輯物件。
+        /// Creates a form-level business logic object.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
         public object CreateFormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
         {
             return new FormBusinessObject(accessToken, progId, isLocalCall);

@@ -4,16 +4,16 @@ using System;
 namespace Bee.Business.BusinessObjects
 {
     /// <summary>
-    /// 表單層級業務邏輯物件提供的自訂方法。
+    /// Custom method handler for form-level business logic objects.
     /// </summary>
     internal class FormExecFuncHandler : IExecFuncHandler
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="FormExecFuncHandler"/> class.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public FormExecFuncHandler(Guid accessToken)
         {
             AccessToken = accessToken;
@@ -22,15 +22,15 @@ namespace Bee.Business.BusinessObjects
         #endregion
 
         /// <summary>
-        /// 存取令牌。
+        /// Gets or sets the access token.
         /// </summary>
         public Guid AccessToken { get; private set; }
 
         /// <summary>
-        /// Hello 測試方法。
+        /// A hello test method.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
+        /// <param name="args">The input arguments.</param>
+        /// <param name="result">The output result.</param>
         public void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Hello", "Hello form-level BusinessObject");

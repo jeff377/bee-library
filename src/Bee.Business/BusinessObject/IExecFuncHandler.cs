@@ -1,7 +1,7 @@
 namespace Bee.Business.BusinessObjects
 {
     /// <summary>
-    /// 定義處理指定 FuncID 的執行功能之介面。
+    /// Interface for handlers that execute methods identified by a FuncID.
     /// </summary>
     public interface IExecFuncHandler
     {

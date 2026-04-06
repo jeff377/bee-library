@@ -12,17 +12,17 @@ using Bee.Repository.Abstractions;
 namespace Bee.Business.BusinessObjects
 {
     /// <summary>
-    /// 系統層級業務邏輯物件。
+    /// System-level business logic object.
     /// </summary>
     public class SystemBusinessObject : BusinessObject, ISystemBusinessObject
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="SystemBusinessObject"/> class.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
         public SystemBusinessObject(Guid accessToken, bool isLocalCall = true)
             : base(accessToken, isLocalCall)
         { }
@@ -30,9 +30,9 @@ namespace Bee.Business.BusinessObjects
         #endregion
 
         /// <summary>
-        /// Ping 方法，測試 API 服務是否可用。
+        /// Ping method for testing whether the API service is available.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual PingResult Ping(PingArgs args)
         {
@@ -40,15 +40,15 @@ namespace Bee.Business.BusinessObjects
             {
                 Status = "ok",
                 ServerTime = DateTime.UtcNow,
-                Version = SysInfo.Version, // 系統版本
-                TraceId = args.TraceId // 回傳追蹤 ID
+                Version = SysInfo.Version, // system version
+                TraceId = args.TraceId // echo back the trace ID
             };
         }
 
         /// <summary>
-        /// 取得通用參數及環境設置。
+        /// Gets common parameters and environment configuration.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual GetCommonConfigurationResult GetCommonConfiguration(GetCommonConfigurationArgs args)
         {
@@ -61,20 +61,20 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 執行登入操作。
+        /// Performs the login operation.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual LoginResult Login(LoginArgs args)
         {
-            // 1. 驗證帳密並取得用戶名稱
+            // 1. Authenticate credentials and retrieve the user name
             if (!AuthenticateUser(args, out var userName))
                 throw new UnauthorizedAccessException("Invalid username or password.");
 
-            // 2. 登入時產生一組金鑰（可能是共用或隨機金鑰）
+            // 2. Generate an encryption key on login (may be shared or random)
             byte[] encryptionKey = BackendInfo.ApiEncryptionKeyProvider.GenerateKeyForLogin();
 
-            // 3. 建立 SessionInfo 並存入快取
+            // 3. Create SessionInfo and store it in the cache
             var sessionInfo = new SessionInfo
             {
                 AccessToken = Guid.NewGuid(),
@@ -85,7 +85,7 @@ namespace Bee.Business.BusinessObjects
             };
             BackendInfo.SessionInfoService.Set(sessionInfo);
 
-            // 4. 回傳加密後的金鑰與 Token
+            // 4. Return the encrypted key and access token
             string encryptedKey = string.Empty;
             if (StrFunc.IsNotEmpty(args.ClientPublicKey))
             {
@@ -106,28 +106,28 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 驗證使用者帳號與密碼是否正確。
+        /// Validates the user's credentials.
         /// </summary>
-        /// <param name="args">登入引數。</param>
-        /// <param name="userName">驗證成功的使用者名稱。</param>
-        /// <returns>是否驗證成功。</returns>
+        /// <param name="args">The login arguments.</param>
+        /// <param name="userName">The user name on successful authentication.</param>
+        /// <returns>True if authentication succeeded; otherwise, false.</returns>
         protected virtual bool AuthenticateUser(LoginArgs args, out string userName)
         {
             userName = "Demo User";
-            return true; // 預設為通過，可由子類實作實際驗證邏輯
+            return true; // Default passes; override in subclasses to implement real validation
         }
 
         /// <summary>
-        /// 建立連線。
+        /// Creates a new user session.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
         {
-            // 建立一組用戶連線
+            // Create a new user session
             var repo = RepositoryInfo.SystemProvider.SessionRepository;
             var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
-            // 回傳存取令牌
+            // Return the access token
             return new CreateSessionResult()
             {
                 AccessToken = user.AccessToken,
@@ -136,9 +136,9 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 取得定義資料的核心方法。
+        /// Core method for retrieving definition data.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         private GetDefineResult GetDefineCore(GetDefineArgs args)
         {
             var result = new GetDefineResult();
@@ -147,13 +147,13 @@ namespace Bee.Business.BusinessObjects
 
             if (value != null)
             {
-                // 如果定義資料實作 ISerializableClone，則先建立一份副本
-                // 以避免在序列化過程中污染快取
+                // If the definition implements ISerializableClone, create a copy first
+                // to avoid polluting the cache during serialization
                 if (value is ISerializableClone cloneable)
                 {
                     value = cloneable.CreateSerializableCopy();
                 }
-                // 將物件序列化為 XML
+                // Serialize the object to XML
                 result.Xml = SerializeFunc.ObjectToXml(value);
             }
 
@@ -161,13 +161,13 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 取得定義資料（對外公開）。會排除機敏定義（例如：SystemSettings、DatabaseSettings）。
+        /// Gets definition data (public). Sensitive definitions such as SystemSettings and DatabaseSettings are excluded.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual GetDefineResult GetDefine(GetDefineArgs args)
         {
-            // 非近端呼叫，禁止取得 SystemSettings 與 DatabaseSettings
+            // Non-local calls are not permitted to access SystemSettings or DatabaseSettings
             if (args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings)
             {
                 if (!IsLocalCall) throw new NotSupportedException("The specified DefineType is not supported.");
@@ -176,18 +176,18 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 儲存定義資料的核心方法。
+        /// Core method for saving definition data.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         private SaveDefineResult SaveDefineCore(SaveDefineArgs args)
         {
-            // 將 XML 轉換為物件
+            // Deserialize XML to the target object
             var type = DefineFunc.GetDefineType(args.DefineType);
             object defineObject = SerializeFunc.XmlToObject(args.Xml, type);
             if (defineObject == null)
                 throw new InvalidOperationException($"Failed to deserialize XML to {type.Name} object.");
 
-            // 儲存定義資料
+            // Save the definition data
             var access = BackendInfo.DefineAccess;
             access.SaveDefine(args.DefineType, defineObject, args.Keys);
             var result = new SaveDefineResult();
@@ -195,13 +195,13 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 儲存定義資料（對外公開）。會排除機敏定義（例如：SystemSettings、DatabaseSettings）。
+        /// Saves definition data (public). Sensitive definitions such as SystemSettings and DatabaseSettings are excluded.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual SaveDefineResult SaveDefine(SaveDefineArgs args)
         {
-            // 非近端呼叫，禁止儲存 SystemSettings 與 DatabaseSettings
+            // Non-local calls are not permitted to save SystemSettings or DatabaseSettings
             if (args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings)
             {
                 if (!IsLocalCall) throw new NotSupportedException("The specified DefineType is not supported.");
@@ -211,9 +211,9 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 檢查套件是否有更新版本。
+        /// Checks whether a newer version of the package is available.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous)]
         public virtual CheckPackageUpdateResult CheckPackageUpdate(CheckPackageUpdateArgs args)
         {
@@ -222,9 +222,9 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 取得套件資訊。
+        /// Gets package information.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Encoded, ApiAccessRequirement.Anonymous)]
         public virtual GetPackageResult GetPackage(GetPackageArgs args)
         {
@@ -233,7 +233,7 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 執行 ExecFunc 方法的實作。
+        /// Override to provide the implementation for <see cref="BusinessObject.ExecFunc"/>.
         /// </summary>
         protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
@@ -242,7 +242,7 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 執行 ExecFuncAnonymou 方法的實作。
+        /// Override to provide the implementation for <see cref="BusinessObject.ExecFuncAnonymous"/>.
         /// </summary>
         protected override void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
         {

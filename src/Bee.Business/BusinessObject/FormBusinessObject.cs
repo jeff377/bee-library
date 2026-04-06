@@ -6,18 +6,18 @@ using Bee.Define;
 namespace Bee.Business.BusinessObjects
 {
     /// <summary>
-    /// 表單層級業務邏輯物件。
+    /// Form-level business logic object.
     /// </summary>
     public class FormBusinessObject : BusinessObject, IFormBusinessObject
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="FormBusinessObject"/> class.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
         public FormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
             : base(accessToken, isLocalCall)
         {
@@ -27,12 +27,12 @@ namespace Bee.Business.BusinessObjects
         #endregion
 
         /// <summary>
-        /// 程式代碼。
+        /// Gets the program identifier.
         /// </summary>
         public string ProgId { get; }
 
         /// <summary>
-        /// 執行 ExecFunc 方法的實作。
+        /// Override to provide the implementation for <see cref="BusinessObject.ExecFunc"/>.
         /// </summary>
         protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
@@ -41,7 +41,7 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 執行 ExecFuncAnonymou 方法的實作。
+        /// Override to provide the implementation for <see cref="BusinessObject.ExecFuncAnonymous"/>.
         /// </summary>
         protected override void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
         {

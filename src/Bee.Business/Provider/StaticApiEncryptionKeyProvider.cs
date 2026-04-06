@@ -5,15 +5,15 @@ using System;
 namespace Bee.Business.Provider
 {
     /// <summary>
-    /// 靜態金鑰提供者，永遠回傳後端設定檔的共用金鑰。
+    /// Static encryption key provider that always returns the shared key from the backend configuration.
     /// </summary>
     public class StaticApiEncryptionKeyProvider : IApiEncryptionKeyProvider
     {
         /// <summary>
-        /// 取得 API 傳輸資料的加密金鑰。
+        /// Gets the encryption key for API transmission data.
         /// </summary>
-        /// <param name="accessToken">AccessToken 或 Guid.Empty。</param>
-        /// <returns>64-byte 的合併金鑰資料（AES + HMAC）。</returns>
+        /// <param name="accessToken">The access token, or <see cref="Guid.Empty"/>.</param>
+        /// <returns>A 64-byte combined key (AES + HMAC).</returns>
         public byte[] GetKey(Guid accessToken)
         {
             return BackendInfo.ApiEncryptionKey
@@ -21,12 +21,12 @@ namespace Bee.Business.Provider
         }
 
         /// <summary>
-        /// 登入時產生一組金鑰，可能是共用或隨機金鑰。
+        /// Generates an encryption key at login time (may be shared or random).
         /// </summary>
-        /// <returns>64-byte 合併金鑰（AES + HMAC）。</returns>
+        /// <returns>A 64-byte combined key (AES + HMAC).</returns>
         public byte[] GenerateKeyForLogin()
         {
-            // 固定金鑰提供者不支援登入時產生金鑰，直接回傳共用金鑰
+            // Static key provider does not generate a new key at login; returns the shared key instead
             return GetKey(Guid.Empty);
         }
     }

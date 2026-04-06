@@ -5,17 +5,17 @@ using Bee.Define;
 namespace Bee.Business.BusinessObjects
 {
     /// <summary>
-    /// 業務邏輯物件基底類別。
+    /// Base class for business logic objects.
     /// </summary>
     public abstract class BusinessObject : IBusinessObject
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="BusinessObject"/> class.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
-        /// <param name="isLocalCall">呼叫是否為近端來源。</param>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="isLocalCall">Whether the call originates from a local source.</param>
         public BusinessObject(Guid accessToken, bool isLocalCall = true)
         {
             AccessToken = accessToken;
@@ -26,24 +26,24 @@ namespace Bee.Business.BusinessObjects
         #endregion
 
         /// <summary>
-        /// 存取令牌。
+        /// Gets the access token.
         /// </summary>
         public Guid AccessToken { get; }
 
         /// <summary>
-        /// 連線資訊。
+        /// Gets the session information.
         /// </summary>
         public SessionInfo SessionInfo { get; }
 
         /// <summary>
-        /// 呼叫是否為近端來源（例如與伺服器同一進程或主機）。
+        /// Gets a value indicating whether the call originates from a local source (e.g., same process or host as the server).
         /// </summary>
         public bool IsLocalCall { get; } = false;
 
         /// <summary>
-        /// 執行自訂方法，開放方法，要求登入。
+        /// Executes a custom method; requires authentication.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
@@ -53,17 +53,17 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 執行 ExecFunc 方法的實作。
+        /// Override to provide the implementation for <see cref="ExecFunc"/>.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
+        /// <param name="args">The input arguments.</param>
+        /// <param name="result">The output result.</param>
         protected virtual void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         { }
 
         /// <summary>
-        /// 執行自訂方法，開放方法，匿名存取。
+        /// Executes a custom method; allows anonymous access.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public ExecFuncResult ExecFuncAnonymous(ExecFuncArgs args)
         {
@@ -73,10 +73,10 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 執行 ExecFuncAuth 方法的實作。
+        /// Override to provide the implementation for <see cref="ExecFuncAnonymous"/>.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
+        /// <param name="args">The input arguments.</param>
+        /// <param name="result">The output result.</param>
         protected virtual void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
         { }
 

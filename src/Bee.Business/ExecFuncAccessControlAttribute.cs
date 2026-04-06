@@ -4,22 +4,22 @@ using System;
 namespace Bee.Business
 {
     /// <summary>
-    /// 標註 ExecFunc 方法的存取授權需求屬性。
+    /// Attribute for declaring the access requirement of an ExecFunc method.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
     public class ExecFuncAccessControlAttribute : Attribute
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="ExecFuncAccessControlAttribute"/> class.
         /// </summary>
-        /// <param name="accessRequirement">是否需要登入。</param>
+        /// <param name="accessRequirement">Whether authentication is required.</param>
         public ExecFuncAccessControlAttribute(ApiAccessRequirement accessRequirement = ApiAccessRequirement.Authenticated)
         {
             AccessRequirement = accessRequirement;
         }
 
         /// <summary>
-        /// 存取授權需求（是否需要登入）。
+        /// Gets the access requirement (whether authentication is required).
         /// </summary>
         public ApiAccessRequirement AccessRequirement { get; }
     }

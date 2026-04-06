@@ -7,18 +7,18 @@ using System;
 namespace Bee.Business.Provider
 {
     /// <summary>
-    /// 動態金鑰提供者，依 AccessToken 取得對應的會話金鑰。
+    /// Dynamic encryption key provider that retrieves the session key corresponding to the given AccessToken.
     /// </summary>
     public class DynamicApiEncryptionKeyProvider : IApiEncryptionKeyProvider
     {
         /// <summary>
-        /// 取得 API 傳輸資料的加密金鑰。
+        /// Gets the encryption key for API transmission data.
         /// </summary>
-        /// <param name="accessToken">AccessToken 或 Guid.Empty。</param>
-        /// <returns>64-byte 的合併金鑰資料（AES + HMAC）。</returns>
+        /// <param name="accessToken">The access token, or <see cref="Guid.Empty"/>.</param>
+        /// <returns>A 64-byte combined key (AES + HMAC).</returns>
         public byte[] GetKey(Guid accessToken)
         {
-            // 如果 AccessToken 為 Guid.Empty，則拋出未授權異常
+            // If AccessToken is Guid.Empty, throw an unauthorized exception
             if (BaseFunc.IsEmpty(accessToken))
             {
                 throw new UnauthorizedAccessException("Access token is required.");
@@ -30,12 +30,12 @@ namespace Bee.Business.Provider
         }
 
         /// <summary>
-        /// 登入時產生一組金鑰，可能是共用或隨機金鑰。
+        /// Generates an encryption key at login time (may be shared or random).
         /// </summary>
-        /// <returns>64-byte 合併金鑰（AES + HMAC）。</returns>
+        /// <returns>A 64-byte combined key (AES + HMAC).</returns>
         public byte[] GenerateKeyForLogin()
         {
-            // 登入時會自動產生或更新 SessionInfo，並設定 ApiEncryptionKey
+            // SessionInfo is created or updated at login and the ApiEncryptionKey is set automatically
             return AesCbcHmacKeyGenerator.GenerateCombinedKey();
         }
     }

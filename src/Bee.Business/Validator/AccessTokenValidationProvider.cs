@@ -6,18 +6,18 @@ using System;
 namespace Bee.Business.Validator
 {
     /// <summary>
-    /// AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
+    /// Provider for validating the validity of an AccessToken.
     /// </summary>
     public class AccessTokenValidationProvider : IAccessTokenValidationProvider
     {
         /// <summary>
-        /// 驗證指定的 AccessToken 是否有效。
+        /// Validates whether the specified AccessToken is valid.
         /// </summary>
-        /// <param name="accessToken">用於驗證的存取權杖。</param>
-        /// <returns>若 AccessToken 有效則為 true，否則為 false。</returns>
+        /// <param name="accessToken">The access token to validate.</param>
+        /// <returns>True if the AccessToken is valid; otherwise, false.</returns>
         public bool ValidateAccessToken(Guid accessToken)
         {
-            // 如果 AccessToken 為 Guid.Empty，則拋出未授權異常
+            // If AccessToken is Guid.Empty, throw an unauthorized exception
             if (BaseFunc.IsEmpty(accessToken))
             {
                 throw new UnauthorizedAccessException("Access token is required.");

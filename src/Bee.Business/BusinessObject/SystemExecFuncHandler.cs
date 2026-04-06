@@ -8,16 +8,16 @@ using Bee.Repository.Abstractions;
 namespace Bee.Business.BusinessObjects
 {
     /// <summary>
-    /// 系統層級業務邏輯物件提供的自訂方法。
+    /// Custom method handler for system-level business logic objects.
     /// </summary>
     internal class SystemExecFuncHandler : IExecFuncHandler
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="SystemExecFuncHandler"/> class.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public SystemExecFuncHandler(Guid accessToken)
         {
             AccessToken = accessToken;
@@ -26,15 +26,15 @@ namespace Bee.Business.BusinessObjects
         #endregion
 
         /// <summary>
-        /// 存取令牌。
+        /// Gets or sets the access token.
         /// </summary>
         public Guid AccessToken { get; private set; }
 
         /// <summary>
-        /// Hello 測試方法。
+        /// A hello test method.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
+        /// <param name="args">The input arguments.</param>
+        /// <param name="result">The output result.</param>
         [ExecFuncAccessControl(ApiAccessRequirement.Anonymous)]
         public void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
@@ -42,10 +42,10 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 升級資料表結構。
+        /// Upgrades the table schema for the specified table.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
-        /// <param name="result">傳出結果。</param>
+        /// <param name="args">The input arguments.</param>
+        /// <param name="result">The output result.</param>
         public void UpgradeTableSchema(ExecFuncArgs args, ExecFuncResult result)
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
@@ -58,7 +58,7 @@ namespace Bee.Business.BusinessObjects
         }
 
         /// <summary>
-        /// 測試資料庫連線。
+        /// Tests the database connection.
         /// </summary>
         public void TestConnection(ExecFuncArgs args, ExecFuncResult result)
         {
