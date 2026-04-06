@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Collections;
@@ -6,25 +6,25 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 選單項目集合。
+    /// A collection of menu items.
     /// </summary>
     [Serializable]
-    [TreeNode("項目集合", false)]
+    [TreeNode("Items", false)]
     public class MenuItemCollection : KeyCollectionBase<MenuItem>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MenuItemCollection"/>.
         /// </summary>
-        /// <param name="folder">選單資料夾。</param>
+        /// <param name="folder">The owning menu folder.</param>
         public MenuItemCollection(MenuFolder folder)
           : base(folder)
         { }
 
         /// <summary>
-        /// 加入成員。
+        /// Adds a menu item to the collection.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="progId">The program ID.</param>
+        /// <param name="displayName">The display name.</param>
         public MenuItem Add(string progId, string displayName)
         {
             var oItem = new MenuItem(progId, displayName);

@@ -9,21 +9,21 @@ using System.Xml.Serialization;
 namespace Bee.Define.Database
 {
     /// <summary>
-    /// 資料表結構。
+    /// Table schema.
     /// </summary>
     [Serializable]
     [XmlType("TableSchema")]
-    [Description("資料表結構。")]
+    [Description("Table schema.")]
     [TreeNode]
     public class TableSchema : IObjectSerializeFile
     {
         private DbFieldCollection _fields = null;
         private TableSchemaIndexCollection _indexes = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="TableSchema"/>.
         /// </summary>
         public TableSchema()
         {
@@ -31,19 +31,19 @@ namespace Bee.Define.Database
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -52,16 +52,16 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the serialization-bound file path.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化繫結檔案。
+        /// Sets the serialization-bound file path.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
@@ -70,41 +70,41 @@ namespace Bee.Define.Database
         #endregion
 
         /// <summary>
-        /// 物件建立時間。
+        /// Gets the object creation time.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
-        /// 資料表名稱。
+        /// Gets or sets the table name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
-        [Description("資料表名稱。")]
+        [Description("Table name.")]
         public string TableName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 欄位集合。
+        /// Gets the field collection.
         /// </summary>
-        [Description("欄位集合。")]
+        [Description("Field collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
         public DbFieldCollection Fields
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _fields)) { return null; }
                 if (_fields == null) { _fields = new DbFieldCollection(this); }
                 return _fields;
@@ -112,16 +112,16 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 索引集合。
+        /// Gets the index collection.
         /// </summary>
-        [Description("索引集合。")]
+        [Description("Index collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
         public TableSchemaIndexCollection Indexes
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _indexes)) { return null; }
                 if (_indexes == null) { _indexes = new TableSchemaIndexCollection(this); }
                 return _indexes;
@@ -129,7 +129,7 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 取得主鍵。
+        /// Gets the primary key index.
         /// </summary>
         public TableSchemaIndex GetPrimaryKey()
         {
@@ -142,7 +142,7 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 資料表結構升級動作。
+        /// Gets or sets the table schema upgrade action.
         /// </summary>
         [XmlIgnore]
         [Browsable(false)]
@@ -150,7 +150,7 @@ namespace Bee.Define.Database
         public DbUpgradeAction UpgradeAction { get; set; } = DbUpgradeAction.None;
 
         /// <summary>
-        /// 建立複本。
+        /// Creates a copy of this instance.
         /// </summary>
         public TableSchema Clone()
         {
@@ -165,7 +165,7 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

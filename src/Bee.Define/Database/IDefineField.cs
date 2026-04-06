@@ -4,22 +4,22 @@ using Bee.Base.Data;
 namespace Bee.Define.Database
 {
     /// <summary>
-    /// 定義欄位介面。
+    /// Interface for a define field.
     /// </summary>
     public interface IDefineField
     {
         /// <summary>
-        /// 欄位名稱。
+        /// Gets or sets the field name.
         /// </summary>
         string FieldName { get; set; }
 
         /// <summary>
-        /// 標題文字．
+        /// Gets or sets the caption text.
         /// </summary>
         string Caption { get; set; }
 
         /// <summary>
-        /// 資料型別。
+        /// Gets or sets the database data type.
         /// </summary>
         FieldDbType DbType { get; set; }
     }

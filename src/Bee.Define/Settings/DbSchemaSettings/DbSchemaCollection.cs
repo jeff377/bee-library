@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Attributes;
@@ -7,17 +7,17 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 資料庫結構集合。
+    /// A collection of database schema definitions.
     /// </summary>
     [Serializable]
-    [Description("資料庫結構集合。")]
-    [TreeNode("資料庫結構", false)]
+    [Description("Database schema collection.")]
+    [TreeNode("Database Schemas", false)]
     public class DbSchemaCollection : KeyCollectionBase<DbSchema>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbSchemaCollection"/>.
         /// </summary>
-        /// <param name="settings">資料表清單。</param>
+        /// <param name="settings">The owning database schema settings.</param>
         public DbSchemaCollection(DbSchemaSettings settings) : base(settings)
         { }
     }

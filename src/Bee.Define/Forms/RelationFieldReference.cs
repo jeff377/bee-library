@@ -1,25 +1,25 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Collections;
 
 namespace Bee.Define.Forms
 {
     /// <summary>
-    /// 用於記錄關聯欄位的參照來源。
+    /// Records the reference source of a relation field.
     /// </summary>
     public class RelationFieldReference : KeyCollectionItem
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="RelationFieldReference"/>.
         /// </summary>
         public RelationFieldReference() { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="RelationFieldReference"/>.
         /// </summary>
-        /// <param name="fieldName">關聯欄位的名稱。</param>
-        /// <param name="foreignKeyField">外鍵欄位。</param>
-        /// <param name="sourceProgId">關聯來源的程式代碼。</param>
-        /// <param name="sourceField">關聯來源的欄位名稱。</param>
+        /// <param name="fieldName">The name of the relation field.</param>
+        /// <param name="foreignKeyField">The foreign key field.</param>
+        /// <param name="sourceProgId">The program ID of the relation source.</param>
+        /// <param name="sourceField">The field name of the relation source.</param>
         public RelationFieldReference(string fieldName, FormField foreignKeyField, string sourceProgId, string sourceField)
         {
             FieldName = fieldName;
@@ -29,7 +29,7 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 關聯欄位的名稱。
+        /// Gets or sets the name of the relation field.
         /// </summary>
         public string FieldName
         {
@@ -38,22 +38,22 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 外鍵欄位。
+        /// Gets or sets the foreign key field.
         /// </summary>
         public FormField ForeignKeyField { get; set; }
 
         /// <summary>
-        /// 關聯來源的程式代碼。
+        /// Gets or sets the program ID of the relation source.
         /// </summary>
         public string SourceProgId { get; set; }
 
         /// <summary>
-        /// 關聯來源的欄位名稱。
+        /// Gets or sets the field name of the relation source.
         /// </summary>
         public string SourceField { get; set; }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

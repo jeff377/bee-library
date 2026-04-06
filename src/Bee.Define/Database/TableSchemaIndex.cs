@@ -9,23 +9,23 @@ using Bee.Base.Collections;
 namespace Bee.Define.Database
 {
     /// <summary>
-    /// 資料表索引。
+    /// Table index schema.
     /// </summary>
     [Serializable]
     [XmlType("TableSchemaIndex")]
-    [Description("資料表索引。")]
+    [Description("Table index schema.")]
     [TreeNode]
     public class TableSchemaIndex : KeyCollectionItem
     {
         private IndexFieldCollection _indexFields = null;
 
         /// <summary>
-        /// 索引名稱。
+        /// Gets or sets the index name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
-        [Description("索引名稱。")]
+        [Description("Index name.")]
         public string Name
         {
             get { return base.Key; }
@@ -33,34 +33,34 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 是否具有唯一性。
+        /// Gets or sets a value indicating whether the index is unique.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("是否具有唯一性。")]
+        [Description("Indicates whether the index is unique.")]
         [DefaultValue(false)]
         public bool Unique { get; set; } = false;
 
         /// <summary>
-        /// 是否為主鍵。
+        /// Gets or sets a value indicating whether this is the primary key.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("是否為主鍵。")]
+        [Description("Indicates whether this is the primary key.")]
         [DefaultValue(false)]
         public bool PrimaryKey { get; set; } = false;
 
         /// <summary>
-        /// 索引欄位集合。
+        /// Gets the index field collection.
         /// </summary>
-        [Description("索引欄位集合。")]
+        [Description("Index field collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
         public IndexFieldCollection IndexFields
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _indexFields)) { return null; }
                 if (_indexFields == null) { _indexFields = new IndexFieldCollection(); }
                 return _indexFields;
@@ -68,9 +68,9 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
@@ -78,7 +78,7 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 索引結構升級動作。
+        /// Gets or sets the index schema upgrade action.
         /// </summary>
         [XmlIgnore]
         [Browsable(false)]
@@ -86,7 +86,7 @@ namespace Bee.Define.Database
         public DbUpgradeAction UpgradeAction { get; set; } = DbUpgradeAction.None;
 
         /// <summary>
-        /// 建立複本。
+        /// Creates a copy of this instance.
         /// </summary>
         public TableSchemaIndex Clone()
         {
@@ -100,21 +100,21 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 比較結構是否相同。
+        /// Compares whether the schema is identical to another instance.
         /// </summary>
-        /// <param name="source">來源物件。</param>
+        /// <param name="source">The source object to compare against.</param>
         public bool Compare(TableSchemaIndex source)
         {
-            // 唯一性不同，傳回 false
+            // Uniqueness differs, return false
             if (Unique != source.Unique) { return false; }
-            // 索引欄位數不同，傳回 falase
+            // Index field count differs, return false
             if (IndexFields.Count != source.IndexFields.Count) { return false; }
-            // 比對每個索引欄位結構
+            // Compare each index field schema
             foreach (IndexField indexField in IndexFields)
             {
-                // 索引欄位不存在，傳回 false
+                // Index field does not exist, return false
                 if (!source.IndexFields.Contains(indexField.FieldName)) { return false; }
-                // 排序方式不同，傳回 false
+                // Sort direction differs, return false
                 if (BackendInfo.DatabaseType == DatabaseType.SQLServer)
                 {
                     if (indexField.SortDirection != source.IndexFields[indexField.FieldName].SortDirection) { return false; }
@@ -124,7 +124,7 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

@@ -1,30 +1,30 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 版號及相關檔案。
+    /// Version number and related files.
     /// </summary>
     [Serializable]
     [XmlType("VersionFiles")]
-    [Description("版號及相關檔案。")]
+    [Description("Version number and related files.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class VersionFiles
     {
         /// <summary>
-        /// 版號。
+        /// Gets or sets the version number.
         /// </summary>
         [XmlAttribute]
-        [Description("版號。")]
+        [Description("Version number.")]
         public string Version { get; set; }
 
         /// <summary>
-        /// 檔案清單。
+        /// Gets or sets the file list.
         /// </summary>
         [XmlAttribute]
-        [Description("檔案清單。")]
+        [Description("File list.")]
         public string Files { get; set; }
     }
 }

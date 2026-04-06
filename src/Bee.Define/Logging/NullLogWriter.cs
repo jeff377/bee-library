@@ -1,15 +1,15 @@
 ﻿namespace Bee.Define.Logging
 {
     /// <summary>
-    /// 空的日誌寫入器，不執行任何操作。
-    /// 用於預設情境避免 Null 檢查。
+    /// A no-op log writer that performs no operations.
+    /// Used as a default to avoid null checks.
     /// </summary>
     public class NullLogWriter : ILogWriter
     {
         /// <summary>
-        /// 寫入日誌（本實作不進行任何操作）。
+        /// Writes a log entry (this implementation does nothing).
         /// </summary>
-        /// <param name="entry">日誌內容。</param>
+        /// <param name="entry">The log entry.</param>
         public void Write(LogEntry entry)
         {
             // Do nothing.

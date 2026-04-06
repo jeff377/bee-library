@@ -1,4 +1,4 @@
-﻿using Bee.Define.Collections;
+using Bee.Define.Collections;
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
@@ -9,11 +9,11 @@ using Bee.Base.Serialization;
 namespace Bee.Define.Layouts
 {
     /// <summary>
-    /// 排版項目。
+    /// A layout item.
     /// </summary>
     [Serializable]
     [XmlType("LayoutItem")]
-    [Description("排版項目。")]
+    [Description("Layout item.")]
     [TreeNode]
     public class LayoutItem : LayoutItemBase
     {
@@ -23,38 +23,38 @@ namespace Bee.Define.Layouts
         private PropertyCollection _extendedProperties = null;
 
         /// <summary>
-        /// 欄位名稱。
+        /// Gets or sets the field name.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("欄位名稱。")]
+        [Description("Field name.")]
         public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 標題文字。
+        /// Gets or sets the caption text.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("標題文字。")]
+        [Description("Caption text.")]
         [DefaultValue("")]
         public string Caption { get; set; } = string.Empty;
 
         /// <summary>
-        /// 控制項類型。
+        /// Gets or sets the control type.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
-        [Description("控制項類型。")]
+        [Description("Control type.")]
         public ControlType ControlType { get; set; } = ControlType.TextEdit;
 
         /// <summary>
-        /// 合併列數。
+        /// Gets or sets the number of rows to span.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
-        [Description("合併列數。")]
+        [Description("Number of rows to span.")]
         [DefaultValue(1)]
         public int RowSpan
         {
@@ -67,11 +67,11 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 合併欄數。
+        /// Gets or sets the number of columns to span.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
-        [Description("合併欄數。")]
+        [Description("Number of columns to span.")]
         [DefaultValue(1)]
         public int ColumnSpan
         {
@@ -84,52 +84,52 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 關連程式代碼。
+        /// Gets or sets the related program ID.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
-        [Description("關連程式代碼。")]
+        [Description("Related program ID.")]
         [DefaultValue("")]
         public string ProgId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 是否唯讀。
+        /// Gets or sets a value indicating whether this item is read-only.
         /// </summary>
         [Category(PropertyCategories.Appearance)]
         [XmlAttribute]
-        [Description("是否唯讀。")]
+        [Description("Indicates whether this item is read-only.")]
         [DefaultValue(false)]
         public bool ReadOnly { get; set; } = false;
 
         /// <summary>
-        /// 顯示格式化。
+        /// Gets or sets the display format string.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
-        [Description("顯示格式化。")]
+        [Description("Display format string.")]
         [DefaultValue("")]
         public string DisplayFormat { get; set; } = string.Empty;
 
         /// <summary>
-        /// 數值格式化。
+        /// Gets or sets the number format string.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
-        [Description("數值格式化。")]
+        [Description("Number format string.")]
         [DefaultValue("")]
         public string NumberFormat { get; set; } = string.Empty;
 
         /// <summary>
-        /// 清單項目集合。
+        /// Gets the list item collection.
         /// </summary>
         [Category(PropertyCategories.Data)]
-        [Description("清單項目集合。")]
+        [Description("List item collection.")]
         [DefaultValue(null)]
         public ListItemCollection ListItems
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _listItems)) { return null; }
                 if (_listItems == null) { _listItems = new ListItemCollection(); }
                 return _listItems;
@@ -137,15 +137,15 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 延伸屬性集合。
+        /// Gets the extended property collection.
         /// </summary>
-        [Description("延伸屬性集合。")]
+        [Description("Extended property collection.")]
         [DefaultValue(null)]
         public PropertyCollection ExtendedProperties
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _extendedProperties)) { return null; }
                 if (_extendedProperties == null) { _extendedProperties = new PropertyCollection(); }
                 return _extendedProperties;
@@ -153,9 +153,9 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
@@ -164,7 +164,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

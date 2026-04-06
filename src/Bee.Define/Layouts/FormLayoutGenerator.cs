@@ -1,4 +1,4 @@
-﻿using Bee.Define.Forms;
+using Bee.Define.Forms;
 using Bee.Base;
 using Bee.Base.Data;
 using System;
@@ -6,16 +6,16 @@ using System;
 namespace Bee.Define.Layouts
 {
     /// <summary>
-    /// 表單版面配置生成器。
-    /// 負責將 FormSchema 轉換為 FormLayout 結構。
+    /// Form layout generator.
+    /// Responsible for converting a <see cref="FormSchema"/> into a <see cref="FormLayout"/> structure.
     /// </summary>
     public class FormLayoutGenerator
     {
         /// <summary>
-        /// 生成表單版面配置。
+        /// Generates a form layout from a form schema definition.
         /// </summary>
-        /// <param name="formDefine">表單結構定義。</param>
-        /// <returns>表單版面配置。</returns>
+        /// <param name="formDefine">The form schema definition.</param>
+        /// <returns>The generated form layout.</returns>
         public FormLayout Generate(FormSchema formDefine)
         {
             if (formDefine == null)
@@ -33,22 +33,22 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 加入版面配置群組。
+        /// Adds layout groups to the form layout.
         /// </summary>
         private void AddLayoutGroups(FormSchema formDefine, FormLayout formLayout)
         {
             if (formDefine.Tables == null) return;
 
-            // 為主表建立版面配置群組
+            // Create a layout group for the master table
             if (formDefine.MasterTable != null)
             {
                 AddMasterTableGroup(formDefine.MasterTable, formLayout);
             }
 
-            // 為其他資料表建立版面配置群組
+            // Create layout groups for the remaining tables
             foreach (var table in formDefine.Tables)
             {
-                // 跳過主表（已處理）
+                // Skip the master table (already handled)
                 if (table == formDefine.MasterTable)
                     continue;
 
@@ -57,7 +57,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 加入主表版面配置群組。
+        /// Adds a master table layout group.
         /// </summary>
         private void AddMasterTableGroup(FormTable formTable, FormLayout formLayout)
         {
@@ -86,7 +86,7 @@ namespace Bee.Define.Layouts
                     NumberFormat = field.NumberFormat
                 };
 
-                // 設定關連程式代碼
+                // Set the related program ID
                 if (StrFunc.IsNotEmpty(field.LookupProgId))
                 {
                     layoutItem.ProgId = field.LookupProgId;
@@ -106,7 +106,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 加入明細表版面配置群組。
+        /// Adds a detail table layout group.
         /// </summary>
         private void AddDetailTableGroup(FormTable formTable, FormLayout formLayout)
         {
@@ -120,10 +120,10 @@ namespace Bee.Define.Layouts
                 ColumnCount = 1
             };
 
-            // 建立資料表格排版
+            // Create a grid layout for the table
             var layoutGrid = new LayoutGrid(formTable.TableName, formTable.DisplayName);
 
-            // 加入欄位
+            // Add columns
             foreach (var field in formTable.Fields)
             {
                 if (!field.Visible) continue;
@@ -151,7 +151,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 根據資料型別取得預設控制項類型。
+        /// Gets the default control type for the specified database field type.
         /// </summary>
         private ControlType GetDefaultControlType(FieldDbType dbType)
         {
@@ -169,7 +169,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 將 ControlType 轉換為 ColumnControlType。
+        /// Converts a <see cref="ControlType"/> to a <see cref="ColumnControlType"/>.
         /// </summary>
         private ColumnControlType ConvertToColumnControlType(ControlType controlType)
         {
@@ -188,7 +188,7 @@ namespace Bee.Define.Layouts
                 case ControlType.CheckEdit:
                     return ColumnControlType.CheckEdit;
                 case ControlType.MemoEdit:
-                    // MemoEdit 在表格欄位中不適用，轉換為 TextEdit
+                    // MemoEdit is not applicable in grid columns; fall back to TextEdit
                     return ColumnControlType.TextEdit;
                 case ControlType.Auto:
                 default:
@@ -197,7 +197,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 根據資料型別取得預設表格欄位控制項類型。
+        /// Gets the default grid column control type for the specified database field type.
         /// </summary>
         private ColumnControlType GetDefaultColumnControlType(FieldDbType dbType)
         {

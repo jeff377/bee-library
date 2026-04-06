@@ -3,16 +3,16 @@
 namespace Bee.Define
 {
     /// <summary>
-    /// 標註 API 方法的存取控制屬性
+    /// Attribute for annotating API method access control.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
     public class ApiAccessControlAttribute : Attribute
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ApiAccessControlAttribute"/>.
         /// </summary>
-        /// <param name="protectionLevel">存取保護等級。</param>
-        /// <param name="accessRequirement">是否需要登入。</param>
+        /// <param name="protectionLevel">The access protection level.</param>
+        /// <param name="accessRequirement">Whether login is required.</param>
         public ApiAccessControlAttribute(
             ApiProtectionLevel protectionLevel,
             ApiAccessRequirement accessRequirement = ApiAccessRequirement.Authenticated)
@@ -22,12 +22,12 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 存取保護等級（編碼與加密需求）。
+        /// Gets the access protection level (encoding and encryption requirements).
         /// </summary>
         public ApiProtectionLevel ProtectionLevel { get; }
 
         /// <summary>
-        /// 存取授權需求（是否需要登入）。
+        /// Gets the access authorization requirement (whether login is required).
         /// </summary>
         public ApiAccessRequirement AccessRequirement { get; }
     }

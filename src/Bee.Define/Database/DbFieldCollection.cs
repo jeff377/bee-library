@@ -7,27 +7,27 @@ using Bee.Base.Collections;
 namespace Bee.Define.Database
 {
     /// <summary>
-    /// 結構欄位集合。
+    /// Database field schema collection.
     /// </summary>
-    [TreeNode("欄位", true)]
+    [TreeNode("Fields", true)]
     [Serializable]
     public class DbFieldCollection : KeyCollectionBase<DbField>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbFieldCollection"/>.
         /// </summary>
-        /// <param name="dbTable">資料表結構。</param>
+        /// <param name="dbTable">The table schema that owns this collection.</param>
         public DbFieldCollection(TableSchema dbTable)
           : base(dbTable)
         { }
 
         /// <summary>
-        /// 加入成員。
+        /// Adds a new field to the collection.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">標題文字。</param>
-        /// <param name="dbType">欄位資料型別。</param>
-        /// <param name="length">字串型別的欄位長度。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="caption">The caption text.</param>
+        /// <param name="dbType">The field database type.</param>
+        /// <param name="length">The field length for string-type fields.</param>
         public DbField Add(string fieldName, string caption, FieldDbType dbType, int length = 0)
         {
             var dbField = new DbField(fieldName, caption, dbType)

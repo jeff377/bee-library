@@ -6,27 +6,27 @@ using Bee.Base.Collections;
 namespace Bee.Define.Collections
 {
     /// <summary>
-    /// 自訂屬性集合。
+    /// A custom property collection.
     /// </summary>
     [Serializable]
-    [Description("自訂屬性集合。")]
+    [Description("Custom property collection.")]
     public class PropertyCollection : KeyCollectionBase<Property>
     {
         /// <summary>
-        /// 加入成員。
+        /// Adds a new property to the collection.
         /// </summary>
-        /// <param name="name">屬性名稱。</param>
-        /// <param name="value">屬性值。</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="value">The property value.</param>
         public void Add(string name, string value)
         {
             base.Add(new Property(name, value));
         }
 
         /// <summary>
-        /// 取得屬性值。
+        /// Gets the string value of a property.
         /// </summary>
-        /// <param name="name">屬性名稱。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="defaultValue">The default value to return if the property does not exist.</param>
         public string GetValue(string name, string defaultValue)
         {
             if (this.Contains(name))
@@ -36,10 +36,10 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 取得屬性值。
+        /// Gets the boolean value of a property.
         /// </summary>
-        /// <param name="name">屬性名稱。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="defaultValue">The default value to return if the property does not exist.</param>
         public bool GetValue(string name, bool defaultValue)
         {
             if (this.Contains(name))
@@ -49,10 +49,10 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 取得屬性值。
+        /// Gets the integer value of a property.
         /// </summary>
-        /// <param name="name">屬性名稱。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="defaultValue">The default value to return if the property does not exist.</param>
         public int GetValue(string name, int defaultValue)
         {
             if (this.Contains(name))

@@ -5,16 +5,16 @@ using System;
 namespace Bee.Define.Database
 {
     /// <summary>
-    /// 資料表結構生成器。
-    /// 負責將 FormTable 轉換為 TableSchema 結構。
+    /// Table schema generator.
+    /// Responsible for converting a <see cref="FormTable"/> into a <see cref="TableSchema"/> structure.
     /// </summary>
     public class TableSchemaGenerator
     {
         /// <summary>
-        /// 生成資料表結構。
+        /// Generates a table schema from a form table definition.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
-        /// <returns>資料表結構。</returns>
+        /// <param name="formTable">The form table.</param>
+        /// <returns>The generated table schema.</returns>
         public TableSchema Generate(FormTable formTable)
         {
             if (formTable == null)
@@ -33,7 +33,7 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 加入欄位。
+        /// Adds fields to the table schema.
         /// </summary>
         private void AddFields(FormTable formTable, TableSchema tableSchema)
         {
@@ -41,7 +41,7 @@ namespace Bee.Define.Database
 
             foreach (var field in formTable.Fields)
             {
-                // 只處理資料庫相關欄位
+                // Only process database-related fields
                 if (field.Type != FieldType.DbField)
                     continue;
 
@@ -56,32 +56,32 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 加入索引。
+        /// Adds indexes to the table schema.
         /// </summary>
         private void AddIndexes(FormTable formTable, TableSchema tableSchema)
         {
-            // 前置檢查，避免空值判斷
+            // Pre-check to avoid null reference
             if (tableSchema.Fields == null) return;
 
-            // 建立主索引
+            // Create primary key index
             if (tableSchema.Fields.Contains(SysFields.No))
                 tableSchema.Indexes.AddPrimaryKey(SysFields.No);
 
-            // 建立唯一列別索引
+            // Create unique row identifier index
             if (tableSchema.Fields.Contains(SysFields.RowId))
                 tableSchema.Indexes.Add("rx_{0}", SysFields.RowId, true);
 
-            // 建立唯一流水索引
+            // Create unique sequential number index
             if (tableSchema.Fields.Contains(SysFields.Id))
                 tableSchema.Indexes.Add("uk_{0}", SysFields.Id, true);
 
-            // 建立外鍵索引
+            // Create foreign key indexes
             if (formTable.Fields == null) { return; }
             foreach (var field in formTable.Fields)
             {
                 if (StrFunc.IsNotEmpty(field.RelationProgId))
                 {
-                    // 包含欄位名稱以避免重複
+                    // Include field name to avoid duplicates
                     tableSchema.Indexes.Add("fk_{0}_{field.FieldName}", field.FieldName, false);
                 }
             }

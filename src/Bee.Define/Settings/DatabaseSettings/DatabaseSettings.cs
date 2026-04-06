@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Text;
 using System.Xml.Serialization;
@@ -11,21 +11,21 @@ using Newtonsoft.Json;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 資料庫設定。
+    /// Database settings.
     /// </summary>
     [Serializable]
     [XmlType("DatabaseSettings")]
-    [Description("資料庫設定。")]
+    [Description("Database settings.")]
     [TreeNode("Database Settings")]
     public class DatabaseSettings : IObjectSerializeFile, IObjectSerializeProcess, ISerializableClone
     {
         private DatabaseServerCollection _servers = null;
         private DatabaseItemCollection _items = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式 
+        /// Initializes a new instance of <see cref="DatabaseSettings"/>.
         /// </summary>
         public DatabaseSettings()
         {
@@ -33,10 +33,10 @@ namespace Bee.Define.Settings
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -44,9 +44,9 @@ namespace Bee.Define.Settings
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -55,7 +55,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the file path bound to serialization.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -63,9 +63,9 @@ namespace Bee.Define.Settings
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化繫結檔案。
+        /// Sets the file path bound to serialization.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
@@ -73,12 +73,12 @@ namespace Bee.Define.Settings
 
         #endregion
 
-        #region IObjectSerializeProcess 介面
+        #region IObjectSerializeProcess Interface
 
         /// <summary>
-        /// 執行序列化前的通知方法。
+        /// Called before serialization.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
         public void BeforeSerialize(SerializeFormat serializeFormat)
         {
             var combinedKey = BackendInfo.ConfigEncryptionKey;
@@ -108,17 +108,17 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 執行序列化後的通知方法。
+        /// Called after serialization.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
         public void AfterSerialize(SerializeFormat serializeFormat)
         {
         }
 
         /// <summary>
-        /// 執行反序列化後的通知方法。
+        /// Called after deserialization.
         /// </summary>
-        /// <param name="serializeFormat">序列化格式。</param>
+        /// <param name="serializeFormat">The serialization format.</param>
         public void AfterDeserialize(SerializeFormat serializeFormat)
         {
             var combinedKey = BackendInfo.ConfigEncryptionKey;
@@ -139,7 +139,7 @@ namespace Bee.Define.Settings
                     }
                     catch
                     {
-                        server.Password = string.Empty; // 解密失敗時保護資料
+                        server.Password = string.Empty; // Protect data on decryption failure
                     }
                 }
             }
@@ -157,7 +157,7 @@ namespace Bee.Define.Settings
                     }
                     catch
                     {
-                        item.Password = string.Empty; // 解密失敗時保護資料
+                        item.Password = string.Empty; // Protect data on decryption failure
                     }
                 }
             }
@@ -165,10 +165,10 @@ namespace Bee.Define.Settings
 
         #endregion
 
-        #region ISerializableClone 介面   
+        #region ISerializableClone Interface
 
         /// <summary>
-        /// 複製出一份序列化用的物件 (深拷貝)。
+        /// Creates a serializable deep copy of this object.
         /// </summary>
         public object CreateSerializableCopy()
         {
@@ -178,22 +178,22 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 物件建立時間。
+        /// Gets the time at which this object was created.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
-        /// 資料庫伺服器集合。
+        /// Gets the database server collection.
         /// </summary>
-        [Description("資料庫伺服器集合。")]
+        [Description("Database server collection.")]
         [DefaultValue(null)]
         public DatabaseServerCollection Servers
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _servers)) { return null; }
                 if (_servers == null) { _servers = new DatabaseServerCollection(); }
                 return _servers;
@@ -201,15 +201,15 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 資料庫連線設定集合。
+        /// Gets the database connection settings collection.
         /// </summary>
-        [Description("資料庫連線設定集合。")]
+        [Description("Database connection settings collection.")]
         [DefaultValue(null)]
         public DatabaseItemCollection Items
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _items)) { return null; }
                 if (_items == null) { _items = new DatabaseItemCollection(); }
                 return _items;
@@ -217,12 +217,12 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 建立此物件的複本。
+        /// Creates a copy of this instance.
         /// </summary>
         public DatabaseSettings Clone()
         {
             var copy = new DatabaseSettings();
-            
+
             foreach (var server in Servers)
                 copy.Servers.Add(server.Clone());
 

@@ -11,7 +11,7 @@ using Newtonsoft.Json;
 namespace Bee.Define.Collections
 {
     /// <summary>
-    /// 具鍵值的強型別集合成員。
+    /// A strongly-typed collection item with a key value.
     /// </summary>
     [Serializable]
     public abstract class MessagePackKeyCollectionItem : IKeyCollectionItem, ITagProperty, IObjectSerialize
@@ -19,10 +19,10 @@ namespace Bee.Define.Collections
         private string _key = string.Empty;
         private IKeyCollectionBase _collection = null;
 
-        #region IKeyCollectionItem 介面
+        #region IKeyCollectionItem Interface
 
         /// <summary>
-        /// 鍵值。
+        /// Gets or sets the key value.
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
@@ -36,7 +36,7 @@ namespace Bee.Define.Collections
             {
                 if (_key != value)
                 {
-                    // 變更成員鍵值
+                    // Change the item key value
                     if (_collection != null && !StrFunc.IsEquals(_key, value))
                         _collection.ChangeItemKey(value, this);
                     _key = value;
@@ -45,16 +45,16 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 設定所屬集合。
+        /// Sets the owning collection.
         /// </summary>
-        /// <param name="collection">集合。</param>
+        /// <param name="collection">The collection.</param>
         public void SetCollection(IKeyCollectionBase collection)
         {
             _collection = collection;
         }
 
         /// <summary>
-        /// 由集合中移除此成員。
+        /// Removes this item from the collection.
         /// </summary>
         public void Remove()
         {
@@ -64,10 +64,10 @@ namespace Bee.Define.Collections
 
         #endregion
 
-        #region ITagProperty 介面
+        #region ITagProperty Interface
 
         /// <summary>
-        /// 儲存額外資訊。
+        /// Gets or sets additional tag information.
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
@@ -75,19 +75,19 @@ namespace Bee.Define.Collections
 
         #endregion
 
-        #region IObjectSerialize 介面
+        #region IObjectSerialize Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -96,7 +96,7 @@ namespace Bee.Define.Collections
         #endregion
 
         /// <summary>
-        /// 所屬集合。
+        /// Gets the owning collection.
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]

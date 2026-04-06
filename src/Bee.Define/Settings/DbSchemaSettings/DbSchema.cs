@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -9,21 +9,21 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 資料庫結構。
+    /// A database schema definition.
     /// </summary>
     [Serializable]
     [XmlType("DbSchema")]
-    [Description("資料庫結構。")]
+    [Description("Database schema.")]
     [TreeNode]
     public class DbSchema : KeyCollectionItem
     {
         private TableItemCollection _tables = null;
 
         /// <summary>
-        /// 資料庫名稱。
+        /// Gets or sets the database name.
         /// </summary>
         [XmlAttribute]
-        [Description("資料庫名稱。")]
+        [Description("Database name.")]
         public string DbName
         {
             get { return base.Key; }
@@ -31,23 +31,23 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 資料表集合。
+        /// Gets the table collection.
         /// </summary>
-        [Description("資料表集合。")]
+        [Description("Table collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
         public TableItemCollection Tables
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _tables)) { return null; }
                 if (_tables == null) { _tables = new TableItemCollection(this); }
                 return _tables;
@@ -55,9 +55,9 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
@@ -65,7 +65,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

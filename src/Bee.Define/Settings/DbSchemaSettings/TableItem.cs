@@ -8,19 +8,19 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 資料表項目。
+    /// A table item in the database schema.
     /// </summary>
     [Serializable]
     [XmlType("TableItem")]
-    [Description("資料表項目。")]
+    [Description("Table item.")]
     [TreeNode]
     public class TableItem : KeyCollectionItem
     {
         /// <summary>
-        /// 資料表名稱。
+        /// Gets or sets the table name.
         /// </summary>
         [XmlAttribute]
-        [Description("資料表名稱。")]
+        [Description("Table name.")]
         public string TableName
         {
             get { return base.Key; }
@@ -28,14 +28,14 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

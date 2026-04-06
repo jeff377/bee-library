@@ -6,14 +6,14 @@ using Newtonsoft.Json;
 namespace Bee.Define.Filters
 {
     /// <summary>
-    /// 條件群組（以 AND/OR 串接多個節點）。
+    /// A filter condition group that combines multiple nodes with AND/OR logic.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public sealed class FilterGroup : FilterNode
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FilterGroup"/>.
         /// </summary>
         public FilterGroup()
         {
@@ -21,9 +21,9 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FilterGroup"/>.
         /// </summary>
-        /// <param name="operator">群組邏輯運算子。</param>
+        /// <param name="operator">The logical operator for the group.</param>
         public FilterGroup(LogicalOperator @operator)
         {
             Operator = @operator;
@@ -31,18 +31,18 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 節點種類。
+        /// Gets the node kind.
         /// </summary>
         public override FilterNodeKind Kind { get { return FilterNodeKind.Group; } }
 
         /// <summary>
-        /// 群組邏輯運算子。
+        /// Gets or sets the logical operator for this group.
         /// </summary>
         [Key(100)]
         public LogicalOperator Operator { get; set; }
 
         /// <summary>
-        /// 子節點集合。
+        /// Gets or sets the child node collection.
         /// </summary>
         [Key(101)]
         [XmlArrayItem(typeof(FilterCondition))]
@@ -51,10 +51,10 @@ namespace Bee.Define.Filters
         public FilterNodeCollection Nodes { get; set; }
 
         /// <summary>
-        /// 判斷是否應序列化 Nodes 屬性。
+        /// Determines whether the Nodes property should be serialized.
         /// </summary>
         /// <returns>
-        /// XmlSerializer 會自動偵測 ShouldSerialize[PropertyName]() 方法，若回傳 false，該屬性就不會被序列化。
+        /// XmlSerializer automatically detects ShouldSerialize[PropertyName]() methods; if the method returns false, the property is not serialized.
         /// </returns>
         public bool ShouldSerializeNodes()
         {
@@ -62,9 +62,9 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建立 AND 群組。
+        /// Creates an AND group.
         /// </summary>
-        /// <param name="nodes">成員節點。</param>
+        /// <param name="nodes">The member nodes.</param>
         public static FilterGroup All(params FilterNode[] nodes)
         {
             var g = new FilterGroup();
@@ -74,9 +74,9 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建立 OR 群組。
+        /// Creates an OR group.
         /// </summary>
-        /// <param name="nodes">成員節點。</param>
+        /// <param name="nodes">The member nodes.</param>
         public static FilterGroup Any(params FilterNode[] nodes)
         {
             var g = new FilterGroup();

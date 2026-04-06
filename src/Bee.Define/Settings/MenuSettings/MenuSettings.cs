@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
@@ -10,20 +10,20 @@ using Newtonsoft.Json;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 選單設定。
+    /// Menu settings.
     /// </summary>
     [Serializable]
     [XmlType("MenuSettings")]
-    [Description("選單設定。")]
+    [Description("Menu settings.")]
     [TreeNode]
     public class MenuSettings : IObjectSerializeFile, IDisplayName
     {
         private MenuFolderCollection _folders = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MenuSettings"/>.
         /// </summary>
         public MenuSettings()
         {
@@ -31,10 +31,10 @@ namespace Bee.Define.Settings
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -42,9 +42,9 @@ namespace Bee.Define.Settings
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -52,7 +52,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the file path bound to serialization.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -60,9 +60,9 @@ namespace Bee.Define.Settings
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化/反序列化的對應檔案。
+        /// Sets the file path bound for serialization/deserialization.
         /// </summary>
-        /// <param name="fileName">檔案名稱。</param>
+        /// <param name="fileName">The file name.</param>
         public void SetObjectFilePath(string fileName)
         {
             ObjectFilePath = fileName;
@@ -71,30 +71,30 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 物件建立時間。
+        /// Gets the time at which this object was created.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlIgnore]
         [Browsable(false)]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public virtual string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 程式資料夾集合。
+        /// Gets the program folder collection.
         /// </summary>
-        [Description("程式資料夾集合。")]
+        [Description("Program folder collection.")]
         [DefaultValue(null)]
         public MenuFolderCollection Folders
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _folders)) { return null; }
                 if (_folders == null) { _folders = new MenuFolderCollection(this); }
                 return _folders;
@@ -102,7 +102,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 取得所有選單資料夾集合。
+        /// Gets all menu folders as a flat list.
         /// </summary>
         /// <returns></returns>
         public List<MenuFolder> GetFolders()
@@ -116,21 +116,21 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 由指定節點開始，列舉所有選單資料夾集合。
+        /// Recursively enumerates all menu folders starting from the specified node.
         /// </summary>
-        /// <param name="folder">指定資料夾節點。</param>
-        /// <param name="folders">資料夾集合。</param>
+        /// <param name="folder">The starting folder node.</param>
+        /// <param name="folders">The folder collection to populate.</param>
         private void EnumFolders(MenuFolder folder, List<MenuFolder> folders)
         {
-            // 將本身資料夾加入集合
+            // Add this folder to the collection
             folders.Add(folder);
-            // 遞回往下層資料夾
+            // Recurse into child folders
             foreach (MenuFolder childFolder in folder.Folders)
                 EnumFolders(childFolder, folders);
         }
 
         /// <summary>
-        /// 取得所有選單項目集合。
+        /// Gets all menu items as a flat list.
         /// </summary>
         /// <returns></returns>
         public List<MenuItem> GetItems()
@@ -144,25 +144,25 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 由指定節點開始，列舉所有選單項目集合。
+        /// Recursively enumerates all menu items starting from the specified node.
         /// </summary>
-        /// <param name="folder">指定資料夾節點。</param>
-        /// <param name="items">程式項目清單集合。</param>
+        /// <param name="folder">The starting folder node.</param>
+        /// <param name="items">The item list to populate.</param>
         private void Enumtems(MenuFolder folder, List<MenuItem> items)
         {
             if (folder == null) return;
-            // 列舉資料夾下的程式項目
+            // Enumerate program items under this folder
             foreach (MenuItem item in folder.Items)
                 items.Add(item);
-            // 遞回往下層資料夾
+            // Recurse into child folders
             foreach (MenuFolder childFolder in folder.Folders)
                 Enumtems(childFolder, items);
         }
 
         /// <summary>
-        /// 尋找選單項目節點。
+        /// Finds a menu item by program ID.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program ID.</param>
         /// <returns></returns>
         public MenuItem FindItem(string progId)
         {

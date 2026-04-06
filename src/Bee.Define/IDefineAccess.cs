@@ -1,109 +1,109 @@
-﻿using Bee.Define.Database;
+using Bee.Define.Database;
 using Bee.Define.Forms;
 using Bee.Define.Layouts;
 using Bee.Define.Settings;
 namespace Bee.Define
 {
     /// <summary>
-    /// 定義資料存取介面。
+    /// Interface for accessing define data.
     /// </summary>
     public interface IDefineAccess
     {
         /// <summary>
-        /// 取得定義資料。
+        /// Gets define data.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">取得定義資料的鍵值。</param>
+        /// <param name="defineType">The define data type.</param>
+        /// <param name="keys">The keys used to retrieve the define data.</param>
         object GetDefine(DefineType defineType, string[] keys = null);
 
         /// <summary>
-        /// 儲存定義資料。
+        /// Saves define data.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="defineObject">定義資料。</param>
-        /// <param name="keys">儲存定義資料的鍵值。</param>
+        /// <param name="defineType">The define data type.</param>
+        /// <param name="defineObject">The define data object.</param>
+        /// <param name="keys">The keys used to save the define data.</param>
         void SaveDefine(DefineType defineType, object defineObject, string[] keys = null);
 
         /// <summary>
-        /// 取得系統設定。
+        /// Gets the system settings.
         /// </summary>
         SystemSettings GetSystemSettings();
 
         /// <summary>
-        /// 儲存系統設定。
+        /// Saves the system settings.
         /// </summary>
-        /// <param name="settings">系統設定。</param>
+        /// <param name="settings">The system settings.</param>
         void SaveSystemSettings(SystemSettings settings);
 
         /// <summary>
-        /// 取得資料庫設定。
+        /// Gets the database settings.
         /// </summary>
         DatabaseSettings GetDatabaseSettings();
 
         /// <summary>
-        /// 儲存資料庫設定。
+        /// Saves the database settings.
         /// </summary>
-        /// <param name="settings">資料庫設定。</param>
+        /// <param name="settings">The database settings.</param>
         void SaveDatabaseSettings(DatabaseSettings settings);
 
         /// <summary>
-        /// 取得程式清單。
+        /// Gets the program settings.
         /// </summary>
         ProgramSettings GetProgramSettings();
 
         /// <summary>
-        /// 儲存程式清單。
+        /// Saves the program settings.
         /// </summary>
-        /// <param name="settings">程式清單。</param>
+        /// <param name="settings">The program settings.</param>
         void SaveProgramSettings(ProgramSettings settings);
 
         /// <summary>
-        /// 取得資料庫結構設定。
+        /// Gets the database schema settings.
         /// </summary>
         DbSchemaSettings GetDbSchemaSettings();
 
         /// <summary>
-        /// 儲存資料庫結構設定。
+        /// Saves the database schema settings.
         /// </summary>
-        /// <param name="settings">資料庫結構設定。</param>
+        /// <param name="settings">The database schema settings.</param>
         void SaveDbSchemaSettings(DbSchemaSettings settings);
 
         /// <summary>
-        /// 取得資料表結構。
+        /// Gets the table schema for the specified database and table.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         TableSchema GetTableSchema(string dbName, string tableName);
 
         /// <summary>
-        /// 儲存資料表結構。
+        /// Saves the table schema for the specified database.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableSchema">資料表結構。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableSchema">The table schema.</param>
         void SaveTableSchema(string dbName, TableSchema tableSchema);
 
         /// <summary>
-        /// 取得表單結構定義。
+        /// Gets the form schema for the specified program.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program ID.</param>
         FormSchema GetFormSchema(string progId);
 
         /// <summary>
-        /// 儲存表單結構定義。
+        /// Saves the form schema.
         /// </summary>
-        /// <param name="formSchema">表單結構定義。</param>
+        /// <param name="formSchema">The form schema.</param>
         void SaveFormSchema(FormSchema formSchema);
 
         /// <summary>
-        /// 取得表單版面配置。
+        /// Gets the form layout for the specified layout ID.
         /// </summary>
-        /// <param name="layoutId">表單版面代碼。</param>
+        /// <param name="layoutId">The form layout ID.</param>
         FormLayout GetFormLayout(string layoutId);
 
         /// <summary>
-        /// 儲存表單版面配置。
+        /// Saves the form layout.
         /// </summary>
-        /// <param name="formLayout">表單版面配置。</param>
+        /// <param name="formLayout">The form layout.</param>
         void SaveFormLayout(FormLayout formLayout);
     }
 }

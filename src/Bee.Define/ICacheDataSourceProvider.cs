@@ -1,16 +1,16 @@
-﻿using System;
+using System;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 快取資料來源提供者介面。
+    /// Interface for a cache data source provider.
     /// </summary>
     public interface ICacheDataSourceProvider
     {
         /// <summary>
-        /// 取得暫存連線的用戶資料。
+        /// Gets the session user data for the specified access token.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         SessionUser GetSessionUser(Guid accessToken);
     }
 }

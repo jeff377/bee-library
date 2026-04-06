@@ -6,10 +6,10 @@ using System.ComponentModel;
 namespace Bee.Define.Layouts
 {
     /// <summary>
-    /// 排版項目基底類別。
+    /// Abstract base class for layout items.
     /// </summary>
     [Serializable]
-    [Description("排版項目基底類別。")]
+    [Description("Layout item base class.")]
     public abstract class LayoutItemBase : CollectionItem
     {
     }

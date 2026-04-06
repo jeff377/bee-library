@@ -7,26 +7,26 @@ using Bee.Base.Collections;
 namespace Bee.Define.Collections
 {
     /// <summary>
-    /// 自訂屬性。
+    /// A custom property.
     /// </summary>
     [Serializable]
     [XmlType("Property")]
-    [Description("自訂屬性。")]
+    [Description("Custom property.")]
     public class Property : KeyCollectionItem
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="Property"/>.
         /// </summary>
         public Property()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="Property"/>.
         /// </summary>
-        /// <param name="name">屬性名稱。</param>
-        /// <param name="value">屬性值。</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="value">The property value.</param>
         public Property(string name, string value)
         {
             Name = name;
@@ -36,10 +36,10 @@ namespace Bee.Define.Collections
         #endregion
 
         /// <summary>
-        /// 屬性名稱。
+        /// Gets or sets the property name.
         /// </summary>
         [XmlAttribute]
-        [Description("屬性名稱。")]
+        [Description("Property name.")]
         public string Name
         {
             get { return base.Key; }
@@ -47,14 +47,14 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 屬性值。
+        /// Gets or sets the property value.
         /// </summary>
         [XmlAttribute]
-        [Description("屬性值。")]
+        [Description("Property value.")]
         public string Value { get; set; } = string.Empty;
 
         /// <summary>
-        /// 物件的描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

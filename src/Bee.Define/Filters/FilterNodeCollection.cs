@@ -6,22 +6,22 @@ using System.Collections.Generic;
 namespace Bee.Define.Filters
 {
     /// <summary>
-    /// 過濾節點集合。
+    /// A collection of filter nodes.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public class FilterNodeCollection : MessagePackCollectionBase<FilterNode>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FilterNodeCollection"/>.
         /// </summary>
         public FilterNodeCollection()
         { }
 
         /// <summary>
-        /// 批次加入多個 <see cref="FilterNode"/> 成員。
+        /// Adds multiple <see cref="FilterNode"/> members to the collection.
         /// </summary>
-        /// <param name="nodes">要加入的節點集合。</param>
+        /// <param name="nodes">The nodes to add.</param>
         public void AddRange(IEnumerable<FilterNode> nodes)
         {
             if (nodes == null) return;

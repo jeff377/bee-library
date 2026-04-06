@@ -5,16 +5,16 @@ using System;
 namespace Bee.Define.Database
 {
     /// <summary>
-    /// 索引欄位集合。
+    /// Index field collection.
     /// </summary>
     [Serializable]
     public class IndexFieldCollection : KeyCollectionBase<IndexField>
     {
         /// <summary>
-        /// 加入成員。
+        /// Adds a new index field to the collection.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="sortDirection">排序方式。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="sortDirection">The sort direction.</param>
         public IndexField Add(string fieldName, SortDirection sortDirection = SortDirection.Asc)
         {
             var indexFIeld = new IndexField(fieldName, sortDirection);

@@ -1,61 +1,61 @@
-﻿using Bee.Define.Database;
+using Bee.Define.Database;
 using Bee.Define.Forms;
 using Bee.Define.Layouts;
 using Bee.Define.Settings;
 namespace Bee.Define.Storage
 {
     /// <summary>
-    /// 定義資料儲存區介面。
+    /// Interface for a define data storage provider.
     /// </summary>
     public interface IDefineStorage
     {
         /// <summary>
-        /// 取得資料庫結構設定。
+        /// Gets the database schema settings.
         /// </summary>
         DbSchemaSettings GetDbSchemaSettings();
 
         /// <summary>
-        /// 儲存資料庫結構設定。
+        /// Saves the database schema settings.
         /// </summary>
-        /// <param name="settings">資料庫結構設定。</param>
+        /// <param name="settings">The database schema settings.</param>
         void SaveDbSchemaSettings(DbSchemaSettings settings);
 
         /// <summary>
-        /// 取得資料表結構。
+        /// Gets the table schema for the specified database and table.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         TableSchema GetTableSchema(string dbName, string tableName);
 
         /// <summary>
-        /// 儲存資料表結構。
+        /// Saves the table schema for the specified database.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableSchema">資料表結構。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableSchema">The table schema.</param>
         void SaveTableSchema(string dbName, TableSchema tableSchema);
 
         /// <summary>
-        /// 取得表單結構定義。
+        /// Gets the form schema for the specified program.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program ID.</param>
         FormSchema GetFormSchema(string progId);
 
         /// <summary>
-        /// 儲存表單結構定義。
+        /// Saves the form schema.
         /// </summary>
-        /// <param name="formSchema">表單結構定義。</param>
+        /// <param name="formSchema">The form schema.</param>
         void SaveFormSchema(FormSchema formSchema);
 
         /// <summary>
-        /// 取得表單版面配置。
+        /// Gets the form layout for the specified layout ID.
         /// </summary>
-        /// <param name="layoutId">表單版面代碼。</param>
+        /// <param name="layoutId">The form layout ID.</param>
         FormLayout GetFormLayout(string layoutId);
 
         /// <summary>
-        /// 儲存表單版面配置。
+        /// Saves the form layout.
         /// </summary>
-        /// <param name="formLayout">表單版面配置。</param>
+        /// <param name="formLayout">The form layout.</param>
         void SaveFormLayout(FormLayout formLayout);
     }
 }

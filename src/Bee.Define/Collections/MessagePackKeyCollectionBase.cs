@@ -12,26 +12,26 @@ using System.Xml.Serialization;
 namespace Bee.Define.Collections
 {
     /// <summary>
-    /// 具鍵值的強型別集合，支援 MessagePack 的版本。
+    /// Strongly typed keyed collection with MessagePack support.
     /// </summary>
-    /// <typeparam name="T">集合成員型別。</typeparam>
+    /// <typeparam name="T">The collection item type.</typeparam>
     [Serializable]
     public class MessagePackKeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty, IMessagePackSerializationCallbackReceiver
-        where T : class, IKeyCollectionItem  // 定義成員型別必須實作 IKeyCollectionItem 介面
+        where T : class, IKeyCollectionItem  // Item type must implement IKeyCollectionItem interface
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MessagePackKeyCollectionBase{T}"/>.
         /// </summary>
         public MessagePackKeyCollectionBase() : base(StringComparer.CurrentCultureIgnoreCase)
         {
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MessagePackKeyCollectionBase{T}"/>.
         /// </summary>
-        /// <param name="owner">擁有者。</param>
+        /// <param name="owner">The owner object.</param>
         public MessagePackKeyCollectionBase(object owner) : this()
         {
             Owner = owner;
@@ -39,48 +39,48 @@ namespace Bee.Define.Collections
 
         #endregion
 
-        #region IKeyCollectionBase 介面
+        #region IKeyCollectionBase Interface
 
         /// <summary>
-        ///  擁有者。
+        /// Gets the owner object.
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public object Owner { get; } = null;
 
         /// <summary>
-        /// 變更成員鍵值。 
+        /// Changes the key of an item.
         /// </summary>
-        /// <param name="key">鍵值。</param>
-        /// <param name="value">成員。</param>
+        /// <param name="key">The new key value.</param>
+        /// <param name="value">The item.</param>
         public void ChangeItemKey(string key, IKeyCollectionItem value)
         {
             base.ChangeItemKey((T)value, key);
         }
 
         /// <summary>
-        /// 移除成員。
+        /// Removes an item from the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to remove.</param>
         public void Remove(IKeyCollectionItem value)
         {
             base.Remove(value.Key);
         }
 
         /// <summary>
-        /// 加入成員。
+        /// Adds an item to the collection.
         /// </summary>
-        /// <param name="value">成員。</param>
+        /// <param name="value">The item to add.</param>
         public void Add(IKeyCollectionItem value)
         {
             base.Add((T)value);
         }
 
         /// <summary>
-        /// 插入成員。
+        /// Inserts an item at the specified index.
         /// </summary>
-        /// <param name="index">索引位置。</param>
-        /// <param name="value">成員。</param>
+        /// <param name="index">The index position.</param>
+        /// <param name="value">The item to insert.</param>
         public void Insert(int index, IKeyCollectionItem value)
         {
             base.Insert(index, (T)value);
@@ -88,19 +88,19 @@ namespace Bee.Define.Collections
 
         #endregion
 
-        #region IObjectSerialize 介面
+        #region IObjectSerialize Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -113,10 +113,10 @@ namespace Bee.Define.Collections
 
         #endregion
 
-        #region ITagProperty 介面
+        #region ITagProperty Interface
 
         /// <summary>
-        /// 儲存額外資訊。
+        /// Gets or sets the tag for storing additional information.
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
@@ -124,31 +124,31 @@ namespace Bee.Define.Collections
 
         #endregion
 
-        #region IMessagePackSerializationCallbackReceiver 介面
+        #region IMessagePackSerializationCallbackReceiver Interface
 
         private System.Collections.Generic.List<T> _itemsBuffer;
 
         /// <summary>
-        /// MessagePack 透過這個欄位代理序列化 Items 的內容。
+        /// Proxy property used by MessagePack to serialize the Items content.
         /// </summary>
-        /// <remarks>父類別 KeyedCollection 不支援 MessagePack 序列化，需透過 ItemsForSerialization 屬性序列化資料。</remarks>
+        /// <remarks>The base class KeyedCollection does not support MessagePack serialization; data must be serialized via the ItemsForSerialization property.</remarks>
         [Key(0)]
         public System.Collections.Generic.List<T> ItemsForSerialization
         {
-            get => Items.ToList();      // 將內部項目轉為 List 傳給 MessagePack
+            get => Items.ToList();      // Convert internal items to List for MessagePack
             set => _itemsBuffer = value;
         }
 
         /// <summary>
-        /// MessagePack 透過這個欄位反序列化資料。
+        /// Called by MessagePack before serialization.
         /// </summary>
         void IMessagePackSerializationCallbackReceiver.OnBeforeSerialize()
         {
-            _itemsBuffer = null; // 確保序列化前不會有資料
+            _itemsBuffer = null; // Ensure no buffered data before serialization
         }
 
         /// <summary>
-        /// MessagePack 透過這個欄位反序列化資料。
+        /// Called by MessagePack after deserialization.
         /// </summary>
         void IMessagePackSerializationCallbackReceiver.OnAfterDeserialize()
         {
@@ -165,19 +165,19 @@ namespace Bee.Define.Collections
         #endregion
 
         /// <summary>
-        /// 取得成員鍵值。
+        /// Gets the key for the specified item.
         /// </summary>
-        /// <param name="item">成員。</param>
+        /// <param name="item">The item.</param>
         protected override string GetKeyForItem(T item)
         {
             return (item as IKeyCollectionItem).Key;
         }
 
         /// <summary>
-        /// 覆寫 InsertItem 方法。
+        /// Overrides the InsertItem method.
         /// </summary>
-        /// <param name="index">索引。</param>
-        /// <param name="item">成員。</param>
+        /// <param name="index">The index.</param>
+        /// <param name="item">The item.</param>
         protected override void InsertItem(int index, T item)
         {
             base.InsertItem(index, item);
@@ -185,9 +185,9 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 覆寫 RemoveItem 方法。
+        /// Overrides the RemoveItem method.
         /// </summary>
-        /// <param name="index">索引。</param>
+        /// <param name="index">The index.</param>
         protected override void RemoveItem(int index)
         {
             this[index].SetCollection(null);

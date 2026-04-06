@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -9,20 +9,20 @@ using Newtonsoft.Json;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 資料庫結構設定。
+    /// Database schema settings.
     /// </summary>
     [Serializable]
     [XmlType("DbSchemaSettings")]
-    [Description("資料庫結構設定。")]
-    [TreeNode("資料庫結構")]
+    [Description("Database schema settings.")]
+    [TreeNode("Database Schema")]
     public class DbSchemaSettings : IObjectSerializeFile
     {
         private DbSchemaCollection _databases = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbSchemaSettings"/>.
         /// </summary>
         public DbSchemaSettings()
         {
@@ -30,10 +30,10 @@ namespace Bee.Define.Settings
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -41,9 +41,9 @@ namespace Bee.Define.Settings
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -51,7 +51,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the file path bound to serialization.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -59,9 +59,9 @@ namespace Bee.Define.Settings
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化繫結檔案。
+        /// Sets the file path bound to serialization.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
@@ -70,22 +70,22 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 物件建立時間。
+        /// Gets the time at which this object was created.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
-        /// 資料庫結構集合。
+        /// Gets the database schema collection.
         /// </summary>
-        [Description("資料庫結構集合。")]
+        [Description("Database schema collection.")]
         [DefaultValue(null)]
         public DbSchemaCollection Databases
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _databases)) { return null; }
                 if (_databases == null) { _databases = new DbSchemaCollection(this); }
                 return _databases;

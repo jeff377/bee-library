@@ -1,4 +1,4 @@
-﻿using Bee.Define.Database;
+using Bee.Define.Database;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,30 +11,30 @@ using Bee.Base.Collections;
 namespace Bee.Define.Forms
 {
     /// <summary>
-    /// 表單資料表。
+    /// A form table definition.
     /// </summary>
     [Serializable]
     [XmlType("FormTable")]
-    [Description("表單資料表。")]
+    [Description("Form table.")]
     [TreeNode]
     public class FormTable : KeyCollectionItem
     {
         private FormFieldCollection _fields = null;
         private RelationFieldReferenceCollection _relationFieldReferences = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FormTable"/>.
         /// </summary>
         public FormTable()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FormTable"/>.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="displayName">The display name.</param>
         public FormTable(string tableName, string displayName)
         {
             TableName = tableName;
@@ -44,12 +44,12 @@ namespace Bee.Define.Forms
         #endregion
 
         /// <summary>
-        /// 資料表名稱。
+        /// Gets or sets the table name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
-        [Description("資料表名稱。")]
+        [Description("Table name.")]
         public string TableName
         {
             get { return this.Key; }
@@ -57,32 +57,32 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 資料庫的資料表名稱。
+        /// Gets or sets the database table name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("資料庫的資料表名稱。")]
+        [Description("Database table name.")]
         public string DbTableName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 欄位集合。
+        /// Gets the field collection.
         /// </summary>
-        [Description("欄位集合。")]
+        [Description("Field collection.")]
         [DefaultValue(null)]
         public FormFieldCollection Fields
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _fields)) { return null; }
                 if (_fields == null) { _fields = new FormFieldCollection(this); }
                 return _fields;
@@ -90,7 +90,7 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 取得關聯欄位的參照來源集合。
+        /// Gets the relation field reference collection.
         /// </summary>
         [Browsable(false)]
         [XmlIgnore]
@@ -105,7 +105,7 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 建立關聯欄位的參照來源集合。
+        /// Creates the relation field reference collection.
         /// </summary>
         private RelationFieldReferenceCollection CreateRelationFieldReferences()
         {
@@ -134,9 +134,9 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
@@ -144,7 +144,7 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {
@@ -152,9 +152,9 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 生成資料庫資料表。
+        /// Generates a database table schema from this form table.
         /// </summary>
-        /// <returns>資料庫資料表。</returns>
+        /// <returns>The generated table schema.</returns>
         public TableSchema GenerateDbTable()
         {
             var generator = new TableSchemaGenerator();

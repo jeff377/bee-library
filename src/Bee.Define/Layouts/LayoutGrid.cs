@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -8,29 +8,29 @@ using Bee.Base.Serialization;
 namespace Bee.Define.Layouts
 {
     /// <summary>
-    /// 資料表格排版。
+    /// A grid layout for tabular data.
     /// </summary>
     [Serializable]
     [XmlType("LayoutGrid")]
-    [Description("資料表格排版。")]
+    [Description("Grid layout for tabular data.")]
     [TreeNode]
     public class LayoutGrid : LayoutItemBase
     {
         private LayoutColumnCollection _columns = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="LayoutGrid"/>.
         /// </summary>
         public LayoutGrid()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="LayoutGrid"/>.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="displayName">The display name.</param>
         public LayoutGrid(string tableName, string displayName)
         {
             TableName = tableName;
@@ -40,41 +40,41 @@ namespace Bee.Define.Layouts
         #endregion
 
         /// <summary>
-        /// 資料表名稱。
+        /// Gets or sets the table name.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("資料表名稱。")]
+        [Description("Table name.")]
         public string TableName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Grid 控制項允許執行的動作。
+        /// Gets or sets the actions allowed on the grid control.
         /// </summary>
         [XmlAttribute]
-        [Description("Grid 控制項允許執行的動作。")]
+        [Description("Actions allowed on the grid control.")]
         [DefaultValue(GridControlAllowActions.All)]
         public GridControlAllowActions AllowActions { get; set; } = GridControlAllowActions.All;
 
         /// <summary>
-        /// 欄位集合。
+        /// Gets the column collection.
         /// </summary>
-        [Description("欄位集合。")]
+        [Description("Column collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
         public LayoutColumnCollection Columns
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _columns)) { return null; }
                 if (_columns == null) { _columns = new LayoutColumnCollection(); }
                 return _columns;
@@ -82,9 +82,9 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
@@ -92,7 +92,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

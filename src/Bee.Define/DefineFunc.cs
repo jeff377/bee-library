@@ -1,4 +1,4 @@
-﻿using Bee.Define.Forms;
+using Bee.Define.Forms;
 using Bee.Define.Layouts;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 定義相關函式庫。
+    /// Utility library for define-related functions.
     /// </summary>
     public static class DefineFunc
     {
@@ -24,16 +24,16 @@ namespace Bee.Define
         };
 
         /// <summary>
-        /// 取得定義型別。
+        /// Gets the CLR type for the specified define type.
         /// </summary>
-        /// <param name="defineType">定義資料類別。</param>
+        /// <param name="defineType">The define data type.</param>
         public static Type GetDefineType(DefineType defineType)
         {
             if (!DefineTypeNames.TryGetValue(defineType, out string typeName))
                 throw new NotSupportedException($"Type not found: {defineType}");
-            // 取得目前組件
+            // Get the current assembly
             var assembly = typeof(DefineFunc).Assembly;
-            // 嘗試取得型別
+            // Attempt to get the type
             var type = assembly.GetType(typeName);
             if (type == null)
                 throw new NotSupportedException($"Type not found: {typeName}");
@@ -41,29 +41,29 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得數值格式化字串。
+        /// Gets the number format string for the specified format name.
         /// </summary>
-        /// <param name="numberFormat">數值格式化。</param>
+        /// <param name="numberFormat">The number format name.</param>
         public static string GetNumberFormatString(string numberFormat)
         {
             if (StrFunc.IsEmpty(numberFormat))
                 return string.Empty;
-            else if (StrFunc.IsEquals(numberFormat, "Quantity"))  // 數量
+            else if (StrFunc.IsEquals(numberFormat, "Quantity"))  // Quantity
                 return "N0";
-            else if (StrFunc.IsEquals(numberFormat, "UnitPrice"))  // 單價
+            else if (StrFunc.IsEquals(numberFormat, "UnitPrice"))  // Unit price
                 return "N2";
-            else if (StrFunc.IsEquals(numberFormat, "Amount"))  // 金額
+            else if (StrFunc.IsEquals(numberFormat, "Amount"))  // Amount
                 return "N2";
-            else if (StrFunc.IsEquals(numberFormat, "Cost"))  // 成本
+            else if (StrFunc.IsEquals(numberFormat, "Cost"))  // Cost
                 return "N4";
             else
                 return string.Empty;
         }
 
         /// <summary>
-        /// 轉換為表格欄位的控制項類型。
+        /// Converts a <see cref="ControlType"/> to a <see cref="ColumnControlType"/>.
         /// </summary>
-        /// <param name="type">控制項類型。</param>
+        /// <param name="type">The control type.</param>
         internal static ColumnControlType ToColumnControlType(ControlType type)
         {
             switch (type)
@@ -86,9 +86,9 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 轉換為資料表格排版欄位。
+        /// Converts a form field to a grid layout column.
         /// </summary>
-        /// <param name="field">表單欄位。</param>
+        /// <param name="field">The form field.</param>
         internal static LayoutColumn ToLayoutColumn(FormField field)
         {
             var controlType = DefineFunc.ToColumnControlType(field.ControlType);
@@ -103,9 +103,9 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得清單版面。
+        /// Gets the list layout for the specified form schema.
         /// </summary>
-        /// <param name="formDefine">表單結構定義。</param>
+        /// <param name="formDefine">The form schema definition.</param>
         internal static LayoutGrid GetListLayout(FormSchema formDefine)
         {
             var table = formDefine.MasterTable;
@@ -113,9 +113,9 @@ namespace Bee.Define
 
             var grid = new LayoutGrid();
             grid.TableName = formDefine.ProgId;
-            // 加入 sys_RowID 隱藏欄位
-            grid.Columns.Add(SysFields.RowId, "列識別", ColumnControlType.TextEdit).Visible = false;
-            // 加入清單顯示欄位
+            // Add sys_RowID hidden column
+            grid.Columns.Add(SysFields.RowId, "Row ID", ColumnControlType.TextEdit).Visible = false;
+            // Add list display columns
             foreach (string fieldName in fieldNames)
             {
                 var field = table.Fields[fieldName];

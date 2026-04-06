@@ -5,24 +5,24 @@ using System.Collections.Generic;
 namespace Bee.Define.Filters
 {
     /// <summary>
-    /// 單一欄位條件（例如 Name LIKE '%Lee%'、Age &gt; 18）。
+    /// A single-field filter condition (e.g., Name LIKE '%Lee%', Age &gt; 18).
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public sealed class FilterCondition : FilterNode
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FilterCondition"/>.
         /// </summary>
         public FilterCondition() { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FilterCondition"/>.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="operator">比較運算子。</param>
-        /// <param name="value">主要值。</param>
-        /// <param name="secondValue">第二值（Between 條件使用）。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="operator">The comparison operator.</param>
+        /// <param name="value">The primary value.</param>
+        /// <param name="secondValue">The second value (used for Between conditions).</param>
         public FilterCondition(string fieldName, ComparisonOperator @operator, object value, object secondValue = null)
         {
             FieldName = fieldName;
@@ -32,42 +32,42 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 節點種類。
+        /// Gets the node kind.
         /// </summary>
         public override FilterNodeKind Kind { get { return FilterNodeKind.Condition; } }
 
         /// <summary>
-        /// 欄位名稱。
+        /// Gets or sets the field name.
         /// </summary>
         [Key(100)]
         public string FieldName { get; set; }
 
         /// <summary>
-        /// 比較運算子。
+        /// Gets or sets the comparison operator.
         /// </summary>
         [Key(101)]
         public ComparisonOperator Operator { get; set; }
 
         /// <summary>
-        /// 主要值（Equal、Like、&gt; 等）。
+        /// Gets or sets the primary value (used for Equal, Like, &gt;, etc.).
         /// </summary>
         [Key(102)]
         public object Value { get; set; }
 
         /// <summary>
-        /// 第二值（Between 條件使用）。
+        /// Gets or sets the second value (used for Between conditions).
         /// </summary>
         [Key(103)]
         public object SecondValue { get; set; }
 
         /// <summary>
-        /// 值為 null 時是否忽略此條件。
+        /// Gets or sets a value indicating whether to ignore this condition when the value is null.
         /// </summary>
         [Key(104)]
         public bool IgnoreIfNull { get; set; }
 
         /// <summary>
-        /// 建立等於條件。
+        /// Creates an Equal condition.
         /// </summary>
         public static FilterCondition Equal(string fieldName, object value, bool ignoreIfNull = false)
         {
@@ -75,7 +75,7 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建立不等於條件。
+        /// Creates a NotEqual condition.
         /// </summary>
         public static FilterCondition NotEqual(string fieldName, object value, bool ignoreIfNull = false)
         {
@@ -83,7 +83,7 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建立 LIKE 條件。
+        /// Creates a Contains (LIKE '%value%') condition.
         /// </summary>
         public static FilterCondition Contains(string fieldName, string keyword)
         {
@@ -91,7 +91,7 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建立以指定前綴開頭的 LIKE 條件（相當於 SQL 的 LIKE 'value%'）。
+        /// Creates a StartsWith condition (equivalent to SQL LIKE 'value%').
         /// </summary>
         public static FilterCondition StartsWith(string fieldName, string prefix)
         {
@@ -99,7 +99,7 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建立以指定後綴結尾的 LIKE 條件（相當於 SQL 的 LIKE '%value'）。
+        /// Creates an EndsWith condition (equivalent to SQL LIKE '%value').
         /// </summary>
         public static FilterCondition EndsWith(string fieldName, string suffix)
         {
@@ -107,7 +107,7 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建立 Between 條件。
+        /// Creates a Between condition.
         /// </summary>
         public static FilterCondition Between(string fieldName, object from, object to, bool ignoreIfNull = false)
         {
@@ -115,7 +115,7 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 建立 IN 條件。
+        /// Creates an In condition.
         /// </summary>
         public static FilterCondition In(string field, IEnumerable<object> values)
         {
@@ -123,7 +123,7 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

@@ -1,27 +1,27 @@
-﻿using Bee.Define.Collections;
+using Bee.Define.Collections;
 using System;
 using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 排序欄位。
+    /// A sort field definition.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public sealed class SortField : MessagePackCollectionItem
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SortField"/>.
         /// </summary>
         public SortField()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SortField"/>.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="direction">排序方向。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="direction">The sort direction.</param>
         public SortField(string fieldName, SortDirection direction)
         {
             if (string.IsNullOrWhiteSpace(fieldName))
@@ -32,13 +32,13 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 欄位名稱或 SQL 運算式。
+        /// Gets or sets the field name or SQL expression.
         /// </summary>
         [Key(100)]
         public string FieldName { get; set; }
 
         /// <summary>
-        /// 排序方向。
+        /// Gets or sets the sort direction.
         /// </summary>
         [Key(101)]
         public SortDirection Direction { get; set; }

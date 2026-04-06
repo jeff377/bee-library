@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -8,27 +8,27 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 程式項目。
+    /// A program item.
     /// </summary>
     [Serializable]
     [XmlType("ProgramItem")]
-    [Description("程式項目。")]
+    [Description("Program item.")]
     [TreeNode]
     public class ProgramItem : KeyCollectionItem
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ProgramItem"/>.
         /// </summary>
         public ProgramItem()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ProgramItem"/>.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="progId">The program ID.</param>
+        /// <param name="displayName">The display name.</param>
         public ProgramItem(string progId, string displayName)
         {
             this.ProgId = progId;
@@ -38,10 +38,10 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 程式代碼。
+        /// Gets or sets the program ID.
         /// </summary>
         [XmlAttribute]
-        [Description("程式代碼。")]
+        [Description("Program ID.")]
         public string ProgId
         {
             get { return base.Key; }
@@ -49,14 +49,14 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
-        [Description("顯示名稱。")]
-        public string DisplayName { get; set; } = string.Empty; 
+        [Description("Display name.")]
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         /// <returns></returns>
         public override string ToString()

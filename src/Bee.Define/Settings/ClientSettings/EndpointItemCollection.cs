@@ -1,20 +1,20 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Collections;
 using System;
 
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 服務端點清單項目集合。
+    /// A collection of service endpoint list items.
     /// </summary>
     [Serializable]
     public class EndpointItemCollection : CollectionBase<EndpointItem>
     {
         /// <summary>
-        /// 加入成員。
+        /// Adds a service endpoint item to the collection.
         /// </summary>
-        /// <param name="name">服務端點名稱。</param>
-        /// <param name="endpoint">服務端點位置，遠端連線為網址，近端連線為本地路徑。</param>
+        /// <param name="name">The service endpoint name.</param>
+        /// <param name="endpoint">The service endpoint location. Use a URL for remote connections or a local path for local connections.</param>
         public EndpointItem Add(string name, string endpoint)
         {
             var item = new EndpointItem(name, endpoint);

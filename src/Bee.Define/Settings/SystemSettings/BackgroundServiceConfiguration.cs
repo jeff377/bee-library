@@ -7,17 +7,17 @@ using Bee.Base.Attributes;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 背景服務程式參數及環境設置。
+    /// Background service parameters and environment settings.
     /// </summary>
     [Serializable]
     [XmlType("BackgroundServiceConfiguration")]
-    [Description("背景服務程式參數及環境設置。")]
+    [Description("Background service parameters and environment settings.")]
     [TreeNode("BackgroundService")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class BackgroundServiceConfiguration
     {
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

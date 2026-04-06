@@ -1,18 +1,18 @@
-﻿using Bee.Define.Collections;
+using Bee.Define.Collections;
 using System;
 using MessagePack;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 排序欄位集合。
+    /// A collection of sort fields.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public class SortFieldCollection : MessagePackCollectionBase<SortField>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="SortFieldCollection"/>.
         /// </summary>
         public SortFieldCollection()
         { }

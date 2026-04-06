@@ -8,24 +8,24 @@ using Bee.Base.Collections;
 namespace Bee.Define.Database
 {
     /// <summary>
-    /// 索引欄位。
+    /// An index field.
     /// </summary>
     [Serializable]
     [XmlType("IndexField")]
-    [Description("索引欄位。")]
+    [Description("Index field.")]
     public class IndexField : KeyCollectionItem
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="IndexField"/>.
         /// </summary>
         public IndexField()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="IndexField"/>.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="sortDirection">排序方式。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="sortDirection">The sort direction.</param>
         public IndexField(string fieldName, SortDirection sortDirection)
         {
             FieldName = fieldName;
@@ -33,11 +33,11 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 欄位名稱。
+        /// Gets or sets the field name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("欄位名稱。")]
+        [Description("Field name.")]
         public string FieldName
         {
             get { return this.Key; }
@@ -45,16 +45,16 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 排序方式。
+        /// Gets or sets the sort direction.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("排序方式。")]
+        [Description("Sort direction.")]
         [DefaultValue(SortDirection.Asc)]
         public SortDirection SortDirection { get; set; } = SortDirection.Asc;
 
         /// <summary>
-        /// 建立複本。
+        /// Creates a copy of this instance.
         /// </summary>
         public IndexField Clone()
         {

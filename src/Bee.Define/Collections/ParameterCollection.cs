@@ -5,17 +5,17 @@ using MessagePack;
 namespace Bee.Define.Collections
 {
     /// <summary>
-    ///  參數項目集合，支援序列化。
+    /// A parameter item collection with serialization support.
     /// </summary>
     [MessagePackObject]
     [Serializable]
     public class ParameterCollection : MessagePackKeyCollectionBase<Parameter>
     {
         /// <summary>
-        /// 加入參數。
+        /// Adds a parameter. If a parameter with the same name already exists, its value is updated.
         /// </summary>
-        /// <param name="name">參數名稱。</param>
-        /// <param name="value">參數值。</param>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="value">The parameter value.</param>
         public void Add(string name, object value)
         {
             if (this.Contains(name))
@@ -29,10 +29,10 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 取得參數值。
+        /// Gets the value of a parameter.
         /// </summary>
-        /// <typeparam name="T">參數型別。</typeparam>
-        /// <param name="name">參數名稱。</param>
+        /// <typeparam name="T">The parameter type.</typeparam>
+        /// <param name="name">The parameter name.</param>
         public T GetValue<T>(string name)
         {
             if (this.Contains(name))
@@ -42,11 +42,11 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 取得參數值。
+        /// Gets the value of a parameter, returning a default value if the parameter does not exist.
         /// </summary>
-        /// <typeparam name="T">參數型別。</typeparam>
-        /// <param name="name">參數名稱。</param>
-        /// <param name="defaultValue">預設值。</param>
+        /// <typeparam name="T">The parameter type.</typeparam>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="defaultValue">The default value to return if the parameter does not exist.</param>
         public T GetValue<T>(string name, T defaultValue)
         {
             if (this.Contains(name))

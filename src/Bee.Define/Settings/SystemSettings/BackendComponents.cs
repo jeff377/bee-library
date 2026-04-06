@@ -7,11 +7,11 @@ using Bee.Base.Attributes;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 後端可替換組件的設定，定義各種後端服務的型別名稱。
+    /// Settings for replaceable backend components, defining the type names for various backend services.
     /// </summary>
     [Serializable]
     [XmlType("BackendComponents")]
-    [Description("後端可替換組件的設定，定義各種後端服務的型別名稱")]
+    [Description("Settings for replaceable backend components, defining the type names for various backend services.")]
     [TreeNode("Components")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class BackendComponents

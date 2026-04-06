@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -8,26 +8,26 @@ using Bee.Base.Collections;
 namespace Bee.Define.Forms
 {
     /// <summary>
-    /// 欄位對應。
+    /// A field mapping that maps a source field to a destination field.
     /// </summary>
     [Serializable]
     [XmlType("FieldMapping")]
-    [Description("欄位對應。")]
+    [Description("Field mapping.")]
     public class FieldMapping : CollectionItem
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FieldMapping"/>.
         /// </summary>
         public FieldMapping()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FieldMapping"/>.
         /// </summary>
-        /// <param name="sourceField">來源欄位。</param>
-        /// <param name="destinationField">目的欄位。</param>
+        /// <param name="sourceField">The source field.</param>
+        /// <param name="destinationField">The destination field.</param>
         public FieldMapping(string sourceField, string destinationField)
         {
             SourceField = sourceField;
@@ -37,23 +37,23 @@ namespace Bee.Define.Forms
         #endregion
 
         /// <summary>
-        /// 來源欄位。
+        /// Gets or sets the source field.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("來源欄位。")]
+        [Description("Source field.")]
         public string SourceField { get; set; } = string.Empty;
 
         /// <summary>
-        /// 目的欄位。
+        /// Gets or sets the destination field.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("目的欄位。")]
+        [Description("Destination field.")]
         public string DestinationField { get; set; } = string.Empty;
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

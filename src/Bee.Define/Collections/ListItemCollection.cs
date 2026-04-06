@@ -6,15 +6,15 @@ using Bee.Base.Collections;
 namespace Bee.Define.Collections
 {
     /// <summary>
-    /// 清單項目集合。
+    /// List item collection.
     /// </summary>
     [Serializable]
     public class ListItemCollection : KeyCollectionBase<ListItem>
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ListItemCollection"/>.
         /// </summary>
         public ListItemCollection()
         { }
@@ -22,10 +22,10 @@ namespace Bee.Define.Collections
         #endregion
 
         /// <summary>
-        /// 加入成員。
+        /// Adds an item to the collection.
         /// </summary>
-        /// <param name="value">項目值。</param>
-        /// <param name="text">顯示文字。</param>
+        /// <param name="value">The item value.</param>
+        /// <param name="text">The display text.</param>
         public ListItem Add(string value, string text)
         {
             var item = new ListItem(value, text);
@@ -34,11 +34,11 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 由資料表產生成員。
+        /// Populates items from a data table.
         /// </summary>
-        /// <param name="table">資料表。</param>
-        /// <param name="valueField">項目值對應欄位名稱。</param>
-        /// <param name="textField">顯示文字對應欄位名稱。</param>
+        /// <param name="table">The data table.</param>
+        /// <param name="valueField">The field name mapped to item value.</param>
+        /// <param name="textField">The field name mapped to display text.</param>
         public void FromTable(DataTable table, string valueField, string textField)
         {
             foreach (DataRow row in table.Rows)

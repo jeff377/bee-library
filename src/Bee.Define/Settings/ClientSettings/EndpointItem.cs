@@ -1,4 +1,4 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Collections;
 using System;
 using System.ComponentModel;
@@ -7,24 +7,24 @@ using System.Xml.Serialization;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 服務端點清單項目。
+    /// A service endpoint list item.
     /// </summary>
     [Serializable]
     [XmlType("EndpointItem")]
-    [Description("服務端點清單項目。")]
+    [Description("Service endpoint list item.")]
     public class EndpointItem : CollectionItem
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="EndpointItem"/>.
         /// </summary>
         public EndpointItem()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="EndpointItem"/>.
         /// </summary>
-        /// <param name="name">服務端點名稱。</param>
-        /// <param name="endpoint">服務端點位置，遠端連線為網址，近端連線為本地路徑。</param>
+        /// <param name="name">The service endpoint name.</param>
+        /// <param name="endpoint">The service endpoint location. Use a URL for remote connections or a local path for local connections.</param>
         public EndpointItem(string name, string endpoint)
         {
             Name = name;
@@ -32,17 +32,17 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 服務端點名稱。
+        /// Gets or sets the service endpoint name.
         /// </summary>
         [XmlAttribute]
-        [Description("服務端點名稱。")]
+        [Description("Service endpoint name.")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// 服務端點位置，遠端連線為網址，近端連線為本地路徑。
+        /// Gets or sets the service endpoint location. Use a URL for remote connections or a local path for local connections.
         /// </summary>
         [XmlAttribute]
-        [Description("服務端點位置，遠端連線為網址，近端連線為本地路徑。")]
+        [Description("Service endpoint location. Use a URL for remote connections or a local path for local connections.")]
         public string Endpoint { get; set; } = string.Empty;
     }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -8,27 +8,27 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 選單項目。
+    /// A menu item.
     /// </summary>
     [Serializable]
     [XmlType("MenuItem")]
-    [Description("選單項目。")]
+    [Description("Menu item.")]
     [TreeNode]
     public class MenuItem : KeyCollectionItem, IDisplayName
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MenuItem"/>.
         /// </summary>
         public MenuItem()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MenuItem"/>.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="progId">The program ID.</param>
+        /// <param name="displayName">The display name.</param>
         public MenuItem(string progId, string displayName)
         {
             ProgId = progId;
@@ -38,10 +38,10 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 程式代碼。
+        /// Gets or sets the program ID.
         /// </summary>
         [XmlAttribute]
-        [Description("程式代碼。")]
+        [Description("Program ID.")]
         public string ProgId
         {
             get { return this.Key; }
@@ -49,14 +49,14 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 產生物件複本。
+        /// Creates a copy of this instance.
         /// </summary>
         /// <returns></returns>
         public MenuItem Clone()
@@ -68,7 +68,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 物件的描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

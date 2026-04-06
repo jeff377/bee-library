@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Attributes;
@@ -7,26 +7,26 @@ using Bee.Base.Collections;
 namespace Bee.Define.Forms
 {
     /// <summary>
-    /// 表單資料表集合。
+    /// A collection of form tables.
     /// </summary>
     [Serializable]
-    [Description("表單資料表集合。")]
-    [TreeNode("資料表", false)]
+    [Description("Form table collection.")]
+    [TreeNode("Tables", false)]
     public class FormTableCollection : KeyCollectionBase<FormTable>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FormTableCollection"/>.
         /// </summary>
-        /// <param name="formDefine">表單結構定義。</param>
+        /// <param name="formDefine">The owning form schema definition.</param>
         public FormTableCollection(FormSchema formDefine) : base(formDefine)
         { }
 
 
         /// <summary>
-        /// 加入資料表。
+        /// Adds a table to the collection.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="displayName">The display name.</param>
         public FormTable Add(string tableName, string displayName)
         {
             var table = new FormTable(tableName, displayName);

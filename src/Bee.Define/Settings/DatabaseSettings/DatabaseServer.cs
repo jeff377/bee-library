@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -8,19 +8,19 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 資料庫伺服器。
+    /// A database server configuration.
     /// </summary>
     [Serializable]
     [XmlType("DatabaseServer")]
-    [Description("資料庫伺服器。")]
+    [Description("Database server.")]
     [TreeNode]
     public class DatabaseServer : KeyCollectionItem
     {
         /// <summary>
-        /// 伺服器編號。
+        /// Gets or sets the server ID.
         /// </summary>
         [XmlAttribute]
-        [Description("伺服器編號。")]
+        [Description("Server ID.")]
         public string Id
         {
             get { return base.Key; }
@@ -28,46 +28,46 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 資料庫類型。
+        /// Gets or sets the database type.
         /// </summary>
         [XmlAttribute]
-        [Description("資料庫類型。")]
+        [Description("Database type.")]
         public DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
 
         /// <summary>
-        /// 資料庫連線字串。
+        /// Gets or sets the database connection string.
         /// </summary>
         [XmlAttribute]
-        [Description("資料庫連線字串。")]
+        [Description("Database connection string.")]
         [DefaultValue("")]
         public string ConnectionString { get; set; } = string.Empty;
 
         /// <summary>
-        /// 登入用戶，取代連線字串中的 {@UserId} 參數。
+        /// Gets or sets the login user ID, which replaces the {@UserId} placeholder in the connection string.
         /// </summary>
         [XmlAttribute]
-        [Description("登入用戶，取代連線字串中的 {@UserId} 參數。")]
+        [Description("Login user ID, which replaces the {@UserId} placeholder in the connection string.")]
         [DefaultValue("")]
         public string UserId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 登入密碼，取代連線字串中的 {@Password} 參數。
+        /// Gets or sets the login password, which replaces the {@Password} placeholder in the connection string.
         /// </summary>
         [XmlAttribute]
-        [Description("登入密碼，取代連線字串中的 {@Password} 參數。")]
+        [Description("Login password, which replaces the {@Password} placeholder in the connection string.")]
         [PasswordPropertyText(true)]
         [DefaultValue("")]
         public string Password { get; set; } = string.Empty;
 
         /// <summary>
-        /// 建立此物件的複本。
+        /// Creates a copy of this instance.
         /// </summary>
         public DatabaseServer Clone()
         {
@@ -83,7 +83,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

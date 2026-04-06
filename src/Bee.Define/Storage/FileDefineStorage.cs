@@ -1,4 +1,4 @@
-﻿using Bee.Define.Database;
+using Bee.Define.Database;
 using Bee.Define.Forms;
 using Bee.Define.Layouts;
 using Bee.Define.Settings;
@@ -9,14 +9,14 @@ using Bee.Base.Serialization;
 namespace Bee.Define.Storage
 {
     /// <summary>
-    /// 以檔案為儲存媒介，實作定義資料的讀取與儲存。
-    /// 提供資料庫結構、資料表結構、表單結構定義及表單版面配置等物件的檔案存取功能。
-    /// 主要透過 XML 檔案序列化與反序列化方式，管理各類定義資料的持久化。
+    /// A file-based implementation of define data read and write operations.
+    /// Provides file access for database schema settings, table schema, form schema, and form layout objects.
+    /// Manages persistence of all define data through XML serialization and deserialization.
     /// </summary>
     public class FileDefineStorage : IDefineStorage
     {
         /// <summary>
-        /// 取得資料表清單。
+        /// Gets the database schema settings.
         /// </summary>
         public DbSchemaSettings GetDbSchemaSettings()
         {
@@ -26,9 +26,9 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 儲存資料表清單。
+        /// Saves the database schema settings.
         /// </summary>
-        /// <param name="settings">資料表清單。</param>
+        /// <param name="settings">The database schema settings.</param>
         public void SaveDbSchemaSettings(DbSchemaSettings settings)
         {
             string filePath = DefinePathInfo.GetDbTableSettingsFilePath();
@@ -36,10 +36,10 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 取得資料表結構。
+        /// Gets the table schema for the specified database and table.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         public TableSchema GetTableSchema(string dbName, string tableName)
         {
             string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableName);
@@ -48,10 +48,10 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 儲存資料表結構。
+        /// Saves the table schema for the specified database.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableSchema">資料表結構。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableSchema">The table schema.</param>
         public void SaveTableSchema(string dbName, TableSchema tableSchema)
         {
             string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableSchema.TableName);
@@ -59,9 +59,9 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 取得表單結構定義。
+        /// Gets the form schema for the specified program.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program ID.</param>
         public FormSchema GetFormSchema(string progId)
         {
             string filePath = DefinePathInfo.GetFormSchemaFilePath(progId);
@@ -70,9 +70,9 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 儲存表單結構定義。
+        /// Saves the form schema.
         /// </summary>
-        /// <param name="formSchema">表單結構定義。</param>
+        /// <param name="formSchema">The form schema.</param>
         public void SaveFormSchema(FormSchema formSchema)
         {
             string filePath = DefinePathInfo.GetFormSchemaFilePath(formSchema.ProgId);
@@ -80,9 +80,9 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 取得表單版面配置。
+        /// Gets the form layout for the specified layout ID.
         /// </summary>
-        /// <param name="layoutId">表單版面代碼。</param>
+        /// <param name="layoutId">The form layout ID.</param>
         public FormLayout GetFormLayout(string layoutId)
         {
             string filePath = DefinePathInfo.GetFormLayoutFilePath(layoutId);
@@ -91,9 +91,9 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 儲存表單版面配置。
+        /// Saves the form layout.
         /// </summary>
-        /// <param name="formLayout">表單版面配置。</param>
+        /// <param name="formLayout">The form layout.</param>
         public void SaveFormLayout(FormLayout formLayout)
         {
             string filePath = DefinePathInfo.GetFormLayoutFilePath(formLayout.LayoutId);
@@ -101,9 +101,9 @@ namespace Bee.Define.Storage
         }
 
         /// <summary>
-        /// 驗證檔案是否存在。
+        /// Validates that the specified file exists.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         private void ValidateFilePath(string filePath)
         {
             if (!FileFunc.FileExists(filePath))

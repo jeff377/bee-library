@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -9,20 +9,20 @@ using Newtonsoft.Json;
 namespace Bee.Define.Layouts
 {
     /// <summary>
-    /// 表單版面配置。
+    /// Form layout configuration.
     /// </summary>
     [Serializable]
     [XmlType("FormLayout")]
-    [Description("表單版面配置。")]
+    [Description("Form layout configuration.")]
     [TreeNode]
     public class FormLayout : IObjectSerializeFile
     {
         private LayoutGroupCollection _groups = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FormLayout"/>.
         /// </summary>
         public FormLayout()
         {
@@ -30,19 +30,19 @@ namespace Bee.Define.Layouts
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -50,16 +50,16 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the file path bound to serialization.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化繫結檔案。
+        /// Sets the file path bound to serialization.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
@@ -68,39 +68,39 @@ namespace Bee.Define.Layouts
         #endregion
 
         /// <summary>
-        /// 物件建立時間。
+        /// Gets the time at which this object was created.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
-        /// 表單版面代碼。
+        /// Gets or sets the form layout ID.
         /// </summary>
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("表單版面代碼。")]
+        [Description("Form layout ID.")]
         public string LayoutId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 佈局群組集合。
+        /// Gets the layout group collection.
         /// </summary>
-        [Description("佈局群組集合。")]
+        [Description("Layout group collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
         public LayoutGroupCollection Groups
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _groups)) { return null; }
                 if (_groups == null) { _groups = new LayoutGroupCollection(); }
                 return _groups;
@@ -108,9 +108,9 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 尋找指定欄位名稱的排版項目。
+        /// Finds the layout item for the specified field name.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
+        /// <param name="fieldName">The field name.</param>
         public LayoutItem FindItem(string fieldName)
         {
             foreach (LayoutGroup group in this.Groups)
@@ -125,7 +125,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

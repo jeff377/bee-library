@@ -6,7 +6,7 @@ using System.Xml.Serialization;
 namespace Bee.Define.Filters
 {
     /// <summary>
-    /// 過濾節點基底類別。
+    /// Abstract base class for filter nodes.
     /// </summary>
     [MessagePackObject]
     [Serializable]
@@ -17,7 +17,7 @@ namespace Bee.Define.Filters
     public abstract class FilterNode : MessagePackCollectionItem
     {
         /// <summary>
-        /// 節點種類。
+        /// Gets the node kind.
         /// </summary>
         [Key(10)]
         public abstract FilterNodeKind Kind { get; }

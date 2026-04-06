@@ -3,14 +3,14 @@
 namespace Bee.Define.Logging
 {
     /// <summary>
-    /// 將日誌輸出至 Console 的實作。
+    /// A log writer implementation that outputs log entries to the console.
     /// </summary>
     public class ConsoleLogWriter : ILogWriter
     {
         /// <summary>
-        /// 寫入一筆日誌記錄。
+        /// Writes a log entry to the console.
         /// </summary>
-        /// <param name="entry">日誌內容。</param>
+        /// <param name="entry">The log entry.</param>
         public void Write(LogEntry entry)
         {
             switch (entry.EntryType)

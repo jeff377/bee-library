@@ -1,21 +1,21 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 全域事件，用於跨專案通知。
+    /// Global events used for cross-project notifications.
     /// </summary>
     public static class GlobalEvents
     {
         /// <summary>
-        /// 當資料庫設定變更時觸發。
+        /// Occurs when the database settings have changed.
         /// </summary>
         public static event EventHandler DatabaseSettingsChanged;
 
         /// <summary>
-        /// 觸發資料庫設定變更事件。
+        /// Raises the <see cref="DatabaseSettingsChanged"/> event.
         /// </summary>
         public static void RaiseDatabaseSettingsChanged()
         {

@@ -6,16 +6,16 @@ using Newtonsoft.Json.Linq;
 namespace Bee.Define.Filters
 {
     /// <summary>
-    /// FilterNodeCollection 的自訂 JSON 轉換器。
+    /// Custom JSON converter for <see cref="FilterNodeCollection"/>.
     /// </summary>
     public class FilterNodeCollectionJsonConverter : JsonConverter<FilterNodeCollection>
     {
         /// <summary>
-        /// 將 <see cref="FilterNodeCollection"/> 物件序列化為 JSON。
+        /// Serializes a <see cref="FilterNodeCollection"/> object to JSON.
         /// </summary>
-        /// <param name="writer">JSON 寫入器。</param>
-        /// <param name="value">要序列化的 <see cref="FilterNodeCollection"/> 物件。</param>
-        /// <param name="serializer">JSON 序列化器。</param>
+        /// <param name="writer">The JSON writer.</param>
+        /// <param name="value">The <see cref="FilterNodeCollection"/> object to serialize.</param>
+        /// <param name="serializer">The JSON serializer.</param>
         public override void WriteJson(JsonWriter writer, FilterNodeCollection value, JsonSerializer serializer)
         {
             if (value == null)
@@ -33,14 +33,14 @@ namespace Bee.Define.Filters
         }
 
         /// <summary>
-        /// 反序列化 JSON 為 <see cref="FilterNodeCollection"/> 物件。
+        /// Deserializes JSON into a <see cref="FilterNodeCollection"/> object.
         /// </summary>
-        /// <param name="reader">JSON 讀取器。</param>
-        /// <param name="objectType">目標物件型別。</param>
-        /// <param name="existingValue">現有的 <see cref="FilterNodeCollection"/> 物件。</param>
-        /// <param name="hasExistingValue">是否有現有值。</param>
-        /// <param name="serializer">JSON 反序列化器。</param>
-        /// <returns>反序列化後的 <see cref="FilterNodeCollection"/> 物件。</returns>
+        /// <param name="reader">The JSON reader.</param>
+        /// <param name="objectType">The target object type.</param>
+        /// <param name="existingValue">The existing <see cref="FilterNodeCollection"/> object.</param>
+        /// <param name="hasExistingValue">Indicates whether there is an existing value.</param>
+        /// <param name="serializer">The JSON deserializer.</param>
+        /// <returns>The deserialized <see cref="FilterNodeCollection"/> object.</returns>
         public override FilterNodeCollection ReadJson(JsonReader reader, Type objectType, FilterNodeCollection existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null)
@@ -50,7 +50,7 @@ namespace Bee.Define.Filters
             var nodes = new List<FilterNode>();
             foreach (var item in array)
             {
-                // 根據 Kind 屬性判斷要反序列化成哪個型別
+                // Determine the target type based on the Kind property
                 var kindToken = item["kind"];
                 FilterNode node = null;
                 if (kindToken != null)
@@ -65,13 +65,13 @@ namespace Bee.Define.Filters
                             node = item.ToObject<FilterGroup>(serializer);
                             break;
                         default:
-                            // 可以選擇丟出例外或忽略
+                            // Throw an exception or ignore unknown kinds
                             throw new JsonSerializationException($"Unknown FilterNodeKind: {kindValue}");
                     }
                 }
                 else
                 {
-                    // 沒有 Kind 屬性，預設為 FilterCondition
+                    // No Kind property — default to FilterCondition
                     node = item.ToObject<FilterCondition>(serializer);
                 }
                 if (node != null)

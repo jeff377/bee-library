@@ -1,7 +1,7 @@
-﻿namespace Bee.Define
+namespace Bee.Define
 {
     /// <summary>
-    /// 網站資訊，記錄網站在運行期間的參數及環境設置。
+    /// Website information that records runtime parameters and environment settings for the website.
     /// </summary>
     public static class WebsiteInfo
     {

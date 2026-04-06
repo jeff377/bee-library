@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Attributes;
@@ -8,26 +8,26 @@ using Bee.Base.Collections;
 namespace Bee.Define.Forms
 {
     /// <summary>
-    /// 表單欄位集合。
+    /// A collection of form fields.
     /// </summary>
     [Serializable]
-    [Description("表單欄位集合。")]
-    [TreeNode("欄位", true)]
+    [Description("Form field collection.")]
+    [TreeNode("Fields", true)]
     public class FormFieldCollection : KeyCollectionBase<FormField>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FormFieldCollection"/>.
         /// </summary>
-        /// <param name="formTable">表單資料表。</param>
+        /// <param name="formTable">The owning form table.</param>
         public FormFieldCollection(FormTable formTable) : base(formTable)
         { }
 
         /// <summary>
-        /// 加入欄位。
+        /// Adds a field to the collection.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">標題文字。</param>
-        /// <param name="dbType">欄位資料型別。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="caption">The caption text.</param>
+        /// <param name="dbType">The database field type.</param>
         public FormField Add(string fieldName, string caption, FieldDbType dbType)
         {
             var field = new FormField(fieldName, caption, dbType);
@@ -36,11 +36,11 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 加入字串欄位。
+        /// Adds a string field to the collection.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">標題文字。</param>
-        /// <param name="maxLength">字串最大長度。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="caption">The caption text.</param>
+        /// <param name="maxLength">The maximum string length.</param>
         public FormField AddStringField(string fieldName, string caption, int maxLength)
         {
             var field = new FormField(fieldName, caption, FieldDbType.String);

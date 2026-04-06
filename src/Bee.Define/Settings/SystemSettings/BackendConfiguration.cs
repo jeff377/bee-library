@@ -67,10 +67,10 @@ namespace Bee.Define.Settings
         public SecurityKeySettings SecurityKeySettings { get; set; } = new SecurityKeySettings();
 
         /// <summary>
-        /// 後端可替換組。
+        /// Backend replaceable components.
         /// </summary>
         [Category("Components")]
-        [Description("後端可替換組")]
+        [Description("Backend replaceable components.")]
         [Browsable(false)]
         public BackendComponents Components { get; set; } = new BackendComponents();
 

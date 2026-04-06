@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -7,17 +7,17 @@ using Bee.Base.Attributes;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 前端參數及環境設置。
+    /// Frontend parameters and environment settings.
     /// </summary>
     [Serializable]
     [XmlType("FrontendConfiguration")]
-    [Description("前端參數及環境設置。")]
+    [Description("Frontend parameters and environment settings.")]
     [TreeNode("Frontend")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class FrontendConfiguration
     {
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

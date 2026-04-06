@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Attributes;
@@ -7,13 +7,13 @@ using Bee.Base.Collections;
 namespace Bee.Define.Layouts
 {
     /// <summary>
-    /// 排版群組集合。
+    /// A collection of layout groups.
     /// </summary>
     [Serializable]
-    [Description("表單欄位集合。")]
-    [TreeNode("群組", false)]
+    [Description("Layout group collection.")]
+    [TreeNode("Groups", false)]
     public class LayoutGroupCollection : CollectionBase<LayoutGroup>
     {
-        
+
     }
 }

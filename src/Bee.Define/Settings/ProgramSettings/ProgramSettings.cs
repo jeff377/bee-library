@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -9,20 +9,20 @@ using Newtonsoft.Json;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 程式清單。
+    /// Program settings (program list).
     /// </summary>
     [Serializable]
     [XmlType("ProgramSettings")]
-    [Description("程式清單。")]
-    [TreeNode("程式清單")]
+    [Description("Program settings.")]
+    [TreeNode("Program Settings")]
     public class ProgramSettings : IObjectSerializeFile
     {
         private ProgramCategoryCollection _categories = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ProgramSettings"/>.
         /// </summary>
         public ProgramSettings()
         {
@@ -30,10 +30,10 @@ namespace Bee.Define.Settings
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -41,9 +41,9 @@ namespace Bee.Define.Settings
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -51,7 +51,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the file path bound to serialization.
         /// </summary>
         [XmlIgnore]
         [JsonIgnore]
@@ -59,9 +59,9 @@ namespace Bee.Define.Settings
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化/反序列化的對應檔案。
+        /// Sets the file path bound for serialization/deserialization.
         /// </summary>
-        /// <param name="fileName">檔案名稱。</param>
+        /// <param name="fileName">The file name.</param>
         public void SetObjectFilePath(string fileName)
         {
             ObjectFilePath = fileName;
@@ -70,15 +70,15 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 程式分類集合。
+        /// Gets the program category collection.
         /// </summary>
-        [Description("資料表分類集合。")]
+        [Description("Program category collection.")]
         [DefaultValue(null)]
         public ProgramCategoryCollection Categories
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _categories)) { return null; }
                 if (_categories == null) { _categories = new ProgramCategoryCollection(this); }
                 return _categories;

@@ -1,9 +1,9 @@
-﻿namespace Bee.Define
+namespace Bee.Define
 {
     /// <summary>
-    /// 提供企業系統中常用業務物件的統一存取服務介面。
-    /// 透過快取機制加速資料讀取，未命中時自資料庫載入並反序列化為物件。
-    /// 適用於組織結構、模組參數等需持久化與快取的資料。
+    /// Provides a unified access service interface for commonly used business objects in enterprise systems.
+    /// Uses a caching mechanism to speed up data reads, loading from the database and deserializing on a cache miss.
+    /// Suitable for organizational structures, module parameters, and other data that requires persistence and caching.
     /// </summary>
     public interface IEnterpriseObjectService
     {

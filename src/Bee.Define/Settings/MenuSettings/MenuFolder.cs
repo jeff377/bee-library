@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -9,30 +9,30 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 選單資料夾。
+    /// A menu folder.
     /// </summary>
     [Serializable]
     [XmlType("MenuFolder")]
-    [Description("選單資料夾。")]
+    [Description("Menu folder.")]
     [TreeNode("{0}", "DisplayName")]
     public class MenuFolder : KeyCollectionItem, IDisplayName
     {
         private MenuFolderCollection _folders = null;
         private MenuItemCollection _items = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MenuFolder"/>.
         /// </summary>
         public MenuFolder()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MenuFolder"/>.
         /// </summary>
-        /// <param name="folderID">資料夾代碼。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="folderID">The folder ID.</param>
+        /// <param name="displayName">The display name.</param>
         public MenuFolder(string folderID, string displayName)
         {
             FolderId = folderID;
@@ -42,10 +42,10 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 資料夾代碼。
+        /// Gets or sets the folder ID.
         /// </summary>
         [XmlAttribute]
-        [Description("資料夾代碼。")]
+        [Description("Folder ID.")]
         public string FolderId
         {
             get { return this.Key; }
@@ -53,22 +53,22 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 子資料夾集合。
+        /// Gets the sub-folder collection.
         /// </summary>
-        [Description("子資料夾集合。")]
+        [Description("Sub-folder collection.")]
         [DefaultValue(null)]
         public MenuFolderCollection Folders
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
                 if (_items == null) { _folders = new MenuFolderCollection(this); }
                 return _folders;
@@ -76,15 +76,15 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 選單項目集合。
+        /// Gets the menu item collection.
         /// </summary>
-        [Description("選單項目集合。")]
+        [Description("Menu item collection.")]
         [DefaultValue(null)]
         public MenuItemCollection Items
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
                 if (_items == null) { _items = new MenuItemCollection(this); }
                 return _items;
@@ -92,9 +92,9 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 尋找選單項目節點。
+        /// Finds a menu item by program ID.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program ID.</param>
         /// <returns></returns>
         public MenuItem FindItem(string progId)
         {
@@ -115,7 +115,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 取得語系鍵值。
+        /// Gets the language key for this folder.
         /// </summary>
         /// <returns></returns>
         public string GetLanguageKey()
@@ -124,7 +124,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 物件的描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         /// <returns></returns>
         public override string ToString()

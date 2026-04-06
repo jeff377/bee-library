@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Collections;
@@ -6,31 +6,31 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 選單資料夾集合。
+    /// A collection of menu folders.
     /// </summary>
     [Serializable]
-    [TreeNode("資料夾集合", false)]
+    [TreeNode("Folders", false)]
     public class MenuFolderCollection : KeyCollectionBase<MenuFolder>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MenuFolderCollection"/>.
         /// </summary>
-        /// <param name="settings">選單設定。</param>
+        /// <param name="settings">The owning menu settings.</param>
         public MenuFolderCollection(MenuSettings settings) : base(settings)
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="MenuFolderCollection"/>.
         /// </summary>
-        /// <param name="folder">選單資料夾。</param>
+        /// <param name="folder">The owning menu folder.</param>
         public MenuFolderCollection(MenuFolder folder) : base(folder)
         { }
 
         /// <summary>
-        /// 加入成員。
+        /// Adds a folder to the collection.
         /// </summary>
-        /// <param name="folderID">資料夾代碼。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="folderID">The folder ID.</param>
+        /// <param name="displayName">The display name.</param>
         public MenuFolder Add(string folderID, string displayName)
         {
             MenuFolder oFolder;

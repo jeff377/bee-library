@@ -1,4 +1,4 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Serialization;
 using Newtonsoft.Json;
 using System;
@@ -8,19 +8,19 @@ using System.Xml.Serialization;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 用戶端設定。
+    /// Client settings.
     /// </summary>
     [Serializable]
     [XmlType("ClientSettings")]
-    [Description("用戶端設定。")]
+    [Description("Client settings.")]
     public class ClientSettings : IObjectSerializeFile
     {
         private EndpointItemCollection _endpointItems = new EndpointItemCollection();
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式 
+        /// Initializes a new instance of <see cref="ClientSettings"/>.
         /// </summary>
         public ClientSettings()
         {
@@ -29,35 +29,35 @@ namespace Bee.Define.Settings
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the file path bound to serialization.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化繫結檔案。
+        /// Sets the file path bound to serialization.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
@@ -66,29 +66,29 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 物件建立時間。
+        /// Gets the time at which this object was created.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; private set; } = DateTime.MinValue;
 
         /// <summary>
-        /// 服務端點位置，遠端連線為網址，近端連線為本地路徑。
+        /// Gets or sets the service endpoint location. Use a URL for remote connections or a local path for local connections.
         /// </summary>
-        [Description("服務端點位置，遠端連線為網址，近端連線為本地路徑。")]
+        [Description("Service endpoint location. Use a URL for remote connections or a local path for local connections.")]
         [DefaultValue("")]
         public string Endpoint { get; set; } = string.Empty;
 
         /// <summary>
-        /// 服務端點清單。
+        /// Gets the service endpoint list.
         /// </summary>
-        [Description("服務端點清單。")]
+        [Description("Service endpoint list.")]
         [DefaultValue(null)]
         public EndpointItemCollection EndpointItems
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _endpointItems)) { return null; }
                 if (_endpointItems == null) { _endpointItems = new EndpointItemCollection(); }
                 return _endpointItems;

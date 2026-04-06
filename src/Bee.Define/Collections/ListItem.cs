@@ -7,25 +7,25 @@ using Bee.Base.Collections;
 namespace Bee.Define.Collections
 {
     /// <summary>
-    /// 清單項目。
+    /// List item.
     /// </summary>
     [Serializable]
     [XmlType("ListItem")]
     public class ListItem : KeyCollectionItem
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ListItem"/>.
         /// </summary>
         public ListItem()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ListItem"/>.
         /// </summary>
-        /// <param name="value">項目值。</param>
-        /// <param name="text">顯示文字。</param>
+        /// <param name="value">The item value.</param>
+        /// <param name="text">The display text.</param>
         public ListItem(string value, string text)
         {
             this.Value = value;
@@ -35,10 +35,10 @@ namespace Bee.Define.Collections
         #endregion
 
         /// <summary>
-        /// 項目值。
+        /// Gets or sets the item value.
         /// </summary>
         [XmlAttribute]
-        [Description("項目值。")]
+        [Description("Item value.")]
         public string Value
         {
             get { return base.Key; }
@@ -46,14 +46,14 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 顯示文字。
+        /// Gets or sets the display text.
         /// </summary>
         [XmlAttribute]
-        [Description("顯示文字。")]
+        [Description("Display text.")]
         public string Text { get; set; } = string.Empty;
 
         /// <summary>
-        /// 描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

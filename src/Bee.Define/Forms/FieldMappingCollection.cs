@@ -5,16 +5,16 @@ using Bee.Base.Collections;
 namespace Bee.Define.Forms
 {
     /// <summary>
-    /// 欄位對應集合。
+    /// A collection of field mappings.
     /// </summary>
     [Serializable]
     public class FieldMappingCollection : CollectionBase<FieldMapping>
     {
         /// <summary>
-        /// 加入關連取回欄位。
+        /// Adds a field mapping entry.
         /// </summary>
-        /// <param name="sourceField">來源欄位。</param>
-        /// <param name="destinationField">目的欄位。</param>
+        /// <param name="sourceField">The source field.</param>
+        /// <param name="destinationField">The destination field.</param>
         public FieldMapping Add(string sourceField, string destinationField)
         {
             var field = new FieldMapping(sourceField, destinationField);
@@ -23,9 +23,9 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 依目的欄位尋找成員。
+        /// Finds a mapping by its destination field name.
         /// </summary>
-        /// <param name="destinationField">目的欄位名稱。</param>
+        /// <param name="destinationField">The destination field name.</param>
         public FieldMapping FindByDestination(string destinationField)
         {
             foreach (FieldMapping item in this)

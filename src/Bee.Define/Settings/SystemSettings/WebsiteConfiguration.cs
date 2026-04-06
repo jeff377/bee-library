@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -7,16 +7,16 @@ using Bee.Base.Attributes;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 網站參數及環境設置。
+    /// Website parameters and environment settings.
     /// </summary>
     [Serializable]
     [XmlType("WebsiteConfiguration")]
-    [Description("網站參數及環境設置。")]
+    [Description("Website parameters and environment settings.")]
     [TreeNode("Website")]
     public class WebsiteConfiguration
     {
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

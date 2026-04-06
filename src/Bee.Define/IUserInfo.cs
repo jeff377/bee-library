@@ -1,31 +1,31 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 表示通用的使用者資訊，包含識別、語系與時區等。
+    /// Represents general user information, including identity, culture, and time zone.
     /// </summary>
     public interface IUserInfo
     {
         /// <summary>
-        /// 用戶帳號。
+        /// Gets the user account ID.
         /// </summary>
         string UserId { get; }
 
         /// <summary>
-        /// 用戶名稱。
+        /// Gets the user name.
         /// </summary>
         string UserName { get; }
 
         /// <summary>
-        /// 使用者語系（如 zh-TW, en-US）
+        /// Gets the user culture (e.g., zh-TW, en-US).
         /// </summary>
         string Culture { get; }
 
         /// <summary>
-        /// 使用者時區（建議使用 IANA，如 Asia/Taipei）
+        /// Gets the user time zone (IANA format recommended, e.g., Asia/Taipei).
         /// </summary>
         string TimeZone { get; }
     }

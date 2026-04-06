@@ -1,89 +1,89 @@
-﻿using System.Data;
+using System.Data;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// Excel 文件操作輔助類別介面。
+    /// Interface for an Excel document operation helper.
     /// </summary>
     public interface IExcelHelper
     {
         /// <summary>
-        /// 開啟檔案。
+        /// Opens a file from a byte array.
         /// </summary>
-        /// <param name="fileBytes">檔案資料。</param>
+        /// <param name="fileBytes">The file data.</param>
         void Open(byte[] fileBytes);
 
         /// <summary>
-        /// 開啟檔案。
+        /// Opens a file by file name.
         /// </summary>
-        /// <param name="fileName">檔案名稱。</param>
+        /// <param name="fileName">The file name.</param>
         void Open(string fileName);
 
         /// <summary>
-        /// 關閉檔案並釋放資源。
+        /// Closes the file and releases resources.
         /// </summary>
         void Close();
 
         /// <summary>
-        /// 儲存為二進位資料。
+        /// Saves the file as a byte array.
         /// </summary>
-        /// <param name="sPassword">開啟密碼</param>        
+        /// <param name="sPassword">The open password.</param>
         byte[] SaveToBytes(string sPassword = "");
 
         /// <summary>
-        /// 將指定工作表的資料匯出至 DataTable。
+        /// Exports the data from the specified worksheet to a DataTable.
         /// </summary>
-        /// <param name="sheetName">工作表名稱。</param>
-        /// <param name="topRowisDisplayName">第一列為顯示名稱，欄位名稱置於第二列。</param>
+        /// <param name="sheetName">The worksheet name.</param>
+        /// <param name="topRowisDisplayName">Indicates whether the first row contains display names, with field names in the second row.</param>
         DataTable ExportDataTable(string sheetName, bool topRowisDisplayName);
 
         /// <summary>
-        /// 將指定工作表的資料匯出至 DataTable。
+        /// Exports the data from the specified worksheet to a DataTable.
         /// </summary>
-        /// <param name="sheetName">工作表名稱。</param>
-        /// <param name="topRowIndex">上方起始列索引，起始為 0。</param>
-        /// <param name="leftColumnIndex ">左邊起始欄索引，起始為 0。</param>
+        /// <param name="sheetName">The worksheet name.</param>
+        /// <param name="topRowIndex">The top starting row index, zero-based.</param>
+        /// <param name="leftColumnIndex ">The left starting column index, zero-based.</param>
         DataTable ExportDataTable(string sheetName, int topRowIndex = 0, int leftColumnIndex = 0);
 
         /// <summary>
-        /// 將所有工作表匯出至 DataSet。
+        /// Exports all worksheets to a DataSet.
         /// </summary>
-        /// <param name="topRowIndex">上方起始列索引，起始為 0。</param>
-        /// <param name="leftColumnIndex ">左邊起始欄索引，起始為 0。</param>
+        /// <param name="topRowIndex">The top starting row index, zero-based.</param>
+        /// <param name="leftColumnIndex ">The left starting column index, zero-based.</param>
         DataSet ExportDataSet(int topRowIndex = 0, int leftColumnIndex = 0);
 
         /// <summary>
-        /// 判斷是否有指定的工作表。
+        /// Determines whether the specified worksheet exists.
         /// </summary>
-        /// <param name="sheetName">工作表名稱。</param>
+        /// <param name="sheetName">The worksheet name.</param>
         bool HasWorksheet(string sheetName);
 
         /// <summary>
-        /// 設定作用工作表。
+        /// Sets the active worksheet.
         /// </summary>
-        /// <param name="index">工作表索引。</param>
+        /// <param name="index">The worksheet index.</param>
         void SetActiveWorksheet(int index);
 
         /// <summary>
-        /// 插入欄位。
+        /// Inserts columns at the specified position.
         /// </summary>
-        /// <param name="columnIndex">欄索引。</param>
-        /// <param name="count">插入欄位數。</param>
+        /// <param name="columnIndex">The column index.</param>
+        /// <param name="count">The number of columns to insert.</param>
         void InsertColumn(int columnIndex, int count);
 
         /// <summary>
-        /// 設定指定儲存格的值。
+        /// Sets the value of the specified cell.
         /// </summary>
-        /// <param name="row">列索引。</param>
-        /// <param name="column">欄索引。</param>
-        /// <param name="value">值。</param>
+        /// <param name="row">The row index.</param>
+        /// <param name="column">The column index.</param>
+        /// <param name="value">The value.</param>
         void SetCellValue(int row, int column, object value);
 
         /// <summary>
-        /// 取得指定儲存格的值。
+        /// Gets the value of the specified cell.
         /// </summary>
-        /// <param name="row">列索引。</param>
-        /// <param name="column">欄索引。</param>
+        /// <param name="row">The row index.</param>
+        /// <param name="column">The column index.</param>
         object GetCellValue(int row, int column);
     }
 }

@@ -2,213 +2,211 @@
 
 namespace Bee.Define
 {
-    #region 常數
+    #region Constants
 
     /// <summary>
-    /// 定義後端常用實作型別的預設名稱常數。
-    /// 可用於 SystemSettings.xml 設定檔中的型別指定，或作為預設 fallback 使用。
+    /// Defines default type name constants for commonly used backend implementations.
+    /// Can be used for type specification in the SystemSettings.xml configuration file or as default fallback values.
     /// </summary>
     public static class BackendDefaultTypes
     {
-        // ---------------- Providers 群 ----------------
+        // ---------------- Providers ----------------
         /// <summary>
-        /// 預設的 API 加密金鑰提供者型別。
+        /// Default API encryption key provider type.
         /// </summary>
         public const string ApiEncryptionKeyProvider = "Bee.Business.DynamicApiEncryptionKeyProvider, Bee.Business";
         /// <summary>
-        /// 預設的 AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
+        /// Default AccessToken validation provider, used to validate the validity of AccessTokens.
         /// </summary>
         public const string AccessTokenValidationProvider = "Bee.Business.AccessTokenValidationProvider, Bee.Business";
         /// <summary>
-        /// 預設的業務邏輯物件提供者型別，用於動態建立 BusinessObject。
+        /// Default business object provider type, used for dynamically creating BusinessObjects.
         /// </summary>
         public const string BusinessObjectProvider = "Bee.Business.BusinessObjectProvider, Bee.Business";
 
-        // ---------------- Cache 群 ----------------
+        // ---------------- Cache ----------------
         /// <summary>
-        /// 預設的快取提供者型別。
+        /// Default cache provider type.
         /// </summary>
         public const string CacheProvider = "Bee.Cache.Providers.MemoryCacheProvider, Bee.Cache";
         /// <summary>
-        /// 預設的快取資料來源提供者型別。
+        /// Default cache data source provider type.
         /// </summary>
         public const string CacheDataSourceProvider = "Bee.Business.CacheDataSourceProvider, Bee.Business";
 
-        // ---------------- Define 群 ----------------
+        // ---------------- Define ----------------
         /// <summary>
-        /// 預設的定義資料儲存區型別。
+        /// Default define storage type.
         /// </summary>
         public const string DefineStorage = "Bee.Define.FileDefineStorage, Bee.Define";
         /// <summary>
-        /// 預設的定義資料存取型別。
+        /// Default define access type.
         /// </summary>
         public const string DefineAccess = "Bee.Cache.LocalDefineAccess, Bee.Cache";
 
-        // ---------------- Service 群 ----------------
+        // ---------------- Services ----------------
         /// <summary>
-        /// 預設的連線資訊存取服務型別。
+        /// Default session info service type.
         /// </summary>
         public const string SessionInfoService = "Bee.Cache.Services.SessionInfoService, Bee.Cache";
         /// <summary>
-        /// 預設的提供企業系統中常用業務物件的統一存取服務型別。
+        /// Default unified access service type for commonly used enterprise business objects.
         /// </summary>
         public const string EnterpriseObjectService = "Bee.Cache.Services.EnterpriseObjectService, Bee.Cache";
 
-        // ---------------- Repository 群 ----------------
+        // ---------------- Repository ----------------
         /// <summary>
-        /// 預設的系統儲存庫提供者型別。
+        /// Default system-level repository provider type.
         /// </summary>
         public const string SystemRepositoryProvider = "Bee.Repository.SystemRepositoryProvider, Bee.Repository";
         /// <summary>
-        /// 預設的表單儲存庫提供者型別。
+        /// Default form-level repository provider type.
         /// </summary>
         public const string FormRepositoryProvider = "Bee.Repository.FormRepositoryProvider, Bee.Repository";
     }
 
     /// <summary>
-    /// SystemObject 的 Action 常數。
+    /// Action name constants for the SystemObject.
     /// </summary>
     public class SystemActions
     {
         /// <summary>
-        /// Ping 方法，測試 API 服務是否可用，此方法不啟用資料編碼。
+        /// Ping method — tests whether the API service is available. Data encoding is not enabled for this method.
         /// </summary>
         public const string Ping = "Ping";
         /// <summary>
-        /// 取得通用參數及環境設置，此方法不啟用資料編碼。
+        /// Gets common configuration parameters and environment settings. Data encoding is not enabled for this method.
         /// </summary>
         public const string GetCommonConfiguration = "GetCommonConfiguration";
         /// <summary>
-        /// 執行登入操作，此方法不啟用加密。
+        /// Performs the login operation. Encryption is not enabled for this method.
         /// </summary>
         public const string Login = "Login";
         /// <summary>
-        /// 建立連線，此方法不啟用資料編碼。
+        /// Creates a session. Data encoding is not enabled for this method.
         /// </summary>
         public const string CreateSession = "CreateSession";
         /// <summary>
-        /// 取得定義資料。
+        /// Gets definition data.
         /// </summary>
         public const string GetDefine = "GetDefine";
         /// <summary>
-        /// 取得定義資料（僅限本機）。
+        /// Gets definition data (local only).
         /// </summary>
         public const string GetLocalDefine = "GetLocalDefine";
         /// <summary>
-        /// 儲存定義資料。
+        /// Saves definition data.
         /// </summary>
         public const string SaveDefine = "SaveDefine";
         /// <summary>
-        /// 儲存定義資料（僅限本機）。
+        /// Saves definition data (local only).
         /// </summary>
         public const string SaveLocalDefine = "SaveLocalDefine";
         /// <summary>
-        /// 執行自訂方法。
+        /// Executes a custom function.
         /// </summary>
         public const string ExecFunc = "ExecFunc";
         /// <summary>
-        /// 執行自訂方法，匿名存取。
+        /// Executes a custom function with anonymous access.
         /// </summary>
         public const string ExecFuncAnonymous = "ExecFuncAnonymous";
         /// <summary>
-        /// 執行自訂方法，僅限近端呼叫。
+        /// Executes a custom function — local calls only.
         /// </summary>
         public const string ExecFuncLocal = "ExecFuncLocal";
     }
 
     /// <summary>
-    /// 機制使用的 FuncID 常數。
+    /// FuncID constants used by the framework.
     /// </summary>
     public class SysFuncIDs
     {
         /// <summary>
-        /// Hello 測試方法。
+        /// Hello test method.
         /// </summary>
         public const string Hello = "Hello";
         /// <summary>
-        /// 升級資料表結構。
+        /// Upgrades the table schema.
         /// </summary>
         public const string UpgradeTableSchema = "UpgradeTableSchema";
         /// <summary>
-        /// 測試資料庫連線。
+        /// Tests the database connection.
         /// </summary>
         public const string TestConnection = "TestConnection";
     }
 
     /// <summary>
-    /// 系統使用程式代碼。
+    /// Program ID constants used by the system.
     /// </summary>
     public class SysProgIds
     {
         /// <summary>
-        /// 系統層級業務邏輯物件。
+        /// System-level business object.
         /// </summary>
         public const string System = "System";
     }
 
     /// <summary>
-    /// 系統欄位名稱常數。
+    /// System field name constants.
     /// </summary>
     public static class SysFields
     {
-        // ---- 系統列識別 ----
+        // ---- System row identification ----
         /// <summary>
-        /// 流水號，自動遞增。
+        /// Sequential number, auto-incremented.
         /// </summary>
         public const string No = "sys_no";
         /// <summary>
-        /// 唯一識別。
+        /// Unique row identifier.
         /// </summary>
         public const string RowId = "sys_rowid";
         /// <summary>
-        /// 主檔唯一識別。
-        /// 明細關聯到主檔的外鍵欄位，指向主檔 (Master) 資料表中對應列的 <see cref="RowId"/>。
+        /// Master record unique identifier.
+        /// A foreign key in the detail table that references the corresponding row in the master table via <see cref="RowId"/>.
         /// </summary>
         public const string MasterRowId = "sys_master_rowid";
 
-        // ---- 基本資料欄位 ----
+        // ---- Basic data fields ----
         /// <summary>
-        /// 編號。
-        /// 基本資料編號或單據號碼。
+        /// Record number or document number.
         /// </summary>
         public const string Id = "sys_id";
         /// <summary>
-        /// 名稱。
-        /// 基本資料名稱，如員工姓名、部門名稱。
+        /// Name field, e.g., employee name or department name.
         /// </summary>
         public const string Name = "sys_name";
 
-        // ---- 操作者資訊 ----
+        // ---- Operator information ----
         /// <summary>
-        /// 建立者唯一識別（外鍵，指向使用者表 sys_rowid）。
+        /// Unique identifier of the creator (foreign key referencing sys_rowid of the user table).
         /// </summary>
         public const string InsertUserRowId = "sys_insert_user_rowid";
         /// <summary>
-        /// 更新者唯一識別（外鍵，指向使用者表 sys_rowid）。
+        /// Unique identifier of the last updater (foreign key referencing sys_rowid of the user table).
         /// </summary>
         public const string UpdateUserRowId = "sys_update_user_rowid";
 
 
-        // ---- 生命週期 ----
+        // ---- Lifecycle ----
         /// <summary>
-        /// 資料寫入時間。
+        /// Record creation timestamp.
         /// </summary>
         public const string InsertTime = "sys_insert_time";
         /// <summary>
-        /// 資料更新時間。
+        /// Record last update timestamp.
         /// </summary>
         public const string UpdateTime = "sys_update_time";
         /// <summary>
-        /// 資料生效日期。
-        /// 該筆資料自此日期起開始有效。生效日「當天」開始生效（含當日）。
-        /// 查詢有效資料時可使用條件：
+        /// Record effective date.
+        /// The record becomes valid starting from this date (inclusive).
+        /// To query active records, use the condition:
         /// <c>CURRENT_DATE >= sys_valid_date</c>
         /// </summary>
         public const string ValidDate = "sys_valid_date";
         /// <summary>
-        /// 資料失效日期。
-        /// 該筆資料自此日期起停止有效；NULL 表示仍有效。失效日「當天」不再有效（不含當日)。
-        /// 查詢有效資料時可使用條件：
+        /// Record expiry date.
+        /// The record is no longer valid on or after this date; NULL means still valid (exclusive of the expiry day).
+        /// To query active records, use the condition:
         /// <c>sys_invalid_date IS NULL OR CURRENT_DATE &lt; sys_invalid_date</c>
         /// </summary>
         public const string InvalidDate = "sys_invalid_date";
@@ -216,23 +214,23 @@ namespace Bee.Define
 
     #endregion
 
-    #region 列舉型別
+    #region Enumerations
 
     /// <summary>
-    /// 日誌事件的類型。
+    /// The type of a log entry event.
     /// </summary>
     public enum LogEntryType
     {
         /// <summary>
-        /// 一般訊息，表示系統正常執行的資訊。
+        /// Informational message indicating normal system operation.
         /// </summary>
         Information,
         /// <summary>
-        /// 警告訊息，表示可能的異常狀況但系統仍可繼續執行。
+        /// Warning message indicating a possible abnormal condition while the system can still continue.
         /// </summary>
         Warning,
         /// <summary>
-        /// 錯誤訊息，表示系統執行時發生異常或失敗。
+        /// Error message indicating an exception or failure during system execution.
         /// </summary>
         Error
     }
@@ -257,418 +255,418 @@ namespace Bee.Define
     }
 
     /// <summary>
-    /// 主金鑰來源類型。
+    /// The source type of the master key.
     /// </summary>
     public enum MasterKeySourceType
     {
         /// <summary>
-        /// 從檔案載入主金鑰。
+        /// Load the master key from a file.
         /// </summary>
         File,
         /// <summary>
-        /// 從環境變數載入主金鑰。
+        /// Load the master key from an environment variable.
         /// </summary>
         Environment
     }
 
     /// <summary>
-    /// 初始化選項。
+    /// Initialization options.
     /// </summary>
     [Flags]
     public enum InitializeOptions
     {
         /// <summary>
-        /// 後端初始化。
+        /// Backend initialization.
         /// </summary>
         Backend = 1,
         /// <summary>
-        /// 前端初始化。
+        /// Frontend initialization.
         /// </summary>
         Frontend = 2,
         /// <summary>
-        /// 網站初始化。
+        /// Website initialization.
         /// </summary>
         Website = 4,
         /// <summary>
-        /// 背景服務初始化。
+        /// Background service initialization.
         /// </summary>
         Background = 8
     }
 
     /// <summary>
-    /// 應用程式類型。
+    /// Application type.
     /// </summary>
     public enum ApplicationType
     {
         /// <summary>
-        /// 網站應用程式
+        /// Web application.
         /// </summary>
         Website,
         /// <summary>
-        /// Windows 桌面應用程式。
+        /// Windows desktop application.
         /// </summary>
         Windows,
         /// <summary>
-        /// 背景服務應用程式。
+        /// Background service application.
         /// </summary>
         BackgroundService
     }
 
     /// <summary>
-    /// API 存取保護等級。
+    /// API access protection level.
     /// </summary>
     public enum ApiProtectionLevel
     {
         /// <summary>
-        /// 一般開放：允許任何呼叫（不強制編碼，開放給第三方）
+        /// Public: allows any call without enforced encoding (open to third parties).
         /// </summary>
         Public = 0,
         /// <summary>
-        /// 需要編碼：允許遠端呼叫，但必須進行編碼（序列化與壓縮）
+        /// Encoded: allows remote calls but requires encoding (serialization and compression).
         /// </summary>
         Encoded = 1,
         /// <summary>
-        /// 需要加密：允許遠端呼叫，必須進行編碼與加密（序列化、壓縮與加密）
+        /// Encrypted: allows remote calls but requires encoding and encryption (serialization, compression, and encryption).
         /// </summary>
         Encrypted = 2,
         /// <summary>
-        /// 僅限近端呼叫（不驗證編碼，適用於工具程式、背景服務）
+        /// Local only: no encoding validation required; suitable for tools and background services.
         /// </summary>
         LocalOnly = 3
     }
 
     /// <summary>
-    /// API 存取授權需求。
+    /// API access authentication requirement.
     /// </summary>
     public enum ApiAccessRequirement
     {
         /// <summary>
-        /// 不需登入（Anonymous Access）
+        /// No login required (anonymous access).
         /// </summary>
         Anonymous = 0,
         /// <summary>
-        /// 需要登入（需驗證 AccessToken）
+        /// Login required (AccessToken must be validated).
         /// </summary>
         Authenticated = 1
     }
 
     /// <summary>
-    /// 定義資料類型。
+    /// Definition data type.
     /// </summary>
     public enum DefineType
     {
         /// <summary>
-        /// 系統設定。
+        /// System settings.
         /// </summary>
         SystemSettings,
         /// <summary>
-        /// 資料庫設定。
+        /// Database settings.
         /// </summary>
         DatabaseSettings,
         /// <summary>
-        /// 資料庫結構設定。
+        /// Database schema settings.
         /// </summary>
         DbSchemaSettings,
         /// <summary>
-        /// 程式清單。
+        /// Program settings list.
         /// </summary>
         ProgramSettings,
         /// <summary>
-        /// 資料表結構。
+        /// Table schema.
         /// </summary>
         TableSchema,
         /// <summary>
-        /// 表單結構定義。
+        /// Form schema definition.
         /// </summary>
         FormSchema,
         /// <summary>
-        /// 表單版面配置。
+        /// Form layout configuration.
         /// </summary>
         FormLayout
     }
 
     /// <summary>
-    /// 資料庫類型。
+    /// Database type.
     /// </summary>
     public enum DatabaseType
     {
         /// <summary>
-        /// SQL Server。
+        /// SQL Server.
         /// </summary>
         SQLServer,
         /// <summary>
-        /// MySQL。
+        /// MySQL.
         /// </summary>
         MySQL,
         /// <summary>
-        /// SQLite。
+        /// SQLite.
         /// </summary>
         SQLite,
         /// <summary>
-        /// Oracle。
+        /// Oracle.
         /// </summary>
         Oracle
     }
 
     /// <summary>
-    /// 資料庫結構升級動作。
+    /// Database schema upgrade action.
     /// </summary>
     public enum DbUpgradeAction
     {
         /// <summary>
-        /// 結構一致無需升級。
+        /// Schema is consistent; no upgrade needed.
         /// </summary>
         None,
         /// <summary>
-        /// 新增。
+        /// New schema element to be created.
         /// </summary>
         New,
         /// <summary>
-        /// 異動。
+        /// Existing schema element to be upgraded.
         /// </summary>
         Upgrade
     }
 
     /// <summary>
-    /// 欄位類型。
+    /// Field type.
     /// </summary>
     public enum FieldType
     {
         /// <summary>
-        /// 實際存在於資料庫表中的欄位。
+        /// A field that physically exists in the database table.
         /// </summary>
         DbField,
         /// <summary>
-        /// 通過 JOIN 操作從其他表取得的關連欄位。
+        /// A relation field retrieved from another table via a JOIN operation.
         /// </summary>
         RelationField,
         /// <summary>
-        /// 使用計算或表達式生成的虛擬欄位。
+        /// A virtual field generated by a calculation or expression.
         /// </summary>
         VirtualField
     }
 
     /// <summary>
-    /// 表示排序方向。
+    /// Represents a sort direction.
     /// </summary>
     public enum SortDirection
     {
         /// <summary>
-        /// 遞增排序。
+        /// Ascending order.
         /// </summary>
         Asc,
         /// <summary>
-        /// 遞減排序。
+        /// Descending order.
         /// </summary>
         Desc
     }
 
     /// <summary>
-    /// 過濾節點種類。
+    /// The kind of a filter node.
     /// </summary>
     public enum FilterNodeKind
     {
-        /// <summary>單一欄位條件。</summary>
+        /// <summary>A single-field condition.</summary>
         Condition = 0,
-        /// <summary>條件群組。</summary>
+        /// <summary>A condition group.</summary>
         Group = 1
     }
 
     /// <summary>
-    /// 表示邏輯運算子，用於群組或串接查詢/條件表達式。
+    /// Represents a logical operator used to combine groups or query/condition expressions.
     /// </summary>
     /// <remarks>
-    /// 用於描述多個條件之間如何組合（例如查詢條件的 AND/OR）。
+    /// Describes how multiple conditions are combined (e.g., AND/OR in query conditions).
     /// </remarks>
     public enum LogicalOperator
     {
         /// <summary>
-        /// 且（AND）。
+        /// Logical AND.
         /// </summary>
         And = 0,
         /// <summary>
-        /// 或（OR）。
+        /// Logical OR.
         /// </summary>
         Or = 1
     }
 
     /// <summary>
-    /// 比較運算子。
-    /// 表示查詢或條件中可使用的各種比較操作類型。
+    /// Comparison operator.
+    /// Represents the various types of comparison operations available in queries or conditions.
     /// </summary>
     public enum ComparisonOperator
     {
         /// <summary>
-        /// 等於，對應 SQL 的 "="。
+        /// Equal to, corresponding to SQL "=".
         /// </summary>
         Equal = 0,
         /// <summary>
-        /// 不等於，對應 SQL 的 "&lt;&gt;" 或 "!="。
+        /// Not equal to, corresponding to SQL "&lt;&gt;" or "!=".
         /// </summary>
         NotEqual = 1,
         /// <summary>
-        /// 大於，對應 SQL 的 "&gt;"。
+        /// Greater than, corresponding to SQL "&gt;".
         /// </summary>
         GreaterThan = 2,
         /// <summary>
-        /// 大於或等於，對應 SQL 的 "&gt;="。
+        /// Greater than or equal to, corresponding to SQL "&gt;=".
         /// </summary>
         GreaterThanOrEqual = 3,
         /// <summary>
-        /// 小於，對應 SQL 的 "&lt;"。
+        /// Less than, corresponding to SQL "&lt;".
         /// </summary>
         LessThan = 4,
         /// <summary>
-        /// 小於或等於，對應 SQL 的 "&lt;="。
+        /// Less than or equal to, corresponding to SQL "&lt;=".
         /// </summary>
         LessThanOrEqual = 5,
         /// <summary>
-        /// 模糊匹配，對應 SQL 的 "LIKE"（使用者需提供適當的通配字元）。
+        /// Pattern matching, corresponding to SQL "LIKE" (the caller must supply appropriate wildcard characters).
         /// </summary>
         Like = 6,
         /// <summary>
-        /// 集合包含，對應 SQL 的 "IN ( ... )"。
+        /// Set membership, corresponding to SQL "IN ( ... )".
         /// </summary>
         In = 7,
         /// <summary>
-        /// 介於範圍，對應 SQL 的 "BETWEEN ... AND ..."。
+        /// Range check, corresponding to SQL "BETWEEN ... AND ...".
         /// </summary>
         Between = 8,
         /// <summary>
-        /// 開頭匹配，相當於 SQL 的 "LIKE 'value%'"。
+        /// Starts-with match, equivalent to SQL "LIKE 'value%'".
         /// </summary>
         StartsWith = 9,
         /// <summary>
-        /// 結尾匹配，相當於 SQL 的 "LIKE '%value'"。
+        /// Ends-with match, equivalent to SQL "LIKE '%value'".
         /// </summary>
         EndsWith = 10,
         /// <summary>
-        /// 包含匹配，相當於 SQL 的 "LIKE '%value%'"。
+        /// Contains match, equivalent to SQL "LIKE '%value%'".
         /// </summary>
         Contains = 11
     }
 
     #endregion
 
-    #region Layout 相關列舉型別
+    #region Layout-related Enumerations
 
     /// <summary>
-    /// 單筆資料表單模式。
+    /// Single-record form mode.
     /// </summary>
     public enum SingleFormMode
     {
         /// <summary>
-        /// 檢視。
+        /// View mode.
         /// </summary>
         View,
         /// <summary>
-        /// 新增。
+        /// Add mode.
         /// </summary>
         Add,
         /// <summary>
-        /// 編輯。
+        /// Edit mode.
         /// </summary>
         Edit
     }
 
     /// <summary>
-    /// 控制項類型。
+    /// Control type.
     /// </summary>
     public enum ControlType
     {
         /// <summary>
-        /// 自動判別。
+        /// Automatically determined.
         /// </summary>
         Auto,
         /// <summary>
-        /// 文字框。
+        /// Text edit box.
         /// </summary>
         TextEdit,
         /// <summary>
-        /// 按鈕文字框。
+        /// Button edit box.
         /// </summary>
         ButtonEdit,
         /// <summary>
-        /// 日期輸入框。
+        /// Date input box.
         /// </summary>
         DateEdit,
         /// <summary>
-        /// 年月輸入框。
+        /// Year-month input box.
         /// </summary>
         YearMonthEdit,
         /// <summary>
-        /// 下拉清單。
+        /// Drop-down list.
         /// </summary>
         DropDownEdit,
         /// <summary>
-        /// 備註輸入框。
+        /// Memo (multi-line text) input box.
         /// </summary>
         MemoEdit,
         /// <summary>
-        /// 核取框。
+        /// Check box.
         /// </summary>
         CheckEdit
     }
 
     /// <summary>
-    /// 表格欄位的控制項類型。
+    /// Control type for grid columns.
     /// </summary>
     public enum ColumnControlType
     {
         /// <summary>
-        /// 自動判別。
+        /// Automatically determined.
         /// </summary>
         Auto,
         /// <summary>
-        /// 文字框。
+        /// Text edit box.
         /// </summary>
         TextEdit,
         /// <summary>
-        /// 按鈕文字框。
+        /// Button edit box.
         /// </summary>
         ButtonEdit,
         /// <summary>
-        /// 日期輸入框。
+        /// Date input box.
         /// </summary>
         DateEdit,
         /// <summary>
-        /// 年月輸入框。
+        /// Year-month input box.
         /// </summary>
         YearMonthEdit,
         /// <summary>
-        /// 下拉清單。
+        /// Drop-down list.
         /// </summary>
         DropDownEdit,
         /// <summary>
-        /// 核取框。
+        /// Check box.
         /// </summary>
         CheckEdit
     }
 
     /// <summary>
-    /// Grid 控制項允許執行的動作。
+    /// Actions allowed on a grid control.
     /// </summary>
     [Flags]
     public enum GridControlAllowActions
     {
         /// <summary>
-        /// 無。
+        /// No actions allowed.
         /// </summary>
         None = 0,
         /// <summary>
-        /// 新增。
+        /// Add action.
         /// </summary>
         Add = 1,
         /// <summary>
-        /// 修改。
+        /// Edit action.
         /// </summary>
         Edit = 2,
         /// <summary>
-        /// 刪除。
+        /// Delete action.
         /// </summary>
         Delete = 4,
         /// <summary>
-        /// 全部。
+        /// All actions (Add, Edit, and Delete).
         /// </summary>
         All = Add | Edit | Delete
     }

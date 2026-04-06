@@ -1,4 +1,4 @@
-﻿using Bee.Define.Settings;
+using Bee.Define.Settings;
 using System;
 using System.IO;
 using Bee.Base;
@@ -7,16 +7,16 @@ using Bee.Base.Security;
 namespace Bee.Define.Security
 {
     /// <summary>
-    /// 主金鑰提供者，從設定來源載入主金鑰。
+    /// Master key provider that loads the master key from a configured source.
     /// </summary>
     public static class MasterKeyProvider
     {
         /// <summary>
-        /// 取得主金鑰內容。
+        /// Gets the master key content.
         /// </summary>
-        /// <param name="source">主金鑰來源設定。</param>
-        /// <param name="autoCreate">是否自動建立主金鑰。</param>
-        /// <returns>解碼後的主金鑰位元組陣列。</returns>
+        /// <param name="source">The master key source configuration.</param>
+        /// <param name="autoCreate">Indicates whether to automatically create the master key if it does not exist.</param>
+        /// <returns>The decoded master key as a byte array.</returns>
         public static byte[] GetMasterKey(MasterKeySource source, bool autoCreate =false)
         {
             string keyText;
@@ -49,11 +49,11 @@ namespace Bee.Define.Security
         }
 
         /// <summary>
-        /// 由檔案載入主金鑰內容。
+        /// Loads the master key content from a file.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
-        /// <param name="autoCreate">是否自動建立主金鑰。</param>
-        /// <returns>主金鑰內容。</returns>
+        /// <param name="filePath">The file path.</param>
+        /// <param name="autoCreate">Indicates whether to automatically create the master key if the file does not exist.</param>
+        /// <returns>The master key content.</returns>
         private static string LoadFromFile(string filePath, bool autoCreate)
         {
             if (string.IsNullOrWhiteSpace(filePath))
@@ -61,7 +61,7 @@ namespace Bee.Define.Security
                 filePath = "Master.key";
             }
 
-            // 若為相對路徑，則補上 BackendInfo.DefinePath
+            // If the path is relative, prepend BackendInfo.DefinePath
             if (!Path.IsPathRooted(filePath))
             {
                 filePath = FileFunc.PathCombine(BackendInfo.DefinePath, filePath);
@@ -82,11 +82,11 @@ namespace Bee.Define.Security
         }
 
         /// <summary>
-        /// 由環境變數載入主金鑰內容。
+        /// Loads the master key content from an environment variable.
         /// </summary>
-        /// <param name="varName">環境變數名稱。</param>
-        /// <param name="autoCreate">是否自動建立主金鑰。</param>
-        /// <returns>主金鑰內容。</returns>
+        /// <param name="varName">The environment variable name.</param>
+        /// <param name="autoCreate">Indicates whether to automatically create the master key if the variable is not set.</param>
+        /// <returns>The master key content.</returns>
         private static string LoadFromEnvironment(string varName, bool autoCreate)
         {
             if (string.IsNullOrWhiteSpace(varName))
@@ -111,11 +111,11 @@ namespace Bee.Define.Security
         }
 
         /// <summary>
-        /// 產生新的 Base64 編碼主金鑰。
+        /// Generates a new Base64-encoded master key.
         /// </summary>
         private static string GenerateNewKey()
         {
-            // 產生新的 Base64 編碼主金鑰
+            // Generate a new Base64-encoded master key
             return AesCbcHmacKeyGenerator.GenerateBase64CombinedKey();
         }
     }

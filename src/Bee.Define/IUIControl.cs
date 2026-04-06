@@ -1,14 +1,14 @@
-﻿namespace Bee.Define
+namespace Bee.Define
 {
     /// <summary>
-    /// UI 控制項介面。
+    /// Interface for a UI control.
     /// </summary>
     public interface IUIControl
     {
         /// <summary>
-        /// 依表單模式設定控制項狀態。
+        /// Sets the control state based on the form mode.
         /// </summary>
-        /// <param name="formMode">單筆資料表單模式。</param>
+        /// <param name="formMode">The single-record form mode.</param>
         void SetControlState(SingleFormMode formMode);
     }
 }

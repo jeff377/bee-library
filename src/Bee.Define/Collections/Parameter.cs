@@ -9,7 +9,7 @@ using MessagePack.Formatters;
 namespace Bee.Define.Collections
 {
     /// <summary>
-    /// 參數項目。
+    /// A parameter item.
     /// </summary>
     [MessagePackObject]
     [Serializable]
@@ -17,19 +17,19 @@ namespace Bee.Define.Collections
     [DefaultProperty("Value")]
     public class Parameter : MessagePackKeyCollectionItem
     {
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="Parameter"/>.
         /// </summary>
         public Parameter()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="Parameter"/>.
         /// </summary>
-        /// <param name="name">參數名稱。</param>
-        /// <param name="value">參數值。</param>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="value">The parameter value.</param>
         public Parameter(string name, object value)
         {
             this.Name = name;
@@ -39,7 +39,7 @@ namespace Bee.Define.Collections
         #endregion
 
         /// <summary>
-        /// 參數名稱。
+        /// Gets or sets the parameter name.
         /// </summary>
         [Key(100)]
         public string Name
@@ -49,14 +49,14 @@ namespace Bee.Define.Collections
         }
 
         /// <summary>
-        /// 參數值。
-        /// </summary>        
+        /// Gets or sets the parameter value.
+        /// </summary>
         [Key(101)]
         [MessagePackFormatter(typeof(TypelessFormatter))]
         public object Value { get; set; } = null;
 
         /// <summary>
-        /// 物件的描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

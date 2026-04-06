@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -9,11 +9,11 @@ using Bee.Base.Collections;
 namespace Bee.Define.Layouts
 {
     /// <summary>
-    /// 排版群組。
+    /// A layout group.
     /// </summary>
     [Serializable]
     [XmlType("LayoutGroup")]
-    [Description("排版群組。")]
+    [Description("Layout group.")]
     [TreeNode]
     public class LayoutGroup : CollectionItem
     {
@@ -21,37 +21,37 @@ namespace Bee.Define.Layouts
         private LayoutItemCollection _items = null;
 
         /// <summary>
-        /// 群組名稱。
+        /// Gets or sets the group name.
         /// </summary>
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("群組名稱。")]
+        [Description("Group name.")]
         [DefaultValue("")]
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// 標題文字。
+        /// Gets or sets the caption text.
         /// </summary>
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("標題文字。")]
+        [Description("Caption text.")]
         [DefaultValue("")]
         public string Caption { get; set; } = string.Empty;
 
         /// <summary>
-        /// 是否顯示標題。
+        /// Gets or sets a value indicating whether the caption is shown.
         /// </summary>
         [XmlAttribute]
-        [Description("是否顯示標題。")]
+        [Description("Indicates whether the caption is shown.")]
         [DefaultValue(true)]
         public bool ShowCaption { get; set; } = true;
 
         /// <summary>
-        /// 欄位數。
+        /// Gets or sets the number of columns.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
-        [Description("欄位數。")]
+        [Description("Number of columns.")]
         public int ColumnCount
         {
             get { return _columnCount; }
@@ -63,9 +63,9 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 佈局項目集合。
+        /// Gets the layout item collection.
         /// </summary>
-        [Description("佈局項目集合。")]
+        [Description("Layout item collection.")]
         [Browsable(false)]
         [XmlArrayItem(typeof(LayoutItem))]
         [XmlArrayItem(typeof(LayoutGrid))]
@@ -74,7 +74,7 @@ namespace Bee.Define.Layouts
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
                 if (_items == null) { _items = new LayoutItemCollection(); }
                 return _items;
@@ -82,9 +82,9 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 尋找指定資料表格排版。
+        /// Finds the grid layout for the specified table name.
         /// </summary>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="tableName">The table name.</param>
         public LayoutGrid FindGrid(string tableName)
         {
             foreach (LayoutItemBase item in this.Items)
@@ -99,9 +99,9 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
@@ -109,7 +109,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -9,29 +9,29 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 程式分類。
+    /// A program category.
     /// </summary>
     [Serializable]
     [XmlType("ProgramCategory")]
-    [Description("程式分類。")]
+    [Description("Program category.")]
     [TreeNode]
     public class ProgramCategory : KeyCollectionItem
     {
         private ProgramItemCollection _items = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ProgramCategory"/>.
         /// </summary>
         public ProgramCategory()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ProgramCategory"/>.
         /// </summary>
-        /// <param name="id">分類代碼。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="id">The category ID.</param>
+        /// <param name="displayName">The display name.</param>
         public ProgramCategory(string id, string displayName)
         {
             Id = id;
@@ -41,10 +41,10 @@ namespace Bee.Define.Settings
         #endregion
 
         /// <summary>
-        /// 分類代碼。
+        /// Gets or sets the category ID.
         /// </summary>
         [XmlAttribute]
-        [Description("分類代碼。")]
+        [Description("Category ID.")]
         public string Id
         {
             get { return base.Key; }
@@ -52,23 +52,23 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 程式項目集合。
+        /// Gets the program item collection.
         /// </summary>
-        [Description("程式項目集合。")]
+        [Description("Program item collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
         public ProgramItemCollection Items
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
                 if (_items == null) { _items = new ProgramItemCollection(this); }
                 return _items;
@@ -76,9 +76,9 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
@@ -86,7 +86,7 @@ namespace Bee.Define.Settings
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

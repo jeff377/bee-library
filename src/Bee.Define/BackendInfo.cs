@@ -8,106 +8,106 @@ using Bee.Base;
 namespace Bee.Define
 {
     /// <summary>
-    /// 後端資訊，記錄伺服端在運行期間的參數及環境設置。
+    /// Backend information, recording the server-side parameters and environment settings at runtime.
     /// </summary>
     public static class BackendInfo
     {
         /// <summary>
-        /// 日誌寫入器。
+        /// Gets or sets the log writer.
         /// </summary>
         public static ILogWriter LogWriter { get; set; } = new NullLogWriter();
 
         /// <summary>
-        /// 記錄選項，用於設定日誌記錄的相關參數。
+        /// Gets or sets the logging options for configuring log-related parameters.
         /// </summary>
         public static LogOptions LogOptions { get; set; } = new LogOptions();
 
         /// <summary>
-        /// 定義資料路徑。
+        /// Gets or sets the definition data path.
         /// </summary>
         public static string DefinePath { get; set; } = string.Empty;
 
         /// <summary>
-        /// API 傳輸加密金鑰。
+        /// Gets or sets the API transport encryption key.
         /// </summary>
         public static byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
-        /// Cookie 資料加密金鑰。
+        /// Gets or sets the Cookie data encryption key.
         /// </summary>
         public static byte[] CookieEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
-        /// 設定檔機敏資料加密金鑰。
+        /// Gets or sets the encryption key for sensitive data in configuration files.
         /// </summary>
         public static byte[] ConfigEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
-        /// 資料庫機敏欄位加密金鑰。
+        /// Gets or sets the encryption key for sensitive database fields.
         /// </summary>
         public static byte[] DatabaseEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
-        /// 資料庫類型。
+        /// Gets or sets the database type.
         /// </summary>
         public static DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
 
         /// <summary>
-        /// 預設資料庫識別。
+        /// Gets or sets the default database identifier.
         /// </summary>
         public static string DatabaseId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 最大 DbCommand 逾時（秒），預設 60 秒，0 表示不限制。
+        /// Gets or sets the maximum DbCommand timeout (seconds). Default is 60 seconds; 0 means unlimited.
         /// </summary>
         public static int MaxDbCommandTimeout { get; set; } = 60;
 
         /// <summary>
-        /// API 金鑰提供者，用於取得傳輸資料加解密所需的 AES+HMAC 金鑰。
-        /// 支援共用金鑰與每次登入動態產生的 Session 金鑰。
+        /// Gets or sets the API key provider, used to obtain the AES+HMAC keys required for transport data encryption/decryption.
+        /// Supports shared keys and session keys dynamically generated at each login.
         /// </summary>
         public static IApiEncryptionKeyProvider ApiEncryptionKeyProvider { get; set; }
 
         /// <summary>
-        /// AccessToken 驗證提供者，用於驗證 AccessToken 的有效性。
+        /// Gets or sets the AccessToken validation provider, used to validate the validity of AccessTokens.
         /// </summary>
         public static IAccessTokenValidationProvider AccessTokenValidationProvider { get; set; }
 
         /// <summary>
-        /// 業務邏輯物件提供者，定義所有 BusinessObject 的取得方式。
+        /// Gets or sets the business object provider, defining how all BusinessObjects are obtained.
         /// </summary>
         public static IBusinessObjectProvider BusinessObjectProvider { get; set; }
 
         /// <summary>
-        /// 快取資料來源提供者。
+        /// Gets or sets the cache data source provider.
         /// </summary>
         public static ICacheDataSourceProvider CacheDataSourceProvider { get; set; }
 
         /// <summary>
-        /// 定義資料儲存區。
+        /// Gets or sets the define data storage.
         /// </summary>
         public static IDefineStorage DefineStorage { get; set; }
 
         /// <summary>
-        /// 定義資料存取。
+        /// Gets or sets the define data access.
         /// </summary>
         public static IDefineAccess DefineAccess { get; set; }
 
         /// <summary>
-        /// 連線資訊存取服務。
+        /// Gets or sets the session info access service.
         /// </summary>
         public static ISessionInfoService SessionInfoService { get; set; }
 
         /// <summary>
-        /// 提供企業系統中常用業務物件的統一存取服務。
+        /// Gets or sets the unified access service for commonly used business objects in the enterprise system.
         /// </summary>
         public static IEnterpriseObjectService EnterpriseObjectService { get; set; }
 
         /// <summary>
-        /// 初始化。
+        /// Initializes the backend with the specified configuration.
         /// </summary>
-        /// <param name="configuration">後端參數與環境設置。</param>
-        /// <param name="autoCreateMasterKey">若主金鑰不存在時是否自動建立。</param>
+        /// <param name="configuration">Backend parameters and environment settings.</param>
+        /// <param name="autoCreateMasterKey">Whether to automatically create the master key if it does not exist.</param>
         public static void Initialize(BackendConfiguration configuration, bool autoCreateMasterKey)
         {
             DatabaseType = configuration.DatabaseType;
@@ -117,27 +117,27 @@ namespace Bee.Define
                        
             if (!SysInfo.IsSingleFile)
             {
-                // 初始化後端服務的實例
+                // Initialize backend service instances
                 InitializeComponents(configuration);
             }
-  
-            // 初始化安全性金鑰
+
+            // Initialize security keys
             InitializeSecurityKeys(configuration, autoCreateMasterKey);
         }
 
         /// <summary>
-        /// 初始化。
+        /// Initializes the backend with the specified configuration.
         /// </summary>
-        /// <param name="configuration">後端參數與環境設置。</param>
+        /// <param name="configuration">Backend parameters and environment settings.</param>
         public static void Initialize(BackendConfiguration configuration)
         {
             Initialize(configuration, false);
         }
 
         /// <summary>
-        /// 初始化後端服務的實例。
+        /// Initializes backend service instances.
         /// </summary>
-        /// <param name="configuration">後端參數與環境設置。</param>
+        /// <param name="configuration">Backend parameters and environment settings.</param>
         private static void InitializeComponents(BackendConfiguration configuration)
         {
             var Components = configuration.Components;
@@ -160,10 +160,10 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 建立指定型別的實例，若 <paramref name="configured"/> 為空則使用 <paramref name="fallback"/>。
+        /// Creates an instance of the specified type; uses <paramref name="fallback"/> if <paramref name="configured"/> is empty.
         /// </summary>
-        /// <param name="configured">組態指定的型別名稱。</param>
-        /// <param name="fallback">預設型別名稱。</param>
+        /// <param name="configured">The type name specified in configuration.</param>
+        /// <param name="fallback">The default type name.</param>
         private static T CreateOrDefault<T>(string configured, string fallback) where T : class
         {
             var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
@@ -171,10 +171,10 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 初始化安全性金鑰。
+        /// Initializes security keys.
         /// </summary>
-        /// <param name="configuration">後端參數與環境設置。</param>
-        /// <param name="autoCreateMasterKey">若主金鑰不存在時是否自動建立。</param>
+        /// <param name="configuration">Backend parameters and environment settings.</param>
+        /// <param name="autoCreateMasterKey">Whether to automatically create the master key if it does not exist.</param>
         private static void InitializeSecurityKeys(BackendConfiguration configuration, bool autoCreateMasterKey)
         {
             var settings = configuration.SecurityKeySettings;

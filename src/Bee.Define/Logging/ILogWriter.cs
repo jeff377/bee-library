@@ -1,14 +1,14 @@
 ﻿namespace Bee.Define.Logging
 {
     /// <summary>
-    /// 系統日誌寫入介面。
+    /// Interface for a system log writer.
     /// </summary>
     public interface ILogWriter
     {
         /// <summary>
-        /// 寫入一筆日誌紀錄。
+        /// Writes a log entry.
         /// </summary>
-        /// <param name="entry">日誌內容。</param>
+        /// <param name="entry">The log entry.</param>
         void Write(LogEntry entry);
     }
 }

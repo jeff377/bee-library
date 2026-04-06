@@ -1,4 +1,4 @@
-﻿using Bee.Define.Collections;
+using Bee.Define.Collections;
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
@@ -10,11 +10,11 @@ using Bee.Base.Collections;
 namespace Bee.Define.Layouts
 {
     /// <summary>
-    /// 資料表格排版欄位。
+    /// A grid layout column.
     /// </summary>
     [Serializable]
     [XmlType("LayoutColumn")]
-    [Description("資料表格排版欄位。")]
+    [Description("Grid layout column.")]
     [TreeNode]
     public class LayoutColumn : CollectionItem
     {
@@ -22,17 +22,17 @@ namespace Bee.Define.Layouts
         private PropertyCollection _extendedProperties = null;
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="LayoutColumn"/>.
         /// </summary>
         public LayoutColumn()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="LayoutColumn"/>.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">標題文字。</param>
-        /// <param name="controlType">控制項類型。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="caption">The caption text.</param>
+        /// <param name="controlType">The control type.</param>
         public LayoutColumn(string fieldName, string caption, ColumnControlType controlType)
         {
             FieldName = fieldName;
@@ -41,97 +41,97 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 欄位名稱。
+        /// Gets or sets the field name.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("欄位名稱。")]
+        [Description("Field name.")]
         public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 標題文字。
+        /// Gets or sets the caption text.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("標題文字。")]
+        [Description("Caption text.")]
         [DefaultValue("")]
         public string Caption { get; set; } = string.Empty;
 
         /// <summary>
-        /// 控制項類型。
+        /// Gets or sets the control type.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
-        [Description("控制項類型。")]
+        [Description("Control type.")]
         public ColumnControlType ControlType { get; set; } = ColumnControlType.TextEdit;
 
         /// <summary>
-        /// 關連程式代碼。
+        /// Gets or sets the related program ID.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
-        [Description("關連程式代碼。")]
+        [Description("Related program ID.")]
         [DefaultValue("")]
         public string ProgId { get; set; }
 
         /// <summary>
-        /// 是否顯示。
+        /// Gets or sets a value indicating whether this column is visible.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
-        [Description("是否顯示。")]
+        [Description("Indicates whether this column is visible.")]
         [DefaultValue(true)]
         public bool Visible { get; set; } = true;
 
         /// <summary>
-        /// 是否唯讀。
+        /// Gets or sets a value indicating whether this column is read-only.
         /// </summary>
         [Category(PropertyCategories.Appearance)]
         [XmlAttribute]
-        [Description("是否唯讀。")]
+        [Description("Indicates whether this column is read-only.")]
         [DefaultValue(false)]
         public bool ReadOnly { get; set; } = false;
 
         /// <summary>
-        /// 欄寬，設定值大於 0 才有效。
+        /// Gets or sets the column width. A value greater than 0 is required to take effect.
         /// </summary>
         [Category(PropertyCategories.Layout)]
         [XmlAttribute]
-        [Description("欄寬，設定值大於 0 才有效。")]
+        [Description("Column width. A value greater than 0 is required to take effect.")]
         [DefaultValue(0)]
         public int Width { get; set; } = 0;
 
         /// <summary>
-        /// 顯示格式化。
+        /// Gets or sets the display format string.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
-        [Description("顯示格式化。")]
+        [Description("Display format string.")]
         [DefaultValue("")]
         public string DisplayFormat { get; set; } = string.Empty;
 
         /// <summary>
-        /// 數值格式化。
+        /// Gets or sets the number format string.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
-        [Description("數值格式化。")]
+        [Description("Number format string.")]
         [DefaultValue("")]
         public string NumberFormat { get; set; } = string.Empty;
 
         /// <summary>
-        /// 清單項目集合。
+        /// Gets the list item collection.
         /// </summary>
         [Category(PropertyCategories.Data)]
-        [Description("清單項目集合。")]
+        [Description("List item collection.")]
         [DefaultValue(null)]
         public ListItemCollection ListItems
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _listItems)) { return null; }
                 if (_listItems == null) { _listItems = new ListItemCollection(); }
                 return _listItems;
@@ -139,15 +139,15 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 延伸屬性集合。
+        /// Gets the extended property collection.
         /// </summary>
-        [Description("延伸屬性集合。")]
+        [Description("Extended property collection.")]
         [DefaultValue(null)]
         public PropertyCollection ExtendedProperties
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _extendedProperties)) { return null; }
                 if (_extendedProperties == null) { _extendedProperties = new PropertyCollection(); }
                 return _extendedProperties;
@@ -155,9 +155,9 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
@@ -166,7 +166,7 @@ namespace Bee.Define.Layouts
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

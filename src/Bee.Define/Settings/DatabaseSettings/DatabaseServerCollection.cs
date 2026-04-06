@@ -7,10 +7,10 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 資料庫伺服器集合。
+    /// A collection of database server configurations.
     /// </summary>
     [Serializable]
-    [Description("資料庫伺服器集合。")]
+    [Description("Database server collection.")]
     [TreeNode("Servers", true)]
     public class DatabaseServerCollection : KeyCollectionBase<DatabaseServer>
     {

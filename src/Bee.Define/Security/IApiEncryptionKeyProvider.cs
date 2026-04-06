@@ -1,24 +1,24 @@
-﻿using System;
+using System;
 
 namespace Bee.Define.Security
 {
     /// <summary>
-    /// API 加密金鑰提供者介面。
-    /// 支援靜態共用金鑰或每次登入個別產生的 Session 金鑰。
+    /// Interface for an API encryption key provider.
+    /// Supports both a static shared key and per-session keys generated at login.
     /// </summary>
     public interface IApiEncryptionKeyProvider
     {
         /// <summary>
-        /// 取得 API 傳輸資料的加密金鑰。
+        /// Gets the encryption key for API data transmission.
         /// </summary>
-        /// <param name="accessToken">AccessToken 或 Guid.Empty。</param>
-        /// <returns>64-byte 的合併金鑰資料（AES + HMAC）。</returns>
+        /// <param name="accessToken">The access token, or <see cref="Guid.Empty"/>.</param>
+        /// <returns>A 64-byte combined key (AES + HMAC).</returns>
         byte[] GetKey(Guid accessToken);
 
         /// <summary>
-        /// 登入時產生一組金鑰，可能是共用或隨機金鑰。
+        /// Generates a key during login; may be a shared or randomly generated key.
         /// </summary>
-        /// <returns>64-byte 合併金鑰（AES + HMAC）。</returns>
+        /// <returns>A 64-byte combined key (AES + HMAC).</returns>
         byte[] GenerateKeyForLogin();
     }
 }

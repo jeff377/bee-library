@@ -10,26 +10,26 @@ using Newtonsoft.Json;
 namespace Bee.Define.Database
 {
     /// <summary>
-    /// 欄位結構。
+    /// Database field schema.
     /// </summary>
     [Serializable]
     [XmlType("DbField")]
-    [Description("欄位結構。")]
+    [Description("Database field schema.")]
     [TreeNode]
     public class DbField : KeyCollectionItem, IDefineField
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbField"/>.
         /// </summary>
         public DbField()
         { }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="DbField"/>.
         /// </summary>
-        /// <param name="fieldName">欄位名稱。</param>
-        /// <param name="caption">標題文字。</param>
-        /// <param name="dbType">欄位資料型別。</param>
+        /// <param name="fieldName">The field name.</param>
+        /// <param name="caption">The caption text.</param>
+        /// <param name="dbType">The field database type.</param>
         public DbField(string fieldName, string caption, FieldDbType dbType)
         {
             FieldName = fieldName;
@@ -38,12 +38,12 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 欄位名稱。
+        /// Gets or sets the field name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
-        [Description("欄位名稱。")]
+        [Description("Field name.")]
         public string FieldName
         {
             get { return this.Key; }
@@ -51,79 +51,79 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 標題文字。
+        /// Gets or sets the caption text.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
         [NotifyParentProperty(true)]
-        [Description("標題文字。")]
+        [Description("Caption text.")]
         public string Caption { get; set; } = string.Empty;
 
         /// <summary>
-        /// 資料型別。
+        /// Gets or sets the database data type.
         /// </summary>
         [XmlAttribute]
         [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
         [Category(PropertyCategories.Data)]
-        [Description("資料型別。")]
+        [Description("Database data type.")]
         public FieldDbType DbType { get; set; } = FieldDbType.String;
 
         /// <summary>
-        /// 字串型別的欄位長度，適用於 <see cref="FieldDbType.String"/>。
+        /// Gets or sets the field length for string-type fields; applies to <see cref="FieldDbType.String"/>.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("字串型別的欄位長度，適用於 String。")]
+        [Description("Field length for string-type fields; applies to String.")]
         [DefaultValue(0)]
         public int Length { get; set; } = 0;
 
         /// <summary>
-        /// 數值型別的精度（總位數），適用於 Decimal。
+        /// Gets or sets the numeric precision (total digits) for Decimal-type fields.
         /// </summary>
         /// <remarks>
-        /// 適用於 Decimal 型別，表示數值的總位數，包含整數和小數部分。
-        /// 例如：Precision=19, Scale=4 表示 DECIMAL(19,4)，範圍為 -999999999999999.9999 到 999999999999999.9999。
+        /// Applies to the Decimal type; represents the total number of digits including both integer and fractional parts.
+        /// For example: Precision=19, Scale=4 represents DECIMAL(19,4), with a range of -999999999999999.9999 to 999999999999999.9999.
         /// </remarks>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("數值型別的精度（總位數），適用於 Decimal  型別。")]
+        [Description("Numeric precision (total digits) for Decimal-type fields.")]
         [DefaultValue(18)]
         public int Precision { get; set; } = 18;
 
         /// <summary>
-        /// 數值型別的小數位數，適用於 Decimal。
+        /// Gets or sets the number of decimal places for Decimal-type fields.
         /// </summary>
         /// <remarks>
-        /// 適用於 Decimal 型別，表示小數點後的位數。
-        /// 例如：Precision=19, Scale=4 表示最多 4 位小數。
+        /// Applies to the Decimal type; represents the number of digits after the decimal point.
+        /// For example: Precision=19, Scale=4 means up to 4 decimal places.
         /// </remarks>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("數值型別的小數位數，適用於 Decimal。")]
+        [Description("Number of decimal places for Decimal-type fields.")]
         [DefaultValue(0)]
         public int Scale { get; set; } = 0;
 
 
         /// <summary>
-        /// 是否允許 Null 值。
+        /// Gets or sets a value indicating whether null values are allowed.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("是否允許 Null 值。")]
+        [Description("Indicates whether null values are allowed.")]
         [DefaultValue(false)]
         public bool AllowNull { get; set; } = false;
 
         /// <summary>
-        /// 預設值。
+        /// Gets or sets the default value.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("預設值。")]
+        [Description("Default value.")]
         [DefaultValue("")]
         public string DefaultValue { get; set; } = string.Empty;
 
         /// <summary>
-        /// 欄位結構升級動作，執行階段比對資料欄位結構使用，此屬性不做序列化。
+        /// Gets or sets the schema upgrade action used at runtime for field schema comparison. This property is not serialized.
         /// </summary>
         [XmlIgnore]
         [Browsable(false)]
@@ -131,7 +131,7 @@ namespace Bee.Define.Database
         public DbUpgradeAction UpgradeAction { get; set; } = DbUpgradeAction.None;
 
         /// <summary>
-        /// 建立複本。
+        /// Creates a copy of this instance.
         /// </summary>
         public DbField Clone()
         {
@@ -149,29 +149,29 @@ namespace Bee.Define.Database
         }
 
         /// <summary>
-        /// 比較結構是否相同。
+        /// Compares whether the schema is identical to another instance.
         /// </summary>
-        /// <param name="source">來源物件。</param>
+        /// <param name="source">The source object to compare against.</param>
         public bool Compare(DbField source)
         {
-            // 比對資料型別
+            // Compare data type
             if (DbType != source.DbType) { return false; }
-            // 比對是否允許 Null
+            // Compare AllowNull
             if (AllowNull != source.AllowNull) { return false; }
-            // 比對 String 型別的欄位長度
+            // Compare field length for String type
             if ((DbType == FieldDbType.String) && (Length != source.Length))
                 return false;
-            // 比對 Decimal 型別的精度和小數位數
+            // Compare precision and scale for Decimal type
             if ((DbType == FieldDbType.Decimal) && (Precision != source.Precision || Scale != source.Scale))
                 return false;
-            // 比較預設值
+            // Compare default value
             if (!StrFunc.IsEquals(DefaultValue, source.DefaultValue)) { return false; }
 
             return true;
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

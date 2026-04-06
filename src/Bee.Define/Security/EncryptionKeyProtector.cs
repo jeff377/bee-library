@@ -5,15 +5,15 @@ using Bee.Base.Security;
 namespace Bee.Define.Security
 {
     /// <summary>
-    /// 使用主金鑰進行金鑰資料的加密與解密。
+    /// Encrypts and decrypts key data using the master key.
     /// </summary>
     public static class EncryptionKeyProtector
     {
         /// <summary>
-        /// 產生新的 AES+HMAC 組合金鑰，並使用主金鑰加密為 Base64 密文。
+        /// Generates a new AES+HMAC combined key and encrypts it with the master key, returning a Base64 ciphertext.
         /// </summary>
-        /// <param name="masterKey">主金鑰（CombinedKey 格式）。</param>
-        /// <returns>加密後的 Base64 編碼字串。</returns>
+        /// <param name="masterKey">The master key in CombinedKey format.</param>
+        /// <returns>The encrypted Base64-encoded string.</returns>
         public static string GenerateEncryptedKey(byte[] masterKey)
         {
             if (masterKey == null || masterKey.Length == 0)
@@ -26,11 +26,11 @@ namespace Bee.Define.Security
         }
 
         /// <summary>
-        /// 使用主金鑰解密 Base64 密文，還原原始 AES+HMAC 組合金鑰。
+        /// Decrypts a Base64 ciphertext using the master key and restores the original AES+HMAC combined key.
         /// </summary>
-        /// <param name="masterKey">主金鑰（CombinedKey 格式）。</param>
-        /// <param name="base64CipherText">加密後的 Base64 編碼字串。</param>
-        /// <returns>還原的原始金鑰位元組陣列。</returns>
+        /// <param name="masterKey">The master key in CombinedKey format.</param>
+        /// <param name="base64CipherText">The encrypted Base64-encoded string.</param>
+        /// <returns>The restored original key as a byte array.</returns>
         public static byte[] DecryptEncryptedKey(byte[] masterKey, string base64CipherText)
         {
             if (masterKey == null || masterKey.Length == 0)

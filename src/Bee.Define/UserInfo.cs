@@ -1,27 +1,27 @@
-﻿namespace Bee.Define
+namespace Bee.Define
 {
     /// <summary>
-    /// 前端的使用者資訊。
+    /// Frontend user information.
     /// </summary>
     public class UserInfo : IUserInfo
     {
         /// <summary>
-        /// 使用者帳號。
+        /// Gets or sets the user account ID.
         /// </summary>
         public string UserId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 使用者名稱。
+        /// Gets or sets the user name.
         /// </summary>
         public string UserName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 使用者語系（如 zh-TW, en-US）
+        /// Gets or sets the user culture (e.g., zh-TW, en-US).
         /// </summary>
         public string Culture { get; set; } = "zh-TW";
 
         /// <summary>
-        /// 使用者時區（建議使用 IANA，如 Asia/Taipei）
+        /// Gets or sets the user time zone (IANA format recommended, e.g., Asia/Taipei).
         /// </summary>
         public string TimeZone { get; set; } = "Asia/Taipei";
     }

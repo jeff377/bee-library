@@ -1,23 +1,23 @@
-﻿using Bee.Base;
+using Bee.Base;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 定義檔路徑資訊。
+    /// Provides file path information for define data files.
     /// </summary>
     public static class DefinePathInfo
     {
         /// <summary>
-        /// 取得定義資料路徑或子路徑。
+        /// Gets the define data path combined with an optional sub-path.
         /// </summary>
-        /// <param name="subPath">子路徑。</param>
+        /// <param name="subPath">The sub-path.</param>
         private static string GetDefinePath(string subPath)
         {
             return FileFunc.PathCombine(BackendInfo.DefinePath, subPath);
         }
 
         /// <summary>
-        /// 取得系統設定的檔案路徑。
+        /// Gets the file path for the system settings file.
         /// </summary>
         public static string GetSystemSettingsFilePath()
         {
@@ -28,7 +28,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得資料庫設定的檔案路徑。
+        /// Gets the file path for the database settings file.
         /// </summary>
         public static string GetDatabaseSettingsFilePath()
         {
@@ -39,7 +39,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得程式清單的檔案路徑。
+        /// Gets the file path for the program settings file.
         /// </summary>
         public static string GetProgramSettingsFilePath()
         {
@@ -50,7 +50,7 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得資料表清單的檔案路徑。
+        /// Gets the file path for the database table list settings file.
         /// </summary>
         public static string GetDbTableSettingsFilePath()
         {
@@ -61,10 +61,10 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得資料表結構的檔案路徑。
+        /// Gets the file path for the specified table schema.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         public static string GetTableSchemaFilePath(string dbName, string tableName)
         {
             string sFilePath;
@@ -74,9 +74,9 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得表單結構定義的檔案路徑。
+        /// Gets the file path for the specified form schema.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program ID.</param>
         public static string GetFormSchemaFilePath(string progId)
         {
             string sFilePath;
@@ -86,9 +86,9 @@ namespace Bee.Define
         }
 
         /// <summary>
-        /// 取得表單版面配置的檔案路徑。
+        /// Gets the file path for the specified form layout.
         /// </summary>
-        /// <param name="layoutId">表單版面代碼。</param>
+        /// <param name="layoutId">The form layout ID.</param>
         public static string GetFormLayoutFilePath(string layoutId)
         {
             string sFilePath;

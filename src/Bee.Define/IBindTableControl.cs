@@ -1,24 +1,24 @@
-﻿using System.Data;
+using System.Data;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 繫結資料表的控制項介面。
+    /// Interface for a control that binds to a data table.
     /// </summary>
     public interface IBindTableControl
     {
         /// <summary>
-        /// 資料表名稱。
+        /// Gets or sets the table name.
         /// </summary>
         string TableName { get; set; }
 
         /// <summary>
-        /// 繫結資料表。
+        /// Gets or sets the bound data table.
         /// </summary>
         DataTable DataTable { get; set; }
 
         /// <summary>
-        /// 結束目前編輯。
+        /// Ends the current edit operation.
         /// </summary>
         void EndEdit();
     }

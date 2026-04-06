@@ -10,30 +10,30 @@ using Newtonsoft.Json;
 namespace Bee.Define.Forms
 {
     /// <summary>
-    /// 表單結構定義。
+    /// Form schema definition.
     /// </summary>
     [Serializable]
     [XmlType("FormSchema")]
-    [Description("表單結構定義。")]
-    [TreeNode("表單結構定義")]
+    [Description("Form schema definition.")]
+    [TreeNode("Form Schema")]
     public class FormSchema : IObjectSerializeFile
     {
         private FormTableCollection _tables = null;
 
-        #region 建構函式
+        #region Constructors
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FormSchema"/>.
         /// </summary>
         public FormSchema()
         {
         }
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="FormSchema"/>.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="progId">The program ID.</param>
+        /// <param name="displayName">The display name.</param>
         public FormSchema(string progId, string displayName)
         {
             ProgId= progId;
@@ -42,19 +42,19 @@ namespace Bee.Define.Forms
 
         #endregion
 
-        #region IObjectSerializeFile 介面
+        #region IObjectSerializeFile Interface
 
         /// <summary>
-        /// 序列化狀態。
+        /// Gets the serialization state.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public SerializeState SerializeState { get; private set; } = SerializeState.None;
 
         /// <summary>
-        /// 設定序列化狀態。
+        /// Sets the serialization state.
         /// </summary>
-        /// <param name="serializeState">序列化狀態。</param>
+        /// <param name="serializeState">The serialization state.</param>
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
@@ -62,16 +62,16 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 序列化繫結檔案。
+        /// Gets the file path bound to serialization.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public string ObjectFilePath { get; private set; } = string.Empty;
 
         /// <summary>
-        /// 設定序列化繫結檔案。
+        /// Sets the file path bound to serialization.
         /// </summary>
-        /// <param name="filePath">檔案路徑。</param>
+        /// <param name="filePath">The file path.</param>
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
@@ -80,45 +80,45 @@ namespace Bee.Define.Forms
         #endregion
 
         /// <summary>
-        /// 物件建立時間。
+        /// Gets the time at which this object was created.
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
-        /// 程式代碼。
+        /// Gets or sets the program ID.
         /// </summary>
         [XmlAttribute()]
-        [Description("程式代碼。")]
+        [Description("Program ID.")]
         public string ProgId { get; set; } = string.Empty;
 
         /// <summary>
-        /// 顯示名稱。
+        /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("顯示名稱。")]
+        [Description("Display name.")]
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 清單欄位集合字串，以逗點分隔多個欄位。
+        /// Gets or sets the list field collection string, with multiple fields separated by commas.
         /// </summary>
         [XmlAttribute]
         [Category(PropertyCategories.Data)]
-        [Description("清單欄位集合字串，以逗點分隔多個欄位。")]
+        [Description("List field collection string, with multiple fields separated by commas.")]
         public string ListFields { get; set; } = string.Empty;
 
         /// <summary>
-        /// 資料表集合。
+        /// Gets the table collection.
         /// </summary>
-        [Description("資料表集合。")]
+        [Description("Table collection.")]
         [DefaultValue(null)]
         public FormTableCollection Tables
         {
             get
             {
-                // 序列化時，若集合無資料則傳回 null
+                // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _tables)) { return null; }
                 if (_tables == null) { _tables = new FormTableCollection(this); }
                 return _tables;
@@ -126,7 +126,7 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 主檔資料表。
+        /// Gets the master table.
         /// </summary>
         [Browsable(false)]
         [TreeNodeIgnore]
@@ -142,7 +142,7 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 取得清單版面。
+        /// Gets the list layout for this form schema.
         /// </summary>
         public LayoutGrid GetListLayout()
         {
@@ -150,7 +150,7 @@ namespace Bee.Define.Forms
         }
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

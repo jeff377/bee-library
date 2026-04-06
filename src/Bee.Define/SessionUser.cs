@@ -1,44 +1,44 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 
 namespace Bee.Define
 {
     /// <summary>
-    /// 連線資訊儲存的用戶資料。
-    /// 保留重建 SessionInfo 所需的資訊，此資料會儲存在 DB。
+    /// User data stored in session info.
+    /// Retains the information needed to reconstruct a <see cref="SessionInfo"/>; this data is persisted in the database.
     /// </summary>
     [Serializable]
     public class SessionUser
     {
         /// <summary>
-        /// 存取令牌。
+        /// Gets or sets the access token.
         /// </summary>
         public Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// 用戶帳號。
+        /// Gets or sets the user account ID.
         /// </summary>
         public string UserID { get; set; } = string.Empty;
 
         /// <summary>
-        /// 用戶名稱。
+        /// Gets or sets the user name.
         /// </summary>
         public string UserName { get; set; } = string.Empty;
 
         /// <summary>
-        /// 效期終止時間。
+        /// Gets or sets the session expiration time.
         /// </summary>
         [DefaultValue(typeof(DateTime), "0001-01-01T00:00:00.0000000Z")]
         public DateTime EndTime { get; set; } = DateTime.MinValue;
 
         /// <summary>
-        /// 一次性有效。
+        /// Gets or sets a value indicating whether this token is one-time use only.
         /// </summary>
         [DefaultValue(false)]
         public bool OneTime { get; set; } = false;
 
         /// <summary>
-        /// 物件描述文字。
+        /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {

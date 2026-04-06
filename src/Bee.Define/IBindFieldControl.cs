@@ -1,17 +1,17 @@
-﻿namespace Bee.Define
+namespace Bee.Define
 {
     /// <summary>
-    /// 繫結欄位的控制項介面。
+    /// Interface for a control that binds to a field.
     /// </summary>
     public interface IBindFieldControl
     {
         /// <summary>
-        /// 欄位名稱．
+        /// Gets or sets the field name.
         /// </summary>
         string FieldName { get; set; }
 
         /// <summary>
-        /// 欄位值。
+        /// Gets or sets the field value.
         /// </summary>
         object FieldValue { get; set; }
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Attributes;
@@ -7,25 +7,25 @@ using Bee.Base.Collections;
 namespace Bee.Define.Settings
 {
     /// <summary>
-    /// 程式項目集合。
+    /// A collection of program items.
     /// </summary>
     [Serializable]
-    [Description("程式項目集合。")]
-    [TreeNode("程式項目", false)]
+    [Description("Program item collection.")]
+    [TreeNode("Program Items", false)]
     public class ProgramItemCollection : KeyCollectionBase<ProgramItem>
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of <see cref="ProgramItemCollection"/>.
         /// </summary>
-        /// <param name="category">程式分類。</param>
+        /// <param name="category">The owning program category.</param>
         public ProgramItemCollection(ProgramCategory category) : base(category)
         { }
 
         /// <summary>
-        /// 加入項目。
+        /// Adds a program item to the collection.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="displayName">顯示名稱。</param>
+        /// <param name="progId">The program ID.</param>
+        /// <param name="displayName">The display name.</param>
         public ProgramItem Add(string progId, string displayName)
         {
             var item = new ProgramItem(progId, displayName);
