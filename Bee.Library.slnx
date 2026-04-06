@@ -1,7 +1,4 @@
 <Solution>
-  <Folder Name="/docs/">
-    <File Path="docs/資料庫命名規範.md" />
-  </Folder>
   <Folder Name="/samples/">
     <Project Path="samples/Custom.Business/Custom.Business.csproj" />
     <Project Path="samples/Custom.Contracts/Custom.Contracts.csproj" />
