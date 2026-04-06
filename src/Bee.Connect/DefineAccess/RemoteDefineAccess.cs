@@ -11,7 +11,7 @@ using Bee.Define;
 namespace Bee.Connect.DefineAccess
 {
     /// <summary>
-    /// 遠端定義資料存取，透過 API 進行定義資料存取。
+    /// Remote definition data access that retrieves and saves definition data via the API.
     /// </summary>
     public class RemoteDefineAccess : IDefineAccess
     {
@@ -21,9 +21,9 @@ namespace Bee.Connect.DefineAccess
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="RemoteDefineAccess"/> class.
         /// </summary>
-        /// <param name="connector">系統層級 API 服務連接器。</param>
+        /// <param name="connector">The system-level API service connector.</param>
         public RemoteDefineAccess(SystemApiConnector connector)
         {
             _connector = connector;
@@ -33,7 +33,7 @@ namespace Bee.Connect.DefineAccess
         #endregion
 
         /// <summary>
-        /// 系統層級 API 服務連接器。
+        /// Gets the system-level API service connector.
         /// </summary>
         private SystemApiConnector Connector
         {
@@ -41,7 +41,7 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 存放已取得定義資料的集合。
+        /// Gets the collection of cached definition objects.
         /// </summary>
         private Dictionary<object> List
         {
@@ -49,10 +49,10 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 取得定義物件的快取鍵值。
+        /// Gets the cache key for a definition object.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">存取定義資料的鍵值。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="keys">The keys used to access the definition data.</param>
         private string GetCacheKey(DefineType defineType, string[] keys = null)
         {
             string cacheKey = $"{defineType}";
@@ -66,23 +66,23 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 取得定義資料。
+        /// Gets definition data of the specified type, using the cache when available.
         /// </summary>
-        /// <typeparam name="T">泛型型別。</typeparam>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">取得定義資料的鍵值。</param>
+        /// <typeparam name="T">The target type.</typeparam>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="keys">The keys used to locate the definition data.</param>
         private T GetDefine<T>(DefineType defineType, string[] keys = null)
         {
             object defineObject;
             string cacheKey = GetCacheKey(defineType, keys);
             if (this.List.ContainsKey(cacheKey))
             {
-                // 若定義資料已存在，則直接回傳
+                // Return the cached definition data if already available
                 defineObject = this.List[cacheKey];
             }
             else
             {
-                // 下載定義資料，並加入集合
+                // Download the definition data and add it to the cache
                 defineObject = this.Connector.GetDefine<T>(defineType, keys);
                 this.List.Add(cacheKey, defineObject);
             }
@@ -90,10 +90,10 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 取得定義資料。
+        /// Gets definition data.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">取得定義資料的鍵值。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="keys">The keys used to locate the definition data.</param>
         public object GetDefine(DefineType defineType, string[] keys = null)
         {
             switch (defineType)
@@ -121,11 +121,11 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 驗證鍵值的長度。
+        /// Validates that the keys array has the expected length.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">取得定義資料的鍵值。</param>
-        /// <param name="expectedLength">正確鍵值的長度。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="keys">The keys to validate.</param>
+        /// <param name="expectedLength">The expected number of keys.</param>
         private void ValidateKeys(DefineType defineType, string[] keys, int expectedLength)
         {
             if (keys == null || keys.Length != expectedLength)
@@ -133,36 +133,35 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 儲存定義資料。
+        /// Saves definition data.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="defineObject">定義資料。</param>
-        /// <param name="keys">儲存定義資料的鍵值。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="defineObject">The definition data object.</param>
+        /// <param name="keys">The keys used to locate where the definition data is saved.</param>
         public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
         {
             this.Connector.SaveDefine(defineType, defineObject, keys);
         }
 
         /// <summary>
-        /// 取得系統設定。
+        /// Gets the system settings.
         /// </summary>
-        /// <returns></returns>
         public SystemSettings GetSystemSettings()
         {
             return GetDefine<SystemSettings>(DefineType.SystemSettings);
         }
 
         /// <summary>
-        /// 儲存系統設定。
+        /// Saves the system settings.
         /// </summary>
-        /// <param name="settings">系統設定。</param>
+        /// <param name="settings">The system settings.</param>
         public void SaveSystemSettings(SystemSettings settings)
         {
             SaveDefine(DefineType.SystemSettings, settings);
         }
 
         /// <summary>
-        /// 取得資料庫設定。
+        /// Gets the database settings.
         /// </summary>
         public DatabaseSettings GetDatabaseSettings()
         {
@@ -170,16 +169,16 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 儲存資料庫設定。
+        /// Saves the database settings.
         /// </summary>
-        /// <param name="settings">資料庫設定。</param>
+        /// <param name="settings">The database settings.</param>
         public void SaveDatabaseSettings(DatabaseSettings settings)
         {
             SaveDefine(DefineType.DatabaseSettings, settings);
         }
 
         /// <summary>
-        /// 取得程式清單。
+        /// Gets the program settings.
         /// </summary>
         public ProgramSettings GetProgramSettings()
         {
@@ -187,16 +186,16 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 儲存程式清單。
+        /// Saves the program settings.
         /// </summary>
-        /// <param name="settings">程式清單。</param>
+        /// <param name="settings">The program settings.</param>
         public void SaveProgramSettings(ProgramSettings settings)
         {
             SaveDefine(DefineType.ProgramSettings, settings);
         }
 
         /// <summary>
-        /// 取得資料庫結構設定。
+        /// Gets the database schema settings.
         /// </summary>
         public DbSchemaSettings GetDbSchemaSettings()
         {
@@ -204,65 +203,65 @@ namespace Bee.Connect.DefineAccess
         }
 
         /// <summary>
-        /// 儲存資料庫結構設定。
+        /// Saves the database schema settings.
         /// </summary>
-        /// <param name="settings">資料庫結構設定。</param>
+        /// <param name="settings">The database schema settings.</param>
         public void SaveDbSchemaSettings(DbSchemaSettings settings)
         {
             SaveDefine(DefineType.DbSchemaSettings, settings);
         }
 
         /// <summary>
-        /// 取得資料表結構。
+        /// Gets the table schema for the specified table.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
         public TableSchema GetTableSchema(string dbName, string tableName)
         {
             return GetDefine<TableSchema>(DefineType.TableSchema, new string[] { dbName, tableName });
         }
 
         /// <summary>
-        /// 儲存資料表結構。
+        /// Saves the table schema.
         /// </summary>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableSchema">資料表結構。</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableSchema">The table schema.</param>
         public void SaveTableSchema(string dbName, TableSchema tableSchema)
         {
             SaveDefine(DefineType.TableSchema, tableSchema, new string[] { dbName });
         }
 
         /// <summary>
-        /// 取得表單結構定義。
+        /// Gets the form schema definition for the specified program.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program identifier.</param>
         public FormSchema GetFormSchema(string progId)
         {
             return GetDefine<FormSchema>(DefineType.FormSchema, new string[] { progId });
         }
 
         /// <summary>
-        /// 儲存表單結構定義。
+        /// Saves the form schema definition.
         /// </summary>
-        /// <param name="formSchema">表單結構定義。</param>
+        /// <param name="formSchema">The form schema.</param>
         public void SaveFormSchema(FormSchema formSchema)
         {
             SaveDefine(DefineType.FormSchema, formSchema);
         }
 
         /// <summary>
-        /// 取得表單版面配置。
+        /// Gets the form layout for the specified layout identifier.
         /// </summary>
-        /// <param name="layoutId">排版代碼。</param>
+        /// <param name="layoutId">The layout identifier.</param>
         public FormLayout GetFormLayout(string layoutId)
         {
             return GetDefine<FormLayout>(DefineType.FormLayout, new string[] { layoutId });
         }
 
         /// <summary>
-        /// 儲存表單版面配置。
+        /// Saves the form layout.
         /// </summary>
-        /// <param name="formLayout">表單版面配置。</param>
+        /// <param name="formLayout">The form layout.</param>
         public void SaveFormLayout(FormLayout formLayout)
         {
             SaveDefine(DefineType.FormLayout, formLayout);

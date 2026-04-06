@@ -12,53 +12,53 @@ using Bee.Define;
 namespace Bee.Connect.Connectors
 {
     /// <summary>
-    /// 系統層級 API 服務連接器。
+    /// System-level API service connector.
     /// </summary>
     public class SystemApiConnector : ApiConnector
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式，採用近端連線。
+        /// Initializes a new instance of the <see cref="SystemApiConnector"/> class using a local connection.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public SystemApiConnector(Guid accessToken) : base(accessToken)
         { }
 
         /// <summary>
-        /// 建構函式，採用遠端連線。
+        /// Initializes a new instance of the <see cref="SystemApiConnector"/> class using a remote connection.
         /// </summary>
-        /// <param name="endpoint">服務端點。。</param>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="endpoint">The service endpoint.</param>
+        /// <param name="accessToken">The access token.</param>
         public SystemApiConnector(string endpoint, Guid accessToken) : base(endpoint, accessToken)
         { }
 
         #endregion
 
         /// <summary>
-        /// 非同步執行 API 方法。
+        /// Asynchronously executes an API method.
         /// </summary>
-        /// <param name="action">執行動作。</param>
-        /// <param name="value">對應執行動作的傳入參數。</param>
-        /// <param name="format">傳輸資料的封裝格式。</param>
+        /// <param name="action">The action name to execute.</param>
+        /// <param name="value">The input parameter for the action.</param>
+        /// <param name="format">The payload encoding format for transmission.</param>
         public async Task<T> ExecuteAsync<T>(string action, object value, PayloadFormat format = PayloadFormat.Encrypted)
         {
             return await base.ExecuteAsync<T>(SysProgIds.System, action, value, format).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// 非同步執行自訂方法。
+        /// Asynchronously executes a custom method; requires authentication.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         public async Task<ExecFuncResult> ExecFuncAsync(ExecFuncArgs args)
         {
             return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFunc, args).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// 執行自訂方法。
+        /// Executes a custom method; requires authentication.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         public ExecFuncResult ExecFunc(ExecFuncArgs args)
         {
             return SyncExecutor.Run(() =>
@@ -67,25 +67,25 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 非同步執行自訂方法，匿名存取。
+        /// Asynchronously executes a custom method; allows anonymous access.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         public async Task<ExecFuncResult> ExecFuncAnonymousAsync(ExecFuncArgs args)
         {
             return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFuncAnonymous, args, PayloadFormat.Encoded).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// 非同步執行自訂方法，僅限近端呼叫。
+        /// Asynchronously executes a custom method; local calls only.
         /// </summary>
-        /// <param name="args">傳入引數。</param>
+        /// <param name="args">The input arguments.</param>
         public async Task<ExecFuncResult> ExecFuncLocalAsync(ExecFuncArgs args)
         {
             return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFuncLocal, args).ConfigureAwait(false);
         }
 
         /// <summary>
-        /// 執行 Ping 方法，測試伺服端的連線狀態。
+        /// Asynchronously executes the Ping method to test the server connection status.
         /// </summary>
         public async Task PingAsync()
         {
@@ -102,13 +102,13 @@ namespace Bee.Connect.Connectors
             }
             catch (Exception ex)
             {
-                // 保留原始錯誤訊息供上層判斷或記錄
+                // Preserve the original error message for callers to inspect or log
                 throw new ApplicationException("Connection failed during Ping.", ex);
             }
         }
 
         /// <summary>
-        ///  非同步執行 Ping 方法，測試伺服端的連線狀態。
+        /// Executes the Ping method to test the server connection status.
         /// </summary>
         public void Ping()
         {
@@ -118,21 +118,21 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 非同步取得通用參數及環境設置，進行初始化。
+        /// Asynchronously retrieves common parameters and environment configuration, then initializes the system.
         /// </summary>
         public async Task InitializeAsync()
         {
-            // 取得通用參數及環境設置，進行初始化
+            // Retrieve common parameters and environment configuration for initialization
             var args = new GetCommonConfigurationArgs();
             var result = await ExecuteAsync<GetCommonConfigurationResult>(SystemActions.GetCommonConfiguration, args, PayloadFormat.Plain).ConfigureAwait(false);
             var configuration = SerializeFunc.XmlToObject<CommonConfiguration>(result.CommonConfiguration);
             SysInfo.Initialize(configuration);
-            // 初始化 API 服務選項，設定序列化器、壓縮器與加密器的實作
+            // Initialize API service options: configure serializer, compressor, and encryptor implementations
             ApiServiceOptions.Initialize(configuration.ApiPayloadOptions);
         }
 
         /// <summary>
-        /// 取得通用參數及環境設置，進行初始化。
+        /// Retrieves common parameters and environment configuration, then initializes the system.
         /// </summary>
         public void Initialize()
         {
@@ -142,11 +142,11 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 非同步建立連線。
+        /// Asynchronously creates a new user session.
         /// </summary>
-        /// <param name="userID">用戶帳號。</param>
-        /// <param name="expiresIn">到期秒數，預設 3600 秒。</param>
-        /// <param name="oneTime">一次性有效。</param>
+        /// <param name="userID">The user account identifier.</param>
+        /// <param name="expiresIn">The expiration time in seconds. Defaults to 3600.</param>
+        /// <param name="oneTime">Whether the session is valid for one-time use only.</param>
         public async Task<Guid> CreateSessionAsync(string userID, int expiresIn = 3600, bool oneTime = false)
         {
             var args = new CreateSessionArgs()
@@ -160,11 +160,11 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 建立連線。
+        /// Creates a new user session.
         /// </summary>
-        /// <param name="userID">用戶帳號。</param>
-        /// <param name="expiresIn">到期秒數，預設 3600 秒。</param>
-        /// <param name="oneTime">一次性有效。</param>
+        /// <param name="userID">The user account identifier.</param>
+        /// <param name="expiresIn">The expiration time in seconds. Defaults to 3600.</param>
+        /// <param name="oneTime">Whether the session is valid for one-time use only.</param>
         public Guid CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
             return SyncExecutor.Run(() =>
@@ -173,25 +173,25 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 非同步執行登入操作。
+        /// Asynchronously performs the login operation.
         /// </summary>
-        /// <param name="userID">使用者帳號。</param>
-        /// <param name="password">使用者密碼。</param>
+        /// <param name="userID">The user account identifier.</param>
+        /// <param name="password">The user password.</param>
         public async Task<LoginResult> LoginAsync(string userID, string password)
         {
-            // 產生 RSA 對稱金鑰
+            // Generate an RSA key pair
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
 
-            // 執行登入操作
+            // Perform the login operation
             var args = new LoginArgs()
             {
                 UserId = userID,
                 Password = password,
-                ClientPublicKey = publicKeyXml  // 傳入 RSA 公鑰
+                ClientPublicKey = publicKeyXml  // Pass the RSA public key
             };
             var result = await ExecuteAsync<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded).ConfigureAwait(false);
 
-            // 用 RSA 私鑰解密，取得 API 加密金鑰
+            // Decrypt with the RSA private key to obtain the API encryption key
             string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
             ApiClientContext.ApiEncryptionKey = Convert.FromBase64String(sessionKey);
 
@@ -199,10 +199,10 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 執行登入操作。
+        /// Performs the login operation.
         /// </summary>
-        /// <param name="userID">使用者帳號。</param>
-        /// <param name="password">使用者密碼。</param>
+        /// <param name="userID">The user account identifier.</param>
+        /// <param name="password">The user password.</param>
         public LoginResult Login(string userID, string password)
         {
             return SyncExecutor.Run(() =>
@@ -211,11 +211,11 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 非同步取得定義資料。
+        /// Asynchronously gets definition data.
         /// </summary>
-        /// <typeparam name="T">泛型型別。</typeparam>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">取得定義資料的鍵值。</param>
+        /// <typeparam name="T">The target type.</typeparam>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="keys">The keys used to locate the definition data.</param>
         public async Task<T> GetDefineAsync<T>(DefineType defineType, string[] keys = null)
         {
             var args = new GetDefineArgs()
@@ -231,11 +231,11 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 取得定義資料。
+        /// Gets definition data.
         /// </summary>
-        /// <typeparam name="T">泛型型別。</typeparam>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="keys">取得定義資料的鍵值。</param>
+        /// <typeparam name="T">The target type.</typeparam>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="keys">The keys used to locate the definition data.</param>
         public T GetDefine<T>(DefineType defineType, string[] keys = null)
         {
             return SyncExecutor.Run(() =>
@@ -244,11 +244,11 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 非同步儲存定義資料。
+        /// Asynchronously saves definition data.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="defineObject">定義資料。</param>
-        /// <param name="keys">儲存定義資料的鍵值。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="defineObject">The definition data object.</param>
+        /// <param name="keys">The keys used to locate where the definition data is saved.</param>
         public async Task SaveDefineAsync(DefineType defineType, object defineObject, string[] keys = null)
         {
             var args = new SaveDefineArgs()
@@ -261,11 +261,11 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 儲存定義資料。
+        /// Saves definition data.
         /// </summary>
-        /// <param name="defineType">定義資料類型。</param>
-        /// <param name="defineObject">定義資料。</param>
-        /// <param name="keys">儲存定義資料的鍵值。</param>
+        /// <param name="defineType">The definition data type.</param>
+        /// <param name="defineObject">The definition data object.</param>
+        /// <param name="keys">The keys used to locate where the definition data is saved.</param>
         public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
         {
             SyncExecutor.Run(() =>

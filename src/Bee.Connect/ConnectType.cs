@@ -1,16 +1,16 @@
 namespace Bee.Connect
 {
     /// <summary>
-    ///  服務連線方式。
+    /// Service connection type.
     /// </summary>
     public enum ConnectType
     {
         /// <summary>
-        /// 近端連線。
+        /// Local connection (in-process).
         /// </summary>
         Local,
         /// <summary>
-        /// 遠端連線。
+        /// Remote connection (over network).
         /// </summary>
         Remote
     }

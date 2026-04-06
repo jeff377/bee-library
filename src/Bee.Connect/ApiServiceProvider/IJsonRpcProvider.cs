@@ -4,20 +4,20 @@ using Bee.Api.Core.JsonRpc;
 namespace Bee.Connect.ApiServiceProvider
 {
     /// <summary>
-    /// JSON-RPC 服務提供者介面。
+    /// Interface for a JSON-RPC service provider.
     /// </summary>
     public interface IJsonRpcProvider
     {
         /// <summary>
-        /// 執行 API 方法。
+        /// Executes an API method.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         JsonRpcResponse Execute(JsonRpcRequest request);
 
         /// <summary>
-        /// 非同步執行 API 方法。
+        /// Asynchronously executes an API method.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request);
     }
 }

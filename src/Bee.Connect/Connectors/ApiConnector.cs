@@ -9,16 +9,16 @@ using System.Threading.Tasks;
 namespace Bee.Connect.Connectors
 {
     /// <summary>
-    /// API 服務連接器基底類別。
+    /// Base class for API service connectors.
     /// </summary>
     public abstract class ApiConnector
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式，採用近端連線。
+        /// Initializes a new instance of the <see cref="ApiConnector"/> class using a local connection.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public ApiConnector(Guid accessToken)
         {
             AccessToken = accessToken;
@@ -26,10 +26,10 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 建構函式，採用遠端連線。
+        /// Initializes a new instance of the <see cref="ApiConnector"/> class using a remote connection.
         /// </summary>
-        /// <param name="endpoint">API 服務端點。</param>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="endpoint">The API service endpoint.</param>
+        /// <param name="accessToken">The access token.</param>
         public ApiConnector(string endpoint, Guid accessToken)
         {
             if (StrFunc.IsEmpty(endpoint))
@@ -42,22 +42,22 @@ namespace Bee.Connect.Connectors
         #endregion
 
         /// <summary>
-        /// 存取令牌。
+        /// Gets or sets the access token.
         /// </summary>
         public Guid AccessToken { get; private set; }
 
         /// <summary>
-        /// API 服務提供者。
+        /// Gets or sets the API service provider.
         /// </summary>
         public IJsonRpcProvider Provider { get; private set; }
 
         /// <summary>
-        /// 執行 API 方法。
+        /// Executes an API method.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="action">執行動作。</param>
-        /// <param name="value">對應執行動作的傳入參數。</param>
-        /// <param name="format">傳輸資料的封裝格式。</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="action">The action name to execute.</param>
+        /// <param name="value">The input parameter for the action.</param>
+        /// <param name="format">The payload encoding format for transmission.</param>
         protected T Execute<T>(string progId, string action, object value, PayloadFormat format)
         {
             if (StrFunc.IsEmpty(progId))
@@ -68,21 +68,21 @@ namespace Bee.Connect.Connectors
             var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, $"Execute.{progId}.{action}");
             try
             {
-                // 建立 JSON-RPC 請求模型
+                // Build the JSON-RPC request model
                 var request = CreateRequest(progId, action, value);
                 TraceRequest(request);
 
-                // 將參數格式轉換為指定的 payloadFormat
+                // Transform the payload to the specified format
                 var actualFormat = TransformRequestPayload(request, format);
 
-                // 呼叫遠端或近端 JSON-RPC 方法
+                // Invoke the JSON-RPC method (remote or local)
                 var response = this.Provider.Execute(request);
                 TraceResponse(response);
 
                 if (response.Error != null)
                     throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
 
-                // 還原回應資料（若為 Encoded 或 Encrypted）
+                // Restore the response payload (if Encoded or Encrypted)
                 RestoreResponsePayload(response, actualFormat);
 
                 Tracer.End(ctx);
@@ -98,12 +98,12 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 非同步執行 API 方法。
+        /// Asynchronously executes an API method.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
-        /// <param name="action">執行動作。</param>
-        /// <param name="value">對應執行動作的傳入參數。</param>
-        /// <param name="format">傳輸資料的封裝格式。</param>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="action">The action name to execute.</param>
+        /// <param name="value">The input parameter for the action.</param>
+        /// <param name="format">The payload encoding format for transmission.</param>
         protected async Task<T> ExecuteAsync<T>(string progId, string action, object value, PayloadFormat format)
         {
             if (StrFunc.IsEmpty(progId))
@@ -114,21 +114,21 @@ namespace Bee.Connect.Connectors
             var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, $"ExecuteAsync.{progId}.{action}");
             try
             {
-                // 建立 JSON-RPC 請求模型
+                // Build the JSON-RPC request model
                 var request = CreateRequest(progId, action, value);
                 TraceRequest(request);
 
-                // 將參數格式轉換為指定的 payloadFormat
+                // Transform the payload to the specified format
                 var actualFormat = TransformRequestPayload(request, format);
 
-                // 呼叫遠端或近端 JSON-RPC 方法
+                // Invoke the JSON-RPC method (remote or local)
                 var response = await this.Provider.ExecuteAsync(request).ConfigureAwait(false);
                 TraceResponse(response);
 
                 if (response.Error != null)
                     throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
 
-                // 還原回應資料（若為 Encoded 或 Encrypted）
+                // Restore the response payload (if Encoded or Encrypted)
                 RestoreResponsePayload(response, actualFormat);
 
                 Tracer.End(ctx);
@@ -142,12 +142,12 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 建立 JSON-RPC 請求物件。
+        /// Creates a JSON-RPC request object.
         /// </summary>
-        /// <param name="progId">功能程式代碼（如 Employee、Login 等）。</param>
-        /// <param name="action">執行動作名稱（如 Hello、GetList）。</param>
-        /// <param name="value">傳遞至伺服端的參數物件。</param>
-        /// <returns>組成後的 JSON-RPC 請求物件。</returns>
+        /// <param name="progId">The program identifier (e.g., Employee, Login).</param>
+        /// <param name="action">The action name to invoke (e.g., Hello, GetList).</param>
+        /// <param name="value">The parameter object to pass to the server.</param>
+        /// <returns>The composed JSON-RPC request object.</returns>
         private JsonRpcRequest CreateRequest(string progId, string action, object value)
         {
             return new JsonRpcRequest()
@@ -162,27 +162,27 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 將指定的 JSON-RPC 請求物件轉換為目標傳輸格式（Plain、Encoded 或 Encrypted）。
+        /// Transforms the specified JSON-RPC request payload to the target transmission format (Plain, Encoded, or Encrypted).
         /// </summary>
-        /// <param name="request">要處理的 JSON-RPC 請求物件。</param>
+        /// <param name="request">The JSON-RPC request object to process.</param>
         /// <param name="format">
-        /// 欲套用的資料格式：
+        /// The desired payload format:
         /// <list type="bullet">
-        /// <item><description><see cref="PayloadFormat.Plain"/>：不做處理。</description></item>
-        /// <item><description><see cref="PayloadFormat.Encoded"/>：執行序列化與壓縮。</description></item>
-        /// <item><description><see cref="PayloadFormat.Encrypted"/>：執行序列化、壓縮並加密。</description></item>
+        /// <item><description><see cref="PayloadFormat.Plain"/>: No transformation.</description></item>
+        /// <item><description><see cref="PayloadFormat.Encoded"/>: Serialize and compress.</description></item>
+        /// <item><description><see cref="PayloadFormat.Encrypted"/>: Serialize, compress, and encrypt.</description></item>
         /// </list>
         /// </param>
-        /// <returns>實際執行後的資料格式（根據執行環境可能會降級為 Plain）。</returns>
+        /// <returns>The actual format applied, which may be downgraded to Plain depending on the runtime environment.</returns>
         private PayloadFormat TransformRequestPayload(JsonRpcRequest request, PayloadFormat format)
         {
-            // 若為本地服務提供者且非除錯模式，則強制將資料格式設為 Plain，避免進行編碼或加密處理，提升效能。
+            // For local providers in non-debug mode, force Plain format to skip encoding/encryption and improve performance.
             if (this.Provider is LocalApiServiceProvider && !SysInfo.IsDebugMode)
             {
-                format = PayloadFormat.Plain; // 本地非除錯模式下不進行編碼
+                format = PayloadFormat.Plain; // No encoding in local non-debug mode
             }
 
-            // 若要求加密但未設定加密金鑰，則自動降級為編碼格式（Encoded），避免加密失敗。
+            // If Encrypted is requested but no encryption key is set, downgrade to Encoded to prevent encryption failure.
             if (format == PayloadFormat.Encrypted && BaseFunc.IsEmpty(ApiClientContext.ApiEncryptionKey))
             {
                 format = PayloadFormat.Encoded;
@@ -197,14 +197,14 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 還原 JSON-RPC 回應資料內容，依據指定格式解碼與解密回原始物件。
+        /// Restores the JSON-RPC response payload by decoding or decrypting it back to the original object.
         /// </summary>
-        /// <param name="response">要還原的 JSON-RPC 回應物件。</param>
+        /// <param name="response">The JSON-RPC response object to restore.</param>
         /// <param name="format">
-        /// 回應資料的格式：
+        /// The response payload format:
         /// <list type="bullet">
-        /// <item><description><see cref="PayloadFormat.Plain"/>：不處理，直接使用。</description></item>
-        /// <item><description><see cref="PayloadFormat.Encoded"/> 或 <see cref="PayloadFormat.Encrypted"/>：進行解碼或解密處理。</description></item>
+        /// <item><description><see cref="PayloadFormat.Plain"/>: No processing; used as-is.</description></item>
+        /// <item><description><see cref="PayloadFormat.Encoded"/> or <see cref="PayloadFormat.Encrypted"/>: Decode or decrypt the payload.</description></item>
         /// </list>
         /// </param>
         private void RestoreResponsePayload(JsonRpcResponse response, PayloadFormat format)
@@ -216,9 +216,9 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 追蹤 JSON-RPC 請求模型。
+        /// Traces the JSON-RPC request model.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         private void TraceRequest(JsonRpcRequest request)
         {
             if (!Tracer.Enabled || request == null) return;
@@ -226,9 +226,9 @@ namespace Bee.Connect.Connectors
         }
 
         /// <summary>
-        /// 追蹤 JSON-RPC 回應模型。
+        /// Traces the JSON-RPC response model.
         /// </summary>
-        /// <param name="response">JSON-RPC 回應模型。</param>
+        /// <param name="response">The JSON-RPC response model.</param>
         private void TraceResponse(JsonRpcResponse response)
         {
             if (!Tracer.Enabled || response == null) return;

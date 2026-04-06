@@ -3,7 +3,7 @@ using Bee.Define;
 namespace Bee.Connect
 {
     /// <summary>
-    /// API 服務連結共用函式庫。
+    /// Shared utility library for API service connections.
     /// </summary>
     public static class ConnectFunc
     {

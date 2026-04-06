@@ -9,32 +9,32 @@ using Bee.Define;
 namespace Bee.Connect
 {
     /// <summary>
-    /// API 服務連線設定驗證器。
+    /// Validator for API service connection settings.
     /// </summary>
     public class ApiConnectValidator
     {
         /// <summary>
-        /// 驗證輸入服務端點，傳回對應的連線方式。
+        /// Validates the input service endpoint and returns the corresponding connection type.
         /// </summary>
-        /// <param name="endpoint">驗證的服務端點，遠端連線為網址，近端連線為本地路徑。</param>
-        /// <param name="allowGenerateSettings">近端連結是否允許自動生成設定檔，包含 System.Settings.xml 及 Database.Settings.xml 設定檔。</param>
+        /// <param name="endpoint">The endpoint to validate: a URL for remote connections or a local path for local connections.</param>
+        /// <param name="allowGenerateSettings">Whether to auto-generate missing settings files (SystemSettings.xml and DatabaseSettings.xml) for local connections.</param>
         public ConnectType Validate(string endpoint, bool allowGenerateSettings = false)
         {
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("Input cannot be null or empty.", nameof(endpoint));
 
-            if (FileFunc.IsLocalPath(endpoint))  // 輸入資料為本地路徑，驗證近端連線設定
+            if (FileFunc.IsLocalPath(endpoint))  // Local path: validate local connection settings
             {
-                // 驗證近端連線設定
+                // Validate local connection settings
                 ValidateLocal(endpoint, allowGenerateSettings);
-                // 回傳連線方式為近端連線
+                // Return local connection type
                 return ConnectType.Local;
             }
-            else if (HttpFunc.IsUrl(endpoint))    // 輸入資料為網址，驗證遠端連線設定
+            else if (HttpFunc.IsUrl(endpoint))    // URL: validate remote connection settings
             {
-                // 驗證遠端連線設定
+                // Validate remote connection settings
                 ValidateRemote(endpoint);
-                // 回傳連線方式為遠端連線
+                // Return remote connection type
                 return ConnectType.Remote;
             }
             else
@@ -44,30 +44,30 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 驗證近端連線設定。
+        /// Validates the local connection settings.
         /// </summary>
-        /// <param name="definePath">定義路徑。</param>
-        /// <param name="allowGenerateSettings">近端連結是否允許自動生成設定檔，包含 System.Settings.xml 及 Database.Settings.xml 設定檔。</param>
+        /// <param name="definePath">The definition path.</param>
+        /// <param name="allowGenerateSettings">Whether to auto-generate missing settings files for local connections.</param>
         private void ValidateLocal(string definePath, bool allowGenerateSettings)
         {
-            // 驗證程式是否支援近端連線
+            // Verify the application supports local connections
             if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
                 throw new InvalidOperationException("Local connections are not supported.");
             if (StrFunc.IsEmpty(definePath))
                 throw new ArgumentException("Definition path must be specified.", nameof(definePath));
 
-            if (allowGenerateSettings) // 設定檔不存在允許自動生成，用於工具程式
+            if (allowGenerateSettings) // Auto-generate missing settings files (used by tool applications)
             {
-                // 驗證是否存在 SystemSettings.xml 設定檔，不存在則建立
+                // Verify SystemSettings.xml exists; create it if missing
                 ValidateSystemSettings(definePath);
-                // 驗證是否存在 DatabaseSettings.xml 設定檔，不存在則建立
+                // Verify DatabaseSettings.xml exists; create it if missing
                 ValidateDatabaseSettings(definePath);
             }
-            else // 要求設定檔一定要存在，用於一般應用程式
+            else // Settings files must already exist (used by regular applications)
             {
                 if (!FileFunc.DirectoryExists(definePath))
                     throw new ArgumentException("Definition path does not exist.", nameof(definePath));
-                // 驗證指定路徑下是否包含 SystemSettings.xml 檔案
+                // Verify that SystemSettings.xml exists in the specified path
                 string filePath = FileFunc.PathCombine(definePath, "SystemSettings.xml");
                 if (!FileFunc.FileExists(filePath))
                     throw new FileNotFoundException("SystemSettings.xml file not found in the definition path.", filePath);
@@ -75,12 +75,12 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 驗證定義路徑是否存在 SystemSettings.xml 設定檔，不存在則建立。
+        /// Verifies that SystemSettings.xml exists in the definition path, creating it if missing.
         /// </summary>
-        /// <param name="definePath">定義路徑。</param>
+        /// <param name="definePath">The definition path.</param>
         private void ValidateSystemSettings(string definePath)
         {
-            // 判斷是否有 SystemSettings.xml 檔案，不存在則建立
+            // Check for SystemSettings.xml; create it if not found
             string filePath = FileFunc.PathCombine(definePath, "SystemSettings.xml");
             if (!FileFunc.FileExists(filePath))
             {
@@ -91,12 +91,12 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 驗證定義路徑是否存在 DatabaseSettings.xml 設定檔，不存在則建立。
+        /// Verifies that DatabaseSettings.xml exists in the definition path, creating it if missing.
         /// </summary>
-        /// <param name="definePath">定義路徑。</param>
+        /// <param name="definePath">The definition path.</param>
         private void ValidateDatabaseSettings(string definePath)
         {
-            // 判斷是否有 DatabaseSettings.xml 檔案，不存在則建立
+            // Check for DatabaseSettings.xml; create it if not found
             string filePath = FileFunc.PathCombine(definePath, "DatabaseSettings.xml");
             if (!FileFunc.FileExists(filePath))
             {
@@ -113,17 +113,17 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 驗證遠端連線設定。
+        /// Validates the remote connection settings.
         /// </summary>
-        /// <param name="endpoint">服務端點。</param>
+        /// <param name="endpoint">The service endpoint.</param>
         private void ValidateRemote(string endpoint)
         {
-            // 驗證程式是否支援遠端連線
+            // Verify the application supports remote connections
             if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
                 throw new InvalidOperationException("Remote connections are not supported.");
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));
-            // 使用遠端連線，執行 Ping 方法
+            // Use remote connection to execute the Ping method
             var connector = new SystemApiConnector(endpoint, Guid.Empty);
             connector.Ping();
         }

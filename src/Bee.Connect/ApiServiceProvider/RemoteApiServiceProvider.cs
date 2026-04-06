@@ -11,66 +11,66 @@ using Bee.Connect;
 namespace Bee.Connect.ApiServiceProvider
 {
     /// <summary>
-    /// 遠端 API 服務提供者（透過網路存取後端業務邏輯）。
+    /// Remote API service provider that accesses backend business logic over the network.
     /// </summary>
     public class RemoteApiServiceProvider : IJsonRpcProvider
     {
         #region 建構函式
 
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="RemoteApiServiceProvider"/> class.
         /// </summary>
-        /// <param name="endpoint">API 服務端點。</param>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="endpoint">The API service endpoint.</param>
+        /// <param name="accessToken">The access token.</param>
         public RemoteApiServiceProvider(string endpoint, Guid accessToken)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
                 throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));
 
             Endpoint = endpoint;
-            AccessToken = accessToken;  // 注意：AccessToken 可為 Guid.Empty，用於尚未登入狀態（如 Login、Ping）
+            AccessToken = accessToken;  // Note: AccessToken may be Guid.Empty for unauthenticated calls (e.g., Login, Ping)
         }
 
         #endregion
 
         /// <summary>
-        /// 服務端點。
+        /// Gets or sets the service endpoint.
         /// </summary>
         public string Endpoint { get; private set; }
 
         /// <summary>
-        /// 存取令牌。
+        /// Gets the access token.
         /// </summary>
         public Guid AccessToken { get; } = Guid.Empty;
 
         /// <summary>
-        /// 執行 API 方法。
+        /// Executes an API method.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         public JsonRpcResponse Execute(JsonRpcRequest request)
         {
-            // 在當前執行緒上執行 async 任務，死結風險較高（容易 UI 執行緒死結），無額外排程成本，適用呼叫端ＲＲＳ保證不是 UI 執行緒
+            // Running async on the current thread risks deadlock (especially on UI threads); no scheduling overhead; suitable only when the caller is guaranteed not to be a UI thread.
             // return ExecuteAsync(request).GetAwaiter().GetResult();
 
-            // 新開執行緒執行 async 任務，死結風險較低（因為不佔用 UI 執行緒），有額外排程成本，適用呼叫端可能為 UI 執行緒
+            // Running async on a new thread lowers deadlock risk (UI thread is not blocked); incurs scheduling overhead; suitable when the caller may be a UI thread.
             return Task.Run(() => ExecuteAsync(request)).GetAwaiter().GetResult();
         }
 
         /// <summary>
-        /// 非同步執行 API 方法。
+        /// Asynchronously executes an API method.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         public async Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request)
         {
             var headers = CreateHeaders();
-            string body = request.ToJson();  // 傳入參數進行 JSON 序列化
-            string json = await HttpFunc.PostAsync(Endpoint, body, headers).ConfigureAwait(false); // 執行 Web API 方法
-            var response = SerializeFunc.JsonToObject<JsonRpcResponse>(json);  // 執行 JSON 反序列化
+            string body = request.ToJson();  // Serialize input parameters to JSON
+            string json = await HttpFunc.PostAsync(Endpoint, body, headers).ConfigureAwait(false); // Call the Web API
+            var response = SerializeFunc.JsonToObject<JsonRpcResponse>(json);  // Deserialize JSON response
             return response;
         }
 
         /// <summary>
-        /// 建立 HTTP 標頭集合。
+        /// Creates the HTTP header collection for the request.
         /// </summary>
         private NameValueCollection CreateHeaders()
         {

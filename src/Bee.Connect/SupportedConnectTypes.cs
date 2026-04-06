@@ -3,21 +3,21 @@ using System;
 namespace Bee.Connect
 {
     /// <summary>
-    /// 程式支援的服務連線方式。
+    /// Service connection types supported by the application.
     /// </summary>
     [Flags]
     public enum SupportedConnectTypes
     {
         /// <summary>
-        /// 近端連線。
+        /// Local connection (in-process).
         /// </summary>
         Local = 1,
         /// <summary>
-        /// 遠端連線。
+        /// Remote connection (over network).
         /// </summary>
         Remote = 2,
         /// <summary>
-        /// 同時支援近端及遠端連線。
+        /// Both local and remote connections are supported.
         /// </summary>
         Both = Local | Remote
     }

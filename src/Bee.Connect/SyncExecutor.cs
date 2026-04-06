@@ -4,19 +4,19 @@ using System.Threading.Tasks;
 namespace Bee.Connect
 {
     /// <summary>
-    /// 同步執行非同步方法的執行器。
+    /// Executor for running asynchronous methods synchronously.
     /// </summary>
     /// <remarks>
-    /// 用於將 <c>async/await</c> 方法轉換為同步方式執行，
-    /// 適用於無法使用 <c>await</c> 的情境，例如：建構函式、WinForms 初始化、封裝同步 API。
+    /// Used to convert <c>async/await</c> methods into synchronous calls,
+    /// suitable for contexts where <c>await</c> cannot be used, such as constructors, WinForms initialization, or synchronous API wrappers.
     /// </remarks>
     public static class SyncExecutor
     {
         /// <summary>
-        /// 同步執行非同步方法（不回傳結果）。
+        /// Synchronously runs an asynchronous method that does not return a result.
         /// </summary>
-        /// <param name="asyncFunc">非同步方法委派。</param>
-        /// <exception cref="AggregateException">若執行失敗，將拋出例外。</exception>
+        /// <param name="asyncFunc">The asynchronous method delegate.</param>
+        /// <exception cref="AggregateException">Thrown if the execution fails.</exception>
         public static void Run(Func<Task> asyncFunc)
         {
             if (asyncFunc == null)
@@ -26,12 +26,12 @@ namespace Bee.Connect
         }
 
         /// <summary>
-        /// 同步執行非同步方法並回傳結果。
+        /// Synchronously runs an asynchronous method and returns its result.
         /// </summary>
-        /// <typeparam name="TResult">結果型別。</typeparam>
-        /// <param name="asyncFunc">非同步方法委派。</param>
-        /// <returns>非同步方法的執行結果。</returns>
-        /// <exception cref="AggregateException">若執行失敗，將拋出例外。</exception>
+        /// <typeparam name="TResult">The result type.</typeparam>
+        /// <param name="asyncFunc">The asynchronous method delegate.</param>
+        /// <returns>The result of the asynchronous method.</returns>
+        /// <exception cref="AggregateException">Thrown if the execution fails.</exception>
         public static TResult Run<TResult>(Func<Task<TResult>> asyncFunc)
         {
             if (asyncFunc == null)

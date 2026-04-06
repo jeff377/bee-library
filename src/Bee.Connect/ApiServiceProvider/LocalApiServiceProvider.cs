@@ -5,43 +5,43 @@ using Bee.Api.Core.JsonRpc;
 namespace Bee.Connect.ApiServiceProvider
 {
     /// <summary>
-    /// 近端 API 服務提供者（在同一進程內直接存取後端業務邏輯）。
+    /// Local API service provider that accesses backend business logic directly within the same process.
     /// </summary>
     public class LocalApiServiceProvider : IJsonRpcProvider
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="LocalApiServiceProvider"/> class.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public LocalApiServiceProvider(Guid accessToken)
         {
             AccessToken = accessToken;
         }
 
         /// <summary>
-        /// 存取令牌。
+        /// Gets the access token.
         /// </summary>
         public Guid AccessToken { get; } = Guid.Empty;
 
         /// <summary>
-        /// 執行 API 方法。
+        /// Executes an API method.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         public JsonRpcResponse Execute(JsonRpcRequest request)
         {
-            // 執行 API 方法
+            // Execute the API method
             var executor = new JsonRpcExecutor(AccessToken, true);
             var response = executor.Execute(request);
             return response;
         }
 
         /// <summary>
-        /// 非同步執行 API 方法。
+        /// Asynchronously executes an API method.
         /// </summary>
-        /// <param name="request">JSON-RPC 請求模型。</param>
+        /// <param name="request">The JSON-RPC request model.</param>
         public async Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request)
         {
-            // 執行 API 方法
+            // Execute the API method
             var executor = new JsonRpcExecutor(AccessToken, true);
             var response = await executor.ExecuteAsync(request);
             return response;
