@@ -3,21 +3,21 @@
 namespace Bee.Repository.Form
 {
     /// <summary>
-    /// 報表表單儲存庫。
+    /// Repository implementation for report forms.
     /// </summary>
     public class ReportFormRepository : IReportFormRepository
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="ReportFormRepository"/> class.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program identifier.</param>
         public ReportFormRepository(string progId)
         {
             ProgId = progId;
         }
 
         /// <summary>
-        /// 程式代碼。
+        /// Gets the program identifier.
         /// </summary>
         public string ProgId { get; }
     }

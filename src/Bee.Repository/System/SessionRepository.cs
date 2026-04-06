@@ -11,18 +11,18 @@ using Bee.Repository.Abstractions.System;
 namespace Bee.Repository.System
 {
     /// <summary>
-    /// 連線資訊的資料存取物件，封裝存取 st_session 與 st_user 資料表的操作邏輯。
+    /// Data access object for session information, encapsulating operations on the st_session and st_user tables.
     /// </summary>
     /// <remarks>
-    /// 此類別負責建立、查詢與刪除 Session 使用者資料，並以 <see cref="SessionUser"/> 為資料模型。
-    /// 常見用途包含使用者登入產生 AccessToken、驗證連線狀態、清除過期連線等情境。
+    /// This class is responsible for creating, querying, and deleting session user data, using <see cref="SessionUser"/> as the data model.
+    /// Common use cases include generating an AccessToken on user login, validating session state, and clearing expired sessions.
     /// </remarks>
     public class SessionRepository : ISessionRepository
     {
         /// <summary>
-        /// 寫入連線資訊。
+        /// Inserts a session record into the database.
         /// </summary>
-        /// <param name="sessionUser">連線資訊儲存的用戶資料。</param>
+        /// <param name="sessionUser">The session user data to persist.</param>
         private void Insert(SessionUser sessionUser)
         {
             string xml = SerializeFunc.ObjectToXml(sessionUser);
@@ -35,9 +35,9 @@ namespace Bee.Repository.System
         }
 
         /// <summary>
-        /// 刪除連線資訊。
+        /// Deletes the session record for the specified access token.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         private void Delete(Guid accessToken)
         {
             string sql = "DELETE FROM st_session \n" +
@@ -48,9 +48,9 @@ namespace Bee.Repository.System
         }
 
         /// <summary>
-        /// 取得連線資訊。
+        /// Gets the session information for the specified access token.
         /// </summary>
-        /// <param name="accessToken">存取令牌。</param>
+        /// <param name="accessToken">The access token.</param>
         public SessionUser GetSession(Guid accessToken)
         {
             string sql = "SELECT session_user_xml, sys_invalid_time \n" +
@@ -62,7 +62,7 @@ namespace Bee.Repository.System
             if (result.Table.IsEmpty()) { return null; }
             var row = result.Table.Rows[0];
 
-            // 若連線已到期，刪除連線資訊，並回傳 null
+            // If the session has expired, delete it and return null
             DateTime endTime = BaseFunc.CDateTime(row[SysFields.InvalidDate]);
             if (endTime < DateTime.Now)
             {
@@ -72,17 +72,17 @@ namespace Bee.Repository.System
 
             string xml = BaseFunc.CStr(row["session_user_xml"]);
             var user = SerializeFunc.XmlToObject<SessionUser>(xml);
-            // 若為一次性有效，刪除連線資訊
+            // If the session is one-time use, delete it after retrieval
             if (user.OneTime) { this.Delete(accessToken); }
             return user;
         }
 
         /// <summary>
-        /// 建立一組用戶連線。
+        /// Creates a new user session.
         /// </summary>
-        /// <param name="userID">用戶帳號。</param>
-        /// <param name="expiresIn">到期秒數。</param>
-        /// <param name="oneTime">一次性有效。</param>
+        /// <param name="userID">The user account identifier.</param>
+        /// <param name="expiresIn">The expiration time in seconds.</param>
+        /// <param name="oneTime">Whether the session is valid for one-time use only.</param>
         public SessionUser CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
         {
             string sql = "SELECT sys_id, sys_name FROM st_user \n" +

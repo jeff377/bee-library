@@ -3,21 +3,21 @@
 namespace Bee.Repository.Form
 {
     /// <summary>
-    /// 資料表單儲存庫。
+    /// Repository implementation for data forms.
     /// </summary>
     public class DataFormRepository : IDataFormRepository
     {
         /// <summary>
-        /// 建構函式。
+        /// Initializes a new instance of the <see cref="DataFormRepository"/> class.
         /// </summary>
-        /// <param name="progId">程式代碼。</param>
+        /// <param name="progId">The program identifier.</param>
         public DataFormRepository(string progId)
         {
             ProgId = progId;
         }
 
         /// <summary>
-        /// 程式代碼。
+        /// Gets the program identifier.
         /// </summary>
         public string ProgId { get; }
     }

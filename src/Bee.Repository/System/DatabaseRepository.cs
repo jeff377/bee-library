@@ -9,14 +9,14 @@ using Bee.Repository.Abstractions.System;
 namespace Bee.Repository.System
 {
     /// <summary>
-    /// 資料庫操作。
+    /// Default implementation of database operations.
     /// </summary>
     internal class DatabaseRepository : IDatabaseRepository
     {
         /// <summary>
-        /// 測試資料庫連線，失敗時丟出例外。
+        /// Tests the database connection and throws an exception on failure.
         /// </summary>
-        /// <param name="item">資料庫設定項。</param>
+        /// <param name="item">The database configuration item.</param>
         public void TestConnection(DatabaseItem item)
         {
             var provider = DbProviderManager.GetFactory(item.DatabaseType);
@@ -37,15 +37,15 @@ namespace Bee.Repository.System
         }
 
         /// <summary>
-        /// 升級資料表結構。
+        /// Upgrades the table schema for the specified table.
         /// </summary>
-        /// <param name="databaseId">資料庫編號。</param>
-        /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="tableName">資料表名稱。</param>
-        /// <remarks>回傳是否已升級。</remarks>
+        /// <param name="databaseId">The database identifier.</param>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
+        /// <remarks>Returns whether the schema was upgraded.</remarks>
         public bool UpgradeTableSchema(string databaseId, string dbName, string tableName)
         {
-            // 確認必要的參數不為空
+            // Ensure required parameters are not empty
             BaseFunc.EnsureNotNullOrWhiteSpace(
                 (databaseId, nameof(databaseId)),
                 (dbName, nameof(dbName)),
