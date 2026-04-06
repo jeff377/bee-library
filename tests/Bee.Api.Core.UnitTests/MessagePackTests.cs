@@ -460,7 +460,7 @@ namespace Bee.Api.Core.UnitTests
             // Arrange: 建立 TGetDefineArgs 實例並設定屬性
             var args = new GetDefineArgs
             {
-                DefineType = DefineType.FormDefine,
+                DefineType = DefineType.FormSchema,
                 Keys = new[] { "Key1", "Key2", "Key3" }
             };
 

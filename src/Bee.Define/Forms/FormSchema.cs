@@ -1,4 +1,4 @@
-﻿using Bee.Define.Layouts;
+using Bee.Define.Layouts;
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
@@ -13,10 +13,10 @@ namespace Bee.Define.Forms
     /// 表單定義。
     /// </summary>
     [Serializable]
-    [XmlType("FormDefine")]
+    [XmlType("FormSchema")]
     [Description("表單定義。")]
     [TreeNode("表單定義")]
-    public class FormDefine : IObjectSerializeFile
+    public class FormSchema : IObjectSerializeFile
     {
         private FormTableCollection _tables = null;
 
@@ -25,7 +25,7 @@ namespace Bee.Define.Forms
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public FormDefine()
+        public FormSchema()
         {
         }
 
@@ -34,8 +34,8 @@ namespace Bee.Define.Forms
         /// </summary>
         /// <param name="progId">程式代碼。</param>
         /// <param name="displayName">顯示名稱。</param>
-        public FormDefine(string progId, string displayName)
-        { 
+        public FormSchema(string progId, string displayName)
+        {
             ProgId= progId;
             DisplayName = displayName;
         }

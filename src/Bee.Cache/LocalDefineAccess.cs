@@ -32,12 +32,12 @@ namespace Bee.Cache
                     return  this.GetProgramSettings();
                 case DefineType.DbSchemaSettings:
                     return this.GetDbSchemaSettings();
-                case DefineType.DbTable:
+                case DefineType.TableSchema:
                     ValidateKeys(defineType, keys, 2);
-                    return  this.GetDbTable(keys[0], keys[1]);
-                case DefineType.FormDefine:
+                    return this.GetTableSchema(keys[0], keys[1]);
+                case DefineType.FormSchema:
                     ValidateKeys(defineType, keys, 1);
-                    return this.GetFormDefine(keys[0]);
+                    return this.GetFormSchema(keys[0]);
                 case DefineType.FormLayout:
                     ValidateKeys(defineType, keys, 1);
                     return  this.GetFormLayout(keys[0]);
@@ -80,10 +80,10 @@ namespace Bee.Cache
                 case DefineType.DbSchemaSettings:
                     this.SaveDbSchemaSettings(defineObject as DbSchemaSettings);
                     break;
-                case DefineType.DbTable:
+                case DefineType.TableSchema:
                     if (keys == null || keys.Length != 1)
                         throw new ArgumentException($"{defineType} keys verification error");
-                    this.SaveDbTable(keys[0], defineObject as DbTable);
+                    this.SaveTableSchema(keys[0], defineObject as TableSchema);
                     break;
                 case DefineType.FormLayout:
                     this.SaveFormLayout(defineObject as FormLayout);
@@ -191,47 +191,47 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        public DbTable GetDbTable(string dbName, string tableName)
+        public TableSchema GetTableSchema(string dbName, string tableName)
         {
-            return CacheFunc.GetDbTable(dbName, tableName);
+            return CacheFunc.GetTableSchema(dbName, tableName);
         }
 
         /// <summary>
         /// 儲存資料表結構。
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="dbTable">資料表結構。</param>
-        public void SaveDbTable(string dbName, DbTable dbTable)
+        /// <param name="tableSchema">資料表結構。</param>
+        public void SaveTableSchema(string dbName, TableSchema tableSchema)
         {
-            DbTableCache oCache;
+            TableSchemaCache oCache;
 
             // 儲存資料表結構後，移除快取
-            BackendInfo.DefineStorage.SaveDbTable(dbName, dbTable);
-            oCache = new DbTableCache();
-            oCache.Remove(dbName, dbTable.TableName);
+            BackendInfo.DefineStorage.SaveTableSchema(dbName, tableSchema);
+            oCache = new TableSchemaCache();
+            oCache.Remove(dbName, tableSchema.TableName);
         }
 
         /// <summary>
         /// 取得表單定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        public FormDefine GetFormDefine(string progId)
+        public FormSchema GetFormSchema(string progId)
         {
-            return CacheFunc.GetFormDefine(progId);
+            return CacheFunc.GetFormSchema(progId);
         }
 
         /// <summary>
         /// 儲存表單定義。
         /// </summary>
-        /// <param name="formDefine">表單定義。</param>
-        public void SaveFormDefine(FormDefine formDefine)
+        /// <param name="formSchema">表單定義。</param>
+        public void SaveFormSchema(FormSchema formSchema)
         {
-            FormDefineCache oCache;
+            FormSchemaCache oCache;
 
             // 儲存資料表結構後，移除快取
-            BackendInfo.DefineStorage.SaveFormDefine(formDefine);
-            oCache = new FormDefineCache();
-            oCache.Remove(formDefine.ProgId);
+            BackendInfo.DefineStorage.SaveFormSchema(formSchema);
+            oCache = new FormSchemaCache();
+            oCache.Remove(formSchema.ProgId);
         }
 
         /// <summary>

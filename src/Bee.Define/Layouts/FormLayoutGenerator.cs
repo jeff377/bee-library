@@ -7,7 +7,7 @@ namespace Bee.Define.Layouts
 {
     /// <summary>
     /// 表單版面配置生成器。
-    /// 負責將 FormDefine 轉換為 FormLayout 結構。
+    /// 負責將 FormSchema 轉換為 FormLayout 結構。
     /// </summary>
     public class FormLayoutGenerator
     {
@@ -16,7 +16,7 @@ namespace Bee.Define.Layouts
         /// </summary>
         /// <param name="formDefine">表單定義。</param>
         /// <returns>表單版面配置。</returns>
-        public FormLayout Generate(FormDefine formDefine)
+        public FormLayout Generate(FormSchema formDefine)
         {
             if (formDefine == null)
                 throw new ArgumentNullException(nameof(formDefine));
@@ -35,7 +35,7 @@ namespace Bee.Define.Layouts
         /// <summary>
         /// 加入版面配置群組。
         /// </summary>
-        private void AddLayoutGroups(FormDefine formDefine, FormLayout formLayout)
+        private void AddLayoutGroups(FormSchema formDefine, FormLayout formLayout)
         {
             if (formDefine.Tables == null) return;
 

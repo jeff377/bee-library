@@ -36,12 +36,12 @@ namespace Bee.Db.Providers.SqlServer
         /// 取得資料表結構。
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
-        public DbTable GetTableSchema(string tableName)
+        public TableSchema GetTableSchema(string tableName)
         {
             // 若資料表不存在則回傳 null
             if (!TableExists(tableName)) { return null; }
 
-            var dbTable = new DbTable();
+            var dbTable = new TableSchema();
             dbTable.TableName = tableName;
 
             // 取得索引的資料來源
@@ -103,7 +103,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
         /// <param name="table">索引資料表。</param>
-        private void ParsePrimaryKey(DbTable dbTable, DataTable table)
+        private void ParsePrimaryKey(TableSchema dbTable, DataTable table)
         {
             if (table.IsEmpty()) { return; }
 
@@ -114,7 +114,7 @@ namespace Bee.Db.Providers.SqlServer
             // 取得索引名稱
             string name = BaseFunc.CStr(table.DefaultView[0]["name"]);
             // 取得主索引
-            var tableIndex = new DbTableIndex();
+            var tableIndex = new TableSchemaIndex();
             tableIndex.PrimaryKey = true;
             tableIndex.Name = name;
             tableIndex.Unique = true;
@@ -135,7 +135,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
         /// <param name="table">索引資料表。</param>
-        private void ParseIndexes(DbTable dbTable, DataTable table)
+        private void ParseIndexes(TableSchema dbTable, DataTable table)
         {
             while (!table.IsEmpty())
             {
@@ -143,7 +143,7 @@ namespace Bee.Db.Providers.SqlServer
                 string name = BaseFunc.CStr(oRow["Name"]);  // 取得索引名稱
                 bool isUnique = BaseFunc.CBool(oRow["IsUnique"]);
 
-                var tableIndex = new DbTableIndex();
+                var tableIndex = new TableSchemaIndex();
                 tableIndex.Name = name;
                 tableIndex.Unique = isUnique;
                 dbTable.Indexes.Add(tableIndex);

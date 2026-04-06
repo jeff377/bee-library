@@ -40,43 +40,43 @@ namespace Bee.Define.Storage
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        public DbTable GetDbTable(string dbName, string tableName)
+        public TableSchema GetTableSchema(string dbName, string tableName)
         {
-            string filePath = DefinePathInfo.GetDbTableFilePath(dbName, tableName);
+            string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableName);
             ValidateFilePath(filePath);
-            return SerializeFunc.XmlFileToObject<DbTable>(filePath);
+            return SerializeFunc.XmlFileToObject<TableSchema>(filePath);
         }
 
         /// <summary>
         /// 儲存資料表結構。
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="dbTable">資料表結構。</param>
-        public void SaveDbTable(string dbName, DbTable dbTable)
+        /// <param name="tableSchema">資料表結構。</param>
+        public void SaveTableSchema(string dbName, TableSchema tableSchema)
         {
-            string filePath = DefinePathInfo.GetDbTableFilePath(dbName, dbTable.TableName);
-            SerializeFunc.ObjectToXmlFile(dbTable, filePath);
+            string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableSchema.TableName);
+            SerializeFunc.ObjectToXmlFile(tableSchema, filePath);
         }
 
         /// <summary>
         /// 取得表單定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        public FormDefine GetFormDefine(string progId)
+        public FormSchema GetFormSchema(string progId)
         {
-            string filePath = DefinePathInfo.GetFormDefineFilePath(progId);
+            string filePath = DefinePathInfo.GetFormSchemaFilePath(progId);
             ValidateFilePath(filePath);
-            return SerializeFunc.XmlFileToObject<FormDefine>(filePath);
+            return SerializeFunc.XmlFileToObject<FormSchema>(filePath);
         }
 
         /// <summary>
         /// 儲存表單定義。
         /// </summary>
-        /// <param name="formDefine">表單定義。</param>
-        public void SaveFormDefine(FormDefine formDefine)
+        /// <param name="formSchema">表單定義。</param>
+        public void SaveFormSchema(FormSchema formSchema)
         {
-            string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
-            SerializeFunc.ObjectToXmlFile(formDefine, filePath);
+            string filePath = DefinePathInfo.GetFormSchemaFilePath(formSchema.ProgId);
+            SerializeFunc.ObjectToXmlFile(formSchema, filePath);
         }
 
         /// <summary>

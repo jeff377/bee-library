@@ -9,16 +9,16 @@ using Bee.UI.WinForms;
 namespace DbUpgrade
 {
     /// <summary>
-    /// ¥Dµøµ¡¡C
+    /// ï¿½Dï¿½ï¿½ï¿½ï¿½ï¿½C
     /// </summary>
     public partial class frmMainForm : BaseForm
     {
-        private StringBuilder _buffer;  // °õ¦æ°T®§¿é¥X¼È¦s°Ï
+        private StringBuilder _buffer;  // ï¿½ï¿½ï¿½ï¿½Tï¿½ï¿½ï¿½ï¿½Xï¿½È¦sï¿½ï¿½
 
-        #region «Øºc¨ç¦¡
+        #region ï¿½Øºcï¿½ç¦¡
 
         /// <summary>
-        /// «Øºc¨ç¦¡¡C
+        /// ï¿½Øºcï¿½ç¦¡ï¿½C
         /// </summary>
         public frmMainForm()
         {
@@ -30,14 +30,14 @@ namespace DbUpgrade
 
         private void frmMainForm_Load(object sender, EventArgs e)
         {
-            // ¸ü¤J¸ê®Æ®w²M³æ
+            // ï¿½ï¿½ï¿½Jï¿½ï¿½Æ®wï¿½Mï¿½ï¿½
             LoadDatabases();
-            // ³]©w³s½u¤è¦¡ªºÅã¥Ü¤å¦r
+            // ï¿½]ï¿½wï¿½sï¿½uï¿½è¦¡ï¿½ï¿½ï¿½ï¿½Ü¤ï¿½r
             SetConnectText();
         }
 
         /// <summary>
-        /// ³]©w³s½u¤è¦¡ªºÅã¥Ü¤å¦r¡C
+        /// ï¿½]ï¿½wï¿½sï¿½uï¿½è¦¡ï¿½ï¿½ï¿½ï¿½Ü¤ï¿½rï¿½C
         /// </summary>
         private void SetConnectText()
         {
@@ -45,7 +45,7 @@ namespace DbUpgrade
         }
 
         /// <summary>
-        /// ¸ü¤J¸ê®Æ®w²M³æ¡C
+        /// ï¿½ï¿½ï¿½Jï¿½ï¿½Æ®wï¿½Mï¿½ï¿½C
         /// </summary>
         private void LoadDatabases()
         {
@@ -57,11 +57,11 @@ namespace DbUpgrade
         }
 
         /// <summary>
-        /// °õ¦æ¤É¯Å¡C
+        /// ï¿½ï¿½ï¿½ï¿½É¯Å¡C
         /// </summary>
         private void btnExecute_Click(object sender, EventArgs e)
         {
-            DbTableItem oTable;
+            TableItem oTable;
 
             btnExecute.Enabled = false;
             try
@@ -83,14 +83,14 @@ namespace DbUpgrade
                     if (UpgradeTableSchema(item.DbName, oTable.TableName))
                     {
                         upgradeCount++;
-                        _buffer.AppendLine($"{oTable.TableName} : µ²ºc¤É¯Å");
+                        _buffer.AppendLine($"{oTable.TableName} : ï¿½ï¿½ï¿½cï¿½É¯ï¿½");
                     }
                     else
                     {
-                        _buffer.AppendLine($"{oTable.TableName} : µ²ºc¤@­P");
+                        _buffer.AppendLine($"{oTable.TableName} : ï¿½ï¿½ï¿½cï¿½@ï¿½P");
                     }
                 }
-                UIFunc.MsgBox($"°õ¦æ§¹¦¨¡A¦@¤É¯Å {upgradeCount} ­Ó¸ê®Æªí");
+                UIFunc.MsgBox($"ï¿½ï¿½ï¿½æ§¹ï¿½ï¿½ï¿½Aï¿½@ï¿½É¯ï¿½ {upgradeCount} ï¿½Ó¸ï¿½Æªï¿½");
                 btnSaveLog.Visible = true;
             }
             catch (Exception ex)
@@ -104,25 +104,25 @@ namespace DbUpgrade
         }
 
         /// <summary>
-        /// Àx¦s°O¿ý¡C
+        /// ï¿½xï¿½sï¿½Oï¿½ï¿½ï¿½C
         /// </summary>
         private void btnSaveLog_Click(object sender, EventArgs e)
         {
             var dialog = new SaveFileDialog();
-            dialog.Title = "Àx¦s°O¿ý";
-            dialog.Filter = "¤å¦rÀÉ|*.txt";
+            dialog.Title = "ï¿½xï¿½sï¿½Oï¿½ï¿½";
+            dialog.Filter = "ï¿½ï¿½rï¿½ï¿½|*.txt";
             dialog.FileName = $"DbToolsLog_{DateTime.Today:yyyyMMdd}.txt";
             if (dialog.ShowDialog() != DialogResult.OK) { return; }
 
-            FileFunc.FileWriteText(dialog.FileName, "DbTools ¤É¯Å°O¿ý\n" + _buffer.ToString());
+            FileFunc.FileWriteText(dialog.FileName, "DbTools ï¿½É¯Å°Oï¿½ï¿½\n" + _buffer.ToString());
             System.Diagnostics.Process.Start(dialog.FileName);
         }
 
         /// <summary>
-        /// ¤É¯Å¸ê®Æªíµ²ºc¡C
+        /// ï¿½É¯Å¸ï¿½Æªï¿½ï¿½ï¿½ï¿½cï¿½C
         /// </summary>
-        /// <param name="dbName">¸ê®Æ®w¦WºÙ¡C</param>
-        /// <param name="tableName">¸ê®Æªí¦WºÙ¡C</param>
+        /// <param name="dbName">ï¿½ï¿½Æ®wï¿½Wï¿½Ù¡C</param>
+        /// <param name="tableName">ï¿½ï¿½Æªï¿½ï¿½Wï¿½Ù¡C</param>
         private bool UpgradeTableSchema(string dbName, string tableName)
         {
             var args = new ExecFuncArgs();
@@ -135,7 +135,7 @@ namespace DbUpgrade
         }
 
         /// <summary>
-        /// ³]©w°T®§¤å¦r¡C
+        /// ï¿½]ï¿½wï¿½Tï¿½ï¿½ï¿½ï¿½rï¿½C
         /// </summary>
         /// <param name="message"></param>
         private void SetMessage(string message)

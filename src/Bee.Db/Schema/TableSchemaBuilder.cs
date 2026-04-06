@@ -37,13 +37,13 @@ namespace Bee.Db.Schema
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        public DbTable Compare(string dbName, string tableName)
+        public TableSchema Compare(string dbName, string tableName)
         {
             // 實際的資料表結構
             var provider = new SqlTableSchemaProvider(this.DatabaseId);
             var realTable = provider.GetTableSchema(tableName);
             // 定義的資料表結構
-            var defineTable = BackendInfo.DefineAccess.GetDbTable(dbName, tableName);
+            var defineTable = BackendInfo.DefineAccess.GetTableSchema(dbName, tableName);
             // 執行比對，並傳回比對後產生的資料表結構
             var comparer = new TableSchemaComparer(defineTable, realTable);
             return comparer.Compare();

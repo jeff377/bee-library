@@ -67,7 +67,7 @@ namespace Bee.Db.Query
         private void AddTableJoin(SelectContext context, string key, FormField foreignKeyField, FieldMappingCollection fieldMappings,
             string leftTable, string leftAlias, string queryFieldName = "")
         {
-            var srcFormDefine = BackendInfo.DefineAccess.GetFormDefine(foreignKeyField.RelationProgId);
+            var srcFormDefine = BackendInfo.DefineAccess.GetFormSchema(foreignKeyField.RelationProgId);
             if (srcFormDefine == null)
             {
                 throw new InvalidOperationException(

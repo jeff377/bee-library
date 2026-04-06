@@ -17,7 +17,7 @@ namespace Bee.Define.Database
         /// 建構函式。
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
-        public DbFieldCollection(DbTable dbTable)
+        public DbFieldCollection(TableSchema dbTable)
           : base(dbTable)
         { }
 

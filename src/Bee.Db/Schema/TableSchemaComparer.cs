@@ -14,7 +14,7 @@ namespace Bee.Db.Schema
         /// </summary>
         /// <param name="defineTable">定義的資料表結構。</param>
         /// <param name="realTable">實際的資料表結構。</param>
-        public TableSchemaComparer(DbTable defineTable, DbTable realTable)
+        public TableSchemaComparer(TableSchema defineTable, TableSchema realTable)
         {
             DefineTable = defineTable;
             RealTable = realTable;
@@ -23,17 +23,17 @@ namespace Bee.Db.Schema
         /// <summary>
         /// 定義的資料表結構。
         /// </summary>
-        public DbTable DefineTable { get; } = null;    
+        public TableSchema DefineTable { get; } = null;    
 
         /// <summary>
         /// 實際的資料表結構。
         /// </summary>
-        public DbTable RealTable { get; } = null;
+        public TableSchema RealTable { get; } = null;
 
         /// <summary>
         /// 執行比對，並傳回比對後產生的資料表結構。
         /// </summary>
-        public DbTable Compare()
+        public TableSchema Compare()
         {
             // 建立定義的資料表結構複本，作為比對的回傳結果
             var compareTable = this.DefineTable.Clone();
@@ -59,7 +59,7 @@ namespace Bee.Db.Schema
         /// 比對欄位結構。
         /// </summary>
         /// <param name="compareTable">比對回傳的資料表結構。</param>
-        private bool CompareFields(DbTable compareTable)
+        private bool CompareFields(TableSchema compareTable)
         {
             bool isMatch = true;
             foreach (DbField field in compareTable.Fields)
@@ -87,10 +87,10 @@ namespace Bee.Db.Schema
         /// 比對索引。
         /// </summary>
         /// <param name="compareTable">比對回傳的資料表結構。</param>
-        private bool CompareIndexes(DbTable compareTable)
+        private bool CompareIndexes(TableSchema compareTable)
         {
             // 有任一索引比對不符，則直接回傳 false
-            foreach (DbTableIndex index in compareTable.Indexes)
+            foreach (TableSchemaIndex index in compareTable.Indexes)
             {
                 string name = StrFunc.Format(index.Name, compareTable.TableName);
                 if (this.RealTable.Indexes.Contains(name))
@@ -116,7 +116,7 @@ namespace Bee.Db.Schema
         /// 加入實體資料表的額外欄位。
         /// </summary>
         /// <param name="compareTable">比對回傳的資料表結構。</param>
-        private void AddExtensionFields(DbTable compareTable)
+        private void AddExtensionFields(TableSchema compareTable)
         {
             foreach (DbField field in this.RealTable.Fields)
             {

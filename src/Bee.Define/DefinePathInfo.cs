@@ -65,11 +65,11 @@ namespace Bee.Define
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        public static string GetDbTableFilePath(string dbName, string tableName)
+        public static string GetTableSchemaFilePath(string dbName, string tableName)
         {
             string sFilePath;
 
-            sFilePath = $@"DbTable\{dbName}\{tableName}.DbTable.xml";
+            sFilePath = $@"TableSchema\{dbName}\{tableName}.TableSchema.xml";
             return GetDefinePath(sFilePath);
         }
 
@@ -77,11 +77,11 @@ namespace Bee.Define
         /// 取得表單定義的檔案路徑。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        public static string GetFormDefineFilePath(string progId)
+        public static string GetFormSchemaFilePath(string progId)
         {
             string sFilePath;
 
-            sFilePath = $@"FormDefine\{progId}.FormDefine.xml";
+            sFilePath = $@"FormSchema\{progId}.FormSchema.xml";
             return GetDefinePath(sFilePath);
         }
 

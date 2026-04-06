@@ -1,4 +1,4 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using Newtonsoft.Json;
@@ -12,20 +12,20 @@ namespace Bee.Define.Database
     /// 資料表結構。
     /// </summary>
     [Serializable]
-    [XmlType("DbTable")]
+    [XmlType("TableSchema")]
     [Description("資料表結構。")]
     [TreeNode]
-    public class DbTable : IObjectSerializeFile
+    public class TableSchema : IObjectSerializeFile
     {
         private DbFieldCollection _fields = null;
-        private DbTableIndexCollection _indexes = null;
+        private TableSchemaIndexCollection _indexes = null;
 
         #region 建構函式
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public DbTable()
+        public TableSchema()
         {
         }
 
@@ -117,13 +117,13 @@ namespace Bee.Define.Database
         [Description("索引集合。")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public DbTableIndexCollection Indexes
+        public TableSchemaIndexCollection Indexes
         {
             get
             {
                 // 序列化時，若集合無資料則傳回 null
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _indexes)) { return null; }
-                if (_indexes == null) { _indexes = new DbTableIndexCollection(this); }
+                if (_indexes == null) { _indexes = new TableSchemaIndexCollection(this); }
                 return _indexes;
             }
         }
@@ -131,9 +131,9 @@ namespace Bee.Define.Database
         /// <summary>
         /// 取得主鍵。
         /// </summary>
-        public DbTableIndex GetPrimaryKey()
+        public TableSchemaIndex GetPrimaryKey()
         {
-            foreach (DbTableIndex index in Indexes)
+            foreach (TableSchemaIndex index in Indexes)
             {
                 if (index.PrimaryKey)
                     return index;
@@ -152,12 +152,12 @@ namespace Bee.Define.Database
         /// <summary>
         /// 建立複本。
         /// </summary>
-        public DbTable Clone()
+        public TableSchema Clone()
         {
-            var table = new DbTable();
+            var table = new TableSchema();
             table.TableName = TableName;
             table.DisplayName = DisplayName;
-            foreach (DbTableIndex index in Indexes)
+            foreach (TableSchemaIndex index in Indexes)
                 table.Indexes.Add(index.Clone());
             foreach (DbField field in Fields)
                 table.Fields.Add(field.Clone());

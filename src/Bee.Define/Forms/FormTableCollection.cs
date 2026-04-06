@@ -18,7 +18,7 @@ namespace Bee.Define.Forms
         /// 建構函式。
         /// </summary>
         /// <param name="formDefine">表單定義。</param>
-        public FormTableCollection(FormDefine formDefine) : base(formDefine)
+        public FormTableCollection(FormSchema formDefine) : base(formDefine)
         { }
 
 

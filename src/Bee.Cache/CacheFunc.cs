@@ -66,27 +66,27 @@ namespace Bee.Cache
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        public static DbTable GetDbTable(string dbName, string tableName)
+        public static TableSchema GetTableSchema(string dbName, string tableName)
         {
-            return CacheContainer.DbTable.Get(dbName, tableName);
+            return CacheContainer.TableSchema.Get(dbName, tableName);
         }
 
         /// <summary>
         /// 取得預設資料庫的資料表結構。
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
-        public static DbTable GetDbTable(string tableName)
+        public static TableSchema GetTableSchema(string tableName)
         {
-            return GetDbTable(BackendInfo.DatabaseId, tableName);
+            return GetTableSchema(BackendInfo.DatabaseId, tableName);
         }
 
         /// <summary>
         /// 取得表單定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        public static FormDefine GetFormDefine(string progId)
+        public static FormSchema GetFormSchema(string progId)
         {
-            return CacheContainer.FormDefine.Get(progId);
+            return CacheContainer.FormSchema.Get(progId);
         }
 
         /// <summary>

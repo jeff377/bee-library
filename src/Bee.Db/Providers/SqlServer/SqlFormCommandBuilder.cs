@@ -21,17 +21,17 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="progID">程式代碼。</param>
         public SqlFormCommandBuilder(string progID)
         {
-            FormDefine = BackendInfo.DefineAccess.GetFormDefine(progID);
-            if (FormDefine == null)
+            FormSchema = BackendInfo.DefineAccess.GetFormSchema(progID);
+            if (FormSchema == null)
                 throw new ArgumentException($"Form definition not found for program ID '{progID}'.", nameof(progID));
         }
 
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public SqlFormCommandBuilder(FormDefine formDefine)
+        public SqlFormCommandBuilder(FormSchema formDefine)
         {
-            FormDefine = formDefine ?? throw new ArgumentNullException(nameof(formDefine));
+            FormSchema = formDefine ?? throw new ArgumentNullException(nameof(formDefine));
         }
 
         #endregion
@@ -39,7 +39,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <summary>
         /// 表單定義。
         /// </summary>
-        private FormDefine FormDefine { get; }
+        private FormSchema FormSchema { get; }
 
         /// <summary>
         /// 建立 Select 語法的資料庫命令。
@@ -50,7 +50,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="sortFields">排序欄位集合。</param>
         public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode filter = null, SortFieldCollection sortFields = null)
         {
-            var builder = new SelectCommandBuilder(FormDefine, DatabaseType.SQLServer);
+            var builder = new SelectCommandBuilder(FormSchema, DatabaseType.SQLServer);
             return builder.Build(tableName, selectFields, filter, sortFields);  
         }
 

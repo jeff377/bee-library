@@ -11,7 +11,7 @@ namespace Bee.Db.Providers
         /// <summary>
         /// 取得 Create Table 的 SQL 語法。
         /// </summary>
-        /// <param name="dbTable">資料表結構。</param>
-        string GetCommandText(DbTable dbTable);
+        /// <param name="tableSchema">資料表結構。</param>
+        string GetCommandText(TableSchema tableSchema);
     }
 }

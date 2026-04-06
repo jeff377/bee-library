@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -12,10 +12,10 @@ namespace Bee.Define.Database
     /// 資料表索引。
     /// </summary>
     [Serializable]
-    [XmlType("DbTableIndex")]
+    [XmlType("TableSchemaIndex")]
     [Description("資料表索引。")]
     [TreeNode]
-    public class DbTableIndex : KeyCollectionItem
+    public class TableSchemaIndex : KeyCollectionItem
     {
         private IndexFieldCollection _indexFields = null;
 
@@ -88,9 +88,9 @@ namespace Bee.Define.Database
         /// <summary>
         /// 建立複本。
         /// </summary>
-        public DbTableIndex Clone()
+        public TableSchemaIndex Clone()
         {
-            var index = new DbTableIndex();
+            var index = new TableSchemaIndex();
             index.Name = Name;
             index.PrimaryKey = PrimaryKey;
             index.Unique = Unique;
@@ -103,7 +103,7 @@ namespace Bee.Define.Database
         /// 比較結構是否相同。
         /// </summary>
         /// <param name="source">來源物件。</param>
-        public bool Compare(DbTableIndex source)
+        public bool Compare(TableSchemaIndex source)
         {
             // 唯一性不同，傳回 false
             if (Unique != source.Unique) { return false; }

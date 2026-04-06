@@ -25,26 +25,26 @@ namespace Bee.Define.Storage
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        DbTable GetDbTable(string dbName, string tableName);
+        TableSchema GetTableSchema(string dbName, string tableName);
 
         /// <summary>
         /// 儲存資料表結構。
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="dbTable">資料表結構。</param>
-        void SaveDbTable(string dbName, DbTable dbTable);
+        /// <param name="tableSchema">資料表結構。</param>
+        void SaveTableSchema(string dbName, TableSchema tableSchema);
 
         /// <summary>
         /// 取得表單定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        FormDefine GetFormDefine(string progId);
+        FormSchema GetFormSchema(string progId);
 
         /// <summary>
         /// 儲存表單定義。
         /// </summary>
-        /// <param name="formDefine">表單定義。</param>
-        void SaveFormDefine(FormDefine formDefine);
+        /// <param name="formSchema">表單定義。</param>
+        void SaveFormSchema(FormSchema formSchema);
 
         /// <summary>
         /// 取得表單版面配置。

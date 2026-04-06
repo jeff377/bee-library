@@ -17,7 +17,7 @@ namespace Bee.Define.Settings
     [TreeNode]
     public class DbSchema : KeyCollectionItem
     {
-        private DbTableItemCollection _tables = null;
+        private TableItemCollection _tables = null;
 
         /// <summary>
         /// 資料庫名稱。
@@ -43,13 +43,13 @@ namespace Bee.Define.Settings
         [Description("資料表集合。")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public DbTableItemCollection Tables
+        public TableItemCollection Tables
         {
             get
             {
                 // 序列化時，若集合無資料則傳回 null
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _tables)) { return null; }
-                if (_tables == null) { _tables = new DbTableItemCollection(this); }
+                if (_tables == null) { _tables = new TableItemCollection(this); }
                 return _tables;
             }
         }

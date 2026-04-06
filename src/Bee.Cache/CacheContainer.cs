@@ -22,11 +22,11 @@ namespace Bee.Cache
         private static readonly Lazy<DbSchemaSettingsCache> _dbSchemaSettings = new Lazy<DbSchemaSettingsCache>(() => new DbSchemaSettingsCache());
         internal static DbSchemaSettingsCache DbSchemaSettings => _dbSchemaSettings.Value;
 
-        private static readonly Lazy<DbTableCache> _dbTable = new Lazy<DbTableCache>(() => new DbTableCache());
-        internal static DbTableCache DbTable => _dbTable.Value;
+        private static readonly Lazy<TableSchemaCache> _tableSchema = new Lazy<TableSchemaCache>(() => new TableSchemaCache());
+        internal static TableSchemaCache TableSchema => _tableSchema.Value;
 
-        private static readonly Lazy<FormDefineCache> _formDefine = new Lazy<FormDefineCache>(() => new FormDefineCache());
-        internal static FormDefineCache FormDefine => _formDefine.Value;
+        private static readonly Lazy<FormSchemaCache> _formSchema = new Lazy<FormSchemaCache>(() => new FormSchemaCache());
+        internal static FormSchemaCache FormSchema => _formSchema.Value;
 
         private static readonly Lazy<FormLayoutCache> _formLayout = new Lazy<FormLayoutCache>(() => new FormLayoutCache());
         internal static FormLayoutCache FormLayout => _formLayout.Value;

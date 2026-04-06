@@ -106,12 +106,12 @@ namespace Bee.Connect.DefineAccess
                     return this.GetProgramSettings();
                 case DefineType.DbSchemaSettings:
                     return this.GetDbSchemaSettings();
-                case DefineType.DbTable:
+                case DefineType.TableSchema:
                     ValidateKeys(defineType, keys, 2);
-                    return this.GetDbTable(keys[0], keys[1]);
-                case DefineType.FormDefine:
+                    return this.GetTableSchema(keys[0], keys[1]);
+                case DefineType.FormSchema:
                     ValidateKeys(defineType, keys, 1);
-                    return this.GetFormDefine(keys[0]);
+                    return this.GetFormSchema(keys[0]);
                 case DefineType.FormLayout:
                     ValidateKeys(defineType, keys, 1);
                     return this.GetFormLayout(keys[0]);
@@ -217,37 +217,37 @@ namespace Bee.Connect.DefineAccess
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
         /// <param name="tableName">資料表名稱。</param>
-        public DbTable GetDbTable(string dbName, string tableName)
+        public TableSchema GetTableSchema(string dbName, string tableName)
         {
-            return GetDefine<DbTable>(DefineType.DbTable, new string[] { dbName, tableName });
+            return GetDefine<TableSchema>(DefineType.TableSchema, new string[] { dbName, tableName });
         }
 
         /// <summary>
         /// 儲存資料表結構。
         /// </summary>
         /// <param name="dbName">資料庫名稱。</param>
-        /// <param name="dbTable">資料表結構。</param>
-        public void SaveDbTable(string dbName, DbTable dbTable)
+        /// <param name="tableSchema">資料表結構。</param>
+        public void SaveTableSchema(string dbName, TableSchema tableSchema)
         {
-            SaveDefine(DefineType.DbTable, dbTable, new string[] { dbName });
+            SaveDefine(DefineType.TableSchema, tableSchema, new string[] { dbName });
         }
 
         /// <summary>
         /// 取得表單定義。
         /// </summary>
         /// <param name="progId">程式代碼。</param>
-        public FormDefine GetFormDefine(string progId)
+        public FormSchema GetFormSchema(string progId)
         {
-            return GetDefine<FormDefine>(DefineType.FormDefine, new string[] { progId });
+            return GetDefine<FormSchema>(DefineType.FormSchema, new string[] { progId });
         }
 
         /// <summary>
         /// 儲存表單定義。
         /// </summary>
-        /// <param name="formDefine">表單定義。</param>
-        public void SaveFormDefine(FormDefine formDefine)
+        /// <param name="formSchema">表單定義。</param>
+        public void SaveFormSchema(FormSchema formSchema)
         {
-            SaveDefine(DefineType.FormDefine, formDefine);
+            SaveDefine(DefineType.FormSchema, formSchema);
         }
 
         /// <summary>

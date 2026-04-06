@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -11,10 +11,10 @@ namespace Bee.Define.Settings
     /// 資料表項目。
     /// </summary>
     [Serializable]
-    [XmlType("DbTableItem")]
+    [XmlType("TableItem")]
     [Description("資料表項目。")]
     [TreeNode]
-    public class DbTableItem : KeyCollectionItem
+    public class TableItem : KeyCollectionItem
     {
         /// <summary>
         /// 資料表名稱。

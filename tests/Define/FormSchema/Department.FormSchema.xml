@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FormDefine xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Department" DisplayName="部門" ListFields="">
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Department" DisplayName="部門" ListFields="">
   <Tables>
     <FormTable TableName="Department" DbTableName="ft_department" DisplayName="部門">
       <Fields>
@@ -18,4 +18,4 @@
       </Fields>
     </FormTable>
   </Tables>
-</FormDefine>
+</FormSchema>

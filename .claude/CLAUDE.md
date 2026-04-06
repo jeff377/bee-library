@@ -55,6 +55,17 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 1. 將計畫寫成 md 文件，存至 `docs/` 目錄，檔名格式：`plan-<主題>.md`
 2. 等待使用者確認後，才開始執行
 
+## 架構參考
+
+實作任何功能或模組前，請先閱讀架構文件：`docs/architecture-overview.md`
+
+重點摘要：
+- **FormDefine** 為定義中樞，同時驅動 UI（FormLayout）、資料庫（DbTable）與驗證規則
+- **DataSet** 為跨層 DTO，承載 Master-Detail 資料，不含邏輯
+- **Business Object（BO）** 負責業務邏輯，不直接存取資料庫
+- **Repository** 採雙軌策略：CRUD 由 FormDefine 驅動，報表/批次由 BO 自行實作（AnyCode）
+- 架構模式：N-Tier + Clean Architecture + MVVM 混合
+
 ## 規則導入
 
 @rules/code-style.md

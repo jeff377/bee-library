@@ -18,8 +18,8 @@ namespace Bee.Define
             { DefineType.DatabaseSettings, "Bee.Define.Settings.DatabaseSettings" },
             { DefineType.DbSchemaSettings, "Bee.Define.Settings.DbSchemaSettings" },
             { DefineType.ProgramSettings,  "Bee.Define.Settings.ProgramSettings" },
-            { DefineType.DbTable,          "Bee.Define.Database.DbTable" },
-            { DefineType.FormDefine,       "Bee.Define.Forms.FormDefine" },
+            { DefineType.TableSchema,      "Bee.Define.Database.TableSchema" },
+            { DefineType.FormSchema,       "Bee.Define.Forms.FormSchema" },
             { DefineType.FormLayout,       "Bee.Define.Layouts.FormLayout" },
         };
 
@@ -106,7 +106,7 @@ namespace Bee.Define
         /// 取得清單版面。
         /// </summary>
         /// <param name="formDefine">表單定義。</param>
-        internal static LayoutGrid GetListLayout(FormDefine formDefine)
+        internal static LayoutGrid GetListLayout(FormSchema formDefine)
         {
             var table = formDefine.MasterTable;
             string[] fieldNames = StrFunc.Split(formDefine.ListFields, ",");

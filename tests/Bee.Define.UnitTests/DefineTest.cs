@@ -21,7 +21,7 @@ namespace Bee.Define.UnitTests
         [Theory]
         [InlineData(DefineType.SystemSettings, typeof(SystemSettings))]
         [InlineData(DefineType.DatabaseSettings, typeof(DatabaseSettings))]
-        [InlineData(DefineType.FormDefine, typeof(FormDefine))]
+        [InlineData(DefineType.FormSchema, typeof(FormSchema))]
         public void GetDefineType_ValidType(DefineType defineType, Type expectedType)
         {
             // Act

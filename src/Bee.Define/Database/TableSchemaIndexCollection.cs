@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Collections;
@@ -10,22 +10,22 @@ namespace Bee.Define.Database
     /// </summary>
     [TreeNode("索引", true)]
     [Serializable]
-    public class DbTableIndexCollection : KeyCollectionBase<DbTableIndex>
+    public class TableSchemaIndexCollection : KeyCollectionBase<TableSchemaIndex>
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        /// <param name="dbTable">資料表結構。</param>
-        public DbTableIndexCollection(DbTable dbTable) : base(dbTable)
+        /// <param name="tableSchema">資料表結構。</param>
+        public TableSchemaIndexCollection(TableSchema tableSchema) : base(tableSchema)
         { }
 
         /// <summary>
         /// 加入主索引。
         /// </summary>
         /// <param name="fields">欄位名稱集合字串，以逗點分隔。</param>
-        public DbTableIndex AddPrimaryKey(string fields)
+        public TableSchemaIndex AddPrimaryKey(string fields)
         {
-            var index = new DbTableIndex()
+            var index = new TableSchemaIndex()
             {
                 Name = "pk_{0}",
                 Unique = true,
@@ -45,12 +45,12 @@ namespace Bee.Define.Database
         /// <param name="name">索引名稱。</param>
         /// <param name="fields">欄位名稱集合字串，以逗點分隔。</param>
         /// <param name="unique">是否具有唯一性。</param>
-        public DbTableIndex Add(string name, string fields, bool unique)
+        public TableSchemaIndex Add(string name, string fields, bool unique)
         {
-            DbTableIndex oIndex;
+            TableSchemaIndex oIndex;
             string[] oFields;
 
-            oIndex = new DbTableIndex();
+            oIndex = new TableSchemaIndex();
             oIndex.Name = name;
             oIndex.Unique = unique;
             oFields = StrFunc.Split(fields, ",");

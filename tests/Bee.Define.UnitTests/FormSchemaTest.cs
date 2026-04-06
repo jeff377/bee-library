@@ -1,17 +1,17 @@
-﻿using Bee.Define.Forms;
+using Bee.Define.Forms;
 using Bee.Base;
 using Bee.Base.Data;
 
 namespace Bee.Define.UnitTests
 {
     [Collection("Initialize")]
-    public class FormDefineTest
+    public class FormSchemaTest
     {
         [Fact]
         public void DepartmentFormTable()
         {
-            var formDefine = new FormDefine("Department", "部門");
-            var table = formDefine.Tables.Add("Department", "部門");
+            var formSchema = new FormSchema("Department", "部門");
+            var table = formSchema.Tables.Add("Department", "部門");
             table.DbTableName = "ft_department";
             table.Fields.Add("sys_no", "流水號", FieldDbType.AutoIncrement);
             table.Fields.Add("sys_rowid", "唯一識別", FieldDbType.Guid);
@@ -30,18 +30,18 @@ namespace Bee.Define.UnitTests
             table.Fields.Add(new FormField("ref_manager_id", "部門主管編號", FieldDbType.String, FieldType.RelationField));
             table.Fields.Add(new FormField("ref_manager_name", "部門主管名稱", FieldDbType.String, FieldType.RelationField));
 
-            Assert.NotNull(formDefine.MasterTable);
+            Assert.NotNull(formSchema.MasterTable);
 
-            //string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
-            //formDefine.SetObjectFilePath(filePath);
-            //formDefine.Save();
+            //string filePath = DefinePathInfo.GetFormSchemaFilePath(formSchema.ProgId);
+            //formSchema.SetObjectFilePath(filePath);
+            //formSchema.Save();
         }
 
         [Fact]
         public void EmployeeFormTable()
         {
-            var formDefine = new FormDefine("Employee", "員工");
-            var table = formDefine.Tables.Add("Employee", "員工");
+            var formSchema = new FormSchema("Employee", "員工");
+            var table = formSchema.Tables.Add("Employee", "員工");
             table.DbTableName = "ft_employee";
             table.Fields.Add("sys_no", "流水號", FieldDbType.AutoIncrement);
             table.Fields.Add("sys_rowid", "唯一識別", FieldDbType.Guid);
@@ -68,9 +68,9 @@ namespace Bee.Define.UnitTests
 
             Assert.NotNull(references);
 
-            //string filePath = DefinePathInfo.GetFormDefineFilePath(formDefine.ProgId);
-            //formDefine.SetObjectFilePath(filePath);
-            //formDefine.Save();
+            //string filePath = DefinePathInfo.GetFormSchemaFilePath(formSchema.ProgId);
+            //formSchema.SetObjectFilePath(filePath);
+            //formSchema.Save();
         }
     }
 }

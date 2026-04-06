@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<DbTable xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="common" TableName="st_session" DisplayName="連線資訊">
+<TableSchema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="common" TableName="st_session" DisplayName="連線資訊">
 	<Fields>
 		<DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
 		<DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
@@ -25,4 +25,4 @@
 			</IndexFields>
 		</DbTableIndex>
 	</Indexes>
-</DbTable>
+</TableSchema>

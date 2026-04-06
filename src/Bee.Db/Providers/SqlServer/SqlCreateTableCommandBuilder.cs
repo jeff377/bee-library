@@ -15,7 +15,7 @@ namespace Bee.Db.Providers.SqlServer
     /// </summary>
     public class SqlCreateTableCommandBuilder : ICreateTableCommandBuilder
     {
-        private DbTable _dbTable = null;
+        private TableSchema _dbTable = null;
 
         #region 建構函式
 
@@ -30,7 +30,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <summary>
         /// 資料表結構。
         /// </summary>
-        private DbTable DbTable
+        private TableSchema TableSchema
         {
             get { return _dbTable; }
         }
@@ -40,18 +40,18 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         private string TableName
         {
-            get { return this.DbTable.TableName; }
+            get { return this.TableSchema.TableName; }
         }
 
         /// <summary>
         /// 取得 Create Table 的 SQL 語法。
         /// </summary>
         /// <param name="dbTable">資料表結構。</param>
-        public string GetCommandText(DbTable dbTable)
+        public string GetCommandText(TableSchema dbTable)
         {
             _dbTable = dbTable;
 
-            if (this.DbTable.UpgradeAction == DbUpgradeAction.Upgrade)
+            if (this.TableSchema.UpgradeAction == DbUpgradeAction.Upgrade)
                 return $"-- 升級 {this.TableName} 資料表\r\n{this.GetUpgradeCommandText()}";
             else
                 return $"-- 建立 {this.TableName} 資料表\r\n{this.GetCreateTableCommandText()}";
@@ -107,7 +107,7 @@ namespace Bee.Db.Providers.SqlServer
         {
            // 取得要搬除的欄位清單
             string fields = string.Empty;
-            foreach (DbField field in this.DbTable.Fields)
+            foreach (DbField field in this.TableSchema.Fields)
             {
                 if (field.UpgradeAction != DbUpgradeAction.New && field.DbType != FieldDbType.AutoIncrement)
                 {
@@ -131,7 +131,7 @@ namespace Bee.Db.Providers.SqlServer
         {
             var sb = new StringBuilder();
             // 索引更名
-            foreach (DbTableIndex index in this.DbTable.Indexes)
+            foreach (TableSchemaIndex index in this.TableSchema.Indexes)
             {
                 string oldName = StrFunc.Format(index.Name, tableName);  // 舊索引名稱
                 string newName = StrFunc.Format(index.Name, newTableName);  // 新索引名稱 
@@ -149,7 +149,7 @@ namespace Bee.Db.Providers.SqlServer
         private string GetCreateTableCommandText(string tableName = "")
         {
             // 資料表名稱
-            string dbTableName = StrFunc.IsNotEmpty(tableName) ? tableName : this.DbTable.TableName;
+            string dbTableName = StrFunc.IsNotEmpty(tableName) ? tableName : this.TableSchema.TableName;
             // 取得建立欄位結構的語法
             string fields = GetFieldsCommandText();
             // 取得建立主索引的命令語法
@@ -176,7 +176,7 @@ namespace Bee.Db.Providers.SqlServer
         {
             // 取得建立欄位結構的語法
             var sb = new StringBuilder();
-            foreach (DbField field in this.DbTable.Fields)
+            foreach (DbField field in this.TableSchema.Fields)
             {
                 // 取得欄位結構的命令語法
                 string text = GetFieldCommandText(field);
@@ -296,7 +296,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="tableName">資料表名稱。</param>
         private string GetPrimaryKeyCommandText(string tableName)
         {
-            var index = this.DbTable.GetPrimaryKey();
+            var index = this.TableSchema.GetPrimaryKey();
             if (index == null) { return string.Empty; }
 
             // 索引欄位
@@ -319,7 +319,7 @@ namespace Bee.Db.Providers.SqlServer
         private string GetIndexsCommandText(string tableName)
         {
             var sb = new StringBuilder();
-            foreach (DbTableIndex index in this.DbTable.Indexes)
+            foreach (TableSchemaIndex index in this.TableSchema.Indexes)
             {
                 if (!index.PrimaryKey)
                     sb.AppendLine(GetIndexCommandText(tableName, index));
@@ -332,7 +332,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         /// <param name="tableName">資料表名稱。</param>
         /// <param name="index">資料表索引。</param>
-        private string GetIndexCommandText(string tableName, DbTableIndex index)
+        private string GetIndexCommandText(string tableName, TableSchemaIndex index)
         {
             // 索引名稱
             string name = StrFunc.Format(index.Name, tableName);

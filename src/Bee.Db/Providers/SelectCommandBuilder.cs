@@ -15,7 +15,7 @@ namespace Bee.Db.Providers
     /// </summary>
     public class SelectCommandBuilder
     {
-        private readonly FormDefine _formDefine;
+        private readonly FormSchema _formDefine;
         private readonly DatabaseType _databaseType;
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Bee.Db.Providers
         /// </summary>
         /// <param name="formDefine">表單定義。</param>
         /// <param name="databaseType">資料庫類型。</param>
-        public SelectCommandBuilder(FormDefine formDefine, DatabaseType databaseType)
+        public SelectCommandBuilder(FormSchema formDefine, DatabaseType databaseType)
         {
             _formDefine = formDefine;
             _databaseType = databaseType;

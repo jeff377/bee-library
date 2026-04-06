@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Attributes;
@@ -12,13 +12,13 @@ namespace Bee.Define.Settings
     [Serializable]
     [Description("資料表項目清單。")]
     [TreeNode("資料表", false)]
-    public class DbTableItemCollection : KeyCollectionBase<DbTableItem>
+    public class TableItemCollection : KeyCollectionBase<TableItem>
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="category">資料表分類。</param>
-        public DbTableItemCollection(DbSchema category) : base(category)
+        public TableItemCollection(DbSchema category) : base(category)
         { }
     }
 }

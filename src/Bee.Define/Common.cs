@@ -376,11 +376,11 @@ namespace Bee.Define
         /// <summary>
         /// 資料表結構。
         /// </summary>
-        DbTable,
+        TableSchema,
         /// <summary>
         /// 表單定義。
         /// </summary>
-        FormDefine,
+        FormSchema,
         /// <summary>
         /// 表單版面配置。
         /// </summary>

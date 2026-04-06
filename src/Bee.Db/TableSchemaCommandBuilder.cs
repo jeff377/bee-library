@@ -1,4 +1,4 @@
-﻿using Bee.Define.Database;
+using Bee.Define.Database;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Define;
@@ -10,27 +10,27 @@ using System.Text;
 namespace Bee.Db
 {
     /// <summary>
-    /// 以 <see cref="DbTable"/> 為依據，產生 Insert、Update、Delete 的資料庫命令；亦可直接包裝成 <see cref="DataTableUpdateSpec"/>。
+    /// 以 <see cref="TableSchema"/> 為依據，產生 Insert、Update、Delete 的資料庫命令；亦可直接包裝成 <see cref="DataTableUpdateSpec"/>。
     /// </summary>
-    public class DbTableCommandBuilder
+    public class TableSchemaCommandBuilder
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
         /// <param name="databaseType">資料庫類型。</param>
-        /// <param name="dbTable">資料表結構。</param>
-        public DbTableCommandBuilder(DatabaseType databaseType, DbTable dbTable)
+        /// <param name="tableSchema">資料表結構。</param>
+        public TableSchemaCommandBuilder(DatabaseType databaseType, TableSchema tableSchema)
         {
             DatabaseType = databaseType;
-            DbTable = dbTable ?? throw new ArgumentNullException(nameof(dbTable), "DbTable cannot be null.");
+            TableSchema = tableSchema ?? throw new ArgumentNullException(nameof(tableSchema), "TableSchema cannot be null.");
         }
 
         /// <summary>
         /// 建構函式（由全域設定取得資料庫類型）。
         /// </summary>
-        /// <param name="dbTable">資料表結構。</param>
-        public DbTableCommandBuilder(DbTable dbTable)
-            : this(BackendInfo.DatabaseType, dbTable)
+        /// <param name="tableSchema">資料表結構。</param>
+        public TableSchemaCommandBuilder(TableSchema tableSchema)
+            : this(BackendInfo.DatabaseType, tableSchema)
         { }
 
         /// <summary>
@@ -41,7 +41,7 @@ namespace Bee.Db
         /// <summary>
         /// 資料表結構。
         /// </summary>
-        public DbTable DbTable { get; }
+        public TableSchema TableSchema { get; }
 
         /// <summary>
         /// 依據資料庫類型，回傳適當的識別字串跳脫格式。
@@ -69,13 +69,13 @@ namespace Bee.Db
         {
             var command = new DbCommandSpec();
             var buffer = new StringBuilder();
-            string tableName = QuoteIdentifier(this.DbTable.TableName);
+            string tableName = QuoteIdentifier(this.TableSchema.TableName);
             buffer.AppendLine($"Insert Into {tableName} ");
 
             // 處理 Insert 的欄位名稱
             buffer.Append("(");
             int count = 0;
-            foreach (DbField field in this.DbTable.Fields)
+            foreach (DbField field in this.TableSchema.Fields)
             {
                 if (field.DbType != FieldDbType.AutoIncrement)
                 {
@@ -91,7 +91,7 @@ namespace Bee.Db
             buffer.AppendLine(" Values ");
             buffer.Append("(");
             count = 0;
-            foreach (DbField field in this.DbTable.Fields)
+            foreach (DbField field in this.TableSchema.Fields)
             {
                 if (field.DbType != FieldDbType.AutoIncrement)
                 {
@@ -115,15 +115,15 @@ namespace Bee.Db
         {
             var command = new DbCommandSpec();
             var buffer = new StringBuilder();
-            string tableName = QuoteIdentifier(this.DbTable.TableName);
+            string tableName = QuoteIdentifier(this.TableSchema.TableName);
             buffer.AppendLine($"Update {tableName} Set ");
 
             string fieldName;
             // 取得主鍵欄位
-            var keyField = this.DbTable.Fields[SysFields.RowId];
+            var keyField = this.TableSchema.Fields[SysFields.RowId];
             // 處理 Update 的欄位名稱與值
             int iCount = 0;
-            foreach (DbField field in this.DbTable.Fields)
+            foreach (DbField field in this.TableSchema.Fields)
             {
                 if (field != keyField && field.DbType != FieldDbType.AutoIncrement)
                 {
@@ -153,11 +153,11 @@ namespace Bee.Db
         {
             var command = new DbCommandSpec();
             var buffer = new StringBuilder();
-            string tableName = QuoteIdentifier(this.DbTable.TableName);
+            string tableName = QuoteIdentifier(this.TableSchema.TableName);
             buffer.AppendLine($"Delete From {tableName} ");
 
             // Where 加入主鍵條件
-            var keyField = this.DbTable.Fields[SysFields.RowId];
+            var keyField = this.TableSchema.Fields[SysFields.RowId];
             string fieldName = QuoteIdentifier(keyField.FieldName);
             command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
             buffer.AppendLine($"Where {fieldName}={GetParameterName(keyField.FieldName)}");
@@ -183,7 +183,7 @@ namespace Bee.Db
             return new DataTableUpdateSpec()
             {
                 DataTable = dataTable,
-                InsertCommand = insertCmd, 
+                InsertCommand = insertCmd,
                 UpdateCommand = updateCmd,
                 DeleteCommand = deleteCmd
             };

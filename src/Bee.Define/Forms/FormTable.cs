@@ -155,9 +155,9 @@ namespace Bee.Define.Forms
         /// 生成資料庫資料表。
         /// </summary>
         /// <returns>資料庫資料表。</returns>
-        public DbTable GenerateDbTable()
+        public TableSchema GenerateDbTable()
         {
-            var generator = new DbTableGenerator();
+            var generator = new TableSchemaGenerator();
             return generator.Generate(this);
         }
     }
