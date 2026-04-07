@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "DbUpgrade": {
-      "commandName": "Project",
-      "commandLineArgs": "--Endpoint D:\\DefinePath"
-    }
-  }
-}

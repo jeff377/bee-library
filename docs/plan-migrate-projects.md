@@ -34,7 +34,7 @@ bee-jsonrpc-sample  → NuGet: Bee.UI.WinForms, Bee.Api.AspNet, Bee.Api.Core, Be
 2. **Bee.UI.Core** — 僅依賴已在 NuGet 的 Bee.Connect，可同步移出
 3. **Bee.UI.WinForms** — 等 Bee.UI.Core 發布 NuGet 後移出
 4. **BeeSettingsEditor** — ✅ 已移植至 [bee-settings-editor](https://github.com/jeff377/bee-settings-editor)
-5. **BeeDbUpgrade** — 同上，可與 BeeSettingsEditor 同步
+5. **BeeDbUpgrade** — ✅ 已移植至 [bee-db-upgrade](https://github.com/jeff377/bee-db-upgrade)
 6. **bee-jsonrpc-sample** — 等 Bee.UI.WinForms + Bee.Api.AspNet 都發布後移出
 
 ## 每個專案的移植步驟
