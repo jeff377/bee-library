@@ -47,7 +47,7 @@ Core packages target **`netstandard2.0; net10.0`** for broad .NET runtime compat
 
 ## 💡 Sample Project
 
-Refer to [jsonrpc-sample](https://github.com/jeff377/jsonrpc-sample), which includes examples of JSON-RPC server and client implementations, and demonstrates how to use the Connector for both local and remote connections.
+Refer to [bee-jsonrpc-sample](https://github.com/jeff377/bee-jsonrpc-sample), which includes examples of JSON-RPC server and client implementations, and demonstrates how to use the Connector for both local and remote connections.
 
 
 ## 📬 Contact & Follow
