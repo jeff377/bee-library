@@ -1,9 +1,9 @@
 ﻿#nullable disable
 using System.Collections;
 using System.Reflection;
-using Bee.Base;
-using Bee.Base.Attributes;
-using Bee.Base.Collections;
+using Bee.Core;
+using Bee.Core.Attributes;
+using Bee.Core.Collections;
 
 namespace Bee.UI.WinForms
 {

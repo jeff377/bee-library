@@ -1,5 +1,5 @@
-﻿using Bee.Define.Database;
-using Bee.Define;
+﻿using Bee.Definition.Database;
+using Bee.Definition;
 
 namespace Bee.Db.Providers
 {

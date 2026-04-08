@@ -1,7 +1,7 @@
 ﻿using System;
 using Bee.Api.Contracts;
 using Bee.Business;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.Business.BusinessObjects
 {

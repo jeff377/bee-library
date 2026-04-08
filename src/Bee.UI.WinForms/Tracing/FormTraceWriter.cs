@@ -1,5 +1,5 @@
-﻿using Bee.Base;
-using Bee.Base.Tracing;
+﻿using Bee.Core;
+using Bee.Core.Tracing;
 
 namespace Bee.UI.WinForms
 {

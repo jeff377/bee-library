@@ -23,11 +23,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Bee.Base\Bee.Base.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Core\Bee.Core.csproj" />
     <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
-    <ProjectReference Include="..\..\src\Bee.Cache\Bee.Cache.csproj" />
+    <ProjectReference Include="..\..\src\Bee.ObjectCaching\Bee.ObjectCaching.csproj" />
     <ProjectReference Include="..\..\src\Bee.Db\Bee.Db.csproj" />
-    <ProjectReference Include="..\..\src\Bee.Define\Bee.Define.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Definition\Bee.Definition.csproj" />
     <ProjectReference Include="..\Bee.Tests.Shared\Bee.Tests.Shared.csproj" />
   </ItemGroup>
 

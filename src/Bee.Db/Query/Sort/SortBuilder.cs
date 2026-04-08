@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bee.Base;
-using Bee.Define;
+using Bee.Core;
+using Bee.Definition;
 
 using Bee.Db;
 

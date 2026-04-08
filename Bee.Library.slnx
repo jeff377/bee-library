@@ -8,26 +8,26 @@
     <File Path="src/Directory.Build.props" />
     <Project Path="src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj" />
     <Project Path="src/Bee.Api.Core/Bee.Api.Core.csproj" />
-    <Project Path="src/Bee.Base/Bee.Base.csproj" />
+    <Project Path="src/Bee.Core/Bee.Core.csproj" />
     <Project Path="src/Bee.Business/Bee.Business.csproj" />
-    <Project Path="src/Bee.Cache/Bee.Cache.csproj" />
-    <Project Path="src/Bee.Connect/Bee.Connect.csproj" />
+    <Project Path="src/Bee.ObjectCaching/Bee.ObjectCaching.csproj" />
+    <Project Path="src/Bee.Api.Client/Bee.Api.Client.csproj" />
     <Project Path="src/Bee.Api.Contracts/Bee.Api.Contracts.csproj" Id="65478f73-2ad9-433b-b2f2-dee9c49677f3" />
     <Project Path="src/Bee.Db/Bee.Db.csproj" />
-    <Project Path="src/Bee.Define/Bee.Define.csproj" />
+    <Project Path="src/Bee.Definition/Bee.Definition.csproj" />
     <Project Path="src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj" Id="30b306b6-0aab-475e-8df0-e1a0801e56a6" />
     <Project Path="src/Bee.Repository/Bee.Repository.csproj" Id="f78f3849-45b9-426e-a7b0-6edbd7fe256d" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Bee.Api.AspNetCore.UnitTests/Bee.Api.AspNetCore.UnitTests.csproj" />
     <Project Path="tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj" />
-    <Project Path="tests/Bee.Base.UnitTests/Bee.Base.UnitTests.csproj" />
+    <Project Path="tests/Bee.Core.UnitTests/Bee.Core.UnitTests.csproj" />
     <Project Path="tests/Bee.Business.UnitTests/Bee.Business.UnitTests.csproj" />
-    <Project Path="tests/Bee.Cache.UnitTests/Bee.Cache.UnitTests.csproj" />
-    <Project Path="tests/Bee.Connect.UnitTests/Bee.Connect.UnitTests.csproj" />
+    <Project Path="tests/Bee.ObjectCaching.UnitTests/Bee.ObjectCaching.UnitTests.csproj" />
+    <Project Path="tests/Bee.Api.Client.UnitTests/Bee.Api.Client.UnitTests.csproj" />
     <Project Path="tests/Bee.Api.Contracts.UnitTests/Bee.Api.Contracts.UnitTests.csproj" Id="3a3e8eb7-95e4-4590-811e-149f003ee48e" />
     <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
-    <Project Path="tests/Bee.Define.UnitTests/Bee.Define.UnitTests.csproj" />
+    <Project Path="tests/Bee.Definition.UnitTests/Bee.Definition.UnitTests.csproj" />
     <Project Path="tests/Bee.Repository.UnitTests/Bee.Repository.UnitTests.csproj" Id="37be88f7-d67a-40a7-91a3-23583c6b85f1" />
     <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />
   </Folder>

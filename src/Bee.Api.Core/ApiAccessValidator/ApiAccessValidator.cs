@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.Api.Core
 {

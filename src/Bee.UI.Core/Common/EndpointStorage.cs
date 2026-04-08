@@ -1,4 +1,4 @@
-﻿using Bee.Base;
+﻿using Bee.Core;
 
 namespace Bee.UI.Core
 {

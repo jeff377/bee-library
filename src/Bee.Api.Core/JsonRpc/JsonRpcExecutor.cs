@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Bee.Base;
-using Bee.Base.Tracing;
-using Bee.Define;
+using Bee.Core;
+using Bee.Core.Tracing;
+using Bee.Definition;
 
 using Bee.Api.Core;
 

@@ -1,6 +1,6 @@
-﻿using Bee.Define.Security;
-using Bee.Base;
-using Bee.Define;
+﻿using Bee.Definition.Security;
+using Bee.Core;
+using Bee.Definition;
 using System;
 
 namespace Bee.Business.Validator

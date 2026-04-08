@@ -1,5 +1,5 @@
-﻿using Bee.Base;
-using Bee.Base.Serialization;
+﻿using Bee.Core;
+using Bee.Core.Serialization;
 using Newtonsoft.Json;
 
 namespace Bee.Api.Core.JsonRpc

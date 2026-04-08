@@ -1,5 +1,5 @@
-﻿using Bee.Base;
-using Bee.Base.Serialization;
+﻿using Bee.Core;
+using Bee.Core.Serialization;
 
 namespace Bee.Api.Core.Transformer
 {

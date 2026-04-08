@@ -1,5 +1,5 @@
-﻿using Bee.Define.Forms;
-using Bee.Define;
+﻿using Bee.Definition.Forms;
+using Bee.Definition;
 
 namespace Bee.Db.Query
 {

@@ -1,6 +1,6 @@
-﻿using Bee.Define.Database;
-using Bee.Base;
-using Bee.Define;
+﻿using Bee.Definition.Database;
+using Bee.Core;
+using Bee.Definition;
 
 using Bee.Db.DbAccess;
 using DbAccessObject = Bee.Db.DbAccess.DbAccess;

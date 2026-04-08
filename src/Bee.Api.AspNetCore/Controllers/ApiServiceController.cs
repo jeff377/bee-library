@@ -2,8 +2,8 @@
 using Bee.Api.Core;
 using Bee.Api.Core.Authorization;
 using Bee.Api.Core.JsonRpc;
-using Bee.Base;
-using Bee.Base.Serialization;
+using Bee.Core;
+using Bee.Core.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;

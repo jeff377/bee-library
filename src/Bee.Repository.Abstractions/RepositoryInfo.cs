@@ -1,7 +1,7 @@
-using Bee.Define.Settings;
+using Bee.Definition.Settings;
 using System;
-using Bee.Base;
-using Bee.Define;
+using Bee.Core;
+using Bee.Definition;
 using Bee.Repository.Abstractions.Provider;
 
 namespace Bee.Repository.Abstractions

@@ -1,5 +1,5 @@
 ﻿using System;
-using Bee.Base;
+using Bee.Core;
 
 using Bee.Api.Core;
 

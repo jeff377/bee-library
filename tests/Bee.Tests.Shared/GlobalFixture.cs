@@ -1,8 +1,8 @@
-﻿using Bee.Base;
-using Bee.Cache;
+﻿using Bee.Core;
+using Bee.ObjectCaching;
 using Bee.Db;
 using Bee.Db.Manager;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.Tests.Shared
 {

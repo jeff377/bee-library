@@ -1,5 +1,5 @@
 ﻿using System;
-using Bee.Define;
+using Bee.Definition;
 using Bee.Repository.Abstractions;
 
 namespace Bee.Business.Provider

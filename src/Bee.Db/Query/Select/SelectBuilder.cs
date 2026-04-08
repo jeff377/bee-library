@@ -1,7 +1,7 @@
-﻿using Bee.Define.Forms;
-using Bee.Base;
-using Bee.Base.Collections;
-using Bee.Define;
+﻿using Bee.Definition.Forms;
+using Bee.Core;
+using Bee.Core.Collections;
+using Bee.Definition;
 using System;
 using System.Collections.Generic;
 

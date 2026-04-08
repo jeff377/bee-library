@@ -1,4 +1,4 @@
-﻿using Bee.Define;
+﻿using Bee.Definition;
 
 namespace Bee.Db.Query
 {

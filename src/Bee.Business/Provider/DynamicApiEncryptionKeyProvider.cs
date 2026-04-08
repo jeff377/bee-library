@@ -1,7 +1,7 @@
-﻿using Bee.Define.Security;
-using Bee.Base;
-using Bee.Base.Security;
-using Bee.Define;
+﻿using Bee.Definition.Security;
+using Bee.Core;
+using Bee.Core.Security;
+using Bee.Definition;
 using System;
 
 namespace Bee.Business.Provider

@@ -1,8 +1,8 @@
-using Bee.Define.Settings;
-using Bee.Base;
+using Bee.Definition.Settings;
+using Bee.Core;
 using Bee.Api.Contracts;
 using Bee.Business.BusinessObjects;
-using Bee.Define;
+using Bee.Definition;
 using System;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;

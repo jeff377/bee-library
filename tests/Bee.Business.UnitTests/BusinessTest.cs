@@ -1,5 +1,5 @@
-using Bee.Base;
-using Bee.Base.Security;
+using Bee.Core;
+using Bee.Core.Security;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 using Bee.Business.BusinessObjects;

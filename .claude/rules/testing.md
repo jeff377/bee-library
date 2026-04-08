@@ -10,8 +10,8 @@
 
 每個 `src/<Module>` 對應 `tests/<Module>.UnitTests`，結構對稱：
 ```
-src/Bee.Base/           → tests/Bee.Base.UnitTests/
-src/Bee.Define/         → tests/Bee.Define.UnitTests/
+src/Bee.Core/           → tests/Bee.Core.UnitTests/
+src/Bee.Definition/     → tests/Bee.Definition.UnitTests/
 src/Bee.Api.Core/       → tests/Bee.Api.Core.UnitTests/
 ```
 

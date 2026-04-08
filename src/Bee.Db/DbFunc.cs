@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using Bee.Base;
+using Bee.Core;
 using Bee.Db.Manager;
-using Bee.Base.Data;
-using Bee.Base.Collections;
-using Bee.Define;
+using Bee.Core.Data;
+using Bee.Core.Collections;
+using Bee.Definition;
 
 namespace Bee.Db
 {

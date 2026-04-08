@@ -1,0 +1,60 @@
+﻿using System;
+using System.ComponentModel;
+using Bee.Core.Serialization;
+
+namespace Bee.Core
+{
+    /// <summary>
+    /// Represents an exception error that occurred during an API method call.
+    /// </summary>
+    [Serializable]
+    public class ApiException : IObjectSerializeBase
+    {
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiException"/>.
+        /// </summary>
+        public ApiException()
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="ApiException"/>.
+        /// </summary>
+        /// <param name="exception">The exception that occurred at runtime.</param>
+        public ApiException(Exception exception)
+        {
+            Message = exception.Message;
+            StackTrace = exception.StackTrace;
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Gets or sets the exception error message.
+        /// </summary>
+        [DefaultValue("")]
+        public string Message { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the call stack trace.
+        /// </summary>
+        [DefaultValue("")]
+        public string StackTrace { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the exception has been handled.
+        /// </summary>
+        [Description("Gets or sets a value indicating whether the exception has been handled.")]
+        [DefaultValue(false)]
+        public bool IsHandle { get; set; } = false;
+
+        /// <summary>
+        /// Returns a string representation of this object.
+        /// </summary>
+        public override string ToString()
+        {
+            return this.Message;
+        }
+    }
+}

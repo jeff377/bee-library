@@ -1,6 +1,6 @@
-﻿using Bee.Define.Filters;
+﻿using Bee.Definition.Filters;
 using Bee.Db.Query;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.Db.UnitTests
 {

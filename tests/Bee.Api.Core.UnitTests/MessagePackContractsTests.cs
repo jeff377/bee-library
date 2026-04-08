@@ -1,12 +1,12 @@
 ﻿using Bee.Api.Core.MessagePack;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
-    /// 驗證 Bee.Define 合約型別的 MessagePack 序列化與反序列化行為。
+    /// 驗證 Bee.Definition 合約型別的 MessagePack 序列化與反序列化行為。
     /// </summary>
     public sealed class MessagePackContractsTests
     {

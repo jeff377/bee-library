@@ -1,6 +1,6 @@
-﻿using Bee.Define.Filters;
-using Bee.Define.Forms;
-using Bee.Define;
+﻿using Bee.Definition.Filters;
+using Bee.Definition.Forms;
+using Bee.Definition;
 using System;
 using System.Collections.Generic;
 

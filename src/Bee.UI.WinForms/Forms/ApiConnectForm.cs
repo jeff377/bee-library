@@ -1,6 +1,6 @@
-﻿using Bee.Base;
-using Bee.Connect;
-using Bee.Define;
+﻿using Bee.Core;
+using Bee.Api.Client;
+using Bee.Definition;
 using Bee.UI.Core;
 
 namespace Bee.UI.WinForms

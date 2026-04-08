@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.Db.Manager
 {

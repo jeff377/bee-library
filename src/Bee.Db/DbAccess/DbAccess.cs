@@ -4,9 +4,9 @@ using System.Data;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
-using Bee.Base;
-using Bee.Base.Data;
-using Bee.Define;
+using Bee.Core;
+using Bee.Core.Data;
+using Bee.Definition;
 
 using Bee.Db;
 using Bee.Db.Manager;

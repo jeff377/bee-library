@@ -1,5 +1,5 @@
 using System;
-using Bee.Define;
+using Bee.Definition;
 using MessagePack;
 
 namespace Bee.Api.Contracts.System

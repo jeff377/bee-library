@@ -1,8 +1,8 @@
-﻿using Bee.Define.Forms;
+﻿using Bee.Definition.Forms;
 using System;
 using System.Collections.Generic;
-using Bee.Base;
-using Bee.Define;
+using Bee.Core;
+using Bee.Definition;
 
 namespace Bee.Db.Query
 {

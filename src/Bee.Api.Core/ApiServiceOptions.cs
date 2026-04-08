@@ -1,6 +1,6 @@
-using Bee.Define.Settings;
+using Bee.Definition.Settings;
 using System;
-using Bee.Define;
+using Bee.Definition;
 using Bee.Api.Core.Authorization;
 using Bee.Api.Core.Transformer;
 

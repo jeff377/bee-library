@@ -1,9 +1,9 @@
-﻿using Bee.Define.Database;
+﻿using Bee.Definition.Database;
 using System;
 using System.Text;
-using Bee.Base;
-using Bee.Base.Data;
-using Bee.Define;
+using Bee.Core;
+using Bee.Core.Data;
+using Bee.Definition;
 
 using Bee.Db;
 using Bee.Db.Providers;

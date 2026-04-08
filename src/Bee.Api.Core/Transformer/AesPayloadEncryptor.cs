@@ -1,5 +1,5 @@
-﻿using Bee.Base;
-using Bee.Base.Security;
+﻿using Bee.Core;
+using Bee.Core.Security;
 
 namespace Bee.Api.Core.Transformer
 {

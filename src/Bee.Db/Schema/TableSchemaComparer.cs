@@ -1,6 +1,6 @@
-﻿using Bee.Define.Database;
-using Bee.Base;
-using Bee.Define;
+﻿using Bee.Definition.Database;
+using Bee.Core;
+using Bee.Definition;
 
 namespace Bee.Db.Schema
 {

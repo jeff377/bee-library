@@ -22,8 +22,8 @@ Core packages target **`netstandard2.0; net10.0`** for broad .NET runtime compat
 
 | Assembly Name | Description |
 |---|---|
-| **Bee.Base.dll** | Core utilities such as serialization, encryption, and general-purpose helpers. |
-| **Bee.Define.dll** | Defines system-wide structured types including FormSchema, field schemas, and layout configurations. |
+| **Bee.Core.dll** | Core utilities such as serialization, encryption, and general-purpose helpers. |
+| **Bee.Definition.dll** | Defines system-wide structured types including FormSchema, field schemas, and layout configurations. |
 | **Bee.Api.Contracts.dll** | Shared data contracts (request/response models) used by both frontend and backend. |
 | **Bee.Api.Core.dll** | Encapsulates API support such as model definitions, payload encryption, and serialization pipeline. |
 
@@ -32,7 +32,7 @@ Core packages target **`netstandard2.0; net10.0`** for broad .NET runtime compat
 | Assembly Name | Description |
 |---|---|
 | **Bee.Repository.Abstractions.dll** | Interface contracts for the business layer to access the data layer; boundary between Business Object and Repository. |
-| **Bee.Cache.dll** | Runtime caching of FormSchema definitions and derived system data to improve performance. |
+| **Bee.ObjectCaching.dll** | Runtime caching of FormSchema definitions and derived system data to improve performance. |
 | **Bee.Db.dll** | Database abstraction with dynamic SQL command generation and connection binding. |
 | **Bee.Repository.dll** | Common repository base classes and FormSchema-driven data access mechanisms. |
 | **Bee.Business.dll** | Core business logic (Business Object / BO) implementing use-case workflows. |
@@ -42,7 +42,7 @@ Core packages target **`netstandard2.0; net10.0`** for broad .NET runtime compat
 
 | Assembly Name | Description |
 |---|---|
-| **Bee.Connect.dll** | Connector for local or remote invocation of backend Business Objects. |
+| **Bee.Api.Client.dll** | Connector for local or remote invocation of backend Business Objects. |
 
 
 ## 💡 Sample Project

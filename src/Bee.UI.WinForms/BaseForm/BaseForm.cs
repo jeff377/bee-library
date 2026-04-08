@@ -1,6 +1,6 @@
-﻿using Bee.Define.Collections;
+﻿using Bee.Definition.Collections;
 using System.ComponentModel;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.UI.WinForms
 {

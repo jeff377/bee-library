@@ -1,8 +1,8 @@
-﻿using Bee.Define.Settings;
+﻿using Bee.Definition.Settings;
 using System;
 using Bee.Api.Contracts;
 using Bee.Business;
-using Bee.Define;
+using Bee.Definition;
 using Bee.Repository.Abstractions;
 
 namespace Bee.Business.BusinessObjects

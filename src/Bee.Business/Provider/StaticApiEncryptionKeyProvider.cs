@@ -1,5 +1,5 @@
-﻿using Bee.Define.Security;
-using Bee.Define;
+﻿using Bee.Definition.Security;
+using Bee.Definition;
 using System;
 
 namespace Bee.Business.Provider

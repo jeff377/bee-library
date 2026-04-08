@@ -1,5 +1,5 @@
-﻿using Bee.Define.Filters;
-using Bee.Define;
+﻿using Bee.Definition.Filters;
+using Bee.Definition;
 using Bee.Db.Providers.SqlServer;
 
 namespace Bee.Db.UnitTests

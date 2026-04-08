@@ -1,7 +1,7 @@
-using Bee.Define.Database;
-using Bee.Base;
-using Bee.Base.Data;
-using Bee.Define;
+using Bee.Definition.Database;
+using Bee.Core;
+using Bee.Core.Data;
+using Bee.Definition;
 using Bee.Db.DbAccess;
 using System;
 using System.Data;

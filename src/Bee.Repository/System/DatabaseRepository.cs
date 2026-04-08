@@ -1,9 +1,9 @@
-﻿using Bee.Define.Settings;
-using Bee.Base;
+﻿using Bee.Definition.Settings;
+using Bee.Core;
 using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Db.Schema;
-using Bee.Define;
+using Bee.Definition;
 using Bee.Repository.Abstractions.System;
 
 namespace Bee.Repository.System

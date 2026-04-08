@@ -1,6 +1,6 @@
 ﻿using System;
 using Bee.Api.Core.MessagePack;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.Api.Core.Transformer
 {

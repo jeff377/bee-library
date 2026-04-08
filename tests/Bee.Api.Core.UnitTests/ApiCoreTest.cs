@@ -1,10 +1,10 @@
 using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
-using Bee.Base;
-using Bee.Base.Serialization;
+using Bee.Core;
+using Bee.Core.Serialization;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
-using Bee.Define;
+using Bee.Definition;
 
 namespace Bee.Api.Core.UnitTests
 {

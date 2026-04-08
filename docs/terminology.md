@@ -7,14 +7,14 @@
 ## 目錄
 
 1. [架構模式與核心概念](#1-架構模式與核心概念)
-2. [表單結構定義層（Bee.Define）](#2-表單結構定義層beedefine)
+2. [表單結構定義層（Bee.Definition）](#2-表單結構定義層beedefinition)
 3. [資料庫層（Bee.Db）](#3-資料庫層beedb)
 4. [業務邏輯層（Bee.Business）](#4-業務邏輯層beebusiness)
 5. [Repository 層（Bee.Repository）](#5-repository-層beerepository)
 6. [API 層（Bee.Api.Core / Bee.Api.AspNetCore）](#6-api-層beeapicore--beeapiaspnetcore)
-7. [快取層（Bee.Cache）](#7-快取層beecache)
-8. [連線層（Bee.Connect）](#8-連線層beeconnect)
-9. [基礎設施（Bee.Base）](#9-基礎設施beebase)
+7. [快取層（Bee.ObjectCaching）](#7-快取層beeobjectcaching)
+8. [連線層（Bee.Api.Client）](#8-連線層beeapiclient)
+9. [基礎設施（Bee.Core）](#9-基礎設施beecore)
 10. [列舉型別（Enumerations）](#10-列舉型別enumerations)
 11. [系統欄位（System Fields）](#11-系統欄位system-fields)
 12. [設定檔（Configuration Files）](#12-設定檔configuration-files)
@@ -38,7 +38,7 @@
 
 ---
 
-## 2. 表單結構定義層（Bee.Define）
+## 2. 表單結構定義層（Bee.Definition）
 
 ### 核心類別
 
@@ -150,7 +150,7 @@
 
 ---
 
-## 7. 快取層（Bee.Cache）
+## 7. 快取層（Bee.ObjectCaching）
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
@@ -161,7 +161,7 @@
 
 ---
 
-## 8. 連線層（Bee.Connect）
+## 8. 連線層（Bee.Api.Client）
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
@@ -169,7 +169,7 @@
 
 ---
 
-## 9. 基礎設施（Bee.Base）
+## 9. 基礎設施（Bee.Core）
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|

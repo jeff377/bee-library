@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+		<Description>Runtime caching of definitions and related system data to improve performance.</Description>		
+		<PackageTags>bee.net;cache;memory;performance;data</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="System.Runtime.Caching" Version="10.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
+	</ItemGroup>
+
+</Project>

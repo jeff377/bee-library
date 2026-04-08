@@ -28,34 +28,28 @@ jobs:
 
     - name: Build only needed projects
       run: |
-        dotnet build src/Bee.Base/Bee.Base.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Define/Bee.Define.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Cache/Bee.Cache.csproj --configuration Release --no-restore
+        dotnet build src/Bee.Core/Bee.Core.csproj --configuration Release --no-restore
+        dotnet build src/Bee.Definition/Bee.Definition.csproj --configuration Release --no-restore
+        dotnet build src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --no-restore
         dotnet build src/Bee.Db/Bee.Db.csproj --configuration Release --no-restore
         dotnet build src/Bee.Business/Bee.Business.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Connect/Bee.Connect.csproj --configuration Release --no-restore
+        dotnet build src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --no-restore
         dotnet build src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --no-restore
         dotnet build src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Api.AspNet/Bee.Api.AspNet.csproj --configuration Release --no-restore
-        dotnet build src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --no-restore
-        dotnet build src/Bee.UI.WinForms/Bee.UI.WinForms.csproj --configuration Release --no-restore
         dotnet build src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --no-restore
         dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore
         dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore
 
     - name: Pack all NuGet projects
       run: |
-        dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Define/Bee.Define.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Cache/Bee.Cache.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Core/Bee.Core.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Connect/Bee.Connect.csproj --configuration Release --output ./nupkgs
+        dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Api.AspNet/Bee.Api.AspNet.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.UI.WinForms/Bee.UI.WinForms.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs
@@ -78,20 +72,16 @@ jobs:
         name: Release ${{ github.ref_name }}
         body: |
           自動發佈 NuGet 套件：
-          - Bee.Base
-          - Bee.Define
-          - Bee.Cache
+          - Bee.Core
+          - Bee.Definition
+          - Bee.ObjectCaching
           - Bee.Db
           - Bee.Business
-          - Bee.Connect
+          - Bee.Api.Client
           - Bee.Api.Core
           - Bee.Api.AspNetCore
-          - Bee.Api.AspNet
-          - Bee.UI.Core
-          - Bee.UI.WinForms
           - Bee.Api.Contracts
           - Bee.Repository.Abstractions
           - Bee.Repository
 
           如需安裝請至 NuGet.org 查詢對應版本。
-

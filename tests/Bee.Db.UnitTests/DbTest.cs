@@ -1,6 +1,6 @@
-using Bee.Define.Filters;
-using Bee.Base;
-using Bee.Define;
+using Bee.Definition.Filters;
+using Bee.Core;
+using Bee.Definition;
 using Bee.Db.DbAccess;
 using Bee.Db.Providers.SqlServer;
 using DbAccessObject = Bee.Db.DbAccess.DbAccess;
