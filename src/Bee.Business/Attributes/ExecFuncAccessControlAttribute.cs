@@ -1,7 +1,7 @@
 using Bee.Definition;
 using System;
 
-namespace Bee.Business
+namespace Bee.Business.Attributes
 {
     /// <summary>
     /// Attribute for declaring the access requirement of an ExecFunc method.

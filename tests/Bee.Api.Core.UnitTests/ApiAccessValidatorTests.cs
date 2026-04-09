@@ -1,5 +1,6 @@
 ﻿using Bee.Api.Core;
 using Bee.Definition;
+using Bee.Definition.Attributes;
 
 namespace Bee.Api.Core.UnitTests
 {

@@ -1,6 +1,6 @@
-﻿using System;
+using System;
 
-namespace Bee.Definition
+namespace Bee.Definition.Attributes
 {
     /// <summary>
     /// Attribute for annotating API method access control.

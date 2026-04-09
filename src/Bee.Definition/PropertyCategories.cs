@@ -1,4 +1,4 @@
-namespace Bee.Core.Attributes
+namespace Bee.Definition
 {
     /// <summary>
     /// Display category constants for property windows.
