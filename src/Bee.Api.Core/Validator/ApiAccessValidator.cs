@@ -3,7 +3,7 @@ using System.Reflection;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Validator
 {
     /// <summary>
     /// Provides access validation logic for API methods, supporting access conditions inherited from base method definitions.

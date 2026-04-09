@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Validator
 {
     /// <summary>
     /// Represents the context of the current API call, describing its state.

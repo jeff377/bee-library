@@ -5,6 +5,7 @@ using Bee.Core.Tracing;
 using Bee.Definition;
 
 using Bee.Api.Core;
+using Bee.Api.Core.Validator;
 
 namespace Bee.Api.Core.JsonRpc
 {

@@ -54,8 +54,6 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 2. 等待使用者確認後，才開始執行
 3. 計畫執行完成後，將計畫文件移至 `docs/plans/archive/` 封存
 
-使用 `@` 列舉檔案時，不列舉 `docs/plans/archive/` 內的檔案。
-
 ## 架構參考
 
 實作任何功能或模組前，請先閱讀架構文件：`docs/architecture-overview.md`
