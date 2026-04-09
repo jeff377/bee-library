@@ -16,15 +16,10 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: |
-          8.0.x
-          6.0.x
-
-    - name: Add MSBuild to PATH (for .NET Framework)
-      uses: microsoft/setup-msbuild@v1.3
+        dotnet-version: 10.0.x
 
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore Bee.Library.slnx
 
     - name: Build only needed projects
       run: |
