@@ -28,9 +28,6 @@ namespace Bee.Tests.Shared
             BackendInfo.Initialize(settings.BackendConfiguration, autoCreateMasterKey: true);
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
-            // .NET 8 預設停用 BinaryFormatter，需手動啟用
-            AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
-
             Console.WriteLine("GlobalFixture Initialized");
         }
 

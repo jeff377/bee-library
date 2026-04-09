@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -245,61 +244,6 @@ namespace Bee.Core.Serialization
             }
         }
 
-        /// <summary>
-        /// Serializes an object to a binary byte array.
-        /// </summary>
-        /// <param name="value">The object to serialize.</param>
-        public static byte[] ObjectToBinary(object value)
-        {
-            // Pre-serialization operations
-            DoBeforeSerialize(SerializeFormat.Binary, value);
-
-            byte[] bytes = null;
-#pragma warning disable SYSLIB0011
-            using (MemoryStream stream = new MemoryStream())
-            {
-                var oFormatter = new BinaryFormatter();
-                oFormatter.Serialize(stream, value);
-                bytes = stream.ToArray();
-            }
-#pragma warning restore SYSLIB0011
-
-            // Post-serialization operations
-            DoAfterSerialize(SerializeFormat.Binary, value);
-            return bytes;
-        }
-
-        /// <summary>
-        /// Deserializes a binary byte array to an object.
-        /// </summary>
-        /// <param name="bytes">The binary data.</param>
-        public static object BinaryToObject(byte[] bytes)
-        {
-            object value;
-#pragma warning disable SYSLIB0011
-            using (MemoryStream stream = new MemoryStream(bytes))
-            {
-                var formatter = new BinaryFormatter();
-                formatter.Binder = new BinarySerializationBinder();
-                value = formatter.Deserialize(stream);
-            }
-#pragma warning restore SYSLIB0011
-
-            // Post-deserialization operations
-            DoAfterDeserialize(SerializeFormat.Binary, value);
-            return value;
-        }
-
-        /// <summary>
-        /// Deserializes a binary byte array to an object.
-        /// </summary>
-        /// <typeparam name="T">The generic type.</typeparam>
-        /// <param name="bytes">The binary data.</param>
-        public static T BinaryToObject<T>(byte[] bytes)
-        {
-            object value = BinaryToObject(bytes);
-            return (T)value;
-        }
 
 
     }

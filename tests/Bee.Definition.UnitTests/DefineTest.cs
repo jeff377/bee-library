@@ -12,12 +12,6 @@ namespace Bee.Definition.UnitTests
 {
     public class DefineTest
     {
-        static DefineTest()
-        {
-            // .NET 8 �w�]���� BinaryFormatter�A�ݤ�ʱҥ�
-            AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
-        }
-
         [Theory]
         [InlineData(DefineType.SystemSettings, typeof(SystemSettings))]
         [InlineData(DefineType.DatabaseSettings, typeof(DatabaseSettings))]
@@ -35,19 +29,11 @@ namespace Bee.Definition.UnitTests
         /// ����ǦC�ơC
         /// </summary>
         /// <param name="value">����C</param>
-        /// <param name="isBinary">����G�i��ǦC�ơC</param>
         /// <param name="isXml">���� XML �ǦC�ơC</param>
         /// <param name="isJson">���� JSON �ǦC�ơC</param>
-        private void SerializeObject<T>(object value, bool isBinary = true, bool isXml = true, bool isJson = true)
+        private void SerializeObject<T>(object value, bool isXml = true, bool isJson = true)
         {
             object? value2;
-            // �G�i��ǦC��
-            if (isBinary)
-            {
-                byte[] bytes = SerializeFunc.ObjectToBinary(value);
-                value2 = SerializeFunc.BinaryToObject<T>(bytes);
-                Assert.NotNull(value2);
-            }
             // XML �ǦC��
             if (isXml)
             {
@@ -97,7 +83,7 @@ namespace Bee.Definition.UnitTests
             items.Add("01", "���ؤ@");
             items.Add("02", "���ؤG");
             items.Add("03", "���ؤT");
-            SerializeObject<ListItemCollection>(items, true, true, true);
+            SerializeObject<ListItemCollection>(items, true, true);
         }
 
         /// <summary>
@@ -113,7 +99,7 @@ namespace Bee.Definition.UnitTests
                 new Parameter("P3", CreateDataTable()),
                 new Parameter("P4", CreateDataSet())
             };
-            SerializeObject<ParameterCollection>(parameters, true, false, true);
+            SerializeObject<ParameterCollection>(parameters, false, true);
         }
 
         /// <summary>
@@ -125,7 +111,7 @@ namespace Bee.Definition.UnitTests
             var settings = new SystemSettings();
             settings.CommonConfiguration.Version = "1.0.0";
             settings.BackendConfiguration.DatabaseId = "default";
-            SerializeObject<SystemSettings>(settings, true, true, false);
+            SerializeObject<SystemSettings>(settings, true, false);
         }
 
         /// <summary>
@@ -141,7 +127,7 @@ namespace Bee.Definition.UnitTests
                 TraceId = Guid.NewGuid().ToString()
             };
             // ���էǦC��
-            SerializeObject<PingArgs>(args, true, false, true);
+            SerializeObject<PingArgs>(args, false, true);
 
             // �إ� TPingResult �ë��w�ݩʻP�Ѽ�
             var result = new PingResult
@@ -152,7 +138,7 @@ namespace Bee.Definition.UnitTests
                 TraceId = Guid.NewGuid().ToString()
             };
             // ���էǦC��
-            SerializeObject<PingResult>(result, true, false, true);
+            SerializeObject<PingResult>(result, false, true);
         }
 
         /// <summary>
@@ -169,7 +155,7 @@ namespace Bee.Definition.UnitTests
                 )
             );
             // ���էǦC��
-            SerializeObject<FilterGroup>(root, true, true, true);
+            SerializeObject<FilterGroup>(root, true, true);
         }
     }
 }

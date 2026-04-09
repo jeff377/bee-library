@@ -14,9 +14,9 @@ namespace Bee.Definition.Settings
     public class ApiPayloadOptions
     {
         /// <summary>
-        /// Specifies the serializer name, e.g., messagepack, binaryformatter.
+        /// Specifies the serializer name, e.g., messagepack.
         /// </summary>
-        [Description("Specifies the serializer name, e.g., messagepack, binaryformatter.")]
+        [Description("Specifies the serializer name, e.g., messagepack.")]
         public string Serializer { get; set; } = "messagepack";
 
         /// <summary>

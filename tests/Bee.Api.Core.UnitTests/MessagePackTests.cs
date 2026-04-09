@@ -17,15 +17,6 @@ namespace Bee.Api.Core.UnitTests
     public class MessagePackTests
     {
         /// <summary>
-        /// 靜態建構函式。
-        /// </summary>
-        static MessagePackTests()
-        {
-            // .NET 8 預設停用 BinaryFormatter，需手動啟用
-            AppContext.SetSwitch("System.Runtime.Serialization.EnableUnsafeBinaryFormatterSerialization", true);
-        }
-
-        /// <summary>
         /// 測試 MessagePack 是否能正確序列化與反序列化 DataSet。
         /// </summary>
         [Fact(DisplayName = "DataSet 序列化")]

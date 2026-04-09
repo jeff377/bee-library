@@ -10,7 +10,7 @@ namespace Bee.Api.Core.Transformer
         /// <summary>
         /// Creates the serializer component with the specified name.
         /// </summary>
-        /// <param name="name">The serializer name, e.g., "messagepack" or "binaryformatter".</param>
+        /// <param name="name">The serializer name, e.g., "messagepack".</param>
         /// <returns>The serializer component.</returns>
         /// <exception cref="NotSupportedException">The serializer name is not supported.</exception>
         public static IApiPayloadSerializer CreateSerializer(string name)
@@ -19,8 +19,6 @@ namespace Bee.Api.Core.Transformer
             {
                 case "messagepack":
                     return new MessagePackPayloadSerializer();
-                case "binaryformatter":
-                    return new BinaryFormatterPayloadSerializer();
                 default:
                     throw new NotSupportedException($"Unsupported serializer: {name}");
             }

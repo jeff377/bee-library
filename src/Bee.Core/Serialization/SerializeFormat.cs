@@ -13,9 +13,5 @@ namespace Bee.Core.Serialization
         /// JSON format.
         /// </summary>
         Json,
-        /// <summary>
-        /// Binary format.
-        /// </summary>
-        Binary,
     }
 }

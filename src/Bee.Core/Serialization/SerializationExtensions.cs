@@ -27,15 +27,6 @@ namespace Bee.Core.Serialization
         }
 
         /// <summary>
-        /// Serializes the object to a binary byte array.
-        /// </summary>
-        /// <param name="value">The object to serialize.</param>
-        public static byte[] ToBinary(this IObjectSerializeBase value)
-        {
-            return SerializeFunc.ObjectToBinary(value);
-        }
-
-        /// <summary>
         /// Serializes the object to an XML file.
         /// </summary>
         /// <param name="value">The object to serialize.</param>
