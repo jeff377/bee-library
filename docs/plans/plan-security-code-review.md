@@ -8,12 +8,12 @@
 
 ## 摘要
 
-本次安全審查涵蓋加密實作、認證與 Session 管理、序列化/反序列化、API 存取控制、資料庫存取、錯誤處理與組態管理等面向。整體架構設計良好，但發現 **3 個高風險**、**5 個中風險** 及 **4 個低風險** 問題。
+本次安全審查涵蓋加密實作、認證與 Session 管理、序列化/反序列化、API 存取控制、資料庫存取、錯誤處理與組態管理等面向。整體架構設計良好，但發現 **5 個高風險**、**8 個中風險** 及 **4 個低風險** 問題。
 
 | 風險等級 | 數量 |
 |---------|------|
-| 🔴 高風險 (High) | 3 |
-| 🟠 中風險 (Medium) | 5 |
+| 🔴 高風險 (High) | 5 |
+| 🟠 中風險 (Medium) | 8 |
 | 🟡 低風險 (Low) | 4 |
 
 ---
@@ -85,6 +85,50 @@
       ...
   }
   ```
+
+---
+
+### H-4：Session 到期驗證使用 `DateTime.Now` 與 `DateTime.UtcNow` 不一致
+
+- **檔案**：`src/Bee.Repository/System/SessionRepository.cs:67` vs `:102`
+- **問題**：
+  ```csharp
+  // 建立 Session 時使用 UtcNow（Line 102）
+  EndTime = DateTime.UtcNow.AddSeconds(expiresIn),
+
+  // 驗證到期時使用 Now（Line 67）
+  if (endTime < DateTime.Now)
+  ```
+  Session 建立時以 `DateTime.UtcNow` 設定到期時間，但驗證時以 `DateTime.Now`（本地時間）比較。
+- **影響**：
+  - 伺服器時區在 UTC 之後（如 UTC+8）：Session 會**延長 8 小時**才過期
+  - 伺服器時區在 UTC 之前（如 UTC-5）：Session 會**提前 5 小時**過期
+  - 時區差異可能被攻擊者利用，延長已失效 Token 的有效期
+- **建議修復**：統一使用 `DateTime.UtcNow`。
+
+---
+
+### H-5：`CreateSession` API 為匿名存取且無速率限制
+
+- **檔案**：`src/Bee.Business/BusinessObjects/SystemBusinessObject.cs:125-137`
+- **問題**：
+  ```csharp
+  [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
+  public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
+  {
+      var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
+      ...
+  }
+  ```
+  `CreateSession` 標示為 `Public` + `Anonymous`，任何人可以不經認證呼叫。且 `CreateSessionArgs` 允許客戶端指定任意 `UserID` 和 `ExpiresIn`（到期秒數）。沒有速率限制、沒有驗證呼叫者身分。
+- **影響**：
+  - 攻擊者可為任意使用者建立大量 Session（資源耗盡 DoS）
+  - 可指定超長 `ExpiresIn` 建立永不過期的 Token
+  - 可對 `st_session` 資料表進行大量寫入（資料庫 DoS）
+- **建議修復**：
+  1. 加入速率限制（Rate Limiting）
+  2. 限制 `ExpiresIn` 的最大值
+  3. 考慮是否需要認證才能呼叫 `CreateSession`
 
 ---
 
@@ -176,6 +220,55 @@
 
 ---
 
+### M-6：One-Time Token 存在 Race Condition（TOCTOU）
+
+- **檔案**：`src/Bee.Repository/System/SessionRepository.cs:75-76`
+- **問題**：
+  ```csharp
+  var user = SerializeFunc.XmlToObject<SessionUser>(xml);
+  if (user.OneTime) { this.Delete(accessToken); }
+  return user;
+  ```
+  一次性 Token 的查詢與刪除不是原子操作。在高併發情境下，多個請求可同時讀取同一 Token，其中只有一個會成功刪除，其餘請求仍可使用該 Token。
+- **影響**：一次性 Token 可被重複使用，違反設計意圖。
+- **建議修復**：使用資料庫交易（Transaction）或 `DELETE ... OUTPUT` 確保原子性。
+
+---
+
+### M-7：`AccessTokenValidationProvider` 未明確檢查 Token 到期時間
+
+- **檔案**：`src/Bee.Business/Validator/AccessTokenValidationProvider.cs:18-31`
+- **問題**：
+  ```csharp
+  public bool ValidateAccessToken(Guid accessToken)
+  {
+      var sessionInfo = BackendInfo.SessionInfoService.Get(accessToken);
+      if (sessionInfo == null)
+          throw new UnauthorizedAccessException("Session key not found or expired.");
+      return sessionInfo.AccessToken == accessToken;
+  }
+  ```
+  驗證邏輯僅檢查 SessionInfo 是否存在和 Token 是否匹配，**沒有明確檢查 `ExpiredAt`**。依賴快取層或資料庫層隱式移除過期 Session。若快取（預設 20 分鐘滑動到期）與 Token 實際到期時間不同步，已過期 Token 可能仍被視為有效。
+- **建議修復**：在 `ValidateAccessToken` 中加入 `if (sessionInfo.ExpiredAt < DateTime.UtcNow)` 檢查。
+
+---
+
+### M-8：Login 預設實作無條件通過驗證
+
+- **檔案**：`src/Bee.Business/BusinessObjects/SystemBusinessObject.cs:115-119`
+- **問題**：
+  ```csharp
+  protected virtual bool AuthenticateUser(LoginArgs args, out string userName)
+  {
+      userName = "Demo User";
+      return true; // Default passes; override in subclasses to implement real validation
+  }
+  ```
+  作為 Framework 的預設實作，`AuthenticateUser` 無條件回傳 `true`。雖然設計意圖是由子類別覆寫，但若開發者忘記覆寫，任何人可以用任何密碼登入系統。
+- **建議修復**：預設回傳 `false` 或拋出 `NotImplementedException`，強制子類別實作驗證邏輯。
+
+---
+
 ## 🟡 低風險問題
 
 ### L-1：RSA 金鑰長度硬編碼為 2048 位元
@@ -246,12 +339,17 @@
 | 1 | H-2：MessagePack Typeless Resolver → 型別白名單 | 中（需設計 Resolver） |
 | 2 | H-1：RSA PKCS#1 → OAEP + RSA.Create() | 小（改 2 行 + 測試） |
 | 3 | H-3：AesPayloadEncryptor 空 Key 改為拋出例外 | 小（改 2 行 + 測試） |
-| 4 | M-1：NoEncryptionEncryptor 加入環境限制 | 小 |
-| 5 | M-3：GZip 解壓加入大小上限 | 小 |
-| 6 | M-4：ASP.NET 版本錯誤處理對齊 Core 版本 | 小 |
-| 7 | M-5：JsonRpcExecutor 區分業務/系統例外 | 中 |
-| 8 | M-2：PBKDF2 SHA-1 → SHA-256 | 小（需考慮既有密碼相容） |
-| 9 | L-1 ~ L-4：低風險項目 | 小 |
+| 4 | H-4：DateTime.Now → DateTime.UtcNow 統一 | 小（改 1 行 + 測試） |
+| 5 | H-5：CreateSession 加入速率限制與 ExpiresIn 上限 | 中 |
+| 6 | M-8：AuthenticateUser 預設改為 false | 小（改 1 行） |
+| 7 | M-7：AccessTokenValidationProvider 加入到期檢查 | 小（加 2 行） |
+| 8 | M-6：One-Time Token 原子性修復 | 中（需改 DB 交易） |
+| 9 | M-1：NoEncryptionEncryptor 加入環境限制 | 小 |
+| 10 | M-3：GZip 解壓加入大小上限 | 小 |
+| 11 | M-4：ASP.NET 版本錯誤處理對齊 Core 版本 | 小 |
+| 12 | M-5：JsonRpcExecutor 區分業務/系統例外 | 中 |
+| 13 | M-2：PBKDF2 SHA-1 → SHA-256 | 小（需考慮既有密碼相容） |
+| 14 | L-1 ~ L-4：低風險項目 | 小 |
 
 ---
 
