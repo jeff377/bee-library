@@ -13,6 +13,9 @@
 # Claude Code local settings (OS-specific)
 .claude/settings.local.json
 
+# Archived Claude Code plans (working documents, not reference material)
+docs/plans/archive/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
