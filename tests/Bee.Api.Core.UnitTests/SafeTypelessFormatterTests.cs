@@ -9,8 +9,7 @@ namespace Bee.Api.Core.UnitTests
     [Collection("Initialize")]
     public class SafeTypelessFormatterTests
     {
-        [Fact]
-        [DisplayName("ParameterCollection 允許安全的基礎型別序列化")]
+        [Fact(DisplayName = "ParameterCollection 允許安全的基礎型別序列化")]
         public void ParameterCollection_AllowedPrimitiveTypes_RoundTrip()
         {
             var original = new ParameterCollection();
@@ -33,8 +32,7 @@ namespace Bee.Api.Core.UnitTests
             Assert.Null(restored["NullValue"].Value);
         }
 
-        [Fact]
-        [DisplayName("ParameterCollection 允許 Bee 命名空間型別序列化")]
+        [Fact(DisplayName = "ParameterCollection 允許 Bee 命名空間型別序列化")]
         public void ParameterCollection_AllowedBeeTypes_RoundTrip()
         {
             var inner = new ParameterCollection();
