@@ -53,4 +53,4 @@ jobs:
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build
 
     - name: Run tests
-      run: dotnet test Bee.Library.slnx --configuration Release --no-build
+      run: dotnet test Bee.Library.slnx --configuration Release --no-restore
