@@ -21,8 +21,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore Bee.Library.slnx
 
-    - name: Build only needed projects
+    - name: Build all projects
       run: |
+        $ErrorActionPreference = 'Stop'
         dotnet build src/Bee.Core/Bee.Core.csproj --configuration Release --no-restore
         dotnet build src/Bee.Definition/Bee.Definition.csproj --configuration Release --no-restore
         dotnet build src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --no-restore
@@ -35,28 +36,31 @@ jobs:
         dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore
         dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore
 
-    - name: Pack all NuGet projects
+    - name: Pack NuGet packages
       run: |
-        dotnet pack src/Bee.Core/Bee.Core.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs
-        dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs
+        $ErrorActionPreference = 'Stop'
+        dotnet pack src/Bee.Core/Bee.Core.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build
 
     - name: Push to NuGet
       run: |
-        Get-ChildItem -Path ./nupkgs -Filter *.*nupkg | ForEach-Object {
+        $ErrorActionPreference = 'Stop'
+        Get-ChildItem -Path ./nupkgs -Filter *.nupkg | ForEach-Object {
           dotnet nuget push $_.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          if ($LASTEXITCODE -ne 0) { throw "Failed to push $($_.Name)" }
         }
 
   release:
-    needs: publish # 👈 確保發佈 NuGet 完成後才進行 Release
+    needs: publish  # 確保 NuGet 全數發佈成功後才建立 GitHub Release
     runs-on: ubuntu-latest
 
     steps:
