@@ -1,9 +1,9 @@
 ﻿<Project>
   <PropertyGroup>
     <!-- 版本資訊 -->
-    <Version>4.0.0</Version>
-    <AssemblyVersion>4.0.0.0</AssemblyVersion>
-    <FileVersion>4.0.0.0</FileVersion>
+    <Version>4.0.1</Version>
+    <AssemblyVersion>4.0.1.0</AssemblyVersion>
+    <FileVersion>4.0.1.0</FileVersion>
 <!---->
     <!-- 套件 Metadata -->
     <Company>Bee.NET</Company>
