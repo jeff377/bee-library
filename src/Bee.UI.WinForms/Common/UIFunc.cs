@@ -1,4 +1,4 @@
-﻿using Bee.Core;
+﻿using Bee.Base;
 using Bee.Api.Client;
 using Bee.Definition;
 

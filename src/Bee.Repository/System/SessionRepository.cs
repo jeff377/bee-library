@@ -1,7 +1,7 @@
 ﻿using System;
-using Bee.Core;
-using Bee.Core.Data;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Data;
+using Bee.Base.Serialization;
 using Bee.Db;
 using Bee.Db.DbAccess;
 using DbAccessObject = Bee.Db.DbAccess.DbAccess;

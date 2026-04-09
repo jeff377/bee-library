@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
-using Bee.Core;
-using Bee.Core.Collections;
+using Bee.Base;
+using Bee.Base.Collections;
 
 namespace Bee.Definition.Collections
 {

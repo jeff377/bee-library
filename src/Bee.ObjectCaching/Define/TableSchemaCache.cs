@@ -1,4 +1,4 @@
-using Bee.Core;
+using Bee.Base;
 using Bee.ObjectCaching;
 using Bee.Definition;
 using Bee.Definition.Database;

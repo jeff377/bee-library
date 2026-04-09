@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Core;
-using Bee.Core.Collections;
+using Bee.Base;
+using Bee.Base.Collections;
 
 namespace Bee.Definition.Collections
 {

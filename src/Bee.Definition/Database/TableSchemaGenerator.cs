@@ -1,5 +1,5 @@
 using Bee.Definition.Forms;
-using Bee.Core;
+using Bee.Base;
 using System;
 
 namespace Bee.Definition.Database

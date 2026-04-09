@@ -1,8 +1,8 @@
 using Bee.Definition.Settings;
 using System;
 using System.IO;
-using Bee.Core;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 

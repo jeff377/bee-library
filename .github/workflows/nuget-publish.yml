@@ -24,7 +24,7 @@ jobs:
     - name: Build all projects
       run: |
         $ErrorActionPreference = 'Stop'
-        dotnet build src/Bee.Core/Bee.Core.csproj --configuration Release --no-restore
+        dotnet build src/Bee.Base/Bee.Base.csproj --configuration Release --no-restore
         dotnet build src/Bee.Definition/Bee.Definition.csproj --configuration Release --no-restore
         dotnet build src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --no-restore
         dotnet build src/Bee.Db/Bee.Db.csproj --configuration Release --no-restore
@@ -39,7 +39,7 @@ jobs:
     - name: Pack NuGet packages
       run: |
         $ErrorActionPreference = 'Stop'
-        dotnet pack src/Bee.Core/Bee.Core.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs --no-build
@@ -71,7 +71,7 @@ jobs:
         name: Release ${{ github.ref_name }}
         body: |
           自動發佈 NuGet 套件：
-          - Bee.Core
+          - Bee.Base
           - Bee.Definition
           - Bee.ObjectCaching
           - Bee.Db

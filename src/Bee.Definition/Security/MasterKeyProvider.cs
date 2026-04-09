@@ -1,8 +1,8 @@
 using Bee.Definition.Settings;
 using System;
 using System.IO;
-using Bee.Core;
-using Bee.Core.Security;
+using Bee.Base;
+using Bee.Base.Security;
 
 namespace Bee.Definition.Security
 {

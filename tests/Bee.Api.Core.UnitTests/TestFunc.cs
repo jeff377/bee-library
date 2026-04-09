@@ -2,8 +2,8 @@
 using MessagePack;
 using Bee.Definition.Collections;
 using System.Reflection;
-using Bee.Core;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.Definition;
 
 namespace Bee.Api.Core.UnitTests

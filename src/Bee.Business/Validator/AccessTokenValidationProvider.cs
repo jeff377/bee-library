@@ -1,5 +1,5 @@
 ﻿using Bee.Definition.Security;
-using Bee.Core;
+using Bee.Base;
 using Bee.Definition;
 using System;
 

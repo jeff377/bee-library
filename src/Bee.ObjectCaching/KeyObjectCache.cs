@@ -1,5 +1,5 @@
 ﻿using System;
-using Bee.Core;
+using Bee.Base;
 
 namespace Bee.ObjectCaching
 {

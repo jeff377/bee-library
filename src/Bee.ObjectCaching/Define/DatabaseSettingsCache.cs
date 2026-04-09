@@ -1,5 +1,5 @@
-﻿using Bee.Core;
-using Bee.Core.Serialization;
+﻿using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.ObjectCaching;
 using Bee.Definition;
 using Bee.Definition.Settings;

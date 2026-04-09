@@ -4,8 +4,8 @@ using System.Web;
 using Bee.Api.Core;
 using Bee.Api.Core.Authorization;
 using Bee.Api.Core.JsonRpc;
-using Bee.Core;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Serialization;
 
 namespace Bee.Api.AspNet
 {

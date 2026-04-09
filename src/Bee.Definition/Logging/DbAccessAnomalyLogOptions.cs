@@ -1,4 +1,4 @@
-﻿using Bee.Core;
+﻿using Bee.Base;
 using System;
 using System.ComponentModel;
 

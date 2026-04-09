@@ -1,7 +1,7 @@
 using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
-using Bee.Core;
-using Bee.Core.Tracing;
+using Bee.Base;
+using Bee.Base.Tracing;
 using Bee.Api.Client.ApiServiceProvider;
 using System;
 using System.Threading.Tasks;

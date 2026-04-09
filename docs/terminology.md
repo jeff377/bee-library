@@ -14,7 +14,7 @@
 6. [API 層（Bee.Api.Core / Bee.Api.AspNetCore）](#6-api-層beeapicore--beeapiaspnetcore)
 7. [快取層（Bee.ObjectCaching）](#7-快取層beeobjectcaching)
 8. [連線層（Bee.Api.Client）](#8-連線層beeapiclient)
-9. [基礎設施（Bee.Core）](#9-基礎設施beecore)
+9. [基礎設施（Bee.Base）](#9-基礎設施beecore)
 10. [列舉型別（Enumerations）](#10-列舉型別enumerations)
 11. [系統欄位（System Fields）](#11-系統欄位system-fields)
 12. [設定檔（Configuration Files）](#12-設定檔configuration-files)
@@ -169,7 +169,7 @@
 
 ---
 
-## 9. 基礎設施（Bee.Core）
+## 9. 基礎設施（Bee.Base）
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|

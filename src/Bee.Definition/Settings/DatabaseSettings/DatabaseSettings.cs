@@ -2,10 +2,10 @@ using System;
 using System.ComponentModel;
 using System.Text;
 using System.Xml.Serialization;
-using Bee.Core;
-using Bee.Core.Security;
-using Bee.Core.Attributes;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Security;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
 using Newtonsoft.Json;
 
 namespace Bee.Definition.Settings

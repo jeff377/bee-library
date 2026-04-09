@@ -1,6 +1,6 @@
 using Bee.Definition.Settings;
 using System;
-using Bee.Core;
+using Bee.Base;
 using Bee.Definition;
 using Bee.Repository.Abstractions.Provider;
 

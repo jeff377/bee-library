@@ -3,8 +3,8 @@ using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Settings;
 using System.Data;
-using Bee.Core;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 

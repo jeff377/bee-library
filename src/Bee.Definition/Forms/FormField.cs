@@ -1,8 +1,8 @@
-using Bee.Core;
-using Bee.Core.Attributes;
-using Bee.Core.Data;
-using Bee.Core.Serialization;
-using Bee.Core.Collections;
+using Bee.Base;
+using Bee.Base.Attributes;
+using Bee.Base.Data;
+using Bee.Base.Serialization;
+using Bee.Base.Collections;
 using Newtonsoft.Json;
 using System;
 using System.ComponentModel;

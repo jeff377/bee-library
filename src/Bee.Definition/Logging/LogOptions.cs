@@ -1,5 +1,5 @@
-﻿using Bee.Core;
-using Bee.Core.Attributes;
+﻿using Bee.Base;
+using Bee.Base.Attributes;
 using System;
 using System.ComponentModel;
 

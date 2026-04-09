@@ -1,7 +1,7 @@
 ﻿using Bee.Definition.Forms;
 using System;
 using System.Collections.Generic;
-using Bee.Core;
+using Bee.Base;
 using Bee.Definition;
 
 namespace Bee.Db.Query

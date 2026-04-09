@@ -3,7 +3,7 @@ using Bee.Definition.Layouts;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Bee.Core;
+using Bee.Base;
 
 namespace Bee.Definition
 {

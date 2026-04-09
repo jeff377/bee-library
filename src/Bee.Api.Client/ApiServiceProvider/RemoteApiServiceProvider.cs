@@ -3,8 +3,8 @@ using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
-using Bee.Core;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Api.Client;
 

@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Core;
-using Bee.Core.Attributes;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
 using Newtonsoft.Json;
 
 namespace Bee.Definition.Settings

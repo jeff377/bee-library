@@ -1,8 +1,8 @@
 ﻿using Bee.Definition.Database;
 using System;
 using System.Text;
-using Bee.Core;
-using Bee.Core.Data;
+using Bee.Base;
+using Bee.Base.Data;
 using Bee.Definition;
 
 using Bee.Db;

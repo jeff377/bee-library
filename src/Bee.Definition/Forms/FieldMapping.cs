@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Core;
-using Bee.Core.Attributes;
-using Bee.Core.Collections;
+using Bee.Base;
+using Bee.Base.Attributes;
+using Bee.Base.Collections;
 
 namespace Bee.Definition.Forms
 {

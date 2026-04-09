@@ -1,8 +1,8 @@
 using System.Text;
 using Bee.Api.AspNetCore.Controllers;
 using Bee.Api.Core.JsonRpc;
-using Bee.Core;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Serialization;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 using Bee.Definition;

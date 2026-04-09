@@ -3,8 +3,8 @@ using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using System;
-using Bee.Core;
-using Bee.Core.Collections;
+using Bee.Base;
+using Bee.Base.Collections;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 

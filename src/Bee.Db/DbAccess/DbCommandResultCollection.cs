@@ -1,5 +1,5 @@
-﻿using Bee.Core;
-using Bee.Core.Collections;
+﻿using Bee.Base;
+using Bee.Base.Collections;
 
 namespace Bee.Db.DbAccess
 {

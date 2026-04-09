@@ -2,8 +2,8 @@
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Core;
-using Bee.Core.Attributes;
+using Bee.Base;
+using Bee.Base.Attributes;
 
 namespace Bee.Definition.Settings
 {

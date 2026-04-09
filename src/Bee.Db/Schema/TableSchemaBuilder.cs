@@ -1,5 +1,5 @@
 ﻿using Bee.Definition.Database;
-using Bee.Core;
+using Bee.Base;
 using Bee.Definition;
 
 using Bee.Db.DbAccess;

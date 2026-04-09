@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
-using Bee.Core;
-using Bee.Core.Security;
+using Bee.Base;
+using Bee.Base.Security;
 
 namespace Bee.Api.Core.Transformer
 {

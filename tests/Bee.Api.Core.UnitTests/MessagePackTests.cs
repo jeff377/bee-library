@@ -2,9 +2,9 @@
 using Bee.Definition.Collections;
 using Bee.Definition.Filters;
 using System.Data;
-using Bee.Core;
-using Bee.Core.Data;
-using Bee.Core.Collections;
+using Bee.Base;
+using Bee.Base.Data;
+using Bee.Base.Collections;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 using Bee.Definition;

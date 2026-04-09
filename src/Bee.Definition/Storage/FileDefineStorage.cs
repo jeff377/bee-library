@@ -3,8 +3,8 @@ using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using System.IO;
-using Bee.Core;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Serialization;
 
 namespace Bee.Definition.Storage
 {

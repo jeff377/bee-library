@@ -1,9 +1,9 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Core;
-using Bee.Core.Attributes;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Attributes;
+using Bee.Base.Serialization;
 
 namespace Bee.Definition.Settings
 {
@@ -34,7 +34,7 @@ namespace Bee.Definition.Settings
         /// List of allowed type namespaces for JSON-RPC data transfer (separated by '|').
         /// Only types in these namespaces are allowed for deserialization to ensure security.
         /// Example: Custom.Module|ThirdParty.Dto
-        /// Note: Bee.Core and Bee.Definition are built-in system namespaces and do not need to be specified.
+        /// Note: Bee.Base and Bee.Definition are built-in system namespaces and do not need to be specified.
         /// </summary>
         [Category("API")]
         [Description("List of allowed type namespaces for JSON-RPC data transfer, separated by '|'.")]

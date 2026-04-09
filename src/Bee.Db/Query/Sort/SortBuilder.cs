@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Bee.Core;
+using Bee.Base;
 using Bee.Definition;
 
 using Bee.Db;

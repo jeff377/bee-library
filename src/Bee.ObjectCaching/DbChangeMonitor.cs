@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Timers;
 using System.Runtime.Caching;
-using Bee.Core;
+using Bee.Base;
 
 namespace Bee.ObjectCaching
 {

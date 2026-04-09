@@ -1,7 +1,7 @@
 ﻿using Bee.Definition.Settings;
-using Bee.Core;
-using Bee.Core.Serialization;
-using Bee.Core.Collections;
+using Bee.Base;
+using Bee.Base.Serialization;
+using Bee.Base.Collections;
 using Bee.Api.Client;
 using Bee.Api.Contracts;
 using Bee.Definition;

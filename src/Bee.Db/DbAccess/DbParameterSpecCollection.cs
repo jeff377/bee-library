@@ -1,8 +1,8 @@
 ﻿using Bee.Definition.Collections;
 using Bee.Definition.Database;
-using Bee.Core;
-using Bee.Core.Data;
-using Bee.Core.Collections;
+using Bee.Base;
+using Bee.Base.Data;
+using Bee.Base.Collections;
 using Bee.Definition;
 using System;
 using System.Data;

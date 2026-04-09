@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
-using Bee.Core;
-using Bee.Core.Serialization;
+using Bee.Base;
+using Bee.Base.Serialization;
 using Newtonsoft.Json;
 
 using Bee.Api.Core;
