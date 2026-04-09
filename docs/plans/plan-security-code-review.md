@@ -3,6 +3,7 @@
 **審查日期**：2026-04-09
 **審查範圍**：`src/` 目錄下所有安全相關程式碼
 **審查人**：Claude Code (AI Security Review)
+**最後更新**：2026-04-09（修復進度同步）
 
 ---
 
@@ -10,17 +11,39 @@
 
 本次安全審查涵蓋加密實作、認證與 Session 管理、序列化/反序列化、API 存取控制、資料庫存取、錯誤處理與組態管理等面向。整體架構設計良好，但發現 **5 個高風險**、**8 個中風險** 及 **4 個低風險** 問題。
 
-| 風險等級 | 數量 |
-|---------|------|
-| 🔴 高風險 (High) | 5 |
-| 🟠 中風險 (Medium) | 8 |
-| 🟡 低風險 (Low) | 4 |
+| 風險等級 | 數量 | 已修復 | 待處理 |
+|---------|------|--------|--------|
+| 🔴 高風險 (High) | 5 | 4 | 1 |
+| 🟠 中風險 (Medium) | 8 | 7 | 1 |
+| 🟡 低風險 (Low) | 4 | 3 | 1 |
+
+### 修復狀態總覽
+
+| 項目 | 狀態 | 修復提交 |
+|------|------|---------|
+| H-1 RSA PKCS#1 → OAEP | ✅ 已修復 | `6c8da97` |
+| H-2 MessagePack 型別白名單 | ✅ 已修復 | `6c8da97` |
+| H-3 AesPayloadEncryptor 空 Key | ✅ 已修復 | `6c8da97` |
+| H-4 DateTime.Now/UtcNow 不一致 | ✅ 已修復 | `d1c95c5` |
+| H-5 CreateSession 無速率限制 | ⚠️ 部分修復 | `d1c95c5`（ExpiresIn 上限） |
+| M-1 NoEncryptionEncryptor 無環境限制 | ✅ 已修復 | `d1c95c5` |
+| M-2 PBKDF2 SHA-1 | ✅ 已修復 | `d1c95c5`（v2 格式，向下相容） |
+| M-3 GZip 無解壓大小限制 | ✅ 已修復 | `d1c95c5` |
+| M-4 ASP.NET 版例外訊息洩漏 | ✅ 已修復 | `d1c95c5` |
+| M-5 JsonRpcExecutor 例外訊息洩漏 | ✅ 已修復 | `d1c95c5` |
+| M-6 One-Time Token TOCTOU | ⏸️ 暫緩 | 需 DB 交易層改動 |
+| M-7 AccessTokenValidationProvider 無到期檢查 | ✅ 已修復 | `d1c95c5` |
+| M-8 AuthenticateUser 預設通過 | ✅ 已修復 | `d1c95c5` |
+| L-1 RSA 金鑰長度 2048-bit | ⏸️ 暫緩 | 2030 年前仍合規 |
+| L-2 ApiException 含 StackTrace | ✅ 已修復 | `d1c95c5` |
+| L-3 RSACryptoServiceProvider 過時 | ✅ 已修復 | `6c8da97`（H-1 一併修復）|
+| L-4 FileHashValidator 非常數時間比較 | ✅ 已修復 | `d1c95c5` |
 
 ---
 
 ## 🔴 高風險問題
 
-### H-1：RSA 使用 PKCS#1 v1.5 填充（Padding Oracle 風險）
+### ✅ H-1：RSA 使用 PKCS#1 v1.5 填充（Padding Oracle 風險）
 
 - **檔案**：`src/Bee.Core/Security/RsaCryptor.cs:44, 62`
 - **問題**：
@@ -37,10 +60,11 @@
   rsa.ImportFromXml(publicKeyXml);
   var encrypted = rsa.Encrypt(data, RSAEncryptionPadding.OaepSHA256);
   ```
+- **修復狀態**：✅ 已修復於 `6c8da97`（改用 `RSA.Create()` + OAEP-SHA256）
 
 ---
 
-### H-2：MessagePack 使用 `TypelessContractlessStandardResolver`（不安全反序列化）
+### ✅ H-2：MessagePack 使用 `TypelessContractlessStandardResolver`（不安全反序列化）
 
 - **檔案**：`src/Bee.Api.Core/MessagePack/MessagePackHelper.cs:32`
 - **問題**：
@@ -60,10 +84,11 @@
   1. 移除 `TypelessContractlessStandardResolver`，改用明確的 Resolver
   2. 若必須支援多型，實作自訂的 `IFormatterResolver`，僅允許已知安全型別
   3. 對齊 JSON 序列化已有的白名單機制
+- **修復狀態**：✅ 已修復於 `6c8da97`（`SafeTypelessFormatter` + `SysInfo.IsTypeNameAllowed` 白名單）
 
 ---
 
-### H-3：`AesPayloadEncryptor` 在 Key 為空時靜默跳過加密
+### ✅ H-3：`AesPayloadEncryptor` 在 Key 為空時靜默跳過加密
 
 - **檔案**：`src/Bee.Api.Core/Transformer/AesPayloadEncryptor.cs:25, 40`
 - **問題**：
@@ -85,10 +110,11 @@
       ...
   }
   ```
+- **修復狀態**：✅ 已修復於 `6c8da97`（空 Key 時拋出 CryptographicException）
 
 ---
 
-### H-4：Session 到期驗證使用 `DateTime.Now` 與 `DateTime.UtcNow` 不一致
+### ✅ H-4：Session 到期驗證使用 `DateTime.Now` 與 `DateTime.UtcNow` 不一致
 
 - **檔案**：`src/Bee.Repository/System/SessionRepository.cs:67` vs `:102`
 - **問題**：
@@ -105,10 +131,11 @@
   - 伺服器時區在 UTC 之前（如 UTC-5）：Session 會**提前 5 小時**過期
   - 時區差異可能被攻擊者利用，延長已失效 Token 的有效期
 - **建議修復**：統一使用 `DateTime.UtcNow`。
+- **修復狀態**：✅ 已修復於 `d1c95c5`
 
 ---
 
-### H-5：`CreateSession` API 為匿名存取且無速率限制
+### ⚠️ H-5：`CreateSession` API 為匿名存取且無速率限制
 
 - **檔案**：`src/Bee.Business/BusinessObjects/SystemBusinessObject.cs:125-137`
 - **問題**：
@@ -129,12 +156,13 @@
   1. 加入速率限制（Rate Limiting）
   2. 限制 `ExpiresIn` 的最大值
   3. 考慮是否需要認證才能呼叫 `CreateSession`
+- **修復狀態**：⚠️ 部分修復於 `d1c95c5`（ExpiresIn 上限 86400 秒已加入；速率限制待後續實作）
 
 ---
 
 ## 🟠 中風險問題
 
-### M-1：`NoEncryptionEncryptor` 可在正式環境啟用
+### ✅ M-1：`NoEncryptionEncryptor` 可在正式環境啟用
 
 - **檔案**：`src/Bee.Api.Core/Transformer/ApiPayloadOptionsFactory.cs:59-61`
 - **問題**：
@@ -145,10 +173,11 @@
   ```
   Factory 允許透過配置將加密器設定為 `"none"`，完全關閉加密。根據安全規範，`NoEncryptionEncryptor` 應**僅限測試環境使用**，但目前程式碼沒有任何環境限制。
 - **建議修復**：加入環境檢查，在非 Debug/Development 模式下拋出例外或記錄警告。
+- **修復狀態**：✅ 已修復於 `d1c95c5`（非 `SysInfo.IsDebugMode` 時拋出例外）
 
 ---
 
-### M-2：PBKDF2 使用 SHA-1 作為 PRF
+### ✅ M-2：PBKDF2 使用 SHA-1 作為 PRF
 
 - **檔案**：`src/Bee.Core/Security/PasswordHasher.cs:68`
 - **問題**：
@@ -160,10 +189,11 @@
   ```csharp
   using var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations, HashAlgorithmName.SHA256);
   ```
+- **修復狀態**：✅ 已修復於 `d1c95c5`（新密碼採 v2 格式 PBKDF2-SHA256；舊 SHA-1 格式仍可驗證）
 
 ---
 
-### M-3：GZip 解壓縮無大小限制（Zip Bomb 風險）
+### ✅ M-3：GZip 解壓縮無大小限制（Zip Bomb 風險）
 
 - **檔案**：`src/Bee.Core/Serialization/GZipFunc.cs:30-49`
 - **問題**：
@@ -180,10 +210,11 @@
   ```
   解壓縮過程沒有檢查解壓後的大小上限。攻擊者可送出極小的壓縮 payload（如 1KB）解壓後產生 GB 等級的資料（Zip Bomb / Decompression Bomb），導致記憶體耗盡（OOM）與服務中斷（DoS）。
 - **建議修復**：加入最大解壓大小限制（如 50MB），超過時拋出例外。
+- **修復狀態**：✅ 已修復於 `d1c95c5`（限制 50MB，超過拋出 InvalidDataException）
 
 ---
 
-### M-4：ASP.NET（非 Core）版本洩漏例外訊息
+### ✅ M-4：ASP.NET（非 Core）版本洩漏例外訊息
 
 - **檔案**：`src/Bee.Api.AspNet/HttpModules/ApiServiceModule.cs:143-144`
 - **問題**：
@@ -200,10 +231,11 @@
   string message = IsDevelopment ? rootEx.Message : string.Empty;
   ```
 - **建議修復**：ASP.NET 版本也應依環境判斷是否回傳詳細錯誤。
+- **修復狀態**：✅ 已修復於 `d1c95c5`（使用 `HttpContext.IsDebuggingEnabled` 判斷）
 
 ---
 
-### M-5：`JsonRpcExecutor` 直接回傳例外訊息給客戶端
+### ✅ M-5：`JsonRpcExecutor` 直接回傳例外訊息給客戶端
 
 - **檔案**：`src/Bee.Api.Core/JsonRpc/JsonRpcExecutor.cs:86-88`
 - **問題**：
@@ -217,10 +249,11 @@
   ```
   `JsonRpcExecutor` 將解包後的例外訊息**直接**設為 JSON-RPC 錯誤回應。這意味著即使上層（ASP.NET Core Controller）有環境保護，如果錯誤發生在 `ExecuteAsyncCore` 的 try/catch 內部（大多數業務邏輯錯誤），詳細訊息仍然會洩漏。
 - **建議修復**：區分業務邏輯例外（可回傳使用者友好訊息）與系統例外（僅回傳通用錯誤訊息）。
+- **修復狀態**：✅ 已修復於 `d1c95c5`（`IsUserFacingException` 白名單分流）
 
 ---
 
-### M-6：One-Time Token 存在 Race Condition（TOCTOU）
+### ⏸️ M-6：One-Time Token 存在 Race Condition（TOCTOU）
 
 - **檔案**：`src/Bee.Repository/System/SessionRepository.cs:75-76`
 - **問題**：
@@ -232,10 +265,11 @@
   一次性 Token 的查詢與刪除不是原子操作。在高併發情境下，多個請求可同時讀取同一 Token，其中只有一個會成功刪除，其餘請求仍可使用該 Token。
 - **影響**：一次性 Token 可被重複使用，違反設計意圖。
 - **建議修復**：使用資料庫交易（Transaction）或 `DELETE ... OUTPUT` 確保原子性。
+- **修復狀態**：⏸️ 暫緩（需資料庫交易層改動，列為獨立工作）
 
 ---
 
-### M-7：`AccessTokenValidationProvider` 未明確檢查 Token 到期時間
+### ✅ M-7：`AccessTokenValidationProvider` 未明確檢查 Token 到期時間
 
 - **檔案**：`src/Bee.Business/Validator/AccessTokenValidationProvider.cs:18-31`
 - **問題**：
@@ -250,10 +284,11 @@
   ```
   驗證邏輯僅檢查 SessionInfo 是否存在和 Token 是否匹配，**沒有明確檢查 `ExpiredAt`**。依賴快取層或資料庫層隱式移除過期 Session。若快取（預設 20 分鐘滑動到期）與 Token 實際到期時間不同步，已過期 Token 可能仍被視為有效。
 - **建議修復**：在 `ValidateAccessToken` 中加入 `if (sessionInfo.ExpiredAt < DateTime.UtcNow)` 檢查。
+- **修復狀態**：✅ 已修復於 `d1c95c5`
 
 ---
 
-### M-8：Login 預設實作無條件通過驗證
+### ✅ M-8：Login 預設實作無條件通過驗證
 
 - **檔案**：`src/Bee.Business/BusinessObjects/SystemBusinessObject.cs:115-119`
 - **問題**：
@@ -266,20 +301,22 @@
   ```
   作為 Framework 的預設實作，`AuthenticateUser` 無條件回傳 `true`。雖然設計意圖是由子類別覆寫，但若開發者忘記覆寫，任何人可以用任何密碼登入系統。
 - **建議修復**：預設回傳 `false` 或拋出 `NotImplementedException`，強制子類別實作驗證邏輯。
+- **修復狀態**：✅ 已修復於 `d1c95c5`（預設回傳 `false`）
 
 ---
 
 ## 🟡 低風險問題
 
-### L-1：RSA 金鑰長度硬編碼為 2048 位元
+### ⏸️ L-1：RSA 金鑰長度硬編碼為 2048 位元
 
 - **檔案**：`src/Bee.Core/Security/RsaCryptor.cs:23, 39, 57`
 - **問題**：RSA 金鑰固定為 2048-bit。雖然目前仍可接受，但 NIST 建議 2030 年後使用 3072-bit 以上。
 - **建議**：升級至 3072-bit 或使金鑰長度可配置。
+- **修復狀態**：⏸️ 暫緩（2030 年前仍符合 NIST 標準）
 
 ---
 
-### L-2：`ApiException` 包含 StackTrace 並可被序列化
+### ✅ L-2：`ApiException` 包含 StackTrace 並可被序列化
 
 - **檔案**：`src/Bee.Core/ApiException.cs:28, 43`
 - **問題**：
@@ -292,18 +329,20 @@
   ```
   `ApiException` 是可序列化的 DTO，包含完整堆疊追蹤。若此物件被回傳給客戶端，將洩漏伺服器內部架構資訊。
 - **建議**：非 Debug 模式下不設定 `StackTrace` 屬性。
+- **修復狀態**：✅ 已修復於 `d1c95c5`（`includeStackTrace` 參數，預設 `false`）
 
 ---
 
-### L-3：`RSACryptoServiceProvider` 已被標記為過時
+### ✅ L-3：`RSACryptoServiceProvider` 已被標記為過時
 
 - **檔案**：`src/Bee.Core/Security/RsaCryptor.cs:23, 39, 57`
 - **問題**：使用已標記為 `[Obsolete]` 的 `RSACryptoServiceProvider`。現代 .NET 建議使用 `RSA.Create()` 工廠方法。
 - **建議**：遷移至 `RSA.Create()` 以獲得更好的跨平台支援與演算法支援。
+- **修復狀態**：✅ 已修復於 `6c8da97`（H-1 一併修復）
 
 ---
 
-### L-4：`FileHashValidator.VerifySha256` 未使用常數時間比較
+### ✅ L-4：`FileHashValidator.VerifySha256` 未使用常數時間比較
 
 - **檔案**：`src/Bee.Core/Security/FileHashValidator.cs:28`
 - **問題**：
@@ -312,6 +351,7 @@
   ```
   使用 `string.Equals` 比較雜湊值，可能產生時序差異（Timing Side-Channel）。不過檔案完整性驗證通常是離線操作，實際被利用的風險很低。
 - **建議**：改用固定時間比較，與專案其他安全實作保持一致。
+- **修復狀態**：✅ 已修復於 `d1c95c5`（改為 XOR 常數時間比較）
 
 ---
 
