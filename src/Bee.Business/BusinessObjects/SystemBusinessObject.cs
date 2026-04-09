@@ -112,11 +112,17 @@ namespace Bee.Business.BusinessObjects
         /// <param name="args">The login arguments.</param>
         /// <param name="userName">The user name on successful authentication.</param>
         /// <returns>True if authentication succeeded; otherwise, false.</returns>
+        /// <remarks>
+        /// The default implementation always returns <c>false</c> to prevent unauthorized access
+        /// if a subclass forgets to override this method. Override in subclasses to implement real validation.
+        /// </remarks>
         protected virtual bool AuthenticateUser(LoginArgs args, out string userName)
         {
-            userName = "Demo User";
-            return true; // Default passes; override in subclasses to implement real validation
+            userName = string.Empty;
+            return false;
         }
+
+        private const int MaxExpiresInSeconds = 86400; // 24 hours
 
         /// <summary>
         /// Creates a new user session.
@@ -125,6 +131,10 @@ namespace Bee.Business.BusinessObjects
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
         {
+            if (args.ExpiresIn <= 0 || args.ExpiresIn > MaxExpiresInSeconds)
+                throw new ArgumentOutOfRangeException(nameof(args.ExpiresIn),
+                    $"ExpiresIn must be between 1 and {MaxExpiresInSeconds} seconds.");
+
             // Create a new user session
             var repo = RepositoryInfo.SystemProvider.SessionRepository;
             var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);

@@ -24,8 +24,11 @@ namespace Bee.Business.Validator
             }
 
             var sessionInfo = BackendInfo.SessionInfoService.Get(accessToken);
-            if (sessionInfo == null) 
+            if (sessionInfo == null)
                 throw new UnauthorizedAccessException("Session key not found or expired.");
+
+            if (sessionInfo.ExpiredAt < DateTime.UtcNow)
+                throw new UnauthorizedAccessException("Session has expired.");
 
             return sessionInfo.AccessToken == accessToken;
         }

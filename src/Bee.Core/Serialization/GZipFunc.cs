@@ -9,6 +9,10 @@ namespace Bee.Core.Serialization
     public static class GZipFunc
     {
         /// <summary>
+        /// Maximum allowed decompressed size in bytes (50 MB). Prevents decompression bomb (zip bomb) attacks.
+        /// </summary>
+        private const long MaxDecompressedBytes = 50 * 1024 * 1024;
+        /// <summary>
         /// Compresses the specified byte array using GZip.
         /// </summary>
         /// <param name="bytes">The raw byte data to compress.</param>
@@ -32,6 +36,7 @@ namespace Bee.Core.Serialization
         {
             byte[] buffer = new byte[4096];
             int count;
+            long totalRead = 0;
 
             using (MemoryStream inputStream = new MemoryStream(bytes))
             {
@@ -41,6 +46,10 @@ namespace Bee.Core.Serialization
                     {
                         while ((count = gZipStream.Read(buffer, 0, buffer.Length)) > 0)
                         {
+                            totalRead += count;
+                            if (totalRead > MaxDecompressedBytes)
+                                throw new InvalidDataException(
+                                    $"Decompressed data exceeds the maximum allowed size of {MaxDecompressedBytes / (1024 * 1024)} MB.");
                             outputStream.Write(buffer, 0, count);
                         }
                         return outputStream.ToArray();

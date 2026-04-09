@@ -140,8 +140,11 @@ namespace Bee.Api.AspNet
             }
             catch (Exception ex)
             {
+                string errorData = context.IsDebuggingEnabled
+                    ? (ex.InnerException?.Message ?? ex.Message)
+                    : null;
                 WriteErrorResponse(context, 500, (int)JsonRpcErrorCode.InternalError,
-                    "Internal server error", request.Id, ex.InnerException?.Message ?? ex.Message);
+                    "Internal server error", request.Id, errorData);
             }
         }
 

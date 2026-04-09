@@ -22,10 +22,14 @@ namespace Bee.Core
         /// Initializes a new instance of <see cref="ApiException"/>.
         /// </summary>
         /// <param name="exception">The exception that occurred at runtime.</param>
-        public ApiException(Exception exception)
+        /// <param name="includeStackTrace">
+        /// When <c>true</c>, the stack trace is populated. Should only be set in debug/development environments
+        /// to avoid leaking server internals to clients.
+        /// </param>
+        public ApiException(Exception exception, bool includeStackTrace = false)
         {
             Message = exception.Message;
-            StackTrace = exception.StackTrace;
+            StackTrace = includeStackTrace ? exception.StackTrace : string.Empty;
         }
 
         #endregion

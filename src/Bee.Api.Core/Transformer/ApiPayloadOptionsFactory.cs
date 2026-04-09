@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Core;
 
 namespace Bee.Api.Core.Transformer
 {
@@ -58,6 +59,9 @@ namespace Bee.Api.Core.Transformer
                     return new AesPayloadEncryptor();
                 case "none":
                 case "":
+                    if (!SysInfo.IsDebugMode)
+                        throw new InvalidOperationException(
+                            "NoEncryptionEncryptor is only permitted in debug/development mode. Configure a valid encryptor for production.");
                     return new NoEncryptionEncryptor();
                 default:
                     throw new NotSupportedException($"Unsupported encryptor: {name}");

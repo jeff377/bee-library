@@ -23,10 +23,40 @@ namespace Bee.Core.Security
             using (var sha256 = SHA256.Create())
             using (var stream = File.OpenRead(filePath))
             {
-                var hashBytes = sha256.ComputeHash(stream);
-                var actualHex = BitConverter.ToString(hashBytes).Replace("-", "");
-                return string.Equals(actualHex, expectedSha256Hex, StringComparison.OrdinalIgnoreCase);
+                var actualBytes = sha256.ComputeHash(stream);
+                var expectedBytes = HexToBytes(expectedSha256Hex);
+                if (expectedBytes == null || expectedBytes.Length != actualBytes.Length)
+                    return false;
+                return FixedTimeEquals(actualBytes, expectedBytes);
             }
+        }
+
+        /// <summary>
+        /// Converts a hexadecimal string to a byte array. Returns null if the input is invalid.
+        /// </summary>
+        private static byte[] HexToBytes(string hex)
+        {
+            if (string.IsNullOrEmpty(hex) || hex.Length % 2 != 0)
+                return null;
+            var bytes = new byte[hex.Length / 2];
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                try { bytes[i] = Convert.ToByte(hex.Substring(i * 2, 2), 16); }
+                catch { return null; }
+            }
+            return bytes;
+        }
+
+        /// <summary>
+        /// Performs a constant-time byte array comparison to prevent timing side-channel attacks.
+        /// </summary>
+        private static bool FixedTimeEquals(byte[] a, byte[] b)
+        {
+            if (a.Length != b.Length) return false;
+            int result = 0;
+            for (int i = 0; i < a.Length; i++)
+                result |= a[i] ^ b[i];
+            return result == 0;
         }
 
         /// <summary>

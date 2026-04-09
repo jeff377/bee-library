@@ -84,9 +84,11 @@ namespace Bee.Api.Core.JsonRpc
             catch (Exception ex)
             {
                 var rootEx = BaseFunc.UnwrapException(ex);
-                string message = rootEx.Message;
+                // Only expose the exception message for known user-facing exception types.
+                // System/infrastructure exceptions return a generic message to avoid leaking internals.
+                string message = IsUserFacingException(rootEx) ? rootEx.Message : "Internal server error";
                 response.Error = new JsonRpcError(-1, message);
-                Tracer.End(ctx, TraceStatus.Error, message);
+                Tracer.End(ctx, TraceStatus.Error, rootEx.Message);
             }
             return response;
         }
@@ -153,6 +155,20 @@ namespace Bee.Api.Core.JsonRpc
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Returns true for exception types whose message is safe to surface to API clients.
+        /// Business-layer and validation exceptions are user-facing; infrastructure exceptions are not.
+        /// </summary>
+        private static bool IsUserFacingException(Exception ex)
+        {
+            return ex is UnauthorizedAccessException
+                || ex is ArgumentException          // includes ArgumentNullException, ArgumentOutOfRangeException
+                || ex is InvalidOperationException
+                || ex is NotSupportedException
+                || ex is FormatException
+                || ex is JsonRpcException;
         }
 
         /// <summary>
