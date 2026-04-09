@@ -18,38 +18,48 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
+    - name: Extract version from tag
+      id: version
+      run: |
+        $tag = "${{ github.ref_name }}"
+        $version = $tag.TrimStart('v')
+        echo "VERSION=$version" >> $env:GITHUB_OUTPUT
+        Write-Host "Publishing version: $version"
+
     - name: Restore dependencies
       run: dotnet restore Bee.Library.slnx
 
     - name: Build all projects
       run: |
         $ErrorActionPreference = 'Stop'
-        dotnet build src/Bee.Base/Bee.Base.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Definition/Bee.Definition.csproj --configuration Release --no-restore
-        dotnet build src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Db/Bee.Db.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Business/Bee.Business.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore
-        dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore
+        $ver = "${{ steps.version.outputs.VERSION }}"
+        dotnet build src/Bee.Base/Bee.Base.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Definition/Bee.Definition.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Db/Bee.Db.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Business/Bee.Business.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore /p:Version=$ver
 
     - name: Pack NuGet packages
       run: |
         $ErrorActionPreference = 'Stop'
-        dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build
+        $ver = "${{ steps.version.outputs.VERSION }}"
+        dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Definition/Bee.Definition.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.ObjectCaching/Bee.ObjectCaching.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Db/Bee.Db.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
 
     - name: Push to NuGet
       run: |
@@ -64,13 +74,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Extract version from tag
+      id: version
+      run: |
+        TAG="${{ github.ref_name }}"
+        echo "VERSION=${TAG#v}" >> $GITHUB_OUTPUT
+
     - name: Create GitHub Release
       uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}
         body: |
-          自動發佈 NuGet 套件：
+          自動發佈 NuGet 套件（版本：${{ steps.version.outputs.VERSION }}）：
           - Bee.Base
           - Bee.Definition
           - Bee.ObjectCaching
