@@ -70,3 +70,4 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 @rules/code-style.md
 @rules/testing.md
 @rules/security.md
+@rules/releasing.md
