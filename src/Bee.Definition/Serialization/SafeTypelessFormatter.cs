@@ -1,0 +1,106 @@
+using System;
+using System.Collections.Generic;
+using Bee.Core;
+using MessagePack;
+using MessagePack.Formatters;
+
+namespace Bee.Definition.Serialization
+{
+    /// <summary>
+    /// A type-safe wrapper around <see cref="TypelessFormatter"/> that validates deserialized types
+    /// against the allowed namespace whitelist defined in <see cref="SysInfo.IsTypeNameAllowed"/>.
+    /// Prevents deserialization of arbitrary types to mitigate remote code execution risks.
+    /// </summary>
+    public sealed class SafeTypelessFormatter : IMessagePackFormatter<object>
+    {
+        /// <summary>
+        /// The singleton instance.
+        /// </summary>
+        public static readonly SafeTypelessFormatter Instance = new SafeTypelessFormatter();
+
+        /// <summary>
+        /// Well-known system primitive types that are always allowed for deserialization.
+        /// </summary>
+        private static readonly HashSet<string> AllowedPrimitiveTypes = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "System.Boolean",
+            "System.Byte",
+            "System.SByte",
+            "System.Int16",
+            "System.UInt16",
+            "System.Int32",
+            "System.UInt32",
+            "System.Int64",
+            "System.UInt64",
+            "System.Single",
+            "System.Double",
+            "System.Decimal",
+            "System.String",
+            "System.DateTime",
+            "System.DateTimeOffset",
+            "System.TimeSpan",
+            "System.Guid",
+            "System.Byte[]",
+            "System.DBNull"
+        };
+
+        /// <summary>
+        /// Initializes a new instance. Public constructor required for <c>[MessagePackFormatter]</c> attribute usage.
+        /// Prefer using <see cref="Instance"/> for direct registration.
+        /// </summary>
+        public SafeTypelessFormatter() { }
+
+        /// <summary>
+        /// Serializes the object value using the underlying <see cref="TypelessFormatter"/>.
+        /// </summary>
+        public void Serialize(ref MessagePackWriter writer, object value, MessagePackSerializerOptions options)
+        {
+            TypelessFormatter.Instance.Serialize(ref writer, value, options);
+        }
+
+        /// <summary>
+        /// Deserializes an object value using the underlying <see cref="TypelessFormatter"/>,
+        /// then validates the resulting type against the allowed type whitelist.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when the deserialized type is not in the allowed whitelist.
+        /// </exception>
+        public object Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        {
+            // Handle nil
+            if (reader.TryReadNil())
+                return null;
+
+            var result = TypelessFormatter.Instance.Deserialize(ref reader, options);
+
+            if (result != null)
+            {
+                ValidateType(result.GetType());
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Validates that the specified type is allowed for deserialization.
+        /// </summary>
+        /// <param name="type">The type to validate.</param>
+        private static void ValidateType(Type type)
+        {
+            var fullName = type.FullName;
+            if (fullName == null)
+                throw new InvalidOperationException("Cannot deserialize a type with no FullName.");
+
+            // Allow well-known primitive types
+            if (AllowedPrimitiveTypes.Contains(fullName))
+                return;
+
+            // Delegate to the application-level whitelist
+            if (SysInfo.IsTypeNameAllowed(fullName))
+                return;
+
+            throw new InvalidOperationException(
+                $"MessagePack deserialization blocked: type '{fullName}' is not in the allowed type whitelist.");
+        }
+    }
+}

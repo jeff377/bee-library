@@ -3,8 +3,8 @@ using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Core;
 using Bee.Core.Collections;
+using Bee.Definition.Serialization;
 using MessagePack;
-using MessagePack.Formatters;
 
 namespace Bee.Definition.Collections
 {
@@ -52,7 +52,7 @@ namespace Bee.Definition.Collections
         /// Gets or sets the parameter value.
         /// </summary>
         [Key(101)]
-        [MessagePackFormatter(typeof(TypelessFormatter))]
+        [MessagePackFormatter(typeof(SafeTypelessFormatter))]
         public object Value { get; set; } = null;
 
         /// <summary>

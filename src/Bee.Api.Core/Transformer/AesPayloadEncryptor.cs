@@ -1,4 +1,5 @@
-﻿using Bee.Core;
+﻿using System.Security.Cryptography;
+using Bee.Core;
 using Bee.Core.Security;
 
 namespace Bee.Api.Core.Transformer
@@ -19,11 +20,12 @@ namespace Bee.Api.Core.Transformer
         /// <param name="bytes">The raw byte data to encrypt.</param>
         /// <param name="encryptionKey">The encryption key.</param>
         /// <returns>The encrypted byte data.</returns>
+        /// <exception cref="CryptographicException">Thrown when the encryption key is null or empty.</exception>
         public byte[] Encrypt(byte[] bytes, byte[] encryptionKey)
         {
-            // If no encryption key is provided, return the original byte data unchanged
-            if (encryptionKey == null || encryptionKey.Length == 0) { return bytes; }
-            // Perform AES-CBC encryption
+            if (encryptionKey == null || encryptionKey.Length == 0)
+                throw new CryptographicException("Encryption key must not be null or empty.");
+
             AesCbcHmacKeyGenerator.FromCombinedKey(encryptionKey, out var aesKey, out var hmacKey);
             return AesCbcHmacCryptor.Encrypt(bytes, aesKey, hmacKey);
         }
@@ -34,15 +36,14 @@ namespace Bee.Api.Core.Transformer
         /// <param name="bytes">The encrypted byte data.</param>
         /// <param name="encryptionKey">The encryption key.</param>
         /// <returns>The decrypted byte data.</returns>
+        /// <exception cref="CryptographicException">Thrown when the encryption key is null or empty.</exception>
         public byte[] Decrypt(byte[] bytes, byte[] encryptionKey)
         {
-            // If no encryption key is provided, return the original byte data unchanged
-            if (encryptionKey == null || encryptionKey.Length == 0) { return bytes; }
-            // Perform AES-CBC decryption
+            if (encryptionKey == null || encryptionKey.Length == 0)
+                throw new CryptographicException("Encryption key must not be null or empty.");
+
             AesCbcHmacKeyGenerator.FromCombinedKey(encryptionKey, out var aesKey, out var hmacKey);
             return AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
         }
-
-
     }
 }

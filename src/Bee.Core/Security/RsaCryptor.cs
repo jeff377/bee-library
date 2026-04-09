@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -10,6 +10,7 @@ namespace Bee.Core.Security
     /// <remarks>
     /// Supports string encryption and decryption using RSA public/private keys, with XML key export/import.
     /// Suitable for asymmetric encryption scenarios such as login credentials and session key exchange.
+    /// Uses OAEP-SHA256 padding to prevent padding oracle attacks.
     /// </remarks>
     public static class RsaCryptor
     {
@@ -20,9 +21,9 @@ namespace Bee.Core.Security
         /// <param name="privateKeyXml">The output private key XML.</param>
         public static void GenerateRsaKeyPair(out string publicKeyXml, out string privateKeyXml)
         {
-            using (var rsa = new RSACryptoServiceProvider(2048))
+            using (var rsa = RSA.Create())
             {
-                rsa.PersistKeyInCsp = false;
+                rsa.KeySize = 2048;
                 publicKeyXml = rsa.ToXmlString(false); // Public key
                 privateKeyXml = rsa.ToXmlString(true); // Private key
             }
@@ -36,12 +37,11 @@ namespace Bee.Core.Security
         /// <returns>The encrypted data as a Base64-encoded string.</returns>
         public static string EncryptWithPublicKey(string plainText, string publicKeyXml)
         {
-            using (var rsa = new RSACryptoServiceProvider(2048))
+            using (var rsa = RSA.Create())
             {
-                rsa.PersistKeyInCsp = false;
                 rsa.FromXmlString(publicKeyXml);
                 var data = Encoding.UTF8.GetBytes(plainText);
-                var encrypted = rsa.Encrypt(data, false);
+                var encrypted = rsa.Encrypt(data, RSAEncryptionPadding.OaepSHA256);
                 return Convert.ToBase64String(encrypted);
             }
         }
@@ -54,15 +54,13 @@ namespace Bee.Core.Security
         /// <returns>The decrypted plaintext string.</returns>
         public static string DecryptWithPrivateKey(string base64CipherText, string privateKeyXml)
         {
-            using (var rsa = new RSACryptoServiceProvider(2048))
+            using (var rsa = RSA.Create())
             {
-                rsa.PersistKeyInCsp = false;
                 rsa.FromXmlString(privateKeyXml);
                 var data = Convert.FromBase64String(base64CipherText);
-                var decrypted = rsa.Decrypt(data, false);
+                var decrypted = rsa.Decrypt(data, RSAEncryptionPadding.OaepSHA256);
                 return Encoding.UTF8.GetString(decrypted);
             }
         }
     }
 }
-

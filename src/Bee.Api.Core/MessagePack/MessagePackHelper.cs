@@ -1,4 +1,5 @@
 ﻿using System;
+using Bee.Definition.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
@@ -24,14 +25,15 @@ namespace Bee.Api.Core.MessagePack
             var resolver = CompositeResolver.Create(
                 new IMessagePackFormatter[]
                 {
-                    new DataTableFormatter(), // Custom DataTable formatter
-                    new DataSetFormatter()    // Custom DataSet formatter
+                    new DataTableFormatter(),          // Custom DataTable formatter
+                    new DataSetFormatter(),             // Custom DataSet formatter
+                    SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
                 new IFormatterResolver[]
                 {
-                    TypelessContractlessStandardResolver.Instance, // Support for polymorphic object types
-                    FormatterResolver.Instance,   // Custom resolver
-                    StandardResolver.Instance      // Standard resolver
+                    ContractlessStandardResolver.Instance, // Contractless resolver (without unsafe Typeless support)
+                    FormatterResolver.Instance,            // Custom resolver
+                    StandardResolver.Instance              // Standard resolver
                 });
 
             // Configure the MessagePack serialization options
