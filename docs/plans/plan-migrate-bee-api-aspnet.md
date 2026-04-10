@@ -32,12 +32,13 @@
 bee-api-aspnet/
 ├── .editorconfig            ← 從 bee-library 複製
 ├── .gitignore               ← .NET gitignore
-├── Directory.Build.props    ← 根目錄，套件 metadata + CI 設定
+├── Directory.Build.props    ← 根目錄，僅 CI 設定（GitHub Actions）
 ├── LICENSE.txt              ← 從 bee-library 複製
 ├── bee.png                  ← 從 bee-library 複製
 ├── README.md                ← 新建
 ├── Bee.Api.AspNet.slnx      ← 新建 solution
 ├── src/
+│   ├── Directory.Build.props  ← 套件 metadata、版本、SourceLink
 │   └── Bee.Api.AspNet/
 │       ├── Bee.Api.AspNet.csproj
 │       └── HttpModules/
@@ -58,11 +59,18 @@ bee-api-aspnet/
 <PackageReference Include="Bee.Api.Core" Version="4.0.1" />
 ```
 
-### 步驟 3：建立根目錄 Directory.Build.props
+### 步驟 3：建立 Directory.Build.props（兩份）
 
-- 合併 bee-library 的套件 metadata + CI 最佳化設定
+**根目錄 `Directory.Build.props`**：
+- 僅包含 GitHub Actions CI 設定（套用到所有專案，含未來可能的 tests/samples）
+- 從 bee-library 根目錄的 `Directory.Build.props` 複製
+
+**`src/Directory.Build.props`**：
+- 套件 metadata（版本、作者、授權、圖示等）
+- SourceLink、符號包、文件產生等發佈相關設定
+- 從 bee-library `src/Directory.Build.props` 複製
 - `RepositoryUrl` / `PackageProjectUrl` 改為 `https://github.com/jeff377/bee-api-aspnet`
-- 資源檔路徑調整為相對於根目錄
+- 資源檔路徑使用 `$(MSBuildThisFileDirectory)..\` 指向根目錄
 
 ### 步驟 4：建立 GitHub Actions workflows
 
