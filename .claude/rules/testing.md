@@ -43,6 +43,35 @@ public void GetDefineType_ValidType(DefineType defineType, Type expectedType)
 }
 ```
 
+### 本機專用測試：`[LocalOnlyFact]` / `[LocalOnlyTheory]`
+
+需要連接本機資料庫或 API 服務的測試，使用 `[LocalOnlyFact]` 或 `[LocalOnlyTheory]` 取代 `[Fact]` / `[Theory]`。
+這兩個 Attribute 定義在 `tests/Bee.Tests.Shared/`，利用環境變數 `CI=true`（GitHub Actions 預設會設定）自動跳過測試。
+
+- **本機執行**：正常執行
+- **CI 環境**：自動標記為 Skipped，不會因基礎設施缺失而失敗
+
+```csharp
+// 需要本機 SQL Server 的測試
+[LocalOnlyFact]
+[DisplayName("ExecuteDataTable 查詢應回傳有效 DataTable")]
+public void ExecuteDataTable_ValidQuery_ReturnsDataTable()
+{
+    var dbAccess = new DbAccess("common");
+    var result = dbAccess.Execute(command);
+    Assert.NotNull(result.Table);
+}
+
+// 參數化版本
+[LocalOnlyTheory]
+[InlineData("http://localhost/jsonrpc/api")]
+[DisplayName("ApiConnectValidator 驗證 URL 應回傳遠端連線類型")]
+public void ApiConnectValidator_ValidUrl_ReturnsRemoteConnectType(string apiUrl) { ... }
+```
+
+**適用場景**：資料庫連線、API 端點呼叫、需要執行中服務的整合測試。
+**不適用**：純邏輯 / 序列化測試 — 這類測試有 bug 應直接修復，不應跳過。
+
 ### 測試集合共用初始化
 需要共用狀態時使用 `[Collection("Initialize")]`。
 
