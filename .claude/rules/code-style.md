@@ -13,13 +13,12 @@
 
 ## 檔案組織
 
-每個套件依職責分資料夾，常見結構：
+每個套件依功能分資料夾，介面可依所屬功能就近放置，不強制集中至 `Interface/` 資料夾：
 ```
 Bee.<Module>/
-  ├── Interface/     # 公開合約（介面）
-  ├── Attributes/    # 自訂 Attribute
-  ├── Exception/     # 自訂例外
-  └── <Feature>/     # 功能實作
+  ├── Attributes/     # 自訂 Attribute
+  ├── Exception/      # 自訂例外
+  └── <Feature>/      # 功能實作（含相關介面）
 ```
 
 ## 語言特性
