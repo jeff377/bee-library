@@ -8,7 +8,7 @@
 | 類別 | PascalCase | `TraceContext`, `AesCbcHmacCryptor` |
 | Attribute | PascalCase + `Attribute` 後綴 | `ApiAccessControlAttribute` |
 | 屬性 / 方法 | PascalCase | `ValidateAccess`, `CreateSession` |
-| 私有欄位 | camelCase（無底線前綴） | `isTokenValid` |
+| 私有欄位 | `_camelCase`（底線前綴） | `_isTokenValid`, `_accessToken` |
 | 參數 | camelCase | `accessToken`, `sessionId` |
 
 ## 檔案組織
@@ -51,6 +51,7 @@ public bool ValidateToken(string token) { ... }
 
 ## 縮排與格式
 
+- 檔案編碼：**UTF-8**（不帶 BOM），避免中文亂碼
 - 縮排：**4 個空格**（`.editorconfig` 定義）
-- XML 檔案：**2 個空格**
-- 行結尾：LF（Unix），避免混用
+- XML 檔案（`.csproj`、`.props`）：**2 個空格**
+- 行結尾：**LF**（Unix），由 `.gitattributes` 強制

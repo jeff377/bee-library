@@ -1,20 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net10.0</TargetFramework>
-		<Description>Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls via JSON-RPC protocol.</Description>
-		<PackageTags>bee.net;aspnetcore;api;webapi;jsonrpc;dynamicapi,service</PackageTags>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Description>Provides a JSON-RPC 2.0 API controller for ASP.NET Core, serving as a unified endpoint to handle backend method calls via JSON-RPC protocol.</Description>
+    <PackageTags>bee.net;aspnetcore;api;webapi;jsonrpc;dynamicapi,service</PackageTags>
 
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-	</PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Bee.Api.Core\Bee.Api.Core.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Api.Core\Bee.Api.Core.csproj" />
+  </ItemGroup>
 
 </Project>

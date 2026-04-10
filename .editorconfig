@@ -3,7 +3,32 @@ root = true
 # All files
 [*]
 indent_style = space
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
 
-# Xml files
+# C# files
+[*.cs]
+indent_size = 4
+
+# XML project files
+[*.{csproj,props,targets}]
+indent_size = 2
+
+# XML files
 [*.xml]
+indent_size = 2
+
+# JSON files
+[*.json]
+indent_size = 2
+
+# Markdown files
+[*.md]
+indent_size = 2
+trim_trailing_whitespace = false
+
+# Solution files
+[*.{sln,slnx}]
 indent_size = 2

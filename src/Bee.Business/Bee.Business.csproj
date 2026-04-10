@@ -1,14 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
-		<Description>Implements core business logic and application-level workflows.</Description>
-		<PackageTags>bee.net;business;application;backend;contracts;repository;json-rpc</PackageTags>
-	</PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+    <Description>Implements core business logic and application-level workflows.</Description>
+    <PackageTags>bee.net;business;application;backend;contracts;repository;json-rpc</PackageTags>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Bee.Api.Contracts\Bee.Api.Contracts.csproj" />
-		<ProjectReference Include="..\Bee.Repository.Abstractions\Bee.Repository.Abstractions.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Api.Contracts\Bee.Api.Contracts.csproj" />
+    <ProjectReference Include="..\Bee.Repository.Abstractions\Bee.Repository.Abstractions.csproj" />
+  </ItemGroup>
 
 </Project>

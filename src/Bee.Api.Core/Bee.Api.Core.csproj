@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
+  <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
-		<Description>Encapsulates API support such as model definitions, encryption, and serialization.</Description>
-		<PackageTags>bee.net;api;core;service;dynamicapi</PackageTags>
-	</PropertyGroup>
+    <Description>Encapsulates API support such as model definitions, encryption, and serialization.</Description>
+    <PackageTags>bee.net;api;core;service;dynamicapi</PackageTags>
+  </PropertyGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\Bee.Api.Contracts\Bee.Api.Contracts.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Api.Contracts\Bee.Api.Contracts.csproj" />
+  </ItemGroup>
 
 </Project>
