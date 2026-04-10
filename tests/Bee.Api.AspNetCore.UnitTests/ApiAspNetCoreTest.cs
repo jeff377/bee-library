@@ -6,6 +6,7 @@ using Bee.Base.Serialization;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 using Bee.Definition;
+using Bee.Tests.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -109,7 +110,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// <summary>
         /// ���� Ping ��k�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public async Task Ping()
         {
             var args = new PingArgs()
@@ -123,7 +124,7 @@ namespace Bee.Api.AspNetCore.UnitTests
             Assert.Equal("001", result.TraceId);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public async Task Hello()
         {
             Guid accessToken = await GetAccessTokenAsync();

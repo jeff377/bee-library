@@ -1,4 +1,6 @@
 ﻿using System;
+using Bee.Definition;
+using Bee.Definition.Filters;
 using Bee.Definition.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
@@ -27,6 +29,8 @@ namespace Bee.Api.Core.MessagePack
                 {
                     new DataTableFormatter(),          // Custom DataTable formatter
                     new DataSetFormatter(),             // Custom DataSet formatter
+                    new CollectionBaseFormatter<FilterNodeCollection, FilterNode>(),   // FilterNodeCollection as array
+                    new CollectionBaseFormatter<SortFieldCollection, SortField>(),     // SortFieldCollection as array
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
                 new IFormatterResolver[]

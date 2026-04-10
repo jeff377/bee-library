@@ -1,4 +1,5 @@
 using Bee.Api.Client.Connectors;
+using Bee.Tests.Shared;
 
 namespace Bee.Api.Client.UnitTests
 {
@@ -9,7 +10,7 @@ namespace Bee.Api.Client.UnitTests
         {
         }
 
-        [Theory]
+        [LocalOnlyTheory]
         [InlineData("http://localhost/jsonrpc/api")]
         //[InlineData("http://localhost/jsonrpc_aspnet/api")]
         public void ApiConnectValidator(string apiUrl)
@@ -23,7 +24,7 @@ namespace Bee.Api.Client.UnitTests
         /// <summary>
         /// ���� SystemApiConnector �� CreateSession ��k�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public void SystemConnector_CreateSession()
         {
             // Arrange

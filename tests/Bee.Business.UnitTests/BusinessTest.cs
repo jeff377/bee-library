@@ -3,6 +3,7 @@ using Bee.Base.Security;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 using Bee.Business.BusinessObjects;
+using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
 {
@@ -19,7 +20,7 @@ namespace Bee.Business.UnitTests
         /// <summary>
         /// �إ߳s�u�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public void CreateSession()
         {
             // Arrange
@@ -43,7 +44,7 @@ namespace Bee.Business.UnitTests
         /// <summary>
         /// �n�J�t�Ψ����� RSA �[�K���|�ܪ��_�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public void Login()
         {
             // Arrange

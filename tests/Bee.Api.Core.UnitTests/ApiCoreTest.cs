@@ -5,6 +5,7 @@ using Bee.Base.Serialization;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 using Bee.Definition;
+using Bee.Tests.Shared;
 
 namespace Bee.Api.Core.UnitTests
 {
@@ -95,7 +96,7 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// �z�L API ���� Ping ��k�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public void Ping()
         {
             var args = new PingArgs()
@@ -112,7 +113,7 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// ���� GetCommonConfiguration ��k�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public void GetCommonConfiguration()
         {
             var args = new GetCommonConfigurationArgs();
@@ -124,7 +125,7 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// �z�L API ���� Hello ��k�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public void Hello()
         {
             // ���o AccessToken

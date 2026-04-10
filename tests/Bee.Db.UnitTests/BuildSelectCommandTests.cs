@@ -1,13 +1,14 @@
 ﻿using Bee.Definition.Filters;
 using Bee.Definition;
 using Bee.Db.Providers.SqlServer;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
     [Collection("Initialize")]
     public class BuildSelectCommandTests
     {
-        [Fact]
+        [LocalOnlyFact]
         public void BuildSelectCommand_SelectOnlyMasterFields()
         {
             // 測試：只 Select 主檔欄位，不應產生任何 JOIN
@@ -20,7 +21,7 @@ namespace Bee.Db.UnitTests
             Assert.DoesNotContain("JOIN", command.CommandText, StringComparison.OrdinalIgnoreCase);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void BuildSelectCommand_WhereOnReferencedField()
         {
             // 測試：Select 主檔欄位，但 Where 條件使用參考欄位，應只 JOIN 該參考表
@@ -36,7 +37,7 @@ namespace Bee.Db.UnitTests
             Assert.Contains("JOIN", command.CommandText, StringComparison.OrdinalIgnoreCase);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void BuildSelectCommand_OrderByReferencedField()
         {
             // 測試：Select 主檔欄位，但 Order By 使用參考欄位，應只 JOIN 該參考表
@@ -53,7 +54,7 @@ namespace Bee.Db.UnitTests
             Assert.Contains("JOIN", command.CommandText, StringComparison.OrdinalIgnoreCase);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void BuildSelectCommand_SelectWithMultipleReferences()
         {
             // 測試：Select 包含多個參考欄位，應 JOIN 對應的多個參考表
@@ -73,7 +74,7 @@ namespace Bee.Db.UnitTests
             Assert.True(joinCount >= 2, $"應包含至少 2 個 JOIN，實際: {joinCount}");
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void BuildSelectCommand_FilterGroupWithMultipleConditions()
         {
             // 測試：FilterGroup 包含多個條件，使用不同參考欄位

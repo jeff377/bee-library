@@ -1,6 +1,6 @@
 using Bee.Definition.Collections;
-using System;
 using MessagePack;
+using System;
 
 namespace Bee.Definition
 {

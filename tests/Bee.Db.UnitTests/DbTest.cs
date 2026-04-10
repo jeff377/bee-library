@@ -3,6 +3,7 @@ using Bee.Base;
 using Bee.Definition;
 using Bee.Db.DbAccess;
 using Bee.Db.Providers.SqlServer;
+using Bee.Tests.Shared;
 using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 
 namespace Bee.Db.UnitTests
@@ -18,7 +19,7 @@ namespace Bee.Db.UnitTests
         /// <summary>
         /// ���� SQL �d�ߡA�è��o DataTable�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public void ExecuteDataTable()
         {
             // �� DbAccess �޲z�s�u
@@ -63,7 +64,7 @@ namespace Bee.Db.UnitTests
         /// <summary>
         /// �D�P�B���� SQL �d�ߡA�è��o DataTable�C
         /// </summary>
-        [Fact]
+        [LocalOnlyFact]
         public async Task ExecuteDataTableAsync()
         {
             string sql = "SELECT * FROM st_user";
@@ -75,7 +76,7 @@ namespace Bee.Db.UnitTests
             Assert.True(table.Rows.Count > 0);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void ExecuteNonQuery()
         {
             int i = BaseFunc.RndInt(0, 100);
@@ -86,7 +87,7 @@ namespace Bee.Db.UnitTests
             int rows = result.RowsAffected;
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public async Task ExecuteNonQueryAsync()
         {
             int i = BaseFunc.RndInt(0, 100);
@@ -97,7 +98,7 @@ namespace Bee.Db.UnitTests
             int rows = result.RowsAffected;
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void ExecuteScalar()
         {
             string sql = "Select note From st_user Where sys_id = {0}";
@@ -121,7 +122,7 @@ namespace Bee.Db.UnitTests
             public string? AccessToken { get; set; }
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void Query()
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM st_user";
@@ -131,7 +132,7 @@ namespace Bee.Db.UnitTests
             var list3 = dbAccess.Query<User2>(command);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public async Task QueryAsync()
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM st_user";
@@ -141,7 +142,7 @@ namespace Bee.Db.UnitTests
             var list2 = await dbAccess.QueryAsync<User2>(command);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void UpdateDataTable()
         {
             var dbAccess = new DbAccessObject("common");
@@ -170,7 +171,7 @@ namespace Bee.Db.UnitTests
             Assert.True(affected > 0, "������ƳQ��s");
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void ExecuteBacth()
         {
             var batch = new DbBatchSpec();
@@ -185,7 +186,7 @@ namespace Bee.Db.UnitTests
             var result = dbAccess.ExecuteBatch(batch);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public async Task ExecuteBacthAsync()
         {
             var batch = new DbBatchSpec();
@@ -200,14 +201,14 @@ namespace Bee.Db.UnitTests
             var result = await dbAccess.ExecuteBatchAsync(batch);
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void SqlDbTableTest()
         {
             var helper = new SqlTableSchemaProvider("common");
             var dbTable = helper.GetTableSchema("st_user");
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void FormCommandBuildTest()
         {
             var builder = new SqlFormCommandBuilder("Employee");
@@ -215,7 +216,7 @@ namespace Bee.Db.UnitTests
             var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name");
         }
 
-        [Fact]
+        [LocalOnlyFact]
         public void FormCommandBuildWithFilterNodeTest()
         {
             var builder = new SqlFormCommandBuilder("Employee");
