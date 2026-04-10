@@ -54,10 +54,10 @@ namespace Bee.Db
         /// </summary>
         private static readonly Dictionary<DatabaseType, Func<string, string>> QuoteIdentifiers = new Dictionary<DatabaseType, Func<string, string>>
         {
-            { DatabaseType.SQLServer, s => $"[{s}]" },
-            { DatabaseType.MySQL, s => $"`{s}`" },
-            { DatabaseType.SQLite, s => $"\"{s}\"" },
-            { DatabaseType.Oracle, s => $"\"{s}\"" }
+            { DatabaseType.SQLServer, s => $"[{s.Replace("]", "]]")}]" },
+            { DatabaseType.MySQL, s => $"`{s.Replace("`", "``")}`" },
+            { DatabaseType.SQLite, s => $"\"{s.Replace("\"", "\"\"")}\"" },
+            { DatabaseType.Oracle, s => $"\"{s.Replace("\"", "\"\"")}\"" }
         };
 
         /// <summary>

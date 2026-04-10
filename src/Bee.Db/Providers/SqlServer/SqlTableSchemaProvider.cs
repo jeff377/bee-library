@@ -14,6 +14,8 @@ namespace Bee.Db.Providers.SqlServer
     /// </summary>
     public class SqlTableSchemaProvider
     {
+        private readonly DbAccessObject _dbAccess;
+
         #region 建構函式
 
         /// <summary>
@@ -23,6 +25,7 @@ namespace Bee.Db.Providers.SqlServer
         public SqlTableSchemaProvider(string databaseId)
         {
             DatabaseId = databaseId;
+            _dbAccess = new DbAccessObject(databaseId);
         }
 
         #endregion
@@ -70,8 +73,7 @@ namespace Bee.Db.Providers.SqlServer
         {
             string sql = "Select Count(*) From sys.tables A Where A.name={0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
-            var dbAccess = new DbAccessObject(DatabaseId);
-            var result = dbAccess.Execute(command);
+            var result = _dbAccess.Execute(command);
             int count = BaseFunc.CInt(result.Scalar);
             return count > 0;
         }
@@ -91,8 +93,7 @@ namespace Bee.Db.Providers.SqlServer
                           "WHERE B.name={0} \n" +
                           "Order By D.is_primary_key,C.key_ordinal";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
-            var dbAccess = new DbAccessObject(DatabaseId);
-            var result = dbAccess.Execute(command);
+            var result = _dbAccess.Execute(command);
             var table = result.Table;
             table.TableName = "TableIndex";
             return table;
@@ -148,7 +149,8 @@ namespace Bee.Db.Providers.SqlServer
                 tableIndex.Unique = isUnique;
                 dbTable.Indexes.Add(tableIndex);
 
-                table.DefaultView.RowFilter = $"Name='{name}'";
+                table.DefaultView.RowFilter = $"Name='{name.Replace("'", "''")}'";
+
                 table.DefaultView.Sort = "Name,KeyOrdinal";
                 foreach (DataRowView rowView in table.DefaultView)
                 {
@@ -181,8 +183,7 @@ namespace Bee.Db.Providers.SqlServer
                           "WHERE B.name={0} \n" +
                           "ORDER BY A.column_id";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
-            var dbAccess = new DbAccessObject(DatabaseId);
-            var result = dbAccess.Execute(command);
+            var result = _dbAccess.Execute(command);
             var table = result.Table;
             table.TableName = "Columns";
             return table;

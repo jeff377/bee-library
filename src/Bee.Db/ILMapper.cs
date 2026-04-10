@@ -18,6 +18,20 @@ namespace Bee.Db
             new ConcurrentDictionary<(Type, string), Delegate>();
 
         /// <summary>
+        /// Clears the cached mapping delegates for type <typeparamref name="T"/>.
+        /// Call this method to release memory in long-running applications or when query shapes are no longer needed.
+        /// </summary>
+        public static void ClearCache()
+        {
+            _cache.Clear();
+        }
+
+        /// <summary>
+        /// Gets the number of cached mapping delegates for type <typeparamref name="T"/>.
+        /// </summary>
+        public static int CacheCount => _cache.Count;
+
+        /// <summary>
         /// Creates a mapping function that converts a <see cref="DbDataReader"/> row to type <typeparamref name="T"/>.
         /// </summary>
         /// <param name="reader">The DbDataReader containing the query results.</param>

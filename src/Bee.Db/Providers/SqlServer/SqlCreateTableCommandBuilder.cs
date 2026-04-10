@@ -44,6 +44,24 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
+        /// Quotes a SQL Server identifier by escaping <c>]</c> as <c>]]</c> and wrapping in square brackets.
+        /// </summary>
+        /// <param name="identifier">The identifier to quote.</param>
+        private static string QuoteName(string identifier)
+        {
+            return $"[{identifier.Replace("]", "]]")}]";
+        }
+
+        /// <summary>
+        /// Escapes a string value for use inside an N'...' literal by doubling single quotes.
+        /// </summary>
+        /// <param name="value">The string value to escape.</param>
+        private static string EscapeSqlString(string value)
+        {
+            return value.Replace("'", "''");
+        }
+
+        /// <summary>
         /// Gets the SQL statement for creating or upgrading a table.
         /// </summary>
         /// <param name="dbTable">The table schema definition.</param>
@@ -94,8 +112,10 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="tableName">The table name.</param>
         private string GetDropTableCommandText(string tableName)
         {
-            return $"IF (SELECT COUNT(*) From sys.tables WHERE name=N'{tableName}')>0\n" +
-                        $"  EXEC('DROP TABLE {tableName}');";
+            string escaped = EscapeSqlString(tableName);
+            string quoted = QuoteName(tableName);
+            return $"IF (SELECT COUNT(*) From sys.tables WHERE name=N'{escaped}')>0\n" +
+                        $"  DROP TABLE {quoted};";
         }
 
         /// <summary>
@@ -106,19 +126,20 @@ namespace Bee.Db.Providers.SqlServer
         private string GetInsertTableCommandText(string tableName, string newTableName)
         {
            // Build the list of fields to migrate
-            string fields = string.Empty;
+            var fieldBuilder = new StringBuilder();
             foreach (DbField field in this.TableSchema.Fields)
             {
                 if (field.UpgradeAction != DbUpgradeAction.New && field.DbType != FieldDbType.AutoIncrement)
                 {
-                    if (StrFunc.IsNotEmpty(fields))
-                        fields += ", ";
-                    fields += $"[{field.FieldName}]";
+                    if (fieldBuilder.Length > 0)
+                        fieldBuilder.Append(", ");
+                    fieldBuilder.Append(QuoteName(field.FieldName));
                 }
             }
+            string fields = fieldBuilder.ToString();
             // Build the INSERT INTO ... SELECT statement
-            string  sql = $"INSERT INTO [{newTableName}] ({fields}) \n" +
-                                  $"SELECT {fields} FROM [{tableName}];";
+            string sql = $"INSERT INTO {QuoteName(newTableName)} ({fields}) \n" +
+                                  $"SELECT {fields} FROM {QuoteName(tableName)};";
             return sql;
         }
 
@@ -135,10 +156,10 @@ namespace Bee.Db.Providers.SqlServer
             {
                 string oldName = StrFunc.Format(index.Name, tableName);  // Old index name
                 string newName = StrFunc.Format(index.Name, newTableName);  // New index name
-                sb.Append($"EXEC sp_rename N'dbo.{tableName}.{oldName}', N'{newName}', N'INDEX';\n");
+                sb.Append($"EXEC sp_rename N'{EscapeSqlString($"dbo.{tableName}.{oldName}")}', N'{EscapeSqlString(newName)}', N'INDEX';\n");
             }
             // Rename the table
-            sb.Append($"EXEC sp_rename N'{tableName}', N'{newTableName}';\n");
+            sb.Append($"EXEC sp_rename N'{EscapeSqlString(tableName)}', N'{EscapeSqlString(newTableName)}';\n");
             return sb.ToString();
         }
 
@@ -159,7 +180,7 @@ namespace Bee.Db.Providers.SqlServer
 
             var sb = new StringBuilder();
             // Assemble the CREATE TABLE statement
-            sb.Append($"CREATE TABLE [{dbTableName}] (\r\n{fields}");
+            sb.Append($"CREATE TABLE {QuoteName(dbTableName)} (\r\n{fields}");
             if (StrFunc.IsNotEmpty(primaryKey))
                 sb.Append($",\r\n  {primaryKey}");
             sb.Append("\r\n);");
@@ -209,9 +230,9 @@ namespace Bee.Db.Providers.SqlServer
                 defaultText = string.Empty;
 
             if (StrFunc.IsEmpty(defaultText))
-                return $"[{field.FieldName}] {dbType} {allowNull}";
+                return $"{QuoteName(field.FieldName)} {dbType} {allowNull}";
             else
-                return $"[{field.FieldName}] {dbType} {allowNull} {defaultText}";
+                return $"{QuoteName(field.FieldName)} {dbType} {allowNull} {defaultText}";
         }
 
         /// <summary>
@@ -300,16 +321,16 @@ namespace Bee.Db.Providers.SqlServer
             if (index == null) { return string.Empty; }
 
             // Build the index field list
-            string fields = string.Empty;
+            var fieldBuilder = new StringBuilder();
             foreach (IndexField field in index.IndexFields)
             {
-                if (StrFunc.IsNotEmpty(fields))
-                    fields += ", ";
-                fields += $"[{field.FieldName}] {field.SortDirection.ToString().ToUpper()}";
+                if (fieldBuilder.Length > 0)
+                    fieldBuilder.Append(", ");
+                fieldBuilder.Append($"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpper()}");
             }
 
             string name = StrFunc.Format(index.Name, tableName);
-            return $"CONSTRAINT [{name}] PRIMARY KEY ({fields})";
+            return $"CONSTRAINT {QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
         /// <summary>
@@ -337,18 +358,18 @@ namespace Bee.Db.Providers.SqlServer
             // Index name
             string name = StrFunc.Format(index.Name, tableName);
             // Index fields
-            string fields = string.Empty;
+            var fieldBuilder = new StringBuilder();
             foreach (IndexField field in index.IndexFields)
             {
-                if (StrFunc.IsNotEmpty(fields))
-                    fields += ", ";
-                fields += $"[{field.FieldName}] {field.SortDirection.ToString().ToUpper()}";
+                if (fieldBuilder.Length > 0)
+                    fieldBuilder.Append(", ");
+                fieldBuilder.Append($"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpper()}");
             }
             // Generate the CREATE INDEX statement
             if (index.Unique)
-                return $"CREATE UNIQUE INDEX [{name}] ON [{tableName}] ({fields});";
+                return $"CREATE UNIQUE INDEX {QuoteName(name)} ON {QuoteName(tableName)} ({fieldBuilder});";
             else
-                return $"CREATE INDEX [{name}] ON [{tableName}] ({fields});";
+                return $"CREATE INDEX {QuoteName(name)} ON {QuoteName(tableName)} ({fieldBuilder});";
         }
     }
 }
