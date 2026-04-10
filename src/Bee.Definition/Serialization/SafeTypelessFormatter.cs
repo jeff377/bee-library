@@ -108,7 +108,8 @@ namespace Bee.Definition.Serialization
 
         /// <summary>
         /// Validates whether the specified type full name is in the allowed whitelist.
-        /// Used by both the formatter (post-check) and <see cref="SafeMessagePackSerializerOptions"/> (pre-check).
+        /// Used by both the formatter (post-check) and the pre-instantiation check
+        /// in the custom <see cref="MessagePackSerializerOptions"/> subclass.
         /// </summary>
         /// <param name="fullName">The full name of the type to validate.</param>
         /// <returns><c>true</c> if the type is allowed; otherwise, <c>false</c>.</returns>
