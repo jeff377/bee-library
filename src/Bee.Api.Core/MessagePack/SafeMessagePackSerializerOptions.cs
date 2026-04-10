@@ -6,10 +6,10 @@ namespace Bee.Api.Core.MessagePack
 {
     /// <summary>
     /// Custom <see cref="MessagePackSerializerOptions"/> that enforces the allowed type whitelist
-    /// during <see cref="MessagePack.Formatters.TypelessFormatter"/> deserialization.
+    /// during <c>TypelessFormatter</c> deserialization.
     /// </summary>
     /// <remarks>
-    /// <see cref="MessagePack.Formatters.TypelessFormatter"/> calls
+    /// <c>TypelessFormatter</c> calls
     /// <see cref="MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowed"/>
     /// <b>before</b> instantiating the deserialized object. This override applies
     /// <see cref="SafeTypelessFormatter.IsTypeAllowed"/> at that point, preventing
@@ -40,7 +40,7 @@ namespace Bee.Api.Core.MessagePack
 
         /// <summary>
         /// Validates that the type is allowed for deserialization before object instantiation.
-        /// Called by <see cref="MessagePack.Formatters.TypelessFormatter"/> during deserialization.
+        /// Called by <c>TypelessFormatter</c> during deserialization.
         /// </summary>
         /// <param name="type">The type about to be instantiated.</param>
         /// <exception cref="InvalidOperationException">

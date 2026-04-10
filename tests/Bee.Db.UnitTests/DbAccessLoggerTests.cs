@@ -10,7 +10,7 @@ namespace Bee.Db.UnitTests
         public void LogError_ValidContext_DoesNotThrow()
         {
             var command = new Bee.Db.DbAccess.DbCommandSpec(
-                Bee.Db.DbAccess.DbCommandKind.NonQuery,
+                Bee.Db.DbCommandKind.NonQuery,
                 "UPDATE test SET col={0}", "value");
             var context = DbAccessLogger.LogStart(command, "testDb");
 
@@ -32,7 +32,7 @@ namespace Bee.Db.UnitTests
         public void LogError_NullException_ThrowsArgumentNull()
         {
             var command = new Bee.Db.DbAccess.DbCommandSpec(
-                Bee.Db.DbAccess.DbCommandKind.NonQuery, "SELECT 1");
+                Bee.Db.DbCommandKind.NonQuery, "SELECT 1");
             var context = DbAccessLogger.LogStart(command);
             Assert.Throws<ArgumentNullException>(() => DbAccessLogger.LogError(context, null!));
         }
