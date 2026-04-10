@@ -4,9 +4,21 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.slnx'
+      - 'Directory.Build.props'
+      - '.github/workflows/build-ci.yml'
   pull_request:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - '*.slnx'
+      - 'Directory.Build.props'
+      - '.github/workflows/build-ci.yml'
 
 jobs:
   build:
