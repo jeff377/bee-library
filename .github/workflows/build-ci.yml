@@ -33,11 +33,8 @@ jobs:
       with:
         dotnet-version: 10.0.x
 
-    - name: Restore dependencies
-      run: dotnet restore Bee.Library.slnx
-
     - name: Build
-      run: dotnet build Bee.Library.slnx --configuration Release --no-restore
+      run: dotnet build Bee.Library.slnx --configuration Release
 
     - name: Test
       run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal
