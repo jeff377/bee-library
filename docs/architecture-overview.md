@@ -1,389 +1,392 @@
-# BeeNET 框架架構總覽
+# BeeNET Framework Architecture Overview
 
-> 定義導向架構（Definition-Driven Architecture）在 ERP 系統中的設計理念與實踐模式
+[繁體中文](architecture-overview.zh-TW.md)
 
----
-
-## 目錄
-
-1. [架構核心理念](#1-架構核心理念)
-2. [架構模式定位](#2-架構模式定位)
-3. [FormSchema 定義中樞](#3-formschema-定義中樞)
-4. [FormLayout 介面層定義](#4-formlayout-介面層定義)
-5. [TableSchema 資料層定義](#5-tableschema-資料層定義)
-6. [DataSet 作為 DTO](#6-dataset-作為-dto)
-7. [Business Object（BO）](#7-business-objectbo)
-8. [Repository 雙軌策略](#8-repository-雙軌策略)
-9. [MVVM 整合](#9-mvvm-整合)
-10. [NoCode / LowCode / AnyCode 演進軸線](#10-nocode--lowcode--anycode-演進軸線)
-11. [整體架構圖](#11-整體架構圖)
-12. [關鍵設計決策摘要](#12-關鍵設計決策摘要)
+> Definition-Driven Architecture: design philosophy and practical patterns for ERP systems
 
 ---
 
-## 1. 架構核心理念
+## Table of Contents
 
-BeeNET 採用**定義導向架構（Definition-Driven Architecture）**，以 `FormSchema` 作為系統的唯一定義來源（Single Source of Truth），統一驅動 UI、資料庫結構與業務邏輯，解決傳統 ERP 開發中規格分散三層、重複實作、難以維護的核心痛點。
-
-**設計精神：**
-
-- **將複雜度封裝在架構層**，簡化上層開發
-- **以結構定義驅動跨層自動化**（UI / DB / Logic）
-- **讓定義成為主要的開發介面**，而非程式碼
-
-### 傳統 ERP 開發的痛點
-
-| 痛點 | 說明 |
-|------|------|
-| 規格分散三層 | 新增一個欄位，UI / DTO / DB Migration 各改一次，極易不一致 |
-| 業務邏輯分散 | 不同模組由不同工程師維護，風格不一、重複開發 |
-| 客製化難回饋 | 客製邏輯無法標準化，累積成難以治理的技術債 |
-
-### 適用邊界
-
-| 適用 | 不適用 |
-|------|--------|
-| 表單中心資料應用（主/明細、稽核、驗證） | 高併發、事件密集系統（電商、社群、遊戲） |
-| 多端統一後台（Web / App / WinForms） | 高頻微服務場景 |
-| 企業內部管理系統（HR、財務、採購、倉儲、CRM） | |
+1. [Core Architecture Philosophy](#1-core-architecture-philosophy)
+2. [Architecture Pattern Positioning](#2-architecture-pattern-positioning)
+3. [FormSchema: The Definition Hub](#3-formschema-the-definition-hub)
+4. [FormLayout: UI Layer Definition](#4-formlayout-ui-layer-definition)
+5. [TableSchema: Data Layer Definition](#5-tableschema-data-layer-definition)
+6. [DataSet as DTO](#6-dataset-as-dto)
+7. [Business Object (BO)](#7-business-object-bo)
+8. [Repository Dual-Track Strategy](#8-repository-dual-track-strategy)
+9. [MVVM Integration](#9-mvvm-integration)
+10. [NoCode / LowCode / AnyCode Evolution Axis](#10-nocode--lowcode--anycode-evolution-axis)
+11. [Overall Architecture Diagram](#11-overall-architecture-diagram)
+12. [Key Design Decision Summary](#12-key-design-decision-summary)
 
 ---
 
-## 2. 架構模式定位
+## 1. Core Architecture Philosophy
 
-BeeNET 採用 **N-Tier + Clean Architecture + MVVM** 的混合模式，從各模式取用最適合 ERP 場景的概念。
+BeeNET adopts a **Definition-Driven Architecture**, using `FormSchema` as the system's single source of truth to uniformly drive UI, database schema, and business logic. This addresses the core pain points of traditional ERP development: specifications scattered across three layers, redundant implementations, and difficulty in maintenance.
 
-### 各模式取用對照
+**Design Principles:**
 
-| 模式 | 取用的概念 | 體現於 BeeNET |
-|------|-----------|--------------|
-| **N-Tier** | 明確層次邊界、DataSet 跨層傳遞、實用主義 | UI / API / BO / Repository / DB 各層分明 |
-| **Clean Architecture** | 依賴方向向內、Domain Core 最穩定、Use Case 隔離 | FormSchema 為 Domain Core；BO 為 Use Case；Repository 為 Interface Adapter |
-| **MVVM** | ViewModel 隔離 View 與 Model、雙向綁定 | FormSchema 驅動 ViewModel 結構；DataSet 為 Model |
+- **Encapsulate complexity in the architecture layer** to simplify application-level development
+- **Use structural definitions to drive cross-layer automation** (UI / DB / Logic)
+- **Make definitions the primary development interface**, not code
 
-### 與純 Clean Architecture 的務實取捨
+### Pain Points of Traditional ERP Development
 
-純 Clean Architecture 要求每個業務概念都有強型別 Domain Entity，ERP 表單數量龐大（百張以上），逐一撰寫 Entity + Mapper 成本極高。
+| Pain Point | Description |
+|------------|-------------|
+| Specifications scattered across layers | Adding a single field requires separate changes in UI / DTO / DB Migration, easily leading to inconsistencies |
+| Scattered business logic | Different modules maintained by different engineers result in inconsistent styles and duplicated efforts |
+| Customizations hard to standardize | Custom logic cannot be standardized, accumulating into unmanageable technical debt |
 
-BeeNET 以 **DataSet 取代強型別 Entity**，帶來：
-- 不需為每張表單定義對應 Entity
-- FormSchema 動態描述結構，新增欄位不需改程式碼
-- 跨層傳遞無需 mapping，減少不必要的轉換層
+### Applicability Boundaries
 
-這是 **pragmatic clean architecture**——保留依賴方向與職責隔離，省去 ERP 場景中不必要的 Entity 建模成本。
+| Suitable | Not Suitable |
+|----------|--------------|
+| Form-centric data applications (master/detail, auditing, validation) | High-concurrency, event-intensive systems (e-commerce, social media, gaming) |
+| Multi-endpoint unified backend (Web / App / WinForms) | High-frequency microservice scenarios |
+| Enterprise internal management systems (HR, finance, procurement, warehouse, CRM) | |
 
 ---
 
-## 3. FormSchema 定義中樞
+## 2. Architecture Pattern Positioning
 
-`FormSchema` 是 BeeNET 架構的核心，一份**跨層共用的結構描述模型**。
+BeeNET adopts a **N-Tier + Clean Architecture + MVVM** hybrid pattern, borrowing the most suitable concepts from each pattern for ERP scenarios.
 
-### 職責範圍
+### Pattern Adoption Comparison
 
-- **欄位定義**：欄位名稱、資料型別、長度、預設值
-- **行為定義**：必填、唯讀、隱藏、驗證規則
-- **關聯定義**：與其他表單（FormSchema）之間的主/明細關係
-- **SQL 產生依據**：Repository CRUD 從 FormSchema 動態產生 SQL
-- **UI 推導來源**：FormLayout 從 FormSchema 推導版面結構
-- **DB 推導來源**：TableSchema 從 FormSchema 推導資料表結構
+| Pattern | Adopted Concepts | Manifested in BeeNET |
+|---------|-----------------|----------------------|
+| **N-Tier** | Clear layer boundaries, DataSet for cross-layer transfer, pragmatism | Distinct UI / API / BO / Repository / DB layers |
+| **Clean Architecture** | Inward dependency direction, Domain Core as the most stable layer, Use Case isolation | FormSchema as Domain Core; BO as Use Case; Repository as Interface Adapter |
+| **MVVM** | ViewModel isolates View from Model, two-way binding | FormSchema drives ViewModel structure; DataSet serves as Model |
 
-### 定義生成流程
+### Pragmatic Trade-offs vs. Pure Clean Architecture
+
+Pure Clean Architecture requires a strongly-typed Domain Entity for every business concept. ERP systems have a vast number of forms (hundreds or more), making the cost of writing Entity + Mapper for each one prohibitively high.
+
+BeeNET **replaces strongly-typed Entities with DataSet**, which brings:
+- No need to define a corresponding Entity for every form
+- FormSchema dynamically describes structure; adding a field requires no code changes
+- Cross-layer transfer without mapping, eliminating unnecessary conversion layers
+
+This is **pragmatic clean architecture** -- preserving dependency direction and separation of responsibilities while eliminating the unnecessary Entity modeling cost in ERP scenarios.
+
+---
+
+## 3. FormSchema: The Definition Hub
+
+`FormSchema` is the core of the BeeNET architecture -- a **cross-layer shared structural description model**.
+
+### Scope of Responsibility
+
+- **Field definitions**: field name, data type, length, default value
+- **Behavior definitions**: required, read-only, hidden, validation rules
+- **Relationship definitions**: master/detail relationships between forms (FormSchemas)
+- **SQL generation basis**: Repository CRUD dynamically generates SQL from FormSchema
+- **UI derivation source**: FormLayout derives layout structure from FormSchema
+- **DB derivation source**: TableSchema derives table structure from FormSchema
+
+### Definition Generation Flow
 
 ```mermaid
 graph TD
-    subgraph 產生 FormSchema
-        A1["AI 智能生成（自然語言 → FormSchema）"]
-        A2["視覺化工具調整（拖拉欄位與關聯）"]
+    subgraph Generate FormSchema
+        A1["AI-powered generation (natural language -> FormSchema)"]
+        A2["Visual tool adjustments (drag-and-drop fields and relationships)"]
     end
 
-    A1 --> FD["FormSchema（表單結構定義）"]
+    A1 --> FD["FormSchema (form structure definition)"]
     A2 --> FD
 
-    FD --> FL["FormLayout（介面配置）"]
-    FD --> DT["TableSchema（資料表結構）"]
+    FD --> FL["FormLayout (UI layout configuration)"]
+    FD --> DT["TableSchema (database table structure)"]
 
-    FL --> UI["Web / Desktop / App 動態表單"]
-    DT --> DB["資料庫建立與維護"]
+    FL --> UI["Web / Desktop / App dynamic forms"]
+    DT --> DB["Database creation and maintenance"]
 ```
 
-### Override 機制
+### Override Mechanism
 
-FormLayout 與 TableSchema 預設由 FormSchema 推導產生，但支援獨立調整：
+FormLayout and TableSchema are derived from FormSchema by default, but support independent adjustments:
 
 ```
-FormSchema 更新
-    ↓
-重新推導「預設值」
-    ↓
-與現有 FormLayout / TableSchema 做 diff
-    ├─ 未手動調整的部分 → 更新
-    └─ 已手動覆寫的部分 → 保留
+FormSchema updated
+    |
+Re-derive "default values"
+    |
+Diff against existing FormLayout / TableSchema
+    |-- Unmodified parts -> Updated
+    +-- Manually overridden parts -> Preserved
 ```
 
-這確保 FormSchema 演進時，人工調整的客製設定不會被覆蓋。
+This ensures that when FormSchema evolves, manually adjusted custom settings are not overwritten.
 
 ---
 
-## 4. FormLayout 介面層定義
+## 4. FormLayout: UI Layer Definition
 
-`FormLayout` 是 FormSchema 在 UI 維度的投影，描述表單的視覺配置。
+`FormLayout` is the UI-dimension projection of FormSchema, describing the visual configuration of a form.
 
-### 定位
+### Positioning
 
 | | XAML | FormLayout |
 |--|--|--|
-| 目的 | 通用 UI 描述語言 | 專為 ERP 制式表單設計 |
-| 複雜度 | 高，需處理所有 UI 場景 | 低，只描述 Master / Detail / Field 結構 |
-| 跨端 | 主要 WPF / MAUI | Web / Desktop / App 統一 |
-| 產生方式 | 手寫 | 從 FormSchema 自動推導，再微調 |
+| Purpose | General-purpose UI description language | Designed specifically for standardized ERP forms |
+| Complexity | High; must handle all UI scenarios | Low; only describes Master / Detail / Field structure |
+| Cross-platform | Primarily WPF / MAUI | Unified across Web / Desktop / App |
+| Generation | Hand-written | Auto-derived from FormSchema, then fine-tuned |
 
-### ERP 制式版面模式
+### Standardized ERP Layout Pattern
 
 ```
-┌────────────────────────────────────┐
-│ Header（主檔欄位群）               │  ← 固定區
-├────────────────────────────────────┤
-│ Tab 1：明細 Grid                   │  ← 明細區（One2Many）
-│ Tab 2：附加資訊                    │
-├────────────────────────────────────┤
-│ Footer（統計欄位）                 │  ← 固定區
-└────────────────────────────────────┘
++------------------------------------+
+| Header (master fields)             |  <- Fixed area
++------------------------------------+
+| Tab 1: Detail Grid                 |  <- Detail area (One2Many)
+| Tab 2: Additional Information      |
++------------------------------------+
+| Footer (summary fields)            |  <- Fixed area
++------------------------------------+
 ```
 
-這種收斂的版面模式讓 FormLayout 能以遠比 XAML 簡潔的語法完整描述，並在 Web / Desktop / App 三端動態渲染。
+This constrained layout pattern allows FormLayout to fully describe forms with a far more concise syntax than XAML, and dynamically render across Web / Desktop / App.
 
 ---
 
-## 5. TableSchema 資料層定義
+## 5. TableSchema: Data Layer Definition
 
-`TableSchema` 是 FormSchema 在資料庫維度的投影，負責描述並維護資料表結構。
+`TableSchema` is the database-dimension projection of FormSchema, responsible for describing and maintaining table structures.
 
-### 職責
+### Responsibilities
 
-- 從 FormSchema 推導資料表欄位、型別、長度
-- 執行資料庫 DDL：CREATE TABLE / ALTER TABLE（欄位新增、修改）
-- DBA 可針對索引、精度、預設值進行獨立調整
+- Derive table columns, types, and lengths from FormSchema
+- Execute database DDL: CREATE TABLE / ALTER TABLE (add and modify columns)
+- DBA can independently adjust indexes, precision, and default values
 
-### 調整範例
+### Adjustment Example
 
 ```
-FormSchema：欄位 Amount，型別 Decimal
-    ↓ 推導
-TableSchema 預設：DECIMAL(18, 2)
-    ↓ DBA 調整（獨立於 FormSchema）
-TableSchema 實際：DECIMAL(24, 6)  +  INDEX  +  DEFAULT 0
+FormSchema: field Amount, type Decimal
+    | derived
+TableSchema default: DECIMAL(18, 2)
+    | DBA adjustment (independent of FormSchema)
+TableSchema actual: DECIMAL(24, 6)  +  INDEX  +  DEFAULT 0
 ```
 
-FormSchema 不需要知道資料庫層的最佳化細節，TableSchema 可獨立演進。
+FormSchema does not need to know database-layer optimization details; TableSchema can evolve independently.
 
 ---
 
-## 6. DataSet 作為 DTO
+## 6. DataSet as DTO
 
-BeeNET 使用 ADO.NET `DataSet` 作為跨層的資料傳輸物件（DTO），而非自訂強型別 POCO。
+BeeNET uses ADO.NET `DataSet` as the cross-layer Data Transfer Object (DTO), rather than custom strongly-typed POCOs.
 
-### 選用理由
+### Rationale
 
-| 特性 | 說明 |
-|------|------|
-| **原生支援 Master-Detail** | `DataRelation` 天然表達主明細結構，ERP 表單幾乎都是這種形態 |
-| **自描述結構** | DataSet 本身含 schema，傳輸時不需額外型別定義 |
-| **多表同時攜帶** | 一個 DataSet 可帶主表 + 多個明細表，一次傳遞整筆作業資料 |
-| **跨層一致** | UI 層、BO 層、Repository 層共用同一物件，不需 mapping |
+| Characteristic | Description |
+|----------------|-------------|
+| **Native Master-Detail support** | `DataRelation` naturally expresses master-detail structure; nearly all ERP forms follow this pattern |
+| **Self-describing structure** | DataSet carries its own schema; no additional type definitions needed during transfer |
+| **Multi-table transport** | A single DataSet can carry a master table plus multiple detail tables, transferring an entire transaction's data at once |
+| **Cross-layer consistency** | UI layer, BO layer, and Repository layer share the same object; no mapping required |
 
-### 設計邊界
+### Design Boundary
 
-DataSet 只是**資料的容器**，本身不包含任何業務邏輯。所有邏輯由 BO 負責，DataSet 只提供資料。
+DataSet is purely a **data container** and contains no business logic whatsoever. All logic resides in the BO; DataSet only provides data.
 
 ---
 
-## 7. Business Object（BO）
+## 7. Business Object (BO)
 
-`Business Object`（BO）是業務邏輯的核心，對應 Clean Architecture 中的 Use Case 層。
+`Business Object` (BO) is the core of business logic, corresponding to the Use Case layer in Clean Architecture.
 
-### 職責
+### Responsibilities
 
-- 提供表單作業對應的方法（Save、Delete、Validate、Query…）
-- 依據 FormSchema 執行資料驗證
-- 協調 DataSet（資料）與 Repository（資料存取）
-- **不直接存取資料庫**，一律透過 Repository
+- Provide methods corresponding to form operations (Save, Delete, Validate, Query...)
+- Execute data validation based on FormSchema
+- Coordinate DataSet (data) and Repository (data access)
+- **Never access the database directly**; always go through Repository
 
-### 典型方法結構
+### Typical Method Structure
 
 ```csharp
 public class SalesOrderBO
 {
-    // CRUD：透過 FormSchema 驅動的 Repository
+    // CRUD: via FormSchema-driven Repository
     public void Save(DataSet ds)
     {
-        // 1. 依 FormSchema 驗證 DataSet 資料
-        // 2. 呼叫 FormSchema-driven Repository 執行 INSERT / UPDATE
+        // 1. Validate DataSet data based on FormSchema
+        // 2. Call FormSchema-driven Repository to execute INSERT / UPDATE
     }
 
     public void Delete(DataSet ds) { ... }
 
-    // 報表：BO 自行實作，完全自控
+    // Reports: BO implements directly with full control
     public DataSet GetSalesSummaryReport(ReportFilter filter)
     {
-        // 自行撰寫複雜 SQL 或呼叫 Stored Procedure
+        // Write complex SQL or call Stored Procedure directly
     }
 
-    // 批次：BO 自行實作，控制交易與分批邏輯
+    // Batch: BO implements directly, controlling transaction and batching logic
     public void BatchUpdatePrices(IEnumerable<PriceRule> rules)
     {
-        // 自訂交易邊界、錯誤回補策略
+        // Custom transaction boundaries, error compensation strategies
     }
 }
 ```
 
-同一個 BO 內可混用兩種 Repository 策略，上層呼叫端無需感知底層走哪條路。
+A single BO can mix both Repository strategies; the caller does not need to know which track is used underneath.
 
 ---
 
-## 8. Repository 雙軌策略
+## 8. Repository Dual-Track Strategy
 
-Repository 採用**雙軌並行**設計，依作業性質選擇適合的實作方式。
+Repository adopts a **dual-track parallel** design, choosing the appropriate implementation based on the nature of the operation.
 
-### 雙軌對照
+### Dual-Track Comparison
 
-| 軌道 | 適用作業 | SQL 來源 | 特性 |
-|------|----------|----------|------|
-| **FormSchema 驅動** | CRUD（新增、修改、刪除） | FormSchema 動態產生 | 定義一處，自動同步；無需手寫 SQL |
-| **AnyCode** | 報表、分析查詢、批次作業 | BO 自行撰寫 | 完全自控；複雜 JOIN、彙總、效能調校 |
+| Track | Applicable Operations | SQL Source | Characteristics |
+|-------|----------------------|------------|-----------------|
+| **FormSchema-driven** | CRUD (create, update, delete) | Dynamically generated from FormSchema | Define once, auto-sync; no hand-written SQL |
+| **AnyCode** | Reports, analytical queries, batch operations | Written by BO | Full control; complex JOINs, aggregations, performance tuning |
 
-### 為什麼這樣劃分
+### Why This Division
 
-ERP 的 CRUD 高度同質化，幾乎所有表單都是：
-
-```
-驗證必填 → 驗證格式 → 驗證關聯 → INSERT / UPDATE / DELETE
-```
-
-這 80% 的作業量讓 FormSchema 驅動，開發者只需定義，不需撰寫程式。
-
-報表與批次作業的 SQL 往往是多表 JOIN + GROUP BY + 動態條件，或需要控制交易邊界與分批策略，強行套入 FormSchema 反而增加不必要的複雜度。
-
-### 基礎設施共用
-
-兩軌共用底層的連線管理與交易管理：
+ERP CRUD operations are highly homogeneous; nearly all forms follow:
 
 ```
-FormSchema-driven Repository ─┐
-                               ├─→ 共用 UnitOfWork / ConnectionFactory
-AnyCode Repository ────────────┘
+Validate required -> Validate format -> Validate relationships -> INSERT / UPDATE / DELETE
 ```
 
-這確保跨軌的操作（例如：CRUD 主單 + 批次更新庫存）可以在**同一個交易**內協作，commit / rollback 保持一致。
+This 80% of workload is handled by FormSchema-driven operations -- developers only need to define, not write code.
+
+Reports and batch operations often involve multi-table JOINs + GROUP BY + dynamic conditions, or require control over transaction boundaries and batching strategies. Forcing them into FormSchema would only add unnecessary complexity.
+
+### Shared Infrastructure
+
+Both tracks share underlying connection management and transaction management:
+
+```
+FormSchema-driven Repository --+
+                                +--> Shared UnitOfWork / ConnectionFactory
+AnyCode Repository -------------+
+```
+
+This ensures cross-track operations (e.g., CRUD on the main order + batch inventory update) can collaborate within **the same transaction**, keeping commit / rollback consistent.
 
 ---
 
-## 9. MVVM 整合
+## 9. MVVM Integration
 
-BeeNET 以 MVVM 模式整合前端，FormSchema 直接驅動 ViewModel 的 binding 結構。
+BeeNET integrates with the frontend using the MVVM pattern, with FormSchema directly driving the ViewModel binding structure.
 
-### 層次對應
+### Layer Mapping
 
-| MVVM 角色 | BeeNET 對應 | 說明 |
-|-----------|------------|------|
-| **Model** | DataSet | 承載表單資料，無邏輯 |
-| **ViewModel** | 由 FormSchema 推導 | 欄位行為、驗證規則、binding 結構 |
-| **View** | Web / Desktop / App | 透過 FormLayout 動態渲染 |
+| MVVM Role | BeeNET Counterpart | Description |
+|-----------|--------------------|-------------|
+| **Model** | DataSet | Carries form data; no logic |
+| **ViewModel** | Derived from FormSchema | Field behavior, validation rules, binding structure |
+| **View** | Web / Desktop / App | Dynamically rendered via FormLayout |
 
-### 資料流
+### Data Flow
 
 ```
-使用者操作
-    ↓↑（雙向綁定）
-ViewModel（FormSchema 推導 binding 結構）
-    ↓↑
-DataSet（Model）
-    ↓
+User interaction
+    |^ (two-way binding)
+ViewModel (binding structure derived from FormSchema)
+    |^
+DataSet (Model)
+    |
 BO.Save(DataSet)
-    ↓
-Repository → Database
+    |
+Repository -> Database
 ```
 
-FormSchema 改變時，ViewModel 的 binding 結構自動更新，View 無需手動調整。
+When FormSchema changes, the ViewModel binding structure updates automatically; the View requires no manual adjustments.
 
 ---
 
-## 10. NoCode / LowCode / AnyCode 演進軸線
+## 10. NoCode / LowCode / AnyCode Evolution Axis
 
-BeeNET 提供三種開發深度，同一條演進軸線，非互斥的技術堆疊。
+BeeNET provides three levels of development depth along a single evolution axis -- they are complementary, not mutually exclusive technology stacks.
 
-### 三段對照
+### Three-Level Comparison
 
-| 模式 | 自由度 | 實作方式 | 適用情境 |
-|------|--------|----------|----------|
-| **NoCode** | 中 | FormSchema → FormLayout + TableSchema 自動產生 | 標準流程、資料導向表單 |
-| **LowCode** | 高 | 事件、條件、規則擴充 BO | 輕度客製邏輯 |
-| **AnyCode** | 完全 | 自訂 UI / BO 方法 / AnyCode Repository | 複雜邏輯、跨模組整合、報表批次 |
+| Mode | Flexibility | Implementation | Applicable Scenarios |
+|------|-------------|----------------|---------------------|
+| **NoCode** | Medium | FormSchema -> FormLayout + TableSchema auto-generated | Standard workflows, data-oriented forms |
+| **LowCode** | High | Events, conditions, and rules to extend BO | Light customization logic |
+| **AnyCode** | Full | Custom UI / BO methods / AnyCode Repository | Complex logic, cross-module integration, reports and batch operations |
 
-### 演進循環
+### Evolution Cycle
 
 ```mermaid
 flowchart LR
-    A[NoCode：定義化實現]
-    --> B[LowCode：事件/條件擴充]
-    --> C[AnyCode：進階邏輯]
-    --> D[架構回饋：模式沉澱回定義層]
+    A[NoCode: Definition-driven implementation]
+    --> B[LowCode: Event/condition extensions]
+    --> C[AnyCode: Advanced logic]
+    --> D[Architecture feedback: Patterns distilled back to definition layer]
     --> A
 ```
 
-每一次 AnyCode 客製所發現的通用模式，可沉澱回 FormSchema 或 BO 基類，使下一次開發更自動化。
+Common patterns discovered during each AnyCode customization can be distilled back into FormSchema or BO base classes, making the next development cycle more automated.
 
 ---
 
-## 11. 整體架構圖
+## 11. Overall Architecture Diagram
 
 ```
-┌──────────────────────────────────────────────────────┐
-│  View                                                │
-│  WinForms / Web (Blazor/React) / App (MAUI)         │  MVVM: View
-├──────────────────────────────────────────────────────┤
-│  ViewModel                                          │  MVVM: ViewModel
-│  （由 FormSchema 推導 binding 結構）                 │
-├──────────────────────────────────────────────────────┤
-│  API Layer  (Bee.Api.AspNetCore / JSON-RPC 2.0)     │  N-Tier: Presentation
-├──────────────────────────────────────────────────────┤
-│                                                      │
-│  Business Object (BO)                               │  Clean Arch: Use Case
-│  ├─ CRUD 方法（依 FormSchema 驗證 + Repository）    │
-│  ├─ 報表方法（AnyCode Repository）                  │
-│  └─ 批次方法（AnyCode Repository）                  │
-│                                                      │
-│  ┌──────────────────────────────────┐               │
-│  │  FormSchema（定義中樞）           │               │  Clean Arch: Domain Core
-│  │  欄位行為 / 表單關係 / 驗證規則  │               │
-│  └──────┬───────────────┬───────────┘               │
-│         ↓               ↓                           │
-│   FormLayout         TableSchema                    │
-│   （介面配置）       （資料表結構）                  │
-│                                                      │
-├──────────────────────────────────────────────────────┤
-│  DataSet（DTO）                                     │  N-Tier: Data Transfer
-│  Master Table + Detail Tables                       │
-├──────────────────────────────────────────────────────┤
-│  Repository                                         │  Clean Arch: Interface Adapter
-│  ├─ FormSchema-driven（CRUD SQL 自動產生）           │
-│  └─ AnyCode（報表/批次，BO 自行實作）               │
-│  └─ 共用 UnitOfWork / ConnectionFactory             │
-├──────────────────────────────────────────────────────┤
-│  Database（MSSQL / MySQL / PostgreSQL …）           │  N-Tier: Data Layer
-└──────────────────────────────────────────────────────┘
++------------------------------------------------------+
+|  View                                                |
+|  WinForms / Web (Blazor/React) / App (MAUI)         |  MVVM: View
++------------------------------------------------------+
+|  ViewModel                                           |  MVVM: ViewModel
+|  (binding structure derived from FormSchema)         |
++------------------------------------------------------+
+|  API Layer  (Bee.Api.AspNetCore / JSON-RPC 2.0)     |  N-Tier: Presentation
++------------------------------------------------------+
+|                                                      |
+|  Business Object (BO)                                |  Clean Arch: Use Case
+|  +- CRUD methods (FormSchema validation + Repository)|
+|  +- Report methods (AnyCode Repository)              |
+|  +- Batch methods (AnyCode Repository)               |
+|                                                      |
+|  +----------------------------------+                |
+|  |  FormSchema (definition hub)     |                |  Clean Arch: Domain Core
+|  |  Field behavior / Form relations |                |
+|  |  / Validation rules              |                |
+|  +------+-----------------+---------+                |
+|         |                 |                          |
+|   FormLayout         TableSchema                     |
+|   (UI layout)        (table structure)               |
+|                                                      |
++------------------------------------------------------+
+|  DataSet (DTO)                                       |  N-Tier: Data Transfer
+|  Master Table + Detail Tables                        |
++------------------------------------------------------+
+|  Repository                                          |  Clean Arch: Interface Adapter
+|  +- FormSchema-driven (CRUD SQL auto-generated)      |
+|  +- AnyCode (reports/batch, BO-implemented)          |
+|  +- Shared UnitOfWork / ConnectionFactory            |
++------------------------------------------------------+
+|  Database (MSSQL / MySQL / PostgreSQL ...)           |  N-Tier: Data Layer
++------------------------------------------------------+
 ```
 
 ---
 
-## 12. 關鍵設計決策摘要
+## 12. Key Design Decision Summary
 
-| 決策點 | 選擇 | 理由 |
-|--------|------|------|
-| **DTO 型別** | ADO.NET DataSet | ERP Master-Detail 結構；跨層一致不需 mapping |
-| **Domain 核心** | FormSchema（而非 Entity） | ERP 表單數量龐大，動態定義優於逐一建模 |
-| **邏輯層** | BO（獨立於資料） | Clean Arch Use Case；不依賴 DB 實作細節 |
-| **CRUD SQL** | FormSchema 動態產生 | 定義一處，欄位新增自動同步 |
-| **複雜查詢/批次** | AnyCode Repository | ERP 報表/批次需完整自控；框架不應限制複雜場景 |
-| **介面定義** | FormLayout（非 XAML） | 專為 ERP 制式版面；結構收斂，語法更簡潔 |
-| **DB 維護** | TableSchema 推導 + 可調整 | 自動同步定義；DBA 仍可獨立最佳化索引與型別 |
-| **架構混合** | N-Tier + Clean Arch + MVVM | 各取最適合 ERP 的概念；不強迫純理論套用 |
+| Decision Point | Choice | Rationale |
+|----------------|--------|-----------|
+| **DTO type** | ADO.NET DataSet | ERP Master-Detail structure; cross-layer consistency without mapping |
+| **Domain core** | FormSchema (not Entity) | Vast number of ERP forms; dynamic definitions are superior to modeling each one individually |
+| **Logic layer** | BO (independent of data) | Clean Arch Use Case; does not depend on DB implementation details |
+| **CRUD SQL** | Dynamically generated from FormSchema | Define once; adding fields auto-syncs |
+| **Complex queries/batch** | AnyCode Repository | ERP reports/batch require full control; the framework should not constrain complex scenarios |
+| **UI definition** | FormLayout (not XAML) | Designed for standardized ERP layouts; constrained structure, more concise syntax |
+| **DB maintenance** | TableSchema derivation + adjustable | Auto-sync with definitions; DBA can still independently optimize indexes and types |
+| **Architecture hybrid** | N-Tier + Clean Arch + MVVM | Borrowing the most suitable concepts for ERP from each; not forcing pure theoretical application |
