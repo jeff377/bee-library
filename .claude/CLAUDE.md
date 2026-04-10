@@ -52,7 +52,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 
 1. 將計畫寫成 md 文件，存至 `docs/plans/` 目錄，檔名格式：`plan-<主題>.md`
 2. 等待使用者確認後，才開始執行
-3. 計畫執行完成後，將計畫文件移至 `docs/plans/archive/` 封存
+3. 計畫執行完成後，由使用者要求時才將計畫文件移至 `docs/plans/archive/` 封存
 
 ## 架構參考
 
