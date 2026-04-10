@@ -45,7 +45,15 @@ namespace Bee.Db.DbAccess
             var conn = factory.CreateConnection()
                        ?? throw new InvalidOperationException("Failed to create database connection: DbProviderFactory.CreateConnection() returned null.");
             conn.ConnectionString = connectionString;
-            conn.Open();
+            try
+            {
+                conn.Open();
+            }
+            catch
+            {
+                conn.Dispose();
+                throw;
+            }
             return new DbConnectionScope(conn, true);
         }
 
@@ -73,7 +81,15 @@ namespace Bee.Db.DbAccess
             var conn = factory.CreateConnection()
                        ?? throw new InvalidOperationException("Failed to create database connection: DbProviderFactory.CreateConnection() returned null.");
             conn.ConnectionString = connectionString;
-            await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                await conn.OpenAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                conn.Dispose();
+                throw;
+            }
             return new DbConnectionScope(conn, true);
         }
 

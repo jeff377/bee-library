@@ -363,7 +363,7 @@ namespace Bee.Db.DbAccess
                 }
                 catch
                 {
-                    tran?.Rollback();
+                    TryRollbackQuiet(tran);
                     throw;
                 }
                 finally
