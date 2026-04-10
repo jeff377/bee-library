@@ -50,6 +50,9 @@ jobs:
         dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore
         dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore
 
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --verbosity normal
+
     - name: Pack NuGet packages (驗證用，不推送)
       run: |
         dotnet pack src/Bee.Base/Bee.Base.csproj --configuration Release --output ./nupkgs --no-build
