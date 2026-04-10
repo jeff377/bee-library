@@ -1,5 +1,6 @@
+using System.ComponentModel;
 using Bee.Base.Security;
-﻿using System.Security.Cryptography;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Bee.Base.UnitTests
@@ -13,7 +14,8 @@ namespace Bee.Base.UnitTests
         private readonly byte[] _hmacKey = Encoding.UTF8.GetBytes("abcdef0123456789abcdef0123456789"); // 32 bytes
 
         [Fact]
-        public void Encrypt_And_Decrypt_Should_Return_Original_Plaintext()
+        [DisplayName("加密後解密應還原為原始明文")]
+        public void EncryptAndDecrypt_ValidPlaintext_ReturnsOriginalText()
         {
             // Arrange
             string originalText = "Bee.NET 測試資料內容";
@@ -29,7 +31,8 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        public void Encrypt_SamePlaintext_Should_ProduceDifferentCiphertext()
+        [DisplayName("相同明文加密兩次應產生不同密文")]
+        public void Encrypt_SamePlaintext_ProducesDifferentCiphertext()
         {
             // Arrange
             byte[] plainBytes = Encoding.UTF8.GetBytes("相同內容測試");
@@ -43,7 +46,8 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        public void Decrypt_WithTamperedCipher_Should_ThrowCryptographicException()
+        [DisplayName("解密被竄改的密文應擲出 CryptographicException")]
+        public void Decrypt_TamperedCiphertext_ThrowsCryptographicException()
         {
             // Arrange
             byte[] plainBytes = Encoding.UTF8.GetBytes("敏感資料");

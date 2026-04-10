@@ -1,4 +1,5 @@
-﻿using Bee.Api.Core.MessagePack;
+using System.ComponentModel;
+using Bee.Api.Core.MessagePack;
 using Bee.Api.Contracts;
 using Bee.Api.Contracts.System;
 using Bee.Definition;
@@ -14,7 +15,8 @@ namespace Bee.Api.Core.UnitTests
         /// 單一測試：對 CheckPackageUpdateArgs/Result 與 GetPackageArgs/Result 進行 round-trip 並比對內容。
         /// </summary>
         [Fact]
-        public void ContractTypes_Roundtrip_With_MessagePackHelper_Succeeds()
+        [DisplayName("合約型別 MessagePack 序列化與反序列化 round-trip 應成功")]
+        public void ContractTypes_RoundTrip_Succeeds()
         {
             // ===== 1) CheckPackageUpdateArgs → Serialize/Deserialize（泛型） =====
             var checkArgs = new CheckPackageUpdateArgs

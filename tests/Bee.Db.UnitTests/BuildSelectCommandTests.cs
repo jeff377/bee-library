@@ -1,4 +1,5 @@
-﻿using Bee.Definition.Filters;
+using System.ComponentModel;
+using Bee.Definition.Filters;
 using Bee.Definition;
 using Bee.Db.Providers.SqlServer;
 using Bee.Tests.Shared;
@@ -9,7 +10,8 @@ namespace Bee.Db.UnitTests
     public class BuildSelectCommandTests
     {
         [LocalOnlyFact]
-        public void BuildSelectCommand_SelectOnlyMasterFields()
+        [DisplayName("BuildSelectCommand 僅選取主檔欄位時不應產生 JOIN")]
+        public void BuildSelectCommand_SelectOnlyMasterFields_NoJoin()
         {
             // 測試：只 Select 主檔欄位，不應產生任何 JOIN
             var builder = new SqlFormCommandBuilder("Project");
@@ -22,7 +24,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void BuildSelectCommand_WhereOnReferencedField()
+        [DisplayName("BuildSelectCommand Where 條件使用參考欄位時應產生 JOIN")]
+        public void BuildSelectCommand_WhereOnReferencedField_GeneratesJoin()
         {
             // 測試：Select 主檔欄位，但 Where 條件使用參考欄位，應只 JOIN 該參考表
             var builder = new SqlFormCommandBuilder("Project");
@@ -38,7 +41,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void BuildSelectCommand_OrderByReferencedField()
+        [DisplayName("BuildSelectCommand Order By 使用參考欄位時應產生 JOIN")]
+        public void BuildSelectCommand_OrderByReferencedField_GeneratesJoin()
         {
             // 測試：Select 主檔欄位，但 Order By 使用參考欄位，應只 JOIN 該參考表
             var builder = new SqlFormCommandBuilder("Project");
@@ -55,7 +59,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void BuildSelectCommand_SelectWithMultipleReferences()
+        [DisplayName("BuildSelectCommand 選取多個參考欄位時應產生多個 JOIN")]
+        public void BuildSelectCommand_SelectWithMultipleReferences_GeneratesMultipleJoins()
         {
             // 測試：Select 包含多個參考欄位，應 JOIN 對應的多個參考表
             var builder = new SqlFormCommandBuilder("Project");
@@ -75,7 +80,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void BuildSelectCommand_FilterGroupWithMultipleConditions()
+        [DisplayName("BuildSelectCommand FilterGroup 含多條件時應正確產生參數與 JOIN")]
+        public void BuildSelectCommand_FilterGroupWithMultipleConditions_GeneratesParametersAndJoin()
         {
             // 測試：FilterGroup 包含多個條件，使用不同參考欄位
             var builder = new SqlFormCommandBuilder("Project");

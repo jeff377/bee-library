@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Bee.Definition.Forms;
 using Bee.Base;
 using Bee.Base.Data;
@@ -8,7 +9,8 @@ namespace Bee.Definition.UnitTests
     public class FormSchemaTest
     {
         [Fact]
-        public void DepartmentFormTable()
+        [DisplayName("FormSchema 建立部門表單定義應包含有效的主檔表")]
+        public void CreateFormSchema_DepartmentWithRelations_HasMasterTable()
         {
             var formSchema = new FormSchema("Department", "部門");
             var table = formSchema.Tables.Add("Department", "部門");
@@ -38,7 +40,8 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        public void EmployeeFormTable()
+        [DisplayName("FormSchema 建立員工表單定義應包含關聯欄位參考")]
+        public void CreateFormSchema_EmployeeWithRelations_HasRelationFieldReferences()
         {
             var formSchema = new FormSchema("Employee", "員工");
             var table = formSchema.Tables.Add("Employee", "員工");

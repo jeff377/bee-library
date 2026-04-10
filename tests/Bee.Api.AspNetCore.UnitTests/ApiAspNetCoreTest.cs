@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Text;
 using Bee.Api.AspNetCore.Controllers;
 using Bee.Api.Core.JsonRpc;
@@ -22,19 +23,19 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// ���եΪ� ApiServiceController ���O�C
+        /// 測試用的 ApiServiceController 類別。
         /// </summary>
         public class ApiServiceController : Controllers.ApiServiceController { }
 
         /// <summary>
-        /// ���o JSON-RPC �ШD�ҫ��� JSON �r��C
+        /// 取得 JSON-RPC 請求模型的 JSON 字串。
         /// </summary>
-        /// <param name="progId">�{���N�X�C</param>
-        /// <param name="action">����ʧ@�C</param>
-        /// <param name="args">�ǤJ��ơC</param>
+        /// <param name="progId">程式代碼。</param>
+        /// <param name="action">執行動作。</param>
+        /// <param name="args">傳入值。</param>
         private string GetRpcRequestJson(string progId, string action, object args)
         {
-            // �]�w JSON-RPC �ШD�ҫ�
+            // 設定 JSON-RPC 請求模型
             var request = new JsonRpcRequest()
             {
                 Method = $"{progId}.{action}",
@@ -48,17 +49,17 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// ���� ApiServiceController �öǦ^�ϧǦC�Ƶ��G�C
+        /// 執行 ApiServiceController 並傳回反序列化結果。
         /// </summary>
-        /// <typeparam name="TResult">�^�ǫ��O�C</typeparam>
-        /// <param name="accessToken">�s���O�P�C</param>
-        /// <param name="progId">�{���N�X�C</param>
-        /// <param name="action">����ʧ@�C</param>
-        /// <param name="args">JSON-RPC �ǤJ�ѼơC</param>
-        /// <returns>�ϧǦC�ƫ᪺���浲�G�C</returns>
+        /// <typeparam name="TResult">回傳型別。</typeparam>
+        /// <param name="accessToken">存取權杖。</param>
+        /// <param name="progId">程式代碼。</param>
+        /// <param name="action">執行動作。</param>
+        /// <param name="args">JSON-RPC 傳入參數。</param>
+        /// <returns>反序列化後的執行結果。</returns>
         private async Task<TResult> ExecuteRpcAsync<TResult>(Guid accessToken, string progId, string action, object args)
         {
-            // �إ� JSON-RPC �ШD���e
+            // 建立 JSON-RPC 請求內容
             string json = GetRpcRequestJson(progId, action, args);
 
             var requestBody = new MemoryStream(Encoding.UTF8.GetBytes(json));
@@ -76,7 +77,7 @@ namespace Bee.Api.AspNetCore.UnitTests
                 }
             };
 
-            // ���� API
+            // 執行 API
             var result = await controller.PostAsync();
             var contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(StatusCodes.Status200OK, contentResult.StatusCode);
@@ -88,17 +89,17 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// �����n�J�è��o AccessToken�C
+        /// 模擬登入並取得 AccessToken。
         /// </summary>
         /// <returns></returns>
         private async Task<Guid> GetAccessTokenAsync()
         {
             if (_accessToken == Guid.Empty)
             {
-                // �����n�J�A��ڱ��p���q API �n�J���o AccessToken
+                // 模擬登入，實際上是透過 API 登入取得 AccessToken
                 var args = new LoginArgs()
                 {
-                    UserId = "demo",    
+                    UserId = "demo",
                     Password = "1234"
                 };
                 var result = await ExecuteRpcAsync<LoginResult>(Guid.Empty, SysProgIds.System, "Login", args);
@@ -108,10 +109,11 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// ���� Ping ��k�C
+        /// 測試 Ping 方法。
         /// </summary>
         [LocalOnlyFact]
-        public async Task Ping()
+        [DisplayName("Ping 應回傳正確狀態與追蹤識別碼")]
+        public async Task Ping_ValidRequest_ReturnsOkStatus()
         {
             var args = new PingArgs()
             {
@@ -125,7 +127,8 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         [LocalOnlyFact]
-        public async Task Hello()
+        [DisplayName("ExecFunc 執行 Hello 應回傳非 null 結果")]
+        public async Task ExecFunc_Hello_ReturnsNotNull()
         {
             Guid accessToken = await GetAccessTokenAsync();
             var args = new ExecFuncArgs("Hello");

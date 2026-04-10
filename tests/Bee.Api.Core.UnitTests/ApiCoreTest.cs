@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
@@ -20,10 +21,11 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// JSON-RPC �ШD�ҫ��ǦC�ơC
+        /// JSON-RPC 請求模型序列化。
         /// </summary>
         [Fact]
-        public void JsonRpcRequestSerialize()
+        [DisplayName("JsonRpcRequest 序列化應產生有效 JSON 並支援編碼與解碼")]
+        public void JsonRpcRequest_Serialize_ReturnsValidJson()
         {
             var request = new JsonRpcRequest()
             {
@@ -37,27 +39,27 @@ namespace Bee.Api.Core.UnitTests
             string json = request.ToJson();
             Assert.NotEmpty(json);
 
-            // ���սs�X
+            // 測試編碼
             ApiPayloadConverter.TransformTo(request.Params, PayloadFormat.Encoded);
             string encodedJson = request.ToJson();
             Assert.NotEmpty(encodedJson);
 
-            // ���ոѽX
+            // 測試解碼
             ApiPayloadConverter.RestoreFrom(request.Params, PayloadFormat.Encoded);
             string decodedJson = request.ToJson();
             Assert.NotEmpty(decodedJson);
         }
 
         /// <summary>
-        /// ���� API ��k�C
+        /// 執行 API 方法。
         /// </summary>
-        /// <param name="accessToken">�s���O�P�C</param>
-        /// <param name="progId">�{���N�X�C</param>
-        /// <param name="action">����ʧ@�C</param>
-        /// <param name="value">�ǤJ��ơC</param>
+        /// <param name="accessToken">存取權杖。</param>
+        /// <param name="progId">程式代碼。</param>
+        /// <param name="action">執行動作。</param>
+        /// <param name="value">傳入值。</param>
         private T ApiExecute<T>(Guid accessToken, string progId, string action, object value)
         {
-            // �]�w JSON-RPC �ШD�ҫ�
+            // 設定 JSON-RPC 請求模型
             var request = new JsonRpcRequest()
             {
                 Method = $"{progId}.{action}",
@@ -74,14 +76,14 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// �����n�J�è��o AccessToken�C
+        /// 模擬登入並取得 AccessToken。
         /// </summary>
         /// <returns></returns>
         private Guid GetAccessToken()
         {
             if (_accessToken == Guid.Empty)
             {
-                // �����n�J�A��ڱ��p���q API �n�J���o AccessToken
+                // 模擬登入，實際上是透過 API 登入取得 AccessToken
                 var args = new LoginArgs()
                 {
                     UserId = "demo",
@@ -94,10 +96,11 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// �z�L API ���� Ping ��k�C
+        /// 透過 API 執行 Ping 方法。
         /// </summary>
         [LocalOnlyFact]
-        public void Ping()
+        [DisplayName("Ping 應回傳正確狀態與追蹤識別碼")]
+        public void Ping_ValidRequest_ReturnsOkStatus()
         {
             var args = new PingArgs()
             {
@@ -111,10 +114,11 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// ���� GetCommonConfiguration ��k�C
+        /// 測試 GetCommonConfiguration 方法。
         /// </summary>
         [LocalOnlyFact]
-        public void GetCommonConfiguration()
+        [DisplayName("GetCommonConfiguration 應回傳非 null 結果")]
+        public void GetCommonConfiguration_ValidRequest_ReturnsNotNull()
         {
             var args = new GetCommonConfigurationArgs();
             var result = ApiExecute<GetCommonConfigurationResult>(Guid.Empty, SysProgIds.System, SystemActions.GetCommonConfiguration, args);
@@ -123,15 +127,16 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// �z�L API ���� Hello ��k�C
+        /// 透過 API 執行 Hello 方法。
         /// </summary>
         [LocalOnlyFact]
-        public void Hello()
+        [DisplayName("ExecFunc 執行 Hello 應回傳非 null 結果")]
+        public void ExecFunc_Hello_ReturnsNotNull()
         {
-            // ���o AccessToken
+            // 取得 AccessToken
             Guid accessToken = GetAccessToken();
 
-            // �]�w �]�w JSON-RPC �ШD�ҫ�
+            // 設定 JSON-RPC 請求模型
             var request = new JsonRpcRequest()
             {
                 Method = $"{SysProgIds.System}.ExecFunc",
@@ -143,12 +148,12 @@ namespace Bee.Api.Core.UnitTests
             };
 
             string json = request.ToJson();
-            // ���� API ��k
+            // 執行 API 方法
             var executor = new JsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
-            // ���o ExecFunc ��k�ǥX���G
+            // 取得 ExecFunc 方法傳出結果
             var execFuncResult = response.Result.Value as ExecFuncResult;
-            Assert.NotNull(execFuncResult);  // �T�{ ExecFunc ��k�ǥX���G���� null
+            Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null
         }
 
     }

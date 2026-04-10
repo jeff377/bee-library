@@ -1,5 +1,6 @@
+using System.ComponentModel;
 using Bee.Base.Serialization;
-﻿using System.Text;
+using System.Text;
 
 namespace Bee.Base.UnitTests
 {
@@ -9,7 +10,8 @@ namespace Bee.Base.UnitTests
         /// 測試壓縮功能，檢查資料是否能成功壓縮。
         /// </summary>
         [Fact]
-        public void TestCompress()
+        [DisplayName("壓縮後解壓縮應還原為原始資料")]
+        public void Compress_ValidInput_ReturnsCompressedBytesThatDecompressCorrectly()
         {
             // 輸入資料：較大的字串資料
             string originalText = new string('A', 1024); // 1024 個 'A' 字符
@@ -34,7 +36,8 @@ namespace Bee.Base.UnitTests
         /// 測試解壓縮功能，確保壓縮和解壓縮能正常工作。
         /// </summary>
         [Fact]
-        public void TestUncompress()
+        [DisplayName("解壓縮應還原為與原始資料相同的內容")]
+        public void Decompress_CompressedInput_ReturnsOriginalData()
         {
             // 輸入資料：原始資料字串
             string originalText = "這是要進行解壓縮的測試資料！";

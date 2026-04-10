@@ -1,4 +1,5 @@
-﻿using Bee.Definition.Security;
+using System.ComponentModel;
+using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Base;
 using Bee.Base.Security;
@@ -14,7 +15,8 @@ namespace Bee.Definition.UnitTests
         /// 驗證 SecurityKeys 可以正確解密 API 與 Cookie 金鑰。
         /// </summary>
         [Fact]
-        public void Should_InitializeSecurityKeys_Correctly()
+        [DisplayName("SecurityKeys 初始化後應正確解密 API 與 Cookie 金鑰")]
+        public void InitializeSecurityKeys_ValidMasterKey_DecryptsKeysCorrectly()
         {
             // 建立模擬金鑰
             byte[] masterKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
@@ -57,7 +59,7 @@ namespace Bee.Definition.UnitTests
             AesCbcHmacKeyGenerator.FromCombinedKey(masterKey, out var aesKey, out var hmacKey);
 
             apiKey = Array.Empty<byte>();
-            cookieKey = Array.Empty<byte>();    
+            cookieKey = Array.Empty<byte>();
             // 解密 API 金鑰，如果設定中有提供。
             if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
             {

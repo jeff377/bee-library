@@ -1,4 +1,5 @@
-﻿using Bee.Repository.System;
+using System.ComponentModel;
+using Bee.Repository.System;
 using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests
@@ -7,8 +8,9 @@ namespace Bee.Repository.UnitTests
     public class SessionRepositoryTests
     {
         [LocalOnlyFact]
-        public void CreateSession()
-        {            
+        [DisplayName("CreateSession 傳入有效使用者編號應建立 Session")]
+        public void CreateSession_ValidUserId_CreatesSession()
+        {
             var repo = new SessionRepository();
             var sessionUse = repo.CreateSession("001");
         }

@@ -1,5 +1,6 @@
+using System.ComponentModel;
 using Bee.Base.Security;
-﻿using System.Text;
+using System.Text;
 
 namespace Bee.Base.UnitTests
 {
@@ -9,7 +10,8 @@ namespace Bee.Base.UnitTests
     public class FileHashValidatorTests
     {
         [Fact]
-        public void ComputeThenVerifySha256_Succeeds()
+        [DisplayName("計算 SHA256 雜湊後驗證應成功且不區分大小寫")]
+        public void ComputeAndVerifySha256_ValidFile_VerificationSucceeds()
         {
             // Arrange
             var dir = Path.Combine(Path.GetTempPath(), "BeeBaseTests");

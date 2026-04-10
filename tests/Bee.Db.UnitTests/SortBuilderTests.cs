@@ -1,4 +1,5 @@
-﻿using Bee.Definition;
+using System.ComponentModel;
+using Bee.Definition;
 using Bee.Db.Query;
 
 namespace Bee.Db.UnitTests
@@ -6,7 +7,8 @@ namespace Bee.Db.UnitTests
     public class SortBuilderTests
     {
         [Fact]
-        public void Build_NullSorts_ThrowsArgumentNullException()
+        [DisplayName("Build 傳入 null 排序集合應回傳空字串")]
+        public void Build_NullSorts_ReturnsEmptyString()
         {
             var builder = new SortBuilder(DatabaseType.SQLServer);
             var result = builder.Build(null);
@@ -14,6 +16,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("Build 傳入空排序集合應回傳空字串")]
         public void Build_EmptySorts_ReturnsEmptyString()
         {
             var builder = new SortBuilder(DatabaseType.SQLServer);
@@ -22,6 +25,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("Build 單一排序欄位應回傳正確的 ORDER BY 子句")]
         public void Build_SingleSortItem_ReturnsCorrectOrderByClause()
         {
             var builder = new SortBuilder(DatabaseType.SQLServer);
@@ -34,6 +38,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("Build 多個排序欄位應回傳正確的 ORDER BY 子句")]
         public void Build_MultipleSortItems_ReturnsCorrectOrderByClause()
         {
             var builder = new SortBuilder(DatabaseType.SQLServer);
@@ -47,6 +52,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("Build 排序欄位含 SQL 運算式應回傳正確的 ORDER BY 子句")]
         public void Build_SortItemWithSqlExpression_ReturnsCorrectOrderByClause()
         {
             var builder = new SortBuilder(DatabaseType.SQLServer);

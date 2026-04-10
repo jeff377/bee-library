@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Bee.Definition.Filters;
 using Bee.Base;
 using Bee.Definition;
@@ -17,19 +18,20 @@ namespace Bee.Db.UnitTests
 
 
         /// <summary>
-        /// ���� SQL �d�ߡA�è��o DataTable�C
+        /// 執行 SQL 查詢，並取得 DataTable。
         /// </summary>
         [LocalOnlyFact]
-        public void ExecuteDataTable()
+        [DisplayName("ExecuteDataTable 執行多種參數化查詢應回傳有效 DataTable")]
+        public void ExecuteDataTable_VariousParameterFormats_ReturnsDataTable()
         {
-            // �� DbAccess �޲z�s�u
+            // 由 DbAccess 管理連線
             string sql = "SELECT * FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var dbAccess = new DbAccessObject("common");
             var result = dbAccess.Execute(command);
             Assert.NotNull(result.Table);
 
-            // �ѥ~���޲z�s�u
+            // 由外部管理連線
             using (var conn = DbFunc.CreateConnection("common"))
             {
                 dbAccess = new DbAccessObject(conn);
@@ -62,10 +64,11 @@ namespace Bee.Db.UnitTests
         }
 
         /// <summary>
-        /// �D�P�B���� SQL �d�ߡA�è��o DataTable�C
+        /// 非同步執行 SQL 查詢，並取得 DataTable。
         /// </summary>
         [LocalOnlyFact]
-        public async Task ExecuteDataTableAsync()
+        [DisplayName("ExecuteDataTableAsync 非同步查詢應回傳含資料列的 DataTable")]
+        public async Task ExecuteDataTableAsync_ValidQuery_ReturnsNonEmptyDataTable()
         {
             string sql = "SELECT * FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
@@ -77,7 +80,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void ExecuteNonQuery()
+        [DisplayName("ExecuteNonQuery 更新資料應成功執行")]
+        public void ExecuteNonQuery_UpdateRow_Executes()
         {
             int i = BaseFunc.RndInt(0, 100);
             string sql = "Update st_user Set note={1} Where sys_id = {0}";
@@ -88,7 +92,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public async Task ExecuteNonQueryAsync()
+        [DisplayName("ExecuteNonQueryAsync 非同步更新資料應成功執行")]
+        public async Task ExecuteNonQueryAsync_UpdateRow_Executes()
         {
             int i = BaseFunc.RndInt(0, 100);
             string sql = "Update st_user Set note={1} Where sys_id = {0}";
@@ -99,7 +104,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void ExecuteScalar()
+        [DisplayName("ExecuteScalar 查詢單一值應成功執行")]
+        public void ExecuteScalar_SelectSingleValue_ReturnsScalar()
         {
             string sql = "Select note From st_user Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, "001");
@@ -123,7 +129,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void Query()
+        [DisplayName("Query 查詢應回傳強型別物件清單")]
+        public void Query_ValidSql_ReturnsMappedObjects()
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
@@ -133,7 +140,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public async Task QueryAsync()
+        [DisplayName("QueryAsync 非同步查詢應回傳強型別物件清單")]
+        public async Task QueryAsync_ValidSql_ReturnsMappedObjects()
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
@@ -143,36 +151,38 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void UpdateDataTable()
+        [DisplayName("UpdateDataTable 修改資料列後更新應影響至少一筆資料")]
+        public void UpdateDataTable_ModifiedRow_AffectsRows()
         {
             var dbAccess = new DbAccessObject("common");
 
-            // 1.�d�� st_user �Ҧ����
+            // 1.查詢 st_user 所有資料
             string sql = "SELECT * FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             var result = dbAccess.Execute(command);
             var table = result.Table;
             Assert.NotNull(table);
-            Assert.True(table.Rows.Count > 0, "st_user �������");
+            Assert.True(table.Rows.Count > 0, "st_user 無任何資料");
 
-            // 2. �ק�Ĥ@�����
+            // 2. 修改第一筆資料
             int i = BaseFunc.RndInt(0, 100);
             var row = table.Rows[0];
             row["note"] = i.ToString();
 
-            // 3. �� DbTableCommandBuilder ���� DataTableUpdateSpec
+            // 3. 用 DbTableCommandBuilder 建立 DataTableUpdateSpec
             var tableSchema = BackendInfo.DefineAccess.GetTableSchema("common", "st_user");
             var builder = new TableSchemaCommandBuilder(tableSchema);
             var updateSpec = builder.BuildUpdateSpec(table);
 
-            // 4. ���� UpdateDataTable
+            // 4. 執行 UpdateDataTable
             int affected = dbAccess.UpdateDataTable(updateSpec);
 
-            Assert.True(affected > 0, "������ƳQ��s");
+            Assert.True(affected > 0, "沒有資料被更新");
         }
 
         [LocalOnlyFact]
-        public void ExecuteBacth()
+        [DisplayName("ExecuteBatch 批次執行含交易的多個命令應成功")]
+        public void ExecuteBatch_WithTransaction_Succeeds()
         {
             var batch = new DbBatchSpec();
             batch.UseTransaction = true;
@@ -187,7 +197,8 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public async Task ExecuteBacthAsync()
+        [DisplayName("ExecuteBatchAsync 非同步批次執行含交易的多個命令應成功")]
+        public async Task ExecuteBatchAsync_WithTransaction_Succeeds()
         {
             var batch = new DbBatchSpec();
             batch.UseTransaction = true;
@@ -202,14 +213,16 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void SqlDbTableTest()
+        [DisplayName("SqlTableSchemaProvider 取得資料表結構應成功")]
+        public void SqlTableSchemaProvider_GetTableSchema_ReturnsSchema()
         {
             var helper = new SqlTableSchemaProvider("common");
             var dbTable = helper.GetTableSchema("st_user");
         }
 
         [LocalOnlyFact]
-        public void FormCommandBuildTest()
+        [DisplayName("SqlFormCommandBuilder 建立 Select 命令應成功")]
+        public void BuildSelectCommand_WithAndWithoutFields_ReturnsCommands()
         {
             var builder = new SqlFormCommandBuilder("Employee");
             var command = builder.BuildSelectCommand("Employee", string.Empty);
@@ -217,11 +230,12 @@ namespace Bee.Db.UnitTests
         }
 
         [LocalOnlyFact]
-        public void FormCommandBuildWithFilterNodeTest()
+        [DisplayName("SqlFormCommandBuilder 搭配篩選條件與排序建立 Select 命令應成功")]
+        public void BuildSelectCommand_WithFilterAndSort_ReturnsCommands()
         {
             var builder = new SqlFormCommandBuilder("Employee");
 
-            // �إߤ@�� FilterCondition �z�� sys_id = '001'
+            // 建立一個 FilterCondition 表示 sys_id = '001'
             var filter = new FilterCondition
             {
                 FieldName = "sys_id",
@@ -229,19 +243,19 @@ namespace Bee.Db.UnitTests
                 Value = "001"
             };
 
-            // �إ߱Ƨ���춰�X
+            // 建立排序欄位集合
             var sortFields = new SortFieldCollection();
-            sortFields.Add(new SortField("sys_id",  SortDirection.Asc)); // �� sys_id ���W�Ƨ�
+            sortFields.Add(new SortField("sys_id",  SortDirection.Asc)); // 以 sys_id 做升冪排序
 
-            // �ǤJ filter node �P sortFields �� BuildSelectCommand
+            // 傳入 filter node 與 sortFields 至 BuildSelectCommand
             var command = builder.BuildSelectCommand("Employee", string.Empty, filter, sortFields);
             Assert.NotNull(command);
 
-            // �]�i���զh���P filter �P sortFields
+            // 也可搭配多個欄位 filter 與 sortFields
             var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", filter, sortFields);
             Assert.NotNull(command2);
 
-            // ���� filter �D Select ���A�O�_�ॿ�T�إ� Join
+            // 測試 filter 非 Select 欄位，是否正確建立 Join
             filter = new FilterCondition
             {
                 FieldName = "ref_supervisor_id",

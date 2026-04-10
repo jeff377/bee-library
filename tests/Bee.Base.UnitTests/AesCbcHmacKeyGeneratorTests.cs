@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using Bee.Base.Security;
-﻿namespace Bee.Base.UnitTests
+
+namespace Bee.Base.UnitTests
 {
     /// <summary>
     /// 測試 AesCbcHmacKeyGenerator 的金鑰產生與還原邏輯。
@@ -10,7 +12,8 @@ using Bee.Base.Security;
         /// 驗證金鑰產生、Base64 編碼與還原後的 AES 與 HMAC 金鑰一致。
         /// </summary>
         [Fact]
-        public void GenerateAndParseKey_ShouldBeValidAndConsistent()
+        [DisplayName("產生組合金鑰後透過 Base64 還原應取得一致的 AES 與 HMAC 金鑰")]
+        public void GenerateAndParseKey_FromCombinedAndBase64_ReturnsConsistentKeys()
         {
             // Arrange: 建立一組隨機 AES + HMAC 金鑰，並合併為 CombinedKey
             byte[] combinedKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
@@ -31,7 +34,8 @@ using Bee.Base.Security;
         /// 驗證兩次產生的組合金鑰應不同，以確保亂數安全性。
         /// </summary>
         [Fact]
-        public void GenerateCombinedKey_ShouldBeRandomEachTime()
+        [DisplayName("每次產生的組合金鑰應為不同的隨機值")]
+        public void GenerateCombinedKey_CalledTwice_ReturnsDifferentKeys()
         {
             // Arrange & Act: 產生兩組不同的組合金鑰
             var key1 = AesCbcHmacKeyGenerator.GenerateCombinedKey();
@@ -45,7 +49,8 @@ using Bee.Base.Security;
         /// 驗證錯誤長度的組合金鑰應丟出 ArgumentException。
         /// </summary>
         [Fact]
-        public void FromCombinedKey_WithInvalidLength_ShouldThrowException()
+        [DisplayName("使用無效長度的組合金鑰應擲出 ArgumentException")]
+        public void FromCombinedKey_InvalidLength_ThrowsArgumentException()
         {
             // Arrange: 構造不合法長度的金鑰資料
             var invalid = new byte[48];

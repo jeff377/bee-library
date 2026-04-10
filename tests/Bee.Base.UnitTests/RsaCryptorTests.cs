@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.ComponentModel;
 using Xunit;
 using Bee.Base;
 using Bee.Base.Security;
@@ -11,7 +12,8 @@ namespace Bee.Base.UnitTests
     public class RsaCryptorTests
     {
         [Fact]
-        public void Rsa_Encrypt_Decrypt_Should_Succeed()
+        [DisplayName("RSA 公鑰加密後以私鑰解密應還原為原始明文")]
+        public void EncryptAndDecrypt_ValidKeyPair_ReturnsOriginalText()
         {
             // Arrange
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
@@ -27,7 +29,8 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        public void Rsa_Decrypt_With_Wrong_Key_Should_Throw()
+        [DisplayName("使用錯誤私鑰解密應擲出例外")]
+        public void Decrypt_WrongPrivateKey_ThrowsException()
         {
             // Arrange
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml1, out var privateKeyXml1);

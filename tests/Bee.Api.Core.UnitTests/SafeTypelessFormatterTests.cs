@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
 using Bee.Definition.Collections;
 

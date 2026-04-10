@@ -1,4 +1,5 @@
-﻿using Bee.Api.Core;
+using System.ComponentModel;
+using Bee.Api.Core;
 using Bee.Api.Core.Validator;
 using Bee.Definition;
 using Bee.Definition.Attributes;
@@ -9,6 +10,7 @@ namespace Bee.Api.Core.UnitTests
     public class ApiAccessValidatorTests
     {
         [Theory]
+        [DisplayName("ValidateAccess 依保護等級與傳輸格式正確驗證存取權限")]
         [InlineData(ApiProtectionLevel.Public, PayloadFormat.Plain, true)]                      // 遠端呼叫 Public API，使用 Plain 傳輸 → ✅ 允許
         [InlineData(ApiProtectionLevel.Encoded, PayloadFormat.Encoded, true)]                  // 遠端呼叫 Encoded API，使用 Encoded 傳輸 → ✅ 允許
         [InlineData(ApiProtectionLevel.Encoded, PayloadFormat.Plain, false)]                   // 遠端呼叫 Encoded API，使用 Plain 傳輸 → ❌ 拒絕（缺少編碼）
@@ -18,7 +20,7 @@ namespace Bee.Api.Core.UnitTests
         [InlineData(ApiProtectionLevel.Encrypted, PayloadFormat.Plain, true, true)]            // 近端呼叫 Encrypted API，使用 Plain 傳輸 → ✅ 允許（本機不受加密限制）
         [InlineData(ApiProtectionLevel.Encoded, PayloadFormat.Plain, true, true)]              // 近端呼叫 Encoded API，使用 Plain 傳輸 → ✅ 允許（本機不受編碼限制）
         [InlineData(ApiProtectionLevel.Public, PayloadFormat.Plain, true, true)]               // 近端呼叫 Public API，使用 Plain 傳輸 → ✅ 允許
-        public void ValidateAccess_WithVariousFormats_ValidatesCorrectly(
+        public void ValidateAccess_VariousFormats_ValidatesCorrectly(
             ApiProtectionLevel protectionLevel,
             PayloadFormat format,
             bool expectedSuccess,
@@ -69,6 +71,4 @@ namespace Bee.Api.Core.UnitTests
             public void Method_LocalOnly() { }
         }
     }
-
 }
-

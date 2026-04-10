@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+using System.ComponentModel;
+using System.Globalization;
 using System.Text;
 
 namespace Bee.Base.UnitTests
@@ -9,7 +10,8 @@ namespace Bee.Base.UnitTests
         /// IP 位址驗證。
         /// </summary>
         [Fact]
-        public void IPValidator()
+        [DisplayName("IP 驗證器應正確判斷白名單允許與黑名單拒絕的 IP")]
+        public void IsIpAllowed_WhitelistAndBlacklist_ReturnsExpectedResult()
         {
             // 定義白名單
             var whitelist = new System.Collections.Generic.List<string>
@@ -41,7 +43,8 @@ namespace Bee.Base.UnitTests
         /// 測試 IsNumeric 方法。
         /// </summary>
         [Fact]
-        public void IsNumericTest()
+        [DisplayName("IsNumeric 應正確判斷各種型別的數值性")]
+        public void IsNumeric_VariousTypes_ReturnsExpectedResult()
         {
             // 布林值測試
             Assert.True(BaseFunc.IsNumeric(true));
@@ -74,7 +77,8 @@ namespace Bee.Base.UnitTests
         [InlineData("h3llo", "h#llo", true, CompareOptions.IgnoreCase)]
         [InlineData("Hello", "h*", true, CompareOptions.IgnoreCase)]
         [InlineData("Hello", "h*", false, CompareOptions.None)] // ✅ 明確區分大小寫
-        public void LikePatternTest(string input, string pattern, bool expected, CompareOptions options)
+        [DisplayName("Like 萬用字元比對應回傳正確結果")]
+        public void Like_PatternWithOptions_ReturnsExpectedMatch(string input, string pattern, bool expected, CompareOptions options)
         {
             var result = StrFunc.Like(input, pattern, options);
             Assert.Equal(expected, result);
@@ -87,14 +91,16 @@ namespace Bee.Base.UnitTests
         [InlineData("ZZ", 36, "100")]
         [InlineData("ABZ", 36, "AC0")] // 正確結果
         [InlineData("ZZZ", 36, "1000")]
-        public void GetNextIdTest(string currentId, int numberBase, string expected)
+        [DisplayName("GetNextId 應回傳正確的下一個編號")]
+        public void GetNextId_VariousBaseAndId_ReturnsExpectedNextId(string currentId, int numberBase, string expected)
         {
             var next = StrFunc.GetNextId(currentId, numberBase);
             Assert.Equal(expected, next);
         }
 
         [Fact]
-        public void MemberPathTest()
+        [DisplayName("MemberPath.Of 應回傳正確的成員路徑字串")]
+        public void Of_StaticProperty_ReturnsFullMemberPath()
         {
             // Act
             var path = MemberPath.Of(() => SysInfo.Version);
@@ -104,6 +110,7 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
+        [DisplayName("RndInt 應回傳指定範圍內的隨機整數")]
         public void RndInt_ReturnsValueWithinRange()
         {
             int min = 1;

@@ -1,5 +1,7 @@
+using System.ComponentModel;
 using Bee.Base.Security;
-﻿namespace Bee.Base.UnitTests
+
+namespace Bee.Base.UnitTests
 {
     /// <summary>
     /// 測試 TPasswordHasher 密碼雜湊與驗證功能。
@@ -10,7 +12,8 @@ using Bee.Base.Security;
         /// 驗證相同密碼能正確通過雜湊驗證。
         /// </summary>
         [Fact]
-        public void HashPassword_And_VerifyPassword_Should_Pass_With_Correct_Password()
+        [DisplayName("正確密碼應通過雜湊驗證")]
+        public void VerifyPassword_CorrectPassword_ReturnsTrue()
         {
             // Arrange
             var hasher = new PasswordHasher();
@@ -28,7 +31,8 @@ using Bee.Base.Security;
         /// 驗證錯誤密碼無法通過雜湊驗證。
         /// </summary>
         [Fact]
-        public void VerifyPassword_Should_Fail_With_Incorrect_Password()
+        [DisplayName("錯誤密碼應無法通過雜湊驗證")]
+        public void VerifyPassword_IncorrectPassword_ReturnsFalse()
         {
             // Arrange
             var hasher = new PasswordHasher();
@@ -47,7 +51,8 @@ using Bee.Base.Security;
         /// 驗證格式錯誤的雜湊字串會返回驗證失敗。
         /// </summary>
         [Fact]
-        public void VerifyPassword_Should_Fail_With_Invalid_Format()
+        [DisplayName("無效格式的雜湊字串應回傳驗證失敗")]
+        public void VerifyPassword_InvalidHashFormat_ReturnsFalse()
         {
             // Arrange
             var hasher = new PasswordHasher();

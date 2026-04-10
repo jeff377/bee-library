@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Security;
 using Bee.Api.Contracts;
@@ -11,17 +12,18 @@ namespace Bee.Business.UnitTests
     public class BusinessTest
     {
         /// <summary>
-        /// �غc�禡�C
+        /// 建構函式。
         /// </summary>
         public BusinessTest()
         {
         }
 
         /// <summary>
-        /// �إ߳s�u�C
+        /// 建立連線。
         /// </summary>
         [LocalOnlyFact]
-        public void CreateSession()
+        [DisplayName("CreateSession 傳入有效參數應回傳含 AccessToken 與到期時間的結果")]
+        public void CreateSession_ValidArgs_ReturnsTokenWithExpiry()
         {
             // Arrange
             var business = new SystemBusinessObject(Guid.Empty);
@@ -42,13 +44,14 @@ namespace Bee.Business.UnitTests
         }
 
         /// <summary>
-        /// �n�J�t�Ψ����� RSA �[�K���|�ܪ��_�C
+        /// 登入系統並驗證 RSA 加密金鑰的交換。
         /// </summary>
         [LocalOnlyFact]
-        public void Login()
+        [DisplayName("Login 使用 RSA 金鑰對登入應回傳可解密的加密 Session 金鑰")]
+        public void Login_WithRsaKeyPair_ReturnsDecryptableSessionKey()
         {
             // Arrange
-            // ���� RSA ��٪��_
+            // 產生 RSA 金鑰對
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
 
             var sbo = new SystemBusinessObject(Guid.Empty);
@@ -66,7 +69,7 @@ namespace Bee.Business.UnitTests
             Assert.NotNull(result);
             Assert.NotEmpty(result.ApiEncryptionKey);
 
-            // �Ψp�_�ѱK EncryptedSessionKey
+            // 用私鑰解密 EncryptedSessionKey
             string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
             Assert.False(string.IsNullOrWhiteSpace(sessionKey));
         }
