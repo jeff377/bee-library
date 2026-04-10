@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
 using Bee.Definition.Collections;
+using Bee.Definition.Serialization;
 
 namespace Bee.Api.Core.UnitTests
 {
@@ -49,6 +50,37 @@ namespace Bee.Api.Core.UnitTests
             var restoredChild = restored["Child"].Value as ParameterCollection;
             Assert.NotNull(restoredChild);
             Assert.Equal("value", restoredChild["Nested"].Value);
+        }
+
+        [Theory]
+        [InlineData("System.Int32", true)]
+        [InlineData("System.String", true)]
+        [InlineData("System.Boolean", true)]
+        [InlineData("System.Decimal", true)]
+        [InlineData("System.DateTime", true)]
+        [InlineData("System.Guid", true)]
+        [InlineData("System.Byte[]", true)]
+        [InlineData("System.DBNull", true)]
+        [InlineData("Bee.Base.SomeClass", true)]
+        [InlineData("Bee.Definition.Collections.Parameter", true)]
+        [InlineData("Bee.Contracts.SomeDto", true)]
+        [DisplayName("IsTypeAllowed 應允許原始型別與白名單命名空間")]
+        public void IsTypeAllowed_AllowedTypes_ReturnsTrue(string fullName, bool expected)
+        {
+            Assert.Equal(expected, SafeTypelessFormatter.IsTypeAllowed(fullName));
+        }
+
+        [Theory]
+        [InlineData("System.Diagnostics.Process")]
+        [InlineData("System.IO.FileInfo")]
+        [InlineData("System.Runtime.Serialization.Formatters.Binary.BinaryFormatter")]
+        [InlineData("Evil.Namespace.Exploit")]
+        [InlineData("System.Data.DataTable")]
+        [InlineData("System.Data.DataRow")]
+        [DisplayName("IsTypeAllowed 應拒絕不在白名單的型別")]
+        public void IsTypeAllowed_DisallowedTypes_ReturnsFalse(string fullName)
+        {
+            Assert.False(SafeTypelessFormatter.IsTypeAllowed(fullName));
         }
     }
 }

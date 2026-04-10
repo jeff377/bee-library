@@ -11,6 +11,24 @@ namespace Bee.Definition.Serialization
     /// against the allowed namespace whitelist defined in <see cref="SysInfo.IsTypeNameAllowed"/>.
     /// Prevents deserialization of arbitrary types to mitigate remote code execution risks.
     /// </summary>
+    /// <remarks>
+    /// This formatter applies two layers of defense:
+    /// <list type="number">
+    ///   <item>
+    ///     <description>
+    ///       <b>Pre-instantiation:</b> A custom <see cref="MessagePackSerializerOptions"/> override of
+    ///       <see cref="MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowed"/>
+    ///       validates the type BEFORE object construction inside <see cref="TypelessFormatter"/>.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///       <b>Post-instantiation (defense-in-depth):</b> After <see cref="TypelessFormatter"/> returns,
+    ///       this formatter validates the resulting object's type as a second safety net.
+    ///     </description>
+    ///   </item>
+    /// </list>
+    /// </remarks>
     public sealed class SafeTypelessFormatter : IMessagePackFormatter<object>
     {
         /// <summary>
@@ -41,9 +59,7 @@ namespace Bee.Definition.Serialization
             "System.TimeSpan",
             "System.Guid",
             "System.Byte[]",
-            "System.DBNull",
-            "System.Data.DataTable",
-            "System.Data.DataRow"
+            "System.DBNull"
         };
 
         /// <summary>
@@ -64,6 +80,11 @@ namespace Bee.Definition.Serialization
         /// Deserializes an object value using the underlying <see cref="TypelessFormatter"/>,
         /// then validates the resulting type against the allowed type whitelist.
         /// </summary>
+        /// <remarks>
+        /// The primary pre-instantiation check is performed by the
+        /// <see cref="MessagePackSerializerOptions.ThrowIfDeserializingTypeIsDisallowed"/> override
+        /// inside <see cref="TypelessFormatter"/>. This post-deserialization check serves as a defense-in-depth safety net.
+        /// </remarks>
         /// <exception cref="InvalidOperationException">
         /// Thrown when the deserialized type is not in the allowed whitelist.
         /// </exception>
@@ -75,12 +96,30 @@ namespace Bee.Definition.Serialization
 
             var result = TypelessFormatter.Instance.Deserialize(ref reader, options);
 
+            // Defense-in-depth: validate the deserialized type even though
+            // SafeMessagePackSerializerOptions already performs pre-instantiation checks.
             if (result != null)
             {
                 ValidateType(result.GetType());
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// Validates whether the specified type full name is in the allowed whitelist.
+        /// Used by both the formatter (post-check) and <see cref="SafeMessagePackSerializerOptions"/> (pre-check).
+        /// </summary>
+        /// <param name="fullName">The full name of the type to validate.</param>
+        /// <returns><c>true</c> if the type is allowed; otherwise, <c>false</c>.</returns>
+        public static bool IsTypeAllowed(string fullName)
+        {
+            // Allow well-known primitive types
+            if (AllowedPrimitiveTypes.Contains(fullName))
+                return true;
+
+            // Delegate to the application-level namespace whitelist
+            return SysInfo.IsTypeNameAllowed(fullName);
         }
 
         /// <summary>
@@ -93,16 +132,11 @@ namespace Bee.Definition.Serialization
             if (fullName == null)
                 throw new InvalidOperationException("Cannot deserialize a type with no FullName.");
 
-            // Allow well-known primitive types
-            if (AllowedPrimitiveTypes.Contains(fullName))
-                return;
-
-            // Delegate to the application-level whitelist
-            if (SysInfo.IsTypeNameAllowed(fullName))
-                return;
-
-            throw new InvalidOperationException(
-                $"MessagePack deserialization blocked: type '{fullName}' is not in the allowed type whitelist.");
+            if (!IsTypeAllowed(fullName))
+            {
+                throw new InvalidOperationException(
+                    $"MessagePack deserialization blocked: type '{fullName}' is not in the allowed type whitelist.");
+            }
         }
     }
 }

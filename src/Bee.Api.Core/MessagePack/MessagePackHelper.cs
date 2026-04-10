@@ -40,8 +40,10 @@ namespace Bee.Api.Core.MessagePack
                     StandardResolver.Instance              // Standard resolver
                 });
 
-            // Configure the MessagePack serialization options
-            Options = MessagePackSerializerOptions.Standard.WithResolver(resolver);
+            // Configure the MessagePack serialization options with whitelist-based type validation.
+            // SafeMessagePackSerializerOptions overrides ThrowIfDeserializingTypeIsDisallowed
+            // to block disallowed types BEFORE object instantiation inside TypelessFormatter.
+            Options = new SafeMessagePackSerializerOptions(resolver);
         }
 
         /// <summary>
