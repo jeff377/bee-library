@@ -16,6 +16,10 @@ namespace Bee.Db.Logging
     public static class DbAccessLogger
     {
         /// <summary>
+        /// Maximum length of CommandText included in log output. Longer values are truncated.
+        /// </summary>
+        private const int MaxCommandTextLogLength = 500;
+        /// <summary>
         /// Starts logging a database command execution.
         /// </summary>
         /// <param name="command">The database command specification.</param>
@@ -72,8 +76,7 @@ namespace Bee.Db.Logging
             if (errCode.HasValue) sb.Append("ErrorCode=").Append(errCode.Value).Append("; ");
             if (errNumber.HasValue) sb.Append("Number=").Append(errNumber.Value).Append("; ");
             sb.Append("Exception=").Append(exception.GetType().FullName).Append("; ");
-            sb.Append("Message=").Append(exception.Message).Append("; ");
-            sb.Append("CommandText=").Append(context.CommandText);
+            sb.Append("CommandText=").Append(TruncateCommandText(context.CommandText));
 
             // Write error log
             // SysInfo.LogWriter?.WriteError(sb.ToString());
@@ -99,10 +102,21 @@ namespace Bee.Db.Logging
             if (!string.IsNullOrEmpty(ctx.DatabaseId)) sb.Append("DbId=").Append(ctx.DatabaseId).Append("; ");
             sb.Append("Elapsed=").Append(elapsedSeconds.ToString("0.###", CultureInfo.InvariantCulture)).Append(" s; ");
             if (affectedRows >= 0) sb.Append("Rows=").Append(affectedRows).Append("; ");
-            sb.Append("CommandText=").Append(ctx.CommandText);
+            sb.Append("CommandText=").Append(TruncateCommandText(ctx.CommandText));
 
             // TODO: Write warning log
             // SysInfo.LogWriter?.WriteError(sb.ToString());
+        }
+
+        /// <summary>
+        /// Truncates command text to <see cref="MaxCommandTextLogLength"/> to avoid exposing excessive SQL details in logs.
+        /// </summary>
+        /// <param name="commandText">The original command text.</param>
+        private static string TruncateCommandText(string commandText)
+        {
+            if (string.IsNullOrEmpty(commandText) || commandText.Length <= MaxCommandTextLogLength)
+                return commandText;
+            return commandText.Substring(0, MaxCommandTextLogLength) + "...(truncated)";
         }
 
         /// <summary>
