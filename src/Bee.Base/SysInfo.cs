@@ -13,7 +13,7 @@ namespace Bee.Base
         static SysInfo()
         {
             // Add the default allowed type namespaces for JSON-RPC data transfer
-            AllowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Definition", "Bee.Contracts" };
+            _allowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Definition", "Bee.Contracts" };
         }
 
         /// <summary>
@@ -52,11 +52,17 @@ namespace Bee.Base
         public static bool IsSingleFile { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets the list of type namespaces allowed for JSON-RPC data transfer.
-        /// Only types in these namespaces are permitted for deserialization to ensure security.
-        /// Note: Bee.Base and Bee.Definition are built-in default namespaces and do not need to be specified.
+        /// Backing field for <see cref="AllowedTypeNamespaces"/>.
         /// </summary>
-        public static List<string> AllowedTypeNamespaces { get; set; }
+        private static List<string> _allowedTypeNamespaces;
+
+        /// <summary>
+        /// Gets the list of type namespaces allowed for JSON-RPC data transfer (read-only).
+        /// Only types in these namespaces are permitted for deserialization to ensure security.
+        /// Use <see cref="Initialize"/> to configure custom namespaces.
+        /// Note: Bee.Base, Bee.Definition, and Bee.Contracts are built-in default namespaces and do not need to be specified.
+        /// </summary>
+        public static IReadOnlyList<string> AllowedTypeNamespaces => _allowedTypeNamespaces;
 
         /// <summary>
         /// Validates whether the specified type name is in an allowed namespace.
@@ -81,7 +87,7 @@ namespace Bee.Base
         {
             Version = configuration.Version;
             IsDebugMode = configuration.IsDebugMode;
-            AllowedTypeNamespaces = BuildAllowedTypeNamespaces(configuration.AllowedTypeNamespaces);
+            _allowedTypeNamespaces = BuildAllowedTypeNamespaces(configuration.AllowedTypeNamespaces);
         }
 
         /// <summary>
@@ -89,10 +95,11 @@ namespace Bee.Base
         /// </summary>
         /// <param name="customNamespaces">User-defined namespace string, separated by '|'.</param>
         /// <returns>List of namespaces including system default and user-defined.</returns>
-        public static List<string> BuildAllowedTypeNamespaces(string customNamespaces)
+        internal static List<string> BuildAllowedTypeNamespaces(string customNamespaces)
         {
-            // Initialize HashSet to ensure no duplicates
-            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            // Initialize HashSet to ensure no duplicates.
+            // Use Ordinal comparison to match .NET type name semantics (case-sensitive).
+            var allowed = new HashSet<string>(StringComparer.Ordinal)
             {
                 "Bee.Base",
                 "Bee.Definition",
