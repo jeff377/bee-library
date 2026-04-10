@@ -75,7 +75,6 @@ namespace Bee.Api.Core.UnitTests
         [InlineData("System.IO.FileInfo")]
         [InlineData("System.Runtime.Serialization.Formatters.Binary.BinaryFormatter")]
         [InlineData("Evil.Namespace.Exploit")]
-        [InlineData("System.Data.DataTable")]
         [InlineData("System.Data.DataRow")]
         [DisplayName("IsTypeAllowed 應拒絕不在白名單的型別")]
         public void IsTypeAllowed_DisallowedTypes_ReturnsFalse(string fullName)

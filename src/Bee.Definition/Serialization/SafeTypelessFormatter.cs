@@ -59,7 +59,8 @@ namespace Bee.Definition.Serialization
             "System.TimeSpan",
             "System.Guid",
             "System.Byte[]",
-            "System.DBNull"
+            "System.DBNull",
+            "System.Data.DataTable"
         };
 
         /// <summary>
