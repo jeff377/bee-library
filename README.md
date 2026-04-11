@@ -28,7 +28,7 @@ For guidelines on API Contract and BO Parameter design (Request/Response vs Args
 
 | Assembly Name | Description |
 |---|---|
-| **Bee.Core.dll** | Core utilities such as serialization, encryption, and general-purpose helpers. |
+| **Bee.Base.dll** | Core utilities such as serialization, encryption, and general-purpose helpers. |
 | **Bee.Definition.dll** | Defines system-wide structured types including FormSchema, field schemas, and layout configurations. |
 | **Bee.Api.Contracts.dll** | Shared data contracts (request/response models) used by both frontend and backend. |
 | **Bee.Api.Core.dll** | Encapsulates API support such as model definitions, payload encryption, and serialization pipeline. |
