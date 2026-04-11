@@ -16,6 +16,10 @@ Core packages target **`netstandard2.0; net10.0`** for broad .NET runtime compat
 - **Modular components**: Decoupled libraries for core utilities, data, caching, business logic, and API hosting.
 - **Rapid development**: Reusable base classes and FormSchema-driven CRUD reduce repetitive boilerplate.
 
+## 📐 Architecture
+
+For an in-depth look at the layered architecture, data flow, and design decisions behind Bee.NET, see the [Architecture Overview](docs/architecture-overview.md).
+
 ## 📦 Assembly
 
 ### Shared (Frontend / Backend)

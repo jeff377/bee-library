@@ -94,15 +94,15 @@ This is **pragmatic clean architecture** -- preserving dependency direction and 
 ```mermaid
 graph TD
     subgraph Generate FormSchema
-        A1["AI-powered generation (natural language -> FormSchema)"]
+        A1["AI-powered generation (natural language)"]
         A2["Visual tool adjustments (drag-and-drop fields and relationships)"]
     end
 
-    A1 --> FD["FormSchema (form structure definition)"]
+    A1 --> FD["FormSchema"]
     A2 --> FD
 
-    FD --> FL["FormLayout (UI layout configuration)"]
-    FD --> DT["TableSchema (database table structure)"]
+    FD --> FL["FormLayout"]
+    FD --> DT["TableSchema"]
 
     FL --> UI["Web / Desktop / App dynamic forms"]
     DT --> DB["Database creation and maintenance"]
