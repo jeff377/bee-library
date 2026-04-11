@@ -20,6 +20,8 @@ Core packages target **`netstandard2.0; net10.0`** for broad .NET runtime compat
 
 For an in-depth look at the layered architecture, data flow, and design decisions behind Bee.NET, see the [Architecture Overview](docs/architecture-overview.md).
 
+For guidelines on API Contract and BO Parameter design (Request/Response vs Args/Result), see the [API/BO Contract Design Principles](docs/api-bo-contract-design.md).
+
 ## 📦 Assembly
 
 ### Shared (Frontend / Backend)
