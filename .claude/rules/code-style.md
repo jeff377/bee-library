@@ -21,13 +21,13 @@ Bee.<Module>/
   └── <Feature>/      # 功能實作（含相關介面）
 ```
 
-## 文件雙語維護
+## 文件語言規則
 
-`docs/` 與根目錄中的 `.md` 文件若有雙語版本（如 `README.md` / `README.zh-TW.md`），修改內容時**必須同步更新兩份文件**。
-
-- 預設檔名為英文版（如 `architecture-overview.md`）
-- 繁體中文版以 `.zh-TW.md` 後綴命名（如 `architecture-overview.zh-TW.md`）
-- 兩份文件頂部需有語言切換連結（`[繁體中文](xxx.zh-TW.md)` / `[English](xxx.md)`）
+- 未指定雙語版時，文件只有 `xxx.md`，內容以**繁體中文**撰寫
+- 若有雙語版本（如 `README.md` / `README.zh-TW.md`），修改內容時**必須同步更新兩份文件**：
+  - 預設檔名為英文版（如 `architecture-overview.md`）
+  - 繁體中文版以 `.zh-TW.md` 後綴命名（如 `architecture-overview.zh-TW.md`）
+  - 兩份文件頂部需有語言切換連結（`[繁體中文](xxx.zh-TW.md)` / `[English](xxx.md)`）
 
 ## 語言特性
 
