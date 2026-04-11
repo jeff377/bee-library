@@ -2,16 +2,16 @@ using System.Collections.Generic;
 using Bee.Definition.Api;
 using MessagePack;
 
-namespace Bee.Api.Contracts.System
+namespace Bee.Api.Core.System
 {
     /// <summary>
-    /// Result collection for a batch package update check.
+    /// API response for the check package update operation.
     /// </summary>
     [MessagePackObject]
-    public class CheckPackageUpdateResult : BusinessResult
+    public class CheckPackageUpdateResponse : ApiResponse, ICheckPackageUpdateResponse
     {
         /// <summary>
-        /// Gets or sets the list of update information items, each corresponding to a query in <see cref="CheckPackageUpdateArgs"/> in order.
+        /// Gets or sets the list of available package updates.
         /// </summary>
         [Key(100)]
         public List<PackageUpdateInfo> Updates { get; set; } = new List<PackageUpdateInfo>();

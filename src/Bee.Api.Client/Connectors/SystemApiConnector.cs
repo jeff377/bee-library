@@ -6,7 +6,7 @@ using Bee.Base;
 using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Api.Contracts;
-using Bee.Api.Contracts.System;
+using Bee.Api.Core.System;
 using Bee.Definition;
 
 namespace Bee.Api.Client.Connectors
@@ -91,12 +91,12 @@ namespace Bee.Api.Client.Connectors
         {
             try
             {
-                var args = new PingArgs()
+                var request = new PingRequest()
                 {
                     ClientName = "Connector",
                     TraceId = Guid.NewGuid().ToString()
                 };
-                var result = await ExecuteAsync<PingResult>(SystemActions.Ping, args, PayloadFormat.Plain).ConfigureAwait(false);
+                var result = await ExecuteAsync<PingResponse>(SystemActions.Ping, request, PayloadFormat.Plain).ConfigureAwait(false);
                 if (result.Status != "ok")
                     throw new InvalidOperationException($"Ping method failed with status: {result.Status}");
             }
@@ -123,8 +123,8 @@ namespace Bee.Api.Client.Connectors
         public async Task InitializeAsync()
         {
             // Retrieve common parameters and environment configuration for initialization
-            var args = new GetCommonConfigurationArgs();
-            var result = await ExecuteAsync<GetCommonConfigurationResult>(SystemActions.GetCommonConfiguration, args, PayloadFormat.Plain).ConfigureAwait(false);
+            var request = new GetCommonConfigurationRequest();
+            var result = await ExecuteAsync<GetCommonConfigurationResponse>(SystemActions.GetCommonConfiguration, request, PayloadFormat.Plain).ConfigureAwait(false);
             var configuration = SerializeFunc.XmlToObject<CommonConfiguration>(result.CommonConfiguration);
             SysInfo.Initialize(configuration);
             // Initialize API service options: configure serializer, compressor, and encryptor implementations
@@ -149,13 +149,13 @@ namespace Bee.Api.Client.Connectors
         /// <param name="oneTime">Whether the session is valid for one-time use only.</param>
         public async Task<Guid> CreateSessionAsync(string userID, int expiresIn = 3600, bool oneTime = false)
         {
-            var args = new CreateSessionArgs()
+            var request = new CreateSessionRequest()
             {
                 UserID = userID,
                 ExpiresIn = expiresIn,
                 OneTime = oneTime
             };
-            var result = await ExecuteAsync<CreateSessionResult>(SystemActions.CreateSession, args, PayloadFormat.Plain).ConfigureAwait(false);
+            var result = await ExecuteAsync<CreateSessionResponse>(SystemActions.CreateSession, request, PayloadFormat.Plain).ConfigureAwait(false);
             return result.AccessToken;
         }
 
@@ -177,19 +177,19 @@ namespace Bee.Api.Client.Connectors
         /// </summary>
         /// <param name="userID">The user account identifier.</param>
         /// <param name="password">The user password.</param>
-        public async Task<LoginResult> LoginAsync(string userID, string password)
+        public async Task<LoginResponse> LoginAsync(string userID, string password)
         {
             // Generate an RSA key pair
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
 
             // Perform the login operation
-            var args = new LoginArgs()
+            var request = new LoginRequest()
             {
                 UserId = userID,
                 Password = password,
                 ClientPublicKey = publicKeyXml  // Pass the RSA public key
             };
-            var result = await ExecuteAsync<LoginResult>(SystemActions.Login, args, PayloadFormat.Encoded).ConfigureAwait(false);
+            var result = await ExecuteAsync<LoginResponse>(SystemActions.Login, request, PayloadFormat.Encoded).ConfigureAwait(false);
 
             // Decrypt with the RSA private key to obtain the API encryption key
             string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
@@ -203,7 +203,7 @@ namespace Bee.Api.Client.Connectors
         /// </summary>
         /// <param name="userID">The user account identifier.</param>
         /// <param name="password">The user password.</param>
-        public LoginResult Login(string userID, string password)
+        public LoginResponse Login(string userID, string password)
         {
             return SyncExecutor.Run(() =>
                 LoginAsync(userID, password)
@@ -218,12 +218,12 @@ namespace Bee.Api.Client.Connectors
         /// <param name="keys">The keys used to locate the definition data.</param>
         public async Task<T> GetDefineAsync<T>(DefineType defineType, string[] keys = null)
         {
-            var args = new GetDefineArgs()
+            var request = new GetDefineRequest()
             {
                 DefineType = defineType,
                 Keys = keys
             };
-            var result = await ExecuteAsync<GetDefineResult>(SystemActions.GetDefine, args).ConfigureAwait(false);
+            var result = await ExecuteAsync<GetDefineResponse>(SystemActions.GetDefine, request).ConfigureAwait(false);
             if (StrFunc.IsNotEmpty(result.Xml))
                 return SerializeFunc.XmlToObject<T>(result.Xml);
             else
@@ -251,13 +251,13 @@ namespace Bee.Api.Client.Connectors
         /// <param name="keys">The keys used to locate where the definition data is saved.</param>
         public async Task SaveDefineAsync(DefineType defineType, object defineObject, string[] keys = null)
         {
-            var args = new SaveDefineArgs()
+            var request = new SaveDefineRequest()
             {
                 DefineType = defineType,
                 Xml = SerializeFunc.ObjectToXml(defineObject),
                 Keys = keys
             };
-            await ExecuteAsync<SaveDefineResult>(SystemActions.SaveDefine, args).ConfigureAwait(false);
+            await ExecuteAsync<SaveDefineResponse>(SystemActions.SaveDefine, request).ConfigureAwait(false);
         }
 
         /// <summary>

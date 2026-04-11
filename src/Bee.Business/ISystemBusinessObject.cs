@@ -1,6 +1,6 @@
 using Bee.Api.Contracts.System;
 
-namespace Bee.Api.Contracts
+namespace Bee.Business
 {
     /// <summary>
     /// Interface for system-level business logic objects.

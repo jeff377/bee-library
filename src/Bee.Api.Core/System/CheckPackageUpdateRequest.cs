@@ -1,14 +1,15 @@
+using System;
 using System.Collections.Generic;
 using Bee.Definition.Api;
 using MessagePack;
 
-namespace Bee.Api.Contracts.System
+namespace Bee.Api.Core.System
 {
     /// <summary>
-    /// Arguments for batch-checking whether multiple apps or components have available updates.
+    /// API request for the check package update operation.
     /// </summary>
     [MessagePackObject]
-    public class CheckPackageUpdateArgs : BusinessArgs
+    public class CheckPackageUpdateRequest : ApiRequest, ICheckPackageUpdateRequest
     {
         /// <summary>
         /// Gets or sets the list of query items to check.

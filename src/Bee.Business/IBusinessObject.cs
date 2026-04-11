@@ -1,4 +1,6 @@
-namespace Bee.Api.Contracts
+using Bee.Api.Contracts;
+
+namespace Bee.Business
 {
     /// <summary>
     /// Base interface for business logic objects.

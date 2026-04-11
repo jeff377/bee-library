@@ -1,4 +1,4 @@
-namespace Bee.Api.Contracts
+namespace Bee.Business
 {
     /// <summary>
     /// Interface for form-level business logic objects.
