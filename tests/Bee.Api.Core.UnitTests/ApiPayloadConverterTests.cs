@@ -19,8 +19,7 @@ namespace Bee.Api.Core.UnitTests
             var payload = new JsonRpcParams
             {
                 Value = new byte[] { 0x01 },
-                TypeName = typeName,
-                Format = PayloadFormat.Encoded
+                TypeName = typeName
             };
 
             // The call may throw due to deserialization failure (invalid bytes),
@@ -45,8 +44,7 @@ namespace Bee.Api.Core.UnitTests
             var payload = new JsonRpcParams
             {
                 Value = new byte[] { 0x01 },
-                TypeName = typeName,
-                Format = PayloadFormat.Encoded
+                TypeName = typeName
             };
 
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -62,8 +60,7 @@ namespace Bee.Api.Core.UnitTests
             var payload = new JsonRpcParams
             {
                 Value = "some value",
-                TypeName = "Evil.Namespace.Exploit, Evil.Assembly",
-                Format = PayloadFormat.Plain
+                TypeName = "Evil.Namespace.Exploit, Evil.Assembly"
             };
 
             // Plain format should skip all validation and return immediately
@@ -78,8 +75,7 @@ namespace Bee.Api.Core.UnitTests
             var payload = new JsonRpcParams
             {
                 Value = new byte[] { 0x01 },
-                TypeName = null,
-                Format = PayloadFormat.Encoded
+                TypeName = null
             };
 
             var ex = Assert.Throws<InvalidOperationException>(() =>
