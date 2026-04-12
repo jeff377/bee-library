@@ -10,9 +10,10 @@ namespace Bee.Api.Core.UnitTests
     public class ApiPayloadConverterTests
     {
         [Theory]
-        [InlineData("Bee.Api.Contracts.System.LoginArgs, Bee.Api.Contracts")]
         [InlineData("Bee.Definition.Collections.ParameterCollection, Bee.Definition")]
         [InlineData("Bee.Base.SomeClass, Bee.Base")]
+        [InlineData("Bee.Contracts.SomeDto, Bee.Contracts")]
+        [InlineData("System.Int32")]
         [DisplayName("RestoreFrom 應允許白名單內的 TypeName")]
         public void RestoreFrom_AllowedTypeName_DoesNotThrowValidationError(string typeName)
         {
