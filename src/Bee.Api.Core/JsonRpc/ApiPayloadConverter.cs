@@ -1,5 +1,6 @@
 ﻿using System;
 using Bee.Base;
+using Bee.Definition.Serialization;
 
 using Bee.Api.Core;
 
@@ -72,6 +73,10 @@ namespace Bee.Api.Core.JsonRpc
             if (string.IsNullOrEmpty(payload.TypeName))
                 throw new InvalidOperationException("TypeName is missing for deserialization.");
 
+            // Validate TypeName against the allowed type whitelist before loading the type.
+            // TypeName format: "Namespace.TypeName, AssemblyName"
+            ValidateTypeName(payload.TypeName);
+
             var type = Type.GetType(payload.TypeName);
             if (type == null)
                 throw new InvalidOperationException("Unable to load type: " + payload.TypeName);
@@ -92,6 +97,29 @@ namespace Bee.Api.Core.JsonRpc
 
             payload.Value = transformer.Decode(bytes, type);
             payload.Format = PayloadFormat.Plain;
+        }
+
+        /// <summary>
+        /// Validates that the TypeName is in the allowed type whitelist.
+        /// Prevents arbitrary type loading from client-supplied type names.
+        /// </summary>
+        /// <param name="typeName">
+        /// The assembly-qualified type name (e.g., "Bee.Api.Contracts.System.LoginArgs, Bee.Api.Contracts").
+        /// </param>
+        /// <exception cref="InvalidOperationException">Thrown when the type is not in the allowed whitelist.</exception>
+        private static void ValidateTypeName(string typeName)
+        {
+            // Extract the full type name (before the comma) from the assembly-qualified name.
+            var fullName = typeName;
+            int commaIndex = typeName.IndexOf(',');
+            if (commaIndex > 0)
+                fullName = typeName.Substring(0, commaIndex).Trim();
+
+            if (!SafeTypelessFormatter.IsTypeAllowed(fullName))
+            {
+                throw new InvalidOperationException(
+                    $"Payload type '{fullName}' is not in the allowed type whitelist.");
+            }
         }
     }
 

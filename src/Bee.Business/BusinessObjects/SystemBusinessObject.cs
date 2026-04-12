@@ -68,9 +68,21 @@ namespace Bee.Business.BusinessObjects
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual LoginResult Login(LoginArgs args)
         {
+            var tracker = BackendInfo.LoginAttemptTracker;
+
+            // 0. Check if the account is locked out due to excessive failed attempts
+            if (tracker != null && tracker.IsLockedOut(args.UserId))
+                throw new UnauthorizedAccessException("Account is temporarily locked due to too many failed login attempts. Please try again later.");
+
             // 1. Authenticate credentials and retrieve the user name
             if (!AuthenticateUser(args, out var userName))
+            {
+                tracker?.RecordFailure(args.UserId);
                 throw new UnauthorizedAccessException("Invalid username or password.");
+            }
+
+            // Clear failed attempt history on successful login
+            tracker?.Reset(args.UserId);
 
             // 2. Generate an encryption key on login (may be shared or random)
             byte[] encryptionKey = BackendInfo.ApiEncryptionKeyProvider.GenerateKeyForLogin();
