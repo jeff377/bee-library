@@ -104,6 +104,12 @@ namespace Bee.Definition
         public static IEnterpriseObjectService EnterpriseObjectService { get; set; }
 
         /// <summary>
+        /// Gets or sets the login attempt tracker for enforcing brute-force protection policies.
+        /// When null, login brute-force protection is disabled.
+        /// </summary>
+        public static ILoginAttemptTracker LoginAttemptTracker { get; set; }
+
+        /// <summary>
         /// Initializes the backend with the specified configuration.
         /// </summary>
         /// <param name="configuration">Backend parameters and environment settings.</param>
