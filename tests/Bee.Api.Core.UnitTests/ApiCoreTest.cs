@@ -3,8 +3,7 @@ using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Serialization;
-using Bee.Api.Contracts;
-using Bee.Api.Contracts.System;
+using Bee.Api.Core.System;
 using Bee.Definition;
 using Bee.Tests.Shared;
 
@@ -32,7 +31,7 @@ namespace Bee.Api.Core.UnitTests
                 Method = $"{SysProgIds.System}.ExecFunc",
                 Params = new JsonRpcParams()
                 {
-                    Value = new ExecFuncArgs("Hello")
+                    Value = new ExecFuncRequest("Hello")
                 },
                 Id = Guid.NewGuid().ToString()
             };
@@ -84,12 +83,12 @@ namespace Bee.Api.Core.UnitTests
             if (_accessToken == Guid.Empty)
             {
                 // 模擬登入，實際上是透過 API 登入取得 AccessToken
-                var args = new LoginArgs()
+                var args = new LoginRequest()
                 {
                     UserId = "demo",
                     Password = "1234"
                 };
-                var result = ApiExecute<LoginResult>(Guid.Empty, SysProgIds.System, "Login", args);
+                var result = ApiExecute<LoginResponse>(Guid.Empty, SysProgIds.System, "Login", args);
                 _accessToken = result.AccessToken;
             }
             return _accessToken;
@@ -102,12 +101,12 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("Ping 應回傳正確狀態與追蹤識別碼")]
         public void Ping_ValidRequest_ReturnsOkStatus()
         {
-            var args = new PingArgs()
+            var args = new PingRequest()
             {
                 ClientName = "TestClient",
                 TraceId = "001",
             };
-            var result = ApiExecute<PingResult>(Guid.Empty, SysProgIds.System, "Ping", args);
+            var result = ApiExecute<PingResponse>(Guid.Empty, SysProgIds.System, "Ping", args);
             Assert.NotNull(result);
             Assert.Equal("ok", result.Status);
             Assert.Equal("001", result.TraceId);
@@ -120,8 +119,8 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("GetCommonConfiguration 應回傳非 null 結果")]
         public void GetCommonConfiguration_ValidRequest_ReturnsNotNull()
         {
-            var args = new GetCommonConfigurationArgs();
-            var result = ApiExecute<GetCommonConfigurationResult>(Guid.Empty, SysProgIds.System, SystemActions.GetCommonConfiguration, args);
+            var args = new GetCommonConfigurationRequest();
+            var result = ApiExecute<GetCommonConfigurationResponse>(Guid.Empty, SysProgIds.System, SystemActions.GetCommonConfiguration, args);
             Assert.NotNull(result);
             //Assert.Equal("messagepack", result.Serializer);
         }
@@ -142,7 +141,7 @@ namespace Bee.Api.Core.UnitTests
                 Method = $"{SysProgIds.System}.ExecFunc",
                 Params = new JsonRpcParams()
                 {
-                    Value = new ExecFuncArgs("Hello")
+                    Value = new ExecFuncRequest("Hello")
                 },
                 Id = Guid.NewGuid().ToString()
             };
@@ -152,7 +151,7 @@ namespace Bee.Api.Core.UnitTests
             var executor = new JsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
-            var execFuncResult = response.Result.Value as ExecFuncResult;
+            var execFuncResult = response.Result.Value as ExecFuncResponse;
             Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null
         }
 

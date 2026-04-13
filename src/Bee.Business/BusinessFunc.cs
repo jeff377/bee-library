@@ -1,6 +1,5 @@
 using Bee.Definition.Settings;
 using Bee.Base;
-using Bee.Api.Contracts;
 using Bee.Business.Attributes;
 using Bee.Business.BusinessObjects;
 using Bee.Definition;

@@ -10,7 +10,7 @@ namespace Bee.Api.Core.UnitTests
     public class ApiPayloadConverterTests
     {
         [Theory]
-        [InlineData("Bee.Api.Contracts.System.LoginArgs, Bee.Api.Contracts")]
+        [InlineData("Bee.Api.Core.System.LoginRequest, Bee.Api.Core")]
         [InlineData("Bee.Definition.Collections.ParameterCollection, Bee.Definition")]
         [InlineData("Bee.Base.SomeClass, Bee.Base")]
         [InlineData("Bee.Contracts.SomeDto, Bee.Contracts")]

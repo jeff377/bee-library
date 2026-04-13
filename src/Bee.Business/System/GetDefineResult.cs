@@ -1,19 +1,15 @@
-using System;
-using MessagePack;
+using Bee.Definition.Api;
 
-namespace Bee.Api.Contracts.System
+namespace Bee.Business.System
 {
     /// <summary>
     /// Output result for retrieving definition data.
     /// </summary>
-    [MessagePackObject]
-    [Serializable]
-    public class GetDefineResult : BusinessResult
+    public class GetDefineResult : BusinessResult, IGetDefineResponse
     {
         /// <summary>
         /// Gets or sets the definition data as an XML string.
         /// </summary>
-        [Key(100)]
         public string Xml { get; set; } = string.Empty;
     }
 }

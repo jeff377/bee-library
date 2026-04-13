@@ -1,26 +1,21 @@
 using System;
-using MessagePack;
+using Bee.Definition.Api;
 
-namespace Bee.Api.Contracts.System
+namespace Bee.Business.System
 {
     /// <summary>
     /// Output result for creating a user session.
     /// </summary>
-    [MessagePackObject]
-    [Serializable]
-    public class CreateSessionResult : BusinessResult
+    public class CreateSessionResult : BusinessResult, ICreateSessionResponse
     {
         /// <summary>
         /// Gets or sets the access token used for authenticating subsequent API calls.
         /// </summary>
-        [Key(100)]
         public Guid AccessToken { get; set; } = Guid.Empty;
 
         /// <summary>
         /// Gets or sets the expiration time of the AccessToken in UTC.
-        /// The client should complete all protected API calls before this time.
         /// </summary>
-        [Key(101)]
         public DateTime ExpiredAt { get; set; }
     }
 }

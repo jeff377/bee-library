@@ -1,39 +1,34 @@
 using System;
 using MessagePack;
 
-namespace Bee.Api.Contracts
+namespace Bee.Api.Core
 {
     /// <summary>
-    /// Input arguments for executing a custom method.
+    /// API request type for executing a custom method.
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class ExecFuncArgs : BusinessArgs
+    public class ExecFuncRequest : ApiRequest
     {
-        #region 建構函式
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExecFuncArgs"/> class.
+        /// Initializes a new instance of the <see cref="ExecFuncRequest"/> class.
         /// </summary>
-        public ExecFuncArgs()
+        public ExecFuncRequest()
         { }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ExecFuncArgs"/> class with the specified function identifier.
+        /// Initializes a new instance of the <see cref="ExecFuncRequest"/> class with the specified function identifier.
         /// </summary>
         /// <param name="funcID">The custom method identifier.</param>
-        public ExecFuncArgs(string funcID)
+        public ExecFuncRequest(string funcID)
         {
             FuncId = funcID;
         }
-
-        #endregion
 
         /// <summary>
         /// Gets or sets the custom method identifier.
         /// </summary>
         [Key(100)]
         public string FuncId { get; set; } = string.Empty;
-
     }
 }

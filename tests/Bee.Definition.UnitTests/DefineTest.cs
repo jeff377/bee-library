@@ -6,8 +6,7 @@ using Bee.Definition.Settings;
 using System.Data;
 using Bee.Base;
 using Bee.Base.Serialization;
-using Bee.Api.Contracts;
-using Bee.Api.Contracts.System;
+using Bee.Business.System;
 
 namespace Bee.Definition.UnitTests
 {

@@ -104,7 +104,7 @@ namespace Bee.Api.Core.JsonRpc
         /// Prevents arbitrary type loading from client-supplied type names.
         /// </summary>
         /// <param name="typeName">
-        /// The assembly-qualified type name (e.g., "Bee.Api.Contracts.System.LoginArgs, Bee.Api.Contracts").
+        /// The assembly-qualified type name (e.g., "Bee.Api.Core.System.LoginRequest, Bee.Api.Core").
         /// </param>
         /// <exception cref="InvalidOperationException">Thrown when the type is not in the allowed whitelist.</exception>
         private static void ValidateTypeName(string typeName)

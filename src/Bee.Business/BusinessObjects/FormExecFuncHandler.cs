@@ -1,5 +1,4 @@
-﻿using Bee.Api.Contracts;
-using System;
+﻿using System;
 
 namespace Bee.Business.BusinessObjects
 {

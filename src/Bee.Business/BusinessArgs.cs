@@ -1,3 +1,5 @@
+using Bee.Definition.Collections;
+
 namespace Bee.Business
 {
     /// <summary>
@@ -5,5 +7,9 @@ namespace Bee.Business
     /// </summary>
     public abstract class BusinessArgs
     {
+        /// <summary>
+        /// Gets or sets the input parameter collection.
+        /// </summary>
+        public ParameterCollection Parameters { get; set; }
     }
 }

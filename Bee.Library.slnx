@@ -8,7 +8,6 @@
     <File Path="src/Directory.Build.props" />
     <Project Path="src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj" />
     <Project Path="src/Bee.Api.Client/Bee.Api.Client.csproj" />
-    <Project Path="src/Bee.Api.Contracts/Bee.Api.Contracts.csproj" Id="65478f73-2ad9-433b-b2f2-dee9c49677f3" />
     <Project Path="src/Bee.Api.Core/Bee.Api.Core.csproj" />
     <Project Path="src/Bee.Base/Bee.Base.csproj" />
     <Project Path="src/Bee.Business/Bee.Business.csproj" />
@@ -21,7 +20,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/Bee.Api.AspNetCore.UnitTests/Bee.Api.AspNetCore.UnitTests.csproj" />
     <Project Path="tests/Bee.Api.Client.UnitTests/Bee.Api.Client.UnitTests.csproj" />
-    <Project Path="tests/Bee.Api.Contracts.UnitTests/Bee.Api.Contracts.UnitTests.csproj" Id="3a3e8eb7-95e4-4590-811e-149f003ee48e" />
     <Project Path="tests/Bee.Api.Core.UnitTests/Bee.Api.Core.UnitTests.csproj" />
     <Project Path="tests/Bee.Base.UnitTests/Bee.Base.UnitTests.csproj" />
     <Project Path="tests/Bee.Business.UnitTests/Bee.Business.UnitTests.csproj" />

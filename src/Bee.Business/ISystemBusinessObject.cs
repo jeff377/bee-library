@@ -1,4 +1,4 @@
-using Bee.Api.Contracts.System;
+using Bee.Business.System;
 
 namespace Bee.Business
 {

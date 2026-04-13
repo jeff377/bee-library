@@ -13,7 +13,7 @@ namespace Bee.Base
         static SysInfo()
         {
             // Add the default allowed type namespaces for JSON-RPC data transfer
-            _allowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Definition", "Bee.Contracts", "Bee.Api.Contracts" };
+            _allowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Definition", "Bee.Contracts", "Bee.Api.Core", "Bee.Business" };
         }
 
         /// <summary>
@@ -104,7 +104,8 @@ namespace Bee.Base
                 "Bee.Base",
                 "Bee.Definition",
                 "Bee.Contracts",
-                "Bee.Api.Contracts"
+                "Bee.Api.Core",
+                "Bee.Business"
             };
 
             // User-defined namespace list (separated by '|')

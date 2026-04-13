@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using System.Text;
 using Bee.Api.AspNetCore.Controllers;
+using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
+using Bee.Api.Core.System;
 using Bee.Base;
 using Bee.Base.Serialization;
-using Bee.Api.Contracts;
-using Bee.Api.Contracts.System;
 using Bee.Definition;
 using Bee.Tests.Shared;
 using Microsoft.AspNetCore.Http;
@@ -97,12 +97,12 @@ namespace Bee.Api.AspNetCore.UnitTests
             if (_accessToken == Guid.Empty)
             {
                 // 模擬登入，實際上是透過 API 登入取得 AccessToken
-                var args = new LoginArgs()
+                var args = new LoginRequest()
                 {
                     UserId = "demo",
                     Password = "1234"
                 };
-                var result = await ExecuteRpcAsync<LoginResult>(Guid.Empty, SysProgIds.System, "Login", args);
+                var result = await ExecuteRpcAsync<LoginResponse>(Guid.Empty, SysProgIds.System, "Login", args);
                 _accessToken = result.AccessToken;
             }
             return _accessToken;
@@ -115,12 +115,12 @@ namespace Bee.Api.AspNetCore.UnitTests
         [DisplayName("Ping 應回傳正確狀態與追蹤識別碼")]
         public async Task Ping_ValidRequest_ReturnsOkStatus()
         {
-            var args = new PingArgs()
+            var args = new PingRequest()
             {
                 ClientName = "TestClient",
                 TraceId = "001",
             };
-            var result = await ExecuteRpcAsync<PingResult>(Guid.Empty, SysProgIds.System, "Ping", args);
+            var result = await ExecuteRpcAsync<PingResponse>(Guid.Empty, SysProgIds.System, "Ping", args);
             Assert.NotNull(result);
             Assert.Equal("ok", result.Status);
             Assert.Equal("001", result.TraceId);
@@ -131,8 +131,8 @@ namespace Bee.Api.AspNetCore.UnitTests
         public async Task ExecFunc_Hello_ReturnsNotNull()
         {
             Guid accessToken = await GetAccessTokenAsync();
-            var args = new ExecFuncArgs("Hello");
-            var result = await ExecuteRpcAsync<ExecFuncResult>(accessToken, SysProgIds.System, "ExecFunc", args);
+            var args = new ExecFuncRequest("Hello");
+            var result = await ExecuteRpcAsync<ExecFuncResponse>(accessToken, SysProgIds.System, "ExecFunc", args);
             Assert.NotNull(result);
         }
     }

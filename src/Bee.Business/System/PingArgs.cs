@@ -1,25 +1,20 @@
-using System;
-using MessagePack;
+using Bee.Definition.Api;
 
-namespace Bee.Api.Contracts.System
+namespace Bee.Business.System
 {
     /// <summary>
     /// Input arguments for the Ping method.
     /// </summary>
-    [MessagePackObject]
-    [Serializable]
-    public class PingArgs : BusinessArgs
+    public class PingArgs : BusinessArgs, IPingRequest
     {
         /// <summary>
         /// Gets or sets the client identifier name (optional).
         /// </summary>
-        [Key(100)]
         public string ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the call trace ID (optional).
         /// </summary>
-        [Key(101)]
         public string TraceId { get; set; }
     }
 }

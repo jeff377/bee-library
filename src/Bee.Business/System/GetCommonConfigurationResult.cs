@@ -1,19 +1,15 @@
-using System;
-using MessagePack;
+using Bee.Definition.Api;
 
-namespace Bee.Api.Contracts.System
+namespace Bee.Business.System
 {
     /// <summary>
     /// Output result for retrieving common parameters and environment configuration.
     /// </summary>
-    [MessagePackObject]
-    [Serializable]
-    public class GetCommonConfigurationResult : BusinessResult
+    public class GetCommonConfigurationResult : BusinessResult, IGetCommonConfigurationResponse
     {
         /// <summary>
         /// Gets or sets the common parameters and environment configuration.
         /// </summary>
-        [Key(100)]
         public string CommonConfiguration { get; set; } = string.Empty;
     }
 }

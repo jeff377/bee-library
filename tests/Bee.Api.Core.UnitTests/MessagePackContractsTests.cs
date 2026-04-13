@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
-using Bee.Api.Contracts;
-using Bee.Api.Contracts.System;
+using Bee.Api.Core.System;
 using Bee.Definition;
 using Bee.Definition.Api;
 
@@ -13,14 +12,14 @@ namespace Bee.Api.Core.UnitTests
     public sealed class MessagePackContractsTests
     {
         /// <summary>
-        /// 單一測試：對 CheckPackageUpdateArgs/Result 與 GetPackageArgs/Result 進行 round-trip 並比對內容。
+        /// 單一測試：對 CheckPackageUpdateRequest/Result 與 GetPackageRequest/Result 進行 round-trip 並比對內容。
         /// </summary>
         [Fact]
         [DisplayName("合約型別 MessagePack 序列化與反序列化 round-trip 應成功")]
         public void ContractTypes_RoundTrip_Succeeds()
         {
-            // ===== 1) CheckPackageUpdateArgs → Serialize/Deserialize（泛型） =====
-            var checkArgs = new CheckPackageUpdateArgs
+            // ===== 1) CheckPackageUpdateRequest → Serialize/Deserialize（泛型） =====
+            var checkArgs = new CheckPackageUpdateRequest
             {
                 Queries = new List<PackageUpdateQuery>
                 {
@@ -47,15 +46,15 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotNull(checkArgsBytes);
             Assert.NotEmpty(checkArgsBytes);
 
-            var checkArgs2 = MessagePackHelper.Deserialize<CheckPackageUpdateArgs>(checkArgsBytes);
+            var checkArgs2 = MessagePackHelper.Deserialize<CheckPackageUpdateRequest>(checkArgsBytes);
             Assert.NotNull(checkArgs2);
             Assert.Equal(checkArgs.Queries.Count, checkArgs2.Queries.Count);
             Assert.Equal(checkArgs.Queries[0].AppId, checkArgs2.Queries[0].AppId);
             Assert.Equal(checkArgs.Queries[0].CurrentVersion, checkArgs2.Queries[0].CurrentVersion);
             Assert.Equal(checkArgs.Queries[1].AppId, checkArgs2.Queries[1].AppId);
 
-            // ===== 2) CheckPackageUpdateResult → Serialize/Deserialize（泛型） =====
-            var checkResult = new CheckPackageUpdateResult
+            // ===== 2) CheckPackageUpdateResponse → Serialize/Deserialize（泛型） =====
+            var checkResult = new CheckPackageUpdateResponse
             {
                 Updates = new List<PackageUpdateInfo>
                 {
@@ -79,15 +78,15 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotNull(checkResultBytes);
             Assert.NotEmpty(checkResultBytes);
 
-            var checkResult2 = MessagePackHelper.Deserialize<CheckPackageUpdateResult>(checkResultBytes);
+            var checkResult2 = MessagePackHelper.Deserialize<CheckPackageUpdateResponse>(checkResultBytes);
             Assert.NotNull(checkResult2);
             Assert.Single(checkResult2.Updates);
             Assert.Equal(checkResult.Updates[0].AppId, checkResult2.Updates[0].AppId);
             Assert.Equal(checkResult.Updates[0].LatestVersion, checkResult2.Updates[0].LatestVersion);
             Assert.Equal(checkResult.Updates[0].Delivery, checkResult2.Updates[0].Delivery);
 
-            // ===== 3) GetPackageArgs → Serialize/Deserialize（非泛型重載） =====
-            var getArgs = new GetPackageArgs
+            // ===== 3) GetPackageRequest → Serialize/Deserialize（非泛型重載） =====
+            var getArgs = new GetPackageRequest
             {
                 AppId = "Client",
                 ComponentId = "Main",
@@ -97,21 +96,21 @@ namespace Bee.Api.Core.UnitTests
                 FileId = ""
             };
 
-            var getArgsBytes = MessagePackHelper.Serialize(getArgs, typeof(GetPackageArgs));
+            var getArgsBytes = MessagePackHelper.Serialize(getArgs, typeof(GetPackageRequest));
             Assert.NotNull(getArgsBytes);
             Assert.NotEmpty(getArgsBytes);
 
-            var getArgs2Obj = MessagePackHelper.Deserialize(getArgsBytes, typeof(GetPackageArgs));
-            var getArgs2 = Assert.IsType<GetPackageArgs>(getArgs2Obj);
+            var getArgs2Obj = MessagePackHelper.Deserialize(getArgsBytes, typeof(GetPackageRequest));
+            var getArgs2 = Assert.IsType<GetPackageRequest>(getArgs2Obj);
             Assert.Equal(getArgs.AppId, getArgs2.AppId);
             Assert.Equal(getArgs.Version, getArgs2.Version);
             Assert.Equal(getArgs.Platform, getArgs2.Platform);
             Assert.Equal(getArgs.Channel, getArgs2.Channel);
             Assert.Equal(getArgs.FileId, getArgs2.FileId);
 
-            // ===== 4) GetPackageResult → Serialize/Deserialize（泛型） =====
+            // ===== 4) GetPackageResponse → Serialize/Deserialize（泛型） =====
             var bytes = new byte[] { 1, 2, 3, 4, 5 }; // 模擬小檔案內容
-            var getResult = new GetPackageResult
+            var getResult = new GetPackageResponse
             {
                 FileName = "client-main-win-x64-1.2.4.zip",
                 Content = bytes,
@@ -124,7 +123,7 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotNull(getResultBytes);
             Assert.NotEmpty(getResultBytes);
 
-            var getResult2 = MessagePackHelper.Deserialize<GetPackageResult>(getResultBytes);
+            var getResult2 = MessagePackHelper.Deserialize<GetPackageResponse>(getResultBytes);
             Assert.NotNull(getResult2);
             Assert.Equal(getResult.FileName, getResult2.FileName);
             Assert.Equal(getResult.FileSize, getResult2.FileSize);

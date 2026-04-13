@@ -139,6 +139,14 @@ namespace Bee.Api.Core.JsonRpc
             // Access validation
             ApiAccessValidator.ValidateAccess(method, new ApiCallContext(AccessToken, IsLocalCall, format));
 
+            // Convert the input parameter to the expected BO type if needed
+            var methodParams = method.GetParameters();
+            if (methodParams.Length > 0 && value != null)
+            {
+                var paramType = methodParams[0].ParameterType;
+                value = ApiInputConverter.Convert(value, paramType);
+            }
+
             var result = method.Invoke(businessObject, new object[] { value });
 
             // If the method is asynchronous (Task or Task<T>), await it

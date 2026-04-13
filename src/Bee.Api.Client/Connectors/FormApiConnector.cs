@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Bee.Api.Core;
-using Bee.Api.Contracts;
 using Bee.Definition;
 
 namespace Bee.Api.Client.Connectors
@@ -56,16 +55,16 @@ namespace Bee.Api.Client.Connectors
         /// Asynchronously executes a custom method; requires authentication.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        public async Task<ExecFuncResult> ExecFuncAsync(ExecFuncArgs args)
+        public async Task<ExecFuncResponse> ExecFuncAsync(ExecFuncRequest args)
         {
-            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFunc, args).ConfigureAwait(false);
+            return await ExecuteAsync<ExecFuncResponse>(SystemActions.ExecFunc, args).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Executes a custom method; requires authentication.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        public ExecFuncResult ExecFunc(ExecFuncArgs args)
+        public ExecFuncResponse ExecFunc(ExecFuncRequest args)
         {
             return SyncExecutor.Run(() =>
                 ExecFuncAsync(args)
@@ -76,18 +75,18 @@ namespace Bee.Api.Client.Connectors
         /// Asynchronously executes a custom method; allows anonymous access.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        public async Task<ExecFuncResult> ExecFuncAnonymousAsync(ExecFuncArgs args)
+        public async Task<ExecFuncResponse> ExecFuncAnonymousAsync(ExecFuncRequest args)
         {
-            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFuncAnonymous, args).ConfigureAwait(false);
+            return await ExecuteAsync<ExecFuncResponse>(SystemActions.ExecFuncAnonymous, args).ConfigureAwait(false);
         }
 
         /// <summary>
         /// Asynchronously executes a custom method; local calls only.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        public async Task<ExecFuncResult> ExecFuncLocalAsync(ExecFuncArgs args)
+        public async Task<ExecFuncResponse> ExecFuncLocalAsync(ExecFuncRequest args)
         {
-            return await ExecuteAsync<ExecFuncResult>(SystemActions.ExecFuncLocal, args).ConfigureAwait(false);
+            return await ExecuteAsync<ExecFuncResponse>(SystemActions.ExecFuncLocal, args).ConfigureAwait(false);
         }
     }
 }

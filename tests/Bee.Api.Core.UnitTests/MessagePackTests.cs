@@ -6,8 +6,7 @@ using System.Data;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Collections;
-using Bee.Api.Contracts;
-using Bee.Api.Contracts.System;
+using Bee.Api.Core.System;
 using Bee.Definition;
 
 namespace Bee.Api.Core.UnitTests
@@ -361,8 +360,8 @@ namespace Bee.Api.Core.UnitTests
         [Fact(DisplayName = "Ping 方法傳遞參數的序列化")]
         public void Ping_Serialize()
         {
-            // 建立 TPingArgs 並指定屬性與參數
-            var args = new PingArgs
+            // 建立 TPingRequest 並指定屬性與參數
+            var args = new PingRequest
             {
                 ClientName = "TestClient",
                 TraceId = Guid.NewGuid().ToString()
@@ -373,8 +372,8 @@ namespace Bee.Api.Core.UnitTests
             // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(args);
 
-            // 建立 TPingResult 並指定屬性與參數
-            var result = new PingResult
+            // 建立 TPingResponse 並指定屬性與參數
+            var result = new PingResponse
             {
                 Status = "pong",
                 ServerTime = new DateTime(2025, 5, 16, 8, 30, 0, DateTimeKind.Utc),
@@ -394,8 +393,8 @@ namespace Bee.Api.Core.UnitTests
         [Fact(DisplayName = "ExecFunc 方法傳遞參數的序列化")]
         public void ExecFunc_Serialize()
         {
-            // 建立 TExecFuncArgs 並指定屬性與參數
-            var args = new ExecFuncArgs
+            // 建立 TExecFuncRequest 並指定屬性與參數
+            var args = new ExecFuncRequest
             {
                 FuncId = "CustomFunction123"
             };
@@ -405,8 +404,8 @@ namespace Bee.Api.Core.UnitTests
             // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(args);
 
-            // 建立 TExecFuncResult 並指定屬性與參數
-            var result = new ExecFuncResult();
+            // 建立 TExecFuncResponse 並指定屬性與參數
+            var result = new ExecFuncResponse();
             result.Parameters.Add("ResultKey", "ResultValue");
             result.Parameters.Add("ResultCount", 100);
             result.Parameters.Add("ResultDate", new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc));
@@ -421,8 +420,8 @@ namespace Bee.Api.Core.UnitTests
         [Fact(DisplayName = "CreateSession 方法傳遞參數的序列化")]
         public void CreateSession_Serialize()
         {
-            // Arrange: 建立 TCreateSessionArgs 實例並設定屬性
-            var args = new CreateSessionArgs
+            // Arrange: 建立 TCreateSessionRequest 實例並設定屬性
+            var args = new CreateSessionRequest
             {
                 UserID = "TestUser",
                 ExpiresIn = 7200,
@@ -432,8 +431,8 @@ namespace Bee.Api.Core.UnitTests
             // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(args);
 
-            // Arrange: 建立 TCreateSessionResult 實例並設定屬性
-            var result = new CreateSessionResult
+            // Arrange: 建立 TCreateSessionResponse 實例並設定屬性
+            var result = new CreateSessionResponse
             {
                 AccessToken = Guid.NewGuid(),
                 ExpiredAt = new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc)
@@ -449,8 +448,8 @@ namespace Bee.Api.Core.UnitTests
         [Fact(DisplayName = "GetDefine 方法傳遞參數的序列化")]
         public void GetDefine_Serialize()
         {
-            // Arrange: 建立 TGetDefineArgs 實例並設定屬性
-            var args = new GetDefineArgs
+            // Arrange: 建立 TGetDefineRequest 實例並設定屬性
+            var args = new GetDefineRequest
             {
                 DefineType = DefineType.FormSchema,
                 Keys = new[] { "Key1", "Key2", "Key3" }
@@ -459,8 +458,8 @@ namespace Bee.Api.Core.UnitTests
             // Act & Assert: 使用 TestMessagePackSerialization 測試
             TestFunc.TestMessagePackSerialization(args);
 
-            // Arrange: 建立 TGetDefineResult 實例並設定屬性
-            var result = new GetDefineResult
+            // Arrange: 建立 TGetDefineResponse 實例並設定屬性
+            var result = new GetDefineResponse
             {
                 Xml = "<Define><Item Key='Key1'>Value1</Item></Define>"
             };

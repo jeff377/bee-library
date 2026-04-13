@@ -54,7 +54,7 @@ namespace Bee.Business.UnitTests
             Assert.True(tracker.IsLockedOut("user01"));
 
             // Wait for lockout to expire
-            System.Threading.Thread.Sleep(100);
+            global::System.Threading.Thread.Sleep(100);
 
             Assert.False(tracker.IsLockedOut("user01"));
         }

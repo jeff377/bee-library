@@ -1,5 +1,3 @@
-using Bee.Api.Contracts;
-
 namespace Bee.Business
 {
     /// <summary>
