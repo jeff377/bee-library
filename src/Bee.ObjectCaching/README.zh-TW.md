@@ -7,8 +7,8 @@
 ## 架構定位
 
 - **層級**：基礎設施層（快取）
-- **上游**（依賴此專案者）：應用程式、`Bee.Business`（間接）
-- **下游**（此專案依賴）：`Bee.Definition`、`System.Runtime.Caching`
+- **下游**（依賴此專案者）：應用程式、`Bee.Business`（間接）
+- **上游**（此專案依賴）：`Bee.Definition`、`System.Runtime.Caching`
 
 ## 目標框架
 

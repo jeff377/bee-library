@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Infrastructure (bottom layer of the Bee.NET framework)
-- **Upstream** (dependents): Almost all other `Bee.*` projects (`Bee.Definition`, `Bee.Business`, `Bee.Api.Core`, etc.)
-- **Downstream** (dependencies): `Newtonsoft.Json`
+- **Downstream** (dependents): Almost all other `Bee.*` projects (`Bee.Definition`, `Bee.Business`, `Bee.Api.Core`, etc.)
+- **Upstream** (dependencies): `Newtonsoft.Json`
 
 ## Target Frameworks
 

@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Data Access Layer (implementation)
-- **Upstream** (dependents): Applications (via `RepositoryInfo` injection)
-- **Downstream** (dependencies): `Bee.Db`, `Bee.Repository.Abstractions`
+- **Downstream** (dependents): Applications (via `RepositoryInfo` injection)
+- **Upstream** (dependencies): `Bee.Db`, `Bee.Repository.Abstractions`
 
 ## Target Frameworks
 

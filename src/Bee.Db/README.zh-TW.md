@@ -7,8 +7,8 @@
 ## 架構定位
 
 - **層級**：資料存取層（基礎設施）
-- **上游**（依賴此套件）：`Bee.Repository`
-- **下游**（此套件依賴）：`Bee.Definition`、`System.Reflection.Emit.Lightweight`
+- **下游**（依賴此套件）：`Bee.Repository`
+- **上游**（此套件依賴）：`Bee.Definition`、`System.Reflection.Emit.Lightweight`
 
 ## 目標框架
 

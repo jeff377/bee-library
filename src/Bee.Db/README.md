@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Data Access Layer (infrastructure)
-- **Upstream** (dependents): `Bee.Repository`
-- **Downstream** (dependencies): `Bee.Definition`, `System.Reflection.Emit.Lightweight`
+- **Downstream** (dependents): `Bee.Repository`
+- **Upstream** (dependencies): `Bee.Definition`, `System.Reflection.Emit.Lightweight`
 
 ## Target Frameworks
 

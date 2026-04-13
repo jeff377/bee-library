@@ -12,8 +12,8 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 
 在 BeeNET 的相依關係圖中，此套件**不包含商業邏輯，也不執行 I/O**。它是純粹的型別與合約庫：介面、POCO、列舉與屬性標籤。這使其保持穩定且輕量——此處的 API 異動會向上波及整個技術堆疊，因此 API 表面採保守演進策略。
 
-- **下游相依**：Bee.Base、MessagePack
-- **上游消費者**：Bee.Api.Contracts、Bee.Api.Core、Bee.Repository.Abstractions、Bee.Db、Bee.ObjectCaching、Bee.Business
+- **上游相依**：Bee.Base、MessagePack
+- **下游消費者**：Bee.Api.Contracts、Bee.Api.Core、Bee.Repository.Abstractions、Bee.Db、Bee.ObjectCaching、Bee.Business
 
 ## 目標框架
 

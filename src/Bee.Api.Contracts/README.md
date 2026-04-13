@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: API Layer (contracts)
-- **Upstream** (dependents): `Bee.Api.Core`, `Bee.Business`
-- **Downstream** (dependencies): `Bee.Definition`
+- **Downstream** (dependents): `Bee.Api.Core`, `Bee.Business`
+- **Upstream** (dependencies): `Bee.Definition`
 
 ## Target Frameworks
 

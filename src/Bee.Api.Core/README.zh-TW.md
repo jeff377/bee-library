@@ -7,8 +7,8 @@
 ## 架構定位
 
 - **層級**：API 層（核心引擎）
-- **上游**（依賴此專案）：`Bee.Api.AspNetCore`、`Bee.Api.Client`
-- **下游**（此專案依賴）：`Bee.Api.Contracts`、`Bee.Definition`
+- **下游**（依賴此專案）：`Bee.Api.AspNetCore`、`Bee.Api.Client`
+- **上游**（此專案依賴）：`Bee.Api.Contracts`、`Bee.Definition`
 
 ## 目標框架
 

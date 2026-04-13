@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: API Layer (hosting)
-- **Upstream** (dependents): Applications (user inherits the controller)
-- **Downstream** (dependencies): `Bee.Api.Core`
+- **Downstream** (dependents): Applications (user inherits the controller)
+- **Upstream** (dependencies): `Bee.Api.Core`
 
 ## Target Frameworks
 

@@ -7,8 +7,8 @@
 ## 架構定位
 
 - **層級**：資料存取層（實作）
-- **上游**（依賴此專案者）：應用程式（透過 `RepositoryInfo` 注入）
-- **下游**（此專案依賴）：`Bee.Db`、`Bee.Repository.Abstractions`
+- **下游**（依賴此專案者）：應用程式（透過 `RepositoryInfo` 注入）
+- **上游**（此專案依賴）：`Bee.Db`、`Bee.Repository.Abstractions`
 
 ## 目標框架
 

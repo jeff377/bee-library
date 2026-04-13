@@ -7,8 +7,8 @@
 ## 架構定位
 
 - **層級**：商業邏輯層（Business Logic Layer）
-- **上游**（依賴此專案者）：`Bee.Api.Core`（透過 Provider 調用）
-- **下游**（此專案依賴）：`Bee.Api.Contracts`、`Bee.Definition`、`Bee.Repository.Abstractions`
+- **下游**（依賴此專案者）：`Bee.Api.Core`（透過 Provider 調用）
+- **上游**（此專案依賴）：`Bee.Api.Contracts`、`Bee.Definition`、`Bee.Repository.Abstractions`
 
 ## 目標框架
 

@@ -7,8 +7,8 @@
 ## 架構定位
 
 - **層級**：API 層（契約）
-- **上游**（依賴此專案）：`Bee.Api.Core`、`Bee.Business`
-- **下游**（此專案依賴）：`Bee.Definition`
+- **下游**（依賴此專案）：`Bee.Api.Core`、`Bee.Business`
+- **上游**（此專案依賴）：`Bee.Definition`
 
 ## 目標框架
 

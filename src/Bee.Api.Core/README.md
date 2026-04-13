@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: API Layer (core engine)
-- **Upstream** (dependents): `Bee.Api.AspNetCore`, `Bee.Api.Client`
-- **Downstream** (dependencies): `Bee.Api.Contracts`, `Bee.Definition`
+- **Downstream** (dependents): `Bee.Api.AspNetCore`, `Bee.Api.Client`
+- **Upstream** (dependencies): `Bee.Api.Contracts`, `Bee.Definition`
 
 ## Target Frameworks
 

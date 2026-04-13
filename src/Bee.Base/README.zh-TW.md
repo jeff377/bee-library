@@ -7,8 +7,8 @@
 ## 架構定位
 
 - **層級**：基礎設施層（Bee.NET 框架最底層）
-- **上游**（依賴此專案者）：幾乎所有其他 `Bee.*` 專案（`Bee.Definition`、`Bee.Business`、`Bee.Api.Core` 等）
-- **下游**（此專案依賴）：`Newtonsoft.Json`
+- **下游**（依賴此專案者）：幾乎所有其他 `Bee.*` 專案（`Bee.Definition`、`Bee.Business`、`Bee.Api.Core` 等）
+- **上游**（此專案依賴）：`Newtonsoft.Json`
 
 ## 目標框架
 

@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Frontend / Client
-- **Upstream** (dependents): Applications (WinForms, Blazor, etc.)
-- **Downstream** (dependencies): `Bee.Api.Core`
+- **Downstream** (dependents): Applications (WinForms, Blazor, etc.)
+- **Upstream** (dependencies): `Bee.Api.Core`
 
 ## Target Frameworks
 

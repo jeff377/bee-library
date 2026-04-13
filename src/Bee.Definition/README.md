@@ -12,8 +12,8 @@ Bee.Definition sits at the foundation of the BeeNET framework, providing the sha
 
 In the BeeNET dependency graph, this package contains **no business logic and no I/O**. It is a pure type + contract library: interfaces, POCOs, enums, and attributes. This keeps it stable and lightweight — changes here ripple upward through the entire stack, so the API surface evolves conservatively.
 
-- **Downstream dependencies**: Bee.Base, MessagePack
-- **Upstream consumers**: Bee.Api.Contracts, Bee.Api.Core, Bee.Repository.Abstractions, Bee.Db, Bee.ObjectCaching, Bee.Business
+- **Upstream dependencies**: Bee.Base, MessagePack
+- **Downstream consumers**: Bee.Api.Contracts, Bee.Api.Core, Bee.Repository.Abstractions, Bee.Db, Bee.ObjectCaching, Bee.Business
 
 ## Target Frameworks
 

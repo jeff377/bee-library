@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Data Access Layer (contracts)
-- **Upstream** (dependents): `Bee.Repository`, `Bee.Business`
-- **Downstream** (dependencies): `Bee.Definition`
+- **Downstream** (dependents): `Bee.Repository`, `Bee.Business`
+- **Upstream** (dependencies): `Bee.Definition`
 
 ## Target Frameworks
 

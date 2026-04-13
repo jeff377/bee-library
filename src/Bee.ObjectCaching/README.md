@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Infrastructure (caching)
-- **Upstream** (dependents): Applications, `Bee.Business` (indirectly)
-- **Downstream** (dependencies): `Bee.Definition`, `System.Runtime.Caching`
+- **Downstream** (dependents): Applications, `Bee.Business` (indirectly)
+- **Upstream** (dependencies): `Bee.Definition`, `System.Runtime.Caching`
 
 ## Target Frameworks
 

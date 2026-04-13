@@ -7,8 +7,8 @@
 ## Architecture Position
 
 - **Layer**: Business Logic Layer
-- **Upstream** (dependents): `Bee.Api.Core` (via Provider invocation)
-- **Downstream** (dependencies): `Bee.Api.Contracts`, `Bee.Definition`, `Bee.Repository.Abstractions`
+- **Downstream** (dependents): `Bee.Api.Core` (via Provider invocation)
+- **Upstream** (dependencies): `Bee.Api.Contracts`, `Bee.Definition`, `Bee.Repository.Abstractions`
 
 ## Target Frameworks
 
