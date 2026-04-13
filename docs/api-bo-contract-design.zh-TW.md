@@ -28,12 +28,12 @@
 
 ## 型別總覽
 
-### 合約介面（Bee.Definition.Api）
+### 合約介面（Bee.Api.Contracts）
 
 定義 API 方法輸入與輸出的屬性合約，只包含唯讀屬性，不含任何序列化標記。
 
 ```csharp
-namespace Bee.Definition.Api
+namespace Bee.Api.Contracts
 {
     public interface ILoginRequest
     {
@@ -101,8 +101,8 @@ public class LoginArgs : BusinessArgs, ILoginRequest
 
 | 用途 | 命名模式 | 範例 | 所在組件 |
 |------|----------|------|----------|
-| 合約介面（輸入） | `IXxxRequest` | `ILoginRequest` | Bee.Definition |
-| 合約介面（輸出） | `IXxxResponse` | `ILoginResponse` | Bee.Definition |
+| 合約介面（輸入） | `IXxxRequest` | `ILoginRequest` | Bee.Api.Contracts |
+| 合約介面（輸出） | `IXxxResponse` | `ILoginResponse` | Bee.Api.Contracts |
 | API 輸入 | `XxxRequest` | `LoginRequest` | Bee.Api.Core |
 | API 輸出 | `XxxResponse` | `LoginResponse` | Bee.Api.Core |
 | BO 輸入 | `XxxArgs` | `LoginArgs` | Bee.Business |
@@ -233,7 +233,7 @@ ApiContractRegistry.Register<ILoginResponse, LoginResponse>();
 
 以新增 `GetOrder` 方法為例：
 
-1. **定義合約介面**（`src/Bee.Definition/Api/`）
+1. **定義合約介面**（`src/Bee.Api.Contracts/`）
    - `IGetOrderRequest.cs` — 輸入屬性
    - `IGetOrderResponse.cs` — 輸出屬性
 
@@ -256,13 +256,13 @@ ApiContractRegistry.Register<ILoginResponse, LoginResponse>();
 ## 組件相依方向
 
 ```
-Bee.Definition          ← 合約介面（所有層共用）
+Bee.Api.Contracts           ← 合約介面（API 與 BO 共用）
     │
-    ├── Bee.Api.Core    ← API 型別（含序列化）
+    ├── Bee.Api.Core        ← API 型別（含序列化）
     │       │
     │       └── Bee.Api.Client  ← 用戶端（只用 Request / Response）
     │
-    └── Bee.Business    ← BO 型別（純 POCO）+ BO 介面
+    └── Bee.Business        ← BO 型別（純 POCO）+ BO 介面
 ```
 
-**原則**：箭頭方向為相依方向。`Bee.Api.Core` 與 `Bee.Business` 彼此不相依，各自只依賴 `Bee.Definition`。
+**原則**：箭頭方向為相依方向。`Bee.Api.Core` 與 `Bee.Business` 彼此不相依，各自只依賴 `Bee.Api.Contracts`。

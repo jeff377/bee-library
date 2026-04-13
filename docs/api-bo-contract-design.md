@@ -28,12 +28,12 @@ Contract Interface (ILoginRequest / ILoginResponse)   <-- Single source of truth
 
 ## Type Overview
 
-### Contract Interfaces (Bee.Definition.Api)
+### Contract Interfaces (Bee.Api.Contracts)
 
 Define the property contracts for API method inputs and outputs. Contain only read-only properties with no serialization attributes.
 
 ```csharp
-namespace Bee.Definition.Api
+namespace Bee.Api.Contracts
 {
     public interface ILoginRequest
     {
@@ -101,8 +101,8 @@ public class LoginArgs : BusinessArgs, ILoginRequest
 
 | Purpose | Pattern | Example | Assembly |
 |---------|---------|---------|----------|
-| Contract interface (input) | `IXxxRequest` | `ILoginRequest` | Bee.Definition |
-| Contract interface (output) | `IXxxResponse` | `ILoginResponse` | Bee.Definition |
+| Contract interface (input) | `IXxxRequest` | `ILoginRequest` | Bee.Api.Contracts |
+| Contract interface (output) | `IXxxResponse` | `ILoginResponse` | Bee.Api.Contracts |
 | API input | `XxxRequest` | `LoginRequest` | Bee.Api.Core |
 | API output | `XxxResponse` | `LoginResponse` | Bee.Api.Core |
 | BO input | `XxxArgs` | `LoginArgs` | Bee.Business |
@@ -233,7 +233,7 @@ ApiContractRegistry.Register<ILoginResponse, LoginResponse>();
 
 Using `GetOrder` as an example:
 
-1. **Define contract interfaces** (`src/Bee.Definition/Api/`)
+1. **Define contract interfaces** (`src/Bee.Api.Contracts/`)
    - `IGetOrderRequest.cs` — input properties
    - `IGetOrderResponse.cs` — output properties
 
@@ -256,13 +256,13 @@ Using `GetOrder` as an example:
 ## Assembly Dependency Direction
 
 ```
-Bee.Definition          <-- Contract interfaces (shared by all layers)
+Bee.Api.Contracts           <-- Contract interfaces (shared by API & BO)
     |
-    +-- Bee.Api.Core    <-- API types (with serialization)
+    +-- Bee.Api.Core        <-- API types (with serialization)
     |       |
     |       +-- Bee.Api.Client  <-- Client (uses Request / Response only)
     |
-    +-- Bee.Business    <-- BO types (pure POCO) + BO interfaces
+    +-- Bee.Business        <-- BO types (pure POCO) + BO interfaces
 ```
 
-**Principle:** Arrows indicate dependency direction. `Bee.Api.Core` and `Bee.Business` do not depend on each other; each depends only on `Bee.Definition`.
+**Principle:** Arrows indicate dependency direction. `Bee.Api.Core` and `Bee.Business` do not depend on each other; each depends only on `Bee.Api.Contracts`.
