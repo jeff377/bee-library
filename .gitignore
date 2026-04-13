@@ -16,6 +16,12 @@
 # Archived Claude Code plans (working documents, not reference material)
 docs/plans/archive/
 
+# Blog posts (published on HackMD, not synced to GitHub)
+docs/blogs/
+
+# Personal Claude skills (author-specific, not synced to GitHub)
+.claude/skills/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
