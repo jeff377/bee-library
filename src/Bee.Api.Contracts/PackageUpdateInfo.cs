@@ -1,6 +1,6 @@
 using MessagePack;
 
-namespace Bee.Definition.Api
+namespace Bee.Api.Contracts
 {
     /// <summary>
     /// Update information for a single query item.

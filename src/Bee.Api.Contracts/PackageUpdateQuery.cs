@@ -1,6 +1,6 @@
 using MessagePack;
 
-namespace Bee.Definition.Api
+namespace Bee.Api.Contracts
 {
     /// <summary>
     /// Package query item specifying which update to check (App/Component + current version + platform/channel).

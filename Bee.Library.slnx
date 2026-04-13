@@ -8,6 +8,7 @@
     <File Path="src/Directory.Build.props" />
     <Project Path="src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj" />
     <Project Path="src/Bee.Api.Client/Bee.Api.Client.csproj" />
+    <Project Path="src/Bee.Api.Contracts/Bee.Api.Contracts.csproj" />
     <Project Path="src/Bee.Api.Core/Bee.Api.Core.csproj" />
     <Project Path="src/Bee.Base/Bee.Base.csproj" />
     <Project Path="src/Bee.Business/Bee.Business.csproj" />

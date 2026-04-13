@@ -1,4 +1,4 @@
-namespace Bee.Definition.Api
+namespace Bee.Api.Contracts
 {
     /// <summary>
     /// Package delivery mode. Serialized as integer values (0/1); do not change the numeric values of existing members.

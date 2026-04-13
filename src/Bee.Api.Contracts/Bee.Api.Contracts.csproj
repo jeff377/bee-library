@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+    <Description>Defines the interface contracts for the API layer, serving as the boundary between the API layer and the business logic layer.</Description>
+    <PackageTags>bee.net;api;contracts;interface;dto;shared</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
+  </ItemGroup>
+
+</Project>

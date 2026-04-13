@@ -1,6 +1,6 @@
 using System;
 
-namespace Bee.Definition.Api
+namespace Bee.Api.Contracts
 {
     /// <summary>
     /// Contract interface for create session response data.

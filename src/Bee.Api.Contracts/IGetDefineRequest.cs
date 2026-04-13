@@ -1,4 +1,6 @@
-namespace Bee.Definition.Api
+using Bee.Definition;
+
+namespace Bee.Api.Contracts
 {
     /// <summary>
     /// Contract interface for get definition request parameters.

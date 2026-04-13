@@ -2,7 +2,7 @@ using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
 using Bee.Api.Core.System;
 using Bee.Definition;
-using Bee.Definition.Api;
+using Bee.Api.Contracts;
 
 namespace Bee.Api.Core.UnitTests
 {

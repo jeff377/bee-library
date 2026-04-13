@@ -23,7 +23,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.IsAssignableFrom<ApiRequest>(request);
-            Assert.IsAssignableFrom<Bee.Definition.Api.ILoginRequest>(request);
+            Assert.IsAssignableFrom<Bee.Api.Contracts.ILoginRequest>(request);
             Assert.Equal("admin", request.UserId);
             Assert.Equal("pass123", request.Password);
         }
@@ -41,7 +41,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.IsAssignableFrom<ApiResponse>(response);
-            Assert.IsAssignableFrom<Bee.Definition.Api.ILoginResponse>(response);
+            Assert.IsAssignableFrom<Bee.Api.Contracts.ILoginResponse>(response);
             Assert.Equal(token, response.AccessToken);
         }
 

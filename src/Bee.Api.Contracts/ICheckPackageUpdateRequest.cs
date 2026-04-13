@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Bee.Definition.Api
+namespace Bee.Api.Contracts
 {
     /// <summary>
     /// Contract interface for check package update request parameters.

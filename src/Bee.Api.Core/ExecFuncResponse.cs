@@ -1,4 +1,5 @@
 using System;
+using Bee.Api.Contracts;
 using MessagePack;
 
 namespace Bee.Api.Core
@@ -8,7 +9,7 @@ namespace Bee.Api.Core
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class ExecFuncResponse : ApiResponse
+    public class ExecFuncResponse : ApiResponse, IExecFuncResponse
     {
     }
 }

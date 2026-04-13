@@ -27,7 +27,7 @@
 
 | 層級 | 型別 | 所在組件 | 命名空間 | 職責 |
 |------|------|----------|----------|------|
-| 合約介面 | `IXxxRequest` / `IXxxResponse` | `Bee.Definition` | `Bee.Definition.Api` | 定義屬性合約，為單一真實來源 |
+| 合約介面 | `IXxxRequest` / `IXxxResponse` | `Bee.Api.Contracts` | `Bee.Api.Contracts` | 定義屬性合約，為單一真實來源 |
 | API 基底 | `ApiRequest` / `ApiResponse` | `Bee.Api.Core` | `Bee.Api.Core` | API 層基底，含 MessagePack 序列化與 `ParameterCollection` |
 | API 合約 | `XxxRequest` / `XxxResponse` | `Bee.Api.Core` | `Bee.Api.Core.System` | 繼承 API 基底並實作合約介面，用於 API 傳輸 |
 | BO 基底 | `BusinessArgs` / `BusinessResult` | `Bee.Business` | `Bee.Business` | BO 層基底，純 POCO，不含任何序列化標記 |
@@ -36,24 +36,26 @@
 ### 組件相依圖
 
 ```
-Bee.Definition                  <-- 合約介面（IXxxRequest / IXxxResponse）
+Bee.Definition                  <-- 共用型別（DefineType, ParameterCollection 等）
     |
-    +-- Bee.Api.Core            <-- API 型別（XxxRequest / XxxResponse）
-    |       |                       繼承 ApiRequest / ApiResponse
-    |       |                       實作 IXxxRequest / IXxxResponse
-    |       |                       標記 [MessagePackObject] + [Key(n)]
+    +-- Bee.Api.Contracts       <-- 合約介面（IXxxRequest / IXxxResponse）+ 共用 DTO
     |       |
-    |       +-- Bee.Api.Client  <-- 用戶端，使用 Request / Response 型別
-    |
-    +-- Bee.Business            <-- BO 型別（XxxArgs / XxxResult）
-            |                       繼承 BusinessArgs / BusinessResult
-            |                       實作 IXxxRequest / IXxxResponse
-            |                       純 POCO，無序列化標記
-            |
-            +-- IBusinessObject / ISystemBusinessObject / IFormBusinessObject
+    |       +-- Bee.Api.Core    <-- API 型別（XxxRequest / XxxResponse）
+    |       |       |               繼承 ApiRequest / ApiResponse
+    |       |       |               實作 IXxxRequest / IXxxResponse
+    |       |       |               標記 [MessagePackObject] + [Key(n)]
+    |       |       |
+    |       |       +-- Bee.Api.Client  <-- 用戶端，使用 Request / Response 型別
+    |       |
+    |       +-- Bee.Business    <-- BO 型別（XxxArgs / XxxResult）
+    |               |               繼承 BusinessArgs / BusinessResult
+    |               |               實作 IXxxRequest / IXxxResponse
+    |               |               純 POCO，無序列化標記
+    |               |
+    |               +-- IBusinessObject / ISystemBusinessObject / IFormBusinessObject
 ```
 
-**關鍵隔離效果**：`Bee.Api.Core` 與 `Bee.Business` 各自僅依賴 `Bee.Definition`，彼此完全脫勾。用戶端（`Bee.Api.Client`）只引用 `Bee.Api.Core`，完全不接觸 BO 參數型別。
+**關鍵隔離效果**：`Bee.Api.Core` 與 `Bee.Business` 各自依賴 `Bee.Api.Contracts`（純介面）與 `Bee.Definition`（共用型別），彼此完全脫勾。用戶端（`Bee.Api.Client`）只引用 `Bee.Api.Core`，完全不接觸 BO 參數型別。
 
 ### Executor 的角色
 
@@ -143,10 +145,10 @@ public interface ILoginRequest
 
 以 Login 為典型範例，完整展示各層型別定義與呼叫路徑。
 
-### 5.1 合約介面（Bee.Definition/Api/）
+### 5.1 合約介面（Bee.Api.Contracts/）
 
 ```csharp
-namespace Bee.Definition.Api
+namespace Bee.Api.Contracts
 {
     public interface ILoginRequest
     {
@@ -294,11 +296,11 @@ public ILoginResponse Login(ILoginRequest request)
 
 ## 7. 注意事項
 
-1. **現有型別不重新命名**：`Bee.Api.Contracts` 中現有的 `LoginArgs`、`LoginResult` 等型別維持原名不變，待後續重構計畫再處理搬遷。本規範僅適用於新開發的 API 方法。
+1. **現有型別已完成搬遷**：所有 System 型別（`LoginArgs`、`LoginResult` 等）已搬遷至 `Bee.Business.System`，對應的 API 型別位於 `Bee.Api.Core.System`。
 
-2. **ExecFunc 模式排除**：`ExecFunc` 使用 `ParameterCollection` 作為通用參數機制，不屬於本規範的 Request/Response 模式，維持現行做法。
+2. **ExecFunc 已納入合約介面模式**：`ExecFunc` 現已定義 `IExecFuncRequest` / `IExecFuncResponse` 合約介面於 `Bee.Api.Contracts`，BO 層的 `ExecFuncArgs` / `ExecFuncResult` 與 API 層的 `ExecFuncRequest` / `ExecFuncResponse` 均實作對應介面。
 
-3. **已遷移的型別**：`PackageUpdateQuery`、`PackageUpdateInfo`、`PackageDelivery` 已搬遷至 `Bee.Definition.Api` 命名空間，作為本架構的先行實踐案例。
+3. **已遷移的型別**：`PackageUpdateQuery`、`PackageUpdateInfo`、`PackageDelivery` 已搬遷至 `Bee.Api.Contracts` 命名空間。
 
 4. **BO 介面歸屬**：`IBusinessObject`、`ISystemBusinessObject`、`IFormBusinessObject` 定義在 `Bee.Business` 組件中，確保 BO 層的介面與實作同屬一個組件。
 

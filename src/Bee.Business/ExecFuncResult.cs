@@ -1,9 +1,11 @@
+using Bee.Api.Contracts;
+
 namespace Bee.Business
 {
     /// <summary>
     /// Output result for executing a custom method.
     /// </summary>
-    public class ExecFuncResult : BusinessResult
+    public class ExecFuncResult : BusinessResult, IExecFuncResponse
     {
     }
 }

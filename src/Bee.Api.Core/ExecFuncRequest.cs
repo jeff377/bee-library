@@ -1,4 +1,5 @@
 using System;
+using Bee.Api.Contracts;
 using MessagePack;
 
 namespace Bee.Api.Core
@@ -8,7 +9,7 @@ namespace Bee.Api.Core
     /// </summary>
     [MessagePackObject]
     [Serializable]
-    public class ExecFuncRequest : ApiRequest
+    public class ExecFuncRequest : ApiRequest, IExecFuncRequest
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ExecFuncRequest"/> class.
