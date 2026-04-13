@@ -49,6 +49,5 @@ jobs:
         dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs --no-build
-        dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build

@@ -41,7 +41,6 @@ jobs:
         dotnet build src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --no-restore /p:Version=$ver
-        dotnet build src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore /p:Version=$ver
 
@@ -57,7 +56,6 @@ jobs:
         dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
-        dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
 
@@ -95,7 +93,6 @@ jobs:
           - Bee.Api.Client
           - Bee.Api.Core
           - Bee.Api.AspNetCore
-          - Bee.Api.Contracts
           - Bee.Repository.Abstractions
           - Bee.Repository
 
