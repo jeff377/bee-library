@@ -10,7 +10,7 @@
 
 | 格式 | 用途 | 場景 |
 |------|------|------|
-| **XML** | 儲存定義資料 | FormSchema、SystemSettings 等複雜型別的持久化 |
+| **XML** | 儲存與表示定義資料 | FormSchema、SystemSettings 等複雜型別的持久化與傳輸表示（定義資料傳輸時先序列化為 XML 字串，再經由 MessagePack 或 JSON 傳遞） |
 | **MessagePack** | 內部系統前後端傳遞 | API Payload（見 [ADR-004](adr-004-messagepack-payload.md)） |
 | **JSON** | 外部系統介接 | 第三方系統整合、JSON-RPC 信封、配置檔 |
 
