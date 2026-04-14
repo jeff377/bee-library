@@ -30,14 +30,26 @@
 
 ## 未來方向
 
-目前框架正進行大改版，正在評估是否全面改採 **net10.0+**，放棄 netstandard2.0 支援。潛在好處：
+已確認可全面改採 **net10.0+**，放棄 netstandard2.0 支援。
+
+### 前端消費者分析
+
+框架有三個前端 repo 會消費 Bee.NET 的 NuGet 套件，各前端依 FormLayout 動態產生介面：
+
+| 前端 | 目標框架 | 需要 netstandard2.0？ |
+|------|---------|----------------------|
+| **WinForms**（桌面） | net10.0+（新版 .NET WinForms） | 否 |
+| **Web**（ASP.NET Core / Blazor） | net10.0+ | 否 |
+| **APP**（MAUI 行動裝置） | net10.0+ | 否 |
+
+**結論：netstandard2.0 沒有消費者**，所有前端均為 net10.0+。
+
+### 改採 net10.0+ 的好處
 
 - **移除條件編譯**：消除所有 `#if NETSTANDARD2_0` 區塊，簡化程式碼
 - **使用現代 API**：可自由使用 Span、新的加密 API、Generic Math 等新功能
 - **降低維護成本**：不需在兩個框架上分別測試
 - **為 STJ 遷移鋪路**：System.Text.Json 在 net10.0 上功能完整（見 [ADR-002](adr-002-newtonsoft-json.md)）
-
-主要考量：是否仍有使用者需要在 .NET Framework 環境中使用本框架。
 
 ## 影響
 
