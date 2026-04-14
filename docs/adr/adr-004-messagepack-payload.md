@@ -6,15 +6,23 @@
 
 ## 背景
 
-框架的 JSON-RPC API 需要一個序列化格式來傳輸 Request/Response Payload。API 外層使用 JSON（符合 JSON-RPC 2.0 規範），但內部 Payload（params / result）可以使用不同的序列化格式。選項包括：
+框架使用三種序列化格式，各有明確用途：
 
-1. **JSON**（Newtonsoft.Json）：文字格式，可讀性高
+| 格式 | 用途 | 場景 |
+|------|------|------|
+| **XML** | 儲存定義資料 | FormSchema、SystemSettings 等複雜型別的持久化 |
+| **MessagePack** | 內部系統前後端傳遞 | API Payload |
+| **JSON** | 外部系統介接 | 第三方系統整合、JSON-RPC 信封（見 [ADR-002](adr-002-newtonsoft-json.md)） |
+
+針對內部系統前後端之間的 API Payload 傳輸，需要選擇一個高效的序列化格式。選項包括：
+
+1. **JSON**（Newtonsoft.Json）：文字格式，可讀性高，但體積大、速度慢
 2. **MessagePack**：二進位格式，體積小、速度快
 3. **Protobuf**：二進位格式，需要 .proto 定義檔
 
 ## 決策
 
-採用 `MessagePack` 作為 API Payload 的序列化格式。JSON-RPC 信封使用 JSON，Payload 欄位使用 MessagePack 編碼後以 Base64 嵌入。
+採用 `MessagePack` 作為內部系統前後端 API Payload 的序列化格式。JSON-RPC 信封使用 JSON（符合 JSON-RPC 2.0 規範），Payload 欄位使用 MessagePack 編碼後以 Base64 嵌入。
 
 ## 理由
 
