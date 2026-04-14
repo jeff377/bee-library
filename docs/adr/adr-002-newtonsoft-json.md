@@ -25,18 +25,21 @@
 
 ## 理由
 
+- **DataSet 序列化（主要原因）**：框架以 DataSet 作為跨層 DTO（見 [ADR-001](adr-001-dataset-as-dto.md)），Newtonsoft.Json 原生支援 DataSet / DataTable 序列化，而 System.Text.Json 不支援，需要自行撰寫 Converter。這是當初選擇 Newtonsoft.Json 的最主要原因。
 - **外部介接定位**：JSON 在本框架中的角色是與外部系統介接，而非內部高頻傳輸（內部由 MessagePack 負責）。因此 JSON 的效能差異對整體影響有限，功能完整性更為重要。
 - **netstandard2.0 相容性**：核心套件目標為 netstandard2.0，System.Text.Json 在此版本的功能有限，需要額外 NuGet 套件且缺少許多功能。
 - **複雜序列化支援**：框架需要自訂型別繫結（`JsonSerializationBinder`）、多型序列化、特殊集合處理等進階功能，Newtonsoft.Json 支援較完整。
-- **DataSet 序列化**：Newtonsoft.Json 對 ADO.NET DataSet / DataTable 的序列化支援成熟，STJ 則需要大量自訂 Converter。
 - **XML 互通**：定義檔使用 XML 格式儲存，Newtonsoft.Json 提供 JSON ↔ XML 轉換功能，方便定義檔處理。
-- **既有整合深度**：框架從早期版本即採用 Newtonsoft.Json，遷移成本高且風險大。
 
 ## 取捨
 
 - **效能較低**：STJ 在純序列化/反序列化效能上通常優於 Newtonsoft.Json。
 - **額外相依**：需要引入 NuGet 套件，而非使用框架內建功能。
 - **未來維護**：微軟已將重心轉向 STJ，Newtonsoft.Json 更新頻率降低。
+
+## 未來方向
+
+考慮未來遷移至 System.Text.Json，主要需克服的障礙是 DataSet 序列化——需自行實作 `JsonConverter<DataSet>` 和 `JsonConverter<DataTable>`。框架在 MessagePack 中已有自行處理 DataSet 序列化的經驗（`Bee.Api.Core/MessagePack/` 中的自訂 Formatter），可作為遷移時的參考。
 
 ## 影響
 
