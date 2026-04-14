@@ -8,11 +8,10 @@
 
 - **層級**：資料存取層（基礎設施）
 - **下游**（依賴此套件）：`Bee.Repository`
-- **上游**（此套件依賴）：`Bee.Definition`、`System.Reflection.Emit.Lightweight`
+- **上游**（此套件依賴）：`Bee.Definition`
 
 ## 目標框架
 
-- `netstandard2.0` -- 廣泛相容 .NET Framework 4.6.1+ 及 .NET Core 2.0+
 - `net10.0` -- 使用現代執行階段 API 與效能改進
 
 ## 主要功能

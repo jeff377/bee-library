@@ -6,13 +6,13 @@ Bee.NET Framework is an **N-Tier + Clean Architecture + MVVM** hybrid designed t
 
 > 📌 *N-tier* means the architecture is divided into more than three logical layers. In Bee.NET, the system is separated into at least five layers: presentation, API communication, business logic, data access, and database — each with a clearly defined responsibility.
 
-Core packages target **`netstandard2.0; net10.0`** for broad .NET runtime compatibility (.NET Framework, .NET Core, .NET 5+, and beyond). The API hosting package (`Bee.Api.AspNetCore`) targets **`net10.0`**.
+All packages target **`net10.0`**.
 
 ## ✨ Features
 
 - **Definition-Driven Architecture**: `FormSchema` serves as the single source of truth, automatically deriving UI layout (`FormLayout`), database schema (`TableSchema`), and validation rules — define once, sync everywhere.
 - **N-Tier + Clean Architecture + MVVM**: Clear separation of presentation, API, business logic (BO), and data access layers, borrowing the best concepts from each pattern for ERP scenarios.
-- **Cross-platform compatibility**: Core packages target `netstandard2.0; net10.0` for broad .NET runtime support.
+- **Cross-platform compatibility**: All packages target `net10.0` for modern .NET runtime support.
 - **Modular components**: Decoupled libraries for core utilities, data, caching, business logic, and API hosting.
 - **Rapid development**: Reusable base classes and FormSchema-driven CRUD reduce repetitive boilerplate.
 

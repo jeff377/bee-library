@@ -10,9 +10,8 @@
 - **Downstream** (dependents): `Bee.Api.AspNetCore`, `Bee.Api.Client`
 - **Upstream** (dependencies): `Bee.Api.Contracts`, `Bee.Definition`
 
-## Target Frameworks
+## Target Framework
 
-- `netstandard2.0` -- broad compatibility with .NET Framework 4.6.1+ and .NET Core 2.0+
 - `net10.0` -- access to modern runtime APIs and performance improvements
 
 ## Key Features

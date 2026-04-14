@@ -9,29 +9,29 @@
 ```mermaid
 graph BT
   subgraph 基礎設施層
-    Base["Bee.Base<br/><small>netstandard2.0 · net10.0</small>"]
-    Definition["Bee.Definition<br/><small>netstandard2.0 · net10.0</small>"]
-    Caching["Bee.ObjectCaching<br/><small>netstandard2.0 · net10.0</small>"]
+    Base["Bee.Base<br/><small>net10.0</small>"]
+    Definition["Bee.Definition<br/><small>net10.0</small>"]
+    Caching["Bee.ObjectCaching<br/><small>net10.0</small>"]
   end
 
   subgraph 資料存取層
-    RepoAbs["Bee.Repository.Abstractions<br/><small>netstandard2.0 · net10.0</small>"]
-    Db["Bee.Db<br/><small>netstandard2.0 · net10.0</small>"]
-    Repo["Bee.Repository<br/><small>netstandard2.0 · net10.0</small>"]
+    RepoAbs["Bee.Repository.Abstractions<br/><small>net10.0</small>"]
+    Db["Bee.Db<br/><small>net10.0</small>"]
+    Repo["Bee.Repository<br/><small>net10.0</small>"]
   end
 
   subgraph 商業邏輯層
-    Business["Bee.Business<br/><small>netstandard2.0 · net10.0</small>"]
+    Business["Bee.Business<br/><small>net10.0</small>"]
   end
 
   subgraph API 層
-    Contracts["Bee.Api.Contracts<br/><small>netstandard2.0 · net10.0</small>"]
-    Core["Bee.Api.Core<br/><small>netstandard2.0 · net10.0</small>"]
+    Contracts["Bee.Api.Contracts<br/><small>net10.0</small>"]
+    Core["Bee.Api.Core<br/><small>net10.0</small>"]
     AspNet["Bee.Api.AspNetCore<br/><small>net10.0</small>"]
   end
 
   subgraph 用戶端
-    Client["Bee.Api.Client<br/><small>netstandard2.0 · net10.0</small>"]
+    Client["Bee.Api.Client<br/><small>net10.0</small>"]
   end
 
   Definition --> Base
@@ -56,17 +56,17 @@ graph BT
 |------|----------|
 | Bee.Base | Newtonsoft.Json |
 | Bee.Definition | MessagePack |
-| Bee.Db | System.Reflection.Emit.Lightweight |
+| Bee.Db | *(none)* |
 | Bee.ObjectCaching | System.Runtime.Caching |
 | Bee.Api.AspNetCore | Microsoft.AspNetCore.Mvc.Core |
 
 ## 目標框架摘要
 
-所有專案皆以 `netstandard2.0` + `net10.0` 雙目標發布，唯一例外為 **Bee.Api.AspNetCore**，因依賴 ASP.NET Core 中介軟體，僅支援 `net10.0`。
+所有專案皆以 `net10.0` 單一目標發布。
 
 ## 架構要點
 
 - **Bee.Base** 為最底層基礎套件，無任何內部相依性。
 - **Bee.Definition** 為被依賴次數最多的專案，共有 6 個直接相依者（Contracts、Db、RepoAbs、Caching、Business、Core）。
-- **Bee.Api.AspNetCore** 是唯一僅支援 `net10.0` 的專案，適用於伺服器端部署。
+- **Bee.Api.AspNetCore** 為 API 託管套件，適用於伺服器端部署。
 - 用戶端（Bee.Api.Client）與伺服器端（Bee.Api.AspNetCore）皆透過 **Bee.Api.Core** 共享協定邏輯，確保序列化與加解密行為一致。

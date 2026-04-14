@@ -19,7 +19,6 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 
 | 框架 | 用途 |
 |------|------|
-| `netstandard2.0` | 最大化跨平台相容性（.NET Framework、.NET Core、Xamarin） |
 | `net10.0` | 使用最新執行時期的最佳化與 API |
 
 ## 主要功能

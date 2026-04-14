@@ -12,7 +12,6 @@
 
 ## 目標框架
 
-- `netstandard2.0` -- 廣泛相容 .NET Framework 4.6.1+ 與 .NET Core 2.0+
 - `net10.0` -- 使用現代執行階段 API 與效能改進
 
 ## 主要功能

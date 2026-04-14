@@ -15,11 +15,10 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 - **Upstream dependencies**: Bee.Base, MessagePack
 - **Downstream consumers**: Bee.Api.Contracts, Bee.Api.Core, Bee.Repository.Abstractions, Bee.Db, Bee.ObjectCaching, Bee.Business
 
-## Target Frameworks
+## Target Framework
 
 | Framework | Purpose |
 |-----------|---------|
-| `netstandard2.0` | Maximum compatibility across .NET Framework, .NET Core, Xamarin |
 | `net10.0` | Access to latest runtime optimizations and APIs |
 
 ## Key Features
