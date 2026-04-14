@@ -27,6 +27,10 @@ namespace Bee.Base.Data
         /// <param name="type">The type to convert.</param>
         public static FieldDbType ToFieldDbType(Type type)
         {
+            // Handle types whose TypeCode is Object
+            if (type == typeof(Guid)) return FieldDbType.Guid;
+            if (type == typeof(byte[])) return FieldDbType.Binary;
+
             var typeCode = ToTypeCode(type);
             switch (typeCode)
             {

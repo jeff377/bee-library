@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using Bee.Base.Data;
 using MessagePack;
 
 namespace Bee.Api.Core.MessagePack
@@ -64,7 +65,7 @@ namespace Bee.Api.Core.MessagePack
                 sdt.Columns.Add(new SerializableDataColumn
                 {
                     ColumnName = col.ColumnName,
-                    DataType = col.DataType.AssemblyQualifiedName,
+                    DataType = DbTypeConverter.ToFieldDbType(col.DataType),
                     DisplayName = col.Caption,
                     AllowDBNull = col.AllowDBNull,
                     ReadOnly = col.ReadOnly,
@@ -136,7 +137,7 @@ namespace Bee.Api.Core.MessagePack
             // Build the column structure
             foreach (var col in sdt.Columns)
             {
-                var type = Type.GetType(col.DataType) ?? typeof(string);
+                var type = DbTypeConverter.ToType(col.DataType);
                 var dc = new DataColumn(col.ColumnName, type)
                 {
                     Caption = col.DisplayName,

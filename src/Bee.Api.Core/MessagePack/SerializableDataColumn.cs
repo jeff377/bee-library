@@ -1,4 +1,5 @@
-﻿using MessagePack;
+﻿using Bee.Base.Data;
+using MessagePack;
 
 namespace Bee.Api.Core.MessagePack
 {
@@ -15,10 +16,10 @@ namespace Bee.Api.Core.MessagePack
         public string ColumnName { get; set; }
 
         /// <summary>
-        /// Gets or sets the data type (AssemblyQualifiedName).
+        /// Gets or sets the data type as a <see cref="FieldDbType"/> enum value.
         /// </summary>
         [Key(1)]
-        public string DataType { get; set; }
+        public FieldDbType DataType { get; set; }
 
         /// <summary>
         /// Gets or sets the display name (Caption).
