@@ -19,6 +19,7 @@
 ## 理由
 
 - **動態結構**：FormSchema 在執行時期定義欄位，表單結構不是編譯時期已知的。DataSet 天然支援動態欄位，不需要為每個表單產生 POCO 類別。
+- **BPM 電子表單支援**：框架除了事先設計好的 ERP / HRM 系統外，在執行階段還支援 BPM（Business Process Management），使用者可動態建置電子表單並與 ERP / BPM 流程做關連。這些表單的結構在編譯時期完全未知，強型別 POCO 無法適用，DataSet 是唯一能同時承載預定義表單與動態 BPM 表單的 DTO。
 - **Master-Detail 原生支援**：DataSet 包含多個 DataTable，可自然對應表單的主表與明細表（Master-Detail）關係，無需額外包裝。
 - **變更追蹤**：DataRow 內建 `RowState`（Added / Modified / Deleted / Unchanged），Repository 層可直接根據狀態產生對應的 INSERT / UPDATE / DELETE，不需要額外的 Change Tracker。
 - **序列化成熟**：DataSet 的 XML / Binary 序列化在 .NET 生態系中已高度成熟，搭配自訂 MessagePack Formatter 也能高效傳輸。
