@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>
+    <TargetFramework>net10.0</TargetFramework>
     <Description>Defines the interface contracts for the business layer to access the data layer, serving as the boundary between the business logic layer and the data access layer.</Description>
     <PackageTags>bee.net;repository;abstractions;dataaccess;contract;backend</PackageTags>
   </PropertyGroup>

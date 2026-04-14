@@ -33,7 +33,6 @@ Bee.<Module>/
 
 - 啟用 **Nullable Reference Types**（`<Nullable>enable</Nullable>`）
 - 啟用 **Implicit Usings**（新專案）
-- 目標 `netstandard2.0` + `net10.0` 的核心套件不使用僅限新版 API
 - 保持 **Deterministic Builds**（`<Deterministic>true</Deterministic>`）
 - 視警告為錯誤（`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`）
 

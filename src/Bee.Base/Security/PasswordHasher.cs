@@ -76,19 +76,8 @@ namespace Bee.Base.Security
         /// </summary>
         private static byte[] PBKDF2SHA256(string password, byte[] salt, int iterations, int outputBytes)
         {
-#if NETSTANDARD2_0
-            // Rfc2898DeriveBytes with HashAlgorithmName is not available in netstandard2.0.
-            // Fall back to SHA-1 for this target. Server deployments on net10.0 will use SHA-256.
-#pragma warning disable SYSLIB0041
-#pragma warning disable SYSLIB0060
-            using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations))
-                return pbkdf2.GetBytes(outputBytes);
-#pragma warning restore SYSLIB0060
-#pragma warning restore SYSLIB0041
-#else
             return Rfc2898DeriveBytes.Pbkdf2(
                 System.Text.Encoding.UTF8.GetBytes(password), salt, iterations, HashAlgorithmName.SHA256, outputBytes);
-#endif
         }
 
         /// <summary>

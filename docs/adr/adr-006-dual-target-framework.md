@@ -2,7 +2,7 @@
 
 ## 狀態
 
-評估中 — 考慮全面改採 net10.0+
+已採納 — 已全面改採 net10.0 單一目標框架（2026-04-14）
 
 ## 背景
 
@@ -53,8 +53,6 @@
 
 ## 影響
 
-- `src/Directory.Build.props`：定義共用的目標框架設定
-- 各專案 `.csproj` 中 `<TargetFrameworks>netstandard2.0;net10.0</TargetFrameworks>`
-- `Bee.Api.AspNetCore.csproj` 例外：`<TargetFramework>net10.0</TargetFramework>`
-- `Bee.Base/Security/` 中的加密實作使用 `#if NETSTANDARD2_0` 條件編譯
-- `.claude/rules/code-style.md` 規定「目標 netstandard2.0 + net10.0 的核心套件不使用僅限新版 API」
+- 所有專案 `.csproj` 統一為 `<TargetFramework>net10.0</TargetFramework>`
+- `Bee.Base/Security/PasswordHasher.cs` 已移除 `#if NETSTANDARD2_0` 條件編譯，統一使用 PBKDF2-SHA256
+- `.claude/rules/code-style.md` 已移除 netstandard2.0 相關限制規則
