@@ -29,6 +29,7 @@ namespace Bee.Api.AspNetCore.Controllers
         /// Handles HTTP POST requests and executes the corresponding API service.
         /// </summary>
         [HttpPost]
+        [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB
         public async Task<IActionResult> PostAsync()
         {
             // Read and parse the JSON-RPC request

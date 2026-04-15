@@ -62,5 +62,57 @@ namespace Bee.Base.UnitTests
                 AesCbcHmacCryptor.Decrypt(encrypted, _aesKey, _hmacKey);
             });
         }
+
+        [Fact]
+        [DisplayName("解密 null 資料應擲出 CryptographicException")]
+        public void Decrypt_NullData_ThrowsCryptographicException()
+        {
+            Assert.Throws<CryptographicException>(() =>
+            {
+                AesCbcHmacCryptor.Decrypt(null!, _aesKey, _hmacKey);
+            });
+        }
+
+        [Fact]
+        [DisplayName("解密過短的資料應擲出 CryptographicException")]
+        public void Decrypt_TooShortData_ThrowsCryptographicException()
+        {
+            // 最小有效長度為 72 bytes
+            byte[] tooShort = new byte[50];
+
+            Assert.Throws<CryptographicException>(() =>
+            {
+                AesCbcHmacCryptor.Decrypt(tooShort, _aesKey, _hmacKey);
+            });
+        }
+
+        [Fact]
+        [DisplayName("解密含無效 IV 長度的資料應擲出 CryptographicException")]
+        public void Decrypt_InvalidIvLength_ThrowsCryptographicException()
+        {
+            // 構造一個 ivLength 為負數的資料
+            byte[] malicious = new byte[80];
+            BitConverter.GetBytes(-1).CopyTo(malicious, 0); // ivLength = -1
+
+            Assert.Throws<CryptographicException>(() =>
+            {
+                AesCbcHmacCryptor.Decrypt(malicious, _aesKey, _hmacKey);
+            });
+        }
+
+        [Fact]
+        [DisplayName("解密含過大 cipher 長度的資料應擲出 CryptographicException")]
+        public void Decrypt_OversizedCipherLength_ThrowsCryptographicException()
+        {
+            // 構造一個 ivLength 合法但 cipherLength 遠超實際資料的資料
+            byte[] malicious = new byte[80];
+            BitConverter.GetBytes(16).CopyTo(malicious, 0);            // ivLength = 16 (valid)
+            BitConverter.GetBytes(int.MaxValue).CopyTo(malicious, 20); // cipherLength = MaxValue at offset 4 + 16
+
+            Assert.Throws<CryptographicException>(() =>
+            {
+                AesCbcHmacCryptor.Decrypt(malicious, _aesKey, _hmacKey);
+            });
+        }
     }
 }

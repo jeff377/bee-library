@@ -44,10 +44,17 @@ namespace Bee.Api.Client.ApiServiceProvider
         public Guid AccessToken { get; } = Guid.Empty;
 
         /// <summary>
-        /// Executes an API method.
+        /// Executes an API method synchronously.
         /// </summary>
         /// <param name="request">The JSON-RPC request model.</param>
+        /// <remarks>
+        /// Prefer <see cref="ExecuteAsync"/> for better performance and resource utilization.
+        /// This synchronous wrapper uses <c>Task.Run</c> to avoid UI thread deadlocks,
+        /// but may cause ThreadPool pressure under high concurrency on server-side scenarios.
+        /// </remarks>
+#pragma warning disable CS0618 // Implementing obsolete interface member
         public JsonRpcResponse Execute(JsonRpcRequest request)
+#pragma warning restore CS0618
         {
             // Running async on the current thread risks deadlock (especially on UI threads); no scheduling overhead; suitable only when the caller is guaranteed not to be a UI thread.
             // return ExecuteAsync(request).GetAwaiter().GetResult();

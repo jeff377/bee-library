@@ -76,7 +76,9 @@ namespace Bee.Api.Client.Connectors
                 var actualFormat = TransformRequestPayload(request, format);
 
                 // Invoke the JSON-RPC method (remote or local)
+#pragma warning disable CS0618 // Intentional use of synchronous Execute for UI thread compatibility
                 var response = this.Provider.Execute(request);
+#pragma warning restore CS0618
                 TraceResponse(response);
 
                 if (response.Error != null)

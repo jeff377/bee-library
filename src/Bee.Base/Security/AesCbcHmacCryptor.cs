@@ -62,12 +62,24 @@ namespace Bee.Base.Security
         /// <exception cref="CryptographicException">Thrown when HMAC validation fails or the data format is invalid.</exception>
         public static byte[] Decrypt(byte[] encryptedData, byte[] aesKey, byte[] hmacKey)
         {
+            // Minimum: 4 (ivLength) + 16 (IV) + 4 (cipherLength) + 16 (min ciphertext) + 32 (HMAC) = 72
+            if (encryptedData == null || encryptedData.Length < 72)
+                throw new CryptographicException("Invalid encrypted data.");
+
             using (var ms = new MemoryStream(encryptedData))
             using (var reader = new BinaryReader(ms))
             {
                 int ivLength = reader.ReadInt32();
+                if (ivLength < 16 || ivLength > 32)
+                    throw new CryptographicException("Invalid IV length.");
+
                 byte[] iv = reader.ReadBytes(ivLength);
+
                 int cipherLength = reader.ReadInt32();
+                // Remaining bytes after ivLength field (4) + IV + cipherLength field (4) must hold ciphertext + HMAC (32)
+                if (cipherLength <= 0 || cipherLength > encryptedData.Length - ivLength - 40)
+                    throw new CryptographicException("Invalid cipher data length.");
+
                 byte[] cipherBytes = reader.ReadBytes(cipherLength);
                 byte[] hmacBytes = reader.ReadBytes(32); // SHA-256 length
 

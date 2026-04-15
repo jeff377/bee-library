@@ -30,9 +30,14 @@ namespace Bee.Base
 
             return _clientMap.GetOrAdd(cacheKey, _ =>
             {
-                return new HttpClient
+                var handler = new SocketsHttpHandler
                 {
-                    BaseAddress = new Uri($"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/")
+                    PooledConnectionLifetime = TimeSpan.FromMinutes(5)
+                };
+                return new HttpClient(handler)
+                {
+                    BaseAddress = new Uri($"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/"),
+                    Timeout = TimeSpan.FromSeconds(30)
                 };
             });
         }
