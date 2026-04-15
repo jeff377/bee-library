@@ -4,7 +4,7 @@ using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Definition.Settings
 {

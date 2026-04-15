@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Definition.Filters
 {
@@ -15,19 +15,19 @@ namespace Bee.Definition.Filters
         /// </summary>
         /// <param name="writer">The JSON writer.</param>
         /// <param name="value">The <see cref="FilterNodeCollection"/> object to serialize.</param>
-        /// <param name="serializer">The JSON serializer.</param>
-        public override void WriteJson(JsonWriter writer, FilterNodeCollection value, JsonSerializer serializer)
+        /// <param name="options">The serializer options.</param>
+        public override void Write(Utf8JsonWriter writer, FilterNodeCollection value, JsonSerializerOptions options)
         {
             if (value == null)
             {
-                writer.WriteNull();
+                writer.WriteNullValue();
                 return;
             }
 
             writer.WriteStartArray();
             foreach (var node in value)
             {
-                serializer.Serialize(writer, node);
+                JsonSerializer.Serialize(writer, node, node.GetType(), options);
             }
             writer.WriteEndArray();
         }
@@ -36,47 +36,52 @@ namespace Bee.Definition.Filters
         /// Deserializes JSON into a <see cref="FilterNodeCollection"/> object.
         /// </summary>
         /// <param name="reader">The JSON reader.</param>
-        /// <param name="objectType">The target object type.</param>
-        /// <param name="existingValue">The existing <see cref="FilterNodeCollection"/> object.</param>
-        /// <param name="hasExistingValue">Indicates whether there is an existing value.</param>
-        /// <param name="serializer">The JSON deserializer.</param>
+        /// <param name="typeToConvert">The target object type.</param>
+        /// <param name="options">The serializer options.</param>
         /// <returns>The deserialized <see cref="FilterNodeCollection"/> object.</returns>
-        public override FilterNodeCollection ReadJson(JsonReader reader, Type objectType, FilterNodeCollection existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override FilterNodeCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonToken.Null)
+            if (reader.TokenType == JsonTokenType.Null)
                 return null;
 
-            var array = JArray.Load(reader);
+            if (reader.TokenType != JsonTokenType.StartArray)
+                throw new JsonException($"Unexpected token type '{reader.TokenType}' when reading FilterNodeCollection.");
+
+            // Parse the array into a JsonDocument to enable property-based type discrimination
+            using var doc = JsonDocument.ParseValue(ref reader);
             var nodes = new List<FilterNode>();
-            foreach (var item in array)
+
+            foreach (var element in doc.RootElement.EnumerateArray())
             {
                 // Determine the target type based on the Kind property
-                var kindToken = item["kind"];
-                FilterNode node = null;
-                if (kindToken != null)
+                FilterNode node;
+                if (element.TryGetProperty("kind", out var kindProp))
                 {
-                    var kindValue = kindToken.ToObject<FilterNodeKind>();
+                    var kindValue = kindProp.ValueKind == JsonValueKind.String
+                        ? Enum.Parse<FilterNodeKind>(kindProp.GetString()!)
+                        : (FilterNodeKind)kindProp.GetInt32();
                     switch (kindValue)
                     {
                         case FilterNodeKind.Condition:
-                            node = item.ToObject<FilterCondition>(serializer);
+                            node = element.Deserialize<FilterCondition>(options);
                             break;
                         case FilterNodeKind.Group:
-                            node = item.ToObject<FilterGroup>(serializer);
+                            node = element.Deserialize<FilterGroup>(options);
                             break;
                         default:
-                            // Throw an exception or ignore unknown kinds
-                            throw new JsonSerializationException($"Unknown FilterNodeKind: {kindValue}");
+                            throw new JsonException($"Unknown FilterNodeKind: {kindValue}");
                     }
                 }
                 else
                 {
                     // No Kind property — default to FilterCondition
-                    node = item.ToObject<FilterCondition>(serializer);
+                    node = element.Deserialize<FilterCondition>(options);
                 }
+
                 if (node != null)
                     nodes.Add(node);
             }
+
             var collection = new FilterNodeCollection();
             collection.AddRange(nodes);
             return collection;

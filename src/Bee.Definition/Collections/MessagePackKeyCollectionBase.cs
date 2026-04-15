@@ -2,7 +2,7 @@
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
 using MessagePack;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;

@@ -1,7 +1,7 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Serialization;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 using Bee.Api.Core;
 
@@ -10,6 +10,7 @@ namespace Bee.Api.Core.JsonRpc
     /// <summary>
     /// Represents the standard API data structure, supporting serialization, compression, and encryption.
     /// </summary>
+    [JsonConverter(typeof(ApiPayloadJsonConverterFactory))]
     public abstract class ApiPayload : IObjectSerialize
     {
         #region IObjectSerialize 介面
@@ -38,19 +39,19 @@ namespace Bee.Api.Core.JsonRpc
         /// <summary>
         /// Gets or sets the payload format (plain, encoded, or encrypted).
         /// </summary>
-        [JsonProperty("format")]
+        [JsonPropertyName("format")]
         public PayloadFormat Format { get; internal set; } = PayloadFormat.Plain;
 
         /// <summary>
         /// Gets or sets the payload value.
         /// </summary>
-        [JsonProperty("value")]
+        [JsonPropertyName("value")]
         public object Value { get; set; }
 
         /// <summary>
         /// Gets or sets the type name of the payload value, used to specify the target type during deserialization.
         /// </summary>
-        [JsonProperty("type")]
+        [JsonPropertyName("type")]
         [DefaultValue("")]
         public string TypeName { get; set; } = string.Empty;
     }

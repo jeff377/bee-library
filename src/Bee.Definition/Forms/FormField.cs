@@ -3,7 +3,7 @@ using Bee.Base.Attributes;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
@@ -86,7 +86,7 @@ namespace Bee.Definition.Forms
         /// Gets or sets the database field type.
         /// </summary>
         [XmlAttribute]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
         [Category(PropertyCategories.Data)]
         [Description("Database field type.")]
         public FieldDbType DbType { get; set; } = FieldDbType.String;

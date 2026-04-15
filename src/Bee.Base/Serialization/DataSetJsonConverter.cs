@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Base.Serialization
 {
@@ -15,26 +16,25 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Serializes a <see cref="DataSet"/> to JSON with full metadata.
         /// </summary>
-        public override void WriteJson(JsonWriter writer, DataSet value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, DataSet value, JsonSerializerOptions options)
         {
             if (value == null)
             {
-                writer.WriteNull();
+                writer.WriteNullValue();
                 return;
             }
 
             writer.WriteStartObject();
 
             // dataSetName
-            writer.WritePropertyName("dataSetName");
-            writer.WriteValue(value.DataSetName);
+            writer.WriteString("dataSetName", value.DataSetName);
 
-            // tables (delegate to DataTableJsonConverter via serializer)
+            // tables (delegate to DataTableJsonConverter via options)
             writer.WritePropertyName("tables");
             writer.WriteStartArray();
             foreach (DataTable table in value.Tables)
             {
-                serializer.Serialize(writer, table);
+                JsonSerializer.Serialize(writer, table, options);
             }
             writer.WriteEndArray();
 
@@ -44,21 +44,18 @@ namespace Bee.Base.Serialization
             foreach (DataRelation rel in value.Relations)
             {
                 writer.WriteStartObject();
-                writer.WritePropertyName("name");
-                writer.WriteValue(rel.RelationName);
-                writer.WritePropertyName("parentTable");
-                writer.WriteValue(rel.ParentTable.TableName);
-                writer.WritePropertyName("childTable");
-                writer.WriteValue(rel.ChildTable.TableName);
+                writer.WriteString("name", rel.RelationName);
+                writer.WriteString("parentTable", rel.ParentTable.TableName);
+                writer.WriteString("childTable", rel.ChildTable.TableName);
                 writer.WritePropertyName("parentColumns");
                 writer.WriteStartArray();
                 foreach (var col in rel.ParentColumns)
-                    writer.WriteValue(col.ColumnName);
+                    writer.WriteStringValue(col.ColumnName);
                 writer.WriteEndArray();
                 writer.WritePropertyName("childColumns");
                 writer.WriteStartArray();
                 foreach (var col in rel.ChildColumns)
-                    writer.WriteValue(col.ColumnName);
+                    writer.WriteStringValue(col.ColumnName);
                 writer.WriteEndArray();
                 writer.WriteEndObject();
             }
@@ -70,13 +67,13 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Deserializes JSON into a <see cref="DataSet"/> with full metadata restoration.
         /// </summary>
-        public override DataSet ReadJson(JsonReader reader, Type objectType, DataSet existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override DataSet Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonToken.Null)
+            if (reader.TokenType == JsonTokenType.Null)
                 return null;
 
-            if (reader.TokenType != JsonToken.StartObject)
-                throw new JsonSerializationException($"Unexpected token type '{reader.TokenType}' when reading DataSet.");
+            if (reader.TokenType != JsonTokenType.StartObject)
+                throw new JsonException($"Unexpected token type '{reader.TokenType}' when reading DataSet.");
 
             string dataSetName = string.Empty;
             var tables = new List<DataTable>();
@@ -84,27 +81,27 @@ namespace Bee.Base.Serialization
 
             while (reader.Read())
             {
-                if (reader.TokenType == JsonToken.EndObject)
+                if (reader.TokenType == JsonTokenType.EndObject)
                     break;
 
-                if (reader.TokenType != JsonToken.PropertyName)
+                if (reader.TokenType != JsonTokenType.PropertyName)
                     continue;
 
-                var propName = (string)reader.Value;
+                var propName = reader.GetString();
                 reader.Read();
 
                 switch (propName)
                 {
                     case "dataSetName":
-                        dataSetName = reader.Value?.ToString() ?? string.Empty;
+                        dataSetName = reader.GetString() ?? string.Empty;
                         break;
 
                     case "tables":
-                        tables = ReadTables(reader, serializer);
+                        tables = ReadTables(ref reader, options);
                         break;
 
                     case "relations":
-                        relations = ReadRelations(reader);
+                        relations = ReadRelations(ref reader);
                         break;
 
                     default:
@@ -118,17 +115,17 @@ namespace Bee.Base.Serialization
 
         #region Read helpers
 
-        private static List<DataTable> ReadTables(JsonReader reader, JsonSerializer serializer)
+        private static List<DataTable> ReadTables(ref Utf8JsonReader reader, JsonSerializerOptions options)
         {
             var list = new List<DataTable>();
-            if (reader.TokenType != JsonToken.StartArray)
+            if (reader.TokenType != JsonTokenType.StartArray)
                 return list;
 
-            while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                if (reader.TokenType == JsonToken.StartObject)
+                if (reader.TokenType == JsonTokenType.StartObject)
                 {
-                    var table = serializer.Deserialize<DataTable>(reader);
+                    var table = JsonSerializer.Deserialize<DataTable>(ref reader, options);
                     if (table != null)
                         list.Add(table);
                 }
@@ -136,30 +133,30 @@ namespace Bee.Base.Serialization
             return list;
         }
 
-        private static List<RelationDef> ReadRelations(JsonReader reader)
+        private static List<RelationDef> ReadRelations(ref Utf8JsonReader reader)
         {
             var list = new List<RelationDef>();
-            if (reader.TokenType != JsonToken.StartArray)
+            if (reader.TokenType != JsonTokenType.StartArray)
                 return list;
 
-            while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                if (reader.TokenType != JsonToken.StartObject)
+                if (reader.TokenType != JsonTokenType.StartObject)
                     continue;
 
                 var rel = new RelationDef();
-                while (reader.Read() && reader.TokenType != JsonToken.EndObject)
+                while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    if (reader.TokenType != JsonToken.PropertyName) continue;
-                    var key = (string)reader.Value;
+                    if (reader.TokenType != JsonTokenType.PropertyName) continue;
+                    var key = reader.GetString();
                     reader.Read();
                     switch (key)
                     {
-                        case "name": rel.Name = reader.Value?.ToString() ?? string.Empty; break;
-                        case "parentTable": rel.ParentTable = reader.Value?.ToString() ?? string.Empty; break;
-                        case "childTable": rel.ChildTable = reader.Value?.ToString() ?? string.Empty; break;
-                        case "parentColumns": rel.ParentColumns = ReadStringArray(reader); break;
-                        case "childColumns": rel.ChildColumns = ReadStringArray(reader); break;
+                        case "name": rel.Name = reader.GetString() ?? string.Empty; break;
+                        case "parentTable": rel.ParentTable = reader.GetString() ?? string.Empty; break;
+                        case "childTable": rel.ChildTable = reader.GetString() ?? string.Empty; break;
+                        case "parentColumns": rel.ParentColumns = ReadStringArray(ref reader); break;
+                        case "childColumns": rel.ChildColumns = ReadStringArray(ref reader); break;
                     }
                 }
                 list.Add(rel);
@@ -167,16 +164,16 @@ namespace Bee.Base.Serialization
             return list;
         }
 
-        private static List<string> ReadStringArray(JsonReader reader)
+        private static List<string> ReadStringArray(ref Utf8JsonReader reader)
         {
             var list = new List<string>();
-            if (reader.TokenType != JsonToken.StartArray)
+            if (reader.TokenType != JsonTokenType.StartArray)
                 return list;
 
-            while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                if (reader.Value != null)
-                    list.Add(reader.Value.ToString()!);
+                if (reader.TokenType == JsonTokenType.String)
+                    list.Add(reader.GetString()!);
             }
             return list;
         }

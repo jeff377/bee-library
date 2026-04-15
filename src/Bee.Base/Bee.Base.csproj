@@ -6,8 +6,5 @@
     <PackageTags>bee.net;base;utilities;helpers;cryptography;encryption;hashing;serialization;compression;tracing;json</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-  </ItemGroup>
 
 </Project>

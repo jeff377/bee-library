@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 

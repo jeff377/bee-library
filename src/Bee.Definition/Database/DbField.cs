@@ -5,7 +5,7 @@ using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Data;
 using Bee.Base.Collections;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Definition.Database
 {
@@ -63,7 +63,7 @@ namespace Bee.Definition.Database
         /// Gets or sets the database data type.
         /// </summary>
         [XmlAttribute]
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Include)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
         [Category(PropertyCategories.Data)]
         [Description("Database data type.")]
         public FieldDbType DbType { get; set; } = FieldDbType.String;

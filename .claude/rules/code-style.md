@@ -51,9 +51,9 @@ public bool ValidateToken(string token) { ... }
 
 ## 序列化
 
-- 預設使用 **Newtonsoft.Json**（`JsonConvert`）
+- JSON 序列化使用 **System.Text.Json**（`JsonSerializer`）
 - 高效能場景使用 **MessagePack**
-- 不混用 `System.Text.Json` 與 `Newtonsoft.Json`
+- 不使用 `Newtonsoft.Json`
 
 ## 縮排與格式
 

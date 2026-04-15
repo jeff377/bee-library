@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Base.Serialization
 {
@@ -143,37 +143,31 @@ namespace Bee.Base.Serialization
         }
 
         /// <summary>
-        /// Gets the JSON serializer settings.
+        /// Gets the JSON serializer options.
         /// </summary>
         /// <param name="ignoreDefaultValue">Whether to ignore default values.</param>
         /// <param name="ignoreNullValue">Whether to ignore null values.</param>
-        /// <param name="includeTypeName">Whether to include type names.</param>
-        private static JsonSerializerSettings GetJsonSerializerSettings(bool ignoreDefaultValue, bool ignoreNullValue, bool includeTypeName)
+        private static JsonSerializerOptions GetJsonSerializerOptions(bool ignoreDefaultValue, bool ignoreNullValue)
         {
-            var settings = new JsonSerializerSettings()
+            var options = new JsonSerializerOptions
             {
-                Formatting = Formatting.Indented,
-                ContractResolver = new CamelCasePropertyNamesContractResolver()
+                WriteIndented = true,
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             };
-            // Ignore default values
-            if (ignoreDefaultValue)
-                settings.DefaultValueHandling = DefaultValueHandling.Ignore;
-            // Ignore null values
-            if (ignoreNullValue)
-                settings.NullValueHandling = NullValueHandling.Ignore;
-            // Include type names
-            if (includeTypeName)
-            {
-                settings.TypeNameHandling = TypeNameHandling.Auto;
-                settings.SerializationBinder = new JsonSerializationBinder();
-            }
-            // Custom converters for DataSet/DataTable with full metadata preservation
-            settings.Converters.Add(new DataTableJsonConverter());
-            settings.Converters.Add(new DataSetJsonConverter());
-            // Use string representation for enum types
-            settings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
 
-            return settings;
+            // Ignore default/null values
+            if (ignoreDefaultValue && ignoreNullValue)
+                options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault;
+            else if (ignoreNullValue)
+                options.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
+
+            // Custom converters for DataSet/DataTable with full metadata preservation
+            options.Converters.Add(new DataTableJsonConverter());
+            options.Converters.Add(new DataSetJsonConverter());
+            // Use string representation for enum types
+            options.Converters.Add(new JsonStringEnumConverter());
+
+            return options;
         }
 
         /// <summary>
@@ -182,15 +176,15 @@ namespace Bee.Base.Serialization
         /// <param name="value">The object to serialize.</param>
         /// <param name="ignoreDefaultValue">Whether to ignore default values.</param>
         /// <param name="ignoreNullValue">Whether to ignore null values.</param>
-        /// <param name="includeTypeName">Whether to include type names.</param>
+        /// <param name="includeTypeName">This parameter is no longer used and will be removed in a future version.</param>
         public static string ObjectToJson(object value, bool ignoreDefaultValue = true, bool ignoreNullValue = true, bool includeTypeName = true)
         {
             // Pre-serialization operations
             DoBeforeSerialize(SerializeFormat.Json, value);
 
             // Serialize to JSON string
-            var settings = GetJsonSerializerSettings(ignoreDefaultValue, ignoreNullValue, includeTypeName);
-            string json = JsonConvert.SerializeObject(value, settings);
+            var options = GetJsonSerializerOptions(ignoreDefaultValue, ignoreNullValue);
+            string json = JsonSerializer.Serialize(value, value?.GetType() ?? typeof(object), options);
 
             // Post-serialization operations
             DoAfterSerialize(SerializeFormat.Json, value);
@@ -202,12 +196,12 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <typeparam name="T">The generic type.</typeparam>
         /// <param name="json">The JSON string.</param>
-        /// <param name="includeTypeName">Whether to include type names.</param>
+        /// <param name="includeTypeName">This parameter is no longer used and will be removed in a future version.</param>
         public static T JsonToObject<T>(string json, bool includeTypeName = true)
         {
             // Deserialize the JSON string
-            var settings = GetJsonSerializerSettings(true, false, includeTypeName);
-            object value = JsonConvert.DeserializeObject(json, typeof(T), settings);
+            var options = GetJsonSerializerOptions(true, false);
+            object value = JsonSerializer.Deserialize(json, typeof(T), options);
             // Post-deserialization operations
             DoAfterDeserialize(SerializeFormat.Json, value);
             return (T)value;

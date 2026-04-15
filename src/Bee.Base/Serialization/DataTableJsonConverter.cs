@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Bee.Base.Data;
-using Newtonsoft.Json;
 
 namespace Bee.Base.Serialization
 {
@@ -16,19 +17,18 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Serializes a <see cref="DataTable"/> to JSON with full metadata.
         /// </summary>
-        public override void WriteJson(JsonWriter writer, DataTable value, JsonSerializer serializer)
+        public override void Write(Utf8JsonWriter writer, DataTable value, JsonSerializerOptions options)
         {
             if (value == null)
             {
-                writer.WriteNull();
+                writer.WriteNullValue();
                 return;
             }
 
             writer.WriteStartObject();
 
             // tableName
-            writer.WritePropertyName("tableName");
-            writer.WriteValue(value.TableName);
+            writer.WriteString("tableName", value.TableName);
 
             // columns
             writer.WritePropertyName("columns");
@@ -36,23 +36,17 @@ namespace Bee.Base.Serialization
             foreach (DataColumn col in value.Columns)
             {
                 writer.WriteStartObject();
-                writer.WritePropertyName("name");
-                writer.WriteValue(col.ColumnName);
-                writer.WritePropertyName("type");
-                writer.WriteValue(DbTypeConverter.ToFieldDbType(col.DataType).ToString());
-                writer.WritePropertyName("allowNull");
-                writer.WriteValue(col.AllowDBNull);
-                writer.WritePropertyName("readOnly");
-                writer.WriteValue(col.ReadOnly);
-                writer.WritePropertyName("maxLength");
-                writer.WriteValue(col.MaxLength);
-                writer.WritePropertyName("caption");
-                writer.WriteValue(col.Caption);
+                writer.WriteString("name", col.ColumnName);
+                writer.WriteString("type", DbTypeConverter.ToFieldDbType(col.DataType).ToString());
+                writer.WriteBoolean("allowNull", col.AllowDBNull);
+                writer.WriteBoolean("readOnly", col.ReadOnly);
+                writer.WriteNumber("maxLength", col.MaxLength);
+                writer.WriteString("caption", col.Caption);
                 writer.WritePropertyName("defaultValue");
                 if (col.DefaultValue is DBNull || col.DefaultValue == null)
-                    writer.WriteNull();
+                    writer.WriteNullValue();
                 else
-                    serializer.Serialize(writer, col.DefaultValue);
+                    JsonSerializer.Serialize(writer, col.DefaultValue, col.DefaultValue.GetType(), options);
                 writer.WriteEndObject();
             }
             writer.WriteEndArray();
@@ -61,7 +55,7 @@ namespace Bee.Base.Serialization
             writer.WritePropertyName("primaryKeys");
             writer.WriteStartArray();
             foreach (var pk in value.PrimaryKey)
-                writer.WriteValue(pk.ColumnName);
+                writer.WriteStringValue(pk.ColumnName);
             writer.WriteEndArray();
 
             // rows
@@ -74,34 +68,33 @@ namespace Bee.Base.Serialization
                     continue;
 
                 writer.WriteStartObject();
-                writer.WritePropertyName("state");
-                writer.WriteValue(state.ToString());
+                writer.WriteString("state", state.ToString());
 
                 switch (state)
                 {
                     case DataRowState.Added:
                     case DataRowState.Unchanged:
                         writer.WritePropertyName("current");
-                        WriteRowValues(writer, row, value.Columns, DataRowVersion.Current, serializer);
+                        WriteRowValues(writer, row, value.Columns, DataRowVersion.Current, options);
                         if (state == DataRowState.Unchanged)
                         {
                             // For Unchanged rows, original == current; write original explicitly
                             // so the reader can reconstruct the row state correctly.
                             writer.WritePropertyName("original");
-                            WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, serializer);
+                            WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, options);
                         }
                         break;
 
                     case DataRowState.Modified:
                         writer.WritePropertyName("current");
-                        WriteRowValues(writer, row, value.Columns, DataRowVersion.Current, serializer);
+                        WriteRowValues(writer, row, value.Columns, DataRowVersion.Current, options);
                         writer.WritePropertyName("original");
-                        WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, serializer);
+                        WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, options);
                         break;
 
                     case DataRowState.Deleted:
                         writer.WritePropertyName("original");
-                        WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, serializer);
+                        WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, options);
                         break;
                 }
 
@@ -115,13 +108,13 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Deserializes JSON into a <see cref="DataTable"/> with full metadata restoration.
         /// </summary>
-        public override DataTable ReadJson(JsonReader reader, Type objectType, DataTable existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override DataTable Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            if (reader.TokenType == JsonToken.Null)
+            if (reader.TokenType == JsonTokenType.Null)
                 return null;
 
-            if (reader.TokenType != JsonToken.StartObject)
-                throw new JsonSerializationException($"Unexpected token type '{reader.TokenType}' when reading DataTable.");
+            if (reader.TokenType != JsonTokenType.StartObject)
+                throw new JsonException($"Unexpected token type '{reader.TokenType}' when reading DataTable.");
 
             string tableName = string.Empty;
             var columns = new List<ColumnDef>();
@@ -130,31 +123,31 @@ namespace Bee.Base.Serialization
 
             while (reader.Read())
             {
-                if (reader.TokenType == JsonToken.EndObject)
+                if (reader.TokenType == JsonTokenType.EndObject)
                     break;
 
-                if (reader.TokenType != JsonToken.PropertyName)
+                if (reader.TokenType != JsonTokenType.PropertyName)
                     continue;
 
-                var propName = (string)reader.Value;
+                var propName = reader.GetString();
                 reader.Read();
 
                 switch (propName)
                 {
                     case "tableName":
-                        tableName = reader.Value?.ToString() ?? string.Empty;
+                        tableName = reader.GetString() ?? string.Empty;
                         break;
 
                     case "columns":
-                        columns = ReadColumns(reader);
+                        columns = ReadColumns(ref reader);
                         break;
 
                     case "primaryKeys":
-                        primaryKeys = ReadStringArray(reader);
+                        primaryKeys = ReadStringArray(ref reader);
                         break;
 
                     case "rows":
-                        rows = ReadRows(reader, columns);
+                        rows = ReadRows(ref reader, columns);
                         break;
 
                     default:
@@ -168,7 +161,7 @@ namespace Bee.Base.Serialization
 
         #region Write helpers
 
-        private static void WriteRowValues(JsonWriter writer, DataRow row, DataColumnCollection columns, DataRowVersion version, JsonSerializer serializer)
+        private static void WriteRowValues(Utf8JsonWriter writer, DataRow row, DataColumnCollection columns, DataRowVersion version, JsonSerializerOptions options)
         {
             writer.WriteStartObject();
             foreach (DataColumn col in columns)
@@ -176,9 +169,9 @@ namespace Bee.Base.Serialization
                 writer.WritePropertyName(col.ColumnName);
                 var val = row[col, version];
                 if (val is DBNull)
-                    writer.WriteNull();
+                    writer.WriteNullValue();
                 else
-                    serializer.Serialize(writer, val);
+                    JsonSerializer.Serialize(writer, val, val.GetType(), options);
             }
             writer.WriteEndObject();
         }
@@ -187,32 +180,32 @@ namespace Bee.Base.Serialization
 
         #region Read helpers
 
-        private static List<ColumnDef> ReadColumns(JsonReader reader)
+        private static List<ColumnDef> ReadColumns(ref Utf8JsonReader reader)
         {
             var list = new List<ColumnDef>();
-            if (reader.TokenType != JsonToken.StartArray)
+            if (reader.TokenType != JsonTokenType.StartArray)
                 return list;
 
-            while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                if (reader.TokenType != JsonToken.StartObject)
+                if (reader.TokenType != JsonTokenType.StartObject)
                     continue;
 
                 var col = new ColumnDef();
-                while (reader.Read() && reader.TokenType != JsonToken.EndObject)
+                while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    if (reader.TokenType != JsonToken.PropertyName) continue;
-                    var key = (string)reader.Value;
+                    if (reader.TokenType != JsonTokenType.PropertyName) continue;
+                    var key = reader.GetString();
                     reader.Read();
                     switch (key)
                     {
-                        case "name": col.Name = reader.Value?.ToString() ?? string.Empty; break;
-                        case "type": col.FieldType = Enum.Parse<FieldDbType>(reader.Value?.ToString() ?? "String"); break;
-                        case "allowNull": col.AllowNull = Convert.ToBoolean(reader.Value); break;
-                        case "readOnly": col.ReadOnly = Convert.ToBoolean(reader.Value); break;
-                        case "maxLength": col.MaxLength = Convert.ToInt32(reader.Value); break;
-                        case "caption": col.Caption = reader.Value?.ToString() ?? string.Empty; break;
-                        case "defaultValue": col.DefaultValue = reader.TokenType == JsonToken.Null ? null : reader.Value; break;
+                        case "name": col.Name = reader.GetString() ?? string.Empty; break;
+                        case "type": col.FieldType = Enum.Parse<FieldDbType>(reader.GetString() ?? "String"); break;
+                        case "allowNull": col.AllowNull = reader.GetBoolean(); break;
+                        case "readOnly": col.ReadOnly = reader.GetBoolean(); break;
+                        case "maxLength": col.MaxLength = reader.GetInt32(); break;
+                        case "caption": col.Caption = reader.GetString() ?? string.Empty; break;
+                        case "defaultValue": col.DefaultValue = reader.TokenType == JsonTokenType.Null ? null : ReadPrimitiveValue(ref reader); break;
                     }
                 }
                 list.Add(col);
@@ -220,50 +213,50 @@ namespace Bee.Base.Serialization
             return list;
         }
 
-        private static List<string> ReadStringArray(JsonReader reader)
+        private static List<string> ReadStringArray(ref Utf8JsonReader reader)
         {
             var list = new List<string>();
-            if (reader.TokenType != JsonToken.StartArray)
+            if (reader.TokenType != JsonTokenType.StartArray)
                 return list;
 
-            while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                if (reader.Value != null)
-                    list.Add(reader.Value.ToString());
+                if (reader.TokenType == JsonTokenType.String)
+                    list.Add(reader.GetString());
             }
             return list;
         }
 
-        private static List<RowDef> ReadRows(JsonReader reader, List<ColumnDef> columns)
+        private static List<RowDef> ReadRows(ref Utf8JsonReader reader, List<ColumnDef> columns)
         {
             var list = new List<RowDef>();
-            if (reader.TokenType != JsonToken.StartArray)
+            if (reader.TokenType != JsonTokenType.StartArray)
                 return list;
 
             // Build type lookup for value conversion
             var typeLookup = columns.ToDictionary(c => c.Name, c => DbTypeConverter.ToType(c.FieldType));
 
-            while (reader.Read() && reader.TokenType != JsonToken.EndArray)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
-                if (reader.TokenType != JsonToken.StartObject)
+                if (reader.TokenType != JsonTokenType.StartObject)
                     continue;
 
                 var rowDef = new RowDef();
-                while (reader.Read() && reader.TokenType != JsonToken.EndObject)
+                while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
                 {
-                    if (reader.TokenType != JsonToken.PropertyName) continue;
-                    var key = (string)reader.Value;
+                    if (reader.TokenType != JsonTokenType.PropertyName) continue;
+                    var key = reader.GetString();
                     reader.Read();
                     switch (key)
                     {
                         case "state":
-                            rowDef.State = Enum.Parse<DataRowState>(reader.Value?.ToString() ?? "Added");
+                            rowDef.State = Enum.Parse<DataRowState>(reader.GetString() ?? "Added");
                             break;
                         case "current":
-                            rowDef.CurrentValues = ReadValueMap(reader, typeLookup);
+                            rowDef.CurrentValues = ReadValueMap(ref reader, typeLookup);
                             break;
                         case "original":
-                            rowDef.OriginalValues = ReadValueMap(reader, typeLookup);
+                            rowDef.OriginalValues = ReadValueMap(ref reader, typeLookup);
                             break;
                         default:
                             reader.Skip();
@@ -275,25 +268,25 @@ namespace Bee.Base.Serialization
             return list;
         }
 
-        private static Dictionary<string, object> ReadValueMap(JsonReader reader, Dictionary<string, Type> typeLookup)
+        private static Dictionary<string, object> ReadValueMap(ref Utf8JsonReader reader, Dictionary<string, Type> typeLookup)
         {
             var map = new Dictionary<string, object>();
-            if (reader.TokenType != JsonToken.StartObject)
+            if (reader.TokenType != JsonTokenType.StartObject)
                 return map;
 
-            while (reader.Read() && reader.TokenType != JsonToken.EndObject)
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                if (reader.TokenType != JsonToken.PropertyName) continue;
-                var colName = (string)reader.Value;
+                if (reader.TokenType != JsonTokenType.PropertyName) continue;
+                var colName = reader.GetString();
                 reader.Read();
 
-                if (reader.TokenType == JsonToken.Null)
+                if (reader.TokenType == JsonTokenType.Null)
                 {
                     map[colName] = null;
                 }
                 else
                 {
-                    var rawValue = reader.Value;
+                    var rawValue = ReadPrimitiveValue(ref reader);
                     if (rawValue != null && typeLookup.TryGetValue(colName, out var targetType))
                         map[colName] = ConvertValue(rawValue, targetType);
                     else
@@ -301,6 +294,35 @@ namespace Bee.Base.Serialization
                 }
             }
             return map;
+        }
+
+        /// <summary>
+        /// Reads a primitive JSON value from the reader and returns it as a .NET object.
+        /// </summary>
+        private static object ReadPrimitiveValue(ref Utf8JsonReader reader)
+        {
+            switch (reader.TokenType)
+            {
+                case JsonTokenType.String:
+                    // Try DateTime first, then fall back to string
+                    if (reader.TryGetDateTime(out var dt))
+                        return dt;
+                    return reader.GetString();
+                case JsonTokenType.Number:
+                    if (reader.TryGetInt64(out var l))
+                        return l;
+                    return reader.GetDouble();
+                case JsonTokenType.True:
+                    return true;
+                case JsonTokenType.False:
+                    return false;
+                case JsonTokenType.Null:
+                    return null;
+                default:
+                    // For complex tokens, skip and return null
+                    reader.Skip();
+                    return null;
+            }
         }
 
         /// <summary>

@@ -1,6 +1,6 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Serialization;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Api.Core.JsonRpc
 {
@@ -52,31 +52,31 @@ namespace Bee.Api.Core.JsonRpc
         /// <summary>
         /// Gets or sets the JSON-RPC version.
         /// </summary>
-        [JsonProperty("jsonrpc", NullValueHandling = NullValueHandling.Include)]
+        [JsonPropertyName("jsonrpc")]
         public string Jsonrpc { get; set; } = "2.0";
 
         /// <summary>
         /// Gets or sets the name of the invoked method.
         /// </summary>
-        [JsonProperty("method", NullValueHandling = NullValueHandling.Include)]
+        [JsonPropertyName("method")]
         public string Method { get; set; }
 
         /// <summary>
         /// Gets or sets the method execution result.
         /// </summary>
-        [JsonProperty("result")]
+        [JsonPropertyName("result")]
         public JsonRpcResult Result { get; set; }
 
         /// <summary>
         /// Gets or sets the error information.
         /// </summary>
-        [JsonProperty("error")]
+        [JsonPropertyName("error")]
         public JsonRpcError Error { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier for the request.
         /// </summary>
-        [JsonProperty("id", NullValueHandling = NullValueHandling.Include)]
+        [JsonPropertyName("id")]
         public string Id { get; set; }
     }
 }

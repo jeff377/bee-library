@@ -8,7 +8,7 @@
 
 - **Layer**: Infrastructure (bottom layer of the Bee.NET framework)
 - **Downstream** (dependents): Almost all other `Bee.*` projects (`Bee.Definition`, `Bee.Business`, `Bee.Api.Core`, etc.)
-- **Upstream** (dependencies): `Newtonsoft.Json`
+- **Upstream** (dependencies): None (uses `System.Text.Json` built into the runtime)
 
 ## Target Framework
 
@@ -32,8 +32,7 @@
 
 ### Serialization & Compression
 
-- `SerializeFunc` -- unified XML / JSON serialization via `Newtonsoft.Json`
-- `JsonSerializationBinder` -- custom type binding for secure deserialization
+- `SerializeFunc` -- unified XML / JSON serialization via `System.Text.Json`
 - `XmlSerializerCache` -- cached XML serializer instances to avoid repeated reflection
 - `GZipFunc` -- GZip compression / decompression for payload handling
 

@@ -1,7 +1,6 @@
 using System.ComponentModel;
+using System.Text.Json;
 using Bee.Api.Core.JsonRpc;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Bee.Api.Core.UnitTests
 {
@@ -26,8 +25,8 @@ namespace Bee.Api.Core.UnitTests
             request.Params.Value = "test-payload";
             request.Params.TypeName = "System.String";
 
-            var json = JsonConvert.SerializeObject(request);
-            var deserialized = JsonConvert.DeserializeObject<JsonRpcRequest>(json);
+            var json = JsonSerializer.Serialize(request);
+            var deserialized = JsonSerializer.Deserialize<JsonRpcRequest>(json);
 
             Assert.NotNull(deserialized);
             Assert.Equal("2.0", deserialized.Jsonrpc);
@@ -38,9 +37,10 @@ namespace Bee.Api.Core.UnitTests
             Assert.Equal("System.String", deserialized.Params.TypeName);
 
             // 驗證 SerializeState 不會出現在 JSON 中（標記了 [JsonIgnore]）
-            var jObj = JObject.Parse(json);
-            Assert.Null(jObj["SerializeState"]);
-            Assert.Null(jObj["serializeState"]);
+            using var jDoc = JsonDocument.Parse(json);
+            var root = jDoc.RootElement;
+            Assert.False(root.TryGetProperty("SerializeState", out _));
+            Assert.False(root.TryGetProperty("serializeState", out _));
         }
 
         /// <summary>
@@ -64,8 +64,8 @@ namespace Bee.Api.Core.UnitTests
                 Error = null
             };
 
-            var json = JsonConvert.SerializeObject(response);
-            var deserialized = JsonConvert.DeserializeObject<JsonRpcResponse>(json);
+            var json = JsonSerializer.Serialize(response);
+            var deserialized = JsonSerializer.Deserialize<JsonRpcResponse>(json);
 
             Assert.NotNull(deserialized);
             Assert.Equal("2.0", deserialized.Jsonrpc);
@@ -96,8 +96,8 @@ namespace Bee.Api.Core.UnitTests
                     new { detail = "Invalid token" })
             };
 
-            var json = JsonConvert.SerializeObject(response);
-            var deserialized = JsonConvert.DeserializeObject<JsonRpcResponse>(json);
+            var json = JsonSerializer.Serialize(response);
+            var deserialized = JsonSerializer.Deserialize<JsonRpcResponse>(json);
 
             Assert.NotNull(deserialized);
             Assert.Null(deserialized.Result);
@@ -120,8 +120,8 @@ namespace Bee.Api.Core.UnitTests
                 "Parse error",
                 "Unexpected token at position 42");
 
-            var json = JsonConvert.SerializeObject(error);
-            var deserialized = JsonConvert.DeserializeObject<JsonRpcError>(json);
+            var json = JsonSerializer.Serialize(error);
+            var deserialized = JsonSerializer.Deserialize<JsonRpcError>(json);
 
             Assert.NotNull(deserialized);
             Assert.Equal(-32700, deserialized.Code);
@@ -139,17 +139,12 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("ApiPayload JSON 序列化保留 Format 和 TypeName")]
         public void ApiPayload_Serialize_PreservesFormatAndTypeName(PayloadFormat format)
         {
-            var payload = new JsonRpcParams
-            {
-                Value = "sample-data",
-                TypeName = "Bee.Api.Core.System.PingRequest"
-            };
-            // Format 為 internal set，需透過 JSON 反序列化間接設定
-            var tempJson = JsonConvert.SerializeObject(new { format = (int)format, value = "sample-data", type = "Bee.Api.Core.System.PingRequest" });
-            payload = JsonConvert.DeserializeObject<JsonRpcParams>(tempJson)!;
+            // Create payload with the specified format via JSON round-trip
+            var tempJson = JsonSerializer.Serialize(new { format = (int)format, value = "sample-data", type = "Bee.Api.Core.System.PingRequest" });
+            var payload = JsonSerializer.Deserialize<JsonRpcParams>(tempJson)!;
 
-            var json = JsonConvert.SerializeObject(payload);
-            var deserialized = JsonConvert.DeserializeObject<JsonRpcParams>(json);
+            var json = JsonSerializer.Serialize(payload);
+            var deserialized = JsonSerializer.Deserialize<JsonRpcParams>(json);
 
             Assert.NotNull(deserialized);
             Assert.Equal(format, deserialized.Format);
@@ -157,8 +152,9 @@ namespace Bee.Api.Core.UnitTests
             Assert.Equal("Bee.Api.Core.System.PingRequest", deserialized.TypeName);
 
             // 驗證 format 序列化為數值
-            var jObj = JObject.Parse(json);
-            Assert.Equal((int)format, jObj["format"]!.Value<int>());
+            using var jDoc = JsonDocument.Parse(json);
+            var root = jDoc.RootElement;
+            Assert.Equal((int)format, root.GetProperty("format").GetInt32());
         }
 
         /// <summary>
@@ -182,7 +178,7 @@ namespace Bee.Api.Core.UnitTests
                 }
                 """;
 
-            var request = JsonConvert.DeserializeObject<JsonRpcRequest>(json);
+            var request = JsonSerializer.Deserialize<JsonRpcRequest>(json);
 
             Assert.NotNull(request);
             Assert.Equal("2.0", request.Jsonrpc);
@@ -213,27 +209,27 @@ namespace Bee.Api.Core.UnitTests
                 }
             };
 
-            var json = JsonConvert.SerializeObject(response);
-            var jObj = JObject.Parse(json);
+            var json = JsonSerializer.Serialize(response);
+            using var jDoc = JsonDocument.Parse(json);
+            var root = jDoc.RootElement;
 
             // 驗證 JSON key 名稱為小寫（符合 JSON-RPC 2.0 規範）
-            Assert.NotNull(jObj["jsonrpc"]);
-            Assert.NotNull(jObj["method"]);
-            Assert.NotNull(jObj["id"]);
-            Assert.NotNull(jObj["result"]);
+            Assert.True(root.TryGetProperty("jsonrpc", out _));
+            Assert.True(root.TryGetProperty("method", out _));
+            Assert.True(root.TryGetProperty("id", out _));
+            Assert.True(root.TryGetProperty("result", out _));
 
             // 驗證 result 內部 key 名稱
-            var resultObj = jObj["result"] as JObject;
-            Assert.NotNull(resultObj);
-            Assert.NotNull(resultObj["format"]);
-            Assert.NotNull(resultObj["value"]);
-            Assert.NotNull(resultObj["type"]);
+            var resultObj = root.GetProperty("result");
+            Assert.True(resultObj.TryGetProperty("format", out _));
+            Assert.True(resultObj.TryGetProperty("value", out _));
+            Assert.True(resultObj.TryGetProperty("type", out _));
 
             // 驗證不應出現 PascalCase key
-            Assert.Null(jObj["Jsonrpc"]);
-            Assert.Null(jObj["Method"]);
-            Assert.Null(jObj["Id"]);
-            Assert.Null(jObj["Result"]);
+            Assert.False(root.TryGetProperty("Jsonrpc", out _));
+            Assert.False(root.TryGetProperty("Method", out _));
+            Assert.False(root.TryGetProperty("Id", out _));
+            Assert.False(root.TryGetProperty("Result", out _));
         }
     }
 }

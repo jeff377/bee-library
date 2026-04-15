@@ -4,7 +4,7 @@ using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Definition;
 using MessagePack;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Api.Core
 {

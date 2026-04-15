@@ -8,7 +8,7 @@
 
 - **層級**：基礎設施層（Bee.NET 框架最底層）
 - **下游**（依賴此專案者）：幾乎所有其他 `Bee.*` 專案（`Bee.Definition`、`Bee.Business`、`Bee.Api.Core` 等）
-- **上游**（此專案依賴）：`Newtonsoft.Json`
+- **上游**（此專案依賴）：無（使用執行階段內建的 `System.Text.Json`）
 
 ## 目標框架
 
@@ -32,8 +32,7 @@
 
 ### 序列化與壓縮
 
-- `SerializeFunc` -- 統一的 XML / JSON 序列化，採用 `Newtonsoft.Json`
-- `JsonSerializationBinder` -- 自訂型別繫結，確保安全反序列化
+- `SerializeFunc` -- 統一的 XML / JSON 序列化，採用 `System.Text.Json`
 - `XmlSerializerCache` -- 快取 XML 序列化器實例，避免重複反射
 - `GZipFunc` -- GZip 壓縮 / 解壓縮，用於 Payload 處理
 

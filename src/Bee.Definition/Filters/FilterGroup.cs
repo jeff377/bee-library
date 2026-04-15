@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 using MessagePack;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Definition.Filters
 {

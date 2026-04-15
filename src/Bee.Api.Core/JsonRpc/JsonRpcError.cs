@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Api.Core.JsonRpc
 {
@@ -29,19 +29,19 @@ namespace Bee.Api.Core.JsonRpc
         /// <summary>
         /// Gets or sets the error code.
         /// </summary>
-        [JsonProperty("code")]
+        [JsonPropertyName("code")]
         public int Code { get; set; }
 
         /// <summary>
         /// Gets or sets the error message.
         /// </summary>
-        [JsonProperty("message")]
+        [JsonPropertyName("message")]
         public string Message { get; set; }
 
         /// <summary>
         /// Gets or sets additional error information.
         /// </summary>
-        [JsonProperty("data")]
+        [JsonPropertyName("data")]
         public object Data { get; set; }
     }
 }

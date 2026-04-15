@@ -6,7 +6,7 @@ using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
 using MessagePack;
-using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace Bee.Definition.Collections
 {
