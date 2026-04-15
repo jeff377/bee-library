@@ -467,6 +467,58 @@ namespace Bee.Api.Core.UnitTests
             // Act & Assert: 使用 TestMessagePackSerialization 測試
             TestFunc.TestMessagePackSerialization(result);
         }
+
+        /// <summary>
+        /// 測試 GetCommonConfiguration 方法傳遞參數的序列化。
+        /// </summary>
+        [Fact(DisplayName = "GetCommonConfiguration 方法傳遞參數的序列化")]
+        public void GetCommonConfiguration_Serialize()
+        {
+            // Arrange: 建立 GetCommonConfigurationRequest（無額外 Key 屬性，僅繼承 Parameters）
+            var args = new GetCommonConfigurationRequest();
+            args.Parameters.Add("AppId", "BeeERP");
+            args.Parameters.Add("Env", "Production");
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            TestFunc.TestMessagePackSerialization(args);
+
+            // Arrange: 建立 GetCommonConfigurationResponse 實例並設定屬性
+            var result = new GetCommonConfigurationResponse
+            {
+                CommonConfiguration = "<Config><Setting Key='Theme'>Dark</Setting></Config>"
+            };
+            result.Parameters.Add("CacheHit", true);
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            TestFunc.TestMessagePackSerialization(result);
+        }
+
+        /// <summary>
+        /// 測試 SaveDefine 方法傳遞參數的序列化。
+        /// </summary>
+        [Fact(DisplayName = "SaveDefine 方法傳遞參數的序列化")]
+        public void SaveDefine_Serialize()
+        {
+            // Arrange: 建立 SaveDefineRequest 實例並設定屬性
+            var args = new SaveDefineRequest
+            {
+                DefineType = DefineType.FormSchema,
+                Xml = "<Define><Item Key='OrderForm'>FormData</Item></Define>",
+                Keys = new[] { "OrderForm", "CustomerForm" }
+            };
+            args.Parameters.Add("UserId", "admin");
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            TestFunc.TestMessagePackSerialization(args);
+
+            // Arrange: 建立 SaveDefineResponse 實例（無額外 Key 屬性，僅繼承 Parameters）
+            var result = new SaveDefineResponse();
+            result.Parameters.Add("AffectedRows", 2);
+            result.Parameters.Add("Timestamp", new DateTime(2025, 6, 1, 10, 0, 0, DateTimeKind.Utc));
+
+            // Act & Assert: 使用 TestMessagePackSerialization 測試
+            TestFunc.TestMessagePackSerialization(result);
+        }
     }
 }
 
