@@ -9,7 +9,7 @@ namespace Bee.Base.UnitTests
     /// JSON DataSet/DataTable 序列化測試。
     /// 驗證自訂 DataTableJsonConverter / DataSetJsonConverter 透過 SerializeFunc 的往返正確性，
     /// 涵蓋所有 FieldDbType 欄位型別、RowState 保留、DBNull 處理、DataRelation、PrimaryKey 及邊界條件。
-    /// 現階段以 Newtonsoft.Json 通過，未來 STJ 遷移時作為回歸驗收標準。
+    /// 已遷移至 System.Text.Json，作為自訂 Converter 的回歸驗收標準。
     /// </summary>
     public class JsonDataSetSerializationTests
     {

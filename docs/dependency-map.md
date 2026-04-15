@@ -54,7 +54,7 @@ graph BT
 
 | 專案 | 外部套件 |
 |------|----------|
-| Bee.Base | Newtonsoft.Json |
+| Bee.Base | *(none)* |
 | Bee.Definition | MessagePack |
 | Bee.Db | *(none)* |
 | Bee.ObjectCaching | System.Runtime.Caching |
