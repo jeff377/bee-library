@@ -2,7 +2,7 @@
 
 ## 狀態
 
-已採納
+已採納 — 維持使用中，STJ 遷移前置條件已滿足（2026-04-14 完成 net10.0 單一目標遷移）
 
 ## 背景
 
@@ -27,7 +27,7 @@
 
 - **DataSet 序列化（主要原因）**：框架以 DataSet 作為跨層 DTO（見 [ADR-001](adr-001-dataset-as-dto.md)），Newtonsoft.Json 原生支援 DataSet / DataTable 序列化，而 System.Text.Json 不支援，需要自行撰寫 Converter。這是當初選擇 Newtonsoft.Json 的最主要原因。
 - **外部介接定位**：JSON 在本框架中的角色是與外部系統介接，而非內部高頻傳輸（內部由 MessagePack 負責）。因此 JSON 的效能差異對整體影響有限，功能完整性更為重要。
-- **netstandard2.0 相容性**：核心套件目標為 netstandard2.0，System.Text.Json 在此版本的功能有限，需要額外 NuGet 套件且缺少許多功能。
+- ~~**netstandard2.0 相容性**：核心套件目標為 netstandard2.0，System.Text.Json 在此版本的功能有限，需要額外 NuGet 套件且缺少許多功能。~~（已不適用 — 所有專案已遷移至 net10.0，見 [ADR-006](adr-006-dual-target-framework.md)）
 - **複雜序列化支援**：框架需要自訂型別繫結（`JsonSerializationBinder`）、多型序列化、特殊集合處理等進階功能，Newtonsoft.Json 支援較完整。
 - **XML 互通**：定義檔使用 XML 格式儲存，Newtonsoft.Json 提供 JSON ↔ XML 轉換功能，方便定義檔處理。
 
@@ -36,14 +36,15 @@
 - **效能較低**：STJ 在純序列化/反序列化效能上通常優於 Newtonsoft.Json。
 - **額外相依**：需要引入 NuGet 套件，而非使用框架內建功能。
 - **未來維護**：微軟已將重心轉向 STJ，Newtonsoft.Json 更新頻率降低。
+- ~~**netstandard2.0 限制**~~：已不再是取捨因素 — 所有專案已遷移至 net10.0，STJ 功能完整可用。
 
-## 未來方向：System.Text.Json 遷移評估
+## 未來方向：System.Text.Json 遷移路線圖
 
 ### 前置條件
 
-STJ 遷移的唯一合理路徑是**先完成 net10.0+ 遷移**（見 [ADR-006](adr-006-dual-target-framework.md)）。若保留 netstandard2.0，需維護 Newtonsoft.Json + STJ 雙軌引擎（條件編譯 + Attribute 雙標），維護成本遠超收益，不建議進行。
+~~STJ 遷移的唯一合理路徑是**先完成 net10.0+ 遷移**（見 [ADR-006](adr-006-dual-target-framework.md)）。~~ ✅ **已滿足**（2026-04-14 完成，見 [ADR-006](adr-006-dual-target-framework.md)）。所有專案已遷移至 net10.0 單一目標框架，不再有 netstandard2.0 相容需求。
 
-### 遷移障礙（依嚴重程度排序）
+### 遷移障礙分析（依嚴重程度排序）
 
 #### 1. DataSet/DataTable Converter（可控 — 已確認型別範圍）
 
@@ -73,7 +74,7 @@ STJ 不支援 DataSet/DataTable 序列化，主因是任意 `System.Type` 的安
 
 - **實際需要 `$type` 的場景僅限 Plain 格式的 `ApiPayload.Value`**（宣告型別為 `object`，執行期可能是 DataSet、PingResult 等）。Encoded/Encrypted 格式已透過 `ApiPayload.TypeName` 屬性獨立儲存型別資訊，不依賴 `$type`
 - **替代方案**：為 `ApiPayload` 撰寫自訂 `JsonConverter`，利用已有的 `TypeName` 屬性做型別判定，取代 Newtonsoft.Json 的 `$type` 自動注入。白名單驗證（`SysInfo.IsTypeNameAllowed()`）可在 Converter 內呼叫
-- **跨 Runtime 名稱對應**（`mscorlib` ↔ `System.Private.CoreLib`）在放棄 netstandard2.0 後不再需要，`JsonSerializationBinder` 可移除
+- **跨 Runtime 名稱對應**（`mscorlib` ↔ `System.Private.CoreLib`）~~在放棄 netstandard2.0 後不再需要~~ 已不再需要（net10.0 單一目標），`JsonSerializationBinder` 可移除
 
 #### 3. 確定可完成的工作
 
@@ -88,17 +89,55 @@ STJ 不支援 DataSet/DataTable 序列化，主因是任意 `System.Type` 的安
 
 ### 遷移可行性結論
 
-所有障礙均已確認可克服：
+所有障礙均已確認可克服，且前置條件已全部滿足：
 
 - **DataSet Converter**：限制欄位型別為 `FieldDbType`（13 種固定型別），消除任意型別安全風險，可控工作量
 - **TypeNameHandling**：利用既有 `ApiPayload.TypeName` 屬性替代 `$type` 自動注入
-- **前置條件**：三個前端均為 net10.0+，可放棄 netstandard2.0（見 [ADR-006](adr-006-dual-target-framework.md)）
+- ~~**前置條件**：三個前端均為 net10.0+，可放棄 netstandard2.0（見 [ADR-006](adr-006-dual-target-framework.md)）~~ ✅ 已完成（2026-04-14）
 
-**結論：STJ 遷移可行。** 遷移路徑：ADR-006 移除 netstandard2.0 → 實作 DataSet/DataTable STJ Converter → 替換 Attribute 與 SerializeFunc → 移除 Newtonsoft.Json 相依。
+**結論：STJ 遷移可行且前置條件已滿足。**
+
+### 遷移路線圖
+
+#### Phase 1：實作 STJ 自訂 Converter
+
+| 項目 | 說明 |
+|------|------|
+| DataSet/DataTable Converter | 實作 `JsonConverter<DataSet>` + `JsonConverter<DataTable>`，參考 MessagePack 的 `DataSetFormatter` + `SerializableDataSet` 中間 DTO 模式 |
+| ApiPayload Converter | 利用 `TypeName` 屬性替代 `$type` 自動注入，白名單驗證移至 Converter 內 |
+| FilterNodeCollectionJsonConverter | `JArray`/`JObject` → `JsonDocument`/`JsonElement`，或改用 `JsonDerivedTypeAttribute` |
+
+#### Phase 2：替換 Attribute 與核心模組
+
+| 項目 | 數量 | 說明 |
+|------|------|------|
+| `[JsonIgnore]` | 12 處 | 命名空間由 `Newtonsoft.Json` → `System.Text.Json.Serialization` |
+| `[JsonProperty("x")]` | 17 處 | → `[JsonPropertyName("x")]` |
+| `NullValueHandling.Include` | 6 處 | JsonRpcRequest/Response 改用 `[JsonIgnore(Condition = JsonIgnoreCondition.Never)]` 或全域 `DefaultIgnoreCondition` |
+| `DefaultValueHandling.Include` | 2 處 | FormField、DbField 改用 `[JsonIgnore(Condition = JsonIgnoreCondition.Never)]` |
+| SerializeFunc.cs 改寫 | 1 檔 | `JsonConvert` → `JsonSerializer`，`JsonSerializerSettings` → `JsonSerializerOptions` |
+
+#### Phase 3：清理
+
+| 項目 | 說明 |
+|------|------|
+| 移除 `JsonSerializationBinder.cs` | 跨 runtime 名稱對應（`mscorlib` ↔ `System.Private.CoreLib`）已不需要 |
+| 移除 Newtonsoft.Json NuGet 相依 | `Bee.Base.csproj` 中的 `PackageReference` |
+| 更新 `code-style.md` | 序列化規範改為 System.Text.Json |
+| 更新本 ADR | 狀態改為「已取代」，記錄最終遷移結果 |
 
 ## 影響
+
+### 現行影響
 
 - 所有 JSON 操作統一使用 `JsonConvert`（Newtonsoft.Json），不使用 `JsonSerializer`（STJ）
 - `Bee.Base/Serialization/SerializeFunc.cs` 封裝所有 JSON 序列化操作
 - `.claude/rules/code-style.md` 明確規定「不混用 System.Text.Json 與 Newtonsoft.Json」
 - 三種序列化各司其職：XML 存定義、MessagePack 傳內部 Payload、JSON 接外部系統
+
+### 遷移後預期影響
+
+- `SerializeFunc.cs` 改用 `System.Text.Json.JsonSerializer`，API 簽章不變
+- 所有 `[JsonProperty]` / `[JsonIgnore]` 改用 `System.Text.Json.Serialization` 命名空間
+- 移除 `Newtonsoft.Json` NuGet 套件相依，改用框架內建功能
+- 三個前端 repo 均為新建，無既有客戶端的 JSON 格式相容問題
