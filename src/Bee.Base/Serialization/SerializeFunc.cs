@@ -167,6 +167,9 @@ namespace Bee.Base.Serialization
                 settings.TypeNameHandling = TypeNameHandling.Auto;
                 settings.SerializationBinder = new JsonSerializationBinder();
             }
+            // Custom converters for DataSet/DataTable with full metadata preservation
+            settings.Converters.Add(new DataTableJsonConverter());
+            settings.Converters.Add(new DataSetJsonConverter());
             // Use string representation for enum types
             settings.Converters.Add(new Newtonsoft.Json.Converters.StringEnumConverter());
 
