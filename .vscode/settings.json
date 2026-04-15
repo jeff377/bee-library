@@ -1,3 +1,4 @@
 {
-  "dotnet.defaultSolution": "Bee.Library.slnx"
+  "dotnet.defaultSolution": "Bee.Library.slnx",
+  "dotnet.unitTests.runSettingsPath": ".runsettings"
 }

@@ -13,6 +13,9 @@
 # Claude Code local settings (OS-specific)
 .claude/settings.local.json
 
+# Local test settings (may contain sensitive connection strings)
+.runsettings
+
 # Archived Claude Code plans (working documents, not reference material)
 docs/plans/archive/
 
