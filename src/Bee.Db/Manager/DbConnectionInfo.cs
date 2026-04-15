@@ -34,6 +34,13 @@ namespace Bee.Db.Manager
         /// <summary>
         /// Gets the database connection string.
         /// </summary>
+        /// <remarks>
+        /// Design note: The connection string (which may contain embedded credentials) is held
+        /// as a plain <see cref="string"/> and cached for the application lifetime in
+        /// <see cref="DbConnectionManager"/>. This follows standard ADO.NET practice.
+        /// Use <c>PersistSecurityInfo=false</c> in connection strings to limit credential
+        /// exposure after the connection is opened.
+        /// </remarks>
         public string ConnectionString { get; }
     }
 }

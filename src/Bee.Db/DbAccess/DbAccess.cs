@@ -258,6 +258,11 @@ namespace Bee.Db.DbAccess
         /// <summary>
         /// Executes a DataTable database command and returns the result set.
         /// </summary>
+        /// <remarks>
+        /// Design note: <c>adapter.Fill</c> loads the entire result set into memory.
+        /// For large result sets, prefer <see cref="Query{T}"/> which streams rows via
+        /// <see cref="System.Data.Common.DbDataReader"/>.
+        /// </remarks>
         /// <param name="command">The database command specification.</param>
         /// <param name="connection">The database connection.</param>
         /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
