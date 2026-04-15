@@ -496,17 +496,9 @@ namespace Bee.Db.DbAccess
                 {
                     if (batch.UseTransaction)
                     {
-#if NET8_0_OR_GREATER
-                        // .NET 8.0+ supports BeginTransactionAsync
                         tran = batch.IsolationLevel.HasValue
                             ? await scope.Connection.BeginTransactionAsync(batch.IsolationLevel.Value, cancellationToken).ConfigureAwait(false)
                             : await scope.Connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
-#else
-                        // .NET Standard 2.0 does not have BeginTransactionAsync; fall back to synchronous BeginTransaction
-                        tran = batch.IsolationLevel.HasValue
-                            ? scope.Connection.BeginTransaction(batch.IsolationLevel.Value)
-                            : scope.Connection.BeginTransaction();
-#endif
                     }
 
                     for (int i = 0; i < batch.Commands.Count; i++)

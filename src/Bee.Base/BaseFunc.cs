@@ -573,28 +573,7 @@ namespace Bee.Base
         /// <returns>A random integer between min (inclusive) and max (exclusive).</returns>
         public static int RndInt(int min, int max)
         {
-#if NET8_0_OR_GREATER
             return RandomNumberGenerator.GetInt32(min, max);
-#else
-            if (min >= max)
-                throw new ArgumentOutOfRangeException(nameof(min), "min must be less than max.");
-
-            long diff = (long)max - min;
-            byte[] uint32Buffer = new byte[4];
-
-            using (var rng = RandomNumberGenerator.Create())
-            {
-                while (true)
-                {
-                    rng.GetBytes(uint32Buffer);
-                    uint rand = BitConverter.ToUInt32(uint32Buffer, 0);
-
-                    long remainder = rand % diff;
-                    if (rand - remainder + (diff - 1) >= rand)
-                        return (int)(min + remainder);
-                }
-            }
-#endif
         }
 
 
