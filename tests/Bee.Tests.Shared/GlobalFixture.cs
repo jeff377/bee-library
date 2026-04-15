@@ -3,6 +3,7 @@ using Bee.ObjectCaching;
 using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Definition;
+using Bee.Definition.Settings;
 
 namespace Bee.Tests.Shared
 {
@@ -28,6 +29,18 @@ namespace Bee.Tests.Shared
             BackendInfo.Initialize(settings.BackendConfiguration, autoCreateMasterKey: true);
             // 註冊資料庫提供者
             DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            // 從環境變數載入測試資料庫連線字串
+            var connStr = Environment.GetEnvironmentVariable("BEE_TEST_DB_CONNSTR");
+            if (!string.IsNullOrEmpty(connStr))
+            {
+                var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+                dbSettings.Items.Add(new DatabaseItem
+                {
+                    Id = "common",
+                    DatabaseType = DatabaseType.SQLServer,
+                    ConnectionString = connStr
+                });
+            }
             Console.WriteLine("GlobalFixture Initialized");
         }
 
