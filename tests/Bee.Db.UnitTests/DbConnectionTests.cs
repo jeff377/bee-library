@@ -5,7 +5,7 @@ using Bee.Tests.Shared;
 namespace Bee.Db.UnitTests
 {
     [Collection("Initialize")]
-    public class DbConnectionTest
+    public class DbConnectionTests
     {
         [LocalOnlyFact]
         [DisplayName("OpenConnection 使用環境變數連線字串應成功連線")]

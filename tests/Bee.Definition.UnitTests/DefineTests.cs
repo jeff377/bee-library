@@ -10,7 +10,7 @@ using Bee.Business.System;
 
 namespace Bee.Definition.UnitTests
 {
-    public class DefineTest
+    public class DefineTests
     {
         [Theory]
         [InlineData(DefineType.SystemSettings, typeof(SystemSettings))]

@@ -14,11 +14,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace Bee.Api.AspNetCore.UnitTests
 {
     [Collection("Initialize")]
-    public class ApiAspNetCoreTest
+    public class ApiAspNetCoreTests
     {
         private Guid _accessToken;
 
-        static ApiAspNetCoreTest()
+        static ApiAspNetCoreTests()
         {
         }
 

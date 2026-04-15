@@ -10,11 +10,11 @@ using Bee.Tests.Shared;
 namespace Bee.Api.Core.UnitTests
 {
     [Collection("Initialize")]
-    public class ApiCoreTest
+    public class ApiCoreTests
     {
         private Guid _accessToken;
 
-        static ApiCoreTest()
+        static ApiCoreTests()
         {
 
         }

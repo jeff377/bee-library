@@ -6,7 +6,7 @@ using Bee.Base.Data;
 namespace Bee.Definition.UnitTests
 {
     [Collection("Initialize")]
-    public class FormSchemaTest
+    public class FormSchemaTests
     {
         [Fact]
         [DisplayName("FormSchema 建立部門表單定義應包含有效的主檔表")]

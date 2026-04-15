@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Bee.Base.UnitTests
 {
-    public class BaseTest
+    public class BaseTests
     {
         /// <summary>
         /// IP 位址驗證。

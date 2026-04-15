@@ -8,12 +8,12 @@ using Bee.Tests.Shared;
 namespace Bee.Business.UnitTests
 {
     [Collection("Initialize")]
-    public class BusinessTest
+    public class BusinessTests
     {
         /// <summary>
         /// 建構函式。
         /// </summary>
-        public BusinessTest()
+        public BusinessTests()
         {
         }
 

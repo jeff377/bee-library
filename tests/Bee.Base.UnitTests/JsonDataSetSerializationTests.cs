@@ -66,7 +66,7 @@ namespace Bee.Base.UnitTests
         /// </summary>
         [Fact]
         [DisplayName("DataTable JSON 序列化處理 DBNull 值")]
-        public void DataTable_JsonSerialize_DbNull()
+        public void DataTable_JsonSerializeWithDbNull_PreservesValues()
         {
             var table = new DataTable("TestTable");
             table.Columns.Add("Id", typeof(int));
@@ -88,7 +88,7 @@ namespace Bee.Base.UnitTests
         /// </summary>
         [Fact]
         [DisplayName("DataTable JSON 序列化保留 RowState")]
-        public void DataTable_JsonSerialize_RowState()
+        public void DataTable_JsonSerializeWithRowState_PreservesState()
         {
             var table = new DataTable("SampleTable");
             table.Columns.Add("Id", typeof(int));
@@ -222,7 +222,7 @@ namespace Bee.Base.UnitTests
         /// </summary>
         [Fact]
         [DisplayName("DataSet JSON 序列化保留 DataRelation")]
-        public void DataSet_JsonSerialize_WithRelation()
+        public void DataSet_JsonSerializeWithRelation_PreservesRelation()
         {
             var dataSet = new DataSet("OrderSystem");
 
@@ -265,7 +265,7 @@ namespace Bee.Base.UnitTests
         /// </summary>
         [Fact]
         [DisplayName("DataTable JSON 序列化保留欄位中繼資料")]
-        public void DataTable_JsonSerialize_ColumnMetadata()
+        public void DataTable_JsonSerialize_PreservesColumnMetadata()
         {
             var table = new DataTable("MetaTable");
 
@@ -303,7 +303,7 @@ namespace Bee.Base.UnitTests
         /// </summary>
         [Fact]
         [DisplayName("DataTable JSON 序列化保留 PrimaryKey")]
-        public void DataTable_JsonSerialize_PrimaryKey()
+        public void DataTable_JsonSerialize_PreservesPrimaryKey()
         {
             var table = new DataTable("PkTable");
             table.Columns.Add("CompanyId", typeof(string));
@@ -383,7 +383,7 @@ namespace Bee.Base.UnitTests
         /// </summary>
         [Fact]
         [DisplayName("DataTable JSON 序列化空資料表")]
-        public void DataTable_JsonSerialize_EmptyTable()
+        public void DataTable_JsonSerializeEmptyTable_RoundTrip()
         {
             var table = new DataTable("EmptyTable");
             table.Columns.Add("Id", typeof(int));
@@ -401,7 +401,7 @@ namespace Bee.Base.UnitTests
         /// </summary>
         [Fact]
         [DisplayName("DataTable JSON 序列化全 null 資料列")]
-        public void DataTable_JsonSerialize_AllNullRow()
+        public void DataTable_JsonSerializeAllNullRow_RoundTrip()
         {
             var table = new DataTable("NullTable");
             table.Columns.Add("Id", typeof(int));
@@ -425,7 +425,7 @@ namespace Bee.Base.UnitTests
         /// </summary>
         [Fact]
         [DisplayName("DataSet JSON 序列化空 DataSet")]
-        public void DataSet_JsonSerialize_EmptyDataSet()
+        public void DataSet_JsonSerializeEmptyDataSet_RoundTrip()
         {
             var dataSet = new DataSet("EmptySet");
 

@@ -10,9 +10,9 @@ using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 namespace Bee.Db.UnitTests
 {
     [Collection("Initialize")]
-    public class DbTest
+    public class DbTests
     {
-        static DbTest()
+        static DbTests()
         {
         }
 

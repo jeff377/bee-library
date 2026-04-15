@@ -5,9 +5,9 @@ using Bee.Tests.Shared;
 namespace Bee.Api.Client.UnitTests
 {
     [Collection("Initialize")]
-    public class ConnectTest
+    public class ConnectTests
     {
-        static ConnectTest()
+        static ConnectTests()
         {
         }
 

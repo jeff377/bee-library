@@ -20,7 +20,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 MessagePack 是否能正確序列化與反序列化 DataSet。
         /// </summary>
         [Fact(DisplayName = "DataSet 序列化")]
-        public void DataSet_Serialize()
+        public void DataSet_Serialize_RoundTrip()
         {
             // 建立範例 DataSet 並加入兩個 DataTable
             var dataSet = new DataSet("TestDataSet");
@@ -70,7 +70,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 MessagePack 是否能正確序列化與反序列化 DataTable。
         /// </summary>
         [Fact(DisplayName = "DataTable 序列化")]
-        public void DataTable_Serialize()
+        public void DataTable_Serialize_RoundTrip()
         {
             // 建立範例 DataTable 並加入測試資料
             var table = new DataTable("TestTable");
@@ -96,7 +96,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 DbNull.Value 是否能正確轉換為 null，並確認轉換後資料能夠正確寫回資料庫。
         /// </summary>
         [Fact(DisplayName = "DataTable 序列化包含 DBNull 值")]
-        public void DataTable_Serialize_DbNull()
+        public void DataTable_SerializeWithDbNull_PreservesValues()
         {
             // Arrange：建立含 DBNull 的 DataTable
             var dt = new DataTable("TestTable");
@@ -121,7 +121,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 DataTable 在序列化後能否保留 RowState 狀態。
         /// </summary>
         [Fact(DisplayName = "DataTable 序列化保留 RowState 狀態")]
-        public void DataTable_Serialize_RowState()
+        public void DataTable_SerializeWithRowState_PreservesState()
         {
             var table = new DataTable("SampleTable");
             table.Columns.Add("Id", typeof(int));
@@ -168,7 +168,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 TListItemCollection 類別的序列化與反序列化。
         /// </summary>
         [Fact(DisplayName = "TListItemCollection 序列化")]
-        public void TListItemCollection_Serialize()
+        public void TListItemCollection_Serialize_RoundTrip()
         {
             // 建立原始物件
             var original = new ListItemCollection()
@@ -199,7 +199,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 TParameterCollection 支援多種型別的序列化與反序列化。
         /// </summary>
         [Fact(DisplayName = "TParameterCollection 多型別序列化")]
-        public void TParameterCollection_Serialize()
+        public void TParameterCollection_Serialize_RoundTrip()
         {
             // 建立原始物件，包含不同型別的參數
             var original = new ParameterCollection();
@@ -244,7 +244,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 TParameterCollection 加入 DataTable 可正常序列化。
         /// </summary>
         [Fact(DisplayName = "TParameterCollection 加入 DataTable 可正常序列化")]
-        public void TParameterCollection_Serialize_DataTable()
+        public void TParameterCollection_SerializeWithDataTable_RoundTrip()
         {
             // 建立測試用的 DataTable
             var table = new DataTable("TestTable");
@@ -279,7 +279,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 TPropertyCollection 可正確序列化與還原屬性集合資料。
         /// </summary>
         [Fact(DisplayName = "TPropertyCollection 序列化")]
-        public void TPropertyCollection_Serialize()
+        public void TPropertyCollection_Serialize_RoundTrip()
         {
             // 建立屬性集合
             var properties = new Bee.Definition.Collections.PropertyCollection();
@@ -310,7 +310,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 Filters 可正確序列化與還原屬性集合資料。
         /// </summary>
         [Fact(DisplayName = "Filters 序列化")]
-        public void Filters_Serialize()
+        public void Filters_Serialize_RoundTrip()
         {
             var root = FilterGroup.All(
                 FilterCondition.Equal("DeptId", 10),
@@ -358,7 +358,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 Ping 方法傳遞參數的序列化。
         /// </summary>
         [Fact(DisplayName = "Ping 方法傳遞參數的序列化")]
-        public void Ping_Serialize()
+        public void Ping_Serialize_RoundTrip()
         {
             // 建立 TPingRequest 並指定屬性與參數
             var args = new PingRequest
@@ -391,7 +391,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 ExecFunc 方法傳遞參數的序列化。
         /// </summary>
         [Fact(DisplayName = "ExecFunc 方法傳遞參數的序列化")]
-        public void ExecFunc_Serialize()
+        public void ExecFunc_Serialize_RoundTrip()
         {
             // 建立 TExecFuncRequest 並指定屬性與參數
             var args = new ExecFuncRequest
@@ -418,7 +418,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 CreateSession 方法傳遞參數的序列化。
         /// </summary>
         [Fact(DisplayName = "CreateSession 方法傳遞參數的序列化")]
-        public void CreateSession_Serialize()
+        public void CreateSession_Serialize_RoundTrip()
         {
             // Arrange: 建立 TCreateSessionRequest 實例並設定屬性
             var args = new CreateSessionRequest
@@ -446,7 +446,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 GetDefine 方法傳遞參數的序列化。
         /// </summary>
         [Fact(DisplayName = "GetDefine 方法傳遞參數的序列化")]
-        public void GetDefine_Serialize()
+        public void GetDefine_Serialize_RoundTrip()
         {
             // Arrange: 建立 TGetDefineRequest 實例並設定屬性
             var args = new GetDefineRequest
@@ -472,7 +472,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 GetCommonConfiguration 方法傳遞參數的序列化。
         /// </summary>
         [Fact(DisplayName = "GetCommonConfiguration 方法傳遞參數的序列化")]
-        public void GetCommonConfiguration_Serialize()
+        public void GetCommonConfiguration_Serialize_RoundTrip()
         {
             // Arrange: 建立 GetCommonConfigurationRequest（無額外 Key 屬性，僅繼承 Parameters）
             var args = new GetCommonConfigurationRequest();
@@ -497,7 +497,7 @@ namespace Bee.Api.Core.UnitTests
         /// 測試 SaveDefine 方法傳遞參數的序列化。
         /// </summary>
         [Fact(DisplayName = "SaveDefine 方法傳遞參數的序列化")]
-        public void SaveDefine_Serialize()
+        public void SaveDefine_Serialize_RoundTrip()
         {
             // Arrange: 建立 SaveDefineRequest 實例並設定屬性
             var args = new SaveDefineRequest

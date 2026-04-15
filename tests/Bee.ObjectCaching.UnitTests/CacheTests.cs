@@ -4,9 +4,9 @@ using Bee.Definition;
 namespace Bee.ObjectCaching.UnitTests
 {
     [Collection("Initialize")]
-    public class CacheTest
+    public class CacheTests
     {
-        static CacheTest()
+        static CacheTests()
         {
         }
 
