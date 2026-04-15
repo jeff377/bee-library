@@ -33,10 +33,6 @@ namespace Bee.Definition.UnitTests
             table.Fields.Add(new FormField("ref_manager_name", "部門主管名稱", FieldDbType.String, FieldType.RelationField));
 
             Assert.NotNull(formSchema.MasterTable);
-
-            //string filePath = DefinePathInfo.GetFormSchemaFilePath(formSchema.ProgId);
-            //formSchema.SetObjectFilePath(filePath);
-            //formSchema.Save();
         }
 
         [Fact]
@@ -70,10 +66,6 @@ namespace Bee.Definition.UnitTests
             var references = table.RelationFieldReferences;
 
             Assert.NotNull(references);
-
-            //string filePath = DefinePathInfo.GetFormSchemaFilePath(formSchema.ProgId);
-            //formSchema.SetObjectFilePath(filePath);
-            //formSchema.Save();
         }
     }
 }

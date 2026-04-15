@@ -1,53 +1,17 @@
 using System.ComponentModel;
 using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
-using Bee.Base;
-using Bee.Base.Serialization;
 using Bee.Api.Core.System;
+using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Tests.Shared;
 
 namespace Bee.Api.Core.UnitTests
 {
     [Collection("Initialize")]
-    public class ApiCoreTests
+    public class JsonRpcExecutorTests
     {
         private Guid _accessToken;
-
-        static ApiCoreTests()
-        {
-
-        }
-
-        /// <summary>
-        /// JSON-RPC 請求模型序列化。
-        /// </summary>
-        [Fact]
-        [DisplayName("JsonRpcRequest 序列化應產生有效 JSON 並支援編碼與解碼")]
-        public void JsonRpcRequest_Serialize_ReturnsValidJson()
-        {
-            var request = new JsonRpcRequest()
-            {
-                Method = $"{SysProgIds.System}.ExecFunc",
-                Params = new JsonRpcParams()
-                {
-                    Value = new ExecFuncRequest("Hello")
-                },
-                Id = Guid.NewGuid().ToString()
-            };
-            string json = request.ToJson();
-            Assert.NotEmpty(json);
-
-            // 測試編碼
-            ApiPayloadConverter.TransformTo(request.Params, PayloadFormat.Encoded);
-            string encodedJson = request.ToJson();
-            Assert.NotEmpty(encodedJson);
-
-            // 測試解碼
-            ApiPayloadConverter.RestoreFrom(request.Params, PayloadFormat.Encoded);
-            string decodedJson = request.ToJson();
-            Assert.NotEmpty(decodedJson);
-        }
 
         /// <summary>
         /// 執行 API 方法。
@@ -77,12 +41,10 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// 模擬登入並取得 AccessToken。
         /// </summary>
-        /// <returns></returns>
         private Guid GetAccessToken()
         {
             if (_accessToken == Guid.Empty)
             {
-                // 模擬登入，實際上是透過 API 登入取得 AccessToken
                 var args = new LoginRequest()
                 {
                     UserId = "demo",
@@ -122,7 +84,6 @@ namespace Bee.Api.Core.UnitTests
             var args = new GetCommonConfigurationRequest();
             var result = ApiExecute<GetCommonConfigurationResponse>(Guid.Empty, SysProgIds.System, SystemActions.GetCommonConfiguration, args);
             Assert.NotNull(result);
-            //Assert.Equal("messagepack", result.Serializer);
         }
 
         /// <summary>
@@ -154,6 +115,5 @@ namespace Bee.Api.Core.UnitTests
             var execFuncResult = response.Result.Value as ExecFuncResponse;
             Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null
         }
-
     }
 }

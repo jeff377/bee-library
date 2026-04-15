@@ -1,31 +1,16 @@
 using System.ComponentModel;
-using Bee.Definition.Collections;
-using Bee.Definition.Filters;
-using Bee.Definition.Forms;
-using Bee.Definition.Settings;
 using System.Data;
 using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Business.System;
+using Bee.Definition.Collections;
+using Bee.Definition.Filters;
+using Bee.Definition.Settings;
 
 namespace Bee.Definition.UnitTests
 {
-    public class DefineTests
+    public class DefinitionSerializationTests
     {
-        [Theory]
-        [InlineData(DefineType.SystemSettings, typeof(SystemSettings))]
-        [InlineData(DefineType.DatabaseSettings, typeof(DatabaseSettings))]
-        [InlineData(DefineType.FormSchema, typeof(FormSchema))]
-        [DisplayName("GetDefineType 傳入有效定義類型應回傳正確的型別")]
-        public void GetDefineType_ValidType_ReturnsExpectedType(DefineType defineType, Type expectedType)
-        {
-            // Act
-            var result = DefineFunc.GetDefineType(defineType);
-
-            // Assert
-            Assert.Equal(expectedType, result);
-        }
-
         /// <summary>
         /// 物件序列化。
         /// </summary>

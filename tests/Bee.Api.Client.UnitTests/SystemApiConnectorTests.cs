@@ -5,30 +5,14 @@ using Bee.Tests.Shared;
 namespace Bee.Api.Client.UnitTests
 {
     [Collection("Initialize")]
-    public class ConnectTests
+    public class SystemApiConnectorTests
     {
-        static ConnectTests()
-        {
-        }
-
-        [LocalOnlyTheory]
-        [DisplayName("ApiConnectValidator 驗證 URL 應回傳遠端連線類型")]
-        [InlineData("http://localhost/jsonrpc/api")]
-        //[InlineData("http://localhost/jsonrpc_aspnet/api")]
-        public void ApiConnectValidator_ValidUrl_ReturnsRemoteConnectType(string apiUrl)
-        {
-            var validator = new ApiConnectValidator();
-            var connectType = validator.Validate(apiUrl);
-
-            Assert.Equal(ConnectType.Remote, connectType);  // 確認連線方式為遠端連線
-        }
-
         /// <summary>
         /// 測試 SystemApiConnector 的 CreateSession 方法。
         /// </summary>
         [LocalOnlyFact]
         [DisplayName("SystemApiConnector CreateSession 應回傳有效的 AccessToken")]
-        public void SystemApiConnector_CreateSession_ReturnsValidToken()
+        public void CreateSession_ValidArgs_ReturnsValidToken()
         {
             // Arrange
             string userId = "001";

@@ -1,6 +1,9 @@
 using System.ComponentModel;
 using System.Text.Json;
 using Bee.Api.Core.JsonRpc;
+using Bee.Api.Core.System;
+using Bee.Base.Serialization;
+using Bee.Definition;
 
 namespace Bee.Api.Core.UnitTests
 {
@@ -230,6 +233,36 @@ namespace Bee.Api.Core.UnitTests
             Assert.False(root.TryGetProperty("Method", out _));
             Assert.False(root.TryGetProperty("Id", out _));
             Assert.False(root.TryGetProperty("Result", out _));
+        }
+
+        /// <summary>
+        /// JSON-RPC 請求模型序列化。
+        /// </summary>
+        [Fact]
+        [DisplayName("JsonRpcRequest 序列化應產生有效 JSON 並支援編碼與解碼")]
+        public void JsonRpcRequest_Serialize_ReturnsValidJson()
+        {
+            var request = new JsonRpcRequest()
+            {
+                Method = $"{SysProgIds.System}.ExecFunc",
+                Params = new JsonRpcParams()
+                {
+                    Value = new ExecFuncRequest("Hello")
+                },
+                Id = Guid.NewGuid().ToString()
+            };
+            string json = request.ToJson();
+            Assert.NotEmpty(json);
+
+            // 測試編碼
+            ApiPayloadConverter.TransformTo(request.Params, PayloadFormat.Encoded);
+            string encodedJson = request.ToJson();
+            Assert.NotEmpty(encodedJson);
+
+            // 測試解碼
+            ApiPayloadConverter.RestoreFrom(request.Params, PayloadFormat.Encoded);
+            string decodedJson = request.ToJson();
+            Assert.NotEmpty(decodedJson);
         }
     }
 }

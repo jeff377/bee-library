@@ -1,21 +1,28 @@
 using System.ComponentModel;
-using Bee.Definition.Filters;
 using Bee.Base;
 using Bee.Definition;
 using Bee.Db.DbAccess;
-using Bee.Db.Providers.SqlServer;
 using Bee.Tests.Shared;
 using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 
 namespace Bee.Db.UnitTests
 {
     [Collection("Initialize")]
-    public class DbTests
+    public class DbAccessTests
     {
-        static DbTests()
+        public class User
         {
+            public string? UserID { get; set; }
+            public string? UserName { get; set; }
+            public DateTime InsertTime { get; set; }
         }
 
+        public class User2
+        {
+            public string? UserID { get; set; }
+            public string? UserName { get; set; }
+            public string? AccessToken { get; set; }
+        }
 
         /// <summary>
         /// 執行 SQL 查詢，並取得 DataTable。
@@ -114,20 +121,6 @@ namespace Bee.Db.UnitTests
             var value = result.Scalar;
         }
 
-        public class User
-        {
-            public string? UserID { get; set; }
-            public string? UserName { get; set; }
-            public DateTime InsertTime { get; set; }
-        }
-
-        public class User2
-        {
-            public string? UserID { get; set; }
-            public string? UserName { get; set; }
-            public string? AccessToken { get; set; }
-        }
-
         [LocalOnlyFact]
         [DisplayName("Query 查詢應回傳強型別物件清單")]
         public void Query_ValidSql_ReturnsMappedObjects()
@@ -211,61 +204,5 @@ namespace Bee.Db.UnitTests
             var dbAccess = new DbAccessObject("common");
             var result = await dbAccess.ExecuteBatchAsync(batch);
         }
-
-        [LocalOnlyFact]
-        [DisplayName("SqlTableSchemaProvider 取得資料表結構應成功")]
-        public void SqlTableSchemaProvider_GetTableSchema_ReturnsSchema()
-        {
-            var helper = new SqlTableSchemaProvider("common");
-            var dbTable = helper.GetTableSchema("st_user");
-        }
-
-        [LocalOnlyFact]
-        [DisplayName("SqlFormCommandBuilder 建立 Select 命令應成功")]
-        public void BuildSelectCommand_WithAndWithoutFields_ReturnsCommands()
-        {
-            var builder = new SqlFormCommandBuilder("Employee");
-            var command = builder.BuildSelectCommand("Employee", string.Empty);
-            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name");
-        }
-
-        [LocalOnlyFact]
-        [DisplayName("SqlFormCommandBuilder 搭配篩選條件與排序建立 Select 命令應成功")]
-        public void BuildSelectCommand_WithFilterAndSort_ReturnsCommands()
-        {
-            var builder = new SqlFormCommandBuilder("Employee");
-
-            // 建立一個 FilterCondition 表示 sys_id = '001'
-            var filter = new FilterCondition
-            {
-                FieldName = "sys_id",
-                Operator = ComparisonOperator.Equal,
-                Value = "001"
-            };
-
-            // 建立排序欄位集合
-            var sortFields = new SortFieldCollection();
-            sortFields.Add(new SortField("sys_id",  SortDirection.Asc)); // 以 sys_id 做升冪排序
-
-            // 傳入 filter node 與 sortFields 至 BuildSelectCommand
-            var command = builder.BuildSelectCommand("Employee", string.Empty, filter, sortFields);
-            Assert.NotNull(command);
-
-            // 也可搭配多個欄位 filter 與 sortFields
-            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", filter, sortFields);
-            Assert.NotNull(command2);
-
-            // 測試 filter 非 Select 欄位，是否正確建立 Join
-            filter = new FilterCondition
-            {
-                FieldName = "ref_supervisor_id",
-                Operator = ComparisonOperator.Equal,
-                Value = "U001"
-            };
-            var command3 = builder.BuildSelectCommand("Employee", "sys_id,sys_name", filter, sortFields);
-            Assert.NotNull(command2);
-        }
-
-
     }
 }
