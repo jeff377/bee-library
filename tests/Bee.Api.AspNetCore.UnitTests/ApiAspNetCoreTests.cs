@@ -90,22 +90,12 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         /// <summary>
-        /// 模擬登入並取得 AccessToken。
+        /// 取得有效的測試 AccessToken（直接在 SessionInfoService 植入，不經過 Login）。
         /// </summary>
-        /// <returns></returns>
-        private async Task<Guid> GetAccessTokenAsync()
+        private Guid GetAccessToken()
         {
             if (_accessToken == Guid.Empty)
-            {
-                // 模擬登入，實際上是透過 API 登入取得 AccessToken
-                var args = new LoginRequest()
-                {
-                    UserId = "demo",
-                    Password = "1234"
-                };
-                var result = await ExecuteRpcAsync<LoginResponse>(Guid.Empty, SysProgIds.System, "Login", args);
-                _accessToken = result.AccessToken;
-            }
+                _accessToken = TestSessionFactory.CreateAccessToken();
             return _accessToken;
         }
 
@@ -127,11 +117,11 @@ namespace Bee.Api.AspNetCore.UnitTests
             Assert.Equal("001", result.TraceId);
         }
 
-        [LocalOnlyFact]
+        [Fact]
         [DisplayName("ExecFunc 執行 Hello 應回傳非 null 結果")]
         public async Task ExecFunc_Hello_ReturnsNotNull()
         {
-            Guid accessToken = await GetAccessTokenAsync();
+            Guid accessToken = GetAccessToken();
             var args = new ExecFuncRequest("Hello");
             var result = await ExecuteRpcAsync<ExecFuncResponse>(accessToken, SysProgIds.System, "ExecFunc", args);
             Assert.NotNull(result);

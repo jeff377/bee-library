@@ -39,20 +39,12 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
-        /// 模擬登入並取得 AccessToken。
+        /// 取得有效的測試 AccessToken（直接在 SessionInfoService 植入，不經過 Login）。
         /// </summary>
         private Guid GetAccessToken()
         {
             if (_accessToken == Guid.Empty)
-            {
-                var args = new LoginRequest()
-                {
-                    UserId = "demo",
-                    Password = "1234"
-                };
-                var result = ApiExecute<LoginResponse>(Guid.Empty, SysProgIds.System, "Login", args);
-                _accessToken = result.AccessToken;
-            }
+                _accessToken = TestSessionFactory.CreateAccessToken();
             return _accessToken;
         }
 
@@ -89,7 +81,7 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// 透過 API 執行 Hello 方法。
         /// </summary>
-        [LocalOnlyFact]
+        [Fact]
         [DisplayName("ExecFunc 執行 Hello 應回傳非 null 結果")]
         public void ExecFunc_Hello_ReturnsNotNull()
         {
