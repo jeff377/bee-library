@@ -8,10 +8,9 @@ using Bee.Base;
 using Bee.Base.Data;
 using Bee.Definition;
 
-using Bee.Db;
 using Bee.Db.Manager;
 
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// Provides database access operations including query execution, batch commands, and DataTable updates.

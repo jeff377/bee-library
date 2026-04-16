@@ -1,9 +1,7 @@
 using System.ComponentModel;
 using Bee.Base;
 using Bee.Definition;
-using Bee.Db.DbAccess;
 using Bee.Tests.Shared;
-using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 
 namespace Bee.Db.UnitTests
 {
@@ -34,14 +32,14 @@ namespace Bee.Db.UnitTests
             // 由 DbAccess 管理連線
             string sql = "SELECT * FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
             Assert.NotNull(result.Table);
 
             // 由外部管理連線
             using (var conn = DbFunc.CreateConnection("common"))
             {
-                dbAccess = new DbAccessObject(conn);
+                dbAccess = new DbAccess(conn);
                 result = dbAccess.Execute(command);
                 Assert.NotNull(result.Table);
             }
@@ -50,12 +48,12 @@ namespace Bee.Db.UnitTests
             command = new DbCommandSpec(DbCommandKind.DataTable, sql);
             command.Parameters.Add("p1", "001");
             command.Parameters.Add("p2", "002");
-            dbAccess = new DbAccessObject("common");
+            dbAccess = new DbAccess("common");
             result = dbAccess.Execute(command);
             Assert.NotNull(result.Table);
 
             command = new DbCommandSpec(DbCommandKind.DataTable, sql, "001", "002");
-            dbAccess = new DbAccessObject("common");
+            dbAccess = new DbAccess("common");
             result = dbAccess.Execute(command);
             Assert.NotNull(result.Table);
 
@@ -79,7 +77,7 @@ namespace Bee.Db.UnitTests
         {
             string sql = "SELECT * FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var reulst = await dbAccess.ExecuteAsync(command);
             var table = reulst.Table;
             Assert.NotNull(table);
@@ -93,7 +91,7 @@ namespace Bee.Db.UnitTests
             int i = BaseFunc.RndInt(0, 100);
             string sql = "Update st_user Set note={1} Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
             int rows = result.RowsAffected;
         }
@@ -105,7 +103,7 @@ namespace Bee.Db.UnitTests
             int i = BaseFunc.RndInt(0, 100);
             string sql = "Update st_user Set note={1} Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var result = await dbAccess.ExecuteAsync(command);
             int rows = result.RowsAffected;
         }
@@ -116,7 +114,7 @@ namespace Bee.Db.UnitTests
         {
             string sql = "Select note From st_user Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, "001");
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
             var value = result.Scalar;
         }
@@ -127,7 +125,7 @@ namespace Bee.Db.UnitTests
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var list = dbAccess.Query<User>(command);
             var list3 = dbAccess.Query<User2>(command);
         }
@@ -138,7 +136,7 @@ namespace Bee.Db.UnitTests
         {
             string sql = "SELECT sys_id AS userID, sys_name AS UserName, sys_insert_time AS InsertTime FROM st_user";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql);
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var list = await dbAccess.QueryAsync<User>(command);
             var list2 = await dbAccess.QueryAsync<User2>(command);
         }
@@ -147,7 +145,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("UpdateDataTable 修改資料列後更新應影響至少一筆資料")]
         public void UpdateDataTable_ModifiedRow_AffectsRows()
         {
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
 
             // 1.查詢 st_user 所有資料
             string sql = "SELECT * FROM st_user";
@@ -185,7 +183,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.NonQuery,
                      "UPDATE st_user SET note={1} WHERE sys_id = {0}", "001", i));
 
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var result = dbAccess.ExecuteBatch(batch);
         }
 
@@ -201,7 +199,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.NonQuery,
                      "UPDATE st_user SET note={1} WHERE sys_id = {0}", "001", i));
 
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
             var result = await dbAccess.ExecuteBatchAsync(batch);
         }
     }

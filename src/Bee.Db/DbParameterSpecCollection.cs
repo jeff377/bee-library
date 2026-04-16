@@ -7,9 +7,7 @@ using Bee.Definition;
 using System;
 using System.Data;
 
-using Bee.Db;
-
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// A collection of <see cref="DbParameterSpec"/> instances.

@@ -2,9 +2,7 @@
 using Bee.Base.Collections;
 using System.Data;
 
-using Bee.Db;
-
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// A unified wrapper for a DbCommand execution result.

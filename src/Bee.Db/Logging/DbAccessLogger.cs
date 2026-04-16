@@ -4,8 +4,6 @@ using System.Globalization;
 using System.Reflection;
 using System.Text;
 
-using Bee.Db.DbAccess;
-
 namespace Bee.Db.Logging
 {
     /// <summary>

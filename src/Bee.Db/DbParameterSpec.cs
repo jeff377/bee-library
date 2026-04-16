@@ -4,9 +4,7 @@ using System;
 using System.Data;
 using System.Data.Common;
 
-using Bee.Db;
-
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// Describes a database command parameter as an intermediary for <see cref="DbParameter"/>.

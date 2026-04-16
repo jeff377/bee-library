@@ -10,9 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using Bee.Db;
-
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// Describes a database command as an intermediary for <see cref="DbCommand"/>.

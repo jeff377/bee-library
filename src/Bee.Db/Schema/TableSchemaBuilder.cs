@@ -1,8 +1,6 @@
 ﻿using Bee.Definition.Database;
 using Bee.Base;
 using Bee.Definition;
-using Bee.Db.DbAccess;
-using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 using Bee.Db.Providers.SqlServer;
 
 namespace Bee.Db.Schema
@@ -76,7 +74,7 @@ namespace Bee.Db.Schema
             if (StrFunc.IsNotEmpty(sql))
             {
                 var command = new DbCommandSpec(DbCommandKind.NonQuery, sql);
-                var dbAccess = new DbAccessObject(DatabaseId);
+                var dbAccess = new DbAccess(DatabaseId);
                 dbAccess.Execute(command);
                 return true;
             }

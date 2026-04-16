@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// Describes a batch of database commands to execute.

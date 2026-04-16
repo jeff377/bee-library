@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// Represents the output of a batch command execution.

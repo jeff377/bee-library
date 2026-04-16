@@ -11,6 +11,13 @@
 | 私有欄位 | `_camelCase`（底線前綴） | `_isTokenValid`, `_accessToken` |
 | 參數 | camelCase | `accessToken`, `sessionId` |
 
+### 命名空間 vs 型別名稱（CA1724）
+
+- **禁止命名空間最後一段與其中的類別／介面同名**
+  - ❌ `namespace Bee.Db.DbAccess` + `class DbAccess`（造成 `Bee.Db.DbAccess.DbAccess` 冗餘限定）
+  - ✅ 將子命名空間合併至上層：`namespace Bee.Db` + `class DbAccess`
+  - ✅ 或重新命名類別：`namespace Bee.Db.DbAccess` + `class DbAccessor`
+
 ## 檔案組織
 
 每個套件依功能分資料夾，介面可依所屬功能就近放置，不強制集中至 `Interface/` 資料夾：
@@ -20,6 +27,15 @@ Bee.<Module>/
   ├── Exception/      # 自訂例外
   └── <Feature>/      # 功能實作（含相關介面）
 ```
+
+### 資料夾與命名空間一致性
+
+資料夾結構必須對映命名空間（對應 IDE0130 規範）：
+- ✅ `src/Bee.Db/Schema/` → `namespace Bee.Db.Schema`
+- ❌ `src/Bee.Db/DbAccess/` → `namespace Bee.Db`（資料夾與命名空間不符）
+
+**唯一例外**：某資料夾下集中了同一父類別的大量子類別，可用資料夾做邏輯分組而不建立對應子命名空間。
+- 例：`src/Bee.Definition/Settings/` 下有許多 `*Settings` 子類別，命名空間維持 `Bee.Definition.Settings`
 
 ## 文件語言規則
 

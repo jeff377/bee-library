@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// Carries a DataTable together with its three command specifications required for a DataTable update operation.

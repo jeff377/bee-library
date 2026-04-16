@@ -1,8 +1,6 @@
 using Bee.Base;
-using Bee.Db.DbAccess;
 using Bee.Db.Schema;
 using Bee.Tests.Shared;
-using DbAccessObject = Bee.Db.DbAccess.DbAccess;
 
 namespace Bee.Db.UnitTests
 {
@@ -57,7 +55,7 @@ namespace Bee.Db.UnitTests
         /// </summary>
         private static void EnsureSeedData()
         {
-            var dbAccess = new DbAccessObject("common");
+            var dbAccess = new DbAccess("common");
 
             var check = new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001");

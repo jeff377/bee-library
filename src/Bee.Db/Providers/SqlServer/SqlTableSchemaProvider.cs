@@ -4,9 +4,6 @@ using Bee.Base.Data;
 using Bee.Definition;
 using System.Data;
 
-using Bee.Db.DbAccess;
-using DbAccessObject = Bee.Db.DbAccess.DbAccess;
-
 namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
@@ -14,7 +11,7 @@ namespace Bee.Db.Providers.SqlServer
     /// </summary>
     public class SqlTableSchemaProvider
     {
-        private readonly DbAccessObject _dbAccess;
+        private readonly DbAccess _dbAccess;
 
         #region 建構函式
 
@@ -25,7 +22,7 @@ namespace Bee.Db.Providers.SqlServer
         public SqlTableSchemaProvider(string databaseId)
         {
             DatabaseId = databaseId;
-            _dbAccess = new DbAccessObject(databaseId);
+            _dbAccess = new DbAccess(databaseId);
         }
 
         #endregion

@@ -4,7 +4,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bee.Db.DbAccess
+namespace Bee.Db
 {
     /// <summary>
     /// Manages the lifetime of a database connection within a scoped context.
