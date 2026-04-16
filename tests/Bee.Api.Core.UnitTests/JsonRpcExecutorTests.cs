@@ -59,7 +59,7 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// 透過 API 執行 Ping 方法。
         /// </summary>
-        [LocalOnlyFact]
+        [Fact]
         [DisplayName("Ping 應回傳正確狀態與追蹤識別碼")]
         public void Ping_ValidRequest_ReturnsOkStatus()
         {
@@ -77,7 +77,7 @@ namespace Bee.Api.Core.UnitTests
         /// <summary>
         /// 測試 GetCommonConfiguration 方法。
         /// </summary>
-        [LocalOnlyFact]
+        [Fact]
         [DisplayName("GetCommonConfiguration 應回傳非 null 結果")]
         public void GetCommonConfiguration_ValidRequest_ReturnsNotNull()
         {

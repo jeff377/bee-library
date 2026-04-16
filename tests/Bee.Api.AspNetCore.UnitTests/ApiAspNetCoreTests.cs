@@ -112,7 +112,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// <summary>
         /// 測試 Ping 方法。
         /// </summary>
-        [LocalOnlyFact]
+        [Fact]
         [DisplayName("Ping 應回傳正確狀態與追蹤識別碼")]
         public async Task Ping_ValidRequest_ReturnsOkStatus()
         {
