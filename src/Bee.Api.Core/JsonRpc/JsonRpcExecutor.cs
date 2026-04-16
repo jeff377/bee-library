@@ -75,6 +75,9 @@ namespace Bee.Api.Core.JsonRpc
                 // Create the business object and invoke the specified method
                 var value = await ExecuteMethodAsync(progId, action, request.Params.Value, format);
 
+                // Convert BO result to API response type by naming convention
+                value = ApiOutputConverter.Convert(value);
+
                 // Return the result
                 response.Result = new JsonRpcResult { Value = value };
                 // Set the response payload format

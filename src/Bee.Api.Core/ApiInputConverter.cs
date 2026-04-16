@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Bee.Api.Core
 {
@@ -12,6 +13,7 @@ namespace Bee.Api.Core
     {
         /// <summary>
         /// Converts the source object to the specified target type by copying public properties with matching names.
+        /// If the source is a <see cref="JsonElement"/> (from JSON deserialization), it is deserialized directly.
         /// </summary>
         /// <param name="source">The source object (typically an API request type).</param>
         /// <param name="targetType">The target type to convert to (typically a BO args type or interface).</param>
@@ -23,6 +25,15 @@ namespace Bee.Api.Core
             // If the source is already assignable to the target type, return as-is
             if (targetType.IsInstanceOfType(source))
                 return source;
+
+            // Handle JsonElement (from JSON deserialization over HTTP).
+            // PropertyNameCaseInsensitive is required because the framework serializes
+            // with camelCase naming policy (see SerializeFunc.GetJsonSerializerOptions).
+            if (source is JsonElement element)
+            {
+                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                return JsonSerializer.Deserialize(element.GetRawText(), targetType, options);
+            }
 
             // If the target is an interface, we cannot create an instance directly
             if (targetType.IsInterface || targetType.IsAbstract)

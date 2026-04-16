@@ -4,6 +4,7 @@ using Bee.Api.AspNetCore.Controllers;
 using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.System;
+
 using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Definition;
@@ -85,7 +86,7 @@ namespace Bee.Api.AspNetCore.UnitTests
             Assert.False(string.IsNullOrWhiteSpace(contentResult.Content));
 
             var response = SerializeFunc.JsonToObject<JsonRpcResponse>(contentResult.Content);
-            return (TResult)response.Result.Value;
+            return ApiOutputConverter.ConvertResultValue<TResult>(response.Result.Value);
         }
 
         /// <summary>

@@ -63,6 +63,7 @@ sequenceDiagram
     E->>E: ApiInputConverter 轉換參數型別
     E->>B: 反射呼叫 Action 方法
     B-->>E: 回傳結果
+    E->>E: ApiOutputConverter 依命名慣例轉為 API Response
     E->>E: 轉換 Payload 格式
     E-->>C: JsonRpcResponse
 ```
@@ -94,18 +95,19 @@ sequenceDiagram
 ```text
 Client 發送 → LoginRequest (API Type, MessagePack)
     ↓ JsonRpcExecutor
-    ↓ ApiInputConverter 屬性對應
+    ↓ ApiInputConverter 屬性對應（{Action}Request → {Action}Args）
 BO 接收 → LoginArgs (BO Type, POCO)
     ↓ 商業邏輯處理
 BO 回傳 → LoginResult (BO Type, POCO)
-    ↓ ApiContractRegistry 型別對應
+    ↓ ApiOutputConverter 命名慣例推導（{Action}Result → {Action}Response）
 Client 接收 → LoginResponse (API Type, MessagePack)
 ```
 
 ### 關鍵元件
 
-- **ApiContractRegistry**：註冊 Contract 介面 → API 型別的對應關係
-- **ApiInputConverter**：將 API Request 的屬性值對應到 BO Args（依屬性名稱匹配）
+- **ApiInputConverter**：將 API Request 的屬性值對應到 BO Args（依屬性名稱匹配），並處理 HTTP 傳入的 `JsonElement`
+- **ApiOutputConverter**：執行後將 BO `{Action}Result` 以反射自動對應到 `{Action}Response`，結果以 `ConcurrentDictionary` 快取（詳見 [ADR-007](adr/adr-007-convention-based-type-resolution.md)）
+- **ApiContractRegistry**：供 MessagePack Typeless 序列化（Encoded / Encrypted 格式）使用的型別白名單，與輸出映射無關
 
 ## ExecFunc 自訂函式模式
 

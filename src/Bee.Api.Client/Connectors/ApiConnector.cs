@@ -6,6 +6,7 @@ using Bee.Api.Client.ApiServiceProvider;
 using System;
 using System.Threading.Tasks;
 
+
 namespace Bee.Api.Client.Connectors
 {
     /// <summary>
@@ -88,15 +89,13 @@ namespace Bee.Api.Client.Connectors
                 RestoreResponsePayload(response, actualFormat);
 
                 Tracer.End(ctx);
-                return (T)response.Result.Value;
+                return ApiOutputConverter.ConvertResultValue<T>(response.Result.Value);
             }
             catch (Exception ex)
             {
                 Tracer.End(ctx, TraceStatus.Error, ex.Message);
                 throw;
             }
-
-
         }
 
         /// <summary>
@@ -134,7 +133,7 @@ namespace Bee.Api.Client.Connectors
                 RestoreResponsePayload(response, actualFormat);
 
                 Tracer.End(ctx);
-                return (T)response.Result.Value;
+                return ApiOutputConverter.ConvertResultValue<T>(response.Result.Value);
             }
             catch (Exception ex)
             {

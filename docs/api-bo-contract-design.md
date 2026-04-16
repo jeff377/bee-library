@@ -216,12 +216,17 @@ public LoginResult Login(LoginArgs args) { ... }
 
 ### Response Mapping
 
-When a BO method returns a pure POCO (e.g., `LoginResult`), the framework's `ApiContractRegistry` automatically converts it to the corresponding API type (`LoginResponse`) for serialization. This mapping must be registered at application startup:
+When a BO method returns a pure POCO (e.g., `LoginResult`), the framework's `ApiOutputConverter` automatically converts it to the corresponding API type (`LoginResponse`) by **naming convention** — no registration is required.
 
-```csharp
-// Register at startup
-ApiContractRegistry.Register<ILoginResponse, LoginResponse>();
+Convention:
+
 ```
+{Action}Result  ──reflection lookup in Bee.Api.Core──▶  {Action}Response
+```
+
+For example, `PingResult` is automatically mapped to `PingResponse`. Reflection results are cached per BO type so each type is resolved only once.
+
+> The convention is enforced: any BO result type that does not follow `{Action}Result` / `{Action}Response` naming cannot be auto-converted. See [ADR-007](adr/adr-007-convention-based-type-resolution.md) for background.
 
 ### ExecFunc Pattern
 
@@ -244,12 +249,12 @@ Using `GetOrder` as an example:
 3. **Implement BO method**
    - Method signature uses `IGetOrderRequest` / `IGetOrderResponse`
    - If BO-specific properties are needed, create `GetOrderArgs` / `GetOrderResult`
+   - Naming must follow the `{Action}Args` / `{Action}Result` convention so that `ApiOutputConverter` can auto-map `GetOrderResult` → `GetOrderResponse`
 
-4. **Register response mapping** (if BO returns a pure POCO)
-   - `ApiContractRegistry.Register<IGetOrderResponse, GetOrderResponse>()`
-
-5. **Update client Connector** (if needed)
+4. **Update client Connector** (if needed)
    - Add a corresponding method using `GetOrderRequest` / `GetOrderResponse`
+
+> No manual registration is required. Response mapping is resolved automatically by naming convention (see [ADR-007](adr/adr-007-convention-based-type-resolution.md)).
 
 ---
 

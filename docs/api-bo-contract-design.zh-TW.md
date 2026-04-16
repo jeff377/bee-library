@@ -216,12 +216,17 @@ public LoginResult Login(LoginArgs args) { ... }
 
 ### 回應映射
 
-當 BO 方法回傳純 POCO（如 `LoginResult`），框架的 `ApiContractRegistry` 會自動將其轉換為對應的 API 型別（`LoginResponse`）進行序列化。此映射需在應用程式啟動時註冊：
+當 BO 方法回傳純 POCO（如 `LoginResult`），框架的 `ApiOutputConverter` 會透過**命名慣例**自動對應至 API 型別（`LoginResponse`），**不需要任何註冊**。
 
-```csharp
-// 在啟動時註冊
-ApiContractRegistry.Register<ILoginResponse, LoginResponse>();
+對應規則：
+
 ```
+{Action}Result  ──反射搜尋 Bee.Api.Core 組件──▶  {Action}Response
+```
+
+例如 `PingResult` 會自動對應到 `PingResponse`。反射結果以 BO 型別為 key 快取，每個型別只解析一次。
+
+> 此命名慣例為**強制規範**：凡不符合 `{Action}Result` / `{Action}Response` 命名的 BO 回傳型別都無法自動轉換。背景請參閱 [ADR-007](adr/adr-007-convention-based-type-resolution.md)。
 
 ### ExecFunc 模式
 
@@ -244,12 +249,12 @@ ApiContractRegistry.Register<ILoginResponse, LoginResponse>();
 3. **實作 BO 方法**
    - 方法簽章使用 `IGetOrderRequest` / `IGetOrderResponse`
    - 若需要 BO 專用屬性，另建 `GetOrderArgs` / `GetOrderResult`
+   - 必須遵守 `{Action}Args` / `{Action}Result` 命名慣例，`ApiOutputConverter` 才能自動將 `GetOrderResult` 對應至 `GetOrderResponse`
 
-4. **註冊回應映射**（若 BO 回傳純 POCO）
-   - `ApiContractRegistry.Register<IGetOrderResponse, GetOrderResponse>()`
-
-5. **更新用戶端 Connector**（若需要）
+4. **更新用戶端 Connector**（若需要）
    - 在 Connector 中新增對應方法，使用 `GetOrderRequest` / `GetOrderResponse`
+
+> 不需要任何手動註冊，回應映射由命名慣例自動推導（詳見 [ADR-007](adr/adr-007-convention-based-type-resolution.md)）。
 
 ---
 

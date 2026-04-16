@@ -33,7 +33,7 @@
 | Business Object 直接建立 `DbConnection` | 繞過連線管理與日誌 | 使用 `DbAccess` 類別 |
 | Client 端存取 `RepositoryInfo` | 僅限 Server 端使用 | 透過 `ApiConnector` 呼叫 API |
 | 跳過 Payload Pipeline 順序 | 破壞加解密一致性 | 維持 Serialize → Compress → Encrypt |
-| 在 BO 中直接回傳 API 型別 | BO 不應依賴 API 序列化格式 | 回傳 BO 型別，由 `ApiContractRegistry` 對應 |
+| 在 BO 中直接回傳 API 型別 | BO 不應依賴 API 序列化格式 | 回傳 BO 型別，由 `ApiOutputConverter` 依命名慣例自動對應 |
 
 ## ExecFunc 開發限制
 
@@ -96,12 +96,18 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 - 未註冊的型別會拋出 `MessagePackSerializationException`
 - 新增 API 型別時必須同步註冊到 `ApiContractRegistry`
 
-### API 契約註冊
+### API 契約命名慣例（強制）
 
-所有 API Request/Response 型別必須透過 `ApiContractRegistry` 註冊：
+API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOutputConverter` 才能自動將 BO 回傳值對應到 API 型別（詳見 [ADR-007](adr/adr-007-convention-based-type-resolution.md)）：
 
-- Contract 介面 → API 型別的對應
-- 未註冊的型別無法在 Payload 轉換中正確序列化
+| 層級 | 輸入 | 輸出 |
+|------|------|------|
+| BO（`Bee.Business`） | `{Action}Args` | `{Action}Result` |
+| API（`Bee.Api.Core`） | `{Action}Request` | `{Action}Response` |
+| Contract（`Bee.Api.Contracts`） | `I{Action}Request` | `I{Action}Response` |
+
+- 偏離命名慣例的型別將無法自動轉換，BO 回傳值會直接流至用戶端造成型別錯誤
+- `ApiContractRegistry` 仍用於 Encoded / Encrypted 格式的 MessagePack Typeless 序列化白名單，但**不再需要手動呼叫 `Register`** 來建立回應映射
 
 ## 帳號安全限制
 
