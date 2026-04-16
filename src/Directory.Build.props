@@ -23,6 +23,9 @@
     <!-- 文件 -->
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
 
+    <!-- 語言特性 -->
+    <ImplicitUsings>enable</ImplicitUsings>
+
     <!-- 健康檢查 -->
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Deterministic>true</Deterministic>

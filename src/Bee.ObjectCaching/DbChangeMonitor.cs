@@ -13,7 +13,7 @@ namespace Bee.ObjectCaching
         private readonly string _UniqueId = string.Empty;
         private readonly string _Key = string.Empty;
         private DateTime _UpdateTime = DateTime.MinValue;
-        private Timer _Timer = null;
+        private System.Timers.Timer _Timer = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbChangeMonitor"/> class.
@@ -24,7 +24,7 @@ namespace Bee.ObjectCaching
             _UniqueId = BaseFunc.NewGuidString();
             _Key = key;
             _UpdateTime = GetUpdateTime(key);
-            _Timer = new Timer(1000);
+            _Timer = new System.Timers.Timer(1000);
             _Timer.Elapsed += new ElapsedEventHandler(Elapsed_EventHandler);
             _Timer.Start();
             base.InitializationComplete();
@@ -69,7 +69,7 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the timer used to poll for changes.
         /// </summary>
-        public Timer Timer
+        public System.Timers.Timer Timer
         {
             get { return _Timer; }
         }
