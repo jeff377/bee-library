@@ -25,7 +25,7 @@ namespace Bee.ObjectCaching.Define
         /// <summary>
         /// Creates an instance of the program settings.
         /// </summary>
-        protected override ProgramSettings CreateInstance()
+        protected override ProgramSettings? CreateInstance()
         {
             string filePath = DefinePathInfo.GetProgramSettingsFilePath();
             if (!FileFunc.FileExists(filePath))

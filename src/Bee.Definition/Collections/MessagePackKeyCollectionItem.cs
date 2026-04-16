@@ -17,7 +17,7 @@ namespace Bee.Definition.Collections
     public abstract class MessagePackKeyCollectionItem : IKeyCollectionItem, ITagProperty, IObjectSerialize
     {
         private string _key = string.Empty;
-        private IKeyCollectionBase _collection = null;
+        private IKeyCollectionBase? _collection = null;
 
         #region IKeyCollectionItem Interface
 
@@ -48,7 +48,7 @@ namespace Bee.Definition.Collections
         /// Sets the owning collection.
         /// </summary>
         /// <param name="collection">The collection.</param>
-        public void SetCollection(IKeyCollectionBase collection)
+        public void SetCollection(IKeyCollectionBase? collection)
         {
             _collection = collection;
         }
@@ -71,7 +71,7 @@ namespace Bee.Definition.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Tag { get; set; } = null;
+        public object? Tag { get; set; } = null;
 
         #endregion
 
@@ -101,7 +101,7 @@ namespace Bee.Definition.Collections
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
         [TreeNodeIgnore]
-        public IKeyCollectionBase Collection
+        public IKeyCollectionBase? Collection
         {
             get { return _collection; }
         }

@@ -40,7 +40,7 @@ namespace Bee.Definition.Logging
         /// <summary>
         /// Gets or sets the optional exception object.
         /// </summary>
-        public Exception Exception { get; set; }
+        public Exception? Exception { get; set; }
 
         /// <summary>
         /// Returns a string representation of this object.

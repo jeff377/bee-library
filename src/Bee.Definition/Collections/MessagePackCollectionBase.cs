@@ -25,7 +25,7 @@ namespace Bee.Definition.Collections
         /// </summary>
         public MessagePackCollectionBase() : base()
         {
-            Owner = null;
+            Owner = null!;
         }
 
         /// <summary>
@@ -46,7 +46,7 @@ namespace Bee.Definition.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Owner { get; private set; }
+        public object? Owner { get; private set; }
 
         /// <summary>
         /// Sets the owner object.
@@ -119,7 +119,7 @@ namespace Bee.Definition.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Tag { get; set; } = null;
+        public object? Tag { get; set; } = null;
 
         #endregion
 
@@ -143,7 +143,7 @@ namespace Bee.Definition.Collections
         protected override void RemoveItem(int index)
         {
             // Clear the item's collection reference
-            this[index].SetCollection(null);
+            this[index].SetCollection((ICollectionBase?)null);
             // Remove item
             base.RemoveItem(index);
         }

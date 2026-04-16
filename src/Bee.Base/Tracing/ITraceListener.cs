@@ -18,7 +18,7 @@ namespace Bee.Base.Tracing
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         TraceContext TraceStart(
             TraceLayer layer, string detail = "", [CallerMemberName] string name = "",
-            string category = "", object tag = null);
+            string category = "", object? tag = null);
 
         /// <summary>
         /// Ends the specified trace segment and emits the corresponding <see cref="TraceEvent"/>.
@@ -26,7 +26,7 @@ namespace Bee.Base.Tracing
         /// <param name="ctx">The context created when the trace was started.</param>
         /// <param name="status">The execution status, e.g. Ok, Error, or Cancelled.</param>
         /// <param name="detail">Additional description; overrides the Detail set at start if provided.</param>
-        void TraceEnd(TraceContext ctx, TraceStatus status = TraceStatus.Ok, string detail = null);
+        void TraceEnd(TraceContext ctx, TraceStatus status = TraceStatus.Ok, string? detail = null);
 
         /// <summary>
         /// Writes a single-point trace event at any position without requiring a paired start/end call.
@@ -39,6 +39,6 @@ namespace Bee.Base.Tracing
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         void TraceWrite(
             TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok,
-            string category = "", object tag = null);
+            string category = "", object? tag = null);
     }
 }

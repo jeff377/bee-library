@@ -110,7 +110,7 @@ namespace Bee.Base.Data
             int iIndex = 0;
             foreach (string fieldName in fieldNameArray)
             {
-                dataColumns[iIndex] = table.Columns[fieldName];
+                dataColumns[iIndex] = table.Columns[fieldName]!;
                 iIndex++;
             }
             table.PrimaryKey = dataColumns;

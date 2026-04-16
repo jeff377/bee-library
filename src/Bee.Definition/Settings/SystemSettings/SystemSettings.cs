@@ -18,7 +18,7 @@ namespace Bee.Definition.Settings
     [TreeNode("System Settings")]
     public class SystemSettings : IObjectSerializeFile
     {
-        private PropertyCollection _ExtendedProperties = null;
+        private PropertyCollection? _ExtendedProperties = null;
 
         #region Constructor
 
@@ -114,12 +114,12 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Extended property collection.")]
         [DefaultValue(null)]
-        public PropertyCollection ExtendedProperties
+        public PropertyCollection? ExtendedProperties
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ExtendedProperties)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ExtendedProperties!)) { return null; }
                 if (_ExtendedProperties == null) { _ExtendedProperties = new PropertyCollection(); }
                 return _ExtendedProperties;
             }

@@ -28,7 +28,7 @@ namespace Bee.Base
         /// Determines whether the specified value is null or DBNull.
         /// </summary>
         /// <param name="value">The value to check.</param>
-        public static bool IsNullOrDBNull(object value)
+        public static bool IsNullOrDBNull(object? value)
         {
             return value == null || Convert.IsDBNull(value);
         }
@@ -133,7 +133,7 @@ namespace Bee.Base
         /// Gets the name of the specified enum member.
         /// </summary>
         /// <param name="value">The enum value.</param>
-        public static string GetEnumName(Enum value)
+        public static string? GetEnumName(Enum value)
         {
             return Enum.GetName(value.GetType(), value);
         }
@@ -150,9 +150,9 @@ namespace Bee.Base
                 return defaultValue;
             // Return the enum name if the value is an enum type
             if (value is Enum e)
-                return GetEnumName(e);
+                return GetEnumName(e) ?? string.Empty;
             // Convert to string
-            return value.ToString();
+            return value.ToString() ?? string.Empty;
         }
 
         /// <summary>
@@ -583,7 +583,7 @@ namespace Bee.Base
         /// <param name="assemblyName">The assembly name.</param>
         /// <param name="typeName">The type name.</param>
         /// <param name="args">Constructor arguments.</param>
-        public static object CreateInstance(string assemblyName, string typeName, params object[] args)
+        public static object? CreateInstance(string assemblyName, string typeName, params object[] args)
         {
             return AssemblyLoader.CreateInstance(assemblyName, typeName, args);
         }
@@ -593,7 +593,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="typeName">The type name, in the format "Bee.Business.TBusinessObject, Bee.Business" or "Bee.Business.TBusinessObject".</param>
         /// <param name="args">Constructor arguments.</param>
-        public static object CreateInstance(string typeName, params object[] args)
+        public static object? CreateInstance(string typeName, params object[] args)
         {
             return AssemblyLoader.CreateInstance(typeName, args);
         }
@@ -603,7 +603,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="component">The component.</param>
         /// <param name="attributeType">The attribute type.</param>
-        public static Attribute GetAttribute(object component, Type attributeType)
+        public static Attribute? GetAttribute(object component, Type attributeType)
         {
             return TypeDescriptor.GetAttributes(component)[attributeType];
         }
@@ -614,7 +614,7 @@ namespace Bee.Base
         /// <param name="component">The component.</param>
         /// <param name="propertyName">The property name.</param>
         /// <param name="attributeType">The attribute type.</param>
-        public static Attribute GetPropertyAttribute(object component, string propertyName, Type attributeType)
+        public static Attribute? GetPropertyAttribute(object component, string propertyName, Type attributeType)
         {
             var property = TypeDescriptor.GetProperties(component)[propertyName];
             return property?.Attributes[attributeType];
@@ -625,7 +625,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="component">The component.</param>
         /// <param name="propertyName">The property name.</param>
-        public static object GetPropertyValue(object component, string propertyName)
+        public static object? GetPropertyValue(object component, string propertyName)
         {
             var property = TypeDescriptor.GetProperties(component)[propertyName];
             return property?.GetValue(component);
@@ -637,9 +637,9 @@ namespace Bee.Base
         /// <param name="component">The object.</param>
         /// <param name="propertyName">The property name.</param>
         /// <param name="propertyValue">The property value to set.</param>
-        public static void SetPropertyValue(object component, string propertyName, object propertyValue)
+        public static void SetPropertyValue(object component, string propertyName, object? propertyValue)
         {
-            TypeDescriptor.GetProperties(component)[propertyName].SetValue(component, propertyValue);
+            TypeDescriptor.GetProperties(component)[propertyName]?.SetValue(component, propertyValue);
         }
 
         /// <summary>
@@ -654,7 +654,7 @@ namespace Bee.Base
             if (genericType == null)
                 throw new ArgumentNullException(nameof(genericType));
 
-            Type type = value.GetType();
+            Type? type = value.GetType();
 
             // Check whether this type is the specified generic type
             if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)

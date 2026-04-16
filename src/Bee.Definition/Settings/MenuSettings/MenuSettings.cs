@@ -18,7 +18,7 @@ namespace Bee.Definition.Settings
     [TreeNode]
     public class MenuSettings : IObjectSerializeFile, IDisplayName
     {
-        private MenuFolderCollection _folders = null;
+        private MenuFolderCollection? _folders = null;
 
         #region Constructors
 
@@ -48,7 +48,7 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_folders, serializeState);
+            BaseFunc.SetSerializeState(_folders!, serializeState);
         }
 
         /// <summary>
@@ -90,12 +90,12 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Program folder collection.")]
         [DefaultValue(null)]
-        public MenuFolderCollection Folders
+        public MenuFolderCollection? Folders
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _folders)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _folders!)) { return null; }
                 if (_folders == null) { _folders = new MenuFolderCollection(this); }
                 return _folders;
             }
@@ -110,7 +110,7 @@ namespace Bee.Definition.Settings
             List<MenuFolder> oFolders;
 
             oFolders = new List<MenuFolder>();
-            foreach (MenuFolder folder in this.Folders)
+            foreach (MenuFolder folder in this.Folders!)
                 EnumFolders(folder, oFolders);
             return oFolders;
         }
@@ -125,7 +125,7 @@ namespace Bee.Definition.Settings
             // Add this folder to the collection
             folders.Add(folder);
             // Recurse into child folders
-            foreach (MenuFolder childFolder in folder.Folders)
+            foreach (MenuFolder childFolder in folder.Folders!)
                 EnumFolders(childFolder, folders);
         }
 
@@ -138,7 +138,7 @@ namespace Bee.Definition.Settings
             List<MenuItem> oItems;
 
             oItems = new List<MenuItem>();
-            foreach (MenuFolder folder in this.Folders)
+            foreach (MenuFolder folder in this.Folders!)
                 Enumtems(folder, oItems);
             return oItems;
         }
@@ -152,10 +152,10 @@ namespace Bee.Definition.Settings
         {
             if (folder == null) return;
             // Enumerate program items under this folder
-            foreach (MenuItem item in folder.Items)
+            foreach (MenuItem item in folder.Items!)
                 items.Add(item);
             // Recurse into child folders
-            foreach (MenuFolder childFolder in folder.Folders)
+            foreach (MenuFolder childFolder in folder.Folders!)
                 Enumtems(childFolder, items);
         }
 
@@ -164,9 +164,9 @@ namespace Bee.Definition.Settings
         /// </summary>
         /// <param name="progId">The program ID.</param>
         /// <returns></returns>
-        public MenuItem FindItem(string progId)
+        public MenuItem? FindItem(string progId)
         {
-            foreach (MenuFolder folder in this.Folders)
+            foreach (MenuFolder folder in this.Folders!)
             {
                 var item = folder.FindItem(progId);
                 if (item != null)

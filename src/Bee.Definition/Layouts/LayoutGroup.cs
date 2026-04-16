@@ -18,7 +18,7 @@ namespace Bee.Definition.Layouts
     public class LayoutGroup : CollectionItem
     {
         private int _columnCount = 1;
-        private LayoutItemCollection _items = null;
+        private LayoutItemCollection? _items = null;
 
         /// <summary>
         /// Gets or sets the group name.
@@ -70,12 +70,12 @@ namespace Bee.Definition.Layouts
         [XmlArrayItem(typeof(LayoutItem))]
         [XmlArrayItem(typeof(LayoutGrid))]
         [DefaultValue(null)]
-        public LayoutItemCollection Items
+        public LayoutItemCollection? Items
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
                 if (_items == null) { _items = new LayoutItemCollection(); }
                 return _items;
             }
@@ -85,9 +85,9 @@ namespace Bee.Definition.Layouts
         /// Finds the grid layout for the specified table name.
         /// </summary>
         /// <param name="tableName">The table name.</param>
-        public LayoutGrid FindGrid(string tableName)
+        public LayoutGrid? FindGrid(string tableName)
         {
-            foreach (LayoutItemBase item in this.Items)
+            foreach (LayoutItemBase item in this.Items!)
             {
                 if (item is LayoutGrid grid)
                 {
@@ -105,7 +105,7 @@ namespace Bee.Definition.Layouts
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_items, serializeState);
+            BaseFunc.SetSerializeState(_items!, serializeState);
         }
 
         /// <summary>

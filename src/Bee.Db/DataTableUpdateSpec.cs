@@ -10,22 +10,22 @@ namespace Bee.Db
         /// <summary>
         /// Gets or sets the DataTable to write back to the database.
         /// </summary>
-        public DataTable DataTable { get; set; }
+        public DataTable DataTable { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the INSERT command specification.
         /// </summary>
-        public DbCommandSpec InsertCommand { get; set; }
+        public DbCommandSpec? InsertCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the UPDATE command specification.
         /// </summary>
-        public DbCommandSpec UpdateCommand { get; set; }
+        public DbCommandSpec? UpdateCommand { get; set; }
 
         /// <summary>
         /// Gets or sets the DELETE command specification.
         /// </summary>
-        public DbCommandSpec DeleteCommand { get; set; }
+        public DbCommandSpec? DeleteCommand { get; set; }
 
         /// <summary>
         /// Gets or sets whether to wrap the entire update in a transaction (rolls back on any failure; commits on success).

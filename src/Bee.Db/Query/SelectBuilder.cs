@@ -37,7 +37,7 @@ namespace Bee.Db.Query
             var selectParts = new List<string>();
             foreach (var fieldName in selectFieldNames)
             {
-                var field = formTable.Fields.GetOrDefault(fieldName);
+                var field = formTable.Fields!.GetOrDefault(fieldName);
                 if (field == null)
                     throw new InvalidOperationException($"Field '{fieldName}' does not exist in table '{formTable.TableName}'.");
                 if (field.Type == FieldType.DbField)
@@ -66,7 +66,7 @@ namespace Bee.Db.Query
             if (string.IsNullOrWhiteSpace(selectFields))
             {
                 // Retrieve all fields
-                foreach (var field in formTable.Fields)
+                foreach (var field in formTable.Fields!)
                 {
                     set.Add(field.FieldName);
                 }

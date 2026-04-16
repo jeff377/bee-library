@@ -15,7 +15,7 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <param name="serializeFormat">The serialization format.</param>
         /// <param name="value">The object to serialize.</param>
-        private static void DoBeforeSerialize(SerializeFormat serializeFormat, object value)
+        private static void DoBeforeSerialize(SerializeFormat serializeFormat, object? value)
         {
             // Notify before serialization
             if (value is IObjectSerializeProcess serializeProcess) { serializeProcess.BeforeSerialize(serializeFormat); }
@@ -28,7 +28,7 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <param name="serializeFormat">The serialization format.</param>
         /// <param name="value">The object that was serialized.</param>
-        private static void DoAfterSerialize(SerializeFormat serializeFormat, object value)
+        private static void DoAfterSerialize(SerializeFormat serializeFormat, object? value)
         {
             // Mark serialization state as ended
             if (value is IObjectSerialize objectSerialize) { objectSerialize.SetSerializeState(SerializeState.None); }
@@ -41,7 +41,7 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <param name="serializeFormat">The serialization format.</param>
         /// <param name="value">The deserialized object.</param>
-        private static void DoAfterDeserialize(SerializeFormat serializeFormat, object value)
+        private static void DoAfterDeserialize(SerializeFormat serializeFormat, object? value)
         {
             // Notify after deserialization
             if (value is IObjectSerializeProcess objectSerializeProcess) { objectSerializeProcess.AfterDeserialize(serializeFormat); }
@@ -78,9 +78,9 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <typeparam name="T">The generic type.</typeparam>
         /// <param name="xml">The XML string.</param>
-        public static T XmlToObject<T>(string xml)
+        public static T? XmlToObject<T>(string xml)
         {
-            return (T)XmlToObject(xml, typeof(T));
+            return (T?)XmlToObject(xml, typeof(T));
         }
 
         /// <summary>
@@ -88,12 +88,12 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <param name="xml">The XML string.</param>
         /// <param name="type">The object type.</param>
-        public static object XmlToObject(string xml, Type type)
+        public static object? XmlToObject(string xml, Type type)
         {
             if (StrFunc.IsEmpty(xml))
                 return default;
 
-            object value;
+            object? value;
             using (StringReader reader = new StringReader(xml))
             {
                 var serializer = XmlSerializerCache.Get(type);
@@ -117,7 +117,7 @@ namespace Bee.Base.Serialization
             sXml = ObjectToXml(value);
             FileFunc.FileWriteText(filePath, sXml);
             // Set the serialization-bound file
-            if (value is IObjectSerializeFile) { (value as IObjectSerializeFile).SetObjectFilePath(filePath); }
+            if (value is IObjectSerializeFile fileSerialize) { fileSerialize.SetObjectFilePath(filePath); }
         }
 
         /// <summary>
@@ -125,13 +125,13 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <typeparam name="T">The generic type.</typeparam>
         /// <param name="filePath">The XML file path.</param>
-        public static T XmlFileToObject<T>(string filePath)
+        public static T? XmlFileToObject<T>(string filePath)
         {
             try
             {
                 // Read file contents and deserialize the XML string to an object
                 string xml = FileFunc.FileReadText(filePath);
-                T value = XmlToObject<T>(xml);
+                T? value = XmlToObject<T>(xml);
                 // Set the serialization-bound file
                 if (value is IObjectSerializeFile objSerializeFile) { objSerializeFile.SetObjectFilePath(filePath); }
                 return value;
@@ -197,14 +197,14 @@ namespace Bee.Base.Serialization
         /// <typeparam name="T">The generic type.</typeparam>
         /// <param name="json">The JSON string.</param>
         /// <param name="includeTypeName">This parameter is no longer used and will be removed in a future version.</param>
-        public static T JsonToObject<T>(string json, bool includeTypeName = true)
+        public static T? JsonToObject<T>(string json, bool includeTypeName = true)
         {
             // Deserialize the JSON string
             var options = GetJsonSerializerOptions(true, false);
-            object value = JsonSerializer.Deserialize(json, typeof(T), options);
+            object? value = JsonSerializer.Deserialize(json, typeof(T), options);
             // Post-deserialization operations
             DoAfterDeserialize(SerializeFormat.Json, value);
-            return (T)value;
+            return (T?)value;
         }
 
         /// <summary>
@@ -225,12 +225,12 @@ namespace Bee.Base.Serialization
         /// </summary>
         /// <typeparam name="T">The generic type.</typeparam>
         /// <param name="filePath">The JSON file path.</param>
-        public static T JsonFileToObject<T>(string filePath)
+        public static T? JsonFileToObject<T>(string filePath)
         {
             try
             {
                 string json = FileFunc.FileReadText(filePath);
-                T value = JsonToObject<T>(json);
+                T? value = JsonToObject<T>(json);
                 // Set the serialization-bound file
                 if (value is IObjectSerializeFile objectSerializeFile) { objectSerializeFile.SetObjectFilePath(filePath); }
                 return value;

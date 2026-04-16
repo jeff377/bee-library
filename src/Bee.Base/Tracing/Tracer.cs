@@ -22,12 +22,12 @@ namespace Bee.Base.Tracing
         /// <param name="category">The trace category, used by the Trace Viewer to parse the Tag by category.</param>
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         /// <returns>The created trace context object.</returns>
-        public static TraceContext Start(
+        public static TraceContext? Start(
             TraceLayer layer, string detail = "", [CallerMemberName] string name = "",
-            string category = "", object tag = null)
+            string category = "", object? tag = null)
         {
             if (!Enabled) { return null; }
-            return SysInfo.TraceListener.TraceStart(layer, detail, name, category, tag);
+            return SysInfo.TraceListener!.TraceStart(layer, detail, name, category, tag);
         }
 
         /// <summary>
@@ -36,10 +36,10 @@ namespace Bee.Base.Tracing
         /// <param name="ctx">The context created when the trace was started.</param>
         /// <param name="status">The execution status, e.g. Ok, Error, or Cancelled.</param>
         /// <param name="detail">Additional description; overrides the Detail set at start if provided.</param>
-        public static void End(TraceContext ctx, TraceStatus status = TraceStatus.Ok, string detail = null)
+        public static void End(TraceContext? ctx, TraceStatus status = TraceStatus.Ok, string? detail = null)
         {
             if (!Enabled || ctx == null) return;
-            SysInfo.TraceListener.TraceEnd(ctx, status, detail);
+            SysInfo.TraceListener!.TraceEnd(ctx, status, detail);
         }
 
         /// <summary>
@@ -53,10 +53,10 @@ namespace Bee.Base.Tracing
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         public static void Write(
             TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok,
-            string category = "", object tag = null)
+            string category = "", object? tag = null)
         {
             if (!Enabled) return;
-            SysInfo.TraceListener.TraceWrite(layer, detail, name, status, category, tag);
+            SysInfo.TraceListener!.TraceWrite(layer, detail, name, status, category, tag);
         }
     }
 }

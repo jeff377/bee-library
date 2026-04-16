@@ -122,7 +122,7 @@ namespace Bee.Db
                     // Check for DBNull: if (!reader.IsDBNull(fieldIndex))
                     il.Emit(OpCodes.Ldarg_0);
                     il.Emit(OpCodes.Ldc_I4, fieldIndex);
-                    il.Emit(OpCodes.Callvirt, isDBNullMethod);
+                    il.Emit(OpCodes.Callvirt, isDBNullMethod!);
                     il.Emit(OpCodes.Brtrue, endIfLabel);
 
                     // `reader.GetXXX(fieldIndex)`
@@ -145,7 +145,7 @@ namespace Bee.Db
         /// <summary>
         /// Returns the best-matching <c>DbDataReader.GetXXX(int index)</c> method for the given <paramref name="fieldType"/>.
         /// </summary>
-        private static MethodInfo GetDbReaderMethod(Type fieldType)
+        private static MethodInfo? GetDbReaderMethod(Type fieldType)
         {
             var readerType = typeof(DbDataReader);
 

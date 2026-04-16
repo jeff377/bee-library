@@ -71,9 +71,9 @@ namespace Bee.Base.Attributes
         public static string GetDisplayText(object value)
         {
             // Get the TreeNodeAttribute from the object
-            var attribute = (TreeNodeAttribute)BaseFunc.GetAttribute(value, typeof(TreeNodeAttribute));
+            var attribute = BaseFunc.GetAttribute(value, typeof(TreeNodeAttribute)) as TreeNodeAttribute;
             // If no attribute is found, return the object's string representation
-            if (attribute == null) { return value.ToString(); }
+            if (attribute == null) { return value.ToString() ?? string.Empty; }
 
             string displayText;
             if (StrFunc.IsNotEmpty(attribute.PropertyName))
@@ -82,7 +82,7 @@ namespace Bee.Base.Attributes
                 var names = StrFunc.Split(attribute.PropertyName, ",");
                 var args = new object[names.Length];
                 for (int N1 = 0; N1 < names.Length; N1++)
-                    args[N1] = BaseFunc.GetPropertyValue(value, names[N1]);
+                    args[N1] = BaseFunc.GetPropertyValue(value, names[N1])!;
                 displayText = StrFunc.Format(attribute.DisplayFormat, args);
             }
             else
@@ -93,10 +93,10 @@ namespace Bee.Base.Attributes
 
             if (StrFunc.IsEmpty(displayText))
             {
-                if (value is IDisplayName)
-                    displayText = (value as IDisplayName).DisplayName;
+                if (value is IDisplayName displayName)
+                    displayText = displayName.DisplayName ?? string.Empty;
                 else
-                    displayText = value.ToString();
+                    displayText = value.ToString() ?? string.Empty;
             }
 
             return displayText;

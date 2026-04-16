@@ -35,12 +35,12 @@ namespace Bee.Db.Providers
         /// <param name="selectFields">A comma-separated list of field names to retrieve; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        public DbCommandSpec Build(string tableName, string selectFields, FilterNode filter = null, SortFieldCollection sortFields = null)
+        public DbCommandSpec Build(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentException("tableName cannot be null or whitespace.", nameof(tableName));
 
-            var formTable = _formDefine.Tables[tableName];
+            var formTable = _formDefine.Tables![tableName];
             if (formTable == null)
                 throw new InvalidOperationException($"Cannot find the specified table: {tableName}");
 
@@ -73,7 +73,7 @@ namespace Bee.Db.Providers
         /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        private SelectContext GetSelectContext(FormTable formTable, string selectFields, FilterNode filter, SortFieldCollection sortFields)
+        private SelectContext GetSelectContext(FormTable formTable, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
         {
             var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
             var builder = new SelectContextBuilder(formTable, usedFieldNames);
@@ -111,7 +111,7 @@ namespace Bee.Db.Providers
         /// <param name="filter">The filter condition.</param>
         /// <param name="selectContext">The field source mappings and JOIN relationships for the query.</param>
         /// <returns>A tuple containing the WHERE clause string and the parameter dictionary.</returns>
-        private (string WhereClause, IDictionary<string, object> Parameters) BuildWhereClause(FilterNode filter, SelectContext selectContext)
+        private (string WhereClause, IDictionary<string, object>? Parameters) BuildWhereClause(FilterNode? filter, SelectContext selectContext)
         {
             var whereBuilder = new WhereBuilder(_databaseType);
             var whereResult = whereBuilder.Build(filter, selectContext, true);
@@ -124,7 +124,7 @@ namespace Bee.Db.Providers
         /// <param name="sortFields">The sort field collection.</param>
         /// <param name="selectContext">The field source mappings and JOIN relationships for the query.</param>
         /// <returns>The ORDER BY clause string, or null if no sort fields are specified.</returns>
-        private string BuildOrderByClause(SortFieldCollection sortFields, SelectContext selectContext)
+        private string BuildOrderByClause(SortFieldCollection? sortFields, SelectContext selectContext)
         {
             var sortBuilder = new SortBuilder(_databaseType);
             return sortBuilder.Build(sortFields, selectContext);
@@ -138,14 +138,14 @@ namespace Bee.Db.Providers
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
         /// <returns>A deduplicated set of field names.</returns>
-        private HashSet<string> GetUsedFieldNames(FormTable formTable, string selectFields, FilterNode filter, SortFieldCollection sortFields)
+        private HashSet<string> GetUsedFieldNames(FormTable formTable, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
         {
             var fieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // selectFields
             if (string.IsNullOrWhiteSpace(selectFields))
             {
-                foreach (var field in formTable.Fields)
+                foreach (var field in formTable.Fields!)
                 {
                     fieldNames.Add(field.FieldName);
                 }
@@ -180,7 +180,7 @@ namespace Bee.Db.Providers
         /// </summary>
         /// <param name="node">The filter condition node.</param>
         /// <param name="fieldNames">The set to add field names to.</param>
-        private void CollectFilterFields(FilterNode node, HashSet<string> fieldNames)
+        private void CollectFilterFields(FilterNode? node, HashSet<string> fieldNames)
         {
             if (node == null) return;
             if (node.Kind == FilterNodeKind.Condition)

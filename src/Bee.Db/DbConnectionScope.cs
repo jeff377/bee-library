@@ -16,7 +16,7 @@ namespace Bee.Db
         /// <summary>
         /// Gets the current database connection.
         /// </summary>
-        public DbConnection Connection { get; private set; }
+        public DbConnection? Connection { get; private set; }
 
         private readonly bool _ownsConnection;
 
@@ -32,7 +32,7 @@ namespace Bee.Db
         /// <param name="externalConnection">An external connection to reuse; if null, a new connection will be created.</param>
         /// <param name="factory">The database provider factory.</param>
         /// <param name="connectionString">The connection string (used only when creating a new connection).</param>
-        public static DbConnectionScope Create(DbConnection externalConnection, DbProviderFactory factory, string connectionString)
+        public static DbConnectionScope Create(DbConnection? externalConnection, DbProviderFactory factory, string connectionString)
         {
             if (externalConnection != null)
             {
@@ -65,7 +65,7 @@ namespace Bee.Db
         /// <param name="connectionString">The connection string (used only when creating a new connection).</param>
         /// <param name="cancellationToken">A cancellation token.</param>
         public static async Task<DbConnectionScope> CreateAsync(
-            DbConnection externalConnection,
+            DbConnection? externalConnection,
             DbProviderFactory factory,
             string connectionString,
             CancellationToken cancellationToken = default)

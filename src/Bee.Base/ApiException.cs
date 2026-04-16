@@ -29,7 +29,7 @@ namespace Bee.Base
         public ApiException(Exception exception, bool includeStackTrace = false)
         {
             Message = exception.Message;
-            StackTrace = includeStackTrace ? exception.StackTrace : string.Empty;
+            StackTrace = includeStackTrace ? (exception.StackTrace ?? string.Empty) : string.Empty;
         }
 
         #endregion

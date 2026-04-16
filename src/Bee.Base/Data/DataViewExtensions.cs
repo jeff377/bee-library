@@ -18,7 +18,7 @@ namespace Bee.Base.Data
                 dataView.Delete(N1);
 
             if (acceptChanges)
-                dataView.Table.AcceptChanges();
+                dataView.Table?.AcceptChanges();
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Bee.Base.Data
         /// <param name="fieldName">The column name to check.</param>
         public static bool HasField(this DataView dataView, string fieldName)
         {
-            return dataView.Table.HasField(fieldName);
+            return dataView.Table?.HasField(fieldName) ?? false;
         }
 
         /// <summary>

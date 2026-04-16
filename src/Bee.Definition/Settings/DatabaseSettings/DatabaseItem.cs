@@ -32,7 +32,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         [XmlAttribute]
         [Description("Display name.")]
-        public string DisplayName { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the database type.

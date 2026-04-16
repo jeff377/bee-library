@@ -26,7 +26,7 @@ namespace Bee.Base.Data
 
             object value = row[columnName];
 
-            if (value == DBNull.Value) { return default(T); }
+            if (value == DBNull.Value) { return default!; }
 
             try
             {
@@ -58,7 +58,7 @@ namespace Bee.Base.Data
 
             object value = row[columnName];
 
-            if (value == DBNull.Value) { return default(T); }
+            if (value == DBNull.Value) { return default!; }
 
             try
             {

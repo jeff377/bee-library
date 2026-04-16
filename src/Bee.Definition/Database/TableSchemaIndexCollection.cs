@@ -34,7 +34,7 @@ namespace Bee.Definition.Database
 
             string[] fieldNames = StrFunc.Split(fields, ",");
             foreach (string fieldName in fieldNames)
-                index.IndexFields.Add(fieldName);
+                index.IndexFields!.Add(fieldName);
             Add(index);
             return index;
         }
@@ -55,7 +55,7 @@ namespace Bee.Definition.Database
             oIndex.Unique = unique;
             oFields = StrFunc.Split(fields, ",");
             foreach (string fieldName in oFields)
-                oIndex.IndexFields.Add(fieldName);
+                oIndex.IndexFields!.Add(fieldName);
             Add(oIndex);
             return oIndex;
         }

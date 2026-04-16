@@ -47,7 +47,7 @@ namespace Bee.ObjectCaching
             var components = configuration.Components;
             // Create the cache provider from configuration or fall back to the default
             Provider = CreateOrDefault<ICacheProvider>
-                (components.CacheProvider, BackendDefaultTypes.CacheProvider);
+                (components.CacheProvider, BackendDefaultTypes.CacheProvider)!;
         }
 
         /// <summary>
@@ -57,7 +57,7 @@ namespace Bee.ObjectCaching
         /// <param name="configured">The type name specified in the configuration.</param>
         /// <param name="fallback">The default type name to use when no type is configured.</param>
         /// <returns>The created instance, or null if the type cannot be instantiated.</returns>
-        private static T CreateOrDefault<T>(string configured, string fallback) where T : class
+        private static T? CreateOrDefault<T>(string configured, string fallback) where T : class
         {
             var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
             return BaseFunc.CreateInstance(typeName) as T;

@@ -66,48 +66,48 @@ namespace Bee.Definition
         /// Gets or sets the API key provider, used to obtain the AES+HMAC keys required for transport data encryption/decryption.
         /// Supports shared keys and session keys dynamically generated at each login.
         /// </summary>
-        public static IApiEncryptionKeyProvider ApiEncryptionKeyProvider { get; set; }
+        public static IApiEncryptionKeyProvider ApiEncryptionKeyProvider { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the AccessToken validation provider, used to validate the validity of AccessTokens.
         /// </summary>
-        public static IAccessTokenValidationProvider AccessTokenValidationProvider { get; set; }
+        public static IAccessTokenValidationProvider AccessTokenValidationProvider { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the business object provider, defining how all BusinessObjects are obtained.
         /// </summary>
-        public static IBusinessObjectProvider BusinessObjectProvider { get; set; }
+        public static IBusinessObjectProvider BusinessObjectProvider { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the cache data source provider.
         /// </summary>
-        public static ICacheDataSourceProvider CacheDataSourceProvider { get; set; }
+        public static ICacheDataSourceProvider CacheDataSourceProvider { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the define data storage.
         /// </summary>
-        public static IDefineStorage DefineStorage { get; set; }
+        public static IDefineStorage DefineStorage { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the define data access.
         /// </summary>
-        public static IDefineAccess DefineAccess { get; set; }
+        public static IDefineAccess DefineAccess { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the session info access service.
         /// </summary>
-        public static ISessionInfoService SessionInfoService { get; set; }
+        public static ISessionInfoService SessionInfoService { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the unified access service for commonly used business objects in the enterprise system.
         /// </summary>
-        public static IEnterpriseObjectService EnterpriseObjectService { get; set; }
+        public static IEnterpriseObjectService EnterpriseObjectService { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the login attempt tracker for enforcing brute-force protection policies.
         /// When null, login brute-force protection is disabled.
         /// </summary>
-        public static ILoginAttemptTracker LoginAttemptTracker { get; set; }
+        public static ILoginAttemptTracker? LoginAttemptTracker { get; set; }
 
         /// <summary>
         /// Initializes the backend with the specified configuration.
@@ -173,7 +173,7 @@ namespace Bee.Definition
         private static T CreateOrDefault<T>(string configured, string fallback) where T : class
         {
             var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
-            return BaseFunc.CreateInstance(typeName) as T;
+            return (BaseFunc.CreateInstance(typeName) as T)!;
         }
 
         /// <summary>

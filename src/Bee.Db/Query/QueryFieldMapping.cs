@@ -21,17 +21,17 @@ namespace Bee.Db.Query
         /// <summary>
         /// Gets or sets the source table alias.
         /// </summary>
-        public string SourceAlias { get; set; }
+        public string SourceAlias { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the source table column name.
         /// </summary>
-        public string SourceField { get; set; }
+        public string SourceField { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the JOIN relationship associated with this query field.
         /// </summary>
-        public TableJoin TableJoin { get; set; }
+        public TableJoin? TableJoin { get; set; }
 
         /// <summary>
         /// Returns a string representation of this object.

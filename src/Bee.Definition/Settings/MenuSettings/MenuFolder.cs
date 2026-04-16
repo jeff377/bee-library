@@ -17,8 +17,8 @@ namespace Bee.Definition.Settings
     [TreeNode("{0}", "DisplayName")]
     public class MenuFolder : KeyCollectionItem, IDisplayName
     {
-        private MenuFolderCollection _folders = null;
-        private MenuItemCollection _items = null;
+        private MenuFolderCollection? _folders = null;
+        private MenuItemCollection? _items = null;
 
         #region Constructors
 
@@ -64,12 +64,12 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Sub-folder collection.")]
         [DefaultValue(null)]
-        public MenuFolderCollection Folders
+        public MenuFolderCollection? Folders
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
                 if (_items == null) { _folders = new MenuFolderCollection(this); }
                 return _folders;
             }
@@ -80,12 +80,12 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Menu item collection.")]
         [DefaultValue(null)]
-        public MenuItemCollection Items
+        public MenuItemCollection? Items
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
                 if (_items == null) { _items = new MenuItemCollection(this); }
                 return _items;
             }
@@ -96,15 +96,15 @@ namespace Bee.Definition.Settings
         /// </summary>
         /// <param name="progId">The program ID.</param>
         /// <returns></returns>
-        public MenuItem FindItem(string progId)
+        public MenuItem? FindItem(string progId)
         {
-            foreach (MenuItem item in this.Items)
+            foreach (MenuItem item in this.Items!)
             {
                 if (StrFunc.IsEquals(item.ProgId, progId))
                     return item;
             }
 
-            foreach (MenuFolder folder in this.Folders)
+            foreach (MenuFolder folder in this.Folders!)
             {
                 var Item = folder.FindItem(progId);
                 if (Item != null)

@@ -31,7 +31,7 @@ namespace Bee.ObjectCaching.Runtime
         /// Gets the view state from the cache.
         /// </summary>
         /// <param name="uniqueGUID">The page identifier.</param>
-        public object Get(Guid uniqueGUID)
+        public object? Get(Guid uniqueGUID)
         {
             return base.Get(uniqueGUID.ToString());
         }

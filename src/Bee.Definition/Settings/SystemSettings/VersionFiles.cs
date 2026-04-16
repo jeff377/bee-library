@@ -18,13 +18,13 @@ namespace Bee.Definition.Settings
         /// </summary>
         [XmlAttribute]
         [Description("Version number.")]
-        public string Version { get; set; }
+        public string Version { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the file list.
         /// </summary>
         [XmlAttribute]
         [Description("File list.")]
-        public string Files { get; set; }
+        public string Files { get; set; } = string.Empty;
     }
 }

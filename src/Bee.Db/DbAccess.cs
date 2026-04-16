@@ -17,7 +17,7 @@ namespace Bee.Db
     /// </summary>
     public class DbAccess
     {
-        private readonly DbConnection _externalConnection = null;
+        private readonly DbConnection? _externalConnection = null;
         private readonly string _connectionString = string.Empty;
         private readonly string _databaseId = string.Empty;  // Used for logging
 
@@ -86,7 +86,7 @@ namespace Bee.Db
         /// <summary>
         /// Attempts to roll back a transaction, silently ignoring any exceptions during rollback.
         /// </summary>
-        private static void TryRollbackQuiet(DbTransaction tran)
+        private static void TryRollbackQuiet(DbTransaction? tran)
         {
             if (tran?.Connection == null) return;
             try { tran.Rollback(); } catch { /* ignore */ }
@@ -107,11 +107,11 @@ namespace Bee.Db
                 switch (command.Kind)
                 {
                     case DbCommandKind.NonQuery:
-                        return ExecuteNonQueryCore(command, scope.Connection, null);
+                        return ExecuteNonQueryCore(command, scope.Connection!, null);
                     case DbCommandKind.Scalar:
-                        return ExecuteScalarCore(command, scope.Connection, null);
+                        return ExecuteScalarCore(command, scope.Connection!, null);
                     case DbCommandKind.DataTable:
-                        return ExecuteDataTableCore(command, scope.Connection, null);
+                        return ExecuteDataTableCore(command, scope.Connection!, null);
                     default:
                         throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
                 }
@@ -159,15 +159,15 @@ namespace Bee.Db
 
             using (var scope = CreateScope())
             {
-                DbTransaction tran = null;
+                DbTransaction? tran = null;
 
                 try
                 {
                     if (batch.UseTransaction)
                     {
                         tran = batch.IsolationLevel.HasValue
-                            ? scope.Connection.BeginTransaction(batch.IsolationLevel.Value)
-                            : scope.Connection.BeginTransaction();
+                            ? scope.Connection!.BeginTransaction(batch.IsolationLevel.Value)
+                            : scope.Connection!.BeginTransaction();
                     }
 
                     for (int i = 0; i < batch.Commands.Count; i++)
@@ -180,14 +180,14 @@ namespace Bee.Db
                             switch (spec.Kind)
                             {
                                 case DbCommandKind.NonQuery:
-                                    item = ExecuteNonQueryCore(spec, scope.Connection, tran);
+                                    item = ExecuteNonQueryCore(spec, scope.Connection!, tran);
                                     result.RowsAffectedSum += item.RowsAffected;
                                     break;
                                 case DbCommandKind.Scalar:
-                                    item = ExecuteScalarCore(spec, scope.Connection, tran);
+                                    item = ExecuteScalarCore(spec, scope.Connection!, tran);
                                     break;
                                 case DbCommandKind.DataTable:
-                                    item = ExecuteDataTableCore(spec, scope.Connection, tran);
+                                    item = ExecuteDataTableCore(spec, scope.Connection!, tran);
                                     break;
                                 default:
                                     throw new NotSupportedException($"Unsupported DbCommandKind: {spec.Kind}.");
@@ -227,7 +227,7 @@ namespace Bee.Db
         /// <param name="connection">The database connection.</param>
         /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         private DbCommandResult ExecuteNonQueryCore(
-            DbCommandSpec command, DbConnection connection, DbTransaction transaction)
+            DbCommandSpec command, DbConnection connection, DbTransaction? transaction)
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
@@ -244,7 +244,7 @@ namespace Bee.Db
         /// <param name="connection">The database connection.</param>
         /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         private DbCommandResult ExecuteScalarCore(
-            DbCommandSpec command, DbConnection connection, DbTransaction transaction)
+            DbCommandSpec command, DbConnection connection, DbTransaction? transaction)
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
@@ -266,7 +266,7 @@ namespace Bee.Db
         /// <param name="connection">The database connection.</param>
         /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         private DbCommandResult ExecuteDataTableCore(
-            DbCommandSpec command, DbConnection connection, DbTransaction transaction)
+            DbCommandSpec command, DbConnection connection, DbTransaction? transaction)
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
@@ -297,7 +297,7 @@ namespace Bee.Db
             if (command == null) throw new ArgumentNullException(nameof(command));
 
             using (var scope = CreateScope())
-            using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
+            using (var cmd = command.CreateCommand(DatabaseType, scope.Connection!))
             using (var reader = cmd.ExecuteReader())
             {
                 var list = new List<T>();
@@ -324,24 +324,24 @@ namespace Bee.Db
 
             using (var scope = CreateScope())
             {
-                DbCommand insert = null, update = null, delete = null;
-                DbTransaction tran = null;
+                DbCommand? insert = null, update = null, delete = null;
+                DbTransaction? tran = null;
 
                 try
                 {
                     if (spec.UseTransaction)
                     {
                         tran = spec.IsolationLevel.HasValue
-                            ? scope.Connection.BeginTransaction(spec.IsolationLevel.Value)
-                            : scope.Connection.BeginTransaction();
+                            ? scope.Connection!.BeginTransaction(spec.IsolationLevel.Value)
+                            : scope.Connection!.BeginTransaction();
                     }
 
                     if (spec.InsertCommand != null)
-                        insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection);
+                        insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection!);
                     if (spec.UpdateCommand != null)
-                        update = spec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection);
+                        update = spec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection!);
                     if (spec.DeleteCommand != null)
-                        delete = spec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection);
+                        delete = spec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection!);
 
                     var adapter = Provider.CreateDataAdapter()
                                   ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
@@ -402,7 +402,7 @@ namespace Bee.Db
         /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
         /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
         /// <returns>The first column value of the first result row.</returns>
-        public object ExecuteScalar(string commandText, params object[] values)
+        public object? ExecuteScalar(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.Scalar, commandText, values);
             return Execute(spec).Scalar;
@@ -414,7 +414,7 @@ namespace Bee.Db
         /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
         /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
         /// <returns>The query result as a <see cref="DataTable"/>.</returns>
-        public DataTable ExecuteDataTable(string commandText, params object[] values)
+        public DataTable? ExecuteDataTable(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.DataTable, commandText, values);
             return Execute(spec).Table;
@@ -439,11 +439,11 @@ namespace Bee.Db
                 switch (command.Kind)
                 {
                     case DbCommandKind.NonQuery:
-                        return await ExecuteNonQueryCoreAsync(command, scope.Connection, null, cancellationToken).ConfigureAwait(false);
+                        return await ExecuteNonQueryCoreAsync(command, scope.Connection!, null, cancellationToken).ConfigureAwait(false);
                     case DbCommandKind.Scalar:
-                        return await ExecuteScalarCoreAsync(command, scope.Connection, null, cancellationToken).ConfigureAwait(false);
+                        return await ExecuteScalarCoreAsync(command, scope.Connection!, null, cancellationToken).ConfigureAwait(false);
                     case DbCommandKind.DataTable:
-                        return await ExecuteDataTableCoreAsync(command, scope.Connection, null, cancellationToken).ConfigureAwait(false);
+                        return await ExecuteDataTableCoreAsync(command, scope.Connection!, null, cancellationToken).ConfigureAwait(false);
                     default:
                         throw new NotSupportedException($"Unsupported DbCommandKind: {command.Kind}.");
                 }
@@ -494,15 +494,15 @@ namespace Bee.Db
 
             using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
             {
-                DbTransaction tran = null;
+                DbTransaction? tran = null;
 
                 try
                 {
                     if (batch.UseTransaction)
                     {
                         tran = batch.IsolationLevel.HasValue
-                            ? await scope.Connection.BeginTransactionAsync(batch.IsolationLevel.Value, cancellationToken).ConfigureAwait(false)
-                            : await scope.Connection.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
+                            ? await scope.Connection!.BeginTransactionAsync(batch.IsolationLevel.Value, cancellationToken).ConfigureAwait(false)
+                            : await scope.Connection!.BeginTransactionAsync(cancellationToken).ConfigureAwait(false);
                     }
 
                     for (int i = 0; i < batch.Commands.Count; i++)
@@ -517,14 +517,14 @@ namespace Bee.Db
                             switch (spec.Kind)
                             {
                                 case DbCommandKind.NonQuery:
-                                    item = await ExecuteNonQueryCoreAsync(spec, scope.Connection, tran, cancellationToken).ConfigureAwait(false);
+                                    item = await ExecuteNonQueryCoreAsync(spec, scope.Connection!, tran, cancellationToken).ConfigureAwait(false);
                                     result.RowsAffectedSum += item.RowsAffected;
                                     break;
                                 case DbCommandKind.Scalar:
-                                    item = await ExecuteScalarCoreAsync(spec, scope.Connection, tran, cancellationToken).ConfigureAwait(false);
+                                    item = await ExecuteScalarCoreAsync(spec, scope.Connection!, tran, cancellationToken).ConfigureAwait(false);
                                     break;
                                 case DbCommandKind.DataTable:
-                                    item = await ExecuteDataTableCoreAsync(spec, scope.Connection, tran, cancellationToken).ConfigureAwait(false);
+                                    item = await ExecuteDataTableCoreAsync(spec, scope.Connection!, tran, cancellationToken).ConfigureAwait(false);
                                     break;
                                 default:
                                     throw new NotSupportedException($"Unsupported DbCommandKind: {spec.Kind}.");
@@ -565,7 +565,7 @@ namespace Bee.Db
         /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         private async Task<DbCommandResult> ExecuteNonQueryCoreAsync(
-            DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
+            DbCommandSpec command, DbConnection connection, DbTransaction? transaction, CancellationToken cancellationToken)
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
@@ -583,7 +583,7 @@ namespace Bee.Db
         /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         private async Task<DbCommandResult> ExecuteScalarCoreAsync(
-            DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
+            DbCommandSpec command, DbConnection connection, DbTransaction? transaction, CancellationToken cancellationToken)
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
@@ -601,7 +601,7 @@ namespace Bee.Db
         /// <param name="transaction">An optional transaction; pass null for no transaction.</param>
         /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         private async Task<DbCommandResult> ExecuteDataTableCoreAsync(
-            DbCommandSpec command, DbConnection connection, DbTransaction transaction, CancellationToken cancellationToken)
+            DbCommandSpec command, DbConnection connection, DbTransaction? transaction, CancellationToken cancellationToken)
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
@@ -629,7 +629,7 @@ namespace Bee.Db
             if (command == null) throw new ArgumentNullException(nameof(command));
 
             using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
-            using (var cmd = command.CreateCommand(DatabaseType, scope.Connection))
+            using (var cmd = command.CreateCommand(DatabaseType, scope.Connection!))
             using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
                 var list = new List<T>();
@@ -664,7 +664,7 @@ namespace Bee.Db
         /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
         /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
         /// <returns>The first column value of the first result row.</returns>
-        public async Task<object> ExecuteScalarAsync(string commandText, params object[] values)
+        public async Task<object?> ExecuteScalarAsync(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.Scalar, commandText, values);
             return (await ExecuteAsync(spec)).Scalar;
@@ -676,7 +676,7 @@ namespace Bee.Db
         /// <param name="commandText">The SQL statement to execute; use {0}, {1} positional placeholders.</param>
         /// <param name="values">Positional parameter values corresponding to {0}, {1}, ...</param>
         /// <returns>The query result as a <see cref="DataTable"/>.</returns>
-        public async Task<DataTable> ExecuteDataTableAsync(string commandText, params object[] values)
+        public async Task<DataTable?> ExecuteDataTableAsync(string commandText, params object[] values)
         {
             var spec = new DbCommandSpec(DbCommandKind.DataTable, commandText, values);
             return (await ExecuteAsync(spec)).Table;

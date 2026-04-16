@@ -22,12 +22,12 @@ namespace Bee.Db
         /// <summary>
         /// Gets the scalar result value (Scalar).
         /// </summary>
-        public object Scalar { get; private set; }
+        public object? Scalar { get; private set; }
 
         /// <summary>
         /// Gets the result DataTable (DataTable).
         /// </summary>
-        public DataTable Table { get; private set; }
+        public DataTable? Table { get; private set; }
 
         /// <summary>
         /// Creates a NonQuery result wrapper.
@@ -40,7 +40,7 @@ namespace Bee.Db
         /// Creates a Scalar result wrapper.
         /// </summary>
         /// <param name="value">The scalar result value.</param>
-        public static DbCommandResult ForScalar(object value)
+        public static DbCommandResult ForScalar(object? value)
             => new DbCommandResult { Kind = DbCommandKind.Scalar, Scalar = value };
 
         /// <summary>

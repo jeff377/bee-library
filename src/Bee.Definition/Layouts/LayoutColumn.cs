@@ -18,8 +18,8 @@ namespace Bee.Definition.Layouts
     [TreeNode]
     public class LayoutColumn : CollectionItem
     {
-        private ListItemCollection _listItems = null;
-        private PropertyCollection _extendedProperties = null;
+        private ListItemCollection? _listItems = null;
+        private PropertyCollection? _extendedProperties = null;
 
         /// <summary>
         /// Initializes a new instance of <see cref="LayoutColumn"/>.
@@ -74,7 +74,7 @@ namespace Bee.Definition.Layouts
         [XmlAttribute]
         [Description("Related program ID.")]
         [DefaultValue("")]
-        public string ProgId { get; set; }
+        public string ProgId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets a value indicating whether this column is visible.
@@ -127,12 +127,12 @@ namespace Bee.Definition.Layouts
         [Category(PropertyCategories.Data)]
         [Description("List item collection.")]
         [DefaultValue(null)]
-        public ListItemCollection ListItems
+        public ListItemCollection? ListItems
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _listItems)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _listItems!)) { return null; }
                 if (_listItems == null) { _listItems = new ListItemCollection(); }
                 return _listItems;
             }
@@ -143,12 +143,12 @@ namespace Bee.Definition.Layouts
         /// </summary>
         [Description("Extended property collection.")]
         [DefaultValue(null)]
-        public PropertyCollection ExtendedProperties
+        public PropertyCollection? ExtendedProperties
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _extendedProperties)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _extendedProperties!)) { return null; }
                 if (_extendedProperties == null) { _extendedProperties = new PropertyCollection(); }
                 return _extendedProperties;
             }
@@ -161,8 +161,8 @@ namespace Bee.Definition.Layouts
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_listItems, serializeState);
-            BaseFunc.SetSerializeState(_extendedProperties, serializeState);
+            BaseFunc.SetSerializeState(_listItems!, serializeState);
+            BaseFunc.SetSerializeState(_extendedProperties!, serializeState);
         }
 
         /// <summary>

@@ -41,7 +41,7 @@ namespace Bee.Db
         /// <summary>
         /// Gets or sets the parameter value; may be set to <c>null</c>.
         /// </summary>
-        public object Value { get; set; } = null;
+        public object? Value { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the parameter data type. If <c>null</c>, the database provider infers the type automatically.

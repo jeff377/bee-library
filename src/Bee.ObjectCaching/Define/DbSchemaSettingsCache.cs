@@ -24,7 +24,7 @@ namespace Bee.ObjectCaching.Define
         /// <summary>
         /// Creates an instance of the database schema settings.
         /// </summary>
-        protected override DbSchemaSettings CreateInstance()
+        protected override DbSchemaSettings? CreateInstance()
         {
             return BackendInfo.DefineStorage.GetDbSchemaSettings();
         }

@@ -44,7 +44,7 @@ namespace Bee.Base.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public object Owner { get; private set; }
+        public object? Owner { get; private set; }
 
         /// <summary>
         /// Sets the owner of this collection.
@@ -117,7 +117,7 @@ namespace Bee.Base.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public object Tag { get; set; } = null;
+        public object? Tag { get; set; }
 
         #endregion
 

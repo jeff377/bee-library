@@ -46,7 +46,7 @@ namespace Bee.Definition.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Owner { get; } = null;
+        public object? Owner { get; } = null;
 
         /// <summary>
         /// Changes the key of an item.
@@ -120,20 +120,20 @@ namespace Bee.Definition.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore, IgnoreMember]
         [Browsable(false)]
-        public object Tag { get; set; } = null;
+        public object? Tag { get; set; } = null;
 
         #endregion
 
         #region IMessagePackSerializationCallbackReceiver Interface
 
-        private System.Collections.Generic.List<T> _itemsBuffer;
+        private System.Collections.Generic.List<T>? _itemsBuffer;
 
         /// <summary>
         /// Proxy property used by MessagePack to serialize the Items content.
         /// </summary>
         /// <remarks>The base class KeyedCollection does not support MessagePack serialization; data must be serialized via the ItemsForSerialization property.</remarks>
         [Key(0)]
-        public System.Collections.Generic.List<T> ItemsForSerialization
+        public System.Collections.Generic.List<T>? ItemsForSerialization
         {
             get => Items.ToList();      // Convert internal items to List for MessagePack
             set => _itemsBuffer = value;
@@ -190,7 +190,7 @@ namespace Bee.Definition.Collections
         /// <param name="index">The index.</param>
         protected override void RemoveItem(int index)
         {
-            this[index].SetCollection(null);
+            this[index].SetCollection((IKeyCollectionBase?)null);
             base.RemoveItem(index);
         }
 

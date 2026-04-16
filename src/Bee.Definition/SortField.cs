@@ -35,7 +35,7 @@ namespace Bee.Definition
         /// Gets or sets the field name or SQL expression.
         /// </summary>
         [Key(100)]
-        public string FieldName { get; set; }
+        public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the sort direction.

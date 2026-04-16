@@ -17,7 +17,7 @@ namespace Bee.Definition.Settings
     [TreeNode("Database Schema")]
     public class DbSchemaSettings : IObjectSerializeFile
     {
-        private DbSchemaCollection _databases = null;
+        private DbSchemaCollection? _databases = null;
 
         #region Constructors
 
@@ -47,7 +47,7 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_databases, serializeState);
+            BaseFunc.SetSerializeState(_databases!, serializeState);
         }
 
         /// <summary>
@@ -81,12 +81,12 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Database schema collection.")]
         [DefaultValue(null)]
-        public DbSchemaCollection Databases
+        public DbSchemaCollection? Databases
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _databases)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _databases!)) { return null; }
                 if (_databases == null) { _databases = new DbSchemaCollection(this); }
                 return _databases;
             }

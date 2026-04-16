@@ -36,7 +36,7 @@ namespace Bee.Db.Providers.SqlServer
         /// Gets the schema definition for the specified table.
         /// </summary>
         /// <param name="tableName">The table name.</param>
-        public TableSchema GetTableSchema(string tableName)
+        public TableSchema? GetTableSchema(string tableName)
         {
             // Return null if the table does not exist
             if (!TableExists(tableName)) { return null; }
@@ -56,7 +56,7 @@ namespace Bee.Db.Providers.SqlServer
             foreach (DataRow row in columns.Rows)
             {
                 var dbField = ParseDbField(row);
-                dbTable.Fields.Add(dbField);
+                dbTable.Fields!.Add(dbField);
             }
 
             return dbTable;
@@ -71,7 +71,7 @@ namespace Bee.Db.Providers.SqlServer
             string sql = "Select Count(*) From sys.tables A Where A.name={0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
             var result = _dbAccess.Execute(command);
-            int count = BaseFunc.CInt(result.Scalar);
+            int count = BaseFunc.CInt(result.Scalar!);
             return count > 0;
         }
 
@@ -91,7 +91,7 @@ namespace Bee.Db.Providers.SqlServer
                           "Order By D.is_primary_key,C.key_ordinal";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
             var result = _dbAccess.Execute(command);
-            var table = result.Table;
+            var table = result.Table!;
             table.TableName = "TableIndex";
             return table;
         }
@@ -116,13 +116,13 @@ namespace Bee.Db.Providers.SqlServer
             tableIndex.PrimaryKey = true;
             tableIndex.Name = name;
             tableIndex.Unique = true;
-            dbTable.Indexes.Add(tableIndex);
+            dbTable.Indexes!.Add(tableIndex);
             foreach (DataRowView row in table.DefaultView)
             {
                 var indexField = new IndexField();
                 indexField.FieldName = BaseFunc.CStr(row["FieldName"]);
                 indexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
-                tableIndex.IndexFields.Add(indexField);
+                tableIndex.IndexFields!.Add(indexField);
             }
             // Remove the processed primary key rows
             table.DefaultView.DeleteRows(true);
@@ -144,7 +144,7 @@ namespace Bee.Db.Providers.SqlServer
                 var tableIndex = new TableSchemaIndex();
                 tableIndex.Name = name;
                 tableIndex.Unique = isUnique;
-                dbTable.Indexes.Add(tableIndex);
+                dbTable.Indexes!.Add(tableIndex);
 
                 table.DefaultView.RowFilter = $"Name='{name.Replace("'", "''")}'";
 
@@ -154,7 +154,7 @@ namespace Bee.Db.Providers.SqlServer
                     var indexField = new IndexField();
                     indexField.FieldName = BaseFunc.CStr(rowView["FieldName"]);
                     indexField.SortDirection = BaseFunc.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
-                    tableIndex.IndexFields.Add(indexField);
+                    tableIndex.IndexFields!.Add(indexField);
                 }
                 // Remove the processed index rows
                 table.DefaultView.DeleteRows(true);
@@ -181,7 +181,7 @@ namespace Bee.Db.Providers.SqlServer
                           "ORDER BY A.column_id";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
             var result = _dbAccess.Execute(command);
-            var table = result.Table;
+            var table = result.Table!;
             table.TableName = "Columns";
             return table;
         }

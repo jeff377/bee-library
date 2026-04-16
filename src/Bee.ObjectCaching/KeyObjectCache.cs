@@ -42,7 +42,7 @@ namespace Bee.ObjectCaching
         /// Creates an instance for the specified key.
         /// </summary>
         /// <param name="key">The member key.</param>
-        protected virtual T CreateInstance(string key)
+        protected virtual T? CreateInstance(string key)
         {
             return default;
         }
@@ -51,7 +51,7 @@ namespace Bee.ObjectCaching
         /// Gets the object associated with the specified member key.
         /// </summary>
         /// <param name="key">The member key.</param>
-        public virtual T Get(string key)
+        public virtual T? Get(string key)
         {
             // Get the cache key
             string cacheKey = GetCacheKey(key);
@@ -63,7 +63,7 @@ namespace Bee.ObjectCaching
             var value = CreateInstance(key);
             if (value != null)
             {
-                CacheInfo.Provider.Set(cacheKey, value, GetPolicy(key));
+                CacheInfo.Provider.Set(cacheKey, value!, GetPolicy(key));
             }
             return value;
         }
@@ -76,7 +76,7 @@ namespace Bee.ObjectCaching
         public virtual void Set(string key, T value)
         {
             string cacheKey = GetCacheKey(key);
-            CacheInfo.Provider.Set(cacheKey, value, GetPolicy(key));
+            CacheInfo.Provider.Set(cacheKey, value!, GetPolicy(key));
         }
 
         /// <summary>

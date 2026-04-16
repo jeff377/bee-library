@@ -32,7 +32,7 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the system settings.
         /// </summary>
-        public static SystemSettings GetSystemSettings()
+        public static SystemSettings? GetSystemSettings()
         {
             return CacheContainer.SystemSettings.Get();
         }
@@ -40,7 +40,7 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the database settings.
         /// </summary>
-        public static DatabaseSettings GetDatabaseSettings()
+        public static DatabaseSettings? GetDatabaseSettings()
         {
             return CacheContainer.DatabaseSettings.Get();
         }
@@ -48,7 +48,7 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the program settings.
         /// </summary>
-        public static ProgramSettings GetProgramSettings()
+        public static ProgramSettings? GetProgramSettings()
         {
             return CacheContainer.ProgramSettings.Get();
         }
@@ -56,7 +56,7 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the database schema settings.
         /// </summary>
-        public static DbSchemaSettings GetDbSchemaSettings()
+        public static DbSchemaSettings? GetDbSchemaSettings()
         {
             return CacheContainer.DbSchemaSettings.Get();
         }
@@ -66,7 +66,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         /// <param name="dbName">The database name.</param>
         /// <param name="tableName">The table name.</param>
-        public static TableSchema GetTableSchema(string dbName, string tableName)
+        public static TableSchema? GetTableSchema(string dbName, string tableName)
         {
             return CacheContainer.TableSchema.Get(dbName, tableName);
         }
@@ -75,7 +75,7 @@ namespace Bee.ObjectCaching
         /// Gets the table schema for the specified table in the default database.
         /// </summary>
         /// <param name="tableName">The table name.</param>
-        public static TableSchema GetTableSchema(string tableName)
+        public static TableSchema? GetTableSchema(string tableName)
         {
             return GetTableSchema(BackendInfo.DatabaseId, tableName);
         }
@@ -84,7 +84,7 @@ namespace Bee.ObjectCaching
         /// Gets the form schema definition for the specified program.
         /// </summary>
         /// <param name="progId">The program identifier.</param>
-        public static FormSchema GetFormSchema(string progId)
+        public static FormSchema? GetFormSchema(string progId)
         {
             return CacheContainer.FormSchema.Get(progId);
         }
@@ -93,7 +93,7 @@ namespace Bee.ObjectCaching
         /// Gets the form layout for the specified layout identifier.
         /// </summary>
         /// <param name="layoutId">The layout identifier.</param>
-        public static FormLayout GetFormLayout(string layoutId)
+        public static FormLayout? GetFormLayout(string layoutId)
         {
             return CacheContainer.FormLayout.Get(layoutId);
         }
@@ -102,7 +102,7 @@ namespace Bee.ObjectCaching
         /// Gets the session information from the cache.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        public static SessionInfo GetSessionInfo(Guid accessToken)
+        public static SessionInfo? GetSessionInfo(Guid accessToken)
         {
             return CacheContainer.SessionInfo.Get(accessToken);
         }
@@ -139,7 +139,7 @@ namespace Bee.ObjectCaching
         /// Loads the view state from the cache.
         /// </summary>
         /// <param name="uniqueGuid">The page identifier.</param>
-        public static object LoadViewState(Guid uniqueGuid)
+        public static object? LoadViewState(Guid uniqueGuid)
         {
             return CacheContainer.ViewState.Get(uniqueGuid);
         }

@@ -14,7 +14,7 @@
         /// Sets the collection that owns this item.
         /// </summary>
         /// <param name="collection">The owning collection.</param>
-        void SetCollection(IKeyCollectionBase collection);
+        void SetCollection(IKeyCollectionBase? collection);
 
         /// <summary>
         /// Removes this item from its owning collection.

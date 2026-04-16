@@ -20,7 +20,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to locate the definition data.</param>
-        public object GetDefine(DefineType defineType, string[] keys = null)
+        public object GetDefine(DefineType defineType, string[]? keys = null)
         {
             switch (defineType)
             {
@@ -34,13 +34,13 @@ namespace Bee.ObjectCaching
                     return this.GetDbSchemaSettings();
                 case DefineType.TableSchema:
                     ValidateKeys(defineType, keys, 2);
-                    return this.GetTableSchema(keys[0], keys[1]);
+                    return this.GetTableSchema(keys![0], keys[1]);
                 case DefineType.FormSchema:
                     ValidateKeys(defineType, keys, 1);
-                    return this.GetFormSchema(keys[0]);
+                    return this.GetFormSchema(keys![0]);
                 case DefineType.FormLayout:
                     ValidateKeys(defineType, keys, 1);
-                    return  this.GetFormLayout(keys[0]);
+                    return this.GetFormLayout(keys![0]);
                 default:
                     throw new NotSupportedException($"DefineType '{defineType}' is not supported.");
             }
@@ -52,7 +52,7 @@ namespace Bee.ObjectCaching
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys to validate.</param>
         /// <param name="expectedLength">The expected number of keys.</param>
-        private void ValidateKeys(DefineType defineType, string[] keys, int expectedLength)
+        private void ValidateKeys(DefineType defineType, string[]? keys, int expectedLength)
         {
             if (keys == null || keys.Length != expectedLength)
                 throw new ArgumentException($"{defineType} keys verification error. Input: {string.Join(",", keys ?? new string[0])}");
@@ -64,29 +64,29 @@ namespace Bee.ObjectCaching
         /// <param name="defineType">The definition data type.</param>
         /// <param name="defineObject">The definition data object.</param>
         /// <param name="keys">The keys used to locate where the definition data is saved.</param>
-        public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
+        public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null)
         {
             switch (defineType)
             {
                 case DefineType.SystemSettings:
-                    this.SaveSystemSettings(defineObject as SystemSettings);
+                    this.SaveSystemSettings((defineObject as SystemSettings)!);
                     break;
                 case DefineType.DatabaseSettings:
-                    this.SaveDatabaseSettings(defineObject as DatabaseSettings);
+                    this.SaveDatabaseSettings((defineObject as DatabaseSettings)!);
                     break;
                 case DefineType.ProgramSettings:
-                    this.SaveProgramSettings(defineObject as ProgramSettings);
+                    this.SaveProgramSettings((defineObject as ProgramSettings)!);
                     break;
                 case DefineType.DbSchemaSettings:
-                    this.SaveDbSchemaSettings(defineObject as DbSchemaSettings);
+                    this.SaveDbSchemaSettings((defineObject as DbSchemaSettings)!);
                     break;
                 case DefineType.TableSchema:
                     if (keys == null || keys.Length != 1)
                         throw new ArgumentException($"{defineType} keys verification error");
-                    this.SaveTableSchema(keys[0], defineObject as TableSchema);
+                    this.SaveTableSchema(keys[0], (defineObject as TableSchema)!);
                     break;
                 case DefineType.FormLayout:
-                    this.SaveFormLayout(defineObject as FormLayout);
+                    this.SaveFormLayout((defineObject as FormLayout)!);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -98,7 +98,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public SystemSettings GetSystemSettings()
         {
-            return CacheFunc.GetSystemSettings();
+            return CacheFunc.GetSystemSettings()!;
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public DatabaseSettings GetDatabaseSettings()
         {
-            return CacheFunc.GetDatabaseSettings();
+            return CacheFunc.GetDatabaseSettings()!;
         }
 
         /// <summary>
@@ -145,7 +145,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public ProgramSettings GetProgramSettings()
         {
-            return CacheFunc.GetProgramSettings();
+            return CacheFunc.GetProgramSettings()!;
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public DbSchemaSettings GetDbSchemaSettings()
         {
-            return CacheFunc.GetDbSchemaSettings();
+            return CacheFunc.GetDbSchemaSettings()!;
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace Bee.ObjectCaching
         /// <param name="tableName">The table name.</param>
         public TableSchema GetTableSchema(string dbName, string tableName)
         {
-            return CacheFunc.GetTableSchema(dbName, tableName);
+            return CacheFunc.GetTableSchema(dbName, tableName)!;
         }
 
         /// <summary>
@@ -217,7 +217,7 @@ namespace Bee.ObjectCaching
         /// <param name="progId">The program identifier.</param>
         public FormSchema GetFormSchema(string progId)
         {
-            return CacheFunc.GetFormSchema(progId);
+            return CacheFunc.GetFormSchema(progId)!;
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace Bee.ObjectCaching
         /// <param name="layoutId">The layout identifier.</param>
         public FormLayout GetFormLayout(string layoutId)
         {
-            return CacheFunc.GetFormLayout(layoutId);
+            return CacheFunc.GetFormLayout(layoutId)!;
         }
 
         /// <summary>

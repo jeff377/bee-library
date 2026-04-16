@@ -36,7 +36,7 @@ namespace Bee.Definition.Collections
         public T GetValue<T>(string name)
         {
             if (this.Contains(name))
-                return (T)this[name].Value;
+                return (T)this[name].Value!;
             else
                 throw new KeyNotFoundException($"Parameter '{name}' does not exist.");
         }
@@ -50,7 +50,7 @@ namespace Bee.Definition.Collections
         public T GetValue<T>(string name, T defaultValue)
         {
             if (this.Contains(name))
-                return (T)this[name].Value;
+                return (T)this[name].Value!;
             else
                 return defaultValue;
         }

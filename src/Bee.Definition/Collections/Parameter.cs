@@ -53,14 +53,14 @@ namespace Bee.Definition.Collections
         /// </summary>
         [Key(101)]
         [MessagePackFormatter(typeof(SafeTypelessFormatter))]
-        public object Value { get; set; } = null;
+        public object? Value { get; set; } = null;
 
         /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
         {
-            return StrFunc.Format("{0}={1}", this.Name, this.Value);
+            return StrFunc.Format("{0}={1}", this.Name, this.Value!);
         }
     }
 }

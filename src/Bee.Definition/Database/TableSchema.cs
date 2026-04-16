@@ -17,8 +17,8 @@ namespace Bee.Definition.Database
     [TreeNode]
     public class TableSchema : IObjectSerializeFile
     {
-        private DbFieldCollection _fields = null;
-        private TableSchemaIndexCollection _indexes = null;
+        private DbFieldCollection? _fields = null;
+        private TableSchemaIndexCollection? _indexes = null;
 
         #region Constructors
 
@@ -47,8 +47,8 @@ namespace Bee.Definition.Database
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_fields, serializeState);
-            BaseFunc.SetSerializeState(_indexes, serializeState);
+            BaseFunc.SetSerializeState(_fields!, serializeState);
+            BaseFunc.SetSerializeState(_indexes!, serializeState);
         }
 
         /// <summary>
@@ -100,12 +100,12 @@ namespace Bee.Definition.Database
         [Description("Field collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public DbFieldCollection Fields
+        public DbFieldCollection? Fields
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _fields)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _fields!)) { return null; }
                 if (_fields == null) { _fields = new DbFieldCollection(this); }
                 return _fields;
             }
@@ -117,12 +117,12 @@ namespace Bee.Definition.Database
         [Description("Index collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public TableSchemaIndexCollection Indexes
+        public TableSchemaIndexCollection? Indexes
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _indexes)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _indexes!)) { return null; }
                 if (_indexes == null) { _indexes = new TableSchemaIndexCollection(this); }
                 return _indexes;
             }
@@ -131,9 +131,9 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Gets the primary key index.
         /// </summary>
-        public TableSchemaIndex GetPrimaryKey()
+        public TableSchemaIndex? GetPrimaryKey()
         {
-            foreach (TableSchemaIndex index in Indexes)
+            foreach (TableSchemaIndex index in Indexes!)
             {
                 if (index.PrimaryKey)
                     return index;
@@ -157,10 +157,10 @@ namespace Bee.Definition.Database
             var table = new TableSchema();
             table.TableName = TableName;
             table.DisplayName = DisplayName;
-            foreach (TableSchemaIndex index in Indexes)
-                table.Indexes.Add(index.Clone());
-            foreach (DbField field in Fields)
-                table.Fields.Add(field.Clone());
+            foreach (TableSchemaIndex index in Indexes!)
+                table.Indexes!.Add(index.Clone());
+            foreach (DbField field in Fields!)
+                table.Fields!.Add(field.Clone());
             return table;
         }
 

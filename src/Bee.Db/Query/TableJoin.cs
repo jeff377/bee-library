@@ -25,32 +25,32 @@ namespace Bee.Db.Query
         /// <summary>
         /// Gets or sets the left-side table name.
         /// </summary>
-        public string LeftTable { get; set; }
+        public string LeftTable { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the left-side table alias.
         /// </summary>
-        public string LeftAlias { get; set; }
+        public string LeftAlias { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the left-side column name.
         /// </summary>
-        public string LeftField { get; set; }
+        public string LeftField { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the right-side table name.
         /// </summary>
-        public string RightTable { get; set; }
+        public string RightTable { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the right-side table alias.
         /// </summary>
-        public string RightAlias { get; set; }
+        public string RightAlias { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the right-side column name.
         /// </summary>
-        public string RightField { get; set; }
+        public string RightField { get; set; } = string.Empty;
 
         /// <summary>
         /// Returns a string representation of this object.

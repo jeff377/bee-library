@@ -34,7 +34,7 @@ namespace Bee.Base.Security
         /// <summary>
         /// Converts a hexadecimal string to a byte array. Returns null if the input is invalid.
         /// </summary>
-        private static byte[] HexToBytes(string hex)
+        private static byte[]? HexToBytes(string hex)
         {
             if (string.IsNullOrEmpty(hex) || hex.Length % 2 != 0)
                 return null;

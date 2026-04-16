@@ -13,7 +13,7 @@ namespace Bee.Base.Collections
     [Serializable]
     public abstract class CollectionItem : ICollectionItem, ITagProperty, IObjectSerialize
     {
-        private ICollectionBase _collection = null;
+        private ICollectionBase? _collection;
 
         #region ICollectionItem Interface
 
@@ -21,7 +21,7 @@ namespace Bee.Base.Collections
         /// Sets the collection that owns this item.
         /// </summary>
         /// <param name="collection">The owning collection.</param>
-        public void SetCollection(ICollectionBase collection)
+        public void SetCollection(ICollectionBase? collection)
         {
             _collection = collection;
         }
@@ -44,7 +44,7 @@ namespace Bee.Base.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public object Tag { get; set; } = null;
+        public object? Tag { get; set; }
 
         #endregion
 
@@ -74,7 +74,7 @@ namespace Bee.Base.Collections
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         [TreeNodeIgnore]
-        public ICollectionBase Collection
+        public ICollectionBase? Collection
         {
             get { return _collection; }
         }

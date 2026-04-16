@@ -131,7 +131,7 @@ namespace Bee.Db.Logging
             var prop = ex.GetType().GetProperty("Number", BindingFlags.Instance | BindingFlags.Public);
             if (prop != null && prop.PropertyType == typeof(int))
             {
-                try { number = (int)prop.GetValue(ex, null); } catch { /* ignore */ }
+                try { number = (int)prop.GetValue(ex, null)!; } catch { /* ignore */ }
             }
             return Tuple.Create(errorCode, number);
         }

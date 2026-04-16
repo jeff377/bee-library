@@ -48,7 +48,7 @@ namespace Bee.Base
         /// <param name="input">The input URL to check.</param>
         public static bool IsUrl(string input)
         {
-            Uri uriResult;
+            Uri? uriResult;
             return Uri.TryCreate(input, UriKind.Absolute, out uriResult) &&
                    (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps);
         }
@@ -59,7 +59,7 @@ namespace Bee.Base
         /// <param name="endpoint">The service endpoint.</param>
         /// <param name="body">The JSON string to pass in the request body.</param>
         /// <param name="headers">Custom request headers.</param>
-        public static async Task<string> PostAsync(string endpoint, string body, NameValueCollection headers = null)
+        public static async Task<string> PostAsync(string endpoint, string body, NameValueCollection? headers = null)
         {
             HttpClient client = GetOrCreateClient(endpoint);
 
@@ -89,7 +89,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="endpoint">The service endpoint.</param>
         /// <param name="headers">Custom request headers.</param>
-        public static async Task<string> GetAsync(string endpoint, NameValueCollection headers = null)
+        public static async Task<string> GetAsync(string endpoint, NameValueCollection? headers = null)
         {
             HttpClient client = GetOrCreateClient(endpoint);
 

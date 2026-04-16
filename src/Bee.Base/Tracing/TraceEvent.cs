@@ -40,7 +40,7 @@ namespace Bee.Base.Tracing
         /// <summary>
         /// Gets or sets the trace object; content is interpreted based on Category.
         /// </summary>
-        public object Tag { get; set; }
+        public object? Tag { get; set; }
 
         /// <summary>
         /// Gets or sets the kind of trace event.

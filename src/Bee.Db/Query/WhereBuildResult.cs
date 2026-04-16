@@ -15,6 +15,6 @@ namespace Bee.Db.Query
         /// <summary>
         /// Gets or sets the named parameters generated for the WHERE clause.
         /// </summary>
-        public IDictionary<string, object> Parameters { get; set; } = null;
+        public IDictionary<string, object>? Parameters { get; set; } = null;
     }
 }

@@ -14,7 +14,7 @@ namespace Bee.ObjectCaching.Services
         /// </summary>
         public SessionInfo Get(Guid accessToken)
         {
-            return CacheFunc.GetSessionInfo(accessToken);
+            return CacheFunc.GetSessionInfo(accessToken)!;
         }
 
         /// <summary>

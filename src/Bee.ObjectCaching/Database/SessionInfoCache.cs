@@ -13,7 +13,7 @@ namespace Bee.ObjectCaching.Database
         /// Creates an instance of the session information.
         /// </summary>
         /// <param name="key">The access token.</param>
-        protected override SessionInfo CreateInstance(string key)
+        protected override SessionInfo? CreateInstance(string key)
         {
             return null; // Loading SessionInfo from the database or other sources is not yet implemented
 
@@ -37,7 +37,7 @@ namespace Bee.ObjectCaching.Database
         /// Gets the session information for the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        public SessionInfo Get(Guid accessToken)
+        public SessionInfo? Get(Guid accessToken)
         {
             return Get(accessToken.ToString());
         }

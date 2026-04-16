@@ -58,7 +58,7 @@ namespace Bee.Db
         /// <param name="kind">The execution kind of the database command.</param>
         /// <param name="commandText">The SQL statement to execute; use {Name} named placeholders.</param>
         /// <param name="parameters">A dictionary of named parameter values.</param>
-        public DbCommandSpec(DbCommandKind kind, string commandText, IDictionary<string, object> parameters)
+        public DbCommandSpec(DbCommandKind kind, string commandText, IDictionary<string, object>? parameters)
         {
             if (string.IsNullOrWhiteSpace(commandText))
                 throw new ArgumentNullException(nameof(commandText), "Command text cannot be null or empty.");

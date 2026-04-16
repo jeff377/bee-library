@@ -17,7 +17,7 @@ namespace Bee.Base.Data
             if (type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Nullable<>)))
                 type = type.GetGenericArguments()[0];
             else if (type.IsByRef)
-                type = type.GetElementType();
+                type = type.GetElementType()!;
             return Type.GetTypeCode(type);
         }
 

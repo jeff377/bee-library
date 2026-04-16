@@ -15,7 +15,7 @@ namespace Bee.Db.Providers.SqlServer
     /// </summary>
     public class SqlCreateTableCommandBuilder : ICreateTableCommandBuilder
     {
-        private TableSchema _dbTable = null;
+        private TableSchema? _dbTable = null;
 
         #region 建構函式
 
@@ -32,7 +32,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         private TableSchema TableSchema
         {
-            get { return _dbTable; }
+            get { return _dbTable!; }
         }
 
         /// <summary>
@@ -127,7 +127,7 @@ namespace Bee.Db.Providers.SqlServer
         {
            // Build the list of fields to migrate
             var fieldBuilder = new StringBuilder();
-            foreach (DbField field in this.TableSchema.Fields)
+            foreach (DbField field in this.TableSchema.Fields!)
             {
                 if (field.UpgradeAction != DbUpgradeAction.New && field.DbType != FieldDbType.AutoIncrement)
                 {
@@ -152,7 +152,7 @@ namespace Bee.Db.Providers.SqlServer
         {
             var sb = new StringBuilder();
             // Rename indexes
-            foreach (TableSchemaIndex index in this.TableSchema.Indexes)
+            foreach (TableSchemaIndex index in this.TableSchema.Indexes!)
             {
                 string oldName = StrFunc.Format(index.Name, tableName);  // Old index name
                 string newName = StrFunc.Format(index.Name, newTableName);  // New index name
@@ -197,7 +197,7 @@ namespace Bee.Db.Providers.SqlServer
         {
             // Build the column definitions
             var sb = new StringBuilder();
-            foreach (DbField field in this.TableSchema.Fields)
+            foreach (DbField field in this.TableSchema.Fields!)
             {
                 // Get the SQL fragment for this column
                 string text = GetFieldCommandText(field);
@@ -322,7 +322,7 @@ namespace Bee.Db.Providers.SqlServer
 
             // Build the index field list
             var fieldBuilder = new StringBuilder();
-            foreach (IndexField field in index.IndexFields)
+            foreach (IndexField field in index.IndexFields!)
             {
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
@@ -340,7 +340,7 @@ namespace Bee.Db.Providers.SqlServer
         private string GetIndexsCommandText(string tableName)
         {
             var sb = new StringBuilder();
-            foreach (TableSchemaIndex index in this.TableSchema.Indexes)
+            foreach (TableSchemaIndex index in this.TableSchema.Indexes!)
             {
                 if (!index.PrimaryKey)
                     sb.AppendLine(GetIndexCommandText(tableName, index));
@@ -359,7 +359,7 @@ namespace Bee.Db.Providers.SqlServer
             string name = StrFunc.Format(index.Name, tableName);
             // Index fields
             var fieldBuilder = new StringBuilder();
-            foreach (IndexField field in index.IndexFields)
+            foreach (IndexField field in index.IndexFields!)
             {
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");

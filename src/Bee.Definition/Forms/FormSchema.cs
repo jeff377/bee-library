@@ -18,7 +18,7 @@ namespace Bee.Definition.Forms
     [TreeNode("Form Schema")]
     public class FormSchema : IObjectSerializeFile
     {
-        private FormTableCollection _tables = null;
+        private FormTableCollection? _tables = null;
 
         #region Constructors
 
@@ -58,7 +58,7 @@ namespace Bee.Definition.Forms
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_tables, serializeState);
+            BaseFunc.SetSerializeState(_tables!, serializeState);
         }
 
         /// <summary>
@@ -114,12 +114,12 @@ namespace Bee.Definition.Forms
         /// </summary>
         [Description("Table collection.")]
         [DefaultValue(null)]
-        public FormTableCollection Tables
+        public FormTableCollection? Tables
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _tables)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _tables!)) { return null; }
                 if (_tables == null) { _tables = new FormTableCollection(this); }
                 return _tables;
             }
@@ -130,14 +130,14 @@ namespace Bee.Definition.Forms
         /// </summary>
         [Browsable(false)]
         [TreeNodeIgnore]
-        public FormTable MasterTable
+        public FormTable? MasterTable
         {
             get
             {
-                if (StrFunc.IsEmpty(this.ProgId) || !this.Tables.Contains(this.ProgId))
+                if (StrFunc.IsEmpty(this.ProgId) || !this.Tables!.Contains(this.ProgId))
                     return null;
                 else
-                    return this.Tables[this.ProgId];
+                    return this.Tables![this.ProgId];
             }
         }
 

@@ -19,8 +19,8 @@ namespace Bee.Definition.Forms
     [TreeNode]
     public class FormTable : KeyCollectionItem
     {
-        private FormFieldCollection _fields = null;
-        private RelationFieldReferenceCollection _relationFieldReferences = null;
+        private FormFieldCollection? _fields = null;
+        private RelationFieldReferenceCollection? _relationFieldReferences = null;
 
         #region Constructors
 
@@ -78,12 +78,12 @@ namespace Bee.Definition.Forms
         /// </summary>
         [Description("Field collection.")]
         [DefaultValue(null)]
-        public FormFieldCollection Fields
+        public FormFieldCollection? Fields
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _fields)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _fields!)) { return null; }
                 if (_fields == null) { _fields = new FormFieldCollection(this); }
                 return _fields;
             }
@@ -111,14 +111,14 @@ namespace Bee.Definition.Forms
         {
             var references = new RelationFieldReferenceCollection();
 
-            foreach (var field in Fields)
+            foreach (var field in Fields!)
             {
                 if (field.Type != FieldType.DbField ||
                     StrFunc.IsEmpty(field.RelationProgId) ||
-                    BaseFunc.IsEmpty(field.RelationFieldMappings))
+                    BaseFunc.IsEmpty(field.RelationFieldMappings!))
                     continue;
 
-                foreach (var mapping in field.RelationFieldMappings)
+                foreach (var mapping in field.RelationFieldMappings!)
                 {
                     string destField = mapping.DestinationField;
                     if (!Fields.Contains(destField))
@@ -140,7 +140,7 @@ namespace Bee.Definition.Forms
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_fields, serializeState);
+            BaseFunc.SetSerializeState(_fields!, serializeState);
         }
 
         /// <summary>

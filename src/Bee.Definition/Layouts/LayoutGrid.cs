@@ -16,7 +16,7 @@ namespace Bee.Definition.Layouts
     [TreeNode]
     public class LayoutGrid : LayoutItemBase
     {
-        private LayoutColumnCollection _columns = null;
+        private LayoutColumnCollection? _columns = null;
 
         #region Constructors
 
@@ -70,12 +70,12 @@ namespace Bee.Definition.Layouts
         [Description("Column collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public LayoutColumnCollection Columns
+        public LayoutColumnCollection? Columns
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _columns)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _columns!)) { return null; }
                 if (_columns == null) { _columns = new LayoutColumnCollection(); }
                 return _columns;
             }
@@ -88,7 +88,7 @@ namespace Bee.Definition.Layouts
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_columns, serializeState);
+            BaseFunc.SetSerializeState(_columns!, serializeState);
         }
 
         /// <summary>

@@ -29,7 +29,7 @@ namespace Bee.ObjectCaching.Define
         /// Creates an instance of the form schema.
         /// </summary>
         /// <param name="key">The member key, which is the program identifier.</param>
-        protected override FormSchema CreateInstance(string key)
+        protected override FormSchema? CreateInstance(string key)
         {
             // Program identifier
             string progId = key;

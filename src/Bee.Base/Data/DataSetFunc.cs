@@ -73,7 +73,7 @@ namespace Bee.Base.Data
             for (int N1 = 0; N1 < fieldNames.Length - 1; N1++)
             {
                 string fieldName = fieldNames[N1];
-                table.Columns[fieldName].SetOrdinal(N1);
+                table.Columns[fieldName]?.SetOrdinal(N1);
             }
             // Return the processed table
             return table;

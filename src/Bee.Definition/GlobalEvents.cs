@@ -12,7 +12,7 @@ namespace Bee.Definition
         /// <summary>
         /// Occurs when the database settings have changed.
         /// </summary>
-        public static event EventHandler DatabaseSettingsChanged;
+        public static event EventHandler? DatabaseSettingsChanged;
 
         /// <summary>
         /// Raises the <see cref="DatabaseSettingsChanged"/> event.

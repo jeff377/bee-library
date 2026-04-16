@@ -16,7 +16,7 @@ namespace Bee.Base
         /// Finds the specified assembly.
         /// </summary>
         /// <param name="assemblyName">The assembly name.</param>
-        public static Assembly FindAssembly(string assemblyName)
+        public static Assembly? FindAssembly(string assemblyName)
         {
             // Check the cache first
             if (_loadedAssemblies.TryGetValue(assemblyName, out var cached))
@@ -76,7 +76,7 @@ namespace Bee.Base
         /// <param name="assemblyName">The assembly name.</param>
         /// <param name="typeName">The type name.</param>
         /// <param name="args">Constructor arguments.</param>
-        public static object CreateInstance(string assemblyName, string typeName, params object[] args)
+        public static object? CreateInstance(string assemblyName, string typeName, params object[] args)
         {
             // Load the assembly
             var assembly = LoadAssembly(assemblyName);
@@ -89,7 +89,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="fullTypeName">The fully qualified type name, e.g. "Bee.Business.TBusinessObject, Bee.Business" or "Bee.Business.TBusinessObject".</param>
         /// <param name="args">Constructor arguments.</param>
-        public static object CreateInstance(string fullTypeName, params object[] args)
+        public static object? CreateInstance(string fullTypeName, params object[] args)
         {
             // Resolve the assembly name and type name
             GetAssemblyAndType(fullTypeName, out string assemblyName, out string typeName);
@@ -102,7 +102,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="assemblyName">The assembly name.</param>
         /// <param name="typeName">The type name.</param>
-        public static Type GetType(string assemblyName, string typeName)
+        public static Type? GetType(string assemblyName, string typeName)
         {
             var assembly = LoadAssembly(assemblyName);
             return assembly.GetType(typeName);
@@ -112,7 +112,7 @@ namespace Bee.Base
         /// Gets the type declaration for the specified fully qualified type name.
         /// </summary>
         /// <param name="fullTypeName">The fully qualified type name.</param>
-        public static Type GetType(string fullTypeName)
+        public static Type? GetType(string fullTypeName)
         {
             // Resolve the assembly name and type name
             GetAssemblyAndType(fullTypeName, out string assemblyName, out string typeName);

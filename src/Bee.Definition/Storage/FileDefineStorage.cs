@@ -18,7 +18,7 @@ namespace Bee.Definition.Storage
         /// <summary>
         /// Gets the database schema settings.
         /// </summary>
-        public DbSchemaSettings GetDbSchemaSettings()
+        public DbSchemaSettings? GetDbSchemaSettings()
         {
             string filePath = DefinePathInfo.GetDbTableSettingsFilePath();
             ValidateFilePath(filePath);
@@ -40,7 +40,7 @@ namespace Bee.Definition.Storage
         /// </summary>
         /// <param name="dbName">The database name.</param>
         /// <param name="tableName">The table name.</param>
-        public TableSchema GetTableSchema(string dbName, string tableName)
+        public TableSchema? GetTableSchema(string dbName, string tableName)
         {
             string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableName);
             ValidateFilePath(filePath);
@@ -62,7 +62,7 @@ namespace Bee.Definition.Storage
         /// Gets the form schema for the specified program.
         /// </summary>
         /// <param name="progId">The program ID.</param>
-        public FormSchema GetFormSchema(string progId)
+        public FormSchema? GetFormSchema(string progId)
         {
             string filePath = DefinePathInfo.GetFormSchemaFilePath(progId);
             ValidateFilePath(filePath);
@@ -83,7 +83,7 @@ namespace Bee.Definition.Storage
         /// Gets the form layout for the specified layout ID.
         /// </summary>
         /// <param name="layoutId">The form layout ID.</param>
-        public FormLayout GetFormLayout(string layoutId)
+        public FormLayout? GetFormLayout(string layoutId)
         {
             string filePath = DefinePathInfo.GetFormLayoutFilePath(layoutId);
             ValidateFilePath(filePath);

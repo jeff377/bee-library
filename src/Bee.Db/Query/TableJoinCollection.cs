@@ -12,7 +12,7 @@ namespace Bee.Db.Query
         /// Finds a JOIN relationship by the right-side table alias.
         /// </summary>
         /// <param name="rightAlias">The right-side table alias.</param>
-        public TableJoin FindRightAlias(string rightAlias)
+        public TableJoin? FindRightAlias(string rightAlias)
         {
             if (string.IsNullOrEmpty(rightAlias))
                 return null;

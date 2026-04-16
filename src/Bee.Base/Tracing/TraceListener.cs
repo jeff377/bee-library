@@ -29,7 +29,7 @@ namespace Bee.Base.Tracing
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         public TraceContext TraceStart(
             TraceLayer layer, string detail = "", [CallerMemberName] string name = "",
-            string category = "", object tag = null)
+            string category = "", object? tag = null)
         {
             var ctx = new TraceContext(layer, name, detail, category, tag);
 
@@ -53,7 +53,7 @@ namespace Bee.Base.Tracing
         /// <param name="ctx">The context created when the trace was started.</param>
         /// <param name="status">The execution status, e.g. Ok, Error, or Cancelled.</param>
         /// <param name="detail">Additional description; overrides the Detail set at start if provided.</param>
-        public void TraceEnd(TraceContext ctx, TraceStatus status = TraceStatus.Ok, string detail = null)
+        public void TraceEnd(TraceContext ctx, TraceStatus status = TraceStatus.Ok, string? detail = null)
         {
             if (ctx == null) return;
             ctx.Stopwatch.Stop();
@@ -83,7 +83,7 @@ namespace Bee.Base.Tracing
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         public void TraceWrite(
             TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok,
-            string category = "", object tag = null)
+            string category = "", object? tag = null)
         {
             _writer.Write(new TraceEvent
             {

@@ -17,7 +17,7 @@ namespace Bee.Definition.Settings
     [TreeNode("Program Settings")]
     public class ProgramSettings : IObjectSerializeFile
     {
-        private ProgramCategoryCollection _categories = null;
+        private ProgramCategoryCollection? _categories = null;
 
         #region Constructors
 
@@ -47,7 +47,7 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_categories, serializeState);
+            BaseFunc.SetSerializeState(_categories!, serializeState);
         }
 
         /// <summary>
@@ -74,12 +74,12 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Program category collection.")]
         [DefaultValue(null)]
-        public ProgramCategoryCollection Categories
+        public ProgramCategoryCollection? Categories
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _categories)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _categories!)) { return null; }
                 if (_categories == null) { _categories = new ProgramCategoryCollection(this); }
                 return _categories;
             }

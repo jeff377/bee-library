@@ -43,11 +43,11 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets or sets the array of directory and file paths to monitor for changes.
         /// </summary>
-        public string[] ChangeMonitorFilePaths { get; set; } = null;
+        public string[]? ChangeMonitorFilePaths { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the array of change-monitor keys for the ST_Cache database table.
         /// </summary>
-        public string[] ChangeMonitorDbKeys { get; set; } = null;
+        public string[]? ChangeMonitorDbKeys { get; set; } = null;
     }
 }

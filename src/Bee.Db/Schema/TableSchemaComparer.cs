@@ -14,7 +14,7 @@ namespace Bee.Db.Schema
         /// </summary>
         /// <param name="defineTable">The defined table schema.</param>
         /// <param name="realTable">The actual table schema from the database.</param>
-        public TableSchemaComparer(TableSchema defineTable, TableSchema realTable)
+        public TableSchemaComparer(TableSchema defineTable, TableSchema? realTable)
         {
             DefineTable = defineTable;
             RealTable = realTable;
@@ -23,12 +23,12 @@ namespace Bee.Db.Schema
         /// <summary>
         /// Gets the defined table schema.
         /// </summary>
-        public TableSchema DefineTable { get; } = null;
+        public TableSchema DefineTable { get; } = null!;
 
         /// <summary>
         /// Gets the actual table schema from the database.
         /// </summary>
-        public TableSchema RealTable { get; } = null;
+        public TableSchema? RealTable { get; } = null;
 
         /// <summary>
         /// Executes the comparison and returns the resulting table schema with upgrade actions set.
@@ -62,9 +62,9 @@ namespace Bee.Db.Schema
         private bool CompareFields(TableSchema compareTable)
         {
             bool isMatch = true;
-            foreach (DbField field in compareTable.Fields)
+            foreach (DbField field in compareTable.Fields!)
             {
-                if (this.RealTable.Fields.Contains(field.FieldName))
+                if (this.RealTable!.Fields!.Contains(field.FieldName))
                 {
                     if (!field.Compare(this.RealTable.Fields[field.FieldName]))
                     {
@@ -90,10 +90,10 @@ namespace Bee.Db.Schema
         private bool CompareIndexes(TableSchema compareTable)
         {
             // Return false immediately if any index does not match
-            foreach (TableSchemaIndex index in compareTable.Indexes)
+            foreach (TableSchemaIndex index in compareTable.Indexes!)
             {
                 string name = StrFunc.Format(index.Name, compareTable.TableName);
-                if (this.RealTable.Indexes.Contains(name))
+                if (this.RealTable!.Indexes!.Contains(name))
                 {
                     if (!index.Compare(this.RealTable.Indexes[name]))
                     {
@@ -118,9 +118,9 @@ namespace Bee.Db.Schema
         /// <param name="compareTable">The table schema used as the comparison result.</param>
         private void AddExtensionFields(TableSchema compareTable)
         {
-            foreach (DbField field in this.RealTable.Fields)
+            foreach (DbField field in this.RealTable!.Fields!)
             {
-                if (!compareTable.Fields.Contains(field.FieldName))
+                if (!compareTable.Fields!.Contains(field.FieldName))
                     compareTable.Fields.Add(field.Clone());
             }
         }

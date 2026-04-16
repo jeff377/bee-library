@@ -29,7 +29,7 @@ namespace Bee.Definition.Serialization
     ///   </item>
     /// </list>
     /// </remarks>
-    public sealed class SafeTypelessFormatter : IMessagePackFormatter<object>
+    public sealed class SafeTypelessFormatter : IMessagePackFormatter<object?>
     {
         /// <summary>
         /// The singleton instance.
@@ -72,7 +72,7 @@ namespace Bee.Definition.Serialization
         /// <summary>
         /// Serializes the object value using the underlying <see cref="TypelessFormatter"/>.
         /// </summary>
-        public void Serialize(ref MessagePackWriter writer, object value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, object? value, MessagePackSerializerOptions options)
         {
             TypelessFormatter.Instance.Serialize(ref writer, value, options);
         }
@@ -89,7 +89,7 @@ namespace Bee.Definition.Serialization
         /// <exception cref="InvalidOperationException">
         /// Thrown when the deserialized type is not in the allowed whitelist.
         /// </exception>
-        public object Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public object? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             // Handle nil
             if (reader.TryReadNil())

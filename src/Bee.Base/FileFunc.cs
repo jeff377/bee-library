@@ -146,12 +146,12 @@ namespace Bee.Base
         /// <param name="isFilePath">Whether the path is a file path; if so, the directory is extracted first before checking.</param>
         public static void DirectoryCheck(string path, bool isFilePath = false)
         {
-            string sPath;
+            string? sPath;
 
             // Get the directory path
             sPath = (isFilePath) ? GetDirectory(path) : path;
             // Check if directory exists; create if not
-            if (!DirectoryExists(sPath))
+            if (sPath != null && !DirectoryExists(sPath))
                 DirectoryCreate(sPath);
         }
 
@@ -184,7 +184,7 @@ namespace Bee.Base
         /// Gets the directory portion of the specified path.
         /// </summary>
         /// <param name="path">The path string.</param>
-        public static string GetDirectory(string path)
+        public static string? GetDirectory(string path)
         {
            return Path.GetDirectoryName(path);
         }
@@ -195,7 +195,7 @@ namespace Bee.Base
         /// <param name="path">The path string.</param>
         public static string GetParentDirectory(string path)
         {
-            return Directory.GetParent(path).FullName;
+            return Directory.GetParent(path)!.FullName;
         }
 
         /// <summary>
@@ -251,7 +251,7 @@ namespace Bee.Base
             if (StrFunc.IsEmpty(AppDomain.CurrentDomain.RelativeSearchPath))
                 return AppDomain.CurrentDomain.BaseDirectory;
             else
-                return AppDomain.CurrentDomain.RelativeSearchPath;
+                return AppDomain.CurrentDomain.RelativeSearchPath!;
         }
 
         #endregion

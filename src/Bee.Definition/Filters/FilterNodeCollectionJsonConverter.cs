@@ -39,7 +39,7 @@ namespace Bee.Definition.Filters
         /// <param name="typeToConvert">The target object type.</param>
         /// <param name="options">The serializer options.</param>
         /// <returns>The deserialized <see cref="FilterNodeCollection"/> object.</returns>
-        public override FilterNodeCollection Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override FilterNodeCollection? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
                 return null;
@@ -54,7 +54,7 @@ namespace Bee.Definition.Filters
             foreach (var element in doc.RootElement.EnumerateArray())
             {
                 // Determine the target type based on the Kind property
-                FilterNode node;
+                FilterNode? node;
                 if (element.TryGetProperty("kind", out var kindProp))
                 {
                     var kindValue = kindProp.ValueKind == JsonValueKind.String

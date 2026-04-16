@@ -94,7 +94,7 @@ namespace Bee.Definition.Security
                 varName = "BEE_MASTER_KEY";
             }
 
-            string value = Environment.GetEnvironmentVariable(varName);
+            string? value = Environment.GetEnvironmentVariable(varName);
 
             if (string.IsNullOrWhiteSpace(value))
             {

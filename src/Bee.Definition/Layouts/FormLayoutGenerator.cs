@@ -96,12 +96,12 @@ namespace Bee.Definition.Layouts
                     layoutItem.ProgId = field.RelationProgId;
                 }
 
-                group.Items.Add(layoutItem);
+                group.Items!.Add(layoutItem);
             }
 
-            if (group.Items.Count > 0)
+            if (group.Items!.Count > 0)
             {
-                formLayout.Groups.Add(group);
+                formLayout.Groups!.Add(group);
             }
         }
 
@@ -140,13 +140,13 @@ namespace Bee.Definition.Layouts
                     NumberFormat = field.NumberFormat
                 };
 
-                layoutGrid.Columns.Add(column);
+                layoutGrid.Columns!.Add(column);
             }
 
-            if (layoutGrid.Columns.Count > 0)
+            if (layoutGrid.Columns!.Count > 0)
             {
-                group.Items.Add(layoutGrid);
-                formLayout.Groups.Add(group);
+                group.Items!.Add(layoutGrid);
+                formLayout.Groups!.Add(group);
             }
         }
 

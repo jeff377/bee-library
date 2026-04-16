@@ -28,9 +28,9 @@ namespace Bee.Db.Query
         /// </summary>
         /// <param name="sortFields">The collection of sort fields.</param>
         /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
-        public string Build(SortFieldCollection sortFields, SelectContext selectContext = null)
+        public string Build(SortFieldCollection? sortFields, SelectContext? selectContext = null)
         {
-            if (BaseFunc.IsEmpty(sortFields)) { return string.Empty; }
+            if (sortFields == null || BaseFunc.IsEmpty(sortFields)) { return string.Empty; }
 
             var mappedSortFields = (selectContext != null)
                    ? RemapSortFields(sortFields, selectContext)

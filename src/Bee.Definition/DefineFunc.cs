@@ -29,7 +29,7 @@ namespace Bee.Definition
         /// <param name="defineType">The define data type.</param>
         public static Type GetDefineType(DefineType defineType)
         {
-            if (!DefineTypeNames.TryGetValue(defineType, out string typeName))
+            if (!DefineTypeNames.TryGetValue(defineType, out string? typeName))
                 throw new NotSupportedException($"Type not found: {defineType}");
             // Get the current assembly
             var assembly = typeof(DefineFunc).Assembly;
@@ -114,11 +114,11 @@ namespace Bee.Definition
             var grid = new LayoutGrid();
             grid.TableName = formDefine.ProgId;
             // Add sys_RowID hidden column
-            grid.Columns.Add(SysFields.RowId, "Row ID", ColumnControlType.TextEdit).Visible = false;
+            grid.Columns!.Add(SysFields.RowId, "Row ID", ColumnControlType.TextEdit).Visible = false;
             // Add list display columns
             foreach (string fieldName in fieldNames)
             {
-                var field = table.Fields[fieldName];
+                var field = table!.Fields![fieldName];
                 if (field != null)
                 {
                     var column = ToLayoutColumn(field);

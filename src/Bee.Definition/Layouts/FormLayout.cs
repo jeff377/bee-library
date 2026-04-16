@@ -17,7 +17,7 @@ namespace Bee.Definition.Layouts
     [TreeNode]
     public class FormLayout : IObjectSerializeFile
     {
-        private LayoutGroupCollection _groups = null;
+        private LayoutGroupCollection? _groups = null;
 
         #region Constructors
 
@@ -46,7 +46,7 @@ namespace Bee.Definition.Layouts
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_groups, serializeState);
+            BaseFunc.SetSerializeState(_groups!, serializeState);
         }
 
         /// <summary>
@@ -96,12 +96,12 @@ namespace Bee.Definition.Layouts
         [Description("Layout group collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public LayoutGroupCollection Groups
+        public LayoutGroupCollection? Groups
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _groups)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _groups!)) { return null; }
                 if (_groups == null) { _groups = new LayoutGroupCollection(); }
                 return _groups;
             }
@@ -111,11 +111,11 @@ namespace Bee.Definition.Layouts
         /// Finds the layout item for the specified field name.
         /// </summary>
         /// <param name="fieldName">The field name.</param>
-        public LayoutItem FindItem(string fieldName)
+        public LayoutItem? FindItem(string fieldName)
         {
-            foreach (LayoutGroup group in this.Groups)
+            foreach (LayoutGroup group in this.Groups!)
             {
-                foreach (LayoutItem item in group.Items)
+                foreach (LayoutItem item in group.Items!)
                 {
                     if (StrFunc.IsEquals(item.FieldName, fieldName))
                         return item;

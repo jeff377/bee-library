@@ -12,6 +12,6 @@ namespace Bee.Db.Query
         /// </summary>
         /// <param name="sortFields">The collection of sort fields.</param>
         /// <param name="selectContext">The field source mappings and table JOIN relationships for the query.</param>
-        string Build(SortFieldCollection sortFields, SelectContext selectContext);
+        string Build(SortFieldCollection? sortFields, SelectContext? selectContext);
     }
 }

@@ -25,7 +25,7 @@ namespace Bee.ObjectCaching.Define
         /// <summary>
         /// Creates an instance of the database settings.
         /// </summary>
-        protected override DatabaseSettings CreateInstance()
+        protected override DatabaseSettings? CreateInstance()
         {
             string filePath = DefinePathInfo.GetDatabaseSettingsFilePath();
             if (!FileFunc.FileExists(filePath))

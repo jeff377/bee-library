@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
     <Description>Runtime caching of definitions and related system data to improve performance.</Description>    
     <PackageTags>bee.net;cache;memory;performance;data</PackageTags>
   </PropertyGroup>

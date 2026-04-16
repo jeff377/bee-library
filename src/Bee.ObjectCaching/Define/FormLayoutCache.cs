@@ -29,7 +29,7 @@ namespace Bee.ObjectCaching.Define
         /// Creates an instance of the form layout.
         /// </summary>
         /// <param name="key">The member key, which is the layout identifier.</param>
-        protected override FormLayout CreateInstance(string key)
+        protected override FormLayout? CreateInstance(string key)
         {
             // Layout identifier
             string layoutId = key;

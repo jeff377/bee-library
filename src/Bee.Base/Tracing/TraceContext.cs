@@ -42,12 +42,12 @@ namespace Bee.Base.Tracing
         /// <summary>
         /// Gets the trace object; content is interpreted based on Category.
         /// </summary>
-        public object Tag { get; }
+        public object? Tag { get; }
 
         /// <summary>
         /// Initializes a new instance of <see cref="TraceContext"/>. Only <see cref="TraceListener"/> may create instances.
         /// </summary>
-        internal TraceContext(TraceLayer layer, string name, string detail, string category = "", object tag = null)
+        internal TraceContext(TraceLayer layer, string name, string detail, string category = "", object? tag = null)
         {
             Layer = layer;
             Name = name ?? string.Empty;

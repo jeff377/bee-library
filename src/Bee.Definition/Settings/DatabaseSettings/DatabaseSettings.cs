@@ -19,8 +19,8 @@ namespace Bee.Definition.Settings
     [TreeNode("Database Settings")]
     public class DatabaseSettings : IObjectSerializeFile, IObjectSerializeProcess, ISerializableClone
     {
-        private DatabaseServerCollection _servers = null;
-        private DatabaseItemCollection _items = null;
+        private DatabaseServerCollection? _servers = null;
+        private DatabaseItemCollection? _items = null;
 
         #region Constructors
 
@@ -50,8 +50,8 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_servers, serializeState);
-            BaseFunc.SetSerializeState(_items, serializeState);
+            BaseFunc.SetSerializeState(_servers!, serializeState);
+            BaseFunc.SetSerializeState(_items!, serializeState);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Bee.Definition.Settings
 
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
-            foreach (var server in Servers)
+            foreach (var server in Servers!)
             {
                 if (StrFunc.IsNotEmpty(server.Password) && !server.Password.StartsWith("enc:"))
                 {
@@ -96,7 +96,7 @@ namespace Bee.Definition.Settings
                 }
             }
 
-            foreach (var item in Items)
+            foreach (var item in Items!)
             {
                 if (StrFunc.IsNotEmpty(item.Password) && !item.Password.StartsWith("enc:"))
                 {
@@ -126,7 +126,7 @@ namespace Bee.Definition.Settings
 
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
-            foreach (var server in Servers)
+            foreach (var server in Servers!)
             {
                 if (StrFunc.IsNotEmpty(server.Password) && server.Password.StartsWith("enc:"))
                 {
@@ -144,7 +144,7 @@ namespace Bee.Definition.Settings
                 }
             }
 
-            foreach (var item in Items)
+            foreach (var item in Items!)
             {
                 if (StrFunc.IsNotEmpty(item.Password) && item.Password.StartsWith("enc:"))
                 {
@@ -189,12 +189,12 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Database server collection.")]
         [DefaultValue(null)]
-        public DatabaseServerCollection Servers
+        public DatabaseServerCollection? Servers
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _servers)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _servers!)) { return null; }
                 if (_servers == null) { _servers = new DatabaseServerCollection(); }
                 return _servers;
             }
@@ -205,12 +205,12 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Database connection settings collection.")]
         [DefaultValue(null)]
-        public DatabaseItemCollection Items
+        public DatabaseItemCollection? Items
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _items)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _items!)) { return null; }
                 if (_items == null) { _items = new DatabaseItemCollection(); }
                 return _items;
             }
@@ -223,11 +223,11 @@ namespace Bee.Definition.Settings
         {
             var copy = new DatabaseSettings();
 
-            foreach (var server in Servers)
-                copy.Servers.Add(server.Clone());
+            foreach (var server in Servers!)
+                copy.Servers!.Add(server.Clone());
 
-            foreach (var item in Items)
-                copy.Items.Add(item.Clone());
+            foreach (var item in Items!)
+                copy.Items!.Add(item.Clone());
 
             return copy;
         }

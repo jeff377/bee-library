@@ -39,7 +39,7 @@ namespace Bee.Db.Query
             _currentTableAlias = "A";
 
             // For foreign key fields, build JOIN relationships between tables
-            foreach (var field in _formTable.Fields)
+            foreach (var field in _formTable.Fields!)
             {
                 // Skip non-foreign-key fields
                 if (field.Type != FieldType.DbField || StrFunc.IsEmpty(field.RelationProgId)) { continue; }
@@ -74,7 +74,7 @@ namespace Bee.Db.Query
                 throw new InvalidOperationException(
                     $"Form definition '{foreignKeyField.RelationProgId}' not found for field '{foreignKeyField.FieldName}'.");
             }
-            var srcTable = srcFormDefine.MasterTable;
+            var srcTable = srcFormDefine.MasterTable!;
 
             // Create the JOIN entry if it does not already exist
             var join = context.Joins.GetOrDefault(key);
@@ -95,7 +95,7 @@ namespace Bee.Db.Query
 
             foreach (var mapping in fieldMappings)
             {
-                var srcField = srcTable.Fields.GetOrDefault(mapping.SourceField);
+                var srcField = srcTable.Fields!.GetOrDefault(mapping.SourceField);
                 if (srcField == null)
                 {
                     throw new InvalidOperationException(
@@ -190,9 +190,9 @@ namespace Bee.Db.Query
         /// <param name="destinationField">The destination field name.</param>
         private FieldMappingCollection GetSingleRelationFieldMappings(FormField foreignKeyField, string destinationField)
         {
-            var fieldMapping = foreignKeyField.RelationFieldMappings.FindByDestination(destinationField);
+            var fieldMapping = foreignKeyField.RelationFieldMappings!.FindByDestination(destinationField);
             var result = new FieldMappingCollection();
-            result.Add(fieldMapping.SourceField, fieldMapping.DestinationField);
+            result.Add(fieldMapping!.SourceField, fieldMapping.DestinationField);
             return result;
         }
     }

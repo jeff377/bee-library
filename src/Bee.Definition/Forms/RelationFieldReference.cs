@@ -40,17 +40,17 @@ namespace Bee.Definition.Forms
         /// <summary>
         /// Gets or sets the foreign key field.
         /// </summary>
-        public FormField ForeignKeyField { get; set; }
+        public FormField ForeignKeyField { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the program ID of the relation source.
         /// </summary>
-        public string SourceProgId { get; set; }
+        public string SourceProgId { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the field name of the relation source.
         /// </summary>
-        public string SourceField { get; set; }
+        public string SourceField { get; set; } = string.Empty;
 
         /// <summary>
         /// Returns a string representation of this object.

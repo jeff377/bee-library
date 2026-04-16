@@ -108,7 +108,7 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Deserializes JSON into a <see cref="DataTable"/> with full metadata restoration.
         /// </summary>
-        public override DataTable Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override DataTable? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
                 return null;
@@ -222,7 +222,7 @@ namespace Bee.Base.Serialization
             while (reader.Read() && reader.TokenType != JsonTokenType.EndArray)
             {
                 if (reader.TokenType == JsonTokenType.String)
-                    list.Add(reader.GetString());
+                    list.Add(reader.GetString()!);
             }
             return list;
         }
@@ -268,16 +268,16 @@ namespace Bee.Base.Serialization
             return list;
         }
 
-        private static Dictionary<string, object> ReadValueMap(ref Utf8JsonReader reader, Dictionary<string, Type> typeLookup)
+        private static Dictionary<string, object?> ReadValueMap(ref Utf8JsonReader reader, Dictionary<string, Type> typeLookup)
         {
-            var map = new Dictionary<string, object>();
+            var map = new Dictionary<string, object?>();
             if (reader.TokenType != JsonTokenType.StartObject)
                 return map;
 
             while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
                 if (reader.TokenType != JsonTokenType.PropertyName) continue;
-                var colName = reader.GetString();
+                var colName = reader.GetString()!;
                 reader.Read();
 
                 if (reader.TokenType == JsonTokenType.Null)
@@ -299,7 +299,7 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Reads a primitive JSON value from the reader and returns it as a .NET object.
         /// </summary>
-        private static object ReadPrimitiveValue(ref Utf8JsonReader reader)
+        private static object? ReadPrimitiveValue(ref Utf8JsonReader reader)
         {
             switch (reader.TokenType)
             {
@@ -394,7 +394,7 @@ namespace Bee.Base.Serialization
             {
                 var pkCols = primaryKeys
                     .Where(pk => dt.Columns.Contains(pk))
-                    .Select(pk => dt.Columns[pk])
+                    .Select(pk => dt.Columns[pk]!)
                     .ToArray();
                 if (pkCols.Length > 0)
                     dt.PrimaryKey = pkCols;
@@ -439,7 +439,7 @@ namespace Bee.Base.Serialization
             return dt;
         }
 
-        private static void SetRowValues(DataRow row, Dictionary<string, object> values)
+        private static void SetRowValues(DataRow row, Dictionary<string, object?>? values)
         {
             if (values == null) return;
             foreach (var kvp in values)
@@ -460,14 +460,14 @@ namespace Bee.Base.Serialization
             public bool ReadOnly { get; set; }
             public int MaxLength { get; set; } = -1;
             public string Caption { get; set; } = string.Empty;
-            public object DefaultValue { get; set; }
+            public object? DefaultValue { get; set; }
         }
 
         private sealed class RowDef
         {
             public DataRowState State { get; set; } = DataRowState.Added;
-            public Dictionary<string, object> CurrentValues { get; set; }
-            public Dictionary<string, object> OriginalValues { get; set; }
+            public Dictionary<string, object?>? CurrentValues { get; set; }
+            public Dictionary<string, object?>? OriginalValues { get; set; }
         }
 
         #endregion

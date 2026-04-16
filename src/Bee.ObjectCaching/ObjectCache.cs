@@ -36,7 +36,7 @@
         /// <summary>
         /// Creates an instance of the cached object.
         /// </summary>
-        protected virtual T CreateInstance()
+        protected virtual T? CreateInstance()
         {
             return default;
         }
@@ -44,7 +44,7 @@
         /// <summary>
         /// Gets the cached object.
         /// </summary>
-        public virtual T Get()
+        public virtual T? Get()
         {
             // Get the cache key
             string key = GetKey();
@@ -56,7 +56,7 @@
             var value = CreateInstance();
             if (value != null)
             {
-                CacheInfo.Provider.Set(key, value, GetPolicy());
+                CacheInfo.Provider.Set(key, value!, GetPolicy());
             }
             return value;
         }
@@ -68,7 +68,7 @@
         public virtual void Set(T value)
         {
             string key = GetKey();
-            CacheInfo.Provider.Set(key, value, GetPolicy());
+            CacheInfo.Provider.Set(key, value!, GetPolicy());
         }
 
         /// <summary>

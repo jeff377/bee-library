@@ -16,12 +16,12 @@ namespace Bee.Base
         /// </summary>
         /// <param name="s">The string to check.</param>
         /// <param name="isTrim">Whether to trim leading and trailing whitespace before checking.</param>
-        public static bool IsEmpty(string s, bool isTrim = true)
+        public static bool IsEmpty(string? s, bool isTrim = true)
         {
             if (BaseFunc.IsNullOrDBNull(s))
                 return true;
             if (isTrim)
-                s = s.Trim();
+                s = s!.Trim();
             return (s == string.Empty);
         }
 
@@ -39,7 +39,7 @@ namespace Bee.Base
         /// </summary>
         /// <param name="s">The string to check.</param>
         /// <param name="isTrim">Whether to trim leading and trailing whitespace before checking.</param>
-        public static bool IsNotEmpty(string s, bool isTrim = true)
+        public static bool IsNotEmpty(string? s, bool isTrim = true)
         {
             return !IsEmpty(s, isTrim);
         }

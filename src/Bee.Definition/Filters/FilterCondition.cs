@@ -23,7 +23,7 @@ namespace Bee.Definition.Filters
         /// <param name="operator">The comparison operator.</param>
         /// <param name="value">The primary value.</param>
         /// <param name="secondValue">The second value (used for Between conditions).</param>
-        public FilterCondition(string fieldName, ComparisonOperator @operator, object value, object secondValue = null)
+        public FilterCondition(string fieldName, ComparisonOperator @operator, object value, object? secondValue = null)
         {
             FieldName = fieldName;
             Operator = @operator;
@@ -40,7 +40,7 @@ namespace Bee.Definition.Filters
         /// Gets or sets the field name.
         /// </summary>
         [Key(100)]
-        public string FieldName { get; set; }
+        public string FieldName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the comparison operator.
@@ -52,13 +52,13 @@ namespace Bee.Definition.Filters
         /// Gets or sets the primary value (used for Equal, Like, &gt;, etc.).
         /// </summary>
         [Key(102)]
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         /// <summary>
         /// Gets or sets the second value (used for Between conditions).
         /// </summary>
         [Key(103)]
-        public object SecondValue { get; set; }
+        public object? SecondValue { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether to ignore this condition when the value is null.
@@ -167,7 +167,7 @@ namespace Bee.Definition.Filters
                     break;
             }
 
-            string valueStr;
+            string? valueStr;
             if (Operator == ComparisonOperator.In && Value is IEnumerable<object> values)
             {
                 valueStr = $"({string.Join(", ", values)})";
@@ -183,8 +183,8 @@ namespace Bee.Definition.Filters
 
             if (Operator == ComparisonOperator.Between)
             {
-                string fromStr = Value is string fs ? $"'{fs}'" : Value?.ToString();
-                string toStr = SecondValue is string ts ? $"'{ts}'" : SecondValue?.ToString();
+                string? fromStr = Value is string fs ? $"'{fs}'" : Value?.ToString();
+                string? toStr = SecondValue is string ts ? $"'{ts}'" : SecondValue?.ToString();
                 return $"{FieldName} {op} {fromStr} AND {toStr}";
             }
             if (Operator == ComparisonOperator.StartsWith)

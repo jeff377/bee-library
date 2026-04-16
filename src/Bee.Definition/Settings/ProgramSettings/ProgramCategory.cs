@@ -17,7 +17,7 @@ namespace Bee.Definition.Settings
     [TreeNode]
     public class ProgramCategory : KeyCollectionItem
     {
-        private ProgramItemCollection _items = null;
+        private ProgramItemCollection? _items = null;
 
         #region Constructors
 
@@ -64,12 +64,12 @@ namespace Bee.Definition.Settings
         [Description("Program item collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public ProgramItemCollection Items
+        public ProgramItemCollection? Items
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
                 if (_items == null) { _items = new ProgramItemCollection(this); }
                 return _items;
             }
@@ -82,7 +82,7 @@ namespace Bee.Definition.Settings
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_items, serializeState);
+            BaseFunc.SetSerializeState(_items!, serializeState);
         }
 
         /// <summary>

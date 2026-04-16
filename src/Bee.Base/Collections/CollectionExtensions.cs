@@ -14,12 +14,12 @@ namespace Bee.Base.Collections
         /// <param name="collection">The property collection.</param>
         /// <param name="key">The property key.</param>
         /// <param name="defaultValue">The default value to return if the key is not found.</param>
-        public static T GetValue<T>(this PropertyCollection collection, string key, object defaultValue)
+        public static T? GetValue<T>(this PropertyCollection collection, string key, object? defaultValue)
         {
             if (collection.Contains(key))
-                return (T)collection[key];
+                return (T?)collection[key];
             else
-                return (T)defaultValue;
+                return (T?)defaultValue;
         }
     }
 }

@@ -8,7 +8,7 @@
         /// <summary>
         /// Gets the owner of this collection.
         /// </summary>
-        object Owner { get; }
+        object? Owner { get; }
 
         /// <summary>
         /// Changes the key of an existing item in the collection.

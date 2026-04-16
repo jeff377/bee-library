@@ -17,7 +17,7 @@ namespace Bee.Definition.Settings
     [TreeNode]
     public class DbSchema : KeyCollectionItem
     {
-        private TableItemCollection _tables = null;
+        private TableItemCollection? _tables = null;
 
         /// <summary>
         /// Gets or sets the database name.
@@ -43,12 +43,12 @@ namespace Bee.Definition.Settings
         [Description("Table collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public TableItemCollection Tables
+        public TableItemCollection? Tables
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _tables)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _tables!)) { return null; }
                 if (_tables == null) { _tables = new TableItemCollection(this); }
                 return _tables;
             }
@@ -61,7 +61,7 @@ namespace Bee.Definition.Settings
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_tables, serializeState);
+            BaseFunc.SetSerializeState(_tables!, serializeState);
         }
 
         /// <summary>

@@ -31,7 +31,7 @@ namespace Bee.Base
         /// Called by the application to record the start, end, and individual events in the execution flow,
         /// enabling performance analysis and exception tracing.
         /// </summary>
-        public static ITraceListener TraceListener { get; set; } = null;
+        public static ITraceListener? TraceListener { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether debug mode is enabled.

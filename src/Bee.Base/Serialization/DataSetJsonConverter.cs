@@ -67,7 +67,7 @@ namespace Bee.Base.Serialization
         /// <summary>
         /// Deserializes JSON into a <see cref="DataSet"/> with full metadata restoration.
         /// </summary>
-        public override DataSet Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override DataSet? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
                 return null;

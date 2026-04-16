@@ -26,7 +26,7 @@ namespace Bee.Definition.Forms
         /// Finds a mapping by its destination field name.
         /// </summary>
         /// <param name="destinationField">The destination field name.</param>
-        public FieldMapping FindByDestination(string destinationField)
+        public FieldMapping? FindByDestination(string destinationField)
         {
             foreach (FieldMapping item in this)
             {

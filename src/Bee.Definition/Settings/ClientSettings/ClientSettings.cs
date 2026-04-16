@@ -84,7 +84,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         [Description("Service endpoint list.")]
         [DefaultValue(null)]
-        public EndpointItemCollection EndpointItems
+        public EndpointItemCollection? EndpointItems
         {
             get
             {

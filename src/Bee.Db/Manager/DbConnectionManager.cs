@@ -22,7 +22,7 @@ namespace Bee.Db.Manager
             GlobalEvents.DatabaseSettingsChanged += OnDatabaseSettingsChanged;
         }
 
-        private static void OnDatabaseSettingsChanged(object sender, EventArgs e)
+        private static void OnDatabaseSettingsChanged(object? sender, EventArgs e)
         {
             Clear();
         }
@@ -61,7 +61,7 @@ namespace Bee.Db.Manager
             var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
 
             // Get the database item
-            var databaseItem = settings.Items[databaseId];
+            var databaseItem = settings.Items![databaseId];
             if (databaseItem == null)
                 throw new InvalidOperationException($"DatabaseItem for id '{databaseId}' was not found.");
 
@@ -75,7 +75,7 @@ namespace Bee.Db.Manager
             // If a ServerId is specified, retrieve the connection string template from the corresponding server
             if (StrFunc.IsNotEmpty(databaseItem.ServerId))
             {
-                var server = settings.Servers[databaseItem.ServerId];
+                var server = settings.Servers![databaseItem.ServerId];
                 if (server == null)
                 {
                     throw new InvalidOperationException(

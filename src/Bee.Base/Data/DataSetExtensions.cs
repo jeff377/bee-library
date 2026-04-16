@@ -11,7 +11,7 @@ namespace Bee.Base.Data
         /// Gets the master table from the dataset.
         /// </summary>
         /// <param name="dataSet">The dataset.</param>
-        public static DataTable GetMasterTable(this DataSet dataSet)
+        public static DataTable? GetMasterTable(this DataSet dataSet)
         {
             if (dataSet == null) { return null; }
             if (StrFunc.IsEmpty(dataSet.DataSetName)) { return null; }
@@ -24,10 +24,10 @@ namespace Bee.Base.Data
         /// Gets the first row of the master table.
         /// </summary>
         /// <param name="dataSet">The dataset.</param>
-        public static DataRow GetMasterRow(this DataSet dataSet)
+        public static DataRow? GetMasterRow(this DataSet dataSet)
         {
             var table = GetMasterTable(dataSet);
-            if (table.IsEmpty()) { return null; }
+            if (table == null || table.IsEmpty()) { return null; }
             return table.Rows[0];
         }
 
@@ -41,7 +41,7 @@ namespace Bee.Base.Data
             if (dataSet == null || (dataSet.Tables.Count == 0)) { return true; }
             // Also considered empty if the master table has no rows
             var table = GetMasterTable(dataSet);
-            return table.IsEmpty();
+            return table == null || table.IsEmpty();
         }
     }
 }

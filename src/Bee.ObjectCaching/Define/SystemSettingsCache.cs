@@ -26,7 +26,7 @@ namespace Bee.ObjectCaching.Define
         /// Creates an instance of the system settings.
         /// </summary>
         /// <returns>The system settings instance.</returns>
-        protected override SystemSettings CreateInstance()
+        protected override SystemSettings? CreateInstance()
         {
             string sFilePath = DefinePathInfo.GetSystemSettingsFilePath();
             if (!FileFunc.FileExists(sFilePath))

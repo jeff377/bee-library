@@ -19,8 +19,8 @@ namespace Bee.Definition.Forms
     [TreeNode]
     public class FormField : KeyCollectionItem
     {
-        private FieldMappingCollection _relationFieldMappings = null;
-        private FieldMappingCollection _lookupFieldMappings = null;
+        private FieldMappingCollection? _relationFieldMappings = null;
+        private FieldMappingCollection? _lookupFieldMappings = null;
 
         #region Constructors
 
@@ -160,12 +160,12 @@ namespace Bee.Definition.Forms
         [Category("Relation")]
         [Description("Field mapping collection from the relation source to local fields.")]
         [DefaultValue(null)]
-        public FieldMappingCollection RelationFieldMappings
+        public FieldMappingCollection? RelationFieldMappings
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _relationFieldMappings)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _relationFieldMappings!)) { return null; }
                 if (_relationFieldMappings == null) { _relationFieldMappings = new FieldMappingCollection(); }
                 return _relationFieldMappings;
             }
@@ -188,12 +188,12 @@ namespace Bee.Definition.Forms
         [Category("Relation")]
         [Description("Field mapping collection for the lookup/selection window.")]
         [DefaultValue(null)]
-        public FieldMappingCollection LookupFieldMappings
+        public FieldMappingCollection? LookupFieldMappings
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _lookupFieldMappings)) { return null; }
+                if (BaseFunc.IsSerializeEmpty(SerializeState, _lookupFieldMappings!)) { return null; }
                 if (_lookupFieldMappings == null) { _lookupFieldMappings = new FieldMappingCollection(); }
                 return _lookupFieldMappings;
             }
@@ -223,12 +223,12 @@ namespace Bee.Definition.Forms
         [Browsable(false)]
         [JsonIgnore]
         [TreeNodeIgnore]
-        public FormTable Table
+        public FormTable? Table
         {
             get
             {
                 if (Collection == null) { return null; }
-                return (Collection as FormFieldCollection).Owner as FormTable;
+                return (Collection as FormFieldCollection)?.Owner as FormTable;
             }
         }
 
@@ -239,8 +239,8 @@ namespace Bee.Definition.Forms
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_relationFieldMappings, serializeState);
-            BaseFunc.SetSerializeState(_lookupFieldMappings, serializeState);
+            BaseFunc.SetSerializeState(_relationFieldMappings!, serializeState);
+            BaseFunc.SetSerializeState(_lookupFieldMappings!, serializeState);
         }
 
         /// <summary>

@@ -14,7 +14,7 @@ namespace Bee.Definition
         /// </summary>
         /// <param name="defineType">The define data type.</param>
         /// <param name="keys">The keys used to retrieve the define data.</param>
-        object GetDefine(DefineType defineType, string[] keys = null);
+        object GetDefine(DefineType defineType, string[]? keys = null);
 
         /// <summary>
         /// Saves define data.
@@ -22,7 +22,7 @@ namespace Bee.Definition
         /// <param name="defineType">The define data type.</param>
         /// <param name="defineObject">The define data object.</param>
         /// <param name="keys">The keys used to save the define data.</param>
-        void SaveDefine(DefineType defineType, object defineObject, string[] keys = null);
+        void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null);
 
         /// <summary>
         /// Gets the system settings.

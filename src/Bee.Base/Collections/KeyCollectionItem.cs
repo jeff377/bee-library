@@ -14,7 +14,7 @@ namespace Bee.Base.Collections
     public abstract class KeyCollectionItem : IKeyCollectionItem, ITagProperty, IObjectSerialize
     {
         private string _key = string.Empty;
-        private IKeyCollectionBase _collection = null;
+        private IKeyCollectionBase? _collection;
 
         #region IKeyCollectionItem Interface
 
@@ -45,7 +45,7 @@ namespace Bee.Base.Collections
         /// Sets the collection that owns this item.
         /// </summary>
         /// <param name="collection">The owning collection.</param>
-        public void SetCollection(IKeyCollectionBase collection)
+        public void SetCollection(IKeyCollectionBase? collection)
         {
             _collection = collection;
         }
@@ -68,7 +68,7 @@ namespace Bee.Base.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public object Tag { get; set; } = null;
+        public object? Tag { get; set; }
 
         #endregion
 
@@ -98,7 +98,7 @@ namespace Bee.Base.Collections
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
         [TreeNodeIgnore]
-        public IKeyCollectionBase Collection
+        public IKeyCollectionBase? Collection
         {
             get { return _collection; }
         }

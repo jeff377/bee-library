@@ -12,6 +12,6 @@ namespace Bee.Base
         /// <summary>
         /// Gets or sets additional information stored in the tag.
         /// </summary>
-        object Tag { get; set; }
+        object? Tag { get; set; }
     }
 }

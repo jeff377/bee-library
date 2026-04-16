@@ -12,7 +12,7 @@ namespace Bee.Definition.Storage
         /// <summary>
         /// Gets the database schema settings.
         /// </summary>
-        DbSchemaSettings GetDbSchemaSettings();
+        DbSchemaSettings? GetDbSchemaSettings();
 
         /// <summary>
         /// Saves the database schema settings.
@@ -25,7 +25,7 @@ namespace Bee.Definition.Storage
         /// </summary>
         /// <param name="dbName">The database name.</param>
         /// <param name="tableName">The table name.</param>
-        TableSchema GetTableSchema(string dbName, string tableName);
+        TableSchema? GetTableSchema(string dbName, string tableName);
 
         /// <summary>
         /// Saves the table schema for the specified database.
@@ -38,7 +38,7 @@ namespace Bee.Definition.Storage
         /// Gets the form schema for the specified program.
         /// </summary>
         /// <param name="progId">The program ID.</param>
-        FormSchema GetFormSchema(string progId);
+        FormSchema? GetFormSchema(string progId);
 
         /// <summary>
         /// Saves the form schema.
@@ -50,7 +50,7 @@ namespace Bee.Definition.Storage
         /// Gets the form layout for the specified layout ID.
         /// </summary>
         /// <param name="layoutId">The form layout ID.</param>
-        FormLayout GetFormLayout(string layoutId);
+        FormLayout? GetFormLayout(string layoutId);
 
         /// <summary>
         /// Saves the form layout.

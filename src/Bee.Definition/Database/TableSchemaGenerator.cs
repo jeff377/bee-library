@@ -51,7 +51,7 @@ namespace Bee.Definition.Database
                     DefaultValue = field.DefaultValue
                 };
 
-                tableSchema.Fields.Add(dbField);
+                tableSchema.Fields!.Add(dbField);
             }
         }
 
@@ -64,16 +64,16 @@ namespace Bee.Definition.Database
             if (tableSchema.Fields == null) return;
 
             // Create primary key index
-            if (tableSchema.Fields.Contains(SysFields.No))
-                tableSchema.Indexes.AddPrimaryKey(SysFields.No);
+            if (tableSchema.Fields!.Contains(SysFields.No))
+                tableSchema.Indexes!.AddPrimaryKey(SysFields.No);
 
             // Create unique row identifier index
             if (tableSchema.Fields.Contains(SysFields.RowId))
-                tableSchema.Indexes.Add("rx_{0}", SysFields.RowId, true);
+                tableSchema.Indexes!.Add("rx_{0}", SysFields.RowId, true);
 
             // Create unique sequential number index
             if (tableSchema.Fields.Contains(SysFields.Id))
-                tableSchema.Indexes.Add("uk_{0}", SysFields.Id, true);
+                tableSchema.Indexes!.Add("uk_{0}", SysFields.Id, true);
 
             // Create foreign key indexes
             if (formTable.Fields == null) { return; }
@@ -82,7 +82,7 @@ namespace Bee.Definition.Database
                 if (StrFunc.IsNotEmpty(field.RelationProgId))
                 {
                     // Include field name to avoid duplicates
-                    tableSchema.Indexes.Add("fk_{0}_{field.FieldName}", field.FieldName, false);
+                    tableSchema.Indexes!.Add("fk_{0}_{field.FieldName}", field.FieldName, false);
                 }
             }
         }

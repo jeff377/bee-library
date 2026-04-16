@@ -42,7 +42,7 @@ namespace Bee.Base.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public object Owner { get; } = null;
+        public object? Owner { get; }
 
         /// <summary>
         /// Changes the key of an existing item in the collection.
@@ -116,7 +116,7 @@ namespace Bee.Base.Collections
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public object Tag { get; set; } = null;
+        public object? Tag { get; set; }
 
         #endregion
 
@@ -154,7 +154,7 @@ namespace Bee.Base.Collections
         /// Returns the item with the specified key, or the default value if not found.
         /// </summary>
         /// <param name="key">The key to look up.</param>
-        public T GetOrDefault(string key)
+        public T? GetOrDefault(string key)
         {
             if (Contains(key))
                 return this[key];

@@ -9,7 +9,7 @@
         /// Sets the collection that owns this item.
         /// </summary>
         /// <param name="collection">The owning collection.</param>
-        void SetCollection(ICollectionBase collection);
+        void SetCollection(ICollectionBase? collection);
 
         /// <summary>
         /// Removes this item from its owning collection.

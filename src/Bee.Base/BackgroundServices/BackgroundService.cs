@@ -11,11 +11,11 @@ namespace Bee.Base.BackgroundServices
     /// </summary>
     public abstract class BackgroundService
     {
-        private System.Timers.Timer _Timer = null;
+        private System.Timers.Timer _Timer = null!;
         private BackgroundServiceStatus _Status = BackgroundServiceStatus.Stopped;
         private int _ThreadCount = 1;
-        private ConcurrentQueue<BackgroundAction> _TaskQueue = null;
-        private SemaphoreSlim _Semaphore = null;
+        private ConcurrentQueue<BackgroundAction>? _TaskQueue;
+        private SemaphoreSlim? _Semaphore;
         private DateTime _NextTime = DateTime.MinValue;
         private int _Interval = 10000;
 
@@ -37,7 +37,7 @@ namespace Bee.Base.BackgroundServices
         /// <summary>
         /// Event raised when the background service status changes.
         /// </summary>
-        public event BackgroundServiceStatusChangedEventHandler StatusChanged;
+        public event BackgroundServiceStatusChangedEventHandler? StatusChanged;
 
         /// <summary>
         /// Raises the StatusChanged event.
@@ -91,7 +91,7 @@ namespace Bee.Base.BackgroundServices
         /// <summary>
         /// Gets the task queue.
         /// </summary>
-        public ConcurrentQueue<BackgroundAction> TaskQueue
+        public ConcurrentQueue<BackgroundAction>? TaskQueue
         {
             get { return _TaskQueue; }
         }
@@ -99,7 +99,7 @@ namespace Bee.Base.BackgroundServices
         /// <summary>
         /// Gets the thread semaphore.
         /// </summary>
-        public SemaphoreSlim Semaphore
+        public SemaphoreSlim? Semaphore
         {
             get { return _Semaphore; }
         }
@@ -200,7 +200,7 @@ namespace Bee.Base.BackgroundServices
         /// <summary>
         /// Handles the timer elapsed event.
         /// </summary>
-        private void Elapsed_EventHandler(object sender, System.Timers.ElapsedEventArgs e)
+        private void Elapsed_EventHandler(object? sender, System.Timers.ElapsedEventArgs e)
         {
             // Stop the timer
             this.Timer.Enabled = false;
@@ -246,7 +246,7 @@ namespace Bee.Base.BackgroundServices
         protected virtual void AddTasks()
         {
             // Exit if the queue already has tasks equal to or exceeding the thread count
-            if (this.TaskQueue.Count >= this.ThreadCount) { return; }
+            if (this.TaskQueue!.Count >= this.ThreadCount) { return; }
             // Exit if it is not yet time to load tasks
             if (DateTime.Now < this.NextTime) { return; }
             // Call the task-loading implementation
@@ -269,9 +269,9 @@ namespace Bee.Base.BackgroundServices
         protected void ExecuteTasks()
         {
             // Execute queued tasks on multiple threads while the service is running
-            while (this.Status == BackgroundServiceStatus.Running && this.TaskQueue.Count > 0 && this.TaskQueue.TryDequeue(out BackgroundAction backgroundAction))
+            while (this.Status == BackgroundServiceStatus.Running && this.TaskQueue!.Count > 0 && this.TaskQueue.TryDequeue(out BackgroundAction? backgroundAction))
             {
-                Debug.WriteLine($"Available thread count: {this.Semaphore.CurrentCount}");
+                Debug.WriteLine($"Available thread count: {this.Semaphore!.CurrentCount}");
                 this.Semaphore.Wait(); // Limit maximum concurrency
                 // Create a CancellationTokenSource for each task to set a timeout
                 CancellationTokenSource cts = new CancellationTokenSource(backgroundAction.Timeout);
@@ -308,7 +308,7 @@ namespace Bee.Base.BackgroundServices
         /// <param name="timeout">The timeout interval in milliseconds after which the task will be cancelled.</param>
         public void AddTask(Action<CancellationToken> action, int timeout)
         {
-            this.TaskQueue.Enqueue(new BackgroundAction(action, timeout));
+            this.TaskQueue!.Enqueue(new BackgroundAction(action, timeout));
         }
 
         /// <summary>
