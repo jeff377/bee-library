@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copy this file to .runsettings and fill in your local connection string. -->
+<!-- .runsettings is gitignored and should never be committed. -->
+<!-- Usage: dotnet test --configuration Release --settings .runsettings -->
+<RunSettings>
+  <RunConfiguration>
+    <EnvironmentVariables>
+      <!-- Local test database connection string -->
+      <BEE_TEST_DB_CONNSTR>Data Source=localhost;Initial Catalog=common;User ID=sa;Password=YOUR_PASSWORD;Encrypt=True;Trust Server Certificate=True;</BEE_TEST_DB_CONNSTR>
+    </EnvironmentVariables>
+  </RunConfiguration>
+</RunSettings>

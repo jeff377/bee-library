@@ -26,10 +26,10 @@ dotnet restore
 dotnet build <project>.csproj --configuration Release --no-restore
 
 # 執行測試（所有）
-dotnet test --configuration Release
+dotnet test --configuration Release --settings .runsettings
 
 # 執行特定測試專案
-dotnet test tests/<Project>.UnitTests/<Project>.UnitTests.csproj
+dotnet test tests/<Project>.UnitTests/<Project>.UnitTests.csproj --settings .runsettings
 
 # 封裝 NuGet
 dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nupkgs

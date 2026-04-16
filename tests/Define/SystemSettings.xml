@@ -3,7 +3,7 @@
   <CommonConfiguration>
     <Version>1.0.0</Version>
     <IsDebugMode>true</IsDebugMode>
-    <AllowedTypeNamespaces>Custom.Contracts</AllowedTypeNamespaces>
+    <AllowedTypeNamespaces></AllowedTypeNamespaces>
     <ApiPayloadOptions>
       <Serializer>messagepack</Serializer>
       <Compressor>gzip</Compressor>
@@ -27,7 +27,7 @@
       </MasterKeySource>
     </SecurityKeySettings>
     <Components>
-      <BusinessObjectProvider>Custom.Business.BusinessObjectProvider, Custom.Business</BusinessObjectProvider>
+      <BusinessObjectProvider></BusinessObjectProvider>
     </Components>
   </BackendConfiguration>
   <FrontendConfiguration />
