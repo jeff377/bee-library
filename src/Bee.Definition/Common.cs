@@ -14,15 +14,15 @@ namespace Bee.Definition
         /// <summary>
         /// Default API encryption key provider type.
         /// </summary>
-        public const string ApiEncryptionKeyProvider = "Bee.Business.DynamicApiEncryptionKeyProvider, Bee.Business";
+        public const string ApiEncryptionKeyProvider = "Bee.Business.Provider.DynamicApiEncryptionKeyProvider, Bee.Business";
         /// <summary>
         /// Default AccessToken validation provider, used to validate the validity of AccessTokens.
         /// </summary>
-        public const string AccessTokenValidationProvider = "Bee.Business.AccessTokenValidationProvider, Bee.Business";
+        public const string AccessTokenValidationProvider = "Bee.Business.Validator.AccessTokenValidationProvider, Bee.Business";
         /// <summary>
         /// Default business object provider type, used for dynamically creating BusinessObjects.
         /// </summary>
-        public const string BusinessObjectProvider = "Bee.Business.BusinessObjectProvider, Bee.Business";
+        public const string BusinessObjectProvider = "Bee.Business.BusinessObjects.BusinessObjectProvider, Bee.Business";
 
         // ---------------- Cache ----------------
         /// <summary>
@@ -32,13 +32,13 @@ namespace Bee.Definition
         /// <summary>
         /// Default cache data source provider type.
         /// </summary>
-        public const string CacheDataSourceProvider = "Bee.Business.CacheDataSourceProvider, Bee.Business";
+        public const string CacheDataSourceProvider = "Bee.Business.Provider.CacheDataSourceProvider, Bee.Business";
 
         // ---------------- Define ----------------
         /// <summary>
         /// Default define storage type.
         /// </summary>
-        public const string DefineStorage = "Bee.Definition.FileDefineStorage, Bee.Definition";
+        public const string DefineStorage = "Bee.Definition.Storage.FileDefineStorage, Bee.Definition";
         /// <summary>
         /// Default define access type.
         /// </summary>
@@ -58,11 +58,11 @@ namespace Bee.Definition
         /// <summary>
         /// Default system-level repository provider type.
         /// </summary>
-        public const string SystemRepositoryProvider = "Bee.Repository.SystemRepositoryProvider, Bee.Repository";
+        public const string SystemRepositoryProvider = "Bee.Repository.Provider.SystemRepositoryProvider, Bee.Repository";
         /// <summary>
         /// Default form-level repository provider type.
         /// </summary>
-        public const string FormRepositoryProvider = "Bee.Repository.FormRepositoryProvider, Bee.Repository";
+        public const string FormRepositoryProvider = "Bee.Repository.Provider.FormRepositoryProvider, Bee.Repository";
     }
 
     /// <summary>

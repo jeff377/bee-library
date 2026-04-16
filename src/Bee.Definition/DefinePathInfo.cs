@@ -1,3 +1,4 @@
+using System.IO;
 using Bee.Base;
 
 namespace Bee.Definition
@@ -67,10 +68,7 @@ namespace Bee.Definition
         /// <param name="tableName">The table name.</param>
         public static string GetTableSchemaFilePath(string dbName, string tableName)
         {
-            string sFilePath;
-
-            sFilePath = $@"TableSchema\{dbName}\{tableName}.TableSchema.xml";
-            return GetDefinePath(sFilePath);
+            return GetDefinePath(Path.Combine("TableSchema", dbName, $"{tableName}.TableSchema.xml"));
         }
 
         /// <summary>
@@ -79,10 +77,7 @@ namespace Bee.Definition
         /// <param name="progId">The program ID.</param>
         public static string GetFormSchemaFilePath(string progId)
         {
-            string sFilePath;
-
-            sFilePath = $@"FormSchema\{progId}.FormSchema.xml";
-            return GetDefinePath(sFilePath);
+            return GetDefinePath(Path.Combine("FormSchema", $"{progId}.FormSchema.xml"));
         }
 
         /// <summary>
@@ -91,10 +86,7 @@ namespace Bee.Definition
         /// <param name="layoutId">The form layout ID.</param>
         public static string GetFormLayoutFilePath(string layoutId)
         {
-            string sFilePath;
-
-            sFilePath = $@"FormLayout\{layoutId}.FormLayout.xml";
-            return GetDefinePath(sFilePath);
+            return GetDefinePath(Path.Combine("FormLayout", $"{layoutId}.FormLayout.xml"));
         }
     }
 }
