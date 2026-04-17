@@ -15,7 +15,7 @@ namespace Bee.Db.UnitTests
         {
             // 測試：只 Select 主檔欄位，不應產生任何 JOIN
             var builder = new SqlFormCommandBuilder("Project");
-            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name");
+            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", null, null);
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
@@ -32,7 +32,7 @@ namespace Bee.Db.UnitTests
             // 查詢 PM 的專案資料，PM 姓名開頭為「張」
             var filter = new FilterCondition("ref_pm_name", ComparisonOperator.StartsWith, "張");
             // 建立 Select 語法
-            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", filter);
+            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", filter, null);
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
@@ -66,7 +66,7 @@ namespace Bee.Db.UnitTests
             var builder = new SqlFormCommandBuilder("Project");
 
             // 假設 ref_owner_dept_name 和 ref_pm_dept_name 來自不同的參考表
-            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name,ref_owner_dept_name,ref_pm_dept_name");
+            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name,ref_owner_dept_name,ref_pm_dept_name", null, null);
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
@@ -116,8 +116,8 @@ namespace Bee.Db.UnitTests
         public void BuildSelectCommand_WithAndWithoutFields_ReturnsCommands()
         {
             var builder = new SqlFormCommandBuilder("Employee");
-            var command = builder.BuildSelectCommand("Employee", string.Empty);
-            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name");
+            var command = builder.BuildSelectCommand("Employee", string.Empty, null, null);
+            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", null, null);
         }
 
         [LocalOnlyFact]

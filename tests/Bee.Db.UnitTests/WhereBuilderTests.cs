@@ -13,7 +13,7 @@ namespace Bee.Db.UnitTests
         {
             var root = FilterCondition.Equal("DeptId", 10);
             var builder = new WhereBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(root);
+            var result = builder.Build(root, null);
             Assert.Equal("WHERE DeptId = @p0", result.WhereClause);
             Assert.NotNull(result.Parameters);
             Assert.Single(result.Parameters);
@@ -26,7 +26,7 @@ namespace Bee.Db.UnitTests
         {
             var root = FilterCondition.Contains("Name", "Lee");
             var builder = new WhereBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(root, includeWhereKeyword: false);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
             Assert.Equal("Name LIKE @p0", result.WhereClause);
             Assert.NotNull(result.Parameters);
             Assert.Equal("%Lee%", result.Parameters["@p0"]);
@@ -45,7 +45,7 @@ namespace Bee.Db.UnitTests
             );
 
             var builder = new WhereBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(root);
+            var result = builder.Build(root, null);
             Assert.StartsWith("WHERE (", result.WhereClause);
             Assert.Contains(" AND ", result.WhereClause);
             Assert.Contains(" OR ", result.WhereClause);
@@ -59,7 +59,7 @@ namespace Bee.Db.UnitTests
         {
             var root = new FilterCondition { FieldName = "Memo", Operator = ComparisonOperator.Equal, Value = null };
             var builder = new WhereBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(root);
+            var result = builder.Build(root, null);
             Assert.Equal("WHERE Memo IS NULL", result.WhereClause);
             Assert.True(result.Parameters == null || result.Parameters.Count == 0);
         }
@@ -74,7 +74,7 @@ namespace Bee.Db.UnitTests
             );
 
             var builder = new WhereBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(root);
+            var result = builder.Build(root, null);
             Assert.Equal("WHERE (DeptId = @p0)", result.WhereClause);
             Assert.Single(result.Parameters!);
         }
@@ -85,7 +85,7 @@ namespace Bee.Db.UnitTests
         {
             var root = FilterCondition.In("Id", new List<object>());
             var builder = new WhereBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(root, includeWhereKeyword: false);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
             Assert.Equal("1 = 0", result.WhereClause);
             Assert.True(result.Parameters == null || result.Parameters.Count == 0);
         }
@@ -96,7 +96,7 @@ namespace Bee.Db.UnitTests
         {
             var root = FilterCondition.In("Id", new List<object> { 1, 2, 3, 4 });
             var builder = new WhereBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(root, includeWhereKeyword: false);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
             Assert.Equal("Id IN (@p0, @p1, @p2, @p3)", result.WhereClause);
             Assert.NotNull(result.Parameters);
             Assert.Equal(4, result.Parameters.Count);
@@ -108,7 +108,7 @@ namespace Bee.Db.UnitTests
         {
             var root = new FilterGroup(); // 預設 Nodes 為空
             var builder = new WhereBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(root);
+            var result = builder.Build(root, null);
             Assert.Equal(string.Empty, result.WhereClause);
         }
 

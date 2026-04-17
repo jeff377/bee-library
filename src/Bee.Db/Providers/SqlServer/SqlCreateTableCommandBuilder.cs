@@ -64,10 +64,10 @@ namespace Bee.Db.Providers.SqlServer
         /// <summary>
         /// Gets the SQL statement for creating or upgrading a table.
         /// </summary>
-        /// <param name="dbTable">The table schema definition.</param>
-        public string GetCommandText(TableSchema dbTable)
+        /// <param name="tableSchema">The table schema definition.</param>
+        public string GetCommandText(TableSchema tableSchema)
         {
-            _dbTable = dbTable;
+            _dbTable = tableSchema;
 
             if (this.TableSchema.UpgradeAction == DbUpgradeAction.Upgrade)
                 return $"-- Upgrade table {this.TableName}\r\n{this.GetUpgradeCommandText()}";

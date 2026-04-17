@@ -29,7 +29,7 @@ namespace Bee.Api.Core.UnitTests
             Assert.Equal(original.Count, restored.Count);
             Assert.Equal(42, restored["IntValue"].Value);
             Assert.Equal("Hello", restored["StringValue"].Value);
-            Assert.Equal(true, restored["BoolValue"].Value);
+            Assert.True((bool)restored["BoolValue"].Value!);
             Assert.Equal(99.99m, restored["DecimalValue"].Value);
             Assert.Null(restored["NullValue"].Value);
         }

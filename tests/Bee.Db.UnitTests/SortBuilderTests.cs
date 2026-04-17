@@ -11,7 +11,7 @@ namespace Bee.Db.UnitTests
         public void Build_NullSorts_ReturnsEmptyString()
         {
             var builder = new SortBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(null);
+            var result = builder.Build(null, null);
             Assert.Equal(string.Empty, result);
         }
 
@@ -20,7 +20,7 @@ namespace Bee.Db.UnitTests
         public void Build_EmptySorts_ReturnsEmptyString()
         {
             var builder = new SortBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(new SortFieldCollection());
+            var result = builder.Build(new SortFieldCollection(), null);
             Assert.Equal(string.Empty, result);
         }
 
@@ -33,7 +33,7 @@ namespace Bee.Db.UnitTests
             {
                 new SortField("Name", SortDirection.Asc)
             };
-            var result = builder.Build(sorts);
+            var result = builder.Build(sorts, null);
             Assert.Equal("ORDER BY Name ASC", result);
         }
 
@@ -47,7 +47,7 @@ namespace Bee.Db.UnitTests
                 new SortField("Name", SortDirection.Asc),
                 new SortField("Age", SortDirection.Desc)
             };
-            var result = builder.Build(sorts);
+            var result = builder.Build(sorts, null);
             Assert.Equal("ORDER BY Name ASC, Age DESC", result);
         }
 
@@ -60,7 +60,7 @@ namespace Bee.Db.UnitTests
             {
                 new SortField("LEN(Name)", SortDirection.Desc)
             };
-            var result = builder.Build(sorts);
+            var result = builder.Build(sorts, null);
             Assert.Equal("ORDER BY LEN(Name) DESC", result);
         }
     }

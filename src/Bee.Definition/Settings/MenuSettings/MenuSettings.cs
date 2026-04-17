@@ -62,10 +62,10 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Sets the file path bound for serialization/deserialization.
         /// </summary>
-        /// <param name="fileName">The file name.</param>
-        public void SetObjectFilePath(string fileName)
+        /// <param name="filePath">The file path.</param>
+        public void SetObjectFilePath(string filePath)
         {
-            ObjectFilePath = fileName;
+            ObjectFilePath = filePath;
         }
 
         #endregion
