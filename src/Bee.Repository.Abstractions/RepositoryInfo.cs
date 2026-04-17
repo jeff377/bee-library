@@ -17,8 +17,7 @@ namespace Bee.Repository.Abstractions
         static RepositoryInfo()
         {
             if (SysInfo.IsSingleFile) { return; }
-            if (BackendInfo.DefineAccess == null)
-                throw new InvalidOperationException("BackendInfo.DefineAccess cannot be null. Please ensure the backend configuration is properly initialized.");
+            if (BackendInfo.DefineAccess == null) { return; }
 
             var settings = BackendInfo.DefineAccess.GetSystemSettings();
             Initialize(settings.BackendConfiguration);

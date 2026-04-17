@@ -16,7 +16,7 @@ namespace Bee.Db.UnitTests
             var result = builder.Build(root);
             Assert.Equal("WHERE DeptId = @p0", result.WhereClause);
             Assert.NotNull(result.Parameters);
-            Assert.Equal(1, result.Parameters.Count);
+            Assert.Single(result.Parameters);
             Assert.Equal(10, result.Parameters["@p0"]);
         }
 
@@ -76,8 +76,7 @@ namespace Bee.Db.UnitTests
             var builder = new WhereBuilder(DatabaseType.SQLServer);
             var result = builder.Build(root);
             Assert.Equal("WHERE (DeptId = @p0)", result.WhereClause);
-            Assert.NotNull(result.Parameters);
-            Assert.Equal(1, result.Parameters.Count);
+            Assert.Single(result.Parameters!);
         }
 
         [Fact]
