@@ -87,14 +87,9 @@ namespace Bee.Base.Security
         /// </summary>
         private static byte[] PBKDF2SHA1Legacy(string password, byte[] salt, int iterations, int outputBytes)
         {
-#pragma warning disable SYSLIB0041
-#pragma warning disable SYSLIB0060
-            using (var pbkdf2 = new Rfc2898DeriveBytes(password, salt, iterations)) // NOSONAR: legacy SHA1 required for backwards compatibility
-            {
-                return pbkdf2.GetBytes(outputBytes);
-            }
-#pragma warning restore SYSLIB0060
-#pragma warning restore SYSLIB0041
+            // NOSONAR: legacy SHA1 required for backwards compatibility with existing stored hashes.
+            return Rfc2898DeriveBytes.Pbkdf2(
+                System.Text.Encoding.UTF8.GetBytes(password), salt, iterations, HashAlgorithmName.SHA1, outputBytes);
         }
 
         /// <summary>
