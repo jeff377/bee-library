@@ -10,15 +10,17 @@ namespace Bee.Api.Client.UnitTests
     /// </summary>
     public class FormApiConnectorTests
     {
+        private const string TestProgId = "Employee";
+
         [Fact]
         [DisplayName("FormApiConnector Local 建構子應設定 ProgId 與 LocalApiServiceProvider")]
         public void Constructor_Local_SetsProgIdAndProvider()
         {
             var token = Guid.NewGuid();
-            var connector = new FormApiConnector(token, "Employee");
+            var connector = new FormApiConnector(token, TestProgId);
 
             Assert.Equal(token, connector.AccessToken);
-            Assert.Equal("Employee", connector.ProgId);
+            Assert.Equal(TestProgId, connector.ProgId);
             Assert.IsType<LocalApiServiceProvider>(connector.Provider);
         }
 
@@ -27,10 +29,10 @@ namespace Bee.Api.Client.UnitTests
         public void Constructor_Remote_SetsProgIdAndProvider()
         {
             var token = Guid.NewGuid();
-            var connector = new FormApiConnector("http://example.com/api", token, "Employee");
+            var connector = new FormApiConnector("http://example.com/api", token, TestProgId);
 
             Assert.Equal(token, connector.AccessToken);
-            Assert.Equal("Employee", connector.ProgId);
+            Assert.Equal(TestProgId, connector.ProgId);
             Assert.IsType<RemoteApiServiceProvider>(connector.Provider);
         }
 
@@ -41,7 +43,7 @@ namespace Bee.Api.Client.UnitTests
         [DisplayName("FormApiConnector Remote 建構子空白 endpoint 應拋 ArgumentException")]
         public void Constructor_RemoteEmptyEndpoint_ThrowsArgumentException(string? endpoint)
         {
-            Assert.Throws<ArgumentException>(() => new FormApiConnector(endpoint!, Guid.NewGuid(), "Employee"));
+            Assert.Throws<ArgumentException>(() => new FormApiConnector(endpoint!, Guid.NewGuid(), TestProgId));
         }
 
         [Theory]
@@ -50,7 +52,7 @@ namespace Bee.Api.Client.UnitTests
         [DisplayName("FormApiConnector.ExecuteAsync 空白 action 應拋 ArgumentException")]
         public async Task ExecuteAsync_EmptyAction_ThrowsArgumentException(string? action)
         {
-            var connector = new FormApiConnector(Guid.NewGuid(), "Employee");
+            var connector = new FormApiConnector(Guid.NewGuid(), TestProgId);
             await Assert.ThrowsAsync<ArgumentException>(async () =>
                 await connector.ExecuteAsync<object>(action!, new object(), PayloadFormat.Plain));
         }
