@@ -5,6 +5,7 @@ namespace Bee.Base.UnitTests
     /// <summary>
     /// SysInfo 型別白名單安全性測試
     /// </summary>
+    [Collection("SysInfoStatic")]
     public class SysInfoSecurityTests
     {
         [Theory]
