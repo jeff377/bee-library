@@ -14,11 +14,7 @@ namespace Bee.Base.Data
         /// <param name="datasetName">The name of the DataSet.</param>
         public static DataSet CreateDataSet(string datasetName)
         {
-            var dataSet = new DataSet(datasetName);
-#pragma warning disable SYSLIB0038
-            dataSet.RemotingFormat = SerializationFormat.Binary;
-#pragma warning restore SYSLIB0038
-            return dataSet;
+            return new DataSet(datasetName);
         }
 
         /// <summary>
@@ -35,11 +31,7 @@ namespace Bee.Base.Data
         /// <param name="tableName">The name of the DataTable.</param>
         public static DataTable CreateDataTable(string tableName)
         {
-            var table = new DataTable(tableName);
-#pragma warning disable SYSLIB0038
-            table.RemotingFormat = SerializationFormat.Binary;
-#pragma warning restore SYSLIB0038
-            return table;
+            return new DataTable(tableName);
         }
 
         /// <summary>
