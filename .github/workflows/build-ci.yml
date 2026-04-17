@@ -27,17 +27,54 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 10.0.x
 
+    - name: Setup Java (for SonarScanner)
+      uses: actions/setup-java@v4
+      with:
+        distribution: zulu
+        java-version: '17'
+
+    - name: Cache SonarCloud packages
+      uses: actions/cache@v4
+      with:
+        path: ~\.sonar\cache
+        key: ${{ runner.os }}-sonar
+        restore-keys: ${{ runner.os }}-sonar
+
+    - name: Install SonarScanner for .NET
+      run: dotnet tool install --global dotnet-sonarscanner
+
+    - name: SonarScanner Begin
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      shell: pwsh
+      run: |
+        dotnet sonarscanner begin `
+          /k:"jeff377_bee-library" `
+          /o:"jeff377" `
+          /d:sonar.token="$env:SONAR_TOKEN" `
+          /d:sonar.host.url="https://sonarcloud.io" `
+          /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" `
+          /d:sonar.coverage.exclusions="tests/**,samples/**"
+
     - name: Build
       run: dotnet build Bee.Library.slnx --configuration Release
 
-    - name: Test
-      run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal
+    - name: Test with coverage
+      run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover"
+
+    - name: SonarScanner End
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      shell: pwsh
+      run: dotnet sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
 
     - name: Pack NuGet packages (驗證用，不推送)
       run: |
