@@ -98,3 +98,4 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 @rules/releasing.md
 @rules/scanning.md
 @rules/sonarcloud.md
+@rules/pull-request.md
