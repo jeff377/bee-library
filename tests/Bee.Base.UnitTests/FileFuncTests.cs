@@ -20,9 +20,13 @@ namespace Bee.Base.UnitTests
                 if (Directory.Exists(_tempDir))
                     Directory.Delete(_tempDir, true);
             }
-            catch
+            catch (IOException)
             {
-                // best effort cleanup
+                // Temp files may still be held by test runner; ignore on teardown.
+            }
+            catch (UnauthorizedAccessException)
+            {
+                // Temp files may still be held by test runner; ignore on teardown.
             }
         }
 

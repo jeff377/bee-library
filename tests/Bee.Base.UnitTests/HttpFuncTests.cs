@@ -1,5 +1,6 @@
 using System.Collections.Specialized;
 using System.ComponentModel;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -69,6 +70,8 @@ namespace Bee.Base.UnitTests
             private readonly TcpListener _listener;
             private readonly CancellationTokenSource _cts = new();
             private readonly Task _acceptLoop;
+            private readonly string _statusLine;
+            private readonly string _body;
             private string _lastRequest = string.Empty;
 
             public int Port { get; }
@@ -77,81 +80,94 @@ namespace Bee.Base.UnitTests
             private LoopbackHttpServer(TcpListener listener, int port, string statusLine, string body)
             {
                 _listener = listener;
+                _statusLine = statusLine;
+                _body = body;
                 Port = port;
 
-                _acceptLoop = Task.Run(async () =>
+                _acceptLoop = Task.Run(RunAcceptLoopAsync);
+            }
+
+            private async Task RunAcceptLoopAsync()
+            {
+                try
                 {
-                    try
+                    while (!_cts.IsCancellationRequested)
                     {
-                        while (!_cts.IsCancellationRequested)
+                        TcpClient client;
+                        try
                         {
-                            TcpClient client;
-                            try
-                            {
-                                client = await _listener.AcceptTcpClientAsync(_cts.Token);
-                            }
-                            catch (OperationCanceledException)
-                            {
-                                break;
-                            }
+                            client = await _listener.AcceptTcpClientAsync(_cts.Token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
 
-                            using (client)
-                            using (var ns = client.GetStream())
-                            {
-                                var buffer = new byte[4096];
-                                var sb = new StringBuilder();
-                                int headerEnd = -1;
-                                int contentLength = 0;
+                        await HandleClientAsync(client);
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Listener was stopped concurrently.
+                }
+                catch (SocketException)
+                {
+                    // Listener was stopped while accepting.
+                }
+            }
 
-                                while (headerEnd < 0)
+            private async Task HandleClientAsync(TcpClient client)
+            {
+                using (client)
+                using (var ns = client.GetStream())
+                {
+                    var buffer = new byte[4096];
+                    var sb = new StringBuilder();
+                    int headerEnd = -1;
+                    int contentLength = 0;
+
+                    while (headerEnd < 0)
+                    {
+                        int read = await ns.ReadAsync(buffer);
+                        if (read == 0) break;
+                        sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
+                        int idx = sb.ToString().IndexOf("\r\n\r\n", StringComparison.Ordinal);
+                        if (idx >= 0)
+                        {
+                            headerEnd = idx + 4;
+                            foreach (var line in sb.ToString(0, idx).Split("\r\n"))
+                            {
+                                if (line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    int read = await ns.ReadAsync(buffer);
-                                    if (read == 0) break;
-                                    sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
-                                    int idx = sb.ToString().IndexOf("\r\n\r\n", StringComparison.Ordinal);
-                                    if (idx >= 0)
-                                    {
-                                        headerEnd = idx + 4;
-                                        foreach (var line in sb.ToString(0, idx).Split("\r\n"))
-                                        {
-                                            if (line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase))
-                                            {
-                                                int.TryParse(line.AsSpan("Content-Length:".Length).Trim(), out contentLength);
-                                                break;
-                                            }
-                                        }
-                                    }
+                                    int.TryParse(line.AsSpan("Content-Length:".Length).Trim(), out contentLength);
+                                    break;
                                 }
-
-                                int bodyRead = Math.Max(0, sb.Length - Math.Max(headerEnd, 0));
-                                while (headerEnd >= 0 && bodyRead < contentLength)
-                                {
-                                    int read = await ns.ReadAsync(buffer);
-                                    if (read == 0) break;
-                                    sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
-                                    bodyRead += read;
-                                }
-
-                                Volatile.Write(ref _lastRequest, sb.ToString());
-
-                                byte[] bodyBytes = Encoding.UTF8.GetBytes(body);
-                                string response =
-                                    $"{statusLine}\r\n" +
-                                    "Content-Type: text/plain; charset=utf-8\r\n" +
-                                    $"Content-Length: {bodyBytes.Length}\r\n" +
-                                    "Connection: close\r\n\r\n";
-                                byte[] header = Encoding.UTF8.GetBytes(response);
-                                await ns.WriteAsync(header);
-                                await ns.WriteAsync(bodyBytes);
-                                await ns.FlushAsync();
                             }
                         }
                     }
-                    catch
+
+                    int bodyRead = Math.Max(0, sb.Length - Math.Max(headerEnd, 0));
+                    while (headerEnd >= 0 && bodyRead < contentLength)
                     {
-                        // Swallow errors from the test server; the test assertion will surface issues.
+                        int read = await ns.ReadAsync(buffer);
+                        if (read == 0) break;
+                        sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
+                        bodyRead += read;
                     }
-                });
+
+                    Volatile.Write(ref _lastRequest, sb.ToString());
+
+                    byte[] bodyBytes = Encoding.UTF8.GetBytes(_body);
+                    string response =
+                        $"{_statusLine}\r\n" +
+                        "Content-Type: text/plain; charset=utf-8\r\n" +
+                        $"Content-Length: {bodyBytes.Length}\r\n" +
+                        "Connection: close\r\n\r\n";
+                    byte[] header = Encoding.UTF8.GetBytes(response);
+                    await ns.WriteAsync(header);
+                    await ns.WriteAsync(bodyBytes);
+                    await ns.FlushAsync();
+                }
             }
 
             public static Task<LoopbackHttpServer> StartAsync(
@@ -170,7 +186,18 @@ namespace Bee.Base.UnitTests
             {
                 _cts.Cancel();
                 _listener.Stop();
-                try { await _acceptLoop; } catch { /* ignore */ }
+                try
+                {
+                    await _acceptLoop;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected during cancellation.
+                }
+                catch (IOException)
+                {
+                    // Stream torn down during shutdown.
+                }
                 _cts.Dispose();
             }
         }
