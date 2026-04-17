@@ -100,15 +100,38 @@ namespace Bee.Base.UnitTests
                             {
                                 var buffer = new byte[4096];
                                 var sb = new StringBuilder();
-                                int read;
-                                while ((read = await ns.ReadAsync(buffer)) > 0)
+                                int headerEnd = -1;
+                                int contentLength = 0;
+
+                                while (headerEnd < 0)
                                 {
+                                    int read = await ns.ReadAsync(buffer);
+                                    if (read == 0) break;
                                     sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
-                                    if (sb.ToString().Contains("\r\n\r\n"))
+                                    int idx = sb.ToString().IndexOf("\r\n\r\n", StringComparison.Ordinal);
+                                    if (idx >= 0)
                                     {
-                                        break;
+                                        headerEnd = idx + 4;
+                                        foreach (var line in sb.ToString(0, idx).Split("\r\n"))
+                                        {
+                                            if (line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                int.TryParse(line.AsSpan("Content-Length:".Length).Trim(), out contentLength);
+                                                break;
+                                            }
+                                        }
                                     }
                                 }
+
+                                int bodyRead = Math.Max(0, sb.Length - Math.Max(headerEnd, 0));
+                                while (headerEnd >= 0 && bodyRead < contentLength)
+                                {
+                                    int read = await ns.ReadAsync(buffer);
+                                    if (read == 0) break;
+                                    sb.Append(Encoding.UTF8.GetString(buffer, 0, read));
+                                    bodyRead += read;
+                                }
+
                                 Volatile.Write(ref _lastRequest, sb.ToString());
 
                                 byte[] bodyBytes = Encoding.UTF8.GetBytes(body);
