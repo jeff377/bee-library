@@ -150,11 +150,23 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("XmlFileToObject 於檔案不存在時應拋出 InvalidOperationException")]
-        public void XmlFileToObject_MissingFile_Throws()
+        [DisplayName("XmlFileToObject 於檔案不存在時應回傳 null")]
+        public void XmlFileToObject_MissingFile_ReturnsNull()
         {
+            // FileReadText returns empty for missing files, and XmlToObject(string.Empty) returns default.
+            var result = SerializeFunc.XmlFileToObject<TestPayload>(TempPath("missing.xml"));
+            Assert.Null(result);
+        }
+
+        [Fact]
+        [DisplayName("XmlFileToObject 於內容損毀時應包成 InvalidOperationException")]
+        public void XmlFileToObject_MalformedXml_Throws()
+        {
+            string path = TempPath("broken.xml");
+            File.WriteAllText(path, "<not-valid-xml");
+
             var ex = Assert.Throws<InvalidOperationException>(
-                () => SerializeFunc.XmlFileToObject<TestPayload>(TempPath("missing.xml")));
+                () => SerializeFunc.XmlFileToObject<TestPayload>(path));
             Assert.Contains("XmlFileToObject", ex.Message);
         }
 

@@ -52,11 +52,13 @@ namespace Bee.Base.UnitTests
 
             var copy = DataSetFunc.CopyDataTable(source, new[] { "NAME", "ID" });
 
+            // CopyDataTable only filters and reorders columns; it does not rename them.
+            // Case-insensitive matching is used to identify which source columns to keep.
             Assert.Equal(2, copy.Columns.Count);
-            Assert.Equal("NAME", copy.Columns[0].ColumnName);
-            Assert.Equal("ID", copy.Columns[1].ColumnName);
+            Assert.Equal("Name", copy.Columns[0].ColumnName);
+            Assert.Equal("Id", copy.Columns[1].ColumnName);
             Assert.Equal(2, copy.Rows.Count);
-            Assert.Equal("Alice", copy.Rows[0]["NAME"]);
+            Assert.Equal("Alice", copy.Rows[0]["Name"]);
         }
 
         [Fact]
