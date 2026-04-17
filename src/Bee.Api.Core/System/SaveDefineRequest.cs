@@ -28,6 +28,6 @@ namespace Bee.Api.Core.System
         /// Gets or sets the optional filter keys.
         /// </summary>
         [Key(102)]
-        public string[] Keys { get; set; } = null;
+        public string[]? Keys { get; set; } = null;
     }
 }

@@ -51,7 +51,7 @@ namespace Bee.Api.Core.JsonRpc
         /// Gets or sets the name of the method to invoke.
         /// </summary>
         [JsonPropertyName("method")]
-        public string Method { get; set; }
+        public string Method { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the method parameters.
@@ -63,6 +63,6 @@ namespace Bee.Api.Core.JsonRpc
         /// Gets or sets the unique identifier for the request.
         /// </summary>
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
     }
 }

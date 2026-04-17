@@ -7,7 +7,7 @@ namespace Bee.Business
     /// </summary>
     public abstract class BusinessArgs
     {
-        private ParameterCollection _parameters;
+        private ParameterCollection? _parameters;
 
         /// <summary>
         /// Gets or sets the input parameter collection.

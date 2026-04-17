@@ -12,7 +12,7 @@ namespace Bee.Repository.Abstractions.System
         /// Gets the session information for the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        SessionUser GetSession(Guid accessToken);
+        SessionUser? GetSession(Guid accessToken);
 
         /// <summary>
         /// Creates a new user session.

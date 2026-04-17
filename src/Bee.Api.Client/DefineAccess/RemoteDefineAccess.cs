@@ -15,8 +15,8 @@ namespace Bee.Api.Client.DefineAccess
     /// </summary>
     public class RemoteDefineAccess : IDefineAccess
     {
-        private readonly SystemApiConnector _connector = null;
-        private readonly Dictionary<object> _list = null;
+        private readonly SystemApiConnector _connector = null!;
+        private readonly Dictionary<object> _list = null!;
 
         #region 建構函式
 
@@ -53,7 +53,7 @@ namespace Bee.Api.Client.DefineAccess
         /// </summary>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to access the definition data.</param>
-        private string GetCacheKey(DefineType defineType, string[] keys = null)
+        private string GetCacheKey(DefineType defineType, string[]? keys = null)
         {
             string cacheKey = $"{defineType}";
             if (keys != null && keys.Length > 0)
@@ -71,9 +71,9 @@ namespace Bee.Api.Client.DefineAccess
         /// <typeparam name="T">The target type.</typeparam>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to locate the definition data.</param>
-        private T GetDefine<T>(DefineType defineType, string[] keys = null)
+        private T GetDefine<T>(DefineType defineType, string[]? keys = null)
         {
-            object defineObject;
+            object? defineObject;
             string cacheKey = GetCacheKey(defineType, keys);
             if (this.List.ContainsKey(cacheKey))
             {
@@ -84,9 +84,9 @@ namespace Bee.Api.Client.DefineAccess
             {
                 // Download the definition data and add it to the cache
                 defineObject = this.Connector.GetDefine<T>(defineType, keys);
-                this.List.Add(cacheKey, defineObject);
+                this.List.Add(cacheKey, defineObject!);
             }
-            return (T)defineObject;
+            return (T)defineObject!;
         }
 
         /// <summary>
@@ -94,7 +94,7 @@ namespace Bee.Api.Client.DefineAccess
         /// </summary>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to locate the definition data.</param>
-        public object GetDefine(DefineType defineType, string[] keys = null)
+        public object GetDefine(DefineType defineType, string[]? keys = null)
         {
             switch (defineType)
             {
@@ -108,13 +108,13 @@ namespace Bee.Api.Client.DefineAccess
                     return this.GetDbSchemaSettings();
                 case DefineType.TableSchema:
                     ValidateKeys(defineType, keys, 2);
-                    return this.GetTableSchema(keys[0], keys[1]);
+                    return this.GetTableSchema(keys![0], keys[1]);
                 case DefineType.FormSchema:
                     ValidateKeys(defineType, keys, 1);
-                    return this.GetFormSchema(keys[0]);
+                    return this.GetFormSchema(keys![0]);
                 case DefineType.FormLayout:
                     ValidateKeys(defineType, keys, 1);
-                    return this.GetFormLayout(keys[0]);
+                    return this.GetFormLayout(keys![0]);
                 default:
                     throw new NotSupportedException($"DefineType '{defineType}' is not supported.");
             }
@@ -126,7 +126,7 @@ namespace Bee.Api.Client.DefineAccess
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys to validate.</param>
         /// <param name="expectedLength">The expected number of keys.</param>
-        private void ValidateKeys(DefineType defineType, string[] keys, int expectedLength)
+        private void ValidateKeys(DefineType defineType, string[]? keys, int expectedLength)
         {
             if (keys == null || keys.Length != expectedLength)
                 throw new ArgumentException($"{defineType} keys verification error. Input: {string.Join(",", keys ?? new string[0])}");
@@ -138,7 +138,7 @@ namespace Bee.Api.Client.DefineAccess
         /// <param name="defineType">The definition data type.</param>
         /// <param name="defineObject">The definition data object.</param>
         /// <param name="keys">The keys used to locate where the definition data is saved.</param>
-        public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
+        public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null)
         {
             this.Connector.SaveDefine(defineType, defineObject, keys);
         }

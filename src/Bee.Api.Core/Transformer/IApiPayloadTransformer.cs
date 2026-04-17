@@ -21,7 +21,7 @@ namespace Bee.Api.Core.Transformer
         /// <param name="payload">The processed data (typically a byte array).</param>
         /// <param name="type">The target object type.</param>
         /// <returns>The restored original data object.</returns>
-        object Decode(object payload, Type type);
+        object? Decode(object payload, Type type);
 
         /// <summary>
         /// Encrypts the specified byte data only.

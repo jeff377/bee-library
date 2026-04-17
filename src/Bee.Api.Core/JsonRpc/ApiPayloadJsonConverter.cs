@@ -14,7 +14,7 @@ namespace Bee.Api.Core.JsonRpc
     public class ApiPayloadJsonConverter<T> : JsonConverter<T> where T : ApiPayload, new()
     {
         /// <inheritdoc />
-        public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
             if (reader.TokenType == JsonTokenType.Null)
                 return null;
@@ -77,7 +77,7 @@ namespace Bee.Api.Core.JsonRpc
                             catch (FormatException)
                             {
                                 // Not a valid base64 string — keep as plain string
-                                payload.Value = elem.GetString();
+                                payload.Value = (object?)elem.GetString();
                             }
                         }
                         else
@@ -85,6 +85,7 @@ namespace Bee.Api.Core.JsonRpc
                             payload.Value = ResolvePlainValue(elem);
                         }
                         break;
+
 
                     case PayloadFormat.Plain:
                     default:
@@ -124,12 +125,12 @@ namespace Bee.Api.Core.JsonRpc
         /// <summary>
         /// Resolves a <see cref="JsonElement"/> to a .NET primitive value for Plain format payloads.
         /// </summary>
-        private static object ResolvePlainValue(JsonElement element)
+        private static object? ResolvePlainValue(JsonElement element)
         {
             switch (element.ValueKind)
             {
                 case JsonValueKind.String:
-                    return element.GetString();
+                    return (object?)element.GetString();
                 case JsonValueKind.Number:
                     if (element.TryGetInt64(out var l))
                         return l;
@@ -163,7 +164,7 @@ namespace Bee.Api.Core.JsonRpc
         public override JsonConverter CreateConverter(Type typeToConvert, JsonSerializerOptions options)
         {
             var converterType = typeof(ApiPayloadJsonConverter<>).MakeGenericType(typeToConvert);
-            return (JsonConverter)Activator.CreateInstance(converterType);
+            return (JsonConverter)Activator.CreateInstance(converterType)!;
         }
     }
 }

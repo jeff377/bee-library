@@ -73,7 +73,7 @@ namespace Bee.Api.Client.ApiServiceProvider
             string body = request.ToJson();  // Serialize input parameters to JSON
             string json = await HttpFunc.PostAsync(Endpoint, body, headers).ConfigureAwait(false); // Call the Web API
             var response = SerializeFunc.JsonToObject<JsonRpcResponse>(json);  // Deserialize JSON response
-            return response;
+            return response!;
         }
 
         /// <summary>

@@ -19,7 +19,7 @@ namespace Bee.Api.Core.JsonRpc
         /// <param name="code">The error code.</param>
         /// <param name="message">The error message.</param>
         /// <param name="data">Additional error information.</param>
-        public JsonRpcError(int code, string message, object data = null)
+        public JsonRpcError(int code, string message, object? data = null)
         {
             Code = code;
             Message = message;
@@ -36,12 +36,12 @@ namespace Bee.Api.Core.JsonRpc
         /// Gets or sets the error message.
         /// </summary>
         [JsonPropertyName("message")]
-        public string Message { get; set; }
+        public string Message { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets additional error information.
         /// </summary>
         [JsonPropertyName("data")]
-        public object Data { get; set; }
+        public object? Data { get; set; }
     }
 }

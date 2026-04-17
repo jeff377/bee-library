@@ -16,6 +16,6 @@ namespace Bee.Business.System
         /// <summary>
         /// Gets or sets the keys used to locate the definition data.
         /// </summary>
-        public string[] Keys { get; set; } = null;
+        public string[]? Keys { get; set; } = null;
     }
 }

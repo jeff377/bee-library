@@ -36,7 +36,7 @@ namespace Bee.Api.Core
         /// A new instance of the API response type with matching properties copied,
         /// or the original value if no convention-matched type exists.
         /// </returns>
-        public static object Convert(object boResult)
+        public static object? Convert(object boResult)
         {
             if (boResult == null) return null;
 
@@ -56,7 +56,7 @@ namespace Bee.Api.Core
         /// <typeparam name="T">The expected result type.</typeparam>
         /// <param name="value">The raw result value from <c>JsonRpcResult.Value</c>.</param>
         /// <returns>The value converted to type <typeparamref name="T"/>.</returns>
-        public static T ConvertResultValue<T>(object value)
+        public static T? ConvertResultValue<T>(object value)
         {
             if (value is T typed) return typed;
             if (value is JsonElement element)

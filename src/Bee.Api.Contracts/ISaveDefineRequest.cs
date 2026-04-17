@@ -20,6 +20,6 @@ namespace Bee.Api.Contracts
         /// <summary>
         /// Gets the optional filter keys.
         /// </summary>
-        string[] Keys { get; }
+        string[]? Keys { get; }
     }
 }

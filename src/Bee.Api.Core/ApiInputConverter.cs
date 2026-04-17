@@ -18,7 +18,7 @@ namespace Bee.Api.Core
         /// <param name="source">The source object (typically an API request type).</param>
         /// <param name="targetType">The target type to convert to (typically a BO args type or interface).</param>
         /// <returns>A new instance of the target type with matching properties copied from the source.</returns>
-        public static object Convert(object source, Type targetType)
+        public static object? Convert(object source, Type targetType)
         {
             if (source == null) return null;
 
@@ -39,7 +39,7 @@ namespace Bee.Api.Core
             if (targetType.IsInterface || targetType.IsAbstract)
                 return source;
 
-            var target = Activator.CreateInstance(targetType);
+            var target = Activator.CreateInstance(targetType)!;
             var sourceType = source.GetType();
 
             // Copy all public instance properties from source to target

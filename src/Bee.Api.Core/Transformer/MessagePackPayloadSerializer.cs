@@ -29,7 +29,7 @@ namespace Bee.Api.Core.Transformer
         /// </summary>
         /// <param name="bytes">The byte array to deserialize.</param>
         /// <param name="type">The type of the deserialized object.</param>
-        public object Deserialize(byte[] bytes, Type type)
+        public object? Deserialize(byte[] bytes, Type type)
         {
             return MessagePackHelper.Deserialize(bytes, type);
         }

@@ -14,13 +14,13 @@ namespace Bee.Api.Core.MessagePack
         /// Gets or sets the current values of the row (column name to value mapping).
         /// </summary>
         [Key(0)]
-        public Dictionary<string, object> CurrentValues { get; set; }
+        public Dictionary<string, object?>? CurrentValues { get; set; }
 
         /// <summary>
         /// Gets or sets the original values of the row (applicable to modified or deleted rows).
         /// </summary>
         [Key(1)]
-        public Dictionary<string, object> OriginalValues { get; set; }
+        public Dictionary<string, object?>? OriginalValues { get; set; }
 
         /// <summary>
         /// Gets or sets the row state (Added, Modified, Deleted, or Unchanged).
@@ -33,8 +33,6 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         public SerializableDataRow()
         {
-            CurrentValues = new Dictionary<string, object>();
-            OriginalValues = new Dictionary<string, object>();
         }
     }
 

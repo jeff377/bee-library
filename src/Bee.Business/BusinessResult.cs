@@ -7,7 +7,7 @@ namespace Bee.Business
     /// </summary>
     public abstract class BusinessResult
     {
-        private ParameterCollection _parameters;
+        private ParameterCollection? _parameters;
 
         /// <summary>
         /// Gets or sets the output parameter collection.

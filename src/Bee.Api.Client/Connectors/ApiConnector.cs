@@ -89,7 +89,7 @@ namespace Bee.Api.Client.Connectors
                 RestoreResponsePayload(response, actualFormat);
 
                 Tracer.End(ctx);
-                return ApiOutputConverter.ConvertResultValue<T>(response.Result.Value);
+                return ApiOutputConverter.ConvertResultValue<T>(response.Result!.Value!)!;
             }
             catch (Exception ex)
             {
@@ -133,7 +133,7 @@ namespace Bee.Api.Client.Connectors
                 RestoreResponsePayload(response, actualFormat);
 
                 Tracer.End(ctx);
-                return ApiOutputConverter.ConvertResultValue<T>(response.Result.Value);
+                return ApiOutputConverter.ConvertResultValue<T>(response.Result!.Value!)!;
             }
             catch (Exception ex)
             {
@@ -213,7 +213,7 @@ namespace Bee.Api.Client.Connectors
             if (format == PayloadFormat.Plain)
                 return;
 
-            ApiPayloadConverter.RestoreFrom(response.Result, format, ApiClientContext.ApiEncryptionKey);
+            ApiPayloadConverter.RestoreFrom(response.Result!, format, ApiClientContext.ApiEncryptionKey);
         }
 
         /// <summary>

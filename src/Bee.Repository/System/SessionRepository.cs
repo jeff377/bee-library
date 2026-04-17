@@ -49,7 +49,7 @@ namespace Bee.Repository.System
         /// Gets the session information for the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        public SessionUser GetSession(Guid accessToken)
+        public SessionUser? GetSession(Guid accessToken)
         {
             string sql = "SELECT session_user_xml, sys_invalid_time \n" +
                                  "FROM st_session \n" +
@@ -57,8 +57,9 @@ namespace Bee.Repository.System
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken);
             var dbAccess = new DbAccess(BackendInfo.DatabaseId);
             var result = dbAccess.Execute(command);
-            if (result.Table.IsEmpty()) { return null; }
-            var row = result.Table.Rows[0];
+            var table = result.Table!;
+            if (table.IsEmpty()) { return null; }
+            var row = table.Rows[0];
 
             // If the session has expired, delete it and return null
             DateTime endTime = BaseFunc.CDateTime(row[SysFields.InvalidDate]);
@@ -71,7 +72,7 @@ namespace Bee.Repository.System
             string xml = BaseFunc.CStr(row["session_user_xml"]);
             var user = SerializeFunc.XmlToObject<SessionUser>(xml);
             // If the session is one-time use, delete it after retrieval
-            if (user.OneTime) { this.Delete(accessToken); }
+            if (user!.OneTime) { this.Delete(accessToken); }
             return user;
         }
 
@@ -88,7 +89,7 @@ namespace Bee.Repository.System
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, userID);
             var dbAccess = new DbAccess(BackendInfo.DatabaseId);
             var result = dbAccess.Execute(command);
-            var table = result.Table;
+            var table = result.Table!;
             if (table.IsEmpty()) { throw new InvalidOperationException($"UserID='{userID}' not found"); }
             var row = table.Rows[0];
 

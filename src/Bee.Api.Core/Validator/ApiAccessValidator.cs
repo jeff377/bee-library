@@ -66,7 +66,7 @@ namespace Bee.Api.Core.Validator
         /// </summary>
         /// <param name="method">The target method.</param>
         /// <returns>The attribute if found; otherwise, null.</returns>
-        private static ApiAccessControlAttribute FindAccessAttribute(MethodInfo method)
+        private static ApiAccessControlAttribute? FindAccessAttribute(MethodInfo method)
         {
             var attr = method.GetCustomAttribute<ApiAccessControlAttribute>();
             if (attr != null)

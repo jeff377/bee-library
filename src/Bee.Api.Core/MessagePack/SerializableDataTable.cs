@@ -17,7 +17,7 @@ namespace Bee.Api.Core.MessagePack
         /// Gets or sets the table name.
         /// </summary>
         [Key(0)]
-        public string TableName { get; set; }
+        public string TableName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the column definitions for the table.
@@ -80,8 +80,8 @@ namespace Bee.Api.Core.MessagePack
             // Process data rows
             foreach (DataRow row in table.Rows)
             {
-                var current = new Dictionary<string, object>();
-                var original = new Dictionary<string, object>();
+                var current = new Dictionary<string, object?>();
+                var original = new Dictionary<string, object?>();
                 var state = row.RowState;
 
                 switch (state)
@@ -155,6 +155,7 @@ namespace Bee.Api.Core.MessagePack
                 var primaryCols = sdt.PrimaryKeys
                     .Select(pk => dt.Columns.Contains(pk) ? dt.Columns[pk] : null)
                     .Where(c => c != null)
+                    .Select(c => c!)
                     .ToArray();
 
                 if (primaryCols.Length > 0)
@@ -169,7 +170,7 @@ namespace Bee.Api.Core.MessagePack
                 switch (srow.RowState)
                 {
                     case DataRowState.Unchanged:
-                        foreach (var kvp in srow.CurrentValues)
+                        foreach (var kvp in srow.CurrentValues!)
                         {
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;
                         }
@@ -178,7 +179,7 @@ namespace Bee.Api.Core.MessagePack
                         break;
 
                     case DataRowState.Added:
-                        foreach (var kvp in srow.CurrentValues)
+                        foreach (var kvp in srow.CurrentValues!)
                         {
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;
                         }
@@ -188,7 +189,7 @@ namespace Bee.Api.Core.MessagePack
 
                     case DataRowState.Modified:
                         // Write the pre-modification (original) values first
-                        foreach (var kvp in srow.OriginalValues)
+                        foreach (var kvp in srow.OriginalValues!)
                         {
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;
                         }
@@ -198,7 +199,7 @@ namespace Bee.Api.Core.MessagePack
                         row.AcceptChanges();
 
                         // Write the modified values; the row will be automatically marked as Modified
-                        foreach (var kvp in srow.CurrentValues)
+                        foreach (var kvp in srow.CurrentValues!)
                         {
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;
                         }
@@ -206,7 +207,7 @@ namespace Bee.Api.Core.MessagePack
 
                     case DataRowState.Deleted:
                         // Create the row with original values, add it, accept changes, then delete it
-                        foreach (var kvp in srow.OriginalValues)
+                        foreach (var kvp in srow.OriginalValues!)
                         {
                             row[kvp.Key] = kvp.Value ?? DBNull.Value;
                         }

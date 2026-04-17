@@ -20,11 +20,11 @@ namespace Bee.Api.Contracts
         /// <summary>
         /// Gets the server version.
         /// </summary>
-        string Version { get; }
+        string? Version { get; }
 
         /// <summary>
         /// Gets the trace identifier.
         /// </summary>
-        string TraceId { get; }
+        string? TraceId { get; }
     }
 }

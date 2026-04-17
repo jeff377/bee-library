@@ -46,7 +46,7 @@ namespace Bee.Api.Core.JsonRpc
         /// Gets or sets the payload value.
         /// </summary>
         [JsonPropertyName("value")]
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
         /// <summary>
         /// Gets or sets the type name of the payload value, used to specify the target type during deserialization.

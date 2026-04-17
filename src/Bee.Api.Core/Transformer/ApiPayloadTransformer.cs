@@ -38,7 +38,7 @@ namespace Bee.Api.Core.Transformer
         /// <param name="payload">The processed data (typically a byte array).</param>
         /// <param name="type">The target object type.</param>
         /// <returns>The restored original data object.</returns>
-        public object Decode(object payload, Type type)
+        public object? Decode(object payload, Type type)
         {
             if (payload == null)
             {
@@ -47,7 +47,7 @@ namespace Bee.Api.Core.Transformer
 
             try
             {
-                byte[] bytes = payload as byte[];
+                byte[]? bytes = payload as byte[];
                 if (bytes == null)
                 {
                     throw new InvalidCastException("Invalid data type. The input data must be a byte array.");

@@ -8,11 +8,11 @@ namespace Bee.Api.Contracts
         /// <summary>
         /// Gets the client name.
         /// </summary>
-        string ClientName { get; }
+        string? ClientName { get; }
 
         /// <summary>
         /// Gets the trace identifier.
         /// </summary>
-        string TraceId { get; }
+        string? TraceId { get; }
     }
 }

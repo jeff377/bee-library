@@ -19,9 +19,9 @@ namespace Bee.Business.Provider
         /// Gets the session user data for the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        public SessionUser GetSessionUser(Guid accessToken)
+        public SessionUser? GetSessionUser(Guid accessToken)
         {
-            var repo = RepositoryInfo.SystemProvider.SessionRepository;
+            var repo = RepositoryInfo.SystemProvider!.SessionRepository;
             return repo.GetSession(accessToken);
         }
     }

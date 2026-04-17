@@ -14,7 +14,7 @@ namespace Bee.Api.Core
     [Serializable]
     public abstract class ApiRequest : IObjectSerialize
     {
-        private ParameterCollection _parameters = null;
+        private ParameterCollection? _parameters = null;
 
         #region IObjectSerialize 介面
 
@@ -31,7 +31,7 @@ namespace Bee.Api.Core
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_parameters, serializeState);
+            if (_parameters != null) BaseFunc.SetSerializeState(_parameters, serializeState);
         }
 
         #endregion
@@ -40,12 +40,12 @@ namespace Bee.Api.Core
         /// Gets or sets the input parameter collection.
         /// </summary>
         [Key(0)]
-        public ParameterCollection Parameters
+        public ParameterCollection? Parameters
         {
             get
             {
                 // Return null when the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _parameters)) { return null; }
+                if (_parameters == null || BaseFunc.IsSerializeEmpty(SerializeState, _parameters)) { return null; }
                 if (_parameters == null) { _parameters = new ParameterCollection(); }
                 return _parameters;
             }

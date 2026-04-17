@@ -29,7 +29,7 @@ namespace Bee.Repository.System
             if (StrFunc.IsNotEmpty(item.Password))
                 connectionString = StrFunc.Replace(connectionString, "{@Password}", item.Password);
 
-            using (var connection = provider.CreateConnection())
+            using (var connection = provider.CreateConnection()!)
             {
                 connection.ConnectionString = connectionString;
                 connection.Open();

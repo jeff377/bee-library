@@ -15,7 +15,7 @@ namespace Bee.Api.Core.MessagePack
         /// Gets or sets the dataset name.
         /// </summary>
         [Key(0)]
-        public string DataSetName { get; set; }
+        public string DataSetName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the collection of all tables.
@@ -82,8 +82,8 @@ namespace Bee.Api.Core.MessagePack
 
             foreach (var rel in sds.Relations)
             {
-                var parentCols = rel.ParentColumns.Select(c => ds.Tables[rel.ParentTable].Columns[c]).ToArray();
-                var childCols = rel.ChildColumns.Select(c => ds.Tables[rel.ChildTable].Columns[c]).ToArray();
+                var parentCols = rel.ParentColumns.Select(c => ds.Tables[rel.ParentTable]!.Columns[c]!).ToArray();
+                var childCols = rel.ChildColumns.Select(c => ds.Tables[rel.ChildTable]!.Columns[c]!).ToArray();
                 ds.Relations.Add(new DataRelation(rel.RelationName, parentCols, childCols));
             }
 

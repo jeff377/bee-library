@@ -66,7 +66,7 @@ namespace Bee.Api.Core.JsonRpc
                 // Payload transmission format
                 var format = request.Params.Format;
                 // Get the API encryption key
-                byte[] apiEncryptionKey = GetApiEncryptionKey(format);
+                byte[]? apiEncryptionKey = GetApiEncryptionKey(format);
                 // Restore the request payload content
                 ApiPayloadConverter.RestoreFrom(request.Params, format, apiEncryptionKey);
 
@@ -76,7 +76,7 @@ namespace Bee.Api.Core.JsonRpc
                 var value = await ExecuteMethodAsync(progId, action, request.Params.Value, format);
 
                 // Convert BO result to API response type by naming convention
-                value = ApiOutputConverter.Convert(value);
+                value = ApiOutputConverter.Convert(value!);
 
                 // Return the result
                 response.Result = new JsonRpcResult { Value = value };
@@ -100,7 +100,7 @@ namespace Bee.Api.Core.JsonRpc
         /// Gets the API encryption key.
         /// </summary>
         /// <param name="format">The payload encoding format for transmission.</param>
-        private byte[] GetApiEncryptionKey(PayloadFormat format)
+        private byte[]? GetApiEncryptionKey(PayloadFormat format)
         {
             return format == PayloadFormat.Encrypted
                 ? BackendInfo.ApiEncryptionKeyProvider.GetKey(AccessToken)
@@ -131,7 +131,7 @@ namespace Bee.Api.Core.JsonRpc
         /// <param name="action">The action to execute.</param>
         /// <param name="value">The input argument for the action.</param>
         /// <param name="format">The payload encoding format for transmission.</param>
-        private async Task<object> ExecuteMethodAsync(string progId, string action, object value, PayloadFormat format)
+        private async Task<object?> ExecuteMethodAsync(string progId, string action, object? value, PayloadFormat format)
         {
             // Create an instance of the business object for the specified progId
             var businessObject = CreateBusinessObject(AccessToken, progId);
@@ -150,7 +150,7 @@ namespace Bee.Api.Core.JsonRpc
                 value = ApiInputConverter.Convert(value, paramType);
             }
 
-            var result = method.Invoke(businessObject, new object[] { value });
+            var result = method.Invoke(businessObject, new object?[] { value });
 
             // If the method is asynchronous (Task or Task<T>), await it
             if (result is Task task)

@@ -124,7 +124,7 @@ namespace Bee.Api.Client.Connectors
             // Retrieve common parameters and environment configuration for initialization
             var request = new GetCommonConfigurationRequest();
             var result = await ExecuteAsync<GetCommonConfigurationResponse>(SystemActions.GetCommonConfiguration, request, PayloadFormat.Plain).ConfigureAwait(false);
-            var configuration = SerializeFunc.XmlToObject<CommonConfiguration>(result.CommonConfiguration);
+            var configuration = SerializeFunc.XmlToObject<CommonConfiguration>(result.CommonConfiguration)!;
             SysInfo.Initialize(configuration);
             // Initialize API service options: configure serializer, compressor, and encryptor implementations
             ApiServiceOptions.Initialize(configuration.ApiPayloadOptions);
@@ -215,7 +215,7 @@ namespace Bee.Api.Client.Connectors
         /// <typeparam name="T">The target type.</typeparam>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to locate the definition data.</param>
-        public async Task<T> GetDefineAsync<T>(DefineType defineType, string[] keys = null)
+        public async Task<T> GetDefineAsync<T>(DefineType defineType, string[]? keys = null)
         {
             var request = new GetDefineRequest()
             {
@@ -224,9 +224,9 @@ namespace Bee.Api.Client.Connectors
             };
             var result = await ExecuteAsync<GetDefineResponse>(SystemActions.GetDefine, request).ConfigureAwait(false);
             if (StrFunc.IsNotEmpty(result.Xml))
-                return SerializeFunc.XmlToObject<T>(result.Xml);
+                return SerializeFunc.XmlToObject<T>(result.Xml)!;
             else
-                return default;
+                return default!;
         }
 
         /// <summary>
@@ -235,7 +235,7 @@ namespace Bee.Api.Client.Connectors
         /// <typeparam name="T">The target type.</typeparam>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to locate the definition data.</param>
-        public T GetDefine<T>(DefineType defineType, string[] keys = null)
+        public T GetDefine<T>(DefineType defineType, string[]? keys = null)
         {
             return SyncExecutor.Run(() =>
                 GetDefineAsync<T>(defineType, keys)
@@ -248,7 +248,7 @@ namespace Bee.Api.Client.Connectors
         /// <param name="defineType">The definition data type.</param>
         /// <param name="defineObject">The definition data object.</param>
         /// <param name="keys">The keys used to locate where the definition data is saved.</param>
-        public async Task SaveDefineAsync(DefineType defineType, object defineObject, string[] keys = null)
+        public async Task SaveDefineAsync(DefineType defineType, object defineObject, string[]? keys = null)
         {
             var request = new SaveDefineRequest()
             {
@@ -265,7 +265,7 @@ namespace Bee.Api.Client.Connectors
         /// <param name="defineType">The definition data type.</param>
         /// <param name="defineObject">The definition data object.</param>
         /// <param name="keys">The keys used to locate where the definition data is saved.</param>
-        public void SaveDefine(DefineType defineType, object defineObject, string[] keys = null)
+        public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null)
         {
             SyncExecutor.Run(() =>
                 SaveDefineAsync(defineType, defineObject, keys)

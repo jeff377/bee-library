@@ -13,7 +13,7 @@ namespace Bee.Api.Core.MessagePack
         /// Gets or sets the column name.
         /// </summary>
         [Key(0)]
-        public string ColumnName { get; set; }
+        public string ColumnName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the data type as a <see cref="FieldDbType"/> enum value.
@@ -25,7 +25,7 @@ namespace Bee.Api.Core.MessagePack
         /// Gets or sets the display name (Caption).
         /// </summary>
         [Key(2)]
-        public string DisplayName { get; set; }
+        public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets a value indicating whether null values are allowed.
@@ -49,7 +49,7 @@ namespace Bee.Api.Core.MessagePack
         /// Gets or sets the default value.
         /// </summary>
         [Key(6)]
-        public object DefaultValue { get; set; }
+        public object? DefaultValue { get; set; }
     }
 
 }

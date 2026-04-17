@@ -21,11 +21,11 @@ namespace Bee.Business.System
         /// <summary>
         /// Gets or sets the optional version information.
         /// </summary>
-        public string Version { get; set; }
+        public string? Version { get; set; }
 
         /// <summary>
         /// Gets or sets the echoed trace ID (if provided).
         /// </summary>
-        public string TraceId { get; set; }
+        public string? TraceId { get; set; }
     }
 }

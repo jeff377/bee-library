@@ -15,12 +15,12 @@ namespace Bee.Api.Core.System
         /// Gets or sets the client name.
         /// </summary>
         [Key(100)]
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the trace identifier.
         /// </summary>
         [Key(101)]
-        public string TraceId { get; set; }
+        public string? TraceId { get; set; }
     }
 }

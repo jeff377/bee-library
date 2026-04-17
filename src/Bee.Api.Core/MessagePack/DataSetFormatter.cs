@@ -7,7 +7,7 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// MessagePack formatter for serializing and deserializing DataSet objects.
     /// </summary>
-    internal class DataSetFormatter : IMessagePackFormatter<DataSet>
+    internal class DataSetFormatter : IMessagePackFormatter<DataSet?>
     {
         /// <summary>
         /// Serializes the DataSet object to MessagePack format.
@@ -15,7 +15,7 @@ namespace Bee.Api.Core.MessagePack
         /// <param name="writer">The MessagePack writer.</param>
         /// <param name="value">The DataSet object to serialize.</param>
         /// <param name="options">The serialization options.</param>
-        public void Serialize(ref MessagePackWriter writer, DataSet value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, DataSet? value, MessagePackSerializerOptions options)
         {
             if (value == null)
             {
@@ -35,10 +35,10 @@ namespace Bee.Api.Core.MessagePack
         /// <param name="reader">The MessagePack reader.</param>
         /// <param name="options">The serialization options.</param>
         /// <returns>The restored DataSet object.</returns>
-        public DataSet Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public DataSet? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())
-                return null;
+                return null;;
 
             var sds = MessagePackSerializer.Deserialize<SerializableDataSet>(ref reader, options);
             return SerializableDataSet.ToDataSet(sds);

@@ -85,9 +85,9 @@ namespace Bee.Api.Core.MessagePack
         /// <param name="data">The byte array to deserialize.</param>
         /// <param name="type">The target object type.</param>
         /// <returns>The deserialized object.</returns>
-        public static object Deserialize(byte[] data, Type type)
+        public static object? Deserialize(byte[] data, Type type)
         {
-            return MessagePackSerializer.Deserialize(type, data, Options);  
+            return MessagePackSerializer.Deserialize(type, data, Options);
         }
     }
 

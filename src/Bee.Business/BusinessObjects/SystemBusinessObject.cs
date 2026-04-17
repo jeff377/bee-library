@@ -146,7 +146,7 @@ namespace Bee.Business.BusinessObjects
                     $"ExpiresIn must be between 1 and {MaxExpiresInSeconds} seconds.");
 
             // Create a new user session
-            var repo = RepositoryInfo.SystemProvider.SessionRepository;
+            var repo = RepositoryInfo.SystemProvider!.SessionRepository;
             var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
             // Return the access token
             return new CreateSessionResult()
@@ -204,7 +204,7 @@ namespace Bee.Business.BusinessObjects
         {
             // Deserialize XML to the target object
             var type = DefineFunc.GetDefineType(args.DefineType);
-            object defineObject = SerializeFunc.XmlToObject(args.Xml, type);
+            object? defineObject = SerializeFunc.XmlToObject(args.Xml, type);
             if (defineObject == null)
                 throw new InvalidOperationException($"Failed to deserialize XML to {type.Name} object.");
 

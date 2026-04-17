@@ -7,7 +7,7 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// MessagePack formatter for serializing and deserializing DataTable objects.
     /// </summary>
-    internal class DataTableFormatter : IMessagePackFormatter<DataTable>
+    internal class DataTableFormatter : IMessagePackFormatter<DataTable?>
     {
         /// <summary>
         /// Serializes the DataTable object to MessagePack format.
@@ -15,7 +15,7 @@ namespace Bee.Api.Core.MessagePack
         /// <param name="writer">The MessagePack writer.</param>
         /// <param name="value">The DataTable object to serialize.</param>
         /// <param name="options">The serialization options.</param>
-        public void Serialize(ref MessagePackWriter writer, DataTable value, MessagePackSerializerOptions options)
+        public void Serialize(ref MessagePackWriter writer, DataTable? value, MessagePackSerializerOptions options)
         {
             if (value == null)
             {
@@ -35,10 +35,10 @@ namespace Bee.Api.Core.MessagePack
         /// <param name="reader">The MessagePack reader.</param>
         /// <param name="options">The serialization options.</param>
         /// <returns>The restored DataTable object.</returns>
-        public DataTable Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+        public DataTable? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())
-                return null;
+                return null;;
 
             var sdt = MessagePackSerializer.Deserialize<SerializableDataTable>(ref reader, options);
             return SerializableDataTable.ToDataTable(sdt);

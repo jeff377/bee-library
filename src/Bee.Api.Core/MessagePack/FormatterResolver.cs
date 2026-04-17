@@ -31,9 +31,9 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         /// <typeparam name="T">The target type.</typeparam>
         /// <returns>The formatter instance.</returns>
-        public IMessagePackFormatter<T> GetFormatter<T>()
+        public IMessagePackFormatter<T>? GetFormatter<T>()
         {
-            return (IMessagePackFormatter<T>)_formatters.GetOrAdd(typeof(T), type =>
+            return (IMessagePackFormatter<T>?)_formatters.GetOrAdd(typeof(T), type =>
             {
                 // Dedicated support for DataSet and DataTable
                 if (type == typeof(DataSet))
@@ -52,13 +52,13 @@ namespace Bee.Api.Core.MessagePack
                     var formatterType = typeof(CollectionBaseFormatter<,>).MakeGenericType(type, elementType);
 
                     // Create and return the instance
-                    return Activator.CreateInstance(formatterType);
+                    return Activator.CreateInstance(formatterType)!;
                 }
 
                 // Fallback: delegate to the standard resolver
-                var method = typeof(StandardResolver).GetMethod("GetFormatter")
+                var method = typeof(StandardResolver).GetMethod("GetFormatter")!
                     .MakeGenericMethod(type);
-                return method.Invoke(StandardResolver.Instance, null);
+                return method.Invoke(StandardResolver.Instance, null)!;
             });
         }
     }

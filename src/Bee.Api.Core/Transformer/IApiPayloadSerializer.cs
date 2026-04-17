@@ -24,6 +24,6 @@ namespace Bee.Api.Core.Transformer
         /// </summary>
         /// <param name="bytes">The byte array to deserialize.</param>
         /// <param name="type">The type of the deserialized object.</param>
-        object Deserialize(byte[] bytes, Type type);
+        object? Deserialize(byte[] bytes, Type type);
     }
 }

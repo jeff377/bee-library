@@ -10,11 +10,11 @@ namespace Bee.Business.System
         /// <summary>
         /// Gets or sets the client identifier name (optional).
         /// </summary>
-        public string ClientName { get; set; }
+        public string? ClientName { get; set; }
 
         /// <summary>
         /// Gets or sets the call trace ID (optional).
         /// </summary>
-        public string TraceId { get; set; }
+        public string? TraceId { get; set; }
     }
 }

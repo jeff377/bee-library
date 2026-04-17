@@ -20,7 +20,7 @@ namespace Bee.Api.Core.JsonRpc
         /// <exception cref="InvalidOperationException">
         /// Thrown when <paramref name="targetFormat"/> is Encrypted but no key is provided, or when Payload.Value is null.
         /// </exception>
-        public static void TransformTo(ApiPayload payload, PayloadFormat targetFormat, byte[] encryptionKey = null)
+        public static void TransformTo(ApiPayload payload, PayloadFormat targetFormat, byte[]? encryptionKey = null)
         {
             if (targetFormat == PayloadFormat.Plain)
             {
@@ -34,7 +34,7 @@ namespace Bee.Api.Core.JsonRpc
             // Convert pure POCO results to API types if a contract mapping is registered
             payload.Value = ApiContractRegistry.ConvertForSerialization(payload.Value);
 
-            var type = payload.Value.GetType();
+            var type = payload.Value!.GetType();
             payload.TypeName = type.FullName + ", " + type.Assembly.GetName().Name;
 
             var transformer = ApiServiceOptions.PayloadTransformer;
@@ -62,7 +62,7 @@ namespace Bee.Api.Core.JsonRpc
         /// Thrown when <paramref name="sourceFormat"/> is Encrypted but no key is provided, or when TypeName cannot be resolved.
         /// </exception>
         /// <exception cref="InvalidCastException">Thrown when Payload.Value is not of type byte[].</exception>
-        public static void RestoreFrom(ApiPayload payload, PayloadFormat sourceFormat, byte[] encryptionKey = null)
+        public static void RestoreFrom(ApiPayload payload, PayloadFormat sourceFormat, byte[]? encryptionKey = null)
         {
             if (sourceFormat == PayloadFormat.Plain)
             {
@@ -89,7 +89,7 @@ namespace Bee.Api.Core.JsonRpc
 
             if (sourceFormat == PayloadFormat.Encrypted)
             {
-                if (BaseFunc.IsEmpty(encryptionKey))
+                if (encryptionKey == null || BaseFunc.IsEmpty(encryptionKey))
                     throw new InvalidOperationException("Missing encryption key for encrypted payload.");
 
                 bytes = transformer.Decrypt(bytes, encryptionKey);

@@ -44,7 +44,7 @@ namespace Bee.Api.Core.JsonRpc
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(Result, serializeState);
+            if (Result != null) BaseFunc.SetSerializeState(Result, serializeState);
         }
 
         #endregion
@@ -59,24 +59,24 @@ namespace Bee.Api.Core.JsonRpc
         /// Gets or sets the name of the invoked method.
         /// </summary>
         [JsonPropertyName("method")]
-        public string Method { get; set; }
+        public string? Method { get; set; }
 
         /// <summary>
         /// Gets or sets the method execution result.
         /// </summary>
         [JsonPropertyName("result")]
-        public JsonRpcResult Result { get; set; }
+        public JsonRpcResult? Result { get; set; }
 
         /// <summary>
         /// Gets or sets the error information.
         /// </summary>
         [JsonPropertyName("error")]
-        public JsonRpcError Error { get; set; }
+        public JsonRpcError? Error { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier for the request.
         /// </summary>
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
     }
 }

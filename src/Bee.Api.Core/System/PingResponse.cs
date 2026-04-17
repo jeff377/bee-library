@@ -27,12 +27,12 @@ namespace Bee.Api.Core.System
         /// Gets or sets the server version.
         /// </summary>
         [Key(102)]
-        public string Version { get; set; }
+        public string? Version { get; set; }
 
         /// <summary>
         /// Gets or sets the trace identifier.
         /// </summary>
         [Key(103)]
-        public string TraceId { get; set; }
+        public string? TraceId { get; set; }
     }
 }

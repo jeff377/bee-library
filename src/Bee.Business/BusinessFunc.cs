@@ -24,7 +24,7 @@ namespace Bee.Business
                 throw new ArgumentNullException(nameof(databaseId));
 
             var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
-            if (!settings.Items.Contains(databaseId))
+            if (!settings.Items!.Contains(databaseId))
                 throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
 
             return settings.Items[databaseId];
@@ -51,7 +51,7 @@ namespace Bee.Business
                     throw new MissingMethodException($"Method {args.FuncId} not found.");
 
                 // Get the ExecFuncAccessControlAttribute
-                var attr = (ExecFuncAccessControlAttribute)Attribute.GetCustomAttribute(
+                var attr = (ExecFuncAccessControlAttribute?)Attribute.GetCustomAttribute(
                       method, typeof(ExecFuncAccessControlAttribute));
 
                 // When no attribute is present, default to Authenticated

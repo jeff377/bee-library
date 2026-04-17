@@ -11,6 +11,6 @@ namespace Bee.Definition
         /// Gets the session user data for the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        SessionUser GetSessionUser(Guid accessToken);
+        SessionUser? GetSessionUser(Guid accessToken);
     }
 }

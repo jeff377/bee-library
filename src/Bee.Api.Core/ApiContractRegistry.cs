@@ -34,7 +34,7 @@ namespace Bee.Api.Core
         /// </summary>
         /// <param name="value">The value to potentially convert.</param>
         /// <returns>The converted API object, or the original value if no conversion is needed.</returns>
-        public static object ConvertForSerialization(object value)
+        public static object? ConvertForSerialization(object value)
         {
             if (value == null) return null;
 
@@ -70,7 +70,7 @@ namespace Bee.Api.Core
 
             public object Convert(object source)
             {
-                var target = Activator.CreateInstance(_apiType);
+                var target = Activator.CreateInstance(_apiType)!;
                 var targetType = target.GetType();
 
                 foreach (var prop in _contractProperties)

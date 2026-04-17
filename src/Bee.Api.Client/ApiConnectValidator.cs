@@ -106,7 +106,7 @@ namespace Bee.Api.Client
                     Id = "default",
                     DisplayName = "Default Database"
                 };
-                settings.Items.Add(item);
+                settings.Items!.Add(item);
                 settings.SetObjectFilePath(filePath);
                 settings.Save();
             }

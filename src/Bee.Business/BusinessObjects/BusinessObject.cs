@@ -33,7 +33,7 @@ namespace Bee.Business.BusinessObjects
         /// <summary>
         /// Gets the session information.
         /// </summary>
-        public SessionInfo SessionInfo { get; }
+        public SessionInfo? SessionInfo { get; }
 
         /// <summary>
         /// Gets a value indicating whether the call originates from a local source (e.g., same process or host as the server).
