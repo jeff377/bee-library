@@ -38,7 +38,7 @@ namespace Bee.Api.Core.MessagePack
         public DataSet? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())
-                return null;;
+                return null;
 
             var sds = MessagePackSerializer.Deserialize<SerializableDataSet>(ref reader, options);
             return SerializableDataSet.ToDataSet(sds);

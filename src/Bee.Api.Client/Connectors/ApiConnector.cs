@@ -213,7 +213,7 @@ namespace Bee.Api.Client.Connectors
         /// <item><description><see cref="PayloadFormat.Encoded"/> or <see cref="PayloadFormat.Encrypted"/>: Decode or decrypt the payload.</description></item>
         /// </list>
         /// </param>
-        private void RestoreResponsePayload(JsonRpcResponse response, PayloadFormat format)
+        private static void RestoreResponsePayload(JsonRpcResponse response, PayloadFormat format)
         {
             if (format == PayloadFormat.Plain)
                 return;
@@ -225,7 +225,7 @@ namespace Bee.Api.Client.Connectors
         /// Traces the JSON-RPC request model.
         /// </summary>
         /// <param name="request">The JSON-RPC request model.</param>
-        private void TraceRequest(JsonRpcRequest request)
+        private static void TraceRequest(JsonRpcRequest request)
         {
             if (!Tracer.Enabled || request == null) return;
             Tracer.Write(TraceLayer.ApiClient, string.Empty, TraceStatus.Ok, TraceCategories.JsonRpc, request, name: $"Request  - {request.Method}");
@@ -235,7 +235,7 @@ namespace Bee.Api.Client.Connectors
         /// Traces the JSON-RPC response model.
         /// </summary>
         /// <param name="response">The JSON-RPC response model.</param>
-        private void TraceResponse(JsonRpcResponse response)
+        private static void TraceResponse(JsonRpcResponse response)
         {
             if (!Tracer.Enabled || response == null) return;
             Tracer.Write(TraceLayer.ApiClient, string.Empty, TraceStatus.Ok, TraceCategories.JsonRpc, response, name: $"Response - {response.Method}");

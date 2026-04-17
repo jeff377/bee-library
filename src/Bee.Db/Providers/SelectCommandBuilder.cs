@@ -3,6 +3,7 @@ using Bee.Definition.Forms;
 using Bee.Definition;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Bee.Db;
 using Bee.Db.Query;
@@ -165,10 +166,9 @@ namespace Bee.Db.Providers
             // sortFields
             if (sortFields != null)
             {
-                foreach (var sortField in sortFields)
+                foreach (var sortField in sortFields.Where(s => !string.IsNullOrWhiteSpace(s.FieldName)))
                 {
-                    if (!string.IsNullOrWhiteSpace(sortField.FieldName))
-                        fieldNames.Add(sortField.FieldName);
+                    fieldNames.Add(sortField.FieldName);
                 }
             }
 

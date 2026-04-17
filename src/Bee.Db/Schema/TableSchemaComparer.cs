@@ -1,4 +1,5 @@
-﻿using Bee.Definition.Database;
+﻿using System.Linq;
+using Bee.Definition.Database;
 using Bee.Base;
 using Bee.Definition;
 
@@ -23,12 +24,12 @@ namespace Bee.Db.Schema
         /// <summary>
         /// Gets the defined table schema.
         /// </summary>
-        public TableSchema DefineTable { get; } = null!;
+        public TableSchema DefineTable { get; }
 
         /// <summary>
         /// Gets the actual table schema from the database.
         /// </summary>
-        public TableSchema? RealTable { get; } = null;
+        public TableSchema? RealTable { get; }
 
         /// <summary>
         /// Executes the comparison and returns the resulting table schema with upgrade actions set.
@@ -118,10 +119,9 @@ namespace Bee.Db.Schema
         /// <param name="compareTable">The table schema used as the comparison result.</param>
         private void AddExtensionFields(TableSchema compareTable)
         {
-            foreach (DbField field in this.RealTable!.Fields!)
+            foreach (var field in this.RealTable!.Fields!.Where(f => !compareTable.Fields!.Contains(f.FieldName)))
             {
-                if (!compareTable.Fields!.Contains(field.FieldName))
-                    compareTable.Fields.Add(field.Clone());
+                compareTable.Fields!.Add(field.Clone());
             }
         }
     }

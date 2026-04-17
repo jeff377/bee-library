@@ -6,7 +6,7 @@ namespace Bee.Base.Serialization
     /// <summary>
     /// String writer that uses UTF-8 encoding.
     /// </summary>
-    public class UTF8StringWriter : StringWriter
+    public class Utf8StringWriter : StringWriter
     {
         /// <summary>
         /// Gets the default UTF-8 encoding (without BOM).

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Data;
@@ -114,12 +115,7 @@ namespace Bee.Base
         /// <param name="values">The array of strings to compare against.</param>
         public static bool IsEqualsOr(string s, params string[] values)
         {
-            foreach (string value in values)
-            {
-                if (IsEquals(s, value))
-                    return true;
-            }
-            return false;
+            return values.Any(value => IsEquals(s, value));
         }
 
         /// <summary>
@@ -186,7 +182,7 @@ namespace Bee.Base
             if (StrFunc.IsEmpty(s))
                 return new string[0];
             // Replace \r with empty string first, then split using \n as the delimiter
-            return s.Replace("\r", "").Split(new char[] { '\n' });
+            return s.Replace("\r", "").Split('\n');
         }
 
         /// <summary>
@@ -248,17 +244,13 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// Appends a delimiter and string to the buffer.
+        /// Appends a delimiter and string to the buffer. Alias of <see cref="Append(StringBuilder, string, string)"/>.
         /// </summary>
         /// <param name="buffer">The buffer.</param>
         /// <param name="s">The string to append.</param>
         /// <param name="delimiter">The delimiter.</param>
         public static void Merge(StringBuilder buffer, string s, string delimiter)
-        {
-            if (buffer.Length > 0)
-                buffer.Append(delimiter);
-            buffer.Append(s);
-        }
+            => Append(buffer, s, delimiter);
 
         /// <summary>
         /// Gets a substring of the specified length from the left side of the string.
@@ -461,7 +453,7 @@ namespace Bee.Base
             if (s == null)
                 return string.Empty;
             else
-                return s.Trim().Trim(new char[] { '\uFEFF', '\u200B' });
+                return s.Trim().Trim('\uFEFF', '\u200B');
         }
 
         /// <summary>

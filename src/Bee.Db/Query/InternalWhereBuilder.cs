@@ -10,6 +10,9 @@ namespace Bee.Db.Query
     /// </summary>
     internal static class InternalWhereBuilder
     {
+        private const string LikeOperator = " LIKE ";
+
+
         /// <summary>
         /// Converts a filter node to a SQL condition string.
         /// </summary>
@@ -64,10 +67,10 @@ namespace Bee.Db.Query
                 case ComparisonOperator.GreaterThanOrEqual: return field + " >= " + parameters.Add(c.Value);
                 case ComparisonOperator.LessThan: return field + " < " + parameters.Add(c.Value);
                 case ComparisonOperator.LessThanOrEqual: return field + " <= " + parameters.Add(c.Value);
-                case ComparisonOperator.Like: return field + " LIKE " + parameters.Add(c.Value);
-                case ComparisonOperator.Contains: return field + " LIKE " + parameters.Add("%" + c.Value + "%");
-                case ComparisonOperator.StartsWith: return field + " LIKE " + parameters.Add(c.Value + "%");
-                case ComparisonOperator.EndsWith: return field + " LIKE " + parameters.Add("%" + c.Value);
+                case ComparisonOperator.Like: return field + LikeOperator + parameters.Add(c.Value);
+                case ComparisonOperator.Contains: return field + LikeOperator + parameters.Add("%" + c.Value + "%");
+                case ComparisonOperator.StartsWith: return field + LikeOperator + parameters.Add(c.Value + "%");
+                case ComparisonOperator.EndsWith: return field + LikeOperator + parameters.Add("%" + c.Value);
                 case ComparisonOperator.In:
                     {
                         var enumerable = c.Value as System.Collections.Generic.IEnumerable<object>;

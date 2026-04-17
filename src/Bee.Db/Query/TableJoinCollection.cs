@@ -1,4 +1,5 @@
-﻿using Bee.Base;
+﻿using System.Linq;
+using Bee.Base;
 using Bee.Base.Collections;
 
 namespace Bee.Db.Query
@@ -16,14 +17,7 @@ namespace Bee.Db.Query
         {
             if (string.IsNullOrEmpty(rightAlias))
                 return null;
-            foreach (var item in this)
-            {
-                if (StrFunc.Equals(item.RightAlias, rightAlias))
-                {
-                    return item;
-                }
-            }
-            return null;
+            return this.FirstOrDefault(item => StrFunc.Equals(item.RightAlias, rightAlias));
         }
     }
 }

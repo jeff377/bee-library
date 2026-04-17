@@ -60,7 +60,7 @@ namespace Bee.Db.Query
         /// </summary>
         /// <param name="formTable">The form table.</param>
         /// <param name="selectFields">A comma-separated string of field names to retrieve; an empty string retrieves all fields.</param>
-        private StringHashSet GetSelectFields(FormTable formTable, string selectFields)
+        private static StringHashSet GetSelectFields(FormTable formTable, string selectFields)
         {
             var set = new StringHashSet();
             if (string.IsNullOrWhiteSpace(selectFields))

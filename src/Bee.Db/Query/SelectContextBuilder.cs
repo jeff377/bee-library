@@ -1,6 +1,7 @@
 ﻿using Bee.Definition.Forms;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Bee.Base;
 using Bee.Definition;
 
@@ -172,13 +173,9 @@ namespace Bee.Db.Query
             if (foreignKeyField.RelationFieldMappings == null)
                 return result;
 
-            foreach (var mapping in foreignKeyField.RelationFieldMappings)
+            foreach (var mapping in foreignKeyField.RelationFieldMappings.Where(m => _usedFieldNames.Contains(m.DestinationField)))
             {
-                // Include the mapping only if _usedFieldNames contains this relation field
-                if (_usedFieldNames.Contains(mapping.DestinationField))
-                {
-                    result.Add(mapping.SourceField, mapping.DestinationField);
-                }
+                result.Add(mapping.SourceField, mapping.DestinationField);
             }
             return result;
         }
@@ -188,7 +185,7 @@ namespace Bee.Db.Query
         /// </summary>
         /// <param name="foreignKeyField">The foreign key field.</param>
         /// <param name="destinationField">The destination field name.</param>
-        private FieldMappingCollection GetSingleRelationFieldMappings(FormField foreignKeyField, string destinationField)
+        private static FieldMappingCollection GetSingleRelationFieldMappings(FormField foreignKeyField, string destinationField)
         {
             var fieldMapping = foreignKeyField.RelationFieldMappings!.FindByDestination(destinationField);
             var result = new FieldMappingCollection();

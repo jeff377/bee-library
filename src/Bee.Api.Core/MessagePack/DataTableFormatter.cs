@@ -38,7 +38,7 @@ namespace Bee.Api.Core.MessagePack
         public DataTable? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())
-                return null;;
+                return null;
 
             var sdt = MessagePackSerializer.Deserialize<SerializableDataTable>(ref reader, options);
             return SerializableDataTable.ToDataTable(sdt);

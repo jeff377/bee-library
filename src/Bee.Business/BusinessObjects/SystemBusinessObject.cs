@@ -160,7 +160,7 @@ namespace Bee.Business.BusinessObjects
         /// Core method for retrieving definition data.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        private GetDefineResult GetDefineCore(GetDefineArgs args)
+        private static GetDefineResult GetDefineCore(GetDefineArgs args)
         {
             var result = new GetDefineResult();
             var access = BackendInfo.DefineAccess;
@@ -189,10 +189,8 @@ namespace Bee.Business.BusinessObjects
         public virtual GetDefineResult GetDefine(GetDefineArgs args)
         {
             // Non-local calls are not permitted to access SystemSettings or DatabaseSettings
-            if (args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings)
-            {
-                if (!IsLocalCall) throw new NotSupportedException("The specified DefineType is not supported.");
-            }
+            if ((args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings) && !IsLocalCall)
+                throw new NotSupportedException("The specified DefineType is not supported.");
             return GetDefineCore(args);
         }
 
@@ -200,7 +198,7 @@ namespace Bee.Business.BusinessObjects
         /// Core method for saving definition data.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        private SaveDefineResult SaveDefineCore(SaveDefineArgs args)
+        private static SaveDefineResult SaveDefineCore(SaveDefineArgs args)
         {
             // Deserialize XML to the target object
             var type = DefineFunc.GetDefineType(args.DefineType);
@@ -223,10 +221,8 @@ namespace Bee.Business.BusinessObjects
         public virtual SaveDefineResult SaveDefine(SaveDefineArgs args)
         {
             // Non-local calls are not permitted to save SystemSettings or DatabaseSettings
-            if (args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings)
-            {
-                if (!IsLocalCall) throw new NotSupportedException("The specified DefineType is not supported.");
-            }
+            if ((args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings) && !IsLocalCall)
+                throw new NotSupportedException("The specified DefineType is not supported.");
 
             return SaveDefineCore(args);
         }

@@ -30,7 +30,7 @@ namespace Bee.Business.BusinessObjects
         /// </summary>
         /// <param name="args">The input arguments.</param>
         /// <param name="result">The output result.</param>
-        public void Hello(ExecFuncArgs args, ExecFuncResult result)
+        public static void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Hello", "Hello form-level BusinessObject");
         }

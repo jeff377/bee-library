@@ -81,7 +81,6 @@ Bee.Api.Client/
   ApiConnectValidator.cs           # Endpoint validation and ConnectType detection
   ConnectType.cs                   # Local / Remote enum
   SupportedConnectTypes.cs         # Flags enum for supported connection types
-  ConnectFunc.cs                   # Shared connection utilities
   SyncExecutor.cs                  # Async-to-sync bridge
   Connectors/
     ApiConnector.cs                # Abstract base connector

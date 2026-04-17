@@ -15,16 +15,11 @@ namespace Bee.Api.Core.MessagePack
     {
         /// <summary>
         /// Statically initialized MessagePack serialization options, including custom formatters and resolvers.
+        /// SafeMessagePackSerializerOptions overrides ThrowIfDeserializingTypeIsDisallowed
+        /// to block disallowed types BEFORE object instantiation inside TypelessFormatter.
         /// </summary>
-        private static readonly MessagePackSerializerOptions Options;
-
-        /// <summary>
-        /// Static constructor that initializes the MessagePack serialization options.
-        /// </summary>
-        static MessagePackHelper()
-        {
-            // Create the custom formatter and resolver composition
-            var resolver = CompositeResolver.Create(
+        private static readonly MessagePackSerializerOptions Options = new SafeMessagePackSerializerOptions(
+            CompositeResolver.Create(
                 new IMessagePackFormatter[]
                 {
                     new DataTableFormatter(),          // Custom DataTable formatter
@@ -38,13 +33,7 @@ namespace Bee.Api.Core.MessagePack
                     ContractlessStandardResolver.Instance, // Contractless resolver (without unsafe Typeless support)
                     FormatterResolver.Instance,            // Custom resolver
                     StandardResolver.Instance              // Standard resolver
-                });
-
-            // Configure the MessagePack serialization options with whitelist-based type validation.
-            // SafeMessagePackSerializerOptions overrides ThrowIfDeserializingTypeIsDisallowed
-            // to block disallowed types BEFORE object instantiation inside TypelessFormatter.
-            Options = new SafeMessagePackSerializerOptions(resolver);
-        }
+                }));
 
         /// <summary>
         /// Serializes an object to a byte array.

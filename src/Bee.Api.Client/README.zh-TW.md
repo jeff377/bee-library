@@ -81,7 +81,6 @@ Bee.Api.Client/
   ApiConnectValidator.cs           # 端點驗證與 ConnectType 偵測
   ConnectType.cs                   # Local / Remote 列舉
   SupportedConnectTypes.cs         # 支援的連線類型旗標列舉
-  ConnectFunc.cs                   # 共用連線工具
   SyncExecutor.cs                  # 非同步轉同步橋接
   Connectors/
     ApiConnector.cs                # 抽象基底連接器

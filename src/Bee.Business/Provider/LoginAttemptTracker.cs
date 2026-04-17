@@ -134,7 +134,7 @@ namespace Bee.Business.Provider
         /// <summary>
         /// Tracks the state of login attempts for a single user.
         /// </summary>
-        private class AttemptInfo
+        private sealed class AttemptInfo
         {
             public int FailedCount { get; set; }
             public DateTime? LockedUntilUtc { get; set; }

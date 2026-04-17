@@ -28,7 +28,7 @@ namespace Bee.Api.Core.JsonRpc
         /// <summary>
         /// Gets or sets the access token used to identify the current user or session.
         /// </summary>
-        public Guid AccessToken { get; set; } = Guid.Empty;
+        public Guid AccessToken { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether the call originates from a local source (e.g., the same process or host as the server).
@@ -111,7 +111,7 @@ namespace Bee.Api.Core.JsonRpc
         /// Parses the progId and action from the Method property.
         /// </summary>
         /// <returns>A tuple containing the progId and action. Throws if the format is invalid.</returns>
-        private (string progId, string action) ParseMethod(string method)
+        private static (string progId, string action) ParseMethod(string method)
         {
             if (!string.IsNullOrEmpty(method))
             {

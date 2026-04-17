@@ -58,7 +58,7 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Adds indexes to the table schema.
         /// </summary>
-        private void AddIndexes(FormTable formTable, TableSchema tableSchema)
+        private static void AddIndexes(FormTable formTable, TableSchema tableSchema)
         {
             // Pre-check to avoid null reference
             if (tableSchema.Fields == null) return;

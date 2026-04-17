@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Bee.Base
 {
@@ -14,7 +15,7 @@ namespace Bee.Base
         public static bool IsEmpty(DateTime dateValue)
         {
             // The minimum DateTime value in SQL databases is 1753/1/1; values earlier than this are treated as empty
-            return dateValue < new DateTime(1753, 1, 1);
+            return dateValue < new DateTime(1753, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
         }
 
         /// <summary>
@@ -24,7 +25,7 @@ namespace Bee.Base
         public static bool IsDate(object value)
         {
             if (value is DateTime) { return true; }
-            return DateTime.TryParse(BaseFunc.CStr(value), out _);
+            return DateTime.TryParse(BaseFunc.CStr(value), CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
         }
 
         /// <summary>
@@ -34,7 +35,7 @@ namespace Bee.Base
         /// <param name="format">The format string.</param>
         public static string Format(DateTime dateValue, string format)
         {
-            return dateValue.ToString(format);
+            return dateValue.ToString(format, CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -43,7 +44,7 @@ namespace Bee.Base
         /// <param name="value">The date value.</param>
         public static DateTime GetYearMonth(DateTime value)
         {
-            return new DateTime(value.Year, value.Month, 1);
+            return new DateTime(value.Year, value.Month, 1, 0, 0, 0, DateTimeKind.Unspecified);
         }
     }
 }

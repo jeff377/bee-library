@@ -102,7 +102,7 @@ namespace Bee.Api.Client.Connectors
             catch (Exception ex)
             {
                 // Preserve the original error message for callers to inspect or log
-                throw new ApplicationException("Connection failed during Ping.", ex);
+                throw new InvalidOperationException("Connection failed during Ping.", ex);
             }
         }
 

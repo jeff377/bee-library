@@ -68,14 +68,7 @@ namespace Bee.Base
         /// <returns>True if the IP address is in the whitelist; otherwise, false.</returns>
         private bool IsIpWhitelisted(string ipAddress)
         {
-            foreach (string pattern in this.Whitelist)
-            {
-                if (IsMatch(ipAddress, pattern))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return this.Whitelist.Any(pattern => IsMatch(ipAddress, pattern));
         }
 
         /// <summary>
@@ -85,14 +78,7 @@ namespace Bee.Base
         /// <returns>True if the IP address is in the blacklist; otherwise, false.</returns>
         private bool IsIpBlacklisted(string ipAddress)
         {
-            foreach (string pattern in this.Blacklist)
-            {
-                if (IsMatch(ipAddress, pattern))
-                {
-                    return true;
-                }
-            }
-            return false;
+            return this.Blacklist.Any(pattern => IsMatch(ipAddress, pattern));
         }
 
         /// <summary>
@@ -119,7 +105,7 @@ namespace Bee.Base
         /// <param name="ipAddress">The IP address to check.</param>
         /// <param name="pattern">The wildcard pattern to match against.</param>
         /// <returns>True if the IP address matches the wildcard pattern; otherwise, false.</returns>
-        private bool IsWildcardMatch(string ipAddress, string pattern)
+        private static bool IsWildcardMatch(string ipAddress, string pattern)
         {
             string[] ipParts = ipAddress.Split('.');
             string[] patternParts = pattern.Split('.');
@@ -138,7 +124,7 @@ namespace Bee.Base
         /// <param name="address">The IP address to check.</param>
         /// <param name="cidr">The CIDR subnet pattern to match against.</param>
         /// <returns>True if the IP address is within the subnet; otherwise, false.</returns>
-        private bool IsInSubnet(IPAddress address, string cidr)
+        private static bool IsInSubnet(IPAddress address, string cidr)
         {
             string[] parts = cidr.Split('/');
             IPAddress ipAddress = IPAddress.Parse(parts[0]);

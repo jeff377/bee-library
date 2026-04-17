@@ -133,7 +133,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         /// <param name="dbTable">The table schema to populate.</param>
         /// <param name="table">The index data table.</param>
-        private void ParseIndexes(TableSchema dbTable, DataTable table)
+        private static void ParseIndexes(TableSchema dbTable, DataTable table)
         {
             while (!table.IsEmpty())
             {
@@ -280,7 +280,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="dataType">The SQL Server data type name.</param>
         /// <param name="defaultValue">The actual default value from the database.</param>
         /// <param name="originalDefaultValue">The built-in default value.</param>
-        public string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
+        public static string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
         {
             switch (StrFunc.ToUpper(dataType))
             {

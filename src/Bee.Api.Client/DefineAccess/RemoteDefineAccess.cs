@@ -15,8 +15,8 @@ namespace Bee.Api.Client.DefineAccess
     /// </summary>
     public class RemoteDefineAccess : IDefineAccess
     {
-        private readonly SystemApiConnector _connector = null!;
-        private readonly Dictionary<object> _list = null!;
+        private readonly SystemApiConnector _connector;
+        private readonly Dictionary<object> _list;
 
         #region 建構函式
 

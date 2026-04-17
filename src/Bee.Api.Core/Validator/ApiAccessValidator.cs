@@ -49,8 +49,8 @@ namespace Bee.Api.Core.Validator
                         throw new UnauthorizedAccessException("This API requires encrypted transmission.");
                     return;
 
-                case PayloadFormat.Plain:
                 default:
+                    // Plain (and any other value) requires ProtectionLevel.Public
                     if (attr.ProtectionLevel > ApiProtectionLevel.Public)
                         throw new UnauthorizedAccessException("This API requires encoded or encrypted transmission.");
                     return;

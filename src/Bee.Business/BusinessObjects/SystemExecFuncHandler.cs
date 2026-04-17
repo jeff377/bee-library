@@ -45,7 +45,7 @@ namespace Bee.Business.BusinessObjects
         /// </summary>
         /// <param name="args">The input arguments.</param>
         /// <param name="result">The output result.</param>
-        public void UpgradeTableSchema(ExecFuncArgs args, ExecFuncResult result)
+        public static void UpgradeTableSchema(ExecFuncArgs args, ExecFuncResult result)
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
             string dbName = args.Parameters.GetValue<string>("DbName");
@@ -59,7 +59,7 @@ namespace Bee.Business.BusinessObjects
         /// <summary>
         /// Tests the database connection.
         /// </summary>
-        public void TestConnection(ExecFuncArgs args, ExecFuncResult result)
+        public static void TestConnection(ExecFuncArgs args, ExecFuncResult result)
         {
             var item = args.Parameters.GetValue<DatabaseItem>("DatabaseItem");
 

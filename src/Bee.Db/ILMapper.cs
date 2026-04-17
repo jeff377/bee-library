@@ -9,27 +9,37 @@ using System.Reflection.Emit;
 namespace Bee.Db
 {
     /// <summary>
+    /// Shared cache for <see cref="ILMapper{T}"/> mapping delegates, keyed by (target type, field mapping signature).
+    /// Isolated from the generic type to avoid SonarCloud S2743 (static state is shared across closed generics).
+    /// </summary>
+    internal static class ILMapperCache
+    {
+        public static readonly ConcurrentDictionary<(Type, string), Delegate> Entries =
+            new ConcurrentDictionary<(Type, string), Delegate>();
+    }
+
+    /// <summary>
     /// Provides IL-based mapping functionality from <see cref="DbDataReader"/> to type <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The target type.</typeparam>
     public static class ILMapper<T>
     {
-        private static readonly ConcurrentDictionary<(Type, string), Delegate> _cache =
-            new ConcurrentDictionary<(Type, string), Delegate>();
-
         /// <summary>
         /// Clears the cached mapping delegates for type <typeparamref name="T"/>.
         /// Call this method to release memory in long-running applications or when query shapes are no longer needed.
         /// </summary>
         public static void ClearCache()
         {
-            _cache.Clear();
+            foreach (var key in ILMapperCache.Entries.Keys.Where(k => k.Item1 == typeof(T)).ToList())
+            {
+                ILMapperCache.Entries.TryRemove(key, out _);
+            }
         }
 
         /// <summary>
         /// Gets the number of cached mapping delegates for type <typeparamref name="T"/>.
         /// </summary>
-        public static int CacheCount => _cache.Count;
+        public static int CacheCount => ILMapperCache.Entries.Keys.Count(k => k.Item1 == typeof(T));
 
         /// <summary>
         /// Creates a mapping function that converts a <see cref="DbDataReader"/> row to type <typeparamref name="T"/>.
@@ -42,13 +52,13 @@ namespace Bee.Db
             // Build a composite cache key from the type T and the field index mapping
             var key = (typeof(T), string.Join(",", fieldIndexes.Select(kv => $"{kv.Key}:{kv.Value}")));
             // Return the cached mapper if it already exists
-            if (_cache.TryGetValue(key, out var cachedDelegate))
+            if (ILMapperCache.Entries.TryGetValue(key, out var cachedDelegate))
             {
                 return (Func<DbDataReader, T>)cachedDelegate;
             }
             // Build the mapper, store it in the cache, and return it
             var mapper = CreateMapper(fieldIndexes);
-            _cache[key] = mapper;
+            ILMapperCache.Entries[key] = mapper;
             return mapper;
         }
 

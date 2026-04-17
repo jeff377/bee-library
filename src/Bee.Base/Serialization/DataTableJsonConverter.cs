@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -14,6 +15,8 @@ namespace Bee.Base.Serialization
     /// </summary>
     public class DataTableJsonConverter : JsonConverter<DataTable>
     {
+        private const string OriginalKey = "original";
+
         /// <summary>
         /// Serializes a <see cref="DataTable"/> to JSON with full metadata.
         /// </summary>
@@ -80,7 +83,7 @@ namespace Bee.Base.Serialization
                         {
                             // For Unchanged rows, original == current; write original explicitly
                             // so the reader can reconstruct the row state correctly.
-                            writer.WritePropertyName("original");
+                            writer.WritePropertyName(OriginalKey);
                             WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, options);
                         }
                         break;
@@ -88,12 +91,12 @@ namespace Bee.Base.Serialization
                     case DataRowState.Modified:
                         writer.WritePropertyName("current");
                         WriteRowValues(writer, row, value.Columns, DataRowVersion.Current, options);
-                        writer.WritePropertyName("original");
+                        writer.WritePropertyName(OriginalKey);
                         WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, options);
                         break;
 
                     case DataRowState.Deleted:
-                        writer.WritePropertyName("original");
+                        writer.WritePropertyName(OriginalKey);
                         WriteRowValues(writer, row, value.Columns, DataRowVersion.Original, options);
                         break;
                 }
@@ -255,7 +258,7 @@ namespace Bee.Base.Serialization
                         case "current":
                             rowDef.CurrentValues = ReadValueMap(ref reader, typeLookup);
                             break;
-                        case "original":
+                        case OriginalKey:
                             rowDef.OriginalValues = ReadValueMap(ref reader, typeLookup);
                             break;
                         default:
@@ -351,7 +354,7 @@ namespace Bee.Base.Serialization
                 if (value is DateTime dt)
                     return dt;
                 if (value is string dtStr)
-                    return DateTime.Parse(dtStr);
+                    return DateTime.Parse(dtStr, CultureInfo.InvariantCulture);
                 return value;
             }
 

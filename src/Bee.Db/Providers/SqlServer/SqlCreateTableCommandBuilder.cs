@@ -1,5 +1,6 @@
 ﻿using Bee.Definition.Database;
 using System;
+using System.Linq;
 using System.Text;
 using Bee.Base;
 using Bee.Base.Data;
@@ -110,7 +111,7 @@ namespace Bee.Db.Providers.SqlServer
         /// Gets the SQL command text for dropping a table if it exists.
         /// </summary>
         /// <param name="tableName">The table name.</param>
-        private string GetDropTableCommandText(string tableName)
+        private static string GetDropTableCommandText(string tableName)
         {
             string escaped = EscapeSqlString(tableName);
             string quoted = QuoteName(tableName);
@@ -150,17 +151,16 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="newTableName">The target (new) table name.</param>
         private string GetRenameTableCommandText(string tableName, string newTableName)
         {
-            var sb = new StringBuilder();
             // Rename indexes
-            foreach (TableSchemaIndex index in this.TableSchema.Indexes!)
+            var indexRenameLines = this.TableSchema.Indexes!.Select(index =>
             {
                 string oldName = StrFunc.Format(index.Name, tableName);  // Old index name
                 string newName = StrFunc.Format(index.Name, newTableName);  // New index name
-                sb.Append($"EXEC sp_rename N'{EscapeSqlString($"dbo.{tableName}.{oldName}")}', N'{EscapeSqlString(newName)}', N'INDEX';\n");
-            }
+                return $"EXEC sp_rename N'{EscapeSqlString($"dbo.{tableName}.{oldName}")}', N'{EscapeSqlString(newName)}', N'INDEX';\n";
+            });
             // Rename the table
-            sb.Append($"EXEC sp_rename N'{EscapeSqlString(tableName)}', N'{EscapeSqlString(newTableName)}';\n");
-            return sb.ToString();
+            string tableRenameLine = $"EXEC sp_rename N'{EscapeSqlString(tableName)}', N'{EscapeSqlString(newTableName)}';\n";
+            return string.Concat(indexRenameLines) + tableRenameLine;
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace Bee.Db.Providers.SqlServer
         /// Converts a field definition to the corresponding SQL Server column type string.
         /// </summary>
         /// <param name="field">The field definition.</param>
-        private string ConverDbType(DbField field)
+        private static string ConverDbType(DbField field)
         {
             switch (field.DbType)
             {
@@ -282,7 +282,7 @@ namespace Bee.Db.Providers.SqlServer
         /// Gets the default value expression for a field.
         /// </summary>
         /// <param name="dbField">The field definition.</param>
-        private string GetDefaultValue(DbField dbField)
+        private static string GetDefaultValue(DbField dbField)
         {
             if (dbField.AllowNull)
                 return string.Empty;
@@ -295,7 +295,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         /// <param name="dbType">The field data type.</param>
         /// <param name="defaultValue">The raw default value.</param>
-        private string GetDefaultValue(FieldDbType dbType, string defaultValue)
+        private static string GetDefaultValue(FieldDbType dbType, string defaultValue)
         {
             string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbType);
 
@@ -353,7 +353,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         /// <param name="tableName">The table name.</param>
         /// <param name="index">The table schema index definition.</param>
-        private string GetIndexCommandText(string tableName, TableSchemaIndex index)
+        private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
         {
             // Index name
             string name = StrFunc.Format(index.Name, tableName);

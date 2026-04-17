@@ -86,10 +86,8 @@ namespace Bee.Api.Core.JsonRpc
                         }
                         break;
 
-
-                    case PayloadFormat.Plain:
                     default:
-                        // For Plain format, resolve based on JSON value kind
+                        // For Plain format (and any other value), resolve based on JSON value kind
                         payload.Value = ResolvePlainValue(elem);
                         break;
                 }

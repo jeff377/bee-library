@@ -6,7 +6,7 @@ namespace Bee.Base.Security
     /// <summary>
     /// Utility class for password hashing and verification using the PBKDF2 algorithm.
     /// </summary>
-    public class PasswordHasher
+    public static class PasswordHasher
     {
         private const int SaltSize = 16; // 128-bit
         private const int HashSize = 32; // 256-bit
@@ -21,7 +21,7 @@ namespace Bee.Base.Security
         /// </summary>
         /// <param name="password">The original password.</param>
         /// <returns>The hashed password string.</returns>
-        public string HashPassword(string password)
+        public static string HashPassword(string password)
         {
             var salt = new byte[SaltSize];
             using (var rng = RandomNumberGenerator.Create())
@@ -37,7 +37,7 @@ namespace Bee.Base.Security
         /// <param name="password">The password entered by the user.</param>
         /// <param name="hashedPassword">The stored hashed password string.</param>
         /// <returns>True if the password matches; otherwise, false.</returns>
-        public bool VerifyPassword(string password, string hashedPassword)
+        public static bool VerifyPassword(string password, string hashedPassword)
         {
             try
             {

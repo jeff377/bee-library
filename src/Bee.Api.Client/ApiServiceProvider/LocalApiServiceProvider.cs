@@ -21,7 +21,7 @@ namespace Bee.Api.Client.ApiServiceProvider
         /// <summary>
         /// Gets the access token.
         /// </summary>
-        public Guid AccessToken { get; } = Guid.Empty;
+        public Guid AccessToken { get; }
 
         /// <summary>
         /// Executes an API method synchronously.

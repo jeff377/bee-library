@@ -10,12 +10,6 @@ namespace Bee.Base
     /// </summary>
     public static class SysInfo
     {
-        static SysInfo()
-        {
-            // Add the default allowed type namespaces for JSON-RPC data transfer
-            _allowedTypeNamespaces = new List<string> { "Bee.Base", "Bee.Definition", "Bee.Contracts", "Bee.Api.Core", "Bee.Business" };
-        }
-
         /// <summary>
         /// Gets or sets the system major version number.
         /// </summary>
@@ -53,8 +47,10 @@ namespace Bee.Base
 
         /// <summary>
         /// Backing field for <see cref="AllowedTypeNamespaces"/>.
+        /// Pre-populated with the default allowed type namespaces for JSON-RPC data transfer.
         /// </summary>
-        private static List<string> _allowedTypeNamespaces;
+        private static List<string> _allowedTypeNamespaces =
+            new List<string> { "Bee.Base", "Bee.Definition", "Bee.Contracts", "Bee.Api.Core", "Bee.Business" };
 
         /// <summary>
         /// Gets the list of type namespaces allowed for JSON-RPC data transfer (read-only).
@@ -70,11 +66,8 @@ namespace Bee.Base
         /// <param name="typeName">The type name to validate.</param>
         public static bool IsTypeNameAllowed(string typeName)
         {
-            foreach (var ns in AllowedTypeNamespaces)
-            {
-                if (typeName.StartsWith(ns + "."))
-                    return true;
-            }
+            if (AllowedTypeNamespaces.Any(ns => typeName.StartsWith(ns + ".")))
+                return true;
 
             return typeName == "System.Byte[]";
         }

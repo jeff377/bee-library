@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace Bee.Base
@@ -23,13 +25,12 @@ namespace Bee.Base
                 return cached;
 
             // Search in the current AppDomain
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            var match = AppDomain.CurrentDomain.GetAssemblies()
+                .FirstOrDefault(a => StrFunc.IsEquals(a.ManifestModule.Name, assemblyName));
+            if (match != null)
             {
-                if (StrFunc.IsEquals(assembly.ManifestModule.Name, assemblyName))
-                {
-                    _loadedAssemblies[assemblyName] = assembly;
-                    return assembly;
-                }
+                _loadedAssemblies[assemblyName] = match;
+                return match;
             }
 
             return null;
@@ -63,8 +64,8 @@ namespace Bee.Base
             else
                 assemblyFile = assemblyName;
 
-            // Load the assembly
-            assembly = Assembly.LoadFrom(assemblyFile);
+            // Load the assembly by bytes to avoid locking the file on disk
+            assembly = Assembly.Load(File.ReadAllBytes(assemblyFile));
             _loadedAssemblies[assemblyName] = assembly;
 
             return assembly;

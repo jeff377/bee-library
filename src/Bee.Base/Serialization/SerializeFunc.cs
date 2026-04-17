@@ -61,7 +61,7 @@ namespace Bee.Base.Serialization
 
             // Serialize and write to string
             string xml = string.Empty;
-            using (UTF8StringWriter writer = new UTF8StringWriter())
+            using (Utf8StringWriter writer = new Utf8StringWriter())
             {
                 var serializer = XmlSerializerCache.Get(value.GetType());
                 serializer.Serialize(writer, value);

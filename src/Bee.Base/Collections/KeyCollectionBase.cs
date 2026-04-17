@@ -2,6 +2,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Xml.Serialization;
 using Bee.Base.Serialization;
 
@@ -100,10 +101,9 @@ namespace Bee.Base.Collections
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            foreach (object item in this)
+            foreach (var item in this.OfType<IObjectSerialize>())
             {
-                if (item is IObjectSerialize)
-                    ((IObjectSerialize)item).SetSerializeState(serializeState);
+                item.SetSerializeState(serializeState);
             }
         }
 

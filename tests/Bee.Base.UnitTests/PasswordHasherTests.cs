@@ -4,7 +4,7 @@ using Bee.Base.Security;
 namespace Bee.Base.UnitTests
 {
     /// <summary>
-    /// 測試 TPasswordHasher 密碼雜湊與驗證功能。
+    /// 測試 PasswordHasher 密碼雜湊與驗證功能。
     /// </summary>
     public class PasswordHasherTests
     {
@@ -16,12 +16,11 @@ namespace Bee.Base.UnitTests
         public void VerifyPassword_CorrectPassword_ReturnsTrue()
         {
             // Arrange
-            var hasher = new PasswordHasher();
             string originalPassword = "MySecurePassword!123";
 
             // Act
-            string hashedPassword = hasher.HashPassword(originalPassword);
-            bool result = hasher.VerifyPassword(originalPassword, hashedPassword);
+            string hashedPassword = PasswordHasher.HashPassword(originalPassword);
+            bool result = PasswordHasher.VerifyPassword(originalPassword, hashedPassword);
 
             // Assert
             Assert.True(result);
@@ -35,13 +34,12 @@ namespace Bee.Base.UnitTests
         public void VerifyPassword_IncorrectPassword_ReturnsFalse()
         {
             // Arrange
-            var hasher = new PasswordHasher();
             string originalPassword = "MySecurePassword!123";
             string wrongPassword = "WrongPassword";
-            string hashedPassword = hasher.HashPassword(originalPassword);
+            string hashedPassword = PasswordHasher.HashPassword(originalPassword);
 
             // Act
-            bool result = hasher.VerifyPassword(wrongPassword, hashedPassword);
+            bool result = PasswordHasher.VerifyPassword(wrongPassword, hashedPassword);
 
             // Assert
             Assert.False(result);
@@ -55,12 +53,11 @@ namespace Bee.Base.UnitTests
         public void VerifyPassword_InvalidHashFormat_ReturnsFalse()
         {
             // Arrange
-            var hasher = new PasswordHasher();
             string password = "any";
             string invalidHash = "not.a.valid.hash";
 
             // Act
-            bool result = hasher.VerifyPassword(password, invalidHash);
+            bool result = PasswordHasher.VerifyPassword(password, invalidHash);
 
             // Assert
             Assert.False(result);

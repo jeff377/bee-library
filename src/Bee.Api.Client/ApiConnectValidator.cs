@@ -78,7 +78,7 @@ namespace Bee.Api.Client
         /// Verifies that SystemSettings.xml exists in the definition path, creating it if missing.
         /// </summary>
         /// <param name="definePath">The definition path.</param>
-        private void ValidateSystemSettings(string definePath)
+        private static void ValidateSystemSettings(string definePath)
         {
             // Check for SystemSettings.xml; create it if not found
             string filePath = FileFunc.PathCombine(definePath, "SystemSettings.xml");
@@ -94,7 +94,7 @@ namespace Bee.Api.Client
         /// Verifies that DatabaseSettings.xml exists in the definition path, creating it if missing.
         /// </summary>
         /// <param name="definePath">The definition path.</param>
-        private void ValidateDatabaseSettings(string definePath)
+        private static void ValidateDatabaseSettings(string definePath)
         {
             // Check for DatabaseSettings.xml; create it if not found
             string filePath = FileFunc.PathCombine(definePath, "DatabaseSettings.xml");
@@ -116,7 +116,7 @@ namespace Bee.Api.Client
         /// Validates the remote connection settings.
         /// </summary>
         /// <param name="endpoint">The service endpoint.</param>
-        private void ValidateRemote(string endpoint)
+        private static void ValidateRemote(string endpoint)
         {
             // Verify the application supports remote connections
             if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))

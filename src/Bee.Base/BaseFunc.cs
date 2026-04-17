@@ -92,7 +92,7 @@ namespace Bee.Base
         {
             // The minimum DateTime value in SQL databases is 1753/1/1; values earlier than this are treated as empty
             // Null, DbNull, and DateTime.MinValue are all treated as empty
-            return (IsNullOrDBNull(value) || value < new DateTime(1753, 1, 1));
+            return (IsNullOrDBNull(value) || value < new DateTime(1753, 1, 1, 0, 0, 0, DateTimeKind.Unspecified));
         }
 
         /// <summary>
@@ -277,8 +277,8 @@ namespace Bee.Base
                     return result;
             }
 
-            if (value is bool)
-                return (bool)value ? 1 : 0;
+            if (value is bool b)
+                return b ? 1 : 0;
 
             if (value is Enum)
                 return Convert.ToInt32(value);
@@ -462,10 +462,10 @@ namespace Bee.Base
         {
             if (IsNullOrDBNull(value))
                 return Guid.Empty;
-            else if (value is Guid)
-                return (Guid)value;
-            else if (value is string)
-                return CGuid((string)value);
+            else if (value is Guid g)
+                return g;
+            else if (value is string s)
+                return CGuid(s);
             else
                 return Guid.Empty;
         }
@@ -507,11 +507,8 @@ namespace Bee.Base
         /// <param name="value">The input value.</param>
         public static object CDbFieldValue(FieldDbType dbType, object value)
         {
-            if (value is DateTime)
-            {
-                if (BaseFunc.CDateTime(value) == DateTime.MinValue)
-                    return DBNull.Value;
-            }
+            if (value is DateTime && BaseFunc.CDateTime(value) == DateTime.MinValue)
+                return DBNull.Value;
             return CFieldValue(dbType, value);
         }
 
@@ -692,16 +689,28 @@ namespace Bee.Base
         {
             string[] args = Environment.GetCommandLineArgs();
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            for (int i = 1; i < args.Length; i++) // Skip args[0] (the executable name)
+            int i = 1; // Skip args[0] (the executable name)
+            while (i < args.Length)
             {
-                if (!args[i].StartsWith("--")) continue;
+                if (!args[i].StartsWith("--"))
+                {
+                    i++;
+                    continue;
+                }
 
                 string key = args[i].Substring(2); // Strip the "--" prefix
-                // If the next argument (i + 1) exists and does not start with "-" (i.e., it's not a new option),
-                // use it as the value and advance i; otherwise, default to "true" (for flag-style options like "--flag").
-                string value = (i + 1 < args.Length && !args[i + 1].StartsWith("-")) ? args[++i] : "true";
-
-                result[key] = value;
+                // If the next argument exists and does not start with "-" (i.e., it's not a new option),
+                // use it as the value; otherwise, default to "true" (for flag-style options like "--flag").
+                if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                {
+                    result[key] = args[i + 1];
+                    i += 2;
+                }
+                else
+                {
+                    result[key] = "true";
+                    i++;
+                }
             }
             return result;
         }
