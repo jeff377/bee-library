@@ -21,7 +21,7 @@ namespace Bee.Base.UnitTests
         private static DataTable JsonRoundTripTable(DataTable table)
         {
             string json = SerializeFunc.ObjectToJson(table, includeTypeName: false);
-            return SerializeFunc.JsonToObject<DataTable>(json, includeTypeName: false);
+            return SerializeFunc.JsonToObject<DataTable>(json, includeTypeName: false)!;
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Bee.Base.UnitTests
         private static DataSet JsonRoundTripDataSet(DataSet dataSet)
         {
             string json = SerializeFunc.ObjectToJson(dataSet, includeTypeName: false);
-            return SerializeFunc.JsonToObject<DataSet>(json, includeTypeName: false);
+            return SerializeFunc.JsonToObject<DataSet>(json, includeTypeName: false)!;
         }
 
         #endregion
@@ -442,7 +442,7 @@ namespace Bee.Base.UnitTests
         [DisplayName("DataTable JSON 序列化 null 值")]
         public void DataTable_JsonSerialize_Null_ReturnsNull()
         {
-            string json = SerializeFunc.ObjectToJson((DataTable?)null, includeTypeName: false);
+            string json = SerializeFunc.ObjectToJson((DataTable?)null!, includeTypeName: false);
             var restored = SerializeFunc.JsonToObject<DataTable?>(json, includeTypeName: false);
 
             Assert.Null(restored);

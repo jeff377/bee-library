@@ -27,7 +27,7 @@ namespace Bee.Base.UnitTests
             Assert.False(BaseFunc.IsNumeric("abc"));
 
             // 特殊值測試
-            Assert.False(BaseFunc.IsNumeric(null));
+            Assert.False(BaseFunc.IsNumeric(null!));
             Assert.False(BaseFunc.IsNumeric(new object()));
             Assert.False(BaseFunc.IsNumeric(DateTime.Now));
         }

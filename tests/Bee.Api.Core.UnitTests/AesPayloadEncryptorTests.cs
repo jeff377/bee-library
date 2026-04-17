@@ -18,7 +18,7 @@ namespace Bee.Api.Core.UnitTests
             var data = new byte[] { 1, 2, 3 };
 
             Assert.Throws<CryptographicException>(() =>
-                encryptor.Encrypt(data, null));
+                encryptor.Encrypt(data, null!));
         }
 
         [Fact(DisplayName = "Encrypt 使用空 Key 應拋出 CryptographicException")]
@@ -36,7 +36,7 @@ namespace Bee.Api.Core.UnitTests
             var data = new byte[] { 1, 2, 3 };
 
             Assert.Throws<CryptographicException>(() =>
-                encryptor.Decrypt(data, null));
+                encryptor.Decrypt(data, null!));
         }
 
         [Fact(DisplayName = "Decrypt 使用空 Key 應拋出 CryptographicException")]

@@ -34,7 +34,7 @@ namespace Bee.Tests.Shared
             if (!string.IsNullOrEmpty(connStr))
             {
                 var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
-                dbSettings.Items.Add(new DatabaseItem
+                dbSettings.Items!.Add(new DatabaseItem
                 {
                     Id = "common",
                     DatabaseType = DatabaseType.SQLServer,

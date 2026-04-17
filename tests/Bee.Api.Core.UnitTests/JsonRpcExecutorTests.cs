@@ -35,7 +35,7 @@ namespace Bee.Api.Core.UnitTests
 
             var executor = new JsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
-            return (T)response.Result.Value;
+            return (T)response.Result!.Value!;
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Bee.Api.Core.UnitTests
             var executor = new JsonRpcExecutor(accessToken);
             var response = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
-            var execFuncResult = response.Result.Value as ExecFuncResponse;
+            var execFuncResult = response.Result!.Value as ExecFuncResponse;
             Assert.NotNull(execFuncResult);  // 確認 ExecFunc 方法傳出結果不為 null
         }
     }

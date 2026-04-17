@@ -20,7 +20,7 @@ namespace Bee.Api.Core.UnitTests
             original.Add("BoolValue", true);
             original.Add("DecimalValue", 99.99m);
             original.Add("DateTimeValue", new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-            original.Add("NullValue", null);
+            original.Add("NullValue", null!);
 
             var bytes = MessagePackHelper.Serialize(original);
             var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);

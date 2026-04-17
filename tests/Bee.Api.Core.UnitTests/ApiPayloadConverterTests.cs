@@ -77,7 +77,7 @@ namespace Bee.Api.Core.UnitTests
             var payload = new JsonRpcParams
             {
                 Value = new byte[] { 0x01 },
-                TypeName = null
+                TypeName = null!
             };
 
             var ex = Assert.Throws<InvalidOperationException>(() =>

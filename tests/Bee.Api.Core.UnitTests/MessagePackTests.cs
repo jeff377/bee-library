@@ -209,7 +209,7 @@ namespace Bee.Api.Core.UnitTests
             original.Add("DateTimeValue", new DateTime(2025, 5, 16, 10, 30, 0));
             original.Add("DecimalValue", 123.45m);
             original.Add("DoubleValue", 9876.54321);
-            original.Add("NullValue", null);
+            original.Add("NullValue", null!);
 
             // 序列化為位元組陣列
             var bytes = MessagePackHelper.Serialize(original);
@@ -234,7 +234,8 @@ namespace Bee.Api.Core.UnitTests
                 }
                 else
                 {
-                    Assert.Equal(originalValue.GetType(), restoredValue.GetType());
+                    Assert.NotNull(restoredValue);
+                    Assert.Equal(originalValue.GetType(), restoredValue!.GetType());
                     Assert.Equal(originalValue, restoredValue);
                 }
             }
@@ -268,7 +269,7 @@ namespace Bee.Api.Core.UnitTests
             Assert.True(restored.Contains("Data"));
             Assert.IsType<DataTable>(restored["Data"].Value);
 
-            var restoredTable = (DataTable)restored["Data"].Value;
+            var restoredTable = (DataTable)restored["Data"].Value!;
             Assert.Equal("TestTable", restoredTable.TableName);
             Assert.Equal(2, restoredTable.Rows.Count);
             Assert.Equal("Alice", restoredTable.Rows[0]["Name"]);
@@ -366,8 +367,8 @@ namespace Bee.Api.Core.UnitTests
                 ClientName = "TestClient",
                 TraceId = Guid.NewGuid().ToString()
             };
-            args.Parameters.Add("Env", "UAT");
-            args.Parameters.Add("Verbose", true);
+            args.Parameters!.Add("Env", "UAT");
+            args.Parameters!.Add("Verbose", true);
 
             // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(args);
@@ -380,8 +381,8 @@ namespace Bee.Api.Core.UnitTests
                 Version = "1.2.3",
                 TraceId = Guid.NewGuid().ToString()
             };
-            result.Parameters.Add("Region", "TW");
-            result.Parameters.Add("Elapsed", 42);
+            result.Parameters!.Add("Region", "TW");
+            result.Parameters!.Add("Elapsed", 42);
 
             // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(result);
@@ -398,17 +399,17 @@ namespace Bee.Api.Core.UnitTests
             {
                 FuncId = "CustomFunction123"
             };
-            args.Parameters.Add("Key1", "Value1");
-            args.Parameters.Add("Key2", 42);
+            args.Parameters!.Add("Key1", "Value1");
+            args.Parameters!.Add("Key2", 42);
 
             // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(args);
 
             // 建立 TExecFuncResponse 並指定屬性與參數
             var result = new ExecFuncResponse();
-            result.Parameters.Add("ResultKey", "ResultValue");
-            result.Parameters.Add("ResultCount", 100);
-            result.Parameters.Add("ResultDate", new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc));
+            result.Parameters!.Add("ResultKey", "ResultValue");
+            result.Parameters!.Add("ResultCount", 100);
+            result.Parameters!.Add("ResultDate", new DateTime(2025, 5, 16, 12, 0, 0, DateTimeKind.Utc));
 
             // 測試 MessagePack 序列化
             TestFunc.TestMessagePackSerialization(result);
@@ -476,8 +477,8 @@ namespace Bee.Api.Core.UnitTests
         {
             // Arrange: 建立 GetCommonConfigurationRequest（無額外 Key 屬性，僅繼承 Parameters）
             var args = new GetCommonConfigurationRequest();
-            args.Parameters.Add("AppId", "BeeERP");
-            args.Parameters.Add("Env", "Production");
+            args.Parameters!.Add("AppId", "BeeERP");
+            args.Parameters!.Add("Env", "Production");
 
             // Act & Assert: 使用 TestMessagePackSerialization 測試
             TestFunc.TestMessagePackSerialization(args);
@@ -487,7 +488,7 @@ namespace Bee.Api.Core.UnitTests
             {
                 CommonConfiguration = "<Config><Setting Key='Theme'>Dark</Setting></Config>"
             };
-            result.Parameters.Add("CacheHit", true);
+            result.Parameters!.Add("CacheHit", true);
 
             // Act & Assert: 使用 TestMessagePackSerialization 測試
             TestFunc.TestMessagePackSerialization(result);
@@ -506,15 +507,15 @@ namespace Bee.Api.Core.UnitTests
                 Xml = "<Define><Item Key='OrderForm'>FormData</Item></Define>",
                 Keys = new[] { "OrderForm", "CustomerForm" }
             };
-            args.Parameters.Add("UserId", "admin");
+            args.Parameters!.Add("UserId", "admin");
 
             // Act & Assert: 使用 TestMessagePackSerialization 測試
             TestFunc.TestMessagePackSerialization(args);
 
             // Arrange: 建立 SaveDefineResponse 實例（無額外 Key 屬性，僅繼承 Parameters）
             var result = new SaveDefineResponse();
-            result.Parameters.Add("AffectedRows", 2);
-            result.Parameters.Add("Timestamp", new DateTime(2025, 6, 1, 10, 0, 0, DateTimeKind.Utc));
+            result.Parameters!.Add("AffectedRows", 2);
+            result.Parameters!.Add("Timestamp", new DateTime(2025, 6, 1, 10, 0, 0, DateTimeKind.Utc));
 
             // Act & Assert: 使用 TestMessagePackSerialization 測試
             TestFunc.TestMessagePackSerialization(result);

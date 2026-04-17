@@ -42,7 +42,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("ConvertForSerialization 對 null 回傳 null")]
         public void ConvertForSerialization_NullValue_ReturnsNull()
         {
-            var result = ApiContractRegistry.ConvertForSerialization(null);
+            var result = ApiContractRegistry.ConvertForSerialization(null!);
 
             Assert.Null(result);
         }

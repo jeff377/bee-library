@@ -57,7 +57,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             var bytes = MessagePackHelper.Serialize(original, typeof(LoginRequest));
-            var deserialized = (LoginRequest)MessagePackHelper.Deserialize(bytes, typeof(LoginRequest));
+            var deserialized = (LoginRequest)MessagePackHelper.Deserialize(bytes, typeof(LoginRequest))!;
 
             Assert.Equal(original.UserId, deserialized.UserId);
             Assert.Equal(original.Password, deserialized.Password);
@@ -80,7 +80,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             var bytes = MessagePackHelper.Serialize(original, typeof(LoginResponse));
-            var deserialized = (LoginResponse)MessagePackHelper.Deserialize(bytes, typeof(LoginResponse));
+            var deserialized = (LoginResponse)MessagePackHelper.Deserialize(bytes, typeof(LoginResponse))!;
 
             Assert.Equal(token, deserialized.AccessToken);
             Assert.Equal(expiredAt, deserialized.ExpiredAt);
@@ -100,7 +100,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             var bytes = MessagePackHelper.Serialize(original, typeof(PingRequest));
-            var deserialized = (PingRequest)MessagePackHelper.Deserialize(bytes, typeof(PingRequest));
+            var deserialized = (PingRequest)MessagePackHelper.Deserialize(bytes, typeof(PingRequest))!;
 
             Assert.Equal("TestClient", deserialized.ClientName);
             Assert.Equal("trace-123", deserialized.TraceId);

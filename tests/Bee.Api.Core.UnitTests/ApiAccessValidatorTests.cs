@@ -46,13 +46,13 @@ namespace Bee.Api.Core.UnitTests
             // Act & Assert
             if (expectedSuccess)
             {
-                var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method, context));
+                var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context));
                 Assert.Null(ex);
             }
             else
             {
                 Assert.Throws<UnauthorizedAccessException>(() =>
-                    ApiAccessValidator.ValidateAccess(method, context));
+                    ApiAccessValidator.ValidateAccess(method!, context));
             }
         }
 

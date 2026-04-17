@@ -61,7 +61,7 @@ namespace Bee.Db.UnitTests
                 "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001");
             var result = dbAccess.Execute(check);
 
-            if (BaseFunc.CInt(result.Scalar) == 0)
+            if (BaseFunc.CInt(result.Scalar!) == 0)
             {
                 var insert = new DbCommandSpec(DbCommandKind.NonQuery,
                     "INSERT INTO st_user (sys_rowid, sys_id, sys_name, password, email, note, sys_insert_time) " +
