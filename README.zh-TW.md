@@ -2,6 +2,12 @@
 
 [English](README.md)
 
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=jeff377_bee-library&metric=alert_status)](https://sonarcloud.io/project/overview?id=jeff377_bee-library)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=jeff377_bee-library&metric=bugs)](https://sonarcloud.io/project/overview?id=jeff377_bee-library)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=jeff377_bee-library&metric=vulnerabilities)](https://sonarcloud.io/project/overview?id=jeff377_bee-library)
+[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=jeff377_bee-library&metric=code_smells)](https://sonarcloud.io/project/overview?id=jeff377_bee-library)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=jeff377_bee-library&metric=coverage)](https://sonarcloud.io/project/overview?id=jeff377_bee-library)
+
 Bee.NET Framework 是一套採用 **N-Tier + Clean Architecture + MVVM** 混合模式的企業資訊系統開發框架，以**定義導向架構（Definition-Driven Architecture）**為核心，以 `FormSchema` 作為系統唯一定義來源（Single Source of Truth），統一驅動 UI 配置、資料表結構與業務驗證規則。
 
 > 📌 *N-Tier* 指超過三層的邏輯分層架構，在 Bee.NET 中實際拆分為五層（表現層、API 呼叫層、業務邏輯層、資料存取層、資料庫層），各層職責明確分離，更能因應複雜企業需求。
