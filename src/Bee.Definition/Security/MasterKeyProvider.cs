@@ -1,6 +1,7 @@
 using Bee.Definition.Settings;
 using System;
 using System.IO;
+using System.Threading;
 using Bee.Base;
 using Bee.Base.Security;
 
@@ -11,6 +12,9 @@ namespace Bee.Definition.Security
     /// </summary>
     public static class MasterKeyProvider
     {
+        private const int ReadRetryCount = 5;
+        private const int ReadRetryDelayMs = 50;
+
         /// <summary>
         /// Gets the master key content.
         /// </summary>
@@ -69,16 +73,53 @@ namespace Bee.Definition.Security
 
             if (!File.Exists(filePath))
             {
-                if (autoCreate)
+                if (!autoCreate)
+                    throw new FileNotFoundException("Master key file not found: " + filePath);
+
+                // Atomically create the file so concurrent callers (e.g. parallel test hosts
+                // sharing a Define folder) don't overwrite each other's keys. If another
+                // process wins the race, fall through to read the key it just wrote.
+                string newKey = GenerateNewKey();
+                try
                 {
-                    string newKey = GenerateNewKey();
-                    File.WriteAllText(filePath, newKey);
+                    using (var fs = new FileStream(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.Read))
+                    using (var writer = new StreamWriter(fs))
+                    {
+                        writer.Write(newKey);
+                    }
                     return newKey;
                 }
-                throw new FileNotFoundException("Master key file not found: " + filePath);
+                catch (IOException)
+                {
+                    // Another process created the file between our File.Exists check and
+                    // FileMode.CreateNew; fall through to read the winning key.
+                }
             }
 
-            return File.ReadAllText(filePath);
+            return ReadAllTextShared(filePath);
+        }
+
+        /// <summary>
+        /// Reads the entire file with <see cref="FileShare.ReadWrite"/> so concurrent
+        /// readers do not collide with the brief write/truncate lock held by another
+        /// process during file creation. Retries on transient <see cref="IOException"/>.
+        /// </summary>
+        /// <param name="filePath">The file path.</param>
+        private static string ReadAllTextShared(string filePath)
+        {
+            for (int attempt = 0; ; attempt++)
+            {
+                try
+                {
+                    using var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    using var reader = new StreamReader(fs);
+                    return reader.ReadToEnd();
+                }
+                catch (IOException) when (attempt < ReadRetryCount - 1)
+                {
+                    Thread.Sleep(ReadRetryDelayMs);
+                }
+            }
         }
 
         /// <summary>
