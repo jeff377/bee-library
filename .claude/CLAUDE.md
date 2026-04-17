@@ -79,3 +79,4 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 @rules/security.md
 @rules/releasing.md
 @rules/scanning.md
+@rules/sonarcloud.md

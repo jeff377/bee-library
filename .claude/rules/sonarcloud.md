@@ -1,0 +1,156 @@
+# SonarCloud 規則指引
+
+本規範收錄 SonarCloud 掃描過本專案後常出現的規則，依主題分類。撰寫新程式碼時主動遵守，避免重複觸發 code smell。
+
+> 安全相關 SAST 規則（SQL 注入、XXE、路徑安全、資源釋放、例外處理基本原則）見 `scanning.md`。
+> 一般命名與格式見 `code-style.md`。
+
+---
+
+## 1. 類別與型別設計
+
+| 規則 | 原則 |
+|------|------|
+| **S1118** | 只含 static 成員的 utility class 須加 `private` 建構子，或直接改為 `static class` |
+| **S3442** | 只含 static 成員但未標記為 static 的 class，應改為 `static class` |
+| **S3925** | 名稱含 `Exception` 的類別必須繼承 `System.Exception`（或相容基底） |
+| **S2094** | 不應存在空 class；移除或改為 interface |
+| **S3260** | 不被繼承的 `private` nested class 應標為 `sealed` |
+| **S2344** | `enum` 不應明確指定 `int` 作為 underlying type（預設即為 int） |
+| **S2342** | 表達「集合／旗標」語意的 enum 名稱末尾應加 `s`（如 `TraceLayers`） |
+| **S101** | 類別名採 Pascal case；連續大寫縮寫僅首字大寫（`Utf8StringWriter` 而非 `UTF8StringWriter`） |
+
+## 2. 方法與成員修飾詞
+
+| 規則 | 原則 |
+|------|------|
+| **S2325** | 未存取任何 instance 成員（不用 `this`／欄位／instance 方法）的方法應加上 `static` |
+| **S2933** | 初始化後不再被重新賦值的欄位應標為 `readonly` |
+| **S4487** | 只被賦值但從未被讀取的 `private` field 應移除 |
+
+## 3. 介面與 override 一致性
+
+| 規則 | 原則 |
+|------|------|
+| **S1006** | override／實作方法必須保留與基底／介面相同的 default 參數值 |
+| **S927** | override／實作方法的參數名必須與介面宣告**完全一致**（大小寫亦然） |
+| **S4144** | 多個方法實作完全相同時應合併，或改以一個呼叫另一個 |
+
+```csharp
+// ✅ 正確：參數名、default 值與介面一致
+public interface IBuilder { string Build(string? prefix = null); }
+public class MyBuilder : IBuilder
+{
+    public string Build(string? prefix = null) { ... }
+}
+
+// ❌ 錯誤：參數名與介面不符
+public string Build(string? Prefix = null) { ... }
+```
+
+## 4. 控制流與語法
+
+| 規則 | 原則 |
+|------|------|
+| **S1066** | 可合併的巢狀 `if` 應合併為單一 `if` 搭配 `&&` |
+| **S127** | `for` loop 不應在 body 中修改停止條件變數（如 `i`） |
+| **S4023** | 使用 pattern matching 取代 `is`+cast 的舊寫法 |
+| **S1116** | 移除空 statement（多餘的 `;`） |
+
+```csharp
+// ✅ S4023: pattern matching
+if (obj is MyType t) { t.DoWork(); }
+
+// ❌ S4023: type-check + cast
+if (obj is MyType) { ((MyType)obj).DoWork(); }
+```
+
+## 5. 欄位與初始化
+
+| 規則 | 原則 |
+|------|------|
+| **S3604** | 欄位若於建構子中被明確賦值，不應再有 inline initializer（如 `= null`、`= string.Empty`） |
+| **S3963** | 可 inline 初始化的靜態欄位，不應放入 static constructor |
+| **S3877** | static constructor 不應 throw（異常會導致整個 type 不可用） |
+| **S2743** | generic type 中的 `static` field 不會跨 close constructed types 共享；需確認是否為有意行為 |
+
+## 6. DateTime 與文化相依 API
+
+| 規則 | 原則 |
+|------|------|
+| **S6562** | 建立 `DateTime` 時須明確指定 `DateTimeKind`（`Utc`／`Local`／`Unspecified`） |
+| **S6580** | `DateTime.Parse`／`ToString` 等文化相依方法須指定 `IFormatProvider`（通常為 `CultureInfo.InvariantCulture`） |
+
+```csharp
+// ✅
+var dt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+var parsed = DateTime.Parse(text, CultureInfo.InvariantCulture);
+
+// ❌
+var dt = new DateTime(2026, 1, 1, 0, 0, 0);
+var parsed = DateTime.Parse(text);
+```
+
+## 7. 集合與 LINQ
+
+| 規則 | 原則 |
+|------|------|
+| **S3267** | 可用 `.Where()` 取代 `foreach` + `if` 的過濾模式 |
+
+```csharp
+// ✅
+foreach (var x in list.Where(x => x.IsActive)) { ... }
+
+// ❌
+foreach (var x in list) { if (x.IsActive) { ... } }
+```
+
+## 8. 字串與陣列
+
+| 規則 | 原則 |
+|------|------|
+| **S6580**（字串面向） | 重複出現的字面字串應提取為 `const` |
+| **S3878** | `params` 參數呼叫時不需明確建立 array；直接傳入元素即可 |
+
+```csharp
+// ✅
+string.Join(", ", "a", "b", "c");
+
+// ❌
+string.Join(", ", new[] { "a", "b", "c" });
+```
+
+## 9. 例外處理
+
+| 規則 | 原則 |
+|------|------|
+| **S112** | 不應 throw `System.ApplicationException`；改用自訂例外或 `InvalidOperationException` |
+
+> 其他例外規則（`catch (Exception)`、空 catch、`throw ex;`）見 `scanning.md`。
+
+## 10. 死碼與已廢棄程式碼
+
+| 規則 | 原則 |
+|------|------|
+| **S125** | 移除被註解掉的程式碼；需保留歷史就用 git log |
+| **S1133** | 標記為 `[Obsolete]` 且確定無呼叫者的程式碼應移除 |
+
+## 11. Reflection 與 Assembly
+
+| 規則 | 原則 |
+|------|------|
+| **S3885** | 優先使用 `Assembly.Load`（依 `AssemblyName`）而非 `Assembly.LoadFrom`（依路徑），後者會導致 load context 不一致 |
+
+## 12. 測試
+
+| 規則 | 原則 |
+|------|------|
+| **S2701** | `Assert.True`／`Assert.False` 的第一參數不應為字面值（如 `Assert.True(true)`），應為被測表達式 |
+
+---
+
+## 不納入之規則
+
+- **Cognitive Complexity（S3776）** — 屬重構判斷題，需依情境評估；不納入為硬性規則。
+- **CA 系列（Roslyn Analyzer）** — 由編譯器警告把關（本專案 `TreatWarningsAsErrors=true`），不重複列入。
+- **一次性專案特定修正** — 如某欄位改名、某類別拆分，非通用原則。
