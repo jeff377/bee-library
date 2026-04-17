@@ -26,7 +26,7 @@ namespace Bee.Api.Client
         /// <summary>
         /// Gets or sets the API key, typically loaded from configuration.
         /// </summary>
-        public static string ApiKey { get; set; } = "46CA0967-EC64-4F96-B502-139BE8FF8DAC";
+        public static string ApiKey { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the API transmission encryption key, exchanged via RSA public key.
