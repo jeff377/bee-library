@@ -61,35 +61,20 @@ namespace Bee.Api.Client.Connectors
         /// <param name="format">The payload encoding format for transmission.</param>
         protected T Execute<T>(string progId, string action, object value, PayloadFormat format)
         {
-            if (StrFunc.IsEmpty(progId))
-                throw new ArgumentException("progId cannot be null or empty.", nameof(progId));
-            if (StrFunc.IsEmpty(action))
-                throw new ArgumentException("action cannot be null or empty.", nameof(action));
-
+            ValidateArgs(progId, action);
             var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, name: $"Execute.{progId}.{action}");
             try
             {
-                // Build the JSON-RPC request model
-                var request = CreateRequest(progId, action, value);
-                TraceRequest(request);
-
-                // Transform the payload to the specified format
-                var actualFormat = TransformRequestPayload(request, format);
+                var (request, actualFormat) = PrepareRequest(progId, action, value, format);
 
                 // Invoke the JSON-RPC method (remote or local)
 #pragma warning disable CS0618 // Intentional use of synchronous Execute for UI thread compatibility
                 var response = this.Provider.Execute(request);
 #pragma warning restore CS0618
-                TraceResponse(response);
 
-                if (response.Error != null)
-                    throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
-
-                // Restore the response payload (if Encoded or Encrypted)
-                RestoreResponsePayload(response, actualFormat);
-
+                var result = FinalizeResponse<T>(response, actualFormat);
                 Tracer.End(ctx);
-                return ApiOutputConverter.ConvertResultValue<T>(response.Result!.Value!)!;
+                return result;
             }
             catch (Exception ex)
             {
@@ -107,39 +92,59 @@ namespace Bee.Api.Client.Connectors
         /// <param name="format">The payload encoding format for transmission.</param>
         protected async Task<T> ExecuteAsync<T>(string progId, string action, object value, PayloadFormat format)
         {
-            if (StrFunc.IsEmpty(progId))
-                throw new ArgumentException("progId cannot be null or empty.", nameof(progId));
-            if (StrFunc.IsEmpty(action))
-                throw new ArgumentException("action cannot be null or empty.", nameof(action));
-
+            ValidateArgs(progId, action);
             var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, name: $"ExecuteAsync.{progId}.{action}");
             try
             {
-                // Build the JSON-RPC request model
-                var request = CreateRequest(progId, action, value);
-                TraceRequest(request);
-
-                // Transform the payload to the specified format
-                var actualFormat = TransformRequestPayload(request, format);
+                var (request, actualFormat) = PrepareRequest(progId, action, value, format);
 
                 // Invoke the JSON-RPC method (remote or local)
                 var response = await this.Provider.ExecuteAsync(request).ConfigureAwait(false);
-                TraceResponse(response);
 
-                if (response.Error != null)
-                    throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
-
-                // Restore the response payload (if Encoded or Encrypted)
-                RestoreResponsePayload(response, actualFormat);
-
+                var result = FinalizeResponse<T>(response, actualFormat);
                 Tracer.End(ctx);
-                return ApiOutputConverter.ConvertResultValue<T>(response.Result!.Value!)!;
+                return result;
             }
             catch (Exception ex)
             {
                 Tracer.End(ctx, TraceStatus.Error, ex.Message);
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Validates the progId and action arguments.
+        /// </summary>
+        private static void ValidateArgs(string progId, string action)
+        {
+            if (StrFunc.IsEmpty(progId))
+                throw new ArgumentException("progId cannot be null or empty.", nameof(progId));
+            if (StrFunc.IsEmpty(action))
+                throw new ArgumentException("action cannot be null or empty.", nameof(action));
+        }
+
+        /// <summary>
+        /// Builds the JSON-RPC request, traces it, and transforms its payload to the target format.
+        /// </summary>
+        private (JsonRpcRequest request, PayloadFormat actualFormat) PrepareRequest(
+            string progId, string action, object value, PayloadFormat format)
+        {
+            var request = CreateRequest(progId, action, value);
+            TraceRequest(request);
+            var actualFormat = TransformRequestPayload(request, format);
+            return (request, actualFormat);
+        }
+
+        /// <summary>
+        /// Traces the response, checks for errors, restores the payload, and converts the result value.
+        /// </summary>
+        private T FinalizeResponse<T>(JsonRpcResponse response, PayloadFormat actualFormat)
+        {
+            TraceResponse(response);
+            if (response.Error != null)
+                throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
+            RestoreResponsePayload(response, actualFormat);
+            return ApiOutputConverter.ConvertResultValue<T>(response.Result!.Value!)!;
         }
 
         /// <summary>
