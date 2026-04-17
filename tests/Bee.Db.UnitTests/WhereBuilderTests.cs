@@ -112,5 +112,143 @@ namespace Bee.Db.UnitTests
             Assert.Equal(string.Empty, result.WhereClause);
         }
 
+        [Fact]
+        [DisplayName("Build root 為 null 應回傳空 WhereBuildResult")]
+        public void Build_NullRoot_ReturnsEmptyResult()
+        {
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            var result = builder.Build(null, null);
+            Assert.Equal(string.Empty, result.WhereClause);
+        }
+
+        [Theory]
+        [InlineData(ComparisonOperator.GreaterThan, ">")]
+        [InlineData(ComparisonOperator.GreaterThanOrEqual, ">=")]
+        [InlineData(ComparisonOperator.LessThan, "<")]
+        [InlineData(ComparisonOperator.LessThanOrEqual, "<=")]
+        [InlineData(ComparisonOperator.NotEqual, "<>")]
+        [DisplayName("Build 各比較運算符應產生對應 SQL 運算子")]
+        public void Build_ComparisonOperators_BuildExpectedSql(ComparisonOperator op, string sqlOp)
+        {
+            var root = new FilterCondition { FieldName = "Age", Operator = op, Value = 18 };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
+            Assert.Equal($"Age {sqlOp} @p0", result.WhereClause);
+            Assert.Equal(18, result.Parameters!["@p0"]);
+        }
+
+        [Fact]
+        [DisplayName("Build Like 條件應使用原始值")]
+        public void Build_Like_UsesRawValue()
+        {
+            var root = new FilterCondition { FieldName = "Name", Operator = ComparisonOperator.Like, Value = "Lee%" };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
+            Assert.Equal("Name LIKE @p0", result.WhereClause);
+            Assert.Equal("Lee%", result.Parameters!["@p0"]);
+        }
+
+        [Fact]
+        [DisplayName("Build StartsWith 應在尾端加上萬用字元")]
+        public void Build_StartsWith_AddsTrailingWildcard()
+        {
+            var root = FilterCondition.StartsWith("Name", "Lee");
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
+            Assert.Equal("Name LIKE @p0", result.WhereClause);
+            Assert.Equal("Lee%", result.Parameters!["@p0"]);
+        }
+
+        [Fact]
+        [DisplayName("Build EndsWith 應在開頭加上萬用字元")]
+        public void Build_EndsWith_AddsLeadingWildcard()
+        {
+            var root = FilterCondition.EndsWith("Name", "Lee");
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
+            Assert.Equal("Name LIKE @p0", result.WhereClause);
+            Assert.Equal("%Lee", result.Parameters!["@p0"]);
+        }
+
+        [Fact]
+        [DisplayName("Build NotEqual 配合 null 值應產生 IS NOT NULL")]
+        public void Build_NotEqualNull_BecomesIsNotNull()
+        {
+            var root = new FilterCondition { FieldName = "Memo", Operator = ComparisonOperator.NotEqual, Value = null };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            var result = builder.Build(root, null);
+            Assert.Equal("WHERE Memo IS NOT NULL", result.WhereClause);
+        }
+
+        [Fact]
+        [DisplayName("Build 不支援的 null 比較運算符應擲出 InvalidOperationException")]
+        public void Build_UnsupportedNullOperator_Throws()
+        {
+            var root = new FilterCondition { FieldName = "Age", Operator = ComparisonOperator.GreaterThan, Value = null };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            Assert.Throws<InvalidOperationException>(() => builder.Build(root, null));
+        }
+
+        [Fact]
+        [DisplayName("Build Between 缺第二值且 IgnoreIfNull=true 時應忽略條件")]
+        public void Build_BetweenMissingSecondValue_IgnoreIfNull_DropsCondition()
+        {
+            var root = new FilterCondition
+            {
+                FieldName = "Age",
+                Operator = ComparisonOperator.Between,
+                Value = 18,
+                SecondValue = null,
+                IgnoreIfNull = true
+            };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
+            Assert.Equal(string.Empty, result.WhereClause);
+        }
+
+        [Fact]
+        [DisplayName("Build Between 缺第二值且未設 IgnoreIfNull 應擲例外")]
+        public void Build_BetweenMissingSecondValue_Throws()
+        {
+            var root = new FilterCondition
+            {
+                FieldName = "Age",
+                Operator = ComparisonOperator.Between,
+                Value = 18,
+                SecondValue = null
+            };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            Assert.Throws<InvalidOperationException>(() => builder.Build(root, null));
+        }
+
+        [Fact]
+        [DisplayName("Build Between 完整值應產生 BETWEEN 子句")]
+        public void Build_Between_BuildsBetweenClause()
+        {
+            var root = FilterCondition.Between("Age", 18, 60);
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            var result = builder.Build(root, null, includeWhereKeyword: false);
+            Assert.Equal("Age BETWEEN @p0 AND @p1", result.WhereClause);
+            Assert.Equal(18, result.Parameters!["@p0"]);
+            Assert.Equal(60, result.Parameters["@p1"]);
+        }
+
+        [Fact]
+        [DisplayName("Build IN 條件傳入非 enumerable 值應擲例外")]
+        public void Build_InWithNonEnumerable_Throws()
+        {
+            var root = new FilterCondition { FieldName = "Id", Operator = ComparisonOperator.In, Value = 1 };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            Assert.Throws<InvalidOperationException>(() => builder.Build(root, null));
+        }
+
+        [Fact]
+        [DisplayName("Build 空 FieldName 應擲出 InvalidOperationException")]
+        public void Build_EmptyFieldName_Throws()
+        {
+            var root = new FilterCondition { FieldName = "", Operator = ComparisonOperator.Equal, Value = 1 };
+            var builder = new WhereBuilder(DatabaseType.SQLServer);
+            Assert.Throws<InvalidOperationException>(() => builder.Build(root, null));
+        }
     }
 }
