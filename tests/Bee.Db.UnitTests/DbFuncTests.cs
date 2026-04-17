@@ -94,22 +94,22 @@ namespace Bee.Db.UnitTests
 
         #region InferDbType 測試
 
-        public static IEnumerable<object[]> InferDbType_Inputs()
+        public static TheoryData<object, DbType> InferDbType_Inputs() => new()
         {
-            yield return new object[] { "abc", DbType.String };
-            yield return new object[] { 1, DbType.Int32 };
-            yield return new object[] { (long)1, DbType.Int64 };
-            yield return new object[] { (short)1, DbType.Int16 };
-            yield return new object[] { (byte)1, DbType.Byte };
-            yield return new object[] { true, DbType.Boolean };
-            yield return new object[] { new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), DbType.DateTime };
-            yield return new object[] { 1.5m, DbType.Decimal };
-            yield return new object[] { 1.5d, DbType.Double };
-            yield return new object[] { 1.5f, DbType.Single };
-            yield return new object[] { Guid.NewGuid(), DbType.Guid };
-            yield return new object[] { new byte[] { 1, 2 }, DbType.Binary };
-            yield return new object[] { TimeSpan.FromSeconds(1), DbType.Time };
-        }
+            { "abc", DbType.String },
+            { 1, DbType.Int32 },
+            { (long)1, DbType.Int64 },
+            { (short)1, DbType.Int16 },
+            { (byte)1, DbType.Byte },
+            { true, DbType.Boolean },
+            { new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), DbType.DateTime },
+            { 1.5m, DbType.Decimal },
+            { 1.5d, DbType.Double },
+            { 1.5f, DbType.Single },
+            { Guid.NewGuid(), DbType.Guid },
+            { new byte[] { 1, 2 }, DbType.Binary },
+            { TimeSpan.FromSeconds(1), DbType.Time },
+        };
 
         [Theory]
         [MemberData(nameof(InferDbType_Inputs))]

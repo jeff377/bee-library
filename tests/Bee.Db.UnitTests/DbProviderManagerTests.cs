@@ -35,7 +35,7 @@ namespace Bee.Db.UnitTests
                 var factory = DbProviderManager.GetFactory(DatabaseType.SQLServer);
 
                 Assert.NotNull(factory);
-                Assert.IsAssignableFrom<DbProviderFactory>(factory);
+                Assert.IsType<DbProviderFactory>(factory, exactMatch: false);
             }
 
             [Fact]
