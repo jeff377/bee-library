@@ -1,6 +1,8 @@
 # Bee.Base.BaseFunc 測試補強計畫書
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-04-18）**
+
+> 實作結果：`tests/Bee.Base.UnitTests/BaseFuncTests.cs` 從 49 行擴充至 420 行，測試數由 2 個 → 57 個，階段 1 (P0 + P1) 已全部落地。本機 coverlet 量測 `BaseFunc.cs` Line Coverage **62.0%**（127/205），超過 ≥ 60% 的次要目標。階段 2 (P2 Reflection/Exception) 視 SonarCloud Quality Gate 狀況再決定是否推進。
 
 ## 1. 背景與目標
 
