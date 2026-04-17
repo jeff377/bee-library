@@ -6,7 +6,7 @@ namespace Bee.ObjectCaching
     /// <summary>
     /// Base class for caching same-type objects accessed by key.
     /// </summary>
-    public abstract class KeyObjectCache<T>
+    public abstract class KeyObjectCache<T> where T : class
     {
         #region 建構函式
 

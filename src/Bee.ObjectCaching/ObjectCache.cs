@@ -3,7 +3,7 @@
     /// <summary>
     /// Base class for single-object caches.
     /// </summary>
-    public abstract class ObjectCache<T>
+    public abstract class ObjectCache<T> where T : class
     {
         #region 建構函式
 

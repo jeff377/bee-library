@@ -110,6 +110,7 @@ namespace Bee.Definition.Forms
         private RelationFieldReferenceCollection CreateRelationFieldReferences()
         {
             var references = new RelationFieldReferenceCollection();
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var field in Fields!)
             {
@@ -123,7 +124,7 @@ namespace Bee.Definition.Forms
                     string destField = mapping.DestinationField;
                     if (!Fields.Contains(destField))
                         throw new KeyNotFoundException($"DestinationField '{destField}' does not exist in the form field collection.");
-                    if (references.Contains(destField))
+                    if (!seen.Add(destField))
                         throw new InvalidOperationException($"DestinationField '{destField}' has duplicate data in RelationFieldReferences.");
 
                     references.Add(new RelationFieldReference(destField, field, field.RelationProgId, mapping.SourceField));

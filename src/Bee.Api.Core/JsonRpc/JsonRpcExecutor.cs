@@ -59,7 +59,7 @@ namespace Bee.Api.Core.JsonRpc
         /// <param name="request">The JSON-RPC request model.</param>
         private async Task<JsonRpcResponse> ExecuteAsyncCore(JsonRpcRequest request)
         {
-            var ctx = Tracer.Start(TraceLayer.ApiServer, string.Empty, request.Method);
+            var ctx = Tracer.Start(TraceLayer.ApiServer, string.Empty, name: request.Method);
             var response = new JsonRpcResponse(request);
             try
             {

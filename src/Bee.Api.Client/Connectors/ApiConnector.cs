@@ -66,7 +66,7 @@ namespace Bee.Api.Client.Connectors
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
-            var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, $"Execute.{progId}.{action}");
+            var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, name: $"Execute.{progId}.{action}");
             try
             {
                 // Build the JSON-RPC request model
@@ -112,7 +112,7 @@ namespace Bee.Api.Client.Connectors
             if (StrFunc.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
 
-            var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, $"ExecuteAsync.{progId}.{action}");
+            var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, name: $"ExecuteAsync.{progId}.{action}");
             try
             {
                 // Build the JSON-RPC request model
@@ -223,7 +223,7 @@ namespace Bee.Api.Client.Connectors
         private void TraceRequest(JsonRpcRequest request)
         {
             if (!Tracer.Enabled || request == null) return;
-            Tracer.Write(TraceLayer.ApiClient, string.Empty, $"Request  - {request.Method}", TraceStatus.Ok, TraceCategories.JsonRpc, request);
+            Tracer.Write(TraceLayer.ApiClient, string.Empty, TraceStatus.Ok, TraceCategories.JsonRpc, request, name: $"Request  - {request.Method}");
         }
 
         /// <summary>
@@ -233,7 +233,7 @@ namespace Bee.Api.Client.Connectors
         private void TraceResponse(JsonRpcResponse response)
         {
             if (!Tracer.Enabled || response == null) return;
-            Tracer.Write(TraceLayer.ApiClient, string.Empty, $"Response - {response.Method}", TraceStatus.Ok, TraceCategories.JsonRpc, response);
+            Tracer.Write(TraceLayer.ApiClient, string.Empty, TraceStatus.Ok, TraceCategories.JsonRpc, response, name: $"Response - {response.Method}");
         }
 
     }

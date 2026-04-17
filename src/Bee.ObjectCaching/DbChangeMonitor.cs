@@ -19,7 +19,7 @@ namespace Bee.ObjectCaching
         /// Initializes a new instance of the <see cref="DbChangeMonitor"/> class.
         /// </summary>
         /// <param name="key">The cache dependency key.</param>
-        private DbChangeMonitor(string key)
+        public DbChangeMonitor(string key)
         {
             _UniqueId = BaseFunc.NewGuidString();
             _Key = key;

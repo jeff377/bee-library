@@ -297,6 +297,7 @@ namespace Bee.Base.BackgroundServices
                     {
                         Debug.WriteLine($"Task faulted with exception: {t.Exception?.Message}");
                     }
+                    cts.Dispose();
                 });
             }
         }

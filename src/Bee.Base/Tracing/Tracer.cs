@@ -23,11 +23,12 @@ namespace Bee.Base.Tracing
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         /// <returns>The created trace context object.</returns>
         public static TraceContext? Start(
-            TraceLayer layer, string detail = "", [CallerMemberName] string name = "",
-            string category = "", object? tag = null)
+            TraceLayer layer, string detail = "",
+            string category = "", object? tag = null,
+            [CallerMemberName] string name = "")
         {
             if (!Enabled) { return null; }
-            return SysInfo.TraceListener!.TraceStart(layer, detail, name, category, tag);
+            return SysInfo.TraceListener!.TraceStart(layer, detail, category, tag, name);
         }
 
         /// <summary>
@@ -52,11 +53,12 @@ namespace Bee.Base.Tracing
         /// <param name="category">The trace category, used by the Trace Viewer to parse the Tag by category.</param>
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         public static void Write(
-            TraceLayer layer, string detail = "", [CallerMemberName] string name = "", TraceStatus status = TraceStatus.Ok,
-            string category = "", object? tag = null)
+            TraceLayer layer, string detail = "", TraceStatus status = TraceStatus.Ok,
+            string category = "", object? tag = null,
+            [CallerMemberName] string name = "")
         {
             if (!Enabled) return;
-            SysInfo.TraceListener!.TraceWrite(layer, detail, name, status, category, tag);
+            SysInfo.TraceListener!.TraceWrite(layer, detail, status, category, tag, name);
         }
     }
 }
