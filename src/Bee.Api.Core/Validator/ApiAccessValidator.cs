@@ -31,12 +31,8 @@ namespace Bee.Api.Core.Validator
                 return;
 
             // Check whether an AccessToken is required
-            if (attr.AccessRequirement == ApiAccessRequirement.Authenticated)
-            {
-                // Validate the AccessToken
-                if (!IsTokenValid(context.AccessToken))
-                    throw new UnauthorizedAccessException("AccessToken is required or invalid.");
-            }
+            if (attr.AccessRequirement == ApiAccessRequirement.Authenticated && !IsTokenValid(context.AccessToken))
+                throw new UnauthorizedAccessException("AccessToken is required or invalid.");
 
             if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly && !context.IsLocalCall)
                 throw new UnauthorizedAccessException("This API is restricted to local calls only.");

@@ -101,7 +101,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         /// <param name="dbTable">The table schema to populate.</param>
         /// <param name="table">The index data table.</param>
-        private void ParsePrimaryKey(TableSchema dbTable, DataTable table)
+        private static void ParsePrimaryKey(TableSchema dbTable, DataTable table)
         {
             if (table.IsEmpty()) { return; }
 

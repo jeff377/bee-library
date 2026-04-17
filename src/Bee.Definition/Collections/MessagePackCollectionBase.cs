@@ -23,7 +23,7 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Initializes a new instance of <see cref="MessagePackCollectionBase{T}"/>.
         /// </summary>
-        public MessagePackCollectionBase() : base()
+        protected MessagePackCollectionBase() : base()
         {
             Owner = null!;
         }
@@ -32,7 +32,7 @@ namespace Bee.Definition.Collections
         /// Initializes a new instance of <see cref="MessagePackCollectionBase{T}"/>.
         /// </summary>
         /// <param name="owner">The owner object.</param>
-        public MessagePackCollectionBase(object owner) : base()
+        protected MessagePackCollectionBase(object owner) : base()
         {
             Owner = owner;
         }

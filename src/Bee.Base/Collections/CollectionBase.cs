@@ -21,7 +21,7 @@ namespace Bee.Base.Collections
         /// <summary>
         /// Initializes a new instance of <see cref="CollectionBase{T}"/>.
         /// </summary>
-        public CollectionBase() : base()
+        protected CollectionBase() : base()
         {
             Owner = null;
         }
@@ -30,7 +30,7 @@ namespace Bee.Base.Collections
         /// Initializes a new instance of <see cref="CollectionBase{T}"/> with the specified owner.
         /// </summary>
         /// <param name="owner">The owner of this collection.</param>
-        public CollectionBase(object owner) : base()
+        protected CollectionBase(object owner) : base()
         {
             Owner = owner;
         }

@@ -153,7 +153,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets the default control type for the specified database field type.
         /// </summary>
-        private ControlType GetDefaultControlType(FieldDbType dbType)
+        private static ControlType GetDefaultControlType(FieldDbType dbType)
         {
             switch (dbType)
             {

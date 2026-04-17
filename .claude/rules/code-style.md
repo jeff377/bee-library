@@ -52,6 +52,13 @@ Bee.<Module>/
 - 保持 **Deterministic Builds**（`<Deterministic>true</Deterministic>`）
 - 視警告為錯誤（`<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`）
 
+### 警告處理原則
+
+程式碼中的編譯器警告必須盡量修正，不允許保留未處理的警告：
+- **Nullable 警告**（CS8600–CS8670）：使用 `!`（null-forgiving）、加 null 檢查、或重構為非 nullable，依情境選擇最能表達意圖的方式
+- 測試中故意傳入 `null` 驗證邊界行為時，使用 `null!` 明確表示這是有意為之
+- 不得以 `#pragma warning disable` 大範圍壓制警告；若需抑制單行，必須加上說明註解
+
 ## XML 文件註解
 
 所有 `public` API 必須加 XML 文件，使用**英文**撰寫（套件公開發布於 NuGet，英文確保 IntelliSense 與外部使用者皆可閱讀）：

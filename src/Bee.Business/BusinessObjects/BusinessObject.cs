@@ -16,10 +16,9 @@ namespace Bee.Business.BusinessObjects
         /// </summary>
         /// <param name="accessToken">The access token.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public BusinessObject(Guid accessToken, bool isLocalCall = true)
+        protected BusinessObject(Guid accessToken, bool isLocalCall = true)
         {
             AccessToken = accessToken;
-            // SessionInfo = CacheFunc.GetSessionInfo(accessToken);
             IsLocalCall = isLocalCall;
         }
 

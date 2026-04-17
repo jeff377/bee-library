@@ -20,7 +20,7 @@ namespace Bee.Api.Client.Connectors
         /// Initializes a new instance of the <see cref="ApiConnector"/> class using a local connection.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        public ApiConnector(Guid accessToken)
+        protected ApiConnector(Guid accessToken)
         {
             AccessToken = accessToken;
             Provider = new LocalApiServiceProvider(accessToken);
@@ -31,7 +31,7 @@ namespace Bee.Api.Client.Connectors
         /// </summary>
         /// <param name="endpoint">The API service endpoint.</param>
         /// <param name="accessToken">The access token.</param>
-        public ApiConnector(string endpoint, Guid accessToken)
+        protected ApiConnector(string endpoint, Guid accessToken)
         {
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));

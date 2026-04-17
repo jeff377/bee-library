@@ -3,7 +3,7 @@ namespace Bee.Definition
     /// <summary>
     /// FuncID constants used by the framework.
     /// </summary>
-    public class SysFuncIDs
+    public static class SysFuncIDs
     {
         /// <summary>
         /// Hello test method.

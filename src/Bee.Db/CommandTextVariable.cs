@@ -3,7 +3,7 @@ namespace Bee.Db
     /// <summary>
     /// Constants for database command text variable names.
     /// </summary>
-    public class CommandTextVariable
+    public static class CommandTextVariable
     {
         /// <summary>
         /// Placeholder string representing the parameter name list.

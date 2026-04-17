@@ -10,7 +10,7 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectCache{T}"/> class.
         /// </summary>
-        public ObjectCache()
+        protected ObjectCache()
         { }
 
         #endregion

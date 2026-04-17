@@ -115,10 +115,7 @@ namespace Bee.Definition.Database
                 // Index field does not exist, return false
                 if (!source.IndexFields!.Contains(indexField.FieldName)) { return false; }
                 // Sort direction differs, return false
-                if (BackendInfo.DatabaseType == DatabaseType.SQLServer)
-                {
-                    if (indexField.SortDirection != source.IndexFields![indexField.FieldName].SortDirection) { return false; }
-                }
+                if (BackendInfo.DatabaseType == DatabaseType.SQLServer && indexField.SortDirection != source.IndexFields![indexField.FieldName].SortDirection) { return false; }
             }
             return true;
         }

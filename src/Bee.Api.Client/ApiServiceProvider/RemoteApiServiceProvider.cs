@@ -56,9 +56,6 @@ namespace Bee.Api.Client.ApiServiceProvider
         public JsonRpcResponse Execute(JsonRpcRequest request)
 #pragma warning restore CS0618
         {
-            // Running async on the current thread risks deadlock (especially on UI threads); no scheduling overhead; suitable only when the caller is guaranteed not to be a UI thread.
-            // return ExecuteAsync(request).GetAwaiter().GetResult();
-
             // Running async on a new thread lowers deadlock risk (UI thread is not blocked); incurs scheduling overhead; suitable when the caller may be a UI thread.
             return Task.Run(() => ExecuteAsync(request)).GetAwaiter().GetResult();
         }

@@ -75,9 +75,6 @@ namespace Bee.Db.Logging
             if (errNumber.HasValue) sb.Append("Number=").Append(errNumber.Value).Append("; ");
             sb.Append("Exception=").Append(exception.GetType().FullName).Append("; ");
             sb.Append("CommandText=").Append(TruncateCommandText(context.CommandText));
-
-            // Write error log
-            // SysInfo.LogWriter?.WriteError(sb.ToString());
         }
 
         /// <summary>
@@ -101,9 +98,6 @@ namespace Bee.Db.Logging
             sb.Append("Elapsed=").Append(elapsedSeconds.ToString("0.###", CultureInfo.InvariantCulture)).Append(" s; ");
             if (affectedRows >= 0) sb.Append("Rows=").Append(affectedRows).Append("; ");
             sb.Append("CommandText=").Append(TruncateCommandText(ctx.CommandText));
-
-            // TODO: Write warning log
-            // SysInfo.LogWriter?.WriteError(sb.ToString());
         }
 
         /// <summary>

@@ -4,7 +4,7 @@ namespace Bee.Api.Core
     /// <summary>
     /// API header key constants.
     /// </summary>
-    public class ApiHeaders
+    public static class ApiHeaders
     {
         /// <summary>
         /// The API key header name.

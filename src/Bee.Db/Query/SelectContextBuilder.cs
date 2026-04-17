@@ -13,8 +13,8 @@ namespace Bee.Db.Query
     /// </summary>
     public class SelectContextBuilder
     {
-        private FormTable _formTable;
-        private HashSet<string> _usedFieldNames;
+        private readonly FormTable _formTable;
+        private readonly HashSet<string> _usedFieldNames;
         private string _currentTableAlias = "A";  // Current table alias in use
 
         /// <summary>

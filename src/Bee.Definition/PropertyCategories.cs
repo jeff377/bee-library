@@ -3,7 +3,7 @@ namespace Bee.Definition
     /// <summary>
     /// Display category constants for property windows.
     /// </summary>
-    public class PropertyCategories
+    public static class PropertyCategories
     {
         /// <summary>
         /// Behavior category.

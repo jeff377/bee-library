@@ -16,21 +16,6 @@ namespace Bee.ObjectCaching.Database
         protected override SessionInfo? CreateInstance(string key)
         {
             return null; // Loading SessionInfo from the database or other sources is not yet implemented
-
-            //var accessToken = BaseFunc.CGuid(key);
-            //if (BaseFunc.IsEmpty(accessToken)) { return null; }
-
-            //// 取得暫存連線的用戶資料
-            //var user = BackendInfo.CacheDataSourceProvider.GetSessionUser(accessToken);
-            //if (user == null) { return null; }
-
-            //// 傳回連線資訊
-            //return new SessionInfo()
-            //{
-            //    AccessToken = accessToken,
-            //    UserID = user.UserID,
-            //    UserName = user.UserName
-            //};
         }
 
         /// <summary>

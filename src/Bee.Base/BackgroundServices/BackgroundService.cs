@@ -11,7 +11,7 @@ namespace Bee.Base.BackgroundServices
     /// </summary>
     public abstract class BackgroundService
     {
-        private System.Timers.Timer _Timer = null!;
+        private readonly System.Timers.Timer _Timer;
         private BackgroundServiceStatus _Status = BackgroundServiceStatus.Stopped;
         private int _ThreadCount = 1;
         private ConcurrentQueue<BackgroundAction>? _TaskQueue;
@@ -24,10 +24,10 @@ namespace Bee.Base.BackgroundServices
         /// <summary>
         /// Initializes a new instance of <see cref="BackgroundService"/>.
         /// </summary>
-        public BackgroundService()
+        protected BackgroundService()
         {
             _Timer = new System.Timers.Timer(100);
-            _Timer.Elapsed += new System.Timers.ElapsedEventHandler(Elapsed_EventHandler);
+            _Timer.Elapsed += Elapsed_EventHandler;
         }
 
         #endregion

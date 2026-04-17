@@ -53,7 +53,7 @@ namespace Bee.Api.Client.DefineAccess
         /// </summary>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to access the definition data.</param>
-        private string GetCacheKey(DefineType defineType, string[]? keys = null)
+        private static string GetCacheKey(DefineType defineType, string[]? keys = null)
         {
             string cacheKey = $"{defineType}";
             if (keys != null && keys.Length > 0)
@@ -126,7 +126,7 @@ namespace Bee.Api.Client.DefineAccess
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys to validate.</param>
         /// <param name="expectedLength">The expected number of keys.</param>
-        private void ValidateKeys(DefineType defineType, string[]? keys, int expectedLength)
+        private static void ValidateKeys(DefineType defineType, string[]? keys, int expectedLength)
         {
             if (keys == null || keys.Length != expectedLength)
                 throw new ArgumentException($"{defineType} keys verification error. Input: {string.Join(",", keys ?? new string[0])}");

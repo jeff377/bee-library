@@ -8,7 +8,7 @@ namespace Bee.ObjectCaching
     /// <summary>
     /// Cache instance container that centrally manages singleton instances of all cache classes, using <see cref="Lazy{T}"/> for deferred initialization.
     /// </summary>
-    internal class CacheContainer
+    internal static class CacheContainer
     {
         private static readonly Lazy<SystemSettingsCache> _systemSettings = new Lazy<SystemSettingsCache>(() => new SystemSettingsCache());
         internal static SystemSettingsCache SystemSettings => _systemSettings.Value;

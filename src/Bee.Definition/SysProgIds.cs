@@ -3,7 +3,7 @@ namespace Bee.Definition
     /// <summary>
     /// Program ID constants used by the system.
     /// </summary>
-    public class SysProgIds
+    public static class SysProgIds
     {
         /// <summary>
         /// System-level business object.

@@ -3,7 +3,7 @@ namespace Bee.Definition
     /// <summary>
     /// Action name constants for the SystemObject.
     /// </summary>
-    public class SystemActions
+    public static class SystemActions
     {
         /// <summary>
         /// Ping method — tests whether the API service is available. Data encoding is not enabled for this method.

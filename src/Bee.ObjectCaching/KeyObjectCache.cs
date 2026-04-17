@@ -13,7 +13,7 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Initializes a new instance of the <see cref="KeyObjectCache{T}"/> class.
         /// </summary>
-        public KeyObjectCache()
+        protected KeyObjectCache()
         { }
 
         #endregion
