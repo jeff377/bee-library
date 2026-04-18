@@ -1,6 +1,6 @@
 # Bee.Repository / Bee.Repository.Abstractions 測試覆蓋率提升計畫書
 
-**狀態：🚧 進行中**（階段 1、2、3 測試已撰寫，待 CI 驗證）
+**狀態：✅ 已完成（2026-04-18）**
 
 ## 1. 背景與目標
 
