@@ -370,6 +370,32 @@ namespace Bee.Base.UnitTests
             Assert.Equal("BA", StrFunc.GetNextId("AC", "ABC"));
         }
 
+        [Theory]
+        [InlineData(1)]
+        [InlineData(37)]
+        [DisplayName("GetNextId(value, numberBase) 進位基數超出 2-36 應拋 ArgumentOutOfRangeException")]
+        public void GetNextId_NumberBaseOutOfRange_Throws(int numberBase)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() => StrFunc.GetNextId("A", numberBase));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [DisplayName("GetNextId(value, baseValues) baseValues 為 null 或空字串應拋 ArgumentException")]
+        public void GetNextId_EmptyBaseValues_Throws(string? baseValues)
+        {
+            Assert.Throws<ArgumentException>(() => StrFunc.GetNextId("A", baseValues!));
+        }
+
+        [Fact]
+        [DisplayName("GetNextId(value, baseValues) value 含 baseValues 外字元應拋 ArgumentException")]
+        public void GetNextId_InvalidCharacterInValue_Throws()
+        {
+            // baseValues 只含 "AB",但 value 含 'Z' → Array.IndexOf 回傳 -1 → 拋例外
+            Assert.Throws<ArgumentException>(() => StrFunc.GetNextId("AZ", "AB"));
+        }
+
         [Fact]
         [DisplayName("Like 於 source 或 pattern 為 null 時應回傳 false")]
         public void Like_NullInputs_ReturnsFalse()
