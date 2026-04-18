@@ -3,12 +3,126 @@ using Bee.Api.Core;
 using Bee.Api.Core.Validator;
 using Bee.Definition;
 using Bee.Definition.Attributes;
+using Bee.Definition.Security;
 
 namespace Bee.Api.Core.UnitTests
 {
     [Collection("Initialize")]
     public class ApiAccessValidatorTests
     {
+        private sealed class FakeTokenProvider : IAccessTokenValidationProvider
+        {
+            public bool Result { get; init; }
+            public bool ValidateAccessToken(Guid accessToken) => Result;
+        }
+
+        [Fact]
+        [DisplayName("ValidateAccess 於方法未標記 ApiAccessControl 時應拋 UnauthorizedAccessException")]
+        public void ValidateAccess_NoAttribute_Throws()
+        {
+            var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_NoAttribute));
+            var context = new ApiCallContext
+            {
+                Format = PayloadFormat.Encrypted,
+                IsLocalCall = false,
+                AccessToken = Guid.NewGuid()
+            };
+
+            Assert.Throws<UnauthorizedAccessException>(() =>
+                ApiAccessValidator.ValidateAccess(method!, context));
+        }
+
+        [Fact]
+        [DisplayName("ValidateAccess 於 Authenticated 要求但 AccessToken 為 Empty 時應拋")]
+        public void ValidateAccess_Authenticated_EmptyToken_Throws()
+        {
+            var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
+            var context = new ApiCallContext
+            {
+                Format = PayloadFormat.Encrypted,
+                IsLocalCall = false,
+                AccessToken = Guid.Empty
+            };
+
+            Assert.Throws<UnauthorizedAccessException>(() =>
+                ApiAccessValidator.ValidateAccess(method!, context));
+        }
+
+        [Fact]
+        [DisplayName("ValidateAccess 於 Authenticated 要求且 provider 回傳 false 時應拋")]
+        public void ValidateAccess_Authenticated_InvalidToken_Throws()
+        {
+            var original = BackendInfo.AccessTokenValidationProvider;
+            try
+            {
+                BackendInfo.AccessTokenValidationProvider = new FakeTokenProvider { Result = false };
+                var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
+                var context = new ApiCallContext
+                {
+                    Format = PayloadFormat.Encrypted,
+                    IsLocalCall = false,
+                    AccessToken = Guid.NewGuid()
+                };
+
+                Assert.Throws<UnauthorizedAccessException>(() =>
+                    ApiAccessValidator.ValidateAccess(method!, context));
+            }
+            finally
+            {
+                BackendInfo.AccessTokenValidationProvider = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("ValidateAccess 於 Authenticated 要求且 provider 回傳 true 時應通過")]
+        public void ValidateAccess_Authenticated_ValidToken_Succeeds()
+        {
+            var original = BackendInfo.AccessTokenValidationProvider;
+            try
+            {
+                BackendInfo.AccessTokenValidationProvider = new FakeTokenProvider { Result = true };
+                var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
+                var context = new ApiCallContext
+                {
+                    Format = PayloadFormat.Encrypted,
+                    IsLocalCall = false,
+                    AccessToken = Guid.NewGuid()
+                };
+
+                var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context));
+                Assert.Null(ex);
+            }
+            finally
+            {
+                BackendInfo.AccessTokenValidationProvider = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("ValidateAccess 於 AccessToken 非 Empty 但 provider 未設定時應拋 InvalidOperationException")]
+        public void ValidateAccess_Authenticated_ProviderNotConfigured_Throws()
+        {
+            var original = BackendInfo.AccessTokenValidationProvider;
+            try
+            {
+                BackendInfo.AccessTokenValidationProvider = null!;
+                var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
+                var context = new ApiCallContext
+                {
+                    Format = PayloadFormat.Encrypted,
+                    IsLocalCall = false,
+                    AccessToken = Guid.NewGuid()
+                };
+
+                Assert.Throws<InvalidOperationException>(() =>
+                    ApiAccessValidator.ValidateAccess(method!, context));
+            }
+            finally
+            {
+                BackendInfo.AccessTokenValidationProvider = original;
+            }
+        }
+
         [Theory]
         [DisplayName("ValidateAccess 依保護等級與傳輸格式正確驗證存取權限")]
         [InlineData(ApiProtectionLevel.Public, PayloadFormat.Plain, true)]                      // 遠端呼叫 Public API，使用 Plain 傳輸 → ✅ 允許
@@ -69,6 +183,11 @@ namespace Bee.Api.Core.UnitTests
 
             [ApiAccessControl(ApiProtectionLevel.LocalOnly, ApiAccessRequirement.Anonymous)]
             public static void Method_LocalOnly() { }
+
+            public static void Method_NoAttribute() { }
+
+            [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+            public static void Method_Authenticated() { }
         }
     }
 }
