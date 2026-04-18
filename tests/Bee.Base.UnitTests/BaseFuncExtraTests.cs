@@ -237,5 +237,82 @@ namespace Bee.Base.UnitTests
         {
             Assert.Throws<ArgumentNullException>(() => BaseFunc.UnwrapException(null!));
         }
+
+        [Theory]
+        [InlineData("12345", 5, true)]
+        [InlineData("12345", 4, false)]
+        [InlineData("abc", 3, false)]
+        [InlineData("", 0, false)]
+        [DisplayName("IsNumeric(string, length) 應同時檢查數值性與長度")]
+        public void IsNumeric_WithLength_ChecksBothConditions(string value, int length, bool expected)
+        {
+            Assert.Equal(expected, BaseFunc.IsNumeric(value, length));
+        }
+
+        private sealed class NumericToString
+        {
+            public override string ToString() => "3.14";
+        }
+
+        [Fact]
+        [DisplayName("ConvertToNumber 對非支援型別但 ToString 為數值應回傳 double")]
+        public void ConvertToNumber_NonStandardType_FallsBackToToString()
+        {
+            // 進入最後 double.TryParse(value.ToString(), ...) 分支
+            var value = new NumericToString();
+            var result = BaseFunc.ConvertToNumber(value);
+            Assert.Equal(3.14d, result);
+        }
+
+        [Theory]
+        [InlineData("20150312", 2015, 3, 12)] // 8-digit 西元
+        [InlineData("1040312", 2015, 3, 12)]  // 7-digit 民國
+        [InlineData("201503", 2015, 3, 1)]    // 6-digit 西元年月
+        [InlineData("10403", 2015, 3, 1)]     // 5-digit 民國年月
+        [InlineData("2015", 2015, 1, 1)]      // 4-digit 西元年
+        [InlineData("104", 2015, 1, 1)]       // 3-digit 民國年
+        [DisplayName("CDateTime 應依字串長度解析各種日期格式")]
+        public void CDateTime_VariousLengths_ParsesCorrectly(string input, int y, int m, int d)
+        {
+            var result = BaseFunc.CDateTime(input);
+            Assert.Equal(new DateTime(y, m, d), result);
+        }
+
+        [Fact]
+        [DisplayName("CDateTime 對未支援長度的數字字串應回傳 DateTime.MinValue")]
+        public void CDateTime_UnsupportedLength_ReturnsMinValue()
+        {
+            // 長度 2 不在 switch 的 3/4/5/6/7/8 範圍內 → default 分支 → MinValue
+            var result = BaseFunc.CDateTime("12");
+            Assert.Equal(DateTime.MinValue, result);
+        }
+
+        [Fact]
+        [DisplayName("CDateTime 對非數字字串經 StrToDate 返回 MinValue")]
+        public void CDateTime_NonNumericString_ReturnsMinValue()
+        {
+            // "abcdefgh" 移除分隔字元後非數字 → StrToDate 直接回傳 MinValue
+            var result = BaseFunc.CDateTime("abcdefgh");
+            Assert.Equal(DateTime.MinValue, result);
+        }
+
+        [Fact]
+        [DisplayName("CDateTime 對無法轉成日期的數字字串應回傳 defaultValue")]
+        public void CDateTime_InvalidCalendarDate_FallsBackToDefault()
+        {
+            // 20150230 → "2015-02-30" → Convert.ToDateTime 拋例外 → catch → defaultValue
+            var fallback = new DateTime(2000, 1, 1);
+            var result = BaseFunc.CDateTime("20150230", fallback);
+            Assert.Equal(fallback, result);
+        }
+
+        [Fact]
+        [DisplayName("CDate 應取得日期部分（時間為零）")]
+        public void CDate_ReturnsDateOnly()
+        {
+            var result = BaseFunc.CDate("20150312");
+            Assert.Equal(new DateTime(2015, 3, 12), result);
+            Assert.Equal(TimeSpan.Zero, result.TimeOfDay);
+        }
     }
 }
