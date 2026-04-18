@@ -79,5 +79,66 @@ namespace Bee.Repository.UnitTests
             var repo = CreateRepository();
             Assert.Throws<NullReferenceException>(() => repo.TestConnection(null!));
         }
+
+        [Fact]
+        [DisplayName("TestConnection 含 {@DbName} 佔位符且 DbName 非空時應完成替換並嘗試連線")]
+        public void TestConnection_WithDbNamePlaceholder_ReplacesAndAttempts()
+        {
+            // 以合法 SQL Server 連線字串語法但指向不存在的主機，確保：
+            // 1. 字串替換成功（未替換則 SqlConnection 仍接受 {@DbName} 作為 catalog 名）
+            // 2. 最終在 Open() 階段失敗，而不是因字串解析拋 ArgumentException
+            var repo = CreateRepository();
+            var item = new DatabaseItem
+            {
+                Id = "placeholder_dbname",
+                DatabaseType = DatabaseType.SQLServer,
+                ConnectionString = "Server=127.0.0.1,65535;Initial Catalog={@DbName};Connection Timeout=1;",
+                DbName = "bee_test_placeholder_db"
+            };
+
+            // 期望 Open 時拋出 SqlException 或相容例外（連線失敗）。
+            var ex = Record.Exception(() => repo.TestConnection(item));
+            Assert.NotNull(ex);
+            Assert.IsNotType<ArgumentException>(ex);
+        }
+
+        [Fact]
+        [DisplayName("TestConnection 含 {@UserId} 與 {@Password} 佔位符且皆非空時應完成替換")]
+        public void TestConnection_WithUserIdAndPasswordPlaceholder_ReplacesAndAttempts()
+        {
+            var repo = CreateRepository();
+            var item = new DatabaseItem
+            {
+                Id = "placeholder_user",
+                DatabaseType = DatabaseType.SQLServer,
+                ConnectionString = "Server=127.0.0.1,65535;User Id={@UserId};Password={@Password};Connection Timeout=1;",
+                UserId = "sa_test",
+                Password = "p@ssword_test"
+            };
+
+            var ex = Record.Exception(() => repo.TestConnection(item));
+            Assert.NotNull(ex);
+            Assert.IsNotType<ArgumentException>(ex);
+        }
+
+        [Fact]
+        [DisplayName("TestConnection 所有佔位符同時指定時應完成替換")]
+        public void TestConnection_WithAllPlaceholders_ReplacesAndAttempts()
+        {
+            var repo = CreateRepository();
+            var item = new DatabaseItem
+            {
+                Id = "placeholder_all",
+                DatabaseType = DatabaseType.SQLServer,
+                ConnectionString = "Server=127.0.0.1,65535;Initial Catalog={@DbName};User Id={@UserId};Password={@Password};Connection Timeout=1;",
+                DbName = "bee_test_db",
+                UserId = "sa_test",
+                Password = "p@ssword_test"
+            };
+
+            var ex = Record.Exception(() => repo.TestConnection(item));
+            Assert.NotNull(ex);
+            Assert.IsNotType<ArgumentException>(ex);
+        }
     }
 }
