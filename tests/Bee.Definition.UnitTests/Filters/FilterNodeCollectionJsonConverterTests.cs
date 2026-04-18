@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using System.IO;
+using System.Text;
 using System.Text.Json;
 using Bee.Definition.Filters;
 
@@ -152,6 +154,38 @@ namespace Bee.Definition.UnitTests.Filters
             var json = """[{"kind":99}]""";
             Assert.Throws<JsonException>(() =>
                 JsonSerializer.Deserialize<FilterNodeCollection>(json, Options));
+        }
+
+        [Fact]
+        [DisplayName("Write 直接呼叫 converter 於 null collection 應寫入 JSON null")]
+        public void Write_DirectConverter_NullCollection_WritesNull()
+        {
+            // JsonSerializer.Serialize<FilterNodeCollection?>(null, ...) 會由框架短路
+            // 寫入 null，不會進入 converter.Write；直接呼叫才能覆蓋 value == null 分支。
+            var converter = new FilterNodeCollectionJsonConverter();
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                converter.Write(writer, null!, new JsonSerializerOptions());
+            }
+
+            var json = Encoding.UTF8.GetString(stream.ToArray());
+            Assert.Equal("null", json);
+        }
+
+        [Fact]
+        [DisplayName("Read 直接呼叫 converter 於 Null token 應回傳 null")]
+        public void Read_DirectConverter_NullToken_ReturnsNull()
+        {
+            // JsonSerializer.Deserialize<FilterNodeCollection?>("null", ...) 會由框架短路
+            // 回傳 null，不會進入 converter.Read；直接呼叫才能覆蓋 TokenType.Null 分支。
+            var converter = new FilterNodeCollectionJsonConverter();
+            var bytes = Encoding.UTF8.GetBytes("null");
+            var reader = new Utf8JsonReader(bytes);
+            Assert.True(reader.Read());
+
+            var result = converter.Read(ref reader, typeof(FilterNodeCollection), new JsonSerializerOptions());
+            Assert.Null(result);
         }
     }
 }
