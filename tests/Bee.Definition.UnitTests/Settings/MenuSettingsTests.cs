@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Base.Serialization;
 using Bee.Definition.Settings;
 
 namespace Bee.Definition.UnitTests.Settings
@@ -223,6 +224,29 @@ namespace Bee.Definition.UnitTests.Settings
             settings.SetObjectFilePath("/tmp/menu.xml");
 
             Assert.Equal("/tmp/menu.xml", settings.ObjectFilePath);
+        }
+
+        [Fact]
+        [DisplayName("MenuSettings.SetSerializeState 應更新自身狀態")]
+        public void MenuSettings_SetSerializeState_UpdatesState()
+        {
+            var settings = new MenuSettings();
+            settings.Folders!.Add("F01", "主檔");
+
+            settings.SetSerializeState(SerializeState.Serialize);
+
+            Assert.Equal(SerializeState.Serialize, settings.SerializeState);
+        }
+
+        [Fact]
+        [DisplayName("MenuSettings.FindItem 找不到時應回傳 null")]
+        public void MenuSettings_FindItem_NotFound_ReturnsNull()
+        {
+            var settings = new MenuSettings();
+            var root = settings.Folders!.Add("F01", "主檔");
+            root.Items!.Add("P001", "客戶維護");
+
+            Assert.Null(settings.FindItem("X999"));
         }
     }
 }
