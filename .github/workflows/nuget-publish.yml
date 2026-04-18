@@ -11,10 +11,10 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9  # v4.3.1
       with:
         dotnet-version: 10.0.x
 
@@ -62,10 +62,12 @@ jobs:
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
 
     - name: Push to NuGet
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
       run: |
         $ErrorActionPreference = 'Stop'
         Get-ChildItem -Path ./nupkgs -Filter *.nupkg | ForEach-Object {
-          dotnet nuget push $_.FullName --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push $_.FullName --api-key "$env:NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
           if ($LASTEXITCODE -ne 0) { throw "Failed to push $($_.Name)" }
         }
 
@@ -81,7 +83,7 @@ jobs:
         echo "VERSION=${TAG#v}" >> $GITHUB_OUTPUT
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2.6.2
       with:
         tag_name: ${{ github.ref_name }}
         name: Release ${{ github.ref_name }}

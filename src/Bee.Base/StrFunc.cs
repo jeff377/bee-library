@@ -157,7 +157,7 @@ namespace Bee.Base
             if (IsEmpty(s)) { return string.Empty; }
 
             oOptions = (ignoreCase) ? RegexOptions.IgnoreCase : RegexOptions.None;
-            return Regex.Replace(s, Regex.Escape(search), replacement, oOptions);
+            return Regex.Replace(s, Regex.Escape(search), replacement, oOptions, TimeSpan.FromSeconds(1));
         }
 
         /// <summary>
@@ -512,7 +512,7 @@ namespace Bee.Base
             if (compareOption.HasFlag(CompareOptions.IgnoreCase))
                 options |= RegexOptions.IgnoreCase;
 
-            return Regex.IsMatch(source, regexPattern, options);
+            return Regex.IsMatch(source, regexPattern, options, TimeSpan.FromSeconds(1));
         }
 
         /// <summary>

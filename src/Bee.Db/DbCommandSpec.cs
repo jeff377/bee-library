@@ -21,7 +21,7 @@ namespace Bee.Db
         private int _commandTimeout = DefaultTimeout;
         // Pre-compiled placeholder regex: {key}; supports {{key}} as an escape (outputs {key})
         private static readonly Regex PlaceholderRegex =
-            new Regex(@"\{(?<key>[^\}]+)\}|\{\{(?<escaped>[^\}]+)\}\}", RegexOptions.Compiled);
+            new Regex(@"\{(?<key>[^\}]+)\}|\{\{(?<escaped>[^\}]+)\}\}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
 
         /// <summary>
         /// Initializes a new empty instance of <see cref="DbCommandSpec"/>.

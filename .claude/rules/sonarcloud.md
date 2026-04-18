@@ -147,6 +147,54 @@ string.Join(", ", new[] { "a", "b", "c" });
 |------|------|
 | **S2701** | `Assert.True`／`Assert.False` 的第一參數不應為字面值（如 `Assert.True(true)`），應為被測表達式 |
 
+## 13. Regex（ReDoS 防護）
+
+| 規則 | 原則 |
+|------|------|
+| **S6444** | `Regex.IsMatch`／`Regex.Replace`／`new Regex(...)` 一律傳入 `TimeSpan.FromSeconds(1)` timeout，即使 pattern 為編譯期常數或已用 `Regex.Escape()` 轉義 |
+
+```csharp
+// ✅ 正確：明確指定 timeout
+Regex.IsMatch(input, pattern, RegexOptions.None, TimeSpan.FromSeconds(1));
+Regex.Replace(s, Regex.Escape(search), replacement, options, TimeSpan.FromSeconds(1));
+new Regex(pattern, RegexOptions.Compiled, TimeSpan.FromSeconds(1));
+
+// ❌ 禁止：未傳 timeout
+Regex.IsMatch(input, pattern);
+new Regex(pattern, RegexOptions.Compiled);
+```
+
+## 14. GitHub Actions 工作流
+
+| 規則 | 原則 |
+|------|------|
+| **S7636** | secrets 不直接在 `run:` block 展開；改以 step-level `env:` 注入後引用環境變數，避免遭 log 洩漏 |
+| **S7637** | 第三方 actions 一律 pin 至完整 commit SHA；版本 tag 以行尾註解保留可讀性 |
+
+```yaml
+# ✅ 正確：secrets 用 env:，action pin commit SHA
+- name: Push to NuGet
+  env:
+    NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+  run: dotnet nuget push ... --api-key "$env:NUGET_API_KEY"
+
+- uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+
+# ❌ 禁止：secrets 直接在 run 展開、action 只 pin 主版本
+- name: Push to NuGet
+  run: dotnet nuget push ... --api-key ${{ secrets.NUGET_API_KEY }}
+
+- uses: actions/checkout@v4
+```
+
+取得 SHA 的方法：`gh api repos/<org>/<name>/git/ref/tags/<tag> --jq .object.sha`
+
+## 15. 序列化
+
+| 規則 | 原則 |
+|------|------|
+| **S5766** | `[Serializable]` marker 類別之建構子若**未**實作 `(SerializationInfo, StreamingContext)`、屬性皆為原始型別、不經 `BinaryFormatter` 反序列化，則非實際反序列化入口，於 Sonar UI 標記 **Safe** 並說明理由即可，不必改程式 |
+
 ---
 
 ## 不納入之規則
