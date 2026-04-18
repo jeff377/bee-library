@@ -142,8 +142,8 @@ namespace Bee.Business.BusinessObjects
         public virtual CreateSessionResult CreateSession(CreateSessionArgs args)
         {
             if (args.ExpiresIn <= 0 || args.ExpiresIn > MaxExpiresInSeconds)
-                throw new ArgumentOutOfRangeException(nameof(args.ExpiresIn),
-                    $"ExpiresIn must be between 1 and {MaxExpiresInSeconds} seconds.");
+                throw new ArgumentOutOfRangeException(nameof(args),
+                    $"args.ExpiresIn must be between 1 and {MaxExpiresInSeconds} seconds.");
 
             // Create a new user session
             var repo = RepositoryInfo.SystemProvider!.SessionRepository;

@@ -97,7 +97,7 @@ namespace Bee.Db
         /// <param name="command">The database command specification.</param>
         public DbCommandResult Execute(DbCommandSpec command)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
+            ArgumentNullException.ThrowIfNull(command);
 
             using (var scope = CreateScope())
             {
@@ -123,8 +123,8 @@ namespace Bee.Db
         /// <param name="transaction">The required database transaction; the command is bound to this transaction.</param>
         public DbCommandResult Execute(DbCommandSpec command, DbTransaction transaction)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(transaction);
 
             var conn = transaction.Connection
                        ?? throw new InvalidOperationException("Transaction has no associated connection.");
@@ -148,8 +148,8 @@ namespace Bee.Db
         /// <param name="batch">The batch command specification.</param>
         public DbBatchResult ExecuteBatch(DbBatchSpec batch)
         {
-            if (batch == null) throw new ArgumentNullException(nameof(batch));
-            if (batch.Commands == null) throw new ArgumentNullException(nameof(batch.Commands));
+            ArgumentNullException.ThrowIfNull(batch);
+            if (batch.Commands == null) throw new ArgumentException("batch.Commands cannot be null.", nameof(batch));
             if (batch.Commands.Count == 0) throw new ArgumentException("Batch contains no commands.", nameof(batch));
 
             var result = new DbBatchResult();
@@ -291,7 +291,7 @@ namespace Bee.Db
         /// <returns>A <see cref="List{T}"/> containing the mapped results.</returns>
         public List<T> Query<T>(DbCommandSpec command)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
+            ArgumentNullException.ThrowIfNull(command);
 
             using (var scope = CreateScope())
             using (var cmd = command.CreateCommand(DatabaseType, scope.Connection!))
@@ -363,8 +363,8 @@ namespace Bee.Db
 
         private static void ValidateUpdateSpec(DataTableUpdateSpec spec)
         {
-            if (spec == null) throw new ArgumentNullException(nameof(spec));
-            if (spec.DataTable == null) throw new ArgumentNullException(nameof(spec.DataTable));
+            ArgumentNullException.ThrowIfNull(spec);
+            if (spec.DataTable == null) throw new ArgumentException("spec.DataTable cannot be null.", nameof(spec));
             if (spec.InsertCommand == null && spec.UpdateCommand == null && spec.DeleteCommand == null)
                 throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(spec));
         }
@@ -465,8 +465,8 @@ namespace Bee.Db
         public Task<DbCommandResult> ExecuteAsync(
             DbCommandSpec command, DbTransaction transaction, CancellationToken cancellationToken = default)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+            ArgumentNullException.ThrowIfNull(command);
+            ArgumentNullException.ThrowIfNull(transaction);
 
             var conn = transaction.Connection
                        ?? throw new InvalidOperationException("Transaction has no associated connection.");
@@ -491,8 +491,8 @@ namespace Bee.Db
         /// <param name="cancellationToken">A cancellation token for cancelling long-running commands.</param>
         public async Task<DbBatchResult> ExecuteBatchAsync(DbBatchSpec batch, CancellationToken cancellationToken = default)
         {
-            if (batch == null) throw new ArgumentNullException(nameof(batch));
-            if (batch.Commands == null) throw new ArgumentNullException(nameof(batch.Commands));
+            ArgumentNullException.ThrowIfNull(batch);
+            if (batch.Commands == null) throw new ArgumentException("batch.Commands cannot be null.", nameof(batch));
             if (batch.Commands.Count == 0) throw new ArgumentException("Batch contains no commands.", nameof(batch));
 
             var result = new DbBatchResult();

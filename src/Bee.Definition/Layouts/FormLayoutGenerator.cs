@@ -18,8 +18,7 @@ namespace Bee.Definition.Layouts
         /// <returns>The generated form layout.</returns>
         public FormLayout Generate(FormSchema formDefine)
         {
-            if (formDefine == null)
-                throw new ArgumentNullException(nameof(formDefine));
+            ArgumentNullException.ThrowIfNull(formDefine);
 
             var formLayout = new FormLayout
             {

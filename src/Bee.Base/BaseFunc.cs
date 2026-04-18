@@ -757,8 +757,7 @@ namespace Bee.Base
         /// <returns>The innermost exception; never null.</returns>
         public static Exception UnwrapException(Exception ex)
         {
-            if (ex == null)
-                throw new ArgumentNullException(nameof(ex));
+            ArgumentNullException.ThrowIfNull(ex);
 
             while (true)
             {

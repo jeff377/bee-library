@@ -19,7 +19,7 @@ namespace Bee.Api.Core.System
         /// Gets or sets the package content bytes.
         /// </summary>
         [Key(101)]
-        public byte[] Content { get; set; } = new byte[0];
+        public byte[] Content { get; set; } = global::System.Array.Empty<byte>();
 
         /// <summary>
         /// Gets or sets the file size in bytes.

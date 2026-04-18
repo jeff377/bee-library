@@ -15,7 +15,7 @@ namespace Bee.Business.System
         /// <summary>
         /// Gets or sets the ZIP file byte content (used when Delivery = Api; large files should use URL download instead).
         /// </summary>
-        public byte[] Content { get; set; } = new byte[0];
+        public byte[] Content { get; set; } = global::System.Array.Empty<byte>();
 
         /// <summary>
         /// Gets or sets the file size in bytes.

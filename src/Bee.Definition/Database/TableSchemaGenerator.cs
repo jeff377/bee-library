@@ -17,8 +17,7 @@ namespace Bee.Definition.Database
         /// <returns>The generated table schema.</returns>
         public TableSchema Generate(FormTable formTable)
         {
-            if (formTable == null)
-                throw new ArgumentNullException(nameof(formTable));
+            ArgumentNullException.ThrowIfNull(formTable);
 
             var tableSchema = new TableSchema
             {
