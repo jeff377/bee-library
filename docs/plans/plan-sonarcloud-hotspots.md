@@ -1,6 +1,8 @@
 # 計畫：處理 SonarCloud Security Hotspots
 
-**狀態：🚧 進行中**
+**狀態：✅ 已完成（2026-04-18）**
+
+> 剩餘 2 個 `[Serializable]` hotspot（`ApiException.cs:29`、`SortField.cs:25`）需在 SonarCloud UI 手動標記 Safe，Claude 無 UI 權限。
 
 ## 背景
 
