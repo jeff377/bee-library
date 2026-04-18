@@ -1,6 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Reflection;
+using Bee.Base.Serialization;
 
 namespace Bee.Base.UnitTests
 {
@@ -314,5 +316,98 @@ namespace Bee.Base.UnitTests
             Assert.Equal(new DateTime(2015, 3, 12), result);
             Assert.Equal(TimeSpan.Zero, result.TimeOfDay);
         }
+
+        private sealed class FakeSerializeObject : IObjectSerialize
+        {
+            public SerializeState SerializeState { get; private set; } = SerializeState.None;
+
+            public void SetSerializeState(SerializeState serializeState)
+            {
+                SerializeState = serializeState;
+            }
+        }
+
+        [Fact]
+        [DisplayName("SetSerializeState 非 null 目標應委派給其 SetSerializeState 方法")]
+        public void SetSerializeState_NonNull_DelegatesToTarget()
+        {
+            var target = new FakeSerializeObject();
+
+            BaseFunc.SetSerializeState(target, SerializeState.Serialize);
+
+            Assert.Equal(SerializeState.Serialize, target.SerializeState);
+        }
+
+        [Fact]
+        [DisplayName("SetSerializeState 目標為 null 應靜默略過")]
+        public void SetSerializeState_Null_IsNoOp()
+        {
+            var ex = Record.Exception(() => BaseFunc.SetSerializeState(null!, SerializeState.Serialize));
+            Assert.Null(ex);
+        }
+
+        private sealed class EmptySerializeObject : IObjectSerializeEmpty
+        {
+            public bool IsSerializeEmpty { get; set; }
+        }
+
+        [Fact]
+        [DisplayName("IsSerializeEmpty state 為 None 時永遠回傳 false")]
+        public void IsSerializeEmpty_StateNone_ReturnsFalse()
+        {
+            Assert.False(BaseFunc.IsSerializeEmpty(SerializeState.None, null!));
+            Assert.False(BaseFunc.IsSerializeEmpty(SerializeState.None, new List<int>()));
+        }
+
+        [Fact]
+        [DisplayName("IsSerializeEmpty 於 Serialize 狀態且 value 為 null 應回傳 true")]
+        public void IsSerializeEmpty_SerializeAndNull_ReturnsTrue()
+        {
+            Assert.True(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, null!));
+        }
+
+        [Fact]
+        [DisplayName("IsSerializeEmpty 應尊重 IObjectSerializeEmpty 回報的狀態")]
+        public void IsSerializeEmpty_ObjectSerializeEmpty_ReflectsProperty()
+        {
+            var emptyObj = new EmptySerializeObject { IsSerializeEmpty = true };
+            Assert.True(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, emptyObj));
+
+            var notEmptyObj = new EmptySerializeObject { IsSerializeEmpty = false };
+            Assert.False(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, notEmptyObj));
+        }
+
+        [Fact]
+        [DisplayName("IsSerializeEmpty 於空 IList 應回傳 true,非空應回傳 false")]
+        public void IsSerializeEmpty_IList_ReflectsEmptiness()
+        {
+            Assert.True(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, new List<int>()));
+            Assert.False(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, new List<int> { 1 }));
+        }
+
+        private sealed class PureEnumerable : IEnumerable
+        {
+            private readonly object[] _items;
+            public PureEnumerable(params object[] items) => _items = items;
+            public IEnumerator GetEnumerator() => _items.GetEnumerator();
+        }
+
+        [Fact]
+        [DisplayName("IsSerializeEmpty 於 IEnumerable 應依可列舉性判斷 empty")]
+        public void IsSerializeEmpty_IEnumerable_ReflectsEmptiness()
+        {
+            Assert.True(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, new PureEnumerable()));
+            Assert.False(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, new PureEnumerable(1, 2)));
+        }
+
+        [Fact]
+        [DisplayName("IsSerializeEmpty 其他型別應走 default 回傳 false")]
+        public void IsSerializeEmpty_DefaultBranch_ReturnsFalse()
+        {
+            // int / string 等 primitive 不符合任何 case → default → false
+            Assert.False(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, 123));
+            Assert.False(BaseFunc.IsSerializeEmpty(SerializeState.Serialize, "abc"));
+        }
+
     }
 }
