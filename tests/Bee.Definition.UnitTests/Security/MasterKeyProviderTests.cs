@@ -240,5 +240,43 @@ namespace Bee.Definition.UnitTests.Security
                 Environment.SetEnvironmentVariable("BEE_MASTER_KEY", original);
             }
         }
+
+        [Fact]
+        [DisplayName("GetMasterKey 不支援的 Type 應拋 InvalidOperationException（default 分支）")]
+        public void GetMasterKey_UnsupportedType_ThrowsInvalidOperation()
+        {
+            // enum 實際只有 File=0 / Environment=1，透過 cast 傳入 99 觸發 switch default
+            var source = new MasterKeySource
+            {
+                Type = (MasterKeySourceType)99,
+                Value = "irrelevant"
+            };
+
+            var ex = Assert.Throws<InvalidOperationException>(() => MasterKeyProvider.GetMasterKey(source));
+            Assert.Contains("Unsupported", ex.Message);
+        }
+
+        [Fact]
+        [DisplayName("GetMasterKey autoCreate=true 但檔案已存在時應讀取既有檔案內容")]
+        public void GetMasterKey_FileExists_AutoCreate_ReturnsExistingKey()
+        {
+            // 檔案已存在 → File.Exists 為 true → 直接跳到 ReadAllTextShared，不執行 CreateNew 路徑
+            byte[] expected = AesCbcHmacKeyGenerator.GenerateCombinedKey();
+            string filePath = Path.Combine(Path.GetTempPath(), $"bee-mk-existing-{Guid.NewGuid()}.key");
+            File.WriteAllText(filePath, Convert.ToBase64String(expected));
+
+            try
+            {
+                byte[] actual = MasterKeyProvider.GetMasterKey(
+                    new MasterKeySource { Type = MasterKeySourceType.File, Value = filePath },
+                    autoCreate: true);
+
+                Assert.Equal(expected, actual);
+            }
+            finally
+            {
+                File.Delete(filePath);
+            }
+        }
     }
 }
