@@ -11,6 +11,16 @@ namespace Bee.Definition.UnitTests.Collections
     /// </summary>
     public class MessagePackCollectionBaseTests
     {
+        /// <summary>
+        /// 用於測試 protected 成員（owner 建構子、SetOwner）的子類別。
+        /// </summary>
+        private sealed class OwnerAwareCollection : MessagePackCollectionBase<SortField>
+        {
+            public OwnerAwareCollection() : base() { }
+            public OwnerAwareCollection(object owner) : base(owner) { }
+            public void CallSetOwner(object owner) => SetOwner(owner);
+        }
+
         private static SortField MakeField(string name = "F") =>
             new SortField(name, SortDirection.Asc);
 
@@ -121,6 +131,28 @@ namespace Bee.Definition.UnitTests.Collections
 
             col.Tag = "meta";
             Assert.Equal("meta", col.Tag);
+        }
+
+        [Fact]
+        [DisplayName("以 owner 為參數的建構子應設定 Owner")]
+        public void Constructor_WithOwner_SetsOwner()
+        {
+            var owner = new object();
+            var col = new OwnerAwareCollection(owner);
+
+            Assert.Same(owner, col.Owner);
+        }
+
+        [Fact]
+        [DisplayName("SetOwner 應更新 Owner 屬性")]
+        public void SetOwner_UpdatesOwner()
+        {
+            var col = new OwnerAwareCollection();
+            var owner = new object();
+
+            col.CallSetOwner(owner);
+
+            Assert.Same(owner, col.Owner);
         }
     }
 }
