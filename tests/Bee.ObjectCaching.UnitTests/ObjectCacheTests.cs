@@ -86,5 +86,68 @@ namespace Bee.ObjectCaching.UnitTests
 
             cache.Remove();
         }
+
+        // 不 override GetPolicy / CreateInstance,讓基底類別預設實作被執行
+        private sealed class DefaultPolicyCache : ObjectCache<TestPayload>
+        {
+            private readonly string _suffix;
+            private readonly TestPayload? _payload;
+
+            public DefaultPolicyCache(string suffix, TestPayload? payload)
+            {
+                _suffix = suffix;
+                _payload = payload;
+            }
+
+            protected override string GetKey() => "ObjectCacheTests_Default_" + _suffix;
+
+            // 僅於 _payload 非 null 時才重寫 CreateInstance,用以觸發預設 GetPolicy 分支;
+            // _payload 為 null 時不重寫,讓基底類別預設 CreateInstance 回傳 default 的分支被執行。
+            protected override TestPayload? CreateInstance()
+            {
+                return _payload ?? base.CreateInstance();
+            }
+        }
+
+        // 完全不 override CreateInstance,僅 override GetKey,覆蓋預設 CreateInstance 回傳 default 的分支
+        private sealed class BareBonesCache : ObjectCache<TestPayload>
+        {
+            private readonly string _suffix;
+            public BareBonesCache(string suffix) { _suffix = suffix; }
+            protected override string GetKey() => "ObjectCacheTests_Bare_" + _suffix;
+        }
+
+        [Fact]
+        [DisplayName("未 override GetPolicy 時應套用預設 20 分鐘 SlidingTime 並將值寫入快取")]
+        public void Get_UsesDefaultGetPolicy_WhenNotOverridden()
+        {
+            var suffix = Guid.NewGuid().ToString("N");
+            var payload = new TestPayload { Value = "default-policy" };
+            var cache = new DefaultPolicyCache(suffix, payload);
+
+            // 第一次 Get → CreateInstance 回傳 payload → 寫入快取時會呼叫基底預設 GetPolicy
+            var first = cache.Get();
+            Assert.Same(payload, first);
+
+            // 第二次 Get → 自快取取得,證明已以預設 policy 寫入
+            var second = cache.Get();
+            Assert.Same(payload, second);
+
+            cache.Remove();
+        }
+
+        [Fact]
+        [DisplayName("未 override CreateInstance 時預設應回傳 null,不寫入快取")]
+        public void Get_UsesDefaultCreateInstance_ReturnsNull()
+        {
+            var suffix = Guid.NewGuid().ToString("N");
+            var cache = new BareBonesCache(suffix);
+
+            var result = cache.Get();
+
+            Assert.Null(result);
+
+            cache.Remove();
+        }
     }
 }

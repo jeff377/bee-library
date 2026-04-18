@@ -86,5 +86,24 @@ namespace Bee.ObjectCaching.UnitTests
             CacheFunc.RemoveSessionInfo(token);
             Assert.Null(CacheFunc.GetSessionInfo(token));
         }
+
+        [Fact]
+        [DisplayName("GetProgramSettings 於 tests/Define 無 ProgramSettings.xml 應拋 FileNotFoundException")]
+        public void GetProgramSettings_NoSettingsFile_ThrowsFileNotFound()
+        {
+            // tests/Define 下未放 ProgramSettings.xml,ProgramSettingsCache.CreateInstance 會拋 FileNotFoundException;
+            // 目的是讓 CacheFunc.GetProgramSettings 的 delegation 這行被執行並覆蓋。
+            Assert.Throws<FileNotFoundException>(() => CacheFunc.GetProgramSettings());
+        }
+
+        [Fact]
+        [DisplayName("GetFormLayout 於未定義 layoutId 應拋 FileNotFoundException")]
+        public void GetFormLayout_UnknownLayoutId_ThrowsFileNotFound()
+        {
+            // 指定不存在的 layoutId,FileDefineStorage.GetFormLayout 會對檔案路徑驗證失敗
+            // 並拋 FileNotFoundException;目的是覆蓋 CacheFunc.GetFormLayout 的 delegation。
+            Assert.Throws<FileNotFoundException>(() =>
+                CacheFunc.GetFormLayout("__non_existent_layout_" + Guid.NewGuid().ToString("N")));
+        }
     }
 }
