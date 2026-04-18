@@ -74,6 +74,39 @@ namespace Bee.Base.UnitTests
             var row = BuildRow();
             Assert.Equal(-1, row.GetFieldValue<int>("Missing", -1));
         }
+
+        [Fact]
+        [DisplayName("GetFieldValue(defaultValue) 於空欄位名稱應拋出 ArgumentNullException")]
+        public void GetFieldValue_WithDefault_EmptyColumnName_Throws()
+        {
+            var row = BuildRow();
+            Assert.Throws<ArgumentNullException>(() => row.GetFieldValue<int>(string.Empty, -1));
+        }
+
+        [Fact]
+        [DisplayName("GetFieldValue(defaultValue) 於欄位存在且值有效時應回傳轉型後的值")]
+        public void GetFieldValue_WithDefault_ExistingColumn_ReturnsTypedValue()
+        {
+            var row = BuildRow();
+            Assert.Equal(5, row.GetFieldValue<int>("Id", -1));
+            Assert.Equal("Alice", row.GetFieldValue<string>("Name", "fallback"));
+        }
+
+        [Fact]
+        [DisplayName("GetFieldValue(defaultValue) 於欄位為 DBNull 時應回傳型別預設值")]
+        public void GetFieldValue_WithDefault_DbNull_ReturnsTypeDefault()
+        {
+            var row = BuildRow();
+            Assert.Equal(0, row.GetFieldValue<int>("Nullable", -1));
+        }
+
+        [Fact]
+        [DisplayName("GetFieldValue(defaultValue) 於型別無法轉換應拋出 InvalidOperationException")]
+        public void GetFieldValue_WithDefault_InvalidConversion_Throws()
+        {
+            var row = BuildRow();
+            Assert.Throws<InvalidOperationException>(() => row.GetFieldValue<Guid>("Name", Guid.Empty));
+        }
     }
 
     public class DataTableExtensionsTests
