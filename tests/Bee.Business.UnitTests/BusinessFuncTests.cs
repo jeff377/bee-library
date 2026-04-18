@@ -1,14 +1,64 @@
 using System.ComponentModel;
+using Bee.Base;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Definition;
+using Bee.Definition.Settings;
 
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="BusinessFunc.InvokeExecFunc"/> 反射派發與權限檢查測試。
+    /// <see cref="BusinessFunc"/> 測試;涵蓋 <see cref="BusinessFunc.GetDatabaseItem"/>
+    /// 與 <see cref="BusinessFunc.InvokeExecFunc"/>。
     /// </summary>
     public class BusinessFuncTests
     {
+        [Fact]
+        [DisplayName("GetDatabaseItem 於 databaseId 為空字串時應拋 ArgumentNullException")]
+        public void GetDatabaseItem_EmptyId_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => BusinessFunc.GetDatabaseItem(string.Empty));
+        }
+
+        [Fact]
+        [DisplayName("GetDatabaseItem 於找不到對應項目時應拋 KeyNotFoundException")]
+        public void GetDatabaseItem_NotFound_ThrowsKeyNotFoundException()
+        {
+            var original = BackendInfo.DefineAccess;
+            try
+            {
+                BackendInfo.DefineAccess = new FakeDefineAccess();
+
+                Assert.Throws<KeyNotFoundException>(() => BusinessFunc.GetDatabaseItem("missing"));
+            }
+            finally
+            {
+                BackendInfo.DefineAccess = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("GetDatabaseItem 於存在對應項目時應回傳該 DatabaseItem")]
+        public void GetDatabaseItem_Found_ReturnsItem()
+        {
+            var original = BackendInfo.DefineAccess;
+            try
+            {
+                var fake = new FakeDefineAccess();
+                fake.Settings.Items!.Add(new DatabaseItem { Id = "common", DisplayName = "共用" });
+                BackendInfo.DefineAccess = fake;
+
+                var item = BusinessFunc.GetDatabaseItem("common");
+
+                Assert.NotNull(item);
+                Assert.Equal("common", item.Id);
+                Assert.Equal("共用", item.DisplayName);
+            }
+            finally
+            {
+                BackendInfo.DefineAccess = original;
+            }
+        }
+
         [Fact]
         [DisplayName("InvokeExecFunc 呼叫不存在的方法應拋 MissingMethodException")]
         public void InvokeExecFunc_MethodNotFound_ThrowsMissingMethodException()
