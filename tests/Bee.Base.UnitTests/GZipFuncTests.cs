@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.IO;
 using Bee.Base.Serialization;
 using System.Text;
 
@@ -56,6 +57,18 @@ namespace Bee.Base.UnitTests
             // 驗證解壓縮後的資料與原始資料相同
             string uncompressedText = Encoding.UTF8.GetString(uncompressedData);
             Assert.Equal(originalText, uncompressedText);
+        }
+
+        [Fact]
+        [DisplayName("Decompress 解壓縮後超過 50MB 上限應拋 InvalidDataException（zip bomb 防護）")]
+        public void Decompress_ExceedsMaxSize_ThrowsInvalidDataException()
+        {
+            // 壓縮 51 MB 的 0x00（高度壓縮比），觸發 > 50 MB 上限
+            byte[] payload = new byte[51 * 1024 * 1024];
+            byte[] compressed = GZipFunc.Compress(payload);
+
+            var ex = Assert.Throws<InvalidDataException>(() => GZipFunc.Decompress(compressed));
+            Assert.Contains("Decompressed data exceeds", ex.Message);
         }
     }
 }
