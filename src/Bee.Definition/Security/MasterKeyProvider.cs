@@ -107,7 +107,8 @@ namespace Bee.Definition.Security
         /// <param name="filePath">The file path.</param>
         private static string ReadAllTextShared(string filePath)
         {
-            for (int attempt = 0; ; attempt++)
+            int attempt = 0;
+            while (true)
             {
                 try
                 {
@@ -118,6 +119,7 @@ namespace Bee.Definition.Security
                 catch (IOException) when (attempt < ReadRetryCount - 1)
                 {
                     Thread.Sleep(ReadRetryDelayMs);
+                    attempt++;
                 }
             }
         }

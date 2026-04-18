@@ -130,11 +130,15 @@ namespace Bee.Definition.Collections
         /// <summary>
         /// Proxy property used by MessagePack to serialize the Items content.
         /// </summary>
-        /// <remarks>The base class KeyedCollection does not support MessagePack serialization; data must be serialized via the ItemsForSerialization property.</remarks>
+        /// <remarks>
+        /// The base class KeyedCollection does not support MessagePack serialization; data must be
+        /// serialized via the ItemsForSerialization property. The buffer is populated in
+        /// <c>OnBeforeSerialize</c> to avoid copying the collection on every property access.
+        /// </remarks>
         [Key(0)]
         public System.Collections.Generic.List<T>? ItemsForSerialization
         {
-            get => Items.ToList();      // Convert internal items to List for MessagePack
+            get => _itemsBuffer;
             set => _itemsBuffer = value;
         }
 
@@ -143,7 +147,8 @@ namespace Bee.Definition.Collections
         /// </summary>
         void IMessagePackSerializationCallbackReceiver.OnBeforeSerialize()
         {
-            _itemsBuffer = null; // Ensure no buffered data before serialization
+            // Snapshot the internal items into the buffer so the serializer reads a stable list.
+            _itemsBuffer = Items.ToList();
         }
 
         /// <summary>

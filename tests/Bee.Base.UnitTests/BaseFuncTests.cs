@@ -412,7 +412,7 @@ namespace Bee.Base.UnitTests
         {
             Assert.Equal("abc", BaseFunc.CFieldValue(FieldDbType.String, "abc"));
             Assert.Equal("abc", BaseFunc.CFieldValue(FieldDbType.Text, "abc"));
-            Assert.Equal(true, BaseFunc.CFieldValue(FieldDbType.Boolean, "1"));
+            Assert.True((bool)BaseFunc.CFieldValue(FieldDbType.Boolean, "1")!);
             Assert.Equal(123, BaseFunc.CFieldValue(FieldDbType.Integer, "123"));
             Assert.Equal(123.45m, BaseFunc.CFieldValue(FieldDbType.Decimal, "123.45"));
             Assert.Equal(123.45m, BaseFunc.CFieldValue(FieldDbType.Currency, "123.45"));

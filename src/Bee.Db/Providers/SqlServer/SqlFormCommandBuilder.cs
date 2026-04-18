@@ -47,7 +47,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
+        public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
         {
             var builder = new SelectCommandBuilder(FormSchema, DatabaseType.SQLServer);
             return builder.Build(tableName, selectFields, filter, sortFields);  

@@ -18,7 +18,6 @@ namespace Bee.Base.BackgroundServices
         private DateTime _NextTime = DateTime.MinValue;
         private int _Interval = 10000;
         private CancellationTokenSource? _Cts;
-        private Task? _RunTask;
 
         #region StatusChanged Event
 
@@ -137,7 +136,7 @@ namespace Bee.Base.BackgroundServices
 
                 _Cts = new CancellationTokenSource();
                 var token = _Cts.Token;
-                _RunTask = Task.Factory.StartNew(
+                _ = Task.Factory.StartNew(
                     () => RunLoop(token),
                     token,
                     TaskCreationOptions.LongRunning,

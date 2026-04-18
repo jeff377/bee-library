@@ -115,9 +115,9 @@ namespace Bee.Definition.Layouts
         {
             foreach (LayoutGroup group in this.Groups!)
             {
-                foreach (LayoutItem item in group.Items!)
+                foreach (LayoutItemBase baseItem in group.Items!)
                 {
-                    if (StrFunc.IsEquals(item.FieldName, fieldName))
+                    if (baseItem is LayoutItem item && StrFunc.IsEquals(item.FieldName, fieldName))
                         return item;
                 }
             }
