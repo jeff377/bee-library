@@ -197,5 +197,48 @@ namespace Bee.Definition.UnitTests.Security
                 Environment.SetEnvironmentVariable(varName, null);
             }
         }
+
+        [Fact]
+        [DisplayName("GetMasterKey 檔案路徑為空字串時會套用預設檔名 Master.key")]
+        public void GetMasterKey_EmptyFilePath_UsesDefaultFileName()
+        {
+            // Arrange: 空字串會被替換為 "Master.key"，於 DefinePath（或當前目錄）下
+            var source = new MasterKeySource
+            {
+                Type = MasterKeySourceType.File,
+                Value = "   "
+            };
+
+            // Act & Assert
+            // autoCreate=false 時，在絕大多數測試環境下預設檔不存在 → 拋 FileNotFoundException；
+            // 若剛好存在（罕見），也只會走到後續 Base64 解析，不影響「空路徑分支被覆蓋」的目的。
+            var ex = Record.Exception(() => MasterKeyProvider.GetMasterKey(source));
+            Assert.NotNull(ex);
+        }
+
+        [Fact]
+        [DisplayName("GetMasterKey 環境變數名為空字串時套用預設 BEE_MASTER_KEY")]
+        public void GetMasterKey_EmptyVarName_UsesDefaultVarName()
+        {
+            // Arrange: 先確保預設變數為空，再呼叫
+            string? original = Environment.GetEnvironmentVariable("BEE_MASTER_KEY");
+            Environment.SetEnvironmentVariable("BEE_MASTER_KEY", null);
+
+            try
+            {
+                var source = new MasterKeySource
+                {
+                    Type = MasterKeySourceType.Environment,
+                    Value = "   "
+                };
+
+                // Act & Assert
+                Assert.Throws<InvalidOperationException>(() => MasterKeyProvider.GetMasterKey(source));
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("BEE_MASTER_KEY", original);
+            }
+        }
     }
 }

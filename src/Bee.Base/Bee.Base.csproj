@@ -7,5 +7,8 @@
     <PackageTags>bee.net;base;utilities;helpers;cryptography;encryption;hashing;serialization;compression;tracing;json</PackageTags>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Bee.Base.UnitTests" />
+  </ItemGroup>
 
 </Project>

@@ -468,5 +468,77 @@ namespace Bee.Base.UnitTests
         }
 
         #endregion
+
+        #region 命令列引數解析：ParseCommandLineArgs
+
+        [Fact]
+        [DisplayName("ParseCommandLineArgs 空陣列回傳空字典")]
+        public void ParseCommandLineArgs_EmptyArray_ReturnsEmptyDictionary()
+        {
+            var result = BaseFunc.ParseCommandLineArgs(Array.Empty<string>());
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        [DisplayName("ParseCommandLineArgs 僅有執行檔名稱時回傳空字典")]
+        public void ParseCommandLineArgs_OnlyExecutable_ReturnsEmptyDictionary()
+        {
+            var result = BaseFunc.ParseCommandLineArgs(new[] { "app.exe" });
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        [DisplayName("ParseCommandLineArgs 跳過不以 -- 開頭的引數")]
+        public void ParseCommandLineArgs_IgnoresNonOptionArgs()
+        {
+            var result = BaseFunc.ParseCommandLineArgs(new[] { "app.exe", "positional", "-single", "another" });
+            Assert.Empty(result);
+        }
+
+        [Fact]
+        [DisplayName("ParseCommandLineArgs --key value 形式解析為鍵值對")]
+        public void ParseCommandLineArgs_KeyValuePair_ParsesCorrectly()
+        {
+            var result = BaseFunc.ParseCommandLineArgs(new[] { "app.exe", "--name", "bee", "--count", "42" });
+            Assert.Equal(2, result.Count);
+            Assert.Equal("bee", result["name"]);
+            Assert.Equal("42", result["count"]);
+        }
+
+        [Fact]
+        [DisplayName("ParseCommandLineArgs --flag 後接新選項時設為 true")]
+        public void ParseCommandLineArgs_FlagFollowedByOption_DefaultsToTrue()
+        {
+            var result = BaseFunc.ParseCommandLineArgs(new[] { "app.exe", "--verbose", "--name", "bee" });
+            Assert.Equal("true", result["verbose"]);
+            Assert.Equal("bee", result["name"]);
+        }
+
+        [Fact]
+        [DisplayName("ParseCommandLineArgs --flag 結尾時設為 true")]
+        public void ParseCommandLineArgs_FlagAtEnd_DefaultsToTrue()
+        {
+            var result = BaseFunc.ParseCommandLineArgs(new[] { "app.exe", "--flag" });
+            Assert.Equal("true", result["flag"]);
+        }
+
+        [Fact]
+        [DisplayName("ParseCommandLineArgs 鍵名以大小寫無關方式檢索")]
+        public void ParseCommandLineArgs_KeyComparison_IsCaseInsensitive()
+        {
+            var result = BaseFunc.ParseCommandLineArgs(new[] { "app.exe", "--Name", "bee" });
+            Assert.Equal("bee", result["name"]);
+            Assert.Equal("bee", result["NAME"]);
+        }
+
+        [Fact]
+        [DisplayName("GetCommandLineArgs 可呼叫並回傳字典")]
+        public void GetCommandLineArgs_ReturnsDictionary()
+        {
+            var result = BaseFunc.GetCommandLineArgs();
+            Assert.NotNull(result);
+        }
+
+        #endregion
     }
 }

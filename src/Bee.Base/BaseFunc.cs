@@ -687,7 +687,16 @@ namespace Bee.Base
         /// </summary>
         public static Dictionary<string, string> GetCommandLineArgs()
         {
-            string[] args = Environment.GetCommandLineArgs();
+            return ParseCommandLineArgs(Environment.GetCommandLineArgs());
+        }
+
+        /// <summary>
+        /// Parses the specified command-line argument array into a dictionary.
+        /// The first element (typically the executable name) is skipped.
+        /// </summary>
+        /// <param name="args">The argument array to parse.</param>
+        internal static Dictionary<string, string> ParseCommandLineArgs(string[] args)
+        {
             var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
             int i = 1; // Skip args[0] (the executable name)
             while (i < args.Length)

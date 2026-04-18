@@ -15,6 +15,8 @@ namespace Bee.Base.UnitTests
             public Exception? LastError;
             public BackgroundServiceAction? LastErrorAction;
             public Exception? InitializeThrow;
+            public Exception? StartThrow;
+            public Exception? StopThrow;
             public Action? OnAddTasksHook;
 
             protected override void OnInitialize()
@@ -24,9 +26,19 @@ namespace Bee.Base.UnitTests
                     throw InitializeThrow;
             }
 
-            protected override void OnStart() => StartCount++;
+            protected override void OnStart()
+            {
+                StartCount++;
+                if (StartThrow != null)
+                    throw StartThrow;
+            }
 
-            protected override void OnStop() => StopCount++;
+            protected override void OnStop()
+            {
+                StopCount++;
+                if (StopThrow != null)
+                    throw StopThrow;
+            }
 
             protected override void OnAddTasks()
             {
@@ -236,6 +248,52 @@ namespace Bee.Base.UnitTests
 
             Assert.True(sw.ElapsedMilliseconds < 1500,
                 $"Stop took {sw.ElapsedMilliseconds}ms; expected < 1500ms.");
+        }
+
+        [Fact]
+        [DisplayName("Start 內部拋例外時應呼叫 OnError 並傳入 Start 動作")]
+        public void Start_OnStartThrows_CallsOnErrorWithStartAction()
+        {
+            var boom = new InvalidOperationException("start failure");
+            var svc = new TestService { StartThrow = boom };
+            svc.Initialize();
+
+            svc.Start();
+
+            Assert.Same(boom, svc.LastError);
+            Assert.Equal(BackgroundServiceAction.Start, svc.LastErrorAction);
+        }
+
+        [Fact]
+        [DisplayName("Stop 內部拋例外時應呼叫 OnError 並傳入 Stop 動作")]
+        public void Stop_OnStopThrows_CallsOnErrorWithStopAction()
+        {
+            var boom = new InvalidOperationException("stop failure");
+            var svc = new TestService { Interval = 50, StopThrow = boom };
+            svc.Initialize();
+            svc.Start();
+            Assert.True(WaitFor(() => svc.Status == BackgroundServiceStatus.Running),
+                "Service did not reach Running state in time.");
+
+            svc.Stop();
+
+            Assert.Same(boom, svc.LastError);
+            Assert.Equal(BackgroundServiceAction.Stop, svc.LastErrorAction);
+            WaitFor(() => svc.Status == BackgroundServiceStatus.Stopped);
+        }
+
+        [Fact]
+        [DisplayName("Stop 在 Start 前呼叫時不應拋例外（_Cts 為 null 分支）")]
+        public void Stop_BeforeStart_DoesNotThrow()
+        {
+            var svc = new TestService();
+            svc.Initialize();
+
+            var ex = Record.Exception(() => svc.Stop());
+
+            Assert.Null(ex);
+            Assert.Null(svc.LastError);
+            Assert.Equal(1, svc.StopCount);
         }
 
         [Fact]
