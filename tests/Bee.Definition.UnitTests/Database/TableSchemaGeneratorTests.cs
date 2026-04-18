@@ -15,10 +15,9 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_NullFormTable_ThrowsArgumentNullException()
         {
             // Arrange
-            var generator = new TableSchemaGenerator();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => generator.Generate(null!));
+            Assert.Throws<ArgumentNullException>(() => TableSchemaGenerator.Generate(null!));
         }
 
         [Fact]
@@ -26,11 +25,10 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_DbTableNameSpecified_UsesDbTableName()
         {
             // Arrange
-            var generator = new TableSchemaGenerator();
             var formTable = BuildFormTable(dbTableName: "ft_employee");
 
             // Act
-            var schema = generator.Generate(formTable);
+            var schema = TableSchemaGenerator.Generate(formTable);
 
             // Assert
             Assert.Equal("ft_employee", schema.TableName);
@@ -41,11 +39,10 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_NoDbTableName_UsesTableName()
         {
             // Arrange
-            var generator = new TableSchemaGenerator();
             var formTable = BuildFormTable(dbTableName: string.Empty);
 
             // Act
-            var schema = generator.Generate(formTable);
+            var schema = TableSchemaGenerator.Generate(formTable);
 
             // Assert
             Assert.Equal("Employee", schema.TableName);
@@ -56,13 +53,12 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_OnlyAddsDbFields()
         {
             // Arrange
-            var generator = new TableSchemaGenerator();
             var formTable = BuildFormTable();
             // 加入非 DbField 類型的欄位，應被忽略
             formTable.Fields!.Add(new FormField("virtual_field", "虛擬欄位", FieldDbType.String, FieldType.RelationField));
 
             // Act
-            var schema = generator.Generate(formTable);
+            var schema = TableSchemaGenerator.Generate(formTable);
 
             // Assert
             Assert.DoesNotContain(schema.Fields!, f => f.FieldName == "virtual_field");
@@ -73,11 +69,10 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_AddsPrimaryKeyIndexOnSysNo()
         {
             // Arrange
-            var generator = new TableSchemaGenerator();
             var formTable = BuildFormTable();
 
             // Act
-            var schema = generator.Generate(formTable);
+            var schema = TableSchemaGenerator.Generate(formTable);
 
             // Assert
             var pk = schema.GetPrimaryKey();
@@ -91,11 +86,10 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_AddsUniqueIndexOnRowId()
         {
             // Arrange
-            var generator = new TableSchemaGenerator();
             var formTable = BuildFormTable();
 
             // Act
-            var schema = generator.Generate(formTable);
+            var schema = TableSchemaGenerator.Generate(formTable);
 
             // Assert
             Assert.Contains(schema.Indexes!, idx =>
@@ -107,12 +101,11 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_MapsMaxLengthToDbFieldLength()
         {
             // Arrange
-            var generator = new TableSchemaGenerator();
             var formTable = new FormTable("Demo", "示範");
             formTable.Fields!.Add(new FormField("name", "名稱", FieldDbType.String) { MaxLength = 50 });
 
             // Act
-            var schema = generator.Generate(formTable);
+            var schema = TableSchemaGenerator.Generate(formTable);
 
             // Assert
             Assert.Equal(50, schema.Fields!["name"].Length);
@@ -123,7 +116,6 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_FieldWithRelationProgId_AddsForeignKeyIndex()
         {
             // Arrange
-            var generator = new TableSchemaGenerator();
             var formTable = BuildFormTable();
             formTable.Fields!.Add(new FormField("dept_rowid", "部門", FieldDbType.String)
             {
@@ -131,7 +123,7 @@ namespace Bee.Definition.UnitTests.Database
             });
 
             // Act
-            var schema = generator.Generate(formTable);
+            var schema = TableSchemaGenerator.Generate(formTable);
 
             // Assert
             Assert.Contains(schema.Indexes!, idx => idx.IndexFields!.Contains("dept_rowid") && !idx.Unique);

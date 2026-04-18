@@ -9,14 +9,14 @@ namespace Bee.Definition.Layouts
     /// Form layout generator.
     /// Responsible for converting a <see cref="FormSchema"/> into a <see cref="FormLayout"/> structure.
     /// </summary>
-    public class FormLayoutGenerator
+    public static class FormLayoutGenerator
     {
         /// <summary>
         /// Generates a form layout from a form schema definition.
         /// </summary>
         /// <param name="formDefine">The form schema definition.</param>
         /// <returns>The generated form layout.</returns>
-        public FormLayout Generate(FormSchema formDefine)
+        public static FormLayout Generate(FormSchema formDefine)
         {
             ArgumentNullException.ThrowIfNull(formDefine);
 
@@ -34,7 +34,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Adds layout groups to the form layout.
         /// </summary>
-        private void AddLayoutGroups(FormSchema formDefine, FormLayout formLayout)
+        private static void AddLayoutGroups(FormSchema formDefine, FormLayout formLayout)
         {
             if (formDefine.Tables == null) return;
 

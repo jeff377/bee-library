@@ -14,8 +14,7 @@ namespace Bee.Api.Client.UnitTests
         //[InlineData("http://localhost/jsonrpc_aspnet/api")]
         public void Validate_ValidUrl_ReturnsRemoteConnectType(string apiUrl)
         {
-            var validator = new ApiConnectValidator();
-            var connectType = validator.Validate(apiUrl);
+            var connectType = ApiConnectValidator.Validate(apiUrl);
 
             Assert.Equal(ConnectType.Remote, connectType);  // 確認連線方式為遠端連線
         }
@@ -27,8 +26,7 @@ namespace Bee.Api.Client.UnitTests
         [DisplayName("ApiConnectValidator.Validate 空白 endpoint 應拋 ArgumentException")]
         public void Validate_EmptyEndpoint_ThrowsArgumentException(string? endpoint)
         {
-            var validator = new ApiConnectValidator();
-            Assert.Throws<ArgumentException>(() => validator.Validate(endpoint!));
+            Assert.Throws<ArgumentException>(() => ApiConnectValidator.Validate(endpoint!));
         }
 
         [Theory]
@@ -38,8 +36,7 @@ namespace Bee.Api.Client.UnitTests
         [DisplayName("ApiConnectValidator.Validate 無法辨識的格式應拋 InvalidOperationException")]
         public void Validate_UnknownFormat_ThrowsInvalidOperationException(string endpoint)
         {
-            var validator = new ApiConnectValidator();
-            Assert.Throws<InvalidOperationException>(() => validator.Validate(endpoint));
+            Assert.Throws<InvalidOperationException>(() => ApiConnectValidator.Validate(endpoint));
         }
 
         [Fact]
@@ -50,8 +47,7 @@ namespace Bee.Api.Client.UnitTests
             try
             {
                 ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Remote;
-                var validator = new ApiConnectValidator();
-                Assert.Throws<InvalidOperationException>(() => validator.Validate(@"C:\FakePath_NoLocalSupport"));
+                Assert.Throws<InvalidOperationException>(() => ApiConnectValidator.Validate(@"C:\FakePath_NoLocalSupport"));
             }
             finally
             {
@@ -67,8 +63,7 @@ namespace Bee.Api.Client.UnitTests
             try
             {
                 ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Both;
-                var validator = new ApiConnectValidator();
-                Assert.Throws<ArgumentException>(() => validator.Validate(@"C:\NonExistent_bee_test_abc123"));
+                Assert.Throws<ArgumentException>(() => ApiConnectValidator.Validate(@"C:\NonExistent_bee_test_abc123"));
             }
             finally
             {
@@ -89,8 +84,7 @@ namespace Bee.Api.Client.UnitTests
             try
             {
                 ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Both;
-                var validator = new ApiConnectValidator();
-                Assert.Throws<FileNotFoundException>(() => validator.Validate(tempDir));
+                Assert.Throws<FileNotFoundException>(() => ApiConnectValidator.Validate(tempDir));
             }
             finally
             {
@@ -113,8 +107,7 @@ namespace Bee.Api.Client.UnitTests
             try
             {
                 ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Both;
-                var validator = new ApiConnectValidator();
-                var result = validator.Validate(tempDir, allowGenerateSettings: true);
+                var result = ApiConnectValidator.Validate(tempDir, allowGenerateSettings: true);
 
                 Assert.Equal(ConnectType.Local, result);
                 Assert.True(File.Exists(Path.Combine(tempDir, "SystemSettings.xml")));

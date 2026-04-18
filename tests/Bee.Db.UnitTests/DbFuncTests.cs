@@ -113,7 +113,6 @@ namespace Bee.Db.UnitTests
             { new byte[] { 1, 2 }, DbType.Binary },
             { TimeSpan.FromSeconds(1), DbType.Time },
         };
-#pragma warning restore xUnit1045
 
         [Theory]
         [MemberData(nameof(InferDbType_Inputs))]
@@ -123,6 +122,7 @@ namespace Bee.Db.UnitTests
             var result = DbFunc.InferDbType(value);
             Assert.Equal(expected, result);
         }
+#pragma warning restore xUnit1045
 
         [Fact]
         [DisplayName("InferDbType 對 null 值應回傳 null")]

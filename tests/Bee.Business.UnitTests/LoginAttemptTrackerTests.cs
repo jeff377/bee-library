@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Threading.Tasks;
 using Bee.Business.Provider;
 
 namespace Bee.Business.UnitTests
@@ -43,7 +44,7 @@ namespace Bee.Business.UnitTests
 
         [Fact]
         [DisplayName("鎖定期間過後應自動解鎖")]
-        public void IsLockedOut_AfterLockoutExpires_ReturnsFalse()
+        public async Task IsLockedOut_AfterLockoutExpires_ReturnsFalse()
         {
             // Use a very short lockout duration for testing
             var tracker = new LoginAttemptTracker(3, TimeSpan.FromMilliseconds(50));
@@ -54,7 +55,7 @@ namespace Bee.Business.UnitTests
             Assert.True(tracker.IsLockedOut("user01"));
 
             // Wait for lockout to expire
-            global::System.Threading.Thread.Sleep(100);
+            await Task.Delay(100);
 
             Assert.False(tracker.IsLockedOut("user01"));
         }

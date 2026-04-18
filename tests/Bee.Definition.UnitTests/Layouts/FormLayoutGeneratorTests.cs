@@ -16,10 +16,9 @@ namespace Bee.Definition.UnitTests.Layouts
         public void Generate_NullFormSchema_ThrowsArgumentNullException()
         {
             // Arrange
-            var generator = new FormLayoutGenerator();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => generator.Generate(null!));
+            Assert.Throws<ArgumentNullException>(() => FormLayoutGenerator.Generate(null!));
         }
 
         [Fact]
@@ -27,11 +26,10 @@ namespace Bee.Definition.UnitTests.Layouts
         public void Generate_CopiesIdAndDisplayName()
         {
             // Arrange
-            var generator = new FormLayoutGenerator();
             var schema = BuildSchema();
 
             // Act
-            var layout = generator.Generate(schema);
+            var layout = FormLayoutGenerator.Generate(schema);
 
             // Assert
             Assert.Equal("Employee", layout.LayoutId);
@@ -43,11 +41,10 @@ namespace Bee.Definition.UnitTests.Layouts
         public void Generate_CreatesMainGroupWithTwoColumns()
         {
             // Arrange
-            var generator = new FormLayoutGenerator();
             var schema = BuildSchema();
 
             // Act
-            var layout = generator.Generate(schema);
+            var layout = FormLayoutGenerator.Generate(schema);
 
             // Assert
             var mainGroup = layout.Groups!.FirstOrDefault(g => g.Name == "MainGroup");
@@ -61,12 +58,11 @@ namespace Bee.Definition.UnitTests.Layouts
         public void Generate_SkipsInvisibleFields()
         {
             // Arrange
-            var generator = new FormLayoutGenerator();
             var schema = BuildSchema();
             schema.MasterTable!.Fields!["sys_id"].Visible = false;
 
             // Act
-            var layout = generator.Generate(schema);
+            var layout = FormLayoutGenerator.Generate(schema);
 
             // Assert
             var mainGroup = layout.Groups!.First(g => g.Name == "MainGroup");
@@ -82,13 +78,12 @@ namespace Bee.Definition.UnitTests.Layouts
         public void Generate_AutoControlType_MapsDbTypeToControlType(FieldDbType dbType, ControlType expected)
         {
             // Arrange
-            var generator = new FormLayoutGenerator();
             var schema = new FormSchema("Demo", "示範");
             var table = schema.Tables!.Add("Demo", "示範");
             table.Fields!.Add(new FormField("field", "欄位", dbType) { ControlType = ControlType.Auto });
 
             // Act
-            var layout = generator.Generate(schema);
+            var layout = FormLayoutGenerator.Generate(schema);
 
             // Assert
             var item = (LayoutItem)layout.Groups!.First().Items!.First();
@@ -100,7 +95,6 @@ namespace Bee.Definition.UnitTests.Layouts
         public void Generate_LookupProgId_SetsLayoutItemProgId()
         {
             // Arrange
-            var generator = new FormLayoutGenerator();
             var schema = new FormSchema("Demo", "示範");
             var table = schema.Tables!.Add("Demo", "示範");
             table.Fields!.Add(new FormField("dept_id", "部門", FieldDbType.String)
@@ -109,7 +103,7 @@ namespace Bee.Definition.UnitTests.Layouts
             });
 
             // Act
-            var layout = generator.Generate(schema);
+            var layout = FormLayoutGenerator.Generate(schema);
 
             // Assert
             var item = (LayoutItem)layout.Groups!.First().Items!.First();
@@ -121,7 +115,6 @@ namespace Bee.Definition.UnitTests.Layouts
         public void Generate_RelationProgId_SetsLayoutItemProgId()
         {
             // Arrange
-            var generator = new FormLayoutGenerator();
             var schema = new FormSchema("Demo", "示範");
             var table = schema.Tables!.Add("Demo", "示範");
             table.Fields!.Add(new FormField("dept_rowid", "部門", FieldDbType.String)
@@ -130,7 +123,7 @@ namespace Bee.Definition.UnitTests.Layouts
             });
 
             // Act
-            var layout = generator.Generate(schema);
+            var layout = FormLayoutGenerator.Generate(schema);
 
             // Assert
             var item = (LayoutItem)layout.Groups!.First().Items!.First();
@@ -142,13 +135,12 @@ namespace Bee.Definition.UnitTests.Layouts
         public void Generate_MultipleTables_CreatesDetailGroupWithGrid()
         {
             // Arrange
-            var generator = new FormLayoutGenerator();
             var schema = BuildSchema();
             var detail = schema.Tables!.Add("EmployeeSkill", "員工技能");
             detail.Fields!.Add("skill_name", "技能", FieldDbType.String);
 
             // Act
-            var layout = generator.Generate(schema);
+            var layout = FormLayoutGenerator.Generate(schema);
 
             // Assert
             var detailGroup = layout.Groups!.FirstOrDefault(g => g.Name == "EmployeeSkillGroup");

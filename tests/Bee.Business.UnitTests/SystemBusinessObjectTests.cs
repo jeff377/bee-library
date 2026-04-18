@@ -47,7 +47,9 @@ namespace Bee.Business.UnitTests
         /// </summary>
         // 需要覆寫 SystemBusinessObject.AuthenticateUser（base 實作永遠回傳 false）
         // 才能驗證登入流程；待後續建立測試用子類別再啟用。
+#pragma warning disable xUnit1004 // Test methods should not be skipped — placeholder retained as TODO marker; see comment above.
         [Fact(Skip = "Requires a test subclass that overrides AuthenticateUser; not yet in place.")]
+#pragma warning restore xUnit1004
         [DisplayName("Login 使用 RSA 金鑰對登入應回傳可解密的加密 Session 金鑰")]
         public void Login_WithRsaKeyPair_ReturnsDecryptableSessionKey()
         {

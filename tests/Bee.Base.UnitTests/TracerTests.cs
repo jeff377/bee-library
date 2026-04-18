@@ -93,7 +93,6 @@ namespace Bee.Base.UnitTests
             SysInfo.TraceListener = new TraceListener(writer);
 
             var ctx = Tracer.Start(TraceLayer.Data, name: "Query");
-            Thread.Sleep(5);
             Tracer.End(ctx, TraceStatus.Error, "override-detail");
 
             Assert.Equal(2, writer.Events.Count);

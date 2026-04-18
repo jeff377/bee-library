@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using Bee.Base.Serialization;
 
 namespace Bee.Base
@@ -8,6 +9,8 @@ namespace Bee.Base
     /// Represents an exception error that occurred during an API method call.
     /// </summary>
     [Serializable]
+    [SuppressMessage("Minor Code Smell", "S2166:Classes named like \"Exception\" should extend \"Exception\" or a subclass",
+        Justification = "ApiException is a serializable DTO carrying API error info across the JSON-RPC boundary, not a thrown exception. Renaming would break the published 4.x public API surface.")]
     public class ApiException : IObjectSerializeBase
     {
         #region Constructors

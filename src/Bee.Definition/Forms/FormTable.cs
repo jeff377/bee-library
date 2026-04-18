@@ -158,8 +158,7 @@ namespace Bee.Definition.Forms
         /// <returns>The generated table schema.</returns>
         public TableSchema GenerateDbTable()
         {
-            var generator = new TableSchemaGenerator();
-            return generator.Generate(this);
+            return TableSchemaGenerator.Generate(this);
         }
     }
 }

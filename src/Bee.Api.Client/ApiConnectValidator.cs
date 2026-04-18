@@ -11,14 +11,14 @@ namespace Bee.Api.Client
     /// <summary>
     /// Validator for API service connection settings.
     /// </summary>
-    public class ApiConnectValidator
+    public static class ApiConnectValidator
     {
         /// <summary>
         /// Validates the input service endpoint and returns the corresponding connection type.
         /// </summary>
         /// <param name="endpoint">The endpoint to validate: a URL for remote connections or a local path for local connections.</param>
         /// <param name="allowGenerateSettings">Whether to auto-generate missing settings files (SystemSettings.xml and DatabaseSettings.xml) for local connections.</param>
-        public ConnectType Validate(string endpoint, bool allowGenerateSettings = false)
+        public static ConnectType Validate(string endpoint, bool allowGenerateSettings = false)
         {
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("Input cannot be null or empty.", nameof(endpoint));

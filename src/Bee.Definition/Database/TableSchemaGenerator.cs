@@ -8,14 +8,14 @@ namespace Bee.Definition.Database
     /// Table schema generator.
     /// Responsible for converting a <see cref="FormTable"/> into a <see cref="TableSchema"/> structure.
     /// </summary>
-    public class TableSchemaGenerator
+    public static class TableSchemaGenerator
     {
         /// <summary>
         /// Generates a table schema from a form table definition.
         /// </summary>
         /// <param name="formTable">The form table.</param>
         /// <returns>The generated table schema.</returns>
-        public TableSchema Generate(FormTable formTable)
+        public static TableSchema Generate(FormTable formTable)
         {
             ArgumentNullException.ThrowIfNull(formTable);
 

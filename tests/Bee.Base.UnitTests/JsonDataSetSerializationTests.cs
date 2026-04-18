@@ -118,6 +118,9 @@ namespace Bee.Base.UnitTests
 
         #region 二、FieldDbType 全型別覆蓋
 
+        // 測試資料需混合多種 .NET 型別（string/int/DateTime/Guid/byte[] 等），
+        // 故 TheoryData 僅能以 object 作為值的型別參數；xUnit1045 警告不適用於此刻意設計。
+#pragma warning disable xUnit1045 // Avoid using TheoryData type arguments that might not be serializable
         /// <summary>
         /// 提供所有 FieldDbType 對應的測試資料。
         /// </summary>
@@ -173,6 +176,7 @@ namespace Bee.Base.UnitTests
                 Assert.Equal(testValue, restoredValue);
             }
         }
+#pragma warning restore xUnit1045
 
         #endregion
 

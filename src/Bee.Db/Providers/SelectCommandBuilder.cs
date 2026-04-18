@@ -74,7 +74,7 @@ namespace Bee.Db.Providers
         /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        private SelectContext GetSelectContext(FormTable formTable, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
+        private static SelectContext GetSelectContext(FormTable formTable, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
         {
             var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
             var builder = new SelectContextBuilder(formTable, usedFieldNames);
