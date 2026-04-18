@@ -167,7 +167,7 @@ namespace Bee.Base
         {
             // Check whether it is a Windows path or UNC network path
             string pattern = @"^([a-zA-Z]:\\|\\\\)";
-            return Regex.IsMatch(input, pattern);
+            return Regex.IsMatch(input, pattern, RegexOptions.None, TimeSpan.FromSeconds(1));
         }
 
         /// <summary>
