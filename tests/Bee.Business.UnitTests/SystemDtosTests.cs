@@ -10,6 +10,9 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class SystemDtosTests
     {
+        private static readonly string[] s_keysK1K2 = { "k1", "k2" };
+        private static readonly string[] s_keysX = { "x" };
+
         [Fact]
         [DisplayName("PingArgs 預設值與屬性 round-trip")]
         public void PingArgs_Defaults_And_RoundTrip()
@@ -113,10 +116,10 @@ namespace Bee.Business.UnitTests
             var args = new GetDefineArgs
             {
                 DefineType = DefineType.FormSchema,
-                Keys = new[] { "k1", "k2" }
+                Keys = s_keysK1K2
             };
             Assert.Equal(DefineType.FormSchema, args.DefineType);
-            Assert.Equal(new[] { "k1", "k2" }, args.Keys);
+            Assert.Equal(s_keysK1K2, args.Keys);
 
             var result = new GetDefineResult { Xml = "<root/>" };
             Assert.Equal("<root/>", result.Xml);
@@ -132,11 +135,11 @@ namespace Bee.Business.UnitTests
 
             args.DefineType = DefineType.TableSchema;
             args.Xml = "<t/>";
-            args.Keys = new[] { "x" };
+            args.Keys = s_keysX;
 
             Assert.Equal(DefineType.TableSchema, args.DefineType);
             Assert.Equal("<t/>", args.Xml);
-            Assert.Equal(new[] { "x" }, args.Keys);
+            Assert.Equal(s_keysX, args.Keys);
         }
 
         [Fact]

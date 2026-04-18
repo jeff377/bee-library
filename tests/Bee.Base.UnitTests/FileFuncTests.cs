@@ -28,6 +28,7 @@ namespace Bee.Base.UnitTests
             {
                 // Temp files may still be held by test runner; ignore on teardown.
             }
+            GC.SuppressFinalize(this);
         }
 
         private string TempPath(string relative) => Path.Combine(_tempDir, relative);

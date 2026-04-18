@@ -153,7 +153,7 @@ namespace Bee.Db.Providers
             }
             else
             {
-                var selectFieldArr = selectFields.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
+                var selectFieldArr = selectFields.Split(',', StringSplitOptions.RemoveEmptyEntries);
                 foreach (var field in selectFieldArr)
                 {
                     fieldNames.Add(field.Trim());

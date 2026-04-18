@@ -21,7 +21,7 @@ namespace Bee.Repository.UnitTests
             var provider = new SystemRepositoryProvider();
 
             Assert.NotNull(provider.DatabaseRepository);
-            Assert.IsAssignableFrom<IDatabaseRepository>(provider.DatabaseRepository);
+            Assert.IsType<IDatabaseRepository>(provider.DatabaseRepository, exactMatch: false);
         }
 
         [Fact]

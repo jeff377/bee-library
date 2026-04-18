@@ -11,6 +11,9 @@ namespace Bee.Api.Client.UnitTests
     /// </summary>
     public class RemoteDefineAccessTests
     {
+        private static readonly string[] s_singleKey = { "onlyOne" };
+        private static readonly string[] s_twoKeys = { "a", "b" };
+
         private static RemoteDefineAccess CreateAccess()
         {
             var connector = new SystemApiConnector(Guid.NewGuid());
@@ -31,7 +34,7 @@ namespace Bee.Api.Client.UnitTests
         {
             var access = CreateAccess();
             Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.TableSchema, Array.Empty<string>()));
-            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.TableSchema, new[] { "onlyOne" }));
+            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.TableSchema, s_singleKey));
         }
 
         [Fact]
@@ -48,7 +51,7 @@ namespace Bee.Api.Client.UnitTests
         {
             var access = CreateAccess();
             Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.FormSchema, Array.Empty<string>()));
-            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.FormSchema, new[] { "a", "b" }));
+            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.FormSchema, s_twoKeys));
         }
 
         [Fact]
@@ -65,7 +68,7 @@ namespace Bee.Api.Client.UnitTests
         {
             var access = CreateAccess();
             Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.FormLayout, Array.Empty<string>()));
-            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.FormLayout, new[] { "a", "b" }));
+            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.FormLayout, s_twoKeys));
         }
 
         [Fact]

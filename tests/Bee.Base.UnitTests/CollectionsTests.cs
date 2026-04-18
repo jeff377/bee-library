@@ -7,6 +7,8 @@ namespace Bee.Base.UnitTests
 {
     public class CollectionBaseTests
     {
+        private static readonly string[] s_expectedNames = { "a", "b", "c" };
+
         private sealed class Item : CollectionItem
         {
             public string Name { get; set; } = string.Empty;
@@ -57,7 +59,7 @@ namespace Bee.Base.UnitTests
             var middle = new Item { Name = "b" };
             items.Insert(1, middle);
 
-            Assert.Equal(new[] { "a", "b", "c" }, items.Select(i => i.Name));
+            Assert.Equal(s_expectedNames, items.Select(i => i.Name));
             Assert.Same(items, middle.Collection);
         }
 

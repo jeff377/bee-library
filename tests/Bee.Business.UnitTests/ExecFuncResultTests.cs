@@ -23,7 +23,7 @@ namespace Bee.Business.UnitTests
         public void ExecFuncResult_IsBusinessResult()
         {
             var result = new ExecFuncResult();
-            Assert.IsAssignableFrom<BusinessResult>(result);
+            Assert.IsType<BusinessResult>(result, exactMatch: false);
         }
     }
 }

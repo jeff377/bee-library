@@ -43,7 +43,7 @@ namespace Bee.ObjectCaching.UnitTests
         public void EnterpriseObjectService_CanBeInstantiated()
         {
             var service = new EnterpriseObjectService();
-            Assert.IsAssignableFrom<IEnterpriseObjectService>(service);
+            Assert.IsType<IEnterpriseObjectService>(service, exactMatch: false);
         }
     }
 }

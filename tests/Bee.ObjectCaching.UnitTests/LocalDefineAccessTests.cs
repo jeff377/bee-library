@@ -9,6 +9,9 @@ namespace Bee.ObjectCaching.UnitTests
     [Collection("Initialize")]
     public class LocalDefineAccessTests
     {
+        private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };
+        private static readonly string[] s_formSchemaKeys = { "Department" };
+
         private readonly LocalDefineAccess _access = new LocalDefineAccess();
 
         [Fact]
@@ -39,7 +42,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("GetDefine(TableSchema) 帶兩個 keys 應回傳對應 TableSchema")]
         public void GetDefine_TableSchema_WithCorrectKeys_ReturnsTableSchema()
         {
-            var result = _access.GetDefine(DefineType.TableSchema, new[] { "common", "st_user" });
+            var result = _access.GetDefine(DefineType.TableSchema, s_tableSchemaKeys);
             var schema = Assert.IsType<TableSchema>(result);
             Assert.Equal("st_user", schema.TableName, ignoreCase: true);
         }
@@ -48,7 +51,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("GetDefine(FormSchema) 帶單一 key 應回傳對應 FormSchema")]
         public void GetDefine_FormSchema_WithCorrectKey_ReturnsFormSchema()
         {
-            var result = _access.GetDefine(DefineType.FormSchema, new[] { "Department" });
+            var result = _access.GetDefine(DefineType.FormSchema, s_formSchemaKeys);
             var schema = Assert.IsType<FormSchema>(result);
             Assert.Equal("Department", schema.ProgId);
         }

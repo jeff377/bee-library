@@ -23,6 +23,7 @@ namespace Bee.Base.UnitTests
         public void Dispose()
         {
             SysInfo.TraceListener = _originalListener;
+            GC.SuppressFinalize(this);
         }
 
         [Fact]

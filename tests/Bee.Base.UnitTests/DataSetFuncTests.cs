@@ -6,6 +6,8 @@ namespace Bee.Base.UnitTests
 {
     public class DataSetFuncTests
     {
+        private static readonly string[] s_copyColumns = { "NAME", "ID" };
+
         [Fact]
         [DisplayName("CreateDataSet 預設名稱應為 \"DataSet\"")]
         public void CreateDataSet_Default_UsesDefaultName()
@@ -50,7 +52,7 @@ namespace Bee.Base.UnitTests
             source.Rows.Add(1, "Alice", 30, "drop");
             source.Rows.Add(2, "Bob", 40, "drop");
 
-            var copy = DataSetFunc.CopyDataTable(source, new[] { "NAME", "ID" });
+            var copy = DataSetFunc.CopyDataTable(source, s_copyColumns);
 
             // CopyDataTable only filters and reorders columns; it does not rename them.
             // Case-insensitive matching is used to identify which source columns to keep.

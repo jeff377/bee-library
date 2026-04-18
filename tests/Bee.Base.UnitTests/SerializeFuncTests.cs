@@ -7,6 +7,11 @@ namespace Bee.Base.UnitTests
 {
     public class SerializeFuncTests : IDisposable
     {
+        private static readonly string[] s_xmlSerializeEvents = { "Before:Xml", "After:Xml" };
+        private static readonly string[] s_xmlDeserializeEvents = { "AfterDeser:Xml" };
+        private static readonly string[] s_jsonSerializeEvents = { "Before:Json", "After:Json" };
+        private static readonly string[] s_jsonDeserializeEvents = { "AfterDeser:Json" };
+
         private readonly string _tempDir;
 
         public SerializeFuncTests()
@@ -30,6 +35,7 @@ namespace Bee.Base.UnitTests
             {
                 // Temp files may still be held by test runner; ignore on teardown.
             }
+            GC.SuppressFinalize(this);
         }
 
         public class TestPayload : IObjectSerializeBase, IObjectSerialize, IObjectSerializeFile, IObjectSerializeProcess
@@ -93,11 +99,11 @@ namespace Bee.Base.UnitTests
             var source = new TestPayload { Name = "Bob", Age = 20 };
 
             string xml = SerializeFunc.ObjectToXml(source);
-            Assert.Equal(new[] { "Before:Xml", "After:Xml" }, source.Events);
+            Assert.Equal(s_xmlSerializeEvents, source.Events);
             Assert.Equal(SerializeState.None, source.SerializeState);
 
             var restored = SerializeFunc.XmlToObject<TestPayload>(xml)!;
-            Assert.Equal(new[] { "AfterDeser:Xml" }, restored.Events);
+            Assert.Equal(s_xmlDeserializeEvents, restored.Events);
         }
 
         [Fact]
@@ -107,12 +113,12 @@ namespace Bee.Base.UnitTests
             var source = new TestPayload { Name = "Carol", Age = 40 };
 
             string json = SerializeFunc.ObjectToJson(source);
-            Assert.Equal(new[] { "Before:Json", "After:Json" }, source.Events);
+            Assert.Equal(s_jsonSerializeEvents, source.Events);
 
             var restored = SerializeFunc.JsonToObject<TestPayload>(json)!;
             Assert.Equal("Carol", restored.Name);
             Assert.Equal(40, restored.Age);
-            Assert.Equal(new[] { "AfterDeser:Json" }, restored.Events);
+            Assert.Equal(s_jsonDeserializeEvents, restored.Events);
         }
 
         [Fact]

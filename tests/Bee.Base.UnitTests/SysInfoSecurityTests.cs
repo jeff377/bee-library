@@ -47,7 +47,7 @@ namespace Bee.Base.UnitTests
         {
             var list = SysInfo.AllowedTypeNamespaces;
             Assert.NotNull(list);
-            Assert.IsAssignableFrom<IReadOnlyList<string>>(list);
+            Assert.IsType<IReadOnlyList<string>>(list, exactMatch: false);
         }
     }
 }

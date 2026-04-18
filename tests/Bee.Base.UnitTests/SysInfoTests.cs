@@ -61,6 +61,7 @@ namespace Bee.Base.UnitTests
                 IsDebugMode = _originalDebug,
                 AllowedTypeNamespaces = string.Join('|', _originalNamespaces)
             });
+            GC.SuppressFinalize(this);
         }
 
         [Fact]
