@@ -68,6 +68,91 @@ namespace Bee.Db.UnitTests
             Assert.Equal(0, fake.DisposeCount);
         }
 
+        [Fact]
+        [DisplayName("Create 無外部連線時應透過 factory 建立並開啟新連線,Dispose 時應關閉")]
+        public void Create_NoExternal_CreatesAndOwnsConnection()
+        {
+            var fake = new FakeDbConnection { CurrentState = ConnectionState.Closed };
+            var factory = new FakeDbProviderFactory(fake);
+
+            using (var scope = DbConnectionScope.Create(null, factory, "conn-str"))
+            {
+                Assert.Same(fake, scope.Connection);
+                Assert.Equal(1, fake.OpenCount);
+                Assert.Equal("conn-str", fake.ConnectionString);
+            }
+
+            Assert.Equal(1, fake.DisposeCount);
+        }
+
+        [Fact]
+        [DisplayName("CreateAsync 無外部連線時應透過 factory 建立並以 OpenAsync 開啟新連線,Dispose 時應關閉")]
+        public async Task CreateAsync_NoExternal_CreatesAndOwnsConnection()
+        {
+            var fake = new FakeDbConnection { CurrentState = ConnectionState.Closed };
+            var factory = new FakeDbProviderFactory(fake);
+
+            using (var scope = await DbConnectionScope.CreateAsync(null, factory, "conn-str"))
+            {
+                Assert.Same(fake, scope.Connection);
+                Assert.Equal(1, fake.OpenAsyncCount);
+                Assert.Equal("conn-str", fake.ConnectionString);
+            }
+
+            Assert.Equal(1, fake.DisposeCount);
+        }
+
+        [Fact]
+        [DisplayName("Create factory.CreateConnection 回傳 null 應擲 InvalidOperationException")]
+        public void Create_FactoryReturnsNull_ThrowsInvalidOperation()
+        {
+            var factory = new FakeDbProviderFactory(null);
+
+            Assert.Throws<InvalidOperationException>(() =>
+                DbConnectionScope.Create(null, factory, "irrelevant"));
+        }
+
+        [Fact]
+        [DisplayName("Create 新連線 Open 失敗應 Dispose 並重拋例外")]
+        public void Create_OpenThrows_DisposesAndRethrows()
+        {
+            var fake = new FakeDbConnection
+            {
+                CurrentState = ConnectionState.Closed,
+                ThrowOnOpen = true
+            };
+            var factory = new FakeDbProviderFactory(fake);
+
+            Assert.Throws<InvalidOperationException>(() =>
+                DbConnectionScope.Create(null, factory, "conn-str"));
+
+            Assert.Equal(1, fake.DisposeCount);
+        }
+
+        [Fact]
+        [DisplayName("CreateAsync 新連線 OpenAsync 失敗應 Dispose 並重拋例外")]
+        public async Task CreateAsync_OpenAsyncThrows_DisposesAndRethrows()
+        {
+            var fake = new FakeDbConnection
+            {
+                CurrentState = ConnectionState.Closed,
+                ThrowOnOpenAsync = true
+            };
+            var factory = new FakeDbProviderFactory(fake);
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await DbConnectionScope.CreateAsync(null, factory, "conn-str"));
+
+            Assert.Equal(1, fake.DisposeCount);
+        }
+
+        private sealed class FakeDbProviderFactory : DbProviderFactory
+        {
+            private readonly DbConnection? _connection;
+            public FakeDbProviderFactory(DbConnection? connection) => _connection = connection;
+            public override DbConnection? CreateConnection() => _connection;
+        }
+
         // 最小可用的 DbConnection 實作，用來模擬 State 與 Open/Dispose 行為
         private sealed class FakeDbConnection : DbConnection
         {
@@ -75,6 +160,8 @@ namespace Bee.Db.UnitTests
             public int OpenCount { get; private set; }
             public int OpenAsyncCount { get; private set; }
             public int DisposeCount { get; private set; }
+            public bool ThrowOnOpen { get; set; }
+            public bool ThrowOnOpenAsync { get; set; }
 
             [System.Diagnostics.CodeAnalysis.AllowNull]
             public override string ConnectionString { get; set; } = string.Empty;
@@ -88,12 +175,14 @@ namespace Bee.Db.UnitTests
             public override void Open()
             {
                 OpenCount++;
+                if (ThrowOnOpen) throw new InvalidOperationException("fake-open-failure");
                 CurrentState = ConnectionState.Open;
             }
 
             public override Task OpenAsync(System.Threading.CancellationToken cancellationToken)
             {
                 OpenAsyncCount++;
+                if (ThrowOnOpenAsync) throw new InvalidOperationException("fake-open-async-failure");
                 CurrentState = ConnectionState.Open;
                 return Task.CompletedTask;
             }
