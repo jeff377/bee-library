@@ -13,6 +13,7 @@ namespace Bee.Db.UnitTests
         {
             var helper = new SqlTableSchemaProvider("common");
             var dbTable = helper.GetTableSchema("st_user");
+            Assert.NotNull(dbTable);
         }
     }
 }

@@ -33,7 +33,7 @@
 
 ### 授權驗證
 
-- `ValidateAuthorization` 擷取 `X-Api-Key` 與 `Authorization` 標頭，委派至已設定的 `ApiServiceOptions.AuthorizationValidator`。
+- `ValidateAuthorization` 接收由 `[FromHeader]` 繫結的 `X-Api-Key` 與 `Authorization` 標頭值，委派至已設定的 `ApiServiceOptions.AuthorizationValidator`。
 - 驗證失敗時回傳 `401 Unauthorized` 與 JSON-RPC 錯誤。
 
 ### 請求執行

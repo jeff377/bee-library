@@ -93,7 +93,8 @@ namespace Bee.Db.UnitTests
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
             var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
-            int rows = result.RowsAffected;
+            Assert.NotNull(result);
+            Assert.True(result.RowsAffected >= 0);
         }
 
         [LocalOnlyFact]
@@ -105,7 +106,8 @@ namespace Bee.Db.UnitTests
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
             var dbAccess = new DbAccess("common");
             var result = await dbAccess.ExecuteAsync(command);
-            int rows = result.RowsAffected;
+            Assert.NotNull(result);
+            Assert.True(result.RowsAffected >= 0);
         }
 
         [LocalOnlyFact]
@@ -116,7 +118,7 @@ namespace Bee.Db.UnitTests
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, "001");
             var dbAccess = new DbAccess("common");
             var result = dbAccess.Execute(command);
-            var value = result.Scalar;
+            Assert.NotNull(result);
         }
 
         [LocalOnlyFact]
@@ -128,6 +130,8 @@ namespace Bee.Db.UnitTests
             var dbAccess = new DbAccess("common");
             var list = dbAccess.Query<User>(command);
             var list3 = dbAccess.Query<User2>(command);
+            Assert.NotNull(list);
+            Assert.NotNull(list3);
         }
 
         [LocalOnlyFact]
@@ -139,6 +143,8 @@ namespace Bee.Db.UnitTests
             var dbAccess = new DbAccess("common");
             var list = await dbAccess.QueryAsync<User>(command);
             var list2 = await dbAccess.QueryAsync<User2>(command);
+            Assert.NotNull(list);
+            Assert.NotNull(list2);
         }
 
         [LocalOnlyFact]
@@ -185,6 +191,7 @@ namespace Bee.Db.UnitTests
 
             var dbAccess = new DbAccess("common");
             var result = dbAccess.ExecuteBatch(batch);
+            Assert.NotNull(result);
         }
 
         [LocalOnlyFact]
@@ -201,6 +208,7 @@ namespace Bee.Db.UnitTests
 
             var dbAccess = new DbAccess("common");
             var result = await dbAccess.ExecuteBatchAsync(batch);
+            Assert.NotNull(result);
         }
     }
 }

@@ -118,6 +118,11 @@ namespace Bee.Db.UnitTests
             var builder = new SqlFormCommandBuilder("Employee");
             var command = builder.BuildSelectCommand("Employee", string.Empty, null, null);
             var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", null, null);
+
+            Assert.NotNull(command);
+            Assert.False(string.IsNullOrWhiteSpace(command.CommandText));
+            Assert.NotNull(command2);
+            Assert.False(string.IsNullOrWhiteSpace(command2.CommandText));
         }
 
         [LocalOnlyFact]

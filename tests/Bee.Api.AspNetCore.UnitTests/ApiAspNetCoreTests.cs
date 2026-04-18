@@ -65,8 +65,10 @@ namespace Bee.Api.AspNetCore.UnitTests
 
             var requestBody = new MemoryStream(Encoding.UTF8.GetBytes(json));
             var context = new DefaultHttpContext();
-            context.Request.Headers["X-Api-Key"] = "valid-api-key";
-            context.Request.Headers["Authorization"] = $"Bearer {accessToken}";
+            const string apiKey = "valid-api-key";
+            var authorization = $"Bearer {accessToken}";
+            context.Request.Headers["X-Api-Key"] = apiKey;
+            context.Request.Headers["Authorization"] = authorization;
             context.Request.Headers["Content-Type"] = "application/json";
             context.Request.Body = requestBody;
 
@@ -79,7 +81,7 @@ namespace Bee.Api.AspNetCore.UnitTests
             };
 
             // 執行 API
-            var result = await controller.PostAsync();
+            var result = await controller.PostAsync(apiKey, authorization);
             var contentResult = Assert.IsType<ContentResult>(result);
             Assert.Equal(StatusCodes.Status200OK, contentResult.StatusCode);
             Assert.Equal("application/json", contentResult.ContentType);

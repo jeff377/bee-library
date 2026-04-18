@@ -33,7 +33,7 @@
 
 ### Authorization Validation
 
-- `ValidateAuthorization` extracts `X-Api-Key` and `Authorization` headers, delegates to the configured `ApiServiceOptions.AuthorizationValidator`.
+- `ValidateAuthorization` receives the `X-Api-Key` and `Authorization` header values bound via `[FromHeader]` and delegates to the configured `ApiServiceOptions.AuthorizationValidator`.
 - Returns `401 Unauthorized` with a JSON-RPC error when validation fails.
 
 ### Request Execution

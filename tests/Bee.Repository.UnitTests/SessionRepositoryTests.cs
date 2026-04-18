@@ -13,6 +13,8 @@ namespace Bee.Repository.UnitTests
         {
             var repo = new SessionRepository();
             var sessionUse = repo.CreateSession("001");
+            Assert.NotNull(sessionUse);
+            Assert.NotEqual(Guid.Empty, sessionUse.AccessToken);
         }
     }
 }

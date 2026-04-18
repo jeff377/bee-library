@@ -28,9 +28,13 @@ namespace Bee.Api.AspNetCore.Controllers
         /// <summary>
         /// Handles HTTP POST requests and executes the corresponding API service.
         /// </summary>
+        /// <param name="apiKey">The API key header value, bound from the <c>X-Api-Key</c> request header.</param>
+        /// <param name="authorization">The authorization header value, bound from the <c>Authorization</c> request header.</param>
         [HttpPost]
         [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB
-        public async Task<IActionResult> PostAsync()
+        public async Task<IActionResult> PostAsync(
+            [FromHeader(Name = ApiHeaders.ApiKey)] string? apiKey = null,
+            [FromHeader(Name = ApiHeaders.Authorization)] string? authorization = null)
         {
             // Read and parse the JSON-RPC request
             JsonRpcRequest request;
@@ -44,7 +48,7 @@ namespace Bee.Api.AspNetCore.Controllers
             }
 
             // Validate the API key and authorization
-            var result = ValidateAuthorization(request);
+            var result = ValidateAuthorization(request, apiKey, authorization);
             if (!result.IsValid)
             {
                 return CreateErrorResponse(StatusCodes.Status401Unauthorized, result.Code, result.ErrorMessage, request.Id);
@@ -103,16 +107,15 @@ namespace Bee.Api.AspNetCore.Controllers
         /// Validates the API authorization information.
         /// </summary>
         /// <param name="request">The JSON-RPC request.</param>
+        /// <param name="apiKey">The API key extracted from the <c>X-Api-Key</c> header.</param>
+        /// <param name="authorization">The raw authorization header value.</param>
         /// <returns>The authorization validation result.</returns>
-        protected virtual ApiAuthorizationResult ValidateAuthorization(JsonRpcRequest request)
+        protected virtual ApiAuthorizationResult ValidateAuthorization(JsonRpcRequest request, string? apiKey, string? authorization)
         {
-            var apiKey = HttpContext.Request.Headers[ApiHeaders.ApiKey].ToString();
-            var authorization = HttpContext.Request.Headers[ApiHeaders.Authorization].ToString();
-
             var context = new ApiAuthorizationContext
             {
-                ApiKey = apiKey,
-                Authorization = authorization,
+                ApiKey = apiKey ?? string.Empty,
+                Authorization = authorization ?? string.Empty,
                 Method = request.Method
             };
 
