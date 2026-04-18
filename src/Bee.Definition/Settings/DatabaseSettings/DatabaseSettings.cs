@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using Bee.Base;
@@ -86,24 +87,18 @@ namespace Bee.Definition.Settings
 
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
-            foreach (var server in Servers!)
+            foreach (var server in Servers!.Where(s => StrFunc.IsNotEmpty(s.Password) && !s.Password.StartsWith("enc:")))
             {
-                if (StrFunc.IsNotEmpty(server.Password) && !server.Password.StartsWith("enc:"))
-                {
-                    byte[] plainBytes = Encoding.UTF8.GetBytes(server.Password);
-                    byte[] encrypted = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
-                    server.Password = "enc:" + Convert.ToBase64String(encrypted);
-                }
+                byte[] plainBytes = Encoding.UTF8.GetBytes(server.Password);
+                byte[] encrypted = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
+                server.Password = "enc:" + Convert.ToBase64String(encrypted);
             }
 
-            foreach (var item in Items!)
+            foreach (var item in Items!.Where(i => StrFunc.IsNotEmpty(i.Password) && !i.Password.StartsWith("enc:")))
             {
-                if (StrFunc.IsNotEmpty(item.Password) && !item.Password.StartsWith("enc:"))
-                {
-                    byte[] plainBytes = Encoding.UTF8.GetBytes(item.Password);
-                    byte[] encrypted = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
-                    item.Password = "enc:" + Convert.ToBase64String(encrypted);
-                }
+                byte[] plainBytes = Encoding.UTF8.GetBytes(item.Password);
+                byte[] encrypted = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
+                item.Password = "enc:" + Convert.ToBase64String(encrypted);
             }
         }
 

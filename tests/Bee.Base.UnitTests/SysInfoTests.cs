@@ -25,14 +25,14 @@ namespace Bee.Base.UnitTests
 
         private sealed class FakeListener : ITraceListener
         {
-            public TraceContext TraceStart(TraceLayer layer, string detail = "",
+            public TraceContext TraceStart(TraceLayers layer, string detail = "",
                 string category = "", object? tag = null, string name = "")
                 => throw new NotImplementedException();
 
             public void TraceEnd(TraceContext ctx, TraceStatus status = TraceStatus.Ok, string? detail = null)
             { }
 
-            public void TraceWrite(TraceLayer layer, string detail = "", TraceStatus status = TraceStatus.Ok,
+            public void TraceWrite(TraceLayers layer, string detail = "", TraceStatus status = TraceStatus.Ok,
                 string category = "", object? tag = null, string name = "")
             { }
         }

@@ -75,5 +75,5 @@ Bee.Definition/
   Settings/         SystemSettings、DatabaseSettings、ProgramSettings、MenuSettings、DbSchemaSettings
   Storage/          IDefineStorage
   （根目錄）         BackendInfo、SessionInfo、IDefineAccess、IBusinessObjectProvider、
-                    DefineFunc、Common（列舉）、UserInfo、WebsiteInfo
+                    DefineFunc、Common（列舉）、UserInfo
 ```

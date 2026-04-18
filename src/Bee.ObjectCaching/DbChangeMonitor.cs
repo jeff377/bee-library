@@ -10,10 +10,7 @@ namespace Bee.ObjectCaching
     /// </summary>
     public class DbChangeMonitor : ChangeMonitor
     {
-        private readonly string _UniqueId = string.Empty;
-        private readonly string _Key = string.Empty;
-        private DateTime _UpdateTime = DateTime.MinValue;
-        private System.Timers.Timer? _Timer = null;
+        private System.Timers.Timer? _Timer;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DbChangeMonitor"/> class.
@@ -21,9 +18,9 @@ namespace Bee.ObjectCaching
         /// <param name="key">The cache dependency key.</param>
         public DbChangeMonitor(string key)
         {
-            _UniqueId = BaseFunc.NewGuidString();
-            _Key = key;
-            _UpdateTime = GetUpdateTime();
+            UniqueId = BaseFunc.NewGuidString();
+            Key = key;
+            UpdateTime = GetUpdateTime();
             _Timer = new System.Timers.Timer(1000);
             _Timer.Elapsed += new ElapsedEventHandler(Elapsed_EventHandler);
             _Timer.Start();
@@ -33,28 +30,18 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the unique identifier for this change monitor.
         /// </summary>
-        public override string UniqueId
-        {
-            get { return _UniqueId; }
-        }
+        public override string UniqueId { get; }
 
         /// <summary>
         /// Gets the reference key for the database cache dependency data.
         /// </summary>
-        public string Key
-        {
-            get { return _Key; }
-        }
+        public string Key { get; }
 
         /// <summary>
         /// Gets or sets the last update time of the database cache dependency data.
         /// </summary>
         /// <remarks>For example, if the company organization data is cached, this represents the update time of organization-related data such as departments and employees.</remarks>
-        public DateTime UpdateTime
-        {
-            get { return _UpdateTime; }
-            set { _UpdateTime = value; }
-        }
+        public DateTime UpdateTime { get; set; }
 
         /// <summary>
         /// Gets the update time of the cache dependency data.

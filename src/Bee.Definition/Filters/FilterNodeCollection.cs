@@ -2,6 +2,7 @@
 using MessagePack;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Bee.Definition.Filters
 {
@@ -25,10 +26,9 @@ namespace Bee.Definition.Filters
         public void AddRange(IEnumerable<FilterNode> nodes)
         {
             if (nodes == null) return;
-            foreach (var node in nodes)
+            foreach (var node in nodes.Where(n => n != null))
             {
-                if (node != null)
-                    this.Add(node);
+                this.Add(node);
             }
         }
     }

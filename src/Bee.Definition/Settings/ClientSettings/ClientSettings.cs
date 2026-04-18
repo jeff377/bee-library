@@ -70,7 +70,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         [XmlIgnore, JsonIgnore]
         [Browsable(false)]
-        public DateTime CreateTime { get; private set; } = DateTime.MinValue;
+        public DateTime CreateTime { get; private set; }
 
         /// <summary>
         /// Gets or sets the service endpoint location. Use a URL for remote connections or a local path for local connections.

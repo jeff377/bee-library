@@ -62,7 +62,7 @@ namespace Bee.Api.Client.Connectors
         protected T Execute<T>(string progId, string action, object value, PayloadFormat format)
         {
             ValidateArgs(progId, action);
-            var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, name: $"Execute.{progId}.{action}");
+            var ctx = Tracer.Start(TraceLayers.ApiClient, string.Empty, name: $"Execute.{progId}.{action}");
             try
             {
                 var (request, actualFormat) = PrepareRequest(progId, action, value, format);
@@ -93,7 +93,7 @@ namespace Bee.Api.Client.Connectors
         protected async Task<T> ExecuteAsync<T>(string progId, string action, object value, PayloadFormat format)
         {
             ValidateArgs(progId, action);
-            var ctx = Tracer.Start(TraceLayer.ApiClient, string.Empty, name: $"ExecuteAsync.{progId}.{action}");
+            var ctx = Tracer.Start(TraceLayers.ApiClient, string.Empty, name: $"ExecuteAsync.{progId}.{action}");
             try
             {
                 var (request, actualFormat) = PrepareRequest(progId, action, value, format);
@@ -228,7 +228,7 @@ namespace Bee.Api.Client.Connectors
         private static void TraceRequest(JsonRpcRequest request)
         {
             if (!Tracer.Enabled || request == null) return;
-            Tracer.Write(TraceLayer.ApiClient, string.Empty, TraceStatus.Ok, TraceCategories.JsonRpc, request, name: $"Request  - {request.Method}");
+            Tracer.Write(TraceLayers.ApiClient, string.Empty, TraceStatus.Ok, TraceCategories.JsonRpc, request, name: $"Request  - {request.Method}");
         }
 
         /// <summary>
@@ -238,7 +238,7 @@ namespace Bee.Api.Client.Connectors
         private static void TraceResponse(JsonRpcResponse response)
         {
             if (!Tracer.Enabled || response == null) return;
-            Tracer.Write(TraceLayer.ApiClient, string.Empty, TraceStatus.Ok, TraceCategories.JsonRpc, response, name: $"Response - {response.Method}");
+            Tracer.Write(TraceLayers.ApiClient, string.Empty, TraceStatus.Ok, TraceCategories.JsonRpc, response, name: $"Response - {response.Method}");
         }
 
     }

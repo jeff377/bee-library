@@ -15,7 +15,7 @@ namespace Bee.Base.Tracing
         /// <summary>
         /// Gets or sets the layer this event belongs to, e.g. UI, API, Biz, or Data.
         /// </summary>
-        public TraceLayer Layer { get; set; }
+        public TraceLayers Layer { get; set; }
 
         /// <summary>
         /// Gets or sets the event name.

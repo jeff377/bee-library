@@ -12,11 +12,9 @@ namespace Bee.Base.BackgroundServices
     public abstract class BackgroundService
     {
         private volatile int _Status = (int)BackgroundServiceStatus.Stopped;
-        private int _ThreadCount = 1;
         private ConcurrentQueue<BackgroundAction>? _TaskQueue;
         private SemaphoreSlim? _Semaphore;
         private DateTime _NextTime = DateTime.MinValue;
-        private int _Interval = 10000;
         private CancellationTokenSource? _Cts;
 
         #region StatusChanged Event
@@ -61,11 +59,7 @@ namespace Bee.Base.BackgroundServices
         /// <summary>
         /// Gets or sets the number of threads to use.
         /// </summary>
-        public int ThreadCount
-        {
-            get { return _ThreadCount; }
-            set { _ThreadCount = value; }
-        }
+        public int ThreadCount { get; set; } = 1;
 
         /// <summary>
         /// Gets the task queue.
@@ -94,11 +88,7 @@ namespace Bee.Base.BackgroundServices
         /// <summary>
         /// Gets or sets the interval (in milliseconds) between task queue loading cycles.
         /// </summary>
-        public int Interval
-        {
-            get { return _Interval; }
-            set { _Interval = value; }
-        }
+        public int Interval { get; set; } = 10000;
 
         /// <summary>
         /// Initializes the background service.

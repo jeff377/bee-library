@@ -3,6 +3,7 @@ using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using System;
+using System.Text;
 using Bee.Base;
 using Bee.Base.Collections;
 using Bee.Api.Client.Connectors;
@@ -55,14 +56,13 @@ namespace Bee.Api.Client.DefineAccess
         /// <param name="keys">The keys used to access the definition data.</param>
         private static string GetCacheKey(DefineType defineType, string[]? keys = null)
         {
-            string cacheKey = $"{defineType}";
-            if (keys != null && keys.Length > 0)
-            {
-                cacheKey += "_";
-                foreach (string value in keys)
-                    cacheKey += $".{value}";
-            }
-            return cacheKey;
+            if (keys == null || keys.Length == 0)
+                return defineType.ToString();
+
+            var builder = new StringBuilder(defineType.ToString()).Append('_');
+            foreach (string value in keys)
+                builder.Append('.').Append(value);
+            return builder.ToString();
         }
 
         /// <summary>

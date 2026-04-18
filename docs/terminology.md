@@ -56,7 +56,6 @@
 | `DefinePathInfo` | 定義檔案路徑資訊 | 提供各類定義檔（FormSchema、TableSchema 等）的標準路徑 |
 | `DefineFunc` | 定義函式庫 | 定義相關的工具方法集合 |
 | `SessionInfo` | 連線資訊 | 執行期用戶連線狀態，含 AccessToken、語系、時區 |
-| `WebsiteInfo` | 網站資訊 | 紀錄網站運行期間的參數及環境設置 |
 | `SortField` | 排序欄位 | 單一排序欄位，含欄位名稱與方向 |
 | `SortFieldCollection` | 排序欄位集合 | 多個 SortField 的集合 |
 

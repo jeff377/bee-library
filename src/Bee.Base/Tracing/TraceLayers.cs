@@ -7,7 +7,7 @@ namespace Bee.Base.Tracing
     /// such as UI, API client, API server, business layer, or data access layer.
     /// </summary>
     [Flags]
-    public enum TraceLayer
+    public enum TraceLayers
     {
         /// <summary>
         /// No layer (default value).

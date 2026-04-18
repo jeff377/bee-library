@@ -1,6 +1,7 @@
 using Bee.Definition.Forms;
 using Bee.Base;
 using System;
+using System.Linq;
 
 namespace Bee.Definition.Database
 {
@@ -76,13 +77,10 @@ namespace Bee.Definition.Database
 
             // Create foreign key indexes
             if (formTable.Fields == null) { return; }
-            foreach (var field in formTable.Fields)
+            foreach (var field in formTable.Fields.Where(f => StrFunc.IsNotEmpty(f.RelationProgId)))
             {
-                if (StrFunc.IsNotEmpty(field.RelationProgId))
-                {
-                    // Include field name to avoid duplicates
-                    tableSchema.Indexes!.Add("fk_{0}_{field.FieldName}", field.FieldName, false);
-                }
+                // Include field name to avoid duplicates
+                tableSchema.Indexes!.Add("fk_{0}_{field.FieldName}", field.FieldName, false);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Bee.Base;
 using Bee.Base.Collections;
 
@@ -28,12 +29,7 @@ namespace Bee.Definition.Forms
         /// <param name="destinationField">The destination field name.</param>
         public FieldMapping? FindByDestination(string destinationField)
         {
-            foreach (FieldMapping item in this)
-            {
-                if (StrFunc.IsEquals(item.DestinationField, destinationField))
-                    return item;
-            }
-            return null;
+            return this.FirstOrDefault(m => StrFunc.IsEquals(m.DestinationField, destinationField));
         }
     }
 }

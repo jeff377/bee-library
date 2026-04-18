@@ -52,7 +52,7 @@ namespace Bee.Base.UnitTests
             // Not attaching the listener to SysInfo.
             _ = new TraceListener(writer);
 
-            var ctx = Tracer.Start(TraceLayer.UI, "detail", name: "op");
+            var ctx = Tracer.Start(TraceLayers.UI, "detail", name: "op");
 
             Assert.Null(ctx);
             Assert.Empty(writer.Events);
@@ -66,10 +66,10 @@ namespace Bee.Base.UnitTests
             SysInfo.TraceListener = new TraceListener(writer);
 
             var tag = new object();
-            var ctx = Tracer.Start(TraceLayer.Business, "sql-detail", "sql", tag, "MyOp");
+            var ctx = Tracer.Start(TraceLayers.Business, "sql-detail", "sql", tag, "MyOp");
 
             Assert.NotNull(ctx);
-            Assert.Equal(TraceLayer.Business, ctx!.Layer);
+            Assert.Equal(TraceLayers.Business, ctx!.Layer);
             Assert.Equal("MyOp", ctx.Name);
             Assert.Equal("sql-detail", ctx.Detail);
             Assert.Equal("sql", ctx.Category);
@@ -78,7 +78,7 @@ namespace Bee.Base.UnitTests
 
             var evt = Assert.Single(writer.Events);
             Assert.Equal(TraceEventKind.Start, evt.Kind);
-            Assert.Equal(TraceLayer.Business, evt.Layer);
+            Assert.Equal(TraceLayers.Business, evt.Layer);
             Assert.Equal("MyOp", evt.Name);
             Assert.Equal("sql-detail", evt.Detail);
             Assert.Equal("sql", evt.Category);
@@ -92,7 +92,7 @@ namespace Bee.Base.UnitTests
             var writer = new CapturingWriter();
             SysInfo.TraceListener = new TraceListener(writer);
 
-            var ctx = Tracer.Start(TraceLayer.Data, name: "Query");
+            var ctx = Tracer.Start(TraceLayers.Data, name: "Query");
             Tracer.End(ctx, TraceStatus.Error, "override-detail");
 
             Assert.Equal(2, writer.Events.Count);
@@ -117,7 +117,7 @@ namespace Bee.Base.UnitTests
 
             // Disabled → no emit even when ctx is non-null (ctx is obtained from the listener,
             // but since SysInfo.TraceListener is cleared, Tracer.End skips emission).
-            var ctx = SysInfo.TraceListener!.TraceStart(TraceLayer.UI, name: "op");
+            var ctx = SysInfo.TraceListener!.TraceStart(TraceLayers.UI, name: "op");
             writer.Events.Clear();
             SysInfo.TraceListener = null;
             Tracer.End(ctx, TraceStatus.Ok);
@@ -132,11 +132,11 @@ namespace Bee.Base.UnitTests
             SysInfo.TraceListener = new TraceListener(writer);
 
             var tag = new { Key = "value" };
-            Tracer.Write(TraceLayer.ApiServer, "some-detail", TraceStatus.Cancelled, "cat", tag, "PointOp");
+            Tracer.Write(TraceLayers.ApiServer, "some-detail", TraceStatus.Cancelled, "cat", tag, "PointOp");
 
             var evt = Assert.Single(writer.Events);
             Assert.Equal(TraceEventKind.Point, evt.Kind);
-            Assert.Equal(TraceLayer.ApiServer, evt.Layer);
+            Assert.Equal(TraceLayers.ApiServer, evt.Layer);
             Assert.Equal("some-detail", evt.Detail);
             Assert.Equal(TraceStatus.Cancelled, evt.Status);
             Assert.Equal("cat", evt.Category);
@@ -153,7 +153,7 @@ namespace Bee.Base.UnitTests
             // Not attaching to SysInfo.
             _ = new TraceListener(writer);
 
-            Tracer.Write(TraceLayer.UI, "no-op");
+            Tracer.Write(TraceLayers.UI, "no-op");
 
             Assert.Empty(writer.Events);
         }
@@ -165,7 +165,7 @@ namespace Bee.Base.UnitTests
             var writer = new CapturingWriter();
             var listener = new TraceListener(writer);
 
-            var ctx = listener.TraceStart(TraceLayer.UI, name: "");
+            var ctx = listener.TraceStart(TraceLayers.UI, name: "");
 
             Assert.Equal(string.Empty, ctx.Name);
             Assert.Equal(string.Empty, ctx.Category);
@@ -191,7 +191,7 @@ namespace Bee.Base.UnitTests
             var writer = new CapturingWriter();
             var listener = new TraceListener(writer);
 
-            var ctx = listener.TraceStart(TraceLayer.UI, "ctx-detail", name: "op");
+            var ctx = listener.TraceStart(TraceLayers.UI, "ctx-detail", name: "op");
             listener.TraceEnd(ctx, TraceStatus.Ok);
 
             Assert.Equal(2, writer.Events.Count);

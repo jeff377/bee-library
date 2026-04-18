@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using Bee.Base.Data;
@@ -672,12 +673,7 @@ namespace Bee.Base
         /// <param name="types">An array of types to check against.</param>
         public static bool CheckTypes(object value, params Type[] types)
         {
-            foreach (Type type in types)
-            {
-                if (type.IsInstanceOfType(value))
-                    return true;
-            }
-            return false;
+            return types.Any(t => t.IsInstanceOfType(value));
         }
 
         /// <summary>

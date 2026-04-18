@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
@@ -98,11 +99,8 @@ namespace Bee.Definition.Settings
         /// <returns></returns>
         public MenuItem? FindItem(string progId)
         {
-            foreach (MenuItem item in this.Items!)
-            {
-                if (StrFunc.IsEquals(item.ProgId, progId))
-                    return item;
-            }
+            var matched = this.Items!.FirstOrDefault(i => StrFunc.IsEquals(i.ProgId, progId));
+            if (matched != null) return matched;
 
             foreach (MenuFolder folder in this.Folders!)
             {

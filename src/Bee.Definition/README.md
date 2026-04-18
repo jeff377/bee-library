@@ -75,5 +75,5 @@ Bee.Definition/
   Settings/         SystemSettings, DatabaseSettings, ProgramSettings, MenuSettings, DbSchemaSettings
   Storage/          IDefineStorage
   (root)            BackendInfo, SessionInfo, IDefineAccess, IBusinessObjectProvider,
-                    DefineFunc, Common (enums), UserInfo, WebsiteInfo
+                    DefineFunc, Common (enums), UserInfo
 ```

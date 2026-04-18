@@ -17,7 +17,7 @@ namespace Bee.Base.Tracing
         /// <param name="category">The trace category, used by the Trace Viewer to parse the Tag by category.</param>
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         TraceContext TraceStart(
-            TraceLayer layer, string detail = "",
+            TraceLayers layer, string detail = "",
             string category = "", object? tag = null,
             [CallerMemberName] string name = "");
 
@@ -39,7 +39,7 @@ namespace Bee.Base.Tracing
         /// <param name="category">The trace category, used by the Trace Viewer to parse the Tag by category.</param>
         /// <param name="tag">The trace object; content is interpreted based on Category.</param>
         void TraceWrite(
-            TraceLayer layer, string detail = "", TraceStatus status = TraceStatus.Ok,
+            TraceLayers layer, string detail = "", TraceStatus status = TraceStatus.Ok,
             string category = "", object? tag = null,
             [CallerMemberName] string name = "");
     }
