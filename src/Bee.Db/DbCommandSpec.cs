@@ -169,52 +169,60 @@ namespace Bee.Db
             if (string.IsNullOrWhiteSpace(CommandText))
                 throw new InvalidOperationException("Failed to execute SQL command: Command text is empty.");
 
-            string commandText = CommandText;
-            if (StrFunc.Contains(commandText, CommandTextVariable.Parameters))
-            {
-                var sb = new StringBuilder();
-                for (int N1 = 0; N1 < Parameters.Count; N1++)
-                    StrFunc.Merge(sb, "{" + N1 + "}", ",");
-                commandText = StrFunc.Replace(commandText, CommandTextVariable.Parameters, sb.ToString());
-            }
+            string commandText = ExpandParametersVariable(CommandText);
 
             return PlaceholderRegex.Replace(commandText, match =>
             {
-                // Escaped literal {{...}} → restore as {...}
                 var escaped = match.Groups["escaped"];
                 if (escaped.Success)
                     return "{" + escaped.Value + "}";
 
                 var key = match.Groups["key"].Value;
+                var name = int.TryParse(key, out var index)
+                    ? ResolveNumericKey(index)
+                    : ResolveNamedKey(key);
 
-                // Numeric key → positional parameter
-                if (int.TryParse(key, out var index))
-                {
-                    if (index < 0 || index >= Parameters.Count)
-                        throw new InvalidOperationException(
-                            $"Failed to resolve SQL parameter: Index {{{index}}} not found in Parameters collection.");
-
-                    var name = Parameters[index].Name;
-                    if (string.IsNullOrWhiteSpace(name))
-                        throw new InvalidOperationException(
-                            $"Failed to resolve SQL parameter: Parameter at index {index} has empty name.");
-
-                    return string.IsNullOrEmpty(parameterPrefix) ? name : parameterPrefix + name;
-                }
-
-                // Text key → named parameter (case-insensitive)
-                var param = Parameters.FirstOrDefault(p =>
-                    p.Name.Equals(key, StringComparison.OrdinalIgnoreCase));
-                if (param == null)
-                    throw new InvalidOperationException(
-                        $"Failed to resolve SQL parameter: Name {{{key}}} not found in Parameters collection.");
-
-                if (string.IsNullOrWhiteSpace(param.Name))
-                    throw new InvalidOperationException(
-                        $"Failed to resolve SQL parameter: Parameter '{key}' has empty name.");
-
-                return string.IsNullOrEmpty(parameterPrefix) ? param.Name : parameterPrefix + param.Name;
+                return string.IsNullOrEmpty(parameterPrefix) ? name : parameterPrefix + name;
             });
+        }
+
+        private string ExpandParametersVariable(string commandText)
+        {
+            if (!StrFunc.Contains(commandText, CommandTextVariable.Parameters))
+                return commandText;
+
+            var sb = new StringBuilder();
+            for (int i = 0; i < Parameters.Count; i++)
+                StrFunc.Merge(sb, "{" + i + "}", ",");
+            return StrFunc.Replace(commandText, CommandTextVariable.Parameters, sb.ToString());
+        }
+
+        private string ResolveNumericKey(int index)
+        {
+            if (index < 0 || index >= Parameters.Count)
+                throw new InvalidOperationException(
+                    $"Failed to resolve SQL parameter: Index {{{index}}} not found in Parameters collection.");
+
+            var name = Parameters[index].Name;
+            if (string.IsNullOrWhiteSpace(name))
+                throw new InvalidOperationException(
+                    $"Failed to resolve SQL parameter: Parameter at index {index} has empty name.");
+
+            return name;
+        }
+
+        private string ResolveNamedKey(string key)
+        {
+            var param = Parameters.FirstOrDefault(p =>
+                p.Name.Equals(key, StringComparison.OrdinalIgnoreCase))
+                ?? throw new InvalidOperationException(
+                    $"Failed to resolve SQL parameter: Name {{{key}}} not found in Parameters collection.");
+
+            if (string.IsNullOrWhiteSpace(param.Name))
+                throw new InvalidOperationException(
+                    $"Failed to resolve SQL parameter: Parameter '{key}' has empty name.");
+
+            return param.Name;
         }
 
         /// <summary>

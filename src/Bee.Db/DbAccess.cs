@@ -314,10 +314,7 @@ namespace Bee.Db
         /// <returns>The number of rows affected.</returns>
         public int UpdateDataTable(DataTableUpdateSpec spec)
         {
-            if (spec == null) throw new ArgumentNullException(nameof(spec));
-            if (spec.DataTable == null) throw new ArgumentNullException(nameof(spec.DataTable));
-            if (spec.InsertCommand == null && spec.UpdateCommand == null && spec.DeleteCommand == null)
-                throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(spec));
+            ValidateUpdateSpec(spec);
 
             using (var scope = CreateScope())
             {
@@ -326,19 +323,11 @@ namespace Bee.Db
 
                 try
                 {
-                    if (spec.UseTransaction)
-                    {
-                        tran = spec.IsolationLevel.HasValue
-                            ? scope.Connection!.BeginTransaction(spec.IsolationLevel.Value)
-                            : scope.Connection!.BeginTransaction();
-                    }
+                    tran = BeginTransactionIfRequested(scope, spec);
 
-                    if (spec.InsertCommand != null)
-                        insert = spec.InsertCommand.CreateCommand(DatabaseType, scope.Connection!);
-                    if (spec.UpdateCommand != null)
-                        update = spec.UpdateCommand.CreateCommand(DatabaseType, scope.Connection!);
-                    if (spec.DeleteCommand != null)
-                        delete = spec.DeleteCommand.CreateCommand(DatabaseType, scope.Connection!);
+                    insert = spec.InsertCommand?.CreateCommand(DatabaseType, scope.Connection!);
+                    update = spec.UpdateCommand?.CreateCommand(DatabaseType, scope.Connection!);
+                    delete = spec.DeleteCommand?.CreateCommand(DatabaseType, scope.Connection!);
 
                     var adapter = Provider.CreateDataAdapter()
                                   ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
@@ -349,12 +338,7 @@ namespace Bee.Db
                         adapter.UpdateCommand = update;
                         adapter.DeleteCommand = delete;
 
-                        if (tran != null)
-                        {
-                            if (insert != null) insert.Transaction = tran;
-                            if (update != null) update.Transaction = tran;
-                            if (delete != null) delete.Transaction = tran;
-                        }
+                        AttachTransaction(tran, insert, update, delete);
 
                         int affected = adapter.Update(spec.DataTable);
 
@@ -369,12 +353,36 @@ namespace Bee.Db
                 }
                 finally
                 {
-                    if (insert != null) insert.Dispose();
-                    if (update != null) update.Dispose();
-                    if (delete != null) delete.Dispose();
+                    insert?.Dispose();
+                    update?.Dispose();
+                    delete?.Dispose();
                     tran?.Dispose();
                 }
             }
+        }
+
+        private static void ValidateUpdateSpec(DataTableUpdateSpec spec)
+        {
+            if (spec == null) throw new ArgumentNullException(nameof(spec));
+            if (spec.DataTable == null) throw new ArgumentNullException(nameof(spec.DataTable));
+            if (spec.InsertCommand == null && spec.UpdateCommand == null && spec.DeleteCommand == null)
+                throw new ArgumentException("At least one of Insert/Update/Delete command spec must be provided.", nameof(spec));
+        }
+
+        private static DbTransaction? BeginTransactionIfRequested(DbConnectionScope scope, DataTableUpdateSpec spec)
+        {
+            if (!spec.UseTransaction) return null;
+            return spec.IsolationLevel.HasValue
+                ? scope.Connection!.BeginTransaction(spec.IsolationLevel.Value)
+                : scope.Connection!.BeginTransaction();
+        }
+
+        private static void AttachTransaction(DbTransaction? tran, DbCommand? insert, DbCommand? update, DbCommand? delete)
+        {
+            if (tran == null) return;
+            if (insert != null) insert.Transaction = tran;
+            if (update != null) update.Transaction = tran;
+            if (delete != null) delete.Transaction = tran;
         }
 
         #endregion
