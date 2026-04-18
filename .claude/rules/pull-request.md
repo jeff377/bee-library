@@ -31,6 +31,7 @@
 2. 本機執行 `dotnet build --configuration Release` + `dotnet test --configuration Release --settings .runsettings`（或只對受影響的專案）
 3. 通過後 `git commit` 並 `git push origin main`
 4. push 後遠端 `build-ci.yml` 仍會跑一次，若失敗需立即修復（見下節）
+   - 可執行 `/ci-watch` 啟動自動監測：週期性檢查 CI 與 SonarCloud，失敗時自動分析 log 並修正
 
 ## CI 失敗處理
 
