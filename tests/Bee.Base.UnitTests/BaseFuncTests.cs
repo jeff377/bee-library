@@ -263,7 +263,10 @@ namespace Bee.Base.UnitTests
         [DisplayName("CEnum(string, Type) 對合法字串回傳對應 enum 值（不區分大小寫）")]
         public void CEnum_ValidString_ReturnsEnumValue(string input, DateInterval expected)
         {
+            // 本測試刻意呼叫 non-generic overload，驗證其行為
+#pragma warning disable CA2263 // Prefer generic overload when type is known
             var result = BaseFunc.CEnum(input, typeof(DateInterval));
+#pragma warning restore CA2263
             Assert.Equal(expected, (DateInterval)result);
         }
 

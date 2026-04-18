@@ -190,7 +190,7 @@ namespace Bee.Db.Providers.SqlServer
         /// Creates a field definition from the column data row.
         /// </summary>
         /// <param name="row">The data row containing column information.</param>
-        private DbField ParseDbField(DataRow row)
+        private static DbField ParseDbField(DataRow row)
         {
             var dbField = new DbField();
             dbField.FieldName = row.GetFieldValue<string>("FieldName");

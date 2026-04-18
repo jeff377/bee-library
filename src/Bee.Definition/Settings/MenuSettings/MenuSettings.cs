@@ -120,7 +120,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         /// <param name="folder">The starting folder node.</param>
         /// <param name="folders">The folder collection to populate.</param>
-        private void EnumFolders(MenuFolder folder, List<MenuFolder> folders)
+        private static void EnumFolders(MenuFolder folder, List<MenuFolder> folders)
         {
             // Add this folder to the collection
             folders.Add(folder);
@@ -148,7 +148,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         /// <param name="folder">The starting folder node.</param>
         /// <param name="items">The item list to populate.</param>
-        private void Enumtems(MenuFolder folder, List<MenuItem> items)
+        private static void Enumtems(MenuFolder folder, List<MenuItem> items)
         {
             if (folder == null) return;
             // Enumerate program items under this folder

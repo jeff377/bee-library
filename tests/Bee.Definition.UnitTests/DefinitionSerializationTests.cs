@@ -17,7 +17,7 @@ namespace Bee.Definition.UnitTests
         /// <param name="value">物件。</param>
         /// <param name="isXml">測試 XML 序列化。</param>
         /// <param name="isJson">測試 JSON 序列化。</param>
-        private void SerializeObject<T>(object value, bool isXml = true, bool isJson = true)
+        private static void SerializeObject<T>(object value, bool isXml = true, bool isJson = true)
         {
             object? value2;
             // XML 序列化
@@ -39,7 +39,7 @@ namespace Bee.Definition.UnitTests
         /// <summary>
         /// 建立測試資料集。
         /// </summary>
-        private DataSet CreateDataSet()
+        private static DataSet CreateDataSet()
         {
             var dataSet = new DataSet("TestDataSet");
             dataSet.Tables.Add(CreateDataTable());
@@ -49,7 +49,7 @@ namespace Bee.Definition.UnitTests
         /// <summary>
         /// 建立測試使用的資料表。
         /// </summary>
-        private DataTable CreateDataTable()
+        private static DataTable CreateDataTable()
         {
             var table = new DataTable("TestTable");
             table.Columns.Add("F1", typeof(int));

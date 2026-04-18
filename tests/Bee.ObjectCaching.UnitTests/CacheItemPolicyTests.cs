@@ -58,7 +58,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("CacheTimeKind 列舉值應為定義過的成員")]
         public void CacheTimeKind_DefinedValues_AreValid(CacheTimeKind kind)
         {
-            Assert.True(Enum.IsDefined(typeof(CacheTimeKind), kind));
+            Assert.True(Enum.IsDefined(kind));
         }
     }
 }

@@ -14,7 +14,7 @@ namespace Bee.Business.UnitTests.Fakes
         /// 標記為 Anonymous。
         /// </summary>
         [ExecFuncAccessControl(ApiAccessRequirement.Anonymous)]
-        public void Anonymous(ExecFuncArgs args, ExecFuncResult result)
+        public static void Anonymous(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Called", "Anonymous");
             result.Parameters.Add("FuncId", args.FuncId);
@@ -24,7 +24,7 @@ namespace Bee.Business.UnitTests.Fakes
         /// 標記為 Authenticated。
         /// </summary>
         [ExecFuncAccessControl(ApiAccessRequirement.Authenticated)]
-        public void Authenticated(ExecFuncArgs args, ExecFuncResult result)
+        public static void Authenticated(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Called", "Authenticated");
         }
@@ -32,7 +32,7 @@ namespace Bee.Business.UnitTests.Fakes
         /// <summary>
         /// 未標記 attribute，預設需 Authenticated。
         /// </summary>
-        public void NoAttribute(ExecFuncArgs args, ExecFuncResult result)
+        public static void NoAttribute(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Called", "NoAttribute");
         }
@@ -42,7 +42,7 @@ namespace Bee.Business.UnitTests.Fakes
         /// 經由 <c>BaseFunc.UnwrapException</c> 應還原為原始型別。
         /// </summary>
         [ExecFuncAccessControl(ApiAccessRequirement.Anonymous)]
-        public void Throws(ExecFuncArgs args, ExecFuncResult result)
+        public static void Throws(ExecFuncArgs args, ExecFuncResult result)
         {
             throw new InvalidOperationException("fake-inner-exception");
         }

@@ -60,7 +60,7 @@ namespace Bee.ObjectCaching
         /// Gets the update time of the cache dependency data.
         /// </summary>
         /// <param name="key">The cache key.</param>
-        private DateTime GetUpdateTime(string key)
+        private static DateTime GetUpdateTime(string key)
         {
             // TODO : 實作取得資料庫相關資料的更新時間
             return DateTime.MinValue;

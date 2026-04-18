@@ -58,7 +58,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Adds a master table layout group.
         /// </summary>
-        private void AddMasterTableGroup(FormTable formTable, FormLayout formLayout)
+        private static void AddMasterTableGroup(FormTable formTable, FormLayout formLayout)
         {
             if (formTable.Fields == null) return;
 
@@ -170,7 +170,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Converts a <see cref="ControlType"/> to a <see cref="ColumnControlType"/>.
         /// </summary>
-        private ColumnControlType ConvertToColumnControlType(ControlType controlType)
+        private static ColumnControlType ConvertToColumnControlType(ControlType controlType)
         {
             switch (controlType)
             {
@@ -198,7 +198,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets the default grid column control type for the specified database field type.
         /// </summary>
-        private ColumnControlType GetDefaultColumnControlType(FieldDbType dbType)
+        private static ColumnControlType GetDefaultColumnControlType(FieldDbType dbType)
         {
             switch (dbType)
             {

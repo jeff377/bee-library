@@ -101,7 +101,7 @@ namespace Bee.Business.Provider
             _attempts.TryRemove(userId, out _);
         }
 
-        private AttemptInfo CreateFirstFailure()
+        private static AttemptInfo CreateFirstFailure()
         {
             return new AttemptInfo
             {

@@ -48,7 +48,7 @@ namespace Bee.Api.Client
         /// </summary>
         /// <param name="definePath">The definition path.</param>
         /// <param name="allowGenerateSettings">Whether to auto-generate missing settings files for local connections.</param>
-        private void ValidateLocal(string definePath, bool allowGenerateSettings)
+        private static void ValidateLocal(string definePath, bool allowGenerateSettings)
         {
             // Verify the application supports local connections
             if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))

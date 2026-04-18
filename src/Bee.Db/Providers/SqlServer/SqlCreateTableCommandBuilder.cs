@@ -215,7 +215,7 @@ namespace Bee.Db.Providers.SqlServer
         /// Gets the SQL fragment for a single column definition.
         /// </summary>
         /// <param name="field">The field definition.</param>
-        private string GetFieldCommandText(DbField field)
+        private static string GetFieldCommandText(DbField field)
         {
             // Column type
             string dbType = ConverDbType(field);

@@ -33,9 +33,11 @@
 - CA1816（4 處）`Dispose()` 加 `GC.SuppressFinalize(this)`
 - xUnit2032（8 處）`IsAssignableFrom` → `IsType(..., exactMatch: false)`
 
-### 第 3 批：泛型與 API 批（25 處）
+### 第 3 批：泛型與 API 批（45 處）— 🚧 進行中
 
-- CA1822（14 處）方法可改 `static`（公開 API 需確認 ABI 影響）
+> 實際抓取（2026-04-18 接手時）：CA1822 34 處、CA2263 11 處，較 brief 預估多（brief 依早先快照寫為 25 處）。
+
+- CA1822（34 處）方法可改 `static`（公開 API 需確認 ABI 影響）
 - CA2263（11 處）改用泛型 overload
 
 ### 第 4 批：行為敏感批（個別評估）

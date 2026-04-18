@@ -33,7 +33,7 @@ namespace Bee.ObjectCaching.Providers
         /// Gets the case-insensitive cache key.
         /// </summary>
         /// <param name="key">The original key.</param>
-        private string GetCacheKey(string key)
+        private static string GetCacheKey(string key)
         {
             return StrFunc.ToUpper(key);
         }

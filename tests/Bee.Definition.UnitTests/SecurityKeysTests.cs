@@ -80,7 +80,7 @@ namespace Bee.Definition.UnitTests
         /// </summary>
         /// <param name="key">金鑰位元組。</param>
         /// <returns>檔案路徑。</returns>
-        private string SaveTempMasterKey(byte[] key)
+        private static string SaveTempMasterKey(byte[] key)
         {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "temp-master.key");
             File.WriteAllText(path, Convert.ToBase64String(key));

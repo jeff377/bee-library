@@ -20,7 +20,7 @@ namespace Bee.Api.Core.UnitTests
         /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">傳入值。</param>
-        private T ApiExecute<T>(Guid accessToken, string progId, string action, object value)
+        private static T ApiExecute<T>(Guid accessToken, string progId, string action, object value)
         {
             // 設定 JSON-RPC 請求模型
             var request = new JsonRpcRequest()

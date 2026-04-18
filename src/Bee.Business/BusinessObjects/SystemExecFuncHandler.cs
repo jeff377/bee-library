@@ -35,7 +35,7 @@ namespace Bee.Business.BusinessObjects
         /// <param name="args">The input arguments.</param>
         /// <param name="result">The output result.</param>
         [ExecFuncAccessControl(ApiAccessRequirement.Anonymous)]
-        public void Hello(ExecFuncArgs args, ExecFuncResult result)
+        public static void Hello(ExecFuncArgs args, ExecFuncResult result)
         {
             result.Parameters.Add("Hello", "Hello system-level BusinessObject");
         }

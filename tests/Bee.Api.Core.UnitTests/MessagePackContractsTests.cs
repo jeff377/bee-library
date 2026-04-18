@@ -96,11 +96,14 @@ namespace Bee.Api.Core.UnitTests
                 FileId = ""
             };
 
+            // 本段刻意呼叫 non-generic overload，驗證其行為
+#pragma warning disable CA2263 // Prefer generic overload when type is known
             var getArgsBytes = MessagePackHelper.Serialize(getArgs, typeof(GetPackageRequest));
             Assert.NotNull(getArgsBytes);
             Assert.NotEmpty(getArgsBytes);
 
             var getArgs2Obj = MessagePackHelper.Deserialize(getArgsBytes, typeof(GetPackageRequest));
+#pragma warning restore CA2263
             var getArgs2 = Assert.IsType<GetPackageRequest>(getArgs2Obj);
             Assert.Equal(getArgs.AppId, getArgs2.AppId);
             Assert.Equal(getArgs.Version, getArgs2.Version);

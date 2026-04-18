@@ -138,7 +138,7 @@ namespace Bee.Api.Client.Connectors
         /// <summary>
         /// Traces the response, checks for errors, restores the payload, and converts the result value.
         /// </summary>
-        private T FinalizeResponse<T>(JsonRpcResponse response, PayloadFormat actualFormat)
+        private static T FinalizeResponse<T>(JsonRpcResponse response, PayloadFormat actualFormat)
         {
             TraceResponse(response);
             if (response.Error != null)
@@ -154,7 +154,7 @@ namespace Bee.Api.Client.Connectors
         /// <param name="action">The action name to invoke (e.g., Hello, GetList).</param>
         /// <param name="value">The parameter object to pass to the server.</param>
         /// <returns>The composed JSON-RPC request object.</returns>
-        private JsonRpcRequest CreateRequest(string progId, string action, object value)
+        private static JsonRpcRequest CreateRequest(string progId, string action, object value)
         {
             return new JsonRpcRequest()
             {

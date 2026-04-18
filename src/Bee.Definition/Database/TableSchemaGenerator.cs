@@ -34,7 +34,7 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Adds fields to the table schema.
         /// </summary>
-        private void AddFields(FormTable formTable, TableSchema tableSchema)
+        private static void AddFields(FormTable formTable, TableSchema tableSchema)
         {
             if (formTable.Fields == null) return;
 

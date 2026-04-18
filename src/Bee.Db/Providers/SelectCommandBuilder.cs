@@ -180,7 +180,7 @@ namespace Bee.Db.Providers
         /// </summary>
         /// <param name="node">The filter condition node.</param>
         /// <param name="fieldNames">The set to add field names to.</param>
-        private void CollectFilterFields(FilterNode? node, HashSet<string> fieldNames)
+        private static void CollectFilterFields(FilterNode? node, HashSet<string> fieldNames)
         {
             if (node == null) return;
             if (node.Kind == FilterNodeKind.Condition)

@@ -21,7 +21,7 @@ namespace Bee.Repository.System
         /// Inserts a session record into the database.
         /// </summary>
         /// <param name="sessionUser">The session user data to persist.</param>
-        private void Insert(SessionUser sessionUser)
+        private static void Insert(SessionUser sessionUser)
         {
             string xml = SerializeFunc.ObjectToXml(sessionUser);
             string sql = "INSERT INTO st_session \n" +
@@ -36,7 +36,7 @@ namespace Bee.Repository.System
         /// Deletes the session record for the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        private void Delete(Guid accessToken)
+        private static void Delete(Guid accessToken)
         {
             string sql = "DELETE FROM st_session \n" +
                                  "WHERE access_token={0}";
@@ -65,14 +65,14 @@ namespace Bee.Repository.System
             DateTime endTime = BaseFunc.CDateTime(row[SysFields.InvalidDate]);
             if (endTime < DateTime.UtcNow)
             {
-                this.Delete(accessToken);
+                Delete(accessToken);
                 return null;
             }
 
             string xml = BaseFunc.CStr(row["session_user_xml"]);
             var user = SerializeFunc.XmlToObject<SessionUser>(xml);
             // If the session is one-time use, delete it after retrieval
-            if (user!.OneTime) { this.Delete(accessToken); }
+            if (user!.OneTime) { Delete(accessToken); }
             return user;
         }
 
@@ -101,7 +101,7 @@ namespace Bee.Repository.System
                 EndTime = DateTime.UtcNow.AddSeconds(expiresIn),
                 OneTime = oneTime
             };
-            this.Insert(user);
+            Insert(user);
             return user;
         }
     }

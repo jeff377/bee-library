@@ -104,7 +104,7 @@ namespace Bee.Definition.Storage
         /// Validates that the specified file exists.
         /// </summary>
         /// <param name="filePath">The file path.</param>
-        private void ValidateFilePath(string filePath)
+        private static void ValidateFilePath(string filePath)
         {
             if (!FileFunc.FileExists(filePath))
                 throw new FileNotFoundException($"The file {filePath} does not exist.");

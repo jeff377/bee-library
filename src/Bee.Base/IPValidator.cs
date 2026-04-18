@@ -87,7 +87,7 @@ namespace Bee.Base
         /// <param name="ipAddress">The IP address to check.</param>
         /// <param name="pattern">The pattern to match against.</param>
         /// <returns>True if the IP address matches the pattern; otherwise, false.</returns>
-        private bool IsMatch(string ipAddress, string pattern)
+        private static bool IsMatch(string ipAddress, string pattern)
         {
             // Check whether the pattern is CIDR notation
             if (pattern.Contains('/'))

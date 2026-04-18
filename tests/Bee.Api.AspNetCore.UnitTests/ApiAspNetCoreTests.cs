@@ -34,7 +34,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="args">傳入值。</param>
-        private string GetRpcRequestJson(string progId, string action, object args)
+        private static string GetRpcRequestJson(string progId, string action, object args)
         {
             // 設定 JSON-RPC 請求模型
             var request = new JsonRpcRequest()

@@ -201,10 +201,10 @@ namespace Bee.Base.Serialization
         {
             // Deserialize the JSON string
             var options = GetJsonSerializerOptions(true, false);
-            object? value = JsonSerializer.Deserialize(json, typeof(T), options);
+            var value = JsonSerializer.Deserialize<T>(json, options);
             // Post-deserialization operations
             DoAfterDeserialize(SerializeFormat.Json, value);
-            return (T?)value;
+            return value;
         }
 
         /// <summary>
