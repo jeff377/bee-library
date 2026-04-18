@@ -378,5 +378,37 @@ namespace Bee.Db.UnitTests
         }
 
         #endregion
+
+        #region 特殊邊界分支
+
+        [Fact]
+        [DisplayName("CreateCommand 具名佔位符參數名為空白時應擲出 InvalidOperationException")]
+        public void CreateCommand_NamedKeyWithBlankName_Throws()
+        {
+            // 先以合法名稱加入,再將 Name 改為空白,觸發 ResolveNamedKey 的空名檢查
+            var spec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT * FROM T WHERE X = {X}");
+            spec.Parameters.Add("X", 1);
+            spec.Parameters[0].Name = "   ";
+
+            using var conn = new SqlConnection();
+            Assert.Throws<InvalidOperationException>(() =>
+                spec.CreateCommand(DatabaseType.SQLServer, conn));
+        }
+
+        [Fact]
+        [DisplayName("CreateCommand 位置佔位符對應的參數名為空白時應擲出 InvalidOperationException")]
+        public void CreateCommand_NumericKeyWithBlankName_Throws()
+        {
+            // 先以合法名稱加入,再將 Name 改為空白,觸發 ResolveNumericKey 的空名檢查
+            var spec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT * FROM T WHERE X = {0}");
+            spec.Parameters.Add("p0", 1);
+            spec.Parameters[0].Name = "   ";
+
+            using var conn = new SqlConnection();
+            Assert.Throws<InvalidOperationException>(() =>
+                spec.CreateCommand(DatabaseType.SQLServer, conn));
+        }
+
+        #endregion
     }
 }
