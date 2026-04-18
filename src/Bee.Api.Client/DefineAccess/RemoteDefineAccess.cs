@@ -73,14 +73,8 @@ namespace Bee.Api.Client.DefineAccess
         /// <param name="keys">The keys used to locate the definition data.</param>
         private T GetDefine<T>(DefineType defineType, string[]? keys = null)
         {
-            object? defineObject;
             string cacheKey = GetCacheKey(defineType, keys);
-            if (this.List.ContainsKey(cacheKey))
-            {
-                // Return the cached definition data if already available
-                defineObject = this.List[cacheKey];
-            }
-            else
+            if (!this.List.TryGetValue(cacheKey, out object? defineObject))
             {
                 // Download the definition data and add it to the cache
                 defineObject = this.Connector.GetDefine<T>(defineType, keys);

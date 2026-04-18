@@ -24,7 +24,7 @@ namespace Bee.Db.Query
         {
             if (string.IsNullOrEmpty(prefix))
             {
-                throw new ArgumentException("Prefix cannot be null or empty.", "prefix");
+                throw new ArgumentException("Prefix cannot be null or empty.", nameof(prefix));
             }
             Prefix = prefix;
         }

@@ -14,6 +14,8 @@ namespace Bee.Api.Core.JsonRpc
     /// </summary>
     public class JsonRpcExecutor
     {
+        private static readonly char[] MethodSeparators = new[] { '.' };
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonRpcExecutor"/> class.
         /// </summary>
@@ -115,7 +117,7 @@ namespace Bee.Api.Core.JsonRpc
         {
             if (!string.IsNullOrEmpty(method))
             {
-                var parts = method.Split(new[] { '.' }, 2);
+                var parts = method.Split(MethodSeparators, 2);
                 if (parts.Length == 2)
                 {
                     return (parts[0], parts[1]);

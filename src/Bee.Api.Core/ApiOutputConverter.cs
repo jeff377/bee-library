@@ -23,6 +23,7 @@ namespace Bee.Api.Core
         // since ConcurrentDictionary does not accept null values.
         private static readonly ConcurrentDictionary<Type, Type> _cache = new();
         private static readonly Type _noMatch = typeof(void);
+        private static readonly JsonSerializerOptions CaseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
 
         private const string ResultSuffix = "Result";
         private const string ResponseSuffix = "Response";
@@ -61,8 +62,7 @@ namespace Bee.Api.Core
             if (value is T typed) return typed;
             if (value is JsonElement element)
             {
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                return JsonSerializer.Deserialize<T>(element.GetRawText(), options);
+                return JsonSerializer.Deserialize<T>(element.GetRawText(), CaseInsensitiveOptions);
             }
             return (T)value;
         }

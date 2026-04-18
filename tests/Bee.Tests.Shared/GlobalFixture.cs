@@ -74,6 +74,7 @@ namespace Bee.Tests.Shared
         {
             // 清理動作，例如刪除暫存資料庫、停止模擬 API Server
             Console.WriteLine("GlobalFixture Disposed");
+            GC.SuppressFinalize(this);
         }
     }
 

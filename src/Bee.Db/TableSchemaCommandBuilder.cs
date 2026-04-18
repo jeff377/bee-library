@@ -73,7 +73,7 @@ namespace Bee.Db
             buffer.AppendLine($"Insert Into {tableName} ");
 
             // Build the INSERT column list
-            buffer.Append("(");
+            buffer.Append('(');
             int count = 0;
             foreach (DbField field in this.TableSchema.Fields!)
             {
@@ -89,7 +89,7 @@ namespace Bee.Db
 
             // Build the INSERT values list
             buffer.AppendLine(" Values ");
-            buffer.Append("(");
+            buffer.Append('(');
             count = 0;
             foreach (DbField field in this.TableSchema.Fields!)
             {

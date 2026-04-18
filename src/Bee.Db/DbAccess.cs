@@ -437,7 +437,7 @@ namespace Bee.Db
         public async Task<DbCommandResult> ExecuteAsync(
             DbCommandSpec command, CancellationToken cancellationToken = default)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
+            ArgumentNullException.ThrowIfNull(command);
 
             using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
             {
@@ -631,7 +631,7 @@ namespace Bee.Db
         /// <returns>A <see cref="List{T}"/> containing the mapped results.</returns>
         public async Task<List<T>> QueryAsync<T>(DbCommandSpec command, CancellationToken cancellationToken = default)
         {
-            if (command == null) throw new ArgumentNullException(nameof(command));
+            ArgumentNullException.ThrowIfNull(command);
 
             using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
             using (var cmd = command.CreateCommand(DatabaseType, scope.Connection!))

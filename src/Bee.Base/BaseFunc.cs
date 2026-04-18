@@ -646,10 +646,8 @@ namespace Bee.Base
         /// <param name="genericType">The generic type.</param>
         public static bool IsGenericType(object value, Type genericType)
         {
-            if (value == null)
-                throw new ArgumentNullException(nameof(value));
-            if (genericType == null)
-                throw new ArgumentNullException(nameof(genericType));
+            ArgumentNullException.ThrowIfNull(value);
+            ArgumentNullException.ThrowIfNull(genericType);
 
             Type? type = value.GetType();
 
@@ -710,7 +708,7 @@ namespace Bee.Base
                 string key = args[i].Substring(2); // Strip the "--" prefix
                 // If the next argument exists and does not start with "-" (i.e., it's not a new option),
                 // use it as the value; otherwise, default to "true" (for flag-style options like "--flag").
-                if (i + 1 < args.Length && !args[i + 1].StartsWith("-"))
+                if (i + 1 < args.Length && !args[i + 1].StartsWith('-'))
                 {
                     result[key] = args[i + 1];
                     i += 2;

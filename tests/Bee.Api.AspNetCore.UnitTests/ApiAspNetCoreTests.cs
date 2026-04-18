@@ -58,7 +58,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// <param name="action">執行動作。</param>
         /// <param name="args">JSON-RPC 傳入參數。</param>
         /// <returns>反序列化後的執行結果。</returns>
-        private async Task<TResult> ExecuteRpcAsync<TResult>(Guid accessToken, string progId, string action, object args)
+        private static async Task<TResult> ExecuteRpcAsync<TResult>(Guid accessToken, string progId, string action, object args)
         {
             // 建立 JSON-RPC 請求內容
             string json = GetRpcRequestJson(progId, action, args);
@@ -68,8 +68,8 @@ namespace Bee.Api.AspNetCore.UnitTests
             const string apiKey = "valid-api-key";
             var authorization = $"Bearer {accessToken}";
             context.Request.Headers["X-Api-Key"] = apiKey;
-            context.Request.Headers["Authorization"] = authorization;
-            context.Request.Headers["Content-Type"] = "application/json";
+            context.Request.Headers.Authorization = authorization;
+            context.Request.Headers.ContentType = "application/json";
             context.Request.Body = requestBody;
 
             var controller = new ApiServiceController

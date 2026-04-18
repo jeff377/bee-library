@@ -94,6 +94,9 @@ namespace Bee.Db.UnitTests
 
         #region InferDbType 測試
 
+        // 此測試資料需涵蓋多種 CLR 型別（string/int/DateTime/Guid/byte[] 等），
+        // 故 TheoryData 僅能以 object 作為第一型別參數；xUnit1045 警告不適用於此刻意設計。
+#pragma warning disable xUnit1045 // Avoid using TheoryData type arguments that might not be serializable
         public static TheoryData<object, DbType> InferDbType_Inputs() => new()
         {
             { "abc", DbType.String },
@@ -110,6 +113,7 @@ namespace Bee.Db.UnitTests
             { new byte[] { 1, 2 }, DbType.Binary },
             { TimeSpan.FromSeconds(1), DbType.Time },
         };
+#pragma warning restore xUnit1045
 
         [Theory]
         [MemberData(nameof(InferDbType_Inputs))]

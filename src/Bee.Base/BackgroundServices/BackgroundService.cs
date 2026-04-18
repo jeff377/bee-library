@@ -242,7 +242,7 @@ namespace Bee.Base.BackgroundServices
         protected void ExecuteTasks()
         {
             // Execute queued tasks on multiple threads while the service is running
-            while (this.Status == BackgroundServiceStatus.Running && this.TaskQueue!.Count > 0 && this.TaskQueue.TryDequeue(out BackgroundAction? backgroundAction))
+            while (this.Status == BackgroundServiceStatus.Running && !this.TaskQueue!.IsEmpty && this.TaskQueue.TryDequeue(out BackgroundAction? backgroundAction))
             {
                 Debug.WriteLine($"Available thread count: {this.Semaphore!.CurrentCount}");
                 this.Semaphore.Wait(); // Limit maximum concurrency

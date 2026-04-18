@@ -11,6 +11,8 @@ namespace Bee.Api.Core
     /// </summary>
     public static class ApiInputConverter
     {
+        private static readonly JsonSerializerOptions CaseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
+
         /// <summary>
         /// Converts the source object to the specified target type by copying public properties with matching names.
         /// If the source is a <see cref="JsonElement"/> (from JSON deserialization), it is deserialized directly.
@@ -31,8 +33,7 @@ namespace Bee.Api.Core
             // with camelCase naming policy (see SerializeFunc.GetJsonSerializerOptions).
             if (source is JsonElement element)
             {
-                var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-                return JsonSerializer.Deserialize(element.GetRawText(), targetType, options);
+                return JsonSerializer.Deserialize(element.GetRawText(), targetType, CaseInsensitiveOptions);
             }
 
             // If the target is an interface, we cannot create an instance directly

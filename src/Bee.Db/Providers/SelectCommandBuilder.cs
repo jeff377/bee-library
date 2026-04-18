@@ -139,7 +139,7 @@ namespace Bee.Db.Providers
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
         /// <returns>A deduplicated set of field names.</returns>
-        private HashSet<string> GetUsedFieldNames(FormTable formTable, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
+        private static HashSet<string> GetUsedFieldNames(FormTable formTable, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
         {
             var fieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 

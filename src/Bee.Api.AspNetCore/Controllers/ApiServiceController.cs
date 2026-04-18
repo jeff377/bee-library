@@ -66,7 +66,7 @@ namespace Bee.Api.AspNetCore.Controllers
         protected virtual async Task<JsonRpcRequest> ReadRequestAsync()
         {
             if (!MediaTypeHeaderValue.TryParse(HttpContext.Request.ContentType, out var mediaType) ||
-                mediaType?.MediaType == null || // Ensure mediaType and MediaType are not null
+                mediaType.MediaType == null ||
                 !mediaType.MediaType.Equals("application/json", StringComparison.OrdinalIgnoreCase))
             {
                 throw new JsonRpcException(StatusCodes.Status415UnsupportedMediaType,

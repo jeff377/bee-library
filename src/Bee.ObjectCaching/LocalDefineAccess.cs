@@ -55,7 +55,7 @@ namespace Bee.ObjectCaching
         private static void ValidateKeys(DefineType defineType, string[]? keys, int expectedLength)
         {
             if (keys == null || keys.Length != expectedLength)
-                throw new ArgumentException($"{defineType} keys verification error. Input: {string.Join(",", keys ?? new string[0])}");
+                throw new ArgumentException($"{defineType} keys verification error. Input: {string.Join(",", keys ?? Array.Empty<string>())}");
         }
 
         /// <summary>

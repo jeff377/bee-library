@@ -19,8 +19,7 @@ namespace Bee.Api.Client
         /// <exception cref="AggregateException">Thrown if the execution fails.</exception>
         public static void Run(Func<Task> asyncFunc)
         {
-            if (asyncFunc == null)
-                throw new ArgumentNullException(nameof(asyncFunc));
+            ArgumentNullException.ThrowIfNull(asyncFunc);
 
             Task.Run(asyncFunc).GetAwaiter().GetResult();
         }
@@ -34,8 +33,7 @@ namespace Bee.Api.Client
         /// <exception cref="AggregateException">Thrown if the execution fails.</exception>
         public static TResult Run<TResult>(Func<Task<TResult>> asyncFunc)
         {
-            if (asyncFunc == null)
-                throw new ArgumentNullException(nameof(asyncFunc));
+            ArgumentNullException.ThrowIfNull(asyncFunc);
 
             return Task.Run(asyncFunc).GetAwaiter().GetResult();
         }

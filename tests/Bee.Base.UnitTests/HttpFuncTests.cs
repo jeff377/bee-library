@@ -139,7 +139,7 @@ namespace Bee.Base.UnitTests
                             {
                                 if (line.StartsWith("Content-Length:", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    int.TryParse(line.AsSpan("Content-Length:".Length).Trim(), out contentLength);
+                                    _ = int.TryParse(line.AsSpan("Content-Length:".Length).Trim(), out contentLength);
                                     break;
                                 }
                             }

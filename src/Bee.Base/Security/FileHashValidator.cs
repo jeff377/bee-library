@@ -73,7 +73,7 @@ namespace Bee.Base.Security
             using (var stream = File.OpenRead(filePath))
             {
                 var hashBytes = sha256.ComputeHash(stream);
-                return BitConverter.ToString(hashBytes).Replace("-", "");
+                return Convert.ToHexString(hashBytes);
             }
         }
     }

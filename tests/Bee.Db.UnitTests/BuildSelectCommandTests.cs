@@ -70,12 +70,14 @@ namespace Bee.Db.UnitTests
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
-            // 驗證 SQL 包含多個 JOIN
-            var joinCount = System.Text.RegularExpressions.Regex.Matches(
-                command.CommandText,
-                "JOIN",
-                System.Text.RegularExpressions.RegexOptions.IgnoreCase
-            ).Count;
+            // 驗證 SQL 包含多個 JOIN（不區分大小寫）
+            int joinCount = 0;
+            int index = 0;
+            while ((index = command.CommandText.IndexOf("JOIN", index, StringComparison.OrdinalIgnoreCase)) >= 0)
+            {
+                joinCount++;
+                index += "JOIN".Length;
+            }
             Assert.True(joinCount >= 2, $"應包含至少 2 個 JOIN，實際: {joinCount}");
         }
 

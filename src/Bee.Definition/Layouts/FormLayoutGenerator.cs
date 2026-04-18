@@ -107,7 +107,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Adds a detail table layout group.
         /// </summary>
-        private void AddDetailTableGroup(FormTable formTable, FormLayout formLayout)
+        private static void AddDetailTableGroup(FormTable formTable, FormLayout formLayout)
         {
             if (formTable.Fields == null) return;
 

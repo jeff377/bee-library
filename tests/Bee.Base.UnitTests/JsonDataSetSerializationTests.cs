@@ -121,21 +121,24 @@ namespace Bee.Base.UnitTests
         /// <summary>
         /// 提供所有 FieldDbType 對應的測試資料。
         /// </summary>
-        public static IEnumerable<object[]> AllFieldDbTypeTestData()
+        public static TheoryData<string, Type, object> AllFieldDbTypeTestData()
         {
-            yield return new object[] { "StringCol", typeof(string), "Hello 測試" };
-            yield return new object[] { "TextCol", typeof(string), "Long text content with 中文字" };
-            yield return new object[] { "BoolCol", typeof(bool), true };
-            yield return new object[] { "AutoIncCol", typeof(int), 42 };
-            yield return new object[] { "ShortCol", typeof(short), (short)12345 };
-            yield return new object[] { "IntCol", typeof(int), int.MaxValue };
-            yield return new object[] { "LongCol", typeof(long), long.MaxValue };
-            yield return new object[] { "DecimalCol", typeof(decimal), 123456.789m };
-            yield return new object[] { "CurrencyCol", typeof(decimal), 99999.99m };
-            yield return new object[] { "DateCol", typeof(DateTime), new DateTime(2026, 4, 15) };
-            yield return new object[] { "DateTimeCol", typeof(DateTime), new DateTime(2026, 4, 15, 10, 30, 45) };
-            yield return new object[] { "GuidCol", typeof(Guid), new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890") };
-            yield return new object[] { "BinaryCol", typeof(byte[]), new byte[] { 0x01, 0x02, 0xAB, 0xFF } };
+            return new TheoryData<string, Type, object>
+            {
+                { "StringCol", typeof(string), "Hello 測試" },
+                { "TextCol", typeof(string), "Long text content with 中文字" },
+                { "BoolCol", typeof(bool), true },
+                { "AutoIncCol", typeof(int), 42 },
+                { "ShortCol", typeof(short), (short)12345 },
+                { "IntCol", typeof(int), int.MaxValue },
+                { "LongCol", typeof(long), long.MaxValue },
+                { "DecimalCol", typeof(decimal), 123456.789m },
+                { "CurrencyCol", typeof(decimal), 99999.99m },
+                { "DateCol", typeof(DateTime), new DateTime(2026, 4, 15) },
+                { "DateTimeCol", typeof(DateTime), new DateTime(2026, 4, 15, 10, 30, 45) },
+                { "GuidCol", typeof(Guid), new Guid("a1b2c3d4-e5f6-7890-abcd-ef1234567890") },
+                { "BinaryCol", typeof(byte[]), new byte[] { 0x01, 0x02, 0xAB, 0xFF } },
+            };
         }
 
         /// <summary>

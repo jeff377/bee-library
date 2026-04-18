@@ -168,7 +168,7 @@ namespace Bee.Base
         public static string[] Split(string s, string delimiter)
         {
             if (IsEmpty(s))
-                return new string[] { };
+                return Array.Empty<string>();
             else
                 return s.Split(new string[] { delimiter }, StringSplitOptions.None);
         }
@@ -180,7 +180,7 @@ namespace Bee.Base
         public static string[] SplitNewLine(string s)
         {
             if (StrFunc.IsEmpty(s))
-                return new string[0];
+                return Array.Empty<string>();
             // Replace \r with empty string first, then split using \n as the delimiter
             return s.Replace("\r", "").Split('\n');
         }

@@ -23,7 +23,7 @@ namespace Bee.ObjectCaching
         {
             _UniqueId = BaseFunc.NewGuidString();
             _Key = key;
-            _UpdateTime = GetUpdateTime(key);
+            _UpdateTime = GetUpdateTime();
             _Timer = new System.Timers.Timer(1000);
             _Timer.Elapsed += new ElapsedEventHandler(Elapsed_EventHandler);
             _Timer.Start();
@@ -59,8 +59,7 @@ namespace Bee.ObjectCaching
         /// <summary>
         /// Gets the update time of the cache dependency data.
         /// </summary>
-        /// <param name="key">The cache key.</param>
-        private static DateTime GetUpdateTime(string key)
+        private static DateTime GetUpdateTime()
         {
             // TODO : 實作取得資料庫相關資料的更新時間
             return DateTime.MinValue;
@@ -82,7 +81,7 @@ namespace Bee.ObjectCaching
             DateTime oUpdateTime;
 
             // If the update time of the dependency data has changed, the source data has been modified and the cache must be invalidated
-            oUpdateTime = GetUpdateTime(this.Key);
+            oUpdateTime = GetUpdateTime();
             if (this.UpdateTime != oUpdateTime)
             {
                 this.UpdateTime = oUpdateTime;
@@ -101,11 +100,6 @@ namespace Bee.ObjectCaching
                 _Timer.Stop();
                 _Timer.Dispose();
                 _Timer = null;
-            }
-
-            if (disposing)
-            {
-                GC.SuppressFinalize(this);
             }
         }
     }
