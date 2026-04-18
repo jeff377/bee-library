@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Diagnostics;
 using Bee.Base.BackgroundServices;
 
 namespace Bee.Base.UnitTests
@@ -215,6 +216,26 @@ namespace Bee.Base.UnitTests
                 svc.Stop();
                 WaitFor(() => svc.Status == BackgroundServiceStatus.Stopped);
             }
+        }
+
+        [Fact]
+        [DisplayName("Stop 應在 1500ms 內完成狀態轉換，不受迴圈 sleep 阻塞")]
+        public void Stop_TransitionsToStoppedPromptly()
+        {
+            var svc = new TestService { Interval = 50 };
+            svc.Initialize();
+            svc.Start();
+            Assert.True(WaitFor(() => svc.Status == BackgroundServiceStatus.Running),
+                "Service did not reach Running state in time.");
+
+            var sw = Stopwatch.StartNew();
+            svc.Stop();
+            Assert.True(WaitFor(() => svc.Status == BackgroundServiceStatus.Stopped, 1500),
+                "Service did not reach Stopped state within 1500ms of Stop().");
+            sw.Stop();
+
+            Assert.True(sw.ElapsedMilliseconds < 1500,
+                $"Stop took {sw.ElapsedMilliseconds}ms; expected < 1500ms.");
         }
 
         [Fact]

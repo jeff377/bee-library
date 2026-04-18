@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
@@ -11,26 +11,14 @@ namespace Bee.Base.BackgroundServices
     /// </summary>
     public abstract class BackgroundService
     {
-        private readonly System.Timers.Timer _Timer;
-        private BackgroundServiceStatus _Status = BackgroundServiceStatus.Stopped;
+        private volatile int _Status = (int)BackgroundServiceStatus.Stopped;
         private int _ThreadCount = 1;
         private ConcurrentQueue<BackgroundAction>? _TaskQueue;
         private SemaphoreSlim? _Semaphore;
         private DateTime _NextTime = DateTime.MinValue;
         private int _Interval = 10000;
-
-        #region Constructors
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="BackgroundService"/>.
-        /// </summary>
-        protected BackgroundService()
-        {
-            _Timer = new System.Timers.Timer(100);
-            _Timer.Elapsed += Elapsed_EventHandler;
-        }
-
-        #endregion
+        private CancellationTokenSource? _Cts;
+        private Task? _RunTask;
 
         #region StatusChanged Event
 
@@ -50,19 +38,11 @@ namespace Bee.Base.BackgroundServices
         #endregion
 
         /// <summary>
-        /// Gets the internal timer.
-        /// </summary>
-        private System.Timers.Timer Timer
-        {
-            get { return _Timer; }
-        }
-
-        /// <summary>
         /// Gets the current background service status.
         /// </summary>
         public BackgroundServiceStatus Status
         {
-            get { return _Status; }
+            get { return (BackgroundServiceStatus)_Status; }
         }
 
         /// <summary>
@@ -71,11 +51,11 @@ namespace Bee.Base.BackgroundServices
         /// <param name="status">The new background service status.</param>
         private void SetStatus(BackgroundServiceStatus status)
         {
-            BackgroundServiceStatusChangedEventArgs oArgs;
-
-            _Status = status;
-            oArgs = new BackgroundServiceStatusChangedEventArgs();
-            oArgs.Status = status;
+            _Status = (int)status;
+            var oArgs = new BackgroundServiceStatusChangedEventArgs
+            {
+                Status = status
+            };
             OnStatusChanged(oArgs);
         }
 
@@ -152,12 +132,16 @@ namespace Bee.Base.BackgroundServices
         {
             try
             {
-                // Set status to starting
                 SetStatus(BackgroundServiceStatus.StartPending);
-                // Enable the timer
-                this.Timer.Enabled = true;
-                // Call the start implementation
                 OnStart();
+
+                _Cts = new CancellationTokenSource();
+                var token = _Cts.Token;
+                _RunTask = Task.Factory.StartNew(
+                    () => RunLoop(token),
+                    token,
+                    TaskCreationOptions.LongRunning,
+                    TaskScheduler.Default);
             }
             catch (Exception ex)
             {
@@ -178,12 +162,9 @@ namespace Bee.Base.BackgroundServices
         {
             try
             {
-            // Set status to stopping
-            _Status = BackgroundServiceStatus.StopPending;
-            // Disable the timer
-            this.Timer.Enabled = false;
-            // Call the stop implementation
-            OnStop();
+                SetStatus(BackgroundServiceStatus.StopPending);
+                _Cts?.Cancel();
+                OnStop();
             }
             catch (Exception ex)
             {
@@ -198,46 +179,39 @@ namespace Bee.Base.BackgroundServices
         { }
 
         /// <summary>
-        /// Handles the timer elapsed event.
+        /// Runs the service loop on a dedicated long-running task.
         /// </summary>
-        private void Elapsed_EventHandler(object? sender, System.Timers.ElapsedEventArgs e)
+        /// <param name="token">Cancellation token signaled by <see cref="Stop"/>.</param>
+        private void RunLoop(CancellationToken token)
         {
-            // Stop the timer
-            this.Timer.Enabled = false;
-            // Run the service
-            Run();
-        }
-
-        /// <summary>
-        /// Runs the service loop.
-        /// </summary>
-        private void Run()
-        {
-            // Set status to running
-            SetStatus(BackgroundServiceStatus.Running);
-            // Run an infinite loop to execute scheduled tasks on threads
-            while (true)
+            try
             {
-                // Break out of the loop if status is no longer Running
-                if (this.Status != BackgroundServiceStatus.Running) { break; }
-                try
-                {
-                    // Enqueue tasks
-                    AddTasks();
-                    // Execute queued tasks
-                    ExecuteTasks();
-                }
-                catch (Exception ex)
-                {
-                    // Handle exceptions in the loop to prevent service interruption
-                    OnError(ex, BackgroundServiceAction.Run);
-                }
-                // Pause the loop for 500 ms to avoid excessive CPU usage
-                Thread.Sleep(500);
-            }
+                SetStatus(BackgroundServiceStatus.Running);
 
-            // Set status to stopped
-            SetStatus(BackgroundServiceStatus.Stopped);
+                while (!token.IsCancellationRequested)
+                {
+                    try
+                    {
+                        AddTasks();
+                        ExecuteTasks();
+                    }
+                    catch (Exception ex)
+                    {
+                        // Handle exceptions in the loop to prevent service interruption
+                        OnError(ex, BackgroundServiceAction.Run);
+                    }
+
+                    // Cancellable wait; WaitOne returns true if the token is signaled,
+                    // false if the 500 ms elapses with no cancellation.
+                    if (token.WaitHandle.WaitOne(500)) { break; }
+                }
+            }
+            finally
+            {
+                SetStatus(BackgroundServiceStatus.Stopped);
+                _Cts?.Dispose();
+                _Cts = null;
+            }
         }
 
         /// <summary>
