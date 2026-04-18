@@ -70,8 +70,8 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
-                if (_items == null) { _folders = new MenuFolderCollection(this); }
+                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _folders!)) { return null; }
+                if (_folders == null) { _folders = new MenuFolderCollection(this); }
                 return _folders;
             }
         }
