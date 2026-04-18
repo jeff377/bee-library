@@ -200,20 +200,25 @@ namespace Bee.Base.Serialization
                     if (reader.TokenType != JsonTokenType.PropertyName) continue;
                     var key = reader.GetString();
                     reader.Read();
-                    switch (key)
-                    {
-                        case "name": col.Name = reader.GetString() ?? string.Empty; break;
-                        case "type": col.FieldType = Enum.Parse<FieldDbType>(reader.GetString() ?? "String"); break;
-                        case "allowNull": col.AllowNull = reader.GetBoolean(); break;
-                        case "readOnly": col.ReadOnly = reader.GetBoolean(); break;
-                        case "maxLength": col.MaxLength = reader.GetInt32(); break;
-                        case "caption": col.Caption = reader.GetString() ?? string.Empty; break;
-                        case "defaultValue": col.DefaultValue = reader.TokenType == JsonTokenType.Null ? null : ReadPrimitiveValue(ref reader); break;
-                    }
+                    ReadColumnField(ref reader, col, key);
                 }
                 list.Add(col);
             }
             return list;
+        }
+
+        private static void ReadColumnField(ref Utf8JsonReader reader, ColumnDef col, string? key)
+        {
+            switch (key)
+            {
+                case "name": col.Name = reader.GetString() ?? string.Empty; break;
+                case "type": col.FieldType = Enum.Parse<FieldDbType>(reader.GetString() ?? "String"); break;
+                case "allowNull": col.AllowNull = reader.GetBoolean(); break;
+                case "readOnly": col.ReadOnly = reader.GetBoolean(); break;
+                case "maxLength": col.MaxLength = reader.GetInt32(); break;
+                case "caption": col.Caption = reader.GetString() ?? string.Empty; break;
+                case "defaultValue": col.DefaultValue = reader.TokenType == JsonTokenType.Null ? null : ReadPrimitiveValue(ref reader); break;
+            }
         }
 
         private static List<string> ReadStringArray(ref Utf8JsonReader reader)

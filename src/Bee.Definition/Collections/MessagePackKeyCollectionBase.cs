@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Xml.Serialization;
 
@@ -138,6 +139,9 @@ namespace Bee.Definition.Collections
         /// method, and the base KeyedCollection exposes its items only via Items.
         /// </remarks>
         [Key(0)]
+        [SuppressMessage("Major Code Smell", "S2365:Properties should not make collection or array copies",
+            Justification = "MessagePack serialization requires a property (not a method) for [Key]. " +
+                            "KeyedCollection exposes its items only via Items, so returning a copy is unavoidable.")]
         public System.Collections.Generic.List<T>? ItemsForSerialization
         {
             get => Items.ToList();

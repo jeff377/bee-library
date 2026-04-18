@@ -127,39 +127,27 @@ namespace Bee.Definition.Settings
             AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
 
             foreach (var server in Servers!)
-            {
-                if (StrFunc.IsNotEmpty(server.Password) && server.Password.StartsWith("enc:"))
-                {
-                    try
-                    {
-                        string base64 = server.Password.Substring(4);
-                        byte[] encrypted = Convert.FromBase64String(base64);
-                        byte[] plain = AesCbcHmacCryptor.Decrypt(encrypted, aesKey, hmacKey);
-                        server.Password = Encoding.UTF8.GetString(plain);
-                    }
-                    catch
-                    {
-                        server.Password = string.Empty; // Protect data on decryption failure
-                    }
-                }
-            }
+                server.Password = DecryptPassword(server.Password, aesKey, hmacKey);
 
             foreach (var item in Items!)
+                item.Password = DecryptPassword(item.Password, aesKey, hmacKey);
+        }
+
+        private static string DecryptPassword(string password, byte[] aesKey, byte[] hmacKey)
+        {
+            if (StrFunc.IsEmpty(password) || !password.StartsWith("enc:"))
+                return password;
+
+            try
             {
-                if (StrFunc.IsNotEmpty(item.Password) && item.Password.StartsWith("enc:"))
-                {
-                    try
-                    {
-                        string base64 = item.Password.Substring(4);
-                        byte[] encrypted = Convert.FromBase64String(base64);
-                        byte[] plain = AesCbcHmacCryptor.Decrypt(encrypted, aesKey, hmacKey);
-                        item.Password = Encoding.UTF8.GetString(plain);
-                    }
-                    catch
-                    {
-                        item.Password = string.Empty; // Protect data on decryption failure
-                    }
-                }
+                string base64 = password.Substring(4);
+                byte[] encrypted = Convert.FromBase64String(base64);
+                byte[] plain = AesCbcHmacCryptor.Decrypt(encrypted, aesKey, hmacKey);
+                return Encoding.UTF8.GetString(plain);
+            }
+            catch
+            {
+                return string.Empty;
             }
         }
 
