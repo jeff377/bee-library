@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.IO;
 using System.Text;
 using System.Text.Json;
 using Bee.Api.Core.JsonRpc;
@@ -229,6 +230,38 @@ namespace Bee.Api.Core.UnitTests
 
             Assert.NotNull(converter);
             Assert.IsType<ApiPayloadJsonConverter<JsonRpcParams>>(converter);
+        }
+
+        [Fact]
+        [DisplayName("Read 直接呼叫 converter 於 Null token 應回傳 null（覆蓋 TokenType.Null 分支）")]
+        public void Read_DirectConverter_NullToken_ReturnsNull()
+        {
+            // JsonSerializer.Deserialize<T>("null") 由框架短路回傳 null，不會進入 converter.Read，
+            // 因此要直接呼叫 converter 才能覆蓋 TokenType.Null 分支。
+            var converter = new ApiPayloadJsonConverter<JsonRpcParams>();
+            var bytes = Encoding.UTF8.GetBytes("null");
+            var reader = new Utf8JsonReader(bytes);
+            Assert.True(reader.Read());
+
+            var result = converter.Read(ref reader, typeof(JsonRpcParams), new JsonSerializerOptions());
+            Assert.Null(result);
+        }
+
+        [Fact]
+        [DisplayName("Write 直接呼叫 converter 於 null value 應寫入 JSON null")]
+        public void Write_DirectConverter_NullValue_WritesNull()
+        {
+            // JsonSerializer.Serialize(null) 由框架短路寫 null，不會進入 converter.Write，
+            // 因此要直接呼叫 converter 才能覆蓋 value == null 分支。
+            var converter = new ApiPayloadJsonConverter<JsonRpcParams>();
+            using var stream = new MemoryStream();
+            using (var writer = new Utf8JsonWriter(stream))
+            {
+                converter.Write(writer, null!, new JsonSerializerOptions());
+            }
+
+            var json = Encoding.UTF8.GetString(stream.ToArray());
+            Assert.Equal("null", json);
         }
     }
 }
