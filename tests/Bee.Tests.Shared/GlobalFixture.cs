@@ -25,6 +25,17 @@ namespace Bee.Tests.Shared
             // 系統初始化
             var settings = BackendInfo.DefineAccess.GetSystemSettings();
             settings.BackendConfiguration.Components.BusinessObjectProvider = BackendDefaultTypes.BusinessObjectProvider;
+            // CI 環境改用環境變數作為 MasterKey 來源，避免在 tests/Define/ 下建立 Master.key
+            // 汙染 MasterKeyProviderTests.GetMasterKey_EmptyFilePath_UsesDefaultFileName 等
+            // 預期「DefinePath 下無 Master.key」的測試。
+            if (string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                settings.BackendConfiguration.SecurityKeySettings.MasterKeySource = new MasterKeySource
+                {
+                    Type = MasterKeySourceType.Environment,
+                    Value = "BEE_TEST_FIXTURE_MASTER_KEY"
+                };
+            }
             SysInfo.Initialize(settings.CommonConfiguration);
             BackendInfo.Initialize(settings.BackendConfiguration, autoCreateMasterKey: true);
             // 註冊資料庫提供者

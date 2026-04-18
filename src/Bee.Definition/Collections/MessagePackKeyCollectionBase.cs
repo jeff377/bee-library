@@ -132,13 +132,15 @@ namespace Bee.Definition.Collections
         /// </summary>
         /// <remarks>
         /// The base class KeyedCollection does not support MessagePack serialization; data must be
-        /// serialized via the ItemsForSerialization property. The buffer is populated in
-        /// <c>OnBeforeSerialize</c> to avoid copying the collection on every property access.
+        /// serialized via the ItemsForSerialization property. The getter returns a fresh copy of
+        /// the internal items so MessagePack observes a stable list. S2365 (property copy) is
+        /// unavoidable here because MessagePack's [Key] serialization requires a property, not a
+        /// method, and the base KeyedCollection exposes its items only via Items.
         /// </remarks>
         [Key(0)]
         public System.Collections.Generic.List<T>? ItemsForSerialization
         {
-            get => _itemsBuffer;
+            get => Items.ToList();
             set => _itemsBuffer = value;
         }
 
@@ -147,8 +149,7 @@ namespace Bee.Definition.Collections
         /// </summary>
         void IMessagePackSerializationCallbackReceiver.OnBeforeSerialize()
         {
-            // Snapshot the internal items into the buffer so the serializer reads a stable list.
-            _itemsBuffer = Items.ToList();
+            _itemsBuffer = null;
         }
 
         /// <summary>
