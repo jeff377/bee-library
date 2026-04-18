@@ -396,5 +396,25 @@ namespace Bee.Base.UnitTests.Serialization
             // Id 欄位 defaultValue 為 0（非 null）應走非 null 分支
             Assert.Contains("\"defaultValue\":0", json);
         }
+
+        [Fact]
+        [DisplayName("Read 應還原 Unchanged 列並呼叫 AcceptChanges")]
+        public void ReadWrite_UnchangedRow_RoundTrip()
+        {
+            // Write_UnchangedRow_WritesBothCurrentAndOriginal 只驗寫;這裡走完整 round-trip,
+            // 讓還原邏輯進入 DataRowState.Unchanged case (line 418-422) 並執行 AcceptChanges。
+            var dt = BuildSampleTable();
+            dt.Rows.Add(1, "Alice");
+            dt.AcceptChanges();
+            Assert.Equal(DataRowState.Unchanged, dt.Rows[0].RowState);
+
+            var json = JsonSerializer.Serialize(dt, Options());
+            var restored = JsonSerializer.Deserialize<DataTable>(json, Options())!;
+
+            Assert.Equal(1, restored.Rows.Count);
+            Assert.Equal(DataRowState.Unchanged, restored.Rows[0].RowState);
+            Assert.Equal(1, restored.Rows[0]["Id"]);
+            Assert.Equal("Alice", restored.Rows[0]["Name"]);
+        }
     }
 }
