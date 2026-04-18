@@ -68,7 +68,7 @@
 ## 設計慣例
 
 - **策略模式** -- `IJsonRpcProvider` 搭配 `LocalApiServiceProvider` 與 `RemoteApiServiceProvider` 實作；連接器在建構時選擇策略。
-- **樣板方法** -- `ApiConnector` 定義 `Execute<T>` / `ExecuteAsync<T>` 的固定步驟（建立請求、轉換酬載、呼叫提供者、還原回應）；子類別提供領域專屬方法。
+- **樣板方法** -- `ApiConnector` 定義 `ExecuteAsync<T>` 的固定步驟（建立請求、轉換酬載、呼叫提供者、還原回應）；子類別提供領域專屬方法。
 - **雙建構函式模式** -- 每個連接器提供兩個建構函式：`(Guid accessToken)` 用於本機、`(string endpoint, Guid accessToken)` 用於遠端，對應兩種提供者類型。
 - **酬載格式協商** -- 請求預設為 `PayloadFormat.Encrypted`；管線在未設定加密金鑰時自動降級為 `Encoded`，本機提供者於非偵錯模式下降級為 `Plain`。
 - **SyncExecutor 支援舊式呼叫者** -- 每個非同步方法皆有使用 `SyncExecutor` 的同步包裝，使 WinForms 建構函式與同步 API 可無死結使用。

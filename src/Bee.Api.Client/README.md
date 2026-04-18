@@ -68,7 +68,7 @@
 ## Design Conventions
 
 - **Strategy Pattern** -- `IJsonRpcProvider` with `LocalApiServiceProvider` and `RemoteApiServiceProvider` implementations; the connector selects the strategy at construction time.
-- **Template Method** -- `ApiConnector` defines `Execute<T>` / `ExecuteAsync<T>` with fixed steps (create request, transform payload, invoke provider, restore response); subclasses supply domain-specific methods.
+- **Template Method** -- `ApiConnector` defines `ExecuteAsync<T>` with fixed steps (create request, transform payload, invoke provider, restore response); subclasses supply domain-specific methods.
 - **Dual constructor pattern** -- each connector offers two constructors: `(Guid accessToken)` for local and `(string endpoint, Guid accessToken)` for remote, mirroring the two provider types.
 - **Payload format negotiation** -- requests default to `PayloadFormat.Encrypted`; the pipeline automatically downgrades to `Encoded` when no encryption key is set, or to `Plain` for local providers in non-debug mode.
 - **SyncExecutor for legacy callers** -- every async method has a sync wrapper using `SyncExecutor`, enabling use from WinForms constructors and synchronous APIs without deadlocks.

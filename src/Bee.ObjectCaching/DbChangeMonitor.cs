@@ -48,7 +48,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         private static DateTime GetUpdateTime()
         {
-            // TODO : 實作取得資料庫相關資料的更新時間
+            // Placeholder: returns MinValue until database-backed change tracking is wired in.
             return DateTime.MinValue;
         }
 

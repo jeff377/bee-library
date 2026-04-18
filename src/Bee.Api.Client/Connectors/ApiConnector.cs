@@ -53,37 +53,6 @@ namespace Bee.Api.Client.Connectors
         public IJsonRpcProvider Provider { get; private set; }
 
         /// <summary>
-        /// Executes an API method.
-        /// </summary>
-        /// <param name="progId">The program identifier.</param>
-        /// <param name="action">The action name to execute.</param>
-        /// <param name="value">The input parameter for the action.</param>
-        /// <param name="format">The payload encoding format for transmission.</param>
-        protected T Execute<T>(string progId, string action, object value, PayloadFormat format)
-        {
-            ValidateArgs(progId, action);
-            var ctx = Tracer.Start(TraceLayers.ApiClient, string.Empty, name: $"Execute.{progId}.{action}");
-            try
-            {
-                var (request, actualFormat) = PrepareRequest(progId, action, value, format);
-
-                // Invoke the JSON-RPC method (remote or local)
-#pragma warning disable CS0618 // Intentional use of synchronous Execute for UI thread compatibility
-                var response = this.Provider.Execute(request);
-#pragma warning restore CS0618
-
-                var result = FinalizeResponse<T>(response, actualFormat);
-                Tracer.End(ctx);
-                return result;
-            }
-            catch (Exception ex)
-            {
-                Tracer.End(ctx, TraceStatus.Error, ex.Message);
-                throw;
-            }
-        }
-
-        /// <summary>
         /// Asynchronously executes an API method.
         /// </summary>
         /// <param name="progId">The program identifier.</param>

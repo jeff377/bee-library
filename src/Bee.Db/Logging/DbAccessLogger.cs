@@ -57,7 +57,7 @@ namespace Bee.Db.Logging
 
             try { context.Stopwatch.Stop(); } catch { /* ignore */ }
 
-            // TODO: wire into logging infrastructure; currently a no-op until a logger is injected.
+            // Placeholder: no-op until an external logger is injected into BackendInfo.
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Bee.Db.Logging
         /// </summary>
         private static void WriteWarning()
         {
-            // TODO: wire into logging infrastructure; currently a no-op until a logger is injected.
+            // Placeholder: no-op until an external logger is injected into BackendInfo.
         }
     }
 }

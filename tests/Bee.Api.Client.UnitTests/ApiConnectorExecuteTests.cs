@@ -11,7 +11,7 @@ using Bee.Base.Tracing;
 namespace Bee.Api.Client.UnitTests
 {
     /// <summary>
-    /// 針對 <see cref="ApiConnector"/> 的 <c>Execute</c>／<c>ExecuteAsync</c> 與輔助流程的純邏輯測試。
+    /// 針對 <see cref="ApiConnector"/> 的 <c>ExecuteAsync</c> 與輔助流程的純邏輯測試。
     /// 以 <see cref="FakeJsonRpcProvider"/> 取代實際的 JSON-RPC 提供者，避免依賴任何外部服務。
     /// </summary>
     public class ApiConnectorExecuteTests
@@ -20,14 +20,11 @@ namespace Bee.Api.Client.UnitTests
         private const string TestAction = "Echo";
 
         /// <summary>
-        /// 公開 <see cref="ApiConnector"/> 的 <c>Execute</c>／<c>ExecuteAsync</c>，以便於測試中直接呼叫。
+        /// 公開 <see cref="ApiConnector"/> 的 <c>ExecuteAsync</c>，以便於測試中直接呼叫。
         /// </summary>
         private sealed class TestApiConnector : ApiConnector
         {
             public TestApiConnector(Guid accessToken) : base(accessToken) { }
-
-            public new T Execute<T>(string progId, string action, object value, PayloadFormat format)
-                => base.Execute<T>(progId, action, value, format);
 
             public new Task<T> ExecuteAsync<T>(string progId, string action, object value, PayloadFormat format)
                 => base.ExecuteAsync<T>(progId, action, value, format);
@@ -39,22 +36,12 @@ namespace Bee.Api.Client.UnitTests
         private sealed class FakeJsonRpcProvider : IJsonRpcProvider
         {
             public JsonRpcRequest? LastRequest { get; private set; }
-            public int SyncCallCount { get; private set; }
             public int AsyncCallCount { get; private set; }
             public Func<JsonRpcRequest, JsonRpcResponse> ResponseFactory { get; set; }
                 = req => new JsonRpcResponse(req)
                 {
                     Result = new JsonRpcResult { Value = "ok" }
                 };
-
-#pragma warning disable CS0618 // Implementing obsolete interface member
-            public JsonRpcResponse Execute(JsonRpcRequest request)
-#pragma warning restore CS0618
-            {
-                LastRequest = request;
-                SyncCallCount++;
-                return ResponseFactory(request);
-            }
 
             public Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request)
             {
@@ -99,21 +86,6 @@ namespace Bee.Api.Client.UnitTests
         }
 
         [Fact]
-        [DisplayName("Execute 同步成功時應回傳 Provider 的結果")]
-        public void Execute_Plain_ReturnsConvertedResult()
-        {
-            var provider = new FakeJsonRpcProvider();
-            var connector = CreateConnector(provider);
-
-            var result = connector.Execute<string>(TestProgId, TestAction, new object(), PayloadFormat.Plain);
-
-            Assert.Equal("ok", result);
-            Assert.Equal(1, provider.SyncCallCount);
-            Assert.NotNull(provider.LastRequest);
-            Assert.Equal($"{TestProgId}.{TestAction}", provider.LastRequest!.Method);
-        }
-
-        [Fact]
         [DisplayName("ExecuteAsync 於 Provider 回傳 Error 時應拋出 InvalidOperationException")]
         public async Task ExecuteAsync_WithErrorResponse_ThrowsInvalidOperationException()
         {
@@ -133,25 +105,6 @@ namespace Bee.Api.Client.UnitTests
             Assert.Contains("Method not found", ex.Message);
         }
 
-        [Fact]
-        [DisplayName("Execute 同步於 Provider 回傳 Error 時應拋出 InvalidOperationException")]
-        public void Execute_WithErrorResponse_ThrowsInvalidOperationException()
-        {
-            var provider = new FakeJsonRpcProvider
-            {
-                ResponseFactory = req => new JsonRpcResponse(req)
-                {
-                    Error = new JsonRpcError(-1, "boom")
-                }
-            };
-            var connector = CreateConnector(provider);
-
-            var ex = Assert.Throws<InvalidOperationException>(() =>
-                connector.Execute<string>(TestProgId, TestAction, new object(), PayloadFormat.Plain));
-
-            Assert.Contains("boom", ex.Message);
-        }
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -161,17 +114,6 @@ namespace Bee.Api.Client.UnitTests
             var connector = CreateConnector(new FakeJsonRpcProvider());
             await Assert.ThrowsAsync<ArgumentException>(async () =>
                 await connector.ExecuteAsync<object>(progId!, TestAction, new object(), PayloadFormat.Plain));
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        [DisplayName("Execute 同步空白 progId 應拋 ArgumentException")]
-        public void Execute_EmptyProgId_ThrowsArgumentException(string? progId)
-        {
-            var connector = CreateConnector(new FakeJsonRpcProvider());
-            Assert.Throws<ArgumentException>(() =>
-                connector.Execute<object>(progId!, TestAction, new object(), PayloadFormat.Plain));
         }
 
         [Fact]
