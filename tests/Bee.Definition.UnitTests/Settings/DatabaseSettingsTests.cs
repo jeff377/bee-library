@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using Bee.Base;
+using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Settings;
@@ -166,6 +168,125 @@ namespace Bee.Definition.UnitTests.Settings
 
                 Assert.Equal("enc:xxx", settings.Servers![0].Password);
                 Assert.Equal("enc:xxx", settings.Items![0].Password);
+            }
+            finally
+            {
+                BackendInfo.ConfigEncryptionKey = originalKey;
+            }
+        }
+
+        [Fact]
+        [DisplayName("BeforeSerialize 於 ConfigEncryptionKey 有值時應加密明文 Password 並加上 enc: 前綴")]
+        public void BeforeSerialize_WithEncryptionKey_EncryptsPlainPassword()
+        {
+            var originalKey = BackendInfo.ConfigEncryptionKey;
+            try
+            {
+                BackendInfo.ConfigEncryptionKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
+                var settings = new DatabaseSettings();
+                settings.Servers!.Add(new DatabaseServer { Id = "S1", Password = "plain-server" });
+                settings.Items!.Add(new DatabaseItem { Id = "D1", Password = "plain-item" });
+
+                settings.BeforeSerialize(SerializeFormat.Xml);
+
+                Assert.StartsWith("enc:", settings.Servers![0].Password);
+                Assert.StartsWith("enc:", settings.Items![0].Password);
+                Assert.NotEqual("plain-server", settings.Servers[0].Password);
+                Assert.NotEqual("plain-item", settings.Items[0].Password);
+            }
+            finally
+            {
+                BackendInfo.ConfigEncryptionKey = originalKey;
+            }
+        }
+
+        [Fact]
+        [DisplayName("BeforeSerialize 不應二次加密已帶 enc: 前綴的 Password")]
+        public void BeforeSerialize_AlreadyEncrypted_NotReEncrypted()
+        {
+            var originalKey = BackendInfo.ConfigEncryptionKey;
+            try
+            {
+                BackendInfo.ConfigEncryptionKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
+                var settings = new DatabaseSettings();
+                settings.Servers!.Add(new DatabaseServer { Id = "S1", Password = "enc:fake-base64" });
+                settings.Items!.Add(new DatabaseItem { Id = "D1", Password = "enc:fake-base64" });
+
+                settings.BeforeSerialize(SerializeFormat.Xml);
+
+                Assert.Equal("enc:fake-base64", settings.Servers![0].Password);
+                Assert.Equal("enc:fake-base64", settings.Items![0].Password);
+            }
+            finally
+            {
+                BackendInfo.ConfigEncryptionKey = originalKey;
+            }
+        }
+
+        [Fact]
+        [DisplayName("BeforeSerialize + AfterDeserialize 應為明文 Password 的往返")]
+        public void BeforeSerializeThenAfterDeserialize_RoundTripsPassword()
+        {
+            var originalKey = BackendInfo.ConfigEncryptionKey;
+            try
+            {
+                BackendInfo.ConfigEncryptionKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
+                var settings = new DatabaseSettings();
+                settings.Servers!.Add(new DatabaseServer { Id = "S1", Password = "pa$$w0rd-server" });
+                settings.Items!.Add(new DatabaseItem { Id = "D1", Password = "pa$$w0rd-item" });
+
+                settings.BeforeSerialize(SerializeFormat.Xml);
+                Assert.StartsWith("enc:", settings.Servers![0].Password);
+
+                settings.AfterDeserialize(SerializeFormat.Xml);
+                Assert.Equal("pa$$w0rd-server", settings.Servers![0].Password);
+                Assert.Equal("pa$$w0rd-item", settings.Items![0].Password);
+            }
+            finally
+            {
+                BackendInfo.ConfigEncryptionKey = originalKey;
+            }
+        }
+
+        [Fact]
+        [DisplayName("AfterDeserialize 於 Password 為明文時不應修改")]
+        public void AfterDeserialize_PlainPassword_LeftUnchanged()
+        {
+            var originalKey = BackendInfo.ConfigEncryptionKey;
+            try
+            {
+                BackendInfo.ConfigEncryptionKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
+                var settings = new DatabaseSettings();
+                settings.Servers!.Add(new DatabaseServer { Id = "S1", Password = "plain" });
+                settings.Items!.Add(new DatabaseItem { Id = "D1", Password = string.Empty });
+
+                settings.AfterDeserialize(SerializeFormat.Xml);
+
+                Assert.Equal("plain", settings.Servers![0].Password);
+                Assert.Equal(string.Empty, settings.Items![0].Password);
+            }
+            finally
+            {
+                BackendInfo.ConfigEncryptionKey = originalKey;
+            }
+        }
+
+        [Fact]
+        [DisplayName("AfterDeserialize 於無效 base64 的 enc: Password 應回傳空字串")]
+        public void AfterDeserialize_InvalidBase64_ReturnsEmpty()
+        {
+            var originalKey = BackendInfo.ConfigEncryptionKey;
+            try
+            {
+                BackendInfo.ConfigEncryptionKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
+                var settings = new DatabaseSettings();
+                settings.Servers!.Add(new DatabaseServer { Id = "S1", Password = "enc:not-valid-base64!!!" });
+                settings.Items!.Add(new DatabaseItem { Id = "D1", Password = "enc:not-valid-base64!!!" });
+
+                settings.AfterDeserialize(SerializeFormat.Xml);
+
+                Assert.Equal(string.Empty, settings.Servers![0].Password);
+                Assert.Equal(string.Empty, settings.Items![0].Password);
             }
             finally
             {
