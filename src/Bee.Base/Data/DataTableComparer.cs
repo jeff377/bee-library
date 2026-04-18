@@ -16,11 +16,23 @@ namespace Bee.Base.Data
         public static bool IsEqual(DataTable dt1, DataTable dt2)
         {
             if (dt1 == null || dt2 == null) return false;
+            if (!AreStructuresEqual(dt1, dt2)) return false;
+
+            for (int i = 0; i < dt1.Rows.Count; i++)
+            {
+                if (!AreRowsEqual(dt1.Rows[i], dt2.Rows[i], dt1.Columns))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool AreStructuresEqual(DataTable dt1, DataTable dt2)
+        {
             if (dt1.TableName != dt2.TableName) return false;
             if (dt1.Columns.Count != dt2.Columns.Count) return false;
             if (dt1.Rows.Count != dt2.Rows.Count) return false;
 
-            // Compare column names and data types
             for (int i = 0; i < dt1.Columns.Count; i++)
             {
                 var col1 = dt1.Columns[i];
@@ -29,52 +41,34 @@ namespace Bee.Base.Data
                     return false;
             }
 
-            // Compare row state and column values for each row
-            for (int i = 0; i < dt1.Rows.Count; i++)
+            return true;
+        }
+
+        private static bool AreRowsEqual(DataRow row1, DataRow row2, DataColumnCollection columns)
+        {
+            if (row1.RowState != row2.RowState) return false;
+
+            foreach (DataColumn col in columns)
             {
-                var row1 = dt1.Rows[i];
-                var row2 = dt2.Rows[i];
-
-                if (row1.RowState != row2.RowState)
+                if (!AreColumnValuesEqual(row1, row2, col.ColumnName, row1.RowState))
                     return false;
-
-                foreach (DataColumn col in dt1.Columns)
-                {
-                    var colName = col.ColumnName;
-
-                    if (row1.RowState == DataRowState.Deleted)
-                    {
-                        // Compare original values for deleted rows
-                        var v1 = row1[colName, DataRowVersion.Original];
-                        var v2 = row2[colName, DataRowVersion.Original];
-                        if (!Equals(v1, v2))
-                            return false;
-                    }
-                    else if (row1.RowState == DataRowState.Modified)
-                    {
-                        // Compare both current and original values for modified rows
-                        var curr1 = row1[colName, DataRowVersion.Current];
-                        var curr2 = row2[colName, DataRowVersion.Current];
-                        if (!Equals(curr1, curr2))
-                            return false;
-
-                        var orig1 = row1[colName, DataRowVersion.Original];
-                        var orig2 = row2[colName, DataRowVersion.Original];
-                        if (!Equals(orig1, orig2))
-                            return false;
-                    }
-                    else
-                    {
-                        // Compare current values for added or unchanged rows
-                        var v1 = row1[colName];
-                        var v2 = row2[colName];
-                        if (!Equals(v1, v2))
-                            return false;
-                    }
-                }
             }
 
             return true;
+        }
+
+        private static bool AreColumnValuesEqual(DataRow row1, DataRow row2, string colName, DataRowState state)
+        {
+            if (state == DataRowState.Deleted)
+                return Equals(row1[colName, DataRowVersion.Original], row2[colName, DataRowVersion.Original]);
+
+            if (state == DataRowState.Modified)
+            {
+                return Equals(row1[colName, DataRowVersion.Current], row2[colName, DataRowVersion.Current])
+                    && Equals(row1[colName, DataRowVersion.Original], row2[colName, DataRowVersion.Original]);
+            }
+
+            return Equals(row1[colName], row2[colName]);
         }
     }
 }

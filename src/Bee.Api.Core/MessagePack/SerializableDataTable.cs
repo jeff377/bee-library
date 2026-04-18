@@ -59,70 +59,75 @@ namespace Bee.Api.Core.MessagePack
                 TableName = table.TableName
             };
 
-            // Process column definitions
             foreach (DataColumn col in table.Columns)
-            {
-                sdt.Columns.Add(new SerializableDataColumn
-                {
-                    ColumnName = col.ColumnName,
-                    DataType = DbTypeConverter.ToFieldDbType(col.DataType),
-                    DisplayName = col.Caption,
-                    AllowDBNull = col.AllowDBNull,
-                    ReadOnly = col.ReadOnly,
-                    MaxLength = col.MaxLength,
-                    DefaultValue = col.DefaultValue is DBNull ? null : col.DefaultValue
-                });
-            }
+                sdt.Columns.Add(BuildSerializableColumn(col));
 
-            // Primary key columns
             sdt.PrimaryKeys.AddRange(table.PrimaryKey.Select(pk => pk.ColumnName));
 
-            // Process data rows
             foreach (DataRow row in table.Rows)
             {
-                var current = new Dictionary<string, object?>();
-                var original = new Dictionary<string, object?>();
-                var state = row.RowState;
-
-                switch (state)
-                {
-                    case DataRowState.Added:
-                        foreach (DataColumn col in table.Columns)
-                        {
-                            current[col.ColumnName] = row[col] is DBNull ? null : row[col];
-                        }
-                        break;
-
-                    case DataRowState.Deleted:
-                        foreach (DataColumn col in table.Columns)
-                        {
-                            original[col.ColumnName] = row[col, DataRowVersion.Original] is DBNull ? null : row[col, DataRowVersion.Original];
-                        }
-                        break;
-
-                    case DataRowState.Modified:
-                    case DataRowState.Unchanged:
-                        foreach (DataColumn col in table.Columns)
-                        {
-                            current[col.ColumnName] = row[col] is DBNull ? null : row[col];
-                            original[col.ColumnName] = row[col, DataRowVersion.Original] is DBNull ? null : row[col, DataRowVersion.Original];
-                        }
-                        break;
-
-                    default:
-                        // Skip Detached or other states (can be extended as needed)
-                        continue;
-                }
-
-                sdt.Rows.Add(new SerializableDataRow
-                {
-                    CurrentValues = current.Count > 0 ? current : null,
-                    OriginalValues = original.Count > 0 ? original : null,
-                    RowState = state
-                });
+                var srow = BuildSerializableRow(row, table.Columns);
+                if (srow != null) sdt.Rows.Add(srow);
             }
 
             return sdt;
+        }
+
+        private static SerializableDataColumn BuildSerializableColumn(DataColumn col)
+        {
+            return new SerializableDataColumn
+            {
+                ColumnName = col.ColumnName,
+                DataType = DbTypeConverter.ToFieldDbType(col.DataType),
+                DisplayName = col.Caption,
+                AllowDBNull = col.AllowDBNull,
+                ReadOnly = col.ReadOnly,
+                MaxLength = col.MaxLength,
+                DefaultValue = col.DefaultValue is DBNull ? null : col.DefaultValue
+            };
+        }
+
+        private static SerializableDataRow? BuildSerializableRow(DataRow row, DataColumnCollection columns)
+        {
+            var state = row.RowState;
+            Dictionary<string, object?>? current = null;
+            Dictionary<string, object?>? original = null;
+
+            switch (state)
+            {
+                case DataRowState.Added:
+                    current = CopyRowValues(row, columns, DataRowVersion.Current);
+                    break;
+                case DataRowState.Deleted:
+                    original = CopyRowValues(row, columns, DataRowVersion.Original);
+                    break;
+                case DataRowState.Modified:
+                case DataRowState.Unchanged:
+                    current = CopyRowValues(row, columns, DataRowVersion.Current);
+                    original = CopyRowValues(row, columns, DataRowVersion.Original);
+                    break;
+                default:
+                    // Skip Detached or other states
+                    return null;
+            }
+
+            return new SerializableDataRow
+            {
+                CurrentValues = current != null && current.Count > 0 ? current : null,
+                OriginalValues = original != null && original.Count > 0 ? original : null,
+                RowState = state
+            };
+        }
+
+        private static Dictionary<string, object?> CopyRowValues(DataRow row, DataColumnCollection columns, DataRowVersion version)
+        {
+            var dict = new Dictionary<string, object?>();
+            foreach (DataColumn col in columns)
+            {
+                var val = row[col, version];
+                dict[col.ColumnName] = val is DBNull ? null : val;
+            }
+            return dict;
         }
 
         /// <summary>
@@ -134,8 +139,18 @@ namespace Bee.Api.Core.MessagePack
         {
             var dt = new DataTable(sdt.TableName);
 
-            // Build the column structure
-            foreach (var col in sdt.Columns)
+            BuildColumns(dt, sdt.Columns);
+            RestorePrimaryKeys(dt, sdt.PrimaryKeys);
+
+            foreach (var srow in sdt.Rows)
+                RestoreRow(dt, srow);
+
+            return dt;
+        }
+
+        private static void BuildColumns(DataTable dt, List<SerializableDataColumn> columns)
+        {
+            foreach (var col in columns)
             {
                 var type = DbTypeConverter.ToType(col.DataType);
                 var dc = new DataColumn(col.ColumnName, type)
@@ -148,77 +163,59 @@ namespace Bee.Api.Core.MessagePack
                 };
                 dt.Columns.Add(dc);
             }
+        }
 
-            // Set primary keys
-            if (sdt.PrimaryKeys.Count > 0)
+        private static void RestorePrimaryKeys(DataTable dt, List<string> primaryKeys)
+        {
+            if (primaryKeys.Count == 0) return;
+
+            var primaryCols = primaryKeys
+                .Select(pk => dt.Columns.Contains(pk) ? dt.Columns[pk] : null)
+                .Where(c => c != null)
+                .Select(c => c!)
+                .ToArray();
+
+            if (primaryCols.Length > 0)
+                dt.PrimaryKey = primaryCols;
+        }
+
+        private static void RestoreRow(DataTable dt, SerializableDataRow srow)
+        {
+            DataRow row = dt.NewRow();
+
+            switch (srow.RowState)
             {
-                var primaryCols = sdt.PrimaryKeys
-                    .Select(pk => dt.Columns.Contains(pk) ? dt.Columns[pk] : null)
-                    .Where(c => c != null)
-                    .Select(c => c!)
-                    .ToArray();
+                case DataRowState.Unchanged:
+                    ApplyValues(row, srow.CurrentValues!);
+                    dt.Rows.Add(row);
+                    row.AcceptChanges();
+                    break;
 
-                if (primaryCols.Length > 0)
-                    dt.PrimaryKey = primaryCols;
+                case DataRowState.Added:
+                    ApplyValues(row, srow.CurrentValues!);
+                    dt.Rows.Add(row);
+                    break;
+
+                case DataRowState.Modified:
+                    ApplyValues(row, srow.OriginalValues!);
+                    dt.Rows.Add(row);
+                    row.AcceptChanges();
+                    ApplyValues(row, srow.CurrentValues!);
+                    break;
+
+                case DataRowState.Deleted:
+                    ApplyValues(row, srow.OriginalValues!);
+                    dt.Rows.Add(row);
+                    row.AcceptChanges();
+                    row.Delete();
+                    break;
             }
+        }
 
-            // Restore each row
-            foreach (var srow in sdt.Rows)
-            {
-                DataRow row = dt.NewRow();
-
-                switch (srow.RowState)
-                {
-                    case DataRowState.Unchanged:
-                        foreach (var kvp in srow.CurrentValues!)
-                        {
-                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                        }
-                        dt.Rows.Add(row);
-                        row.AcceptChanges();
-                        break;
-
-                    case DataRowState.Added:
-                        foreach (var kvp in srow.CurrentValues!)
-                        {
-                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                        }
-                        dt.Rows.Add(row);
-                        // Do not call AcceptChanges to preserve the Added state
-                        break;
-
-                    case DataRowState.Modified:
-                        // Write the pre-modification (original) values first
-                        foreach (var kvp in srow.OriginalValues!)
-                        {
-                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                        }
-                        dt.Rows.Add(row);
-
-                        // Accept changes so the state becomes Unchanged
-                        row.AcceptChanges();
-
-                        // Write the modified values; the row will be automatically marked as Modified
-                        foreach (var kvp in srow.CurrentValues!)
-                        {
-                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                        }
-                        break;
-
-                    case DataRowState.Deleted:
-                        // Create the row with original values, add it, accept changes, then delete it
-                        foreach (var kvp in srow.OriginalValues!)
-                        {
-                            row[kvp.Key] = kvp.Value ?? DBNull.Value;
-                        }
-                        dt.Rows.Add(row);
-                        row.AcceptChanges();
-                        row.Delete();
-                        break;
-                }
-            }
-
-            return dt;
+        private static void ApplyValues(DataRow row, Dictionary<string, object?> values)
+        {
+            foreach (var kvp in values)
+                row[kvp.Key] = kvp.Value ?? DBNull.Value;
         }
 
     }

@@ -23,77 +23,68 @@ namespace Bee.Api.Core.JsonRpc
                 throw new JsonException($"Unexpected token type '{reader.TokenType}' when reading ApiPayload.");
 
             var payload = new T();
-            PayloadFormat format = PayloadFormat.Plain;
             JsonElement? valueElement = null;
 
-            while (reader.Read())
+            while (reader.Read() && reader.TokenType != JsonTokenType.EndObject)
             {
-                if (reader.TokenType == JsonTokenType.EndObject)
-                    break;
-
                 if (reader.TokenType != JsonTokenType.PropertyName)
                     continue;
 
                 var propName = reader.GetString();
                 reader.Read();
-
-                switch (propName)
-                {
-                    case "format":
-                        format = (PayloadFormat)reader.GetInt32();
-                        payload.Format = format;
-                        break;
-                    case "value":
-                        if (reader.TokenType != JsonTokenType.Null)
-                        {
-                            using var doc = JsonDocument.ParseValue(ref reader);
-                            valueElement = doc.RootElement.Clone();
-                        }
-                        break;
-                    case "type":
-                        payload.TypeName = reader.GetString() ?? string.Empty;
-                        break;
-                    default:
-                        reader.Skip();
-                        break;
-                }
+                ReadProperty(ref reader, payload, propName, ref valueElement);
             }
 
-            // Resolve Value based on format
             if (valueElement.HasValue)
-            {
-                var elem = valueElement.Value;
-                switch (format)
-                {
-                    case PayloadFormat.Encoded:
-                    case PayloadFormat.Encrypted:
-                        // Encoded/Encrypted payloads store byte[] as base64 string
-                        if (elem.ValueKind == JsonValueKind.String)
-                        {
-                            try
-                            {
-                                payload.Value = elem.GetBytesFromBase64();
-                            }
-                            catch (FormatException)
-                            {
-                                // Not a valid base64 string — keep as plain string
-                                payload.Value = (object?)elem.GetString();
-                            }
-                        }
-                        else
-                        {
-                            payload.Value = ResolvePlainValue(elem);
-                        }
-                        break;
-
-                    default:
-                        // For Plain format (and any other value), resolve based on JSON value kind
-                        payload.Value = ResolvePlainValue(elem);
-                        break;
-                }
-            }
+                payload.Value = ResolvePayloadValue(payload.Format, valueElement.Value);
 
             return payload;
+        }
+
+        private static void ReadProperty(ref Utf8JsonReader reader, T payload, string? propName, ref JsonElement? valueElement)
+        {
+            switch (propName)
+            {
+                case "format":
+                    payload.Format = (PayloadFormat)reader.GetInt32();
+                    break;
+                case "value":
+                    if (reader.TokenType != JsonTokenType.Null)
+                    {
+                        using var doc = JsonDocument.ParseValue(ref reader);
+                        valueElement = doc.RootElement.Clone();
+                    }
+                    break;
+                case "type":
+                    payload.TypeName = reader.GetString() ?? string.Empty;
+                    break;
+                default:
+                    reader.Skip();
+                    break;
+            }
+        }
+
+        private static object? ResolvePayloadValue(PayloadFormat format, JsonElement elem)
+        {
+            if (format is PayloadFormat.Encoded or PayloadFormat.Encrypted)
+                return ResolveEncodedValue(elem);
+
+            return ResolvePlainValue(elem);
+        }
+
+        private static object? ResolveEncodedValue(JsonElement elem)
+        {
+            if (elem.ValueKind != JsonValueKind.String)
+                return ResolvePlainValue(elem);
+
+            try
+            {
+                return elem.GetBytesFromBase64();
+            }
+            catch (FormatException)
+            {
+                return elem.GetString();
+            }
         }
 
         /// <inheritdoc />
