@@ -22,7 +22,16 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: BeeTest_Password123!
+        ports:
+          - 1433:1433
 
     steps:
     - name: Checkout code
@@ -44,37 +53,64 @@ jobs:
     - name: Cache SonarCloud packages
       uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4.3.0
       with:
-        path: ~\.sonar\cache
+        path: ~/.sonar/cache
         key: ${{ runner.os }}-sonar
         restore-keys: ${{ runner.os }}-sonar
 
     - name: Install SonarScanner for .NET
       run: dotnet tool install --global dotnet-sonarscanner
 
+    - name: Install sqlcmd
+      run: |
+        curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null
+        curl https://packages.microsoft.com/config/ubuntu/22.04/prod.list | sudo tee /etc/apt/sources.list.d/mssql-release.list > /dev/null
+        sudo apt-get update
+        sudo ACCEPT_EULA=Y apt-get install -y mssql-tools18 unixodbc-dev
+        echo "/opt/mssql-tools18/bin" >> $GITHUB_PATH
+
+    - name: Wait for SQL Server
+      env:
+        SA_PASSWORD: BeeTest_Password123!
+      run: |
+        for i in {1..60}; do
+          if /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P "$SA_PASSWORD" -C -Q "SELECT 1" > /dev/null 2>&1; then
+            echo "SQL Server ready after ${i} attempt(s)"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "SQL Server did not become ready in time" >&2
+        exit 1
+
+    - name: Create test database
+      env:
+        SA_PASSWORD: BeeTest_Password123!
+      run: /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P "$SA_PASSWORD" -C -Q "IF DB_ID('common') IS NULL CREATE DATABASE common;"
+
     - name: SonarScanner Begin
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      shell: pwsh
       run: |
-        dotnet sonarscanner begin `
-          /k:"jeff377_bee-library" `
-          /o:"jeff377" `
-          /d:sonar.token="$env:SONAR_TOKEN" `
-          /d:sonar.host.url="https://sonarcloud.io" `
-          /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" `
+        dotnet sonarscanner begin \
+          /k:"jeff377_bee-library" \
+          /o:"jeff377" \
+          /d:sonar.token="$SONAR_TOKEN" \
+          /d:sonar.host.url="https://sonarcloud.io" \
+          /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
           /d:sonar.coverage.exclusions="tests/**,samples/**"
 
     - name: Build
       run: dotnet build Bee.Library.slnx --configuration Release
 
     - name: Test with coverage
+      env:
+        BEE_TEST_DB_CONNSTR: "Server=localhost,1433;Database=common;User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
       run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover"
 
     - name: SonarScanner End
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      shell: pwsh
-      run: dotnet sonarscanner end /d:sonar.token="$env:SONAR_TOKEN"
+      run: dotnet sonarscanner end /d:sonar.token="$SONAR_TOKEN"
 
     - name: Pack NuGet packages (驗證用，不推送)
       run: |

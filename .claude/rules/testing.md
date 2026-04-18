@@ -43,17 +43,17 @@ public void GetDefineType_ValidType(DefineType defineType, Type expectedType)
 }
 ```
 
-### 本機專用測試：`[LocalOnlyFact]` / `[LocalOnlyTheory]`
+### 需要資料庫的測試：`[DbFact]` / `[DbTheory]`
 
-需要連接本機資料庫或 API 服務的測試，使用 `[LocalOnlyFact]` 或 `[LocalOnlyTheory]` 取代 `[Fact]` / `[Theory]`。
-這兩個 Attribute 定義在 `tests/Bee.Tests.Shared/`，利用環境變數 `CI=true`（GitHub Actions 預設會設定）自動跳過測試。
+需要連接資料庫的測試使用 `[DbFact]` 或 `[DbTheory]` 取代 `[Fact]` / `[Theory]`。
+這兩個 Attribute 定義在 `tests/Bee.Tests.Shared/`，會檢查環境變數 `BEE_TEST_DB_CONNSTR`；**未設定則自動跳過**。
 
-- **本機執行**：正常執行
-- **CI 環境**：自動標記為 Skipped，不會因基礎設施缺失而失敗
+- **本機（`.runsettings` 已填連線字串）**：正常執行
+- **CI（`build-ci.yml` 啟動 SQL Server service container 並注入 `BEE_TEST_DB_CONNSTR`）**：正常執行
+- **本機或 CI 未設 `BEE_TEST_DB_CONNSTR`**：自動標記為 Skipped，不會因缺基礎設施而失敗
 
 ```csharp
-// 需要本機 SQL Server 的測試
-[LocalOnlyFact]
+[DbFact]
 [DisplayName("ExecuteDataTable 查詢應回傳有效 DataTable")]
 public void ExecuteDataTable_ValidQuery_ReturnsDataTable()
 {
@@ -61,16 +61,25 @@ public void ExecuteDataTable_ValidQuery_ReturnsDataTable()
     var result = dbAccess.Execute(command);
     Assert.NotNull(result.Table);
 }
+```
 
-// 參數化版本
+**適用場景**：純資料庫相依的測試（查詢、schema、Repository/BO 相關）。
+**不適用**：純邏輯 / 序列化測試 — 這類測試有 bug 應直接修復，不應跳過。
+
+### 需要本機基礎設施的測試：`[LocalOnlyFact]` / `[LocalOnlyTheory]`
+
+需要本機特定基礎設施（例如本機跑著的 API server、專屬資料、或無法在 CI 自動備妥的環境）的測試，使用 `[LocalOnlyFact]` / `[LocalOnlyTheory]`。
+定義在 `tests/Bee.Tests.Shared/`，會檢查環境變數 `CI`；**當 `CI=true`（GitHub Actions 預設）時自動跳過**。
+
+```csharp
 [LocalOnlyTheory]
 [InlineData("http://localhost/jsonrpc/api")]
 [DisplayName("ApiConnectValidator 驗證 URL 應回傳遠端連線類型")]
-public void ApiConnectValidator_ValidUrl_ReturnsRemoteConnectType(string apiUrl) { ... }
+public void Validate_ValidUrl_ReturnsRemoteConnectType(string apiUrl) { ... }
 ```
 
-**適用場景**：資料庫連線、API 端點呼叫、需要執行中服務的整合測試。
-**不適用**：純邏輯 / 序列化測試 — 這類測試有 bug 應直接修復，不應跳過。
+**適用場景**：真正需要「本機運行中服務」的整合測試（如需要 API server 回應的 ping 測試）。
+**不適用**：只需要 DB 的測試 — 請使用 `[DbFact]` / `[DbTheory]`。
 
 ### 測試集合共用初始化
 需要共用狀態時使用 `[Collection("Initialize")]`。

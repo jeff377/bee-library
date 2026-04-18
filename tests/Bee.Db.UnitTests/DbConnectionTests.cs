@@ -7,7 +7,7 @@ namespace Bee.Db.UnitTests
     [Collection("Initialize")]
     public class DbConnectionTests
     {
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("OpenConnection 使用環境變數連線字串應成功連線")]
         public void OpenConnection_WithEnvConnStr_Succeeds()
         {

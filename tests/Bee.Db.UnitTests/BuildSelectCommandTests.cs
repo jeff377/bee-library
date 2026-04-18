@@ -9,7 +9,7 @@ namespace Bee.Db.UnitTests
     [Collection("Initialize")]
     public class BuildSelectCommandTests
     {
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("BuildSelectCommand 僅選取主檔欄位時不應產生 JOIN")]
         public void BuildSelectCommand_SelectOnlyMasterFields_NoJoin()
         {
@@ -23,7 +23,7 @@ namespace Bee.Db.UnitTests
             Assert.DoesNotContain("JOIN", command.CommandText, StringComparison.OrdinalIgnoreCase);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("BuildSelectCommand Where 條件使用參考欄位時應產生 JOIN")]
         public void BuildSelectCommand_WhereOnReferencedField_GeneratesJoin()
         {
@@ -40,7 +40,7 @@ namespace Bee.Db.UnitTests
             Assert.Contains("JOIN", command.CommandText, StringComparison.OrdinalIgnoreCase);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("BuildSelectCommand Order By 使用參考欄位時應產生 JOIN")]
         public void BuildSelectCommand_OrderByReferencedField_GeneratesJoin()
         {
@@ -58,7 +58,7 @@ namespace Bee.Db.UnitTests
             Assert.Contains("JOIN", command.CommandText, StringComparison.OrdinalIgnoreCase);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("BuildSelectCommand 選取多個參考欄位時應產生多個 JOIN")]
         public void BuildSelectCommand_SelectWithMultipleReferences_GeneratesMultipleJoins()
         {
@@ -81,7 +81,7 @@ namespace Bee.Db.UnitTests
             Assert.True(joinCount >= 2, $"應包含至少 2 個 JOIN，實際: {joinCount}");
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("BuildSelectCommand FilterGroup 含多條件時應正確產生參數與 JOIN")]
         public void BuildSelectCommand_FilterGroupWithMultipleConditions_GeneratesParametersAndJoin()
         {
@@ -113,7 +113,7 @@ namespace Bee.Db.UnitTests
             Assert.Contains("JOIN", command.CommandText, StringComparison.OrdinalIgnoreCase);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("SqlFormCommandBuilder 建立 Select 命令應成功")]
         public void BuildSelectCommand_WithAndWithoutFields_ReturnsCommands()
         {
@@ -127,7 +127,7 @@ namespace Bee.Db.UnitTests
             Assert.False(string.IsNullOrWhiteSpace(command2.CommandText));
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("SqlFormCommandBuilder 搭配篩選條件與排序建立 Select 命令應成功")]
         public void BuildSelectCommand_WithFilterAndSort_ReturnsCommands()
         {

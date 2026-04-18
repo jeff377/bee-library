@@ -1,8 +1,8 @@
 using Bee.Base;
+using Bee.Db;
 using Bee.Db.Schema;
-using Bee.Tests.Shared;
 
-namespace Bee.Db.UnitTests
+namespace Bee.Tests.Shared
 {
     /// <summary>
     /// Extends <see cref="GlobalFixture"/> with database-specific prerequisites:

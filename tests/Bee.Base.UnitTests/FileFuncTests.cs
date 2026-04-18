@@ -187,13 +187,23 @@ namespace Bee.Base.UnitTests
         }
 
         [Theory]
-        [InlineData(@"C:\temp\file.txt", true)]
         [InlineData("/etc/hosts", true)]
         [InlineData("relative/path", false)]
         [DisplayName("IsPathRooted 應辨識絕對路徑")]
         public void IsPathRooted_RecognizesAbsolutePaths(string input, bool expected)
         {
             Assert.Equal(expected, FileFunc.IsPathRooted(input));
+        }
+
+        [Fact]
+        [DisplayName("IsPathRooted 於 Windows 應辨識磁碟機路徑")]
+        public void IsPathRooted_WindowsDrivePath_OnlyOnWindows()
+        {
+            // Path.IsPathRooted 對 "C:\..." 的判斷只在 Windows 為 true，Linux/macOS 為 false。
+            if (!System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(System.Runtime.InteropServices.OSPlatform.Windows))
+                return;
+
+            Assert.True(FileFunc.IsPathRooted(@"C:\temp\file.txt"));
         }
 
         [Fact]

@@ -12,7 +12,7 @@ namespace Bee.Api.Client.UnitTests
         /// <summary>
         /// 測試 SystemApiConnector 的 CreateSession 方法。
         /// </summary>
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("SystemApiConnector CreateSession 應回傳有效的 AccessToken")]
         public void CreateSession_ValidArgs_ReturnsValidToken()
         {

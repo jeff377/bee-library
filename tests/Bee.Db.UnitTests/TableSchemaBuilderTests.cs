@@ -8,7 +8,7 @@ namespace Bee.Db.UnitTests
     [Collection("Initialize")]
     public class TableSchemaBuilderTests
     {
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("TableSchemaBuilder 比對結構一致的資料表應回傳 None")]
         public void Compare_UpToDateTable_ReturnsNoneAction()
         {
@@ -19,7 +19,7 @@ namespace Bee.Db.UnitTests
             Assert.Equal(DbUpgradeAction.None, result.UpgradeAction);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("TableSchemaBuilder 取得命令文字應回傳空字串（結構已同步）")]
         public void GetCommandText_UpToDateTable_ReturnsEmpty()
         {
@@ -29,7 +29,7 @@ namespace Bee.Db.UnitTests
             Assert.Equal(string.Empty, sql);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("TableSchemaBuilder Execute 結構已同步時應回傳 false")]
         public void Execute_UpToDateTable_ReturnsFalse()
         {

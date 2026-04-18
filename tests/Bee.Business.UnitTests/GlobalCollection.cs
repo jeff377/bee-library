@@ -7,7 +7,7 @@ namespace Bee.Business.UnitTests
     /// 讓多個測試類別共用相同的初始化邏輯。
     /// </summary>
     [CollectionDefinition("Initialize")]
-    public class GlobalCollection : ICollectionFixture<GlobalFixture>
+    public class GlobalCollection : ICollectionFixture<DbGlobalFixture>
     {
         // 不需要任何程式碼，僅作為集合定義
     }

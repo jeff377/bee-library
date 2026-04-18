@@ -25,7 +25,7 @@ namespace Bee.Db.UnitTests
         /// <summary>
         /// 執行 SQL 查詢，並取得 DataTable。
         /// </summary>
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("ExecuteDataTable 執行多種參數化查詢應回傳有效 DataTable")]
         public void ExecuteDataTable_VariousParameterFormats_ReturnsDataTable()
         {
@@ -71,7 +71,7 @@ namespace Bee.Db.UnitTests
         /// <summary>
         /// 非同步執行 SQL 查詢，並取得 DataTable。
         /// </summary>
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("ExecuteDataTableAsync 非同步查詢應回傳含資料列的 DataTable")]
         public async Task ExecuteDataTableAsync_ValidQuery_ReturnsNonEmptyDataTable()
         {
@@ -84,7 +84,7 @@ namespace Bee.Db.UnitTests
             Assert.True(table.Rows.Count > 0);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("ExecuteNonQuery 更新資料應成功執行")]
         public void ExecuteNonQuery_UpdateRow_Executes()
         {
@@ -97,7 +97,7 @@ namespace Bee.Db.UnitTests
             Assert.True(result.RowsAffected >= 0);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("ExecuteNonQueryAsync 非同步更新資料應成功執行")]
         public async Task ExecuteNonQueryAsync_UpdateRow_Executes()
         {
@@ -110,7 +110,7 @@ namespace Bee.Db.UnitTests
             Assert.True(result.RowsAffected >= 0);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("ExecuteScalar 查詢單一值應成功執行")]
         public void ExecuteScalar_SelectSingleValue_ReturnsScalar()
         {
@@ -121,7 +121,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(result);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("Query 查詢應回傳強型別物件清單")]
         public void Query_ValidSql_ReturnsMappedObjects()
         {
@@ -134,7 +134,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(list3);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("QueryAsync 非同步查詢應回傳強型別物件清單")]
         public async Task QueryAsync_ValidSql_ReturnsMappedObjects()
         {
@@ -147,7 +147,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(list2);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("UpdateDataTable 修改資料列後更新應影響至少一筆資料")]
         public void UpdateDataTable_ModifiedRow_AffectsRows()
         {
@@ -177,7 +177,7 @@ namespace Bee.Db.UnitTests
             Assert.True(affected > 0, "沒有資料被更新");
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("ExecuteBatch 批次執行含交易的多個命令應成功")]
         public void ExecuteBatch_WithTransaction_Succeeds()
         {
@@ -194,7 +194,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(result);
         }
 
-        [LocalOnlyFact]
+        [DbFact]
         [DisplayName("ExecuteBatchAsync 非同步批次執行含交易的多個命令應成功")]
         public async Task ExecuteBatchAsync_WithTransaction_Succeeds()
         {

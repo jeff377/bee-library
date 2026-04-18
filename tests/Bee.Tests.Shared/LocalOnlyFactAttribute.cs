@@ -10,7 +10,7 @@ namespace Bee.Tests.Shared
         public LocalOnlyFactAttribute()
         {
             if (Environment.GetEnvironmentVariable("CI") == "true")
-                Skip = "Skipped on CI – requires local infrastructure";
+                Skip = "Skipped on CI – requires local infrastructure (e.g. running API server)";
         }
     }
 }
