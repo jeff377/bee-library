@@ -39,5 +39,21 @@ namespace Bee.ObjectCaching.UnitTests
 
             Assert.Equal(moment, monitor.UpdateTime);
         }
+
+        [Fact]
+        [DisplayName("Timer Elapsed 時 UpdateTime 不同於 GetUpdateTime 應通知 OnChanged")]
+        public void TimerElapsed_WhenUpdateTimeDiffers_TriggersOnChanged()
+        {
+            // GetUpdateTime() 目前回傳 DateTime.MinValue;將 UpdateTime 改為現在時間後,
+            // Timer 觸發時會進入 if 分支呼叫 OnChanged,並把 UpdateTime 更新回 MinValue。
+            using var monitor = new DbChangeMonitor("change-test");
+            monitor.Timer!.Interval = 50;
+            monitor.UpdateTime = DateTime.UtcNow;
+
+            var triggered = SpinWait.SpinUntil(() => monitor.HasChanged, 2000);
+
+            Assert.True(triggered, "Monitor did not mark HasChanged within 2s.");
+            Assert.Equal(DateTime.MinValue, monitor.UpdateTime);
+        }
     }
 }
