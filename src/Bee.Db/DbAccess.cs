@@ -547,7 +547,11 @@ namespace Bee.Db
                     }
 
                     // Commit only after all commands succeed
-                    try { tran?.Commit(); }
+                    try
+                    {
+                        if (tran != null)
+                            await tran.CommitAsync(cancellationToken).ConfigureAwait(false);
+                    }
                     catch (Exception ex)
                     {
                         throw new InvalidOperationException("Failed to commit transaction.", ex);
@@ -555,7 +559,7 @@ namespace Bee.Db
                 }
                 finally
                 {
-                    if (tran != null) tran.Dispose();
+                    if (tran != null) await tran.DisposeAsync().ConfigureAwait(false);
                 }
             }
 

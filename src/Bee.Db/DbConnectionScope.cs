@@ -87,7 +87,7 @@ namespace Bee.Db
             }
             catch
             {
-                conn.Dispose();
+                await conn.DisposeAsync().ConfigureAwait(false);
                 throw;
             }
             return new DbConnectionScope(conn, true);
