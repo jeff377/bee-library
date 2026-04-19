@@ -1,5 +1,4 @@
 using Bee.Definition.Collections;
-using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;

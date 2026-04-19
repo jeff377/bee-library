@@ -1,6 +1,4 @@
-﻿using System;
-using Bee.Base;
-using Bee.Base.Security;
+﻿using Bee.Base.Security;
 
 namespace Bee.Definition.Security
 {

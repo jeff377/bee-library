@@ -3,11 +3,9 @@ using Bee.Base.Serialization;
 using Bee.Base.Collections;
 using MessagePack;
 using System.Text.Json.Serialization;
-using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Xml.Serialization;
 
 namespace Bee.Definition.Collections

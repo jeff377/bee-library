@@ -1,4 +1,3 @@
-using System;
 using Bee.Base;
 
 namespace Bee.Definition

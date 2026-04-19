@@ -1,10 +1,7 @@
-using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
-using Bee.Base.Serialization;
 using Bee.Base.Collections;
 
 namespace Bee.Definition.Settings

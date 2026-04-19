@@ -1,6 +1,5 @@
 ﻿using Bee.Definition.Collections;
 using MessagePack;
-using System;
 using System.Xml.Serialization;
 
 namespace Bee.Definition.Filters

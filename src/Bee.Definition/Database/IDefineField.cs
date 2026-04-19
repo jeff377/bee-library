@@ -1,5 +1,4 @@
-﻿using Bee.Base;
-using Bee.Base.Data;
+﻿using Bee.Base.Data;
 
 namespace Bee.Definition.Database
 {

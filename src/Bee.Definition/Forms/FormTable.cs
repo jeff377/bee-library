@@ -1,6 +1,4 @@
 using Bee.Definition.Database;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;

@@ -1,6 +1,4 @@
-using System;
 using System.ComponentModel;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using Bee.Base;

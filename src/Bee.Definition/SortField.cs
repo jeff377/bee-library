@@ -1,5 +1,4 @@
 using Bee.Definition.Collections;
-using System;
 using MessagePack;
 
 namespace Bee.Definition

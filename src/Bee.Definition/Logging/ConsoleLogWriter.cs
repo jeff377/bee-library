@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bee.Definition.Logging
+﻿namespace Bee.Definition.Logging
 {
     /// <summary>
     /// A log writer implementation that outputs log entries to the console.

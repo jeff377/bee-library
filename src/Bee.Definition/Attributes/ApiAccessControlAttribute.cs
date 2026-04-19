@@ -1,5 +1,3 @@
-using System;
-
 namespace Bee.Definition.Attributes
 {
     /// <summary>

@@ -1,4 +1,3 @@
-using System.IO;
 using Bee.Base;
 
 namespace Bee.Definition

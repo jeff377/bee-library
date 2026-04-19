@@ -1,8 +1,6 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base;
-using Bee.Base.Collections;
 using Bee.Definition.Serialization;
 using MessagePack;
 
