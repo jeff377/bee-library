@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Bee.Db.Query
+﻿namespace Bee.Db.Query
 {
     /// <summary>
     /// Represents the result of building a WHERE clause.

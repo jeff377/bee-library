@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Bee.Db.Query
+﻿namespace Bee.Db.Query
 {
     /// <summary>
     /// Default parameter collector that generates parameter names as @p0, @p1, ... (or with a custom prefix).

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using Bee.Base;
+﻿using Bee.Base;
 using Bee.Definition;
-
-using Bee.Db;
 
 namespace Bee.Db.Query
 {

@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Bee.Base;
+﻿using Bee.Base;
 using Bee.Base.Collections;
 
 namespace Bee.Db.Query

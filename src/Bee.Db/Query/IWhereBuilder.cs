@@ -1,5 +1,4 @@
 ﻿using Bee.Definition.Filters;
-using Bee.Definition;
 
 namespace Bee.Db.Query
 {

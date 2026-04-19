@@ -1,6 +1,5 @@
 ﻿using Bee.Definition;
 using Bee.Definition.Logging;
-using System;
 
 namespace Bee.Db.Logging
 {

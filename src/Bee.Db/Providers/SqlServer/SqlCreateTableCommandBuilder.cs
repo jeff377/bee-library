@@ -1,13 +1,8 @@
 ﻿using Bee.Definition.Database;
-using System;
-using System.Linq;
 using System.Text;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Definition;
-
-using Bee.Db;
-using Bee.Db.Providers;
 
 namespace Bee.Db.Providers.SqlServer
 {

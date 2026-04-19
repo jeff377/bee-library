@@ -1,8 +1,5 @@
-﻿using Bee.Definition.Settings;
-using Bee.Base;
-using Bee.Base.Collections;
+﻿using Bee.Base;
 using Bee.Definition;
-using System;
 using System.Collections.Concurrent;
 
 namespace Bee.Db.Manager
