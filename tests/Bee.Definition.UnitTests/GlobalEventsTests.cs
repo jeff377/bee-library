@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Definition;
 
 namespace Bee.Definition.UnitTests
 {

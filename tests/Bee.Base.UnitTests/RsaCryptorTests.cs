@@ -1,7 +1,4 @@
-using System;
 using System.ComponentModel;
-using Xunit;
-using Bee.Base;
 using Bee.Base.Security;
 
 namespace Bee.Base.UnitTests

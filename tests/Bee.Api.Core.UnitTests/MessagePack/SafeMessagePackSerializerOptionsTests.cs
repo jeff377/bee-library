@@ -1,7 +1,5 @@
-using System;
 using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
-using MessagePack;
 using MessagePack.Resolvers;
 
 namespace Bee.Api.Core.UnitTests.MessagePack

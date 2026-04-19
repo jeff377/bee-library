@@ -1,9 +1,7 @@
 using System.ComponentModel;
 using System.Data;
 using Bee.Api.Core.MessagePack;
-using Bee.Definition.Collections;
 using Bee.Definition.Filters;
-using MessagePack;
 using MessagePack.Formatters;
 
 namespace Bee.Api.Core.UnitTests.MessagePack

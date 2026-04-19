@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.System;
 using Bee.Base.Serialization;

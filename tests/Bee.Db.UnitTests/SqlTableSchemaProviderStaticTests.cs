@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Db.Providers.SqlServer;
-using Bee.Definition;
 
 namespace Bee.Db.UnitTests
 {

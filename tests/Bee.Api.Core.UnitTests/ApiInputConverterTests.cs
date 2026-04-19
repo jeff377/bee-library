@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Text.Json;
-using Bee.Api.Core;
 
 namespace Bee.Api.Core.UnitTests
 {

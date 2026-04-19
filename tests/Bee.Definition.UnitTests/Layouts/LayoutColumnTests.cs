@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using Bee.Base.Serialization;
-using Bee.Definition;
 using Bee.Definition.Layouts;
 
 namespace Bee.Definition.UnitTests.Layouts

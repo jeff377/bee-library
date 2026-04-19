@@ -1,5 +1,3 @@
-using Bee.Business;
-
 namespace Bee.Business.UnitTests.Fakes
 {
     /// <summary>

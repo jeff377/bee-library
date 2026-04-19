@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Base;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Definition;
 using Bee.Definition.Settings;

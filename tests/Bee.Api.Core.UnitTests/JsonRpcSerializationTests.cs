@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json;
 using Bee.Api.Core.JsonRpc;
-using Bee.Api.Core.System;
 using Bee.Base.Serialization;
 using Bee.Definition;
 

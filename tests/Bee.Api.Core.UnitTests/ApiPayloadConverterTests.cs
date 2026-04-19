@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using Bee.Api.Core.JsonRpc;
-using Bee.Api.Core.Transformer;
 
 namespace Bee.Api.Core.UnitTests
 {

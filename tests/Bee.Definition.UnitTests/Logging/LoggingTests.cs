@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.IO;
 using Bee.Definition.Logging;
 
 namespace Bee.Definition.UnitTests.Logging

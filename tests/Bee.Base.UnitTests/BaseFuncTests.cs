@@ -1,7 +1,6 @@
 using System.Collections;
 using System.ComponentModel;
 using Bee.Base.Data;
-using Bee.Base.Serialization;
 
 namespace Bee.Base.UnitTests
 {

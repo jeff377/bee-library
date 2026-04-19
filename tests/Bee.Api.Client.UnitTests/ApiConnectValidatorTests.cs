@@ -1,6 +1,4 @@
 using System.ComponentModel;
-using System.IO;
-using Bee.Api.Client.Connectors;
 using Bee.Tests.Shared;
 
 namespace Bee.Api.Client.UnitTests

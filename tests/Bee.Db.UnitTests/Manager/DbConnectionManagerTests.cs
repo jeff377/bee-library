@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Db.Manager;
-using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests.Manager
 {

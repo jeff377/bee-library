@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Db;
 using Bee.Db.Query;
 
 namespace Bee.Db.UnitTests.Query

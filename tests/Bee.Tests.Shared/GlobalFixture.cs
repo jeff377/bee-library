@@ -1,6 +1,5 @@
 ﻿using Bee.Base;
 using Bee.ObjectCaching;
-using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.Definition.Settings;

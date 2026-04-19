@@ -1,8 +1,6 @@
 using System.ComponentModel;
-using Bee.Base;
 using Bee.Base.Security;
 using Bee.Base.Serialization;
-using Bee.Definition;
 using Bee.Definition.Settings;
 
 namespace Bee.Definition.UnitTests.Settings

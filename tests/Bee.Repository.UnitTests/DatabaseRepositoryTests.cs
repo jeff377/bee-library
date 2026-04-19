@@ -3,7 +3,6 @@ using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.System;
 using Bee.Repository.Provider;
-using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests
 {

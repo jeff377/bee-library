@@ -1,5 +1,4 @@
 using System.Buffers;
-using System.Collections;
 using System.ComponentModel;
 using Bee.Definition.Serialization;
 using MessagePack;

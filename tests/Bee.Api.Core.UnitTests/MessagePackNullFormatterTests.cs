@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Data;
-using System.Linq;
 using Bee.Api.Core.MessagePack;
 
 namespace Bee.Api.Core.UnitTests
