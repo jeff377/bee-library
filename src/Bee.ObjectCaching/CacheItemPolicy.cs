@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bee.ObjectCaching
+﻿namespace Bee.ObjectCaching
 {
     /// <summary>
     /// Cache item expiration policy.

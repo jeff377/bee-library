@@ -2,7 +2,6 @@
 using Bee.ObjectCaching.Providers;
 using Bee.Definition;
 using Bee.Definition.Settings;
-using System;
 
 namespace Bee.ObjectCaching
 {

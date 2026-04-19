@@ -1,6 +1,4 @@
-﻿using System;
-using Bee.ObjectCaching;
-using Bee.Definition;
+﻿using Bee.Definition;
 
 namespace Bee.ObjectCaching.Services
 {

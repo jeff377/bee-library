@@ -1,9 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Base.Serialization;
-using Bee.ObjectCaching;
 using Bee.Definition;
 using Bee.Definition.Settings;
-using System.IO;
 
 namespace Bee.ObjectCaching.Define
 {

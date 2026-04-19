@@ -1,7 +1,4 @@
-﻿using Bee.ObjectCaching;
-using System;
-
-namespace Bee.ObjectCaching.Runtime
+﻿namespace Bee.ObjectCaching.Runtime
 {
     /// <summary>
     /// View state cache.

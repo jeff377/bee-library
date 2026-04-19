@@ -1,7 +1,6 @@
 ﻿using Bee.ObjectCaching.Database;
 using Bee.ObjectCaching.Define;
 using Bee.ObjectCaching.Runtime;
-using System;
 
 namespace Bee.ObjectCaching
 {
