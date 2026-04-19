@@ -17,6 +17,8 @@ namespace Bee.Business.UnitTests
     [Collection("Initialize")]
     public class SystemBusinessObjectExtraTests
     {
+        private static readonly string[] DepartmentKeys = { "Department" };
+
         [Fact]
         [DisplayName("Ping 應回傳包含 TraceId 與 OK 狀態的 PingResult")]
         public void Ping_ReturnsOkResult()
@@ -67,7 +69,7 @@ namespace Bee.Business.UnitTests
             var result = bo.GetDefine(new GetDefineArgs
             {
                 DefineType = DefineType.FormSchema,
-                Keys = new[] { "Department" }
+                Keys = DepartmentKeys
             });
 
             Assert.NotNull(result);

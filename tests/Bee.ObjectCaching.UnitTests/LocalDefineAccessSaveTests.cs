@@ -14,6 +14,8 @@ namespace Bee.ObjectCaching.UnitTests
     [Collection("Initialize")]
     public class LocalDefineAccessSaveTests
     {
+        private static readonly string[] DbViaDefineKeys = { "db_via_define" };
+
         private readonly LocalDefineAccess _access = new LocalDefineAccess();
 
         /// <summary>
@@ -198,7 +200,7 @@ namespace Bee.ObjectCaching.UnitTests
         {
             using var temp = new TempDefinePath();
             var schema = new TableSchema { TableName = "t_via_define" };
-            _access.SaveDefine(DefineType.TableSchema, schema, new[] { "db_via_define" });
+            _access.SaveDefine(DefineType.TableSchema, schema, DbViaDefineKeys);
             Assert.True(File.Exists(DefinePathInfo.GetTableSchemaFilePath("db_via_define", "t_via_define")));
         }
 
