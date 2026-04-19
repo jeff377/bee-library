@@ -1,4 +1,5 @@
 ﻿using Bee.Definition;
+using Bee.Definition.Logging;
 using System;
 
 namespace Bee.Db.Logging
@@ -34,14 +35,25 @@ namespace Bee.Db.Logging
             var opts = BackendInfo.LogOptions == null ? null : BackendInfo.LogOptions.DbAccess;
             if (opts == null) return;
 
-            var elapsedSeconds = context.Stopwatch.Elapsed.TotalSeconds;
-            bool isSlow = (opts.ExecutionTimeThreshold > 0) && (elapsedSeconds >= opts.ExecutionTimeThreshold);
-            bool isLarge = (opts.AffectedRowThreshold > 0) && (affectedRows >= opts.AffectedRowThreshold);
-
-            if (opts.Level == DbAccessAnomalyLogLevel.Warning && (isSlow || isLarge))
+            if (ShouldWarn(opts, context.Stopwatch.Elapsed.TotalSeconds, affectedRows))
             {
                 WriteWarning();
             }
+        }
+
+        /// <summary>
+        /// Determines whether an anomaly warning should be logged for the given options and runtime metrics.
+        /// </summary>
+        /// <param name="opts">The database access anomaly log options.</param>
+        /// <param name="elapsedSeconds">The command execution elapsed time in seconds.</param>
+        /// <param name="affectedRows">The number of rows affected.</param>
+        /// <returns>True if a warning should be written; otherwise, false.</returns>
+        internal static bool ShouldWarn(DbAccessAnomalyLogOptions opts, double elapsedSeconds, int affectedRows)
+        {
+            if (opts == null) return false;
+            bool isSlow = (opts.ExecutionTimeThreshold > 0) && (elapsedSeconds >= opts.ExecutionTimeThreshold);
+            bool isLarge = (opts.AffectedRowThreshold > 0) && (affectedRows >= opts.AffectedRowThreshold);
+            return opts.Level == DbAccessAnomalyLogLevel.Warning && (isSlow || isLarge);
         }
 
         /// <summary>

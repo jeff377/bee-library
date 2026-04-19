@@ -264,8 +264,8 @@ namespace Bee.Base.UnitTests.Serialization
             }
             """;
             var dt = JsonSerializer.Deserialize<DataTable>(json, Options())!;
-            Assert.Equal(true, dt.Rows[0]["A"]);
-            Assert.Equal(false, dt.Rows[0]["B"]);
+            Assert.True((bool)dt.Rows[0]["A"]);
+            Assert.False((bool)dt.Rows[0]["B"]);
             // 複雜 token 會被 Skip 回傳 null → DBNull
             Assert.True(dt.Rows[0].IsNull("C"));
         }

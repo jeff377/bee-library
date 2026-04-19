@@ -11,4 +11,8 @@
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Bee.Db.UnitTests" />
+  </ItemGroup>
+
 </Project>

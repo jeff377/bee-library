@@ -13,7 +13,7 @@ namespace Bee.Db.UnitTests
         /// <summary>
         /// 暫時替換 <see cref="BackendInfo.LogOptions"/>，用後還原。
         /// </summary>
-        private static IDisposable UseLogOptions(LogOptions? replacement)
+        private static DisposableAction UseLogOptions(LogOptions? replacement)
         {
             var original = BackendInfo.LogOptions;
             BackendInfo.LogOptions = replacement!;
@@ -118,30 +118,22 @@ namespace Bee.Db.UnitTests
             Assert.False(context.Stopwatch.IsRunning);
         }
 
-        [Fact]
-        [DisplayName("LogEnd 執行時間超過 threshold 應觸發 Warning 分支（不擲例外）")]
-        public void LogEnd_ElapsedAboveThreshold_InvokesWarning()
+        [Theory]
+        [InlineData(1.5, 0, true)]
+        [InlineData(0.5, 0, false)]
+        [DisplayName("ShouldWarn 於 Warning 等級且執行時間超過 threshold 應回傳 true")]
+        public void ShouldWarn_ElapsedAboveThreshold_ReturnsExpected(double elapsedSeconds, int affectedRows, bool expected)
         {
-            // ExecutionTimeThreshold=1 秒；LogStart 至 LogEnd 之間 sleep >1s 以觸發 isSlow
-            var opts = new LogOptions
+            var opts = new DbAccessAnomalyLogOptions
             {
-                DbAccess = new DbAccessAnomalyLogOptions
-                {
-                    Level = DbAccessAnomalyLogLevel.Warning,
-                    AffectedRowThreshold = 0,
-                    ExecutionTimeThreshold = 1
-                }
+                Level = DbAccessAnomalyLogLevel.Warning,
+                AffectedRowThreshold = 0,
+                ExecutionTimeThreshold = 1
             };
-            using var _ = UseLogOptions(opts);
 
-            var context = DbAccessLogger.LogStart(BuildCommand());
-            // 手動模擬經過時間以避免真的 sleep：將 Stopwatch 的內部值轉化──不可行，直接 sleep 1 秒
-            System.Threading.Thread.Sleep(1100);
+            var result = DbAccessLogger.ShouldWarn(opts, elapsedSeconds, affectedRows);
 
-            var ex = Record.Exception(() => DbAccessLogger.LogEnd(context, affectedRows: 0));
-
-            Assert.Null(ex);
-            Assert.False(context.Stopwatch.IsRunning);
+            Assert.Equal(expected, result);
         }
 
         [Fact]

@@ -9,6 +9,8 @@ namespace Bee.Base.UnitTests
     /// </summary>
     public class StrFuncExtraTests
     {
+        private static readonly string[] ExpectedAbc = ["a", "b", "c"];
+
         // ---- IsEmpty / IsNotEmpty ----
 
         [Theory]
@@ -141,7 +143,7 @@ namespace Bee.Base.UnitTests
         [DisplayName("Split 應依分隔字串切分")]
         public void Split_Splits()
         {
-            Assert.Equal(new[] { "a", "b", "c" }, StrFunc.Split("a||b||c", "||"));
+            Assert.Equal(ExpectedAbc, StrFunc.Split("a||b||c", "||"));
         }
 
         [Fact]
@@ -155,7 +157,7 @@ namespace Bee.Base.UnitTests
         [DisplayName("SplitNewLine 應同時處理 \\r\\n 與 \\n")]
         public void SplitNewLine_HandlesBothEndings()
         {
-            Assert.Equal(new[] { "a", "b", "c" }, StrFunc.SplitNewLine("a\r\nb\nc"));
+            Assert.Equal(ExpectedAbc, StrFunc.SplitNewLine("a\r\nb\nc"));
             Assert.Empty(StrFunc.SplitNewLine(string.Empty));
         }
 

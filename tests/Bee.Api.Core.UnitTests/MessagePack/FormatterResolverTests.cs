@@ -56,7 +56,7 @@ namespace Bee.Api.Core.UnitTests.MessagePack
             var formatter = FormatterResolver.Instance.GetFormatter<int>();
 
             Assert.NotNull(formatter);
-            Assert.IsAssignableFrom<IMessagePackFormatter<int>>(formatter);
+            Assert.IsType<IMessagePackFormatter<int>>(formatter, exactMatch: false);
         }
 
         [Fact]

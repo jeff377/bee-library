@@ -87,7 +87,7 @@ namespace Bee.Base.UnitTests
 
             var attr = BaseFunc.GetAttribute(component, typeof(DescriptionAttribute));
 
-            var desc = Assert.IsAssignableFrom<DescriptionAttribute>(attr);
+            var desc = Assert.IsType<DescriptionAttribute>(attr, exactMatch: false);
             Assert.Equal("Holder-Component", desc.Description);
         }
 
@@ -99,7 +99,7 @@ namespace Bee.Base.UnitTests
 
             var attr = BaseFunc.GetPropertyAttribute(component, "Number", typeof(DefaultValueAttribute));
 
-            var def = Assert.IsAssignableFrom<DefaultValueAttribute>(attr);
+            var def = Assert.IsType<DefaultValueAttribute>(attr, exactMatch: false);
             Assert.Equal(42, def.Value);
         }
 

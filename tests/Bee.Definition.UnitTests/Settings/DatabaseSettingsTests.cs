@@ -149,7 +149,9 @@ namespace Bee.Definition.UnitTests.Settings
         {
             var settings = new DatabaseSettings();
 
-            settings.AfterSerialize(SerializeFormat.Xml);
+            var ex = Record.Exception(() => settings.AfterSerialize(SerializeFormat.Xml));
+
+            Assert.Null(ex);
         }
 
         [Fact]
