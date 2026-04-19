@@ -1,5 +1,4 @@
 using Bee.Definition;
-using System;
 
 namespace Bee.Business.Attributes
 {

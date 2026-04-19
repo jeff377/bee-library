@@ -1,5 +1,4 @@
-﻿using System;
-using Bee.Definition;
+﻿using Bee.Definition;
 using Bee.Definition.Attributes;
 
 namespace Bee.Business
