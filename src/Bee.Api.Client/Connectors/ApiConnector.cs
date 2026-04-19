@@ -3,8 +3,6 @@ using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Tracing;
 using Bee.Api.Client.ApiServiceProvider;
-using System;
-using System.Threading.Tasks;
 
 
 namespace Bee.Api.Client.Connectors

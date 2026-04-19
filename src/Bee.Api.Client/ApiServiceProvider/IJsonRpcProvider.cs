@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 using Bee.Api.Core.JsonRpc;
 
 namespace Bee.Api.Client.ApiServiceProvider
