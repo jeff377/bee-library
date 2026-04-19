@@ -1,6 +1,4 @@
-﻿using Bee.Base;
-
-namespace Bee.Api.Core.Transformer
+﻿namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// An encryptor implementation that performs no encryption or decryption.

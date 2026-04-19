@@ -1,4 +1,3 @@
-using System;
 using Bee.Api.Contracts;
 using MessagePack;
 

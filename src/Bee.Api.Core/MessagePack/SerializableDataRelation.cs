@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using MessagePack;
+﻿using MessagePack;
 
 namespace Bee.Api.Core.MessagePack
 {

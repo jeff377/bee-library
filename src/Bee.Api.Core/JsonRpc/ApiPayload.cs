@@ -3,8 +3,6 @@ using Bee.Base;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
 
-using Bee.Api.Core;
-
 namespace Bee.Api.Core.JsonRpc
 {
     /// <summary>

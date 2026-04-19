@@ -1,4 +1,3 @@
-using System;
 using Bee.Definition.Serialization;
 using MessagePack;
 

@@ -1,4 +1,3 @@
-using System;
 using Bee.Base;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;

@@ -1,5 +1,3 @@
-using System;
-
 namespace Bee.Api.Core
 {
     /// <summary>

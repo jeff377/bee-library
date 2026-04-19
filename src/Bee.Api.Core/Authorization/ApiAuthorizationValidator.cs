@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Bee.Api.Core.JsonRpc;
+﻿using Bee.Api.Core.JsonRpc;
 
 namespace Bee.Api.Core.Authorization
 {

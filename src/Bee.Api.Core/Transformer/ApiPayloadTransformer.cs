@@ -1,7 +1,4 @@
-﻿using System;
-using Bee.Api.Core;
-
-namespace Bee.Api.Core.Transformer
+﻿namespace Bee.Api.Core.Transformer
 {
     /// <summary>
     /// Default API payload transformer that provides data serialization, compression, and encryption/decryption.
