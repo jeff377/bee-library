@@ -1,7 +1,6 @@
 using Bee.Definition.Settings;
 using Bee.Base;
 using Bee.Business.Attributes;
-using Bee.Business.BusinessObjects;
 using Bee.Definition;
 using System;
 using System.Collections.Generic;

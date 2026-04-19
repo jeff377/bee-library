@@ -73,16 +73,17 @@
 ```
 Bee.Business/
   Attributes/       # ExecFuncAccessControlAttribute
-  BusinessObjects/  # BusinessObject, SystemBusinessObject, FormBusinessObject,
-                    # BusinessObjectProvider, IExecFuncHandler,
-                    # SystemExecFuncHandler, FormExecFuncHandler
-  Provider/         # LoginAttemptTracker, StaticApiEncryptionKeyProvider,
-                    # DynamicApiEncryptionKeyProvider, CacheDataSourceProvider
-  System/           # Args/Result pairs for system operations
+  Form/             # Form-level BO archetype (namespace Bee.Business.Form)
+                    # IFormBusinessObject, FormBusinessObject, FormExecFuncHandler
+  System/           # System-level BO archetype (namespace Bee.Business.System)
+                    # ISystemBusinessObject, SystemBusinessObject, SystemExecFuncHandler,
+                    # and Args/Result pairs for system operations
                     # (Login, Ping, CreateSession, GetDefine, SaveDefine,
                     #  CheckPackageUpdate, GetPackage, GetCommonConfiguration)
+  Provider/         # LoginAttemptTracker, StaticApiEncryptionKeyProvider,
+                    # DynamicApiEncryptionKeyProvider, CacheDataSourceProvider
   Validator/        # AccessTokenValidationProvider
-  *.cs (root)       # IBusinessObject, ISystemBusinessObject, IFormBusinessObject,
-                    # BusinessFunc, ExecFuncArgs, ExecFuncResult,
+  *.cs (root)       # BusinessObject, BusinessObjectProvider, IBusinessObject,
+                    # IExecFuncHandler, BusinessFunc, ExecFuncArgs, ExecFuncResult,
                     # BusinessArgs, BusinessResult
 ```

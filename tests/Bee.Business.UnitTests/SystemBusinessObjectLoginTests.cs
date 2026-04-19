@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using Bee.Base.Security;
-using Bee.Business.BusinessObjects;
 using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Definition;

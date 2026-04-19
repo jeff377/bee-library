@@ -73,16 +73,17 @@
 ```
 Bee.Business/
   Attributes/       # ExecFuncAccessControlAttribute
-  BusinessObjects/  # BusinessObject、SystemBusinessObject、FormBusinessObject、
-                    # BusinessObjectProvider、IExecFuncHandler、
-                    # SystemExecFuncHandler、FormExecFuncHandler
-  Provider/         # LoginAttemptTracker、StaticApiEncryptionKeyProvider、
-                    # DynamicApiEncryptionKeyProvider、CacheDataSourceProvider
-  System/           # 系統操作的 Args/Result 組合
+  Form/             # 表單層 BO 原型（命名空間 Bee.Business.Form）
+                    # IFormBusinessObject、FormBusinessObject、FormExecFuncHandler
+  System/           # 系統層 BO 原型（命名空間 Bee.Business.System）
+                    # ISystemBusinessObject、SystemBusinessObject、SystemExecFuncHandler，
+                    # 以及系統操作的 Args/Result 組合
                     # （Login、Ping、CreateSession、GetDefine、SaveDefine、
                     #   CheckPackageUpdate、GetPackage、GetCommonConfiguration）
+  Provider/         # LoginAttemptTracker、StaticApiEncryptionKeyProvider、
+                    # DynamicApiEncryptionKeyProvider、CacheDataSourceProvider
   Validator/        # AccessTokenValidationProvider
-  *.cs（根目錄）     # IBusinessObject、ISystemBusinessObject、IFormBusinessObject、
-                    # BusinessFunc、ExecFuncArgs、ExecFuncResult、
+  *.cs（根目錄）     # BusinessObject、BusinessObjectProvider、IBusinessObject、
+                    # IExecFuncHandler、BusinessFunc、ExecFuncArgs、ExecFuncResult、
                     # BusinessArgs、BusinessResult
 ```

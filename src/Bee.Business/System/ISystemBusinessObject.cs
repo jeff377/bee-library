@@ -1,6 +1,4 @@
-using Bee.Business.System;
-
-namespace Bee.Business
+namespace Bee.Business.System
 {
     /// <summary>
     /// Interface for system-level business logic objects.

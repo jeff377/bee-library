@@ -1,4 +1,4 @@
-namespace Bee.Business.BusinessObjects
+namespace Bee.Business
 {
     /// <summary>
     /// Interface for handlers that execute methods identified by a FuncID.

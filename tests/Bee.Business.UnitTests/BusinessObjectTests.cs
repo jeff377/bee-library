@@ -4,7 +4,7 @@ using Bee.Business.UnitTests.Fakes;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="BusinessObjects.BusinessObject"/> 基底行為測試。
+    /// <see cref="BusinessObject"/> 基底行為測試。
     /// </summary>
     public class BusinessObjectTests
     {

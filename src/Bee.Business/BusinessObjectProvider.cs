@@ -1,7 +1,9 @@
-﻿using Bee.Definition;
+﻿using Bee.Business.Form;
+using Bee.Business.System;
+using Bee.Definition;
 using System;
 
-namespace Bee.Business.BusinessObjects
+namespace Bee.Business
 {
     /// <summary>
     /// Provider for creating business logic objects.

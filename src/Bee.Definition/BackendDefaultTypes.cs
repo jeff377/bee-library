@@ -18,7 +18,7 @@ namespace Bee.Definition
         /// <summary>
         /// Default business object provider type, used for dynamically creating BusinessObjects.
         /// </summary>
-        public const string BusinessObjectProvider = "Bee.Business.BusinessObjects.BusinessObjectProvider, Bee.Business";
+        public const string BusinessObjectProvider = "Bee.Business.BusinessObjectProvider, Bee.Business";
 
         // ---------------- Cache ----------------
         /// <summary>

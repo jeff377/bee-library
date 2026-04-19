@@ -3,12 +3,11 @@ using System;
 using Bee.Base;
 using Bee.Base.Security;
 using Bee.Base.Serialization;
-using Bee.Business.System;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Repository.Abstractions;
 
-namespace Bee.Business.BusinessObjects
+namespace Bee.Business.System
 {
     /// <summary>
     /// System-level business logic object.

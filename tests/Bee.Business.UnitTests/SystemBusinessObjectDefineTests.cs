@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Business.BusinessObjects;
 using Bee.Business.System;
 using Bee.Definition;
 using Bee.Tests.Shared;

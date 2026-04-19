@@ -2,7 +2,7 @@
 using Bee.Definition;
 using Bee.Definition.Attributes;
 
-namespace Bee.Business.BusinessObjects
+namespace Bee.Business
 {
     /// <summary>
     /// Base class for business logic objects.

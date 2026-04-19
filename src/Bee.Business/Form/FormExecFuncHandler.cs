@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bee.Business.BusinessObjects
+namespace Bee.Business.Form
 {
     /// <summary>
     /// Custom method handler for form-level business logic objects.

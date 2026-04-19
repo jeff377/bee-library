@@ -1,5 +1,6 @@
 using System.ComponentModel;
-using Bee.Business.BusinessObjects;
+using Bee.Business.Form;
+using Bee.Business.System;
 
 namespace Bee.Business.UnitTests
 {

@@ -4,7 +4,7 @@ using Bee.Business.Attributes;
 using Bee.Definition;
 using Bee.Repository.Abstractions;
 
-namespace Bee.Business.BusinessObjects
+namespace Bee.Business.System
 {
     /// <summary>
     /// Custom method handler for system-level business logic objects.

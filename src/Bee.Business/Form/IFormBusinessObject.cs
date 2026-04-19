@@ -1,4 +1,4 @@
-namespace Bee.Business
+namespace Bee.Business.Form
 {
     /// <summary>
     /// Interface for form-level business logic objects.

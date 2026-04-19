@@ -1,4 +1,3 @@
-using Bee.Business.BusinessObjects;
 using Bee.Business.System;
 
 namespace Bee.Business.UnitTests.Fakes

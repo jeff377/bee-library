@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Security;
 using Bee.Business.System;
-using Bee.Business.BusinessObjects;
 using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests

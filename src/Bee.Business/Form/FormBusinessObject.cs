@@ -1,7 +1,7 @@
 ﻿using System;
 using Bee.Definition;
 
-namespace Bee.Business.BusinessObjects
+namespace Bee.Business.Form
 {
     /// <summary>
     /// Form-level business logic object.
