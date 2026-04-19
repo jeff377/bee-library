@@ -153,5 +153,23 @@ namespace Bee.Business.UnitTests
             Assert.Throws<ArgumentOutOfRangeException>(() =>
                 new LoginAttemptTracker(5, TimeSpan.Zero));
         }
+
+        [Fact]
+        [DisplayName("鎖定期間內再次 RecordFailure 應維持既有鎖定狀態")]
+        public void RecordFailure_DuringLockout_KeepsLockedState()
+        {
+            // 鎖定 10 分鐘，確保持續在鎖定期間
+            var tracker = new LoginAttemptTracker(3, TimeSpan.FromMinutes(10));
+
+            for (int i = 0; i < 3; i++)
+                tracker.RecordFailure("user01");
+            Assert.True(tracker.IsLockedOut("user01"));
+
+            // 觸發 IncrementFailure 中 LockedUntilUtc 仍有效的早退分支
+            tracker.RecordFailure("user01");
+            tracker.RecordFailure("user01");
+
+            Assert.True(tracker.IsLockedOut("user01"));
+        }
     }
 }

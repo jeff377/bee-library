@@ -133,6 +133,30 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
+        [DisplayName("Save 後 GetProgramSettings 可經由 ProgramSettingsCache 讀回")]
+        public void GetProgramSettings_RoundTrip_ThroughCache()
+        {
+            using var temp = new TempDefinePath();
+            _access.SaveProgramSettings(new ProgramSettings());
+
+            var loaded = _access.GetProgramSettings();
+            Assert.NotNull(loaded);
+        }
+
+        [Fact]
+        [DisplayName("Save 後 GetFormLayout 可經由 FormLayoutCache 讀回")]
+        public void GetFormLayout_RoundTrip_ThroughCache()
+        {
+            using var temp = new TempDefinePath();
+            var layout = new FormLayout { LayoutId = "L_Get" };
+            _access.SaveFormLayout(layout);
+
+            var loaded = _access.GetFormLayout("L_Get");
+            Assert.NotNull(loaded);
+            Assert.Equal("L_Get", loaded.LayoutId);
+        }
+
+        [Fact]
         [DisplayName("SaveDefine(SystemSettings) 應委派至 SaveSystemSettings")]
         public void SaveDefine_SystemSettings_DelegatesToSaveSystemSettings()
         {
