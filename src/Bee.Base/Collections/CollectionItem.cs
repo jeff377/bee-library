@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using System;
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base.Attributes;

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bee.Base
+﻿namespace Bee.Base
 {
     /// <summary>
     /// Interface for classes that have a Tag property.

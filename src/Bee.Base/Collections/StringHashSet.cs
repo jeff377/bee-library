@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Bee.Base.Collections
+﻿namespace Bee.Base.Collections
 {
     /// <summary>
     /// A case-insensitive string collection that does not allow duplicate entries.

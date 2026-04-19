@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Bee.Base.Collections
+﻿namespace Bee.Base.Collections
 {
     /// <summary>
     /// A key-value collection with case-insensitive string keys.

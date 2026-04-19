@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Bee.Base.Tracing;
+﻿using Bee.Base.Tracing;
 
 namespace Bee.Base
 {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bee.Base.Tracing
+﻿namespace Bee.Base.Tracing
 {
     /// <summary>
     /// Represents the execution context of a trace segment.

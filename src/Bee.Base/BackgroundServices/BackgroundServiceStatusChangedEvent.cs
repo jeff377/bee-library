@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bee.Base.BackgroundServices
+﻿namespace Bee.Base.BackgroundServices
 {
     /// <summary>
     /// Delegate declaration for the BackgroundServiceStatusChanged event, raised when the background service status changes.

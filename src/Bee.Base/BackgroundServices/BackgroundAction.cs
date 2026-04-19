@@ -1,7 +1,4 @@
-﻿using System;
-using System.Threading;
-
-namespace Bee.Base.BackgroundServices
+﻿namespace Bee.Base.BackgroundServices
 {
     /// <summary>
     /// Represents a delegate action for a background task.

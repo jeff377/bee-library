@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Bee.Base.Attributes
+﻿namespace Bee.Base.Attributes
 {
     /// <summary>
     /// Custom attribute applied to a class to describe how the object is presented as a tree node.
