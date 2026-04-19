@@ -12,6 +12,9 @@ insert_final_newline = true
 [*.cs]
 indent_size = 4
 
+# 編譯期檢查：移除多餘 using 指令
+dotnet_diagnostic.IDE0005.severity = warning
+
 # XML project files
 [*.{csproj,props,targets}]
 indent_size = 2
