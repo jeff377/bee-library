@@ -26,6 +26,9 @@ docs/blogs/
 # Personal Claude skills (author-specific, not synced to GitHub)
 .claude/skills/
 
+# Personal Claude slash commands (author-specific, not synced to GitHub)
+.claude/commands/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
