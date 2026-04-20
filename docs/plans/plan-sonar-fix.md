@@ -1,6 +1,11 @@
 # 計畫：新建 `/sonar-fix` 品質巡檢 skill（SonarCloud Issues + Coverage）
 
-**狀態：🚧 進行中**
+**狀態：✅ 已完成（2026-04-20）**
+
+> 落地步驟 3（`.gitignore` 決策）依使用者指示不執行（狀態檔已改至 `docs/.sonar-fix-state/` 採 git 追蹤）。
+> 落地步驟 5（daily 乾跑）：2026-04-20 初始化 snapshot，QG=OK、coverage 91.8%、0 issue。
+> 落地步驟 6（fix 手動跑）：結束條件 2a 立即成立（QG=OK + coverage ≥ 90% + 無 BLOCKER/HIGH），skill no-op 退出，閉環驗證通過。
+> 排程 `bee-sonar-fix-daily` 每日 09:00 執行 daily 模式。
 
 ## 背景
 
