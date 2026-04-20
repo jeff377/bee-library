@@ -75,7 +75,7 @@ namespace Bee.Definition.Layouts
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _columns!)) { return null; }
-                if (_columns == null) { _columns = new LayoutColumnCollection(); }
+                if (_columns == null) { _columns = []; }
                 return _columns;
             }
         }

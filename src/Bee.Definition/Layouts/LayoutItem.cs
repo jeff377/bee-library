@@ -130,7 +130,7 @@ namespace Bee.Definition.Layouts
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _listItems!)) { return null; }
-                if (_listItems == null) { _listItems = new ListItemCollection(); }
+                if (_listItems == null) { _listItems = []; }
                 return _listItems;
             }
         }
@@ -146,7 +146,7 @@ namespace Bee.Definition.Layouts
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _extendedProperties!)) { return null; }
-                if (_extendedProperties == null) { _extendedProperties = new PropertyCollection(); }
+                if (_extendedProperties == null) { _extendedProperties = []; }
                 return _extendedProperties;
             }
         }

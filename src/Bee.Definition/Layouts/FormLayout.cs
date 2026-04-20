@@ -101,7 +101,7 @@ namespace Bee.Definition.Layouts
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _groups!)) { return null; }
-                if (_groups == null) { _groups = new LayoutGroupCollection(); }
+                if (_groups == null) { _groups = []; }
                 return _groups;
             }
         }

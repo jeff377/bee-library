@@ -107,7 +107,7 @@ namespace Bee.Definition.Settings
         {
             List<MenuFolder> oFolders;
 
-            oFolders = new List<MenuFolder>();
+            oFolders = [];
             foreach (MenuFolder folder in this.Folders!)
                 EnumFolders(folder, oFolders);
             return oFolders;
@@ -135,7 +135,7 @@ namespace Bee.Definition.Settings
         {
             List<MenuItem> oItems;
 
-            oItems = new List<MenuItem>();
+            oItems = [];
             foreach (MenuFolder folder in this.Folders!)
                 Enumtems(folder, oItems);
             return oItems;

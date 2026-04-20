@@ -14,7 +14,7 @@ namespace Bee.Definition.Settings
     [Description("Client settings.")]
     public class ClientSettings : IObjectSerializeFile
     {
-        private EndpointItemCollection _endpointItems = new EndpointItemCollection();
+        private EndpointItemCollection _endpointItems = [];
 
         #region Constructors
 
@@ -89,7 +89,7 @@ namespace Bee.Definition.Settings
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _endpointItems)) { return null; }
-                if (_endpointItems == null) { _endpointItems = new EndpointItemCollection(); }
+                if (_endpointItems == null) { _endpointItems = []; }
                 return _endpointItems;
             }
         }

@@ -165,7 +165,7 @@ namespace Bee.Definition.Forms
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _relationFieldMappings!)) { return null; }
-                if (_relationFieldMappings == null) { _relationFieldMappings = new FieldMappingCollection(); }
+                if (_relationFieldMappings == null) { _relationFieldMappings = []; }
                 return _relationFieldMappings;
             }
         }
@@ -193,7 +193,7 @@ namespace Bee.Definition.Forms
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _lookupFieldMappings!)) { return null; }
-                if (_lookupFieldMappings == null) { _lookupFieldMappings = new FieldMappingCollection(); }
+                if (_lookupFieldMappings == null) { _lookupFieldMappings = []; }
                 return _lookupFieldMappings;
             }
         }

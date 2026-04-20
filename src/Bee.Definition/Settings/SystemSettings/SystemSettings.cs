@@ -119,7 +119,7 @@ namespace Bee.Definition.Settings
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ExtendedProperties!)) { return null; }
-                if (_ExtendedProperties == null) { _ExtendedProperties = new PropertyCollection(); }
+                if (_ExtendedProperties == null) { _ExtendedProperties = []; }
                 return _ExtendedProperties;
             }
         }

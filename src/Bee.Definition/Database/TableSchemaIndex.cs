@@ -61,7 +61,7 @@ namespace Bee.Definition.Database
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _indexFields!)) { return null; }
-                if (_indexFields == null) { _indexFields = new IndexFieldCollection(); }
+                if (_indexFields == null) { _indexFields = []; }
                 return _indexFields;
             }
         }

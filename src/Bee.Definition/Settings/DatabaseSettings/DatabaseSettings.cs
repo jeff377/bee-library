@@ -176,7 +176,7 @@ namespace Bee.Definition.Settings
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _servers!)) { return null; }
-                if (_servers == null) { _servers = new DatabaseServerCollection(); }
+                if (_servers == null) { _servers = []; }
                 return _servers;
             }
         }
@@ -192,7 +192,7 @@ namespace Bee.Definition.Settings
             {
                 // Return null if the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _items!)) { return null; }
-                if (_items == null) { _items = new DatabaseItemCollection(); }
+                if (_items == null) { _items = []; }
                 return _items;
             }
         }

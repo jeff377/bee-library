@@ -16,7 +16,7 @@ namespace Bee.Definition.Filters
         /// </summary>
         public FilterGroup()
         {
-            Nodes = new FilterNodeCollection();
+            Nodes = [];
         }
 
         /// <summary>
@@ -26,7 +26,7 @@ namespace Bee.Definition.Filters
         public FilterGroup(LogicalOperator @operator)
         {
             Operator = @operator;
-            Nodes = new FilterNodeCollection();
+            Nodes = [];
         }
 
         /// <summary>
