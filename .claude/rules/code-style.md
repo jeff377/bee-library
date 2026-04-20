@@ -11,13 +11,6 @@
 | 私有欄位 | `_camelCase`（底線前綴） | `_isTokenValid`, `_accessToken` |
 | 參數 | camelCase | `accessToken`, `sessionId` |
 
-### 命名空間 vs 型別名稱（CA1724）
-
-- **禁止命名空間最後一段與其中的類別／介面同名**
-  - ❌ `namespace Bee.Db.DbAccess` + `class DbAccess`（造成 `Bee.Db.DbAccess.DbAccess` 冗餘限定）
-  - ✅ 將子命名空間合併至上層：`namespace Bee.Db` + `class DbAccess`
-  - ✅ 或重新命名類別：`namespace Bee.Db.DbAccess` + `class DbAccessor`
-
 ## 檔案組織
 
 每個套件依功能分資料夾，介面可依所屬功能就近放置，不強制集中至 `Interface/` 資料夾：
@@ -36,6 +29,8 @@ Bee.<Module>/
 
 **唯一例外**：某資料夾下集中了同一父類別的大量子類別，可用資料夾做邏輯分組而不建立對應子命名空間。
 - 例：`src/Bee.Definition/Settings/` 下有許多 `*Settings` 子類別，命名空間維持 `Bee.Definition.Settings`
+
+> 此規則無法以 `.editorconfig` 硬性化（IDE0130 是全域規則，無法針對個別資料夾開例外），由 prompt 層把關。
 
 ## 文件語言規則
 
@@ -61,7 +56,7 @@ Bee.<Module>/
 
 ## XML 文件註解
 
-所有 `public` API 必須加 XML 文件，使用**英文**撰寫（套件公開發布於 NuGet，英文確保 IntelliSense 與外部使用者皆可閱讀）：
+XML 文件使用**英文**撰寫（套件公開發布於 NuGet，英文確保 IntelliSense 與外部使用者皆可閱讀）：
 
 ```csharp
 /// <summary>

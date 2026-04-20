@@ -18,6 +18,9 @@ dotnet_diagnostic.IDE0005.severity = warning
 # 編譯期檢查：使用集合初始化運算式
 dotnet_diagnostic.IDE0028.severity = warning
 
+# 編譯期檢查：namespace 末段不得與其中的類別／介面同名
+dotnet_diagnostic.CA1724.severity = warning
+
 # XML project files
 [*.{csproj,props,targets}]
 indent_size = 2
