@@ -1,7 +1,11 @@
 {
-  "capturedAt": null,
-  "qualityGate": null,
-  "coverage": null,
+  "capturedAt": "2026-04-20T09:39:31Z",
+  "qualityGate": "OK",
+  "coverage": 91.8,
+  "ncloc": 15716,
+  "bugs": 0,
+  "vulnerabilities": 0,
+  "codeSmells": 0,
   "leakIssueKeys": [],
   "allOpenIssueKeys": []
 }
