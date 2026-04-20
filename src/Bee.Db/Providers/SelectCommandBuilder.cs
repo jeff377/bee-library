@@ -42,9 +42,11 @@ namespace Bee.Db.Providers
 
             var selectContext = GetSelectContext(formTable, selectFields, filter, sortFields);
 
-            var sqlParts = new List<string>();
-            sqlParts.Add(BuildSelectClause(formTable, selectFields, selectContext));
-            sqlParts.Add(BuildFromClause(formTable, selectContext.Joins));
+            var sqlParts = new List<string>
+            {
+                BuildSelectClause(formTable, selectFields, selectContext),
+                BuildFromClause(formTable, selectContext.Joins)
+            };
 
             var (whereClause, parameters) = BuildWhereClause(filter, selectContext);
             if (!string.IsNullOrWhiteSpace(whereClause))

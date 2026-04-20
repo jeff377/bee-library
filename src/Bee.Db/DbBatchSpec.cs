@@ -10,7 +10,7 @@ namespace Bee.Db
         /// <summary>
         /// Gets or sets the collection of commands to execute (executed in order).
         /// </summary>
-        public DbCommandSpecCollection Commands { get; set; } = new DbCommandSpecCollection();
+        public DbCommandSpecCollection Commands { get; set; } = [];
 
         /// <summary>
         /// Gets or sets whether to wrap the entire batch in a transaction (rolls back on any failure; commits on success).

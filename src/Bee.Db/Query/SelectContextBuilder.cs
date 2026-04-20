@@ -185,8 +185,10 @@ namespace Bee.Db.Query
         private static FieldMappingCollection GetSingleRelationFieldMappings(FormField foreignKeyField, string destinationField)
         {
             var fieldMapping = foreignKeyField.RelationFieldMappings!.FindByDestination(destinationField);
-            var result = new FieldMappingCollection();
-            result.Add(fieldMapping!.SourceField, fieldMapping.DestinationField);
+            var result = new FieldMappingCollection
+            {
+                { fieldMapping!.SourceField, fieldMapping.DestinationField }
+            };
             return result;
         }
     }

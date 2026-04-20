@@ -11,12 +11,12 @@
         /// Gets or sets all field source mappings used by the query.
         /// Each entry describes a query field's mapping to its source table, column, and JOIN relationship.
         /// </summary>
-        public QueryFieldMappingCollection FieldMappings { get; set; } = new QueryFieldMappingCollection();
+        public QueryFieldMappingCollection FieldMappings { get; set; } = [];
 
         /// <summary>
         /// Gets or sets all table JOIN relationships required by the query.
         /// Records JOIN conditions, structures, and aliases between tables.
         /// </summary>
-        public TableJoinCollection Joins { get; set; } = new TableJoinCollection();
+        public TableJoinCollection Joins { get; set; } = [];
     }
 }

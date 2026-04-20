@@ -5,7 +5,7 @@
     /// </summary>
     public sealed class DefaultParameterCollector : IParameterCollector
     {
-        private readonly Dictionary<string, object> _parameters = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _parameters = [];
         private int _index;
 
         /// <summary>

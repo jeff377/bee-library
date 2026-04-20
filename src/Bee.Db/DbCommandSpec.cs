@@ -113,7 +113,7 @@ namespace Bee.Db
         /// <summary>
         /// Gets the parameter specifications for this command.
         /// </summary>
-        public DbParameterSpecCollection Parameters { get; } = new DbParameterSpecCollection();
+        public DbParameterSpecCollection Parameters { get; } = [];
 
         /// <summary>
         /// Creates a <see cref="DbCommand"/> instance configured with the current <see cref="DbCommandSpec"/> settings.

@@ -11,7 +11,7 @@ namespace Bee.Db.Manager
         /// <summary>
         /// Stores the registered <see cref="DbProviderFactory"/> instances.
         /// </summary>
-        private static readonly Dictionary<DatabaseType, DbProviderFactory> _factories = new Dictionary<DatabaseType, DbProviderFactory>();
+        private static readonly Dictionary<DatabaseType, DbProviderFactory> _factories = [];
 
         /// <summary>
         /// Registers a new database provider factory.

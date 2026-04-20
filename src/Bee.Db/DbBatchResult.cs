@@ -8,7 +8,7 @@
         /// <summary>
         /// Gets or sets the results for each command in the batch (in input order).
         /// </summary>
-        public DbCommandResultCollection Results { get; set; } = new DbCommandResultCollection();
+        public DbCommandResultCollection Results { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the total number of rows affected (accumulated only for NonQuery commands).
