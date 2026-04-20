@@ -17,9 +17,6 @@
 # Local test settings (may contain sensitive connection strings)
 .runsettings
 
-# Local test wrapper (developer-specific; references local Docker container)
-test.sh
-
 # Archived Claude Code plans (working documents, not reference material)
 docs/plans/archive/
 
