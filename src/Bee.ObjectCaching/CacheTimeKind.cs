@@ -3,7 +3,7 @@ namespace Bee.ObjectCaching
     /// <summary>
     /// Cache condition dependency time type.
     /// </summary>
-    public enum CacheTimeKind
+    public enum CacheTimeKind : int
     {
         /// <summary>
         /// Sliding expiration time.
