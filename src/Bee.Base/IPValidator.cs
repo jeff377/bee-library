@@ -21,8 +21,8 @@ namespace Bee.Base
         /// <param name="blacklist">A list of blacklist IP address patterns.</param>
         public IPValidator(List<string> whitelist, List<string> blacklist)
         {
-            _whitelist = whitelist ?? new List<string>();
-            _blacklist = blacklist ?? new List<string>();
+            _whitelist = whitelist ?? [];
+            _blacklist = blacklist ?? [];
         }
 
         /// <summary>

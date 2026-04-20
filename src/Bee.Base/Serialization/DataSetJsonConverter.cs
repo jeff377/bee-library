@@ -218,8 +218,8 @@ namespace Bee.Base.Serialization
             public string Name { get; set; } = string.Empty;
             public string ParentTable { get; set; } = string.Empty;
             public string ChildTable { get; set; } = string.Empty;
-            public List<string> ParentColumns { get; set; } = new();
-            public List<string> ChildColumns { get; set; } = new();
+            public List<string> ParentColumns { get; set; } = [];
+            public List<string> ChildColumns { get; set; } = [];
         }
 
         #endregion
