@@ -26,7 +26,7 @@ namespace Bee.Api.Client.DefineAccess
         public RemoteDefineAccess(SystemApiConnector connector)
         {
             _connector = connector;
-            _list = new Dictionary<object>();
+            _list = [];
         }
 
         #endregion
