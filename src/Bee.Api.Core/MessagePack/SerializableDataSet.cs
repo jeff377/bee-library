@@ -32,8 +32,8 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         public SerializableDataSet()
         {
-            Tables = new List<SerializableDataTable>();
-            Relations = new List<SerializableDataRelation>();
+            Tables = [];
+            Relations = [];
         }
 
         /// <summary>

@@ -10,12 +10,12 @@ namespace Bee.Api.Core.Authorization
         /// <summary>
         /// The set of methods that do not require authorization (case-sensitive).
         /// </summary>
-        private static readonly HashSet<string> NoAuthMethods = new HashSet<string>
-        {
+        private static readonly HashSet<string> NoAuthMethods =
+        [
             "System.Ping",
             "System.GetApiPayloadOptions",
             "System.Login"
-        };
+        ];
 
         /// <summary>
         /// Determines whether the specified JSON-RPC method requires authorization.

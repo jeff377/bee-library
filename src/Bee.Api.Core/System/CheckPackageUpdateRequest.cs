@@ -13,6 +13,6 @@ namespace Bee.Api.Core.System
         /// Gets or sets the list of query items to check.
         /// </summary>
         [Key(100)]
-        public List<PackageUpdateQuery> Queries { get; set; } = new List<PackageUpdateQuery>();
+        public List<PackageUpdateQuery> Queries { get; set; } = [];
     }
 }

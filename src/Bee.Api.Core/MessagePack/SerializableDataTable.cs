@@ -39,9 +39,9 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         public SerializableDataTable()
         {
-            Columns = new List<SerializableDataColumn>();
-            Rows = new List<SerializableDataRow>();
-            PrimaryKeys = new List<string>();
+            Columns = [];
+            Rows = [];
+            PrimaryKeys = [];
         }
 
         /// <summary>

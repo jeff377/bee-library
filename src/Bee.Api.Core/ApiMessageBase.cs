@@ -44,7 +44,7 @@ namespace Bee.Api.Core
             {
                 // Return null when the collection is empty during serialization
                 if (BaseFunc.IsSerializeEmpty(SerializeState, _parameters!)) { return null; }
-                if (_parameters == null) { _parameters = new ParameterCollection(); }
+                if (_parameters == null) { _parameters = []; }
                 return _parameters;
             }
             set

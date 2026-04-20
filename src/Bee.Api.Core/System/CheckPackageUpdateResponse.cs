@@ -13,6 +13,6 @@ namespace Bee.Api.Core.System
         /// Gets or sets the list of available package updates.
         /// </summary>
         [Key(100)]
-        public List<PackageUpdateInfo> Updates { get; set; } = new List<PackageUpdateInfo>();
+        public List<PackageUpdateInfo> Updates { get; set; } = [];
     }
 }

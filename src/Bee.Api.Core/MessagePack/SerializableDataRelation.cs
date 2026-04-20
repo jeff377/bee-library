@@ -43,8 +43,8 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         public SerializableDataRelation()
         {
-            ParentColumns = new List<string>();
-            ChildColumns = new List<string>();
+            ParentColumns = [];
+            ChildColumns = [];
         }
     }
 
