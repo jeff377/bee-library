@@ -29,6 +29,9 @@ docs/blogs/
 # Personal Claude slash commands (author-specific, not synced to GitHub)
 .claude/commands/
 
+# AI agent prompts (proprietary, local-only)
+prompts/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
