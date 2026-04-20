@@ -27,7 +27,7 @@
 
 - `ApiPayloadTransformer` -- orchestrates the Serialize -> Compress -> Encrypt pipeline (and the reverse on inbound payloads).
 - `IApiPayloadSerializer` / `MessagePackPayloadSerializer` -- pluggable serialization via MessagePack.
-- `IApiPayloadCompressor` / `GZipPayloadCompressor` -- pluggable GZip compression.
+- `IApiPayloadCompressor` / `GzipPayloadCompressor` -- pluggable Gzip compression.
 - `IApiPayloadEncryptor` / `AesPayloadEncryptor` -- pluggable AES-CBC-HMAC encryption.
 - `NoEncryptionEncryptor` -- bypass encryptor for testing only.
 - `ApiPayloadOptionsFactory` -- creates pipeline options based on protection level.
@@ -93,7 +93,7 @@ Bee.Api.Core/
                     FormatterResolver, custom formatters for ADO.NET types
   Transformer/      IApiPayloadTransformer, ApiPayloadTransformer,
                     IApiPayloadSerializer, MessagePackPayloadSerializer,
-                    IApiPayloadCompressor, GZipPayloadCompressor,
+                    IApiPayloadCompressor, GzipPayloadCompressor,
                     IApiPayloadEncryptor, AesPayloadEncryptor,
                     NoEncryptionEncryptor, ApiPayloadOptionsFactory
   Validator/        ApiAccessValidator, ApiCallContext

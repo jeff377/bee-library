@@ -34,7 +34,7 @@
 
 - `SerializeFunc` -- unified XML / JSON serialization via `System.Text.Json`
 - `XmlSerializerCache` -- cached XML serializer instances to avoid repeated reflection
-- `GZipFunc` -- GZip compression / decompression for payload handling
+- `GzipFunc` -- Gzip compression / decompression for payload handling
 
 ### Collections
 

@@ -35,7 +35,7 @@ namespace Bee.Api.Core.Transformer
             switch (name)
             {
                 case "gzip":
-                    return new GZipPayloadCompressor();
+                    return new GzipPayloadCompressor();
                 case "none":
                 case "":
                     return new NoCompressionCompressor();

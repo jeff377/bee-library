@@ -34,7 +34,7 @@
 
 - `SerializeFunc` -- 統一的 XML / JSON 序列化，採用 `System.Text.Json`
 - `XmlSerializerCache` -- 快取 XML 序列化器實例，避免重複反射
-- `GZipFunc` -- GZip 壓縮 / 解壓縮，用於 Payload 處理
+- `GzipFunc` -- Gzip 壓縮 / 解壓縮，用於 Payload 處理
 
 ### 集合
 

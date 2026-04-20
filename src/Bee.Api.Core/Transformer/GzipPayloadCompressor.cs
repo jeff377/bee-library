@@ -5,7 +5,7 @@ namespace Bee.Api.Core.Transformer
     /// <summary>
     /// GZip-based API transport layer data compressor.
     /// </summary>
-    public class GZipPayloadCompressor : IApiPayloadCompressor
+    public class GzipPayloadCompressor : IApiPayloadCompressor
     {
         /// <summary>
         /// Gets the identifier string for the compression algorithm.
@@ -19,7 +19,7 @@ namespace Bee.Api.Core.Transformer
         /// <returns>The compressed byte data.</returns>
         public byte[] Compress(byte[] bytes)
         {
-            return GZipFunc.Compress(bytes);
+            return GzipFunc.Compress(bytes);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Bee.Api.Core.Transformer
         /// <returns>The decompressed byte data.</returns>
         public byte[] Decompress(byte[] bytes)
         {
-            return GZipFunc.Decompress(bytes);
+            return GzipFunc.Decompress(bytes);
         }
     }
 }

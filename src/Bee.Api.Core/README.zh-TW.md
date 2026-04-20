@@ -27,7 +27,7 @@
 
 - `ApiPayloadTransformer` -- 協調序列化 -> 壓縮 -> 加密管線（入站則執行反向流程）。
 - `IApiPayloadSerializer` / `MessagePackPayloadSerializer` -- 可插拔的 MessagePack 序列化。
-- `IApiPayloadCompressor` / `GZipPayloadCompressor` -- 可插拔的 GZip 壓縮。
+- `IApiPayloadCompressor` / `GzipPayloadCompressor` -- 可插拔的 Gzip 壓縮。
 - `IApiPayloadEncryptor` / `AesPayloadEncryptor` -- 可插拔的 AES-CBC-HMAC 加密。
 - `NoEncryptionEncryptor` -- 僅供測試使用的旁路加密器。
 - `ApiPayloadOptionsFactory` -- 依據保護等級建立管線選項。
@@ -93,7 +93,7 @@ Bee.Api.Core/
                     FormatterResolver、ADO.NET 型別自訂格式器
   Transformer/      IApiPayloadTransformer、ApiPayloadTransformer、
                     IApiPayloadSerializer、MessagePackPayloadSerializer、
-                    IApiPayloadCompressor、GZipPayloadCompressor、
+                    IApiPayloadCompressor、GzipPayloadCompressor、
                     IApiPayloadEncryptor、AesPayloadEncryptor、
                     NoEncryptionEncryptor、ApiPayloadOptionsFactory
   Validator/        ApiAccessValidator、ApiCallContext

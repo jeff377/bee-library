@@ -13,7 +13,7 @@ namespace Bee.Api.Core
         private static IApiAuthorizationValidator _authorizationValidator = new ApiAuthorizationValidator(); // Default implementation
         private static IApiPayloadTransformer _payloadTransformer = new ApiPayloadTransformer(); // Default implementation
         private static IApiPayloadSerializer _payloadSerializer = new MessagePackPayloadSerializer(); // Default implementation
-        private static IApiPayloadCompressor _payloadCompressor = new GZipPayloadCompressor(); // Default implementation
+        private static IApiPayloadCompressor _payloadCompressor = new GzipPayloadCompressor(); // Default implementation
         private static IApiPayloadEncryptor _payloadEncryptor = new AesPayloadEncryptor(); // Default implementation
 
         /// <summary>

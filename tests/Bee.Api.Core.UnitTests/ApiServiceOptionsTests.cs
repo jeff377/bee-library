@@ -18,7 +18,7 @@ namespace Bee.Api.Core.UnitTests
             Assert.IsType<ApiAuthorizationValidator>(ApiServiceOptions.AuthorizationValidator);
             Assert.IsType<ApiPayloadTransformer>(ApiServiceOptions.PayloadTransformer);
             Assert.IsType<MessagePackPayloadSerializer>(ApiServiceOptions.PayloadSerializer);
-            Assert.IsType<GZipPayloadCompressor>(ApiServiceOptions.PayloadCompressor);
+            Assert.IsType<GzipPayloadCompressor>(ApiServiceOptions.PayloadCompressor);
         }
 
         [Fact]

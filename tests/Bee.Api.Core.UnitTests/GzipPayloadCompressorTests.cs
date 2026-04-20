@@ -5,15 +5,15 @@ using Bee.Api.Core.Transformer;
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
-    /// GZipPayloadCompressor 測試。
+    /// GzipPayloadCompressor 測試。
     /// </summary>
-    public class GZipPayloadCompressorTests
+    public class GzipPayloadCompressorTests
     {
         [Fact]
         [DisplayName("CompressionMethod 應為 \"gzip\"")]
         public void CompressionMethod_IsGzip()
         {
-            var compressor = new GZipPayloadCompressor();
+            var compressor = new GzipPayloadCompressor();
 
             Assert.Equal("gzip", compressor.CompressionMethod);
         }
@@ -22,7 +22,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("Compress 後 Decompress 應還原原始內容")]
         public void CompressDecompress_RoundTrip_RestoresOriginalBytes()
         {
-            var compressor = new GZipPayloadCompressor();
+            var compressor = new GzipPayloadCompressor();
             var original = Encoding.UTF8.GetBytes(
                 "The quick brown fox jumps over the lazy dog. " +
                 "The quick brown fox jumps over the lazy dog. " +
@@ -38,7 +38,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("Compress 壓縮後長度應不同於原始內容")]
         public void Compress_ProducesDifferentBytes()
         {
-            var compressor = new GZipPayloadCompressor();
+            var compressor = new GzipPayloadCompressor();
             var original = Encoding.UTF8.GetBytes(new string('A', 1000));
 
             var compressed = compressor.Compress(original);

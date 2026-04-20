@@ -26,12 +26,12 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("CreateCompressor(\"gzip\") 應回傳 GZipPayloadCompressor")]
-        public void CreateCompressor_Gzip_ReturnsGZipCompressor()
+        [DisplayName("CreateCompressor(\"gzip\") 應回傳 GzipPayloadCompressor")]
+        public void CreateCompressor_Gzip_ReturnsGzipCompressor()
         {
             var compressor = ApiPayloadOptionsFactory.CreateCompressor("gzip");
 
-            Assert.IsType<GZipPayloadCompressor>(compressor);
+            Assert.IsType<GzipPayloadCompressor>(compressor);
         }
 
         [Theory]
