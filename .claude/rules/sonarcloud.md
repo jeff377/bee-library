@@ -10,6 +10,7 @@
 > - **S2325** → CA1822（方法應為 static）
 > - **S2933** → IDE0044（readonly 欄位）
 > - **S4487** → IDE0051 / IDE0052（未使用 private 成員）
+> - **S927** → CA1725（override 參數名一致）
 
 ---
 
@@ -29,20 +30,7 @@
 | 規則 | 原則 |
 |------|------|
 | **S1006** | override／實作方法必須保留與基底／介面相同的 default 參數值 |
-| **S927** | override／實作方法的參數名必須與介面宣告**完全一致**（大小寫亦然） |
 | **S4144** | 多個方法實作完全相同時應合併，或改以一個呼叫另一個 |
-
-```csharp
-// ✅ 正確：參數名、default 值與介面一致
-public interface IBuilder { string Build(string? prefix = null); }
-public class MyBuilder : IBuilder
-{
-    public string Build(string? prefix = null) { ... }
-}
-
-// ❌ 錯誤：參數名與介面不符
-public string Build(string? Prefix = null) { ... }
-```
 
 ## 3. 控制流與語法
 

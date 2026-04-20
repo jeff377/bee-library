@@ -1,5 +1,7 @@
 # 計畫：啟用 CA1305／CA1031／CA1725 編譯期檢查
 
+**狀態：🚧 進行中（CA1725 已完成 2026-04-20；CA1305／CA1031 待處理）**
+
 ## 背景
 
 2026-04-20 將 `sonarcloud.md` 列舉的 Sonar 規則改由 `.editorconfig` 硬性化時，多數 CA 對應規則零違規（CA1822、CA1052、IDE0044、IDE0051、IDE0052、CA3075、CA5350/5351、CA5394）直接啟用。但三條規則在啟用當下會讓 build 失敗：
@@ -39,7 +41,7 @@
 
 **判斷原則**：能列舉具體例外型別者一律列舉；背景服務 lifecycle 這類必須吞例外的場景，用 `#pragma` 區域抑制並加說明。
 
-### CA1725（4 處，全在 test fixture）
+### CA1725（4 處，全在 test fixture）✅ 已完成（2026-04-20）
 
 [tests/Bee.Base.UnitTests/SerializeFuncTests.cs](tests/Bee.Base.UnitTests/SerializeFuncTests.cs) 的 `TestPayload` 類別 override `IObjectSerialize` / `IObjectSerializeProcess` 介面：
 

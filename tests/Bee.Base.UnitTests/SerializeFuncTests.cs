@@ -46,7 +46,7 @@ namespace Bee.Base.UnitTests
             private SerializeState _state = SerializeState.None;
             [XmlIgnore, JsonIgnore]
             public SerializeState SerializeState => _state;
-            public void SetSerializeState(SerializeState state) => _state = state;
+            public void SetSerializeState(SerializeState serializeState) => _state = serializeState;
 
             private string _objectFilePath = string.Empty;
             [XmlIgnore, JsonIgnore]
@@ -56,9 +56,9 @@ namespace Bee.Base.UnitTests
             [XmlIgnore, JsonIgnore]
             public List<string> Events { get; } = [];
 
-            public void BeforeSerialize(SerializeFormat format) => Events.Add($"Before:{format}");
-            public void AfterSerialize(SerializeFormat format) => Events.Add($"After:{format}");
-            public void AfterDeserialize(SerializeFormat format) => Events.Add($"AfterDeser:{format}");
+            public void BeforeSerialize(SerializeFormat serializeFormat) => Events.Add($"Before:{serializeFormat}");
+            public void AfterSerialize(SerializeFormat serializeFormat) => Events.Add($"After:{serializeFormat}");
+            public void AfterDeserialize(SerializeFormat serializeFormat) => Events.Add($"AfterDeser:{serializeFormat}");
         }
 
         private string TempPath(string fileName) => Path.Combine(_tempDir, fileName);
