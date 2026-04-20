@@ -10,6 +10,6 @@ namespace Bee.Business.System
         /// <summary>
         /// Gets or sets the list of query items to check.
         /// </summary>
-        public List<PackageUpdateQuery> Queries { get; set; } = new List<PackageUpdateQuery>();
+        public List<PackageUpdateQuery> Queries { get; set; } = [];
     }
 }

@@ -16,7 +16,7 @@ namespace Bee.Business
         /// </summary>
         public ParameterCollection Parameters
         {
-            get => _parameters ??= new ParameterCollection();
+            get => _parameters ??= [];
             set => _parameters = value;
         }
     }
