@@ -1,4 +1,5 @@
 ﻿using System.Data;
+using System.Globalization;
 
 namespace Bee.Base.Data
 {
@@ -29,7 +30,7 @@ namespace Bee.Base.Data
 
             try
             {
-                return (T)Convert.ChangeType(value, typeof(T));
+                return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
             }
             catch (Exception ex)
             {
@@ -61,7 +62,7 @@ namespace Bee.Base.Data
 
             try
             {
-                return (T)Convert.ChangeType(value, typeof(T));
+                return (T)Convert.ChangeType(value, typeof(T), CultureInfo.InvariantCulture);
             }
             catch (Exception ex)
             {

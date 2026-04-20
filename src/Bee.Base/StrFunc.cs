@@ -59,7 +59,7 @@ namespace Bee.Base
         /// <param name="args">An array of arguments.</param>
         public static string Format(string s, params object[] args)
         {
-            return string.Format(s, args);
+            return string.Format(CultureInfo.InvariantCulture, s, args);
         }
 
         /// <summary>

@@ -2,6 +2,7 @@ using Bee.Definition.Database;
 using Bee.Base.Data;
 using Bee.Definition;
 using System.Data;
+using System.Globalization;
 using System.Text;
 
 namespace Bee.Db
@@ -68,7 +69,7 @@ namespace Bee.Db
             var command = new DbCommandSpec();
             var buffer = new StringBuilder();
             string tableName = QuoteIdentifier(this.TableSchema.TableName);
-            buffer.AppendLine($"Insert Into {tableName} ");
+            buffer.AppendLine(CultureInfo.InvariantCulture, $"Insert Into {tableName} ");
 
             // Build the INSERT column list
             buffer.Append('(');
@@ -114,7 +115,7 @@ namespace Bee.Db
             var command = new DbCommandSpec();
             var buffer = new StringBuilder();
             string tableName = QuoteIdentifier(this.TableSchema.TableName);
-            buffer.AppendLine($"Update {tableName} Set ");
+            buffer.AppendLine(CultureInfo.InvariantCulture, $"Update {tableName} Set ");
 
             string fieldName;
             // Get the primary key field
@@ -130,7 +131,7 @@ namespace Bee.Db
                     command.Parameters.Add(field);
                     if (iCount > 0)
                         buffer.Append(", ");
-                    buffer.Append($"{fieldName}={GetParameterName(field.FieldName)}");
+                    buffer.Append(CultureInfo.InvariantCulture, $"{fieldName}={GetParameterName(field.FieldName)}");
                     iCount++;
                 }
             }
@@ -138,7 +139,7 @@ namespace Bee.Db
             fieldName = QuoteIdentifier(keyField!.FieldName);
             command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
             buffer.AppendLine();
-            buffer.AppendLine($"Where {fieldName}={GetParameterName(keyField.FieldName)}");
+            buffer.AppendLine(CultureInfo.InvariantCulture, $"Where {fieldName}={GetParameterName(keyField.FieldName)}");
 
             command.CommandText = buffer.ToString();
             return command;
@@ -152,13 +153,13 @@ namespace Bee.Db
             var command = new DbCommandSpec();
             var buffer = new StringBuilder();
             string tableName = QuoteIdentifier(this.TableSchema.TableName);
-            buffer.AppendLine($"Delete From {tableName} ");
+            buffer.AppendLine(CultureInfo.InvariantCulture, $"Delete From {tableName} ");
 
             // Add primary key condition to WHERE clause
             var keyField = this.TableSchema.Fields![SysFields.RowId];
             string fieldName = QuoteIdentifier(keyField!.FieldName);
             command.Parameters.Add(keyField, System.Data.DataRowVersion.Original);
-            buffer.AppendLine($"Where {fieldName}={GetParameterName(keyField.FieldName)}");
+            buffer.AppendLine(CultureInfo.InvariantCulture, $"Where {fieldName}={GetParameterName(keyField.FieldName)}");
 
             command.CommandText = buffer.ToString();
             return command;

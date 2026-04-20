@@ -1,4 +1,6 @@
-﻿namespace Bee.Db.Query
+﻿using System.Globalization;
+
+namespace Bee.Db.Query
 {
     /// <summary>
     /// Default parameter collector that generates parameter names as @p0, @p1, ... (or with a custom prefix).
@@ -34,7 +36,7 @@
         /// <returns>The generated parameter name in the format "prefix + 'p' + index" (e.g., @p0, @p1).</returns>
         public string Add(object value)
         {
-            var name = Prefix + "p" + _index.ToString();
+            var name = Prefix + "p" + _index.ToString(CultureInfo.InvariantCulture);
             _index++;
             _parameters[name] = value;
             return name;

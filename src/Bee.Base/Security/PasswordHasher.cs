@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Globalization;
+using System.Security.Cryptography;
 
 namespace Bee.Base.Security
 {
@@ -46,7 +47,7 @@ namespace Bee.Base.Security
                     var inner = hashedPassword.Substring(V2Prefix.Length);
                     var parts = inner.Split('.');
                     if (parts.Length != 3) return false;
-                    int iterations = int.Parse(parts[0]);
+                    int iterations = int.Parse(parts[0], CultureInfo.InvariantCulture);
                     byte[] salt = Convert.FromBase64String(parts[1]);
                     byte[] storedHash = Convert.FromBase64String(parts[2]);
                     var computedHash = PBKDF2SHA256(password, salt, iterations, storedHash.Length);
@@ -57,7 +58,7 @@ namespace Bee.Base.Security
                     // Legacy format: {iterations}.{salt}.{hash} — PBKDF2-SHA1 (read-only, for existing passwords)
                     var parts = hashedPassword.Split('.');
                     if (parts.Length != 3) return false;
-                    int iterations = int.Parse(parts[0]);
+                    int iterations = int.Parse(parts[0], CultureInfo.InvariantCulture);
                     byte[] salt = Convert.FromBase64String(parts[1]);
                     byte[] storedHash = Convert.FromBase64String(parts[2]);
                     var computedHash = PBKDF2SHA1Legacy(password, salt, iterations, storedHash.Length);

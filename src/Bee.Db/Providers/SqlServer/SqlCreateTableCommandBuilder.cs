@@ -1,4 +1,5 @@
 ﻿using Bee.Definition.Database;
+using System.Globalization;
 using System.Text;
 using Bee.Base;
 using Bee.Base.Data;
@@ -175,13 +176,13 @@ namespace Bee.Db.Providers.SqlServer
 
             var sb = new StringBuilder();
             // Assemble the CREATE TABLE statement
-            sb.Append($"CREATE TABLE {QuoteName(dbTableName)} (\r\n{fields}");
+            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {QuoteName(dbTableName)} (\r\n{fields}");
             if (StrFunc.IsNotEmpty(primaryKey))
-                sb.Append($",\r\n  {primaryKey}");
+                sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append("\r\n);");
             // Append the index creation statements
             if (StrFunc.IsNotEmpty(indexs))
-                sb.Append($"\r\n{indexs}");
+                sb.Append(CultureInfo.InvariantCulture, $"\r\n{indexs}");
             return sb.ToString();
         }
 
@@ -321,7 +322,7 @@ namespace Bee.Db.Providers.SqlServer
             {
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
-                fieldBuilder.Append($"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpper()}");
+                fieldBuilder.Append(CultureInfo.InvariantCulture, $"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
             string name = StrFunc.Format(index.Name, tableName);
@@ -358,7 +359,7 @@ namespace Bee.Db.Providers.SqlServer
             {
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
-                fieldBuilder.Append($"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpper()}");
+                fieldBuilder.Append(CultureInfo.InvariantCulture, $"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             // Generate the CREATE INDEX statement
             if (index.Unique)

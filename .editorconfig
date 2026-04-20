@@ -39,6 +39,9 @@ dotnet_diagnostic.IDE0052.severity = warning
 # override／介面實作的參數名須與宣告一致（對應 S927）
 dotnet_diagnostic.CA1725.severity = warning
 
+# 文化相依 API 須指定 IFormatProvider（對應 S6580）
+dotnet_diagnostic.CA1305.severity = warning
+
 # ───── 安全相關（對應 scanning.md） ─────
 
 # XXE 防護：安全的 XML 解析設定

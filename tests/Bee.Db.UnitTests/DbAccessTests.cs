@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using Bee.Base;
 using Bee.Definition;
 using Bee.Tests.Shared;
@@ -164,7 +165,7 @@ namespace Bee.Db.UnitTests
             // 2. 修改第一筆資料
             int i = BaseFunc.RndInt(0, 100);
             var row = table.Rows[0];
-            row["note"] = i.ToString();
+            row["note"] = i.ToString(CultureInfo.InvariantCulture);
 
             // 3. 用 DbTableCommandBuilder 建立 DataTableUpdateSpec
             var tableSchema = BackendInfo.DefineAccess.GetTableSchema("common", "st_user");

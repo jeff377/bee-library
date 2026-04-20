@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Globalization;
+using System.Net;
 
 namespace Bee.Base
 {
@@ -125,7 +126,7 @@ namespace Bee.Base
         {
             string[] parts = cidr.Split('/');
             IPAddress ipAddress = IPAddress.Parse(parts[0]);
-            int prefixLength = int.Parse(parts[1]);
+            int prefixLength = int.Parse(parts[1], CultureInfo.InvariantCulture);
 
             uint mask = uint.MaxValue << (32 - prefixLength);
             uint ipAddressBits = BitConverter.ToUInt32(ipAddress.GetAddressBytes().Reverse().ToArray(), 0);

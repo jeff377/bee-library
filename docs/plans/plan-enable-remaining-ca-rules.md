@@ -1,6 +1,6 @@
 # 計畫：啟用 CA1305／CA1031／CA1725 編譯期檢查
 
-**狀態：🚧 進行中（CA1725 已完成 2026-04-20；CA1305／CA1031 待處理）**
+**狀態：🚧 進行中（CA1725、CA1305 已完成 2026-04-20；CA1031 待處理）**
 
 ## 背景
 
@@ -16,18 +16,28 @@
 
 ## 違規清單
 
-### CA1305（28 處，全在 Bee.Base）
+### CA1305 ✅ 已完成（2026-04-20）
 
-| 檔案 | 行 | 呼叫 | 建議 |
-|------|---|------|------|
-| [BaseFunc.cs](src/Bee.Base/BaseFunc.cs) | 282、310、312、331、350、369、428 | `Convert.ToInt32/Double/Decimal/DateTime` | `CultureInfo.InvariantCulture` |
-| [StrFunc.cs](src/Bee.Base/StrFunc.cs) | 62 | `string.Format` | `CultureInfo.InvariantCulture` |
-| [IPValidator.cs](src/Bee.Base/IPValidator.cs) | 128 | `int.Parse` | `CultureInfo.InvariantCulture` |
-| [PasswordHasher.cs](src/Bee.Base/Security/PasswordHasher.cs) | 49、60 | `int.Parse` | `CultureInfo.InvariantCulture` |
-| [DataRowExtensions.cs](src/Bee.Base/Data/DataRowExtensions.cs) | 32、64 | `Convert.ChangeType` | `CultureInfo.InvariantCulture` |
-| [DataTableJsonConverter.cs](src/Bee.Base/Serialization/DataTableJsonConverter.cs) | 366 | `Convert.ChangeType` | `CultureInfo.InvariantCulture` |
+執行時共修復 **28 處**違規，分佈於 Bee.Base（14 處）、Bee.Db（13 處）、Bee.Db.UnitTests（1 處）。原估「全在 Bee.Base」是因前次 build 未跑完成，實際上 Bee.Db 的 SQL builder 內插字串也都會觸發。
 
-**判斷原則**：本專案所有文化相依呼叫都是資料序列化／轉換場景，應固定 `CultureInfo.InvariantCulture`，不受使用者地區影響。
+**Bee.Base**
+- [BaseFunc.cs](src/Bee.Base/BaseFunc.cs)：`Convert.ToInt32/Double/Decimal/DateTime` 7 處
+- [StrFunc.cs](src/Bee.Base/StrFunc.cs)：`string.Format`
+- [IPValidator.cs](src/Bee.Base/IPValidator.cs)：`int.Parse`
+- [PasswordHasher.cs](src/Bee.Base/Security/PasswordHasher.cs)：`int.Parse` 2 處
+- [DataRowExtensions.cs](src/Bee.Base/Data/DataRowExtensions.cs)：`Convert.ChangeType` 2 處
+- [DataTableJsonConverter.cs](src/Bee.Base/Serialization/DataTableJsonConverter.cs)：`Convert.ChangeType`
+
+**Bee.Db**
+- [DefaultParameterCollector.cs](src/Bee.Db/Query/DefaultParameterCollector.cs)：`int.ToString`
+- [FromBuilder.cs](src/Bee.Db/Query/FromBuilder.cs)：`StringBuilder.Append` 內插字串 2 處
+- [TableSchemaCommandBuilder.cs](src/Bee.Db/TableSchemaCommandBuilder.cs)：`StringBuilder.AppendLine/Append` 內插字串 6 處
+- [SqlCreateTableCommandBuilder.cs](src/Bee.Db/Providers/SqlServer/SqlCreateTableCommandBuilder.cs)：`StringBuilder.Append` 內插字串 5 處（含 `ToUpper()` → `ToUpperInvariant()` 兩處）
+
+**Bee.Db.UnitTests**
+- [DbAccessTests.cs:167](tests/Bee.Db.UnitTests/DbAccessTests.cs:167)：`int.ToString`
+
+**判斷原則**：本專案所有文化相依呼叫都是資料序列化／SQL 產生／轉換場景，應固定 `CultureInfo.InvariantCulture`，不受使用者地區影響。
 
 ### CA1031（22 處）
 

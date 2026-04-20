@@ -363,7 +363,7 @@ namespace Bee.Base.Serialization
             // Numeric type coercion (JSON long → int/short/decimal etc.)
             try
             {
-                return Convert.ChangeType(value, targetType);
+                return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
             }
             catch
             {

@@ -279,7 +279,7 @@ namespace Bee.Base
                 return b ? 1 : 0;
 
             if (value is Enum)
-                return Convert.ToInt32(value);
+                return Convert.ToInt32(value, CultureInfo.InvariantCulture);
 
             if (value is byte || value is sbyte ||
                 value is short || value is ushort ||
@@ -307,9 +307,9 @@ namespace Bee.Base
             try
             {
                 if (value is Enum)
-                    return Convert.ToInt32(value);
+                    return Convert.ToInt32(value, CultureInfo.InvariantCulture);
                 else
-                    return Convert.ToInt32(ConvertToNumber(value));
+                    return Convert.ToInt32(ConvertToNumber(value), CultureInfo.InvariantCulture);
             }
             catch
             {
@@ -328,7 +328,7 @@ namespace Bee.Base
 
             try
             {
-                return Convert.ToDouble(ConvertToNumber(value == null ? defaultValue : value));
+                return Convert.ToDouble(ConvertToNumber(value == null ? defaultValue : value), CultureInfo.InvariantCulture);
             }
             catch
             {
@@ -347,7 +347,7 @@ namespace Bee.Base
 
             try
             {
-                return Convert.ToDecimal(ConvertToNumber(value == null ? defaultValue : value));
+                return Convert.ToDecimal(ConvertToNumber(value == null ? defaultValue : value), CultureInfo.InvariantCulture);
             }
             catch
             {
@@ -366,7 +366,7 @@ namespace Bee.Base
 
             if (IsNullOrDBNull(value)) { return defaultValue; }
             if (StrFunc.IsEmpty(value)) { return defaultValue; }
-            if (DateTimeFunc.IsDate(value)) { return Convert.ToDateTime(value); }
+            if (DateTimeFunc.IsDate(value)) { return Convert.ToDateTime(value, CultureInfo.InvariantCulture); }
 
             try
             {
@@ -425,7 +425,7 @@ namespace Bee.Base
             }
 
             if (StrFunc.IsNotEmpty(sDate))
-                return Convert.ToDateTime(sDate);
+                return Convert.ToDateTime(sDate, CultureInfo.InvariantCulture);
             else
                 return DateTime.MinValue;
         }

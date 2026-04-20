@@ -11,6 +11,7 @@
 > - **S2933** → IDE0044（readonly 欄位）
 > - **S4487** → IDE0051 / IDE0052（未使用 private 成員）
 > - **S927** → CA1725（override 參數名一致）
+> - **S6580** → CA1305（`IFormatProvider` 文化相依 API）
 
 ---
 
@@ -58,21 +59,18 @@ if (obj is MyType) { ((MyType)obj).DoWork(); }
 | **S3877** | static constructor 不應 throw（異常會導致整個 type 不可用） |
 | **S2743** | generic type 中的 `static` field 不會跨 close constructed types 共享；需確認是否為有意行為 |
 
-## 5. DateTime 與文化相依 API
+## 5. DateTime
 
 | 規則 | 原則 |
 |------|------|
 | **S6562** | 建立 `DateTime` 時須明確指定 `DateTimeKind`（`Utc`／`Local`／`Unspecified`） |
-| **S6580** | `DateTime.Parse`／`ToString` 等文化相依方法須指定 `IFormatProvider`（通常為 `CultureInfo.InvariantCulture`） |
 
 ```csharp
 // ✅
 var dt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-var parsed = DateTime.Parse(text, CultureInfo.InvariantCulture);
 
 // ❌
 var dt = new DateTime(2026, 1, 1, 0, 0, 0);
-var parsed = DateTime.Parse(text);
 ```
 
 ## 6. 集合與 LINQ
@@ -93,7 +91,6 @@ foreach (var x in list) { if (x.IsActive) { ... } }
 
 | 規則 | 原則 |
 |------|------|
-| **S6580**（字串面向） | 重複出現的字面字串應提取為 `const` |
 | **S3878** | `params` 參數呼叫時不需明確建立 array；直接傳入元素即可 |
 
 ```csharp

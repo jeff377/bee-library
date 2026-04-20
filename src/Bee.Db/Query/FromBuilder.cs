@@ -1,4 +1,5 @@
 ﻿using Bee.Definition;
+using System.Globalization;
 using System.Text;
 
 namespace Bee.Db.Query
@@ -28,7 +29,7 @@ namespace Bee.Db.Query
         public string Build(string mainTableName, TableJoinCollection joins)
         {
             var sb = new StringBuilder();
-            sb.Append($"FROM {QuoteIdentifier(mainTableName)} A");
+            sb.Append(CultureInfo.InvariantCulture, $"FROM {QuoteIdentifier(mainTableName)} A");
 
             if (joins == null || joins.Count == 0)
                 return sb.ToString();
@@ -38,7 +39,7 @@ namespace Bee.Db.Query
             {
                 var joinKeyword = join.JoinType.ToString().ToUpperInvariant() + " JOIN";
                 sb.AppendLine();
-                sb.Append($"{joinKeyword} {QuoteIdentifier(join.RightTable)} {join.RightAlias} ON {join.LeftAlias}.{QuoteIdentifier(join.LeftField)} = {join.RightAlias}.{QuoteIdentifier(join.RightField)}");
+                sb.Append(CultureInfo.InvariantCulture, $"{joinKeyword} {QuoteIdentifier(join.RightTable)} {join.RightAlias} ON {join.LeftAlias}.{QuoteIdentifier(join.LeftField)} = {join.RightAlias}.{QuoteIdentifier(join.RightField)}");
             }
             return sb.ToString();
         }
