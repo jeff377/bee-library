@@ -4,6 +4,12 @@
 
 > 安全相關 SAST 規則（SQL 注入、XXE、路徑安全、資源釋放、例外處理基本原則）見 `scanning.md`。
 > 一般命名與格式見 `code-style.md`。
+>
+> 以下規則已由 `.editorconfig` 硬性化（build time 即失敗），不再列於本文件：
+> - **S1118 / S3442** → CA1052（static holder type）
+> - **S2325** → CA1822（方法應為 static）
+> - **S2933** → IDE0044（readonly 欄位）
+> - **S4487** → IDE0051 / IDE0052（未使用 private 成員）
 
 ---
 
@@ -11,8 +17,6 @@
 
 | 規則 | 原則 |
 |------|------|
-| **S1118** | 只含 static 成員的 utility class 須加 `private` 建構子，或直接改為 `static class` |
-| **S3442** | 只含 static 成員但未標記為 static 的 class，應改為 `static class` |
 | **S3925** | 名稱含 `Exception` 的類別必須繼承 `System.Exception`（或相容基底） |
 | **S2094** | 不應存在空 class；移除或改為 interface |
 | **S3260** | 不被繼承的 `private` nested class 應標為 `sealed` |
@@ -20,15 +24,7 @@
 | **S2342** | 表達「集合／旗標」語意的 enum 名稱末尾應加 `s`（如 `TraceLayers`） |
 | **S101** | 類別名採 Pascal case；連續大寫縮寫僅首字大寫（`Utf8StringWriter` 而非 `UTF8StringWriter`） |
 
-## 2. 方法與成員修飾詞
-
-| 規則 | 原則 |
-|------|------|
-| **S2325** | 未存取任何 instance 成員（不用 `this`／欄位／instance 方法）的方法應加上 `static` |
-| **S2933** | 初始化後不再被重新賦值的欄位應標為 `readonly` |
-| **S4487** | 只被賦值但從未被讀取的 `private` field 應移除 |
-
-## 3. 介面與 override 一致性
+## 2. 介面與 override 一致性
 
 | 規則 | 原則 |
 |------|------|
@@ -48,7 +44,7 @@ public class MyBuilder : IBuilder
 public string Build(string? Prefix = null) { ... }
 ```
 
-## 4. 控制流與語法
+## 3. 控制流與語法
 
 | 規則 | 原則 |
 |------|------|
@@ -65,7 +61,7 @@ if (obj is MyType t) { t.DoWork(); }
 if (obj is MyType) { ((MyType)obj).DoWork(); }
 ```
 
-## 5. 欄位與初始化
+## 4. 欄位與初始化
 
 | 規則 | 原則 |
 |------|------|
@@ -74,7 +70,7 @@ if (obj is MyType) { ((MyType)obj).DoWork(); }
 | **S3877** | static constructor 不應 throw（異常會導致整個 type 不可用） |
 | **S2743** | generic type 中的 `static` field 不會跨 close constructed types 共享；需確認是否為有意行為 |
 
-## 6. DateTime 與文化相依 API
+## 5. DateTime 與文化相依 API
 
 | 規則 | 原則 |
 |------|------|
@@ -91,7 +87,7 @@ var dt = new DateTime(2026, 1, 1, 0, 0, 0);
 var parsed = DateTime.Parse(text);
 ```
 
-## 7. 集合與 LINQ
+## 6. 集合與 LINQ
 
 | 規則 | 原則 |
 |------|------|
@@ -105,7 +101,7 @@ foreach (var x in list.Where(x => x.IsActive)) { ... }
 foreach (var x in list) { if (x.IsActive) { ... } }
 ```
 
-## 8. 字串與陣列
+## 7. 字串與陣列
 
 | 規則 | 原則 |
 |------|------|
@@ -120,7 +116,7 @@ string.Join(", ", "a", "b", "c");
 string.Join(", ", new[] { "a", "b", "c" });
 ```
 
-## 9. 例外處理
+## 8. 例外處理
 
 | 規則 | 原則 |
 |------|------|
@@ -128,26 +124,26 @@ string.Join(", ", new[] { "a", "b", "c" });
 
 > 其他例外規則（`catch (Exception)`、空 catch、`throw ex;`）見 `scanning.md`。
 
-## 10. 死碼與已廢棄程式碼
+## 9. 死碼與已廢棄程式碼
 
 | 規則 | 原則 |
 |------|------|
 | **S125** | 移除被註解掉的程式碼；需保留歷史就用 git log |
 | **S1133** | 標記為 `[Obsolete]` 且確定無呼叫者的程式碼應移除 |
 
-## 11. Reflection 與 Assembly
+## 10. Reflection 與 Assembly
 
 | 規則 | 原則 |
 |------|------|
 | **S3885** | 優先使用 `Assembly.Load`（依 `AssemblyName`）而非 `Assembly.LoadFrom`（依路徑），後者會導致 load context 不一致 |
 
-## 12. 測試
+## 11. 測試
 
 | 規則 | 原則 |
 |------|------|
 | **S2701** | `Assert.True`／`Assert.False` 的第一參數不應為字面值（如 `Assert.True(true)`），應為被測表達式 |
 
-## 13. Regex（ReDoS 防護）
+## 12. Regex（ReDoS 防護）
 
 | 規則 | 原則 |
 |------|------|
@@ -164,7 +160,7 @@ Regex.IsMatch(input, pattern);
 new Regex(pattern, RegexOptions.Compiled);
 ```
 
-## 14. GitHub Actions 工作流
+## 13. GitHub Actions 工作流
 
 | 規則 | 原則 |
 |------|------|
@@ -189,7 +185,7 @@ new Regex(pattern, RegexOptions.Compiled);
 
 取得 SHA 的方法：`gh api repos/<org>/<name>/git/ref/tags/<tag> --jq .object.sha`
 
-## 15. 序列化
+## 14. 序列化
 
 | 規則 | 原則 |
 |------|------|

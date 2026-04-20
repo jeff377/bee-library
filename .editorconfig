@@ -21,6 +21,33 @@ dotnet_diagnostic.IDE0028.severity = warning
 # 編譯期檢查：namespace 末段不得與其中的類別／介面同名
 dotnet_diagnostic.CA1724.severity = warning
 
+# ───── 從 SonarCloud 遷移至編譯期的規則 ─────
+
+# 未使用 instance 成員的方法應為 static（對應 S2325）
+dotnet_diagnostic.CA1822.severity = warning
+
+# 只含 static 成員的 class 應為 static class（對應 S1118/S3442）
+dotnet_diagnostic.CA1052.severity = warning
+
+# 初始化後不再賦值的欄位應標為 readonly（對應 S2933）
+dotnet_diagnostic.IDE0044.severity = warning
+
+# 未使用的 private 成員（對應 S4487）
+dotnet_diagnostic.IDE0051.severity = warning
+dotnet_diagnostic.IDE0052.severity = warning
+
+# ───── 安全相關（對應 scanning.md） ─────
+
+# XXE 防護：安全的 XML 解析設定
+dotnet_diagnostic.CA3075.severity = warning
+
+# 禁用 SHA1 / MD5 作安全雜湊
+dotnet_diagnostic.CA5350.severity = warning
+dotnet_diagnostic.CA5351.severity = warning
+
+# 禁用 System.Random 於安全場景
+dotnet_diagnostic.CA5394.severity = warning
+
 # XML project files
 [*.{csproj,props,targets}]
 indent_size = 2
