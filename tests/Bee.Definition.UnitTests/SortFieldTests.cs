@@ -48,11 +48,12 @@ namespace Bee.Definition.UnitTests
         public void SortFieldCollection_Add_IncrementsCount()
         {
             // Arrange
-            var collection = new SortFieldCollection();
-
-            // Act
-            collection.Add(new SortField("sys_id", SortDirection.Asc));
-            collection.Add(new SortField("sys_no", SortDirection.Desc));
+            var collection = new SortFieldCollection
+            {
+                // Act
+                new SortField("sys_id", SortDirection.Asc),
+                new SortField("sys_no", SortDirection.Desc)
+            };
 
             // Assert
             Assert.Equal(2, collection.Count);

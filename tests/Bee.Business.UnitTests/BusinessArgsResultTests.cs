@@ -27,8 +27,10 @@ namespace Bee.Business.UnitTests
             var args = new ExecFuncArgs();
             args.Parameters.Add("old", "value");
 
-            var replacement = new ParameterCollection();
-            replacement.Add("new", "value");
+            var replacement = new ParameterCollection
+            {
+                { "new", "value" }
+            };
             args.Parameters = replacement;
 
             Assert.Same(replacement, args.Parameters);
@@ -45,8 +47,10 @@ namespace Bee.Business.UnitTests
             var parameters = result.Parameters;
             Assert.NotNull(parameters);
 
-            var replacement = new ParameterCollection();
-            replacement.Add("k", 42);
+            var replacement = new ParameterCollection
+            {
+                { "k", 42 }
+            };
             result.Parameters = replacement;
 
             Assert.Same(replacement, result.Parameters);

@@ -83,7 +83,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("Build IN 條件傳入空集合應產生恆假常數")]
         public void Build_InWithEmptyList_ReturnsFalseConstant()
         {
-            var root = FilterCondition.In("Id", new List<object>());
+            var root = FilterCondition.In("Id", []);
             var builder = new WhereBuilder(DatabaseType.SQLServer);
             var result = builder.Build(root, null, includeWhereKeyword: false);
             Assert.Equal("1 = 0", result.WhereClause);
@@ -94,7 +94,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("Build IN 條件傳入多個值應正確建立")]
         public void Build_InWithMultipleValues_BuildsCorrectly()
         {
-            var root = FilterCondition.In("Id", new List<object> { 1, 2, 3, 4 });
+            var root = FilterCondition.In("Id", [1, 2, 3, 4]);
             var builder = new WhereBuilder(DatabaseType.SQLServer);
             var result = builder.Build(root, null, includeWhereKeyword: false);
             Assert.Equal("Id IN (@p0, @p1, @p2, @p3)", result.WhereClause);

@@ -199,14 +199,16 @@ namespace Bee.Api.Core.UnitTests
         public void TParameterCollection_Serialize_RoundTrip()
         {
             // 建立原始物件，包含不同型別的參數
-            var original = new ParameterCollection();
-            original.Add("IntValue", 123);
-            original.Add("StringValue", "測試字串");
-            original.Add("BoolValue", true);
-            original.Add("DateTimeValue", new DateTime(2025, 5, 16, 10, 30, 0));
-            original.Add("DecimalValue", 123.45m);
-            original.Add("DoubleValue", 9876.54321);
-            original.Add("NullValue", null!);
+            var original = new ParameterCollection
+            {
+                { "IntValue", 123 },
+                { "StringValue", "測試字串" },
+                { "BoolValue", true },
+                { "DateTimeValue", new DateTime(2025, 5, 16, 10, 30, 0) },
+                { "DecimalValue", 123.45m },
+                { "DoubleValue", 9876.54321 },
+                { "NullValue", null! }
+            };
 
             // 序列化為位元組陣列
             var bytes = MessagePackHelper.Serialize(original);
@@ -252,8 +254,10 @@ namespace Bee.Api.Core.UnitTests
             table.Rows.Add(2, "Bob");
 
             // 建立參數集合，加入 DataTable 參數
-            var parameters = new ParameterCollection();
-            parameters.Add("Data", table);
+            var parameters = new ParameterCollection
+            {
+                { "Data", table }
+            };
 
             // 序列化
             var bytes = MessagePackHelper.Serialize(parameters);
@@ -280,10 +284,12 @@ namespace Bee.Api.Core.UnitTests
         public void TPropertyCollection_Serialize_RoundTrip()
         {
             // 建立屬性集合
-            var properties = new Bee.Definition.Collections.PropertyCollection();
-            properties.Add("AppName", "BeeERP");
-            properties.Add("Enabled", "true");
-            properties.Add("RetryCount", "3");
+            var properties = new Bee.Definition.Collections.PropertyCollection
+            {
+                { "AppName", "BeeERP" },
+                { "Enabled", "true" },
+                { "RetryCount", "3" }
+            };
 
             // 序列化
             var bytes = MessagePackHelper.Serialize(properties);

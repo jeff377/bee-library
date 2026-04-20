@@ -62,9 +62,11 @@ namespace Bee.Definition.UnitTests.Collections
         [DisplayName("ICollectionItem 版 Insert 應插入於指定 index")]
         public void Insert_ViaInterface_InsertsAtIndex()
         {
-            var col = new SortFieldCollection();
-            col.Add(MakeField("A"));
-            col.Add(MakeField("B"));
+            var col = new SortFieldCollection
+            {
+                MakeField("A"),
+                MakeField("B")
+            };
 
             ICollectionItem newItem = MakeField("C");
             col.Insert(1, newItem);
@@ -91,9 +93,11 @@ namespace Bee.Definition.UnitTests.Collections
         [DisplayName("Clear 應移除所有項目")]
         public void Clear_RemovesAllItems()
         {
-            var col = new SortFieldCollection();
-            col.Add(MakeField("A"));
-            col.Add(MakeField("B"));
+            var col = new SortFieldCollection
+            {
+                MakeField("A"),
+                MakeField("B")
+            };
 
             col.Clear();
 

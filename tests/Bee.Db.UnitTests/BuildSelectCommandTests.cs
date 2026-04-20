@@ -47,8 +47,10 @@ namespace Bee.Db.UnitTests
             // 測試：Select 主檔欄位，但 Order By 使用參考欄位，應只 JOIN 該參考表
             var builder = new SqlFormCommandBuilder("Project");
             // 以 PM 姓名做排序
-            var sortFields = new SortFieldCollection();
-            sortFields.Add(new SortField("ref_pm_dept_name", SortDirection.Asc));
+            var sortFields = new SortFieldCollection
+            {
+                new SortField("ref_pm_dept_name", SortDirection.Asc)
+            };
 
             var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", null, sortFields);
 
@@ -142,8 +144,10 @@ namespace Bee.Db.UnitTests
             };
 
             // 建立排序欄位集合
-            var sortFields = new SortFieldCollection();
-            sortFields.Add(new SortField("sys_id",  SortDirection.Asc)); // 以 sys_id 做升冪排序
+            var sortFields = new SortFieldCollection
+            {
+                new SortField("sys_id", SortDirection.Asc) // 以 sys_id 做升冪排序
+            };
 
             // 傳入 filter node 與 sortFields 至 BuildSelectCommand
             var command = builder.BuildSelectCommand("Employee", string.Empty, filter, sortFields);

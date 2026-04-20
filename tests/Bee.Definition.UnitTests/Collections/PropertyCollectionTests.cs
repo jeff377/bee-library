@@ -36,10 +36,11 @@ namespace Bee.Definition.UnitTests.Collections
         public void Add_StringValue_AddsItem()
         {
             // Arrange
-            var collection = new PropertyCollection();
-
-            // Act
-            collection.Add("Theme", "Dark");
+            var collection = new PropertyCollection
+            {
+                // Act
+                { "Theme", "Dark" }
+            };
 
             // Assert
             Assert.Single(collection);
@@ -51,8 +52,10 @@ namespace Bee.Definition.UnitTests.Collections
         public void GetValue_String_ReturnsValueOrDefault()
         {
             // Arrange
-            var collection = new PropertyCollection();
-            collection.Add("A", "1");
+            var collection = new PropertyCollection
+            {
+                { "A", "1" }
+            };
 
             // Act & Assert
             Assert.Equal("1", collection.GetValue("A", "default"));
@@ -64,8 +67,10 @@ namespace Bee.Definition.UnitTests.Collections
         public void GetValue_Bool_ReturnsConvertedOrDefault()
         {
             // Arrange
-            var collection = new PropertyCollection();
-            collection.Add("Enabled", "true");
+            var collection = new PropertyCollection
+            {
+                { "Enabled", "true" }
+            };
 
             // Act & Assert
             Assert.True(collection.GetValue("Enabled", false));
@@ -77,8 +82,10 @@ namespace Bee.Definition.UnitTests.Collections
         public void GetValue_Int_ReturnsConvertedOrDefault()
         {
             // Arrange
-            var collection = new PropertyCollection();
-            collection.Add("Count", "42");
+            var collection = new PropertyCollection
+            {
+                { "Count", "42" }
+            };
 
             // Act & Assert
             Assert.Equal(42, collection.GetValue("Count", 0));

@@ -39,8 +39,10 @@ namespace Bee.Definition.UnitTests.Filters
         [DisplayName("Write/Read round-trip 應還原 FilterCondition")]
         public void ReadWrite_RoundTrip_FilterCondition()
         {
-            var collection = new FilterNodeCollection();
-            collection.Add(new FilterCondition("Name", ComparisonOperator.Equal, "Alice"));
+            var collection = new FilterNodeCollection
+            {
+                new FilterCondition("Name", ComparisonOperator.Equal, "Alice")
+            };
 
             var json = JsonSerializer.Serialize(collection, Options);
             var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);
@@ -59,8 +61,10 @@ namespace Bee.Definition.UnitTests.Filters
             var group = new FilterGroup(LogicalOperator.Or);
             group.Nodes.Add(new FilterCondition("Age", ComparisonOperator.GreaterThan, 18));
 
-            var collection = new FilterNodeCollection();
-            collection.Add(group);
+            var collection = new FilterNodeCollection
+            {
+                group
+            };
 
             var json = JsonSerializer.Serialize(collection, Options);
             var restored = JsonSerializer.Deserialize<FilterNodeCollection>(json, Options);

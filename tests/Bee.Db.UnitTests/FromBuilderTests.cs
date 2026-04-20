@@ -23,7 +23,7 @@ namespace Bee.Db.UnitTests
         {
             var builder = new FromBuilder(DatabaseType.SQLServer);
 
-            var result = builder.Build("st_user", new TableJoinCollection());
+            var result = builder.Build("st_user", []);
 
             Assert.Equal("FROM [st_user] A", result);
         }
@@ -32,18 +32,20 @@ namespace Bee.Db.UnitTests
         [DisplayName("Build 單一 join 應產生 LEFT JOIN 子句")]
         public void Build_SingleJoin_ProducesLeftJoinClause()
         {
-            var joins = new TableJoinCollection();
-            joins.Add(new TableJoin
+            var joins = new TableJoinCollection
             {
-                Key = "j1",
-                JoinType = JoinType.Left,
-                LeftTable = "st_user",
-                LeftAlias = "A",
-                LeftField = "dept_id",
-                RightTable = "st_dept",
-                RightAlias = "B",
-                RightField = "dept_id"
-            });
+                new TableJoin
+                {
+                    Key = "j1",
+                    JoinType = JoinType.Left,
+                    LeftTable = "st_user",
+                    LeftAlias = "A",
+                    LeftField = "dept_id",
+                    RightTable = "st_dept",
+                    RightAlias = "B",
+                    RightField = "dept_id"
+                }
+            };
 
             var builder = new FromBuilder(DatabaseType.SQLServer);
             var result = builder.Build("st_user", joins);
@@ -56,21 +58,31 @@ namespace Bee.Db.UnitTests
         [DisplayName("Build 多個 join 應依 RightAlias 排序")]
         public void Build_MultipleJoins_OrderedByRightAlias()
         {
-            var joins = new TableJoinCollection();
-            joins.Add(new TableJoin
+            var joins = new TableJoinCollection
             {
-                Key = "jc",
-                JoinType = JoinType.Left,
-                LeftTable = "main", LeftAlias = "A", LeftField = "f1",
-                RightTable = "tbl_c", RightAlias = "C", RightField = "f1"
-            });
-            joins.Add(new TableJoin
-            {
-                Key = "jb",
-                JoinType = JoinType.Left,
-                LeftTable = "main", LeftAlias = "A", LeftField = "f2",
-                RightTable = "tbl_b", RightAlias = "B", RightField = "f2"
-            });
+                new TableJoin
+                {
+                    Key = "jc",
+                    JoinType = JoinType.Left,
+                    LeftTable = "main",
+                    LeftAlias = "A",
+                    LeftField = "f1",
+                    RightTable = "tbl_c",
+                    RightAlias = "C",
+                    RightField = "f1"
+                },
+                new TableJoin
+                {
+                    Key = "jb",
+                    JoinType = JoinType.Left,
+                    LeftTable = "main",
+                    LeftAlias = "A",
+                    LeftField = "f2",
+                    RightTable = "tbl_b",
+                    RightAlias = "B",
+                    RightField = "f2"
+                }
+            };
 
             var builder = new FromBuilder(DatabaseType.SQLServer);
             var result = builder.Build("main", joins);

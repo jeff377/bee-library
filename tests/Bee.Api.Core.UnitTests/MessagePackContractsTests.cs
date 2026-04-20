@@ -20,8 +20,8 @@ namespace Bee.Api.Core.UnitTests
             // ===== 1) CheckPackageUpdateRequest → Serialize/Deserialize（泛型） =====
             var checkArgs = new CheckPackageUpdateRequest
             {
-                Queries = new List<PackageUpdateQuery>
-                {
+                Queries =
+                [
                     new PackageUpdateQuery
                     {
                         AppId = "Client",
@@ -38,7 +38,7 @@ namespace Bee.Api.Core.UnitTests
                         Platform = "Win-x64",
                         Channel = "Stable"
                     }
-                }
+                ]
             };
 
             var checkArgsBytes = MessagePackHelper.Serialize(checkArgs);
@@ -55,8 +55,8 @@ namespace Bee.Api.Core.UnitTests
             // ===== 2) CheckPackageUpdateResponse → Serialize/Deserialize（泛型） =====
             var checkResult = new CheckPackageUpdateResponse
             {
-                Updates = new List<PackageUpdateInfo>
-                {
+                Updates =
+                [
                     new PackageUpdateInfo
                     {
                         AppId = "Client",
@@ -70,7 +70,7 @@ namespace Bee.Api.Core.UnitTests
                         PackageUrl = "https://cdn.example.com/client-1.2.4.zip",
                         ReleaseNotes = "Minor fixes"
                     }
-                }
+                ]
             };
 
             var checkResultBytes = MessagePackHelper.Serialize(checkResult);

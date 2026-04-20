@@ -8,7 +8,7 @@ namespace Bee.Base.UnitTests
     {
         private sealed class CapturingWriter : ITraceWriter
         {
-            public List<TraceEvent> Events { get; } = new();
+            public List<TraceEvent> Events { get; } = [];
             public void Write(TraceEvent evt) => Events.Add(evt);
         }
 

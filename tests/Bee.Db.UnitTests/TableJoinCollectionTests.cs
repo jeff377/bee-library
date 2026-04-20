@@ -7,27 +7,29 @@ namespace Bee.Db.UnitTests
     {
         private static TableJoinCollection BuildSampleCollection()
         {
-            var collection = new TableJoinCollection();
-            collection.Add(new TableJoin
+            var collection = new TableJoinCollection
             {
-                Key = "join1",
-                LeftTable = "tb_main",
-                LeftAlias = "M",
-                LeftField = "id",
-                RightTable = "tb_detail",
-                RightAlias = "D",
-                RightField = "main_id"
-            });
-            collection.Add(new TableJoin
-            {
-                Key = "join2",
-                LeftTable = "tb_main",
-                LeftAlias = "M",
-                LeftField = "user_id",
-                RightTable = "tb_user",
-                RightAlias = "U",
-                RightField = "id"
-            });
+                new TableJoin
+                {
+                    Key = "join1",
+                    LeftTable = "tb_main",
+                    LeftAlias = "M",
+                    LeftField = "id",
+                    RightTable = "tb_detail",
+                    RightAlias = "D",
+                    RightField = "main_id"
+                },
+                new TableJoin
+                {
+                    Key = "join2",
+                    LeftTable = "tb_main",
+                    LeftAlias = "M",
+                    LeftField = "user_id",
+                    RightTable = "tb_user",
+                    RightAlias = "U",
+                    RightField = "id"
+                }
+            };
             return collection;
         }
 

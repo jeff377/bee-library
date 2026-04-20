@@ -14,13 +14,15 @@ namespace Bee.Api.Core.UnitTests
         [Fact(DisplayName = "ParameterCollection 允許安全的基礎型別序列化")]
         public void ParameterCollection_AllowedPrimitiveTypes_RoundTrip()
         {
-            var original = new ParameterCollection();
-            original.Add("IntValue", 42);
-            original.Add("StringValue", "Hello");
-            original.Add("BoolValue", true);
-            original.Add("DecimalValue", 99.99m);
-            original.Add("DateTimeValue", new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc));
-            original.Add("NullValue", null!);
+            var original = new ParameterCollection
+            {
+                { "IntValue", 42 },
+                { "StringValue", "Hello" },
+                { "BoolValue", true },
+                { "DecimalValue", 99.99m },
+                { "DateTimeValue", new DateTime(2025, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                { "NullValue", null! }
+            };
 
             var bytes = MessagePackHelper.Serialize(original);
             var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);
@@ -37,11 +39,15 @@ namespace Bee.Api.Core.UnitTests
         [Fact(DisplayName = "ParameterCollection 允許 Bee 命名空間型別序列化")]
         public void ParameterCollection_AllowedBeeTypes_RoundTrip()
         {
-            var inner = new ParameterCollection();
-            inner.Add("Nested", "value");
+            var inner = new ParameterCollection
+            {
+                { "Nested", "value" }
+            };
 
-            var original = new ParameterCollection();
-            original.Add("Child", inner);
+            var original = new ParameterCollection
+            {
+                { "Child", inner }
+            };
 
             var bytes = MessagePackHelper.Serialize(original);
             var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);

@@ -52,9 +52,11 @@ namespace Bee.Base.UnitTests
         [DisplayName("Insert 應將項目插入指定索引並設定 Collection")]
         public void Insert_AtIndex_InsertsAndSetsCollection()
         {
-            var items = new Items();
-            items.Add(new Item { Name = "a" });
-            items.Add(new Item { Name = "c" });
+            var items = new Items
+            {
+                new Item { Name = "a" },
+                new Item { Name = "c" }
+            };
 
             var middle = new Item { Name = "b" };
             items.Insert(1, middle);
@@ -128,8 +130,10 @@ namespace Bee.Base.UnitTests
         [DisplayName("Add 後應可依 Key（忽略大小寫）查找項目")]
         public void Add_AllowsCaseInsensitiveLookup()
         {
-            var items = new KeyedItems();
-            items.Add(new KeyedItem { Key = "Alpha", Value = 1 });
+            var items = new KeyedItems
+            {
+                new KeyedItem { Key = "Alpha", Value = 1 }
+            };
 
             Assert.True(items.Contains("alpha"));
             Assert.True(items.Contains("ALPHA"));
@@ -140,8 +144,10 @@ namespace Bee.Base.UnitTests
         [DisplayName("GetOrDefault 於不存在應回傳 null")]
         public void GetOrDefault_MissingKey_ReturnsNull()
         {
-            var items = new KeyedItems();
-            items.Add(new KeyedItem { Key = "Alpha" });
+            var items = new KeyedItems
+            {
+                new KeyedItem { Key = "Alpha" }
+            };
 
             Assert.NotNull(items.GetOrDefault("alpha"));
             Assert.Null(items.GetOrDefault("beta"));
@@ -246,8 +252,10 @@ namespace Bee.Base.UnitTests
         [DisplayName("Add(string, delimiter) 應分割字串並加入所有 token")]
         public void AddWithDelimiter_SplitsAndAddsTokens()
         {
-            var set = new StringHashSet();
-            set.Add("a,b,c", ",");
+            var set = new StringHashSet
+            {
+                { "a,b,c", "," }
+            };
 
             Assert.Equal(3, set.Count);
             Assert.Contains("a", set);
@@ -258,8 +266,10 @@ namespace Bee.Base.UnitTests
         [DisplayName("Add(string, delimiter) 空字串應直接忽略")]
         public void AddWithDelimiter_EmptyInput_NoOp()
         {
-            var set = new StringHashSet();
-            set.Add(string.Empty, ",");
+            var set = new StringHashSet
+            {
+                { string.Empty, "," }
+            };
 
             Assert.Empty(set);
         }

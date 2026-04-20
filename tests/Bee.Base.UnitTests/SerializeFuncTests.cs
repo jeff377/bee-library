@@ -54,7 +54,7 @@ namespace Bee.Base.UnitTests
             public void SetObjectFilePath(string filePath) => _objectFilePath = filePath;
 
             [XmlIgnore, JsonIgnore]
-            public List<string> Events { get; } = new();
+            public List<string> Events { get; } = [];
 
             public void BeforeSerialize(SerializeFormat format) => Events.Add($"Before:{format}");
             public void AfterSerialize(SerializeFormat format) => Events.Add($"After:{format}");

@@ -40,10 +40,11 @@ namespace Bee.Definition.UnitTests.Collections
         public void Add_NameValue_AddsItem()
         {
             // Arrange
-            var collection = new ParameterCollection();
-
-            // Act
-            collection.Add("X", 100);
+            var collection = new ParameterCollection
+            {
+                // Act
+                { "X", 100 }
+            };
 
             // Assert
             Assert.Single(collection);
@@ -55,11 +56,13 @@ namespace Bee.Definition.UnitTests.Collections
         public void Add_DuplicateName_ReplacesValue()
         {
             // Arrange
-            var collection = new ParameterCollection();
-            collection.Add("X", 100);
+            var collection = new ParameterCollection
+            {
+                { "X", 100 },
 
-            // Act
-            collection.Add("X", 200);
+                // Act
+                { "X", 200 }
+            };
 
             // Assert
             Assert.Single(collection);
@@ -71,8 +74,10 @@ namespace Bee.Definition.UnitTests.Collections
         public void GetValueT_Existing_ReturnsTypedValue()
         {
             // Arrange
-            var collection = new ParameterCollection();
-            collection.Add("Age", 30);
+            var collection = new ParameterCollection
+            {
+                { "Age", 30 }
+            };
 
             // Act
             var value = collection.GetValue<int>("Age");

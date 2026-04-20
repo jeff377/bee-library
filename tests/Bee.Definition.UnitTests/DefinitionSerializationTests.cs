@@ -65,10 +65,12 @@ namespace Bee.Definition.UnitTests
         [DisplayName("ListItemCollection 序列化與反序列化應正確還原")]
         public void SerializeListItems_XmlAndJson_RoundTripsCorrectly()
         {
-            var items = new ListItemCollection();
-            items.Add("01", "項目一");
-            items.Add("02", "項目二");
-            items.Add("03", "項目三");
+            var items = new ListItemCollection
+            {
+                { "01", "項目一" },
+                { "02", "項目二" },
+                { "03", "項目三" }
+            };
             SerializeObject<ListItemCollection>(items, true, true);
         }
 

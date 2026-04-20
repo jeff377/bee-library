@@ -20,7 +20,7 @@ namespace Bee.Db.UnitTests
         public void Build_EmptySorts_ReturnsEmptyString()
         {
             var builder = new SortBuilder(DatabaseType.SQLServer);
-            var result = builder.Build(new SortFieldCollection(), null);
+            var result = builder.Build([], null);
             Assert.Equal(string.Empty, result);
         }
 
