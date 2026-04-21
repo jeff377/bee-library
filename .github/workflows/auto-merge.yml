@@ -3,39 +3,17 @@ name: Auto Merge
 on:
   pull_request:
     types: [labeled]
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'PR number to merge'
-        required: true
-        type: string
 
 jobs:
   auto-merge:
     if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.label.name == 'auto-merge' &&
-       github.event.pull_request.user.login == 'jeff377' &&
-       github.event.pull_request.base.ref == 'main')
+      github.event.label.name == 'auto-merge' &&
+      github.event.pull_request.user.login == 'jeff377' &&
+      github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
-      contents: write
     steps:
-      - name: Resolve PR number
-        id: pr
-        env:
-          PR_FROM_EVENT: ${{ github.event.number }}
-          PR_FROM_INPUT: ${{ inputs.pr_number }}
-        run: |
-          if [ -n "$PR_FROM_INPUT" ]; then
-            echo "number=$PR_FROM_INPUT" >> "$GITHUB_OUTPUT"
-          else
-            echo "number=$PR_FROM_EVENT" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Auto merge
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ steps.pr.outputs.number }}
+          GH_TOKEN: ${{ secrets.AUTOMERGE_PAT }}
+          PR_NUMBER: ${{ github.event.number }}
         run: gh pr merge "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --squash --auto --delete-branch
