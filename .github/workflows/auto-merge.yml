@@ -1,0 +1,33 @@
+name: Auto Merge
+
+on:
+  pull_request:
+    types: [labeled]
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+
+jobs:
+  auto-merge:
+    if: |
+      github.event.label.name == 'auto-merge' &&
+      github.event.pull_request.user.login == 'jeff377'
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      contents: write
+    steps:
+      - name: Wait for Build CI
+        uses: lewagon/wait-on-check-action@e106e5c43e8ca1edea6383a39a01c5ca495fd812  # v1.3.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          check-name: 'build'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          wait-interval: 30
+
+      - name: Auto merge
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
+        run: gh pr merge "$PR_NUMBER" --squash --auto --delete-branch
