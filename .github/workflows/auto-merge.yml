@@ -3,16 +3,13 @@ name: Auto Merge
 on:
   pull_request:
     types: [labeled]
-    branches: [main]
-    paths:
-      - 'src/**'
-      - 'tests/**'
 
 jobs:
   auto-merge:
     if: |
       github.event.label.name == 'auto-merge' &&
-      github.event.pull_request.user.login == 'jeff377'
+      github.event.pull_request.user.login == 'jeff377' &&
+      github.event.pull_request.base.ref == 'main'
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
