@@ -118,5 +118,21 @@ namespace Bee.Api.Client.UnitTests
                     Directory.Delete(tempDir, recursive: true);
             }
         }
+
+        [Fact]
+        [DisplayName("ApiConnectValidator.Validate URL 但不支援遠端連線時應拋 InvalidOperationException")]
+        public void Validate_Url_RemoteNotSupported_ThrowsInvalidOperationException()
+        {
+            var original = ApiClientContext.SupportedConnectTypes;
+            try
+            {
+                ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Local;
+                Assert.Throws<InvalidOperationException>(() => ApiConnectValidator.Validate("http://example.com/api"));
+            }
+            finally
+            {
+                ApiClientContext.SupportedConnectTypes = original;
+            }
+        }
     }
 }
