@@ -32,6 +32,9 @@ docs/blogs/
 # AI agent prompts (proprietary, local-only)
 prompts/
 
+# Internal design docs (AI coding devloop — proprietary, local-only)
+docs/internal/
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
@@ -53,6 +56,8 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+# Exception: Claude Code agent working logs (bee-sonar-fix / bee-coverage-fix)
+!.claude/logs/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
