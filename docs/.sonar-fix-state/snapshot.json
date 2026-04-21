@@ -1,11 +1,11 @@
 {
-  "capturedAt": "2026-04-20T13:09:00Z",
+  "capturedAt": "2026-04-21T01:13:42Z",
   "qualityGate": "OK",
   "coverage": 91.8,
   "ncloc": 15716,
   "bugs": 0,
   "vulnerabilities": 0,
-  "codeSmells": 0,
-  "leakIssueKeys": [],
-  "allOpenIssueKeys": []
+  "codeSmells": 1,
+  "leakIssueKeys": ["AZ2rjQSGMEXeMQGE0_yr"],
+  "allOpenIssueKeys": ["AZ2rjQSGMEXeMQGE0_yr"]
 }
