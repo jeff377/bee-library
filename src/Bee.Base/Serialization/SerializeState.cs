@@ -3,7 +3,7 @@ namespace Bee.Base.Serialization
     /// <summary>
     /// Serialization state.
     /// </summary>
-    public enum SerializeState
+    public enum SerializeState : int
     {
         /// <summary>
         /// None.
