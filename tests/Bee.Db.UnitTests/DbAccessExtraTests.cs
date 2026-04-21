@@ -178,5 +178,120 @@ namespace Bee.Db.UnitTests
             Assert.Contains("DatabaseType", text);
             Assert.Contains("Provider", text);
         }
+
+        [Fact]
+        [DisplayName("UpdateDataTable spec.DataTable 為 null 應擲 ArgumentException")]
+        public void UpdateDataTable_NullDataTable_ThrowsArgumentException()
+        {
+            using var conn = new SqlConnection();
+            var dbAccess = new DbAccess(conn);
+            var spec = new DataTableUpdateSpec
+            {
+                DataTable = null,
+                InsertCommand = new DbCommandSpec(DbCommandKind.NonQuery, "INSERT INTO t (c) VALUES ({0})", 1)
+            };
+
+            Assert.Throws<ArgumentException>(() => dbAccess.UpdateDataTable(spec));
+        }
+
+        [DbFact]
+        [DisplayName("ExecuteNonQuery(string) 字串便捷方法應正確執行並回傳影響列數")]
+        public void ExecuteNonQuery_StringOverload_ReturnsRowsAffected()
+        {
+            var dbAccess = new DbAccess("common");
+
+            int rows = dbAccess.ExecuteNonQuery(
+                "UPDATE st_user SET note={0} WHERE sys_id={1}", "test", "001");
+
+            Assert.True(rows >= 0);
+        }
+
+        [DbFact]
+        [DisplayName("ExecuteScalar(string) 字串便捷方法應回傳非 null 值")]
+        public void ExecuteScalar_StringOverload_ReturnsValue()
+        {
+            var dbAccess = new DbAccess("common");
+
+            object? val = dbAccess.ExecuteScalar("SELECT COUNT(*) FROM st_user");
+
+            Assert.NotNull(val);
+        }
+
+        [DbFact]
+        [DisplayName("ExecuteDataTable(string) 字串便捷方法應回傳有效 DataTable")]
+        public void ExecuteDataTable_StringOverload_ReturnsDataTable()
+        {
+            var dbAccess = new DbAccess("common");
+
+            var table = dbAccess.ExecuteDataTable("SELECT * FROM st_user");
+
+            Assert.NotNull(table);
+        }
+
+        [DbFact]
+        [DisplayName("ExecuteNonQueryAsync(string) 非同步字串便捷方法應正確執行")]
+        public async Task ExecuteNonQueryAsync_StringOverload_ReturnsRowsAffected()
+        {
+            var dbAccess = new DbAccess("common");
+
+            int rows = await dbAccess.ExecuteNonQueryAsync(
+                "UPDATE st_user SET note={0} WHERE sys_id={1}", "test", "001");
+
+            Assert.True(rows >= 0);
+        }
+
+        [DbFact]
+        [DisplayName("ExecuteScalarAsync(string) 非同步字串便捷方法應回傳非 null 值")]
+        public async Task ExecuteScalarAsync_StringOverload_ReturnsValue()
+        {
+            var dbAccess = new DbAccess("common");
+
+            object? val = await dbAccess.ExecuteScalarAsync("SELECT COUNT(*) FROM st_user");
+
+            Assert.NotNull(val);
+        }
+
+        [DbFact]
+        [DisplayName("ExecuteDataTableAsync(string) 非同步字串便捷方法應回傳有效 DataTable")]
+        public async Task ExecuteDataTableAsync_StringOverload_ReturnsDataTable()
+        {
+            var dbAccess = new DbAccess("common");
+
+            var table = await dbAccess.ExecuteDataTableAsync("SELECT * FROM st_user");
+
+            Assert.NotNull(table);
+        }
+
+        [DbFact]
+        [DisplayName("Execute(command, transaction) 帶交易執行應成功")]
+        public void Execute_WithTransaction_ExecutesSuccessfully()
+        {
+            using var conn = DbFunc.CreateConnection("common");
+            conn.Open();
+            var dbAccess = new DbAccess(conn);
+            using var tran = conn.BeginTransaction();
+
+            var spec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT COUNT(*) FROM st_user");
+            var result = dbAccess.Execute(spec, tran);
+
+            tran.Commit();
+            Assert.NotNull(result.Scalar);
+        }
+
+        [DbFact]
+        [DisplayName("ExecuteAsync(command, transaction) 非同步帶交易執行應成功")]
+        public async Task ExecuteAsync_WithTransaction_ExecutesSuccessfully()
+        {
+            using var conn = DbFunc.CreateConnection("common");
+            conn.Open();
+            var dbAccess = new DbAccess(conn);
+            await using var tran = await conn.BeginTransactionAsync();
+
+            var spec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT COUNT(*) FROM st_user");
+            var result = await dbAccess.ExecuteAsync(spec, tran);
+
+            await tran.CommitAsync();
+            Assert.NotNull(result.Scalar);
+        }
     }
 }
