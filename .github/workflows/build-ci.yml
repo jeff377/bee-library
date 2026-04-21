@@ -19,6 +19,7 @@ on:
       - '*.slnx'
       - 'Directory.Build.props'
       - '.github/workflows/build-ci.yml'
+  workflow_dispatch:
 
 jobs:
   build:
