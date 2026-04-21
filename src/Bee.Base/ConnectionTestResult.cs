@@ -19,7 +19,7 @@
         public ConnectionTestResult(bool isSuccess, string message)
         {
             this.IsSuccess = isSuccess;
-            this.Message = message;;
+            this.Message = message;
         }
 
         /// <summary>
