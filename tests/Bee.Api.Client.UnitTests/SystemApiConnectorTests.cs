@@ -2,6 +2,8 @@ using System.ComponentModel;
 using Bee.Api.Client.ApiServiceProvider;
 using Bee.Api.Client.Connectors;
 using Bee.Api.Core;
+using Bee.Definition;
+using Bee.Definition.Settings;
 using Bee.Tests.Shared;
 
 namespace Bee.Api.Client.UnitTests
@@ -73,6 +75,56 @@ namespace Bee.Api.Client.UnitTests
             var connector = new SystemApiConnector(Guid.NewGuid());
             await Assert.ThrowsAsync<ArgumentException>(async () =>
                 await connector.ExecuteAsync<object>(action!, new object(), PayloadFormat.Plain));
+        }
+
+        [Fact]
+        [DisplayName("SystemApiConnector.PingAsync 遠端服務不可用應拋包裝後的 InvalidOperationException")]
+        public async Task PingAsync_ServiceUnavailable_ThrowsWrappedInvalidOperationException()
+        {
+            var connector = new SystemApiConnector("http://127.0.0.1:59999/api", Guid.NewGuid());
+
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => connector.PingAsync());
+
+            Assert.Equal("Connection failed during Ping.", ex.Message);
+            Assert.NotNull(ex.InnerException);
+        }
+
+        [Fact]
+        [DisplayName("SystemApiConnector.Ping 遠端服務不可用應拋包裝後的 InvalidOperationException")]
+        public void Ping_ServiceUnavailable_ThrowsWrappedInvalidOperationException()
+        {
+            var connector = new SystemApiConnector("http://127.0.0.1:59999/api", Guid.NewGuid());
+
+            var ex = Assert.Throws<InvalidOperationException>(() => connector.Ping());
+
+            Assert.Equal("Connection failed during Ping.", ex.Message);
+            Assert.NotNull(ex.InnerException);
+        }
+
+        [DbFact]
+        [DisplayName("SystemApiConnector.GetDefine 取得 SystemSettings 應回傳有效物件")]
+        public void GetDefine_WithValidToken_ReturnsSystemSettings()
+        {
+            var initConnector = new SystemApiConnector(Guid.NewGuid());
+            var token = initConnector.CreateSession("001");
+            var connector = new SystemApiConnector(token);
+
+            var result = connector.GetDefine<SystemSettings>(DefineType.SystemSettings);
+
+            Assert.NotNull(result);
+        }
+
+        [DbFact]
+        [DisplayName("SystemApiConnector.GetDefineAsync 非同步取得 SystemSettings 應回傳有效物件")]
+        public async Task GetDefineAsync_WithValidToken_ReturnsSystemSettings()
+        {
+            var initConnector = new SystemApiConnector(Guid.NewGuid());
+            var token = initConnector.CreateSession("001");
+            var connector = new SystemApiConnector(token);
+
+            var result = await connector.GetDefineAsync<SystemSettings>(DefineType.SystemSettings);
+
+            Assert.NotNull(result);
         }
     }
 }
