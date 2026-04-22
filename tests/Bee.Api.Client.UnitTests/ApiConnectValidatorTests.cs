@@ -135,5 +135,23 @@ namespace Bee.Api.Client.UnitTests
                 ApiClientContext.SupportedConnectTypes = original;
             }
         }
+
+        [Fact]
+        [DisplayName("ApiConnectValidator.Validate 遠端 URL 連線失敗應拋 InvalidOperationException")]
+        public void Validate_RemoteUrl_ConnectionFails_ThrowsInvalidOperationException()
+        {
+            var original = ApiClientContext.SupportedConnectTypes;
+            try
+            {
+                ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Both;
+                // 使用不存在的端點，Ping 必定失敗並包裝成 InvalidOperationException
+                Assert.Throws<InvalidOperationException>(() =>
+                    ApiConnectValidator.Validate("http://127.0.0.1:19999/nonexistent-bee-api"));
+            }
+            finally
+            {
+                ApiClientContext.SupportedConnectTypes = original;
+            }
+        }
     }
 }
