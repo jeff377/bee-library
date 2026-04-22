@@ -98,3 +98,48 @@ public void Validate_ValidUrl_ReturnsRemoteConnectType(string apiUrl) { ... }
 - 加密、雜湊等安全相關邏輯**必須**有對應測試
 - 新增公開 API 時同步新增對應測試
 - 使用 `[DisplayName]` 提供清楚的中文描述
+
+## 常見 analyzer 退件規則
+
+`build-ci.yml` 有 strict build 階段會直接擋 PR；以下三條是撰寫測試檔時特別容易踩的，列出以減少 PR churn。
+
+### S2699 — 每個 `[Fact]`／`[Theory]` 必須至少一個 `Assert.*`
+
+驗證「無例外」的測試不可裸呼叫，需用 `Record.Exception` / `Record.ExceptionAsync` 明確斷言：
+
+```csharp
+// ❌ 無 assert，S2699 觸發
+[Fact]
+public async Task PingAsync_LocalConnector_Succeeds()
+{
+    var connector = new SystemApiConnector(Guid.NewGuid());
+    await connector.PingAsync();
+}
+
+// ✅ Record.ExceptionAsync + Assert.Null
+[Fact]
+public async Task PingAsync_LocalConnector_Succeeds()
+{
+    var connector = new SystemApiConnector(Guid.NewGuid());
+    var exception = await Record.ExceptionAsync(() => connector.PingAsync());
+    Assert.Null(exception);
+}
+```
+
+### CA1861 — 常數 array 改用 `static readonly` 欄位
+
+`new[] { ... }` 作為 method 引數傳入時每次呼叫會配置新 array，應抽成檔案頂部的 `static readonly`：
+
+```csharp
+// ❌ inline new[]，CA1861 觸發
+var result = access.GetDefine(DefineType.FormSchema, new[] { "Employee" });
+
+// ✅ static readonly 欄位
+private static readonly string[] s_employeeKey = { "Employee" };
+
+var result = access.GetDefine(DefineType.FormSchema, s_employeeKey);
+```
+
+### IDE0005 — 不留未使用的 `using`
+
+從別的測試檔 copy header 時容易帶進不相關的 using，補完測試後逐一檢查並移除。
