@@ -4,9 +4,7 @@ using Bee.Api.Client.DefineAccess;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
-using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
-using Bee.Tests.Shared;
 
 namespace Bee.Api.Client.UnitTests
 {
@@ -19,6 +17,8 @@ namespace Bee.Api.Client.UnitTests
     {
         private static readonly string[] s_singleKey = { "onlyOne" };
         private static readonly string[] s_twoKeys = { "a", "b" };
+        private static readonly string[] s_employeeKey = { "Employee" };
+        private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };
 
         private static RemoteDefineAccess CreateAccess()
         {
@@ -201,7 +201,7 @@ namespace Bee.Api.Client.UnitTests
             var connector = new SystemApiConnector(Guid.NewGuid());
             var access = new RemoteDefineAccess(connector);
 
-            var result = access.GetDefine(DefineType.FormSchema, new[] { "Employee" });
+            var result = access.GetDefine(DefineType.FormSchema, s_employeeKey);
 
             Assert.NotNull(result);
             Assert.IsType<FormSchema>(result);
@@ -214,7 +214,7 @@ namespace Bee.Api.Client.UnitTests
             var connector = new SystemApiConnector(Guid.NewGuid());
             var access = new RemoteDefineAccess(connector);
 
-            var result = access.GetDefine(DefineType.TableSchema, new[] { "common", "st_user" });
+            var result = access.GetDefine(DefineType.TableSchema, s_tableSchemaKeys);
 
             Assert.NotNull(result);
             Assert.IsType<TableSchema>(result);

@@ -80,7 +80,8 @@ namespace Bee.Api.Client.UnitTests
         public async Task PingAsync_LocalConnector_Succeeds()
         {
             var connector = new SystemApiConnector(Guid.NewGuid());
-            await connector.PingAsync();
+            var exception = await Record.ExceptionAsync(() => connector.PingAsync());
+            Assert.Null(exception);
         }
 
         [DbFact]
@@ -88,7 +89,8 @@ namespace Bee.Api.Client.UnitTests
         public void Ping_LocalConnector_Succeeds()
         {
             var connector = new SystemApiConnector(Guid.NewGuid());
-            connector.Ping();
+            var exception = Record.Exception(() => connector.Ping());
+            Assert.Null(exception);
         }
 
     }

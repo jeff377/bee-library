@@ -88,6 +88,12 @@ jobs:
         SA_PASSWORD: BeeTest_Password123!
       run: /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P "$SA_PASSWORD" -C -Q "IF DB_ID('common') IS NULL CREATE DATABASE common;"
 
+    # Strict build（analyzer gate）：未經 SonarScanner 包覆，TreatWarningsAsErrors
+    # 與 .editorconfig 的 analyzer 規則會真正擋 build。Sonar-wrapped build 會削弱
+    # 這層保護，故獨立跑一次把關。
+    - name: Strict build (analyzer gate)
+      run: dotnet build Bee.Library.slnx --configuration Release
+
     - name: SonarScanner Begin
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -100,8 +106,8 @@ jobs:
           /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
           /d:sonar.coverage.exclusions="tests/**,samples/**"
 
-    - name: Build
-      run: dotnet build Bee.Library.slnx --configuration Release
+    - name: Build (for Sonar coverage)
+      run: dotnet build Bee.Library.slnx --configuration Release --no-incremental
 
     - name: Test with coverage
       env:

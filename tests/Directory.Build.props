@@ -7,6 +7,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
+    <!-- 二層保險：build-ci.yml 的 Sonar-wrapped build 會削弱 TreatWarningsAsErrors 對
+         某些 analyzer 規則的效果；WarningsAsErrors 點名硬化，Sonar ruleset 蓋不掉 -->
+    <WarningsAsErrors>$(WarningsAsErrors);IDE0005;CA1861;S2699</WarningsAsErrors>
+
     <!-- IDE0005 需要同時啟用 GenerateDocumentationFile 才會在編譯期偵測；
          測試專案無 public API 需要文件，關閉所有 XML 註解相關警告 -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
