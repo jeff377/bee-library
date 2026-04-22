@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Write(.claude/logs/**)",
+      "Edit(.claude/logs/**)",
+      "Write(src/**)",
+      "Edit(src/**)",
+      "Write(tests/**)",
+      "Edit(tests/**)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(mkdir:*)",
+      "Bash(date:*)",
+      "Bash(TZ=Asia/Taipei date:*)",
+      "WebFetch(domain:sonarcloud.io)"
+    ]
+  }
+}
