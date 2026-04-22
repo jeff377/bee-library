@@ -83,6 +83,27 @@ namespace Bee.Db.UnitTests
             Assert.Equal(string.Empty, result);
         }
 
+        [Theory]
+        [InlineData("MONEY", "((12.34))", "", "12.34")]
+        [InlineData("FLOAT", "((3.14))", "", "3.14")]
+        [DisplayName("ParseDBDefaultValue MONEY 和 FLOAT 型別應剝除雙括號")]
+        public void ParseDBDefaultValue_MoneyAndFloat_StripsDoubleParens(
+            string dataType, string defaultValue, string originalDefault, string expected)
+        {
+            var result = SqlTableSchemaProvider.ParseDBDefaultValue(dataType, defaultValue, originalDefault);
+
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        [DisplayName("ParseDBDefaultValue NVARCHAR 無 N' 前綴時應回退至單引號格式")]
+        public void ParseDBDefaultValue_NVarchar_WithoutNPrefix_FallbackToSingleQuote()
+        {
+            var result = SqlTableSchemaProvider.ParseDBDefaultValue("NVARCHAR", "('hello')", "");
+
+            Assert.Equal("hello", result);
+        }
+
         #endregion
     }
 }
