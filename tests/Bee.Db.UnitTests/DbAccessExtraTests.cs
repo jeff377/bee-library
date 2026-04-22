@@ -178,5 +178,20 @@ namespace Bee.Db.UnitTests
             Assert.Contains("DatabaseType", text);
             Assert.Contains("Provider", text);
         }
+
+        [Fact]
+        [DisplayName("UpdateDataTable DataTable 為 null 應擲 ArgumentException")]
+        public void UpdateDataTable_NullDataTable_ThrowsArgumentException()
+        {
+            using var conn = new SqlConnection();
+            var dbAccess = new DbAccess(conn);
+            var spec = new DataTableUpdateSpec
+            {
+                DataTable = null!,
+                InsertCommand = new DbCommandSpec(DbCommandKind.NonQuery, "INSERT INTO t VALUES ({0})", "x")
+            };
+
+            Assert.Throws<ArgumentException>(() => dbAccess.UpdateDataTable(spec));
+        }
     }
 }

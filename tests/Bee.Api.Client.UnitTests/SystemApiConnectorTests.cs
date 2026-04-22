@@ -74,5 +74,22 @@ namespace Bee.Api.Client.UnitTests
             await Assert.ThrowsAsync<ArgumentException>(async () =>
                 await connector.ExecuteAsync<object>(action!, new object(), PayloadFormat.Plain));
         }
+
+        [DbFact]
+        [DisplayName("SystemApiConnector.PingAsync 本機連線應成功回應")]
+        public async Task PingAsync_LocalConnector_Succeeds()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            await connector.PingAsync();
+        }
+
+        [DbFact]
+        [DisplayName("SystemApiConnector.Ping 同步本機連線應成功回應")]
+        public void Ping_LocalConnector_Succeeds()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            connector.Ping();
+        }
+
     }
 }

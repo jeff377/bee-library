@@ -2,6 +2,11 @@ using System.ComponentModel;
 using Bee.Api.Client.Connectors;
 using Bee.Api.Client.DefineAccess;
 using Bee.Definition;
+using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
+using Bee.Tests.Shared;
 
 namespace Bee.Api.Client.UnitTests
 {
@@ -9,6 +14,7 @@ namespace Bee.Api.Client.UnitTests
     /// 針對 <see cref="RemoteDefineAccess"/> 參數防護與不支援型別的純邏輯測試。
     /// 以 local <see cref="SystemApiConnector"/> 建構，但測試案例僅涵蓋在呼叫實際遠端之前就應拋出的錯誤路徑。
     /// </summary>
+    [Collection("Initialize")]
     public class RemoteDefineAccessTests
     {
         private static readonly string[] s_singleKey = { "onlyOne" };
@@ -86,6 +92,132 @@ namespace Bee.Api.Client.UnitTests
             var connector = new SystemApiConnector(Guid.NewGuid());
             var access = new RemoteDefineAccess(connector);
             Assert.NotNull(access);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetSystemSettings 本機連線應回傳系統設定")]
+        public void GetSystemSettings_LocalConnector_ReturnsSettings()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var settings = access.GetSystemSettings();
+
+            Assert.NotNull(settings);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDatabaseSettings 本機連線應回傳資料庫設定")]
+        public void GetDatabaseSettings_LocalConnector_ReturnsSettings()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var settings = access.GetDatabaseSettings();
+
+            Assert.NotNull(settings);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDbSchemaSettings 本機連線應回傳資料庫綱要設定")]
+        public void GetDbSchemaSettings_LocalConnector_ReturnsSettings()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var settings = access.GetDbSchemaSettings();
+
+            Assert.NotNull(settings);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetFormSchema 本機連線應回傳表單結構定義")]
+        public void GetFormSchema_LocalConnector_ReturnsFormSchema()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var schema = access.GetFormSchema("Employee");
+
+            Assert.NotNull(schema);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetTableSchema 本機連線應回傳資料表結構定義")]
+        public void GetTableSchema_LocalConnector_ReturnsTableSchema()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var schema = access.GetTableSchema("common", "st_user");
+
+            Assert.NotNull(schema);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine 重複呼叫應使用快取回傳相同物件")]
+        public void GetDefine_SystemSettings_SecondCall_ReturnsCachedObject()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var result1 = access.GetSystemSettings();
+            var result2 = access.GetSystemSettings();
+
+            Assert.NotNull(result1);
+            Assert.Same(result1, result2);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine SystemSettings 使用 GetDefine 公開方法應回傳系統設定")]
+        public void GetDefine_SystemSettings_ViaPublicMethod_ReturnsSettings()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.SystemSettings);
+
+            Assert.NotNull(result);
+            Assert.IsType<SystemSettings>(result);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine DatabaseSettings 使用 GetDefine 公開方法應回傳資料庫設定")]
+        public void GetDefine_DatabaseSettings_ViaPublicMethod_ReturnsSettings()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.DatabaseSettings);
+
+            Assert.NotNull(result);
+            Assert.IsType<DatabaseSettings>(result);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine FormSchema 含有效 key 使用 GetDefine 公開方法應回傳表單定義")]
+        public void GetDefine_FormSchema_ViaPublicMethod_ReturnsFormSchema()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.FormSchema, new[] { "Employee" });
+
+            Assert.NotNull(result);
+            Assert.IsType<FormSchema>(result);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine TableSchema 含有效 keys 使用 GetDefine 公開方法應回傳資料表定義")]
+        public void GetDefine_TableSchema_ViaPublicMethod_ReturnsTableSchema()
+        {
+            var connector = new SystemApiConnector(Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.TableSchema, new[] { "common", "st_user" });
+
+            Assert.NotNull(result);
+            Assert.IsType<TableSchema>(result);
         }
     }
 }
