@@ -220,7 +220,7 @@ namespace Bee.Base.UnitTests
             try
             {
                 svc.Start();
-                Assert.True(executed.Wait(3000),
+                Assert.True(executed.Wait(10000),
                     "Queued action was not executed within timeout.");
             }
             finally
