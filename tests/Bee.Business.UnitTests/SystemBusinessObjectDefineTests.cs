@@ -45,5 +45,22 @@ namespace Bee.Business.UnitTests
 
             Assert.False(string.IsNullOrWhiteSpace(result.Xml));
         }
+
+        [Fact]
+        [DisplayName("SaveDefine 本地呼叫 DbSchemaSettings 應成功執行 SaveDefineCore 路徑")]
+        public void SaveDefine_LocalCallDbSchemaSettings_Succeeds()
+        {
+            var bo = new SystemBusinessObject(Guid.Empty, isLocalCall: true);
+            var getResult = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbSchemaSettings });
+            Assert.False(string.IsNullOrWhiteSpace(getResult.Xml));
+
+            var saveResult = bo.SaveDefine(new SaveDefineArgs
+            {
+                DefineType = DefineType.DbSchemaSettings,
+                Xml = getResult.Xml
+            });
+
+            Assert.NotNull(saveResult);
+        }
     }
 }
