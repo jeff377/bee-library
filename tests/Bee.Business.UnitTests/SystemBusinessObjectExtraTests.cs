@@ -122,5 +122,19 @@ namespace Bee.Business.UnitTests
             Assert.True(result.Parameters.Contains("Hello"));
             Assert.Contains("Hello system-level", result.Parameters.GetValue<string>("Hello"));
         }
+
+        [Fact]
+        [DisplayName("ExecFunc 已驗證呼叫 Hello 方法應回傳問候語（覆蓋 DoExecFunc 路徑）")]
+        public void ExecFunc_Hello_AuthenticatedCall_ReturnsGreeting()
+        {
+            // Hello 標註 Anonymous，Authenticated 呼叫者可存取（權限足夠），因此覆蓋 DoExecFunc 路徑
+            var bo = new TestableSystemBusinessObject(Guid.Empty, _ => (false, string.Empty));
+            var args = new ExecFuncArgs("Hello");
+
+            var result = bo.ExecFunc(args);
+
+            Assert.True(result.Parameters.Contains("Hello"));
+            Assert.Contains("Hello system-level", result.Parameters.GetValue<string>("Hello"));
+        }
     }
 }
