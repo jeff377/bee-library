@@ -61,7 +61,7 @@ namespace Bee.Repository.System
             var row = table.Rows[0];
 
             // If the session has expired, delete it and return null
-            DateTime endTime = BaseFunc.CDateTime(row[SysFields.InvalidDate]);
+            DateTime endTime = BaseFunc.CDateTime(row["sys_invalid_time"]);
             if (endTime < DateTime.UtcNow)
             {
                 Delete(accessToken);
