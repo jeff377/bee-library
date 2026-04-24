@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Definition;
+using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
 {
@@ -135,6 +136,37 @@ namespace Bee.Business.UnitTests
 
             Assert.True(result.Parameters.Contains("Hello"));
             Assert.Contains("Hello system-level", result.Parameters.GetValue<string>("Hello"));
+        }
+
+        [DbFact]
+        [DisplayName("ExecFunc(TestConnection) 傳入有效資料庫設定應不拋出例外")]
+        public void ExecFunc_TestConnection_ValidDatabaseItem_Succeeds()
+        {
+            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            var dbItem = dbSettings.Items?.FirstOrDefault(x => x.Id == "common");
+            Assert.NotNull(dbItem);
+
+            var bo = new TestableSystemBusinessObject(Guid.Empty, _ => (false, string.Empty));
+            var args = new ExecFuncArgs("TestConnection");
+            args.Parameters.Add("DatabaseItem", dbItem);
+
+            var exception = Record.Exception(() => bo.ExecFunc(args));
+            Assert.Null(exception);
+        }
+
+        [DbFact]
+        [DisplayName("ExecFunc(UpgradeTableSchema) 傳入已知資料表應回傳含 Upgraded 的結果")]
+        public void ExecFunc_UpgradeTableSchema_ExistingTable_HasUpgradedResult()
+        {
+            var bo = new TestableSystemBusinessObject(Guid.Empty, _ => (false, string.Empty));
+            var args = new ExecFuncArgs("UpgradeTableSchema");
+            args.Parameters.Add("DatabaseId", "common");
+            args.Parameters.Add("DbName", "common");
+            args.Parameters.Add("TableName", "st_user");
+
+            var result = bo.ExecFunc(args);
+
+            Assert.True(result.Parameters.Contains("Upgraded"));
         }
     }
 }
