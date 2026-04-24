@@ -20,6 +20,7 @@ namespace Bee.Db.Providers.SqlServer
             switch (change)
             {
                 case AddFieldChange _:
+                case RenameFieldChange _:
                 case AddIndexChange _:
                 case DropIndexChange _:
                     return ChangeExecutionKind.Alter;
@@ -48,6 +49,8 @@ namespace Bee.Db.Providers.SqlServer
                     return new[] { BuildAddFieldStatement(tableName, add.Field) };
                 case AlterFieldChange alter:
                     return BuildAlterFieldStatements(tableName, alter.OldField, alter.NewField);
+                case RenameFieldChange rename:
+                    return new[] { BuildRenameFieldStatement(tableName, rename) };
                 case AddIndexChange addIndex:
                     return new[] { BuildAddIndexStatement(tableName, addIndex.Index) };
                 case DropIndexChange dropIndex:
@@ -60,6 +63,18 @@ namespace Bee.Db.Providers.SqlServer
         private static string BuildAddFieldStatement(string tableName, DbField field)
         {
             return $"ALTER TABLE {SqlSchemaHelper.QuoteName(tableName)} ADD {SqlSchemaHelper.GetColumnDefinition(field)};";
+        }
+
+        /// <summary>
+        /// Builds the <c>sp_rename</c> invocation for a column rename. The source is identified as
+        /// <c>schema.table.column</c>; the target is the new column name (bare identifier).
+        /// </summary>
+        private static string BuildRenameFieldStatement(string tableName, RenameFieldChange change)
+        {
+            string sourceObject = $"{tableName}.{change.OldFieldName}";
+            string sourceLiteral = SqlSchemaHelper.EscapeSqlString(sourceObject);
+            string targetLiteral = SqlSchemaHelper.EscapeSqlString(change.NewField.FieldName);
+            return $"EXEC sp_rename N'{sourceLiteral}', N'{targetLiteral}', N'COLUMN';";
         }
 
         private static IReadOnlyList<string> BuildAlterFieldStatements(string tableName, DbField oldField, DbField newField)

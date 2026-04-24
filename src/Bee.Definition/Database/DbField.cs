@@ -59,6 +59,18 @@ namespace Bee.Definition.Database
         public string Caption { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the original field name used as a one-time rename hint during schema upgrade.
+        /// When set, the schema comparer emits a rename instruction that maps the existing column with
+        /// <see cref="OriginalFieldName"/> to the current <see cref="FieldName"/>. Intended for
+        /// new-module development iteration; for already-deployed modules, schema renames are discouraged.
+        /// </summary>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Original field name; one-time rename hint for schema upgrade.")]
+        [DefaultValue("")]
+        public string OriginalFieldName { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the database data type.
         /// </summary>
         [XmlAttribute]
@@ -138,6 +150,7 @@ namespace Bee.Definition.Database
             {
                 FieldName = FieldName,
                 Caption = Caption,
+                OriginalFieldName = OriginalFieldName,
                 DbType = DbType,
                 Length = Length,
                 Precision = Precision,

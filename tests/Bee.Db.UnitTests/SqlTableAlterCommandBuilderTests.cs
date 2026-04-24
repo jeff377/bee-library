@@ -242,5 +242,36 @@ namespace Bee.Db.UnitTests
 
             Assert.ThrowsAny<ArgumentException>(() => _builder.GetStatements(null!, change));
         }
+
+        // ---------- RenameFieldChange ----------
+
+        [Fact]
+        [DisplayName("GetExecutionKind：RenameFieldChange 應為 Alter")]
+        public void GetExecutionKind_RenameField_ReturnsAlter()
+        {
+            var change = new RenameFieldChange("emp_name", new DbField("employee_name", "Name", FieldDbType.String) { Length = 50 });
+
+            Assert.Equal(ChangeExecutionKind.Alter, _builder.GetExecutionKind(change));
+        }
+
+        [Fact]
+        [DisplayName("IsNarrowingChange：RenameFieldChange 應回傳 false")]
+        public void IsNarrowingChange_RenameField_ReturnsFalse()
+        {
+            var change = new RenameFieldChange("emp_name", new DbField("employee_name", "Name", FieldDbType.String) { Length = 50 });
+
+            Assert.False(_builder.IsNarrowingChange(change));
+        }
+
+        [Fact]
+        [DisplayName("GetStatements：RenameFieldChange 應產生 sp_rename 語句")]
+        public void GetStatements_RenameField_EmitsSpRename()
+        {
+            var change = new RenameFieldChange("emp_name", new DbField("employee_name", "Name", FieldDbType.String) { Length = 50 });
+            var statements = _builder.GetStatements("st_demo", change);
+
+            var sql = Assert.Single(statements);
+            Assert.Equal("EXEC sp_rename N'st_demo.emp_name', N'employee_name', N'COLUMN';", sql);
+        }
     }
 }

@@ -437,5 +437,79 @@ namespace Bee.Db.UnitTests
             // 舊 API 的 DescriptionChanges 不應被 CompareToDiff 動到
             Assert.Empty(comparer.DescriptionChanges);
         }
+
+        // ---- Rename detection via OriginalFieldName ----
+
+        [Fact]
+        [DisplayName("CompareToDiff：舊名存在、新名不存在時應產生 RenameFieldChange")]
+        public void CompareToDiff_RenameHint_OldNameExists_EmitsRenameFieldChange()
+        {
+            var define = BuildBaseSchema();
+            define.Fields!["name"].FieldName = "display_name";
+            define.Fields!["display_name"].OriginalFieldName = "name";
+            var real = BuildRealSchema();
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            var rename = Assert.Single(diff.Changes.OfType<RenameFieldChange>());
+            Assert.Equal("name", rename.OldFieldName);
+            Assert.Equal("display_name", rename.NewField.FieldName);
+            // 型別相同 (String 50 ↔ String 50)，不應額外產生 AlterFieldChange
+            Assert.Empty(diff.Changes.OfType<AlterFieldChange>());
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：rename 合併型別變更時應同時產生 Rename + Alter")]
+        public void CompareToDiff_RenameWithTypeChange_EmitsRenameAndAlter()
+        {
+            var define = BuildBaseSchema();
+            define.Fields!["name"].FieldName = "display_name";
+            define.Fields!["display_name"].OriginalFieldName = "name";
+            define.Fields!["display_name"].Length = 100; // 與 real 的 50 不同
+            var real = BuildRealSchema();
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            Assert.Single(diff.Changes.OfType<RenameFieldChange>());
+            var alter = Assert.Single(diff.Changes.OfType<AlterFieldChange>());
+            // Alter 的 old 是 post-rename 投影（新名，但舊定義）
+            Assert.Equal("display_name", alter.OldField.FieldName);
+            Assert.Equal(50, alter.OldField.Length);
+            Assert.Equal(100, alter.NewField.Length);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：stale rename hint（新名已存在於 DB）應視為已完成，不再產生 Rename")]
+        public void CompareToDiff_RenameHint_StaleHint_NoRenameEmitted()
+        {
+            var define = BuildBaseSchema();
+            define.Fields!["name"].FieldName = "display_name";
+            define.Fields!["display_name"].OriginalFieldName = "name";
+            var real = BuildRealSchema();
+            // DB 已完成 rename：存在 display_name，不存在 name
+            real.Fields!.Remove("name");
+            real.Fields!.Add("display_name", "Display Name", FieldDbType.String, 50);
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            Assert.Empty(diff.Changes.OfType<RenameFieldChange>());
+            Assert.Empty(diff.Changes.OfType<AddFieldChange>());
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：舊名與新名皆不存在時應降級為 AddFieldChange（警告情境）")]
+        public void CompareToDiff_RenameHint_NeitherNameInRealTable_FallsBackToAddField()
+        {
+            var define = BuildBaseSchema();
+            define.Fields!.Add("new_col", "New", FieldDbType.String, 20);
+            define.Fields!["new_col"].OriginalFieldName = "ghost_col"; // ghost 舊名不存在於 DB
+            var real = BuildRealSchema();
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            Assert.Empty(diff.Changes.OfType<RenameFieldChange>());
+            var add = Assert.Single(diff.Changes.OfType<AddFieldChange>());
+            Assert.Equal("new_col", add.Field.FieldName);
+        }
     }
 }

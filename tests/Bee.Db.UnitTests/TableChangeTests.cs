@@ -55,5 +55,17 @@ namespace Bee.Db.UnitTests
             Assert.Same(index, change.Index);
             Assert.IsAssignableFrom<TableChange>(change);
         }
+
+        [Fact]
+        [DisplayName("RenameFieldChange 應保留 OldFieldName 與 NewField")]
+        public void RenameFieldChange_PreservesOldNameAndNewField()
+        {
+            var newField = new DbField("employee_name", "Employee Name", FieldDbType.String) { Length = 50 };
+            var change = new RenameFieldChange("emp_name", newField);
+
+            Assert.Equal("emp_name", change.OldFieldName);
+            Assert.Same(newField, change.NewField);
+            Assert.IsAssignableFrom<TableChange>(change);
+        }
     }
 }

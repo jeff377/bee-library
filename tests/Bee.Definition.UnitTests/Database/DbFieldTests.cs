@@ -17,6 +17,7 @@ namespace Bee.Definition.UnitTests.Database
 
             Assert.Equal(string.Empty, field.FieldName);
             Assert.Equal(string.Empty, field.Caption);
+            Assert.Equal(string.Empty, field.OriginalFieldName);
             Assert.Equal(FieldDbType.String, field.DbType);
             Assert.Equal(0, field.Length);
             Assert.Equal(18, field.Precision);
@@ -55,6 +56,7 @@ namespace Bee.Definition.UnitTests.Database
         {
             var source = new DbField("amount", "金額", FieldDbType.Decimal)
             {
+                OriginalFieldName = "legacy_amount",
                 Length = 0,
                 Precision = 19,
                 Scale = 4,
@@ -67,6 +69,7 @@ namespace Bee.Definition.UnitTests.Database
             Assert.NotSame(source, clone);
             Assert.Equal(source.FieldName, clone.FieldName);
             Assert.Equal(source.Caption, clone.Caption);
+            Assert.Equal(source.OriginalFieldName, clone.OriginalFieldName);
             Assert.Equal(source.DbType, clone.DbType);
             Assert.Equal(source.Length, clone.Length);
             Assert.Equal(source.Precision, clone.Precision);
@@ -177,6 +180,16 @@ namespace Bee.Definition.UnitTests.Database
             var field = new DbField("sys_id", "編號", FieldDbType.String);
 
             Assert.Equal("sys_id - 編號", field.ToString());
+        }
+
+        [Fact]
+        [DisplayName("Compare OriginalFieldName 不同不影響結果（僅為 rename 提示）")]
+        public void Compare_OriginalFieldNameIgnored()
+        {
+            var a = new DbField("x", "x", FieldDbType.String) { OriginalFieldName = "old_x" };
+            var b = new DbField("x", "x", FieldDbType.String);
+
+            Assert.True(a.Compare(b));
         }
     }
 }

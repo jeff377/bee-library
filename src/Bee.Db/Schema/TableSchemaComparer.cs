@@ -208,6 +208,9 @@ namespace Bee.Db.Schema
 
         /// <summary>
         /// Collects field-level changes into the given diff. Fields present only in the actual database are preserved.
+        /// When <see cref="DbField.OriginalFieldName"/> is set on a defined field, rename intent is resolved:
+        /// the DB column with the old name is renamed if the new name does not yet exist; otherwise the hint is
+        /// treated as already-applied (stale) and the normal comparison path is used.
         /// </summary>
         /// <param name="diff">The diff to populate.</param>
         private void CollectFieldChanges(TableSchemaDiff diff)
@@ -216,14 +219,31 @@ namespace Bee.Db.Schema
             {
                 if (this.RealTable!.Fields!.Contains(defineField.FieldName))
                 {
+                    // DB already has a column with the target name; compare definitions directly.
+                    // Any stale OriginalFieldName hint is treated as already-applied and ignored here.
                     var realField = this.RealTable.Fields[defineField.FieldName];
                     if (!defineField.Compare(realField))
                         diff.Changes.Add(new AlterFieldChange(realField.Clone(), defineField.Clone()));
+                    continue;
                 }
-                else
+
+                // DB does not yet have the target name — check for a rename hint.
+                if (StrFunc.IsNotEmpty(defineField.OriginalFieldName)
+                    && this.RealTable.Fields!.Contains(defineField.OriginalFieldName))
                 {
-                    diff.Changes.Add(new AddFieldChange(defineField.Clone()));
+                    var oldRealField = this.RealTable.Fields[defineField.OriginalFieldName];
+                    diff.Changes.Add(new RenameFieldChange(defineField.OriginalFieldName, defineField.Clone()));
+                    // After rename, the column definition may still differ from the target; emit an
+                    // AlterFieldChange against a projection of the real column under the new name.
+                    var postRenameField = oldRealField.Clone();
+                    postRenameField.FieldName = defineField.FieldName;
+                    if (!defineField.Compare(postRenameField))
+                        diff.Changes.Add(new AlterFieldChange(postRenameField, defineField.Clone()));
+                    continue;
                 }
+
+                // No column under the target name and no applicable rename hint — add as a new column.
+                diff.Changes.Add(new AddFieldChange(defineField.Clone()));
             }
         }
 
