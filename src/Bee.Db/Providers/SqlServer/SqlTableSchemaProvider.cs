@@ -9,7 +9,7 @@ namespace Bee.Db.Providers.SqlServer
     /// <summary>
     /// Provides methods for reading and parsing SQL Server table schemas.
     /// </summary>
-    public class SqlTableSchemaProvider
+    public class SqlTableSchemaProvider : ITableSchemaProvider
     {
         private readonly DbAccess _dbAccess;
 

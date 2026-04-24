@@ -40,7 +40,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             var diff = new TableSchemaComparer(define, real).CompareToDiff();
 
-            var sql = SqlTableRebuildCommandBuilder.GetCommandText(diff);
+            var sql = new SqlTableRebuildCommandBuilder().GetCommandText(diff);
 
             Assert.Contains("tmp_st_demo", sql);
             Assert.Contains("INSERT INTO [tmp_st_demo]", sql);
@@ -55,7 +55,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             var diff = new TableSchemaComparer(define, real).CompareToDiff();
 
-            var sql = SqlTableRebuildCommandBuilder.GetCommandText(diff);
+            var sql = new SqlTableRebuildCommandBuilder().GetCommandText(diff);
 
             // 新欄位 age 應在 tmp 定義中出現
             Assert.Contains("[age]", sql);
@@ -74,7 +74,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema(withExtraLegacyField: true);
             var diff = new TableSchemaComparer(define, real).CompareToDiff();
 
-            var sql = SqlTableRebuildCommandBuilder.GetCommandText(diff);
+            var sql = new SqlTableRebuildCommandBuilder().GetCommandText(diff);
 
             Assert.Contains("[legacy_col]", sql);
         }
@@ -86,7 +86,7 @@ namespace Bee.Db.UnitTests
             var define = BuildDefineSchema();
             var diff = new TableSchemaComparer(define, realTable: null).CompareToDiff();
 
-            Assert.Throws<InvalidOperationException>(() => SqlTableRebuildCommandBuilder.GetCommandText(diff));
+            Assert.Throws<InvalidOperationException>(() => new SqlTableRebuildCommandBuilder().GetCommandText(diff));
         }
     }
 }

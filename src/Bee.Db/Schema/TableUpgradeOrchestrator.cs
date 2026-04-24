@@ -115,7 +115,8 @@ namespace Bee.Db.Schema
 
         private static UpgradePlan BuildRebuildPlan(TableSchemaDiff diff)
         {
-            var sql = SqlTableRebuildCommandBuilder.GetCommandText(diff);
+            var builder = new SqlTableRebuildCommandBuilder();
+            var sql = builder.GetCommandText(diff);
             var stage = new UpgradeStage(UpgradeStageKind.Rebuild, new[] { sql });
             return new UpgradePlan(UpgradeExecutionMode.Rebuild, new[] { stage });
         }

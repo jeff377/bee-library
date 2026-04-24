@@ -10,16 +10,16 @@ namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
     /// Builds the SQL Server rebuild script (drop tmp / create tmp / copy data / drop old / rename tmp)
-    /// used as the orchestrator's fallback when ALTER cannot apply all changes.
+    /// used as the orchestrator fallback when ALTER cannot apply all changes.
     /// </summary>
-    internal static class SqlTableRebuildCommandBuilder
+    internal class SqlTableRebuildCommandBuilder : ITableRebuildCommandBuilder
     {
         /// <summary>
         /// Produces the rebuild SQL script for the given diff. Extension fields (real-only) are preserved;
         /// newly added fields are excluded from the INSERT ... SELECT data copy so existing rows get their default.
         /// </summary>
         /// <param name="diff">The schema diff; must not be a new-table diff (use <see cref="ICreateTableCommandBuilder"/> for that).</param>
-        public static string GetCommandText(TableSchemaDiff diff)
+        public string GetCommandText(TableSchemaDiff diff)
         {
             if (diff.IsNewTable)
                 throw new InvalidOperationException("Rebuild is not applicable for a new table; use CREATE TABLE instead.");
