@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Db.Schema;
+using Bee.Db.Schema.Changes;
 using Bee.Definition;
 using Bee.Definition.Database;
 
@@ -255,6 +256,186 @@ namespace Bee.Db.UnitTests
 
             // legacy_col 不在 define 中，不應產生對應的 Column DescriptionChange
             Assert.DoesNotContain(comparer.DescriptionChanges, c => c.FieldName == "legacy_col");
+        }
+
+        // ---- CompareToDiff ----
+
+        [Fact]
+        [DisplayName("CompareToDiff：RealTable 為 null 時 IsNewTable=true 且無 Changes")]
+        public void CompareToDiff_NullRealTable_ReturnsNewTableDiffWithNoChanges()
+        {
+            var define = BuildBaseSchema();
+            var comparer = new TableSchemaComparer(define, null);
+
+            var diff = comparer.CompareToDiff();
+
+            Assert.True(diff.IsNewTable);
+            Assert.Empty(diff.Changes);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：結構完全相同時 Changes 應為空")]
+        public void CompareToDiff_IdenticalSchemas_ReturnsNoChanges()
+        {
+            var define = BuildBaseSchema();
+            var real = BuildRealSchema();
+            var comparer = new TableSchemaComparer(define, real);
+
+            var diff = comparer.CompareToDiff();
+
+            Assert.Empty(diff.Changes);
+            Assert.True(diff.IsEmpty);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：實際表缺少欄位時應產生 AddFieldChange")]
+        public void CompareToDiff_MissingField_EmitsAddFieldChange()
+        {
+            var define = BuildBaseSchema();
+            define.Fields!.Add("age", "Age", FieldDbType.Integer);
+            var real = BuildRealSchema();
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            var addChange = Assert.Single(diff.Changes.OfType<AddFieldChange>());
+            Assert.Equal("age", addChange.Field.FieldName);
+            Assert.Equal(FieldDbType.Integer, addChange.Field.DbType);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：欄位定義不同時應產生 AlterFieldChange（含 Old/New）")]
+        public void CompareToDiff_DifferentField_EmitsAlterFieldChange()
+        {
+            var define = BuildBaseSchema();
+            var real = BuildRealSchema();
+            real.Fields!["name"].Length = 30;
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            var alterChange = Assert.Single(diff.Changes.OfType<AlterFieldChange>());
+            Assert.Equal("name", alterChange.NewField.FieldName);
+            Assert.Equal(50, alterChange.NewField.Length);
+            Assert.Equal(30, alterChange.OldField.Length);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：實際表缺少索引時應產生 AddIndexChange")]
+        public void CompareToDiff_MissingIndex_EmitsAddIndexChange()
+        {
+            var define = BuildBaseSchema();
+            define.Indexes!.Add("ix_{0}_name", "name", false);
+            var real = BuildRealSchema();
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            var addIndex = Assert.Single(diff.Changes.OfType<AddIndexChange>());
+            Assert.Equal("ix_{0}_name", addIndex.Index.Name);
+            Assert.Empty(diff.Changes.OfType<DropIndexChange>());
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：索引定義不同時應同時產生 Drop + Add")]
+        public void CompareToDiff_DifferentIndex_EmitsDropThenAdd()
+        {
+            var define = BuildBaseSchema();
+            define.Indexes!.Add("ix_{0}_name", "name", true);
+            var real = BuildRealSchema();
+            real.Indexes!.Add("ix_st_demo_name", "name", false);
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            var drop = Assert.Single(diff.Changes.OfType<DropIndexChange>());
+            var add = Assert.Single(diff.Changes.OfType<AddIndexChange>());
+            Assert.Equal("ix_st_demo_name", drop.Index.Name);
+            Assert.Equal("ix_{0}_name", add.Index.Name);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：僅存在於 Real 的欄位不產生 Change（保留政策）")]
+        public void CompareToDiff_ExtraFieldInRealTable_EmitsNoChangeForExtensionField()
+        {
+            var define = BuildBaseSchema();
+            var real = BuildRealSchema();
+            real.Fields!.Add("legacy_col", "Legacy", FieldDbType.String, 10);
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            Assert.Empty(diff.Changes);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：僅存在於 Real 的索引不產生 Change（保留政策）")]
+        public void CompareToDiff_ExtraIndexInRealTable_EmitsNoChangeForExtensionIndex()
+        {
+            var define = BuildBaseSchema();
+            var real = BuildRealSchema();
+            real.Indexes!.Add("ix_st_demo_legacy", "name", false);
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            Assert.Empty(diff.Changes);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：描述差異應填入 diff.DescriptionChanges")]
+        public void CompareToDiff_DescriptionDiff_PopulatesDiffDescriptionChanges()
+        {
+            var define = BuildBaseSchema();
+            define.DisplayName = "示範資料表";
+            var real = BuildRealSchema();
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            var change = Assert.Single(diff.DescriptionChanges);
+            Assert.Equal(DescriptionLevel.Table, change.Level);
+            Assert.Equal("示範資料表", change.NewValue);
+            Assert.True(change.IsNew);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：Define 註解為空採保守策略（不產生 DescriptionChange）")]
+        public void CompareToDiff_EmptyDefineDescription_NoDescriptionChange()
+        {
+            var define = BuildBaseSchema();
+            define.DisplayName = string.Empty;
+            var real = BuildRealSchema();
+            real.DisplayName = "DB 既有表說明";
+
+            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+
+            Assert.Empty(diff.DescriptionChanges);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff：不應影響 define 或 real 的 UpgradeAction（不 mutate）")]
+        public void CompareToDiff_DoesNotMutateUpgradeAction()
+        {
+            var define = BuildBaseSchema();
+            define.Fields!.Add("age", "Age", FieldDbType.Integer);
+            var real = BuildRealSchema();
+            real.Fields!["name"].Length = 30;
+
+            new TableSchemaComparer(define, real).CompareToDiff();
+
+            // define 上未被設定 UpgradeAction
+            Assert.Equal(DbUpgradeAction.None, define.UpgradeAction);
+            Assert.Equal(DbUpgradeAction.None, define.Fields!["age"].UpgradeAction);
+            Assert.Equal(DbUpgradeAction.None, define.Fields!["name"].UpgradeAction);
+        }
+
+        [Fact]
+        [DisplayName("CompareToDiff 不影響舊 Compare() 行為（獨立 DescriptionChanges 來源）")]
+        public void CompareToDiff_DoesNotPopulateLegacyDescriptionChanges()
+        {
+            var define = BuildBaseSchema();
+            define.DisplayName = "示範";
+            var real = BuildRealSchema();
+            var comparer = new TableSchemaComparer(define, real);
+
+            comparer.CompareToDiff();
+
+            // 舊 API 的 DescriptionChanges 不應被 CompareToDiff 動到
+            Assert.Empty(comparer.DescriptionChanges);
         }
     }
 }
