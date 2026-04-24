@@ -45,5 +45,17 @@ namespace Bee.Business.UnitTests
 
             Assert.False(string.IsNullOrWhiteSpace(result.Xml));
         }
+
+        [Fact]
+        [DisplayName("SaveDefine 本地呼叫 SystemSettings 應成功執行並回傳結果")]
+        public void SaveDefine_LocalCall_SystemSettings_ReturnsResult()
+        {
+            var bo = new SystemBusinessObject(Guid.Empty, isLocalCall: true);
+            var xml = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.SystemSettings }).Xml;
+
+            var result = bo.SaveDefine(new SaveDefineArgs { DefineType = DefineType.SystemSettings, Xml = xml });
+
+            Assert.NotNull(result);
+        }
     }
 }
