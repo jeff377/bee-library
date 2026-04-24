@@ -1,21 +1,22 @@
+using System.Globalization;
+using System.Text;
+using Bee.Base;
+using Bee.Base.Data;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
-using Bee.Definition;
 using Bee.Definition.Database;
 
 namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
-    /// Builds the SQL Server "rebuild" upgrade script (drop tmp / create tmp / copy data / drop old / rename tmp)
-    /// as the fallback path when ALTER cannot apply all changes. Delegates SQL generation to
-    /// <see cref="SqlCreateTableCommandBuilder"/> by reconstructing the legacy-style schema
-    /// (extension fields appended, per-field upgrade actions marked).
+    /// Builds the SQL Server rebuild script (drop tmp / create tmp / copy data / drop old / rename tmp)
+    /// used as the orchestrator's fallback when ALTER cannot apply all changes.
     /// </summary>
-    internal class SqlTableRebuildCommandBuilder
+    internal static class SqlTableRebuildCommandBuilder
     {
         /// <summary>
         /// Produces the rebuild SQL script for the given diff. Extension fields (real-only) are preserved;
-        /// newly added fields are marked as New so they are excluded from the INSERT ... SELECT data copy.
+        /// newly added fields are excluded from the INSERT ... SELECT data copy so existing rows get their default.
         /// </summary>
         /// <param name="diff">The schema diff; must not be a new-table diff (use <see cref="ICreateTableCommandBuilder"/> for that).</param>
         public static string GetCommandText(TableSchemaDiff diff)
@@ -23,31 +24,48 @@ namespace Bee.Db.Providers.SqlServer
             if (diff.IsNewTable)
                 throw new InvalidOperationException("Rebuild is not applicable for a new table; use CREATE TABLE instead.");
 
-            var schema = BuildLegacyUpgradeSchema(diff);
-            var inner = new SqlCreateTableCommandBuilder();
-            return inner.GetCommandText(schema);
+            string tableName = diff.DefineTable.TableName;
+            string tmpTableName = $"tmp_{tableName}";
+
+            var effectiveSchema = BuildEffectiveSchema(diff);
+            var addedFieldNames = diff.Changes.OfType<AddFieldChange>()
+                .Select(c => c.Field.FieldName)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            var sb = new StringBuilder();
+            sb.AppendLine(CultureInfo.InvariantCulture, $"-- Rebuild table {tableName}");
+
+            // 1) Drop any leftover temp table from a prior failed run.
+            sb.AppendLine("-- Drop temporary table");
+            sb.AppendLine(BuildDropIfExistsStatement(tmpTableName));
+
+            // 2) Create the temp table using the CREATE builder (with the tmp name).
+            sb.AppendLine("-- Create temporary table");
+            var tmpSchema = CloneWithTableName(effectiveSchema, tmpTableName);
+            var createBuilder = new SqlCreateTableCommandBuilder();
+            sb.AppendLine(createBuilder.GetCommandText(tmpSchema));
+
+            // 3) Copy data from the original table (excluding newly-added and identity columns).
+            sb.AppendLine("-- Move data");
+            sb.AppendLine(BuildInsertSelectStatement(tableName, tmpTableName, effectiveSchema, addedFieldNames));
+
+            // 4) Drop the original table.
+            sb.AppendLine("-- Drop old table");
+            sb.AppendLine(BuildDropIfExistsStatement(tableName));
+
+            // 5) Rename indexes, then rename the table.
+            sb.AppendLine("-- Rename temporary table");
+            sb.Append(BuildRenameStatements(tmpTableName, tableName, effectiveSchema));
+
+            return sb.ToString();
         }
 
         /// <summary>
-        /// Reconstructs a <see cref="TableSchema"/> with legacy-style <see cref="DbUpgradeAction"/> markers
-        /// so that <see cref="SqlCreateTableCommandBuilder"/> can emit the rebuild script.
+        /// Builds the effective rebuild schema: defined table + real-only fields appended (extension field policy).
         /// </summary>
-        private static TableSchema BuildLegacyUpgradeSchema(TableSchemaDiff diff)
+        private static TableSchema BuildEffectiveSchema(TableSchemaDiff diff)
         {
             var cloned = diff.DefineTable.Clone();
-            cloned.UpgradeAction = DbUpgradeAction.Upgrade;
-
-            // Mark newly-added fields as New so INSERT ... SELECT skips them.
-            var addedNames = diff.Changes.OfType<AddFieldChange>()
-                .Select(c => c.Field.FieldName)
-                .ToHashSet(StringComparer.OrdinalIgnoreCase);
-            foreach (DbField field in cloned.Fields!)
-            {
-                if (addedNames.Contains(field.FieldName))
-                    field.UpgradeAction = DbUpgradeAction.New;
-            }
-
-            // Append extension fields (present in real DB but not in the defined schema) so they are preserved.
             if (diff.RealTable != null)
             {
                 foreach (var realField in diff.RealTable.Fields!)
@@ -56,8 +74,57 @@ namespace Bee.Db.Providers.SqlServer
                         cloned.Fields!.Add(realField.Clone());
                 }
             }
-
             return cloned;
+        }
+
+        private static TableSchema CloneWithTableName(TableSchema schema, string tableName)
+        {
+            var tmpSchema = schema.Clone();
+            tmpSchema.TableName = tableName;
+            // DisplayName is carried over so the tmp table gets the same extended property;
+            // after rename the properties remain attached to the (renamed) object.
+            tmpSchema.DisplayName = schema.DisplayName;
+            return tmpSchema;
+        }
+
+        private static string BuildDropIfExistsStatement(string tableName)
+        {
+            string escaped = SqlSchemaHelper.EscapeSqlString(tableName);
+            string quoted = SqlSchemaHelper.QuoteName(tableName);
+            return $"IF (SELECT COUNT(*) From sys.tables WHERE name=N'{escaped}')>0\n  DROP TABLE {quoted};";
+        }
+
+        private static string BuildInsertSelectStatement(string sourceTable, string targetTable, TableSchema schema, HashSet<string> addedFieldNames)
+        {
+            var fieldBuilder = new StringBuilder();
+            foreach (DbField field in schema.Fields!)
+            {
+                if (addedFieldNames.Contains(field.FieldName)) continue;
+                if (field.DbType == FieldDbType.AutoIncrement) continue;
+                if (fieldBuilder.Length > 0) fieldBuilder.Append(", ");
+                fieldBuilder.Append(SqlSchemaHelper.QuoteName(field.FieldName));
+            }
+            string fields = fieldBuilder.ToString();
+            return $"INSERT INTO {SqlSchemaHelper.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {SqlSchemaHelper.QuoteName(sourceTable)};";
+        }
+
+        private static string BuildRenameStatements(string oldTable, string newTable, TableSchema schema)
+        {
+            var sb = new StringBuilder();
+            // Rename indexes (including PK) so they follow the table.
+            foreach (var index in schema.Indexes!)
+            {
+                string oldIndexName = StrFunc.Format(index.Name, oldTable);
+                string newIndexName = StrFunc.Format(index.Name, newTable);
+                string oldQualified = SqlSchemaHelper.EscapeSqlString($"dbo.{oldTable}.{oldIndexName}");
+                string escapedNew = SqlSchemaHelper.EscapeSqlString(newIndexName);
+                sb.Append(CultureInfo.InvariantCulture, $"EXEC sp_rename N'{oldQualified}', N'{escapedNew}', N'INDEX';\n");
+            }
+            // Rename the table.
+            string oldEscaped = SqlSchemaHelper.EscapeSqlString(oldTable);
+            string newEscaped = SqlSchemaHelper.EscapeSqlString(newTable);
+            sb.Append(CultureInfo.InvariantCulture, $"EXEC sp_rename N'{oldEscaped}', N'{newEscaped}';\n");
+            return sb.ToString();
         }
     }
 }

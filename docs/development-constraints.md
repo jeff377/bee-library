@@ -114,3 +114,25 @@ API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOut
 - `LoginAttemptTracker` 預設規則：連續 5 次登入失敗後鎖定帳號 15 分鐘
 - 鎖定期間所有登入嘗試直接拒絕，不檢查密碼
 - 成功登入會重置失敗計數器
+
+## 資料庫 Schema 限制
+
+框架的 schema 定義（`TableSchema`）與升級機制（`TableUpgradeOrchestrator`）**刻意不支援**下列資料庫層元素：
+
+- **Foreign Key 約束**
+- **Trigger**
+- **View**
+
+### 設計原則
+
+Referential integrity、business rules 與衍生資料由**程式端（Business Object 層）**處理，schema 定義僅描述資料表結構（欄位、索引、主鍵）。
+
+### 設計理由
+
+- 資料庫層相依會讓跨 provider 支援與 schema 升級成本爆炸
+- 實務 ERP 場景下，BO 層已能完整表達業務規則，不需下推至 DB
+- 升級流程（新增／刪除欄位、改型別）不必處理 FK 暫存／trigger 重建／view 刷新等級聯議題
+
+### 若真的需要 FK / Trigger / View
+
+不透過框架，改由專案自訂的 migration 腳本手動維護。升級管線不會產生對應 DDL，也不保證相容。

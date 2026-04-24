@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Text;
 using Bee.Base;
 using Bee.Base.Data;
-using Bee.Definition;
 
 namespace Bee.Db.Providers.SqlServer
 {
@@ -59,104 +58,13 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
-        /// Gets the SQL statement for creating or upgrading a table.
+        /// Gets the SQL statement for creating a table.
         /// </summary>
         /// <param name="tableSchema">The table schema definition.</param>
         public string GetCommandText(TableSchema tableSchema)
         {
             _dbTable = tableSchema;
-
-            if (this.TableSchema.UpgradeAction == DbUpgradeAction.Upgrade)
-                return $"-- Upgrade table {this.TableName}\r\n{this.GetUpgradeCommandText()}";
-            else
-                return $"-- Create table {this.TableName}\r\n{this.GetCreateTableCommandText()}";
-        }
-
-        /// <summary>
-        /// Gets the SQL script for upgrading an existing table.
-        /// </summary>
-        private string GetUpgradeCommandText()
-        {
-            var sb = new StringBuilder();
-            string tmpTableName = $"tmp_{this.TableName}";
-            // Drop the temporary table
-            string sql = GetDropTableCommandText(tmpTableName);
-            sb.AppendLine("-- Drop temporary table");
-            sb.AppendLine(sql);
-            // Create the temporary table
-            sql = GetCreateTableCommandText(tmpTableName);
-            sb.AppendLine("-- Create temporary table");
-            sb.AppendLine(sql);
-            // Move data
-            sql = GetInsertTableCommandText(this.TableName, tmpTableName);
-            sb.AppendLine("-- Move data");
-            sb.AppendLine(sql);
-            // Drop the old table
-            sql = GetDropTableCommandText(this.TableName);
-            sb.AppendLine("-- Drop old table");
-            sb.AppendLine(sql);
-            // Rename the temporary table
-            sb.AppendLine("-- Rename temporary table");
-            sql = GetRenameTableCommandText(tmpTableName, this.TableName);
-            sb.AppendLine(sql);
-
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Gets the SQL command text for dropping a table if it exists.
-        /// </summary>
-        /// <param name="tableName">The table name.</param>
-        private static string GetDropTableCommandText(string tableName)
-        {
-            string escaped = EscapeSqlString(tableName);
-            string quoted = QuoteName(tableName);
-            return $"IF (SELECT COUNT(*) From sys.tables WHERE name=N'{escaped}')>0\n" +
-                        $"  DROP TABLE {quoted};";
-        }
-
-        /// <summary>
-        /// Gets the INSERT INTO ... SELECT SQL statement for migrating data from the old table to the new table.
-        /// </summary>
-        /// <param name="tableName">The source (old) table name.</param>
-        /// <param name="newTableName">The destination (new) table name.</param>
-        private string GetInsertTableCommandText(string tableName, string newTableName)
-        {
-           // Build the list of fields to migrate
-            var fieldBuilder = new StringBuilder();
-            foreach (DbField field in this.TableSchema.Fields!)
-            {
-                if (field.UpgradeAction != DbUpgradeAction.New && field.DbType != FieldDbType.AutoIncrement)
-                {
-                    if (fieldBuilder.Length > 0)
-                        fieldBuilder.Append(", ");
-                    fieldBuilder.Append(QuoteName(field.FieldName));
-                }
-            }
-            string fields = fieldBuilder.ToString();
-            // Build the INSERT INTO ... SELECT statement
-            string sql = $"INSERT INTO {QuoteName(newTableName)} ({fields}) \n" +
-                                  $"SELECT {fields} FROM {QuoteName(tableName)};";
-            return sql;
-        }
-
-        /// <summary>
-        /// Gets the SQL command text for renaming a table.
-        /// </summary>
-        /// <param name="tableName">The current (old) table name.</param>
-        /// <param name="newTableName">The target (new) table name.</param>
-        private string GetRenameTableCommandText(string tableName, string newTableName)
-        {
-            // Rename indexes
-            var indexRenameLines = this.TableSchema.Indexes!.Select(index =>
-            {
-                string oldName = StrFunc.Format(index.Name, tableName);  // Old index name
-                string newName = StrFunc.Format(index.Name, newTableName);  // New index name
-                return $"EXEC sp_rename N'{EscapeSqlString($"dbo.{tableName}.{oldName}")}', N'{EscapeSqlString(newName)}', N'INDEX';\n";
-            });
-            // Rename the table
-            string tableRenameLine = $"EXEC sp_rename N'{EscapeSqlString(tableName)}', N'{EscapeSqlString(newTableName)}';\n";
-            return string.Concat(indexRenameLines) + tableRenameLine;
+            return $"-- Create table {this.TableName}\r\n{this.GetCreateTableCommandText()}";
         }
 
         /// <summary>

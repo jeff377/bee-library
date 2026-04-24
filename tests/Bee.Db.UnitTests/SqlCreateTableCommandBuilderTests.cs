@@ -100,27 +100,6 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("GetCommandText UpgradeAction.Upgrade 應走 drop/create/insert/rename 五段")]
-        public void GetCommandText_Upgrade_GeneratesUpgradeScript()
-        {
-            var schema = BuildSchema(FieldDbType.Integer);
-            schema.UpgradeAction = DbUpgradeAction.Upgrade;
-            var builder = new SqlCreateTableCommandBuilder();
-
-            string sql = builder.GetCommandText(schema);
-
-            Assert.Contains("-- Upgrade table st_demo", sql);
-            Assert.Contains("-- Drop temporary table", sql);
-            Assert.Contains("-- Create temporary table", sql);
-            Assert.Contains("-- Move data", sql);
-            Assert.Contains("-- Drop old table", sql);
-            Assert.Contains("-- Rename temporary table", sql);
-            Assert.Contains("CREATE TABLE [tmp_st_demo]", sql);
-            Assert.Contains("INSERT INTO [tmp_st_demo]", sql);
-            Assert.Contains("EXEC sp_rename", sql);
-        }
-
-        [Fact]
         [DisplayName("含 PrimaryKey 索引時應產生 CONSTRAINT ... PRIMARY KEY 語句")]
         public void GetCommandText_PrimaryKey_GeneratesConstraint()
         {
@@ -308,22 +287,6 @@ namespace Bee.Db.UnitTests
 
             Assert.Contains("@value=N'O''Brien 表'", sql);
             Assert.Contains("@value=N'it''s a field'", sql);
-        }
-
-        [Fact]
-        [DisplayName("UpgradeAction.Upgrade 時 extended property 應寫入 tmp 表")]
-        public void GetCommandText_UpgradePath_WritesExtendedPropertyToTmpTable()
-        {
-            var schema = BuildSchema(FieldDbType.Integer);
-            schema.UpgradeAction = DbUpgradeAction.Upgrade;
-            schema.DisplayName = "示範資料表";
-            schema.Fields!["col"].Caption = "數值欄位";
-
-            var builder = new SqlCreateTableCommandBuilder();
-            string sql = builder.GetCommandText(schema);
-
-            // extended property 應掛在 tmp 表上（rename 後 SQL Server 會保留到正式表）
-            Assert.Contains("@level1type=N'TABLE', @level1name=N'tmp_st_demo'", sql);
         }
 
         #endregion

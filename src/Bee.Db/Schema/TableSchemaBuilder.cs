@@ -1,4 +1,5 @@
-﻿using Bee.Definition.Database;
+using System.Text;
+using Bee.Definition.Database;
 using Bee.Base;
 using Bee.Definition;
 using Bee.Db.Providers.SqlServer;
@@ -6,7 +7,10 @@ using Bee.Db.Providers.SqlServer;
 namespace Bee.Db.Schema
 {
     /// <summary>
-    /// Compares and builds table schema upgrade commands.
+    /// Compares a defined table schema against the actual database schema and produces (or executes)
+    /// the required upgrade commands. Routes structural changes through <see cref="TableUpgradeOrchestrator"/>
+    /// (ALTER-based strategy with rebuild fallback); metadata-only drift is handled by
+    /// <see cref="SqlExtendedPropertyCommandBuilder"/> inside the orchestrator's description stage.
     /// </summary>
     public class TableSchemaBuilder
     {
@@ -44,7 +48,8 @@ namespace Bee.Db.Schema
         }
 
         /// <summary>
-        /// Compares the actual table schema with the defined schema and returns the comparison result.
+        /// Compares the actual table schema with the defined schema and returns the legacy comparison result
+        /// (retained for existing callers; new code should use <see cref="CompareToDiff"/>).
         /// </summary>
         /// <param name="dbName">The database name.</param>
         /// <param name="tableName">The table name.</param>
@@ -54,45 +59,51 @@ namespace Bee.Db.Schema
         }
 
         /// <summary>
-        /// Compares the table schema and returns the SQL command text required for the upgrade.
-        /// Schema changes go through <see cref="SqlCreateTableCommandBuilder"/>; when only description
-        /// drift exists, a metadata-only script is produced via <see cref="SqlExtendedPropertyCommandBuilder"/>.
+        /// Produces a structured <see cref="TableSchemaDiff"/> for the specified table.
         /// </summary>
         /// <param name="dbName">The database name.</param>
         /// <param name="tableName">The table name.</param>
-        public string GetCommandText(string dbName, string tableName)
+        public TableSchemaDiff CompareToDiff(string dbName, string tableName)
         {
-            var comparer = CreateComparer(dbName, tableName);
-            var dbTable = comparer.Compare();
-            // Schema DDL path: CREATE or rebuild (already includes extended property writes)
-            if (dbTable.UpgradeAction != DbUpgradeAction.None)
+            return CreateComparer(dbName, tableName).CompareToDiff();
+        }
+
+        /// <summary>
+        /// Plans the upgrade for the specified table and returns the combined SQL script (all stages concatenated).
+        /// Returns an empty string when no changes are required.
+        /// </summary>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="options">Upgrade options; null uses <see cref="UpgradeOptions.Default"/>.</param>
+        public string GetCommandText(string dbName, string tableName, UpgradeOptions? options = null)
+        {
+            var diff = CompareToDiff(dbName, tableName);
+            var plan = new TableUpgradeOrchestrator().Plan(diff, options);
+            if (plan.IsEmpty) return string.Empty;
+
+            var sb = new StringBuilder();
+            foreach (var sql in plan.AllStatements)
             {
-                var schemaBuilder = new SqlCreateTableCommandBuilder();
-                return schemaBuilder.GetCommandText(dbTable);
+                if (StrFunc.IsEmpty(sql)) continue;
+                if (sb.Length > 0) sb.AppendLine();
+                sb.AppendLine(sql);
             }
-            // Metadata-only path: description drift without schema change
-            if (comparer.DescriptionChanges.Count > 0)
-                return SqlExtendedPropertyCommandBuilder.GetCommandText(dbTable.TableName, comparer.DescriptionChanges);
-            return string.Empty;
+            return sb.ToString().TrimEnd();
         }
 
         /// <summary>
         /// Compares the table schema and executes the upgrade if differences are found.
+        /// Each stage runs in its own transaction.
         /// </summary>
         /// <param name="dbName">The database name.</param>
         /// <param name="tableName">The table name.</param>
+        /// <param name="options">Upgrade options; null uses <see cref="UpgradeOptions.Default"/>.</param>
         /// <remarks>Returns <c>true</c> if an upgrade was performed; otherwise <c>false</c>.</remarks>
-        public bool Execute(string dbName, string tableName)
+        public bool Execute(string dbName, string tableName, UpgradeOptions? options = null)
         {
-            string sql = this.GetCommandText(dbName, tableName);
-            if (StrFunc.IsNotEmpty(sql))
-            {
-                var command = new DbCommandSpec(DbCommandKind.NonQuery, sql);
-                var dbAccess = new DbAccess(DatabaseId);
-                dbAccess.Execute(command);
-                return true;
-            }
-            return false;
+            var diff = CompareToDiff(dbName, tableName);
+            var plan = new TableUpgradeOrchestrator().Plan(diff, options);
+            return TableUpgradeOrchestrator.Execute(plan, this.DatabaseId);
         }
     }
 }
