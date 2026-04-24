@@ -236,5 +236,96 @@ namespace Bee.Db.UnitTests
         }
 
         #endregion
+
+        #region Extended property (description) 產出
+
+        [Fact]
+        [DisplayName("GetCommandText 有 DisplayName 與 Caption 時應產生 sp_addextendedproperty")]
+        public void GetCommandText_WithDisplayNameAndCaption_IncludesExtendedProperty()
+        {
+            var schema = BuildSchema(FieldDbType.Integer);
+            schema.DisplayName = "示範資料表";
+            schema.Fields!["col"].Caption = "數值欄位";
+
+            var builder = new SqlCreateTableCommandBuilder();
+            string sql = builder.GetCommandText(schema);
+
+            // 表層
+            Assert.Contains("EXEC sp_addextendedproperty", sql);
+            Assert.Contains("@value=N'示範資料表'", sql);
+            Assert.Contains("@level1type=N'TABLE', @level1name=N'st_demo'", sql);
+            // 欄位層
+            Assert.Contains("@value=N'數值欄位'", sql);
+            Assert.Contains("@level2type=N'COLUMN', @level2name=N'col'", sql);
+        }
+
+        [Fact]
+        [DisplayName("GetCommandText DisplayName 為空時不產生表層 sp_addextendedproperty")]
+        public void GetCommandText_WithEmptyDisplayName_OmitsTableExtendedProperty()
+        {
+            var schema = BuildSchema(FieldDbType.Integer);
+            // DisplayName 預設即為空，只設欄位 Caption
+            schema.Fields!["col"].Caption = "數值欄位";
+
+            var builder = new SqlCreateTableCommandBuilder();
+            string sql = builder.GetCommandText(schema);
+
+            // 不應有表層 extended property（無 level2 的那條）
+            Assert.DoesNotContain("@level1type=N'TABLE', @level1name=N'st_demo';", sql);
+            // 但欄位層仍應產出
+            Assert.Contains("@level2type=N'COLUMN', @level2name=N'col'", sql);
+        }
+
+        [Fact]
+        [DisplayName("GetCommandText Caption 為空的欄位不產生欄位層 sp_addextendedproperty")]
+        public void GetCommandText_WithEmptyCaption_OmitsColumnExtendedProperty()
+        {
+            var schema = BuildSchema(FieldDbType.Integer);
+            schema.DisplayName = "示範資料表";
+            // 把欄位 Caption 清空
+            schema.Fields!["col"].Caption = string.Empty;
+            schema.Fields![SysFields.RowId].Caption = string.Empty;
+
+            var builder = new SqlCreateTableCommandBuilder();
+            string sql = builder.GetCommandText(schema);
+
+            // 表層有
+            Assert.Contains("@value=N'示範資料表'", sql);
+            // 欄位層無
+            Assert.DoesNotContain("@level2type=N'COLUMN'", sql);
+        }
+
+        [Fact]
+        [DisplayName("GetCommandText 含單引號時應正確 escape 為雙單引號")]
+        public void GetCommandText_WithSingleQuote_EscapesCorrectly()
+        {
+            var schema = BuildSchema(FieldDbType.Integer);
+            schema.DisplayName = "O'Brien 表";
+            schema.Fields!["col"].Caption = "it's a field";
+
+            var builder = new SqlCreateTableCommandBuilder();
+            string sql = builder.GetCommandText(schema);
+
+            Assert.Contains("@value=N'O''Brien 表'", sql);
+            Assert.Contains("@value=N'it''s a field'", sql);
+        }
+
+        [Fact]
+        [DisplayName("UpgradeAction.Upgrade 時 extended property 應寫入 tmp 表")]
+        public void GetCommandText_UpgradePath_WritesExtendedPropertyToTmpTable()
+        {
+            var schema = BuildSchema(FieldDbType.Integer);
+            schema.UpgradeAction = DbUpgradeAction.Upgrade;
+            schema.DisplayName = "示範資料表";
+            schema.Fields!["col"].Caption = "數值欄位";
+
+            var builder = new SqlCreateTableCommandBuilder();
+            string sql = builder.GetCommandText(schema);
+
+            // extended property 應掛在 tmp 表上（rename 後 SQL Server 會保留到正式表）
+            Assert.Contains("@level1type=N'TABLE', @level1name=N'tmp_st_demo'", sql);
+        }
+
+        #endregion
     }
 }

@@ -43,6 +43,8 @@ namespace Bee.Db.Providers.SqlServer
 
             var dbTable = new TableSchema();
             dbTable.TableName = tableName;
+            // Retrieve the table-level description from extended property
+            dbTable.DisplayName = GetTableDescription(tableName);
 
             // Retrieve the index data source
             var indexes = GetTableIndexes(tableName);
@@ -73,6 +75,19 @@ namespace Bee.Db.Providers.SqlServer
             var result = _dbAccess.Execute(command);
             int count = BaseFunc.CInt(result.Scalar!);
             return count > 0;
+        }
+
+        /// <summary>
+        /// Gets the table-level MS_Description extended property value.
+        /// </summary>
+        /// <param name="tableName">The table name.</param>
+        private string GetTableDescription(string tableName)
+        {
+            string sql = "SELECT IsNull(CAST((SELECT value FROM fn_listextendedproperty(" +
+                         "N'MS_Description', N'SCHEMA', N'dbo', N'TABLE', {0}, NULL, NULL)) AS nvarchar(max)), N'')";
+            var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
+            var result = _dbAccess.Execute(command);
+            return BaseFunc.CStr(result.Scalar!);
         }
 
         /// <summary>

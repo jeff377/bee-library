@@ -29,36 +29,50 @@ namespace Bee.Db.Schema
         public string DatabaseId { get; private set; }
 
         /// <summary>
-        /// Compares the actual table schema with the defined schema and returns the comparison result.
+        /// Creates a <see cref="TableSchemaComparer"/> for the specified table.
         /// </summary>
         /// <param name="dbName">The database name.</param>
         /// <param name="tableName">The table name.</param>
-        public TableSchema Compare(string dbName, string tableName)
+        private TableSchemaComparer CreateComparer(string dbName, string tableName)
         {
             // Actual table schema from the database
             var provider = new SqlTableSchemaProvider(this.DatabaseId);
             var realTable = provider.GetTableSchema(tableName);
             // Defined table schema from the form definitions
             var defineTable = BackendInfo.DefineAccess.GetTableSchema(dbName, tableName);
-            // Compare and return the resulting table schema
-            var comparer = new TableSchemaComparer(defineTable, realTable);
-            return comparer.Compare();
+            return new TableSchemaComparer(defineTable, realTable);
+        }
+
+        /// <summary>
+        /// Compares the actual table schema with the defined schema and returns the comparison result.
+        /// </summary>
+        /// <param name="dbName">The database name.</param>
+        /// <param name="tableName">The table name.</param>
+        public TableSchema Compare(string dbName, string tableName)
+        {
+            return CreateComparer(dbName, tableName).Compare();
         }
 
         /// <summary>
         /// Compares the table schema and returns the SQL command text required for the upgrade.
+        /// Schema changes go through <see cref="SqlCreateTableCommandBuilder"/>; when only description
+        /// drift exists, a metadata-only script is produced via <see cref="SqlExtendedPropertyCommandBuilder"/>.
         /// </summary>
         /// <param name="dbName">The database name.</param>
         /// <param name="tableName">The table name.</param>
         public string GetCommandText(string dbName, string tableName)
         {
-            // Compare table schemas and retrieve the schema that requires upgrading
-            var dbTable = this.Compare(dbName, tableName);
+            var comparer = CreateComparer(dbName, tableName);
+            var dbTable = comparer.Compare();
+            // Schema DDL path: CREATE or rebuild (already includes extended property writes)
             if (dbTable.UpgradeAction != DbUpgradeAction.None)
             {
-                var builder = new SqlCreateTableCommandBuilder();
-                return builder.GetCommandText(dbTable);
+                var schemaBuilder = new SqlCreateTableCommandBuilder();
+                return schemaBuilder.GetCommandText(dbTable);
             }
+            // Metadata-only path: description drift without schema change
+            if (comparer.DescriptionChanges.Count > 0)
+                return SqlExtendedPropertyCommandBuilder.GetCommandText(dbTable.TableName, comparer.DescriptionChanges);
             return string.Empty;
         }
 

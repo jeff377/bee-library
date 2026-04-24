@@ -31,6 +31,12 @@ namespace Bee.Db.Schema
         public TableSchema? RealTable { get; }
 
         /// <summary>
+        /// Gets the description drift between the defined and the actual schema.
+        /// Populated by <see cref="Compare"/>; independent of <see cref="DbUpgradeAction"/>.
+        /// </summary>
+        public List<DescriptionChange> DescriptionChanges { get; } = [];
+
+        /// <summary>
         /// Executes the comparison and returns the resulting table schema with upgrade actions set.
         /// </summary>
         public TableSchema Compare()
@@ -52,7 +58,51 @@ namespace Bee.Db.Schema
             // Append extra fields from the actual table
             if (compareTable.UpgradeAction != DbUpgradeAction.None)
                 AddExtensionFields(compareTable);
+            // Detect description drift; does not affect UpgradeAction
+            CompareDescriptions();
             return compareTable;
+        }
+
+        /// <summary>
+        /// Detects description drift between the defined and actual schema and populates <see cref="DescriptionChanges"/>.
+        /// Empty-define / non-empty-real is treated as no drift (conservative policy; avoids accidental removal).
+        /// </summary>
+        private void CompareDescriptions()
+        {
+            var real = this.RealTable!;
+            // Table-level: DisplayName
+            AddDescriptionDrift(DescriptionLevel.Table, string.Empty,
+                this.DefineTable.DisplayName, real.DisplayName);
+            // Column-level: Caption — only when the column exists in both schemas
+            foreach (DbField defineField in this.DefineTable.Fields!)
+            {
+                if (!real.Fields!.Contains(defineField.FieldName))
+                    continue;
+                var realField = real.Fields[defineField.FieldName];
+                AddDescriptionDrift(DescriptionLevel.Column, defineField.FieldName,
+                    defineField.Caption, realField.Caption);
+            }
+        }
+
+        /// <summary>
+        /// Adds a <see cref="DescriptionChange"/> if the defined value differs from the real value,
+        /// following the conservative policy (empty define → no drift).
+        /// </summary>
+        private void AddDescriptionDrift(DescriptionLevel level, string fieldName, string defineValue, string realValue)
+        {
+            // Conservative: empty define is treated as "not specified", do not remove existing DB description
+            if (StrFunc.IsEmpty(defineValue))
+                return;
+            // No drift when values match
+            if (StrFunc.IsEquals(defineValue, realValue))
+                return;
+            DescriptionChanges.Add(new DescriptionChange
+            {
+                Level = level,
+                FieldName = fieldName,
+                NewValue = defineValue,
+                IsNew = StrFunc.IsEmpty(realValue),
+            });
         }
 
         /// <summary>

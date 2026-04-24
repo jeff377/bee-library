@@ -154,5 +154,107 @@ namespace Bee.Db.UnitTests
             Assert.Same(define, comparer.DefineTable);
             Assert.Same(real, comparer.RealTable);
         }
+
+        [Fact]
+        [DisplayName("只有 DisplayName 差異時 UpgradeAction=None 且 DescriptionChanges 含表層異動")]
+        public void Compare_OnlyTableDisplayNameDiffers_NoUpgradeButDescriptionChanged()
+        {
+            var define = BuildBaseSchema();
+            define.DisplayName = "示範資料表";
+            var real = BuildRealSchema();
+            real.DisplayName = string.Empty; // DB 尚未寫入
+
+            var comparer = new TableSchemaComparer(define, real);
+            var result = comparer.Compare();
+
+            Assert.Equal(DbUpgradeAction.None, result.UpgradeAction);
+            var change = Assert.Single(comparer.DescriptionChanges);
+            Assert.Equal(DescriptionLevel.Table, change.Level);
+            Assert.Equal("示範資料表", change.NewValue);
+            Assert.True(change.IsNew);
+        }
+
+        [Fact]
+        [DisplayName("只有欄位 Caption 差異時應產生 Column 層 DescriptionChange（更新模式）")]
+        public void Compare_OnlyFieldCaptionDiffers_DescriptionChangeIsUpdate()
+        {
+            var define = BuildBaseSchema();
+            define.Fields!["name"].Caption = "新名稱";
+            var real = BuildRealSchema();
+            real.Fields!["name"].Caption = "舊名稱"; // DB 已存在不同值
+
+            var comparer = new TableSchemaComparer(define, real);
+            var result = comparer.Compare();
+
+            Assert.Equal(DbUpgradeAction.None, result.UpgradeAction);
+            var change = Assert.Single(comparer.DescriptionChanges);
+            Assert.Equal(DescriptionLevel.Column, change.Level);
+            Assert.Equal("name", change.FieldName);
+            Assert.Equal("新名稱", change.NewValue);
+            Assert.False(change.IsNew);
+        }
+
+        [Fact]
+        [DisplayName("Define 註解為空時採保守策略不產生 DescriptionChange")]
+        public void Compare_EmptyDefineDescription_NoChangeGenerated()
+        {
+            var define = BuildBaseSchema();
+            define.DisplayName = string.Empty;
+            define.Fields!["name"].Caption = string.Empty;
+            var real = BuildRealSchema();
+            real.DisplayName = "DB 既有表說明";
+            real.Fields!["name"].Caption = "DB 既有欄位說明";
+
+            var comparer = new TableSchemaComparer(define, real);
+            var result = comparer.Compare();
+
+            Assert.Equal(DbUpgradeAction.None, result.UpgradeAction);
+            Assert.Empty(comparer.DescriptionChanges);
+        }
+
+        [Fact]
+        [DisplayName("結構與註解皆有差異時 UpgradeAction=Upgrade 且 DescriptionChanges 仍會填充（供上層判斷）")]
+        public void Compare_SchemaAndDescriptionDiffer_UpgradePopulatesBoth()
+        {
+            var define = BuildBaseSchema();
+            define.DisplayName = "新表說明";
+            var real = BuildRealSchema();
+            real.Fields!["name"].Length = 30; // 觸發 schema Upgrade
+
+            var comparer = new TableSchemaComparer(define, real);
+            var result = comparer.Compare();
+
+            Assert.Equal(DbUpgradeAction.Upgrade, result.UpgradeAction);
+            // DescriptionChanges 仍會產生，由上層決定是否消費
+            Assert.Contains(comparer.DescriptionChanges, c => c.Level == DescriptionLevel.Table);
+        }
+
+        [Fact]
+        [DisplayName("RealTable 為 null 時 DescriptionChanges 應為空（由 schema CREATE 路徑處理）")]
+        public void Compare_NullRealTable_DescriptionChangesEmpty()
+        {
+            var define = BuildBaseSchema();
+            define.DisplayName = "示範資料表";
+
+            var comparer = new TableSchemaComparer(define, null);
+            comparer.Compare();
+
+            Assert.Empty(comparer.DescriptionChanges);
+        }
+
+        [Fact]
+        [DisplayName("僅存在於 Real 的欄位不產生 DescriptionChange")]
+        public void Compare_ExtraFieldInRealTable_NoColumnDescriptionChange()
+        {
+            var define = BuildBaseSchema();
+            var real = BuildRealSchema();
+            real.Fields!.Add("legacy_col", "舊欄位說明", FieldDbType.String, 10);
+
+            var comparer = new TableSchemaComparer(define, real);
+            comparer.Compare();
+
+            // legacy_col 不在 define 中，不應產生對應的 Column DescriptionChange
+            Assert.DoesNotContain(comparer.DescriptionChanges, c => c.FieldName == "legacy_col");
+        }
     }
 }

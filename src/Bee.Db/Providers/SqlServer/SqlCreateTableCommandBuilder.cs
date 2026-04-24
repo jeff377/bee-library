@@ -183,7 +183,58 @@ namespace Bee.Db.Providers.SqlServer
             // Append the index creation statements
             if (StrFunc.IsNotEmpty(indexs))
                 sb.Append(CultureInfo.InvariantCulture, $"\r\n{indexs}");
+            // Append extended property statements for table and column descriptions
+            string extendedProperty = GetExtendedPropertyCommandText(dbTableName);
+            if (StrFunc.IsNotEmpty(extendedProperty))
+                sb.Append(CultureInfo.InvariantCulture, $"\r\n{extendedProperty}");
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets the sp_addextendedproperty SQL fragment for table and column descriptions.
+        /// </summary>
+        /// <param name="dbTableName">The target table name (tmp or final).</param>
+        private string GetExtendedPropertyCommandText(string dbTableName)
+        {
+            var sb = new StringBuilder();
+            // Table-level description sourced from DisplayName
+            if (StrFunc.IsNotEmpty(this.TableSchema.DisplayName))
+                sb.AppendLine(GetAddTableExtendedPropertyCommand(dbTableName, this.TableSchema.DisplayName));
+            // Column-level descriptions sourced from Caption
+            foreach (DbField field in this.TableSchema.Fields!)
+            {
+                if (StrFunc.IsNotEmpty(field.Caption))
+                    sb.AppendLine(GetAddColumnExtendedPropertyCommand(dbTableName, field.FieldName, field.Caption));
+            }
+            return sb.ToString().Trim();
+        }
+
+        /// <summary>
+        /// Gets the sp_addextendedproperty SQL for a table-level description.
+        /// </summary>
+        /// <param name="tableName">The target table name.</param>
+        /// <param name="description">The description text.</param>
+        private static string GetAddTableExtendedPropertyCommand(string tableName, string description)
+        {
+            return $"EXEC sp_addextendedproperty\r\n" +
+                   $"  @name=N'MS_Description', @value=N'{EscapeSqlString(description)}',\r\n" +
+                   $"  @level0type=N'SCHEMA', @level0name=N'dbo',\r\n" +
+                   $"  @level1type=N'TABLE', @level1name=N'{EscapeSqlString(tableName)}';";
+        }
+
+        /// <summary>
+        /// Gets the sp_addextendedproperty SQL for a column-level description.
+        /// </summary>
+        /// <param name="tableName">The target table name.</param>
+        /// <param name="columnName">The column name.</param>
+        /// <param name="description">The description text.</param>
+        private static string GetAddColumnExtendedPropertyCommand(string tableName, string columnName, string description)
+        {
+            return $"EXEC sp_addextendedproperty\r\n" +
+                   $"  @name=N'MS_Description', @value=N'{EscapeSqlString(description)}',\r\n" +
+                   $"  @level0type=N'SCHEMA', @level0name=N'dbo',\r\n" +
+                   $"  @level1type=N'TABLE', @level1name=N'{EscapeSqlString(tableName)}',\r\n" +
+                   $"  @level2type=N'COLUMN', @level2name=N'{EscapeSqlString(columnName)}';";
         }
 
         /// <summary>
