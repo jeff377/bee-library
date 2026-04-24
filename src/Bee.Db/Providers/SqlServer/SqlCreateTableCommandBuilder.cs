@@ -201,10 +201,9 @@ namespace Bee.Db.Providers.SqlServer
             if (StrFunc.IsNotEmpty(this.TableSchema.DisplayName))
                 sb.AppendLine(GetAddTableExtendedPropertyCommand(dbTableName, this.TableSchema.DisplayName));
             // Column-level descriptions sourced from Caption
-            foreach (DbField field in this.TableSchema.Fields!)
+            foreach (var field in this.TableSchema.Fields!.Where(f => StrFunc.IsNotEmpty(f.Caption)))
             {
-                if (StrFunc.IsNotEmpty(field.Caption))
-                    sb.AppendLine(GetAddColumnExtendedPropertyCommand(dbTableName, field.FieldName, field.Caption));
+                sb.AppendLine(GetAddColumnExtendedPropertyCommand(dbTableName, field.FieldName, field.Caption));
             }
             return sb.ToString().Trim();
         }
