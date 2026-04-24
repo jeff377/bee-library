@@ -20,6 +20,10 @@ namespace Bee.Definition
         /// <summary>
         /// Oracle.
         /// </summary>
-        Oracle
+        Oracle,
+        /// <summary>
+        /// PostgreSQL.
+        /// </summary>
+        PostgreSQL
     }
 }

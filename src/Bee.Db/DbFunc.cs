@@ -19,7 +19,8 @@ namespace Bee.Db
             { DatabaseType.SQLServer, "@" },
             { DatabaseType.MySQL, "@" },
             { DatabaseType.SQLite, "@" },
-            { DatabaseType.Oracle, ":" }
+            { DatabaseType.Oracle, ":" },
+            { DatabaseType.PostgreSQL, "@" }
         };
 
         /// <summary>
@@ -53,7 +54,8 @@ namespace Bee.Db
             { DatabaseType.SQLServer, s => $"[{s.Replace("]", "]]")}]" },
             { DatabaseType.MySQL, s => $"`{s.Replace("`", "``")}`" },
             { DatabaseType.SQLite, s => $"\"{s.Replace("\"", "\"\"")}\"" },
-            { DatabaseType.Oracle, s => $"\"{s.Replace("\"", "\"\"")}\"" }
+            { DatabaseType.Oracle, s => $"\"{s.Replace("\"", "\"\"")}\"" },
+            { DatabaseType.PostgreSQL, s => $"\"{s.Replace("\"", "\"\"")}\"" }
         };
 
         /// <summary>

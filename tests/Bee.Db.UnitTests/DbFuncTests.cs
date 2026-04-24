@@ -35,8 +35,10 @@ namespace Bee.Db.UnitTests
         [InlineData(DatabaseType.SQLite, "Col\"umn", "\"Col\"\"umn\"")]
         [InlineData(DatabaseType.Oracle, "Name", "\"Name\"")]
         [InlineData(DatabaseType.Oracle, "Col\"umn", "\"Col\"\"umn\"")]
-        [DisplayName("QuoteIdentifier SQLite/Oracle 應正確跳脫雙引號")]
-        public void QuoteIdentifier_SqliteOracle_EscapesDoubleQuote(DatabaseType dbType, string identifier, string expected)
+        [InlineData(DatabaseType.PostgreSQL, "Name", "\"Name\"")]
+        [InlineData(DatabaseType.PostgreSQL, "Col\"umn", "\"Col\"\"umn\"")]
+        [DisplayName("QuoteIdentifier SQLite/Oracle/PostgreSQL 應正確跳脫雙引號")]
+        public void QuoteIdentifier_SqliteOraclePg_EscapesDoubleQuote(DatabaseType dbType, string identifier, string expected)
         {
             var result = DbFunc.QuoteIdentifier(dbType, identifier);
             Assert.Equal(expected, result);
@@ -59,6 +61,7 @@ namespace Bee.Db.UnitTests
         [InlineData(DatabaseType.MySQL, "@")]
         [InlineData(DatabaseType.SQLite, "@")]
         [InlineData(DatabaseType.Oracle, ":")]
+        [InlineData(DatabaseType.PostgreSQL, "@")]
         [DisplayName("GetParameterPrefix 應回傳對應資料庫的參數前綴")]
         public void GetParameterPrefix_ReturnsCorrectPrefix(DatabaseType dbType, string expected)
         {
@@ -83,6 +86,7 @@ namespace Bee.Db.UnitTests
         [InlineData(DatabaseType.MySQL, "Id", "@Id")]
         [InlineData(DatabaseType.SQLite, "Id", "@Id")]
         [InlineData(DatabaseType.Oracle, "Id", ":Id")]
+        [InlineData(DatabaseType.PostgreSQL, "Id", "@Id")]
         [DisplayName("GetParameterName 應依資料庫類型加上對應前綴")]
         public void GetParameterName_AppendsPrefix(DatabaseType dbType, string name, string expected)
         {
