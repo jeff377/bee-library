@@ -1,4 +1,5 @@
 using Bee.Base;
+using Bee.Db.Manager;
 using Bee.Db.Providers;
 using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema.Changes;
@@ -12,22 +13,33 @@ namespace Bee.Db.Schema
     /// </summary>
     public class TableUpgradeOrchestrator
     {
+        private readonly IDialectFactory _dialect;
         private readonly ITableAlterCommandBuilder _alterBuilder;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="TableUpgradeOrchestrator"/> for the SQL Server provider.
+        /// Initializes a new instance of <see cref="TableUpgradeOrchestrator"/> for the specified database,
+        /// resolving the dialect factory from <see cref="DbDialectRegistry"/>.
         /// </summary>
-        public TableUpgradeOrchestrator()
-            : this(new SqlTableAlterCommandBuilder())
+        /// <param name="databaseId">The database identifier used to resolve the dialect factory.</param>
+        public TableUpgradeOrchestrator(string databaseId)
+            : this(ResolveDialect(databaseId))
         { }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="TableUpgradeOrchestrator"/> with a custom alter builder.
+        /// Initializes a new instance of <see cref="TableUpgradeOrchestrator"/> with the supplied dialect factory.
         /// </summary>
-        /// <param name="alterBuilder">The provider-specific alter command builder.</param>
-        public TableUpgradeOrchestrator(ITableAlterCommandBuilder alterBuilder)
+        /// <param name="dialect">The dialect factory for the target database.</param>
+        public TableUpgradeOrchestrator(IDialectFactory dialect)
         {
-            _alterBuilder = alterBuilder ?? throw new ArgumentNullException(nameof(alterBuilder));
+            _dialect = dialect ?? throw new ArgumentNullException(nameof(dialect));
+            _alterBuilder = _dialect.CreateTableAlterCommandBuilder();
+        }
+
+        private static IDialectFactory ResolveDialect(string databaseId)
+        {
+            BaseFunc.EnsureNotNullOrWhiteSpace((databaseId, nameof(databaseId)));
+            var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
+            return DbDialectRegistry.Get(connInfo.DatabaseType);
         }
 
         /// <summary>
@@ -105,17 +117,17 @@ namespace Bee.Db.Schema
             return true;
         }
 
-        private static UpgradePlan BuildCreatePlan(TableSchemaDiff diff)
+        private UpgradePlan BuildCreatePlan(TableSchemaDiff diff)
         {
-            var builder = new SqlCreateTableCommandBuilder();
+            var builder = _dialect.CreateCreateTableCommandBuilder();
             var sql = builder.GetCommandText(diff.DefineTable);
             var stage = new UpgradeStage(UpgradeStageKind.CreateTable, new[] { sql });
             return new UpgradePlan(UpgradeExecutionMode.Create, new[] { stage });
         }
 
-        private static UpgradePlan BuildRebuildPlan(TableSchemaDiff diff)
+        private UpgradePlan BuildRebuildPlan(TableSchemaDiff diff)
         {
-            var builder = new SqlTableRebuildCommandBuilder();
+            var builder = _dialect.CreateTableRebuildCommandBuilder();
             var sql = builder.GetCommandText(diff);
             var stage = new UpgradeStage(UpgradeStageKind.Rebuild, new[] { sql });
             return new UpgradePlan(UpgradeExecutionMode.Rebuild, new[] { stage });

@@ -251,7 +251,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="defaultValue">The raw default value.</param>
         private static string GetDefaultValue(FieldDbType dbType, string defaultValue)
         {
-            string originalDefaultValue = DbFunc.GetSqlDefaultValue(dbType);
+            string originalDefaultValue = SqlSchemaHelper.GetDefaultValueExpression(dbType);
 
             switch (dbType)
             {

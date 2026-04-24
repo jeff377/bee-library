@@ -2,7 +2,6 @@
 using System.Data.Common;
 using Bee.Base;
 using Bee.Db.Manager;
-using Bee.Base.Data;
 using Bee.Definition;
 
 namespace Bee.Db
@@ -129,32 +128,5 @@ namespace Bee.Db
             return StrFunc.Format(s, oArgs);
         }
 
-        /// <summary>
-        /// Gets the default SQL Server column value for the specified field type.
-        /// </summary>
-        /// <param name="dbType">The field data type.</param>
-        internal static string GetSqlDefaultValue(FieldDbType dbType)
-        {
-            switch (dbType)
-            {
-                case FieldDbType.String:
-                case FieldDbType.Text:
-                    return string.Empty;
-                case FieldDbType.Boolean:
-                case FieldDbType.Short:
-                case FieldDbType.Integer:
-                case FieldDbType.Long:
-                case FieldDbType.Decimal:
-                case FieldDbType.Currency:
-                    return "0";
-                case FieldDbType.Date:
-                case FieldDbType.DateTime:
-                    return "getdate()";
-                case FieldDbType.Guid:
-                    return "newid()";
-                default:
-                    return string.Empty;
-            }
-        }
     }
 }

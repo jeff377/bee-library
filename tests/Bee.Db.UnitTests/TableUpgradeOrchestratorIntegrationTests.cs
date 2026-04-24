@@ -70,7 +70,7 @@ namespace Bee.Db.UnitTests
             var provider = new Providers.SqlServer.SqlTableSchemaProvider(DatabaseId);
             var real = provider.GetTableSchema(tableName);
             var diff = new TableSchemaComparer(define, real).CompareToDiff();
-            return new TableUpgradeOrchestrator().Plan(diff, options);
+            return new TableUpgradeOrchestrator(DatabaseId).Plan(diff, options);
         }
 
         [DbFact]

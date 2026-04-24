@@ -73,6 +73,35 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <summary>
+        /// Gets the SQL Server built-in default value expression for the specified field type
+        /// (e.g. <c>getdate()</c> for DateTime, <c>newid()</c> for Guid, <c>0</c> for numeric).
+        /// </summary>
+        /// <param name="dbType">The field data type.</param>
+        public static string GetDefaultValueExpression(FieldDbType dbType)
+        {
+            switch (dbType)
+            {
+                case FieldDbType.String:
+                case FieldDbType.Text:
+                    return string.Empty;
+                case FieldDbType.Boolean:
+                case FieldDbType.Short:
+                case FieldDbType.Integer:
+                case FieldDbType.Long:
+                case FieldDbType.Decimal:
+                case FieldDbType.Currency:
+                    return "0";
+                case FieldDbType.Date:
+                case FieldDbType.DateTime:
+                    return "getdate()";
+                case FieldDbType.Guid:
+                    return "newid()";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Gets the default value expression for a field, honoring <see cref="DbField.AllowNull"/>
         /// (nullable fields have no default). Returns an empty string when no default should be applied.
         /// </summary>
@@ -81,7 +110,7 @@ namespace Bee.Db.Providers.SqlServer
         {
             if (field.AllowNull)
                 return string.Empty;
-            string originalDefaultValue = DbFunc.GetSqlDefaultValue(field.DbType);
+            string originalDefaultValue = GetDefaultValueExpression(field.DbType);
             switch (field.DbType)
             {
                 case FieldDbType.String:

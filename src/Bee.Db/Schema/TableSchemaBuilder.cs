@@ -1,8 +1,9 @@
 using System.Text;
-using Bee.Definition.Database;
 using Bee.Base;
+using Bee.Db.Manager;
+using Bee.Db.Providers;
 using Bee.Definition;
-using Bee.Db.Providers.SqlServer;
+using Bee.Definition.Database;
 
 namespace Bee.Db.Schema
 {
@@ -10,10 +11,12 @@ namespace Bee.Db.Schema
     /// Compares a defined table schema against the actual database schema and produces (or executes)
     /// the required upgrade commands. Routes structural changes through <see cref="TableUpgradeOrchestrator"/>
     /// (ALTER-based strategy with rebuild fallback); metadata-only drift is handled by
-    /// <see cref="SqlExtendedPropertyCommandBuilder"/> inside the orchestrator's description stage.
+    /// the provider-specific extended-property builder inside the orchestrator's description stage.
     /// </summary>
     public class TableSchemaBuilder
     {
+        private readonly IDialectFactory _dialect;
+
         #region Constructors
 
         /// <summary>
@@ -22,7 +25,10 @@ namespace Bee.Db.Schema
         /// <param name="databaseId">The database identifier.</param>
         public TableSchemaBuilder(string databaseId)
         {
+            BaseFunc.EnsureNotNullOrWhiteSpace((databaseId, nameof(databaseId)));
             DatabaseId = databaseId;
+            var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
+            _dialect = DbDialectRegistry.Get(connInfo.DatabaseType);
         }
 
         #endregion
@@ -40,7 +46,7 @@ namespace Bee.Db.Schema
         private TableSchemaComparer CreateComparer(string dbName, string tableName)
         {
             // Actual table schema from the database
-            var provider = new SqlTableSchemaProvider(this.DatabaseId);
+            var provider = _dialect.CreateTableSchemaProvider(this.DatabaseId);
             var realTable = provider.GetTableSchema(tableName);
             // Defined table schema from the form definitions
             var defineTable = BackendInfo.DefineAccess.GetTableSchema(dbName, tableName);
@@ -78,7 +84,7 @@ namespace Bee.Db.Schema
         public string GetCommandText(string dbName, string tableName, UpgradeOptions? options = null)
         {
             var diff = CompareToDiff(dbName, tableName);
-            var plan = new TableUpgradeOrchestrator().Plan(diff, options);
+            var plan = new TableUpgradeOrchestrator(_dialect).Plan(diff, options);
             if (plan.IsEmpty) return string.Empty;
 
             var sb = new StringBuilder();
@@ -102,7 +108,7 @@ namespace Bee.Db.Schema
         public bool Execute(string dbName, string tableName, UpgradeOptions? options = null)
         {
             var diff = CompareToDiff(dbName, tableName);
-            var plan = new TableUpgradeOrchestrator().Plan(diff, options);
+            var plan = new TableUpgradeOrchestrator(_dialect).Plan(diff, options);
             return TableUpgradeOrchestrator.Execute(plan, this.DatabaseId);
         }
     }

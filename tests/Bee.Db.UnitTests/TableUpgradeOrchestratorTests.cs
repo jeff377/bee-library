@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Db.Providers;
+using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
@@ -10,6 +11,8 @@ namespace Bee.Db.UnitTests
     [Collection("Initialize")]
     public class TableUpgradeOrchestratorTests
     {
+        private static readonly IDialectFactory s_dialect = new SqlDialectFactory();
+
         private static TableSchema BuildDefineSchema(string tableName = "st_demo")
         {
             var schema = new TableSchema { TableName = tableName };
@@ -33,7 +36,7 @@ namespace Bee.Db.UnitTests
         private static UpgradePlan PlanFor(TableSchema define, TableSchema? real, UpgradeOptions? options = null)
         {
             var diff = new TableSchemaComparer(define, real).CompareToDiff();
-            return new TableUpgradeOrchestrator().Plan(diff, options);
+            return new TableUpgradeOrchestrator(s_dialect).Plan(diff, options);
         }
 
         [Fact]
@@ -99,7 +102,7 @@ namespace Bee.Db.UnitTests
             define.Fields!["display_name"].Length = 0;
 
             var diff = new TableSchemaComparer(define, BuildRealSchema()).CompareToDiff();
-            var orchestrator = new TableUpgradeOrchestrator();
+            var orchestrator = new TableUpgradeOrchestrator(s_dialect);
 
             Assert.Throws<InvalidOperationException>(() => orchestrator.Plan(diff));
         }
@@ -159,7 +162,7 @@ namespace Bee.Db.UnitTests
             define.Fields!["name"].Length = 30; // 由 real 50 縮為 30
 
             var diff = new TableSchemaComparer(define, BuildRealSchema()).CompareToDiff();
-            var orchestrator = new TableUpgradeOrchestrator();
+            var orchestrator = new TableUpgradeOrchestrator(s_dialect);
 
             Assert.Throws<InvalidOperationException>(() => orchestrator.Plan(diff));
         }
@@ -173,7 +176,7 @@ namespace Bee.Db.UnitTests
 
             var diff = new TableSchemaComparer(define, BuildRealSchema()).CompareToDiff();
             var options = new UpgradeOptions { AllowColumnNarrowing = true };
-            var plan = new TableUpgradeOrchestrator().Plan(diff, options);
+            var plan = new TableUpgradeOrchestrator(s_dialect).Plan(diff, options);
 
             Assert.Equal(UpgradeExecutionMode.Alter, plan.Mode);
             Assert.NotEmpty(plan.Warnings);
@@ -184,12 +187,24 @@ namespace Bee.Db.UnitTests
         [DisplayName("Plan：NotSupported 變化應擲例外")]
         public void Plan_NotSupportedChange_Throws()
         {
-            var orchestrator = new TableUpgradeOrchestrator(new NotSupportedBuilder());
+            var orchestrator = new TableUpgradeOrchestrator(new NotSupportedDialect());
             var define = BuildDefineSchema();
             define.Fields!.Add("age", "Age", FieldDbType.Integer);
             var diff = new TableSchemaComparer(define, BuildRealSchema()).CompareToDiff();
 
             Assert.Throws<InvalidOperationException>(() => orchestrator.Plan(diff));
+        }
+
+        // 測試用 dialect：alter builder 一律回傳 NotSupported，其餘委派給 SqlDialectFactory。
+        private sealed class NotSupportedDialect : IDialectFactory
+        {
+            private readonly SqlDialectFactory _inner = new();
+            public ITableSchemaProvider CreateTableSchemaProvider(string databaseId) => _inner.CreateTableSchemaProvider(databaseId);
+            public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => _inner.CreateCreateTableCommandBuilder();
+            public ITableAlterCommandBuilder CreateTableAlterCommandBuilder() => new NotSupportedBuilder();
+            public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => _inner.CreateTableRebuildCommandBuilder();
+            public IFormCommandBuilder CreateFormCommandBuilder(string progId) => _inner.CreateFormCommandBuilder(progId);
+            public string GetDefaultValueExpression(FieldDbType dbType) => _inner.GetDefaultValueExpression(dbType);
         }
 
         // 自訂 alter builder 讓 GetExecutionKind 永遠回傳 NotSupported，用於驗證 orchestrator 的拒絕行為
