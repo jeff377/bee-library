@@ -30,5 +30,8 @@ namespace Bee.Db.Schema.Changes
         /// Gets the target field definition; <see cref="DbField.FieldName"/> is the new column name.
         /// </summary>
         public DbField NewField { get; }
+
+        /// <inheritdoc />
+        public override string Describe() => $"RenameFieldChange '{OldFieldName}' -> '{NewField.FieldName}'";
     }
 }

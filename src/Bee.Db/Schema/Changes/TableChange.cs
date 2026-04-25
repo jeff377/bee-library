@@ -6,5 +6,9 @@ namespace Bee.Db.Schema.Changes
     /// </summary>
     public abstract class TableChange
     {
+        /// <summary>
+        /// Returns a short human-readable description of this change for logging and warnings.
+        /// </summary>
+        public abstract string Describe();
     }
 }

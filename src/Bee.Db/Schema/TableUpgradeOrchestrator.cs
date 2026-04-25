@@ -149,7 +149,7 @@ namespace Bee.Db.Schema
                     if (!options.AllowColumnNarrowing)
                         throw new InvalidOperationException(
                             $"Change narrows a column ({change.GetType().Name}); set UpgradeOptions.AllowColumnNarrowing to proceed.");
-                    warnings.Add($"Narrowing change permitted: {DescribeChange(change)}");
+                    warnings.Add($"Narrowing change permitted: {change.Describe()}");
                 }
 
                 var stmts = _alterBuilder.GetStatements(tableName, change);
@@ -189,11 +189,5 @@ namespace Bee.Db.Schema
             return new UpgradePlan(UpgradeExecutionMode.Alter, stages, warnings);
         }
 
-        private static string DescribeChange(TableChange change)
-        {
-            if (change is AlterFieldChange alter)
-                return $"AlterFieldChange on '{alter.NewField.FieldName}'";
-            return change.GetType().Name;
-        }
     }
 }

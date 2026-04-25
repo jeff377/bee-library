@@ -82,7 +82,7 @@ namespace Bee.Db.UnitTests
         {
             var rebuildBuilder = _factory.CreateTableRebuildCommandBuilder();
 
-            Assert.IsAssignableFrom<ITableRebuildCommandBuilder>(rebuildBuilder);
+            Assert.IsType<ITableRebuildCommandBuilder>(rebuildBuilder, exactMatch: false);
         }
 
 [Fact]

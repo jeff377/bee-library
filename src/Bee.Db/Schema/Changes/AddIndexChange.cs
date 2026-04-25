@@ -21,5 +21,8 @@ namespace Bee.Db.Schema.Changes
         /// Gets the index to be created (sourced from the defined schema; name may be a template).
         /// </summary>
         public TableSchemaIndex Index { get; }
+
+        /// <inheritdoc />
+        public override string Describe() => $"AddIndexChange on '{Index.Name}'";
     }
 }

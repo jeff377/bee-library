@@ -22,5 +22,8 @@ namespace Bee.Db.Schema.Changes
         /// Gets the index as it currently exists in the database (name is already the actual DB name, not a template).
         /// </summary>
         public TableSchemaIndex Index { get; }
+
+        /// <inheritdoc />
+        public override string Describe() => $"DropIndexChange on '{Index.Name}'";
     }
 }

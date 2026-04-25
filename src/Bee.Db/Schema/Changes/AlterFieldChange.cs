@@ -27,5 +27,8 @@ namespace Bee.Db.Schema.Changes
         /// Gets the target field definition sourced from the defined schema.
         /// </summary>
         public DbField NewField { get; }
+
+        /// <inheritdoc />
+        public override string Describe() => $"AlterFieldChange on '{NewField.FieldName}'";
     }
 }

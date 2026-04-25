@@ -20,5 +20,8 @@ namespace Bee.Db.Schema.Changes
         /// Gets the field to be added (sourced from the defined schema).
         /// </summary>
         public DbField Field { get; }
+
+        /// <inheritdoc />
+        public override string Describe() => $"AddFieldChange on '{Field.FieldName}'";
     }
 }
