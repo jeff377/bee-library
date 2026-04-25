@@ -109,10 +109,10 @@ namespace Bee.Db.Providers.SqlServer
         {
             var sb = new StringBuilder();
             // Rename indexes (including PK) so they follow the table.
-            foreach (var index in schema.Indexes!)
+            foreach (var indexName in schema.Indexes!.Select(index => index.Name))
             {
-                string oldIndexName = StrFunc.Format(index.Name, oldTable);
-                string newIndexName = StrFunc.Format(index.Name, newTable);
+                string oldIndexName = StrFunc.Format(indexName, oldTable);
+                string newIndexName = StrFunc.Format(indexName, newTable);
                 string oldQualified = SqlSchemaHelper.EscapeSqlString($"dbo.{oldTable}.{oldIndexName}");
                 string escapedNew = SqlSchemaHelper.EscapeSqlString(newIndexName);
                 sb.Append(CultureInfo.InvariantCulture, $"EXEC sp_rename N'{oldQualified}', N'{escapedNew}', N'INDEX';\n");
