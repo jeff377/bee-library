@@ -49,7 +49,7 @@ namespace Bee.Db.Schema
         /// <param name="options">Upgrade options; null uses <see cref="UpgradeOptions.Default"/>.</param>
         public UpgradePlan Plan(TableSchemaDiff diff, UpgradeOptions? options = null)
         {
-            if (diff == null) throw new ArgumentNullException(nameof(diff));
+            ArgumentNullException.ThrowIfNull(diff);
             options ??= UpgradeOptions.Default;
 
             if (diff.IsNewTable)
@@ -87,7 +87,7 @@ namespace Bee.Db.Schema
         /// <param name="databaseId">The database identifier to open connections for.</param>
         public static bool Execute(UpgradePlan plan, string databaseId)
         {
-            if (plan == null) throw new ArgumentNullException(nameof(plan));
+            ArgumentNullException.ThrowIfNull(plan);
             BaseFunc.EnsureNotNullOrWhiteSpace((databaseId, nameof(databaseId)));
 
             if (plan.IsEmpty) return false;
