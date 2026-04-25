@@ -68,11 +68,8 @@ namespace Bee.Db.Providers.SqlServer
             var cloned = diff.DefineTable.Clone();
             if (diff.RealTable != null)
             {
-                foreach (var realField in diff.RealTable.Fields!)
-                {
-                    if (!cloned.Fields!.Contains(realField.FieldName))
-                        cloned.Fields!.Add(realField.Clone());
-                }
+                foreach (var realField in diff.RealTable.Fields!.Where(f => !cloned.Fields!.Contains(f.FieldName)))
+                    cloned.Fields!.Add(realField.Clone());
             }
             return cloned;
         }
