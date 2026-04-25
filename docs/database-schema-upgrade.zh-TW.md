@@ -84,7 +84,7 @@ bool upgraded = builder.Execute("myDb", "ft_employee", new UpgradeOptions
 
 ### TableSchemaDiff（結構化變更）
 
-[TableSchemaDiff](../src/Bee.Db/Schema/TableSchemaDiff.cs) 是 provider 無關的中介結果，列出每一筆 `TableChange`：
+[TableSchemaDiff](../src/Bee.Db/Schema/TableSchemaDiff.cs) 是 provider 無關的中介結果，列出每一筆 `ITableChange`：
 
 | Change 型別 | 對應變更 |
 |-------------|----------|

@@ -188,7 +188,7 @@ namespace Bee.Db.Schema
         /// <summary>
         /// Produces a structured diff describing the differences between the defined schema and the actual database schema.
         /// Unlike <see cref="Compare"/>, this does not mutate <see cref="DbUpgradeAction"/> on the cloned schema;
-        /// instead, each difference is represented as a <see cref="TableChange"/> record.
+        /// instead, each difference is represented as an <see cref="ITableChange"/> record.
         /// Fields and indexes present only in the actual database (not in the defined schema) are preserved and produce no change entries.
         /// </summary>
         public TableSchemaDiff CompareToDiff()

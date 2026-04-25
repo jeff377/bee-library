@@ -210,9 +210,9 @@ namespace Bee.Db.UnitTests
         // 自訂 alter builder 讓 GetExecutionKind 永遠回傳 NotSupported，用於驗證 orchestrator 的拒絕行為
         private sealed class NotSupportedBuilder : ITableAlterCommandBuilder
         {
-            public ChangeExecutionKind GetExecutionKind(TableChange change) => ChangeExecutionKind.NotSupported;
-            public bool IsNarrowingChange(TableChange change) => false;
-            public IReadOnlyList<string> GetStatements(string tableName, TableChange change) => [];
+            public ChangeExecutionKind GetExecutionKind(ITableChange change) => ChangeExecutionKind.NotSupported;
+            public bool IsNarrowingChange(ITableChange change) => false;
+            public IReadOnlyList<string> GetStatements(string tableName, ITableChange change) => [];
         }
     }
 }

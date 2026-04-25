@@ -5,7 +5,7 @@ namespace Bee.Db.Schema.Changes
     /// <summary>
     /// Represents a field whose definition differs between the defined schema and the actual database.
     /// </summary>
-    public sealed class AlterFieldChange : TableChange
+    public sealed class AlterFieldChange : ITableChange
     {
         /// <summary>
         /// Initializes a new instance of <see cref="AlterFieldChange"/>.
@@ -29,6 +29,6 @@ namespace Bee.Db.Schema.Changes
         public DbField NewField { get; }
 
         /// <inheritdoc />
-        public override string Describe() => $"AlterFieldChange on '{NewField.FieldName}'";
+        public string Describe() => $"AlterFieldChange on '{NewField.FieldName}'";
     }
 }

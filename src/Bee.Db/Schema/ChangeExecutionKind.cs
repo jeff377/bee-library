@@ -1,7 +1,7 @@
 namespace Bee.Db.Schema
 {
     /// <summary>
-    /// Indicates how a <see cref="Changes.TableChange"/> can be executed by a provider.
+    /// Indicates how an <see cref="Changes.ITableChange"/> can be executed by a provider.
     /// </summary>
     public enum ChangeExecutionKind
     {

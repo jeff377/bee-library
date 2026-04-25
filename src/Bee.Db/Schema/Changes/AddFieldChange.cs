@@ -5,7 +5,7 @@ namespace Bee.Db.Schema.Changes
     /// <summary>
     /// Represents a field that exists in the defined schema but not in the actual database.
     /// </summary>
-    public sealed class AddFieldChange : TableChange
+    public sealed class AddFieldChange : ITableChange
     {
         /// <summary>
         /// Initializes a new instance of <see cref="AddFieldChange"/>.
@@ -22,6 +22,6 @@ namespace Bee.Db.Schema.Changes
         public DbField Field { get; }
 
         /// <inheritdoc />
-        public override string Describe() => $"AddFieldChange on '{Field.FieldName}'";
+        public string Describe() => $"AddFieldChange on '{Field.FieldName}'";
     }
 }

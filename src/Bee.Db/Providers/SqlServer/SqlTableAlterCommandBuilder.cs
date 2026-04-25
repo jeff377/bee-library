@@ -8,14 +8,14 @@ using Bee.Definition.Database;
 namespace Bee.Db.Providers.SqlServer
 {
     /// <summary>
-    /// Generates SQL Server ALTER statements for a <see cref="TableChange"/>.
+    /// Generates SQL Server ALTER statements for a <see cref="ITableChange"/>.
     /// Supports <see cref="AddFieldChange"/>, <see cref="AlterFieldChange"/>,
     /// <see cref="AddIndexChange"/>, and <see cref="DropIndexChange"/> (including primary keys).
     /// </summary>
     public class SqlTableAlterCommandBuilder : ITableAlterCommandBuilder
     {
         /// <inheritdoc />
-        public ChangeExecutionKind GetExecutionKind(TableChange change)
+        public ChangeExecutionKind GetExecutionKind(ITableChange change)
         {
             switch (change)
             {
@@ -32,7 +32,7 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <inheritdoc />
-        public bool IsNarrowingChange(TableChange change)
+        public bool IsNarrowingChange(ITableChange change)
         {
             if (change is AlterFieldChange alter)
                 return SqlAlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
@@ -40,7 +40,7 @@ namespace Bee.Db.Providers.SqlServer
         }
 
         /// <inheritdoc />
-        public IReadOnlyList<string> GetStatements(string tableName, TableChange change)
+        public IReadOnlyList<string> GetStatements(string tableName, ITableChange change)
         {
             BaseFunc.EnsureNotNullOrWhiteSpace((tableName, nameof(tableName)));
             switch (change)

@@ -6,7 +6,7 @@ namespace Bee.Db.Schema.Changes
     /// Represents an index that exists in the defined schema but not in the actual database,
     /// or a recreated index following a <see cref="DropIndexChange"/>.
     /// </summary>
-    public sealed class AddIndexChange : TableChange
+    public sealed class AddIndexChange : ITableChange
     {
         /// <summary>
         /// Initializes a new instance of <see cref="AddIndexChange"/>.
@@ -23,6 +23,6 @@ namespace Bee.Db.Schema.Changes
         public TableSchemaIndex Index { get; }
 
         /// <inheritdoc />
-        public override string Describe() => $"AddIndexChange on '{Index.Name}'";
+        public string Describe() => $"AddIndexChange on '{Index.Name}'";
     }
 }

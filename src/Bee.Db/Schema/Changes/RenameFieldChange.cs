@@ -8,7 +8,7 @@ namespace Bee.Db.Schema.Changes
     /// Detected by <see cref="TableSchemaComparer"/> when <see cref="DbField.OriginalFieldName"/> is set
     /// on a defined field whose current name does not yet exist in the database.
     /// </summary>
-    public sealed class RenameFieldChange : TableChange
+    public sealed class RenameFieldChange : ITableChange
     {
         /// <summary>
         /// Initializes a new instance of <see cref="RenameFieldChange"/>.
@@ -32,6 +32,6 @@ namespace Bee.Db.Schema.Changes
         public DbField NewField { get; }
 
         /// <inheritdoc />
-        public override string Describe() => $"RenameFieldChange '{OldFieldName}' -> '{NewField.FieldName}'";
+        public string Describe() => $"RenameFieldChange '{OldFieldName}' -> '{NewField.FieldName}'";
     }
 }

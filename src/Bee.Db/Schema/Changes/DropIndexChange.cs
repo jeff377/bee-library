@@ -7,7 +7,7 @@ namespace Bee.Db.Schema.Changes
     /// Emitted when an index definition differs between the defined schema and the actual database.
     /// Indexes present only in the database (and not in the defined schema) are preserved and do not produce this change.
     /// </summary>
-    public sealed class DropIndexChange : TableChange
+    public sealed class DropIndexChange : ITableChange
     {
         /// <summary>
         /// Initializes a new instance of <see cref="DropIndexChange"/>.
@@ -24,6 +24,6 @@ namespace Bee.Db.Schema.Changes
         public TableSchemaIndex Index { get; }
 
         /// <inheritdoc />
-        public override string Describe() => $"DropIndexChange on '{Index.Name}'";
+        public string Describe() => $"DropIndexChange on '{Index.Name}'";
     }
 }

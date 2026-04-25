@@ -16,7 +16,7 @@ namespace Bee.Db.UnitTests
             var change = new AddFieldChange(field);
 
             Assert.Same(field, change.Field);
-            Assert.IsType<TableChange>(change, exactMatch: false);
+            Assert.IsType<ITableChange>(change, exactMatch: false);
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Bee.Db.UnitTests
 
             Assert.Same(oldField, change.OldField);
             Assert.Same(newField, change.NewField);
-            Assert.IsType<TableChange>(change, exactMatch: false);
+            Assert.IsType<ITableChange>(change, exactMatch: false);
         }
 
         [Fact]
@@ -41,7 +41,7 @@ namespace Bee.Db.UnitTests
             var change = new AddIndexChange(index);
 
             Assert.Same(index, change.Index);
-            Assert.IsType<TableChange>(change, exactMatch: false);
+            Assert.IsType<ITableChange>(change, exactMatch: false);
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace Bee.Db.UnitTests
             var change = new DropIndexChange(index);
 
             Assert.Same(index, change.Index);
-            Assert.IsType<TableChange>(change, exactMatch: false);
+            Assert.IsType<ITableChange>(change, exactMatch: false);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Bee.Db.UnitTests
 
             Assert.Equal("emp_name", change.OldFieldName);
             Assert.Same(newField, change.NewField);
-            Assert.IsType<TableChange>(change, exactMatch: false);
+            Assert.IsType<ITableChange>(change, exactMatch: false);
         }
     }
 }

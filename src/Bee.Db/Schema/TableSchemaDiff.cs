@@ -38,7 +38,7 @@ namespace Bee.Db.Schema
         /// <summary>
         /// Gets the structural changes required to align the real table with the defined schema.
         /// </summary>
-        public List<TableChange> Changes { get; } = [];
+        public List<ITableChange> Changes { get; } = [];
 
         /// <summary>
         /// Gets the description (MS_Description) drift between the defined and actual schema.

@@ -84,7 +84,7 @@ Internally the upgrade is split into three stages, each callable in isolation:
 
 ### TableSchemaDiff (Structured Changes)
 
-[TableSchemaDiff](../src/Bee.Db/Schema/TableSchemaDiff.cs) is a provider-agnostic intermediate result listing each `TableChange`:
+[TableSchemaDiff](../src/Bee.Db/Schema/TableSchemaDiff.cs) is a provider-agnostic intermediate result listing each `ITableChange`:
 
 | Change Type | Meaning |
 |-------------|---------|
