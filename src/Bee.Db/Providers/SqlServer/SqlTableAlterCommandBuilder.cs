@@ -77,7 +77,7 @@ namespace Bee.Db.Providers.SqlServer
             return $"EXEC sp_rename N'{sourceLiteral}', N'{targetLiteral}', N'COLUMN';";
         }
 
-        private static IReadOnlyList<string> BuildAlterFieldStatements(string tableName, DbField oldField, DbField newField)
+        private static List<string> BuildAlterFieldStatements(string tableName, DbField oldField, DbField newField)
         {
             var statements = new List<string>();
             bool columnSpecChanged = HasColumnSpecChanged(oldField, newField);
