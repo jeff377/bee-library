@@ -34,6 +34,20 @@ jobs:
         ports:
           - 1433:1433
 
+      postgresql:
+        image: postgres:17
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: common
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
     - name: Checkout code
       uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
@@ -112,6 +126,7 @@ jobs:
     - name: Test with coverage
       env:
         BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database=common;User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
+        BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database=common;Username=testuser;Password=testpass"
       run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover"
 
     - name: SonarScanner End
