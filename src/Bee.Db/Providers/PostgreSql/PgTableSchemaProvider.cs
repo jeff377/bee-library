@@ -88,22 +88,23 @@ namespace Bee.Db.Providers.PostgreSql
         /// <param name="tableName">The table name.</param>
         private DataTable GetTableIndexes(string tableName)
         {
-            // pg_index.indkey is an int2vector of column ordinals; we expand it via generate_subscripts
-            // so each row represents one (index, column) pair with its ordinal position. indoption bit 0
-            // is the DESC flag for that column.
+            // pg_index.indkey is a 0-indexed int2vector of column ordinals; we expand it via
+            // generate_subscripts so each row represents one (index, column) pair with its ordinal
+            // position. indoption is parallel to indkey and shares the same 0-indexed access; bit 0
+            // of each entry is the DESC flag for that column.
             string sql =
                 "SELECT a.attname AS \"FieldName\", " +
                 "       i.indisprimary AS \"IsPrimaryKey\", " +
                 "       i.indisunique AS \"IsUnique\", " +
                 "       c.relname AS \"name\", " +
                 "       k.ord AS \"KeyOrdinal\", " +
-                "       (COALESCE(i.indoption[k.ord - 1], 0) & 1) = 1 AS \"IsDesc\" " +
+                "       (COALESCE(i.indoption[k.ord], 0) & 1) = 1 AS \"IsDesc\" " +
                 "FROM pg_catalog.pg_index i " +
                 "JOIN pg_catalog.pg_class c ON c.oid = i.indexrelid " +
                 "JOIN pg_catalog.pg_class t ON t.oid = i.indrelid " +
                 "JOIN pg_catalog.pg_namespace n ON n.oid = t.relnamespace " +
                 "JOIN LATERAL generate_subscripts(i.indkey, 1) AS k(ord) ON TRUE " +
-                "JOIN pg_catalog.pg_attribute a ON a.attrelid = t.oid AND a.attnum = i.indkey[k.ord - 1] " +
+                "JOIN pg_catalog.pg_attribute a ON a.attrelid = t.oid AND a.attnum = i.indkey[k.ord] " +
                 "WHERE n.nspname = {0} AND t.relname = {1} " +
                 "ORDER BY i.indisprimary DESC, c.relname, k.ord";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, DefaultSchema, tableName);
