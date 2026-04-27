@@ -216,15 +216,14 @@ Only `FormSchema` definitions actually referenced are joined — FormMap never a
 | Component | Role |
 |---|---|
 | `Bee.Definition.Forms.FormSchema` / `FormField` | source of truth (business entities and relations) |
-| `Bee.Db.Query.SelectContextBuilder` | recursively walks the `FormSchema` chain to produce `TableJoin` and `QueryFieldMapping` collections |
-| `Bee.Db.Query.SelectBuilder` | builds the `SELECT` clause |
-| `Bee.Db.Query.FromBuilder` | builds the `FROM` clause (including JOINs) |
-| `Bee.Db.Query.WhereBuilder` | builds the `WHERE` clause with parameterization |
-| `Bee.Db.Query.SortBuilder` | builds the `ORDER BY` clause |
-| `Bee.Db.Providers.SelectCommandBuilder` | combines the four sub-builders into a final `DbCommandSpec` |
-| `Bee.Db.Providers.IFormCommandBuilder` | per-dialect entry point (`SqlFormCommandBuilder` / `PgFormCommandBuilder`) |
-
-> **Current status**: FormMap's SELECT path is fully implemented (SQL Server / PostgreSQL). The INSERT / UPDATE / DELETE interfaces (`BuildInsertCommand` / `BuildUpdateCommand` / `BuildDeleteCommand`) are declared but pending implementation; they will follow the same multi-DB architecture in a later release.
+| `Bee.Db.Sql.SelectContextBuilder` | recursively walks the `FormSchema` chain to produce `TableJoin` and `QueryFieldMapping` collections |
+| `Bee.Db.Sql.SelectBuilder` | builds the `SELECT` clause |
+| `Bee.Db.Sql.FromBuilder` | builds the `FROM` clause (including JOINs) |
+| `Bee.Db.Sql.WhereBuilder` | builds the `WHERE` clause with parameterization |
+| `Bee.Db.Sql.SortBuilder` | builds the `ORDER BY` clause |
+| `Bee.Db.Sql.SelectCommandBuilder` | combines the four sub-builders into a final SELECT `DbCommandSpec` |
+| `Bee.Db.Sql.InsertCommandBuilder` / `UpdateCommandBuilder` / `DeleteCommandBuilder` | produce IUD `DbCommandSpec` from a `FormSchema` and a `DataRow` / `FilterNode` (single-table, no JOIN, identifiers quoted per dialect) |
+| `Bee.Db.Providers.IFormCommandBuilder` | per-dialect entry point (`SqlFormCommandBuilder` / `PgFormCommandBuilder`); methods `Build{Select,Insert,Update,Delete}` delegate to the shared cores above |
 
 ---
 

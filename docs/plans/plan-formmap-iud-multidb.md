@@ -1,6 +1,6 @@
 # 計畫：FormMap INSERT / UPDATE / DELETE 多 DB 實作
 
-**狀態：📝 擬定中（待開工）**
+**狀態：✅ 已完成（2026-04-27）**
 
 > **設計原則**：`IFormCommandBuilder` 僅負責產生 SQL 字串（純函式、無副作用），執行由呼叫端（Repository / BO）負責。
 

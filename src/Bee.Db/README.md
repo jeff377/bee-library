@@ -46,8 +46,8 @@ The framework routes SQL generation and schema reading by `DatabaseType` through
 - `DbDialectRegistry` -- maps `DatabaseType` to its `IDialectFactory` (mirrors how `DbProviderManager` maps to ADO.NET `DbProviderFactory`); registration is explicit and performed by the host
 - `DbFunc` -- database-aware utilities (parameter prefixes, identifier quoting, type inference) keyed by `DatabaseType`
 - Built-in dialect implementations:
-  - **SQL Server** (`Providers/SqlServer/`) -- full support: form CRUD, CREATE/ALTER/REBUILD DDL, schema introspection
-  - **PostgreSQL** (`Providers/PostgreSql/`) -- full support (since v4.2.x): form SELECT, CREATE/ALTER/REBUILD DDL, schema introspection via `information_schema` + `pg_catalog`
+  - **SQL Server** (`Providers/SqlServer/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection
+  - **PostgreSQL** (`Providers/PostgreSql/`) -- full support: form SELECT / INSERT / UPDATE / DELETE, CREATE/ALTER/REBUILD DDL, schema introspection via `information_schema` + `pg_catalog`
   - MySQL / SQLite / Oracle -- parameter prefix and identifier quoting are pre-registered in `DbFunc` so connection-level operations work; SQL generation classes are not yet implemented
 
 `Bee.Db` itself has zero ADO.NET driver dependencies; the driver lives in the host application.

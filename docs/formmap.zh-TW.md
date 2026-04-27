@@ -216,15 +216,14 @@ ORDER BY A.[sys_id] ASC
 | 元件 | 角色 |
 |---|---|
 | `Bee.Definition.Forms.FormSchema` / `FormField` | FormMap 的資料來源（業務實體與關聯定義） |
-| `Bee.Db.Query.SelectContextBuilder` | 從 `FormSchema` 鏈遞迴展開 `TableJoin` 集合與 `QueryFieldMapping` |
-| `Bee.Db.Query.SelectBuilder` | 產生 `SELECT` 子句 |
-| `Bee.Db.Query.FromBuilder` | 產生 `FROM` 子句（含 JOIN） |
-| `Bee.Db.Query.WhereBuilder` | 產生 `WHERE` 子句與參數化 |
-| `Bee.Db.Query.SortBuilder` | 產生 `ORDER BY` 子句 |
-| `Bee.Db.Providers.SelectCommandBuilder` | 整合上述四個 builder，產出最終 `DbCommandSpec` |
-| `Bee.Db.Providers.IFormCommandBuilder` | 各 DB 方言的入口介面（`SqlFormCommandBuilder` / `PgFormCommandBuilder`） |
-
-> **目前狀態**：FormMap 的 SELECT 路徑已實作完整（SQL Server / PostgreSQL）。INSERT / UPDATE / DELETE 介面（`BuildInsertCommand` / `BuildUpdateCommand` / `BuildDeleteCommand`）已宣告但實作待開發，將於後續版本以同款多 DB 架構補上。
+| `Bee.Db.Sql.SelectContextBuilder` | 從 `FormSchema` 鏈遞迴展開 `TableJoin` 集合與 `QueryFieldMapping` |
+| `Bee.Db.Sql.SelectBuilder` | 產生 `SELECT` 子句 |
+| `Bee.Db.Sql.FromBuilder` | 產生 `FROM` 子句（含 JOIN） |
+| `Bee.Db.Sql.WhereBuilder` | 產生 `WHERE` 子句與參數化 |
+| `Bee.Db.Sql.SortBuilder` | 產生 `ORDER BY` 子句 |
+| `Bee.Db.Sql.SelectCommandBuilder` | 整合上述四個 builder，產出最終 SELECT `DbCommandSpec` |
+| `Bee.Db.Sql.InsertCommandBuilder` / `UpdateCommandBuilder` / `DeleteCommandBuilder` | 從 `FormSchema` 與 `DataRow` / `FilterNode` 產出 IUD `DbCommandSpec`（單表、無 JOIN、識別子依方言 quote） |
+| `Bee.Db.Providers.IFormCommandBuilder` | 各 DB 方言的入口介面（`SqlFormCommandBuilder` / `PgFormCommandBuilder`），方法 `Build{Select,Insert,Update,Delete}` 委派至上述共用核心 |
 
 ---
 

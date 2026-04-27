@@ -46,8 +46,8 @@
 - `DbDialectRegistry` -- 將 `DatabaseType` 映射到對應的 `IDialectFactory`（與 `DbProviderManager` 映射 ADO.NET `DbProviderFactory` 對稱）；註冊由 host 應用程式明示完成
 - `DbFunc` -- 資料庫感知工具方法（依 `DatabaseType` 索引參數前綴、識別符引號、型別推斷）
 - 內建 dialect 實作：
-  - **SQL Server**（`Providers/SqlServer/`）-- 完整支援：表單 CRUD、CREATE/ALTER/REBUILD DDL、結構描述探查
-  - **PostgreSQL**（`Providers/PostgreSql/`）-- 完整支援（自 v4.2.x）：表單 SELECT、CREATE/ALTER/REBUILD DDL、透過 `information_schema` + `pg_catalog` 進行結構描述探查
+  - **SQL Server**（`Providers/SqlServer/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、結構描述探查
+  - **PostgreSQL**（`Providers/PostgreSql/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `information_schema` + `pg_catalog` 進行結構描述探查
   - MySQL / SQLite / Oracle -- 參數前綴與識別符引號已預先註冊在 `DbFunc`，連線層可直接運作；SQL 生成類別尚未實作
 
 `Bee.Db` 本身**不引用任何 ADO.NET driver**，driver 由 host 應用程式自行引用。
