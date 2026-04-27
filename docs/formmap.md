@@ -216,14 +216,14 @@ Only `FormSchema` definitions actually referenced are joined — FormMap never a
 | Component | Role |
 |---|---|
 | `Bee.Definition.Forms.FormSchema` / `FormField` | source of truth (business entities and relations) |
-| `Bee.Db.Sql.SelectContextBuilder` | recursively walks the `FormSchema` chain to produce `TableJoin` and `QueryFieldMapping` collections |
-| `Bee.Db.Sql.SelectBuilder` | builds the `SELECT` clause |
-| `Bee.Db.Sql.FromBuilder` | builds the `FROM` clause (including JOINs) |
-| `Bee.Db.Sql.WhereBuilder` | builds the `WHERE` clause with parameterization |
-| `Bee.Db.Sql.SortBuilder` | builds the `ORDER BY` clause |
-| `Bee.Db.Sql.SelectCommandBuilder` | combines the four sub-builders into a final SELECT `DbCommandSpec` |
-| `Bee.Db.Sql.InsertCommandBuilder` / `UpdateCommandBuilder` / `DeleteCommandBuilder` | produce IUD `DbCommandSpec` from a `FormSchema` and a `DataRow` / `FilterNode` (single-table, no JOIN, identifiers quoted per dialect) |
-| `Bee.Db.Providers.IFormCommandBuilder` | per-dialect entry point (`SqlFormCommandBuilder` / `PgFormCommandBuilder`); methods `Build{Select,Insert,Update,Delete}` delegate to the shared cores above |
+| `Bee.Db.Dml.SelectContextBuilder` | recursively walks the `FormSchema` chain to produce `TableJoin` and `QueryFieldMapping` collections |
+| `Bee.Db.Dml.SelectBuilder` | builds the `SELECT` clause |
+| `Bee.Db.Dml.FromBuilder` | builds the `FROM` clause (including JOINs) |
+| `Bee.Db.Dml.WhereBuilder` | builds the `WHERE` clause with parameterization |
+| `Bee.Db.Dml.SortBuilder` | builds the `ORDER BY` clause |
+| `Bee.Db.Dml.SelectCommandBuilder` | combines the four sub-builders into a final SELECT `DbCommandSpec` |
+| `Bee.Db.Dml.InsertCommandBuilder` / `UpdateCommandBuilder` / `DeleteCommandBuilder` | produce IUD `DbCommandSpec` from a `FormSchema` and a `DataRow` / `FilterNode` (single-table, no JOIN, identifiers quoted per dialect) |
+| `Bee.Db.Dml.IFormCommandBuilder` | per-dialect entry point (`SqlFormCommandBuilder` / `PgFormCommandBuilder`); methods `Build{Select,Insert,Update,Delete}` delegate to the shared cores above |
 
 ---
 

@@ -154,23 +154,46 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 
 ```
 Bee.Db/
-  DbAccess/        # DbAccess, DbCommandSpec, DbBatchSpec, DbConnectionScope,
-                   # DbCommandResult, DbParameterSpec, DataTableUpdateSpec
+  Ddl/             # DDL string-generation contracts:
+                   # ICreateTableCommandBuilder, ITableAlterCommandBuilder,
+                   # ITableRebuildCommandBuilder
+  Dml/             # DML string-generation contracts and builders:
+                   # IFormCommandBuilder,
+                   # SelectCommandBuilder / InsertCommandBuilder /
+                   # UpdateCommandBuilder / DeleteCommandBuilder,
+                   # ISelectBuilder/SelectBuilder, IFromBuilder/FromBuilder,
+                   # IWhereBuilder/WhereBuilder/InternalWhereBuilder/WhereBuildResult,
+                   # ISortBuilder/SortBuilder,
+                   # SelectContext, SelectContextBuilder,
+                   # QueryFieldMapping, QueryFieldMappingCollection,
+                   # TableJoin, TableJoinCollection,
+                   # IParameterCollector, DefaultParameterCollector,
+                   # TableSchemaCommandBuilder, JoinType
+  Schema/          # TableSchema model + comparison + upgrade flow (no SQL emission):
+                   # TableSchemaBuilder, TableSchemaComparer, TableSchemaDiff,
+                   # TableUpgradeOrchestrator, UpgradePlan, UpgradeStage,
+                   # UpgradeStageKind, UpgradeOptions, UpgradeExecutionMode,
+                   # ChangeExecutionKind, DescriptionLevel, DescriptionChange,
+                   # ITableSchemaProvider (live-DB schema reader contract)
+    Changes/       # AddFieldChange, AlterFieldChange, RenameFieldChange,
+                   # AddIndexChange, DropIndexChange, ITableChange
+  Providers/       # IDialectFactory (provider-factory contract)
+    SqlServer/     # SQL Server implementations (DDL + DML + SchemaProvider + Helper)
+    PostgreSql/    # PostgreSQL implementations
+    Sqlite/        # SQLite implementations
   Manager/         # DbConnectionManager, DbProviderManager, DbConnectionInfo,
                    # DbDialectRegistry
-  Providers/       # IDialectFactory, IFormCommandBuilder, ICreateTableCommandBuilder,
-                   # ITableAlterCommandBuilder, ITableRebuildCommandBuilder,
-                   # ITableSchemaProvider, SelectCommandBuilder
-    SqlServer/     # SQL Server-specific implementations
-    PostgreSql/    # PostgreSQL-specific implementations
-  Query/           # Query component builders
-    Context/       # SelectContext, QueryFieldMapping, TableJoin
-    From/          # IFromBuilder, FromBuilder
-    Select/        # ISelectBuilder, SelectBuilder
-    Sort/          # ISortBuilder, SortBuilder
-    Where/         # IWhereBuilder, WhereBuilder, IParameterCollector
-  Schema/          # TableSchemaBuilder, TableSchemaComparer
   Logging/         # DbAccessLogger, DbLogContext
-  *.cs (root)      # DbFunc, ILMapper, DbCommandKind, JoinType,
-                   # CommandTextVariable, TableSchemaCommandBuilder
+  *.cs (root)      # Cross-cutting infrastructure:
+                   # DbAccess, DbCommandSpec, DbCommandSpecCollection,
+                   # DbBatchSpec, DbBatchResult, DbCommandResult,
+                   # DbCommandResultCollection, DbCommandKind,
+                   # DbConnectionScope, DbParameterSpec, DbParameterSpecCollection,
+                   # DataTableUpdateSpec, DbFunc, ILMapper, CommandTextVariable
 ```
+
+The namespace layout follows three principles (see [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md)):
+
+1. **Syntax layer (`Bee.Db.Ddl` / `Bee.Db.Dml`) vs model layer (`Bee.Db.Schema`)** — namespaces emitting SQL strings live under `Ddl` or `Dml`; namespaces operating on the `TableSchema` model live under `Schema`.
+2. **Contracts by responsibility, implementations by provider** — abstract contracts go to the responsibility-named namespace; concrete per-provider implementations all live in `Bee.Db.Providers.{X}` regardless of whether they implement DDL, DML, or schema-reading contracts.
+3. **`Bee.Db.Providers` keeps only `IDialectFactory`** — it is the factory binding contract, not a grab-bag for per-provider interfaces.

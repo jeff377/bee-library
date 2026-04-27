@@ -154,23 +154,46 @@ Host=localhost;Port=5432;Database={@DbName};Username={@UserId};Password={@Passwo
 
 ```
 Bee.Db/
-  DbAccess/        # DbAccess、DbCommandSpec、DbBatchSpec、DbConnectionScope、
-                   # DbCommandResult、DbParameterSpec、DataTableUpdateSpec
+  Ddl/             # DDL 字串產生契約：
+                   # ICreateTableCommandBuilder、ITableAlterCommandBuilder、
+                   # ITableRebuildCommandBuilder
+  Dml/             # DML 字串產生契約與構件：
+                   # IFormCommandBuilder，
+                   # SelectCommandBuilder / InsertCommandBuilder /
+                   # UpdateCommandBuilder / DeleteCommandBuilder，
+                   # ISelectBuilder/SelectBuilder、IFromBuilder/FromBuilder、
+                   # IWhereBuilder/WhereBuilder/InternalWhereBuilder/WhereBuildResult、
+                   # ISortBuilder/SortBuilder、
+                   # SelectContext、SelectContextBuilder、
+                   # QueryFieldMapping、QueryFieldMappingCollection、
+                   # TableJoin、TableJoinCollection、
+                   # IParameterCollector、DefaultParameterCollector、
+                   # TableSchemaCommandBuilder、JoinType
+  Schema/          # TableSchema 模型 + 比對 + 升級流程（不產 SQL）：
+                   # TableSchemaBuilder、TableSchemaComparer、TableSchemaDiff、
+                   # TableUpgradeOrchestrator、UpgradePlan、UpgradeStage、
+                   # UpgradeStageKind、UpgradeOptions、UpgradeExecutionMode、
+                   # ChangeExecutionKind、DescriptionLevel、DescriptionChange、
+                   # ITableSchemaProvider（live-DB schema 讀取契約）
+    Changes/       # AddFieldChange、AlterFieldChange、RenameFieldChange、
+                   # AddIndexChange、DropIndexChange、ITableChange
+  Providers/       # IDialectFactory（provider 工廠契約）
+    SqlServer/     # SQL Server 實作（DDL + DML + SchemaProvider + Helper）
+    PostgreSql/    # PostgreSQL 實作
+    Sqlite/        # SQLite 實作
   Manager/         # DbConnectionManager、DbProviderManager、DbConnectionInfo、
                    # DbDialectRegistry
-  Providers/       # IDialectFactory、IFormCommandBuilder、ICreateTableCommandBuilder、
-                   # ITableAlterCommandBuilder、ITableRebuildCommandBuilder、
-                   # ITableSchemaProvider、SelectCommandBuilder
-    SqlServer/     # SQL Server 專屬實作
-    PostgreSql/    # PostgreSQL 專屬實作
-  Query/           # 查詢元件建構器
-    Context/       # SelectContext、QueryFieldMapping、TableJoin
-    From/          # IFromBuilder、FromBuilder
-    Select/        # ISelectBuilder、SelectBuilder
-    Sort/          # ISortBuilder、SortBuilder
-    Where/         # IWhereBuilder、WhereBuilder、IParameterCollector
-  Schema/          # TableSchemaBuilder、TableSchemaComparer
   Logging/         # DbAccessLogger、DbLogContext
-  *.cs (root)      # DbFunc、ILMapper、DbCommandKind、JoinType、
-                   # CommandTextVariable、TableSchemaCommandBuilder
+  *.cs (root)      # 跨切面基礎設施：
+                   # DbAccess、DbCommandSpec、DbCommandSpecCollection、
+                   # DbBatchSpec、DbBatchResult、DbCommandResult、
+                   # DbCommandResultCollection、DbCommandKind、
+                   # DbConnectionScope、DbParameterSpec、DbParameterSpecCollection、
+                   # DataTableUpdateSpec、DbFunc、ILMapper、CommandTextVariable
 ```
+
+命名空間佈局遵循三項原則（見 [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md)）：
+
+1. **語法層（`Bee.Db.Ddl` / `Bee.Db.Dml`）vs 模型層（`Bee.Db.Schema`）** — 產 SQL 字串者歸 `Ddl` / `Dml`；操作 `TableSchema` 模型者歸 `Schema`。
+2. **契約依職能歸類，實作依 provider 歸類** — 抽象契約進對應職能命名空間；具體 per-provider 實作不論是 DDL、DML、或 schema 讀取都統一歸 `Bee.Db.Providers.{X}`。
+3. **`Bee.Db.Providers` 僅留 `IDialectFactory`** — 它是工廠綁定契約，不再作為 per-provider 介面的雜物袋。

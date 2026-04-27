@@ -1,6 +1,7 @@
 using System.Data;
 using Bee.Base;
 using Bee.Base.Data;
+using Bee.Db.Schema;
 using Bee.Definition;
 using Bee.Definition.Database;
 

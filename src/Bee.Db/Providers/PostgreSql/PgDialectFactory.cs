@@ -1,4 +1,7 @@
 using Bee.Base.Data;
+using Bee.Db.Ddl;
+using Bee.Db.Dml;
+using Bee.Db.Schema;
 
 namespace Bee.Db.Providers.PostgreSql
 {

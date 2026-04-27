@@ -1,5 +1,5 @@
 using System.Data;
-using Bee.Db.Sql;
+using Bee.Db.Dml;
 using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
@@ -10,7 +10,7 @@ namespace Bee.Db.Providers.Sqlite
     /// SQLite form-related SQL command builder, generating Select, Insert, Update, and Delete
     /// statements. Counterpart to <see cref="SqlServer.SqlFormCommandBuilder"/> and
     /// <see cref="PostgreSql.PgFormCommandBuilder"/> for the SQLite provider; all four methods
-    /// delegate to the dialect-agnostic cores in <see cref="Bee.Db.Sql"/>.
+    /// delegate to the dialect-agnostic cores in <see cref="Bee.Db.Dml"/>.
     /// </summary>
     public class SqliteFormCommandBuilder : IFormCommandBuilder
     {

@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using Bee.Base.Data;
+using Bee.Db.Ddl;
+using Bee.Db.Dml;
 using Bee.Db.Providers;
 using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;

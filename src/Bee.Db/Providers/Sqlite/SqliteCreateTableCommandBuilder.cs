@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using Bee.Base;
+using Bee.Db.Ddl;
 using Bee.Base.Data;
 using Bee.Definition.Database;
 

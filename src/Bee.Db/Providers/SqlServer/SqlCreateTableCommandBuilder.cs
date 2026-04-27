@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Text;
 using Bee.Base;
+using Bee.Db.Ddl;
 using Bee.Base.Data;
 
 namespace Bee.Db.Providers.SqlServer
