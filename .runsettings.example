@@ -15,6 +15,9 @@
       <BEE_TEST_CONNSTR_SQLSERVER>Data Source=localhost;Initial Catalog=common;User ID=sa;Password=YOUR_PASSWORD;Encrypt=True;Trust Server Certificate=True;</BEE_TEST_CONNSTR_SQLSERVER>
       <!-- PostgreSQL connection string (used by [DbFact(DatabaseType.PostgreSQL)] tests) -->
       <BEE_TEST_CONNSTR_POSTGRESQL>Host=localhost;Port=5432;Database=common;Username=postgres;Password=YOUR_PASSWORD</BEE_TEST_CONNSTR_POSTGRESQL>
+      <!-- SQLite connection string (used by [DbFact(DatabaseType.SQLite)] tests). -->
+      <!-- In-memory shared cache: zero IO, zero cleanup, identical between local and CI. -->
+      <BEE_TEST_CONNSTR_SQLITE>Data Source=file:bee_test_sqlite?mode=memory&amp;cache=shared</BEE_TEST_CONNSTR_SQLITE>
     </EnvironmentVariables>
   </RunConfiguration>
 </RunSettings>

@@ -61,8 +61,11 @@ namespace Bee.Db.Providers.Sqlite
         }
 
         /// <summary>
-        /// Validates the SQLite-specific constraint that an AutoIncrement field, if present,
-        /// must be the single-column primary key.
+        /// Validates the SQLite-specific constraint that an AutoIncrement field, if a primary
+        /// key is declared in the schema, must be the single-column primary key. When the
+        /// schema does not declare a primary key, the inlined
+        /// <c>INTEGER PRIMARY KEY AUTOINCREMENT</c> is the table's PK by definition and
+        /// validation is skipped.
         /// </summary>
         private void ValidateAutoIncrement()
         {
@@ -70,8 +73,9 @@ namespace Bee.Db.Providers.Sqlite
             if (autoIncrementField == null) return;
 
             var primaryKey = this.TableSchema.GetPrimaryKey();
-            if (primaryKey == null
-                || primaryKey.IndexFields!.Count != 1
+            if (primaryKey == null) return;
+
+            if (primaryKey.IndexFields!.Count != 1
                 || !StrFunc.IsEquals(primaryKey.IndexFields[0].FieldName, autoIncrementField.FieldName))
             {
                 throw new InvalidOperationException(

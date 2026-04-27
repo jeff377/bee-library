@@ -127,6 +127,10 @@ jobs:
       env:
         BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database=common;User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
         BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database=common;Username=testuser;Password=testpass"
+        # SQLite is a pure driver with no service container — in-memory shared cache so
+        # multiple connections see the same database (cache=shared) and there is no IO
+        # to clean up between runs.
+        BEE_TEST_CONNSTR_SQLITE: "Data Source=file:bee_test_sqlite?mode=memory&cache=shared"
       run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover"
 
     - name: SonarScanner End

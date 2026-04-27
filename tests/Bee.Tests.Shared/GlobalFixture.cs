@@ -2,6 +2,7 @@ using Bee.Base;
 using Bee.ObjectCaching;
 using Bee.Db.Manager;
 using Bee.Db.Providers.PostgreSql;
+using Bee.Db.Providers.Sqlite;
 using Bee.Db.Providers.SqlServer;
 using Bee.Definition;
 using Bee.Definition.Settings;
@@ -15,6 +16,12 @@ namespace Bee.Tests.Shared
     /// </summary>
     public class GlobalFixture : IDisposable
     {
+        // SQLite in-memory shared-cache databases live only as long as at least one
+        // connection is open; once the last connection closes the database disappears.
+        // Keep one connection alive for the fixture's lifetime so subsequent test
+        // connections see the schema/data populated by EnsureSchema/EnsureSeedData.
+        private Microsoft.Data.Sqlite.SqliteConnection? _sqliteKeepAlive;
+
         /// <summary>
         /// 建構函式，於第一次進入 Collection 測試時執行初始化。
         /// </summary>
@@ -44,6 +51,7 @@ namespace Bee.Tests.Shared
             // 註冊各 DB 的 ADO.NET provider + dialect factory；每個 DB 各自獨立、未設環境變數則跳過。
             RegisterSqlServer();
             RegisterPostgreSql();
+            RegisterSqlite();
             // 未來新增 MySQL / Oracle 在此擴增。
             Console.WriteLine("GlobalFixture Initialized");
         }
@@ -103,6 +111,33 @@ namespace Bee.Tests.Shared
             });
         }
 
+        /// <summary>
+        /// 註冊 SQLite 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
+        /// 推薦的測試連線字串是 <c>Data Source=file:bee_test_sqlite?mode=memory&amp;cache=shared</c>
+        /// （in-memory + shared cache，零 IO，CI 與本機行為一致）。同時保留一條長生命週期連線
+        /// 防止 in-memory database 在所有測試連線關閉時被釋放。
+        /// </summary>
+        private void RegisterSqlite()
+        {
+            DbProviderManager.RegisterProvider(DatabaseType.SQLite, Microsoft.Data.Sqlite.SqliteFactory.Instance);
+            DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
+
+            var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLite));
+            if (string.IsNullOrEmpty(connStr)) return;
+
+            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            dbSettings.Items!.Add(new DatabaseItem
+            {
+                Id = TestDbConventions.GetDatabaseId(DatabaseType.SQLite),
+                DatabaseType = DatabaseType.SQLite,
+                ConnectionString = connStr
+            });
+
+            // Hold one open connection for the fixture's lifetime — see field comment.
+            _sqliteKeepAlive = new Microsoft.Data.Sqlite.SqliteConnection(connStr);
+            _sqliteKeepAlive.Open();
+        }
+
         private static string FindRepoRoot(string startDir)
         {
             var dir = new DirectoryInfo(startDir);
@@ -121,6 +156,8 @@ namespace Bee.Tests.Shared
         public void Dispose()
         {
             // 清理動作，例如刪除暫存資料庫、停止模擬 API Server
+            _sqliteKeepAlive?.Dispose();
+            _sqliteKeepAlive = null;
             Console.WriteLine("GlobalFixture Disposed");
             GC.SuppressFinalize(this);
         }

@@ -133,5 +133,12 @@ namespace Bee.Db.UnitTests
         {
             RunRoundTrip(DatabaseType.PostgreSQL);
         }
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("FormMap IUD on SQLite: INSERT → SELECT → UPDATE → SELECT → DELETE 完整 round-trip")]
+        public void RoundTrip_Sqlite()
+        {
+            RunRoundTrip(DatabaseType.SQLite);
+        }
     }
 }

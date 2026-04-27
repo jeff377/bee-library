@@ -264,17 +264,25 @@ namespace Bee.Db
             {
                 if (transaction != null) cmd.Transaction = transaction;
 
-                var adapter = Provider.CreateDataAdapter()
-                    ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
-
-                using (adapter)
+                var adapter = Provider.CreateDataAdapter();
+                var table = new DataTable("DataTable");
+                if (adapter != null)
                 {
-                    adapter.SelectCommand = cmd;
-                    var table = new DataTable("DataTable");
-                    adapter.Fill(table);
-                    DataSetFunc.UpperColumnName(table);
-                    return DbCommandResult.ForTable(table);
+                    using (adapter)
+                    {
+                        adapter.SelectCommand = cmd;
+                        adapter.Fill(table);
+                    }
                 }
+                else
+                {
+                    // The provider does not supply a DbDataAdapter (e.g. Microsoft.Data.Sqlite).
+                    // Fall back to the same DbDataReader + DataTable.Load path used by the async overload.
+                    using var reader = cmd.ExecuteReader();
+                    table.Load(reader);
+                }
+                DataSetFunc.UpperColumnName(table);
+                return DbCommandResult.ForTable(table);
             }
         }
 

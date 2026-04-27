@@ -18,6 +18,7 @@ namespace Bee.Tests.Shared
         {
             EnsureDatabase(DatabaseType.SQLServer);
             EnsureDatabase(DatabaseType.PostgreSQL);
+            EnsureDatabase(DatabaseType.SQLite);
             // 未來新增 MySQL / Oracle 在此擴增。
         }
 
@@ -110,6 +111,10 @@ namespace Bee.Tests.Shared
                     return ("NEWID()", "GETDATE()");
                 case DatabaseType.PostgreSQL:
                     return ("gen_random_uuid()", "CURRENT_TIMESTAMP");
+                case DatabaseType.SQLite:
+                    // SQLite has no native UUID generator; hex(randomblob(16)) is unique enough
+                    // for seed data even though it isn't a v4 UUID.
+                    return ("hex(randomblob(16))", "CURRENT_TIMESTAMP");
                 default:
                     throw new NotSupportedException($"Seed expressions are not defined for {dbType}.");
             }

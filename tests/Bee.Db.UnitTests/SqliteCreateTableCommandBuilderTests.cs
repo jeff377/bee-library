@@ -238,16 +238,19 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("AutoIncrement 欄位但無 PK 索引應擲 InvalidOperationException")]
-        public void GetCommandText_AutoIncrementWithoutPrimaryKey_Throws()
+        [DisplayName("AutoIncrement 欄位且無 PK 索引應內聯為 PK（INTEGER PRIMARY KEY AUTOINCREMENT 即為 PK）")]
+        public void GetCommandText_AutoIncrementWithoutPrimaryKey_InlinesPrimaryKey()
         {
-            var schema = new TableSchema { TableName = "st_bad" };
+            var schema = new TableSchema { TableName = "st_seq" };
             schema.Fields!.Add(SysFields.No, "Sequence", FieldDbType.AutoIncrement);
             schema.Fields!.Add("name", "Name", FieldDbType.String, 20);
-            // No primary key declared.
+            // No primary key index declared — the inlined AUTOINCREMENT column is the PK.
 
             var builder = new SqliteCreateTableCommandBuilder();
-            Assert.Throws<InvalidOperationException>(() => builder.GetCommandText(schema));
+            string sql = builder.GetCommandText(schema);
+
+            Assert.Contains("\"sys_no\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL", sql);
+            Assert.DoesNotContain("CONSTRAINT", sql);
         }
 
         [Fact]

@@ -10,8 +10,7 @@ namespace Bee.Db.Providers.Sqlite
     public class SqliteDialectFactory : IDialectFactory
     {
         /// <inheritdoc />
-        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId) =>
-            throw new NotImplementedException("SqliteTableSchemaProvider lands in PR S5.");
+        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId) => new SqliteTableSchemaProvider(databaseId);
 
         /// <inheritdoc />
         public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new SqliteCreateTableCommandBuilder();
