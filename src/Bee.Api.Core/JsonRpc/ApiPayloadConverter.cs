@@ -1,5 +1,7 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Definition.Serialization;
+using Bee.Api.Core.Messages;
+using Bee.Api.Core.Registry;
 
 namespace Bee.Api.Core.JsonRpc
 {

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Bee.Api.Client.ApiServiceProvider;
 using Bee.Api.Client.Connectors;
-using Bee.Api.Core;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.UnitTests
 {

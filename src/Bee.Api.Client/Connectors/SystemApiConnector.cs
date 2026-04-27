@@ -5,6 +5,7 @@ using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Api.Core.System;
 using Bee.Definition;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.Connectors
 {

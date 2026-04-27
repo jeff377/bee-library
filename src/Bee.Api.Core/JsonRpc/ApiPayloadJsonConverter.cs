@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.JsonRpc
 {

@@ -1,7 +1,9 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Tracing;
 using Bee.Definition;
 using Bee.Api.Core.Validator;
+using Bee.Api.Core.Conversion;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.JsonRpc
 {

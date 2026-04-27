@@ -2,7 +2,7 @@ using System.Collections.Concurrent;
 using System.Reflection;
 using MessagePack;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Registry
 {
     /// <summary>
     /// Registry for mapping contract interfaces to API response types.

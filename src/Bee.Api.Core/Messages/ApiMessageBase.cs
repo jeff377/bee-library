@@ -4,7 +4,7 @@ using Bee.Base.Serialization;
 using MessagePack;
 using System.Text.Json.Serialization;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Messages
 {
     /// <summary>
     /// Base class for API message objects (requests and responses) with serialization support.

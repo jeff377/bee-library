@@ -1,5 +1,6 @@
 using Bee.Api.Contracts;
 using MessagePack;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.System
 {

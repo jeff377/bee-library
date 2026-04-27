@@ -87,18 +87,29 @@
 Bee.Api.Core/
   Authorization/    IApiAuthorizationValidator、ApiAuthorizationValidator、
                     ApiAuthorizationContext、ApiAuthorizationResult
+  Conversion/       ApiInputConverter、ApiOutputConverter
+                    （.NET 物件模型轉換：API 型別 ↔ BO 型別）
   JsonRpc/          JsonRpcExecutor、JsonRpcRequest、JsonRpcResponse、JsonRpcError、
                     JsonRpcException、ApiPayload、ApiPayloadConverter
+  Messages/         ApiMessageBase、ApiRequest、ApiResponse、
+                    ExecFuncRequest、ExecFuncResponse、
+                    ApiHeaders、PayloadFormat
   MessagePack/      SafeMessagePackSerializerOptions、MessagePackHelper、
                     FormatterResolver、ADO.NET 型別自訂格式器
+  Registry/         ApiContractRegistry（Contract → API 型別註冊中心）
+  System/           內建請求/回應型別（Login、Ping、CreateSession、
+                    GetDefine、SaveDefine、ExecFunc 等）
   Transformer/      IApiPayloadTransformer、ApiPayloadTransformer、
                     IApiPayloadSerializer、MessagePackPayloadSerializer、
                     IApiPayloadCompressor、GzipPayloadCompressor、
                     IApiPayloadEncryptor、AesPayloadEncryptor、
                     NoEncryptionEncryptor、ApiPayloadOptionsFactory
+                    （byte 層級 payload 管線；與 Conversion 的 .NET 物件層級
+                    型別轉換抽象層次不同）
   Validator/        ApiAccessValidator、ApiCallContext
-  System/           內建請求/回應型別（Login、Ping、CreateSession、
-                    GetDefine、SaveDefine、ExecFunc 等）
-  (root)            ApiServiceOptions、ApiContractRegistry、ApiRequest、ApiResponse、
-                    ApiInputConverter、ApiHeaders、PayloadFormat
+  （根目錄）         ApiServiceOptions（使用者啟動配置入口）
 ```
+
+命名空間佈局遵循 [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md) 的設計原則：
+契約依職能歸類（`Messages` 放訊息型別、`Conversion` 放型別轉換、`Registry` 放註冊中心等）；
+根層只保留跨切面基礎設施（此處僅 `ApiServiceOptions`）。

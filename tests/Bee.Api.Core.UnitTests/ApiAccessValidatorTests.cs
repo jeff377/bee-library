@@ -3,6 +3,7 @@ using Bee.Api.Core.Validator;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Security;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.UnitTests
 {

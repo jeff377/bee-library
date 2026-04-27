@@ -1,5 +1,5 @@
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Messages
 {
     /// <summary>
     /// API header key constants.

@@ -1,7 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Conversion
 {
     /// <summary>
     /// Converts API request objects to BO parameter types by copying matching properties.

@@ -1,5 +1,5 @@
-using Bee.Api.Core;
 using Bee.Definition;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.Connectors
 {

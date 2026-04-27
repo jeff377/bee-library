@@ -2,10 +2,10 @@ using System.ComponentModel;
 using System.Reflection;
 using Bee.Api.Client.ApiServiceProvider;
 using Bee.Api.Client.Connectors;
-using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Tracing;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.UnitTests
 {

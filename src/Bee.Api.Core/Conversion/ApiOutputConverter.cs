@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 
-namespace Bee.Api.Core
+namespace Bee.Api.Core.Conversion
 {
     /// <summary>
     /// Converts BO result objects to API response types by naming convention.

@@ -3,6 +3,7 @@ using System.Text.Json;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base.Serialization;
 using Bee.Definition;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.UnitTests
 {

@@ -1,8 +1,8 @@
-﻿using System.Collections.Specialized;
-using Bee.Api.Core;
+using System.Collections.Specialized;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Serialization;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.ApiServiceProvider
 {

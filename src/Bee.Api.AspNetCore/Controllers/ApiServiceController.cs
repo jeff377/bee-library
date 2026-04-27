@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 using Bee.Api.Core;
 using Bee.Api.Core.Authorization;
 using Bee.Api.Core.JsonRpc;
@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.AspNetCore.Controllers
 {

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Text;
 using System.Text.Json;
 using Bee.Api.Core.JsonRpc;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.UnitTests
 {

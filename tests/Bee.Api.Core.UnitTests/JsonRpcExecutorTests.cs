@@ -4,6 +4,7 @@ using Bee.Api.Core.System;
 using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Tests.Shared;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.UnitTests
 {

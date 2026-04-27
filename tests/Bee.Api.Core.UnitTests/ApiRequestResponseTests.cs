@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Api.Core.MessagePack;
 using Bee.Api.Core.System;
+using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.UnitTests
 {

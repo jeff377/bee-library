@@ -1,8 +1,9 @@
-using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Tracing;
 using Bee.Api.Client.ApiServiceProvider;
+using Bee.Api.Core.Conversion;
+using Bee.Api.Core.Messages;
 
 
 namespace Bee.Api.Client.Connectors

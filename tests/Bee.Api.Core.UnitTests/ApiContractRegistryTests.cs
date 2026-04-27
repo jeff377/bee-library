@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Api.Core.System;
 using Bee.Api.Contracts;
+using Bee.Api.Core.Registry;
 
 namespace Bee.Api.Core.UnitTests
 {

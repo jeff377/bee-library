@@ -87,18 +87,30 @@
 Bee.Api.Core/
   Authorization/    IApiAuthorizationValidator, ApiAuthorizationValidator,
                     ApiAuthorizationContext, ApiAuthorizationResult
+  Conversion/       ApiInputConverter, ApiOutputConverter
+                    (.NET object-model conversion: API type <-> BO type)
   JsonRpc/          JsonRpcExecutor, JsonRpcRequest, JsonRpcResponse, JsonRpcError,
                     JsonRpcException, ApiPayload, ApiPayloadConverter
+  Messages/         ApiMessageBase, ApiRequest, ApiResponse,
+                    ExecFuncRequest, ExecFuncResponse,
+                    ApiHeaders, PayloadFormat
   MessagePack/      SafeMessagePackSerializerOptions, MessagePackHelper,
                     FormatterResolver, custom formatters for ADO.NET types
+  Registry/         ApiContractRegistry (contract -> API type registry)
+  System/           Built-in request/response types (Login, Ping, CreateSession,
+                    GetDefine, SaveDefine, ExecFunc, etc.)
   Transformer/      IApiPayloadTransformer, ApiPayloadTransformer,
                     IApiPayloadSerializer, MessagePackPayloadSerializer,
                     IApiPayloadCompressor, GzipPayloadCompressor,
                     IApiPayloadEncryptor, AesPayloadEncryptor,
                     NoEncryptionEncryptor, ApiPayloadOptionsFactory
+                    (byte-level payload pipeline; distinct from Conversion's
+                    .NET object-level type mapping)
   Validator/        ApiAccessValidator, ApiCallContext
-  System/           Built-in request/response types (Login, Ping, CreateSession,
-                    GetDefine, SaveDefine, ExecFunc, etc.)
-  (root)            ApiServiceOptions, ApiContractRegistry, ApiRequest, ApiResponse,
-                    ApiInputConverter, ApiHeaders, PayloadFormat
+  (root)            ApiServiceOptions (user-facing startup configuration)
 ```
+
+The namespace layout follows the design principles in [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md):
+contracts grouped by responsibility (`Messages` for message types, `Conversion` for type
+conversion, `Registry` for registries, etc.); the root reserved for cross-cutting
+infrastructure (here, only `ApiServiceOptions`).

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Text.Json;
 using Bee.Api.Core.System;
 using Bee.Business.System;
+using Bee.Api.Core.Conversion;
 
 namespace Bee.Api.Core.UnitTests
 {
