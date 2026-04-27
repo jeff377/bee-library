@@ -39,3 +39,4 @@
 - `Bee.Db/Providers/SqlServer/SqlFormCommandBuilder.cs`：依據 FormSchema 自動產生 SQL
 - `Bee.Db/Query/SelectCommandBuilder.cs`：組合 SELECT / FROM / WHERE / ORDER BY
 - 架構詳細說明於 `docs/architecture-overview.md`
+- 資料存取層的具體模式（FormMap）說明於 `docs/formmap.zh-TW.md`

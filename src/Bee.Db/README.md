@@ -31,6 +31,8 @@
 
 ### Query Composition
 
+> Bee.Db follows the **FormMap** pattern: `FormSchema` describes business entities, and the query context recursively walks `FormSchema` chains to expand JOINs — yielding a "form-level relation" data-access experience distinct from ORM. See the [FormMap design document](../../docs/formmap.md).
+
 - `SelectCommandBuilder` -- builds SELECT commands from `FormSchema` definitions
 - `ISelectBuilder` / `IFromBuilder` / `IWhereBuilder` / `ISortBuilder` -- composable builder interfaces for SELECT, FROM, WHERE, and ORDER BY clauses
 - `SelectContext` -- query context tracking field mappings and table joins

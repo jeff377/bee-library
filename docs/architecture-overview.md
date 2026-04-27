@@ -250,7 +250,7 @@ Repository adopts a **dual-track parallel** design, choosing the appropriate imp
 
 | Track | Applicable Operations | SQL Source | Characteristics |
 |-------|----------------------|------------|-----------------|
-| **FormSchema-driven** | CRUD (create, update, delete) | Dynamically generated from FormSchema | Define once, auto-sync; no hand-written SQL |
+| **FormSchema-driven** ([FormMap](formmap.md)) | CRUD (create, update, delete) | Dynamically generated from FormSchema | Define once, auto-sync; no hand-written SQL |
 | **AnyCode** | Reports, analytical queries, batch operations | Written by BO | Full control; complex JOINs, aggregations, performance tuning |
 
 ### Why This Division

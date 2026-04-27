@@ -32,6 +32,7 @@
 | AnyCode | 全程式碼 | 完全由開發者自行實作，不受 `FormSchema` 驅動 |
 | Master-Detail Pattern | 主從資料模式 | 一筆主檔（Master）對應多筆明細（Detail）的資料關聯結構 |
 | Repository Dual-Track Strategy | Repository 雙軌策略 | CRUD 由 `FormSchema` 驅動；報表 / 批次由 BO 自行實作（AnyCode） |
+| FormMap | 表單映射 | Bee.Db 採用的資料庫存取模式，以 `FormSchema` 為單位描述業務實體並動態產生 SQL；與 ORM 平行的設計（[詳見](formmap.zh-TW.md)） |
 | N-Tier Architecture | N 層式架構 | 呈現層 → API 層 → 業務邏輯層 → 資料存取層 的分層架構 |
 | Clean Architecture | 整潔架構 | 依賴方向由外向內，核心層不依賴外部框架 |
 | MVVM | MVVM 模式 | Model-View-ViewModel，用於 UI 層的資料繫結與狀態管理 |

@@ -31,6 +31,8 @@
 
 ### 查詢組合
 
+> Bee.Db 採用 **FormMap** 模式：以 `FormSchema` 為單位描述業務實體，由查詢上下文沿 `FormSchema` 鏈遞迴展開 JOIN，產生與 ORM 不同的「表單級關聯」資料存取體驗。詳見 [FormMap 設計文件](../../docs/formmap.zh-TW.md)。
+
 - `SelectCommandBuilder` -- 根據 `FormSchema` 定義建構 SELECT 命令
 - `ISelectBuilder` / `IFromBuilder` / `IWhereBuilder` / `ISortBuilder` -- 可組合的建構器介面，分別負責 SELECT、FROM、WHERE 與 ORDER BY 子句
 - `SelectContext` -- 查詢上下文，追蹤欄位映射與資料表聯結
