@@ -263,13 +263,13 @@ namespace Bee.Db.Providers.Sqlite
             var parts = facets.Split(',');
             if (parts.Length == 1)
             {
-                int.TryParse(parts[0].Trim(), out length);
-                int.TryParse(parts[0].Trim(), out precision);
+                _ = int.TryParse(parts[0].Trim(), out length);
+                _ = int.TryParse(parts[0].Trim(), out precision);
             }
             else if (parts.Length >= 2)
             {
-                int.TryParse(parts[0].Trim(), out precision);
-                int.TryParse(parts[1].Trim(), out scale);
+                _ = int.TryParse(parts[0].Trim(), out precision);
+                _ = int.TryParse(parts[1].Trim(), out scale);
             }
         }
 
