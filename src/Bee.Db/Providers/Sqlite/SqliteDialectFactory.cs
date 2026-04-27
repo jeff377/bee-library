@@ -14,8 +14,7 @@ namespace Bee.Db.Providers.Sqlite
             throw new NotImplementedException("SqliteTableSchemaProvider lands in PR S5.");
 
         /// <inheritdoc />
-        public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() =>
-            throw new NotImplementedException("SqliteCreateTableCommandBuilder lands in PR S3.");
+        public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new SqliteCreateTableCommandBuilder();
 
         /// <inheritdoc />
         public ITableAlterCommandBuilder CreateTableAlterCommandBuilder() =>
