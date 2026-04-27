@@ -1,5 +1,5 @@
-﻿using Bee.Definition.Filters;
-using Bee.Definition;
+using Bee.Definition.Filters;
+using Bee.Definition.Database;
 
 namespace Bee.Db.Dml
 {

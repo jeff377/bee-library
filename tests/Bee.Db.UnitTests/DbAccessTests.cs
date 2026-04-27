@@ -4,6 +4,7 @@ using Bee.Base;
 using Bee.Db.Dml;
 using Bee.Definition;
 using Bee.Tests.Shared;
+using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {

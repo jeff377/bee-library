@@ -1,4 +1,4 @@
-﻿using Bee.Definition;
+using Bee.Definition.Sorting;
 
 namespace Bee.Db.Dml
 {

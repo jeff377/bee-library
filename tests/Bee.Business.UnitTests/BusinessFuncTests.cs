@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Definition;
 using Bee.Definition.Settings;
+using Bee.Definition.Security;
 
 namespace Bee.Business.UnitTests
 {

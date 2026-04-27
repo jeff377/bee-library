@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Definition.Forms;
 using Bee.Base.Data;
+using Bee.Definition.Database;
 
 namespace Bee.Definition.UnitTests
 {

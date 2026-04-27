@@ -1,5 +1,5 @@
 using Bee.Business.Attributes;
-using Bee.Definition;
+using Bee.Definition.Security;
 
 namespace Bee.Business.UnitTests.Fakes
 {

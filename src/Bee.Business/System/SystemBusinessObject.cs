@@ -1,9 +1,11 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Repository.Abstractions;
+using Bee.Definition.Identity;
+using Bee.Definition.Security;
 
 namespace Bee.Business.System
 {

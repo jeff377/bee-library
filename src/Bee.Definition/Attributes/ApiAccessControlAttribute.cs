@@ -1,3 +1,5 @@
+using Bee.Definition.Security;
+
 namespace Bee.Definition.Attributes
 {
     /// <summary>

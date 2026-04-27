@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Bee.Definition.Settings;
+using Bee.Definition.Security;
 
 namespace Bee.Definition.UnitTests.Settings
 {

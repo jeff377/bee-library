@@ -2,8 +2,8 @@ using System.ComponentModel;
 using Bee.Api.Client.ApiServiceProvider;
 using Bee.Api.Client.Connectors;
 using Bee.Api.Core;
-using Bee.Definition;
 using Bee.Tests.Shared;
+using Bee.Definition.Database;
 
 namespace Bee.Api.Client.UnitTests
 {

@@ -7,9 +7,9 @@ namespace Bee.Db.Providers
 {
     /// <summary>
     /// Provider-specific factory that produces every SQL-generating or schema-reading builder the
-    /// framework needs for a single <see cref="Bee.Definition.DatabaseType"/>. Register an implementation
+    /// framework needs for a single <see cref="Bee.Definition.Database.DatabaseType"/>. Register an implementation
     /// with <see cref="Manager.DbDialectRegistry"/> at application startup so <see cref="Schema.TableSchemaBuilder"/>
-    /// and <see cref="Schema.TableUpgradeOrchestrator"/> can route by <see cref="Bee.Definition.DatabaseType"/>.
+    /// and <see cref="Schema.TableUpgradeOrchestrator"/> can route by <see cref="Bee.Definition.Database.DatabaseType"/>.
     /// </summary>
     public interface IDialectFactory
     {

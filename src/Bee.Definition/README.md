@@ -65,15 +65,31 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 Bee.Definition/
   Attributes/       Access control attributes (ApiAccessControl, ExecFuncAccessControl)
   Collections/      ListItem, Parameter, PropertyCollection
-  Database/         TableSchema, DbField, DbFieldCollection, TableSchemaIndex
-  Filters/          FilterCondition, FilterGroup, ComparisonOperator, SortField
+  Database/         TableSchema, DbField, DbFieldCollection, TableSchemaIndex,
+                    DatabaseType, FieldType, DbAccessAnomalyLogLevel, DbUpgradeAction
+  Documents/        IExcelHelper (document-format helper abstraction)
+  Filters/          FilterCondition, FilterGroup, FilterNode, FilterNodeKind,
+                    ComparisonOperator, LogicalOperator
   Forms/            FormSchema, FormField, FormFieldCollection, FormTable
-  Layouts/          FormLayout, LayoutGroup, LayoutItem
-  Logging/          ILogWriter, LogEntry, LogOptions
-  Security/         IAccessTokenValidationProvider, IApiEncryptionKeyProvider
+  Identity/         SessionInfo, SessionUser, UserInfo, IUserInfo, ISessionInfoService
+  Layouts/          FormLayout, LayoutGroup, LayoutItem,
+                    ControlType, ColumnControlType, GridControlAllowActions, SingleFormMode,
+                    IUIControl, IBindFieldControl, IBindTableControl
+  Logging/          ILogWriter, LogEntry, LogEntryType, LogOptions
+  Security/         IAccessTokenValidationProvider, IApiEncryptionKeyProvider,
+                    MasterKeyProvider, MasterKeySourceType,
+                    ApiAccessRequirement, ApiProtectionLevel
   Serialization/    Custom MessagePack formatters
   Settings/         SystemSettings, DatabaseSettings, ProgramSettings, MenuSettings, DbSchemaSettings
-  Storage/          IDefineStorage
-  (root)            BackendInfo, SessionInfo, IDefineAccess, IBusinessObjectProvider,
-                    DefineFunc, Common (enums), UserInfo
+  Sorting/          SortField, SortFieldCollection, SortDirection
+  Storage/          IDefineAccess (and friends)
+  (root)            Cross-cutting infrastructure:
+                    BackendInfo, BackendDefaultTypes, DefineFunc, DefinePathInfo,
+                    DefineType, GlobalEvents, PropertyCategories,
+                    SysFields, SysFuncIDs, SysProgIds, SystemActions,
+                    ApplicationType, InitializeOptions,
+                    IBusinessObjectProvider, ICacheDataSourceProvider, IEnterpriseObjectService
 ```
+
+The namespace layout follows the design principles in [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md):
+syntax/model/factory separation; concrete content grouped by domain (`Database`, `Filters`, `Forms`, `Layouts`, etc.); the root layer reserved for cross-cutting infrastructure (system constants, global service-locator interfaces, framework-wide enums).

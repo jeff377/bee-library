@@ -1,6 +1,7 @@
-﻿using System.Reflection;
+using System.Reflection;
 using Bee.Definition;
 using Bee.Definition.Attributes;
+using Bee.Definition.Security;
 
 namespace Bee.Api.Core.Validator
 {

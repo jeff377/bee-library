@@ -6,6 +6,8 @@ using Bee.Db.Providers.Sqlite;
 using Bee.Db.Providers.SqlServer;
 using Bee.Definition;
 using Bee.Definition.Settings;
+using Bee.Definition.Database;
+using Bee.Definition.Security;
 
 namespace Bee.Tests.Shared
 {

@@ -1,8 +1,8 @@
-﻿using System.Data;
+using System.Data;
 using System.Data.Common;
 using Bee.Base;
 using Bee.Db.Manager;
-using Bee.Definition;
+using Bee.Definition.Database;
 
 namespace Bee.Db
 {

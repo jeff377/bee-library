@@ -6,6 +6,7 @@ using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Tests.Shared;
+using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {

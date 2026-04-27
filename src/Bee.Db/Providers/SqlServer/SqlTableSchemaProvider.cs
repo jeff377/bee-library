@@ -1,9 +1,9 @@
-﻿using Bee.Definition.Database;
+using Bee.Definition.Database;
 using Bee.Base;
 using Bee.Base.Data;
 using Bee.Db.Schema;
-using Bee.Definition;
 using System.Data;
+using Bee.Definition.Sorting;
 
 namespace Bee.Db.Providers.SqlServer
 {

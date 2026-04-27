@@ -1,8 +1,10 @@
-﻿using Bee.Definition.Logging;
+using Bee.Definition.Logging;
 using Bee.Definition.Storage;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Base;
+using Bee.Definition.Database;
+using Bee.Definition.Identity;
 
 namespace Bee.Definition
 {

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Definition;
 using Bee.ObjectCaching.Services;
+using Bee.Definition.Identity;
 
 namespace Bee.ObjectCaching.UnitTests
 {

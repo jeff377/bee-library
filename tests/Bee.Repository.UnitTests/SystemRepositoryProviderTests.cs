@@ -1,9 +1,9 @@
 using System.ComponentModel;
-using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.System;
 using Bee.Repository.Provider;
 using Bee.Repository.System;
+using Bee.Definition.Identity;
 
 namespace Bee.Repository.UnitTests
 {

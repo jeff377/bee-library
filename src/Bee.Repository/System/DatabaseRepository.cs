@@ -1,4 +1,4 @@
-﻿using Bee.Definition.Settings;
+using Bee.Definition.Settings;
 using Bee.Base;
 using Bee.Db.Manager;
 using Bee.Db.Schema;

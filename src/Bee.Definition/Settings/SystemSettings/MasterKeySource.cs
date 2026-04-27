@@ -1,5 +1,6 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Xml.Serialization;
+using Bee.Definition.Security;
 
 namespace Bee.Definition.Settings
 {

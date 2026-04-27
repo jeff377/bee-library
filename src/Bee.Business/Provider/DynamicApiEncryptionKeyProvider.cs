@@ -1,4 +1,4 @@
-﻿using Bee.Definition.Security;
+using Bee.Definition.Security;
 using Bee.Base;
 using Bee.Base.Security;
 using Bee.Definition;

@@ -1,8 +1,8 @@
 using System.ComponentModel;
 using Bee.Base.Security;
 using Bee.Business.System;
-using Bee.Definition;
 using Bee.Tests.Shared;
+using Bee.Definition.Database;
 
 namespace Bee.Business.UnitTests
 {

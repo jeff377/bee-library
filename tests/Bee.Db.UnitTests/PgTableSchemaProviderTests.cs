@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Db.Providers.PostgreSql;
-using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Tests.Shared;
 

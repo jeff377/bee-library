@@ -1,3 +1,5 @@
+using Bee.Definition.Identity;
+
 namespace Bee.Definition
 {
     /// <summary>

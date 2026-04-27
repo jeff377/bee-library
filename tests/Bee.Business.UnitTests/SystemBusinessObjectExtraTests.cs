@@ -3,6 +3,7 @@ using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Definition;
 using Bee.Tests.Shared;
+using Bee.Definition.Database;
 
 namespace Bee.Business.UnitTests
 {

@@ -1,5 +1,6 @@
-﻿using Bee.Definition;
+using Bee.Definition;
 using Bee.Repository.Abstractions;
+using Bee.Definition.Identity;
 
 namespace Bee.Business.Provider
 {

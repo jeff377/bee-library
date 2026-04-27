@@ -1,7 +1,7 @@
 using Bee.Base;
 using Bee.Db;
 using Bee.Db.Schema;
-using Bee.Definition;
+using Bee.Definition.Database;
 
 namespace Bee.Tests.Shared
 {

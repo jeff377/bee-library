@@ -1,6 +1,7 @@
 using System.ComponentModel;
-using Bee.Definition;
 using Bee.Db.Dml;
+using Bee.Definition.Database;
+using Bee.Definition.Sorting;
 
 namespace Bee.Db.UnitTests
 {

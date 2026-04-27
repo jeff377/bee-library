@@ -1,5 +1,5 @@
-﻿using System.Data.Common;
-using Bee.Definition;
+using System.Data.Common;
+using Bee.Definition.Database;
 
 namespace Bee.Db.Manager
 {

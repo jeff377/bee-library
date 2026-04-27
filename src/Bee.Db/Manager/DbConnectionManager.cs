@@ -1,4 +1,4 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Definition;
 using System.Collections.Concurrent;
 

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Bee.Definition.Logging;
+using Bee.Definition.Database;
 
 namespace Bee.Definition.UnitTests.Logging
 {

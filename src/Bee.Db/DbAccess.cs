@@ -1,9 +1,10 @@
-﻿using System.Data;
+using System.Data;
 using System.Data.Common;
 using Bee.Base.Data;
 using Bee.Definition;
 
 using Bee.Db.Manager;
+using Bee.Definition.Database;
 
 namespace Bee.Db
 {

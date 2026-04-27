@@ -1,7 +1,7 @@
 using System.ComponentModel;
-using Bee.Definition;
 using Bee.Repository.System;
 using Bee.Tests.Shared;
+using Bee.Definition.Database;
 
 namespace Bee.Repository.UnitTests
 {

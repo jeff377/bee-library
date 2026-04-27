@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Business.Provider;
 using Bee.Definition;
+using Bee.Definition.Identity;
 
 namespace Bee.Business.UnitTests
 {

@@ -3,6 +3,7 @@ using Bee.Base;
 using Bee.Business.Attributes;
 using Bee.Definition;
 using System.Runtime.ExceptionServices;
+using Bee.Definition.Security;
 
 namespace Bee.Business
 {

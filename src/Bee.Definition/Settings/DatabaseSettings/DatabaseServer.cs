@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base.Attributes;
 using Bee.Base.Collections;
+using Bee.Definition.Database;
 
 namespace Bee.Definition.Settings
 {

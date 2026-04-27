@@ -1,4 +1,4 @@
-using Bee.Definition;
+using Bee.Definition.Database;
 
 namespace Bee.Tests.Shared
 {

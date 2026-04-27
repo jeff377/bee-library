@@ -1,6 +1,6 @@
-﻿using System.Data;
+using System.Data;
 using Bee.Definition.Filters;
-using Bee.Definition;
+using Bee.Definition.Sorting;
 
 namespace Bee.Db.Dml
 {

@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Definition.Settings;
+using Bee.Definition.Database;
 
 namespace Bee.Definition.UnitTests.Settings
 {

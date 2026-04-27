@@ -2,8 +2,8 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
-using Bee.Definition;
 using Bee.Tests.Shared;
+using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {

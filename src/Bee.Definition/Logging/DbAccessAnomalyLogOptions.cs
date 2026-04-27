@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
+using Bee.Definition.Database;
 
 namespace Bee.Definition.Logging
 {

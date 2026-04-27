@@ -1,9 +1,10 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db;
 using Bee.Definition;
 using Bee.Repository.Abstractions.System;
+using Bee.Definition.Identity;
 
 namespace Bee.Repository.System
 {

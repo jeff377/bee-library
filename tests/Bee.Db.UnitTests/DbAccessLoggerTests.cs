@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Db.Logging;
 using Bee.Definition;
 using Bee.Definition.Logging;
+using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {

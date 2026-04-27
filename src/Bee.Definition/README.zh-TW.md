@@ -65,15 +65,31 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 Bee.Definition/
   Attributes/       存取控制屬性（ApiAccessControl、ExecFuncAccessControl）
   Collections/      ListItem、Parameter、PropertyCollection
-  Database/         TableSchema、DbField、DbFieldCollection、TableSchemaIndex
-  Filters/          FilterCondition、FilterGroup、ComparisonOperator、SortField
+  Database/         TableSchema、DbField、DbFieldCollection、TableSchemaIndex、
+                    DatabaseType、FieldType、DbAccessAnomalyLogLevel、DbUpgradeAction
+  Documents/        IExcelHelper（文件格式 helper 抽象）
+  Filters/          FilterCondition、FilterGroup、FilterNode、FilterNodeKind、
+                    ComparisonOperator、LogicalOperator
   Forms/            FormSchema、FormField、FormFieldCollection、FormTable
-  Layouts/          FormLayout、LayoutGroup、LayoutItem
-  Logging/          ILogWriter、LogEntry、LogOptions
-  Security/         IAccessTokenValidationProvider、IApiEncryptionKeyProvider
+  Identity/         SessionInfo、SessionUser、UserInfo、IUserInfo、ISessionInfoService
+  Layouts/          FormLayout、LayoutGroup、LayoutItem、
+                    ControlType、ColumnControlType、GridControlAllowActions、SingleFormMode、
+                    IUIControl、IBindFieldControl、IBindTableControl
+  Logging/          ILogWriter、LogEntry、LogEntryType、LogOptions
+  Security/         IAccessTokenValidationProvider、IApiEncryptionKeyProvider、
+                    MasterKeyProvider、MasterKeySourceType、
+                    ApiAccessRequirement、ApiProtectionLevel
   Serialization/    自訂 MessagePack 格式化器
   Settings/         SystemSettings、DatabaseSettings、ProgramSettings、MenuSettings、DbSchemaSettings
-  Storage/          IDefineStorage
-  （根目錄）         BackendInfo、SessionInfo、IDefineAccess、IBusinessObjectProvider、
-                    DefineFunc、Common（列舉）、UserInfo
+  Sorting/          SortField、SortFieldCollection、SortDirection
+  Storage/          IDefineAccess 等
+  （根目錄）         跨切面基礎設施：
+                    BackendInfo、BackendDefaultTypes、DefineFunc、DefinePathInfo、
+                    DefineType、GlobalEvents、PropertyCategories、
+                    SysFields、SysFuncIDs、SysProgIds、SystemActions、
+                    ApplicationType、InitializeOptions、
+                    IBusinessObjectProvider、ICacheDataSourceProvider、IEnterpriseObjectService
 ```
+
+命名空間佈局遵循 [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md) 的設計原則：
+語法／模型／工廠分離；具體內容依領域歸類（`Database`、`Filters`、`Forms`、`Layouts` 等）；根層只保留跨切面基礎設施（系統常數、全域 service locator 介面、框架級 enum）。

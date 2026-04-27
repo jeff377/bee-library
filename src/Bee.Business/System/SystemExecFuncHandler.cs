@@ -1,7 +1,7 @@
-﻿using Bee.Definition.Settings;
+using Bee.Definition.Settings;
 using Bee.Business.Attributes;
-using Bee.Definition;
 using Bee.Repository.Abstractions;
+using Bee.Definition.Security;
 
 namespace Bee.Business.System
 {

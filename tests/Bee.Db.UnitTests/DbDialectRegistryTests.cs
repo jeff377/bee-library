@@ -5,7 +5,6 @@ using Bee.Db.Manager;
 using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
-using Bee.Definition;
 using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests

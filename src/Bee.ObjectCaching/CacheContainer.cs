@@ -1,4 +1,4 @@
-﻿using Bee.ObjectCaching.Database;
+using Bee.ObjectCaching.Database;
 using Bee.ObjectCaching.Define;
 using Bee.ObjectCaching.Runtime;
 

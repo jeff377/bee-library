@@ -1,5 +1,6 @@
-﻿using Bee.Base;
-using Bee.Definition;
+using Bee.Base;
+using Bee.Definition.Database;
+using Bee.Definition.Sorting;
 
 namespace Bee.Db.Dml
 {

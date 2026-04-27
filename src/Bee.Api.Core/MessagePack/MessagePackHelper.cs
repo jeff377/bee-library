@@ -1,9 +1,9 @@
-﻿using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Serialization;
 using MessagePack;
 using MessagePack.Formatters;
 using MessagePack.Resolvers;
+using Bee.Definition.Sorting;
 
 namespace Bee.Api.Core.MessagePack
 {

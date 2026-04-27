@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Data;
 using Bee.Definition;
 using Microsoft.Data.SqlClient;
+using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {

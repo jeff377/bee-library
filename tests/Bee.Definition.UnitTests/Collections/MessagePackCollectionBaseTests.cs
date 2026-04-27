@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Collections;
 using Bee.Base.Serialization;
 using Bee.Definition.Collections;
+using Bee.Definition.Sorting;
 
 namespace Bee.Definition.UnitTests.Collections
 {

@@ -1,6 +1,7 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base.Collections;
+using Bee.Definition.Sorting;
 
 namespace Bee.Definition.Database
 {

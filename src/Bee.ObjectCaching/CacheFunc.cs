@@ -1,9 +1,10 @@
-﻿using Bee.Definition.Database;
+using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using System.Runtime.Caching;
 using Bee.Definition;
+using Bee.Definition.Identity;
 
 namespace Bee.ObjectCaching
 {

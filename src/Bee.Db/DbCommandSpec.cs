@@ -1,10 +1,11 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.Base.Collections;
 using Bee.Definition;
 using System.Data;
 using System.Data.Common;
 using System.Text;
 using System.Text.RegularExpressions;
+using Bee.Definition.Database;
 
 namespace Bee.Db
 {

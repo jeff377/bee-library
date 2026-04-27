@@ -1,5 +1,6 @@
-﻿using Bee.Definition;
+using Bee.Definition;
 using Bee.Definition.Logging;
+using Bee.Definition.Database;
 
 namespace Bee.Db.Logging
 {

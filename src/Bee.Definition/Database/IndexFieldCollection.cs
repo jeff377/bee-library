@@ -1,4 +1,5 @@
-﻿using Bee.Base.Collections;
+using Bee.Base.Collections;
+using Bee.Definition.Sorting;
 
 namespace Bee.Definition.Database
 {

@@ -1,6 +1,6 @@
-﻿using Bee.Definition;
 using System.Globalization;
 using System.Text;
+using Bee.Definition.Database;
 
 namespace Bee.Db.Dml
 {

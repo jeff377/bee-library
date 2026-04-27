@@ -1,4 +1,4 @@
-﻿using Bee.Definition.Database;
+using Bee.Definition.Database;
 using System.Globalization;
 using System.Text;
 using Bee.Base;
