@@ -26,8 +26,7 @@ namespace Bee.Db.Providers.Sqlite
             throw new NotImplementedException("SqliteTableRebuildCommandBuilder lands in PR S4.");
 
         /// <inheritdoc />
-        public IFormCommandBuilder CreateFormCommandBuilder(string progId) =>
-            throw new NotImplementedException("SqliteFormCommandBuilder lands in PR S2.");
+        public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new SqliteFormCommandBuilder(progId);
 
         /// <inheritdoc />
         public string GetDefaultValueExpression(FieldDbType dbType) =>
