@@ -38,8 +38,7 @@ namespace Bee.Db.Dml
         {
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentException("tableName cannot be null or whitespace.", nameof(tableName));
-            if (row == null)
-                throw new ArgumentNullException(nameof(row));
+            ArgumentNullException.ThrowIfNull(row);
             if (row.RowState != DataRowState.Modified)
                 throw new InvalidOperationException(
                     $"BuildUpdate requires a row in Modified state; received {row.RowState}.");
