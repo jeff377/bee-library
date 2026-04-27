@@ -3,7 +3,7 @@ using Bee.Definition.Collections;
 using Bee.Definition.Filters;
 using System.Data;
 using Bee.Base.Data;
-using Bee.Api.Core.System;
+using Bee.Api.Core.Messages.System;
 using Bee.Definition;
 using Bee.Api.Core.Messages;
 

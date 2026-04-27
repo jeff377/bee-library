@@ -143,7 +143,7 @@ namespace Bee.Api.Core.UnitTests
         public void ApiPayload_Serialize_PreservesFormatAndTypeName(PayloadFormat format)
         {
             // Create payload with the specified format via JSON round-trip
-            var tempJson = JsonSerializer.Serialize(new { format = (int)format, value = "sample-data", type = "Bee.Api.Core.System.PingRequest" });
+            var tempJson = JsonSerializer.Serialize(new { format = (int)format, value = "sample-data", type = "Bee.Api.Core.Messages.System.PingRequest" });
             var payload = JsonSerializer.Deserialize<JsonRpcParams>(tempJson)!;
 
             var json = JsonSerializer.Serialize(payload);
@@ -152,7 +152,7 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotNull(deserialized);
             Assert.Equal(format, deserialized.Format);
             Assert.Equal("sample-data", deserialized.Value);
-            Assert.Equal("Bee.Api.Core.System.PingRequest", deserialized.TypeName);
+            Assert.Equal("Bee.Api.Core.Messages.System.PingRequest", deserialized.TypeName);
 
             // 驗證 format 序列化為數值
             using var jDoc = JsonDocument.Parse(json);
@@ -175,7 +175,7 @@ namespace Bee.Api.Core.UnitTests
                     "params": {
                         "format": 1,
                         "value": "base64-encoded-payload",
-                        "type": "Bee.Api.Core.System.ExecFuncRequest"
+                        "type": "Bee.Api.Core.Messages.System.ExecFuncRequest"
                     },
                     "id": "client-req-42"
                 }
@@ -190,7 +190,7 @@ namespace Bee.Api.Core.UnitTests
             Assert.NotNull(request.Params);
             Assert.Equal(PayloadFormat.Encoded, request.Params.Format);
             Assert.Equal("base64-encoded-payload", request.Params.Value);
-            Assert.Equal("Bee.Api.Core.System.ExecFuncRequest", request.Params.TypeName);
+            Assert.Equal("Bee.Api.Core.Messages.System.ExecFuncRequest", request.Params.TypeName);
         }
 
         /// <summary>
@@ -208,7 +208,7 @@ namespace Bee.Api.Core.UnitTests
                 Result = new JsonRpcResult
                 {
                     Value = "result-data",
-                    TypeName = "Bee.Api.Core.System.PingResponse"
+                    TypeName = "Bee.Api.Core.Messages.System.PingResponse"
                 }
             };
 

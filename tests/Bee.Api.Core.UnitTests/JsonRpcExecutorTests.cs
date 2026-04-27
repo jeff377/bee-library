@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using Bee.Api.Core.JsonRpc;
-using Bee.Api.Core.System;
+using Bee.Api.Core.Messages.System;
 using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Tests.Shared;

@@ -1,6 +1,6 @@
 # 計畫 E：Bee.Api.Core/System 命名空間語意精準化
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-04-28）— 採選項 2（Bee.Api.Core.Messages.System）**
 
 ## 背景
 

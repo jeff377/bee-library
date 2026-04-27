@@ -1,9 +1,8 @@
 using Bee.Definition;
 using Bee.Api.Contracts;
 using MessagePack;
-using Bee.Api.Core.Messages;
 
-namespace Bee.Api.Core.System
+namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API request for the save definition operation.

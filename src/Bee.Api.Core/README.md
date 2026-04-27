@@ -94,11 +94,12 @@ Bee.Api.Core/
   Messages/         ApiMessageBase, ApiRequest, ApiResponse,
                     ExecFuncRequest, ExecFuncResponse,
                     ApiHeaders, PayloadFormat, ApiErrorInfo
+    System/         Built-in system-level request/response types
+                    (Login, Ping, CreateSession, GetDefine, SaveDefine,
+                    GetPackage, CheckPackageUpdate, GetCommonConfiguration)
   MessagePack/      SafeMessagePackSerializerOptions, MessagePackHelper,
                     FormatterResolver, custom formatters for ADO.NET types
   Registry/         ApiContractRegistry (contract -> API type registry)
-  System/           Built-in request/response types (Login, Ping, CreateSession,
-                    GetDefine, SaveDefine, ExecFunc, etc.)
   Transformer/      IApiPayloadTransformer, ApiPayloadTransformer,
                     IApiPayloadSerializer, MessagePackPayloadSerializer,
                     IApiPayloadCompressor, GzipPayloadCompressor,

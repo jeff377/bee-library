@@ -1,8 +1,7 @@
 using Bee.Api.Contracts;
 using MessagePack;
-using Bee.Api.Core.Messages;
 
-namespace Bee.Api.Core.System
+namespace Bee.Api.Core.Messages.System
 {
     /// <summary>
     /// API response for the ping operation.

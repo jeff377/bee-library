@@ -94,11 +94,12 @@ Bee.Api.Core/
   Messages/         ApiMessageBase、ApiRequest、ApiResponse、
                     ExecFuncRequest、ExecFuncResponse、
                     ApiHeaders、PayloadFormat、ApiErrorInfo
+    System/         內建系統級請求/回應型別
+                    （Login、Ping、CreateSession、GetDefine、SaveDefine、
+                    GetPackage、CheckPackageUpdate、GetCommonConfiguration）
   MessagePack/      SafeMessagePackSerializerOptions、MessagePackHelper、
                     FormatterResolver、ADO.NET 型別自訂格式器
   Registry/         ApiContractRegistry（Contract → API 型別註冊中心）
-  System/           內建請求/回應型別（Login、Ping、CreateSession、
-                    GetDefine、SaveDefine、ExecFunc 等）
   Transformer/      IApiPayloadTransformer、ApiPayloadTransformer、
                     IApiPayloadSerializer、MessagePackPayloadSerializer、
                     IApiPayloadCompressor、GzipPayloadCompressor、

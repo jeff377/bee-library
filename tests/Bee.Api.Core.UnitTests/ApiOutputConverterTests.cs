@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Text.Json;
-using Bee.Api.Core.System;
+using Bee.Api.Core.Messages.System;
 using Bee.Business.System;
 using Bee.Api.Core.Conversion;
 
