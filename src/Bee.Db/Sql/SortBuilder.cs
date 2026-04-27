@@ -1,7 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Definition;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Builds the SQL ORDER BY clause.

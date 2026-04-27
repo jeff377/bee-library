@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using Bee.Definition;
-using Bee.Db.Query;
+using Bee.Db.Sql;
 
 namespace Bee.Db.UnitTests
 {

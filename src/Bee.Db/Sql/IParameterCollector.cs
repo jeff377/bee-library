@@ -1,4 +1,4 @@
-﻿namespace Bee.Db.Query
+﻿namespace Bee.Db.Sql
 {
     /// <summary>
     /// Defines the interface for a parameter collector used by query builders to generate named parameters.

@@ -1,7 +1,7 @@
 ﻿using Bee.Definition.Filters;
 using Bee.Definition;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Internal shared utility for converting filter nodes to SQL condition strings.

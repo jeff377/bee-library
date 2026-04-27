@@ -1,4 +1,4 @@
-﻿namespace Bee.Db.Query
+﻿namespace Bee.Db.Sql
 {
     /// <summary>
     /// Represents the result of building a WHERE clause.

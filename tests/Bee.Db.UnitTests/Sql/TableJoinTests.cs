@@ -1,7 +1,7 @@
 using System.ComponentModel;
-using Bee.Db.Query;
+using Bee.Db.Sql;
 
-namespace Bee.Db.UnitTests.Query
+namespace Bee.Db.UnitTests.Sql
 {
     /// <summary>
     /// TableJoin 屬性預設值、Key 讀寫與 ToString 輸出格式測試。

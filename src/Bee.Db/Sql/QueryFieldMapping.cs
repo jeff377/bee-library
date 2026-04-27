@@ -1,6 +1,6 @@
 ﻿using Bee.Base.Collections;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Describes the mapping between a query field and its original data source.

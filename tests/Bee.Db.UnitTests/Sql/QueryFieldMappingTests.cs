@@ -1,7 +1,7 @@
 using System.ComponentModel;
-using Bee.Db.Query;
+using Bee.Db.Sql;
 
-namespace Bee.Db.UnitTests.Query
+namespace Bee.Db.UnitTests.Sql
 {
     /// <summary>
     /// QueryFieldMapping 單元測試。

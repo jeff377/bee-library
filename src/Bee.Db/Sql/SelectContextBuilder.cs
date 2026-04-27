@@ -2,7 +2,7 @@
 using Bee.Base;
 using Bee.Definition;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Builds a complete <see cref="SelectContext"/> based on the query requirements.

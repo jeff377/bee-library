@@ -1,6 +1,6 @@
 ﻿using Bee.Definition.Forms;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Defines the interface for building a SQL SELECT clause.

@@ -1,6 +1,6 @@
 ﻿using Bee.Base.Collections;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Describes a JOIN relationship between two tables.

@@ -1,7 +1,7 @@
 ﻿using Bee.Base;
 using Bee.Base.Collections;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// A collection of <see cref="TableJoin"/> instances describing JOIN relationships between tables.

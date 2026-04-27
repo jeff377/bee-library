@@ -2,7 +2,7 @@
 using Bee.Base.Collections;
 using Bee.Definition;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Builds the SQL SELECT clause.

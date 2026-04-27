@@ -1,9 +1,8 @@
 ﻿using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition;
-using Bee.Db.Query;
 
-namespace Bee.Db.Providers
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Builds SELECT command specifications from a form schema.

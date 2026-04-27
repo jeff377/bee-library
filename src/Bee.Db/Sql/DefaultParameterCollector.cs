@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Default parameter collector that generates parameter names as @p0, @p1, ... (or with a custom prefix).

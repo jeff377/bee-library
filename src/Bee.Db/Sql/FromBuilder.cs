@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Text;
 
-namespace Bee.Db.Query
+namespace Bee.Db.Sql
 {
     /// <summary>
     /// Builds the SQL FROM clause, including any JOIN statements.

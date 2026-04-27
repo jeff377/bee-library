@@ -1,4 +1,4 @@
-﻿namespace Bee.Db.Query
+﻿namespace Bee.Db.Sql
 {
     /// <summary>
     /// Defines the interface for building a SQL FROM clause.

@@ -1,4 +1,4 @@
-﻿namespace Bee.Db.Query
+﻿namespace Bee.Db.Sql
 {
     /// <summary>
     /// Represents the field source mappings and table JOIN relationships required for a SQL query.
