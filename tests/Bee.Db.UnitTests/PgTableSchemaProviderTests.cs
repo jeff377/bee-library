@@ -1,6 +1,8 @@
 using System.ComponentModel;
+using Bee.Base.Data;
 using Bee.Db.Providers.PostgreSql;
 using Bee.Definition;
+using Bee.Definition.Database;
 using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
@@ -78,6 +80,123 @@ namespace Bee.Db.UnitTests
 
                 Assert.NotNull(schema);
                 Assert.Equal(string.Empty, schema!.DisplayName);
+            }
+            finally
+            {
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"DROP TABLE IF EXISTS \"{tableName}\";"));
+            }
+        }
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("GetTableSchema 應正確解析 Decimal 欄位的 Precision 與 Scale")]
+        public void GetTableSchema_DecimalColumn_ParsesPrecisionAndScale()
+        {
+            string tableName = $"bee_test_decimal_{Guid.NewGuid():N}";
+            var dbAccess = new DbAccess(DatabaseId);
+            try
+            {
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"CREATE TABLE \"{tableName}\" (\"id\" integer NOT NULL, \"amount\" numeric(12,3) NOT NULL);"));
+
+                var provider = new PgTableSchemaProvider(DatabaseId);
+                var schema = provider.GetTableSchema(tableName);
+
+                Assert.NotNull(schema);
+                var amount = schema!.Fields![@"amount"];
+                Assert.Equal(FieldDbType.Decimal, amount.DbType);
+                Assert.Equal(12, amount.Precision);
+                Assert.Equal(3, amount.Scale);
+            }
+            finally
+            {
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"DROP TABLE IF EXISTS \"{tableName}\";"));
+            }
+        }
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("GetTableSchema 應同時解析主鍵與非主鍵索引")]
+        public void GetTableSchema_PrimaryKeyAndSecondaryIndex_BothParsed()
+        {
+            string tableName = $"bee_test_idx_{Guid.NewGuid():N}";
+            string idxName = $"ix_{tableName}_name";
+            var dbAccess = new DbAccess(DatabaseId);
+            try
+            {
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"CREATE TABLE \"{tableName}\" (\"id\" integer NOT NULL, \"name\" varchar(50) NOT NULL, " +
+                    $"CONSTRAINT \"pk_{tableName}\" PRIMARY KEY (\"id\"));"));
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"CREATE INDEX \"{idxName}\" ON \"{tableName}\" (\"name\");"));
+
+                var provider = new PgTableSchemaProvider(DatabaseId);
+                var schema = provider.GetTableSchema(tableName);
+
+                Assert.NotNull(schema);
+                // Primary key index
+                var pk = schema!.GetPrimaryKey();
+                Assert.NotNull(pk);
+                Assert.True(pk!.PrimaryKey);
+                Assert.Single(pk.IndexFields!);
+                Assert.Equal("id", pk.IndexFields![0].FieldName);
+
+                // Secondary (non-primary) index
+                var secondary = schema.Indexes!.Cast<TableSchemaIndex>().FirstOrDefault(i => !i.PrimaryKey);
+                Assert.NotNull(secondary);
+                Assert.Equal(idxName, secondary!.Name);
+                Assert.Single(secondary.IndexFields!);
+                Assert.Equal("name", secondary.IndexFields![0].FieldName);
+            }
+            finally
+            {
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"DROP TABLE IF EXISTS \"{tableName}\";"));
+            }
+        }
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("GetTableSchema 無主鍵的資料表應回傳空 PK，欄位仍可解析")]
+        public void GetTableSchema_NoPrimaryKey_ReturnsSchemaWithoutPk()
+        {
+            string tableName = $"bee_test_nopk_{Guid.NewGuid():N}";
+            var dbAccess = new DbAccess(DatabaseId);
+            try
+            {
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"CREATE TABLE \"{tableName}\" (\"value\" integer NOT NULL);"));
+
+                var provider = new PgTableSchemaProvider(DatabaseId);
+                var schema = provider.GetTableSchema(tableName);
+
+                Assert.NotNull(schema);
+                Assert.Null(schema!.GetPrimaryKey());
+                Assert.NotNull(schema.Fields!["value"]);
+                Assert.Equal(FieldDbType.Integer, schema.Fields!["value"].DbType);
+            }
+            finally
+            {
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"DROP TABLE IF EXISTS \"{tableName}\";"));
+            }
+        }
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("GetTableSchema AutoIncrement 欄位應解析為 FieldDbType.AutoIncrement")]
+        public void GetTableSchema_AutoIncrementColumn_MapsToAutoIncrement()
+        {
+            string tableName = $"bee_test_identity_{Guid.NewGuid():N}";
+            var dbAccess = new DbAccess(DatabaseId);
+            try
+            {
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"CREATE TABLE \"{tableName}\" (\"id\" integer GENERATED BY DEFAULT AS IDENTITY NOT NULL);"));
+
+                var provider = new PgTableSchemaProvider(DatabaseId);
+                var schema = provider.GetTableSchema(tableName);
+
+                Assert.NotNull(schema);
+                Assert.Equal(FieldDbType.AutoIncrement, schema!.Fields!["id"].DbType);
             }
             finally
             {
