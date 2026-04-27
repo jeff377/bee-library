@@ -1,6 +1,6 @@
 # 計畫：Bee.Db 加入 SQLite Provider（第三 RDBMS 支援）
 
-**狀態：🚧 進行中（2026-04-27 起）**
+**狀態：✅ 已完成（2026-04-27）**
 
 > **先決條件已解**：[`plan-postgresql-provider.md`](archive/plan-postgresql-provider.md) 已於 2026-04-27 完成，dialect factory 抽象層經 SQL Server + PostgreSQL 兩 provider 驗證穩定；測試基礎設施（`[DbFact(DatabaseType)]` 參數化、`DbGlobalFixture` 多 DB 容錯、env var 命名 `BEE_TEST_CONNSTR_{DBTYPE}`）已支援任意 DB 擴增，本計畫不需修改 infra。
 
@@ -164,13 +164,13 @@ PR S1–S6 各自獨立可 merge；S5 起整合測試開跑。
 
 ## 完成定義（DoD）
 
-- [ ] `Providers/Sqlite/` 完整實作（DialectFactory、Form、CreateTable、TableAlter、TableRebuild、TableSchema、TypeMapping、SchemaHelper、AlterCompatibilityRules）
-- [ ] `Bee.Db.csproj` 維持零 driver 相依（`Microsoft.Data.Sqlite` 只在 `Bee.Tests.Shared`）
-- [ ] `DbAccess` 可在 SQLite 上執行 CRUD / DDL
-- [ ] `TableSchemaBuilder` + `TableUpgradeOrchestrator` 在 SQLite 上能比對並走 alter / rebuild 正確路徑（rebuild 為主）
-- [ ] CI `build-ci.yml` 跑 `[DbFact(DatabaseType.SQLite)]` 測試
-- [ ] `Bee.Db/README.md`（雙語）與 `docs/architecture-overview.md`（雙語）反映 SQLite 支援
-- [ ] DDL 限制（ALTER 受限、無 COMMENT、AutoIncrement 內聯）在文件明確記載
+- [x] `Providers/Sqlite/` 完整實作（DialectFactory、Form、CreateTable、TableAlter、TableRebuild、TableSchema、TypeMapping、SchemaHelper、AlterCompatibilityRules）
+- [x] `Bee.Db.csproj` 維持零 driver 相依（`Microsoft.Data.Sqlite` 只在 `Bee.Tests.Shared`）
+- [x] `DbAccess` 可在 SQLite 上執行 CRUD / DDL（`UpdateDataTable` 因 SQLite 無 `DbDataAdapter` 不適用，已記為已知限制）
+- [x] `TableSchemaBuilder` + `TableUpgradeOrchestrator` 在 SQLite 上能比對並走 alter / rebuild 正確路徑（rebuild 為主）
+- [x] CI `build-ci.yml` 注入 `BEE_TEST_CONNSTR_SQLITE` 跑 `[DbFact(DatabaseType.SQLite)]` 測試
+- [x] `Bee.Db/README.md`（雙語）與 `docs/architecture-overview.md`（雙語）反映 SQLite 支援
+- [x] DDL 限制（ALTER 受限、無 COMMENT、AutoIncrement 內聯）在文件明確記載
 
 ## 設計決策（已與使用者確認）
 
