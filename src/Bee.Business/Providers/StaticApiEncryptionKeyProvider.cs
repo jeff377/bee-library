@@ -1,7 +1,7 @@
 ﻿using Bee.Definition.Security;
 using Bee.Definition;
 
-namespace Bee.Business.Provider
+namespace Bee.Business.Providers
 {
     /// <summary>
     /// Static encryption key provider that always returns the shared key from the backend configuration.

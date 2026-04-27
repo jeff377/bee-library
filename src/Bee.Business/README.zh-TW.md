@@ -80,7 +80,7 @@ Bee.Business/
                     # 以及系統操作的 Args/Result 組合
                     # （Login、Ping、CreateSession、GetDefine、SaveDefine、
                     #   CheckPackageUpdate、GetPackage、GetCommonConfiguration）
-  Provider/         # LoginAttemptTracker、StaticApiEncryptionKeyProvider、
+  Providers/         # LoginAttemptTracker、StaticApiEncryptionKeyProvider、
                     # DynamicApiEncryptionKeyProvider、CacheDataSourceProvider
   Validator/        # AccessTokenValidationProvider
   *.cs（根目錄）     # BusinessObject、BusinessObjectProvider、IBusinessObject、

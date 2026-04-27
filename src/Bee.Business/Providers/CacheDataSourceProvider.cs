@@ -2,7 +2,7 @@ using Bee.Definition;
 using Bee.Repository.Abstractions;
 using Bee.Definition.Identity;
 
-namespace Bee.Business.Provider
+namespace Bee.Business.Providers
 {
     /// <summary>
     /// Cache data source provider.

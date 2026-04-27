@@ -3,7 +3,7 @@ using Bee.Base;
 using Bee.Base.Security;
 using Bee.Definition;
 
-namespace Bee.Business.Provider
+namespace Bee.Business.Providers
 {
     /// <summary>
     /// Dynamic encryption key provider that retrieves the session key corresponding to the given AccessToken.

@@ -10,7 +10,7 @@ namespace Bee.Definition
         /// <summary>
         /// Default API encryption key provider type.
         /// </summary>
-        public const string ApiEncryptionKeyProvider = "Bee.Business.Provider.DynamicApiEncryptionKeyProvider, Bee.Business";
+        public const string ApiEncryptionKeyProvider = "Bee.Business.Providers.DynamicApiEncryptionKeyProvider, Bee.Business";
         /// <summary>
         /// Default AccessToken validation provider, used to validate the validity of AccessTokens.
         /// </summary>
@@ -28,7 +28,7 @@ namespace Bee.Definition
         /// <summary>
         /// Default cache data source provider type.
         /// </summary>
-        public const string CacheDataSourceProvider = "Bee.Business.Provider.CacheDataSourceProvider, Bee.Business";
+        public const string CacheDataSourceProvider = "Bee.Business.Providers.CacheDataSourceProvider, Bee.Business";
 
         // ---------------- Define ----------------
         /// <summary>
