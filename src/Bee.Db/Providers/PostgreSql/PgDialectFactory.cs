@@ -14,8 +14,7 @@ namespace Bee.Db.Providers.PostgreSql
             => throw new NotImplementedException("PgTableSchemaProvider is not yet implemented (PG plan PR 7).");
 
         /// <inheritdoc />
-        public ICreateTableCommandBuilder CreateCreateTableCommandBuilder()
-            => throw new NotImplementedException("PgCreateTableCommandBuilder is not yet implemented (PG plan PR 5).");
+        public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new PgCreateTableCommandBuilder();
 
         /// <inheritdoc />
         public ITableAlterCommandBuilder CreateTableAlterCommandBuilder()
