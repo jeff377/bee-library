@@ -371,9 +371,19 @@ flowchart LR
 │  └─ AnyCode（報表/批次，BO 自行實作）               │
 │  └─ 共用 UnitOfWork / ConnectionFactory             │
 ├──────────────────────────────────────────────────────┤
-│  Database（MSSQL / MySQL / PostgreSQL …）           │  N-Tier: Data Layer
+│  Bee.Db（資料存取基礎設施）                          │  N-Tier: Data Layer
+│  ├─ IDialectFactory 依 DatabaseType 路由             │
+│  ├─ DbDialectRegistry：SQLServer / PostgreSQL / …    │
+│  └─ DbProviderManager：ADO.NET DbProviderFactory     │
+├──────────────────────────────────────────────────────┤
+│  Database（MSSQL / PostgreSQL / MySQL …）           │
 └──────────────────────────────────────────────────────┘
 ```
+
+> Provider 註冊由 host 應用程式明示完成：對每個實際使用的資料庫，呼叫
+> `DbProviderManager.RegisterProvider(...)` 與 `DbDialectRegistry.Register(...)`。
+> `Bee.Db` 本身不引用任何 ADO.NET driver。註冊範例見
+> [`src/Bee.Db/README.zh-TW.md`](../src/Bee.Db/README.zh-TW.md)。
 
 ---
 

@@ -372,9 +372,21 @@ Common patterns discovered during each AnyCode customization can be distilled ba
 |  +- AnyCode (reports/batch, BO-implemented)          |
 |  +- Shared UnitOfWork / ConnectionFactory            |
 +------------------------------------------------------+
-|  Database (MSSQL / MySQL / PostgreSQL ...)           |  N-Tier: Data Layer
+|  Bee.Db (data access infrastructure)                 |  N-Tier: Data Layer
+|  +- IDialectFactory routes per DatabaseType          |
+|  +- DbDialectRegistry: SQLServer / PostgreSQL / ...  |
+|  +- DbProviderManager: ADO.NET DbProviderFactory     |
++------------------------------------------------------+
+|  Database (MSSQL / PostgreSQL / MySQL ...)           |
 +------------------------------------------------------+
 ```
+
+> Provider registration is explicit: the host app calls
+> `DbProviderManager.RegisterProvider(...)` and
+> `DbDialectRegistry.Register(...)` for each database it actually uses.
+> `Bee.Db` itself has zero ADO.NET driver dependencies. See
+> [`src/Bee.Db/README.md`](../src/Bee.Db/README.md) for the registration
+> code example.
 
 ---
 

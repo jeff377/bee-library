@@ -1,6 +1,6 @@
 # 計畫：Bee.Db 加入 PostgreSQL Provider（第二 RDBMS 支援）
 
-**狀態：📝 擬定中（已依 ALTER-based 升級計畫落地後的架構重整，待最終確認後動工）**
+**狀態：✅ 已完成（2026-04-27）**
 
 > **先決條件已解**：[`plan-alter-based-upgrade.md`](plan-alter-based-upgrade.md) 已於 2026-04-25 完成（v4.1.0）。該計畫引入的 `TableUpgradeOrchestrator` / `ITableAlterCommandBuilder` / `SqlTableRebuildCommandBuilder` / `SqlSchemaHelper` / `SqlAlterCompatibilityRules` 都是新的 provider-specific 耦合點，本計畫的抽象層萃取需一併覆蓋這些新面向（見下方「主要耦合點」與「技術設計 1.2」）。
 
@@ -372,7 +372,7 @@ CI（`build-ci.yml`）加入 PostgreSQL service container，注入 `BEE_TEST_CON
 | **PR 6** | `PgTableAlterCommandBuilder` + `PgAlterCompatibilityRules` + `PgTableRebuildCommandBuilder` + 各自單元測試（對應 SQL Server 測試結構） | ✅ 已完成（commit `036158f`） |
 | **PR 7** | `PgTableSchemaProvider` 實作；`tests/Bee.Tests.Shared` 新增 `Npgsql` PackageReference + `GlobalFixture` 註冊 PG provider/dialect；`DbGlobalFixture` 加入 PG schema + seed（依方言產 INSERT）；整合測試（對應 `SqlTableSchemaProviderTests` / `TableUpgradeOrchestratorIntegrationTests`） | ✅ 已完成（2026-04-27） |
 | **PR 8** | CI workflow：`build-ci.yml` 加 PostgreSQL service container，注入 `BEE_TEST_CONNSTR_POSTGRESQL` | ✅ 已完成（與 PR 7 合併推送，2026-04-27） |
-| **PR 9** | 文件更新：`Bee.Db/README.md`（雙語，加 PostgreSQL driver 註冊範例）、`docs/architecture-overview.md` Provider 章節、範例專案新增 PG 連線範例 | ⏳ 待完成 |
+| **PR 9** | 文件更新：`Bee.Db/README.md`（雙語，加 PostgreSQL driver 註冊範例 + 目錄結構 + Schema 段落更新）、`docs/architecture-overview.md`（雙語，N-Tier 圖加 `Bee.Db` 子層 + dialect factory 註冊說明）。範例專案因 repo 無 `samples/` 目錄，以 README 程式片段交付。 | ✅ 已完成（2026-04-27） |
 
 每個 PR 獨立可 merge，不綁死；任一卡住不阻擋其他。PR T 必須先於 PR 4，因為 PR 4 起的 PG 單元測試需要新版 `[DbFact]` 屬性與多 DB fixture 才能跑。
 
@@ -408,16 +408,16 @@ CI（`build-ci.yml`）加入 PostgreSQL service container，注入 `BEE_TEST_CON
 
 ## 完成定義（DoD）
 
-- [ ] `Bee.Db` 抽象層改造完成（`IDialectFactory` 涵蓋 Schema Provider / Create / Alter / Rebuild / Form / DefaultValueExpression），SQL Server 所有測試通過，零回歸
-- [ ] `Bee.Db.csproj` 維持零 driver 相依（未新增 Npgsql 或其他 driver PackageReference）
-- [ ] `Providers/PostgreSql/` 完整實作（Form / CreateTable / TableAlter / TableRebuild / TableSchema / Dialect / TypeMapping / SchemaHelper / AlterCompatibilityRules）
-- [ ] `DbAccess` 可在 PostgreSQL 上執行 `Execute` / `ExecuteDataTable` / `ExecuteScalar`
-- [ ] `TableSchemaBuilder` + `TableUpgradeOrchestrator` 可在 PostgreSQL 上比對並走 ALTER / rebuild 正確路徑
-- [ ] `./test.sh` 能自動啟動 SQL Server + PostgreSQL 兩個 container
-- [ ] CI `build-ci.yml` 在 PostgreSQL service container 下跑 `[PgDbFact]` 測試
-- [ ] `Bee.Db/README.md`（雙語）更新 Provider 章節
-- [ ] `docs/architecture-overview.md` 反映新的 Dialect 路由層
-- [ ] 範例專案至少提供一個 PostgreSQL 連線範例
+- [x] `Bee.Db` 抽象層改造完成（`IDialectFactory` 涵蓋 Schema Provider / Create / Alter / Rebuild / Form / DefaultValueExpression），SQL Server 所有測試通過，零回歸
+- [x] `Bee.Db.csproj` 維持零 driver 相依（未新增 Npgsql 或其他 driver PackageReference）
+- [x] `Providers/PostgreSql/` 完整實作（Form / CreateTable / TableAlter / TableRebuild / TableSchema / Dialect / TypeMapping / SchemaHelper / AlterCompatibilityRules）
+- [x] `DbAccess` 可在 PostgreSQL 上執行 `Execute` / `ExecuteDataTable` / `ExecuteScalar`
+- [x] `TableSchemaBuilder` + `TableUpgradeOrchestrator` 可在 PostgreSQL 上比對並走 ALTER / rebuild 正確路徑（PR T 與 PR 6 確認；fixture 自動建表已端到端驗證）
+- [x] `./test.sh` 能自動啟動 SQL Server + PostgreSQL 兩個 container（PR T `start_container` 重構）
+- [x] CI `build-ci.yml` 在 PostgreSQL service container 下跑 `[DbFact(DatabaseType.PostgreSQL)]` 測試（PR 8 已落地，coverage 95.1%）
+- [x] `Bee.Db/README.md`（雙語）更新 Provider 章節（PR 9）
+- [x] `docs/architecture-overview.md`（雙語）反映新的 Dialect 路由層（PR 9）
+- [~] 範例專案至少提供一個 PostgreSQL 連線範例（repo 無 `samples/`，以 README 程式片段交付）
 
 ## 參考
 
