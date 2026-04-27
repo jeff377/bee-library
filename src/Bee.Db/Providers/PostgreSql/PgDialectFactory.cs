@@ -8,8 +8,7 @@ namespace Bee.Db.Providers.PostgreSql
     public class PgDialectFactory : IDialectFactory
     {
         /// <inheritdoc />
-        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId)
-            => throw new NotImplementedException("PgTableSchemaProvider is not yet implemented (PG plan PR 7).");
+        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId) => new PgTableSchemaProvider(databaseId);
 
         /// <inheritdoc />
         public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new PgCreateTableCommandBuilder();

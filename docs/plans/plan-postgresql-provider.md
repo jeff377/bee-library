@@ -367,10 +367,10 @@ CI（`build-ci.yml`）加入 PostgreSQL service container，注入 `BEE_TEST_CON
 | **PR 2** | `DatabaseType.PostgreSQL` enum + `DbFunc.DbParameterPrefixes` / `QuoteIdentifiers` 各加一筆 | ✅ 已完成（commit `d35a120`） |
 | **PR 3** | 新增 `src/Bee.Db/Providers/PostgreSql/` 目錄 + `PgDialectFactory` 空殼 + `PgTypeMapping` / `PgSchemaHelper` 骨架；`Bee.Db.csproj` 不新增任何 PackageReference | ✅ 已完成（commit `015ae5d`） |
 | **PR T** | **測試基礎設施重整**：env var 改名 `BEE_TEST_DB_CONNSTR` → `BEE_TEST_CONNSTR_SQLSERVER`；`[DbFact]` / `[DbTheory]` 強制參數化 `DatabaseType`；`DbGlobalFixture` 多 DB 並存 + 容錯；連線 ID `common_{dbtype_lower}`（SQL Server 同時保留 Id="common" 給 prod 預設路徑）；`./test.sh` 雙容器；`.runsettings`、CI workflow、testing.md 同步；現有 SQL 測試遷移 | ✅ 已完成（2026-04-27） |
-| **PR 4** | `PgFormCommandBuilder` 實作 + 單元測試（純字串生成，不需 DB） | ⏳ 待完成 |
-| **PR 5** | `PgCreateTableCommandBuilder` 實作 + 單元測試 | ⏳ 待完成 |
-| **PR 6** | `PgTableAlterCommandBuilder` + `PgAlterCompatibilityRules` + `PgTableRebuildCommandBuilder` + 各自單元測試（對應 SQL Server 測試結構） | ⏳ 待完成 |
-| **PR 7** | `PgTableSchemaProvider` 實作；`tests/Bee.Tests.Shared` 新增 `Npgsql` PackageReference + `GlobalFixture` 註冊 PG provider/dialect；`DbGlobalFixture` 加入 PG schema + seed（依方言產 INSERT）；整合測試（對應 `SqlTableSchemaProviderTests` / `TableUpgradeOrchestratorIntegrationTests`） | ⏳ 待完成 |
+| **PR 4** | `PgFormCommandBuilder` 實作 + 單元測試（純字串生成，不需 DB） | ✅ 已完成（commit `2c4f499`） |
+| **PR 5** | `PgCreateTableCommandBuilder` 實作 + 單元測試 | ✅ 已完成（commit `b9e25bf`） |
+| **PR 6** | `PgTableAlterCommandBuilder` + `PgAlterCompatibilityRules` + `PgTableRebuildCommandBuilder` + 各自單元測試（對應 SQL Server 測試結構） | ✅ 已完成（commit `036158f`） |
+| **PR 7** | `PgTableSchemaProvider` 實作；`tests/Bee.Tests.Shared` 新增 `Npgsql` PackageReference + `GlobalFixture` 註冊 PG provider/dialect；`DbGlobalFixture` 加入 PG schema + seed（依方言產 INSERT）；整合測試（對應 `SqlTableSchemaProviderTests` / `TableUpgradeOrchestratorIntegrationTests`） | ✅ 已完成（2026-04-27） |
 | **PR 8** | CI workflow：`build-ci.yml` 加 PostgreSQL service container，注入 `BEE_TEST_CONNSTR_POSTGRESQL` | ⏳ 待完成 |
 | **PR 9** | 文件更新：`Bee.Db/README.md`（雙語，加 PostgreSQL driver 註冊範例）、`docs/architecture-overview.md` Provider 章節、範例專案新增 PG 連線範例 | ⏳ 待完成 |
 
