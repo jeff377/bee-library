@@ -26,8 +26,7 @@ namespace Bee.Db.Providers.PostgreSql
             => throw new NotImplementedException("PgTableRebuildCommandBuilder is not yet implemented (PG plan PR 6).");
 
         /// <inheritdoc />
-        public IFormCommandBuilder CreateFormCommandBuilder(string progId)
-            => throw new NotImplementedException("PgFormCommandBuilder is not yet implemented (PG plan PR 4).");
+        public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new PgFormCommandBuilder(progId);
 
         /// <inheritdoc />
         public string GetDefaultValueExpression(FieldDbType dbType) => PgSchemaHelper.GetDefaultValueExpression(dbType);
