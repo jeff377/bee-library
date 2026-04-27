@@ -342,11 +342,9 @@ namespace Bee.Db.Providers.Sqlite
                 trimmed = trimmed.Substring(1, trimmed.Length - 2).Trim();
 
             // For string types, strip the surrounding single quotes and unescape doubled quotes.
-            if (dbType == FieldDbType.String || dbType == FieldDbType.Text)
-            {
-                if (trimmed.Length >= 2 && trimmed.StartsWith('\'') && trimmed.EndsWith('\''))
-                    trimmed = trimmed.Substring(1, trimmed.Length - 2).Replace("''", "'");
-            }
+            if ((dbType == FieldDbType.String || dbType == FieldDbType.Text) &&
+                trimmed.Length >= 2 && trimmed.StartsWith('\'') && trimmed.EndsWith('\''))
+                trimmed = trimmed.Substring(1, trimmed.Length - 2).Replace("''", "'");
 
             return StrFunc.IsEquals(originalDefault, trimmed) ? string.Empty : trimmed;
         }
