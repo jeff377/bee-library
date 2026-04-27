@@ -371,7 +371,7 @@ CI（`build-ci.yml`）加入 PostgreSQL service container，注入 `BEE_TEST_CON
 | **PR 5** | `PgCreateTableCommandBuilder` 實作 + 單元測試 | ✅ 已完成（commit `b9e25bf`） |
 | **PR 6** | `PgTableAlterCommandBuilder` + `PgAlterCompatibilityRules` + `PgTableRebuildCommandBuilder` + 各自單元測試（對應 SQL Server 測試結構） | ✅ 已完成（commit `036158f`） |
 | **PR 7** | `PgTableSchemaProvider` 實作；`tests/Bee.Tests.Shared` 新增 `Npgsql` PackageReference + `GlobalFixture` 註冊 PG provider/dialect；`DbGlobalFixture` 加入 PG schema + seed（依方言產 INSERT）；整合測試（對應 `SqlTableSchemaProviderTests` / `TableUpgradeOrchestratorIntegrationTests`） | ✅ 已完成（2026-04-27） |
-| **PR 8** | CI workflow：`build-ci.yml` 加 PostgreSQL service container，注入 `BEE_TEST_CONNSTR_POSTGRESQL` | ⏳ 待完成 |
+| **PR 8** | CI workflow：`build-ci.yml` 加 PostgreSQL service container，注入 `BEE_TEST_CONNSTR_POSTGRESQL` | ✅ 已完成（與 PR 7 合併推送，2026-04-27） |
 | **PR 9** | 文件更新：`Bee.Db/README.md`（雙語，加 PostgreSQL driver 註冊範例）、`docs/architecture-overview.md` Provider 章節、範例專案新增 PG 連線範例 | ⏳ 待完成 |
 
 每個 PR 獨立可 merge，不綁死；任一卡住不阻擋其他。PR T 必須先於 PR 4，因為 PR 4 起的 PG 單元測試需要新版 `[DbFact]` 屬性與多 DB fixture 才能跑。
