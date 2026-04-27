@@ -1,6 +1,7 @@
 using Bee.Base;
 using Bee.ObjectCaching;
 using Bee.Db.Manager;
+using Bee.Db.Providers.PostgreSql;
 using Bee.Db.Providers.SqlServer;
 using Bee.Definition;
 using Bee.Definition.Settings;
@@ -42,7 +43,8 @@ namespace Bee.Tests.Shared
             BackendInfo.Initialize(settings.BackendConfiguration, autoCreateMasterKey: true);
             // 註冊各 DB 的 ADO.NET provider + dialect factory；每個 DB 各自獨立、未設環境變數則跳過。
             RegisterSqlServer();
-            // 未來新增 PostgreSQL / MySQL / Oracle 在此擴增（對應 PR 7+）。
+            RegisterPostgreSql();
+            // 未來新增 MySQL / Oracle 在此擴增。
             Console.WriteLine("GlobalFixture Initialized");
         }
 
@@ -75,6 +77,28 @@ namespace Bee.Tests.Shared
             {
                 Id = TestDbConventions.GetDatabaseId(DatabaseType.SQLServer),
                 DatabaseType = DatabaseType.SQLServer,
+                ConnectionString = connStr
+            });
+        }
+
+        /// <summary>
+        /// 註冊 PostgreSQL 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
+        /// 與 SQL Server 不同，PG 並非 fixture 的「邏輯預設」（<see cref="BackendInfo.DatabaseId"/> 仍為 "common"
+        /// 對應 SQL Server），所以只註冊一個明確的 Id（<c>common_postgresql</c>）。
+        /// </summary>
+        private static void RegisterPostgreSql()
+        {
+            DbProviderManager.RegisterProvider(DatabaseType.PostgreSQL, Npgsql.NpgsqlFactory.Instance);
+            DbDialectRegistry.Register(DatabaseType.PostgreSQL, new PgDialectFactory());
+
+            var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.PostgreSQL));
+            if (string.IsNullOrEmpty(connStr)) return;
+
+            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            dbSettings.Items!.Add(new DatabaseItem
+            {
+                Id = TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL),
+                DatabaseType = DatabaseType.PostgreSQL,
                 ConnectionString = connStr
             });
         }

@@ -17,7 +17,8 @@ namespace Bee.Tests.Shared
         public DbGlobalFixture() : base()
         {
             EnsureDatabase(DatabaseType.SQLServer);
-            // 未來新增 PostgreSQL / MySQL / Oracle 在此擴增（對應 PR 7+）。
+            EnsureDatabase(DatabaseType.PostgreSQL);
+            // 未來新增 MySQL / Oracle 在此擴增。
         }
 
         /// <summary>
