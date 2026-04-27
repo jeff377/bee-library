@@ -374,10 +374,10 @@ Common patterns discovered during each AnyCode customization can be distilled ba
 +------------------------------------------------------+
 |  Bee.Db (data access infrastructure)                 |  N-Tier: Data Layer
 |  +- IDialectFactory routes per DatabaseType          |
-|  +- DbDialectRegistry: SQLServer / PostgreSQL / ...  |
+|  +- DbDialectRegistry: SQLServer / PostgreSQL / SQLite / ...  |
 |  +- DbProviderManager: ADO.NET DbProviderFactory     |
 +------------------------------------------------------+
-|  Database (MSSQL / PostgreSQL / MySQL ...)           |
+|  Database (MSSQL / PostgreSQL / SQLite / MySQL ...) |
 +------------------------------------------------------+
 ```
 

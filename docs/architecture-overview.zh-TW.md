@@ -373,10 +373,10 @@ flowchart LR
 ├──────────────────────────────────────────────────────┤
 │  Bee.Db（資料存取基礎設施）                          │  N-Tier: Data Layer
 │  ├─ IDialectFactory 依 DatabaseType 路由             │
-│  ├─ DbDialectRegistry：SQLServer / PostgreSQL / …    │
+│  ├─ DbDialectRegistry：SQLServer / PostgreSQL / SQLite / … │
 │  └─ DbProviderManager：ADO.NET DbProviderFactory     │
 ├──────────────────────────────────────────────────────┤
-│  Database（MSSQL / PostgreSQL / MySQL …）           │
+│  Database（MSSQL / PostgreSQL / SQLite / MySQL …）  │
 └──────────────────────────────────────────────────────┘
 ```
 
