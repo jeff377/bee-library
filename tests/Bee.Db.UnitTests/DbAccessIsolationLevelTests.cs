@@ -10,7 +10,7 @@ namespace Bee.Db.UnitTests
     [Collection("Initialize")]
     public class DbAccessIsolationLevelTests
     {
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteBatch 以指定 IsolationLevel 執行批次交易應成功")]
         public void ExecuteBatch_WithIsolationLevel_Succeeds()
         {
@@ -22,14 +22,14 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001"));
 
-            var dbAccess = new DbAccess("common");
+            var dbAccess = new DbAccess("common_sqlserver");
             var result = dbAccess.ExecuteBatch(batch);
 
             Assert.NotNull(result);
             Assert.Single(result.Results);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteBatchAsync 以指定 IsolationLevel 非同步執行批次交易應成功")]
         public async Task ExecuteBatchAsync_WithIsolationLevel_Succeeds()
         {
@@ -41,14 +41,14 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001"));
 
-            var dbAccess = new DbAccess("common");
+            var dbAccess = new DbAccess("common_sqlserver");
             var result = await dbAccess.ExecuteBatchAsync(batch);
 
             Assert.NotNull(result);
             Assert.Single(result.Results);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteBatch 批次中含 DataTable 命令應成功回傳資料表")]
         public void ExecuteBatch_DataTableCommand_Succeeds()
         {
@@ -56,7 +56,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.DataTable,
                 "SELECT sys_id FROM st_user WHERE sys_id = {0}", "001"));
 
-            var dbAccess = new DbAccess("common");
+            var dbAccess = new DbAccess("common_sqlserver");
             var result = dbAccess.ExecuteBatch(batch);
 
             Assert.NotNull(result);
@@ -64,7 +64,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(result.Results[0].Table);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteBatchAsync 批次中含 DataTable 命令非同步應成功回傳資料表")]
         public async Task ExecuteBatchAsync_DataTableCommand_Succeeds()
         {
@@ -72,7 +72,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.DataTable,
                 "SELECT sys_id FROM st_user WHERE sys_id = {0}", "001"));
 
-            var dbAccess = new DbAccess("common");
+            var dbAccess = new DbAccess("common_sqlserver");
             var result = await dbAccess.ExecuteBatchAsync(batch);
 
             Assert.NotNull(result);
@@ -80,11 +80,11 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(result.Results[0].Table);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("UpdateDataTable 以指定 IsolationLevel 執行更新應成功")]
         public void UpdateDataTable_WithIsolationLevel_Succeeds()
         {
-            var dbAccess = new DbAccess("common");
+            var dbAccess = new DbAccess("common_sqlserver");
 
             var cmd = new DbCommandSpec(DbCommandKind.DataTable,
                 "SELECT * FROM st_user WHERE sys_id = {0}", "001");

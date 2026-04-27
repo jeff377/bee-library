@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Db.Schema;
+using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Tests.Shared;
 
@@ -9,7 +10,7 @@ namespace Bee.Db.UnitTests
     [Collection("Initialize")]
     public class TableUpgradeOrchestratorIntegrationTests
     {
-        private const string DatabaseId = "common";
+        private const string DatabaseId = "common_sqlserver";
 
         private static TableSchema BuildSchema(string tableName, int nameLength = 50)
         {
@@ -73,7 +74,7 @@ namespace Bee.Db.UnitTests
             return new TableUpgradeOrchestrator(DatabaseId).Plan(diff, options);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("整合：空 plan 應回傳 false")]
         public void Execute_EmptyPlan_ReturnsFalse()
         {
@@ -82,7 +83,7 @@ namespace Bee.Db.UnitTests
             Assert.False(executed);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("整合：新表應透過 Create 模式建立於 DB")]
         public void Execute_NewTable_CreatesTable()
         {
@@ -104,7 +105,7 @@ namespace Bee.Db.UnitTests
             }
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("整合：新增欄位走 ALTER 路徑，既有資料保留")]
         public void Execute_AddColumn_PreservesExistingData()
         {
@@ -136,7 +137,7 @@ namespace Bee.Db.UnitTests
             }
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("整合：放大欄位長度走 ALTER 路徑")]
         public void Execute_WidenColumnLength_UsesAlterPath()
         {
@@ -161,7 +162,7 @@ namespace Bee.Db.UnitTests
             }
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("整合：跨 family 型別變更應走 Rebuild 路徑（資料可丟失視資料而定）")]
         public void Execute_CrossFamilyTypeChange_UsesRebuildPath()
         {
@@ -196,7 +197,7 @@ namespace Bee.Db.UnitTests
             }
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("整合：同一定義重跑應為 NoChange（冪等）")]
         public void Execute_SameSchemaTwice_IsIdempotent()
         {
@@ -218,7 +219,7 @@ namespace Bee.Db.UnitTests
             }
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("整合：real-only 欄位（extension）在 rebuild 後仍保留")]
         public void Execute_RebuildPath_PreservesExtensionField()
         {

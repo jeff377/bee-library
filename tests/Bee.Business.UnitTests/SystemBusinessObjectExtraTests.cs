@@ -138,13 +138,13 @@ namespace Bee.Business.UnitTests
             Assert.Contains("Hello system-level", result.Parameters.GetValue<string>("Hello"));
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecFunc UpgradeTableSchema 應執行並在結果中包含 Upgraded 狀態")]
         public void ExecFunc_UpgradeTableSchema_ReturnsUpgradedStatus()
         {
             var bo = new TestableSystemBusinessObject(Guid.Empty, _ => (false, string.Empty));
             var args = new ExecFuncArgs("UpgradeTableSchema");
-            args.Parameters.Add("DatabaseId", "common");
+            args.Parameters.Add("DatabaseId", "common_sqlserver");
             args.Parameters.Add("DbName", "common");
             args.Parameters.Add("TableName", "st_user");
 
@@ -153,13 +153,13 @@ namespace Bee.Business.UnitTests
             Assert.True(result.Parameters.Contains("Upgraded"));
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecFunc TestConnection 以有效資料庫設定應不拋出例外")]
         public void ExecFunc_TestConnection_ValidDatabaseItem_Succeeds()
         {
             var bo = new TestableSystemBusinessObject(Guid.Empty, _ => (false, string.Empty));
             var args = new ExecFuncArgs("TestConnection");
-            var dbItem = BackendInfo.DefineAccess.GetDatabaseSettings().Items!["common"];
+            var dbItem = BackendInfo.DefineAccess.GetDatabaseSettings().Items!["common_sqlserver"];
             args.Parameters.Add("DatabaseItem", dbItem);
 
             var exception = Record.Exception(() => bo.ExecFunc(args));

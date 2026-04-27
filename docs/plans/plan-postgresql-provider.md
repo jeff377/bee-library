@@ -274,59 +274,107 @@ placeholder 機制 provider-agnostic，無需改動。
 
 ## 測試策略
 
-### 方案：並行跑兩種 DB，不以單一環境變數切換
+### 多 DB 並行策略：每 DB 一條環境變數 + 參數化 attribute
 
-新增屬性 `[PgDbFact]` / `[PgDbTheory]`，檢查 `BEE_TEST_PG_CONNSTR`。保留原 `[DbFact]` 仍檢查 `BEE_TEST_DB_CONNSTR`（SQL Server 專用）。
+採可擴展設計，未來新增 MySQL / Oracle 等不需修改基礎設施。
 
-理由：
-- 同一份測試若要對兩種 DB 各跑一次（例如 `SqlCreateTableCommandBuilderTests` 對應 `PgCreateTableCommandBuilderTests`），**provider-specific 測試本就該分開**
-- 純邏輯測試（如 `FieldDbType` 映射）不需重複
-- 未來要做「抽象層整合測試對兩 DB 各跑一次」，再加 `[MultiDbTheory]` 即可，不影響現有結構
+#### 環境變數命名
 
-### `./test.sh` 擴充
+`BEE_TEST_CONNSTR_{DBTYPE}`，`{DBTYPE}` 為 `DatabaseType` enum 值的 uppercase。
 
-```bash
-PG_CONTAINER="${BEE_TEST_PG_CONTAINER:-pg17}"
-SQL_CONTAINER="${BEE_TEST_SQL_CONTAINER:-sql2025}"
+| 變數 | 對應 DB |
+|------|--------|
+| `BEE_TEST_CONNSTR_SQLSERVER` | SQL Server |
+| `BEE_TEST_CONNSTR_POSTGRESQL` | PostgreSQL |
+| 未來 `BEE_TEST_CONNSTR_MYSQL` | MySQL |
+| 未來 `BEE_TEST_CONNSTR_ORACLE` | Oracle |
 
-# 各自檢查 container 存在則啟動；不存在則跳過（對應測試 skip）
+舊 `BEE_TEST_DB_CONNSTR` 一次性遷移至 `BEE_TEST_CONNSTR_SQLSERVER`，不保留 alias（內部 infra，無外部消費者）。
+
+#### 連線 ID 命名
+
+`common_{dbtype_lower}` —— 與 DB 類型 1:1 對應：
+
+- `common_sqlserver`
+- `common_postgresql`
+
+`DbGlobalFixture` 對每個有 connection string 的 DB 各自註冊一個 `DatabaseItem`。
+
+#### `[DbFact]` / `[DbTheory]` 強制參數化
+
+```csharp
+[DbFact(DatabaseType.PostgreSQL)]
+public void PgFoo() { ... }
+
+[DbFact(DatabaseType.SQLServer)]
+public void SqlFoo() { ... }
 ```
 
-### 環境變數對照
+實作邏輯：依 `DatabaseType` 推導 env var 名稱，未設則 Skip。新增 DB 不需新 attribute 類別。
+
+#### `DbGlobalFixture` 多 DB 並存（容錯）
+
+針對每個 `DatabaseType`：
+
+- 偵測對應 env var；未設則跳過該 DB
+- 連線失敗只跳過該 DB（記 warning + 不 throw），不阻擋其他 DB 的 fixture 進行
+- 執行 schema 建立（`TableSchemaBuilder.Execute(connId, "st_user")` / `st_session`）
+- 執行 seed：依方言產 INSERT（PG：`gen_random_uuid()` / `CURRENT_TIMESTAMP`；SQL：`NEWID()` / `GETDATE()`）
+
+採此設計後，本機只啟動單一 DB 容器即可跑該 DB 的所有 `[DbFact]` 測試；CI 啟動兩個 service container 則同時跑兩 DB。
+
+#### `./test.sh` 擴充
+
+```bash
+SQL_CONTAINER="${BEE_TEST_SQL_CONTAINER:-sql2025}"
+PG_CONTAINER="${BEE_TEST_PG_CONTAINER:-pgvector-db}"
+
+start_container "$SQL_CONTAINER" 1433
+start_container "$PG_CONTAINER"  5432
+```
+
+兩個容器各自試啟，未存在/未啟動就跳過該 DB 測試。
+
+#### 環境變數對照
 
 | 變數 | 用途 |
 |------|------|
-| `BEE_TEST_DB_CONNSTR` | SQL Server 連線字串（現有） |
-| `BEE_TEST_PG_CONNSTR` | PostgreSQL 連線字串（新增） |
+| `BEE_TEST_CONNSTR_SQLSERVER` | SQL Server 連線字串（取代舊 `BEE_TEST_DB_CONNSTR`） |
+| `BEE_TEST_CONNSTR_POSTGRESQL` | PostgreSQL 連線字串（新增） |
 | `BEE_TEST_SQL_CONTAINER` | SQL Server container 名稱（現有，預設 `sql2025`） |
-| `BEE_TEST_PG_CONTAINER` | PostgreSQL container 名稱（新增，預設 `pg17`） |
+| `BEE_TEST_PG_CONTAINER` | PostgreSQL container 名稱（新增，預設 `pgvector-db`） |
 
-CI（`build-ci.yml`）同步加入 PostgreSQL service container，注入 `BEE_TEST_PG_CONNSTR`。
+CI（`build-ci.yml`）加入 PostgreSQL service container，注入 `BEE_TEST_CONNSTR_POSTGRESQL`；同步把現有 `BEE_TEST_DB_CONNSTR` 改名 `BEE_TEST_CONNSTR_SQLSERVER`。
 
-### 測試對應
+#### 測試對應
 
-| SQL Server 測試 | 新增對應 |
-|----------------|---------|
+| SQL Server 測試 | PG 對應 |
+|----------------|--------|
 | `SqlCreateTableCommandBuilderTests` | `PgCreateTableCommandBuilderTests` |
-| `SqlTableSchemaProviderTests`（若存在） | `PgTableSchemaProviderTests` |
-| `DbAccessTests`（與 DB 無關邏輯） | 不變，沿用 `[DbFact]` |
-| （無） | `TableSchemaBuilderPgTests` — 驗證路由到 Pg builder |
+| `SqlTableAlterCommandBuilderTests` | `PgTableAlterCommandBuilderTests` |
+| `SqlTableRebuildCommandBuilderTests` | `PgTableRebuildCommandBuilderTests` |
+| `SqlAlterCompatibilityRulesTests` | `PgAlterCompatibilityRulesTests` |
+| `SqlTableSchemaProviderTests` | `PgTableSchemaProviderTests` |
+| `SqlTableSchemaProviderStaticTests` | `PgTableSchemaProviderStaticTests` |
+| `DbAccessTests` 等使用 `[DbFact]` 的 SQL 測試 | 加 `DatabaseType.SQLServer` 參數；不另複製為 PG（這些是 `DbAccess` 行為驗證，與 dialect 無關） |
 
 ## 實作步驟（建議 PR 切分）
 
-| PR | 範圍 | 驗收 |
+| PR | 範圍 | 狀態 |
 |----|------|------|
-| **PR 1a** | 抽象層萃取（基礎）：新增 `ITableSchemaProvider`、`ITableRebuildCommandBuilder`、`IDialectFactory`、`DbDialectRegistry`；`SqlServer/SqlDialectFactory` 實作；`SqlTableRebuildCommandBuilder` 從 `internal static` 改為實作 `ITableRebuildCommandBuilder`；`tests/Bee.Tests.Shared/GlobalFixture.cs` 補上 `DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory())` | SQL Server 所有既有測試通過，零行為改變 |
-| **PR 1b** | 把路由接入呼叫點：`TableSchemaBuilder.CreateComparer` 改走 dialect；`TableUpgradeOrchestrator` 預設建構子改為 `new TableUpgradeOrchestrator(databaseId)` 並由 dialect factory 取得 alter/rebuild/create builder；`BuildCreatePlan` / `BuildRebuildPlan` / ctor 不再直接 `new` SqlServer 類別；`DbFunc.GetSqlDefaultValue` 搬家至 `IDialectFactory.GetDefaultValueExpression` | SQL Server 所有既有測試通過，零行為改變 |
-| **PR 2** | `DatabaseType.PostgreSQL` enum + `DbFunc.DbParameterPrefixes` / `QuoteIdentifiers` 各加一筆 | build 通過；無新測試 |
-| **PR 3** | 新增 `src/Bee.Db/Providers/PostgreSql/` 目錄 + `PgDialectFactory` 空殼 + `PgTypeMapping` / `PgSchemaHelper` 骨架；`Bee.Db.csproj` **不新增任何 PackageReference**（維持零 driver 相依） | `Bee.Db` build 通過；無新測試 |
-| **PR 4** | `PgFormCommandBuilder` 實作 + 單元測試（純字串生成，不需 DB） | `PgFormCommandBuilderTests` 全綠 |
-| **PR 5** | `PgCreateTableCommandBuilder` 實作 + 單元測試 | `PgCreateTableCommandBuilderTests` 全綠（純字串比對） |
-| **PR 6** | `PgTableAlterCommandBuilder` + `PgAlterCompatibilityRules` + `PgTableRebuildCommandBuilder` + 各自單元測試（對應 SQL Server 測試結構） | `Pg*AlterCommandBuilderTests` / `Pg*RebuildCommandBuilderTests` / `PgAlterCompatibilityRulesTests` 全綠 |
-| **PR 7** | `PgTableSchemaProvider` 實作；`tests/Bee.Tests.Shared` 新增 `Npgsql` PackageReference 與 `GlobalFixture` 註冊；`./test.sh` 支援 `pg17` container；`[PgDbFact]` 新增；CI workflow 加 pg service；整合測試（對應 `TableUpgradeOrchestratorIntegrationTests`） | 本機 + CI 跑整合測試通過 |
-| **PR 8** | 文件更新：`Bee.Db/README.md`（雙語，加 PostgreSQL driver 註冊範例）、`docs/architecture-overview.md` Provider 章節、範例專案新增 PG 連線範例 | 文件 review |
+| **PR 1a** | 抽象層萃取（基礎）：新增 `ITableSchemaProvider`、`ITableRebuildCommandBuilder`、`IDialectFactory`、`DbDialectRegistry`；`SqlServer/SqlDialectFactory` 實作；`SqlTableRebuildCommandBuilder` 從 `internal static` 改為實作 `ITableRebuildCommandBuilder`；`tests/Bee.Tests.Shared/GlobalFixture.cs` 補上 `DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory())` | ✅ 已完成（commit `3df46bd`） |
+| **PR 1b** | 把路由接入呼叫點：`TableSchemaBuilder.CreateComparer` 改走 dialect；`TableUpgradeOrchestrator` 預設建構子改為 `new TableUpgradeOrchestrator(databaseId)` 並由 dialect factory 取得 alter/rebuild/create builder；`BuildCreatePlan` / `BuildRebuildPlan` / ctor 不再直接 `new` SqlServer 類別；`DbFunc.GetSqlDefaultValue` 搬家至 `IDialectFactory.GetDefaultValueExpression` | ✅ 已完成（commit `2dc90a2`） |
+| **PR 2** | `DatabaseType.PostgreSQL` enum + `DbFunc.DbParameterPrefixes` / `QuoteIdentifiers` 各加一筆 | ✅ 已完成（commit `d35a120`） |
+| **PR 3** | 新增 `src/Bee.Db/Providers/PostgreSql/` 目錄 + `PgDialectFactory` 空殼 + `PgTypeMapping` / `PgSchemaHelper` 骨架；`Bee.Db.csproj` 不新增任何 PackageReference | ✅ 已完成（commit `015ae5d`） |
+| **PR T** | **測試基礎設施重整**：env var 改名 `BEE_TEST_DB_CONNSTR` → `BEE_TEST_CONNSTR_SQLSERVER`；`[DbFact]` / `[DbTheory]` 強制參數化 `DatabaseType`；`DbGlobalFixture` 多 DB 並存 + 容錯；連線 ID `common_{dbtype_lower}`（SQL Server 同時保留 Id="common" 給 prod 預設路徑）；`./test.sh` 雙容器；`.runsettings`、CI workflow、testing.md 同步；現有 SQL 測試遷移 | ✅ 已完成（2026-04-27） |
+| **PR 4** | `PgFormCommandBuilder` 實作 + 單元測試（純字串生成，不需 DB） | ⏳ 待完成 |
+| **PR 5** | `PgCreateTableCommandBuilder` 實作 + 單元測試 | ⏳ 待完成 |
+| **PR 6** | `PgTableAlterCommandBuilder` + `PgAlterCompatibilityRules` + `PgTableRebuildCommandBuilder` + 各自單元測試（對應 SQL Server 測試結構） | ⏳ 待完成 |
+| **PR 7** | `PgTableSchemaProvider` 實作；`tests/Bee.Tests.Shared` 新增 `Npgsql` PackageReference + `GlobalFixture` 註冊 PG provider/dialect；`DbGlobalFixture` 加入 PG schema + seed（依方言產 INSERT）；整合測試（對應 `SqlTableSchemaProviderTests` / `TableUpgradeOrchestratorIntegrationTests`） | ⏳ 待完成 |
+| **PR 8** | CI workflow：`build-ci.yml` 加 PostgreSQL service container，注入 `BEE_TEST_CONNSTR_POSTGRESQL` | ⏳ 待完成 |
+| **PR 9** | 文件更新：`Bee.Db/README.md`（雙語，加 PostgreSQL driver 註冊範例）、`docs/architecture-overview.md` Provider 章節、範例專案新增 PG 連線範例 | ⏳ 待完成 |
 
-每個 PR 獨立可 merge，不綁死；任一卡住不阻擋其他。PR 1a / PR 1b 之所以拆，是為了先固定抽象形狀（1a）再改呼叫點（1b），降低一次性改動的風險面。
+每個 PR 獨立可 merge，不綁死；任一卡住不阻擋其他。PR T 必須先於 PR 4，因為 PR 4 起的 PG 單元測試需要新版 `[DbFact]` 屬性與多 DB fixture 才能跑。
 
 ## 風險與未決事項
 
@@ -343,14 +391,20 @@ CI（`build-ci.yml`）同步加入 PostgreSQL service container，注入 `BEE_TE
 
 ### 未決事項（待使用者確認）
 
-1. **`[PgDbFact]` 命名 vs 改造 `[DbFact]` 接受目標 DB 參數**？
-   - 建議：獨立 `[PgDbFact]`（理由見測試策略段）
+1. ~~**`[PgDbFact]` 命名 vs 改造 `[DbFact]` 接受目標 DB 參數**~~
+   - ✅ 已解：採參數化 `[DbFact(DatabaseType)]`（單一 attribute、可擴展），詳見 §測試策略
 2. **是否同步新增 `Providers/MySql/` 骨架**？
    - 建議：不同步；先把 PostgreSQL 做穩，MySQL 留到下一個迭代
 3. ~~**現有 `plan-alter-based-upgrade.md`（Schema 升級計畫）與本計畫的順序關係**~~
    - ✅ 已解：ALTER-based 升級計畫已於 2026-04-25 完成（v4.1.0）；本計畫 PR 1 改為雙層（1a 抽象、1b 路由接入）以覆蓋 orchestrator 帶進來的新耦合點
-4. **發佈版號**：`v4.1.0` 已被 ALTER-based 升級計畫用掉；本計畫的 PR 1a + 1b（抽象層萃取 + 路由接入）合入後發 `v4.2.0`（純重構、API 向下相容）；PostgreSQL 功能完成後發 `v4.3.0`（新增能力、無破壞）
-5. **`ITableRebuildCommandBuilder` 命名與可見度**：目前 `SqlTableRebuildCommandBuilder` 為 `internal static`，萃取為介面後建議改為 `public interface` + `internal class` 實作（對應 `ITableAlterCommandBuilder` 的 `public` 介面慣例），供 `IDialectFactory` 對外契約使用
+4. **發佈版號**：發佈先暫緩，待後續確認再決定版號。原規劃為 PR 1a + 1b 後發 `v4.2.0`（純重構），PostgreSQL 完成後發 `v4.3.0`（新增能力）。
+5. ~~**`ITableRebuildCommandBuilder` 命名與可見度**~~
+   - ✅ 已解：採 `public interface` + `internal class` 慣例（已於 PR 1a 落地，commit `3df46bd`）。
+
+### 已知測試 side-effect（與本計畫無關，留待另案處理）
+
+1. **`tests/Define/DbSchemaSettings.xml` 被 `LocalDefineAccessSaveTests.SaveDbSchemaSettings_*` 系列測試覆寫**：每次跑完測試會重序列化此檔案，造成 `<Tables>` 元素遺失。需 `git checkout -- tests/Define/DbSchemaSettings.xml` 還原。修法應是該測試使用獨立 tmp 目錄而非污染 fixture 檔案。
+2. **`Bee.Api.Client.UnitTests.ApiConnectValidatorTests.Validate_ValidUrl_ReturnsRemoteConnectType`** 為 `[LocalOnlyTheory]`，需要本機跑著 API server 才會通過。CI 環境會 skip（`CI=true`）。
 
 ## 完成定義（DoD）
 

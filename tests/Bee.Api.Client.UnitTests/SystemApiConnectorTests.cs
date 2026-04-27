@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Api.Client.ApiServiceProvider;
 using Bee.Api.Client.Connectors;
 using Bee.Api.Core;
+using Bee.Definition;
 using Bee.Tests.Shared;
 
 namespace Bee.Api.Client.UnitTests
@@ -12,7 +13,7 @@ namespace Bee.Api.Client.UnitTests
         /// <summary>
         /// 測試 SystemApiConnector 的 CreateSession 方法。
         /// </summary>
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SystemApiConnector CreateSession 應回傳有效的 AccessToken")]
         public void CreateSession_ValidArgs_ReturnsValidToken()
         {
@@ -75,7 +76,7 @@ namespace Bee.Api.Client.UnitTests
                 await connector.ExecuteAsync<object>(action!, new object(), PayloadFormat.Plain));
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SystemApiConnector.PingAsync 本機連線應成功回應")]
         public async Task PingAsync_LocalConnector_Succeeds()
         {
@@ -84,7 +85,7 @@ namespace Bee.Api.Client.UnitTests
             Assert.Null(exception);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SystemApiConnector.Ping 同步本機連線應成功回應")]
         public void Ping_LocalConnector_Succeeds()
         {

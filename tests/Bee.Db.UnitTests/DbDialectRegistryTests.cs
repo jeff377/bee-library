@@ -56,10 +56,10 @@ namespace Bee.Db.UnitTests
         [DisplayName("CreateTableSchemaProvider 應回傳 SqlTableSchemaProvider")]
         public void CreateTableSchemaProvider_ReturnsSqlImpl()
         {
-            var provider = _factory.CreateTableSchemaProvider("common");
+            var provider = _factory.CreateTableSchemaProvider("common_sqlserver");
 
             Assert.IsType<SqlTableSchemaProvider>(provider);
-            Assert.Equal("common", provider.DatabaseId);
+            Assert.Equal("common_sqlserver", provider.DatabaseId);
         }
 
         [Fact]

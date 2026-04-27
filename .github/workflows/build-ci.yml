@@ -111,7 +111,7 @@ jobs:
 
     - name: Test with coverage
       env:
-        BEE_TEST_DB_CONNSTR: "Server=localhost,1433;Database=common;User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
+        BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database=common;User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
       run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover"
 
     - name: SonarScanner End

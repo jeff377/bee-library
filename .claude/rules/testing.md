@@ -43,25 +43,45 @@ public void GetDefineType_ValidType(DefineType defineType, Type expectedType)
 }
 ```
 
-### 需要資料庫的測試：`[DbFact]` / `[DbTheory]`
+### 需要資料庫的測試：`[DbFact(DatabaseType)]` / `[DbTheory(DatabaseType)]`
 
-需要連接資料庫的測試使用 `[DbFact]` 或 `[DbTheory]` 取代 `[Fact]` / `[Theory]`。
-這兩個 Attribute 定義在 `tests/Bee.Tests.Shared/`，會檢查環境變數 `BEE_TEST_DB_CONNSTR`；**未設定則自動跳過**。
+需要連接資料庫的測試使用 `[DbFact(DatabaseType.X)]` 或 `[DbTheory(DatabaseType.X)]` 取代 `[Fact]` / `[Theory]`，**並指定該測試針對的資料庫類型**。
+兩個 attribute 定義在 `tests/Bee.Tests.Shared/`，會依規則 `BEE_TEST_CONNSTR_{DBTYPE}`（uppercase 列舉值）檢查對應環境變數；**未設定則自動跳過**。
 
-- **本機（`.runsettings` 已填連線字串）**：正常執行
-- **CI（`build-ci.yml` 啟動 SQL Server service container 並注入 `BEE_TEST_DB_CONNSTR`）**：正常執行
-- **本機或 CI 未設 `BEE_TEST_DB_CONNSTR`**：自動標記為 Skipped，不會因缺基礎設施而失敗
+| DatabaseType | 環境變數 |
+|--------------|---------|
+| `SQLServer` | `BEE_TEST_CONNSTR_SQLSERVER` |
+| `PostgreSQL` | `BEE_TEST_CONNSTR_POSTGRESQL` |
+| 未來 `MySQL` / `Oracle` | `BEE_TEST_CONNSTR_MYSQL` / `BEE_TEST_CONNSTR_ORACLE`（規則自動推導，不需新類別） |
+
+連線 ID 命名規則 `common_{dbtype_lower}`（由 `TestDbConventions.GetDatabaseId` 產生）：
+- `common_sqlserver`、`common_postgresql`、…
 
 ```csharp
-[DbFact]
-[DisplayName("ExecuteDataTable 查詢應回傳有效 DataTable")]
-public void ExecuteDataTable_ValidQuery_ReturnsDataTable()
+[DbFact(DatabaseType.SQLServer)]
+[DisplayName("SQL Server 上 ExecuteDataTable 查詢應回傳有效 DataTable")]
+public void ExecuteDataTable_SqlServer_ReturnsDataTable()
 {
-    var dbAccess = new DbAccess("common");
+    var dbAccess = new DbAccess("common_sqlserver");
+    var result = dbAccess.Execute(command);
+    Assert.NotNull(result.Table);
+}
+
+[DbFact(DatabaseType.PostgreSQL)]
+[DisplayName("PostgreSQL 上 ExecuteDataTable 查詢應回傳有效 DataTable")]
+public void ExecuteDataTable_PostgreSQL_ReturnsDataTable()
+{
+    var dbAccess = new DbAccess("common_postgresql");
     var result = dbAccess.Execute(command);
     Assert.NotNull(result.Table);
 }
 ```
+
+- **本機（`.runsettings` 設好對應 `BEE_TEST_CONNSTR_*`）**：對應 DB 的測試正常執行
+- **CI（`build-ci.yml` 啟動對應 service container 並注入 `BEE_TEST_CONNSTR_*`）**：正常執行
+- **任一 DB 未設環境變數**：該 DB 的測試自動 Skipped，不影響其他 DB
+
+`DbGlobalFixture` 多 DB 並存且容錯：對每個 `DatabaseType` 偵測對應 env var、驗證連線、建立 schema、寫入 seed；單一 DB 失敗只跳過該 DB，不阻擋其他 DB。
 
 **適用場景**：純資料庫相依的測試（查詢、schema、Repository/BO 相關）。
 **不適用**：純邏輯 / 序列化測試 — 這類測試有 bug 應直接修復，不應跳過。

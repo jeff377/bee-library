@@ -1,4 +1,4 @@
-﻿using Bee.Base;
+using Bee.Base;
 using Bee.ObjectCaching;
 using Bee.Db.Manager;
 using Bee.Db.Providers.SqlServer;
@@ -8,7 +8,9 @@ using Bee.Definition.Settings;
 namespace Bee.Tests.Shared
 {
     /// <summary>
-    /// 提供測試所需的全域初始化邏輯，例如資料庫、API 環境的啟動與釋放資源。
+    /// 提供測試所需的全域初始化邏輯。除了載入定義路徑與系統設定外，依環境變數逐一註冊
+    /// 各 <see cref="DatabaseType"/> 對應的 ADO.NET <c>DbProviderFactory</c> 與框架 dialect factory，
+    /// 並建立 <see cref="DatabaseItem"/>（Id 命名見 <see cref="TestDbConventions.GetDatabaseId"/>）。
     /// </summary>
     public class GlobalFixture : IDisposable
     {
@@ -38,23 +40,43 @@ namespace Bee.Tests.Shared
             }
             SysInfo.Initialize(settings.CommonConfiguration);
             BackendInfo.Initialize(settings.BackendConfiguration, autoCreateMasterKey: true);
-            // 註冊資料庫提供者
-            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
-            // 註冊 dialect 工廠（SQL 生成與 schema 讀取的 builder 路由）
-            DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
-            // 從環境變數載入測試資料庫連線字串
-            var connStr = Environment.GetEnvironmentVariable("BEE_TEST_DB_CONNSTR");
-            if (!string.IsNullOrEmpty(connStr))
-            {
-                var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
-                dbSettings.Items!.Add(new DatabaseItem
-                {
-                    Id = "common",
-                    DatabaseType = DatabaseType.SQLServer,
-                    ConnectionString = connStr
-                });
-            }
+            // 註冊各 DB 的 ADO.NET provider + dialect factory；每個 DB 各自獨立、未設環境變數則跳過。
+            RegisterSqlServer();
+            // 未來新增 PostgreSQL / MySQL / Oracle 在此擴增（對應 PR 7+）。
             Console.WriteLine("GlobalFixture Initialized");
+        }
+
+        /// <summary>
+        /// 註冊 SQL Server 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
+        /// SQL Server 是測試 fixture 的「邏輯預設」（<c>BackendConfiguration.DatabaseId="common"</c>
+        /// 在 SystemSettings.xml 中），所以同時註冊兩個 Id 指向同一個 SQL Server 連線：
+        /// <list type="bullet">
+        /// <item><c>common</c>：用於 prod code 路徑（<see cref="BackendInfo.DatabaseId"/> 預設值），
+        /// 例如 <c>SessionRepository.GetSession</c> 與 <c>CacheFunc.GetTableSchema(tableName)</c>。</item>
+        /// <item><c>common_sqlserver</c>：用於 <c>[DbFact(DatabaseType.SQLServer)]</c> 明確 DB 類型測試。</item>
+        /// </list>
+        /// </summary>
+        private static void RegisterSqlServer()
+        {
+            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
+
+            var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLServer));
+            if (string.IsNullOrEmpty(connStr)) return;
+
+            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            dbSettings.Items!.Add(new DatabaseItem
+            {
+                Id = "common",
+                DatabaseType = DatabaseType.SQLServer,
+                ConnectionString = connStr
+            });
+            dbSettings.Items!.Add(new DatabaseItem
+            {
+                Id = TestDbConventions.GetDatabaseId(DatabaseType.SQLServer),
+                DatabaseType = DatabaseType.SQLServer,
+                ConnectionString = connStr
+            });
         }
 
         private static string FindRepoRoot(string startDir)

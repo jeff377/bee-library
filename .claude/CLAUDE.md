@@ -26,9 +26,10 @@ dotnet restore
 dotnet build <project>.csproj --configuration Release --no-restore
 
 # 執行測試（所有）
-# 使用 ./test.sh：有 Docker 且存在 SQL Server container 時自動啟動，
-# 否則直接跑 dotnet test（DbFact 測試依 .runsettings 自動 skip）。
-# 容器名稱預設 sql2025，可用 BEE_TEST_SQL_CONTAINER 環境變數 override。
+# 使用 ./test.sh：偵測本機 SQL Server / PostgreSQL container（預設 sql2025、pgvector-db），
+# 存在則自動啟動再跑 dotnet test。未啟動的容器對應的 [DbFact(DatabaseType.X)] 測試
+# 會依 .runsettings 中各 BEE_TEST_CONNSTR_{DBTYPE} 是否可連線自動 skip。
+# 容器名稱可用 BEE_TEST_SQL_CONTAINER / BEE_TEST_PG_CONTAINER 環境變數 override。
 ./test.sh
 
 # 執行特定測試專案

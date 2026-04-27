@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Bee.Business.Provider;
+using Bee.Definition;
 using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
@@ -10,7 +11,7 @@ namespace Bee.Business.UnitTests
     [Collection("Initialize")]
     public class CacheDataSourceProviderTests
     {
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetSessionUser 傳入不存在的 Token 應回傳 null")]
         public void GetSessionUser_UnknownToken_ReturnsNull()
         {

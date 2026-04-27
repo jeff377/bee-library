@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
+using Bee.Definition;
 using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
@@ -49,11 +50,11 @@ namespace Bee.Db.UnitTests
 
         // ── ExecuteAsync(spec) - Scalar branch (no transaction overload) ────
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteAsync(DbCommandSpec) Scalar 類型應回傳純量值")]
         public async Task ExecuteAsync_ScalarKind_ReturnsScalar()
         {
-            var dbAccess = new DbAccess("common");
+            var dbAccess = new DbAccess("common_sqlserver");
             var spec = new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001");
 
@@ -65,12 +66,12 @@ namespace Bee.Db.UnitTests
 
         // ── Execute(spec, transaction) - Scalar + DataTable branches ────────
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("Execute(spec, transaction) Scalar 類型應回傳純量值")]
         public void Execute_WithTransaction_ScalarKind_ReturnsScalar()
         {
-            var dbAccess = new DbAccess("common");
-            using var conn = DbFunc.CreateConnection("common");
+            var dbAccess = new DbAccess("common_sqlserver");
+            using var conn = DbFunc.CreateConnection("common_sqlserver");
             conn.Open();
             using var tran = conn.BeginTransaction();
 
@@ -83,12 +84,12 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(result.Scalar);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("Execute(spec, transaction) DataTable 類型應回傳資料表")]
         public void Execute_WithTransaction_DataTableKind_ReturnsTable()
         {
-            var dbAccess = new DbAccess("common");
-            using var conn = DbFunc.CreateConnection("common");
+            var dbAccess = new DbAccess("common_sqlserver");
+            using var conn = DbFunc.CreateConnection("common_sqlserver");
             conn.Open();
             using var tran = conn.BeginTransaction();
 
@@ -103,12 +104,12 @@ namespace Bee.Db.UnitTests
 
         // ── ExecuteAsync(spec, transaction) - Scalar + DataTable branches ───
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteAsync(spec, transaction) Scalar 類型應回傳純量值")]
         public async Task ExecuteAsync_WithTransaction_ScalarKind_ReturnsScalar()
         {
-            var dbAccess = new DbAccess("common");
-            using var conn = DbFunc.CreateConnection("common");
+            var dbAccess = new DbAccess("common_sqlserver");
+            using var conn = DbFunc.CreateConnection("common_sqlserver");
             await conn.OpenAsync();
             await using var tran = await conn.BeginTransactionAsync();
 
@@ -121,12 +122,12 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(result.Scalar);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteAsync(spec, transaction) DataTable 類型應回傳資料表")]
         public async Task ExecuteAsync_WithTransaction_DataTableKind_ReturnsTable()
         {
-            var dbAccess = new DbAccess("common");
-            using var conn = DbFunc.CreateConnection("common");
+            var dbAccess = new DbAccess("common_sqlserver");
+            using var conn = DbFunc.CreateConnection("common_sqlserver");
             await conn.OpenAsync();
             await using var tran = await conn.BeginTransactionAsync();
 

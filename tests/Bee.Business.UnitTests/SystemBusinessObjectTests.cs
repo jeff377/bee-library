@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Base.Security;
 using Bee.Business.System;
+using Bee.Definition;
 using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
@@ -18,7 +19,7 @@ namespace Bee.Business.UnitTests
         /// <summary>
         /// 建立連線。
         /// </summary>
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateSession 傳入有效參數應回傳含 AccessToken 與到期時間的結果")]
         public void CreateSession_ValidArgs_ReturnsTokenWithExpiry()
         {

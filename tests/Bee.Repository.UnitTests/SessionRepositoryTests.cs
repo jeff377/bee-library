@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Definition;
 using Bee.Repository.System;
 using Bee.Tests.Shared;
 
@@ -7,7 +8,7 @@ namespace Bee.Repository.UnitTests
     [Collection("Initialize")]
     public class SessionRepositoryTests
     {
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateSession 傳入有效使用者編號應建立 Session")]
         public void CreateSession_ValidUserId_CreatesSession()
         {
@@ -17,7 +18,7 @@ namespace Bee.Repository.UnitTests
             Assert.NotEqual(Guid.Empty, sessionUse.AccessToken);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateSession 傳入不存在的使用者編號應擲 InvalidOperationException")]
         public void CreateSession_NonExistentUserId_ThrowsInvalidOperation()
         {
@@ -27,7 +28,7 @@ namespace Bee.Repository.UnitTests
                 () => repo.CreateSession("__nonexistent_user_xyz__"));
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetSession 傳入不存在的 AccessToken 應回傳 null")]
         public void GetSession_NonExistentToken_ReturnsNull()
         {
@@ -38,7 +39,7 @@ namespace Bee.Repository.UnitTests
             Assert.Null(result);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetSession 傳入有效 Token 應回傳 SessionUser")]
         public void GetSession_ValidToken_ReturnsSessionUser()
         {
@@ -52,7 +53,7 @@ namespace Bee.Repository.UnitTests
             Assert.Equal(created.AccessToken, result.AccessToken);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetSession 已過期的 Session 應回傳 null")]
         public void GetSession_ExpiredSession_ReturnsNull()
         {
@@ -65,7 +66,7 @@ namespace Bee.Repository.UnitTests
             Assert.Null(result);
         }
 
-        [DbFact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetSession 一次性 Session 取回後應被刪除")]
         public void GetSession_OneTimeSession_DeletesAfterRetrieval()
         {
