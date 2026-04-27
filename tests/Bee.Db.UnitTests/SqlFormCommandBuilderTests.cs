@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Data;
 using Bee.Db.Providers.SqlServer;
 using Bee.Definition.Forms;
 
@@ -24,12 +25,23 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("BuildInsert 應擲 NotSupportedException")]
-        public void BuildInsert_Throws()
+        [DisplayName("BuildInsert 應委派至 SQL Server 方言並產生 INSERT 語句")]
+        public void BuildInsert_DelegatesToSqlServerDialect()
         {
-            var builder = new SqlFormCommandBuilder(new FormSchema());
+            var schema = new FormSchema("X", "X");
+            var table = schema.Tables!.Add("Foo", "Foo");
+            table.DbTableName = "tb_foo";
+            table.Fields!.AddStringField("name", "Name", 50);
 
-            Assert.Throws<NotSupportedException>(() => builder.BuildInsert());
+            var dt = new DataTable();
+            dt.Columns.Add("name", typeof(string));
+            var row = dt.NewRow();
+            row["name"] = "n";
+
+            var builder = new SqlFormCommandBuilder(schema);
+            var spec = builder.BuildInsert("Foo", row);
+
+            Assert.Contains("[tb_foo]", spec.CommandText);
         }
 
         [Fact]

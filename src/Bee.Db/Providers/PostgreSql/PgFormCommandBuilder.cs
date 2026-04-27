@@ -1,3 +1,4 @@
+using System.Data;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition;
@@ -55,9 +56,12 @@ namespace Bee.Db.Providers.PostgreSql
         /// <summary>
         /// Builds the INSERT command specification.
         /// </summary>
-        public DbCommandSpec BuildInsert()
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="row">The data row to insert.</param>
+        public DbCommandSpec BuildInsert(string tableName, DataRow row)
         {
-            throw new NotSupportedException();
+            var builder = new InsertCommandBuilder(FormSchema, DatabaseType.PostgreSQL);
+            return builder.Build(tableName, row);
         }
 
         /// <summary>

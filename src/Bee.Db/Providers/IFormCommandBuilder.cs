@@ -1,4 +1,5 @@
-﻿using Bee.Definition.Filters;
+﻿using System.Data;
+using Bee.Definition.Filters;
 using Bee.Definition;
 
 namespace Bee.Db.Providers
@@ -18,9 +19,11 @@ namespace Bee.Db.Providers
         DbCommandSpec BuildSelect(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null);
 
         /// <summary>
-        /// Builds the INSERT command specification.
+        /// Builds the INSERT command specification for the specified table from a <see cref="DataRow"/>.
         /// </summary>
-        DbCommandSpec BuildInsert();
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="row">The data row to insert.</param>
+        DbCommandSpec BuildInsert(string tableName, DataRow row);
 
         /// <summary>
         /// Builds the UPDATE command specification.
