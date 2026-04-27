@@ -92,5 +92,5 @@ Bee.Base/
   Serialization/       # JSON/XML serialization, GZip compression
   Tracing/             # Tracer, TraceContext, TraceListener, TraceWriter
   *.cs (root)          # BaseFunc, StrFunc, DateTimeFunc, FileFunc, HttpFunc,
-                       # IPValidator, SysInfo, ApiException, IKeyObject, etc.
+                       # IPValidator, SysInfo, IKeyObject, etc.
 ```

@@ -1,6 +1,6 @@
 # 計畫 C：Bee.Base/ApiException 分層污染處理
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-04-28）— 採選項 3（搬到 Bee.Api.Core.Messages 並改名 ApiErrorInfo）**
 
 ## 背景
 

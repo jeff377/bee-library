@@ -93,7 +93,7 @@ Bee.Api.Core/
                     JsonRpcException、ApiPayload、ApiPayloadConverter
   Messages/         ApiMessageBase、ApiRequest、ApiResponse、
                     ExecFuncRequest、ExecFuncResponse、
-                    ApiHeaders、PayloadFormat
+                    ApiHeaders、PayloadFormat、ApiErrorInfo
   MessagePack/      SafeMessagePackSerializerOptions、MessagePackHelper、
                     FormatterResolver、ADO.NET 型別自訂格式器
   Registry/         ApiContractRegistry（Contract → API 型別註冊中心）

@@ -92,5 +92,5 @@ Bee.Base/
   Serialization/       # JSON/XML 序列化、GZip 壓縮
   Tracing/             # Tracer、TraceContext、TraceListener、TraceWriter
   *.cs（根目錄）        # BaseFunc、StrFunc、DateTimeFunc、FileFunc、HttpFunc、
-                       # IPValidator、SysInfo、ApiException、IKeyObject 等
+                       # IPValidator、SysInfo、IKeyObject 等
 ```

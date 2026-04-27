@@ -1,34 +1,32 @@
-﻿using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
+using System.ComponentModel;
 using Bee.Base.Serialization;
 
-namespace Bee.Base
+namespace Bee.Api.Core.Messages
 {
     /// <summary>
-    /// Represents an exception error that occurred during an API method call.
+    /// Carries error information for an API method call across the JSON-RPC boundary.
+    /// This is a serializable DTO, not a thrown exception.
     /// </summary>
     [Serializable]
-    [SuppressMessage("Minor Code Smell", "S2166:Classes named like \"Exception\" should extend \"Exception\" or a subclass",
-        Justification = "ApiException is a serializable DTO carrying API error info across the JSON-RPC boundary, not a thrown exception. Renaming would break the published 4.x public API surface.")]
-    public class ApiException : IObjectSerializeBase
+    public class ApiErrorInfo : IObjectSerializeBase
     {
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ApiException"/>.
+        /// Initializes a new instance of <see cref="ApiErrorInfo"/>.
         /// </summary>
-        public ApiException()
+        public ApiErrorInfo()
         { }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="ApiException"/>.
+        /// Initializes a new instance of <see cref="ApiErrorInfo"/> from a runtime exception.
         /// </summary>
         /// <param name="exception">The exception that occurred at runtime.</param>
         /// <param name="includeStackTrace">
         /// When <c>true</c>, the stack trace is populated. Should only be set in debug/development environments
         /// to avoid leaking server internals to clients.
         /// </param>
-        public ApiException(Exception exception, bool includeStackTrace = false)
+        public ApiErrorInfo(Exception exception, bool includeStackTrace = false)
         {
             Message = exception.Message;
             StackTrace = includeStackTrace ? (exception.StackTrace ?? string.Empty) : string.Empty;
@@ -37,7 +35,7 @@ namespace Bee.Base
         #endregion
 
         /// <summary>
-        /// Gets or sets the exception error message.
+        /// Gets or sets the error message.
         /// </summary>
         [DefaultValue("")]
         public string Message { get; set; } = string.Empty;
@@ -49,9 +47,9 @@ namespace Bee.Base
         public string StackTrace { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets a value indicating whether the exception has been handled.
+        /// Gets or sets a value indicating whether the error has been handled.
         /// </summary>
-        [Description("Gets or sets a value indicating whether the exception has been handled.")]
+        [Description("Gets or sets a value indicating whether the error has been handled.")]
         [DefaultValue(false)]
         public bool IsHandle { get; set; } = false;
 

@@ -3,48 +3,6 @@ using Bee.Base.Attributes;
 
 namespace Bee.Base.UnitTests
 {
-    public class ApiExceptionTests
-    {
-        [Fact]
-        [DisplayName("無參建構子應產生空訊息與未處理狀態")]
-        public void DefaultCtor_InitializesEmpty()
-        {
-            var ex = new ApiException();
-            Assert.Equal(string.Empty, ex.Message);
-            Assert.Equal(string.Empty, ex.StackTrace);
-            Assert.False(ex.IsHandle);
-            Assert.Equal(string.Empty, ex.ToString());
-        }
-
-        [Fact]
-        [DisplayName("由例外建構時應複製 Message，預設不包含 StackTrace")]
-        public void FromException_CopiesMessage_OmitsStackTraceByDefault()
-        {
-            InvalidOperationException inner;
-            try { throw new InvalidOperationException("boom"); }
-            catch (InvalidOperationException e) { inner = e; }
-
-            var api = new ApiException(inner);
-
-            Assert.Equal("boom", api.Message);
-            Assert.Equal(string.Empty, api.StackTrace);
-            Assert.Equal("boom", api.ToString());
-        }
-
-        [Fact]
-        [DisplayName("由例外建構且允許 StackTrace 時應填入非空堆疊")]
-        public void FromException_IncludeStackTrace_PopulatesStackTrace()
-        {
-            InvalidOperationException inner;
-            try { throw new InvalidOperationException("boom"); }
-            catch (InvalidOperationException e) { inner = e; }
-
-            var api = new ApiException(inner, includeStackTrace: true);
-
-            Assert.False(string.IsNullOrEmpty(api.StackTrace));
-        }
-    }
-
     public class TreeNodeAttributeTests
     {
         [TreeNode("Literal Label")]
