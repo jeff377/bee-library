@@ -74,9 +74,12 @@ namespace Bee.Db.Providers.SqlServer
         /// <summary>
         /// Builds the DELETE command specification.
         /// </summary>
-        public DbCommandSpec BuildDelete()
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="filter">The filter that becomes the WHERE clause; must not be null.</param>
+        public DbCommandSpec BuildDelete(string tableName, FilterNode filter)
         {
-            throw new NotSupportedException();
+            var builder = new DeleteCommandBuilder(FormSchema, DatabaseType.SQLServer);
+            return builder.Build(tableName, filter);
         }
     }
 }

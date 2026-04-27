@@ -1,6 +1,9 @@
 using System.ComponentModel;
 using System.Data;
+using Bee.Base.Data;
 using Bee.Db.Providers.PostgreSql;
+using Bee.Definition;
+using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 
 namespace Bee.Db.UnitTests
@@ -52,12 +55,18 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("BuildDelete 應擲 NotSupportedException")]
-        public void BuildDelete_Throws()
+        [DisplayName("BuildDelete 應委派至 PostgreSQL 方言並產生 DELETE 語句")]
+        public void BuildDelete_DelegatesToPostgreSqlDialect()
         {
-            var builder = new PgFormCommandBuilder(new FormSchema());
+            var schema = new FormSchema("X", "X");
+            var table = schema.Tables!.Add("Foo", "Foo");
+            table.DbTableName = "tb_foo";
+            table.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
 
-            Assert.Throws<NotSupportedException>(() => builder.BuildDelete());
+            var builder = new PgFormCommandBuilder(schema);
+            var spec = builder.BuildDelete("Foo", FilterCondition.Equal(SysFields.RowId, Guid.NewGuid()));
+
+            Assert.Contains("DELETE FROM \"tb_foo\"", spec.CommandText);
         }
     }
 }

@@ -31,8 +31,10 @@ namespace Bee.Db.Providers
         DbCommandSpec BuildUpdate();
 
         /// <summary>
-        /// Builds the DELETE command specification.
+        /// Builds the DELETE command specification for the specified table using the supplied filter.
         /// </summary>
-        DbCommandSpec BuildDelete();
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="filter">The filter that becomes the WHERE clause; must not be null.</param>
+        DbCommandSpec BuildDelete(string tableName, FilterNode filter);
     }
 }
