@@ -2,7 +2,7 @@
 
 **狀態：✅ 已完成（2026-04-27）**
 
-> **先決條件已解**：[`plan-alter-based-upgrade.md`](plan-alter-based-upgrade.md) 已於 2026-04-25 完成（v4.1.0）。該計畫引入的 `TableUpgradeOrchestrator` / `ITableAlterCommandBuilder` / `SqlTableRebuildCommandBuilder` / `SqlSchemaHelper` / `SqlAlterCompatibilityRules` 都是新的 provider-specific 耦合點，本計畫的抽象層萃取需一併覆蓋這些新面向（見下方「主要耦合點」與「技術設計 1.2」）。
+> **先決條件已解**：[`plan-alter-based-upgrade.md`](../plan-alter-based-upgrade.md) 已於 2026-04-25 完成（v4.1.0）。該計畫引入的 `TableUpgradeOrchestrator` / `ITableAlterCommandBuilder` / `SqlTableRebuildCommandBuilder` / `SqlSchemaHelper` / `SqlAlterCompatibilityRules` 都是新的 provider-specific 耦合點，本計畫的抽象層萃取需一併覆蓋這些新面向（見下方「主要耦合點」與「技術設計 1.2」）。
 
 ## 背景
 
