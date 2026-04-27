@@ -3,9 +3,7 @@ using Bee.Base.Data;
 namespace Bee.Db.Providers.PostgreSql
 {
     /// <summary>
-    /// <see cref="IDialectFactory"/> implementation for PostgreSQL. Skeleton — individual builder
-    /// factory methods throw <see cref="NotImplementedException"/> until their corresponding
-    /// provider classes are implemented (see PG provider plan PR 4–7).
+    /// <see cref="IDialectFactory"/> implementation for PostgreSQL.
     /// </summary>
     public class PgDialectFactory : IDialectFactory
     {
@@ -17,12 +15,10 @@ namespace Bee.Db.Providers.PostgreSql
         public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new PgCreateTableCommandBuilder();
 
         /// <inheritdoc />
-        public ITableAlterCommandBuilder CreateTableAlterCommandBuilder()
-            => throw new NotImplementedException("PgTableAlterCommandBuilder is not yet implemented (PG plan PR 6).");
+        public ITableAlterCommandBuilder CreateTableAlterCommandBuilder() => new PgTableAlterCommandBuilder();
 
         /// <inheritdoc />
-        public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder()
-            => throw new NotImplementedException("PgTableRebuildCommandBuilder is not yet implemented (PG plan PR 6).");
+        public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new PgTableRebuildCommandBuilder();
 
         /// <inheritdoc />
         public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new PgFormCommandBuilder(progId);
