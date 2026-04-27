@@ -22,30 +22,30 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("BuildInsertCommand 應擲 NotSupportedException")]
-        public void BuildInsertCommand_Throws()
+        [DisplayName("BuildInsert 應擲 NotSupportedException")]
+        public void BuildInsert_Throws()
         {
             var builder = new PgFormCommandBuilder(new FormSchema());
 
-            Assert.Throws<NotSupportedException>(() => builder.BuildInsertCommand());
+            Assert.Throws<NotSupportedException>(() => builder.BuildInsert());
         }
 
         [Fact]
-        [DisplayName("BuildUpdateCommand 應擲 NotSupportedException")]
-        public void BuildUpdateCommand_Throws()
+        [DisplayName("BuildUpdate 應擲 NotSupportedException")]
+        public void BuildUpdate_Throws()
         {
             var builder = new PgFormCommandBuilder(new FormSchema());
 
-            Assert.Throws<NotSupportedException>(() => builder.BuildUpdateCommand());
+            Assert.Throws<NotSupportedException>(() => builder.BuildUpdate());
         }
 
         [Fact]
-        [DisplayName("BuildDeleteCommand 應擲 NotSupportedException")]
-        public void BuildDeleteCommand_Throws()
+        [DisplayName("BuildDelete 應擲 NotSupportedException")]
+        public void BuildDelete_Throws()
         {
             var builder = new PgFormCommandBuilder(new FormSchema());
 
-            Assert.Throws<NotSupportedException>(() => builder.BuildDeleteCommand());
+            Assert.Throws<NotSupportedException>(() => builder.BuildDelete());
         }
     }
 }

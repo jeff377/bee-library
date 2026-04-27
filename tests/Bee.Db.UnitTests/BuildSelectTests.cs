@@ -7,15 +7,15 @@ using Bee.Tests.Shared;
 namespace Bee.Db.UnitTests
 {
     [Collection("Initialize")]
-    public class BuildSelectCommandTests
+    public class BuildSelectTests
     {
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("BuildSelectCommand 僅選取主檔欄位時不應產生 JOIN")]
-        public void BuildSelectCommand_SelectOnlyMasterFields_NoJoin()
+        [DisplayName("BuildSelect 僅選取主檔欄位時不應產生 JOIN")]
+        public void BuildSelect_SelectOnlyMasterFields_NoJoin()
         {
             // 測試：只 Select 主檔欄位，不應產生任何 JOIN
             var builder = new SqlFormCommandBuilder("Project");
-            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", null, null);
+            var command = builder.BuildSelect("Project", "sys_id,sys_name", null, null);
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
@@ -24,15 +24,15 @@ namespace Bee.Db.UnitTests
         }
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("BuildSelectCommand Where 條件使用參考欄位時應產生 JOIN")]
-        public void BuildSelectCommand_WhereOnReferencedField_GeneratesJoin()
+        [DisplayName("BuildSelect Where 條件使用參考欄位時應產生 JOIN")]
+        public void BuildSelect_WhereOnReferencedField_GeneratesJoin()
         {
             // 測試：Select 主檔欄位，但 Where 條件使用參考欄位，應只 JOIN 該參考表
             var builder = new SqlFormCommandBuilder("Project");
             // 查詢 PM 的專案資料，PM 姓名開頭為「張」
             var filter = new FilterCondition("ref_pm_name", ComparisonOperator.StartsWith, "張");
             // 建立 Select 語法
-            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", filter, null);
+            var command = builder.BuildSelect("Project", "sys_id,sys_name", filter, null);
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
@@ -41,8 +41,8 @@ namespace Bee.Db.UnitTests
         }
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("BuildSelectCommand Order By 使用參考欄位時應產生 JOIN")]
-        public void BuildSelectCommand_OrderByReferencedField_GeneratesJoin()
+        [DisplayName("BuildSelect Order By 使用參考欄位時應產生 JOIN")]
+        public void BuildSelect_OrderByReferencedField_GeneratesJoin()
         {
             // 測試：Select 主檔欄位，但 Order By 使用參考欄位，應只 JOIN 該參考表
             var builder = new SqlFormCommandBuilder("Project");
@@ -52,7 +52,7 @@ namespace Bee.Db.UnitTests
                 new SortField("ref_pm_dept_name", SortDirection.Asc)
             };
 
-            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", null, sortFields);
+            var command = builder.BuildSelect("Project", "sys_id,sys_name", null, sortFields);
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
@@ -61,14 +61,14 @@ namespace Bee.Db.UnitTests
         }
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("BuildSelectCommand 選取多個參考欄位時應產生多個 JOIN")]
-        public void BuildSelectCommand_SelectWithMultipleReferences_GeneratesMultipleJoins()
+        [DisplayName("BuildSelect 選取多個參考欄位時應產生多個 JOIN")]
+        public void BuildSelect_SelectWithMultipleReferences_GeneratesMultipleJoins()
         {
             // 測試：Select 包含多個參考欄位，應 JOIN 對應的多個參考表
             var builder = new SqlFormCommandBuilder("Project");
 
             // 假設 ref_owner_dept_name 和 ref_pm_dept_name 來自不同的參考表
-            var command = builder.BuildSelectCommand("Project", "sys_id,sys_name,ref_owner_dept_name,ref_pm_dept_name", null, null);
+            var command = builder.BuildSelect("Project", "sys_id,sys_name,ref_owner_dept_name,ref_pm_dept_name", null, null);
 
             Assert.NotNull(command);
             Assert.NotNull(command.CommandText);
@@ -84,8 +84,8 @@ namespace Bee.Db.UnitTests
         }
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("BuildSelectCommand FilterGroup 含多條件時應正確產生參數與 JOIN")]
-        public void BuildSelectCommand_FilterGroupWithMultipleConditions_GeneratesParametersAndJoin()
+        [DisplayName("BuildSelect FilterGroup 含多條件時應正確產生參數與 JOIN")]
+        public void BuildSelect_FilterGroupWithMultipleConditions_GeneratesParametersAndJoin()
         {
             // 測試：FilterGroup 包含多個條件，使用不同參考欄位
             var builder = new SqlFormCommandBuilder("Project");
@@ -100,7 +100,7 @@ namespace Bee.Db.UnitTests
                 new SortField("sys_id", SortDirection.Asc)
             };
 
-            var command = builder.BuildSelectCommand(
+            var command = builder.BuildSelect(
                 "Project",
                 "sys_id,sys_name",
                 filterGroup,
@@ -117,11 +117,11 @@ namespace Bee.Db.UnitTests
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SqlFormCommandBuilder 建立 Select 命令應成功")]
-        public void BuildSelectCommand_WithAndWithoutFields_ReturnsCommands()
+        public void BuildSelect_WithAndWithoutFields_ReturnsCommands()
         {
             var builder = new SqlFormCommandBuilder("Employee");
-            var command = builder.BuildSelectCommand("Employee", string.Empty, null, null);
-            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", null, null);
+            var command = builder.BuildSelect("Employee", string.Empty, null, null);
+            var command2 = builder.BuildSelect("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", null, null);
 
             Assert.NotNull(command);
             Assert.False(string.IsNullOrWhiteSpace(command.CommandText));
@@ -131,7 +131,7 @@ namespace Bee.Db.UnitTests
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SqlFormCommandBuilder 搭配篩選條件與排序建立 Select 命令應成功")]
-        public void BuildSelectCommand_WithFilterAndSort_ReturnsCommands()
+        public void BuildSelect_WithFilterAndSort_ReturnsCommands()
         {
             var builder = new SqlFormCommandBuilder("Employee");
 
@@ -149,12 +149,12 @@ namespace Bee.Db.UnitTests
                 new SortField("sys_id", SortDirection.Asc) // 以 sys_id 做升冪排序
             };
 
-            // 傳入 filter node 與 sortFields 至 BuildSelectCommand
-            var command = builder.BuildSelectCommand("Employee", string.Empty, filter, sortFields);
+            // 傳入 filter node 與 sortFields 至 BuildSelect
+            var command = builder.BuildSelect("Employee", string.Empty, filter, sortFields);
             Assert.NotNull(command);
 
             // 也可搭配多個欄位 filter 與 sortFields
-            var command2 = builder.BuildSelectCommand("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", filter, sortFields);
+            var command2 = builder.BuildSelect("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", filter, sortFields);
             Assert.NotNull(command2);
 
             // 測試 filter 非 Select 欄位，是否正確建立 Join
@@ -164,7 +164,7 @@ namespace Bee.Db.UnitTests
                 Operator = ComparisonOperator.Equal,
                 Value = "U001"
             };
-            var command3 = builder.BuildSelectCommand("Employee", "sys_id,sys_name", filter, sortFields);
+            var command3 = builder.BuildSelect("Employee", "sys_id,sys_name", filter, sortFields);
             Assert.NotNull(command2);
         }
     }

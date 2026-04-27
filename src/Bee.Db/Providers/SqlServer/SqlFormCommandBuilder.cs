@@ -45,16 +45,16 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        public DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
+        public DbCommandSpec BuildSelect(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
         {
             var builder = new SelectCommandBuilder(FormSchema, DatabaseType.SQLServer);
-            return builder.Build(tableName, selectFields, filter, sortFields);  
+            return builder.Build(tableName, selectFields, filter, sortFields);
         }
 
         /// <summary>
         /// Builds the INSERT command specification.
         /// </summary>
-        public DbCommandSpec BuildInsertCommand()
+        public DbCommandSpec BuildInsert()
         {
             throw new NotSupportedException();
         }
@@ -62,7 +62,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <summary>
         /// Builds the UPDATE command specification.
         /// </summary>
-        public DbCommandSpec BuildUpdateCommand()
+        public DbCommandSpec BuildUpdate()
         {
             throw new NotSupportedException();
         }
@@ -70,7 +70,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <summary>
         /// Builds the DELETE command specification.
         /// </summary>
-        public DbCommandSpec BuildDeleteCommand()
+        public DbCommandSpec BuildDelete()
         {
             throw new NotSupportedException();
         }

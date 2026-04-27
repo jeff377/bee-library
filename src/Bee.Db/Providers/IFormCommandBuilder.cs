@@ -15,21 +15,21 @@ namespace Bee.Db.Providers
         /// <param name="selectFields">A comma-separated list of field names to retrieve; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        DbCommandSpec BuildSelectCommand(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null);
+        DbCommandSpec BuildSelect(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null);
 
         /// <summary>
         /// Builds the INSERT command specification.
         /// </summary>
-        DbCommandSpec BuildInsertCommand();
+        DbCommandSpec BuildInsert();
 
         /// <summary>
         /// Builds the UPDATE command specification.
         /// </summary>
-        DbCommandSpec BuildUpdateCommand();
+        DbCommandSpec BuildUpdate();
 
         /// <summary>
         /// Builds the DELETE command specification.
         /// </summary>
-        DbCommandSpec BuildDeleteCommand();
+        DbCommandSpec BuildDelete();
     }
 }
