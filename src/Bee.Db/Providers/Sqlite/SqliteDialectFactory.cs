@@ -17,12 +17,10 @@ namespace Bee.Db.Providers.Sqlite
         public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new SqliteCreateTableCommandBuilder();
 
         /// <inheritdoc />
-        public ITableAlterCommandBuilder CreateTableAlterCommandBuilder() =>
-            throw new NotImplementedException("SqliteTableAlterCommandBuilder lands in PR S4.");
+        public ITableAlterCommandBuilder CreateTableAlterCommandBuilder() => new SqliteTableAlterCommandBuilder();
 
         /// <inheritdoc />
-        public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() =>
-            throw new NotImplementedException("SqliteTableRebuildCommandBuilder lands in PR S4.");
+        public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new SqliteTableRebuildCommandBuilder();
 
         /// <inheritdoc />
         public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new SqliteFormCommandBuilder(progId);
