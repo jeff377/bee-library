@@ -46,12 +46,29 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("BuildUpdate 應擲 NotSupportedException")]
-        public void BuildUpdate_Throws()
+        [DisplayName("BuildUpdate 應委派至 PostgreSQL 方言並產生 UPDATE 語句")]
+        public void BuildUpdate_DelegatesToPostgreSqlDialect()
         {
-            var builder = new PgFormCommandBuilder(new FormSchema());
+            var schema = new FormSchema("X", "X");
+            var table = schema.Tables!.Add("Foo", "Foo");
+            table.DbTableName = "tb_foo";
+            table.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            table.Fields!.AddStringField("name", "Name", 50);
 
-            Assert.Throws<NotSupportedException>(() => builder.BuildUpdate());
+            var dt = new DataTable();
+            dt.Columns.Add(SysFields.RowId, typeof(Guid));
+            dt.Columns.Add("name", typeof(string));
+            var row = dt.NewRow();
+            row[SysFields.RowId] = Guid.NewGuid();
+            row["name"] = "old";
+            dt.Rows.Add(row);
+            dt.AcceptChanges();
+            row["name"] = "new";
+
+            var builder = new PgFormCommandBuilder(schema);
+            var spec = builder.BuildUpdate("Foo", row);
+
+            Assert.Contains("UPDATE \"tb_foo\"", spec.CommandText);
         }
 
         [Fact]

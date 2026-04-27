@@ -67,9 +67,12 @@ namespace Bee.Db.Providers.PostgreSql
         /// <summary>
         /// Builds the UPDATE command specification.
         /// </summary>
-        public DbCommandSpec BuildUpdate()
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="row">The modified data row.</param>
+        public DbCommandSpec BuildUpdate(string tableName, DataRow row)
         {
-            throw new NotSupportedException();
+            var builder = new UpdateCommandBuilder(FormSchema, DatabaseType.PostgreSQL);
+            return builder.Build(tableName, row);
         }
 
         /// <summary>
