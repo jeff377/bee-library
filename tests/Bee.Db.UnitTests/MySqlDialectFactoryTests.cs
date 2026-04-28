@@ -62,8 +62,8 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(factory.CreateTableAlterCommandBuilder());
             Assert.NotNull(factory.CreateTableRebuildCommandBuilder());
             Assert.NotNull(factory.CreateTableSchemaProvider("common_mysql"));
-            // FormCommandBuilder 建構子接收 progId；用測試用 ID 即可（stub 不會 lookup FormSchema）
-            Assert.NotNull(factory.CreateFormCommandBuilder("test_progId"));
+            // CreateFormCommandBuilder 在 builder 實作後會查 FormSchema，不再適用「random progId 不爆」斷言；
+            // 該行為改由 MySqlFormCommandBuilderTests 覆蓋。
         }
     }
 }
