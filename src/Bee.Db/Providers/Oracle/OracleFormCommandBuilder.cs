@@ -1,54 +1,96 @@
 using System.Data;
 using Bee.Db.Dml;
+using Bee.Definition;
+using Bee.Definition.Database;
 using Bee.Definition.Filters;
+using Bee.Definition.Forms;
 using Bee.Definition.Sorting;
 
 namespace Bee.Db.Providers.Oracle
 {
     /// <summary>
-    /// Oracle 19c+ form-related SQL command builder, generating SELECT, INSERT, UPDATE
+    /// Oracle 19c+ form-related SQL command builder, generating SELECT, INSERT, UPDATE,
     /// and DELETE statements. Counterpart to <see cref="MySql.MySqlFormCommandBuilder"/>
-    /// and <see cref="PostgreSql.PgFormCommandBuilder"/>.
+    /// and <see cref="Sqlite.SqliteFormCommandBuilder"/>; all four methods delegate to
+    /// the dialect-agnostic cores in <see cref="Bee.Db.Dml"/> with
+    /// <see cref="DatabaseType.Oracle"/>, so double-quote identifier quoting and
+    /// <c>:</c> bind-variable prefix flow from the <see cref="DbFunc"/> dictionaries.
     /// </summary>
-    /// <remarks>
-    /// Skeleton; the full implementation lands in a follow-up commit. Differences from
-    /// MySQL/PG: <c>:name</c> bind-variable syntax, double-quote identifier quoting, and
-    /// the <c>RETURNING ... INTO</c> clause for retrieving auto-generated IDENTITY values
-    /// after INSERT. See docs/plans/plan-oracle-support.md.
-    /// </remarks>
     public class OracleFormCommandBuilder : IFormCommandBuilder
     {
-        private const string NotImplementedMessage =
-            "Oracle form command builder is not yet implemented. See docs/plans/plan-oracle-support.md.";
+        #region 建構函式
 
         /// <summary>
-        /// Initializes a new instance of <see cref="OracleFormCommandBuilder"/>.
+        /// Initializes a new instance of <see cref="OracleFormCommandBuilder"/> using the specified program ID.
         /// </summary>
         /// <param name="progId">The form program identifier.</param>
-        /// <remarks>
-        /// At the stub stage <paramref name="progId"/> is intentionally not stored — the
-        /// follow-up implementation will resolve <c>FormSchema</c> (see
-        /// <see cref="MySql.MySqlFormCommandBuilder"/>) and persist it as a field.
-        /// </remarks>
         public OracleFormCommandBuilder(string progId)
         {
-            _ = progId;
+            FormSchema = BackendInfo.DefineAccess.GetFormSchema(progId);
+            if (FormSchema == null)
+                throw new ArgumentException($"Form definition not found for program ID '{progId}'.", nameof(progId));
         }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Initializes a new instance of <see cref="OracleFormCommandBuilder"/> using the specified form schema.
+        /// </summary>
+        /// <param name="formDefine">The form schema definition.</param>
+        public OracleFormCommandBuilder(FormSchema formDefine)
+        {
+            FormSchema = formDefine ?? throw new ArgumentNullException(nameof(formDefine));
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Gets the form schema definition.
+        /// </summary>
+        private FormSchema FormSchema { get; }
+
+        /// <summary>
+        /// Builds the SELECT command specification.
+        /// </summary>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
+        /// <param name="filter">The filter condition.</param>
+        /// <param name="sortFields">The sort field collection.</param>
         public DbCommandSpec BuildSelect(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
-            => throw new NotImplementedException(NotImplementedMessage);
+        {
+            var builder = new SelectCommandBuilder(FormSchema, DatabaseType.Oracle);
+            return builder.Build(tableName, selectFields, filter, sortFields);
+        }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds the INSERT command specification.
+        /// </summary>
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="row">The data row to insert.</param>
         public DbCommandSpec BuildInsert(string tableName, DataRow row)
-            => throw new NotImplementedException(NotImplementedMessage);
+        {
+            var builder = new InsertCommandBuilder(FormSchema, DatabaseType.Oracle);
+            return builder.Build(tableName, row);
+        }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds the UPDATE command specification.
+        /// </summary>
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="row">The modified data row.</param>
         public DbCommandSpec BuildUpdate(string tableName, DataRow row)
-            => throw new NotImplementedException(NotImplementedMessage);
+        {
+            var builder = new UpdateCommandBuilder(FormSchema, DatabaseType.Oracle);
+            return builder.Build(tableName, row);
+        }
 
-        /// <inheritdoc />
+        /// <summary>
+        /// Builds the DELETE command specification.
+        /// </summary>
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="filter">The filter that becomes the WHERE clause; must not be null.</param>
         public DbCommandSpec BuildDelete(string tableName, FilterNode filter)
-            => throw new NotImplementedException(NotImplementedMessage);
+        {
+            var builder = new DeleteCommandBuilder(FormSchema, DatabaseType.Oracle);
+            return builder.Build(tableName, filter);
+        }
     }
 }
