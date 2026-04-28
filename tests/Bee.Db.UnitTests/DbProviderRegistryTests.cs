@@ -20,9 +20,10 @@ namespace Bee.Db.UnitTests
         [DisplayName("Get 未註冊型別應擲 KeyNotFoundException")]
         public void Get_UnregisteredType_Throws()
         {
-            // Oracle 在測試專案中未註冊（fixture 僅註冊 SQLServer）
+            // GlobalFixture 註冊全部既定 DatabaseType；改用 enum 範圍外的整數
+            // 作為「永遠不會被註冊」的 placeholder。
             Assert.Throws<KeyNotFoundException>(() =>
-                DbProviderRegistry.Get(DatabaseType.Oracle));
+                DbProviderRegistry.Get((DatabaseType)9999));
         }
 
         [Collection("Initialize")]

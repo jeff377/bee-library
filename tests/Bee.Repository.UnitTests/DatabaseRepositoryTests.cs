@@ -57,17 +57,15 @@ namespace Bee.Repository.UnitTests
         [DisplayName("TestConnection 傳入未註冊的 DatabaseType 應拋 KeyNotFoundException")]
         public void TestConnection_UnregisteredDatabaseType_ThrowsKeyNotFoundException()
         {
-            // GlobalFixture 已註冊 SQLServer / PostgreSQL / SQLite / MySQL；
-            // Oracle 仍未註冊，作為「未註冊 DatabaseType」的代表。
-            // TODO: 當 plan-oracle-support.md 推進到第 4 步註冊 Oracle 後，需改寫本測試
-            // （DbProviderRegistry 無 Unregister API；可在 Oracle PR 中以 dynamic
-            // unregister 機制或 reserved DatabaseType 取代此 hardcode）。
+            // GlobalFixture 已註冊全部既定 DatabaseType（SQLServer / PostgreSQL / SQLite /
+            // MySQL / Oracle）。為了仍能驗證「未註冊 DatabaseType 應拋 KeyNotFoundException」
+            // 這條保護邏輯，這裡 cast 一個 enum 範圍外的整數作為「永遠不會被註冊」的 placeholder。
             var repo = CreateRepository();
             var item = new DatabaseItem
             {
-                Id = "oracle_test",
-                DatabaseType = DatabaseType.Oracle,
-                ConnectionString = "Data Source=localhost:1521/XE;User Id=foo;Password=bar;"
+                Id = "unregistered_test",
+                DatabaseType = (DatabaseType)9999,
+                ConnectionString = "Data Source=localhost;User Id=foo;Password=bar;"
             };
 
             Assert.Throws<KeyNotFoundException>(() => repo.TestConnection(item));

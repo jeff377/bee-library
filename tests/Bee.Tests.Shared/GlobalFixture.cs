@@ -2,6 +2,7 @@ using Bee.Base;
 using Bee.ObjectCaching;
 using Bee.Db.Manager;
 using Bee.Db.Providers.MySql;
+using Bee.Db.Providers.Oracle;
 using Bee.Db.Providers.PostgreSql;
 using Bee.Db.Providers.Sqlite;
 using Bee.Db.Providers.SqlServer;
@@ -56,7 +57,7 @@ namespace Bee.Tests.Shared
             RegisterPostgreSql();
             RegisterSqlite();
             RegisterMySql();
-            // 未來新增 Oracle 在此擴增。
+            RegisterOracle();
             Console.WriteLine("GlobalFixture Initialized");
         }
 
@@ -164,6 +165,47 @@ namespace Bee.Tests.Shared
                 DatabaseType = DatabaseType.MySQL,
                 ConnectionString = connStr
             });
+        }
+
+        /// <summary>
+        /// 註冊 Oracle 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
+        /// Oracle 並非 fixture 的「邏輯預設」（<see cref="BackendInfo.DatabaseId"/> 仍為 "common"
+        /// 對應 SQL Server），所以只註冊一個明確的 Id（<c>common_oracle</c>）。
+        /// 同時掛上 connection-open hook：每次新連線開啟後執行
+        /// <c>ALTER SESSION SET NLS_COMP='LINGUISTIC' NLS_SORT='BINARY_CI'</c>，讓字串比對在
+        /// session 範圍內 case-insensitive，符合 ERP 預設行為（詳見 plan-oracle-support.md）。
+        /// 本機未設 <c>BEE_TEST_CONNSTR_ORACLE</c> 則僅完成 dialect 註冊，後續以
+        /// <c>[DbFact(DatabaseType.Oracle)]</c> 標記的整合測試會自動跳過。
+        /// </summary>
+        private static void RegisterOracle()
+        {
+            DbProviderRegistry.Register(
+                DatabaseType.Oracle,
+                global::Oracle.ManagedDataAccess.Client.OracleClientFactory.Instance,
+                ApplyOracleSessionSettings);
+            DbDialectRegistry.Register(DatabaseType.Oracle, new OracleDialectFactory());
+
+            var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.Oracle));
+            if (string.IsNullOrEmpty(connStr)) return;
+
+            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            dbSettings.Items!.Add(new DatabaseItem
+            {
+                Id = TestDbConventions.GetDatabaseId(DatabaseType.Oracle),
+                DatabaseType = DatabaseType.Oracle,
+                ConnectionString = connStr
+            });
+        }
+
+        /// <summary>
+        /// 套用 Oracle session 級設定：linguistic comparison + case-insensitive sort。
+        /// 由 <see cref="DbProviderRegistry"/> 的 connection-open hook 在每次新連線開啟後呼叫。
+        /// </summary>
+        private static void ApplyOracleSessionSettings(System.Data.Common.DbConnection connection)
+        {
+            using var cmd = connection.CreateCommand();
+            cmd.CommandText = "ALTER SESSION SET NLS_COMP='LINGUISTIC' NLS_SORT='BINARY_CI'";
+            cmd.ExecuteNonQuery();
         }
 
         private static string FindRepoRoot(string startDir)

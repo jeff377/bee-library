@@ -42,7 +42,9 @@ namespace Bee.Db.UnitTests
         [DisplayName("Get 未註冊型別應擲 KeyNotFoundException")]
         public void Get_Unregistered_Throws()
         {
-            Assert.Throws<KeyNotFoundException>(() => DbDialectRegistry.Get(DatabaseType.Oracle));
+            // GlobalFixture 註冊全部既定 DatabaseType 後，找不到「天然未註冊」的列舉值；
+            // 改用 enum 範圍外的整數作為「永遠不會被註冊」的 placeholder。
+            Assert.Throws<KeyNotFoundException>(() => DbDialectRegistry.Get((DatabaseType)9999));
         }
     }
 

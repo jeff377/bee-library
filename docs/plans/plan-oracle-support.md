@@ -2,7 +2,10 @@
 
 **狀態：🚧 進行中**
 
-> 進度：Phase A（基礎建設）完成 — `DbProviderRegistry` 加 connection-open hook、`Oracle.ManagedDataAccess.Core` 套件加入、`DbGlobalFixture.GetSeedExpressions` Oracle case、`.runsettings` placeholder。Phase B+（方言實作與測試）尚未啟動。
+> 進度：
+> - Phase A（基礎建設）完成 — `DbProviderRegistry` 加 connection-open hook、`Oracle.ManagedDataAccess.Core` 套件加入、`DbGlobalFixture.GetSeedExpressions` Oracle case、`.runsettings` placeholder
+> - Phase B-1（方言核心 + Skeleton）完成 — `OracleTypeMapping` / `OracleSchemaHelper` / `OracleAlterCompatibilityRules` / `OracleDialectFactory` + 5 個 stub builder + GlobalFixture 註冊（含 ALTER SESSION hook）+ 5 個 smoke test
+> - 後續：B-2 CreateTableCommandBuilder、B-3 FormCommandBuilder、C-1 TableAlterCommandBuilder、C-2 TableRebuildCommandBuilder、C-3 TableSchemaProvider
 
 > 本計畫為 [plan-multi-db-overview.md](plan-multi-db-overview.md) 的子 plan。執行前請先完成總綱定義的「前置步驟：DatabaseType 列舉順序調整」。建議先完成 [plan-mysql-support.md](plan-mysql-support.md) 再動本計畫——MySQL 較單純，可順帶完成共通基礎建設修改、也讓抽象層先暴露一輪缺口。
 
