@@ -6,34 +6,34 @@ using Bee.Definition.Identity;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="AccessTokenValidationProvider"/> 行為測試。
+    /// <see cref="AccessTokenValidator"/> 行為測試。
     /// </summary>
     [Collection("Initialize")]
-    public class AccessTokenValidationProviderTests
+    public class AccessTokenValidatorTests
     {
         [Fact]
-        [DisplayName("ValidateAccessToken(Guid.Empty) 應拋 UnauthorizedAccessException")]
-        public void ValidateAccessToken_Empty_ThrowsUnauthorized()
+        [DisplayName("Validate(Guid.Empty) 應拋 UnauthorizedAccessException")]
+        public void Validate_Empty_ThrowsUnauthorized()
         {
-            var provider = new AccessTokenValidationProvider();
-            Assert.Throws<UnauthorizedAccessException>(() => provider.ValidateAccessToken(Guid.Empty));
+            var provider = new AccessTokenValidator();
+            Assert.Throws<UnauthorizedAccessException>(() => provider.Validate(Guid.Empty));
         }
 
         [Fact]
-        [DisplayName("ValidateAccessToken 未知 AccessToken 應拋 UnauthorizedAccessException")]
-        public void ValidateAccessToken_UnknownToken_ThrowsUnauthorized()
+        [DisplayName("Validate 未知 AccessToken 應拋 UnauthorizedAccessException")]
+        public void Validate_UnknownToken_ThrowsUnauthorized()
         {
-            var provider = new AccessTokenValidationProvider();
+            var provider = new AccessTokenValidator();
             var token = Guid.NewGuid();
 
-            Assert.Throws<UnauthorizedAccessException>(() => provider.ValidateAccessToken(token));
+            Assert.Throws<UnauthorizedAccessException>(() => provider.Validate(token));
         }
 
         [Fact]
-        [DisplayName("ValidateAccessToken 過期 Session 應拋 UnauthorizedAccessException")]
-        public void ValidateAccessToken_ExpiredSession_ThrowsUnauthorized()
+        [DisplayName("Validate 過期 Session 應拋 UnauthorizedAccessException")]
+        public void Validate_ExpiredSession_ThrowsUnauthorized()
         {
-            var provider = new AccessTokenValidationProvider();
+            var provider = new AccessTokenValidator();
             var token = Guid.NewGuid();
             var expired = new SessionInfo
             {
@@ -47,7 +47,7 @@ namespace Bee.Business.UnitTests
 
             try
             {
-                Assert.Throws<UnauthorizedAccessException>(() => provider.ValidateAccessToken(token));
+                Assert.Throws<UnauthorizedAccessException>(() => provider.Validate(token));
             }
             finally
             {
@@ -56,10 +56,10 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("ValidateAccessToken 有效 Session 應回傳 true")]
-        public void ValidateAccessToken_ValidSession_ReturnsTrue()
+        [DisplayName("Validate 有效 Session 應回傳 true")]
+        public void Validate_ValidSession_ReturnsTrue()
         {
-            var provider = new AccessTokenValidationProvider();
+            var provider = new AccessTokenValidator();
             var token = Guid.NewGuid();
             var session = new SessionInfo
             {
@@ -73,7 +73,7 @@ namespace Bee.Business.UnitTests
 
             try
             {
-                Assert.True(provider.ValidateAccessToken(token));
+                Assert.True(provider.Validate(token));
             }
             finally
             {

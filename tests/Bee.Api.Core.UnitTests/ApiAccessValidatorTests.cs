@@ -10,10 +10,10 @@ namespace Bee.Api.Core.UnitTests
     [Collection("Initialize")]
     public class ApiAccessValidatorTests
     {
-        private sealed class FakeTokenProvider : IAccessTokenValidationProvider
+        private sealed class FakeTokenProvider : IAccessTokenValidator
         {
             public bool Result { get; init; }
-            public bool ValidateAccessToken(Guid accessToken) => Result;
+            public bool Validate(Guid accessToken) => Result;
         }
 
         [Fact]
@@ -52,10 +52,10 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("ValidateAccess 於 Authenticated 要求且 provider 回傳 false 時應拋")]
         public void ValidateAccess_Authenticated_InvalidToken_Throws()
         {
-            var original = BackendInfo.AccessTokenValidationProvider;
+            var original = BackendInfo.AccessTokenValidator;
             try
             {
-                BackendInfo.AccessTokenValidationProvider = new FakeTokenProvider { Result = false };
+                BackendInfo.AccessTokenValidator = new FakeTokenProvider { Result = false };
                 var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
                 var context = new ApiCallContext
                 {
@@ -69,7 +69,7 @@ namespace Bee.Api.Core.UnitTests
             }
             finally
             {
-                BackendInfo.AccessTokenValidationProvider = original;
+                BackendInfo.AccessTokenValidator = original;
             }
         }
 
@@ -77,10 +77,10 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("ValidateAccess 於 Authenticated 要求且 provider 回傳 true 時應通過")]
         public void ValidateAccess_Authenticated_ValidToken_Succeeds()
         {
-            var original = BackendInfo.AccessTokenValidationProvider;
+            var original = BackendInfo.AccessTokenValidator;
             try
             {
-                BackendInfo.AccessTokenValidationProvider = new FakeTokenProvider { Result = true };
+                BackendInfo.AccessTokenValidator = new FakeTokenProvider { Result = true };
                 var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
                 var context = new ApiCallContext
                 {
@@ -94,7 +94,7 @@ namespace Bee.Api.Core.UnitTests
             }
             finally
             {
-                BackendInfo.AccessTokenValidationProvider = original;
+                BackendInfo.AccessTokenValidator = original;
             }
         }
 
@@ -102,10 +102,10 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("ValidateAccess 於 AccessToken 非 Empty 但 provider 未設定時應拋 InvalidOperationException")]
         public void ValidateAccess_Authenticated_ProviderNotConfigured_Throws()
         {
-            var original = BackendInfo.AccessTokenValidationProvider;
+            var original = BackendInfo.AccessTokenValidator;
             try
             {
-                BackendInfo.AccessTokenValidationProvider = null!;
+                BackendInfo.AccessTokenValidator = null!;
                 var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
                 var context = new ApiCallContext
                 {
@@ -119,7 +119,7 @@ namespace Bee.Api.Core.UnitTests
             }
             finally
             {
-                BackendInfo.AccessTokenValidationProvider = original;
+                BackendInfo.AccessTokenValidator = original;
             }
         }
 

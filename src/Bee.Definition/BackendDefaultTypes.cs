@@ -12,9 +12,9 @@ namespace Bee.Definition
         /// </summary>
         public const string ApiEncryptionKeyProvider = "Bee.Business.Providers.DynamicApiEncryptionKeyProvider, Bee.Business";
         /// <summary>
-        /// Default AccessToken validation provider, used to validate the validity of AccessTokens.
+        /// Default access token validator, used to verify the validity of access tokens.
         /// </summary>
-        public const string AccessTokenValidationProvider = "Bee.Business.Validator.AccessTokenValidationProvider, Bee.Business";
+        public const string AccessTokenValidator = "Bee.Business.Validator.AccessTokenValidator, Bee.Business";
         /// <summary>
         /// Default business object provider type, used for dynamically creating BusinessObjects.
         /// </summary>

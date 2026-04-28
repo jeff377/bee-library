@@ -1,20 +1,21 @@
-﻿using Bee.Definition.Security;
+using Bee.Definition.Security;
 using Bee.Base;
 using Bee.Definition;
 
 namespace Bee.Business.Validator
 {
     /// <summary>
-    /// Provider for validating the validity of an AccessToken.
+    /// Default implementation of <see cref="IAccessTokenValidator"/>.
+    /// Validates the access token against the session info store.
     /// </summary>
-    public class AccessTokenValidationProvider : IAccessTokenValidationProvider
+    public class AccessTokenValidator : IAccessTokenValidator
     {
         /// <summary>
-        /// Validates whether the specified AccessToken is valid.
+        /// Validates whether the specified access token is valid.
         /// </summary>
         /// <param name="accessToken">The access token to validate.</param>
-        /// <returns>True if the AccessToken is valid; otherwise, false.</returns>
-        public bool ValidateAccessToken(Guid accessToken)
+        /// <returns>True if the access token is valid; otherwise, false.</returns>
+        public bool Validate(Guid accessToken)
         {
             // If AccessToken is Guid.Empty, throw an unauthorized exception
             if (BaseFunc.IsEmpty(accessToken))

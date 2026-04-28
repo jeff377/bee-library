@@ -70,9 +70,9 @@ namespace Bee.Definition
         public static IApiEncryptionKeyProvider ApiEncryptionKeyProvider { get; set; } = null!;
 
         /// <summary>
-        /// Gets or sets the AccessToken validation provider, used to validate the validity of AccessTokens.
+        /// Gets or sets the access token validator, used to verify the validity of access tokens.
         /// </summary>
-        public static IAccessTokenValidationProvider AccessTokenValidationProvider { get; set; } = null!;
+        public static IAccessTokenValidator AccessTokenValidator { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the business object provider, defining how all BusinessObjects are obtained.
@@ -150,8 +150,8 @@ namespace Bee.Definition
             var Components = configuration.Components;
             ApiEncryptionKeyProvider = CreateOrDefault<IApiEncryptionKeyProvider>
                 (Components.ApiEncryptionKeyProvider, BackendDefaultTypes.ApiEncryptionKeyProvider);
-            AccessTokenValidationProvider = CreateOrDefault<IAccessTokenValidationProvider>
-                (Components.AccessTokenValidationProvider, BackendDefaultTypes.AccessTokenValidationProvider);
+            AccessTokenValidator = CreateOrDefault<IAccessTokenValidator>
+                (Components.AccessTokenValidator, BackendDefaultTypes.AccessTokenValidator);
             BusinessObjectProvider = CreateOrDefault<IBusinessObjectProvider>
                 (Components.BusinessObjectProvider, BackendDefaultTypes.BusinessObjectProvider);
             CacheDataSourceProvider = CreateOrDefault<ICacheDataSourceProvider>

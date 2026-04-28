@@ -83,11 +83,11 @@ namespace Bee.Api.Core.Validator
             if (accessToken == Guid.Empty)
                 return false;
 
-            var provider = BackendInfo.AccessTokenValidationProvider;
+            var provider = BackendInfo.AccessTokenValidator;
             if (provider == null)
-                throw new InvalidOperationException("AccessTokenValidationProvider is not configured.");
+                throw new InvalidOperationException("AccessTokenValidator is not configured.");
 
-            return provider.ValidateAccessToken(accessToken);
+            return provider.Validate(accessToken);
         }
     }
 

@@ -23,12 +23,12 @@ namespace Bee.Definition.Settings
         public string ApiEncryptionKeyProvider { get; set; } = BackendDefaultTypes.ApiEncryptionKeyProvider;
 
         /// <summary>
-        /// AccessToken validation provider type.
+        /// Access token validator type.
         /// </summary>
-        [Category("Providers")]
-        [Description("AccessToken validation provider type, used to validate the validity of AccessTokens.")]
-        [DefaultValue(BackendDefaultTypes.AccessTokenValidationProvider)]
-        public string AccessTokenValidationProvider { get; set; } = BackendDefaultTypes.AccessTokenValidationProvider;
+        [Category("Validators")]
+        [Description("Access token validator type, used to verify the validity of access tokens.")]
+        [DefaultValue(BackendDefaultTypes.AccessTokenValidator)]
+        public string AccessTokenValidator { get; set; } = BackendDefaultTypes.AccessTokenValidator;
 
         /// <summary>
         /// Business object provider type.
