@@ -1,25 +1,29 @@
-using System.Runtime.Caching;
-using Bee.Base;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.FileProviders;
 
 namespace Bee.ObjectCaching.Providers
 {
     /// <summary>
-    /// Cache provider implementation that uses <see cref="MemoryCache"/>.
+    /// Cache provider implementation backed by <see cref="IMemoryCache"/>.
     /// </summary>
-    public class MemoryCacheProvider : ICacheProvider
+    public class MemoryCacheProvider : ICacheProvider, IDisposable
     {
         private readonly MemoryCache _memoryCache;
+        private readonly List<PhysicalFileProvider> _fileProviders = [];
+        private readonly object _fileProvidersLock = new();
+        private bool _disposed;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MemoryCacheProvider"/> class using the default <see cref="MemoryCache"/>.
+        /// Initializes a new instance of the <see cref="MemoryCacheProvider"/> class
+        /// using a dedicated <see cref="MemoryCache"/> with default options.
         /// </summary>
         public MemoryCacheProvider()
+            : this(new MemoryCache(new MemoryCacheOptions()))
         {
-            _memoryCache = MemoryCache.Default;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="MemoryCacheProvider"/> class using the specified <see cref="MemoryCache"/>.
+        /// Initializes a new instance of the <see cref="MemoryCacheProvider"/> class with the specified <see cref="MemoryCache"/>.
         /// </summary>
         /// <param name="memoryCache">The memory cache instance to use.</param>
         public MemoryCacheProvider(MemoryCache memoryCache)
@@ -28,12 +32,12 @@ namespace Bee.ObjectCaching.Providers
         }
 
         /// <summary>
-        /// Gets the case-insensitive cache key.
+        /// Normalizes the cache key for case-insensitive comparison.
         /// </summary>
         /// <param name="key">The original key.</param>
         private static string GetCacheKey(string key)
         {
-            return StrFunc.ToUpper(key);
+            return key.ToLowerInvariant();
         }
 
         /// <summary>
@@ -42,8 +46,7 @@ namespace Bee.ObjectCaching.Providers
         /// <param name="key">The cache key.</param>
         public bool Contains(string key)
         {
-            string cacheKey = GetCacheKey(key);
-            return _memoryCache.Contains(cacheKey);
+            return _memoryCache.TryGetValue(GetCacheKey(key), out _);
         }
 
         /// <summary>
@@ -55,40 +58,26 @@ namespace Bee.ObjectCaching.Providers
         public void Set(string key, object value, CacheItemPolicy policy)
         {
             var cacheKey = GetCacheKey(key);
-            var cacheItem = new CacheItem(cacheKey, value);
-            var cachePolicy = CacheFunc.CreateCachePolicy(policy);
-            _memoryCache.Set(cacheItem, cachePolicy);
+            var options = CreateEntryOptions(policy);
+            _memoryCache.Set(cacheKey, value, options);
         }
 
         /// <summary>
-        /// Returns the cache entry for the specified key.
+        /// Returns the cache entry for the specified key, or <c>null</c> if the key is not present.
         /// </summary>
         /// <param name="key">The cache key.</param>
-        public object Get(string key)
+        public object? Get(string key)
         {
-            string cacheKey = GetCacheKey(key);
-            return _memoryCache.Get(cacheKey);
+            return _memoryCache.Get(GetCacheKey(key));
         }
 
         /// <summary>
         /// Removes the cache entry with the specified key.
         /// </summary>
         /// <param name="key">The cache key.</param>
-        /// <returns>The removed cache entry, or null if the entry does not exist.</returns>
-        public object Remove(string key)
+        public void Remove(string key)
         {
-            string cacheKey = GetCacheKey(key);
-            return _memoryCache.Remove(cacheKey);
-        }
-
-        /// <summary>
-        /// Removes a specified percentage of cache entries from the cache.
-        /// </summary>
-        /// <param name="percent">The percentage of total cache entries to remove.</param>
-        /// <returns>The number of cache entries removed.</returns>
-        public long Trim(int percent)
-        {
-            return _memoryCache.Trim(percent);
+            _memoryCache.Remove(GetCacheKey(key));
         }
 
         /// <summary>
@@ -96,18 +85,69 @@ namespace Bee.ObjectCaching.Providers
         /// </summary>
         public long GetCount()
         {
-            return _memoryCache.GetCount();
+            return _memoryCache.Count;
         }
 
         /// <summary>
-        /// Returns a collection of all keys currently in the cache.
+        /// Maps a Bee.NET <see cref="CacheItemPolicy"/> to a <see cref="MemoryCacheEntryOptions"/>,
+        /// translating absolute / sliding expirations and file watch tokens.
         /// </summary>
-        /// <returns>A collection of cache key strings.</returns>
-        public IEnumerable<string> GetAllKeys()
+        private MemoryCacheEntryOptions CreateEntryOptions(CacheItemPolicy policy)
         {
-            // MemoryCache may be modified by other threads during enumeration;
-            // ToList() is recommended to take a snapshot first
-            return _memoryCache.Select(item => item.Key).ToList();
+            var options = new MemoryCacheEntryOptions();
+            if (policy.AbsoluteExpiration != DateTimeOffset.MaxValue)
+                options.AbsoluteExpiration = policy.AbsoluteExpiration;
+            if (policy.SlidingExpiration != TimeSpan.Zero)
+                options.SlidingExpiration = policy.SlidingExpiration;
+
+            if (policy.ChangeMonitorFilePaths != null)
+            {
+                foreach (var path in policy.ChangeMonitorFilePaths)
+                {
+                    var directory = Path.GetDirectoryName(path);
+                    var fileName = Path.GetFileName(path);
+                    if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
+                        continue;
+
+                    var fileProvider = new PhysicalFileProvider(directory);
+                    lock (_fileProvidersLock)
+                    {
+                        _fileProviders.Add(fileProvider);
+                    }
+                    options.AddExpirationToken(fileProvider.Watch(fileName));
+                }
+            }
+
+            return options;
+        }
+
+        /// <summary>
+        /// Releases the underlying <see cref="MemoryCache"/> and any file providers created for change monitoring.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        /// <summary>
+        /// Releases managed resources held by this provider.
+        /// </summary>
+        /// <param name="disposing"><c>true</c> if called from <see cref="Dispose()"/>; otherwise <c>false</c>.</param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (_disposed) return;
+            if (disposing)
+            {
+                _memoryCache.Dispose();
+                lock (_fileProvidersLock)
+                {
+                    foreach (var fp in _fileProviders)
+                        fp.Dispose();
+                    _fileProviders.Clear();
+                }
+            }
+            _disposed = true;
         }
     }
 }

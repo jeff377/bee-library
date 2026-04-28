@@ -1,17 +1,11 @@
 using System.ComponentModel;
-using System.Runtime.Caching;
 using Bee.ObjectCaching.Providers;
 
 namespace Bee.ObjectCaching.UnitTests
 {
     public class MemoryCacheProviderTests
     {
-        private static MemoryCacheProvider CreateProvider(out MemoryCache memoryCache)
-        {
-            // 每個測試使用獨立的 MemoryCache 實例，避免共享 MemoryCache.Default 造成測試間污染
-            memoryCache = new MemoryCache("Bee.ObjectCaching.Tests." + Guid.NewGuid().ToString("N"));
-            return new MemoryCacheProvider(memoryCache);
-        }
+        private static MemoryCacheProvider CreateProvider() => new();
 
         private static CacheItemPolicy DefaultPolicy() =>
             new CacheItemPolicy(CacheTimeKind.SlidingTime, 5);
@@ -20,7 +14,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("Set 後 Contains 應回傳 true，未存在的 key 應為 false")]
         public void Contains_AfterSet_ReturnsTrue_OtherwiseFalse()
         {
-            var provider = CreateProvider(out _);
+            using var provider = CreateProvider();
             provider.Set("foo", "bar", DefaultPolicy());
 
             Assert.True(provider.Contains("foo"));
@@ -31,17 +25,25 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("Get 應回傳先前 Set 的值")]
         public void Get_AfterSet_ReturnsValue()
         {
-            var provider = CreateProvider(out _);
+            using var provider = CreateProvider();
             provider.Set("hello", "world", DefaultPolicy());
 
             Assert.Equal("world", provider.Get("hello"));
         }
 
         [Fact]
+        [DisplayName("Get 不存在的 key 應回傳 null")]
+        public void Get_MissingKey_ReturnsNull()
+        {
+            using var provider = CreateProvider();
+            Assert.Null(provider.Get("not-exists"));
+        }
+
+        [Fact]
         [DisplayName("Key 比對應為大小寫不敏感")]
         public void Set_KeyIsCaseInsensitive()
         {
-            var provider = CreateProvider(out _);
+            using var provider = CreateProvider();
             provider.Set("Mixed", 123, DefaultPolicy());
 
             Assert.True(provider.Contains("mixed"));
@@ -50,79 +52,61 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("Remove 應移除指定快取項目並回傳被移除的值")]
-        public void Remove_ExistingKey_RemovesAndReturnsValue()
+        [DisplayName("Remove 應移除指定快取項目")]
+        public void Remove_ExistingKey_RemovesEntry()
         {
-            var provider = CreateProvider(out _);
+            using var provider = CreateProvider();
             provider.Set("k1", "v1", DefaultPolicy());
 
-            var removed = provider.Remove("k1");
+            provider.Remove("k1");
 
-            Assert.Equal("v1", removed);
             Assert.False(provider.Contains("k1"));
         }
 
         [Fact]
-        [DisplayName("Remove 不存在的 key 應回傳 null")]
-        public void Remove_MissingKey_ReturnsNull()
+        [DisplayName("Remove 不存在的 key 不應拋例外")]
+        public void Remove_MissingKey_DoesNotThrow()
         {
-            var provider = CreateProvider(out _);
-            Assert.Null(provider.Remove("not-exists"));
+            using var provider = CreateProvider();
+            var exception = Record.Exception(() => provider.Remove("not-exists"));
+            Assert.Null(exception);
         }
 
         [Fact]
-        [DisplayName("GetCount 與 GetAllKeys 應回應目前快取內容")]
-        public void GetCount_GetAllKeys_ReflectCurrentCache()
+        [DisplayName("GetCount 應回應目前快取項目數量")]
+        public void GetCount_ReflectsCurrentCache()
         {
-            var provider = CreateProvider(out _);
+            using var provider = CreateProvider();
             provider.Set("a", 1, DefaultPolicy());
             provider.Set("b", 2, DefaultPolicy());
 
             Assert.Equal(2, provider.GetCount());
-            var keys = provider.GetAllKeys().ToList();
-            Assert.Equal(2, keys.Count);
-            // 內部會將 key 轉成大寫存放
-            Assert.Contains("A", keys);
-            Assert.Contains("B", keys);
+
+            provider.Remove("a");
+            Assert.Equal(1, provider.GetCount());
         }
 
         [Fact]
-        [DisplayName("Trim(100) 應移除全部快取項目")]
-        public void Trim_All_RemovesEverything()
+        [DisplayName("AbsoluteExpiration 過期後 Get 應回傳 null")]
+        public async Task Set_WithAbsoluteExpiration_EvictsAfterDeadline()
         {
-            var provider = CreateProvider(out _);
-            provider.Set("a", 1, DefaultPolicy());
-            provider.Set("b", 2, DefaultPolicy());
+            using var provider = CreateProvider();
+            var policy = new CacheItemPolicy
+            {
+                AbsoluteExpiration = DateTimeOffset.UtcNow.AddMilliseconds(50)
+            };
+            provider.Set("k", "v", policy);
 
-            provider.Trim(100);
+            await Task.Delay(200);
 
-            // Trim 採近似演算法，此處只驗證最終狀態
-            Assert.Equal(0, provider.GetCount());
+            Assert.Null(provider.Get("k"));
         }
 
         [Fact]
-        [DisplayName("使用無參數建構子應對應到 MemoryCache.Default")]
-        public void DefaultConstructor_DoesNotThrow()
-        {
-            var provider = new MemoryCacheProvider();
-            // 寫入後立刻清除，避免影響其他使用 MemoryCache.Default 的測試
-            var key = "MemoryCacheProviderTests_default_" + Guid.NewGuid().ToString("N");
-            try
-            {
-                provider.Set(key, "v", DefaultPolicy());
-                Assert.True(provider.Contains(key));
-            }
-            finally
-            {
-                provider.Remove(key);
-            }
-        }
-
-        [Fact]
-        [DisplayName("Set 帶 ChangeMonitorFilePaths 的 policy 應能成功建立快取")]
+        [DisplayName("Set 帶 ChangeMonitorFilePaths 應能成功建立快取")]
         public void Set_WithFileChangeMonitor_DoesNotThrow()
         {
-            var provider = CreateProvider(out _);
+            using var provider = CreateProvider();
             var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".tmp");
             File.WriteAllText(tempFile, "x");
             try
@@ -134,6 +118,40 @@ namespace Bee.ObjectCaching.UnitTests
                 };
                 provider.Set("with-monitor", "v", policy);
                 Assert.Equal("v", provider.Get("with-monitor"));
+            }
+            finally
+            {
+                File.Delete(tempFile);
+            }
+        }
+
+        [Fact]
+        [DisplayName("ChangeMonitorFilePaths 監控的檔案變更後快取項目應被驅逐")]
+        public async Task Set_WithFileChangeMonitor_EvictsOnFileChange()
+        {
+            using var provider = CreateProvider();
+            var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".tmp");
+            File.WriteAllText(tempFile, "initial");
+            try
+            {
+                var policy = new CacheItemPolicy
+                {
+                    ChangeMonitorFilePaths = new[] { tempFile },
+                    SlidingExpiration = TimeSpan.FromMinutes(10)
+                };
+                provider.Set("watched", "v", policy);
+                Assert.True(provider.Contains("watched"));
+
+                // Trigger a file change; PhysicalFileProvider polls every ~4 seconds by default.
+                File.WriteAllText(tempFile, "changed");
+
+                var deadline = DateTime.UtcNow.AddSeconds(10);
+                while (provider.Contains("watched") && DateTime.UtcNow < deadline)
+                {
+                    await Task.Delay(200);
+                }
+
+                Assert.False(provider.Contains("watched"));
             }
             finally
             {

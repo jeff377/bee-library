@@ -8,7 +8,7 @@
 
 - **層級**：基礎設施層（快取）
 - **下游**（依賴此專案者）：應用程式、`Bee.Business`（間接）
-- **上游**（此專案依賴）：`Bee.Definition`、`System.Runtime.Caching`
+- **上游**（此專案依賴）：`Bee.Definition`、`Microsoft.Extensions.Caching.Memory`、`Microsoft.Extensions.FileProviders.Physical`
 
 ## 目標框架
 
@@ -38,7 +38,7 @@
 
 ### 快取失效機制
 
-- `HostFileChangeMonitor` 整合 -- 當底層定義檔案變更時自動清除快取項目
+- 檔案型失效 -- 透過 `PhysicalFileProvider` 產生的 `IChangeToken`，在底層定義檔案變更時自動清除快取項目
 
 ### 服務
 
@@ -63,8 +63,9 @@
 - **外觀模式（Facade）** -- `CacheFunc` 公開扁平的靜態 API，對呼叫端隱藏 `CacheContainer` 與各快取類別的複雜度。
 - **範本方法模式（Template Method）** -- `ObjectCache<T>` 的子類別覆寫 `GetPolicy`、`GetKey` 與 `CreateInstance`，在不修改基底擷取邏輯的前提下定義快取行為。
 - **延遲單例（Lazy Singleton）** -- `CacheContainer` 使用 `Lazy<T>` 延遲至首次存取時才初始化。
-- **鍵值正規化** -- 所有快取鍵一律轉為大寫，確保不區分大小寫的查找。
-- **檔案型失效機制** -- `HostFileChangeMonitor` 在來源定義檔案變更時清除快取項目。（資料庫驅動的失效機制規劃中，尚未實作。）
+- **鍵值正規化** -- 所有快取鍵一律以 `ToLowerInvariant()` 轉為小寫，確保不區分大小寫且不受 culture 影響。
+- **檔案型失效機制** -- 透過 `PhysicalFileProvider` 產生的 `IChangeToken`，在來源定義檔案變更時清除快取項目。（資料庫驅動的失效機制規劃中，尚未實作。）
+- **底層儲存** -- `MemoryCacheProvider` 包裝 `Microsoft.Extensions.Caching.Memory.IMemoryCache`，公開的 `CacheItemPolicy` 內部映射到 `MemoryCacheEntryOptions`。
 - **啟用 Nullable Reference Types**（`<Nullable>enable</Nullable>`）。
 
 ## 目錄結構

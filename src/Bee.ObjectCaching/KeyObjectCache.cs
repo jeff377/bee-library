@@ -55,8 +55,8 @@ namespace Bee.ObjectCaching
             // Get the cache key
             string cacheKey = GetCacheKey(key);
             // Return the cached object if it already exists in the cache
-            if (CacheInfo.Provider.Contains(cacheKey))
-                return (T)CacheInfo.Provider.Get(cacheKey);
+            if (CacheInfo.Provider.Get(cacheKey) is T cached)
+                return cached;
 
             // Create and insert the object into the cache, then return it
             var value = CreateInstance(key);

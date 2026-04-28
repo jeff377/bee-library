@@ -2,7 +2,6 @@ using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
-using System.Runtime.Caching;
 using Bee.Definition;
 using Bee.Definition.Identity;
 
@@ -13,22 +12,6 @@ namespace Bee.ObjectCaching
     /// </summary>
     public static class CacheFunc
     {
-        /// <summary>
-        /// Creates the eviction policy for a cache item.
-        /// </summary>
-        /// <param name="policy">The eviction policy for the cache item.</param>
-        internal static System.Runtime.Caching.CacheItemPolicy CreateCachePolicy(CacheItemPolicy policy)
-        {
-            var cachePolicy = new System.Runtime.Caching.CacheItemPolicy();
-            if (policy.AbsoluteExpiration != DateTimeOffset.MaxValue)
-                cachePolicy.AbsoluteExpiration = policy.AbsoluteExpiration;
-            if (policy.SlidingExpiration != TimeSpan.Zero)
-                cachePolicy.SlidingExpiration = policy.SlidingExpiration;
-            if (policy.ChangeMonitorFilePaths != null)
-                cachePolicy.ChangeMonitors.Add(new HostFileChangeMonitor(policy.ChangeMonitorFilePaths));
-            return cachePolicy;
-        }
-
         /// <summary>
         /// Gets the system settings.
         /// </summary>

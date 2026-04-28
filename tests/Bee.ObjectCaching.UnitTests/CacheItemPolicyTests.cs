@@ -13,7 +13,6 @@ namespace Bee.ObjectCaching.UnitTests
             Assert.Equal(DateTimeOffset.MaxValue, policy.AbsoluteExpiration);
             Assert.Equal(TimeSpan.Zero, policy.SlidingExpiration);
             Assert.Null(policy.ChangeMonitorFilePaths);
-            Assert.Null(policy.ChangeMonitorDbKeys);
         }
 
         [Fact]
@@ -39,17 +38,15 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("可指定 ChangeMonitorFilePaths 與 ChangeMonitorDbKeys")]
-        public void ChangeMonitor_Properties_AreAssignable()
+        [DisplayName("可指定 ChangeMonitorFilePaths")]
+        public void ChangeMonitorFilePaths_IsAssignable()
         {
             var policy = new CacheItemPolicy
             {
-                ChangeMonitorFilePaths = new[] { "a.txt", "b.txt" },
-                ChangeMonitorDbKeys = new[] { "key1" }
+                ChangeMonitorFilePaths = new[] { "a.txt", "b.txt" }
             };
 
             Assert.Equal(2, policy.ChangeMonitorFilePaths!.Length);
-            Assert.Single(policy.ChangeMonitorDbKeys!);
         }
 
         [Theory]

@@ -8,7 +8,7 @@
 
 - **Layer**: Infrastructure (caching)
 - **Downstream** (dependents): Applications, `Bee.Business` (indirectly)
-- **Upstream** (dependencies): `Bee.Definition`, `System.Runtime.Caching`
+- **Upstream** (dependencies): `Bee.Definition`, `Microsoft.Extensions.Caching.Memory`, `Microsoft.Extensions.FileProviders.Physical`
 
 ## Target Framework
 
@@ -38,7 +38,7 @@
 
 ### Cache Invalidation
 
-- `HostFileChangeMonitor` integration -- evicts cache entries when underlying definition files change
+- File-based invalidation -- `IChangeToken` from `PhysicalFileProvider` evicts cache entries when underlying definition files change
 
 ### Services
 
@@ -63,8 +63,9 @@
 - **Facade Pattern** -- `CacheFunc` exposes a flat static API, hiding `CacheContainer` and individual cache classes from callers.
 - **Template Method Pattern** -- `ObjectCache<T>` subclasses override `GetPolicy`, `GetKey`, and `CreateInstance` to define caching behavior without modifying the base retrieval logic.
 - **Lazy Singleton** -- `CacheContainer` uses `Lazy<T>` to defer initialization until first access.
-- **Key normalization** -- all cache keys are converted to uppercase to ensure case-insensitive lookups.
-- **File-based invalidation** -- `HostFileChangeMonitor` evicts cache entries when the source definition files change. (Database-driven invalidation is planned but not yet implemented.)
+- **Key normalization** -- all cache keys are converted to lowercase using `ToLowerInvariant()` to ensure case-insensitive, culture-invariant lookups.
+- **File-based invalidation** -- `IChangeToken` produced by `PhysicalFileProvider` evicts cache entries when the source definition files change. (Database-driven invalidation is planned but not yet implemented.)
+- **Backing store** -- `MemoryCacheProvider` wraps `Microsoft.Extensions.Caching.Memory.IMemoryCache`; the public `CacheItemPolicy` is mapped internally to `MemoryCacheEntryOptions`.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 
 ## Directory Structure

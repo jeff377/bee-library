@@ -49,8 +49,8 @@
             // Get the cache key
             string key = GetKey();
             // Return the cached object if it already exists in the cache
-            if (CacheInfo.Provider.Contains(key))
-                return (T)CacheInfo.Provider.Get(key);
+            if (CacheInfo.Provider.Get(key) is T cached)
+                return cached;
 
             // Create and insert the object into the cache, then return it
             var value = CreateInstance();
