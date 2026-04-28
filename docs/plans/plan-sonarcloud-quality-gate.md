@@ -1,6 +1,6 @@
 # 計畫：解除 SonarCloud Quality Gate ERROR
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-04-28）** — 兩項處置短期方案皆已落地。長期對稱型別重構移交 [plan-symmetric-types-refactor.md](plan-symmetric-types-refactor.md) 追蹤。
 
 ## 背景
 
@@ -74,6 +74,8 @@ serialization paths. No additional validation is required.
 ---
 
 ## 項目二：對稱型別重複行重構評估
+
+**狀態：✅ 短期方案已完成（2026-04-28）** — `build-ci.yml` 加入 `sonar.cpd.exclusions` 排除 `LayoutItem.cs`、`LayoutColumn.cs`，`new_duplicated_lines_density` 預期回落到門檻內。長期重構議題移交 [plan-symmetric-types-refactor.md](plan-symmetric-types-refactor.md)。
 
 ### 現況
 - `new_duplicated_lines_density = 3.04%`（剛超過 3.0% 門檻）
