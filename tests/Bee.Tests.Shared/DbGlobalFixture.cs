@@ -115,7 +115,14 @@ namespace Bee.Tests.Shared
                     // SQLite has no native UUID generator; hex(randomblob(16)) is unique enough
                     // for seed data even though it isn't a v4 UUID.
                     return ("hex(randomblob(16))", "CURRENT_TIMESTAMP");
+                case DatabaseType.MySQL:
+                    // UUID() returns a 36-char string; CURRENT_TIMESTAMP(6) matches the
+                    // DATETIME(6) microsecond precision used in MySQL CREATE TABLE output.
+                    return ("UUID()", "CURRENT_TIMESTAMP(6)");
                 default:
+                    // NOTE: when adding a new DatabaseType, add a case here as well — otherwise
+                    // DbGlobalFixture will throw at fixture init time once a connection string
+                    // for the new DB is provided.
                     throw new NotSupportedException($"Seed expressions are not defined for {dbType}.");
             }
         }

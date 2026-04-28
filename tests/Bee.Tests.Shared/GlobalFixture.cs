@@ -1,6 +1,7 @@
 using Bee.Base;
 using Bee.ObjectCaching;
 using Bee.Db.Manager;
+using Bee.Db.Providers.MySql;
 using Bee.Db.Providers.PostgreSql;
 using Bee.Db.Providers.Sqlite;
 using Bee.Db.Providers.SqlServer;
@@ -54,7 +55,8 @@ namespace Bee.Tests.Shared
             RegisterSqlServer();
             RegisterPostgreSql();
             RegisterSqlite();
-            // 未來新增 MySQL / Oracle 在此擴增。
+            RegisterMySql();
+            // 未來新增 Oracle 在此擴增。
             Console.WriteLine("GlobalFixture Initialized");
         }
 
@@ -138,6 +140,30 @@ namespace Bee.Tests.Shared
             // Hold one open connection for the fixture's lifetime — see field comment.
             _sqliteKeepAlive = new Microsoft.Data.Sqlite.SqliteConnection(connStr);
             _sqliteKeepAlive.Open();
+        }
+
+        /// <summary>
+        /// 註冊 MySQL 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
+        /// MySQL 並非 fixture 的「邏輯預設」（<see cref="BackendInfo.DatabaseId"/> 仍為 "common"
+        /// 對應 SQL Server），所以只註冊一個明確的 Id（<c>common_mysql</c>）。
+        /// 本機未設 <c>BEE_TEST_CONNSTR_MYSQL</c>（如未跑 MySQL container）則僅完成 dialect 註冊，
+        /// 後續以 <c>[DbFact(DatabaseType.MySQL)]</c> 標記的整合測試會自動跳過。
+        /// </summary>
+        private static void RegisterMySql()
+        {
+            DbProviderRegistry.Register(DatabaseType.MySQL, MySqlConnector.MySqlConnectorFactory.Instance);
+            DbDialectRegistry.Register(DatabaseType.MySQL, new MySqlDialectFactory());
+
+            var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.MySQL));
+            if (string.IsNullOrEmpty(connStr)) return;
+
+            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            dbSettings.Items!.Add(new DatabaseItem
+            {
+                Id = TestDbConventions.GetDatabaseId(DatabaseType.MySQL),
+                DatabaseType = DatabaseType.MySQL,
+                ConnectionString = connStr
+            });
         }
 
         private static string FindRepoRoot(string startDir)
