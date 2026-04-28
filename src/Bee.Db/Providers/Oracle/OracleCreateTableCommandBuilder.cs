@@ -32,6 +32,13 @@ namespace Bee.Db.Providers.Oracle
     ///       column-level COLLATE — so the CREATE TABLE output stays free of per-column
     ///       collation clauses.</item>
     /// </list>
+    /// <para>
+    /// Oracle.ManagedDataAccess accepts only one SQL statement per command (ORA-03405),
+    /// so the multiple statements (CREATE TABLE + COMMENT ON + CREATE INDEX) are wrapped
+    /// in a PL/SQL anonymous block and dispatched via <c>EXECUTE IMMEDIATE</c>. Other
+    /// dialects rely on the driver's built-in semicolon splitting, but on Oracle the block
+    /// form is the only safe way to ship a multi-statement script through ADO.NET.
+    /// </para>
     /// </remarks>
     public class OracleCreateTableCommandBuilder : ICreateTableCommandBuilder
     {
@@ -49,14 +56,77 @@ namespace Bee.Db.Providers.Oracle
         private TableSchema TableSchema => _dbTable!;
 
         /// <summary>
-        /// Gets the SQL statement for creating a table.
+        /// Gets the SQL statement(s) for creating a table, wrapped in a PL/SQL anonymous
+        /// block so multiple DDL statements (CREATE TABLE + COMMENT ON + CREATE INDEX)
+        /// can be dispatched through Oracle.ManagedDataAccess in a single call.
         /// </summary>
         /// <param name="tableSchema">The table schema definition.</param>
         public string GetCommandText(TableSchema tableSchema)
         {
             _dbTable = tableSchema;
             ValidateAutoIncrement();
-            return $"-- Create table {this.TableSchema.TableName}\r\n{this.GetCreateTableCommandText()}";
+            var statements = BuildRawStatements();
+            return BuildPlSqlBlock(this.TableSchema.TableName, statements);
+        }
+
+        /// <summary>
+        /// Wraps the supplied DDL statements in a PL/SQL anonymous block, escaping single
+        /// quotes inside each statement so Oracle parses them as a literal. Each statement
+        /// is dispatched via <c>EXECUTE IMMEDIATE</c>; trailing semicolons are not included
+        /// inside the EXECUTE IMMEDIATE literal (DDL there must not be terminated).
+        /// </summary>
+        internal static string BuildPlSqlBlock(string tableName, IReadOnlyList<string> statements)
+        {
+            var sb = new StringBuilder();
+            sb.Append(CultureInfo.InvariantCulture, $"-- Create table {tableName}\r\n");
+            sb.Append("BEGIN\r\n");
+            foreach (var stmt in statements)
+            {
+                sb.Append("  EXECUTE IMMEDIATE '");
+                sb.Append(stmt.Replace("'", "''"));
+                sb.Append("';\r\n");
+            }
+            sb.Append("END;");
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Builds the ordered list of single-statement DDL strings (no trailing semicolons,
+        /// no PL/SQL wrapping). Order: CREATE TABLE → COMMENT ON TABLE → COMMENT ON COLUMN
+        /// (per field with non-empty caption) → CREATE INDEX (per non-PK index). The
+        /// rebuild builder reuses this list to assemble its own block.
+        /// </summary>
+        internal IReadOnlyList<string> BuildRawStatements()
+        {
+            string tableName = this.TableSchema.TableName;
+            var autoIncrementField = GetAutoIncrementField();
+            string fields = GetFieldsCommandText(autoIncrementField);
+            string primaryKey = GetPrimaryKeyCommandText(tableName, autoIncrementField);
+
+            var list = new List<string>();
+
+            var sb = new StringBuilder();
+            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {OracleSchemaHelper.QuoteName(tableName)} (\r\n{fields}");
+            if (StrFunc.IsNotEmpty(primaryKey))
+                sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
+            sb.Append("\r\n)");
+            list.Add(sb.ToString());
+
+            string tableComment = GetTableCommentStatementInternal(tableName);
+            if (StrFunc.IsNotEmpty(tableComment)) list.Add(tableComment);
+
+            foreach (DbField field in this.TableSchema.Fields!)
+            {
+                string commentStmt = OracleSchemaHelper.GetCommentStatement(tableName, field);
+                if (StrFunc.IsNotEmpty(commentStmt)) list.Add(commentStmt);
+            }
+
+            foreach (TableSchemaIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
+            {
+                list.Add(BuildIndexStatement(tableName, index));
+            }
+
+            return list;
         }
 
         /// <summary>
@@ -102,30 +172,21 @@ namespace Bee.Db.Providers.Oracle
         }
 
         /// <summary>
-        /// Gets the CREATE TABLE statement plus trailing COMMENT and CREATE INDEX statements.
+        /// Builds a single CREATE INDEX statement (no trailing semicolon).
         /// </summary>
-        private string GetCreateTableCommandText()
+        private static string BuildIndexStatement(string tableName, TableSchemaIndex index)
         {
-            string tableName = this.TableSchema.TableName;
-            var autoIncrementField = GetAutoIncrementField();
-            string fields = GetFieldsCommandText(autoIncrementField);
-            string primaryKey = GetPrimaryKeyCommandText(tableName, autoIncrementField);
-            string tableComment = GetTableCommentStatement(tableName);
-            string columnComments = GetColumnCommentStatements(tableName);
-            string indexes = GetIndexesCommandText(tableName);
-
-            var sb = new StringBuilder();
-            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {OracleSchemaHelper.QuoteName(tableName)} (\r\n{fields}");
-            if (StrFunc.IsNotEmpty(primaryKey))
-                sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
-            sb.Append("\r\n);");
-            if (StrFunc.IsNotEmpty(tableComment))
-                sb.Append(CultureInfo.InvariantCulture, $"\r\n{tableComment};");
-            if (StrFunc.IsNotEmpty(columnComments))
-                sb.Append(CultureInfo.InvariantCulture, $"\r\n{columnComments}");
-            if (StrFunc.IsNotEmpty(indexes))
-                sb.Append(CultureInfo.InvariantCulture, $"\r\n{indexes}");
-            return sb.ToString();
+            string name = StrFunc.Format(index.Name, tableName);
+            var fieldBuilder = new StringBuilder();
+            foreach (IndexField field in index.IndexFields!)
+            {
+                if (fieldBuilder.Length > 0)
+                    fieldBuilder.Append(", ");
+                fieldBuilder.Append(CultureInfo.InvariantCulture,
+                    $"{OracleSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+            }
+            string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
+            return $"CREATE {uniqueClause}INDEX {OracleSchemaHelper.QuoteName(name)} ON {OracleSchemaHelper.QuoteName(tableName)} ({fieldBuilder})";
         }
 
         /// <summary>
@@ -190,67 +251,16 @@ namespace Bee.Db.Providers.Oracle
         /// <summary>
         /// Gets the <c>COMMENT ON TABLE</c> statement when the schema has a non-empty
         /// <see cref="TableSchema.DisplayName"/>; otherwise empty. The schema reader
-        /// round-trips the table caption from <c>ALL_TAB_COMMENTS</c>, so emitting this here
-        /// keeps fixture re-runs idempotent.
+        /// round-trips the table caption from <c>USER_TAB_COMMENTS</c>, so emitting this
+        /// here keeps fixture re-runs idempotent. No trailing semicolon — the caller wraps
+        /// the statement inside <c>EXECUTE IMMEDIATE</c>.
         /// </summary>
-        private string GetTableCommentStatement(string tableName)
+        private string GetTableCommentStatementInternal(string tableName)
         {
             if (StrFunc.IsEmpty(TableSchema.DisplayName))
                 return string.Empty;
 
             return $"COMMENT ON TABLE {OracleSchemaHelper.QuoteName(tableName)} IS '{OracleSchemaHelper.EscapeSqlString(TableSchema.DisplayName)}'";
-        }
-
-        /// <summary>
-        /// Gets the <c>COMMENT ON COLUMN</c> statements for every field with a non-empty
-        /// caption, separated by line breaks.
-        /// </summary>
-        private string GetColumnCommentStatements(string tableName)
-        {
-            var sb = new StringBuilder();
-            foreach (DbField field in this.TableSchema.Fields!)
-            {
-                string commentStmt = OracleSchemaHelper.GetCommentStatement(tableName, field);
-                if (StrFunc.IsEmpty(commentStmt)) continue;
-                sb.Append(commentStmt);
-                sb.Append(";\r\n");
-            }
-            return sb.ToString().TrimEnd();
-        }
-
-        /// <summary>
-        /// Gets the SQL statements for creating all non-primary-key indexes.
-        /// </summary>
-        /// <param name="tableName">The table name.</param>
-        private string GetIndexesCommandText(string tableName)
-        {
-            var sb = new StringBuilder();
-            foreach (TableSchemaIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
-            {
-                sb.AppendLine(GetIndexCommandText(tableName, index));
-            }
-            return sb.ToString().Trim();
-        }
-
-        /// <summary>
-        /// Gets the SQL statement for creating a single index.
-        /// </summary>
-        /// <param name="tableName">The table name.</param>
-        /// <param name="index">The table schema index definition.</param>
-        private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
-        {
-            string name = StrFunc.Format(index.Name, tableName);
-            var fieldBuilder = new StringBuilder();
-            foreach (IndexField field in index.IndexFields!)
-            {
-                if (fieldBuilder.Length > 0)
-                    fieldBuilder.Append(", ");
-                fieldBuilder.Append(CultureInfo.InvariantCulture,
-                    $"{OracleSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
-            }
-
-            string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {OracleSchemaHelper.QuoteName(name)} ON {OracleSchemaHelper.QuoteName(tableName)} ({fieldBuilder});";
         }
     }
 }

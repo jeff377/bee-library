@@ -195,15 +195,20 @@ namespace Bee.Db.Providers.Oracle
         /// </remarks>
         private DataTable GetColumns(string tableName)
         {
+            // DATA_DEFAULT 是 LONG 型別 — 不能與 CHAR '' 在 COALESCE 中混用（ORA-00932）。
+            // 直接 SELECT，DBNull 在 ParseDbField 透過 IsNull 檢查轉成 string.Empty。
+            // Length: 字串型用 CHAR_LENGTH（CHAR semantic），二進位/RAW 用 DATA_LENGTH（byte）；
+            // CHAR_LENGTH 對 RAW 永遠是 0，會導致 RAW(16)→Binary 誤判而非 Guid。
             string sql =
                 "SELECT c.COLUMN_NAME AS \"FieldName\", " +
                 "       c.DATA_TYPE AS \"DbType\", " +
                 "       CASE WHEN c.NULLABLE = 'Y' THEN 1 ELSE 0 END AS \"AllowDBNull\", " +
                 "       CASE WHEN c.IDENTITY_COLUMN = 'YES' THEN 1 ELSE 0 END AS \"AutoIncrement\", " +
-                "       COALESCE(c.CHAR_LENGTH, 0) AS \"Length\", " +
+                "       CASE WHEN c.DATA_TYPE IN ('RAW', 'BLOB', 'LONG RAW') THEN COALESCE(c.DATA_LENGTH, 0) " +
+                "            ELSE COALESCE(c.CHAR_LENGTH, 0) END AS \"Length\", " +
                 "       COALESCE(c.DATA_PRECISION, 0) AS \"Precision\", " +
                 "       COALESCE(c.DATA_SCALE, 0) AS \"Decimals\", " +
-                "       COALESCE(c.DATA_DEFAULT, '') AS \"DefaultValue\", " +
+                "       c.DATA_DEFAULT AS \"DefaultValue\", " +
                 "       COALESCE(cc.COMMENTS, '') AS \"Description\" " +
                 "FROM USER_TAB_COLUMNS c " +
                 "LEFT JOIN USER_COL_COMMENTS cc ON cc.TABLE_NAME = c.TABLE_NAME AND cc.COLUMN_NAME = c.COLUMN_NAME " +
@@ -247,8 +252,19 @@ namespace Bee.Db.Providers.Oracle
                 dbField.Scale = scale;
             }
 
+            // IDENTITY 欄位的 DATA_DEFAULT 是 Oracle 自動產生的 sequence call
+            // （形如 "OWNER"."ISEQ$$_NNNN".nextval），不應與 define 的 DefaultValue 比對；
+            // 強制設為空字串以維持 round-trip 一致。
+            if (dbField.DbType == FieldDbType.AutoIncrement)
+            {
+                dbField.DefaultValue = string.Empty;
+                return dbField;
+            }
+
             string originalDefaultValue = OracleSchemaHelper.GetDefaultValueExpression(dbField.DbType);
-            dbField.DefaultValue = ParseDBDefaultValue(dataType, row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
+            // DATA_DEFAULT 是 LONG 欄位且未在 query 中 COALESCE，DBNull 視同空字串。
+            string rawDefault = row.IsNull("DefaultValue") ? string.Empty : row.GetFieldValue<string>("DefaultValue");
+            dbField.DefaultValue = ParseDBDefaultValue(dataType, rawDefault, originalDefaultValue);
             return dbField;
         }
 

@@ -20,7 +20,7 @@ namespace Bee.Tests.Shared
             EnsureDatabase(DatabaseType.PostgreSQL);
             EnsureDatabase(DatabaseType.SQLite);
             EnsureDatabase(DatabaseType.MySQL);
-            // 未來新增 Oracle 在此擴增。
+            EnsureDatabase(DatabaseType.Oracle);
         }
 
         /// <summary>
@@ -81,16 +81,30 @@ namespace Bee.Tests.Shared
         {
             var dbAccess = new DbAccess(databaseId);
 
+            // 表名與欄位名一律 dialect-quote：Oracle 對 unquoted 識別符自動轉 UPPERCASE，
+            // 而 framework CREATE TABLE 是 quoted lowercase 形式，unquoted SELECT/INSERT
+            // 會找不到 ST_USER。對其他 DB（quoted 後仍為原大小寫）行為一致。
+            string tbl = DbFunc.QuoteIdentifier(dbType, "st_user");
+            string colRowId = DbFunc.QuoteIdentifier(dbType, "sys_rowid");
+            string colId = DbFunc.QuoteIdentifier(dbType, "sys_id");
+            string colName = DbFunc.QuoteIdentifier(dbType, "sys_name");
+            string colPwd = DbFunc.QuoteIdentifier(dbType, "password");
+            string colEmail = DbFunc.QuoteIdentifier(dbType, "email");
+            string colNote = DbFunc.QuoteIdentifier(dbType, "note");
+            string colInsTime = DbFunc.QuoteIdentifier(dbType, "sys_insert_time");
+
             var check = new DbCommandSpec(DbCommandKind.Scalar,
-                "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001");
+                $"SELECT COUNT(*) FROM {tbl} WHERE {colId} = {{0}}", "001");
             var result = dbAccess.Execute(check);
 
             if (BaseFunc.CInt(result.Scalar!) == 0)
             {
                 var (uuid, now) = GetSeedExpressions(dbType);
+                // password/email/note 使用單空白字元而非空字串：Oracle 將 empty string 視為
+                // NULL，會違反 NOT NULL constraint；其他 DB 仍視為一字元字串。如此 5 DB 行為一致。
                 var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                    $"INSERT INTO st_user (sys_rowid, sys_id, sys_name, password, email, note, sys_insert_time) " +
-                    $"VALUES ({uuid}, {{0}}, {{1}}, '', '', '', {now})",
+                    $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colPwd}, {colEmail}, {colNote}, {colInsTime}) " +
+                    $"VALUES ({uuid}, {{0}}, {{1}}, ' ', ' ', ' ', {now})",
                     "001", "測試管理員");
                 dbAccess.Execute(insert);
                 Console.WriteLine($"DbGlobalFixture: {databaseId} seed user '001' inserted");
