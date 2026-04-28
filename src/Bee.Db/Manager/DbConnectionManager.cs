@@ -6,7 +6,7 @@ namespace Bee.Db.Manager
 {
     /// <summary>
     /// Manages the cache of database connection information.
-    /// Works alongside <see cref="DbProviderManager"/>, focusing on connection info caching.
+    /// Works alongside <see cref="DbProviderRegistry"/>, focusing on connection info caching.
     /// </summary>
     public static class DbConnectionManager
     {
@@ -103,7 +103,7 @@ namespace Bee.Db.Manager
                 throw new InvalidOperationException($"Connection string for database '{databaseId}' is null or empty.");
 
             // Retrieve the database provider factory
-            var provider = DbProviderManager.GetFactory(databaseType)
+            var provider = DbProviderRegistry.Get(databaseType)
                 ?? throw new InvalidOperationException($"Unknown database type: {databaseType}.");
 
             return new DbConnectionInfo(databaseType, provider, connectionString);

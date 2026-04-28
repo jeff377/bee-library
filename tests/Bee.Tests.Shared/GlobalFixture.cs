@@ -70,7 +70,7 @@ namespace Bee.Tests.Shared
         /// </summary>
         private static void RegisterSqlServer()
         {
-            DbProviderManager.RegisterProvider(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
+            DbProviderRegistry.Register(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
 
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLServer));
@@ -98,7 +98,7 @@ namespace Bee.Tests.Shared
         /// </summary>
         private static void RegisterPostgreSql()
         {
-            DbProviderManager.RegisterProvider(DatabaseType.PostgreSQL, Npgsql.NpgsqlFactory.Instance);
+            DbProviderRegistry.Register(DatabaseType.PostgreSQL, Npgsql.NpgsqlFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.PostgreSQL, new PgDialectFactory());
 
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.PostgreSQL));
@@ -121,7 +121,7 @@ namespace Bee.Tests.Shared
         /// </summary>
         private void RegisterSqlite()
         {
-            DbProviderManager.RegisterProvider(DatabaseType.SQLite, Microsoft.Data.Sqlite.SqliteFactory.Instance);
+            DbProviderRegistry.Register(DatabaseType.SQLite, Microsoft.Data.Sqlite.SqliteFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
 
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLite));

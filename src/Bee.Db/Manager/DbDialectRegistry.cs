@@ -5,7 +5,7 @@ namespace Bee.Db.Manager
 {
     /// <summary>
     /// Registry of <see cref="IDialectFactory"/> implementations keyed by <see cref="DatabaseType"/>.
-    /// Mirrors the role of <see cref="DbProviderManager"/> (which stores ADO.NET <c>DbProviderFactory</c>)
+    /// Mirrors the role of <see cref="DbProviderRegistry"/> (which stores ADO.NET <c>DbProviderFactory</c>)
     /// for the framework's own SQL-generation and schema-reading builders.
     /// Registration is explicit and performed by the host application or test fixture; the framework
     /// never auto-registers any dialect.

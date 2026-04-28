@@ -17,7 +17,7 @@ namespace Bee.Repository.System
         /// <param name="item">The database configuration item.</param>
         public void TestConnection(DatabaseItem item)
         {
-            var provider = DbProviderManager.GetFactory(item.DatabaseType);
+            var provider = DbProviderRegistry.Get(item.DatabaseType);
 
             var connectionString = item.ConnectionString;
             if (StrFunc.IsNotEmpty(item.DbName))

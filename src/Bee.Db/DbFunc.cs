@@ -107,7 +107,7 @@ namespace Bee.Db
         {
             var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
 
-            var provider = DbProviderManager.GetFactory(connInfo.DatabaseType)
+            var provider = DbProviderRegistry.Get(connInfo.DatabaseType)
                     ?? throw new InvalidOperationException($"Unknown database type: {connInfo.DatabaseType}.");
             var connection = provider.CreateConnection()
                     ?? throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");

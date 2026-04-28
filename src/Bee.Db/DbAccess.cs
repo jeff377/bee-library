@@ -44,7 +44,7 @@ namespace Bee.Db
         {
             _externalConnection = externalConnection ?? throw new ArgumentNullException(nameof(externalConnection));
             DatabaseType = BackendInfo.DatabaseType;
-            Provider = DbProviderManager.GetFactory(DatabaseType)
+            Provider = DbProviderRegistry.Get(DatabaseType)
                 ?? throw new InvalidOperationException($"Unknown database type: {DatabaseType}.");
         }
 
