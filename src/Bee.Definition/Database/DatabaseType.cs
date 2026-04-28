@@ -10,20 +10,20 @@ namespace Bee.Definition.Database
         /// </summary>
         SQLServer,
         /// <summary>
+        /// PostgreSQL.
+        /// </summary>
+        PostgreSQL,
+        /// <summary>
         /// MySQL.
         /// </summary>
         MySQL,
-        /// <summary>
-        /// SQLite.
-        /// </summary>
-        SQLite,
         /// <summary>
         /// Oracle.
         /// </summary>
         Oracle,
         /// <summary>
-        /// PostgreSQL.
+        /// SQLite.
         /// </summary>
-        PostgreSQL
+        SQLite
     }
 }

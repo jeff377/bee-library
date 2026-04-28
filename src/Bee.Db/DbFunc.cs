@@ -17,10 +17,10 @@ namespace Bee.Db
         private static readonly Dictionary<DatabaseType, string> DbParameterPrefixes = new Dictionary<DatabaseType, string>
         {
             { DatabaseType.SQLServer, "@" },
+            { DatabaseType.PostgreSQL, "@" },
             { DatabaseType.MySQL, "@" },
-            { DatabaseType.SQLite, "@" },
             { DatabaseType.Oracle, ":" },
-            { DatabaseType.PostgreSQL, "@" }
+            { DatabaseType.SQLite, "@" }
         };
 
         /// <summary>
@@ -52,10 +52,10 @@ namespace Bee.Db
         private static readonly Dictionary<DatabaseType, Func<string, string>> QuoteIdentifiers = new Dictionary<DatabaseType, Func<string, string>>
         {
             { DatabaseType.SQLServer, s => $"[{s.Replace("]", "]]")}]" },
+            { DatabaseType.PostgreSQL, s => $"\"{s.Replace("\"", "\"\"")}\"" },
             { DatabaseType.MySQL, s => $"`{s.Replace("`", "``")}`" },
-            { DatabaseType.SQLite, s => $"\"{s.Replace("\"", "\"\"")}\"" },
             { DatabaseType.Oracle, s => $"\"{s.Replace("\"", "\"\"")}\"" },
-            { DatabaseType.PostgreSQL, s => $"\"{s.Replace("\"", "\"\"")}\"" }
+            { DatabaseType.SQLite, s => $"\"{s.Replace("\"", "\"\"")}\"" }
         };
 
         /// <summary>
