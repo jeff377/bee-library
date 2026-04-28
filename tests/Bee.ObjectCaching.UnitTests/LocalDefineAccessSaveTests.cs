@@ -4,6 +4,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
+using Bee.Tests.Shared;
 
 namespace Bee.ObjectCaching.UnitTests
 {
@@ -17,35 +18,6 @@ namespace Bee.ObjectCaching.UnitTests
         private static readonly string[] DbViaDefineKeys = { "db_via_define" };
 
         private readonly LocalDefineAccess _access = new LocalDefineAccess();
-
-        /// <summary>
-        /// 建立暫存 DefinePath 並將 <see cref="BackendInfo.DefinePath"/> 切過去；
-        /// Dispose 時還原並清除暫存目錄。
-        /// </summary>
-        private sealed class TempDefinePath : IDisposable
-        {
-            private readonly string _original;
-            public string Path { get; }
-
-            public TempDefinePath()
-            {
-                _original = BackendInfo.DefinePath;
-                Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bee-lda-{Guid.NewGuid():N}");
-                Directory.CreateDirectory(Path);
-                BackendInfo.DefinePath = Path;
-            }
-
-            public void Dispose()
-            {
-                BackendInfo.DefinePath = _original;
-                try
-                {
-                    if (Directory.Exists(Path))
-                        Directory.Delete(Path, recursive: true);
-                }
-                catch (IOException) { /* 測試完整性優先於暫存清理 */ }
-            }
-        }
 
         [Fact]
         [DisplayName("SaveSystemSettings 應寫入 SystemSettings.xml 並可再讀回")]

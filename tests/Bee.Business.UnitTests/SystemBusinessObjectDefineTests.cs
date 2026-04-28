@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Business.System;
 using Bee.Definition;
+using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
 {
@@ -54,6 +55,8 @@ namespace Bee.Business.UnitTests
             var getResult = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbSchemaSettings });
             Assert.False(string.IsNullOrWhiteSpace(getResult.Xml));
 
+            // SaveDefine 會寫入 BackendInfo.DefinePath；切換到暫存資料夾避免污染 tests/Define/。
+            using var temp = new TempDefinePath();
             var saveResult = bo.SaveDefine(new SaveDefineArgs
             {
                 DefineType = DefineType.DbSchemaSettings,
