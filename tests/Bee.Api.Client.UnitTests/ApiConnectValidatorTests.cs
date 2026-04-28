@@ -41,15 +41,15 @@ namespace Bee.Api.Client.UnitTests
         [DisplayName("ApiConnectValidator.Validate 本機路徑但不支援 Local 時應拋 InvalidOperationException")]
         public void Validate_LocalPath_NotSupported_ThrowsInvalidOperationException()
         {
-            var original = ApiClientContext.SupportedConnectTypes;
+            var original = ApiClientInfo.SupportedConnectTypes;
             try
             {
-                ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Remote;
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
                 Assert.Throws<InvalidOperationException>(() => ApiConnectValidator.Validate(@"C:\FakePath_NoLocalSupport"));
             }
             finally
             {
-                ApiClientContext.SupportedConnectTypes = original;
+                ApiClientInfo.SupportedConnectTypes = original;
             }
         }
 
@@ -57,15 +57,15 @@ namespace Bee.Api.Client.UnitTests
         [DisplayName("ApiConnectValidator.Validate 本機路徑不存在時應拋 ArgumentException")]
         public void Validate_LocalPath_NotExists_ThrowsArgumentException()
         {
-            var original = ApiClientContext.SupportedConnectTypes;
+            var original = ApiClientInfo.SupportedConnectTypes;
             try
             {
-                ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Both;
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Both;
                 Assert.Throws<ArgumentException>(() => ApiConnectValidator.Validate(@"C:\NonExistent_bee_test_abc123"));
             }
             finally
             {
-                ApiClientContext.SupportedConnectTypes = original;
+                ApiClientInfo.SupportedConnectTypes = original;
             }
         }
 
@@ -78,15 +78,15 @@ namespace Bee.Api.Client.UnitTests
 
             var tempDir = Path.Combine(Path.GetTempPath(), "bee_api_client_tests_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tempDir);
-            var originalSupported = ApiClientContext.SupportedConnectTypes;
+            var originalSupported = ApiClientInfo.SupportedConnectTypes;
             try
             {
-                ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Both;
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Both;
                 Assert.Throws<FileNotFoundException>(() => ApiConnectValidator.Validate(tempDir));
             }
             finally
             {
-                ApiClientContext.SupportedConnectTypes = originalSupported;
+                ApiClientInfo.SupportedConnectTypes = originalSupported;
                 if (Directory.Exists(tempDir))
                     Directory.Delete(tempDir, recursive: true);
             }
@@ -101,10 +101,10 @@ namespace Bee.Api.Client.UnitTests
 
             var tempDir = Path.Combine(Path.GetTempPath(), "bee_api_client_tests_" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(tempDir);
-            var originalSupported = ApiClientContext.SupportedConnectTypes;
+            var originalSupported = ApiClientInfo.SupportedConnectTypes;
             try
             {
-                ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Both;
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Both;
                 var result = ApiConnectValidator.Validate(tempDir, allowGenerateSettings: true);
 
                 Assert.Equal(ConnectType.Local, result);
@@ -113,7 +113,7 @@ namespace Bee.Api.Client.UnitTests
             }
             finally
             {
-                ApiClientContext.SupportedConnectTypes = originalSupported;
+                ApiClientInfo.SupportedConnectTypes = originalSupported;
                 if (Directory.Exists(tempDir))
                     Directory.Delete(tempDir, recursive: true);
             }
@@ -123,16 +123,16 @@ namespace Bee.Api.Client.UnitTests
         [DisplayName("ApiConnectValidator.Validate URL 格式但不支援 Remote 時應拋 InvalidOperationException")]
         public void Validate_RemoteUrl_RemoteNotSupported_ThrowsInvalidOperationException()
         {
-            var original = ApiClientContext.SupportedConnectTypes;
+            var original = ApiClientInfo.SupportedConnectTypes;
             try
             {
-                ApiClientContext.SupportedConnectTypes = SupportedConnectTypes.Local;
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Local;
                 Assert.Throws<InvalidOperationException>(
                     () => ApiConnectValidator.Validate("http://example.com/api"));
             }
             finally
             {
-                ApiClientContext.SupportedConnectTypes = original;
+                ApiClientInfo.SupportedConnectTypes = original;
             }
         }
     }

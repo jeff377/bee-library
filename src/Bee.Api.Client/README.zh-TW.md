@@ -42,7 +42,7 @@
 
 ### 應用程式上下文
 
-- `ApiClientContext` 持有靜態執行階段組態：`ConnectType`、`Endpoint`、`ApiKey`、`ApiEncryptionKey` 與 `SupportedConnectTypes`。
+- `ApiClientInfo` 持有靜態執行階段組態：`ConnectType`、`Endpoint`、`ApiKey`、`ApiEncryptionKey` 與 `SupportedConnectTypes`。
 
 ### 非同步轉同步橋接
 
@@ -52,7 +52,7 @@
 
 | 類別 / 介面 | 用途 |
 |-------------|------|
-| `ApiClientContext` | 靜態執行階段組態（連線類型、端點、金鑰） |
+| `ApiClientInfo` | 靜態執行階段組態（連線類型、端點、金鑰） |
 | `ApiConnector` | 抽象基底連接器，含酬載管線與追蹤 |
 | `SystemApiConnector` | 系統層級操作（Login、Ping、CreateSession、Initialize、Define CRUD、ExecFunc） |
 | `FormApiConnector` | 表單層級商業物件呼叫，綁定至特定 ProgId |
@@ -77,7 +77,7 @@
 
 ```
 Bee.Api.Client/
-  ApiClientContext.cs              # 靜態執行階段組態
+  ApiClientInfo.cs              # 靜態執行階段組態
   ApiConnectValidator.cs           # 端點驗證與 ConnectType 偵測
   ConnectType.cs                   # Local / Remote 列舉
   SupportedConnectTypes.cs         # 支援的連線類型旗標列舉

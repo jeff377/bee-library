@@ -59,7 +59,7 @@ namespace Bee.Api.Client.ApiServiceProvider
         {
             return new NameValueCollection
             {
-                { ApiHeaders.ApiKey, ApiClientContext.ApiKey },
+                { ApiHeaders.ApiKey, ApiClientInfo.ApiKey },
                 { ApiHeaders.Authorization, $"Bearer {AccessToken}" }
             };
         }

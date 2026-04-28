@@ -48,7 +48,7 @@ namespace Bee.Api.Client
         private static void ValidateLocal(string definePath, bool allowGenerateSettings)
         {
             // Verify the application supports local connections
-            if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
+            if (!ApiClientInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
                 throw new InvalidOperationException("Local connections are not supported.");
             if (StrFunc.IsEmpty(definePath))
                 throw new ArgumentException("Definition path must be specified.", nameof(definePath));
@@ -116,7 +116,7 @@ namespace Bee.Api.Client
         private static void ValidateRemote(string endpoint)
         {
             // Verify the application supports remote connections
-            if (!ApiClientContext.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
+            if (!ApiClientInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
                 throw new InvalidOperationException("Remote connections are not supported.");
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));

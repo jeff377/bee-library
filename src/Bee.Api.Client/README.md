@@ -42,7 +42,7 @@
 
 ### Application Context
 
-- `ApiClientContext` holds static runtime configuration: `ConnectType`, `Endpoint`, `ApiKey`, `ApiEncryptionKey`, and `SupportedConnectTypes`.
+- `ApiClientInfo` holds static runtime configuration: `ConnectType`, `Endpoint`, `ApiKey`, `ApiEncryptionKey`, and `SupportedConnectTypes`.
 
 ### Async-to-Sync Bridge
 
@@ -52,7 +52,7 @@
 
 | Class / Interface | Purpose |
 |-------------------|---------|
-| `ApiClientContext` | Static runtime configuration (connection type, endpoint, keys) |
+| `ApiClientInfo` | Static runtime configuration (connection type, endpoint, keys) |
 | `ApiConnector` | Abstract base connector with payload pipeline and tracing |
 | `SystemApiConnector` | System-level operations (Login, Ping, CreateSession, Initialize, Define CRUD, ExecFunc) |
 | `FormApiConnector` | Form-level business object calls bound to a specific ProgId |
@@ -77,7 +77,7 @@
 
 ```
 Bee.Api.Client/
-  ApiClientContext.cs              # Static runtime configuration
+  ApiClientInfo.cs              # Static runtime configuration
   ApiConnectValidator.cs           # Endpoint validation and ConnectType detection
   ConnectType.cs                   # Local / Remote enum
   SupportedConnectTypes.cs         # Flags enum for supported connection types

@@ -36,5 +36,5 @@
 - `RepositoryInfo`（Bee.Repository.Abstractions）：Repository Provider 的全域入口
 - `CacheFunc`（Bee.ObjectCaching）：快取操作的全域 Facade
 - `ApiServiceOptions`（Bee.Api.Core）：API 序列化/壓縮/加密元件的全域配置
-- `ApiClientContext`（Bee.Api.Client）：用戶端連線配置的全域入口
+- `ApiClientInfo`（Bee.Api.Client）：用戶端連線配置的全域入口
 - 初始化順序記錄於 `docs/development-constraints.md` 和 `docs/development-cookbook.md`

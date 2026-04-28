@@ -191,7 +191,7 @@ namespace Bee.Api.Client.Connectors
 
             // Decrypt with the RSA private key to obtain the API encryption key
             string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
-            ApiClientContext.ApiEncryptionKey = Convert.FromBase64String(sessionKey);
+            ApiClientInfo.ApiEncryptionKey = Convert.FromBase64String(sessionKey);
 
             return result;
         }
