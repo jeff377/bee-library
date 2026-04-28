@@ -23,8 +23,8 @@
 
 ### Provider Contracts
 
-- `ISystemRepositoryProvider` -- aggregates system-level repositories (`ISessionRepository`, `IDatabaseRepository`)
-- `IFormRepositoryProvider` -- factory for form-level repositories, resolving `IDataFormRepository` and `IReportFormRepository` by ProgId
+- `ISystemRepositoryFactory` -- aggregates system-level repositories (`ISessionRepository`, `IDatabaseRepository`)
+- `IFormRepositoryFactory` -- factory for form-level repositories, resolving `IDataFormRepository` and `IReportFormRepository` by ProgId
 
 ### Form Repository Contracts
 
@@ -33,7 +33,7 @@
 
 ### Static Service Locator
 
-- `RepositoryInfo` -- static entry point that exposes `SystemProvider` and `FormProvider`, automatically initialized from `BackendConfiguration`
+- `RepositoryInfo` -- static entry point that exposes `SystemFactory` and `FormFactory`, automatically initialized from `BackendConfiguration`
 
 ## Key Public APIs
 
@@ -41,8 +41,8 @@
 |-------------------|---------|
 | `ISessionRepository` | Session create (`CreateSession`) and retrieve (`GetSession`) |
 | `IDatabaseRepository` | Connection testing (`TestConnection`) and schema migration (`UpgradeTableSchema`) |
-| `ISystemRepositoryProvider` | Aggregates system repositories into a single provider |
-| `IFormRepositoryProvider` | Factory to resolve form repositories by ProgId |
+| `ISystemRepositoryFactory` | Aggregates system repositories into a single provider |
+| `IFormRepositoryFactory` | Factory to resolve form repositories by ProgId |
 | `IDataFormRepository` | Contract for data form data access |
 | `IReportFormRepository` | Contract for report form data access |
 | `RepositoryInfo` | Static service locator for provider instances |
@@ -50,7 +50,7 @@
 ## Design Conventions
 
 - **Repository Pattern** -- each domain concern (session, database, form) has a dedicated repository interface.
-- **Provider / Factory Pattern** -- `ISystemRepositoryProvider` aggregates repositories; `IFormRepositoryProvider` acts as a factory resolving repositories by ProgId.
+- **Provider / Factory Pattern** -- `ISystemRepositoryFactory` aggregates repositories; `IFormRepositoryFactory` acts as a factory resolving repositories by ProgId.
 - **Static Service Locator** -- `RepositoryInfo` reads `BackendConfiguration` at static initialization and creates provider instances via reflection (`BaseFunc.CreateInstance`), with configurable fallback to default types.
 - **Configuration-driven instantiation** -- provider type names are specified in `BackendConfiguration.Components`; custom implementations can replace defaults without code changes.
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
@@ -60,7 +60,7 @@
 ```
 Bee.Repository.Abstractions/
   Form/                # IDataFormRepository, IReportFormRepository
-  Providers/            # ISystemRepositoryProvider, IFormRepositoryProvider
+  Factories/            # ISystemRepositoryFactory, IFormRepositoryFactory
   System/              # ISessionRepository, IDatabaseRepository
   RepositoryInfo.cs    # Static service locator for provider instances
 ```

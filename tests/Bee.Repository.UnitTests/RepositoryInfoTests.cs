@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.Form;
-using Bee.Repository.Abstractions.Providers;
+using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
-using Bee.Repository.Providers;
+using Bee.Repository.Factories;
 using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests
@@ -16,77 +16,77 @@ namespace Bee.Repository.UnitTests
     public class RepositoryInfoTests
     {
         [Fact]
-        [DisplayName("RepositoryInfo.SystemProvider 於 GlobalFixture 初始化後不應為 null")]
+        [DisplayName("RepositoryInfo.SystemFactory 於 GlobalFixture 初始化後不應為 null")]
         public void SystemProvider_AfterFixtureInit_IsNotNull()
         {
-            Assert.NotNull(RepositoryInfo.SystemProvider);
+            Assert.NotNull(RepositoryInfo.SystemFactory);
         }
 
         [Fact]
-        [DisplayName("RepositoryInfo.FormProvider 於 GlobalFixture 初始化後不應為 null")]
+        [DisplayName("RepositoryInfo.FormFactory 於 GlobalFixture 初始化後不應為 null")]
         public void FormProvider_AfterFixtureInit_IsNotNull()
         {
-            Assert.NotNull(RepositoryInfo.FormProvider);
+            Assert.NotNull(RepositoryInfo.FormFactory);
         }
 
         [Fact]
-        [DisplayName("RepositoryInfo.SystemProvider 預設型別應為 SystemRepositoryProvider")]
-        public void SystemProvider_DefaultType_IsSystemRepositoryProvider()
+        [DisplayName("RepositoryInfo.SystemFactory 預設型別應為 SystemRepositoryFactory")]
+        public void SystemProvider_DefaultType_IsSystemRepositoryFactory()
         {
-            Assert.IsType<SystemRepositoryProvider>(RepositoryInfo.SystemProvider);
+            Assert.IsType<SystemRepositoryFactory>(RepositoryInfo.SystemFactory);
         }
 
         [Fact]
-        [DisplayName("RepositoryInfo.FormProvider 預設型別應為 FormRepositoryProvider")]
-        public void FormProvider_DefaultType_IsFormRepositoryProvider()
+        [DisplayName("RepositoryInfo.FormFactory 預設型別應為 FormRepositoryFactory")]
+        public void FormProvider_DefaultType_IsFormRepositoryFactory()
         {
-            Assert.IsType<FormRepositoryProvider>(RepositoryInfo.FormProvider);
+            Assert.IsType<FormRepositoryFactory>(RepositoryInfo.FormFactory);
         }
 
         [Fact]
-        [DisplayName("RepositoryInfo.SystemProvider 可被外部替換並讀回")]
+        [DisplayName("RepositoryInfo.SystemFactory 可被外部替換並讀回")]
         public void SystemProvider_CanBeReplaced()
         {
-            var original = RepositoryInfo.SystemProvider;
+            var original = RepositoryInfo.SystemFactory;
             try
             {
-                var stub = new StubSystemRepositoryProvider();
-                RepositoryInfo.SystemProvider = stub;
-                Assert.Same(stub, RepositoryInfo.SystemProvider);
+                var stub = new StubSystemRepositoryFactory();
+                RepositoryInfo.SystemFactory = stub;
+                Assert.Same(stub, RepositoryInfo.SystemFactory);
             }
             finally
             {
-                RepositoryInfo.SystemProvider = original;
+                RepositoryInfo.SystemFactory = original;
             }
         }
 
         [Fact]
-        [DisplayName("RepositoryInfo.FormProvider 可被外部替換並讀回")]
+        [DisplayName("RepositoryInfo.FormFactory 可被外部替換並讀回")]
         public void FormProvider_CanBeReplaced()
         {
-            var original = RepositoryInfo.FormProvider;
+            var original = RepositoryInfo.FormFactory;
             try
             {
-                var stub = new StubFormRepositoryProvider();
-                RepositoryInfo.FormProvider = stub;
-                Assert.Same(stub, RepositoryInfo.FormProvider);
+                var stub = new StubFormRepositoryFactory();
+                RepositoryInfo.FormFactory = stub;
+                Assert.Same(stub, RepositoryInfo.FormFactory);
             }
             finally
             {
-                RepositoryInfo.FormProvider = original;
+                RepositoryInfo.FormFactory = original;
             }
         }
 
-        private sealed class StubSystemRepositoryProvider : ISystemRepositoryProvider
+        private sealed class StubSystemRepositoryFactory : ISystemRepositoryFactory
         {
-            public IDatabaseRepository DatabaseRepository { get; set; } = null!;
-            public ISessionRepository SessionRepository { get; set; } = null!;
+            public IDatabaseRepository CreateDatabaseRepository() => null!;
+            public ISessionRepository CreateSessionRepository() => null!;
         }
 
-        private sealed class StubFormRepositoryProvider : IFormRepositoryProvider
+        private sealed class StubFormRepositoryFactory : IFormRepositoryFactory
         {
-            public IDataFormRepository GetDataFormRepository(string progId) => null!;
-            public IReportFormRepository GetReportFormRepository(string progId) => null!;
+            public IDataFormRepository CreateDataFormRepository(string progId) => null!;
+            public IReportFormRepository CreateReportFormRepository(string progId) => null!;
         }
     }
 }

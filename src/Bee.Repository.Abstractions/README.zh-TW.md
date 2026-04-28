@@ -23,8 +23,8 @@
 
 ### Provider 契約
 
-- `ISystemRepositoryProvider` -- 聚合系統層級的 Repository（`ISessionRepository`、`IDatabaseRepository`）
-- `IFormRepositoryProvider` -- 表單層級 Repository 的工廠，依 ProgId 解析 `IDataFormRepository` 與 `IReportFormRepository`
+- `ISystemRepositoryFactory` -- 聚合系統層級的 Repository（`ISessionRepository`、`IDatabaseRepository`）
+- `IFormRepositoryFactory` -- 表單層級 Repository 的工廠，依 ProgId 解析 `IDataFormRepository` 與 `IReportFormRepository`
 
 ### 表單 Repository 契約
 
@@ -33,7 +33,7 @@
 
 ### 靜態服務定位器
 
-- `RepositoryInfo` -- 靜態進入點，公開 `SystemProvider` 與 `FormProvider`，從 `BackendConfiguration` 自動初始化
+- `RepositoryInfo` -- 靜態進入點，公開 `SystemFactory` 與 `FormFactory`，從 `BackendConfiguration` 自動初始化
 
 ## 主要公開 API
 
@@ -41,8 +41,8 @@
 |-------------|------|
 | `ISessionRepository` | Session 建立（`CreateSession`）與取得（`GetSession`） |
 | `IDatabaseRepository` | 連線測試（`TestConnection`）與結構遷移（`UpgradeTableSchema`） |
-| `ISystemRepositoryProvider` | 將系統 Repository 聚合為單一 Provider |
-| `IFormRepositoryProvider` | 依 ProgId 解析表單 Repository 的工廠 |
+| `ISystemRepositoryFactory` | 將系統 Repository 聚合為單一 Provider |
+| `IFormRepositoryFactory` | 依 ProgId 解析表單 Repository 的工廠 |
 | `IDataFormRepository` | 資料表單資料存取契約 |
 | `IReportFormRepository` | 報表表單資料存取契約 |
 | `RepositoryInfo` | Provider 實例的靜態服務定位器 |
@@ -50,7 +50,7 @@
 ## 設計慣例
 
 - **Repository 模式** -- 每個領域關注點（Session、資料庫、表單）擁有專屬的 Repository 介面。
-- **Provider / Factory 模式** -- `ISystemRepositoryProvider` 聚合 Repository；`IFormRepositoryProvider` 作為工廠，依 ProgId 解析 Repository。
+- **Provider / Factory 模式** -- `ISystemRepositoryFactory` 聚合 Repository；`IFormRepositoryFactory` 作為工廠，依 ProgId 解析 Repository。
 - **靜態服務定位器** -- `RepositoryInfo` 在靜態初始化時讀取 `BackendConfiguration`，透過反射（`BaseFunc.CreateInstance`）建立 Provider 實例，支援可設定的預設型別回退。
 - **組態驅動實例化** -- Provider 型別名稱定義於 `BackendConfiguration.Components`；自訂實作可在不修改程式碼的情況下替換預設值。
 - **啟用 Nullable Reference Types**（`<Nullable>enable</Nullable>`）。
@@ -60,7 +60,7 @@
 ```
 Bee.Repository.Abstractions/
   Form/                # IDataFormRepository、IReportFormRepository
-  Providers/            # ISystemRepositoryProvider、IFormRepositoryProvider
+  Factories/            # ISystemRepositoryFactory、IFormRepositoryFactory
   System/              # ISessionRepository、IDatabaseRepository
   RepositoryInfo.cs    # Provider 實例的靜態服務定位器
 ```

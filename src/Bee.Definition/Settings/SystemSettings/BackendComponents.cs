@@ -87,20 +87,20 @@ namespace Bee.Definition.Settings
         public string EnterpriseObjectService { get; set; } = BackendDefaultTypes.EnterpriseObjectService;
 
         /// <summary>
-        /// System level repository provider type.
+        /// System level repository factory type.
         /// </summary>
         [Category("Repository")]
-        [Description("System level Repository provider type.")]
-        [DefaultValue(BackendDefaultTypes.SystemRepositoryProvider)]
-        public string SystemRepositoryProvider { get; set; } = BackendDefaultTypes.SystemRepositoryProvider;
+        [Description("System level Repository factory type.")]
+        [DefaultValue(BackendDefaultTypes.SystemRepositoryFactory)]
+        public string SystemRepositoryFactory { get; set; } = BackendDefaultTypes.SystemRepositoryFactory;
 
         /// <summary>
-        /// Form level repository provider type.
+        /// Form level repository factory type.
         /// </summary>
         [Category("Repository")]
-        [Description("Form level Repository provider type.")]
-        [DefaultValue(BackendDefaultTypes.FormRepositoryProvider)]
-        public string FormRepositoryProvider { get; set; } = BackendDefaultTypes.FormRepositoryProvider;
+        [Description("Form level Repository factory type.")]
+        [DefaultValue(BackendDefaultTypes.FormRepositoryFactory)]
+        public string FormRepositoryFactory { get; set; } = BackendDefaultTypes.FormRepositoryFactory;
 
 
     }

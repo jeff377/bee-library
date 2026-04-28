@@ -1,14 +1,14 @@
 using System.ComponentModel;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.System;
-using Bee.Repository.Providers;
+using Bee.Repository.Factories;
 using Bee.Definition.Database;
 
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
     /// 針對 <see cref="IDatabaseRepository"/> 預設實作的純邏輯測試。
-    /// 透過 <see cref="SystemRepositoryProvider"/> 取得實例（避免直接依賴 internal 型別）。
+    /// 透過 <see cref="SystemRepositoryFactory"/> 取得實例（避免直接依賴 internal 型別）。
     /// </summary>
     [Collection("Initialize")]
     public class DatabaseRepositoryTests
@@ -18,7 +18,7 @@ namespace Bee.Repository.UnitTests
         private const string ValidTableName = "TableName";
 
         private static IDatabaseRepository CreateRepository()
-            => new SystemRepositoryProvider().DatabaseRepository;
+            => new SystemRepositoryFactory().CreateDatabaseRepository();
 
         [Theory]
         [InlineData(null)]

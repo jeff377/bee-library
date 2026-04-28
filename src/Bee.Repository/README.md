@@ -35,8 +35,8 @@
 
 ### Provider Implementations
 
-- `SystemRepositoryProvider` -- wires `SessionRepository` and `DatabaseRepository` into a single provider
-- `FormRepositoryProvider` -- factory that creates form repository instances by ProgId
+- `SystemRepositoryFactory` -- wires `SessionRepository` and `DatabaseRepository` into a single provider
+- `FormRepositoryFactory` -- factory that creates form repository instances by ProgId
 
 ## Key Public APIs
 
@@ -46,8 +46,8 @@
 | `DatabaseRepository` | Connection testing and schema migration |
 | `DataFormRepository` | Data form data access implementation |
 | `ReportFormRepository` | Report form data access implementation |
-| `SystemRepositoryProvider` | Default `ISystemRepositoryProvider` implementation |
-| `FormRepositoryProvider` | Default `IFormRepositoryProvider` implementation |
+| `SystemRepositoryFactory` | Default `ISystemRepositoryFactory` implementation |
+| `FormRepositoryFactory` | Default `IFormRepositoryFactory` implementation |
 
 ## Design Conventions
 
@@ -63,6 +63,6 @@
 ```
 Bee.Repository/
   Form/       # DataFormRepository, ReportFormRepository
-  Providers/   # SystemRepositoryProvider, FormRepositoryProvider
+  Factories/   # SystemRepositoryFactory, FormRepositoryFactory
   System/     # SessionRepository, DatabaseRepository
 ```

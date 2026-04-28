@@ -145,7 +145,7 @@ namespace Bee.Business.System
                     $"args.ExpiresIn must be between 1 and {MaxExpiresInSeconds} seconds.");
 
             // Create a new user session
-            var repo = RepositoryInfo.SystemProvider!.SessionRepository;
+            var repo = RepositoryInfo.SystemFactory!.CreateSessionRepository();
             var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
             // Return the access token
             return new CreateSessionResult()

@@ -52,12 +52,12 @@ namespace Bee.Definition
 
         // ---------------- Repository ----------------
         /// <summary>
-        /// Default system-level repository provider type.
+        /// Default system-level repository factory type.
         /// </summary>
-        public const string SystemRepositoryProvider = "Bee.Repository.Providers.SystemRepositoryProvider, Bee.Repository";
+        public const string SystemRepositoryFactory = "Bee.Repository.Factories.SystemRepositoryFactory, Bee.Repository";
         /// <summary>
-        /// Default form-level repository provider type.
+        /// Default form-level repository factory type.
         /// </summary>
-        public const string FormRepositoryProvider = "Bee.Repository.Providers.FormRepositoryProvider, Bee.Repository";
+        public const string FormRepositoryFactory = "Bee.Repository.Factories.FormRepositoryFactory, Bee.Repository";
     }
 }

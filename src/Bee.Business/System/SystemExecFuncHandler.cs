@@ -50,7 +50,7 @@ namespace Bee.Business.System
             string dbName = args.Parameters.GetValue<string>("DbName");
             string tableName = args.Parameters.GetValue<string>("TableName");
 
-            var repo = RepositoryInfo.SystemProvider!.DatabaseRepository;
+            var repo = RepositoryInfo.SystemFactory!.CreateDatabaseRepository();
             bool upgraded = repo.UpgradeTableSchema(databaseId, dbName, tableName);
             result.Parameters.Add("Upgraded", upgraded);
         }
@@ -62,7 +62,7 @@ namespace Bee.Business.System
         {
             var item = args.Parameters.GetValue<DatabaseItem>("DatabaseItem");
 
-            var repo = RepositoryInfo.SystemProvider!.DatabaseRepository;
+            var repo = RepositoryInfo.SystemFactory!.CreateDatabaseRepository();
             repo.TestConnection(item);
         }
 

@@ -21,7 +21,7 @@ namespace Bee.Business.Providers
         /// <param name="accessToken">The access token.</param>
         public SessionUser? GetSessionUser(Guid accessToken)
         {
-            var repo = RepositoryInfo.SystemProvider!.SessionRepository;
+            var repo = RepositoryInfo.SystemFactory!.CreateSessionRepository();
             return repo.GetSession(accessToken);
         }
     }

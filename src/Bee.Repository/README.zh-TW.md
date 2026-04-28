@@ -35,8 +35,8 @@
 
 ### Provider 實作
 
-- `SystemRepositoryProvider` -- 將 `SessionRepository` 與 `DatabaseRepository` 組裝為單一 Provider
-- `FormRepositoryProvider` -- 依 ProgId 建立表單 Repository 實例的工廠
+- `SystemRepositoryFactory` -- 將 `SessionRepository` 與 `DatabaseRepository` 組裝為單一 Provider
+- `FormRepositoryFactory` -- 依 ProgId 建立表單 Repository 實例的工廠
 
 ## 主要公開 API
 
@@ -46,8 +46,8 @@
 | `DatabaseRepository` | 連線測試與結構遷移 |
 | `DataFormRepository` | 資料表單資料存取實作 |
 | `ReportFormRepository` | 報表表單資料存取實作 |
-| `SystemRepositoryProvider` | 預設 `ISystemRepositoryProvider` 實作 |
-| `FormRepositoryProvider` | 預設 `IFormRepositoryProvider` 實作 |
+| `SystemRepositoryFactory` | 預設 `ISystemRepositoryFactory` 實作 |
+| `FormRepositoryFactory` | 預設 `IFormRepositoryFactory` 實作 |
 
 ## 設計慣例
 
@@ -63,6 +63,6 @@
 ```
 Bee.Repository/
   Form/       # DataFormRepository、ReportFormRepository
-  Providers/   # SystemRepositoryProvider、FormRepositoryProvider
+  Factories/   # SystemRepositoryFactory、FormRepositoryFactory
   System/     # SessionRepository、DatabaseRepository
 ```

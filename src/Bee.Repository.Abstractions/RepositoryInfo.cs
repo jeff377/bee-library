@@ -1,12 +1,12 @@
 using Bee.Definition.Settings;
 using Bee.Base;
 using Bee.Definition;
-using Bee.Repository.Abstractions.Providers;
+using Bee.Repository.Abstractions.Factories;
 
 namespace Bee.Repository.Abstractions
 {
     /// <summary>
-    /// Provides static access to the system repository and form repository providers.
+    /// Provides static access to the system and form repository factories.
     /// </summary>
     public static class RepositoryInfo
     {
@@ -23,27 +23,27 @@ namespace Bee.Repository.Abstractions
         }
 
         /// <summary>
-        /// Gets or sets the system repository provider.
+        /// Gets or sets the system repository factory.
         /// </summary>
-        public static ISystemRepositoryProvider? SystemProvider { get; set; }
+        public static ISystemRepositoryFactory? SystemFactory { get; set; }
 
         /// <summary>
-        /// Gets or sets the form repository provider.
+        /// Gets or sets the form repository factory.
         /// </summary>
-        public static IFormRepositoryProvider? FormProvider { get; set; }
+        public static IFormRepositoryFactory? FormFactory { get; set; }
 
         /// <summary>
-        /// Initializes the repository providers from the given backend configuration.
+        /// Initializes the repository factories from the given backend configuration.
         /// </summary>
         private static void Initialize(BackendConfiguration configuration)
         {
             var components = configuration.Components;
-            // Set the system repository provider
-            SystemProvider = CreateOrDefault<ISystemRepositoryProvider>
-                (components.SystemRepositoryProvider, BackendDefaultTypes.SystemRepositoryProvider);
-            // Set the form repository provider
-            FormProvider = CreateOrDefault<IFormRepositoryProvider>
-                (components.FormRepositoryProvider, BackendDefaultTypes.FormRepositoryProvider);
+            // Set the system repository factory
+            SystemFactory = CreateOrDefault<ISystemRepositoryFactory>
+                (components.SystemRepositoryFactory, BackendDefaultTypes.SystemRepositoryFactory);
+            // Set the form repository factory
+            FormFactory = CreateOrDefault<IFormRepositoryFactory>
+                (components.FormRepositoryFactory, BackendDefaultTypes.FormRepositoryFactory);
         }
 
         /// <summary>
