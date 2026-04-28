@@ -17,8 +17,8 @@
 # Local test settings (may contain sensitive connection strings)
 .runsettings
 
-# Archived Claude Code plans (working documents, not reference material)
-docs/plans/archive/
+# Archived working documents (plans / 過時設計文件，非當前參考資料)
+docs/archive/
 
 # Blog posts (published on HackMD, not synced to GitHub)
 docs/blogs/

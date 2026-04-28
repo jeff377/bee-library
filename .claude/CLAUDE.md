@@ -57,7 +57,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 1. 將計畫寫成 md 文件，存至 `docs/plans/` 目錄，檔名格式：`plan-<主題>.md`
 2. 等待使用者確認後，才開始執行
 3. **Plan 執行完畢時，立刻在文件頂部標記完成狀態**（見下方格式），讓後續不需回查程式碼或 commits 即可判斷狀態
-4. 由使用者要求時才將計畫文件移至 `docs/plans/archive/` 封存
+4. 由使用者要求時才將計畫文件移至 `docs/archive/` 封存（此目錄已 gitignored，不上 GitHub；亦可放置任何需封存的舊文件，不限 plan）
 
 #### Plan 狀態標記格式
 
@@ -74,7 +74,7 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 
 - 進行中或尚未開始的 plan 可省略狀態列，或標記 `**狀態：🚧 進行中**`／`**狀態：📝 擬定中**`
 - 完成日期採 ISO 格式（`YYYY-MM-DD`），對應實作落地當天
-- 已封存至 `docs/plans/archive/` 的 plan 必有完成狀態列
+- 已封存至 `docs/archive/` 的 plan 必有完成狀態列
 
 ## 架構參考
 
