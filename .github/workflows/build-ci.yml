@@ -116,7 +116,8 @@ jobs:
           /k:"jeff377_bee-library" \
           /o:"jeff377" \
           /d:sonar.token="$SONAR_TOKEN" \
-          /s:"$GITHUB_WORKSPACE/sonar-project.properties"
+          /d:sonar.host.url="https://sonarcloud.io" \
+          /s:"$GITHUB_WORKSPACE/SonarQube.Analysis.xml"
 
     - name: Build (for Sonar coverage)
       run: dotnet build Bee.Library.slnx --configuration Release --no-incremental

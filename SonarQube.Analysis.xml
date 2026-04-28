@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  SonarCloud 掃描設定。
+
+  此檔由 .github/workflows/build-ci.yml 的 SonarScanner Begin step 透過
+  /s:"$GITHUB_WORKSPACE/SonarQube.Analysis.xml" 引用。
+
+  命令列保留的參數（不放此檔）：
+    /k:                專案 key
+    /o:                organization
+    /d:sonar.token     SONAR_TOKEN secret，避免進入版控
+    /d:sonar.host.url  SonarCloud 入口（dotnet scanner 部分版本要求命令列）
+
+  設計原則：與專案內檔案 / 規則綁定的設定放此檔，跟 repo 一起 PR review。
+  與帳號／組織通用的設定（quality profile、quality gate）留 SonarCloud UI。
+
+  注意：SonarScanner for .NET 的 /s: 參數要求 XML 格式（SonarQube.Analysis.xml），
+  不接受 Java sonar-project.properties 格式。
+-->
+<SonarQubeAnalysisProperties xmlns="http://www.sonarsource.com/msbuild/analyzer/2015/12">
+  <!-- 覆蓋率報告 -->
+  <Property Name="sonar.cs.opencover.reportsPaths">**/TestResults/**/coverage.opencover.xml</Property>
+
+  <!-- 不納入覆蓋率計算的目錄（測試與範例本身不需被覆蓋） -->
+  <Property Name="sonar.coverage.exclusions">tests/**,samples/**</Property>
+
+  <!--
+    排除「設計上對稱、繼承基底不同」的型別對的重複行偵測。
+    詳見 docs/plans/plan-symmetric-types-refactor.md
+  -->
+  <Property Name="sonar.cpd.exclusions">src/Bee.Definition/Layouts/LayoutItem.cs,src/Bee.Definition/Layouts/LayoutColumn.cs</Property>
+</SonarQubeAnalysisProperties>
