@@ -39,7 +39,6 @@
 ### Cache Invalidation
 
 - `HostFileChangeMonitor` integration -- evicts cache entries when underlying definition files change
-- `DbChangeMonitor` -- polls the `ST_Cache` table to detect database-side invalidation signals
 
 ### Services
 
@@ -65,7 +64,7 @@
 - **Template Method Pattern** -- `ObjectCache<T>` subclasses override `GetPolicy`, `GetKey`, and `CreateInstance` to define caching behavior without modifying the base retrieval logic.
 - **Lazy Singleton** -- `CacheContainer` uses `Lazy<T>` to defer initialization until first access.
 - **Key normalization** -- all cache keys are converted to uppercase to ensure case-insensitive lookups.
-- **Dual invalidation** -- file-based (`HostFileChangeMonitor`) and database-based (`DbChangeMonitor`) eviction strategies coexist.
+- **File-based invalidation** -- `HostFileChangeMonitor` evicts cache entries when the source definition files change. (Database-driven invalidation is planned but not yet implemented.)
 - **Nullable reference types** enabled (`<Nullable>enable</Nullable>`).
 
 ## Directory Structure
@@ -81,5 +80,5 @@ Bee.ObjectCaching/
   Services/    # SessionInfoService, EnterpriseObjectService
   *.cs (root)  # CacheFunc, CacheContainer, ObjectCache, KeyObjectCache,
                # CacheItemPolicy, CacheTimeKind, CacheInfo,
-               # LocalDefineAccess, DbChangeMonitor
+               # LocalDefineAccess
 ```

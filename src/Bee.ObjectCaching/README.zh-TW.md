@@ -39,7 +39,6 @@
 ### 快取失效機制
 
 - `HostFileChangeMonitor` 整合 -- 當底層定義檔案變更時自動清除快取項目
-- `DbChangeMonitor` -- 輪詢 `ST_Cache` 資料表以偵測資料庫端的失效訊號
 
 ### 服務
 
@@ -65,7 +64,7 @@
 - **範本方法模式（Template Method）** -- `ObjectCache<T>` 的子類別覆寫 `GetPolicy`、`GetKey` 與 `CreateInstance`，在不修改基底擷取邏輯的前提下定義快取行為。
 - **延遲單例（Lazy Singleton）** -- `CacheContainer` 使用 `Lazy<T>` 延遲至首次存取時才初始化。
 - **鍵值正規化** -- 所有快取鍵一律轉為大寫，確保不區分大小寫的查找。
-- **雙軌失效機制** -- 檔案型（`HostFileChangeMonitor`）與資料庫型（`DbChangeMonitor`）清除策略並存。
+- **檔案型失效機制** -- `HostFileChangeMonitor` 在來源定義檔案變更時清除快取項目。（資料庫驅動的失效機制規劃中，尚未實作。）
 - **啟用 Nullable Reference Types**（`<Nullable>enable</Nullable>`）。
 
 ## 目錄結構
@@ -81,5 +80,5 @@ Bee.ObjectCaching/
   Services/    # SessionInfoService、EnterpriseObjectService
   *.cs（根目錄）# CacheFunc、CacheContainer、ObjectCache、KeyObjectCache、
                # CacheItemPolicy、CacheTimeKind、CacheInfo、
-               # LocalDefineAccess、DbChangeMonitor
+               # LocalDefineAccess
 ```
