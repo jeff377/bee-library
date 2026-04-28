@@ -1,9 +1,10 @@
 namespace Bee.Definition
 {
     /// <summary>
-    /// Interface for a business object provider that defines how all business objects are obtained.
+    /// Factory for creating business objects. Used by the API layer to create the BO instance
+    /// that handles a particular API call (system-level or form-level).
     /// </summary>
-    public interface IBusinessObjectProvider
+    public interface IBusinessObjectFactory
     {
         /// <summary>
         /// Creates a system-level business object.

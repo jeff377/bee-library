@@ -194,9 +194,9 @@ namespace Bee.Api.Core.JsonRpc
                 throw new ArgumentException("ProgId cannot be null or empty.", nameof(progId));
 
             if (progId == SysProgIds.System)
-                return BackendInfo.BusinessObjectProvider.CreateSystemBusinessObject(accessToken, IsLocalCall);
+                return BackendInfo.BusinessObjectFactory.CreateSystemBusinessObject(accessToken, IsLocalCall);
             else
-                return BackendInfo.BusinessObjectProvider.CreateFormBusinessObject(accessToken, progId, IsLocalCall);
+                return BackendInfo.BusinessObjectFactory.CreateFormBusinessObject(accessToken, progId, IsLocalCall);
         }
     }
 

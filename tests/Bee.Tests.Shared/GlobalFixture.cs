@@ -36,7 +36,7 @@ namespace Bee.Tests.Shared
             BackendInfo.DefineAccess = new LocalDefineAccess();
             // 系統初始化
             var settings = BackendInfo.DefineAccess.GetSystemSettings();
-            settings.BackendConfiguration.Components.BusinessObjectProvider = BackendDefaultTypes.BusinessObjectProvider;
+            settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
             // CI 環境改用環境變數作為 MasterKey 來源，避免在 tests/Define/ 下建立 Master.key
             // 汙染 MasterKeyProviderTests.GetMasterKey_EmptyFilePath_UsesDefaultFileName 等
             // 預期「DefinePath 下無 Master.key」的測試。

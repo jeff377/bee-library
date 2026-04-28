@@ -16,9 +16,9 @@ namespace Bee.Definition
         /// </summary>
         public const string AccessTokenValidator = "Bee.Business.Validator.AccessTokenValidator, Bee.Business";
         /// <summary>
-        /// Default business object provider type, used for dynamically creating BusinessObjects.
+        /// Default business object factory type, used for creating BusinessObjects per API call.
         /// </summary>
-        public const string BusinessObjectProvider = "Bee.Business.BusinessObjectProvider, Bee.Business";
+        public const string BusinessObjectFactory = "Bee.Business.BusinessObjectFactory, Bee.Business";
 
         // ---------------- Cache ----------------
         /// <summary>

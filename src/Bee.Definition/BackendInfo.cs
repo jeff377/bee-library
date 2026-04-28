@@ -75,9 +75,10 @@ namespace Bee.Definition
         public static IAccessTokenValidator AccessTokenValidator { get; set; } = null!;
 
         /// <summary>
-        /// Gets or sets the business object provider, defining how all BusinessObjects are obtained.
+        /// Gets or sets the business object factory, defining how all BusinessObjects are created
+        /// for incoming API calls.
         /// </summary>
-        public static IBusinessObjectProvider BusinessObjectProvider { get; set; } = null!;
+        public static IBusinessObjectFactory BusinessObjectFactory { get; set; } = null!;
 
         /// <summary>
         /// Gets or sets the cache data source provider.
@@ -152,8 +153,8 @@ namespace Bee.Definition
                 (Components.ApiEncryptionKeyProvider, BackendDefaultTypes.ApiEncryptionKeyProvider);
             AccessTokenValidator = CreateOrDefault<IAccessTokenValidator>
                 (Components.AccessTokenValidator, BackendDefaultTypes.AccessTokenValidator);
-            BusinessObjectProvider = CreateOrDefault<IBusinessObjectProvider>
-                (Components.BusinessObjectProvider, BackendDefaultTypes.BusinessObjectProvider);
+            BusinessObjectFactory = CreateOrDefault<IBusinessObjectFactory>
+                (Components.BusinessObjectFactory, BackendDefaultTypes.BusinessObjectFactory);
             CacheDataSourceProvider = CreateOrDefault<ICacheDataSourceProvider>
                 (Components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider);
             DefineStorage = CreateOrDefault<IDefineStorage>

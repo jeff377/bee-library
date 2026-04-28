@@ -1,18 +1,19 @@
-﻿using Bee.Business.Form;
+using Bee.Business.Form;
 using Bee.Business.System;
 using Bee.Definition;
 
 namespace Bee.Business
 {
     /// <summary>
-    /// Provider for creating business logic objects.
+    /// Default implementation of <see cref="IBusinessObjectFactory"/>; creates business logic objects
+    /// (<see cref="SystemBusinessObject"/> or <see cref="FormBusinessObject"/>) for incoming API calls.
     /// </summary>
-    public class BusinessObjectProvider : IBusinessObjectProvider
+    public class BusinessObjectFactory : IBusinessObjectFactory
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BusinessObjectProvider"/> class.
+        /// Initializes a new instance of the <see cref="BusinessObjectFactory"/> class.
         /// </summary>
-        public BusinessObjectProvider()
+        public BusinessObjectFactory()
         { }
 
         /// <summary>

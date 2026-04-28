@@ -31,12 +31,12 @@ namespace Bee.Definition.Settings
         public string AccessTokenValidator { get; set; } = BackendDefaultTypes.AccessTokenValidator;
 
         /// <summary>
-        /// Business object provider type.
+        /// Business object factory type.
         /// </summary>
-        [Category("Providers")]
-        [Description("Business object provider type, defines how to obtain all BusinessObjects.")]
-        [DefaultValue(BackendDefaultTypes.BusinessObjectProvider)]
-        public string BusinessObjectProvider { get; set; } = BackendDefaultTypes.BusinessObjectProvider;
+        [Category("Factories")]
+        [Description("Business object factory type, defines how to create all BusinessObjects per API call.")]
+        [DefaultValue(BackendDefaultTypes.BusinessObjectFactory)]
+        public string BusinessObjectFactory { get; set; } = BackendDefaultTypes.BusinessObjectFactory;
 
         /// <summary>
         /// Cache provider type.
