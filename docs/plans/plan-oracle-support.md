@@ -9,7 +9,8 @@
 > - Phase B-3（FormCommandBuilder）完成 — SELECT/INSERT/UPDATE/DELETE 委派至 dialect-agnostic cores（`DatabaseType.Oracle`）+ 7 個純語法測試
 > - Phase C-1（TableAlterCommandBuilder）完成 — ADD/MODIFY/RENAME COLUMN、CREATE/DROP INDEX、PK constraint via ADD CONSTRAINT/DROP PRIMARY KEY；family-aware ALTER vs Rebuild 分類；Oracle 特有的 ADD/MODIFY 括號形式與 DROP INDEX 不帶 ON tablename + 19 個純語法測試
 > - Phase C-2（TableRebuildCommandBuilder）完成 — 6 步 rebuild 腳本（drop tmp / create tmp / insert / drop old / rename / recreate index）；DROP TABLE 包 PL/SQL block 取代 IF EXISTS（吞 ORA-00942）+ CASCADE CONSTRAINTS；新欄位與 IDENTITY 欄位排除於資料複製 + 11 個純語法測試
-> - 後續：C-3 TableSchemaProvider
+> - Phase C-3（TableSchemaProvider）完成 — 從 USER_TABLES / USER_TAB_COLUMNS / USER_TAB_COMMENTS / USER_COL_COMMENTS / USER_INDEXES / USER_IND_COLUMNS / USER_CONSTRAINTS 讀取並映射至 TableSchema；NUMBER 精度推回 FieldDbType（含 Boolean/Short/Integer/Long/Currency/Decimal）；RAW(16) 還原為 Guid；TIMESTAMP 帶括號精度也識別；DEFAULT 字面 strip（含 escape `''`）+ 40 個純語法測試
+> - 全部 builder 階段完成。後續：Phase D（整合測試 — 本機 Oracle container 跑 [DbFact(Oracle)] 系列）
 
 > 本計畫為 [plan-multi-db-overview.md](plan-multi-db-overview.md) 的子 plan。執行前請先完成總綱定義的「前置步驟：DatabaseType 列舉順序調整」。建議先完成 [plan-mysql-support.md](plan-mysql-support.md) 再動本計畫——MySQL 較單純，可順帶完成共通基礎建設修改、也讓抽象層先暴露一輪缺口。
 
