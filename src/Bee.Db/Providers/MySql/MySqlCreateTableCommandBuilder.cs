@@ -29,7 +29,7 @@ namespace Bee.Db.Providers.MySql
     /// </remarks>
     public class MySqlCreateTableCommandBuilder : ICreateTableCommandBuilder
     {
-        private const string TableSuffix =
+        private const string BaseTableSuffix =
             " ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci";
 
         private TableSchema? _dbTable;
@@ -117,10 +117,23 @@ namespace Bee.Db.Providers.MySql
             sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {MySqlSchemaHelper.QuoteName(tableName)} (\r\n{fields}");
             if (StrFunc.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
-            sb.Append(CultureInfo.InvariantCulture, $"\r\n){TableSuffix};");
+            sb.Append(CultureInfo.InvariantCulture, $"\r\n){GetTableSuffix()};");
             if (StrFunc.IsNotEmpty(indexes))
                 sb.Append(CultureInfo.InvariantCulture, $"\r\n{indexes}");
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// Gets the table suffix, appending <c>COMMENT='...'</c> when the schema has a
+        /// non-empty <see cref="TableSchema.DisplayName"/>. The schema reader round-trips
+        /// the table COMMENT, so emitting it here keeps fixture re-runs idempotent (no
+        /// phantom description drift).
+        /// </summary>
+        private string GetTableSuffix()
+        {
+            if (StrFunc.IsEmpty(TableSchema.DisplayName))
+                return BaseTableSuffix;
+            return $"{BaseTableSuffix} COMMENT='{MySqlSchemaHelper.EscapeSqlString(TableSchema.DisplayName)}'";
         }
 
         /// <summary>

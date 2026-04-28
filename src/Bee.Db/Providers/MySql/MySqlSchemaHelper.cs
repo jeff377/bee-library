@@ -74,11 +74,18 @@ namespace Bee.Db.Providers.MySql
         {
             if (field.AllowNull)
                 return string.Empty;
+
+            // MySQL 8.0: BLOB/TEXT/JSON columns reject inline string-literal DEFAULT
+            // (only parenthesised expression defaults are allowed). Suppress DEFAULT for
+            // Text columns — they remain NOT NULL but the caller must provide a value on
+            // INSERT. Binary maps to LONGBLOB and has no default in the framework either.
+            if (field.DbType == FieldDbType.Text)
+                return string.Empty;
+
             string originalDefaultValue = GetDefaultValueExpression(field.DbType);
             switch (field.DbType)
             {
                 case FieldDbType.String:
-                case FieldDbType.Text:
                     return StrFunc.Format("'{0}'", StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
@@ -105,7 +112,8 @@ namespace Bee.Db.Providers.MySql
             string nullability = field.AllowNull ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
             string defaultClause = StrFunc.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
-            return $"{QuoteName(field.FieldName)} {dbType} {nullability}{defaultClause}";
+            string commentClause = GetCommentClause(field.Caption);
+            return $"{QuoteName(field.FieldName)} {dbType} {nullability}{defaultClause}{commentClause}";
         }
 
         /// <summary>
@@ -115,7 +123,19 @@ namespace Bee.Db.Providers.MySql
         /// <param name="field">The AutoIncrement field definition.</param>
         public static string GetAutoIncrementColumnDefinition(DbField field)
         {
-            return $"{QuoteName(field.FieldName)} BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY";
+            string commentClause = GetCommentClause(field.Caption);
+            return $"{QuoteName(field.FieldName)} BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY{commentClause}";
+        }
+
+        /// <summary>
+        /// Returns the <c>COMMENT 'caption'</c> clause for a column with a non-empty caption,
+        /// or empty string when the caption is empty. The framework emits COMMENT so the
+        /// schema reader can round-trip captions cleanly (otherwise every fixture re-run
+        /// would detect a description drift on every text column).
+        /// </summary>
+        private static string GetCommentClause(string caption)
+        {
+            return StrFunc.IsEmpty(caption) ? string.Empty : $" COMMENT '{EscapeSqlString(caption)}'";
         }
     }
 }

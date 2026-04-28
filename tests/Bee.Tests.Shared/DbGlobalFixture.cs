@@ -19,7 +19,8 @@ namespace Bee.Tests.Shared
             EnsureDatabase(DatabaseType.SQLServer);
             EnsureDatabase(DatabaseType.PostgreSQL);
             EnsureDatabase(DatabaseType.SQLite);
-            // 未來新增 MySQL / Oracle 在此擴增。
+            EnsureDatabase(DatabaseType.MySQL);
+            // 未來新增 Oracle 在此擴增。
         }
 
         /// <summary>
