@@ -60,7 +60,7 @@
 ```
 Bee.Repository.Abstractions/
   Form/                # IDataFormRepository、IReportFormRepository
-  Provider/            # ISystemRepositoryProvider、IFormRepositoryProvider
+  Providers/            # ISystemRepositoryProvider、IFormRepositoryProvider
   System/              # ISessionRepository、IDatabaseRepository
   RepositoryInfo.cs    # Provider 實例的靜態服務定位器
 ```

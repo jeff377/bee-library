@@ -1,6 +1,6 @@
 ﻿using Bee.Api.Core.MessagePack;
 
-namespace Bee.Api.Core.Transformer
+namespace Bee.Api.Core.Transformers
 {
     /// <summary>
     /// API payload serializer that uses MessagePack.

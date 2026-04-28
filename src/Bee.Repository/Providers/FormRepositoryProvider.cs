@@ -1,8 +1,8 @@
 ﻿using Bee.Repository.Abstractions.Form;
-using Bee.Repository.Abstractions.Provider;
+using Bee.Repository.Abstractions.Providers;
 using Bee.Repository.Form;
 
-namespace Bee.Repository.Provider
+namespace Bee.Repository.Providers
 {
     /// <summary>
     /// Default implementation of the form repository provider.

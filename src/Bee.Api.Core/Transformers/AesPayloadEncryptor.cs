@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using Bee.Base.Security;
 
-namespace Bee.Api.Core.Transformer
+namespace Bee.Api.Core.Transformers
 {
     /// <summary>
     /// AES-based API transport layer data encryptor.

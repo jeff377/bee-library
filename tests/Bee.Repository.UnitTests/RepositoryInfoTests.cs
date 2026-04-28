@@ -1,9 +1,9 @@
 using System.ComponentModel;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.Form;
-using Bee.Repository.Abstractions.Provider;
+using Bee.Repository.Abstractions.Providers;
 using Bee.Repository.Abstractions.System;
-using Bee.Repository.Provider;
+using Bee.Repository.Providers;
 using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests

@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using Bee.Repository.Form;
-using Bee.Repository.Provider;
+using Bee.Repository.Providers;
 
 namespace Bee.Repository.UnitTests
 {

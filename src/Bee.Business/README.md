@@ -80,8 +80,9 @@ Bee.Business/
                     # and Args/Result pairs for system operations
                     # (Login, Ping, CreateSession, GetDefine, SaveDefine,
                     #  CheckPackageUpdate, GetPackage, GetCommonConfiguration)
-  Providers/         # LoginAttemptTracker, StaticApiEncryptionKeyProvider,
-                    # DynamicApiEncryptionKeyProvider, CacheDataSourceProvider
+  Providers/        # StaticApiEncryptionKeyProvider, DynamicApiEncryptionKeyProvider,
+                    # CacheDataSourceProvider
+  Security/         # LoginAttemptTracker (in-memory account-lockout tracker)
   Validator/        # AccessTokenValidationProvider
   *.cs (root)       # BusinessObject, BusinessObjectProvider, IBusinessObject,
                     # IExecFuncHandler, BusinessFunc, ExecFuncArgs, ExecFuncResult,

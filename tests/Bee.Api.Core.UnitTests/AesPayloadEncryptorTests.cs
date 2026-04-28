@@ -1,5 +1,5 @@
 using System.Security.Cryptography;
-using Bee.Api.Core.Transformer;
+using Bee.Api.Core.Transformers;
 using Bee.Base.Security;
 
 namespace Bee.Api.Core.UnitTests

@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using Bee.Definition.Security;
 
-namespace Bee.Business.Providers
+namespace Bee.Business.Security
 {
     /// <summary>
     /// In-memory login attempt tracker that enforces account lockout after consecutive failed attempts.

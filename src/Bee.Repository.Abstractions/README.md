@@ -60,7 +60,7 @@
 ```
 Bee.Repository.Abstractions/
   Form/                # IDataFormRepository, IReportFormRepository
-  Provider/            # ISystemRepositoryProvider, IFormRepositoryProvider
+  Providers/            # ISystemRepositoryProvider, IFormRepositoryProvider
   System/              # ISessionRepository, IDatabaseRepository
   RepositoryInfo.cs    # Static service locator for provider instances
 ```

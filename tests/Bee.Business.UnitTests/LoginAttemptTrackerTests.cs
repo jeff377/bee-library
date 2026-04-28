@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Bee.Business.Providers;
+using Bee.Business.Security;
 
 namespace Bee.Business.UnitTests
 {

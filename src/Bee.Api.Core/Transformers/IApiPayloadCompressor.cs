@@ -1,4 +1,4 @@
-namespace Bee.Api.Core.Transformer
+namespace Bee.Api.Core.Transformers
 {
     /// <summary>
     /// Interface for the API transport layer data compression strategy.

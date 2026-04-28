@@ -1,6 +1,6 @@
 ﻿using Bee.Base.Serialization;
 
-namespace Bee.Api.Core.Transformer
+namespace Bee.Api.Core.Transformers
 {
     /// <summary>
     /// GZip-based API transport layer data compressor.

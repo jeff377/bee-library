@@ -12,7 +12,7 @@ namespace Bee.Api.Core.UnitTests
             var info = new ApiErrorInfo();
             Assert.Equal(string.Empty, info.Message);
             Assert.Equal(string.Empty, info.StackTrace);
-            Assert.False(info.IsHandle);
+            Assert.False(info.IsHandled);
             Assert.Equal(string.Empty, info.ToString());
         }
 

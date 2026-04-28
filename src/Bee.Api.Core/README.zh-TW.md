@@ -93,21 +93,21 @@ Bee.Api.Core/
                     JsonRpcException、ApiPayload、ApiPayloadConverter
   Messages/         ApiMessageBase、ApiRequest、ApiResponse、
                     ExecFuncRequest、ExecFuncResponse、
-                    ApiHeaders、PayloadFormat、ApiErrorInfo
+                    ApiHeaders、PayloadFormat、ApiErrorInfo、ApiCallContext
     System/         內建系統級請求/回應型別
                     （Login、Ping、CreateSession、GetDefine、SaveDefine、
                     GetPackage、CheckPackageUpdate、GetCommonConfiguration）
   MessagePack/      SafeMessagePackSerializerOptions、MessagePackHelper、
                     FormatterResolver、ADO.NET 型別自訂格式器
   Registry/         ApiContractRegistry（Contract → API 型別註冊中心）
-  Transformer/      IApiPayloadTransformer、ApiPayloadTransformer、
+  Transformers/     IApiPayloadTransformer、ApiPayloadTransformer、
                     IApiPayloadSerializer、MessagePackPayloadSerializer、
                     IApiPayloadCompressor、GzipPayloadCompressor、
                     IApiPayloadEncryptor、AesPayloadEncryptor、
                     NoEncryptionEncryptor、ApiPayloadOptionsFactory
                     （byte 層級 payload 管線；與 Conversion 的 .NET 物件層級
                     型別轉換抽象層次不同）
-  Validator/        ApiAccessValidator、ApiCallContext
+  Validator/        ApiAccessValidator
   （根目錄）         ApiServiceOptions（使用者啟動配置入口）
 ```
 

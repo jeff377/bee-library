@@ -1,7 +1,7 @@
 using Bee.Definition.Settings;
 using Bee.Base;
 using Bee.Definition;
-using Bee.Repository.Abstractions.Provider;
+using Bee.Repository.Abstractions.Providers;
 
 namespace Bee.Repository.Abstractions
 {

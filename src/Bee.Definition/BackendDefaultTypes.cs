@@ -54,10 +54,10 @@ namespace Bee.Definition
         /// <summary>
         /// Default system-level repository provider type.
         /// </summary>
-        public const string SystemRepositoryProvider = "Bee.Repository.Provider.SystemRepositoryProvider, Bee.Repository";
+        public const string SystemRepositoryProvider = "Bee.Repository.Providers.SystemRepositoryProvider, Bee.Repository";
         /// <summary>
         /// Default form-level repository provider type.
         /// </summary>
-        public const string FormRepositoryProvider = "Bee.Repository.Provider.FormRepositoryProvider, Bee.Repository";
+        public const string FormRepositoryProvider = "Bee.Repository.Providers.FormRepositoryProvider, Bee.Repository";
     }
 }

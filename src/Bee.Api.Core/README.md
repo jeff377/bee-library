@@ -93,21 +93,21 @@ Bee.Api.Core/
                     JsonRpcException, ApiPayload, ApiPayloadConverter
   Messages/         ApiMessageBase, ApiRequest, ApiResponse,
                     ExecFuncRequest, ExecFuncResponse,
-                    ApiHeaders, PayloadFormat, ApiErrorInfo
+                    ApiHeaders, PayloadFormat, ApiErrorInfo, ApiCallContext
     System/         Built-in system-level request/response types
                     (Login, Ping, CreateSession, GetDefine, SaveDefine,
                     GetPackage, CheckPackageUpdate, GetCommonConfiguration)
   MessagePack/      SafeMessagePackSerializerOptions, MessagePackHelper,
                     FormatterResolver, custom formatters for ADO.NET types
   Registry/         ApiContractRegistry (contract -> API type registry)
-  Transformer/      IApiPayloadTransformer, ApiPayloadTransformer,
+  Transformers/     IApiPayloadTransformer, ApiPayloadTransformer,
                     IApiPayloadSerializer, MessagePackPayloadSerializer,
                     IApiPayloadCompressor, GzipPayloadCompressor,
                     IApiPayloadEncryptor, AesPayloadEncryptor,
                     NoEncryptionEncryptor, ApiPayloadOptionsFactory
                     (byte-level payload pipeline; distinct from Conversion's
                     .NET object-level type mapping)
-  Validator/        ApiAccessValidator, ApiCallContext
+  Validator/        ApiAccessValidator
   (root)            ApiServiceOptions (user-facing startup configuration)
 ```
 

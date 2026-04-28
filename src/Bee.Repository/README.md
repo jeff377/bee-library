@@ -63,6 +63,6 @@
 ```
 Bee.Repository/
   Form/       # DataFormRepository, ReportFormRepository
-  Provider/   # SystemRepositoryProvider, FormRepositoryProvider
+  Providers/   # SystemRepositoryProvider, FormRepositoryProvider
   System/     # SessionRepository, DatabaseRepository
 ```

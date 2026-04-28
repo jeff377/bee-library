@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Bee.Api.Core.Transformer;
+using Bee.Api.Core.Transformers;
 using Bee.Base;
 
 namespace Bee.Api.Core.UnitTests

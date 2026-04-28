@@ -51,7 +51,7 @@ namespace Bee.Api.Core.Messages
         /// </summary>
         [Description("Gets or sets a value indicating whether the error has been handled.")]
         [DefaultValue(false)]
-        public bool IsHandle { get; set; } = false;
+        public bool IsHandled { get; set; } = false;
 
         /// <summary>
         /// Returns a string representation of this object.

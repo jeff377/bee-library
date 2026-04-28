@@ -1,6 +1,6 @@
 ﻿using Bee.Repository.Abstractions.Form;
 
-namespace Bee.Repository.Abstractions.Provider
+namespace Bee.Repository.Abstractions.Providers
 {
     /// <summary>
     /// Interface for the form repository provider.

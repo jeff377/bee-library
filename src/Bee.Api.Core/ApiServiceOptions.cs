@@ -1,6 +1,6 @@
 using Bee.Definition.Settings;
 using Bee.Api.Core.Authorization;
-using Bee.Api.Core.Transformer;
+using Bee.Api.Core.Transformers;
 
 namespace Bee.Api.Core
 {

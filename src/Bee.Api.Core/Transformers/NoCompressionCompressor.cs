@@ -1,4 +1,4 @@
-﻿namespace Bee.Api.Core.Transformer
+﻿namespace Bee.Api.Core.Transformers
 {
     /// <summary>
     /// A compressor implementation that performs no compression or decompression.
