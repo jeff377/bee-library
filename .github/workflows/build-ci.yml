@@ -116,10 +116,7 @@ jobs:
           /k:"jeff377_bee-library" \
           /o:"jeff377" \
           /d:sonar.token="$SONAR_TOKEN" \
-          /d:sonar.host.url="https://sonarcloud.io" \
-          /d:sonar.cs.opencover.reportsPaths="**/TestResults/**/coverage.opencover.xml" \
-          /d:sonar.coverage.exclusions="tests/**,samples/**" \
-          /d:sonar.cpd.exclusions="src/Bee.Definition/Layouts/LayoutItem.cs,src/Bee.Definition/Layouts/LayoutColumn.cs"
+          /s:"$GITHUB_WORKSPACE/sonar-project.properties"
 
     - name: Build (for Sonar coverage)
       run: dotnet build Bee.Library.slnx --configuration Release --no-incremental
