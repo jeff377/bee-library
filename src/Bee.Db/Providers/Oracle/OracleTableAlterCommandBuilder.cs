@@ -1,34 +1,167 @@
+using System.Globalization;
+using System.Text;
+using Bee.Base;
 using Bee.Db.Ddl;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
+using Bee.Definition.Database;
 
 namespace Bee.Db.Providers.Oracle
 {
     /// <summary>
-    /// Oracle 19c+ ALTER TABLE builder. Counterpart to
-    /// <see cref="MySql.MySqlTableAlterCommandBuilder"/> and
+    /// Generates Oracle 19c+ <c>ALTER TABLE</c> statements for a <see cref="ITableChange"/>.
+    /// Counterpart to <see cref="MySql.MySqlTableAlterCommandBuilder"/> and
     /// <see cref="PostgreSql.PgTableAlterCommandBuilder"/>.
     /// </summary>
     /// <remarks>
-    /// Skeleton; the full implementation lands in a follow-up commit. Oracle uses
-    /// <c>ALTER TABLE ... MODIFY (column ...)</c> for type changes and
-    /// <c>ALTER TABLE ... RENAME COLUMN</c> for renames. Type changes are stricter than
-    /// MySQL — for example <c>NUMBER</c> precision/scale reduction may require the column
-    /// to be empty — and the rebuild fallback is invoked more often. See
-    /// docs/plans/plan-oracle-support.md.
+    /// Oracle 19c+ natively supports <c>ADD</c>, <c>MODIFY</c>, <c>RENAME COLUMN</c> and
+    /// index management; the rebuild fallback is only invoked for cross-family type
+    /// changes flagged by <see cref="OracleAlterCompatibilityRules"/>. Differences from
+    /// MySQL: column lists for <c>ADD</c> / <c>MODIFY</c> use Oracle's parenthesised form
+    /// (<c>ADD ("col" type ...)</c>), index drops do not take an <c>ON tablename</c> clause,
+    /// and <c>MODIFY</c> emits the full column definition in one statement (PG-style
+    /// three-part ALTER is not used).
     /// </remarks>
     public class OracleTableAlterCommandBuilder : ITableAlterCommandBuilder
     {
-        private const string NotImplementedMessage =
-            "Oracle ALTER TABLE builder is not yet implemented. See docs/plans/plan-oracle-support.md.";
+        /// <inheritdoc />
+        public ChangeExecutionKind GetExecutionKind(ITableChange change)
+        {
+            switch (change)
+            {
+                case AddFieldChange _:
+                case RenameFieldChange _:
+                case AddIndexChange _:
+                case DropIndexChange _:
+                    return ChangeExecutionKind.Alter;
+                case AlterFieldChange alter:
+                    return OracleAlterCompatibilityRules.GetKindForTypeChange(alter.OldField.DbType, alter.NewField.DbType);
+                default:
+                    return ChangeExecutionKind.NotSupported;
+            }
+        }
 
         /// <inheritdoc />
-        public ChangeExecutionKind GetExecutionKind(ITableChange change) => throw new NotImplementedException(NotImplementedMessage);
+        public bool IsNarrowingChange(ITableChange change)
+        {
+            if (change is AlterFieldChange alter)
+                return OracleAlterCompatibilityRules.IsNarrowing(alter.OldField, alter.NewField);
+            return false;
+        }
 
         /// <inheritdoc />
-        public bool IsNarrowingChange(ITableChange change) => throw new NotImplementedException(NotImplementedMessage);
+        public IReadOnlyList<string> GetStatements(string tableName, ITableChange change)
+        {
+            BaseFunc.EnsureNotNullOrWhiteSpace((tableName, nameof(tableName)));
+            switch (change)
+            {
+                case AddFieldChange add:
+                    return new[] { BuildAddFieldStatement(tableName, add.Field) };
+                case AlterFieldChange alter:
+                    return new[] { BuildAlterFieldStatement(tableName, alter.NewField) };
+                case RenameFieldChange rename:
+                    return new[] { BuildRenameFieldStatement(tableName, rename) };
+                case AddIndexChange addIndex:
+                    return new[] { BuildAddIndexStatement(tableName, addIndex.Index) };
+                case DropIndexChange dropIndex:
+                    return new[] { BuildDropIndexStatement(tableName, dropIndex.Index) };
+                default:
+                    throw new InvalidOperationException($"Unsupported change type: {change.GetType().Name}");
+            }
+        }
 
-        /// <inheritdoc />
-        public IReadOnlyList<string> GetStatements(string tableName, ITableChange change) => throw new NotImplementedException(NotImplementedMessage);
+        /// <summary>
+        /// Builds the Oracle <c>ALTER TABLE ... ADD (column-definition)</c> statement.
+        /// Oracle accepts both bare and parenthesised forms for single-column ADD; the
+        /// parenthesised form is used for visual consistency with MODIFY and to keep the
+        /// shape stable if multi-column ADD is added later.
+        /// </summary>
+        private static string BuildAddFieldStatement(string tableName, DbField field)
+        {
+            return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} ADD ({OracleSchemaHelper.GetColumnDefinition(field)});";
+        }
+
+        /// <summary>
+        /// Builds the Oracle <c>ALTER TABLE ... MODIFY (column-definition)</c> statement.
+        /// The full column definition (type + default + nullability) is re-emitted in one go.
+        /// </summary>
+        /// <remarks>
+        /// Oracle differs from MySQL in that MODIFY rejects redundant nullability hints
+        /// (e.g. specifying <c>NOT NULL</c> on an already-NOT-NULL column raises ORA-01442);
+        /// the full re-definition output here may need diff-based trimming when integration
+        /// tests cover the upgrade path. See docs/plans/plan-oracle-support.md.
+        /// </remarks>
+        private static string BuildAlterFieldStatement(string tableName, DbField newField)
+        {
+            string newDef = OracleSchemaHelper.GetColumnDefinition(newField);
+            return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} MODIFY ({newDef});";
+        }
+
+        /// <summary>
+        /// Builds the Oracle <c>ALTER TABLE ... RENAME COLUMN</c> statement (12c+).
+        /// </summary>
+        private static string BuildRenameFieldStatement(string tableName, RenameFieldChange change)
+        {
+            return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} RENAME COLUMN " +
+                   $"{OracleSchemaHelper.QuoteName(change.OldFieldName)} TO {OracleSchemaHelper.QuoteName(change.NewField.FieldName)};";
+        }
+
+        /// <summary>
+        /// Builds the index creation statement. Primary keys go through
+        /// <c>ALTER TABLE ... ADD CONSTRAINT name PRIMARY KEY</c>; everything else uses
+        /// <c>CREATE [UNIQUE] INDEX</c>. Oracle PK constraints reject ASC/DESC inside
+        /// the column list, so PK column lists are emitted without sort direction.
+        /// </summary>
+        private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
+        {
+            string indexName = StrFunc.Format(index.Name, tableName);
+
+            if (index.PrimaryKey)
+            {
+                string pkFields = BuildIndexFieldList(index, includeSortDirection: false);
+                return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} ADD CONSTRAINT {OracleSchemaHelper.QuoteName(indexName)} PRIMARY KEY ({pkFields});";
+            }
+
+            string fields = BuildIndexFieldList(index, includeSortDirection: true);
+            string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
+            return $"CREATE {uniqueClause}INDEX {OracleSchemaHelper.QuoteName(indexName)} ON {OracleSchemaHelper.QuoteName(tableName)} ({fields});";
+        }
+
+        /// <summary>
+        /// Builds the index drop statement. Primary keys use
+        /// <c>ALTER TABLE ... DROP PRIMARY KEY</c> (Oracle accepts this without naming
+        /// the constraint); regular indexes use <c>DROP INDEX name</c> — note Oracle does
+        /// **not** take an <c>ON tablename</c> clause, unlike MySQL.
+        /// </summary>
+        private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
+        {
+            if (index.PrimaryKey)
+                return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} DROP PRIMARY KEY;";
+
+            return $"DROP INDEX {OracleSchemaHelper.QuoteName(index.Name)};";
+        }
+
+        /// <summary>
+        /// Builds the comma-separated index field list. Sort direction (ASC/DESC) is
+        /// only valid on regular indexes; PK constraints reject it on Oracle.
+        /// </summary>
+        private static string BuildIndexFieldList(TableSchemaIndex index, bool includeSortDirection)
+        {
+            var sb = new StringBuilder();
+            foreach (IndexField field in index.IndexFields!)
+            {
+                if (sb.Length > 0) sb.Append(", ");
+                if (includeSortDirection)
+                {
+                    sb.Append(CultureInfo.InvariantCulture,
+                        $"{OracleSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                }
+                else
+                {
+                    sb.Append(OracleSchemaHelper.QuoteName(field.FieldName));
+                }
+            }
+            return sb.ToString();
+        }
     }
 }
