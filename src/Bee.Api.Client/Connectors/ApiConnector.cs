@@ -1,7 +1,7 @@
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Base.Tracing;
-using Bee.Api.Client.ApiServiceProvider;
+using Bee.Api.Client.Providers;
 using Bee.Api.Core.Conversion;
 using Bee.Api.Core.Messages;
 
@@ -22,7 +22,7 @@ namespace Bee.Api.Client.Connectors
         protected ApiConnector(Guid accessToken)
         {
             AccessToken = accessToken;
-            Provider = new LocalApiServiceProvider(accessToken);
+            Provider = new LocalApiProvider(accessToken);
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Bee.Api.Client.Connectors
                 throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));
 
             AccessToken = accessToken;
-            Provider = new RemoteApiServiceProvider(endpoint, accessToken);
+            Provider = new RemoteApiProvider(endpoint, accessToken);
         }
 
         #endregion
@@ -151,7 +151,7 @@ namespace Bee.Api.Client.Connectors
         private PayloadFormat TransformRequestPayload(JsonRpcRequest request, PayloadFormat format)
         {
             // For local providers in non-debug mode, force Plain format to skip encoding/encryption and improve performance.
-            if (this.Provider is LocalApiServiceProvider && !SysInfo.IsDebugMode)
+            if (this.Provider is LocalApiProvider && !SysInfo.IsDebugMode)
             {
                 format = PayloadFormat.Plain; // No encoding in local non-debug mode
             }

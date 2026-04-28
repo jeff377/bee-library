@@ -1,6 +1,6 @@
 using Bee.Api.Core.JsonRpc;
 
-namespace Bee.Api.Client.ApiServiceProvider
+namespace Bee.Api.Client.Providers
 {
     /// <summary>
     /// Interface for a JSON-RPC service provider.

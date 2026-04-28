@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Bee.Api.Client.ApiServiceProvider;
+using Bee.Api.Client.Providers;
 using Bee.Api.Client.Connectors;
 using Bee.Api.Core.Messages;
 
@@ -13,7 +13,7 @@ namespace Bee.Api.Client.UnitTests
         private const string TestProgId = "Employee";
 
         [Fact]
-        [DisplayName("FormApiConnector Local 建構子應設定 ProgId 與 LocalApiServiceProvider")]
+        [DisplayName("FormApiConnector Local 建構子應設定 ProgId 與 LocalApiProvider")]
         public void Constructor_Local_SetsProgIdAndProvider()
         {
             var token = Guid.NewGuid();
@@ -21,11 +21,11 @@ namespace Bee.Api.Client.UnitTests
 
             Assert.Equal(token, connector.AccessToken);
             Assert.Equal(TestProgId, connector.ProgId);
-            Assert.IsType<LocalApiServiceProvider>(connector.Provider);
+            Assert.IsType<LocalApiProvider>(connector.Provider);
         }
 
         [Fact]
-        [DisplayName("FormApiConnector Remote 建構子應設定 ProgId 與 RemoteApiServiceProvider")]
+        [DisplayName("FormApiConnector Remote 建構子應設定 ProgId 與 RemoteApiProvider")]
         public void Constructor_Remote_SetsProgIdAndProvider()
         {
             var token = Guid.NewGuid();
@@ -33,7 +33,7 @@ namespace Bee.Api.Client.UnitTests
 
             Assert.Equal(token, connector.AccessToken);
             Assert.Equal(TestProgId, connector.ProgId);
-            Assert.IsType<RemoteApiServiceProvider>(connector.Provider);
+            Assert.IsType<RemoteApiProvider>(connector.Provider);
         }
 
         [Theory]

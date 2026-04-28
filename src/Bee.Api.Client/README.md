@@ -18,7 +18,7 @@
 
 ### Local / Remote Strategy
 
-- `IJsonRpcProvider` abstracts the transport layer; `LocalApiServiceProvider` invokes business logic in-process via `JsonRpcExecutor`, while `RemoteApiServiceProvider` sends HTTP POST requests to a remote endpoint.
+- `IJsonRpcProvider` abstracts the transport layer; `LocalApiProvider` invokes business logic in-process via `JsonRpcExecutor`, while `RemoteApiProvider` sends HTTP POST requests to a remote endpoint.
 - The active strategy is selected at construction time via the connector's dual-constructor pattern.
 
 ### System-Level Connector
@@ -57,8 +57,8 @@
 | `SystemApiConnector` | System-level operations (Login, Ping, CreateSession, Initialize, Define CRUD, ExecFunc) |
 | `FormApiConnector` | Form-level business object calls bound to a specific ProgId |
 | `IJsonRpcProvider` | Strategy interface for JSON-RPC transport |
-| `LocalApiServiceProvider` | In-process provider via `JsonRpcExecutor` |
-| `RemoteApiServiceProvider` | HTTP-based provider with API key and Bearer token headers |
+| `LocalApiProvider` | In-process provider via `JsonRpcExecutor` |
+| `RemoteApiProvider` | HTTP-based provider with API key and Bearer token headers |
 | `RemoteDefineAccess` | `IDefineAccess` implementation with caching over the API |
 | `ApiConnectValidator` | Validates endpoints and determines connection type |
 | `ConnectType` | Enum: `Local`, `Remote` |
@@ -67,7 +67,7 @@
 
 ## Design Conventions
 
-- **Strategy Pattern** -- `IJsonRpcProvider` with `LocalApiServiceProvider` and `RemoteApiServiceProvider` implementations; the connector selects the strategy at construction time.
+- **Strategy Pattern** -- `IJsonRpcProvider` with `LocalApiProvider` and `RemoteApiProvider` implementations; the connector selects the strategy at construction time.
 - **Template Method** -- `ApiConnector` defines `ExecuteAsync<T>` with fixed steps (create request, transform payload, invoke provider, restore response); subclasses supply domain-specific methods.
 - **Dual constructor pattern** -- each connector offers two constructors: `(Guid accessToken)` for local and `(string endpoint, Guid accessToken)` for remote, mirroring the two provider types.
 - **Payload format negotiation** -- requests default to `PayloadFormat.Encrypted`; the pipeline automatically downgrades to `Encoded` when no encryption key is set, or to `Plain` for local providers in non-debug mode.
@@ -86,10 +86,10 @@ Bee.Api.Client/
     ApiConnector.cs                # Abstract base connector
     SystemApiConnector.cs          # System-level operations
     FormApiConnector.cs            # Form-level business object calls
-  ApiServiceProvider/
+  Providers/
     IJsonRpcProvider.cs            # Transport strategy interface
-    LocalApiServiceProvider.cs     # In-process provider
-    RemoteApiServiceProvider.cs    # HTTP-based provider
+    LocalApiProvider.cs     # In-process provider
+    RemoteApiProvider.cs    # HTTP-based provider
   DefineAccess/
     RemoteDefineAccess.cs          # Cached IDefineAccess over API
 ```

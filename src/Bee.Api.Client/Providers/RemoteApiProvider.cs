@@ -4,21 +4,21 @@ using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Api.Core.Messages;
 
-namespace Bee.Api.Client.ApiServiceProvider
+namespace Bee.Api.Client.Providers
 {
     /// <summary>
     /// Remote API service provider that accesses backend business logic over the network.
     /// </summary>
-    public class RemoteApiServiceProvider : IJsonRpcProvider
+    public class RemoteApiProvider : IJsonRpcProvider
     {
         #region 建構函式
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RemoteApiServiceProvider"/> class.
+        /// Initializes a new instance of the <see cref="RemoteApiProvider"/> class.
         /// </summary>
         /// <param name="endpoint">The API service endpoint.</param>
         /// <param name="accessToken">The access token.</param>
-        public RemoteApiServiceProvider(string endpoint, Guid accessToken)
+        public RemoteApiProvider(string endpoint, Guid accessToken)
         {
             if (string.IsNullOrWhiteSpace(endpoint))
                 throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));

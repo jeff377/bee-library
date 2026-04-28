@@ -18,7 +18,7 @@
 
 ### 本機 / 遠端策略
 
-- `IJsonRpcProvider` 抽象化傳輸層；`LocalApiServiceProvider` 透過 `JsonRpcExecutor` 在行程內呼叫商業邏輯，`RemoteApiServiceProvider` 則向遠端端點發送 HTTP POST 請求。
+- `IJsonRpcProvider` 抽象化傳輸層；`LocalApiProvider` 透過 `JsonRpcExecutor` 在行程內呼叫商業邏輯，`RemoteApiProvider` 則向遠端端點發送 HTTP POST 請求。
 - 建構時透過連接器的雙建構函式模式選擇啟用的策略。
 
 ### 系統層級連接器
@@ -57,8 +57,8 @@
 | `SystemApiConnector` | 系統層級操作（Login、Ping、CreateSession、Initialize、Define CRUD、ExecFunc） |
 | `FormApiConnector` | 表單層級商業物件呼叫，綁定至特定 ProgId |
 | `IJsonRpcProvider` | JSON-RPC 傳輸策略介面 |
-| `LocalApiServiceProvider` | 行程內提供者，透過 `JsonRpcExecutor` |
-| `RemoteApiServiceProvider` | HTTP 提供者，附帶 API 金鑰與 Bearer 權杖標頭 |
+| `LocalApiProvider` | 行程內提供者，透過 `JsonRpcExecutor` |
+| `RemoteApiProvider` | HTTP 提供者，附帶 API 金鑰與 Bearer 權杖標頭 |
 | `RemoteDefineAccess` | 透過 API 實作 `IDefineAccess`，含快取機制 |
 | `ApiConnectValidator` | 驗證端點並判斷連線類型 |
 | `ConnectType` | 列舉：`Local`、`Remote` |
@@ -67,7 +67,7 @@
 
 ## 設計慣例
 
-- **策略模式** -- `IJsonRpcProvider` 搭配 `LocalApiServiceProvider` 與 `RemoteApiServiceProvider` 實作；連接器在建構時選擇策略。
+- **策略模式** -- `IJsonRpcProvider` 搭配 `LocalApiProvider` 與 `RemoteApiProvider` 實作；連接器在建構時選擇策略。
 - **樣板方法** -- `ApiConnector` 定義 `ExecuteAsync<T>` 的固定步驟（建立請求、轉換酬載、呼叫提供者、還原回應）；子類別提供領域專屬方法。
 - **雙建構函式模式** -- 每個連接器提供兩個建構函式：`(Guid accessToken)` 用於本機、`(string endpoint, Guid accessToken)` 用於遠端，對應兩種提供者類型。
 - **酬載格式協商** -- 請求預設為 `PayloadFormat.Encrypted`；管線在未設定加密金鑰時自動降級為 `Encoded`，本機提供者於非偵錯模式下降級為 `Plain`。
@@ -86,10 +86,10 @@ Bee.Api.Client/
     ApiConnector.cs                # 抽象基底連接器
     SystemApiConnector.cs          # 系統層級操作
     FormApiConnector.cs            # 表單層級商業物件呼叫
-  ApiServiceProvider/
+  Providers/
     IJsonRpcProvider.cs            # 傳輸策略介面
-    LocalApiServiceProvider.cs     # 行程內提供者
-    RemoteApiServiceProvider.cs    # HTTP 提供者
+    LocalApiProvider.cs     # 行程內提供者
+    RemoteApiProvider.cs    # HTTP 提供者
   DefineAccess/
     RemoteDefineAccess.cs          # 透過 API 實作快取式 IDefineAccess
 ```

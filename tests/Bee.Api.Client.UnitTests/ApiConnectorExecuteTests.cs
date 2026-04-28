@@ -1,6 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
-using Bee.Api.Client.ApiServiceProvider;
+using Bee.Api.Client.Providers;
 using Bee.Api.Client.Connectors;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;

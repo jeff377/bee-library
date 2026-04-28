@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Bee.Api.Client.ApiServiceProvider;
+using Bee.Api.Client.Providers;
 using Bee.Api.Client.Connectors;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
@@ -34,25 +34,25 @@ namespace Bee.Api.Client.UnitTests
         }
 
         [Fact]
-        [DisplayName("SystemApiConnector Local 建構子應建立 LocalApiServiceProvider")]
+        [DisplayName("SystemApiConnector Local 建構子應建立 LocalApiProvider")]
         public void Constructor_Local_SetsAccessTokenAndLocalProvider()
         {
             var token = Guid.NewGuid();
             var connector = new SystemApiConnector(token);
 
             Assert.Equal(token, connector.AccessToken);
-            Assert.IsType<LocalApiServiceProvider>(connector.Provider);
+            Assert.IsType<LocalApiProvider>(connector.Provider);
         }
 
         [Fact]
-        [DisplayName("SystemApiConnector Remote 建構子應建立 RemoteApiServiceProvider")]
+        [DisplayName("SystemApiConnector Remote 建構子應建立 RemoteApiProvider")]
         public void Constructor_Remote_SetsAccessTokenAndRemoteProvider()
         {
             var token = Guid.NewGuid();
             var connector = new SystemApiConnector("http://example.com/api", token);
 
             Assert.Equal(token, connector.AccessToken);
-            Assert.IsType<RemoteApiServiceProvider>(connector.Provider);
+            Assert.IsType<RemoteApiProvider>(connector.Provider);
         }
 
         [Theory]

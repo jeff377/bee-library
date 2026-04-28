@@ -1,17 +1,17 @@
 ﻿using Bee.Api.Core.JsonRpc;
 
-namespace Bee.Api.Client.ApiServiceProvider
+namespace Bee.Api.Client.Providers
 {
     /// <summary>
     /// Local API service provider that accesses backend business logic directly within the same process.
     /// </summary>
-    public class LocalApiServiceProvider : IJsonRpcProvider
+    public class LocalApiProvider : IJsonRpcProvider
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="LocalApiServiceProvider"/> class.
+        /// Initializes a new instance of the <see cref="LocalApiProvider"/> class.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        public LocalApiServiceProvider(Guid accessToken)
+        public LocalApiProvider(Guid accessToken)
         {
             AccessToken = accessToken;
         }
