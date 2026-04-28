@@ -17,7 +17,7 @@
   注意：SonarScanner for .NET 的 /s: 參數要求 XML 格式（SonarQube.Analysis.xml），
   不接受 Java sonar-project.properties 格式。
 -->
-<SonarQubeAnalysisProperties xmlns="http://www.sonarsource.com/msbuild/analyzer/2015/12">
+<SonarQubeAnalysisProperties xmlns="http://www.sonarsource.com/msbuild/integration/2015/1">
   <!-- 覆蓋率報告 -->
   <Property Name="sonar.cs.opencover.reportsPaths">**/TestResults/**/coverage.opencover.xml</Property>
 
