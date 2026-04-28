@@ -53,17 +53,20 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("MySQL DialectFactory 應能建立各 builder 與 schema provider 實例")]
+        [DisplayName("MySQL DialectFactory 應能建立各純 SQL 產生器實例")]
         public void DialectFactory_CreatesAllBuilders()
         {
             var factory = new MySqlDialectFactory();
 
+            // 只驗證「無外部相依」的 builder：CREATE / ALTER / Rebuild 純字串輸出，
+            // 不需開連線或查 FormSchema。
             Assert.NotNull(factory.CreateCreateTableCommandBuilder());
             Assert.NotNull(factory.CreateTableAlterCommandBuilder());
             Assert.NotNull(factory.CreateTableRebuildCommandBuilder());
-            Assert.NotNull(factory.CreateTableSchemaProvider("common_mysql"));
-            // CreateFormCommandBuilder 在 builder 實作後會查 FormSchema，不再適用「random progId 不爆」斷言；
-            // 該行為改由 MySqlFormCommandBuilderTests 覆蓋。
+            // CreateTableSchemaProvider 在實作後會 ctor 內 new DbAccess(databaseId)，
+            // CI 未設 BEE_TEST_CONNSTR_MYSQL 時 'common_mysql' 沒註冊到 DbConnectionManager
+            // → KeyNotFoundException；改由 MySqlIntegrationTests 覆蓋。
+            // CreateFormCommandBuilder 同理：實作後查 FormSchema，由 MySqlFormCommandBuilderTests 覆蓋。
         }
     }
 }
