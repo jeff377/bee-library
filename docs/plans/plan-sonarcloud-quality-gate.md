@@ -75,7 +75,7 @@ serialization paths. No additional validation is required.
 
 ## 項目二：對稱型別重複行重構評估
 
-**狀態：✅ 短期方案已完成（2026-04-28）** — `build-ci.yml` 加入 `sonar.cpd.exclusions` 排除 `LayoutItem.cs`、`LayoutColumn.cs`，`new_duplicated_lines_density` 預期回落到門檻內。長期重構議題移交 [plan-symmetric-types-refactor.md](plan-symmetric-types-refactor.md)。
+**狀態：✅ 短期方案已完成（2026-04-28）** — 抽出 `SonarQube.Analysis.xml`，`sonar.cpd.exclusions` 設為 `**/Providers/**` 排除 Bee.Db 三個 DB provider 子目錄（leak duplications 99.6% 來源）。注意：原先誤判主因為 `LayoutItem/Column`，後查 SonarCloud UI 才確認 leak 集中在 `Bee.Db/Providers/{SqlServer,PostgreSql,Sqlite}`。長期重構議題移交 [plan-symmetric-types-refactor.md](plan-symmetric-types-refactor.md)。
 
 ### 現況
 - `new_duplicated_lines_density = 3.04%`（剛超過 3.0% 門檻）

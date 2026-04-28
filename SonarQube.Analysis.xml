@@ -25,9 +25,12 @@
   <Property Name="sonar.coverage.exclusions">tests/**,samples/**</Property>
 
   <!--
-    排除「設計上對稱、繼承基底不同」的型別對的重複行偵測。
-    詳見 docs/plans/plan-symmetric-types-refactor.md
-    用 **/<檔名> glob 寫法，不依賴 sonar.projectBaseDir 的自動偵測結果。
+    排除「設計上對稱實作」的重複行偵測。
+    Bee.Db.Providers 每個 DB（SqlServer/PostgreSql/Sqlite）必須各自實作
+    SQL dialect、元數據查詢、schema 操作，本質上就是對稱重複，無法以
+    共用基底消除。詳見 docs/plans/plan-symmetric-types-refactor.md。
+
+    用 **/Providers/** glob 寫法，未來新增 Oracle/MySql provider 自動套用。
   -->
-  <Property Name="sonar.cpd.exclusions">**/LayoutItem.cs,**/LayoutColumn.cs</Property>
+  <Property Name="sonar.cpd.exclusions">**/Providers/**</Property>
 </SonarQubeAnalysisProperties>

@@ -4,19 +4,35 @@
 
 ## 背景
 
-SonarCloud 在 2026-04-28 巡檢時，全 repo 顯示 `duplicated_lines = 1446`、`duplicated_blocks = 37`。
-最大重複源頭是「對稱型別對」—— 兩個語意分離但實作高度雷同的類別：
+SonarCloud 在 2026-04-28 巡檢時，**leak period（v4.0.1 起）的新增重複行**為 977 行，
+其中 973 行（99.6%）集中在 `Bee.Db.Providers`，是新增 Sqlite provider 後與既有
+SqlServer / PostgreSql provider 形成的對稱實作。其餘對稱型別對則屬全 repo 累計
+重複（不在 leak 內），但仍為長期負債。
+
+### Leak 主來源（占 99.6%）
+
+| 子目錄 | dup_lines | 說明 |
+|---|---|---|
+| `src/Bee.Db/Providers/PostgreSql` | 376 | PostgreSql 對應的 schema / builder / helper |
+| `src/Bee.Db/Providers/SqlServer` | 323 | SqlServer 對應的同名類別 |
+| `src/Bee.Db/Providers/Sqlite` | 274 | Sqlite 對應的同名類別 |
+
+主要重複的類別套件（每個 provider 都有對應實作）：
+- `*AlterCompatibilityRules`（SQL 方言對 ALTER TABLE 的相容性規則）
+- `*SchemaHelper`（schema 元數據查詢）
+- `*TableRebuildCommandBuilder`（重建表的命令產生）
+- `*TypeMapping`、`*CreateTableCommandBuilder`、`*TableAlterCommandBuilder`
+
+### 既有對稱型別對（不在 leak 內，但仍為負債）
 
 | 型別對 | dup_lines | 領域 |
 |---|---|---|
 | `Bee.Definition.Layouts.LayoutItem` ↔ `LayoutColumn` | 各 68 | Form 格線 layout / Grid 欄位 layout |
 | `Bee.Base.Collections.CollectionItem` ↔ `KeyCollectionItem` | 各 52 | 集合元素 base / keyed 集合元素 base |
-| 散落於 `Bee.Db`、`Bee.ObjectCaching`、`Bee.Api.Client` 各 ~46 | — | 待逐一辨識 |
 
-短期已用 `sonar.cpd.exclusions` 排除 LayoutItem/Column 一對，讓 quality gate 過關（v4.0.1 之後）。
-但這只是治標：**重複本身仍存在**，未來新增類似類別會繼續累積，且在跨 repo 一致性、維護成本上都是負債。
-
-本計畫目標：在 v5.x 規劃時系統性評估是否抽共用基底，並且**不在 v4.x 內動 public API**。
+短期已用 `sonar.cpd.exclusions=**/Providers/**` 排除 Bee.Db Providers，讓 quality
+gate 過關。LayoutItem / Column / CollectionItem 等則無 exclude 必要（不在 leak）。
+本計畫目標：v5.x 規劃時系統性評估是否抽共用基底，並且**不在 v4.x 內動 public API**。
 
 ---
 
