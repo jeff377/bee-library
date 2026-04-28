@@ -56,7 +56,7 @@ namespace Bee.Db.UnitTests
             var dbAccess = new DbAccess(databaseId);
 
             var rowId = Guid.NewGuid();
-            var sysId = "ut_" + Guid.NewGuid().ToString("N").Substring(0, 12);
+            var sysId = string.Concat("ut_", Guid.NewGuid().ToString("N").AsSpan(0, 12));
 
             try
             {

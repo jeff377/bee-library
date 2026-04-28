@@ -1,0 +1,22 @@
+{
+  "issues": {
+    "AZ3Pym7ZqgvhdYcrszSU": {
+      "rule": "csharpsquid:S5766",
+      "kind": "security_hotspot",
+      "component": "src/Bee.Api.Core/Messages/ApiErrorInfo.cs",
+      "line": 29,
+      "attempts": 0,
+      "reason": "ApiErrorInfo 為 [Serializable] DTO，建構子未實作 (SerializationInfo, StreamingContext)、屬性皆為原始型別、且不經 BinaryFormatter 反序列化，符合 .claude/rules/sonarcloud.md §14 (S5766)。需使用者於 SonarCloud UI 將此 hotspot 標記為 Safe（API 變更狀態需 token，無法自動執行）。",
+      "lastAttempt": "2026-04-28"
+    }
+  },
+  "files": {},
+  "metrics": {
+    "new_duplicated_lines_density": {
+      "value": "3.04%",
+      "threshold": "3.0%",
+      "reason": "新版本 leak 期間統計納入既有對稱型別重複（LayoutItem/LayoutColumn、CollectionItem/KeyCollectionItem 等）。要降低需重構這些 public API 類別，超出 sonar-fix 自動修正範圍（禁止觸碰 public API 簽章）。需另開計畫評估是否抽出共用基底或以原始碼產生器取代。",
+      "lastAttempt": "2026-04-28"
+    }
+  }
+}
