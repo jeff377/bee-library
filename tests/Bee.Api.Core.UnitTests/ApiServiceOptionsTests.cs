@@ -9,6 +9,7 @@ namespace Bee.Api.Core.UnitTests
     /// <summary>
     /// ApiServiceOptions 測試。由於 ApiServiceOptions 為靜態類別，測試會保存／還原原始實作以避免影響其他測試。
     /// </summary>
+    [Collection("SysInfo")]
     public class ApiServiceOptionsTests
     {
         [Fact]

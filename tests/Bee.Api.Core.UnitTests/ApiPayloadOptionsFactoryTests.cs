@@ -7,6 +7,7 @@ namespace Bee.Api.Core.UnitTests
     /// <summary>
     /// ApiPayloadOptionsFactory 測試。
     /// </summary>
+    [Collection("SysInfo")]
     public class ApiPayloadOptionsFactoryTests
     {
         [Fact]

@@ -7,6 +7,7 @@ namespace Bee.Api.Core.UnitTests
     /// <summary>
     /// ApiPayloadTransformer 測試。需保存／還原 <see cref="ApiServiceOptions"/> 靜態狀態以避免影響其他測試。
     /// </summary>
+    [Collection("SysInfo")]
     public class ApiPayloadTransformerTests
     {
         [Fact]
