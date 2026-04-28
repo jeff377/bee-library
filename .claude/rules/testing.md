@@ -119,6 +119,48 @@ public void Validate_ValidUrl_ReturnsRemoteConnectType(string apiUrl) { ... }
 - 新增公開 API 時同步新增對應測試
 - 使用 `[DisplayName]` 提供清楚的中文描述
 
+## 全域狀態與平行安全
+
+xUnit 預設 collection-level parallel：**不同 test class 平行執行**，同一 collection 內串行。任何「跨 class 共享的 static / global state」在平行執行下必然 race。
+
+### 核心原則
+
+- **測試方法除 fixture 初始化外，禁止直接修改 production 的 `static` 變數**（含靜態屬性、靜態欄位、`AppDomain` 等全域狀態）
+- 若 production code 必須以 static 暴露全域狀態（如 `SysInfo.IsDebugMode`），優先**重構為可注入**：
+  - 加重載方法接收參數（如 `CreateEncryptor(string name, bool isDebugMode)`）
+  - 或抽介面以 DI 提供（如 `IDebugModeProvider`）
+- 重構成本太高、暫時無法避免時，**所有會碰同一個 static 的測試 class 必須加入同一 `[Collection("...")]`**，讓 xUnit 串行執行
+
+### 為什麼這條容易踩
+
+- 本機 CPU 多、排程鬆，race 不一定觸發；CI runner 通常 2 core，平行更密集，問題就浮現
+- 失敗訊息（如 `NoEncryptionEncryptor is only permitted in debug/development mode`）看起來像 production bug，但根因是測試之間互相污染
+- try/finally 還原 static 值「看起來」安全，實際上只在串行執行下成立
+
+### 串行化做法（過渡方案）
+
+```csharp
+// 1. 在 test 專案根目錄宣告 collection
+[CollectionDefinition("SysInfo")]
+public class SysInfoCollection
+{
+    // 純 marker，無 fixture
+}
+
+// 2. 所有會修改 SysInfo 的 test class 加同一 [Collection]
+[Collection("SysInfo")]
+public class ApiServiceOptionsTests { ... }
+
+[Collection("SysInfo")]
+public class ApiPayloadOptionsFactoryTests { ... }
+```
+
+### 已知違反案例（待逐步遷移）
+
+- `Bee.Api.Core.UnitTests` 中三個 class 透過 `try/finally` 切換 `SysInfo.IsDebugMode`
+  - 短期：已用 `[Collection("SysInfo")]` 串行
+  - 長期：`ApiPayloadOptionsFactory.CreateEncryptor` 應改為接受 `isDebugMode` 參數
+
 ## 常見 analyzer 退件規則
 
 `build-ci.yml` 有 strict build 階段會直接擋 PR；以下三條是撰寫測試檔時特別容易踩的，列出以減少 PR churn。
