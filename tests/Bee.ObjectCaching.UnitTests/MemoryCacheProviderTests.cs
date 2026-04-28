@@ -145,7 +145,8 @@ namespace Bee.ObjectCaching.UnitTests
                 // Trigger a file change; PhysicalFileProvider polls every ~4 seconds by default.
                 File.WriteAllText(tempFile, "changed");
 
-                var deadline = DateTime.UtcNow.AddSeconds(10);
+                // PhysicalFileProvider polls every ~4 seconds in polling mode; allow generous slack on CI.
+                var deadline = DateTime.UtcNow.AddSeconds(20);
                 while (provider.Contains("watched") && DateTime.UtcNow < deadline)
                 {
                     await Task.Delay(200);

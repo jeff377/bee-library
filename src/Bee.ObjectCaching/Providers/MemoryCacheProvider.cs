@@ -109,7 +109,14 @@ namespace Bee.ObjectCaching.Providers
                     if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
                         continue;
 
-                    var fileProvider = new PhysicalFileProvider(directory);
+                    // Use polling rather than inotify/FileSystemWatcher: kernel-level
+                    // file events are unreliable inside Linux CI containers (e.g. /tmp on
+                    // GitHub Actions emits spurious events that evict entries immediately).
+                    var fileProvider = new PhysicalFileProvider(directory)
+                    {
+                        UsePollingFileWatcher = true,
+                        UseActivePolling = true
+                    };
                     lock (_fileProvidersLock)
                     {
                         _fileProviders.Add(fileProvider);
