@@ -27,6 +27,7 @@
   <!--
     排除「設計上對稱、繼承基底不同」的型別對的重複行偵測。
     詳見 docs/plans/plan-symmetric-types-refactor.md
+    用 **/<檔名> glob 寫法，不依賴 sonar.projectBaseDir 的自動偵測結果。
   -->
-  <Property Name="sonar.cpd.exclusions">src/Bee.Definition/Layouts/LayoutItem.cs,src/Bee.Definition/Layouts/LayoutColumn.cs</Property>
+  <Property Name="sonar.cpd.exclusions">**/LayoutItem.cs,**/LayoutColumn.cs</Property>
 </SonarQubeAnalysisProperties>
