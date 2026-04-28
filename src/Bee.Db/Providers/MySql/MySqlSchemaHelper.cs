@@ -1,4 +1,6 @@
+using Bee.Base;
 using Bee.Base.Data;
+using Bee.Definition.Database;
 
 namespace Bee.Db.Providers.MySql
 {
@@ -52,6 +54,68 @@ namespace Bee.Db.Providers.MySql
                 default:
                     return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Escapes a string value for use inside a <c>'...'</c> literal by doubling single quotes.
+        /// </summary>
+        /// <param name="value">The string value to escape.</param>
+        public static string EscapeSqlString(string value)
+        {
+            return value.Replace("'", "''");
+        }
+
+        /// <summary>
+        /// Gets the default value expression for a field, honoring <see cref="DbField.AllowNull"/>
+        /// (nullable fields have no default). Returns an empty string when no default should be applied.
+        /// </summary>
+        /// <param name="field">The field definition.</param>
+        public static string GetDefaultExpression(DbField field)
+        {
+            if (field.AllowNull)
+                return string.Empty;
+            string originalDefaultValue = GetDefaultValueExpression(field.DbType);
+            switch (field.DbType)
+            {
+                case FieldDbType.String:
+                case FieldDbType.Text:
+                    return StrFunc.Format("'{0}'", StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
+                case FieldDbType.AutoIncrement:
+                    return string.Empty;
+                default:
+                    return StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
+            }
+        }
+
+        /// <summary>
+        /// Generates a full column definition fragment (name + type + nullability + optional inline DEFAULT).
+        /// Use <see cref="GetAutoIncrementColumnDefinition(DbField)"/> for AutoIncrement columns instead;
+        /// MySQL requires inlining <c>AUTO_INCREMENT PRIMARY KEY</c> on the same line.
+        /// </summary>
+        /// <remarks>
+        /// Case-insensitive comparison is provided table-wide via the
+        /// <c>COLLATE=utf8mb4_0900_ai_ci</c> table-level clause emitted by the CREATE
+        /// TABLE builder, so column-level <c>COLLATE</c> is not required here (MySQL
+        /// columns inherit the table collation by default).
+        /// </remarks>
+        /// <param name="field">The field definition.</param>
+        public static string GetColumnDefinition(DbField field)
+        {
+            string dbType = MySqlTypeMapping.GetMySqlType(field);
+            string nullability = field.AllowNull ? "NULL" : "NOT NULL";
+            string defaultExpression = GetDefaultExpression(field);
+            string defaultClause = StrFunc.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
+            return $"{QuoteName(field.FieldName)} {dbType} {nullability}{defaultClause}";
+        }
+
+        /// <summary>
+        /// Generates the inline MySQL-specific column definition for an AutoIncrement primary key:
+        /// <c>`name` BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY</c>.
+        /// </summary>
+        /// <param name="field">The AutoIncrement field definition.</param>
+        public static string GetAutoIncrementColumnDefinition(DbField field)
+        {
+            return $"{QuoteName(field.FieldName)} BIGINT NOT NULL AUTO_INCREMENT PRIMARY KEY";
         }
     }
 }
