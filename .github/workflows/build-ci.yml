@@ -10,6 +10,7 @@ on:
       - '*.slnx'
       - 'Directory.Build.props'
       - '.github/workflows/build-ci.yml'
+      - 'SonarQube.Analysis.xml'
   pull_request:
     branches:
       - main
@@ -18,6 +19,7 @@ on:
       - 'tests/**'
       - '*.slnx'
       - 'Directory.Build.props'
+      - 'SonarQube.Analysis.xml'
       - '.github/workflows/build-ci.yml'
   workflow_dispatch:
 
