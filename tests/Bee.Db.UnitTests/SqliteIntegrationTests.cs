@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Globalization;
 using Bee.Base.Data;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
@@ -41,6 +42,38 @@ namespace Bee.Db.UnitTests
             var schema = provider.GetTableSchema("__no_such_table__");
 
             Assert.Null(schema);
+        }
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite text 欄位字串比對應為 case-insensitive（COLLATE NOCASE）")]
+        public void StringComparison_IsCaseInsensitive()
+        {
+            var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
+            var dbAccess = new Bee.Db.DbAccess(databaseId);
+
+            // 手寫 minimal DDL 以聚焦於驗證 SQLite 對 COLLATE NOCASE 欄位的執行行為，
+            // 與 SqliteCreateTableCommandBuilder 純語法測試獨立。
+            dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                "DROP TABLE IF EXISTS ci_test"));
+            dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                "CREATE TABLE ci_test (name VARCHAR(50) COLLATE NOCASE NOT NULL)"));
+
+            try
+            {
+                dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                    "INSERT INTO ci_test (name) VALUES ({0})", "Jeff"));
+
+                var result = dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.Scalar,
+                    "SELECT COUNT(*) FROM ci_test WHERE name = {0}", "jeff"));
+
+                Assert.NotNull(result);
+                Assert.Equal(1, Convert.ToInt32(result.Scalar!, CultureInfo.InvariantCulture));
+            }
+            finally
+            {
+                dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                    "DROP TABLE IF EXISTS ci_test"));
+            }
         }
 
     }

@@ -113,6 +113,20 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("SQLite GetStatements：AddField 文字欄位應帶 COLLATE NOCASE（與 CREATE TABLE 一致）")]
+        public void GetStatements_AddStringField_IncludesCollateNocase()
+        {
+            // 由於 CREATE 與 ALTER 共用 SqliteSchemaHelper.GetColumnDefinition，
+            // ALTER TABLE ADD COLUMN 新增文字欄位也會自動帶 COLLATE NOCASE，與 CREATE 行為一致。
+            var field = new DbField("name", "Name", FieldDbType.String) { Length = 50, AllowNull = false };
+            var statements = _builder.GetStatements("st_demo", new AddFieldChange(field));
+
+            var sql = Assert.Single(statements);
+            Assert.Contains("ALTER TABLE \"st_demo\" ADD COLUMN", sql);
+            Assert.Contains("\"name\" VARCHAR(50) COLLATE NOCASE NOT NULL", sql);
+        }
+
+        [Fact]
         [DisplayName("SQLite GetStatements：RenameField 產生 RENAME COLUMN")]
         public void GetStatements_RenameField_EmitsRenameColumn()
         {

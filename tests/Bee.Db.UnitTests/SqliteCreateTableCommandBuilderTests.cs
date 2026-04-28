@@ -287,5 +287,43 @@ namespace Bee.Db.UnitTests
         }
 
         #endregion
+
+        #region COLLATE NOCASE for case-insensitive compare
+
+        [Theory]
+        [InlineData(FieldDbType.String, 50)]
+        [InlineData(FieldDbType.Text, 0)]
+        [DisplayName("GetCommandText 文字欄位（String/Text）column 定義應帶 COLLATE NOCASE")]
+        public void GetCommandText_TextField_IncludesCollateNocase(FieldDbType dbType, int length)
+        {
+            var schema = BuildSchema(dbType, length: length);
+            var builder = new SqliteCreateTableCommandBuilder();
+
+            string sql = builder.GetCommandText(schema);
+
+            // ERP CI 比對需求：WHERE name = 'jeff' 應命中 'Jeff'，
+            // 由 column 級 COLLATE NOCASE 套用實現。
+            Assert.Contains("COLLATE NOCASE", sql);
+        }
+
+        [Fact]
+        [DisplayName("GetCommandText 全為非文字欄位的 schema 不應出現 COLLATE 子句")]
+        public void GetCommandText_NonTextSchema_OmitsCollate()
+        {
+            var schema = new TableSchema { TableName = "st_demo" };
+            schema.Fields!.Add("rowid", "Row ID", FieldDbType.Guid);
+            schema.Fields.Add("count", "Count", FieldDbType.Integer);
+            schema.Fields.Add("amount", "Amount", FieldDbType.Decimal);
+            schema.Fields.Add("created", "Created", FieldDbType.DateTime);
+            schema.Fields.Add("data", "Data", FieldDbType.Binary);
+            schema.Indexes!.AddPrimaryKey("rowid");
+            var builder = new SqliteCreateTableCommandBuilder();
+
+            string sql = builder.GetCommandText(schema);
+
+            Assert.DoesNotContain("COLLATE", sql);
+        }
+
+        #endregion
     }
 }

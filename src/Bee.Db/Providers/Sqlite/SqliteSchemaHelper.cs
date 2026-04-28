@@ -86,14 +86,32 @@ namespace Bee.Db.Providers.Sqlite
         /// Use <see cref="GetAutoIncrementColumnDefinition(DbField)"/> for AutoIncrement columns instead;
         /// SQLite requires inlining the primary key keyword on the same line.
         /// </summary>
+        /// <remarks>
+        /// Text columns (<see cref="FieldDbType.String"/>, <see cref="FieldDbType.Text"/>) are
+        /// emitted with <c>COLLATE NOCASE</c> so string comparisons (<c>=</c>, <c>LIKE</c>,
+        /// <c>ORDER BY</c>) are case-insensitive by default — matches the ERP expectation that
+        /// <c>WHERE name = 'jeff'</c> hits a row stored as <c>Jeff</c>. Note SQLite's
+        /// <c>NOCASE</c> only folds ASCII A–Z; non-ASCII characters remain case-sensitive.
+        /// </remarks>
         /// <param name="field">The field definition.</param>
         public static string GetColumnDefinition(DbField field)
         {
             string dbType = SqliteTypeMapping.GetSqliteType(field);
+            string collateClause = IsTextType(field.DbType) ? " COLLATE NOCASE" : string.Empty;
             string nullability = field.AllowNull ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
             string defaultClause = StrFunc.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
-            return $"{QuoteName(field.FieldName)} {dbType} {nullability}{defaultClause}";
+            return $"{QuoteName(field.FieldName)} {dbType}{collateClause} {nullability}{defaultClause}";
+        }
+
+        /// <summary>
+        /// Returns true if the field stores text and should use <c>COLLATE NOCASE</c> for
+        /// case-insensitive comparison.
+        /// </summary>
+        /// <param name="dbType">The field data type.</param>
+        private static bool IsTextType(FieldDbType dbType)
+        {
+            return dbType == FieldDbType.String || dbType == FieldDbType.Text;
         }
 
         /// <summary>
