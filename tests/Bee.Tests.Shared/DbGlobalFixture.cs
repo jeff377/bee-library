@@ -120,6 +120,10 @@ namespace Bee.Tests.Shared
                     // UUID() returns a 36-char string; CURRENT_TIMESTAMP(6) matches the
                     // DATETIME(6) microsecond precision used in MySQL CREATE TABLE output.
                     return ("UUID()", "CURRENT_TIMESTAMP(6)");
+                case DatabaseType.Oracle:
+                    // SYS_GUID() returns a 16-byte RAW; SYSTIMESTAMP carries time-zone info
+                    // and aligns with the TIMESTAMP(6) precision used in Oracle CREATE TABLE output.
+                    return ("SYS_GUID()", "SYSTIMESTAMP");
                 default:
                     // NOTE: when adding a new DatabaseType, add a case here as well — otherwise
                     // DbGlobalFixture will throw at fixture init time once a connection string

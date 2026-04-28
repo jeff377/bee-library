@@ -1,6 +1,8 @@
 # 計畫：補上 Oracle 支援
 
-**狀態：📝 擬定中**
+**狀態：🚧 進行中**
+
+> 進度：Phase A（基礎建設）完成 — `DbProviderRegistry` 加 connection-open hook、`Oracle.ManagedDataAccess.Core` 套件加入、`DbGlobalFixture.GetSeedExpressions` Oracle case、`.runsettings` placeholder。Phase B+（方言實作與測試）尚未啟動。
 
 > 本計畫為 [plan-multi-db-overview.md](plan-multi-db-overview.md) 的子 plan。執行前請先完成總綱定義的「前置步驟：DatabaseType 列舉順序調整」。建議先完成 [plan-mysql-support.md](plan-mysql-support.md) 再動本計畫——MySQL 較單純，可順帶完成共通基礎建設修改、也讓抽象層先暴露一輪缺口。
 

@@ -65,7 +65,8 @@ namespace Bee.Db
         /// </summary>
         private DbConnectionScope CreateScope()
         {
-            return DbConnectionScope.Create(_externalConnection, Provider, _connectionString);
+            return DbConnectionScope.Create(_externalConnection, Provider, _connectionString,
+                DbProviderRegistry.GetConnectionInitializer(DatabaseType));
         }
 
         /// <summary>
@@ -73,7 +74,8 @@ namespace Bee.Db
         /// </summary>
         private Task<DbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
         {
-            return DbConnectionScope.CreateAsync(_externalConnection, Provider, _connectionString, cancellationToken);
+            return DbConnectionScope.CreateAsync(_externalConnection, Provider, _connectionString, cancellationToken,
+                DbProviderRegistry.GetConnectionInitializer(DatabaseType));
         }
 
         /// <summary>

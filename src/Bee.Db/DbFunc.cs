@@ -101,6 +101,10 @@ namespace Bee.Db
 
         /// <summary>
         /// Creates a database connection for the specified database identifier.
+        /// If a connection initializer is registered for the underlying database type
+        /// (see <see cref="DbProviderRegistry.GetConnectionInitializer"/>), it is wired to
+        /// the connection's <see cref="DbConnection.StateChange"/> event so that it runs
+        /// automatically each time the connection transitions from <c>Closed</c> to <c>Open</c>.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
         public static DbConnection CreateConnection(string databaseId)
@@ -112,6 +116,16 @@ namespace Bee.Db
             var connection = provider.CreateConnection()
                     ?? throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");
             connection.ConnectionString = connInfo.ConnectionString;
+
+            var initializer = DbProviderRegistry.GetConnectionInitializer(connInfo.DatabaseType);
+            if (initializer != null)
+            {
+                connection.StateChange += (sender, e) =>
+                {
+                    if (e.OriginalState == ConnectionState.Closed && e.CurrentState == ConnectionState.Open)
+                        initializer((DbConnection)sender!);
+                };
+            }
             return connection;
         }
 

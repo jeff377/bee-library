@@ -13,20 +13,42 @@ namespace Bee.Db.Manager
     public static class DbProviderRegistry
     {
         private static readonly Dictionary<DatabaseType, DbProviderFactory> _factories = [];
+        private static readonly Dictionary<DatabaseType, Action<DbConnection>> _initializers = [];
 
         /// <summary>
         /// Registers an ADO.NET provider factory for the specified database type.
-        /// Re-registering replaces the previous entry.
+        /// Re-registering replaces the previous entry and clears any associated connection initializer.
         /// </summary>
         /// <param name="type">The database type.</param>
         /// <param name="factory">The provider factory.</param>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="factory"/> is null.</exception>
         public static void Register(DatabaseType type, DbProviderFactory factory)
+            => Register(type, factory, null);
+
+        /// <summary>
+        /// Registers an ADO.NET provider factory along with an optional connection initializer
+        /// that runs once on every newly opened connection of this database type.
+        /// Re-registering replaces the previous entry; passing <c>null</c> for
+        /// <paramref name="connectionInitializer"/> clears any previously set initializer.
+        /// </summary>
+        /// <param name="type">The database type.</param>
+        /// <param name="factory">The provider factory.</param>
+        /// <param name="connectionInitializer">
+        /// Optional action invoked after a freshly created connection is opened. Typical use:
+        /// dialect-specific session settings (e.g. Oracle <c>ALTER SESSION SET NLS_COMP=...</c>).
+        /// The action runs against an already opened connection and may execute commands directly.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="factory"/> is null.</exception>
+        public static void Register(DatabaseType type, DbProviderFactory factory, Action<DbConnection>? connectionInitializer)
         {
             if (factory == null)
                 throw new ArgumentNullException(nameof(factory), "DbProviderFactory cannot be null.");
 
             _factories[type] = factory;
+            if (connectionInitializer != null)
+                _initializers[type] = connectionInitializer;
+            else
+                _initializers.Remove(type);
         }
 
         /// <summary>
@@ -41,6 +63,14 @@ namespace Bee.Db.Manager
                 return factory;
             throw new KeyNotFoundException($"Database provider not registered: {type}");
         }
+
+        /// <summary>
+        /// Gets the connection initializer registered for the specified database type, or
+        /// <c>null</c> if no initializer was registered.
+        /// </summary>
+        /// <param name="type">The database type.</param>
+        public static Action<DbConnection>? GetConnectionInitializer(DatabaseType type)
+            => _initializers.TryGetValue(type, out var initializer) ? initializer : null;
 
         /// <summary>
         /// Determines whether a provider factory is registered for the specified database type.
