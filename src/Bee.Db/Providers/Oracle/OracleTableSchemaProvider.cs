@@ -283,8 +283,6 @@ namespace Bee.Db.Providers.Oracle
         /// </remarks>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
-            // TIMESTAMP comes back as 'TIMESTAMP(6)' (precision in the type string itself);
-            // strip any trailing parenthesised qualifier before matching.
             string type = NormalizeDataTypeName(dataType);
             switch (type)
             {
@@ -298,12 +296,7 @@ namespace Bee.Db.Providers.Oracle
                 case "long":
                     return FieldDbType.Text;
                 case "number":
-                    if (dataPrecision == 1 && dataScale == 0) return FieldDbType.Boolean;
-                    if (dataPrecision == 5 && dataScale == 0) return FieldDbType.Short;
-                    if (dataPrecision == 10 && dataScale == 0) return FieldDbType.Integer;
-                    if (dataPrecision == 19 && dataScale == 0) return FieldDbType.Long;
-                    if (dataPrecision == 19 && dataScale == 4) return FieldDbType.Currency;
-                    return FieldDbType.Decimal;
+                    return MapNumberType(dataPrecision, dataScale);
                 case "float":
                 case "binary_float":
                 case "binary_double":
@@ -322,6 +315,26 @@ namespace Bee.Db.Providers.Oracle
                 default:
                     return FieldDbType.Unknown;
             }
+        }
+
+        /// <summary>
+        /// Maps an Oracle <c>NUMBER(precision, scale)</c> column to the matching
+        /// <see cref="FieldDbType"/> based on the framework's emitted forms.
+        /// </summary>
+        private static FieldDbType MapNumberType(int dataPrecision, int dataScale)
+        {
+            if (dataScale == 0)
+            {
+                if (dataPrecision == 1) return FieldDbType.Boolean;
+                if (dataPrecision == 5) return FieldDbType.Short;
+                if (dataPrecision == 10) return FieldDbType.Integer;
+                if (dataPrecision == 19) return FieldDbType.Long;
+            }
+            else if (dataPrecision == 19 && dataScale == 4)
+            {
+                return FieldDbType.Currency;
+            }
+            return FieldDbType.Decimal;
         }
 
         /// <summary>

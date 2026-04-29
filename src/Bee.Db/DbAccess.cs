@@ -74,8 +74,8 @@ namespace Bee.Db
         /// </summary>
         private Task<DbConnectionScope> CreateScopeAsync(CancellationToken cancellationToken = default)
         {
-            return DbConnectionScope.CreateAsync(_externalConnection, Provider, _connectionString, cancellationToken,
-                DbProviderRegistry.GetConnectionInitializer(DatabaseType));
+            return DbConnectionScope.CreateAsync(_externalConnection, Provider, _connectionString,
+                DbProviderRegistry.GetConnectionInitializer(DatabaseType), cancellationToken);
         }
 
         /// <summary>

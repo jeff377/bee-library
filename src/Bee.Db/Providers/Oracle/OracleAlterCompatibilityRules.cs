@@ -40,6 +40,12 @@ namespace Bee.Db.Providers.Oracle
         /// <summary>
         /// Returns the execution kind for changing a column from <paramref name="from"/> to <paramref name="to"/>.
         /// </summary>
+        /// <remarks>
+        /// Oracle cannot flip a column's IDENTITY status via an in-place ALTER; adding or removing
+        /// the IDENTITY clause requires re-creating the column. Any change involving
+        /// <see cref="TypeFamily.AutoIncrement"/> on either side therefore returns
+        /// <see cref="ChangeExecutionKind.Rebuild"/> unless the type is unchanged.
+        /// </remarks>
         /// <param name="from">The source type (current DB column type).</param>
         /// <param name="to">The target type (defined column type).</param>
         public static ChangeExecutionKind GetKindForTypeChange(FieldDbType from, FieldDbType to)
@@ -50,8 +56,6 @@ namespace Bee.Db.Providers.Oracle
             if (fromFamily == TypeFamily.Unknown || toFamily == TypeFamily.Unknown)
                 return ChangeExecutionKind.NotSupported;
 
-            // AutoIncrement (IDENTITY) status change cannot be flipped via in-place ALTER on Oracle;
-            // adding or removing the IDENTITY clause requires re-creating the column.
             if (fromFamily == TypeFamily.AutoIncrement || toFamily == TypeFamily.AutoIncrement)
             {
                 return from == to ? ChangeExecutionKind.Alter : ChangeExecutionKind.Rebuild;
