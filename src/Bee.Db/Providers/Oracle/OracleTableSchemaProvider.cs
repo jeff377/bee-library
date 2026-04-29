@@ -23,11 +23,15 @@ namespace Bee.Db.Providers.Oracle
     /// 'CURRENT_SCHEMA')</c> clutter.
     /// </para>
     /// <para>
-    /// Identifier case: <c>USER_TAB_COLUMNS.TABLE_NAME</c> stores the unquoted (uppercased)
-    /// form by default, but the framework's CREATE TABLE builder always quotes identifiers,
-    /// so a <c>"st_user"</c> table is stored as the lowercase string <c>st_user</c>.
-    /// Lookups pass the table name as-is; mixed-case schemas (against FormSchema convention)
-    /// will not round-trip cleanly.
+    /// Identifier case: the framework's CREATE TABLE builder emits quoted-UPPERCASE
+    /// identifiers (per <see cref="OracleSchemaHelper.QuoteName"/>), aligning with Oracle's
+    /// natural unquoted-fold-to-UPPER convention. <c>USER_TAB_COLUMNS.TABLE_NAME</c> /
+    /// <c>COLUMN_NAME</c> therefore returns UPPERCASE strings. This provider translates at
+    /// the boundary: input identifiers are uppercased before querying Oracle's data
+    /// dictionary; output identifiers are lowercased before being placed onto
+    /// <see cref="TableSchema"/> / <see cref="DbField"/> so the rest of the framework
+    /// (FormSchema, Repository, Business) sees a consistent lowercase abstraction across
+    /// all 5 supported databases.
     /// </para>
     /// </remarks>
     public class OracleTableSchemaProvider : ITableSchemaProvider
@@ -50,16 +54,22 @@ namespace Bee.Db.Providers.Oracle
         /// <inheritdoc />
         public TableSchema? GetTableSchema(string tableName)
         {
-            if (!TableExists(tableName)) return null;
+            // Oracle stores framework-emitted identifiers as UPPERCASE (per
+            // OracleSchemaHelper.QuoteName); query the data dictionary in UPPER form.
+            string storageName = tableName.ToUpperInvariant();
 
+            if (!TableExists(storageName)) return null;
+
+            // The TableName surfaced to the framework follows the lowercase abstraction;
+            // pass the caller-supplied value through verbatim rather than the storage form.
             var dbTable = new TableSchema { TableName = tableName };
-            dbTable.DisplayName = GetTableDescription(tableName);
+            dbTable.DisplayName = GetTableDescription(storageName);
 
-            var indexes = GetTableIndexes(tableName);
+            var indexes = GetTableIndexes(storageName);
             ParsePrimaryKey(dbTable, indexes);
             ParseIndexes(dbTable, indexes);
 
-            var columns = GetColumns(tableName);
+            var columns = GetColumns(storageName);
             foreach (DataRow row in columns.Rows)
             {
                 dbTable.Fields!.Add(ParseDbField(row));
@@ -71,10 +81,11 @@ namespace Bee.Db.Providers.Oracle
         /// <summary>
         /// Determines whether the specified table exists in the user's own schema.
         /// </summary>
-        private bool TableExists(string tableName)
+        /// <param name="storageName">Table name in Oracle storage form (UPPERCASE).</param>
+        private bool TableExists(string storageName)
         {
             string sql = "SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = {0}";
-            var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
+            var command = new DbCommandSpec(DbCommandKind.Scalar, sql, storageName);
             var result = _dbAccess.Execute(command);
             return BaseFunc.CInt(result.Scalar!) > 0;
         }
@@ -82,10 +93,11 @@ namespace Bee.Db.Providers.Oracle
         /// <summary>
         /// Gets the table-level <c>COMMENT ON TABLE</c> value (empty string if none).
         /// </summary>
-        private string GetTableDescription(string tableName)
+        /// <param name="storageName">Table name in Oracle storage form (UPPERCASE).</param>
+        private string GetTableDescription(string storageName)
         {
             string sql = "SELECT COALESCE(COMMENTS, '') FROM USER_TAB_COMMENTS WHERE TABLE_NAME = {0}";
-            var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
+            var command = new DbCommandSpec(DbCommandKind.Scalar, sql, storageName);
             var result = _dbAccess.Execute(command);
             return BaseFunc.CStr(result.Scalar!);
         }
@@ -96,7 +108,8 @@ namespace Bee.Db.Providers.Oracle
         /// <c>USER_CONSTRAINTS</c> to flag the PK index (Oracle creates the PK as a
         /// regular unique index whose name matches the constraint).
         /// </summary>
-        private DataTable GetTableIndexes(string tableName)
+        /// <param name="storageName">Table name in Oracle storage form (UPPERCASE).</param>
+        private DataTable GetTableIndexes(string storageName)
         {
             string sql =
                 "SELECT i.INDEX_NAME AS \"Name\", " +
@@ -110,7 +123,7 @@ namespace Bee.Db.Providers.Oracle
                 "LEFT JOIN USER_CONSTRAINTS c ON c.CONSTRAINT_NAME = i.INDEX_NAME AND c.CONSTRAINT_TYPE = 'P' " +
                 "WHERE i.TABLE_NAME = {0} " +
                 "ORDER BY (CASE WHEN c.CONSTRAINT_TYPE = 'P' THEN 0 ELSE 1 END), i.INDEX_NAME, ic.COLUMN_POSITION";
-            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, storageName);
             var result = _dbAccess.Execute(command);
             var table = result.Table!;
             table.TableName = "TableIndex";
@@ -128,7 +141,7 @@ namespace Bee.Db.Providers.Oracle
             table.DefaultView.Sort = "KeyOrdinal";
             if (table.DefaultView.IsEmpty()) return;
 
-            string name = BaseFunc.CStr(table.DefaultView[0]["Name"]);
+            string name = BaseFunc.CStr(table.DefaultView[0]["Name"]).ToLowerInvariant();
             var tableIndex = new TableSchemaIndex
             {
                 PrimaryKey = true,
@@ -140,7 +153,7 @@ namespace Bee.Db.Providers.Oracle
             {
                 var indexField = new IndexField
                 {
-                    FieldName = BaseFunc.CStr(row["FieldName"]),
+                    FieldName = BaseFunc.CStr(row["FieldName"]).ToLowerInvariant(),
                     SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
                 };
                 tableIndex.IndexFields!.Add(indexField);
@@ -156,7 +169,11 @@ namespace Bee.Db.Providers.Oracle
             while (!table.IsEmpty())
             {
                 var oRow = table.Rows[0];
-                string name = BaseFunc.CStr(oRow["Name"]);
+                // The "Name" column carries Oracle's UPPERCASE storage form; we still need to
+                // RowFilter on the original string before lowercase-ing for the framework
+                // surface, otherwise the filter no longer matches the stored value.
+                string storageName = BaseFunc.CStr(oRow["Name"]);
+                string name = storageName.ToLowerInvariant();
                 bool isUnique = BaseFunc.CBool(oRow["IsUnique"]);
 
                 var tableIndex = new TableSchemaIndex
@@ -166,13 +183,13 @@ namespace Bee.Db.Providers.Oracle
                 };
                 dbTable.Indexes!.Add(tableIndex);
 
-                table.DefaultView.RowFilter = $"Name='{name.Replace("'", "''")}'";
+                table.DefaultView.RowFilter = $"Name='{storageName.Replace("'", "''")}'";
                 table.DefaultView.Sort = "Name,KeyOrdinal";
                 foreach (DataRowView rowView in table.DefaultView)
                 {
                     var indexField = new IndexField
                     {
-                        FieldName = BaseFunc.CStr(rowView["FieldName"]),
+                        FieldName = BaseFunc.CStr(rowView["FieldName"]).ToLowerInvariant(),
                         SortDirection = BaseFunc.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
                     };
                     tableIndex.IndexFields!.Add(indexField);
@@ -193,7 +210,8 @@ namespace Bee.Db.Providers.Oracle
         /// non-zero (the driver default). The trailing newline / whitespace Oracle
         /// appends to LONG defaults is trimmed in <see cref="ParseDBDefaultValue"/>.
         /// </remarks>
-        private DataTable GetColumns(string tableName)
+        /// <param name="storageName">Table name in Oracle storage form (UPPERCASE).</param>
+        private DataTable GetColumns(string storageName)
         {
             // DATA_DEFAULT 是 LONG 型別 — 不能與 CHAR '' 在 COALESCE 中混用（ORA-00932）。
             // 直接 SELECT，DBNull 在 ParseDbField 透過 IsNull 檢查轉成 string.Empty。
@@ -214,7 +232,7 @@ namespace Bee.Db.Providers.Oracle
                 "LEFT JOIN USER_COL_COMMENTS cc ON cc.TABLE_NAME = c.TABLE_NAME AND cc.COLUMN_NAME = c.COLUMN_NAME " +
                 "WHERE c.TABLE_NAME = {0} " +
                 "ORDER BY c.COLUMN_ID";
-            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, tableName);
+            var command = new DbCommandSpec(DbCommandKind.DataTable, sql, storageName);
             var result = _dbAccess.Execute(command);
             var table = result.Table!;
             table.TableName = "Columns";
@@ -228,7 +246,10 @@ namespace Bee.Db.Providers.Oracle
         {
             var dbField = new DbField
             {
-                FieldName = row.GetFieldValue<string>("FieldName"),
+                // Oracle stores column names in UPPERCASE; lowercase here so the framework's
+                // FormSchema / Repository surface remains case-consistent with the other
+                // 4 supported databases (per the adapter-boundary translation strategy).
+                FieldName = row.GetFieldValue<string>("FieldName").ToLowerInvariant(),
                 Caption = row.GetFieldValue<string>("Description"),
                 AllowNull = row.GetFieldValue<bool>("AllowDBNull")
             };

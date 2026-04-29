@@ -58,8 +58,8 @@ namespace Bee.Db.UnitTests
             string sql = BuildSql(BuildDefineSchema(), BuildRealSchema());
 
             Assert.Contains("tmp_st_demo", sql);
-            Assert.Contains("INSERT INTO \"tmp_st_demo\"", sql);
-            Assert.Contains("ALTER TABLE \"tmp_st_demo\" RENAME TO \"st_demo\"", sql);
+            Assert.Contains("INSERT INTO \"TMP_ST_DEMO\"", sql);
+            Assert.Contains("ALTER TABLE \"TMP_ST_DEMO\" RENAME TO \"ST_DEMO\"", sql);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Bee.Db.UnitTests
             string sql = BuildSql(BuildDefineSchema(), BuildRealSchema());
 
             // tmp 表透過 OracleCreateTableCommandBuilder 建立；不應出現 MySQL/SQLite 風格後綴
-            Assert.Contains("CREATE TABLE \"tmp_st_demo\"", sql);
+            Assert.Contains("CREATE TABLE \"TMP_ST_DEMO\"", sql);
             Assert.DoesNotContain("ENGINE=InnoDB", sql);
             Assert.DoesNotContain("COLLATE=", sql);
         }
@@ -81,8 +81,8 @@ namespace Bee.Db.UnitTests
             string sql = BuildSql(BuildDefineSchema(), BuildRealSchema());
 
             // Oracle 無 DROP TABLE IF EXISTS；DDL 包在 anonymous block 中，當 ORA-00942 才忽略
-            Assert.Contains("EXECUTE IMMEDIATE 'DROP TABLE \"tmp_st_demo\" CASCADE CONSTRAINTS'", sql);
-            Assert.Contains("EXECUTE IMMEDIATE 'DROP TABLE \"st_demo\" CASCADE CONSTRAINTS'", sql);
+            Assert.Contains("EXECUTE IMMEDIATE 'DROP TABLE \"TMP_ST_DEMO\" CASCADE CONSTRAINTS'", sql);
+            Assert.Contains("EXECUTE IMMEDIATE 'DROP TABLE \"ST_DEMO\" CASCADE CONSTRAINTS'", sql);
             Assert.Contains("WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE", sql);
             Assert.DoesNotContain("DROP TABLE IF EXISTS", sql);
         }
@@ -94,12 +94,12 @@ namespace Bee.Db.UnitTests
             string sql = BuildSql(BuildDefineSchema(), BuildRealSchema());
 
             // age 欄位應出現在 tmp 表定義
-            Assert.Contains("\"age\"", sql);
+            Assert.Contains("\"AGE\"", sql);
             // 但 INSERT ... SELECT 子句不應含 age
-            int insertIdx = sql.IndexOf("INSERT INTO \"tmp_st_demo\"", StringComparison.Ordinal);
-            int selectIdx = sql.IndexOf("FROM \"st_demo\"", insertIdx, StringComparison.Ordinal);
+            int insertIdx = sql.IndexOf("INSERT INTO \"TMP_ST_DEMO\"", StringComparison.Ordinal);
+            int selectIdx = sql.IndexOf("FROM \"ST_DEMO\"", insertIdx, StringComparison.Ordinal);
             string insertSelectSection = sql.Substring(insertIdx, selectIdx - insertIdx);
-            Assert.DoesNotContain("\"age\"", insertSelectSection);
+            Assert.DoesNotContain("\"AGE\"", insertSelectSection);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace Bee.Db.UnitTests
         {
             string sql = BuildSql(BuildDefineSchema(), BuildRealSchema(withExtraLegacyField: true));
 
-            Assert.Contains("\"legacy_col\"", sql);
+            Assert.Contains("\"LEGACY_COL\"", sql);
         }
 
         [Fact]
@@ -127,12 +127,12 @@ namespace Bee.Db.UnitTests
         {
             string sql = BuildSql(BuildDefineSchema(), BuildRealSchema());
 
-            int renameIdx = sql.IndexOf("RENAME TO \"st_demo\"", StringComparison.Ordinal);
-            int recreateIdx = sql.IndexOf("CREATE INDEX \"ix_st_demo_name\"", StringComparison.Ordinal);
+            int renameIdx = sql.IndexOf("RENAME TO \"ST_DEMO\"", StringComparison.Ordinal);
+            int recreateIdx = sql.IndexOf("CREATE INDEX \"IX_ST_DEMO_NAME\"", StringComparison.Ordinal);
 
             Assert.True(renameIdx > 0, "RENAME 步驟必須出現");
             Assert.True(recreateIdx > renameIdx, "非 PK 索引必須在 RENAME 之後重建");
-            Assert.Contains("ON \"st_demo\" (\"name\" ASC)", sql);
+            Assert.Contains("ON \"ST_DEMO\" (\"NAME\" ASC)", sql);
         }
 
         [Fact]
@@ -171,12 +171,12 @@ namespace Bee.Db.UnitTests
         {
             string sql = BuildSql(BuildDefineSchema(), BuildRealSchema());
 
-            int dropTmpIdx = sql.IndexOf("DROP TABLE \"tmp_st_demo\"", StringComparison.Ordinal);
-            int createTmpIdx = sql.IndexOf("CREATE TABLE \"tmp_st_demo\"", StringComparison.Ordinal);
-            int insertIdx = sql.IndexOf("INSERT INTO \"tmp_st_demo\"", StringComparison.Ordinal);
-            int dropOldIdx = sql.IndexOf("DROP TABLE \"st_demo\"", StringComparison.Ordinal);
-            int renameIdx = sql.IndexOf("RENAME TO \"st_demo\"", StringComparison.Ordinal);
-            int recreateIdx = sql.IndexOf("CREATE INDEX \"ix_st_demo_name\"", StringComparison.Ordinal);
+            int dropTmpIdx = sql.IndexOf("DROP TABLE \"TMP_ST_DEMO\"", StringComparison.Ordinal);
+            int createTmpIdx = sql.IndexOf("CREATE TABLE \"TMP_ST_DEMO\"", StringComparison.Ordinal);
+            int insertIdx = sql.IndexOf("INSERT INTO \"TMP_ST_DEMO\"", StringComparison.Ordinal);
+            int dropOldIdx = sql.IndexOf("DROP TABLE \"ST_DEMO\"", StringComparison.Ordinal);
+            int renameIdx = sql.IndexOf("RENAME TO \"ST_DEMO\"", StringComparison.Ordinal);
+            int recreateIdx = sql.IndexOf("CREATE INDEX \"IX_ST_DEMO_NAME\"", StringComparison.Ordinal);
 
             Assert.True(dropTmpIdx >= 0 && createTmpIdx > dropTmpIdx, "drop tmp → create tmp");
             Assert.True(createTmpIdx > 0 && insertIdx > createTmpIdx, "create tmp → insert");

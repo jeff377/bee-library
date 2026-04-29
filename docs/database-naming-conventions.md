@@ -107,14 +107,37 @@ PostgreSQL 與 Oracle 是「**相反方向**」的 fold：同一支未加引號 
 > - 資料內容敏感性由 SQL 執行階段決定，受 collation / NLS / `COLLATE` 子句影響  
 > - 兩層的設定彼此獨立，不會互相影響  
 
-### 5.3 設計含義  
+### 5.3 Bee.NET adapter 的識別符策略  
+
+Framework 對 5 DB 採「**統一加引號 + DB 各自最自然的大小寫**」策略，由 adapter 在邊界處理 case 翻譯：  
+
+| DB | DDL/DML 中識別符儲存形式 | 引號方式 |
+|----|---------------------|---------|
+| SQL Server | 原樣（小寫，案例不敏感） | `[name]` |
+| PostgreSQL | **小寫**（fold 一致） | `"name"` |
+| MySQL | 原樣（小寫） | `` `name` `` |
+| SQLite | 原樣（小寫） | `"name"` |
+| **Oracle** | **UPPERCASE**（與 Oracle 預設 fold 方向一致） | `"NAME"` |
+
+Oracle 是 outlier：framework 在 emit DDL/DML 時將識別符 `.ToUpperInvariant()` 後再加引號（`OracleSchemaHelper.QuoteName` / `DbFunc.QuoteIdentifier(Oracle, ...)`），因此 Oracle 內部 data dictionary 看到的是 UPPERCASE（如 `ST_USER`、`SYS_NO`、`COMMENT`）。  
+讀取端（`OracleTableSchemaProvider`）在從 `USER_TAB_COLUMNS` 等 view 取回後，將識別符 `.ToLowerInvariant()` 才裝進 `TableSchema` / `DbField`。  
+
+> **抽象一致性**：`FormSchema`、`Bee.Repository`、`Bee.Business` 等上層只看得到 lowercase 識別符（如 `st_user`），不需要知道 Oracle 內部存的是 UPPERCASE。case 翻譯被完全封裝在 Oracle adapter 內部。  
+
+#### 為什麼 Oracle 採 UPPERCASE 儲存  
+
+1. **與 Oracle 慣例對齊**：DBA 在 SQL Developer / DBeaver / sqlplus 看到的物件名為 `ST_USER`，符合 Oracle 預設 unquoted-fold-to-UPPER 行為的視覺結果  
+2. **手寫 SQL 對 Oracle 友善**：`SELECT * FROM st_user` 由 Oracle parser fold 為 `ST_USER` 剛好對應 storage，**不必每處都加引號**（與其他 4 DB 維持 lowercase 直觀寫法一致）  
+3. **Reserved word 仍能用作欄位**：因為 framework 仍 emit `"COMMENT"`、`"ORDER"` 加引號形式，Oracle parser 視為 quoted identifier 而非 reserved word token，命名上不需禁用 reserved words  
+
+#### 命名規範的驗證面  
 
 第 1～4 節的「全小寫 + snake_case」命名規範，背後對應以下觀察：  
 
-1. **小寫 + 加引號**：5 DB 皆能正確識別物件名稱，是跨 DB 最安全的路徑。Bee.NET framework 產生的 SQL 全部走此路徑（透過 `DbFunc.QuoteIdentifier`）  
-2. **小寫 + 不加引號**：SQL Server / PostgreSQL / MySQL / SQLite 皆 OK；**唯獨 Oracle** 會 fold 至 UPPERCASE 而對不上實際儲存的小寫物件名  
-3. **避開 reserved words**：建議識別符避開 5 個 DB 任一者的 reserved word（如 `comment`、`order`、`user`、`size`、`group`、`level`、`number`），降低手寫 SQL 時 reserved word 衝突的負擔  
-4. **資料內容比對**：framework 已抹平 5 DB 差異（Oracle 以 session NLS 補齊），手寫 SQL 寫 `WHERE name = 'jeff'` 在 5 DB 上行為一致，**無需**依 DB 改寫成 `LOWER()` 或 `ILIKE`  
+1. **跨 DB 抽象上一律小寫**：FormSchema 中的識別符宣告永遠是 lowercase，由 framework 各 DB adapter 翻譯成該 DB 的儲存形式  
+2. **Oracle 內部 UPPERCASE 是封裝細節**：開發者寫 FormSchema、Repository、BO 時不需感知 Oracle 用 UPPERCASE，這是 adapter 邊界內部行為  
+3. **Reserved words 建議避開**：雖然 framework 加引號可規避 reserved word 衝突（5 DB 都豁免於 quoted identifier 規則），但仍建議避開 `comment`、`order`、`user`、`size`、`group`、`level`、`number` 等常見 reserved words，降低手寫 SQL 與工具相容的麻煩  
+4. **資料內容比對 case-insensitive**：framework 已抹平 5 DB 差異（Oracle 以 session NLS 補齊），手寫 SQL 寫 `WHERE name = 'jeff'` 在 5 DB 上行為一致  
 
 ---
 

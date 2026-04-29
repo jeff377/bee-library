@@ -106,8 +106,8 @@ namespace Bee.Db.UnitTests
             var statements = _builder.GetStatements("st_demo", new AddFieldChange(field));
 
             var sql = Assert.Single(statements);
-            Assert.Contains("ALTER TABLE \"st_demo\" ADD (", sql);
-            Assert.Contains("\"age\" NUMBER(10) DEFAULT 0 NOT NULL", sql);
+            Assert.Contains("ALTER TABLE \"ST_DEMO\" ADD (", sql);
+            Assert.Contains("\"AGE\" NUMBER(10) DEFAULT 0 NOT NULL", sql);
             Assert.EndsWith(");", sql);
         }
 
@@ -120,8 +120,8 @@ namespace Bee.Db.UnitTests
             var statements = _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField));
 
             var sql = Assert.Single(statements);
-            Assert.Contains("ALTER TABLE \"st_demo\" MODIFY (", sql);
-            Assert.Contains("\"name\" VARCHAR2(100 CHAR)", sql);
+            Assert.Contains("ALTER TABLE \"ST_DEMO\" MODIFY (", sql);
+            Assert.Contains("\"NAME\" VARCHAR2(100 CHAR)", sql);
             Assert.Contains("NOT NULL", sql);
             Assert.EndsWith(");", sql);
         }
@@ -146,7 +146,7 @@ namespace Bee.Db.UnitTests
             var statements = _builder.GetStatements("st_demo", change);
 
             var sql = Assert.Single(statements);
-            Assert.Equal("ALTER TABLE \"st_demo\" RENAME COLUMN \"oldname\" TO \"newname\";", sql);
+            Assert.Equal("ALTER TABLE \"ST_DEMO\" RENAME COLUMN \"OLDNAME\" TO \"NEWNAME\";", sql);
         }
 
         [Fact]
@@ -157,8 +157,8 @@ namespace Bee.Db.UnitTests
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(index));
 
             var sql = Assert.Single(statements);
-            Assert.Contains("CREATE INDEX \"ix_st_demo_col\" ON \"st_demo\"", sql);
-            Assert.Contains("\"col\" ASC", sql);
+            Assert.Contains("CREATE INDEX \"IX_ST_DEMO_COL\" ON \"ST_DEMO\"", sql);
+            Assert.Contains("\"COL\" ASC", sql);
         }
 
         [Fact]
@@ -169,7 +169,7 @@ namespace Bee.Db.UnitTests
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(index));
 
             var sql = Assert.Single(statements);
-            Assert.Contains("CREATE UNIQUE INDEX \"uk_st_demo_col\" ON \"st_demo\"", sql);
+            Assert.Contains("CREATE UNIQUE INDEX \"UK_ST_DEMO_COL\" ON \"ST_DEMO\"", sql);
         }
 
         [Fact]
@@ -180,10 +180,10 @@ namespace Bee.Db.UnitTests
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(pk));
 
             var sql = Assert.Single(statements);
-            Assert.Contains("ALTER TABLE \"st_demo\" ADD CONSTRAINT \"pk_st_demo\"", sql);
-            Assert.Contains("PRIMARY KEY (\"id\")", sql);
+            Assert.Contains("ALTER TABLE \"ST_DEMO\" ADD CONSTRAINT \"PK_ST_DEMO\"", sql);
+            Assert.Contains("PRIMARY KEY (\"ID\")", sql);
             // Oracle PK constraint 內 column 不接受 ASC/DESC
-            Assert.DoesNotContain("PRIMARY KEY (\"id\" ASC", sql);
+            Assert.DoesNotContain("PRIMARY KEY (\"ID\" ASC", sql);
         }
 
         [Fact]
@@ -197,8 +197,8 @@ namespace Bee.Db.UnitTests
 
             var sql = Assert.Single(statements);
             // Oracle DROP INDEX 與 MySQL 不同：不接 ON tablename
-            Assert.Equal("DROP INDEX \"ix_st_demo_col\";", sql);
-            Assert.DoesNotContain("ON \"st_demo\"", sql);
+            Assert.Equal("DROP INDEX \"IX_ST_DEMO_COL\";", sql);
+            Assert.DoesNotContain("ON \"ST_DEMO\"", sql);
         }
 
         [Fact]
@@ -209,7 +209,7 @@ namespace Bee.Db.UnitTests
             var statements = _builder.GetStatements("st_demo", new DropIndexChange(pk));
 
             var sql = Assert.Single(statements);
-            Assert.Equal("ALTER TABLE \"st_demo\" DROP PRIMARY KEY;", sql);
+            Assert.Equal("ALTER TABLE \"ST_DEMO\" DROP PRIMARY KEY;", sql);
         }
 
         [Theory]

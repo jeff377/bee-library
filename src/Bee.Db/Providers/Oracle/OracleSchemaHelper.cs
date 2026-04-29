@@ -23,7 +23,7 @@ namespace Bee.Db.Providers.Oracle
         /// <param name="identifier">The identifier to quote.</param>
         public static string QuoteName(string identifier)
         {
-            return $"\"{identifier.Replace("\"", "\"\"")}\"";
+            return $"\"{identifier.ToUpperInvariant().Replace("\"", "\"\"")}\"";
         }
 
         /// <summary>

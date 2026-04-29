@@ -54,7 +54,7 @@ namespace Bee.Db
             { DatabaseType.SQLServer, s => $"[{s.Replace("]", "]]")}]" },
             { DatabaseType.PostgreSQL, s => $"\"{s.Replace("\"", "\"\"")}\"" },
             { DatabaseType.MySQL, s => $"`{s.Replace("`", "``")}`" },
-            { DatabaseType.Oracle, s => $"\"{s.Replace("\"", "\"\"")}\"" },
+            { DatabaseType.Oracle, s => $"\"{s.ToUpperInvariant().Replace("\"", "\"\"")}\"" },
             { DatabaseType.SQLite, s => $"\"{s.Replace("\"", "\"\"")}\"" }
         };
 

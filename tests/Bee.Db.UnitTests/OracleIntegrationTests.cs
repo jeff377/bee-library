@@ -66,21 +66,21 @@ namespace Bee.Db.UnitTests
             // IF EXISTS，改用 PL/SQL block + 吞 ORA-00942。
             string dropDdl =
                 "BEGIN " +
-                "  EXECUTE IMMEDIATE 'DROP TABLE \"ci_test\" CASCADE CONSTRAINTS'; " +
+                "  EXECUTE IMMEDIATE 'DROP TABLE \"CI_TEST\" CASCADE CONSTRAINTS'; " +
                 "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; " +
                 "END;";
 
             dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery, dropDdl));
             dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
-                "CREATE TABLE \"ci_test\" (\"name\" VARCHAR2(50 CHAR) NOT NULL)"));
+                "CREATE TABLE \"CI_TEST\" (\"NAME\" VARCHAR2(50 CHAR) NOT NULL)"));
 
             try
             {
                 dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
-                    "INSERT INTO \"ci_test\" (\"name\") VALUES ({0})", "Jeff"));
+                    "INSERT INTO \"CI_TEST\" (\"NAME\") VALUES ({0})", "Jeff"));
 
                 var result = dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.Scalar,
-                    "SELECT COUNT(*) FROM \"ci_test\" WHERE \"name\" = {0}", "jeff"));
+                    "SELECT COUNT(*) FROM \"CI_TEST\" WHERE \"NAME\" = {0}", "jeff"));
 
                 Assert.NotNull(result);
                 Assert.Equal(1, Convert.ToInt32(result.Scalar!, CultureInfo.InvariantCulture));
@@ -165,10 +165,10 @@ namespace Bee.Db.UnitTests
 
                 var masterId = Guid.NewGuid();
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                    "INSERT INTO \"tb_it_master\" (\"sys_rowid\", \"name\") VALUES ({0}, {1})",
+                    "INSERT INTO \"TB_IT_MASTER\" (\"SYS_ROWID\", \"NAME\") VALUES ({0}, {1})",
                     masterId, "M1"));
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                    "INSERT INTO \"tb_it_detail\" (\"sys_rowid\", \"master_id\", \"amount\") VALUES ({0}, {1}, {2})",
+                    "INSERT INTO \"TB_IT_DETAIL\" (\"SYS_ROWID\", \"MASTER_ID\", \"AMOUNT\") VALUES ({0}, {1}, {2})",
                     Guid.NewGuid(), masterId, 250));
 
                 // 直接驅動 FromBuilder（FormSchema RelationField 路徑需 cross-form
@@ -192,12 +192,12 @@ namespace Bee.Db.UnitTests
 
                 // FromBuilder 產出片段必含完整雙引號識別符（撞到 ORA-00942 / ORA-00904
                 // 的常見漏洞點）。
-                Assert.Contains("FROM \"tb_it_master\" A", fromClause);
-                Assert.Contains("INNER JOIN \"tb_it_detail\" B", fromClause);
-                Assert.Contains("A.\"sys_rowid\" = B.\"master_id\"", fromClause);
+                Assert.Contains("FROM \"TB_IT_MASTER\" A", fromClause);
+                Assert.Contains("INNER JOIN \"TB_IT_DETAIL\" B", fromClause);
+                Assert.Contains("A.\"SYS_ROWID\" = B.\"MASTER_ID\"", fromClause);
 
                 var spec = new DbCommandSpec(DbCommandKind.DataTable,
-                    $"SELECT A.\"name\", B.\"amount\" {fromClause} WHERE A.\"sys_rowid\" = {{0}}",
+                    $"SELECT A.\"NAME\", B.\"AMOUNT\" {fromClause} WHERE A.\"SYS_ROWID\" = {{0}}",
                     masterId);
                 var result = dbAccess.Execute(spec);
 
@@ -281,7 +281,7 @@ namespace Bee.Db.UnitTests
 
                 var rowId = Guid.NewGuid();
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                    "INSERT INTO \"tb_it_alter\" (\"sys_rowid\", \"name\") VALUES ({0}, {1})",
+                    "INSERT INTO \"TB_IT_ALTER\" (\"SYS_ROWID\", \"NAME\") VALUES ({0}, {1})",
                     rowId, "before"));
 
                 var alterBuilder = new OracleTableAlterCommandBuilder();
@@ -299,7 +299,7 @@ namespace Bee.Db.UnitTests
                 Assert.True(afterAlter!.Fields!.Contains("age"));
 
                 var preserved = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
-                    "SELECT \"name\" FROM \"tb_it_alter\" WHERE \"sys_rowid\" = {0}", rowId));
+                    "SELECT \"NAME\" FROM \"TB_IT_ALTER\" WHERE \"SYS_ROWID\" = {0}", rowId));
                 Assert.Equal("before", preserved.Scalar);
             }
             finally
@@ -407,10 +407,12 @@ namespace Bee.Db.UnitTests
         private static void DropQuotedTable(DbAccess dbAccess, string tableName)
         {
             // Oracle 無 DROP TABLE IF EXISTS；包 PL/SQL block 並吞 ORA-00942。
-            // 表名直接內嵌至 EXECUTE IMMEDIATE 字面內，僅用於測試 fixture 控制路徑。
+            // Framework 統一以 UPPERCASE 形式儲存於 Oracle（per OracleSchemaHelper.QuoteName），
+            // 此 helper 跨過 framework 直接拼 DDL，必須自行 UPPER 化以對齊。
+            string storageName = tableName.ToUpperInvariant();
             string ddl =
                 "BEGIN " +
-                "  EXECUTE IMMEDIATE 'DROP TABLE \"" + tableName + "\" CASCADE CONSTRAINTS'; " +
+                "  EXECUTE IMMEDIATE 'DROP TABLE \"" + storageName + "\" CASCADE CONSTRAINTS'; " +
                 "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; " +
                 "END;";
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, ddl));

@@ -33,14 +33,26 @@ namespace Bee.Db.UnitTests
         [Theory]
         [InlineData(DatabaseType.SQLite, "Name", "\"Name\"")]
         [InlineData(DatabaseType.SQLite, "Col\"umn", "\"Col\"\"umn\"")]
-        [InlineData(DatabaseType.Oracle, "Name", "\"Name\"")]
-        [InlineData(DatabaseType.Oracle, "Col\"umn", "\"Col\"\"umn\"")]
         [InlineData(DatabaseType.PostgreSQL, "Name", "\"Name\"")]
         [InlineData(DatabaseType.PostgreSQL, "Col\"umn", "\"Col\"\"umn\"")]
-        [DisplayName("QuoteIdentifier SQLite/Oracle/PostgreSQL 應正確跳脫雙引號")]
-        public void QuoteIdentifier_SqliteOraclePg_EscapesDoubleQuote(DatabaseType dbType, string identifier, string expected)
+        [DisplayName("QuoteIdentifier SQLite/PostgreSQL 應正確跳脫雙引號（保留原大小寫）")]
+        public void QuoteIdentifier_SqlitePg_EscapesDoubleQuote(DatabaseType dbType, string identifier, string expected)
         {
             var result = DbFunc.QuoteIdentifier(dbType, identifier);
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("Name", "\"NAME\"")]
+        [InlineData("col", "\"COL\"")]
+        [InlineData("Col\"umn", "\"COL\"\"UMN\"")]
+        [DisplayName("QuoteIdentifier Oracle 應正確跳脫雙引號並 UPPERCASE 化（adapter 邊界策略）")]
+        public void QuoteIdentifier_Oracle_UppercasesAndEscapes(string identifier, string expected)
+        {
+            // Oracle 採 quoted-UPPERCASE 策略：framework 對 Oracle 識別符在 emit 階段 UPPER 化
+            // 後加引號，與 Oracle 內部「unquoted fold to UPPER」自然儲存對齊。SQL Server / MySQL
+            // 不分大小寫，不需此處理；PostgreSQL / SQLite 保留 case-sensitive 原樣存放。
+            var result = DbFunc.QuoteIdentifier(DatabaseType.Oracle, identifier);
             Assert.Equal(expected, result);
         }
 

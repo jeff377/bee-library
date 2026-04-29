@@ -50,8 +50,8 @@ namespace Bee.Db.UnitTests
 
             var spec = builder.BuildSelect("Foo", "name", null, null);
 
-            Assert.Contains("\"tb_foo\"", spec.CommandText);
-            Assert.Contains("\"name\"", spec.CommandText);
+            Assert.Contains("\"TB_FOO\"", spec.CommandText);
+            Assert.Contains("\"NAME\"", spec.CommandText);
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace Bee.Db.UnitTests
             var builder = new OracleFormCommandBuilder(BuildFooSchema());
             var spec = builder.BuildInsert("Foo", row);
 
-            Assert.Contains("INSERT INTO \"tb_foo\"", spec.CommandText);
+            Assert.Contains("INSERT INTO \"TB_FOO\"", spec.CommandText);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace Bee.Db.UnitTests
             var builder = new OracleFormCommandBuilder(BuildFooSchema());
             var spec = builder.BuildUpdate("Foo", row);
 
-            Assert.Contains("UPDATE \"tb_foo\"", spec.CommandText);
+            Assert.Contains("UPDATE \"TB_FOO\"", spec.CommandText);
         }
 
         [Fact]
@@ -96,7 +96,7 @@ namespace Bee.Db.UnitTests
             var builder = new OracleFormCommandBuilder(BuildFooSchema());
             var spec = builder.BuildDelete("Foo", FilterCondition.Equal(SysFields.RowId, Guid.NewGuid()));
 
-            Assert.Contains("DELETE FROM \"tb_foo\"", spec.CommandText);
+            Assert.Contains("DELETE FROM \"TB_FOO\"", spec.CommandText);
         }
 
         [Fact]
