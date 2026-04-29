@@ -1,0 +1,66 @@
+name: Oracle Validation (manual)
+
+# 手動觸發的 Oracle 整合測試 workflow。
+#
+# 為什麼獨立成一個 workflow：
+# - Oracle XE/Free image 較大（~1.5GB）、container 啟動慢（45-90s），
+#   不適合每次 PR 都拉，會把主 CI 從 ~4 分鐘拖到 ~6+ 分鐘。
+# - 改為 workflow_dispatch（純手動），需要時透過 GitHub UI「Run workflow」
+#   或 `gh workflow run oracle-validation.yml` 觸發。
+#
+# 不送 SonarCloud：
+# - 主 CI 跟此 workflow 若都送同一個 SonarCloud project key，後者會洗掉前者
+#   的覆蓋率快照，且兩者背景條件不同（service container 集合不同），混在
+#   一起反而失真。此 workflow 純為驗證 Oracle provider 行為，不參與 quality gate。
+#
+# 詳見 docs/plans/plan-ci-mysql-and-oracle-manual.md。
+
+on:
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    services:
+      oracle:
+        # Oracle 23ai Free 版本，對齊本機 .runsettings 預設的 FREEPDB1 service name。
+        # gvenzl/oracle-free 是社群維護的事實標準（GH Actions 上最常用），
+        # faststart 版預先建好 DB，啟動時間從 5+ 分鐘壓到 45-90 秒。
+        image: gvenzl/oracle-free:23-slim-faststart
+        env:
+          ORACLE_PASSWORD: BeeTest_Password123!
+          APP_USER: testuser
+          APP_USER_PASSWORD: testpass
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 30
+          --health-start-period 60s
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+      with:
+        fetch-depth: 0
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9  # v4.3.1
+      with:
+        dotnet-version: 10.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore Bee.Library.slnx
+
+    - name: Build (Release)
+      run: dotnet build Bee.Library.slnx --configuration Release --no-restore
+
+    - name: Run Oracle integration tests
+      env:
+        BEE_TEST_CONNSTR_ORACLE: "Data Source=localhost:1521/FREEPDB1;User Id=testuser;Password=testpass;"
+      # 只跑檔名／namespace 含 Oracle 的測試 — 避免重複跑其他 DB。
+      # 其他 DB 的 [DbFact] 因環境變數未設會自動 skip，但 filter 仍能省下載入時間。
+      run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal --filter "FullyQualifiedName~Oracle"
