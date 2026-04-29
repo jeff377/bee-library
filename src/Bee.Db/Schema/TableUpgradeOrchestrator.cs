@@ -186,8 +186,6 @@ namespace Bee.Db.Schema
             // (SQLite, MySQL) or have a different syntax that hasn't been wired through yet.
             // Skipping for non-SQL-Server avoids running SQL Server-specific SQL against them
             // (which would throw with errors like "Parameter '@name' must be defined").
-            // TODO: when description persistence is added to other dialects, abstract this via
-            // an IDescriptionSyncCommandBuilder on IDialectFactory and let each provider opt in.
             if (diff.DescriptionChanges.Count > 0 && _dialect is SqlDialectFactory)
             {
                 var descSql = SqlExtendedPropertyCommandBuilder.GetCommandText(tableName, diff.DescriptionChanges);
