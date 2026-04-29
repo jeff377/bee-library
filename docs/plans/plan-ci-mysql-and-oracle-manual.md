@@ -1,6 +1,12 @@
 # 計畫：主 CI 加入 MySQL，Oracle 走手動 workflow
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-04-29）**
+
+## 完成驗證
+
+- 主 CI（commit `a43600b`）加入 MySQL 8.0 service container，並行於 SQL Server / PostgreSQL，總時間僅 +14s（3:50 → 4:04）。
+- SonarCloud quality gate 通過：New Coverage 84.6%（>80% 門檻）；MySQL provider 覆蓋率從 48.19% 大幅上升。
+- Oracle workflow（commit `c8ece6f`）首次手動觸發成功，130 / 130 passed，總時間 ~2 分鐘（image pull cache 命中、faststart 版啟動 67s）。
 
 > 本計畫銜接 commit `8c4e010`（將 Oracle/MySQL 排除在 SonarCloud coverage 計算外的短期 fix），目的是恢復「真實覆蓋率」訊號。
 > MySQL 部分屬 [plan-mysql-support.md](plan-mysql-support.md) 設計策略的調整：原本「CI 不變動」的設計改為「CI 加 service container」。
