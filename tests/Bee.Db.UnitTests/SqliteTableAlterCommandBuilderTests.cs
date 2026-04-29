@@ -12,6 +12,16 @@ namespace Bee.Db.UnitTests
     {
         private readonly SqliteTableAlterCommandBuilder _builder = new();
 
+        /// <summary>
+        /// Test-only fake to drive the default branches in <c>GetExecutionKind</c> and
+        /// <c>GetStatements</c>; production <see cref="ITableChange"/> implementations are all
+        /// matched by the switch arms above the default case.
+        /// </summary>
+        private sealed class UnknownChange : ITableChange
+        {
+            public string Describe() => "unknown";
+        }
+
         // ---------- GetExecutionKind ----------
 
         [Fact]
@@ -206,6 +216,22 @@ namespace Bee.Db.UnitTests
 
             Assert.Throws<InvalidOperationException>(() =>
                 _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField)));
+        }
+
+        [Fact]
+        [DisplayName("SQLite GetExecutionKind：未知 ITableChange 子類應回傳 NotSupported")]
+        public void GetExecutionKind_UnknownChange_ReturnsNotSupported()
+        {
+            Assert.Equal(ChangeExecutionKind.NotSupported, _builder.GetExecutionKind(new UnknownChange()));
+        }
+
+        [Fact]
+        [DisplayName("SQLite GetStatements：未知 ITableChange 子類應擲 InvalidOperationException")]
+        public void GetStatements_UnknownChange_Throws()
+        {
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+                _builder.GetStatements("st_demo", new UnknownChange()));
+            Assert.Contains("Unsupported change type", ex.Message);
         }
     }
 }

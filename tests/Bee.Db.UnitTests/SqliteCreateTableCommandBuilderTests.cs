@@ -325,5 +325,41 @@ namespace Bee.Db.UnitTests
         }
 
         #endregion
+
+        #region 複合 PK / 複合索引
+
+        [Fact]
+        [DisplayName("GetCommandText 複合 PK 應產生逗號分隔的 PRIMARY KEY 欄位列")]
+        public void GetCommandText_CompositePrimaryKey_EmitsCommaSeparatedFields()
+        {
+            var schema = new TableSchema { TableName = "st_compo" };
+            schema.Fields!.Add("a", "A", FieldDbType.Integer);
+            schema.Fields.Add("b", "B", FieldDbType.Integer);
+            schema.Indexes!.AddPrimaryKey("a,b");
+
+            var builder = new SqliteCreateTableCommandBuilder();
+            string sql = builder.GetCommandText(schema);
+
+            Assert.Contains("CONSTRAINT \"pk_st_compo\" PRIMARY KEY (\"a\" ASC, \"b\" ASC)", sql);
+        }
+
+        [Fact]
+        [DisplayName("GetCommandText 複合二級索引應產生逗號分隔的 INDEX 欄位列")]
+        public void GetCommandText_CompositeSecondaryIndex_EmitsCommaSeparatedFields()
+        {
+            var schema = new TableSchema { TableName = "st_demo" };
+            schema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            schema.Fields.Add("a", "A", FieldDbType.Integer);
+            schema.Fields.Add("b", "B", FieldDbType.Integer);
+            schema.Indexes!.AddPrimaryKey(SysFields.RowId);
+            schema.Indexes.Add("ix_{0}_a_b", "a,b", false);
+
+            var builder = new SqliteCreateTableCommandBuilder();
+            string sql = builder.GetCommandText(schema);
+
+            Assert.Contains("CREATE INDEX \"ix_st_demo_a_b\" ON \"st_demo\" (\"a\" ASC, \"b\" ASC);", sql);
+        }
+
+        #endregion
     }
 }

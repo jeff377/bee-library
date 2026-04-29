@@ -1,6 +1,26 @@
 # 計畫：SQLite Provider 覆蓋率偏低調查
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-04-29）**
+
+## 結果摘要
+
+新增 5 個純語法測試檔（`SqliteAlterCompatibilityRulesTests`、`SqliteTableSchemaProviderStaticTests`、`SqliteSchemaHelperTests`、`SqliteDialectFactoryTests`、`SqliteTypeMappingTests`）並擴充既有測試（`SqliteCreateTableCommandBuilderTests`、`SqliteTableAlterCommandBuilderTests`、`SqliteIntegrationTests`）。
+
+`Providers/Sqlite/` 本機 line coverage 由 **69.38% (75 uncovered)** 提升至 **99.01% (4 uncovered)**：
+
+| File | Cov% | Uncovered |
+|------|------|-----------|
+| SqliteAlterCompatibilityRules | 96.67% | 1（GetNumericRank `default: return 0` — IsNumeric 守門後不可達） |
+| SqliteCreateTableCommandBuilder | 100% | 0 |
+| SqliteDialectFactory | 100% | 0 |
+| SqliteFormCommandBuilder | 82.35% | 3（建構子的 `if (FormSchema == null) throw` — `GetFormSchema` 缺檔時先擲 FileNotFoundException，與 SqlServer/PostgreSql/MySql 共用 pattern，跨 provider 一致保留為防禦性檢查） |
+| SqliteSchemaHelper | 100% | 0 |
+| SqliteTableAlterCommandBuilder | 100% | 0 |
+| SqliteTableRebuildCommandBuilder | 100% | 0 |
+| SqliteTableSchemaProvider | 100% | 0 |
+| SqliteTypeMapping | 100% | 0 |
+
+剩餘 4 行皆為防禦性死碼（`GetNumericRank` default 與 `FormSchema null` 守門），與其他 provider 採用相同 pattern，不另行處理。
 
 ## 背景
 
