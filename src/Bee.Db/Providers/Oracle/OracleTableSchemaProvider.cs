@@ -296,12 +296,7 @@ namespace Bee.Db.Providers.Oracle
                 case "long":
                     return FieldDbType.Text;
                 case "number":
-                    if (dataPrecision == 1 && dataScale == 0) return FieldDbType.Boolean;
-                    if (dataPrecision == 5 && dataScale == 0) return FieldDbType.Short;
-                    if (dataPrecision == 10 && dataScale == 0) return FieldDbType.Integer;
-                    if (dataPrecision == 19 && dataScale == 0) return FieldDbType.Long;
-                    if (dataPrecision == 19 && dataScale == 4) return FieldDbType.Currency;
-                    return FieldDbType.Decimal;
+                    return GetNumberDbType(dataPrecision, dataScale);
                 case "float":
                 case "binary_float":
                 case "binary_double":
@@ -320,6 +315,16 @@ namespace Bee.Db.Providers.Oracle
                 default:
                     return FieldDbType.Unknown;
             }
+        }
+
+        private static FieldDbType GetNumberDbType(int dataPrecision, int dataScale)
+        {
+            if (dataPrecision == 1 && dataScale == 0) return FieldDbType.Boolean;
+            if (dataPrecision == 5 && dataScale == 0) return FieldDbType.Short;
+            if (dataPrecision == 10 && dataScale == 0) return FieldDbType.Integer;
+            if (dataPrecision == 19 && dataScale == 0) return FieldDbType.Long;
+            if (dataPrecision == 19 && dataScale == 4) return FieldDbType.Currency;
+            return FieldDbType.Decimal;
         }
 
         /// <summary>
