@@ -50,6 +50,21 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: BeeTest_Password123!
+          MYSQL_DATABASE: common
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost -uroot -pBeeTest_Password123!"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
     - name: Checkout code
       uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
@@ -128,6 +143,7 @@ jobs:
       env:
         BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database=common;User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
         BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database=common;Username=testuser;Password=testpass"
+        BEE_TEST_CONNSTR_MYSQL: "Server=localhost;Port=3306;Database=common;User=testuser;Password=testpass;"
         # SQLite is a pure driver with no service container — in-memory shared cache so
         # multiple connections see the same database (cache=shared) and there is no IO
         # to clean up between runs.
