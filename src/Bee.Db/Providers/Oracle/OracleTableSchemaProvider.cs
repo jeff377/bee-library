@@ -283,8 +283,6 @@ namespace Bee.Db.Providers.Oracle
         /// </remarks>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
-            // TIMESTAMP comes back as 'TIMESTAMP(6)' (precision in the type string itself);
-            // strip any trailing parenthesised qualifier before matching.
             string type = NormalizeDataTypeName(dataType);
             switch (type)
             {
