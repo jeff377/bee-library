@@ -180,20 +180,25 @@ namespace Bee.Db.Schema
             if (addColumnStmts.Count > 0) stages.Add(new UpgradeStage(UpgradeStageKind.AddColumns, addColumnStmts));
             if (createIndexStmts.Count > 0) stages.Add(new UpgradeStage(UpgradeStageKind.CreateIndexes, createIndexStmts));
 
-            // Description sync is currently SQL Server-only — SqlExtendedPropertyCommandBuilder
-            // emits sp_addextendedproperty calls. Other dialects (PG / SQLite / MySQL / Oracle)
-            // either don't persist column descriptions in the framework's CREATE TABLE output
-            // (SQLite, MySQL) or have a different syntax that hasn't been wired through yet.
-            // Skipping for non-SQL-Server avoids running SQL Server-specific SQL against them
-            // (which would throw with errors like "Parameter '@name' must be defined").
+            AddDescriptionSyncStage(stages, diff, tableName);
+
+            return new UpgradePlan(UpgradeExecutionMode.Alter, stages, warnings);
+        }
+
+        // Description sync is currently SQL Server-only — SqlExtendedPropertyCommandBuilder
+        // emits sp_addextendedproperty calls. Other dialects (PG / SQLite / MySQL / Oracle)
+        // either don't persist column descriptions in the framework's CREATE TABLE output
+        // (SQLite, MySQL) or have a different syntax that hasn't been wired through yet.
+        // Skipping for non-SQL-Server avoids running SQL Server-specific SQL against them
+        // (which would throw with errors like "Parameter '@name' must be defined").
+        private void AddDescriptionSyncStage(List<UpgradeStage> stages, TableSchemaDiff diff, string tableName)
+        {
             if (diff.DescriptionChanges.Count > 0 && _dialect is SqlDialectFactory)
             {
                 var descSql = SqlExtendedPropertyCommandBuilder.GetCommandText(tableName, diff.DescriptionChanges);
                 if (StrFunc.IsNotEmpty(descSql))
                     stages.Add(new UpgradeStage(UpgradeStageKind.SyncDescriptions, new[] { descSql }));
             }
-
-            return new UpgradePlan(UpgradeExecutionMode.Alter, stages, warnings);
         }
 
     }
