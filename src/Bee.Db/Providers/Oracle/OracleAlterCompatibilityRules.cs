@@ -50,8 +50,6 @@ namespace Bee.Db.Providers.Oracle
             if (fromFamily == TypeFamily.Unknown || toFamily == TypeFamily.Unknown)
                 return ChangeExecutionKind.NotSupported;
 
-            // AutoIncrement (IDENTITY) status change cannot be flipped via in-place ALTER on Oracle;
-            // adding or removing the IDENTITY clause requires re-creating the column.
             if (fromFamily == TypeFamily.AutoIncrement || toFamily == TypeFamily.AutoIncrement)
             {
                 return from == to ? ChangeExecutionKind.Alter : ChangeExecutionKind.Rebuild;
