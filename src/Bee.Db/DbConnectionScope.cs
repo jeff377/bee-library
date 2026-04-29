@@ -69,17 +69,17 @@ namespace Bee.Db
         /// <param name="externalConnection">An external connection to reuse; if null, a new connection will be created.</param>
         /// <param name="factory">The database provider factory.</param>
         /// <param name="connectionString">The connection string (used only when creating a new connection).</param>
-        /// <param name="cancellationToken">A cancellation token.</param>
         /// <param name="onConnectionOpened">
         /// Optional callback invoked after a newly created connection is opened. Not invoked for an
         /// external connection — its initialization is the caller's responsibility.
         /// </param>
+        /// <param name="cancellationToken">A cancellation token.</param>
         public static async Task<DbConnectionScope> CreateAsync(
             DbConnection? externalConnection,
             DbProviderFactory factory,
             string connectionString,
-            CancellationToken cancellationToken = default,
-            Action<DbConnection>? onConnectionOpened = null)
+            Action<DbConnection>? onConnectionOpened = null,
+            CancellationToken cancellationToken = default)
         {
             if (externalConnection != null)
             {
