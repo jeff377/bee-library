@@ -411,5 +411,80 @@ namespace Bee.Db.UnitTests
         }
 
         #endregion
+
+        #region NormalizeParameterValue（Oracle Guid → byte[] 轉換）
+
+        [Fact]
+        [DisplayName("NormalizeParameterValue：Oracle 上 Guid 應轉成 16-byte byte[]")]
+        public void NormalizeParameterValue_OracleGuid_ConvertedToByteArray()
+        {
+            var guid = Guid.Parse("12345678-1234-5678-90ab-cdef12345678");
+
+            object? result = DbCommandSpec.NormalizeParameterValue(DatabaseType.Oracle, guid);
+
+            // Oracle.ManagedDataAccess.OracleParameter 不接受 Guid 作為 RAW(16) 綁定值
+            // (拋 ArgumentException : Value does not fall within the expected range);
+            // framework 必須轉成 byte[]。byte[] 內容須等同 guid.ToByteArray()。
+            var bytes = Assert.IsType<byte[]>(result);
+            Assert.Equal(16, bytes.Length);
+            Assert.Equal(guid.ToByteArray(), bytes);
+        }
+
+        [Theory]
+        [InlineData(DatabaseType.SQLServer)]
+        [InlineData(DatabaseType.PostgreSQL)]
+        [InlineData(DatabaseType.MySQL)]
+        [InlineData(DatabaseType.SQLite)]
+        [DisplayName("NormalizeParameterValue：非 Oracle DB 上 Guid 應原值傳回")]
+        public void NormalizeParameterValue_NonOracleGuid_PassThrough(DatabaseType dbType)
+        {
+            var guid = Guid.NewGuid();
+
+            object? result = DbCommandSpec.NormalizeParameterValue(dbType, guid);
+
+            Assert.Equal(guid, result);
+        }
+
+        [Fact]
+        [DisplayName("NormalizeParameterValue：Oracle 上非 Guid 值（string、int、null）應原值傳回")]
+        public void NormalizeParameterValue_OracleNonGuid_PassThrough()
+        {
+            Assert.Equal("hello", DbCommandSpec.NormalizeParameterValue(DatabaseType.Oracle, "hello"));
+            Assert.Equal(42, DbCommandSpec.NormalizeParameterValue(DatabaseType.Oracle, 42));
+            Assert.Null(DbCommandSpec.NormalizeParameterValue(DatabaseType.Oracle, null));
+        }
+
+        [Fact]
+        [DisplayName("NormalizeDbType：Oracle 上 DbType.Guid 應改寫為 DbType.Binary")]
+        public void NormalizeDbType_OracleGuid_RewrittenToBinary()
+        {
+            // OracleParameter.DbType 拒絕 DbType.Guid（Oracle 無原生 UUID type，
+            // framework 映射為 RAW(16) → DbType.Binary）。
+            Assert.Equal(DbType.Binary, DbCommandSpec.NormalizeDbType(DatabaseType.Oracle, DbType.Guid));
+        }
+
+        [Theory]
+        [InlineData(DatabaseType.SQLServer)]
+        [InlineData(DatabaseType.PostgreSQL)]
+        [InlineData(DatabaseType.MySQL)]
+        [InlineData(DatabaseType.SQLite)]
+        [DisplayName("NormalizeDbType：非 Oracle DB 上 DbType.Guid 應原值傳回")]
+        public void NormalizeDbType_NonOracleGuid_PassThrough(DatabaseType dbType)
+        {
+            Assert.Equal(DbType.Guid, DbCommandSpec.NormalizeDbType(dbType, DbType.Guid));
+        }
+
+        [Theory]
+        [InlineData(DbType.String)]
+        [InlineData(DbType.Int32)]
+        [InlineData(DbType.Binary)]
+        [InlineData(DbType.DateTime)]
+        [DisplayName("NormalizeDbType：Oracle 上非 Guid DbType 應原值傳回")]
+        public void NormalizeDbType_OracleNonGuid_PassThrough(DbType dbType)
+        {
+            Assert.Equal(dbType, DbCommandSpec.NormalizeDbType(DatabaseType.Oracle, dbType));
+        }
+
+        #endregion
     }
 }

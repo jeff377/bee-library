@@ -1,17 +1,26 @@
 using System.ComponentModel;
+using System.Data;
 using System.Globalization;
 using Bee.Base.Data;
+using Bee.Db.Dml;
+using Bee.Db.Providers.Oracle;
 using Bee.Tests.Shared;
+using Bee.Definition;
 using Bee.Definition.Database;
+using Bee.Definition.Filters;
+using Bee.Definition.Forms;
 
 namespace Bee.Db.UnitTests
 {
     /// <summary>
     /// Oracle-specific integration tests: schema reader round-trip against the live fixture
-    /// table, and session-level case-insensitive comparison provided by the connection-open
-    /// hook (<c>ALTER SESSION SET NLS_COMP='LINGUISTIC' NLS_SORT='BINARY_CI'</c>). Skipped
-    /// when no Oracle connection string is configured (<see cref="DbFactAttribute"/>
-    /// handles the env-var check).
+    /// table, session-level case-insensitive comparison provided by the connection-open hook
+    /// (<c>ALTER SESSION SET NLS_COMP='LINGUISTIC' NLS_SORT='BINARY_CI'</c>), and end-to-end
+    /// verification that framework-generated SQL runs against quoted-lowercase tables (since
+    /// Oracle uppercases unquoted identifiers and the framework's identifier-quoting strategy
+    /// is the only thing keeping <c>"st_user"</c>-style tables addressable). Skipped when no
+    /// Oracle connection string is configured (<see cref="DbFactAttribute"/> handles the
+    /// env-var check).
     /// </summary>
     [Collection("Initialize")]
     public class OracleIntegrationTests
@@ -80,6 +89,331 @@ namespace Bee.Db.UnitTests
             {
                 dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery, dropDdl));
             }
+        }
+
+        // ---------- quoted-lowercase end-to-end coverage (per docs/plans/plan-oracle-integration-tests.md) ----------
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("FormSchema 驅動的 INSERT/SELECT/UPDATE/DELETE 應在 quoted-lowercase 表上正確運作")]
+        public void FormCrud_QuotedLowercaseTable_InsertSelectUpdateDelete_Succeeds()
+        {
+            const string tableName = "tb_it_crud";
+            var dbAccess = new DbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            DropQuotedTable(dbAccess, tableName);
+
+            try
+            {
+                CreateTable(dbAccess, BuildCrudTableSchema(tableName));
+
+                var formSchema = BuildCrudFormSchema(tableName);
+                var formBuilder = new OracleFormCommandBuilder(formSchema);
+                var rowId = Guid.NewGuid();
+
+                // INSERT
+                var insertRow = NewRow(formSchema, tableName, rowId, "alice", 10);
+                int inserted = dbAccess.Execute(formBuilder.BuildInsert("Foo", insertRow)).RowsAffected;
+                Assert.Equal(1, inserted);
+
+                // SELECT 驗證 INSERT 落地（含 WHERE rowId 等值）
+                var selectByRowId = formBuilder.BuildSelect("Foo", "name,qty",
+                    FilterCondition.Equal(SysFields.RowId, rowId), null);
+                var selectResult = dbAccess.Execute(selectByRowId);
+                Assert.NotNull(selectResult.Table);
+                Assert.Single(selectResult.Table!.Rows);
+                Assert.Equal("alice", selectResult.Table.Rows[0]["name"]);
+                Assert.Equal(10, Convert.ToInt32(selectResult.Table.Rows[0]["qty"], CultureInfo.InvariantCulture));
+
+                // UPDATE
+                var updateRow = ExistingRow(formSchema, tableName, rowId, "alice", 10);
+                updateRow["name"] = "alice2";
+                updateRow["qty"] = 99;
+                int updated = dbAccess.Execute(formBuilder.BuildUpdate("Foo", updateRow)).RowsAffected;
+                Assert.Equal(1, updated);
+
+                var afterUpdate = dbAccess.Execute(selectByRowId);
+                Assert.Equal("alice2", afterUpdate.Table!.Rows[0]["name"]);
+                Assert.Equal(99, Convert.ToInt32(afterUpdate.Table.Rows[0]["qty"], CultureInfo.InvariantCulture));
+
+                // DELETE
+                int deleted = dbAccess.Execute(
+                    formBuilder.BuildDelete("Foo", FilterCondition.Equal(SysFields.RowId, rowId))).RowsAffected;
+                Assert.Equal(1, deleted);
+
+                var afterDelete = dbAccess.Execute(selectByRowId);
+                Assert.Empty(afterDelete.Table!.Rows);
+            }
+            finally
+            {
+                DropQuotedTable(dbAccess, tableName);
+            }
+        }
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("FromBuilder 產生的 JOIN 子句應在 quoted-lowercase 兩表 + ON 兩端欄位上可執行")]
+        public void Join_QuotedLowercaseTables_FromBuilderEmitsExecutableSql()
+        {
+            const string masterTable = "tb_it_master";
+            const string detailTable = "tb_it_detail";
+            var dbAccess = new DbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            DropQuotedTable(dbAccess, detailTable);
+            DropQuotedTable(dbAccess, masterTable);
+
+            try
+            {
+                CreateTable(dbAccess, BuildMasterSchema(masterTable));
+                CreateTable(dbAccess, BuildDetailSchema(detailTable));
+
+                var masterId = Guid.NewGuid();
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    "INSERT INTO \"tb_it_master\" (\"sys_rowid\", \"name\") VALUES ({0}, {1})",
+                    masterId, "M1"));
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    "INSERT INTO \"tb_it_detail\" (\"sys_rowid\", \"master_id\", \"amount\") VALUES ({0}, {1}, {2})",
+                    Guid.NewGuid(), masterId, 250));
+
+                // 直接驅動 FromBuilder（FormSchema RelationField 路徑需 cross-form
+                // DefinePath 設定，超出 quoting 驗證範圍；此處聚焦在 FromBuilder 對
+                // join 兩端 table + ON 兩端 field 是否正確 quote）。
+                var joins = new TableJoinCollection
+                {
+                    new TableJoin
+                    {
+                        Key = "j1",
+                        JoinType = JoinType.Inner,
+                        LeftAlias = "A",
+                        LeftField = SysFields.RowId,
+                        RightTable = detailTable,
+                        RightAlias = "B",
+                        RightField = "master_id",
+                    },
+                };
+
+                string fromClause = new FromBuilder(DatabaseType.Oracle).Build(masterTable, joins);
+
+                // FromBuilder 產出片段必含完整雙引號識別符（撞到 ORA-00942 / ORA-00904
+                // 的常見漏洞點）。
+                Assert.Contains("FROM \"tb_it_master\" A", fromClause);
+                Assert.Contains("INNER JOIN \"tb_it_detail\" B", fromClause);
+                Assert.Contains("A.\"sys_rowid\" = B.\"master_id\"", fromClause);
+
+                var spec = new DbCommandSpec(DbCommandKind.DataTable,
+                    $"SELECT A.\"name\", B.\"amount\" {fromClause} WHERE A.\"sys_rowid\" = {{0}}",
+                    masterId);
+                var result = dbAccess.Execute(spec);
+
+                Assert.NotNull(result.Table);
+                Assert.Single(result.Table!.Rows);
+                Assert.Equal("M1", result.Table.Rows[0]["name"]);
+                Assert.Equal(250, Convert.ToInt32(result.Table.Rows[0]["amount"], CultureInfo.InvariantCulture));
+            }
+            finally
+            {
+                DropQuotedTable(dbAccess, detailTable);
+                DropQuotedTable(dbAccess, masterTable);
+            }
+        }
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle reserved word 命名的欄位（comment / order）quoted 後應可 CRUD")]
+        public void ReservedWordFieldName_QuotedLowercase_CrudSucceeds()
+        {
+            const string tableName = "tb_it_reserved";
+            var dbAccess = new DbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            DropQuotedTable(dbAccess, tableName);
+
+            try
+            {
+                // "comment" 與 "order" 皆為 Oracle reserved word；少一邊雙引號就會
+                // 直接 syntax error，是 quoting 機制的剛性需求驗證。
+                var schema = new TableSchema { TableName = tableName };
+                schema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+                schema.Fields!.Add("comment", "Comment", FieldDbType.String, 100);
+                schema.Fields!.Add("order", "Order", FieldDbType.Integer);
+                schema.Indexes!.AddPrimaryKey(SysFields.RowId);
+                CreateTable(dbAccess, schema);
+
+                var formSchema = new FormSchema("X", "X");
+                var table = formSchema.Tables!.Add("Foo", "Foo");
+                table.DbTableName = tableName;
+                table.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+                table.Fields!.AddStringField("comment", "Comment", 100);
+                table.Fields!.Add("order", "Order", FieldDbType.Integer);
+
+                var formBuilder = new OracleFormCommandBuilder(formSchema);
+                var rowId = Guid.NewGuid();
+
+                var insertRow = NewRow(formSchema, tableName, rowId);
+                insertRow["comment"] = "hello";
+                insertRow["order"] = 7;
+                dbAccess.Execute(formBuilder.BuildInsert("Foo", insertRow));
+
+                var selected = dbAccess.Execute(formBuilder.BuildSelect("Foo", "comment,order",
+                    FilterCondition.Equal("order", 7), null));
+                Assert.NotNull(selected.Table);
+                Assert.Single(selected.Table!.Rows);
+                Assert.Equal("hello", selected.Table.Rows[0]["comment"]);
+            }
+            finally
+            {
+                DropQuotedTable(dbAccess, tableName);
+            }
+        }
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("OracleTableAlterCommandBuilder.ADD column 應能在 quoted-lowercase 表上執行並保留資料")]
+        public void AlterAddColumn_QuotedLowercaseTable_Succeeds()
+        {
+            // Rebuild 路徑（OracleTableRebuildCommandBuilder.GetCommandText）目前回傳混合
+            // PL/SQL block + 純 SQL 的多語句腳本，Oracle.ManagedDataAccess 一次只能執行一條，
+            // 整個腳本需在呼叫端拆分後逐條送出，或由 builder API 改為 GetStatements()。此測試
+            // 因此只覆蓋 Alter（已採 GetStatements 模式），Rebuild 端到端驗證留待後續另案。
+            const string tableName = "tb_it_alter";
+            var dbAccess = new DbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            DropQuotedTable(dbAccess, tableName);
+
+            try
+            {
+                var initial = new TableSchema { TableName = tableName };
+                initial.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+                initial.Fields!.Add("name", "Name", FieldDbType.String, 50);
+                initial.Indexes!.AddPrimaryKey(SysFields.RowId);
+                CreateTable(dbAccess, initial);
+
+                var rowId = Guid.NewGuid();
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    "INSERT INTO \"tb_it_alter\" (\"sys_rowid\", \"name\") VALUES ({0}, {1})",
+                    rowId, "before"));
+
+                var alterBuilder = new OracleTableAlterCommandBuilder();
+                var addStatements = alterBuilder.GetStatements(tableName,
+                    new Bee.Db.Schema.Changes.AddFieldChange(
+                        new DbField("age", "Age", FieldDbType.Integer) { AllowNull = true }));
+                foreach (var stmt in addStatements)
+                {
+                    dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, stmt));
+                }
+
+                var provider = new OracleTableSchemaProvider(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+                var afterAlter = provider.GetTableSchema(tableName);
+                Assert.NotNull(afterAlter);
+                Assert.True(afterAlter!.Fields!.Contains("age"));
+
+                var preserved = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
+                    "SELECT \"name\" FROM \"tb_it_alter\" WHERE \"sys_rowid\" = {0}", rowId));
+                Assert.Equal("before", preserved.Scalar);
+            }
+            finally
+            {
+                DropQuotedTable(dbAccess, tableName);
+            }
+        }
+
+        // ---------- helpers ----------
+
+        private static TableSchema BuildCrudTableSchema(string tableName)
+        {
+            var schema = new TableSchema { TableName = tableName };
+            schema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            schema.Fields!.Add("name", "Name", FieldDbType.String, 50);
+            schema.Fields!.Add("qty", "Qty", FieldDbType.Integer);
+            schema.Indexes!.AddPrimaryKey(SysFields.RowId);
+            return schema;
+        }
+
+        private static FormSchema BuildCrudFormSchema(string tableName)
+        {
+            var schema = new FormSchema("X", "X");
+            var table = schema.Tables!.Add("Foo", "Foo");
+            table.DbTableName = tableName;
+            table.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            table.Fields!.AddStringField("name", "Name", 50);
+            table.Fields!.Add("qty", "Qty", FieldDbType.Integer);
+            return schema;
+        }
+
+        private static TableSchema BuildMasterSchema(string tableName)
+        {
+            var schema = new TableSchema { TableName = tableName };
+            schema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            schema.Fields!.Add("name", "Name", FieldDbType.String, 50);
+            schema.Indexes!.AddPrimaryKey(SysFields.RowId);
+            return schema;
+        }
+
+        private static TableSchema BuildDetailSchema(string tableName)
+        {
+            var schema = new TableSchema { TableName = tableName };
+            schema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            schema.Fields!.Add("master_id", "Master ID", FieldDbType.Guid);
+            schema.Fields!.Add("amount", "Amount", FieldDbType.Integer);
+            schema.Indexes!.AddPrimaryKey(SysFields.RowId);
+            return schema;
+        }
+
+        private static DataRow NewRow(FormSchema formSchema, string tableName, Guid rowId, string? name = null, int? qty = null)
+        {
+            var dt = BuildDataTable(formSchema, tableName);
+            var row = dt.NewRow();
+            row[SysFields.RowId] = rowId;
+            if (name != null) row["name"] = name;
+            if (qty != null) row["qty"] = qty.Value;
+            return row;
+        }
+
+        private static DataRow ExistingRow(FormSchema formSchema, string tableName, Guid rowId, string name, int qty)
+        {
+            // Update path 需要 row.RowState != Added；先 Add+AcceptChanges，後續欄位修改才會被
+            // BuildUpdate 偵測為 modified。
+            var dt = BuildDataTable(formSchema, tableName);
+            var row = dt.NewRow();
+            row[SysFields.RowId] = rowId;
+            row["name"] = name;
+            row["qty"] = qty;
+            dt.Rows.Add(row);
+            dt.AcceptChanges();
+            return row;
+        }
+
+        private static DataTable BuildDataTable(FormSchema formSchema, string tableName)
+        {
+            var formTable = formSchema.Tables!["Foo"]!;
+            var dt = new DataTable(tableName);
+            foreach (var field in formTable.Fields!)
+            {
+                dt.Columns.Add(field.FieldName, MapClrType(field.DbType));
+            }
+            return dt;
+        }
+
+        private static Type MapClrType(FieldDbType dbType) => dbType switch
+        {
+            FieldDbType.Guid => typeof(Guid),
+            FieldDbType.String => typeof(string),
+            FieldDbType.Integer => typeof(int),
+            FieldDbType.Long => typeof(long),
+            FieldDbType.Decimal => typeof(decimal),
+            FieldDbType.DateTime => typeof(DateTime),
+            FieldDbType.Date => typeof(DateTime),
+            FieldDbType.Boolean => typeof(bool),
+            _ => typeof(object),
+        };
+
+        private static void CreateTable(DbAccess dbAccess, TableSchema schema)
+        {
+            string sql = new OracleCreateTableCommandBuilder().GetCommandText(schema);
+            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql));
+        }
+
+        private static void DropQuotedTable(DbAccess dbAccess, string tableName)
+        {
+            // Oracle 無 DROP TABLE IF EXISTS；包 PL/SQL block 並吞 ORA-00942。
+            // 表名直接內嵌至 EXECUTE IMMEDIATE 字面內，僅用於測試 fixture 控制路徑。
+            string ddl =
+                "BEGIN " +
+                "  EXECUTE IMMEDIATE 'DROP TABLE \"" + tableName + "\" CASCADE CONSTRAINTS'; " +
+                "EXCEPTION WHEN OTHERS THEN IF SQLCODE != -942 THEN RAISE; END IF; " +
+                "END;";
+            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, ddl));
         }
     }
 }

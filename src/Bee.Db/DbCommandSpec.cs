@@ -142,8 +142,8 @@ namespace Bee.Db
                 p.ParameterName = (string.IsNullOrEmpty(parameterPrefix) || spec.Name.StartsWith(parameterPrefix))
                     ? spec.Name
                     : parameterPrefix + spec.Name;
-                p.Value = spec.Value ?? DBNull.Value;
-                if (spec.DbType.HasValue) p.DbType = spec.DbType.Value;
+                p.Value = NormalizeParameterValue(databaseType, spec.Value) ?? DBNull.Value;
+                if (spec.DbType.HasValue) p.DbType = NormalizeDbType(databaseType, spec.DbType.Value);
                 if (spec.Size.HasValue && spec.Size.Value > 0) p.Size = spec.Size.Value;
                 p.IsNullable = spec.IsNullable;
                 if (!string.IsNullOrEmpty(spec.SourceColumn))
@@ -153,6 +153,36 @@ namespace Bee.Db
             }
 
             return cmd;
+        }
+
+        /// <summary>
+        /// Normalizes a parameter value for the target provider. Oracle.ManagedDataAccess does
+        /// not accept a <see cref="Guid"/> instance as the value of a <c>RAW(16)</c> parameter
+        /// (the framework's <see cref="Bee.Base.Data.FieldDbType.Guid"/> mapping), and throws
+        /// <c>ArgumentException : Value does not fall within the expected range</c>; convert to
+        /// <c>byte[]</c> via <see cref="Guid.ToByteArray()"/> for Oracle only. All other providers
+        /// pass the value through unchanged.
+        /// </summary>
+        internal static object? NormalizeParameterValue(DatabaseType databaseType, object? value)
+        {
+            if (databaseType == DatabaseType.Oracle && value is Guid guid)
+                return guid.ToByteArray();
+            return value;
+        }
+
+        /// <summary>
+        /// Normalizes a parameter <see cref="DbType"/> for the target provider. Oracle.ManagedDataAccess
+        /// rejects <c>DbType.Guid</c> on <see cref="System.Data.Common.DbParameter.DbType"/> assignment
+        /// (Oracle has no native UUID type — the framework maps <see cref="Bee.Base.Data.FieldDbType.Guid"/>
+        /// to <c>RAW(16)</c>); rewrite to <see cref="DbType.Binary"/> for Oracle. This pairs with
+        /// <see cref="NormalizeParameterValue"/>, which converts the value side from <see cref="Guid"/>
+        /// to <c>byte[]</c>.
+        /// </summary>
+        internal static DbType NormalizeDbType(DatabaseType databaseType, DbType dbType)
+        {
+            if (databaseType == DatabaseType.Oracle && dbType == DbType.Guid)
+                return DbType.Binary;
+            return dbType;
         }
 
         /// <summary>
