@@ -49,7 +49,8 @@
   - **SQL Server**（`Providers/SqlServer/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、結構描述探查
   - **PostgreSQL**（`Providers/PostgreSql/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `information_schema` + `pg_catalog` 進行結構描述探查
   - **SQLite**（`Providers/Sqlite/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE DDL、ALTER（限 ADD / RENAME COLUMN / Index）、其餘欄位修改一律走 REBUILD、透過 `sqlite_master` + `PRAGMA` 進行結構描述探查；定位於檔案式單機與嵌入式情境，請見下方限制清單
-  - MySQL / Oracle -- 參數前綴與識別符引號已預先註冊在 `DbFunc`，連線層可直接運作；SQL 生成類別尚未實作
+  - **MySQL**（`Providers/MySql/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `information_schema` 進行結構描述探查
+  - **Oracle**（`Providers/Oracle/`）-- 完整支援：表單 SELECT / INSERT / UPDATE / DELETE、CREATE/ALTER/REBUILD DDL、透過 `USER_*` data dictionary view 進行結構描述探查。識別符一律以 quoted-UPPERCASE（`"ST_USER"`）形式 emit —— 與 Oracle 原生 unquoted-fold-to-UPPER 慣例對齊，同時保留 reserved word 欄位與特殊字元命名的可用性。Provider 在 read-back 邊界將識別符 lowercase 化，使 framework 上層（FormSchema、Repository、Business）對 5 個支援的資料庫維持一致的 lowercase 抽象。完整識別符策略見 [docs/database-naming-conventions.md §5.3](../../docs/database-naming-conventions.md)
 
 #### SQLite 已知限制
 
