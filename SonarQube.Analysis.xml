@@ -21,8 +21,16 @@
   <!-- 覆蓋率報告 -->
   <Property Name="sonar.cs.opencover.reportsPaths">**/TestResults/**/coverage.opencover.xml</Property>
 
-  <!-- 不納入覆蓋率計算的目錄（測試與範例本身不需被覆蓋） -->
-  <Property Name="sonar.coverage.exclusions">tests/**,samples/**</Property>
+  <!--
+    不納入覆蓋率計算的目錄。
+    - tests/、samples/：測試與範例本身不需被覆蓋
+    - Providers/Oracle/、Providers/MySql/：CI 無對應 service container
+      （Oracle 啟動成本高、MySQL 依 plan-mysql-support.md 設計上 CI 不跑），
+      整合測試自動 skip 會把覆蓋率拉低且非真實風險訊號。
+      未來若引入專屬 nightly／手動 workflow 跑全 DB 並送 SonarCloud，
+      或主 CI 加入對應 service container，可移除此排除。
+  -->
+  <Property Name="sonar.coverage.exclusions">tests/**,samples/**,src/Bee.Db/Providers/Oracle/**,src/Bee.Db/Providers/MySql/**</Property>
 
   <!--
     排除「設計上對稱實作」的重複行偵測。
