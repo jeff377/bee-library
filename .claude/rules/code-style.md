@@ -54,7 +54,52 @@ Bee.<Module>/
 - 測試中故意傳入 `null` 驗證邊界行為時，使用 `null!` 明確表示這是有意為之
 - 不得以 `#pragma warning disable` 大範圍壓制警告；若需抑制單行，必須加上說明註解
 
-## XML 文件註解
+## 註解規範
+
+預設**不寫註解** — 命名清楚的識別符已能說明 WHAT，註解只在 WHY 非顯而易見時才有價值。
+若移除註解後讀者不會困惑，就不該寫。
+
+### 說明性註解（in-body）
+
+寫註解時遵循以下原則：
+
+- **寫 WHY 不寫 WHAT** — 解釋意圖、限制、權衡，不重複程式碼已表達的內容
+- **使用結構化前綴**標示意圖：
+
+  | 前綴 | 用途 |
+  |------|------|
+  | `WARNING:` / `IMPORTANT:` | 改動會破壞功能或安全性 |
+  | `NOTE:` | 非顯而易見的設計考量 |
+  | `HACK:` | 已知技術債，需附原因 |
+  | `TODO:` | 待辦（建議帶 issue 連結） |
+
+- **長篇背景外送至 `docs/adr/`**，原始碼只留結論並引用 ADR 編號
+- **跨檔案約束**雙向都寫註解；可能的話以編譯期手段（source generator、測試斷言）取代註解
+- **絕不註解掉舊程式碼**（對應 SonarCloud S125，見 `sonarcloud.md` 第 9 節）。需保留歷史用 `git log`
+
+```csharp
+// ✅ 寫 WHY：解釋非顯而易見的限制
+// PostgreSQL 預設 statement_timeout 為 30 秒；超過會被 server 中斷，
+// 此處對齊以便 client 端先收到 TimeoutException 而非 NpgsqlException。
+client.Timeout = TimeSpan.FromSeconds(30);
+
+// ✅ WARNING 前綴：標示安全相關約束
+// WARNING: 此處的順序不可調換 — 必須先序列化再壓縮再加密。
+// 反過來會破壞 AesCbcHmac 的 IV 隨機性保證（見 docs/adr/0007-payload-pipeline.md）。
+var serialized = Serialize(payload);
+var compressed = Compress(serialized);
+var encrypted = Encrypt(compressed);
+
+// ❌ 寫了等於沒寫：重複程式碼已表達的內容
+// 設定 timeout 為 30 秒
+client.Timeout = TimeSpan.FromSeconds(30);
+
+// ❌ 註解掉的舊程式碼：用 git log 保留歷史，不留在原始碼
+// var legacy = oldRepo.GetUser(id);
+var user = repo.GetUser(id);
+```
+
+### XML 文件註解（公開 API）
 
 XML 文件使用**英文**撰寫（套件公開發布於 NuGet，英文確保 IntelliSense 與外部使用者皆可閱讀）：
 
@@ -65,6 +110,20 @@ XML 文件使用**英文**撰寫（套件公開發布於 NuGet，英文確保 In
 /// <param name="token">The access token to validate.</param>
 /// <returns>True if the token is valid; otherwise, false.</returns>
 public bool ValidateToken(string token) { ... }
+```
+
+API 級的警告或前置條件寫進 `<remarks>`，呼叫端會在 IDE IntelliSense 看到：
+
+```csharp
+/// <summary>
+/// Renews the access token.
+/// </summary>
+/// <remarks>
+/// This method must be called within an active transaction.
+/// Calling without a transaction will leave the session table in an
+/// inconsistent state if a network error occurs mid-call.
+/// </remarks>
+public void RenewAccessToken(Guid sessionId) { ... }
 ```
 
 ## 序列化
