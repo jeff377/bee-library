@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Security;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
+using Bee.Tests.Shared;
 
 namespace Bee.Definition.UnitTests.Security
 {
@@ -201,7 +202,10 @@ namespace Bee.Definition.UnitTests.Security
         [DisplayName("GetMasterKey 檔案路徑為空字串時會套用預設檔名 Master.key")]
         public void GetMasterKey_EmptyFilePath_UsesDefaultFileName()
         {
-            // Arrange: 空字串會被替換為 "Master.key"，於 DefinePath（或當前目錄）下
+            // Arrange: 空字串會被替換為 "Master.key"，於 DefinePath 下尋找。
+            // 用 TempDefinePath 切到全新空白目錄，確保「預設檔不存在 → 拋 FileNotFoundException」
+            // 的斷言成立（避免被 tests/Define/Master.key 等既存 fixture 干擾）。
+            using var temp = new TempDefinePath();
             var source = new MasterKeySource
             {
                 Type = MasterKeySourceType.File,
@@ -209,8 +213,6 @@ namespace Bee.Definition.UnitTests.Security
             };
 
             // Act & Assert
-            // autoCreate=false 時，在絕大多數測試環境下預設檔不存在 → 拋 FileNotFoundException；
-            // 若剛好存在（罕見），也只會走到後續 Base64 解析，不影響「空路徑分支被覆蓋」的目的。
             var ex = Record.Exception(() => MasterKeyProvider.GetMasterKey(source));
             Assert.NotNull(ex);
         }

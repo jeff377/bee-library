@@ -6,6 +6,7 @@ using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -53,10 +54,12 @@ namespace Bee.Db.UnitTests
     {
         private readonly SqlDialectFactory _factory = new();
 
-        [Fact]
+        [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateTableSchemaProvider 應回傳 SqlTableSchemaProvider")]
         public void CreateTableSchemaProvider_ReturnsSqlImpl()
         {
+            // ctor 內 new DbAccess("common_sqlserver") 需要 DbConnectionManager 已註冊連線；
+            // 未設 BEE_TEST_CONNSTR_SQLSERVER 時 GlobalFixture 不會註冊，故以 [DbFact] 跳過。
             var provider = _factory.CreateTableSchemaProvider("common_sqlserver");
 
             Assert.IsType<SqlTableSchemaProvider>(provider);
