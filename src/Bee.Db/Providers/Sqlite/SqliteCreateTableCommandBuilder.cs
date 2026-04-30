@@ -100,7 +100,7 @@ namespace Bee.Db.Providers.Sqlite
             string indexes = GetIndexesCommandText(tableName);
 
             var sb = new StringBuilder();
-            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {SqliteSchemaHelper.QuoteName(tableName)} (\r\n{fields}");
+            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {SqliteSchemaSyntax.QuoteName(tableName)} (\r\n{fields}");
             if (StrFunc.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append("\r\n);");
@@ -122,9 +122,9 @@ namespace Bee.Db.Providers.Sqlite
                 if (sb.Length > 0)
                     sb.Append(",\r\n");
                 if (autoIncrementField != null && field == autoIncrementField)
-                    sb.Append("  " + SqliteSchemaHelper.GetAutoIncrementColumnDefinition(field));
+                    sb.Append("  " + SqliteSchemaSyntax.GetAutoIncrementColumnDefinition(field));
                 else
-                    sb.Append("  " + SqliteSchemaHelper.GetColumnDefinition(field));
+                    sb.Append("  " + SqliteSchemaSyntax.GetColumnDefinition(field));
             }
             return sb.ToString();
         }
@@ -145,11 +145,11 @@ namespace Bee.Db.Providers.Sqlite
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
                 fieldBuilder.Append(CultureInfo.InvariantCulture,
-                    $"{SqliteSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{SqliteSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
             string name = StrFunc.Format(index.Name, tableName);
-            return $"CONSTRAINT {SqliteSchemaHelper.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
+            return $"CONSTRAINT {SqliteSchemaSyntax.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
         /// <summary>
@@ -180,11 +180,11 @@ namespace Bee.Db.Providers.Sqlite
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
                 fieldBuilder.Append(CultureInfo.InvariantCulture,
-                    $"{SqliteSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{SqliteSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {SqliteSchemaHelper.QuoteName(name)} ON {SqliteSchemaHelper.QuoteName(tableName)} ({fieldBuilder});";
+            return $"CREATE {uniqueClause}INDEX {SqliteSchemaSyntax.QuoteName(name)} ON {SqliteSchemaSyntax.QuoteName(tableName)} ({fieldBuilder});";
         }
     }
 }

@@ -64,7 +64,7 @@ namespace Bee.Db.Providers.PostgreSql
 
         private static string BuildAddFieldStatement(string tableName, DbField field)
         {
-            return $"ALTER TABLE {PgSchemaHelper.QuoteName(tableName)} ADD COLUMN {PgSchemaHelper.GetColumnDefinition(field)};";
+            return $"ALTER TABLE {PgSchemaSyntax.QuoteName(tableName)} ADD COLUMN {PgSchemaSyntax.GetColumnDefinition(field)};";
         }
 
         /// <summary>
@@ -72,8 +72,8 @@ namespace Bee.Db.Providers.PostgreSql
         /// </summary>
         private static string BuildRenameFieldStatement(string tableName, RenameFieldChange change)
         {
-            return $"ALTER TABLE {PgSchemaHelper.QuoteName(tableName)} RENAME COLUMN " +
-                   $"{PgSchemaHelper.QuoteName(change.OldFieldName)} TO {PgSchemaHelper.QuoteName(change.NewField.FieldName)};";
+            return $"ALTER TABLE {PgSchemaSyntax.QuoteName(tableName)} RENAME COLUMN " +
+                   $"{PgSchemaSyntax.QuoteName(change.OldFieldName)} TO {PgSchemaSyntax.QuoteName(change.NewField.FieldName)};";
         }
 
         /// <summary>
@@ -83,8 +83,8 @@ namespace Bee.Db.Providers.PostgreSql
         private static List<string> BuildAlterFieldStatements(string tableName, DbField oldField, DbField newField)
         {
             var statements = new List<string>();
-            string quotedTable = PgSchemaHelper.QuoteName(tableName);
-            string quotedColumn = PgSchemaHelper.QuoteName(newField.FieldName);
+            string quotedTable = PgSchemaSyntax.QuoteName(tableName);
+            string quotedColumn = PgSchemaSyntax.QuoteName(newField.FieldName);
 
             // 1) Type change (length / precision / scale included)
             bool typeChanged = oldField.DbType != newField.DbType
@@ -106,12 +106,12 @@ namespace Bee.Db.Providers.PostgreSql
             }
 
             // 3) Default change (a nullable column has no DEFAULT in this framework, see
-            // PgSchemaHelper.GetDefaultExpression)
+            // PgSchemaSyntax.GetDefaultExpression)
             bool defaultChanged = !StrFunc.IsEquals(oldField.DefaultValue, newField.DefaultValue)
                 || oldField.AllowNull != newField.AllowNull;
             if (defaultChanged)
             {
-                string newDefault = PgSchemaHelper.GetDefaultExpression(newField);
+                string newDefault = PgSchemaSyntax.GetDefaultExpression(newField);
                 if (StrFunc.IsNotEmpty(newDefault))
                     statements.Add($"ALTER TABLE {quotedTable} ALTER COLUMN {quotedColumn} SET DEFAULT {newDefault};");
                 else
@@ -127,19 +127,19 @@ namespace Bee.Db.Providers.PostgreSql
             string fields = BuildIndexFieldList(index);
 
             if (index.PrimaryKey)
-                return $"ALTER TABLE {PgSchemaHelper.QuoteName(tableName)} ADD CONSTRAINT {PgSchemaHelper.QuoteName(indexName)} PRIMARY KEY ({fields});";
+                return $"ALTER TABLE {PgSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {PgSchemaSyntax.QuoteName(indexName)} PRIMARY KEY ({fields});";
 
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {PgSchemaHelper.QuoteName(indexName)} ON {PgSchemaHelper.QuoteName(tableName)} ({fields});";
+            return $"CREATE {uniqueClause}INDEX {PgSchemaSyntax.QuoteName(indexName)} ON {PgSchemaSyntax.QuoteName(tableName)} ({fields});";
         }
 
         private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
         {
             // Primary keys are constraints; everything else is an index.
             if (index.PrimaryKey)
-                return $"ALTER TABLE {PgSchemaHelper.QuoteName(tableName)} DROP CONSTRAINT {PgSchemaHelper.QuoteName(index.Name)};";
+                return $"ALTER TABLE {PgSchemaSyntax.QuoteName(tableName)} DROP CONSTRAINT {PgSchemaSyntax.QuoteName(index.Name)};";
 
-            return $"DROP INDEX {PgSchemaHelper.QuoteName(index.Name)};";
+            return $"DROP INDEX {PgSchemaSyntax.QuoteName(index.Name)};";
         }
 
         private static string BuildIndexFieldList(TableSchemaIndex index)
@@ -149,7 +149,7 @@ namespace Bee.Db.Providers.PostgreSql
             {
                 if (sb.Length > 0) sb.Append(", ");
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"{PgSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{PgSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             return sb.ToString();
         }

@@ -78,7 +78,7 @@ namespace Bee.Db.Providers.Oracle
         /// </summary>
         private static string BuildAddFieldStatement(string tableName, DbField field)
         {
-            return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} ADD ({OracleSchemaHelper.GetColumnDefinition(field)});";
+            return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} ADD ({OracleSchemaSyntax.GetColumnDefinition(field)});";
         }
 
         /// <summary>
@@ -93,8 +93,8 @@ namespace Bee.Db.Providers.Oracle
         /// </remarks>
         private static string BuildAlterFieldStatement(string tableName, DbField newField)
         {
-            string newDef = OracleSchemaHelper.GetColumnDefinition(newField);
-            return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} MODIFY ({newDef});";
+            string newDef = OracleSchemaSyntax.GetColumnDefinition(newField);
+            return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} MODIFY ({newDef});";
         }
 
         /// <summary>
@@ -102,8 +102,8 @@ namespace Bee.Db.Providers.Oracle
         /// </summary>
         private static string BuildRenameFieldStatement(string tableName, RenameFieldChange change)
         {
-            return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} RENAME COLUMN " +
-                   $"{OracleSchemaHelper.QuoteName(change.OldFieldName)} TO {OracleSchemaHelper.QuoteName(change.NewField.FieldName)};";
+            return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} RENAME COLUMN " +
+                   $"{OracleSchemaSyntax.QuoteName(change.OldFieldName)} TO {OracleSchemaSyntax.QuoteName(change.NewField.FieldName)};";
         }
 
         /// <summary>
@@ -119,12 +119,12 @@ namespace Bee.Db.Providers.Oracle
             if (index.PrimaryKey)
             {
                 string pkFields = BuildIndexFieldList(index, includeSortDirection: false);
-                return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} ADD CONSTRAINT {OracleSchemaHelper.QuoteName(indexName)} PRIMARY KEY ({pkFields});";
+                return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {OracleSchemaSyntax.QuoteName(indexName)} PRIMARY KEY ({pkFields});";
             }
 
             string fields = BuildIndexFieldList(index, includeSortDirection: true);
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {OracleSchemaHelper.QuoteName(indexName)} ON {OracleSchemaHelper.QuoteName(tableName)} ({fields});";
+            return $"CREATE {uniqueClause}INDEX {OracleSchemaSyntax.QuoteName(indexName)} ON {OracleSchemaSyntax.QuoteName(tableName)} ({fields});";
         }
 
         /// <summary>
@@ -136,9 +136,9 @@ namespace Bee.Db.Providers.Oracle
         private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
         {
             if (index.PrimaryKey)
-                return $"ALTER TABLE {OracleSchemaHelper.QuoteName(tableName)} DROP PRIMARY KEY;";
+                return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} DROP PRIMARY KEY;";
 
-            return $"DROP INDEX {OracleSchemaHelper.QuoteName(index.Name)};";
+            return $"DROP INDEX {OracleSchemaSyntax.QuoteName(index.Name)};";
         }
 
         /// <summary>
@@ -154,11 +154,11 @@ namespace Bee.Db.Providers.Oracle
                 if (includeSortDirection)
                 {
                     sb.Append(CultureInfo.InvariantCulture,
-                        $"{OracleSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                        $"{OracleSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
                 }
                 else
                 {
-                    sb.Append(OracleSchemaHelper.QuoteName(field.FieldName));
+                    sb.Append(OracleSchemaSyntax.QuoteName(field.FieldName));
                 }
             }
             return sb.ToString();

@@ -65,7 +65,7 @@ namespace Bee.Db.Providers.Sqlite
 
         private static string BuildAddFieldStatement(string tableName, DbField field)
         {
-            return $"ALTER TABLE {SqliteSchemaHelper.QuoteName(tableName)} ADD COLUMN {SqliteSchemaHelper.GetColumnDefinition(field)};";
+            return $"ALTER TABLE {SqliteSchemaSyntax.QuoteName(tableName)} ADD COLUMN {SqliteSchemaSyntax.GetColumnDefinition(field)};";
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         private static string BuildRenameFieldStatement(string tableName, RenameFieldChange change)
         {
-            return $"ALTER TABLE {SqliteSchemaHelper.QuoteName(tableName)} RENAME COLUMN " +
-                   $"{SqliteSchemaHelper.QuoteName(change.OldFieldName)} TO {SqliteSchemaHelper.QuoteName(change.NewField.FieldName)};";
+            return $"ALTER TABLE {SqliteSchemaSyntax.QuoteName(tableName)} RENAME COLUMN " +
+                   $"{SqliteSchemaSyntax.QuoteName(change.OldFieldName)} TO {SqliteSchemaSyntax.QuoteName(change.NewField.FieldName)};";
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Bee.Db.Providers.Sqlite
             string indexName = StrFunc.Format(index.Name, tableName);
             string fields = BuildIndexFieldList(index);
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {SqliteSchemaHelper.QuoteName(indexName)} ON {SqliteSchemaHelper.QuoteName(tableName)} ({fields});";
+            return $"CREATE {uniqueClause}INDEX {SqliteSchemaSyntax.QuoteName(indexName)} ON {SqliteSchemaSyntax.QuoteName(tableName)} ({fields});";
         }
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace Bee.Db.Providers.Sqlite
                 throw new NotSupportedException(
                     "SQLite cannot drop a PRIMARY KEY from an existing table via ALTER; this requires a rebuild.");
 
-            return $"DROP INDEX {SqliteSchemaHelper.QuoteName(index.Name)};";
+            return $"DROP INDEX {SqliteSchemaSyntax.QuoteName(index.Name)};";
         }
 
         private static string BuildIndexFieldList(TableSchemaIndex index)
@@ -114,7 +114,7 @@ namespace Bee.Db.Providers.Sqlite
             {
                 if (sb.Length > 0) sb.Append(", ");
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"{SqliteSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{SqliteSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             return sb.ToString();
         }

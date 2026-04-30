@@ -33,6 +33,6 @@ namespace Bee.Db.Providers.MySql
 
         /// <inheritdoc />
         public string GetDefaultValueExpression(FieldDbType dbType) =>
-            MySqlSchemaHelper.GetDefaultValueExpression(dbType);
+            MySqlSchemaSyntax.GetDefaultValueExpression(dbType);
     }
 }

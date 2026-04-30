@@ -136,7 +136,7 @@ namespace Bee.Db.Providers.Oracle
         /// </remarks>
         private static string BuildDropIfExistsStatement(string tableName)
         {
-            string quoted = OracleSchemaHelper.QuoteName(tableName);
+            string quoted = OracleSchemaSyntax.QuoteName(tableName);
             return "BEGIN\r\n" +
                    $"  EXECUTE IMMEDIATE 'DROP TABLE {quoted} CASCADE CONSTRAINTS';\r\n" +
                    "EXCEPTION\r\n" +
@@ -152,15 +152,15 @@ namespace Bee.Db.Providers.Oracle
                 if (addedFieldNames.Contains(field.FieldName)) continue;
                 if (field.DbType == FieldDbType.AutoIncrement) continue;
                 if (fieldBuilder.Length > 0) fieldBuilder.Append(", ");
-                fieldBuilder.Append(OracleSchemaHelper.QuoteName(field.FieldName));
+                fieldBuilder.Append(OracleSchemaSyntax.QuoteName(field.FieldName));
             }
             string fields = fieldBuilder.ToString();
-            return $"INSERT INTO {OracleSchemaHelper.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {OracleSchemaHelper.QuoteName(sourceTable)};";
+            return $"INSERT INTO {OracleSchemaSyntax.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {OracleSchemaSyntax.QuoteName(sourceTable)};";
         }
 
         private static string BuildRenameTableStatement(string oldTable, string newTable)
         {
-            return $"ALTER TABLE {OracleSchemaHelper.QuoteName(oldTable)} RENAME TO {OracleSchemaHelper.QuoteName(newTable)};";
+            return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(oldTable)} RENAME TO {OracleSchemaSyntax.QuoteName(newTable)};";
         }
 
         private static string BuildRecreateIndexStatements(string tableName, TableSchema schema)
@@ -172,7 +172,7 @@ namespace Bee.Db.Providers.Oracle
                 string fields = BuildIndexFieldList(index);
                 string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"CREATE {uniqueClause}INDEX {OracleSchemaHelper.QuoteName(name)} ON {OracleSchemaHelper.QuoteName(tableName)} ({fields});\n");
+                    $"CREATE {uniqueClause}INDEX {OracleSchemaSyntax.QuoteName(name)} ON {OracleSchemaSyntax.QuoteName(tableName)} ({fields});\n");
             }
             return sb.ToString();
         }
@@ -184,7 +184,7 @@ namespace Bee.Db.Providers.Oracle
             {
                 if (sb.Length > 0) sb.Append(", ");
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"{OracleSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{OracleSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             return sb.ToString();
         }

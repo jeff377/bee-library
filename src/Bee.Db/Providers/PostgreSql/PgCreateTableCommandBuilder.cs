@@ -49,7 +49,7 @@ namespace Bee.Db.Providers.PostgreSql
             string comments = GetCommentCommandText(tableName);
 
             var sb = new StringBuilder();
-            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {PgSchemaHelper.QuoteName(tableName)} (\r\n{fields}");
+            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {PgSchemaSyntax.QuoteName(tableName)} (\r\n{fields}");
             if (StrFunc.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append("\r\n);");
@@ -70,7 +70,7 @@ namespace Bee.Db.Providers.PostgreSql
             {
                 if (sb.Length > 0)
                     sb.Append(",\r\n");
-                sb.Append("  " + PgSchemaHelper.GetColumnDefinition(field));
+                sb.Append("  " + PgSchemaSyntax.GetColumnDefinition(field));
             }
             return sb.ToString();
         }
@@ -90,11 +90,11 @@ namespace Bee.Db.Providers.PostgreSql
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
                 fieldBuilder.Append(CultureInfo.InvariantCulture,
-                    $"{PgSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{PgSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
             string name = StrFunc.Format(index.Name, tableName);
-            return $"CONSTRAINT {PgSchemaHelper.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
+            return $"CONSTRAINT {PgSchemaSyntax.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
         /// <summary>
@@ -125,11 +125,11 @@ namespace Bee.Db.Providers.PostgreSql
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
                 fieldBuilder.Append(CultureInfo.InvariantCulture,
-                    $"{PgSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{PgSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {PgSchemaHelper.QuoteName(name)} ON {PgSchemaHelper.QuoteName(tableName)} ({fieldBuilder});";
+            return $"CREATE {uniqueClause}INDEX {PgSchemaSyntax.QuoteName(name)} ON {PgSchemaSyntax.QuoteName(tableName)} ({fieldBuilder});";
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace Bee.Db.Providers.PostgreSql
         /// </summary>
         private static string BuildTableCommentStatement(string tableName, string description)
         {
-            return $"COMMENT ON TABLE {PgSchemaHelper.QuoteName(tableName)} IS '{PgSchemaHelper.EscapeSqlString(description)}';";
+            return $"COMMENT ON TABLE {PgSchemaSyntax.QuoteName(tableName)} IS '{PgSchemaSyntax.EscapeSqlString(description)}';";
         }
 
         /// <summary>
@@ -163,7 +163,7 @@ namespace Bee.Db.Providers.PostgreSql
         /// </summary>
         private static string BuildColumnCommentStatement(string tableName, string columnName, string description)
         {
-            return $"COMMENT ON COLUMN {PgSchemaHelper.QuoteName(tableName)}.{PgSchemaHelper.QuoteName(columnName)} IS '{PgSchemaHelper.EscapeSqlString(description)}';";
+            return $"COMMENT ON COLUMN {PgSchemaSyntax.QuoteName(tableName)}.{PgSchemaSyntax.QuoteName(columnName)} IS '{PgSchemaSyntax.EscapeSqlString(description)}';";
         }
     }
 }

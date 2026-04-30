@@ -238,7 +238,7 @@ namespace Bee.Db.Providers.SqlServer
                 dbField.Scale = row.GetFieldValue<int>("Decimals");
             }
 
-            string originalDefaultValue = SqlSchemaHelper.GetDefaultValueExpression(dbField.DbType);  // Get the built-in default value
+            string originalDefaultValue = SqlSchemaSyntax.GetDefaultValueExpression(dbField.DbType);  // Get the built-in default value
             dbField.DefaultValue = ParseDBDefaultValue(row.GetFieldValue<string>("DbType"), row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
             return dbField;
         }

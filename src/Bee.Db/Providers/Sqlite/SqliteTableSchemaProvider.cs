@@ -88,7 +88,7 @@ namespace Bee.Db.Providers.Sqlite
         /// </remarks>
         private DataTable ReadColumns(string tableName)
         {
-            string sql = $"PRAGMA table_info({SqliteSchemaHelper.QuoteName(tableName)})";
+            string sql = $"PRAGMA table_info({SqliteSchemaSyntax.QuoteName(tableName)})";
             return ReadDynamicPragma(sql, "Columns");
         }
 
@@ -160,7 +160,7 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         private void ParseIndexes(TableSchema dbTable, string tableName)
         {
-            string listSql = $"PRAGMA index_list({SqliteSchemaHelper.QuoteName(tableName)})";
+            string listSql = $"PRAGMA index_list({SqliteSchemaSyntax.QuoteName(tableName)})";
             var listResult = ReadDynamicPragma(listSql, "IndexList");
 
             foreach (DataRow row in listResult.Rows)
@@ -196,7 +196,7 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         private List<string> ReadIndexFields(string indexName)
         {
-            string sql = $"PRAGMA index_info({SqliteSchemaHelper.QuoteName(indexName)})";
+            string sql = $"PRAGMA index_info({SqliteSchemaSyntax.QuoteName(indexName)})";
             var result = ReadDynamicPragma(sql, "IndexInfo");
             var fields = new List<string>();
             foreach (DataRow row in result.Rows)
@@ -234,7 +234,7 @@ namespace Bee.Db.Providers.Sqlite
                 dbField.Scale = scale > 0 ? scale : dbField.Scale;
             }
 
-            string originalDefault = SqliteSchemaHelper.GetDefaultValueExpression(dbField.DbType);
+            string originalDefault = SqliteSchemaSyntax.GetDefaultValueExpression(dbField.DbType);
             string raw = BaseFunc.CStr(row["dflt_value"]);
             dbField.DefaultValue = ParseDefaultValue(raw, dbField.DbType, originalDefault);
             return dbField;

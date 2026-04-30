@@ -6,10 +6,10 @@ using Bee.Definition.Database;
 namespace Bee.Db.UnitTests
 {
     /// <summary>
-    /// 純語法測試：覆蓋 <see cref="SqliteSchemaHelper"/> 的識別符 quote、字串 escape、
+    /// 純語法測試：覆蓋 <see cref="SqliteSchemaSyntax"/> 的識別符 quote、字串 escape、
     /// 預設值表達式與 column / AutoIncrement column 定義組裝。
     /// </summary>
-    public class SqliteSchemaHelperTests
+    public class SqliteSchemaSyntaxTests
     {
         #region QuoteName
 
@@ -20,7 +20,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite QuoteName：應以雙引號包覆並 escape 內部雙引號")]
         public void QuoteName_VariousIdentifiers_QuotesProperly(string identifier, string expected)
         {
-            Assert.Equal(expected, SqliteSchemaHelper.QuoteName(identifier));
+            Assert.Equal(expected, SqliteSchemaSyntax.QuoteName(identifier));
         }
 
         #endregion
@@ -34,7 +34,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite EscapeSqlString：單引號應加倍以避免破壞字面量")]
         public void EscapeSqlString_DoublesSingleQuotes(string input, string expected)
         {
-            Assert.Equal(expected, SqliteSchemaHelper.EscapeSqlString(input));
+            Assert.Equal(expected, SqliteSchemaSyntax.EscapeSqlString(input));
         }
 
         #endregion
@@ -58,7 +58,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite GetDefaultValueExpression：各型別應對應正確 SQLite 預設表達式")]
         public void GetDefaultValueExpression_VariousTypes_ReturnsExpected(FieldDbType dbType, string expected)
         {
-            Assert.Equal(expected, SqliteSchemaHelper.GetDefaultValueExpression(dbType));
+            Assert.Equal(expected, SqliteSchemaSyntax.GetDefaultValueExpression(dbType));
         }
 
         #endregion
@@ -70,7 +70,7 @@ namespace Bee.Db.UnitTests
         public void GetDefaultExpression_AllowNull_ReturnsEmpty()
         {
             var field = new DbField("v", "V", FieldDbType.Integer) { AllowNull = true };
-            Assert.Equal(string.Empty, SqliteSchemaHelper.GetDefaultExpression(field));
+            Assert.Equal(string.Empty, SqliteSchemaSyntax.GetDefaultExpression(field));
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace Bee.Db.UnitTests
         public void GetDefaultExpression_AutoIncrement_ReturnsEmpty()
         {
             var field = new DbField("v", "V", FieldDbType.AutoIncrement);
-            Assert.Equal(string.Empty, SqliteSchemaHelper.GetDefaultExpression(field));
+            Assert.Equal(string.Empty, SqliteSchemaSyntax.GetDefaultExpression(field));
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace Bee.Db.UnitTests
         public void GetDefaultExpression_StringNoCustom_ReturnsEmptyLiteral()
         {
             var field = new DbField("v", "V", FieldDbType.String) { Length = 50 };
-            Assert.Equal("''", SqliteSchemaHelper.GetDefaultExpression(field));
+            Assert.Equal("''", SqliteSchemaSyntax.GetDefaultExpression(field));
         }
 
         [Fact]
@@ -98,7 +98,7 @@ namespace Bee.Db.UnitTests
                 Length = 50,
                 DefaultValue = "O'Brien"
             };
-            Assert.Equal("'O''Brien'", SqliteSchemaHelper.GetDefaultExpression(field));
+            Assert.Equal("'O''Brien'", SqliteSchemaSyntax.GetDefaultExpression(field));
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace Bee.Db.UnitTests
         public void GetDefaultExpression_IntegerCustom_ReturnsRaw()
         {
             var field = new DbField("v", "V", FieldDbType.Integer) { DefaultValue = "42" };
-            Assert.Equal("42", SqliteSchemaHelper.GetDefaultExpression(field));
+            Assert.Equal("42", SqliteSchemaSyntax.GetDefaultExpression(field));
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace Bee.Db.UnitTests
         public void GetDefaultExpression_IntegerNoCustom_ReturnsBuiltinZero()
         {
             var field = new DbField("v", "V", FieldDbType.Integer);
-            Assert.Equal("0", SqliteSchemaHelper.GetDefaultExpression(field));
+            Assert.Equal("0", SqliteSchemaSyntax.GetDefaultExpression(field));
         }
 
         #endregion
@@ -126,7 +126,7 @@ namespace Bee.Db.UnitTests
         public void GetColumnDefinition_String_IncludesCollateAndDefault()
         {
             var field = new DbField("name", "Name", FieldDbType.String) { Length = 50 };
-            var sql = SqliteSchemaHelper.GetColumnDefinition(field);
+            var sql = SqliteSchemaSyntax.GetColumnDefinition(field);
             Assert.Contains("\"name\" VARCHAR(50) COLLATE NOCASE NOT NULL DEFAULT ''", sql);
         }
 
@@ -135,7 +135,7 @@ namespace Bee.Db.UnitTests
         public void GetColumnDefinition_IntegerNotNull_IncludesDefaultZero()
         {
             var field = new DbField("count", "Count", FieldDbType.Integer);
-            var sql = SqliteSchemaHelper.GetColumnDefinition(field);
+            var sql = SqliteSchemaSyntax.GetColumnDefinition(field);
             Assert.Contains("\"count\" INTEGER NOT NULL DEFAULT 0", sql);
         }
 
@@ -144,7 +144,7 @@ namespace Bee.Db.UnitTests
         public void GetColumnDefinition_AllowNull_OmitsDefault()
         {
             var field = new DbField("count", "Count", FieldDbType.Integer) { AllowNull = true };
-            var sql = SqliteSchemaHelper.GetColumnDefinition(field);
+            var sql = SqliteSchemaSyntax.GetColumnDefinition(field);
             Assert.Equal("\"count\" INTEGER NULL", sql);
         }
 
@@ -157,7 +157,7 @@ namespace Bee.Db.UnitTests
         public void GetAutoIncrementColumnDefinition_InlinesPrimaryKey()
         {
             var field = new DbField("sys_no", "Seq", FieldDbType.AutoIncrement);
-            var sql = SqliteSchemaHelper.GetAutoIncrementColumnDefinition(field);
+            var sql = SqliteSchemaSyntax.GetAutoIncrementColumnDefinition(field);
             Assert.Equal("\"sys_no\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL", sql);
         }
 

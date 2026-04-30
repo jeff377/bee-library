@@ -8,7 +8,7 @@ namespace Bee.Db.Providers.SqlServer
     /// Shared SQL Server identifier, literal, and column-definition primitives used by
     /// the CREATE and ALTER schema builders.
     /// </summary>
-    internal static class SqlSchemaHelper
+    internal static class SqlSchemaSyntax
     {
         /// <summary>
         /// Quotes a SQL Server identifier by escaping <c>]</c> as <c>]]</c> and wrapping in square brackets.

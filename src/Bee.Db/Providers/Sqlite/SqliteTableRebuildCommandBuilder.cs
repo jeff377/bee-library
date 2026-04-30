@@ -107,7 +107,7 @@ namespace Bee.Db.Providers.Sqlite
 
         private static string BuildDropIfExistsStatement(string tableName)
         {
-            return $"DROP TABLE IF EXISTS {SqliteSchemaHelper.QuoteName(tableName)};";
+            return $"DROP TABLE IF EXISTS {SqliteSchemaSyntax.QuoteName(tableName)};";
         }
 
         private static string BuildInsertSelectStatement(string sourceTable, string targetTable, TableSchema schema, HashSet<string> addedFieldNames)
@@ -118,15 +118,15 @@ namespace Bee.Db.Providers.Sqlite
                 if (addedFieldNames.Contains(field.FieldName)) continue;
                 if (field.DbType == FieldDbType.AutoIncrement) continue;
                 if (fieldBuilder.Length > 0) fieldBuilder.Append(", ");
-                fieldBuilder.Append(SqliteSchemaHelper.QuoteName(field.FieldName));
+                fieldBuilder.Append(SqliteSchemaSyntax.QuoteName(field.FieldName));
             }
             string fields = fieldBuilder.ToString();
-            return $"INSERT INTO {SqliteSchemaHelper.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {SqliteSchemaHelper.QuoteName(sourceTable)};";
+            return $"INSERT INTO {SqliteSchemaSyntax.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {SqliteSchemaSyntax.QuoteName(sourceTable)};";
         }
 
         private static string BuildRenameTableStatement(string oldTable, string newTable)
         {
-            return $"ALTER TABLE {SqliteSchemaHelper.QuoteName(oldTable)} RENAME TO {SqliteSchemaHelper.QuoteName(newTable)};";
+            return $"ALTER TABLE {SqliteSchemaSyntax.QuoteName(oldTable)} RENAME TO {SqliteSchemaSyntax.QuoteName(newTable)};";
         }
 
         private static string BuildRecreateIndexStatements(string tableName, TableSchema schema)
@@ -138,7 +138,7 @@ namespace Bee.Db.Providers.Sqlite
                 string fields = BuildIndexFieldList(index);
                 string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"CREATE {uniqueClause}INDEX {SqliteSchemaHelper.QuoteName(name)} ON {SqliteSchemaHelper.QuoteName(tableName)} ({fields});\n");
+                    $"CREATE {uniqueClause}INDEX {SqliteSchemaSyntax.QuoteName(name)} ON {SqliteSchemaSyntax.QuoteName(tableName)} ({fields});\n");
             }
             return sb.ToString();
         }
@@ -150,7 +150,7 @@ namespace Bee.Db.Providers.Sqlite
             {
                 if (sb.Length > 0) sb.Append(", ");
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"{SqliteSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{SqliteSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             return sb.ToString();
         }

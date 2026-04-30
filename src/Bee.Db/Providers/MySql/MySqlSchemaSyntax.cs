@@ -6,8 +6,8 @@ namespace Bee.Db.Providers.MySql
 {
     /// <summary>
     /// Shared MySQL identifier and column-definition primitives used by the CREATE and
-    /// ALTER schema builders. Counterpart to <see cref="Sqlite.SqliteSchemaHelper"/> and
-    /// <see cref="PostgreSql.PgSchemaHelper"/>.
+    /// ALTER schema builders. Counterpart to <see cref="Sqlite.SqliteSchemaSyntax"/> and
+    /// <see cref="PostgreSql.PgSchemaSyntax"/>.
     /// </summary>
     /// <remarks>
     /// Targets MySQL 8.0+. Assumes the server's <c>SQL_MODE</c> does not include
@@ -15,7 +15,7 @@ namespace Bee.Db.Providers.MySql
     /// (which is accent- and case-insensitive) are 8.0 defaults — see
     /// docs/plans/plan-mysql-support.md.
     /// </remarks>
-    internal static class MySqlSchemaHelper
+    internal static class MySqlSchemaSyntax
     {
         /// <summary>
         /// Quotes a MySQL identifier with backticks; embedded backticks are doubled.

@@ -233,7 +233,7 @@ namespace Bee.Db.Providers.MySql
                 dbField.Scale = scale;
             }
 
-            string originalDefaultValue = MySqlSchemaHelper.GetDefaultValueExpression(dbField.DbType);
+            string originalDefaultValue = MySqlSchemaSyntax.GetDefaultValueExpression(dbField.DbType);
             dbField.DefaultValue = ParseDBDefaultValue(dataType, row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
             return dbField;
         }

@@ -119,7 +119,7 @@ namespace Bee.Db.Providers.MySql
 
         private static string BuildDropIfExistsStatement(string tableName)
         {
-            return $"DROP TABLE IF EXISTS {MySqlSchemaHelper.QuoteName(tableName)};";
+            return $"DROP TABLE IF EXISTS {MySqlSchemaSyntax.QuoteName(tableName)};";
         }
 
         private static string BuildInsertSelectStatement(string sourceTable, string targetTable, TableSchema schema, HashSet<string> addedFieldNames)
@@ -130,15 +130,15 @@ namespace Bee.Db.Providers.MySql
                 if (addedFieldNames.Contains(field.FieldName)) continue;
                 if (field.DbType == FieldDbType.AutoIncrement) continue;
                 if (fieldBuilder.Length > 0) fieldBuilder.Append(", ");
-                fieldBuilder.Append(MySqlSchemaHelper.QuoteName(field.FieldName));
+                fieldBuilder.Append(MySqlSchemaSyntax.QuoteName(field.FieldName));
             }
             string fields = fieldBuilder.ToString();
-            return $"INSERT INTO {MySqlSchemaHelper.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {MySqlSchemaHelper.QuoteName(sourceTable)};";
+            return $"INSERT INTO {MySqlSchemaSyntax.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {MySqlSchemaSyntax.QuoteName(sourceTable)};";
         }
 
         private static string BuildRenameTableStatement(string oldTable, string newTable)
         {
-            return $"ALTER TABLE {MySqlSchemaHelper.QuoteName(oldTable)} RENAME TO {MySqlSchemaHelper.QuoteName(newTable)};";
+            return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(oldTable)} RENAME TO {MySqlSchemaSyntax.QuoteName(newTable)};";
         }
 
         private static string BuildRecreateIndexStatements(string tableName, TableSchema schema)
@@ -150,7 +150,7 @@ namespace Bee.Db.Providers.MySql
                 string fields = BuildIndexFieldList(index);
                 string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"CREATE {uniqueClause}INDEX {MySqlSchemaHelper.QuoteName(name)} ON {MySqlSchemaHelper.QuoteName(tableName)} ({fields});\n");
+                    $"CREATE {uniqueClause}INDEX {MySqlSchemaSyntax.QuoteName(name)} ON {MySqlSchemaSyntax.QuoteName(tableName)} ({fields});\n");
             }
             return sb.ToString();
         }
@@ -162,7 +162,7 @@ namespace Bee.Db.Providers.MySql
             {
                 if (sb.Length > 0) sb.Append(", ");
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"{MySqlSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{MySqlSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             return sb.ToString();
         }

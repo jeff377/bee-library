@@ -26,6 +26,6 @@ namespace Bee.Db.Providers.SqlServer
         public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new SqlFormCommandBuilder(progId);
 
         /// <inheritdoc />
-        public string GetDefaultValueExpression(FieldDbType dbType) => SqlSchemaHelper.GetDefaultValueExpression(dbType);
+        public string GetDefaultValueExpression(FieldDbType dbType) => SqlSchemaSyntax.GetDefaultValueExpression(dbType);
     }
 }

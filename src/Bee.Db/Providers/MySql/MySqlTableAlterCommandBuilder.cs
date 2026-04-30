@@ -72,7 +72,7 @@ namespace Bee.Db.Providers.MySql
 
         private static string BuildAddFieldStatement(string tableName, DbField field)
         {
-            return $"ALTER TABLE {MySqlSchemaHelper.QuoteName(tableName)} ADD COLUMN {MySqlSchemaHelper.GetColumnDefinition(field)};";
+            return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(tableName)} ADD COLUMN {MySqlSchemaSyntax.GetColumnDefinition(field)};";
         }
 
         /// <summary>
@@ -81,8 +81,8 @@ namespace Bee.Db.Providers.MySql
         /// </summary>
         private static string BuildAlterFieldStatement(string tableName, DbField newField)
         {
-            string newDef = MySqlSchemaHelper.GetColumnDefinition(newField);
-            return $"ALTER TABLE {MySqlSchemaHelper.QuoteName(tableName)} MODIFY COLUMN {newDef};";
+            string newDef = MySqlSchemaSyntax.GetColumnDefinition(newField);
+            return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(tableName)} MODIFY COLUMN {newDef};";
         }
 
         /// <summary>
@@ -92,8 +92,8 @@ namespace Bee.Db.Providers.MySql
         /// </summary>
         private static string BuildRenameFieldStatement(string tableName, RenameFieldChange change)
         {
-            return $"ALTER TABLE {MySqlSchemaHelper.QuoteName(tableName)} RENAME COLUMN " +
-                   $"{MySqlSchemaHelper.QuoteName(change.OldFieldName)} TO {MySqlSchemaHelper.QuoteName(change.NewField.FieldName)};";
+            return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(tableName)} RENAME COLUMN " +
+                   $"{MySqlSchemaSyntax.QuoteName(change.OldFieldName)} TO {MySqlSchemaSyntax.QuoteName(change.NewField.FieldName)};";
         }
 
         /// <summary>
@@ -107,10 +107,10 @@ namespace Bee.Db.Providers.MySql
             string fields = BuildIndexFieldList(index);
 
             if (index.PrimaryKey)
-                return $"ALTER TABLE {MySqlSchemaHelper.QuoteName(tableName)} ADD CONSTRAINT {MySqlSchemaHelper.QuoteName(indexName)} PRIMARY KEY ({fields});";
+                return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {MySqlSchemaSyntax.QuoteName(indexName)} PRIMARY KEY ({fields});";
 
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {MySqlSchemaHelper.QuoteName(indexName)} ON {MySqlSchemaHelper.QuoteName(tableName)} ({fields});";
+            return $"CREATE {uniqueClause}INDEX {MySqlSchemaSyntax.QuoteName(indexName)} ON {MySqlSchemaSyntax.QuoteName(tableName)} ({fields});";
         }
 
         /// <summary>
@@ -121,9 +121,9 @@ namespace Bee.Db.Providers.MySql
         private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
         {
             if (index.PrimaryKey)
-                return $"ALTER TABLE {MySqlSchemaHelper.QuoteName(tableName)} DROP PRIMARY KEY;";
+                return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(tableName)} DROP PRIMARY KEY;";
 
-            return $"DROP INDEX {MySqlSchemaHelper.QuoteName(index.Name)} ON {MySqlSchemaHelper.QuoteName(tableName)};";
+            return $"DROP INDEX {MySqlSchemaSyntax.QuoteName(index.Name)} ON {MySqlSchemaSyntax.QuoteName(tableName)};";
         }
 
         private static string BuildIndexFieldList(TableSchemaIndex index)
@@ -133,7 +133,7 @@ namespace Bee.Db.Providers.MySql
             {
                 if (sb.Length > 0) sb.Append(", ");
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"{MySqlSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{MySqlSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             return sb.ToString();
         }

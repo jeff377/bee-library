@@ -86,7 +86,7 @@ namespace Bee.Db.Providers.PostgreSql
 
         private static string BuildDropIfExistsStatement(string tableName)
         {
-            return $"DROP TABLE IF EXISTS {PgSchemaHelper.QuoteName(tableName)};";
+            return $"DROP TABLE IF EXISTS {PgSchemaSyntax.QuoteName(tableName)};";
         }
 
         private static string BuildInsertSelectStatement(string sourceTable, string targetTable, TableSchema schema, HashSet<string> addedFieldNames)
@@ -97,10 +97,10 @@ namespace Bee.Db.Providers.PostgreSql
                 if (addedFieldNames.Contains(field.FieldName)) continue;
                 if (field.DbType == FieldDbType.AutoIncrement) continue;
                 if (fieldBuilder.Length > 0) fieldBuilder.Append(", ");
-                fieldBuilder.Append(PgSchemaHelper.QuoteName(field.FieldName));
+                fieldBuilder.Append(PgSchemaSyntax.QuoteName(field.FieldName));
             }
             string fields = fieldBuilder.ToString();
-            return $"INSERT INTO {PgSchemaHelper.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {PgSchemaHelper.QuoteName(sourceTable)};";
+            return $"INSERT INTO {PgSchemaSyntax.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {PgSchemaSyntax.QuoteName(sourceTable)};";
         }
 
         private static string BuildRenameStatements(string oldTable, string newTable, TableSchema schema)
@@ -112,11 +112,11 @@ namespace Bee.Db.Providers.PostgreSql
                 string oldIndexName = StrFunc.Format(indexName, oldTable);
                 string newIndexName = StrFunc.Format(indexName, newTable);
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"ALTER INDEX {PgSchemaHelper.QuoteName(oldIndexName)} RENAME TO {PgSchemaHelper.QuoteName(newIndexName)};\n");
+                    $"ALTER INDEX {PgSchemaSyntax.QuoteName(oldIndexName)} RENAME TO {PgSchemaSyntax.QuoteName(newIndexName)};\n");
             }
             // Rename the table.
             sb.Append(CultureInfo.InvariantCulture,
-                $"ALTER TABLE {PgSchemaHelper.QuoteName(oldTable)} RENAME TO {PgSchemaHelper.QuoteName(newTable)};\n");
+                $"ALTER TABLE {PgSchemaSyntax.QuoteName(oldTable)} RENAME TO {PgSchemaSyntax.QuoteName(newTable)};\n");
             return sb.ToString();
         }
     }

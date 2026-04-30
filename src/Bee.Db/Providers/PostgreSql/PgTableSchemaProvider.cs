@@ -237,7 +237,7 @@ namespace Bee.Db.Providers.PostgreSql
                 dbField.Scale = scale;
             }
 
-            string originalDefaultValue = PgSchemaHelper.GetDefaultValueExpression(dbField.DbType);
+            string originalDefaultValue = PgSchemaSyntax.GetDefaultValueExpression(dbField.DbType);
             dbField.DefaultValue = ParseDBDefaultValue(dataType, row.GetFieldValue<string>("DefaultValue"), originalDefaultValue);
             return dbField;
         }

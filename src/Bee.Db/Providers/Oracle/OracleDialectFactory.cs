@@ -33,6 +33,6 @@ namespace Bee.Db.Providers.Oracle
 
         /// <inheritdoc />
         public string GetDefaultValueExpression(FieldDbType dbType) =>
-            OracleSchemaHelper.GetDefaultValueExpression(dbType);
+            OracleSchemaSyntax.GetDefaultValueExpression(dbType);
     }
 }

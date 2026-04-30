@@ -87,8 +87,8 @@ namespace Bee.Db.Providers.SqlServer
 
         private static string BuildDropIfExistsStatement(string tableName)
         {
-            string escaped = SqlSchemaHelper.EscapeSqlString(tableName);
-            string quoted = SqlSchemaHelper.QuoteName(tableName);
+            string escaped = SqlSchemaSyntax.EscapeSqlString(tableName);
+            string quoted = SqlSchemaSyntax.QuoteName(tableName);
             return $"IF (SELECT COUNT(*) From sys.tables WHERE name=N'{escaped}')>0\n  DROP TABLE {quoted};";
         }
 
@@ -100,10 +100,10 @@ namespace Bee.Db.Providers.SqlServer
                 if (addedFieldNames.Contains(field.FieldName)) continue;
                 if (field.DbType == FieldDbType.AutoIncrement) continue;
                 if (fieldBuilder.Length > 0) fieldBuilder.Append(", ");
-                fieldBuilder.Append(SqlSchemaHelper.QuoteName(field.FieldName));
+                fieldBuilder.Append(SqlSchemaSyntax.QuoteName(field.FieldName));
             }
             string fields = fieldBuilder.ToString();
-            return $"INSERT INTO {SqlSchemaHelper.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {SqlSchemaHelper.QuoteName(sourceTable)};";
+            return $"INSERT INTO {SqlSchemaSyntax.QuoteName(targetTable)} ({fields}) \nSELECT {fields} FROM {SqlSchemaSyntax.QuoteName(sourceTable)};";
         }
 
         private static string BuildRenameStatements(string oldTable, string newTable, TableSchema schema)
@@ -114,13 +114,13 @@ namespace Bee.Db.Providers.SqlServer
             {
                 string oldIndexName = StrFunc.Format(indexName, oldTable);
                 string newIndexName = StrFunc.Format(indexName, newTable);
-                string oldQualified = SqlSchemaHelper.EscapeSqlString($"dbo.{oldTable}.{oldIndexName}");
-                string escapedNew = SqlSchemaHelper.EscapeSqlString(newIndexName);
+                string oldQualified = SqlSchemaSyntax.EscapeSqlString($"dbo.{oldTable}.{oldIndexName}");
+                string escapedNew = SqlSchemaSyntax.EscapeSqlString(newIndexName);
                 sb.Append(CultureInfo.InvariantCulture, $"EXEC sp_rename N'{oldQualified}', N'{escapedNew}', N'INDEX';\n");
             }
             // Rename the table.
-            string oldEscaped = SqlSchemaHelper.EscapeSqlString(oldTable);
-            string newEscaped = SqlSchemaHelper.EscapeSqlString(newTable);
+            string oldEscaped = SqlSchemaSyntax.EscapeSqlString(oldTable);
+            string newEscaped = SqlSchemaSyntax.EscapeSqlString(newTable);
             sb.Append(CultureInfo.InvariantCulture, $"EXEC sp_rename N'{oldEscaped}', N'{newEscaped}';\n");
             return sb.ToString();
         }

@@ -24,7 +24,7 @@ namespace Bee.Db.Providers.Oracle
     /// </para>
     /// <para>
     /// Identifier case: the framework's CREATE TABLE builder emits quoted-UPPERCASE
-    /// identifiers (per <see cref="OracleSchemaHelper.QuoteName"/>), aligning with Oracle's
+    /// identifiers (per <see cref="OracleSchemaSyntax.QuoteName"/>), aligning with Oracle's
     /// natural unquoted-fold-to-UPPER convention. <c>USER_TAB_COLUMNS.TABLE_NAME</c> /
     /// <c>COLUMN_NAME</c> therefore returns UPPERCASE strings. This provider translates at
     /// the boundary: input identifiers are uppercased before querying Oracle's data
@@ -55,7 +55,7 @@ namespace Bee.Db.Providers.Oracle
         public TableSchema? GetTableSchema(string tableName)
         {
             // Oracle stores framework-emitted identifiers as UPPERCASE (per
-            // OracleSchemaHelper.QuoteName); query the data dictionary in UPPER form.
+            // OracleSchemaSyntax.QuoteName); query the data dictionary in UPPER form.
             string storageName = tableName.ToUpperInvariant();
 
             if (!TableExists(storageName)) return null;
@@ -282,7 +282,7 @@ namespace Bee.Db.Providers.Oracle
                 return dbField;
             }
 
-            string originalDefaultValue = OracleSchemaHelper.GetDefaultValueExpression(dbField.DbType);
+            string originalDefaultValue = OracleSchemaSyntax.GetDefaultValueExpression(dbField.DbType);
             // DATA_DEFAULT 是 LONG 欄位且未在 query 中 COALESCE，DBNull 視同空字串。
             string rawDefault = row.IsNull("DefaultValue") ? string.Empty : row.GetFieldValue<string>("DefaultValue");
             dbField.DefaultValue = ParseDBDefaultValue(dataType, rawDefault, originalDefaultValue);

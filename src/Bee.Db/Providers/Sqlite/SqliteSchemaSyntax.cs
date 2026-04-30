@@ -6,9 +6,9 @@ namespace Bee.Db.Providers.Sqlite
 {
     /// <summary>
     /// Shared SQLite identifier, literal, and column-definition primitives used by the
-    /// CREATE and ALTER schema builders. Counterpart to <see cref="PostgreSql.PgSchemaHelper"/>.
+    /// CREATE and ALTER schema builders. Counterpart to <see cref="PostgreSql.PgSchemaSyntax"/>.
     /// </summary>
-    internal static class SqliteSchemaHelper
+    internal static class SqliteSchemaSyntax
     {
         /// <summary>
         /// Quotes a SQLite identifier by escaping <c>"</c> as <c>""</c> and wrapping in double quotes.

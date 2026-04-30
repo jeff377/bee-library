@@ -26,6 +26,6 @@ namespace Bee.Db.Providers.PostgreSql
         public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new PgFormCommandBuilder(progId);
 
         /// <inheritdoc />
-        public string GetDefaultValueExpression(FieldDbType dbType) => PgSchemaHelper.GetDefaultValueExpression(dbType);
+        public string GetDefaultValueExpression(FieldDbType dbType) => PgSchemaSyntax.GetDefaultValueExpression(dbType);
     }
 }

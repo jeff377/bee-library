@@ -63,7 +63,7 @@ namespace Bee.Db.Providers.SqlServer
 
         private static string BuildAddFieldStatement(string tableName, DbField field)
         {
-            return $"ALTER TABLE {SqlSchemaHelper.QuoteName(tableName)} ADD {SqlSchemaHelper.GetColumnDefinition(field)};";
+            return $"ALTER TABLE {SqlSchemaSyntax.QuoteName(tableName)} ADD {SqlSchemaSyntax.GetColumnDefinition(field)};";
         }
 
         /// <summary>
@@ -73,8 +73,8 @@ namespace Bee.Db.Providers.SqlServer
         private static string BuildRenameFieldStatement(string tableName, RenameFieldChange change)
         {
             string sourceObject = $"{tableName}.{change.OldFieldName}";
-            string sourceLiteral = SqlSchemaHelper.EscapeSqlString(sourceObject);
-            string targetLiteral = SqlSchemaHelper.EscapeSqlString(change.NewField.FieldName);
+            string sourceLiteral = SqlSchemaSyntax.EscapeSqlString(sourceObject);
+            string targetLiteral = SqlSchemaSyntax.EscapeSqlString(change.NewField.FieldName);
             return $"EXEC sp_rename N'{sourceLiteral}', N'{targetLiteral}', N'COLUMN';";
         }
 
@@ -93,7 +93,7 @@ namespace Bee.Db.Providers.SqlServer
                 statements.Add(BuildAlterColumnStatement(tableName, newField));
 
             // Re-add default when the new field has a default expression (non-nullable fields always do).
-            string newDefaultExpression = SqlSchemaHelper.GetDefaultExpression(newField);
+            string newDefaultExpression = SqlSchemaSyntax.GetDefaultExpression(newField);
             if ((defaultChanged || columnSpecChanged) && StrFunc.IsNotEmpty(newDefaultExpression))
                 statements.Add(BuildAddDefaultConstraintStatement(tableName, newField, newDefaultExpression));
 
@@ -117,9 +117,9 @@ namespace Bee.Db.Providers.SqlServer
 
         private static string BuildAlterColumnStatement(string tableName, DbField newField)
         {
-            string dbType = SqlSchemaHelper.ConvertDbType(newField);
+            string dbType = SqlSchemaSyntax.ConvertDbType(newField);
             string nullability = newField.AllowNull ? "NULL" : "NOT NULL";
-            return $"ALTER TABLE {SqlSchemaHelper.QuoteName(tableName)} ALTER COLUMN {SqlSchemaHelper.QuoteName(newField.FieldName)} {dbType} {nullability};";
+            return $"ALTER TABLE {SqlSchemaSyntax.QuoteName(tableName)} ALTER COLUMN {SqlSchemaSyntax.QuoteName(newField.FieldName)} {dbType} {nullability};";
         }
 
         /// <summary>
@@ -129,9 +129,9 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         private static string BuildDropDefaultConstraintStatement(string tableName, string columnName)
         {
-            string tableLiteral = SqlSchemaHelper.EscapeSqlString(tableName);
-            string columnLiteral = SqlSchemaHelper.EscapeSqlString(columnName);
-            string quotedTable = SqlSchemaHelper.QuoteName(tableName);
+            string tableLiteral = SqlSchemaSyntax.EscapeSqlString(tableName);
+            string columnLiteral = SqlSchemaSyntax.EscapeSqlString(columnName);
+            string quotedTable = SqlSchemaSyntax.QuoteName(tableName);
             var sb = new StringBuilder();
             sb.AppendLine("DECLARE @df_name NVARCHAR(256);");
             sb.AppendLine("SELECT @df_name = dc.name");
@@ -148,7 +148,7 @@ namespace Bee.Db.Providers.SqlServer
         private static string BuildAddDefaultConstraintStatement(string tableName, DbField newField, string defaultExpression)
         {
             string constraintName = $"DF_{tableName}_{newField.FieldName}";
-            return $"ALTER TABLE {SqlSchemaHelper.QuoteName(tableName)} ADD CONSTRAINT {SqlSchemaHelper.QuoteName(constraintName)} DEFAULT ({defaultExpression}) FOR {SqlSchemaHelper.QuoteName(newField.FieldName)};";
+            return $"ALTER TABLE {SqlSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {SqlSchemaSyntax.QuoteName(constraintName)} DEFAULT ({defaultExpression}) FOR {SqlSchemaSyntax.QuoteName(newField.FieldName)};";
         }
 
         private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
@@ -157,19 +157,19 @@ namespace Bee.Db.Providers.SqlServer
             string fields = BuildIndexFieldList(index);
 
             if (index.PrimaryKey)
-                return $"ALTER TABLE {SqlSchemaHelper.QuoteName(tableName)} ADD CONSTRAINT {SqlSchemaHelper.QuoteName(indexName)} PRIMARY KEY ({fields});";
+                return $"ALTER TABLE {SqlSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {SqlSchemaSyntax.QuoteName(indexName)} PRIMARY KEY ({fields});";
 
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {SqlSchemaHelper.QuoteName(indexName)} ON {SqlSchemaHelper.QuoteName(tableName)} ({fields});";
+            return $"CREATE {uniqueClause}INDEX {SqlSchemaSyntax.QuoteName(indexName)} ON {SqlSchemaSyntax.QuoteName(tableName)} ({fields});";
         }
 
         private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
         {
             // Primary key must be dropped as a constraint.
             if (index.PrimaryKey)
-                return $"ALTER TABLE {SqlSchemaHelper.QuoteName(tableName)} DROP CONSTRAINT {SqlSchemaHelper.QuoteName(index.Name)};";
+                return $"ALTER TABLE {SqlSchemaSyntax.QuoteName(tableName)} DROP CONSTRAINT {SqlSchemaSyntax.QuoteName(index.Name)};";
 
-            return $"DROP INDEX {SqlSchemaHelper.QuoteName(index.Name)} ON {SqlSchemaHelper.QuoteName(tableName)};";
+            return $"DROP INDEX {SqlSchemaSyntax.QuoteName(index.Name)} ON {SqlSchemaSyntax.QuoteName(tableName)};";
         }
 
         private static string BuildIndexFieldList(TableSchemaIndex index)
@@ -179,7 +179,7 @@ namespace Bee.Db.Providers.SqlServer
             {
                 if (sb.Length > 0) sb.Append(", ");
                 sb.Append(CultureInfo.InvariantCulture,
-                    $"{SqlSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{SqlSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
             return sb.ToString();
         }

@@ -10,7 +10,7 @@ namespace Bee.Db.UnitTests
 {
     /// <summary>
     /// 純語法測試：覆蓋 <see cref="SqliteDialectFactory"/> 的 factory 方法。
-    /// 只驗證回傳的具體型別與委派至 SqliteSchemaHelper.GetDefaultValueExpression 的一致性，
+    /// 只驗證回傳的具體型別與委派至 SqliteSchemaSyntax.GetDefaultValueExpression 的一致性，
     /// 不觸及任何資料庫連線。
     /// </summary>
     [Collection("Initialize")]
@@ -66,7 +66,7 @@ namespace Bee.Db.UnitTests
         [InlineData(FieldDbType.Integer, "0")]
         [InlineData(FieldDbType.DateTime, "CURRENT_TIMESTAMP")]
         [InlineData(FieldDbType.Guid, "(hex(randomblob(16)))")]
-        [DisplayName("SqliteDialectFactory：GetDefaultValueExpression 應委派至 SqliteSchemaHelper")]
+        [DisplayName("SqliteDialectFactory：GetDefaultValueExpression 應委派至 SqliteSchemaSyntax")]
         public void GetDefaultValueExpression_DelegatesToHelper(FieldDbType dbType, string expected)
         {
             Assert.Equal(expected, _factory.GetDefaultValueExpression(dbType));

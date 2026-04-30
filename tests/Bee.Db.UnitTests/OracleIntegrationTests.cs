@@ -407,7 +407,7 @@ namespace Bee.Db.UnitTests
         private static void DropQuotedTable(DbAccess dbAccess, string tableName)
         {
             // Oracle 無 DROP TABLE IF EXISTS；包 PL/SQL block 並吞 ORA-00942。
-            // Framework 統一以 UPPERCASE 形式儲存於 Oracle（per OracleSchemaHelper.QuoteName），
+            // Framework 統一以 UPPERCASE 形式儲存於 Oracle（per OracleSchemaSyntax.QuoteName），
             // 此 helper 跨過 framework 直接拼 DDL，必須自行 UPPER 化以對齊。
             string storageName = tableName.ToUpperInvariant();
             string ddl =

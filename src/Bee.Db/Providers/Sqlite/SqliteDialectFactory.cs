@@ -29,6 +29,6 @@ namespace Bee.Db.Providers.Sqlite
 
         /// <inheritdoc />
         public string GetDefaultValueExpression(FieldDbType dbType) =>
-            SqliteSchemaHelper.GetDefaultValueExpression(dbType);
+            SqliteSchemaSyntax.GetDefaultValueExpression(dbType);
     }
 }

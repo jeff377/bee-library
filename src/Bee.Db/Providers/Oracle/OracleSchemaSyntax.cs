@@ -6,8 +6,8 @@ namespace Bee.Db.Providers.Oracle
 {
     /// <summary>
     /// Shared Oracle identifier and column-definition primitives used by the CREATE and
-    /// ALTER schema builders. Counterpart to <see cref="MySql.MySqlSchemaHelper"/> and
-    /// <see cref="PostgreSql.PgSchemaHelper"/>.
+    /// ALTER schema builders. Counterpart to <see cref="MySql.MySqlSchemaSyntax"/> and
+    /// <see cref="PostgreSql.PgSchemaSyntax"/>.
     /// </summary>
     /// <remarks>
     /// Targets Oracle 19c+. All identifiers are quoted with double quotes — this is required
@@ -15,7 +15,7 @@ namespace Bee.Db.Providers.Oracle
     /// <c>LEVEL</c>, <c>SESSION</c>); quoted identifiers also become case-sensitive, so the
     /// FormSchema convention is to use lowercase names. See docs/plans/plan-oracle-support.md.
     /// </remarks>
-    internal static class OracleSchemaHelper
+    internal static class OracleSchemaSyntax
     {
         /// <summary>
         /// Quotes an Oracle identifier with double quotes; embedded double quotes are doubled.

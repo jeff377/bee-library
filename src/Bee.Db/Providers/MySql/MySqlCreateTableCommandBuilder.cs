@@ -114,7 +114,7 @@ namespace Bee.Db.Providers.MySql
             string indexes = GetIndexesCommandText(tableName);
 
             var sb = new StringBuilder();
-            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {MySqlSchemaHelper.QuoteName(tableName)} (\r\n{fields}");
+            sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {MySqlSchemaSyntax.QuoteName(tableName)} (\r\n{fields}");
             if (StrFunc.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append(CultureInfo.InvariantCulture, $"\r\n){GetTableSuffix()};");
@@ -133,7 +133,7 @@ namespace Bee.Db.Providers.MySql
         {
             if (StrFunc.IsEmpty(TableSchema.DisplayName))
                 return BaseTableSuffix;
-            return $"{BaseTableSuffix} COMMENT='{MySqlSchemaHelper.EscapeSqlString(TableSchema.DisplayName)}'";
+            return $"{BaseTableSuffix} COMMENT='{MySqlSchemaSyntax.EscapeSqlString(TableSchema.DisplayName)}'";
         }
 
         /// <summary>
@@ -149,9 +149,9 @@ namespace Bee.Db.Providers.MySql
                 if (sb.Length > 0)
                     sb.Append(",\r\n");
                 if (autoIncrementField != null && field == autoIncrementField)
-                    sb.Append("  " + MySqlSchemaHelper.GetAutoIncrementColumnDefinition(field));
+                    sb.Append("  " + MySqlSchemaSyntax.GetAutoIncrementColumnDefinition(field));
                 else
-                    sb.Append("  " + MySqlSchemaHelper.GetColumnDefinition(field));
+                    sb.Append("  " + MySqlSchemaSyntax.GetColumnDefinition(field));
             }
             return sb.ToString();
         }
@@ -172,11 +172,11 @@ namespace Bee.Db.Providers.MySql
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
                 fieldBuilder.Append(CultureInfo.InvariantCulture,
-                    $"{MySqlSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{MySqlSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
             string name = StrFunc.Format(index.Name, tableName);
-            return $"CONSTRAINT {MySqlSchemaHelper.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
+            return $"CONSTRAINT {MySqlSchemaSyntax.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
         /// <summary>
@@ -207,11 +207,11 @@ namespace Bee.Db.Providers.MySql
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
                 fieldBuilder.Append(CultureInfo.InvariantCulture,
-                    $"{MySqlSchemaHelper.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                    $"{MySqlSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
-            return $"CREATE {uniqueClause}INDEX {MySqlSchemaHelper.QuoteName(name)} ON {MySqlSchemaHelper.QuoteName(tableName)} ({fieldBuilder});";
+            return $"CREATE {uniqueClause}INDEX {MySqlSchemaSyntax.QuoteName(name)} ON {MySqlSchemaSyntax.QuoteName(tableName)} ({fieldBuilder});";
         }
     }
 }

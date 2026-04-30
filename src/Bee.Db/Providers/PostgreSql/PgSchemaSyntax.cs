@@ -7,9 +7,9 @@ namespace Bee.Db.Providers.PostgreSql
     /// <summary>
     /// Shared PostgreSQL identifier, literal, and column-definition primitives used by
     /// the CREATE and ALTER schema builders. Counterpart to
-    /// <see cref="SqlServer.SqlSchemaHelper"/> for the SQL Server provider.
+    /// <see cref="SqlServer.SqlSchemaSyntax"/> for the SQL Server provider.
     /// </summary>
-    internal static class PgSchemaHelper
+    internal static class PgSchemaSyntax
     {
         /// <summary>
         /// Quotes a PostgreSQL identifier by escaping <c>"</c> as <c>""</c> and wrapping in double quotes.
