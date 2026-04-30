@@ -10,6 +10,11 @@ namespace Bee.Business.UnitTests
     /// <see cref="BusinessFunc"/> 測試;涵蓋 <see cref="BusinessFunc.GetDatabaseItem"/>
     /// 與 <see cref="BusinessFunc.InvokeExecFunc"/>。
     /// </summary>
+    [Collection("Initialize")] // 串行化：本檔測試會 mutate BackendInfo.DefineAccess（global state），
+    // 必須與其他讀取 BackendInfo.DefineAccess 的 [Collection("Initialize")] class 串行，
+    // 否則 mutation 會在 concurrent test 中 leak 到 LocalDefineAccess 路徑，
+    // 觸發 CacheInfo cctor poison（NotImplementedException → TypeInitializationException）。
+    // 詳見 testing.md「全域狀態與平行安全」章節。
     public class BusinessFuncTests
     {
         [Fact]
