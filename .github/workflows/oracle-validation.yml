@@ -27,7 +27,11 @@ jobs:
         # Oracle 23ai Free 版本，對齊本機 .runsettings 預設的 FREEPDB1 service name。
         # gvenzl/oracle-free 是社群維護的事實標準（GH Actions 上最常用），
         # faststart 版預先建好 DB，啟動時間從 5+ 分鐘壓到 45-90 秒。
-        image: gvenzl/oracle-free:23-slim-faststart
+        #
+        # Pin digest（plan-oracle-main-ci-evaluation.md 樣本期間要求）：
+        # 對應 tag :23-slim-faststart（2026-04-30 取得）。樣本期結束後依決議
+        # 決定主 CI 是否續用 pin。
+        image: gvenzl/oracle-free@sha256:c9803db54238b5be268c7f5916e3c5811ef106e58aeb2f1f9b690c135ed50672
         env:
           ORACLE_PASSWORD: BeeTest_Password123!
           APP_USER: testuser
