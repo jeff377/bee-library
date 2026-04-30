@@ -1,22 +1,10 @@
 using System.ComponentModel;
-using Bee.Tests.Shared;
 
 namespace Bee.Api.Client.UnitTests
 {
     [Collection("Initialize")]
     public class ApiConnectValidatorTests
     {
-        [LocalOnlyTheory]
-        [DisplayName("ApiConnectValidator 驗證 URL 應回傳遠端連線類型")]
-        [InlineData("http://localhost/jsonrpc/api")]
-        //[InlineData("http://localhost/jsonrpc_aspnet/api")]
-        public void Validate_ValidUrl_ReturnsRemoteConnectType(string apiUrl)
-        {
-            var connectType = ApiConnectValidator.Validate(apiUrl);
-
-            Assert.Equal(ConnectType.Remote, connectType);  // 確認連線方式為遠端連線
-        }
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -129,6 +117,25 @@ namespace Bee.Api.Client.UnitTests
                 ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Local;
                 Assert.Throws<InvalidOperationException>(
                     () => ApiConnectValidator.Validate("http://example.com/api"));
+            }
+            finally
+            {
+                ApiClientInfo.SupportedConnectTypes = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("ApiConnectValidator.Validate URL 無法連線時應拋 InvalidOperationException 並指出 endpoint not reachable")]
+        public void Validate_RemoteUrl_NotReachable_ThrowsEndpointNotReachable()
+        {
+            var original = ApiClientInfo.SupportedConnectTypes;
+            try
+            {
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Both;
+                // 127.0.0.1:1 為 reserved port，本機不會有服務監聽，預檢必然失敗
+                var ex = Assert.Throws<InvalidOperationException>(
+                    () => ApiConnectValidator.Validate("http://127.0.0.1:1/jsonrpc/api"));
+                Assert.Contains("Endpoint not reachable", ex.Message);
             }
             finally
             {

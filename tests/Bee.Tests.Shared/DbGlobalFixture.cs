@@ -14,13 +14,24 @@ namespace Bee.Tests.Shared
     /// </summary>
     public class DbGlobalFixture : GlobalFixture
     {
+        // 同 GlobalFixture：single-host 模式下多個 collection 並行創建 fixture instance 會
+        // race（重複 schema build、重複 seed insert）。lock + once flag 確保整個 process 內
+        // 只執行一次 DB 初始化。
+        private static readonly object _dbInitLock = new();
+        private static bool _dbInitialized;
+
         public DbGlobalFixture() : base()
         {
-            EnsureDatabase(DatabaseType.SQLServer);
-            EnsureDatabase(DatabaseType.PostgreSQL);
-            EnsureDatabase(DatabaseType.SQLite);
-            EnsureDatabase(DatabaseType.MySQL);
-            EnsureDatabase(DatabaseType.Oracle);
+            lock (_dbInitLock)
+            {
+                if (_dbInitialized) return;
+                EnsureDatabase(DatabaseType.SQLServer);
+                EnsureDatabase(DatabaseType.PostgreSQL);
+                EnsureDatabase(DatabaseType.SQLite);
+                EnsureDatabase(DatabaseType.MySQL);
+                EnsureDatabase(DatabaseType.Oracle);
+                _dbInitialized = true;
+            }
         }
 
         /// <summary>

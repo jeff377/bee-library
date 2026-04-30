@@ -51,6 +51,41 @@ namespace Bee.Base
         }
 
         /// <summary>
+        /// Asynchronously probes whether the specified endpoint is reachable over the network.
+        /// </summary>
+        /// <param name="endpoint">The endpoint URL to probe.</param>
+        /// <param name="timeout">The probe timeout. Defaults to 5 seconds.</param>
+        /// <returns>
+        /// True if the server returns any HTTP response (including 4xx/5xx status codes);
+        /// false on DNS failure, connection refused, or timeout.
+        /// </returns>
+        /// <remarks>
+        /// Uses an HTTP HEAD request as a low-cost probe. Any HTTP response — including 404 or 405 —
+        /// proves the host is alive and routing requests, so it is treated as "reachable".
+        /// Use this only for transport-level reachability; verifying that the endpoint actually
+        /// implements the expected service contract is the caller's responsibility.
+        /// </remarks>
+        public static async Task<bool> IsEndpointReachableAsync(string endpoint, TimeSpan? timeout = null)
+        {
+            using var cts = new CancellationTokenSource(timeout ?? TimeSpan.FromSeconds(5));
+            try
+            {
+                HttpClient client = GetOrCreateClient(endpoint);
+                using var request = new HttpRequestMessage(HttpMethod.Head, endpoint);
+                using var response = await client.SendAsync(request, cts.Token).ConfigureAwait(false);
+                return true;
+            }
+            catch (HttpRequestException)
+            {
+                return false;
+            }
+            catch (TaskCanceledException)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
         /// Asynchronously sends a POST request.
         /// </summary>
         /// <param name="endpoint">The service endpoint.</param>

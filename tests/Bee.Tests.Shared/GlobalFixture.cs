@@ -20,18 +20,39 @@ namespace Bee.Tests.Shared
     /// </summary>
     public class GlobalFixture : IDisposable
     {
+        // VS Code Test Explorer 走 single-host 模式時,9 個 test collection 各自會新建一個
+        // GlobalFixture/DbGlobalFixture instance,並行進入 ctor。BackendInfo.DefineAccess /
+        // DbProviderRegistry 等都是 process-wide static,並行 init 會造成 KeyedCollection 重複 Add、
+        // BackendInfo.Initialize 重入等問題,連帶讓 [Collection("Initialize")] 測試大量失敗。
+        // terminal 的 dotnet test 對每個 assembly 開獨立 process,沒有此 race。
+        // 用 lock + once flag 確保整個 process 內只執行一次 init,後續 fixture instance 直接 return。
+        private static readonly object _initLock = new();
+        private static bool _initialized;
+
         // SQLite in-memory shared-cache databases live only as long as at least one
         // connection is open; once the last connection closes the database disappears.
-        // Keep one connection alive for the fixture's lifetime so subsequent test
-        // connections see the schema/data populated by EnsureSchema/EnsureSeedData.
-        private Microsoft.Data.Sqlite.SqliteConnection? _sqliteKeepAlive;
+        // Static + never disposed in fixture: in single-host mode the first fixture would
+        // dispose first while other parallel fixtures still need the in-memory schema;
+        // OS reclaims the connection at process exit anyway.
+        private static Microsoft.Data.Sqlite.SqliteConnection? _sqliteKeepAlive;
 
         /// <summary>
-        /// 建構函式，於第一次進入 Collection 測試時執行初始化。
+        /// 建構函式,於第一次進入 Collection 測試時執行初始化。
+        /// 在 single-host 模式下,後續 fixture instance 會 short-circuit 直接 return。
         /// </summary>
         public GlobalFixture()
         {
-            // 全域初始化邏輯，例如載入設定檔、建立資料庫、啟動 API
+            lock (_initLock)
+            {
+                if (_initialized) return;
+                InitializeOnce();
+                _initialized = true;
+            }
+        }
+
+        private static void InitializeOnce()
+        {
+            // 全域初始化邏輯,例如載入設定檔、建立資料庫、啟動 API
             // 設定定義路徑（相對於測試輸出目錄往上找 tests/Bee.Tests.Shared/Define）
             var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
             BackendInfo.DefinePath = Path.Combine(repoRoot, "tests", "Define");
@@ -39,7 +60,7 @@ namespace Bee.Tests.Shared
             // 系統初始化
             var settings = BackendInfo.DefineAccess.GetSystemSettings();
             settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
-            // CI 環境改用環境變數作為 MasterKey 來源，避免在 tests/Define/ 下建立 Master.key
+            // CI 環境改用環境變數作為 MasterKey 來源,避免在 tests/Define/ 下建立 Master.key
             // 汙染 MasterKeyProviderTests.GetMasterKey_EmptyFilePath_UsesDefaultFileName 等
             // 預期「DefinePath 下無 Master.key」的測試。
             if (string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase))
@@ -105,7 +126,7 @@ namespace Bee.Tests.Shared
         /// （in-memory + shared cache，零 IO，CI 與本機行為一致）。同時保留一條長生命週期連線
         /// 防止 in-memory database 在所有測試連線關閉時被釋放。
         /// </summary>
-        private void RegisterSqlite()
+        private static void RegisterSqlite()
         {
             DbProviderRegistry.Register(DatabaseType.SQLite, Microsoft.Data.Sqlite.SqliteFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
@@ -115,9 +136,7 @@ namespace Bee.Tests.Shared
 
             AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLite), DatabaseType.SQLite, connStr);
 
-            // Hold one open connection for the fixture's lifetime — see field comment.
-            // 在 single-process 多 assembly 場景下，第二個 fixture instance 不再開新連線
-            // （第一個 instance 持有的連線已足夠維持 in-memory db 存活）。
+            // Hold one open connection for the entire process lifetime — see field comment.
             if (_sqliteKeepAlive == null)
             {
                 _sqliteKeepAlive = new Microsoft.Data.Sqlite.SqliteConnection(connStr);
@@ -209,11 +228,14 @@ namespace Bee.Tests.Shared
         /// <summary>
         /// 測試完成後釋放資源。
         /// </summary>
+        /// <remarks>
+        /// 注意:在 single-host 模式下多個 fixture instance 會分別 dispose,
+        /// 不可在此關閉 <c>_sqliteKeepAlive</c>(它是 process-wide singleton,
+        /// 提早關閉會讓其他並行 collection 的 in-memory db 消失)。OS 會在
+        /// process exit 時自動回收連線。
+        /// </remarks>
         public void Dispose()
         {
-            // 清理動作，例如刪除暫存資料庫、停止模擬 API Server
-            _sqliteKeepAlive?.Dispose();
-            _sqliteKeepAlive = null;
             Console.WriteLine("GlobalFixture Disposed");
             GC.SuppressFinalize(this);
         }

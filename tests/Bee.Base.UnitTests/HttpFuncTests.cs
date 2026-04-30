@@ -60,6 +60,51 @@ namespace Bee.Base.UnitTests
                 () => HttpFunc.GetAsync(server.BuildUrl("/boom")));
         }
 
+        [Fact]
+        [DisplayName("IsEndpointReachableAsync 對運作中的 endpoint 應回傳 true")]
+        public async Task IsEndpointReachableAsync_RunningServer_ReturnsTrue()
+        {
+            await using var server = await LoopbackHttpServer.StartAsync();
+
+            bool result = await HttpFunc.IsEndpointReachableAsync(server.BuildUrl("/probe"));
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        [DisplayName("IsEndpointReachableAsync 對 4xx 回應仍視為 reachable 並回傳 true")]
+        public async Task IsEndpointReachableAsync_NotFoundStatus_ReturnsTrue()
+        {
+            await using var server = await LoopbackHttpServer.StartAsync(statusLine: "HTTP/1.1 404 Not Found", body: string.Empty);
+
+            bool result = await HttpFunc.IsEndpointReachableAsync(server.BuildUrl("/missing"));
+
+            Assert.True(result);
+        }
+
+        [Fact]
+        [DisplayName("IsEndpointReachableAsync 連線被拒絕時應回傳 false")]
+        public async Task IsEndpointReachableAsync_ConnectionRefused_ReturnsFalse()
+        {
+            // 127.0.0.1:1 為 reserved port,本機不會有服務監聽,連線必然被拒絕
+            bool result = await HttpFunc.IsEndpointReachableAsync("http://127.0.0.1:1/probe");
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        [DisplayName("IsEndpointReachableAsync 探測逾時時應回傳 false")]
+        public async Task IsEndpointReachableAsync_Timeout_ReturnsFalse()
+        {
+            await using var stall = await StallingServer.StartAsync();
+
+            bool result = await HttpFunc.IsEndpointReachableAsync(
+                stall.BuildUrl("/never"),
+                timeout: TimeSpan.FromMilliseconds(200));
+
+            Assert.False(result);
+        }
+
         /// <summary>
         /// Minimal single-request HTTP loopback server used to exercise HttpFunc without requiring
         /// external infrastructure or mocking HttpClient internals.
@@ -196,6 +241,92 @@ namespace Bee.Base.UnitTests
                 catch (IOException)
                 {
                     // Stream torn down during shutdown.
+                }
+                _cts.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Loopback TCP listener that accepts connections but never reads or writes,
+        /// used to deterministically trigger client-side timeouts.
+        /// </summary>
+        private sealed class StallingServer : IAsyncDisposable
+        {
+            private readonly TcpListener _listener;
+            private readonly CancellationTokenSource _cts = new();
+            private readonly Task _acceptLoop;
+            private readonly List<TcpClient> _accepted = [];
+
+            public int Port { get; }
+
+            private StallingServer(TcpListener listener, int port)
+            {
+                _listener = listener;
+                Port = port;
+                _acceptLoop = Task.Run(AcceptLoopAsync);
+            }
+
+            private async Task AcceptLoopAsync()
+            {
+                try
+                {
+                    while (!_cts.IsCancellationRequested)
+                    {
+                        TcpClient client;
+                        try
+                        {
+                            client = await _listener.AcceptTcpClientAsync(_cts.Token);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            break;
+                        }
+
+                        lock (_accepted)
+                        {
+                            _accepted.Add(client);
+                        }
+                        // Intentionally never read or respond — the connection stalls until disposal.
+                    }
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Listener was stopped concurrently.
+                }
+                catch (SocketException)
+                {
+                    // Listener was stopped while accepting.
+                }
+            }
+
+            public static Task<StallingServer> StartAsync()
+            {
+                var listener = new TcpListener(IPAddress.Loopback, 0);
+                listener.Start();
+                int port = ((IPEndPoint)listener.LocalEndpoint).Port;
+                return Task.FromResult(new StallingServer(listener, port));
+            }
+
+            public string BuildUrl(string path) => $"http://127.0.0.1:{Port}{path}";
+
+            public async ValueTask DisposeAsync()
+            {
+                _cts.Cancel();
+                _listener.Stop();
+                try
+                {
+                    await _acceptLoop;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Expected during cancellation.
+                }
+                lock (_accepted)
+                {
+                    foreach (var client in _accepted)
+                    {
+                        try { client.Dispose(); } catch (ObjectDisposedException) { }
+                    }
                 }
                 _cts.Dispose();
             }

@@ -120,6 +120,9 @@ namespace Bee.Api.Client
                 throw new InvalidOperationException("Remote connections are not supported.");
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));
+            // Pre-check transport-level reachability before establishing the connector
+            if (!SyncExecutor.Run(() => HttpFunc.IsEndpointReachableAsync(endpoint)))
+                throw new InvalidOperationException($"Endpoint not reachable: {endpoint}");
             // Use remote connection to execute the Ping method
             var connector = new SystemApiConnector(endpoint, Guid.Empty);
             connector.Ping();
