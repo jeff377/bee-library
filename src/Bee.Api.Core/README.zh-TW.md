@@ -49,7 +49,7 @@
 ### MessagePack 基礎設施
 
 - `SafeMessagePackSerializerOptions` -- 反序列化型別白名單，防止不受信任型別攻擊。
-- `MessagePackHelper` -- MessagePack 操作的公用方法。
+- `MessagePackCodec` -- MessagePack 序列化的編解碼器。
 - `FormatterResolver` -- 自訂解析器，包含 ADO.NET 型別（`DataTable`、`DataSet` 等）的格式器。
 
 ### 內建系統操作
@@ -97,7 +97,7 @@ Bee.Api.Core/
     System/         內建系統級請求/回應型別
                     （Login、Ping、CreateSession、GetDefine、SaveDefine、
                     GetPackage、CheckPackageUpdate、GetCommonConfiguration）
-  MessagePack/      SafeMessagePackSerializerOptions、MessagePackHelper、
+  MessagePack/      SafeMessagePackSerializerOptions、MessagePackCodec、
                     FormatterResolver、ADO.NET 型別自訂格式器
   Registry/         ApiContractRegistry（Contract → API 型別註冊中心）
   Transformers/     IApiPayloadTransformer、ApiPayloadTransformer、

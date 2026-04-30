@@ -15,8 +15,8 @@ namespace Bee.Api.Core.UnitTests
         {
             DataSet? original = null;
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var restored = MessagePackHelper.Deserialize<DataSet?>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var restored = MessagePackCodec.Deserialize<DataSet?>(bytes);
 
             Assert.Null(restored);
         }
@@ -27,8 +27,8 @@ namespace Bee.Api.Core.UnitTests
         {
             DataTable? original = null;
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var restored = MessagePackHelper.Deserialize<DataTable?>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var restored = MessagePackCodec.Deserialize<DataTable?>(bytes);
 
             Assert.Null(restored);
         }
@@ -39,8 +39,8 @@ namespace Bee.Api.Core.UnitTests
         {
             var original = new DataSet("Empty");
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var restored = MessagePackHelper.Deserialize<DataSet>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var restored = MessagePackCodec.Deserialize<DataSet>(bytes);
 
             Assert.NotNull(restored);
             Assert.Empty(restored.Tables);
@@ -53,8 +53,8 @@ namespace Bee.Api.Core.UnitTests
             var original = new DataTable("Empty");
             original.Columns.Add("Id", typeof(int));
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var restored = MessagePackHelper.Deserialize<DataTable>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var restored = MessagePackCodec.Deserialize<DataTable>(bytes);
 
             Assert.NotNull(restored);
             Assert.Empty(restored.Rows);

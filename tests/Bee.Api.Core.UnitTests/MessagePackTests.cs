@@ -38,11 +38,11 @@ namespace Bee.Api.Core.UnitTests
             dataSet.Tables.Add(table1);
             dataSet.Tables.Add(table2);
 
-            // 使用 MessagePackHelper 進行序列化
-            byte[] serialized = MessagePackHelper.Serialize(dataSet);
+            // 使用 MessagePackCodec 進行序列化
+            byte[] serialized = MessagePackCodec.Serialize(dataSet);
 
             // 反序列化回 DataSet
-            var deserialized = MessagePackHelper.Deserialize<DataSet>(serialized);
+            var deserialized = MessagePackCodec.Deserialize<DataSet>(serialized);
 
             // 驗證資料是否正確
             Assert.Equal(2, deserialized.Tables.Count);
@@ -77,10 +77,10 @@ namespace Bee.Api.Core.UnitTests
             table.Rows.Add("Test1", 100);
             table.Rows.Add("Test2", 200);
 
-            // 使用 MessagePackHelper 進行序列化
-            byte[] serialized = MessagePackHelper.Serialize(table);
+            // 使用 MessagePackCodec 進行序列化
+            byte[] serialized = MessagePackCodec.Serialize(table);
             // 反序列化回 DataTable
-            var deserialized = MessagePackHelper.Deserialize<DataTable>(serialized);
+            var deserialized = MessagePackCodec.Deserialize<DataTable>(serialized);
 
             // 驗證資料是否正確
             Assert.Equal(2, deserialized.Rows.Count);
@@ -153,8 +153,8 @@ namespace Bee.Api.Core.UnitTests
             table.Rows.Add(row3);
 
             // Serialize & Deserialize
-            var bytes = MessagePackHelper.Serialize(table);
-            var restored = MessagePackHelper.Deserialize<DataTable>(bytes);
+            var bytes = MessagePackCodec.Serialize(table);
+            var restored = MessagePackCodec.Deserialize<DataTable>(bytes);
 
             if (!DataTableComparer.IsEqual(table, restored))
             {
@@ -177,10 +177,10 @@ namespace Bee.Api.Core.UnitTests
             };
 
             // 序列化為位元組陣列
-            var bytes = MessagePackHelper.Serialize(original);
+            var bytes = MessagePackCodec.Serialize(original);
 
             // 反序列化為物件
-            var restored = MessagePackHelper.Deserialize<ListItemCollection>(bytes);
+            var restored = MessagePackCodec.Deserialize<ListItemCollection>(bytes);
 
             // 驗證還原後的值與原值一致
             Assert.NotNull(restored);
@@ -212,10 +212,10 @@ namespace Bee.Api.Core.UnitTests
             };
 
             // 序列化為位元組陣列
-            var bytes = MessagePackHelper.Serialize(original);
+            var bytes = MessagePackCodec.Serialize(original);
 
             // 反序列化為物件
-            var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);
+            var restored = MessagePackCodec.Deserialize<ParameterCollection>(bytes);
 
             // 驗證還原後的值與原值一致
             Assert.NotNull(restored);
@@ -261,10 +261,10 @@ namespace Bee.Api.Core.UnitTests
             };
 
             // 序列化
-            var bytes = MessagePackHelper.Serialize(parameters);
+            var bytes = MessagePackCodec.Serialize(parameters);
 
             // 反序列化
-            var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);
+            var restored = MessagePackCodec.Deserialize<ParameterCollection>(bytes);
 
             // 驗證
             Assert.NotNull(restored);
@@ -293,10 +293,10 @@ namespace Bee.Api.Core.UnitTests
             };
 
             // 序列化
-            var bytes = MessagePackHelper.Serialize(properties);
+            var bytes = MessagePackCodec.Serialize(properties);
 
             // 反序列化
-            var restored = MessagePackHelper.Deserialize<Bee.Definition.Collections.PropertyCollection>(bytes);
+            var restored = MessagePackCodec.Deserialize<Bee.Definition.Collections.PropertyCollection>(bytes);
 
             // 驗證內容是否正確還原
             Assert.NotNull(restored);
@@ -326,10 +326,10 @@ namespace Bee.Api.Core.UnitTests
             );
 
             // MessagePack 序列化
-            var bytes = MessagePackHelper.Serialize(root);
+            var bytes = MessagePackCodec.Serialize(root);
 
             // 反序列化
-            var restored = MessagePackHelper.Deserialize<FilterGroup>(bytes);
+            var restored = MessagePackCodec.Deserialize<FilterGroup>(bytes);
 
             // 驗證結構與內容
             Assert.NotNull(restored);

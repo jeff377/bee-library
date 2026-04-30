@@ -10,7 +10,7 @@ namespace Bee.Api.Core.MessagePack
     /// <summary>
     /// Provides static methods for MessagePack serialization and deserialization using custom formatters and resolvers.
     /// </summary>
-    public static class MessagePackHelper
+    public static class MessagePackCodec
     {
         /// <summary>
         /// Statically initialized MessagePack serialization options, including custom formatters and resolvers.

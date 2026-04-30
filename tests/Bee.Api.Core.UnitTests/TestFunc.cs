@@ -16,8 +16,8 @@ namespace Bee.Api.Core.UnitTests
         public static void TestMessagePackSerialization<T>(T obj)
         {
             // 序列化與反序列化
-            var serialized = MessagePackHelper.Serialize(obj);
-            var deserialized = MessagePackHelper.Deserialize<T>(serialized);
+            var serialized = MessagePackCodec.Serialize(obj);
+            var deserialized = MessagePackCodec.Deserialize<T>(serialized);
 
             Assert.NotNull(deserialized);
 

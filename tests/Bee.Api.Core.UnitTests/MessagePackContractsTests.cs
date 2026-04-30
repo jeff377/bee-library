@@ -41,11 +41,11 @@ namespace Bee.Api.Core.UnitTests
                 ]
             };
 
-            var checkArgsBytes = MessagePackHelper.Serialize(checkArgs);
+            var checkArgsBytes = MessagePackCodec.Serialize(checkArgs);
             Assert.NotNull(checkArgsBytes);
             Assert.NotEmpty(checkArgsBytes);
 
-            var checkArgs2 = MessagePackHelper.Deserialize<CheckPackageUpdateRequest>(checkArgsBytes);
+            var checkArgs2 = MessagePackCodec.Deserialize<CheckPackageUpdateRequest>(checkArgsBytes);
             Assert.NotNull(checkArgs2);
             Assert.Equal(checkArgs.Queries.Count, checkArgs2.Queries.Count);
             Assert.Equal(checkArgs.Queries[0].AppId, checkArgs2.Queries[0].AppId);
@@ -73,11 +73,11 @@ namespace Bee.Api.Core.UnitTests
                 ]
             };
 
-            var checkResultBytes = MessagePackHelper.Serialize(checkResult);
+            var checkResultBytes = MessagePackCodec.Serialize(checkResult);
             Assert.NotNull(checkResultBytes);
             Assert.NotEmpty(checkResultBytes);
 
-            var checkResult2 = MessagePackHelper.Deserialize<CheckPackageUpdateResponse>(checkResultBytes);
+            var checkResult2 = MessagePackCodec.Deserialize<CheckPackageUpdateResponse>(checkResultBytes);
             Assert.NotNull(checkResult2);
             Assert.Single(checkResult2.Updates);
             Assert.Equal(checkResult.Updates[0].AppId, checkResult2.Updates[0].AppId);
@@ -97,11 +97,11 @@ namespace Bee.Api.Core.UnitTests
 
             // 本段刻意呼叫 non-generic overload，驗證其行為
 #pragma warning disable CA2263 // Prefer generic overload when type is known
-            var getArgsBytes = MessagePackHelper.Serialize(getArgs, typeof(GetPackageRequest));
+            var getArgsBytes = MessagePackCodec.Serialize(getArgs, typeof(GetPackageRequest));
             Assert.NotNull(getArgsBytes);
             Assert.NotEmpty(getArgsBytes);
 
-            var getArgs2Obj = MessagePackHelper.Deserialize(getArgsBytes, typeof(GetPackageRequest));
+            var getArgs2Obj = MessagePackCodec.Deserialize(getArgsBytes, typeof(GetPackageRequest));
 #pragma warning restore CA2263
             var getArgs2 = Assert.IsType<GetPackageRequest>(getArgs2Obj);
             Assert.Equal(getArgs.AppId, getArgs2.AppId);
@@ -121,11 +121,11 @@ namespace Bee.Api.Core.UnitTests
                 PackageUrl = "" // Delivery=Api 時通常為空
             };
 
-            var getResultBytes = MessagePackHelper.Serialize(getResult);
+            var getResultBytes = MessagePackCodec.Serialize(getResult);
             Assert.NotNull(getResultBytes);
             Assert.NotEmpty(getResultBytes);
 
-            var getResult2 = MessagePackHelper.Deserialize<GetPackageResponse>(getResultBytes);
+            var getResult2 = MessagePackCodec.Deserialize<GetPackageResponse>(getResultBytes);
             Assert.NotNull(getResult2);
             Assert.Equal(getResult.FileName, getResult2.FileName);
             Assert.Equal(getResult.FileSize, getResult2.FileSize);

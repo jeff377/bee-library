@@ -55,8 +55,8 @@ namespace Bee.Api.Core.UnitTests
                 ClientPublicKey = "publicKeyXml"
             };
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var deserialized = MessagePackHelper.Deserialize<LoginRequest>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var deserialized = MessagePackCodec.Deserialize<LoginRequest>(bytes);
 
             Assert.Equal(original.UserId, deserialized.UserId);
             Assert.Equal(original.Password, deserialized.Password);
@@ -78,8 +78,8 @@ namespace Bee.Api.Core.UnitTests
                 UserName = "Test User"
             };
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var deserialized = MessagePackHelper.Deserialize<LoginResponse>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var deserialized = MessagePackCodec.Deserialize<LoginResponse>(bytes);
 
             Assert.Equal(token, deserialized.AccessToken);
             Assert.Equal(expiredAt, deserialized.ExpiredAt);
@@ -98,8 +98,8 @@ namespace Bee.Api.Core.UnitTests
                 TraceId = "trace-123"
             };
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var deserialized = MessagePackHelper.Deserialize<PingRequest>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var deserialized = MessagePackCodec.Deserialize<PingRequest>(bytes);
 
             Assert.Equal("TestClient", deserialized.ClientName);
             Assert.Equal("trace-123", deserialized.TraceId);

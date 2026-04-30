@@ -19,7 +19,7 @@ namespace Bee.Api.Core.Transformers
         /// <param name="type">The type of the object.</param>
         public byte[] Serialize(object value, Type type)
         {
-            return MessagePackHelper.Serialize(value, type);
+            return MessagePackCodec.Serialize(value, type);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Bee.Api.Core.Transformers
         /// <param name="type">The type of the deserialized object.</param>
         public object? Deserialize(byte[] bytes, Type type)
         {
-            return MessagePackHelper.Deserialize(bytes, type);
+            return MessagePackCodec.Deserialize(bytes, type);
         }
     }
 

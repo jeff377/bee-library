@@ -49,7 +49,7 @@
 ### MessagePack Infrastructure
 
 - `SafeMessagePackSerializerOptions` -- type whitelist for deserialization to prevent untrusted-type attacks.
-- `MessagePackHelper` -- utility methods for MessagePack operations.
+- `MessagePackCodec` -- encoder/decoder for MessagePack serialization.
 - `FormatterResolver` -- custom resolver with formatters for ADO.NET types (`DataTable`, `DataSet`, etc.).
 
 ### Built-in System Operations
@@ -97,7 +97,7 @@ Bee.Api.Core/
     System/         Built-in system-level request/response types
                     (Login, Ping, CreateSession, GetDefine, SaveDefine,
                     GetPackage, CheckPackageUpdate, GetCommonConfiguration)
-  MessagePack/      SafeMessagePackSerializerOptions, MessagePackHelper,
+  MessagePack/      SafeMessagePackSerializerOptions, MessagePackCodec,
                     FormatterResolver, custom formatters for ADO.NET types
   Registry/         ApiContractRegistry (contract -> API type registry)
   Transformers/     IApiPayloadTransformer, ApiPayloadTransformer,

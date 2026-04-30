@@ -24,8 +24,8 @@ namespace Bee.Api.Core.UnitTests
                 { "NullValue", null! }
             };
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var restored = MessagePackCodec.Deserialize<ParameterCollection>(bytes);
 
             Assert.NotNull(restored);
             Assert.Equal(original.Count, restored.Count);
@@ -49,8 +49,8 @@ namespace Bee.Api.Core.UnitTests
                 { "Child", inner }
             };
 
-            var bytes = MessagePackHelper.Serialize(original);
-            var restored = MessagePackHelper.Deserialize<ParameterCollection>(bytes);
+            var bytes = MessagePackCodec.Serialize(original);
+            var restored = MessagePackCodec.Deserialize<ParameterCollection>(bytes);
 
             Assert.NotNull(restored);
             var restoredChild = restored["Child"].Value as ParameterCollection;

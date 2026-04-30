@@ -86,8 +86,8 @@ namespace Bee.Api.Core.UnitTests
         {
             var ds = BuildMasterDetailDataSet();
 
-            var bytes = MessagePackHelper.Serialize(ds);
-            var restored = MessagePackHelper.Deserialize<DataSet>(bytes);
+            var bytes = MessagePackCodec.Serialize(ds);
+            var restored = MessagePackCodec.Deserialize<DataSet>(bytes);
 
             Assert.NotNull(restored);
             Assert.Equal(2, restored.Tables.Count);
