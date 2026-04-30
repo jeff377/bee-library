@@ -5,8 +5,10 @@ using System.Collections.Concurrent;
 namespace Bee.Db.Manager
 {
     /// <summary>
-    /// Manages the cache of database connection information.
-    /// Works alongside <see cref="DbProviderRegistry"/>, focusing on connection info caching.
+    /// Resolves and caches database connection information.
+    /// Combines DatabaseItem, DatabaseServer, and <see cref="DbProviderRegistry"/>
+    /// data into ready-to-use <see cref="DbConnectionInfo"/> instances,
+    /// then caches the result and refreshes when database settings change.
     /// </summary>
     public static class DbConnectionManager
     {
