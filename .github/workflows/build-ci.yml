@@ -65,6 +65,25 @@ jobs:
           --health-timeout 5s
           --health-retries 10
 
+      # Oracle 23ai Free，對齊本機 .runsettings 的 FREEPDB1 service name。
+      # gvenzl/oracle-free 是社群維護的事實標準；faststart 版預先建好 DB，
+      # 啟動時間 45~90s（image ~1.5GB）。pin digest 對應 tag :23-slim-faststart，
+      # 詳見 docs/plans/plan-oracle-main-ci-evaluation.md。
+      oracle:
+        image: gvenzl/oracle-free@sha256:c9803db54238b5be268c7f5916e3c5811ef106e58aeb2f1f9b690c135ed50672
+        env:
+          ORACLE_PASSWORD: BeeTest_Password123!
+          APP_USER: testuser
+          APP_USER_PASSWORD: testpass
+        ports:
+          - 1521:1521
+        options: >-
+          --health-cmd healthcheck.sh
+          --health-interval 20s
+          --health-timeout 10s
+          --health-retries 30
+          --health-start-period 60s
+
     steps:
     - name: Checkout code
       uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
@@ -144,6 +163,7 @@ jobs:
         BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database=common;User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
         BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database=common;Username=testuser;Password=testpass"
         BEE_TEST_CONNSTR_MYSQL: "Server=localhost;Port=3306;Database=common;User=testuser;Password=testpass;"
+        BEE_TEST_CONNSTR_ORACLE: "Data Source=localhost:1521/FREEPDB1;User Id=testuser;Password=testpass;"
         # SQLite is a pure driver with no service container — in-memory shared cache so
         # multiple connections see the same database (cache=shared) and there is no IO
         # to clean up between runs.

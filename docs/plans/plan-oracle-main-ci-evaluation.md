@@ -1,6 +1,6 @@
 # 計畫：Oracle 進主 CI 可行性再評估
 
-**狀態：🚧 樣本期完成，待決策（2026-04-30）**
+**狀態：✅ 已完成（2026-04-30）— Oracle 已併入主 CI**
 
 > 本計畫銜接 [plan-ci-mysql-and-oracle-manual.md](plan-ci-mysql-and-oracle-manual.md)（已完成），目的是在累積足夠 `oracle-validation.yml` 實測數據後，重新評估 Oracle 是否值得納入主 CI。
 
@@ -260,19 +260,70 @@ push 後監測接續 5 次主 CI 跑況，確認沒有引入 flakiness。
   - **冷 cache 情境（1/10 PR）**：delta ≈ 100~110s
 - 真實 delta 需執行 plan 步驟 4.0（branch 跑 3 次主 CI 實測）才能確認
 
-### 決策建議
+### 步驟 4.0 實測結果（2026-04-30）
 
-樣本資料**邊緣達標**：
-- 主指標（成功率、init 平均）達標，且 build/test 完全穩定
-- 唯一未達標項目是「Oracle init 尖峰 ≤ 120s」，根因是 runner image cache miss，屬隨機外部變數
-- 主 CI 環境的暖 cache 機率可能更高（PR 觸發頻繁、cache 容易 hot），1/10 冷 cache 比例可能高估
+於 `claude/oracle-main-ci-trial` branch 把 `gvenzl/oracle-free@sha256:c9803db5...` service container 加到 `build-ci.yml`，透過 `workflow_dispatch` 觸發 3 次主 CI；同時取 main 最近 5 次成功的 build-ci.yml 為 baseline。
 
-**建議走步驟 4（合併進主 CI），但加強驗證**：
-1. **必跑步驟 4.0**：在 branch 上連續推 3~5 次 dummy commit 觸發 build-ci.yml，量真實 wall clock delta
-2. 若 branch 實測 delta ≤ 90s（涵蓋暖 cache 情境）→ 合併
-3. 若實測 delta 偶爾 > 90s（冷 cache 情境）→ 評估「+100s」是否仍可接受，或回到「維持現狀」
+**Baseline (main, 不含 Oracle)：**
 
-也可考慮：先**保守延後**，等執行 cron 樣本（10-14 天）取得真正不同時段的樣本後再決策。
+| Run ID | Init (s) | Test (s) | Total (s) |
+|--------|----------|----------|-----------|
+| [25142215883](https://github.com/jeff377/bee-library/actions/runs/25142215883) | 47 | 28 | 229 |
+| [25140837499](https://github.com/jeff377/bee-library/actions/runs/25140837499) | 49 | 30 | 242 |
+| [25121555957](https://github.com/jeff377/bee-library/actions/runs/25121555957) | 48 | 30 | 242 |
+| [25120251975](https://github.com/jeff377/bee-library/actions/runs/25120251975) | 49 | 28 | 232 |
+| [25119896214](https://github.com/jeff377/bee-library/actions/runs/25119896214) | 49 | 32 | 261 |
+
+平均：Init **48s**、Test **29s**、Total **241s**
+
+**Trial (branch, 含 Oracle)：**
+
+| Run ID | Init (s) | Test (s) | Total (s) |
+|--------|----------|----------|-----------|
+| [25145352325](https://github.com/jeff377/bee-library/actions/runs/25145352325) | 119 | 32 | 322 |
+| [25145354704](https://github.com/jeff377/bee-library/actions/runs/25145354704) | 97 | 32 | 288 |
+| [25145356858](https://github.com/jeff377/bee-library/actions/runs/25145356858) | 89 | 29 | 277 |
+
+平均：Init **101s**、Test **31s**、Total **295s**
+
+**真實 Delta：**
+
+| 階段 | Baseline | Trial | Delta |
+|------|----------|-------|-------|
+| Initialize containers | 48s | 101s | **+53s** |
+| Test with coverage | 30s | 31s | +1s（Oracle 整合測試與其他 DB 並行） |
+| **Total wall clock** | **241s（4分01秒）** | **295s（4分55秒）** | **+54s** |
+
+### 解讀
+
+- **Test step 只 +1s**：dotnet test 已並行執行不同 DB 的測試集合，Oracle 加入沒有疊加成本
+- **Init +53s 是真正的成本**：主 CI Initialize containers 從 ~48s 跳到 ~101s — 等待 Oracle health check（其他 service 已 healthy 在等待 Oracle）
+- **Total +54s 在「≤ 90s」門檻內** ✅
+- **3/3 trial 全部成功**，沒遇到冷 cache outlier
+
+### 達標檢查（合併條件）
+
+| 條件 | 門檻 | 實測 | 達標 |
+|------|------|------|------|
+| Trial 成功率 | ≥ 90%（依 plan 步驟 4.0） | 100% | ✅ |
+| Wall clock delta | ≤ 90s | +54s | ✅ |
+| 主 CI 平均耗時 | ≤ 6 分鐘 | ~4分55秒 | ✅ |
+
+### 最終決策建議
+
+**達標可進主 CI**：實測 +54s 在預估 +30~90s 區間中段、低於門檻。SonarCloud quality gate 待確認，但預期可通過（branch 沒新 src code）。
+
+下一步（依 plan 步驟 4.1~4.4）：
+1. 把 trial branch 的 `build-ci.yml` 改動 cherry-pick 到 main（或直接從 trial branch 開 PR）
+2. 修改 `SonarQube.Analysis.xml` 移除 `src/Bee.Db/Providers/Oracle/**` 從 coverage exclusions
+3. 刪除 `oracle-validation.yml`（功能已併入主 CI）
+4. 合併後監測接續 5 次主 CI 跑況確認沒有引入 flakiness
+5. 若 5 次內出現嚴重 flakiness（如 image cache miss 導致 Init > 200s），準備 revert SOP
+
+**注意保留風險**：
+- 樣本（10 次 oracle-validation + 3 次 trial = 13 次）中曾出現 1 次 143s 冷 cache（Sample #6 of oracle-validation）
+- 主 CI 高頻運行下，runner cache 應該更熱，但仍可能偶發 +100s 以上 delta
+- 合併後若觀測到問題，已備有 revert SOP（見風險表）
 
 ## 參考
 
@@ -280,3 +331,4 @@ push 後監測接續 5 次主 CI 跑況，確認沒有引入 flakiness。
 - 既有 Oracle workflow：[`.github/workflows/oracle-validation.yml`](../../.github/workflows/oracle-validation.yml)
 - 首次成功 run（基準樣本）：https://github.com/jeff377/bee-library/actions/runs/25088730228
 - 樣本期 commit：`c1fc01a`（pin image digest）
+- Trial branch：`claude/oracle-main-ci-trial`（commit `5ebf493`）

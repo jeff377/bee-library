@@ -24,12 +24,9 @@
   <!--
     不納入覆蓋率計算的目錄。
     - tests/、samples/：測試與範例本身不需被覆蓋
-    - Providers/Oracle/：CI 無 Oracle service container（image 大、啟動慢），
-      整合測試由獨立的 oracle-validation.yml 手動觸發跑（不送 SonarCloud）。
-      若未來主 CI 接受 Oracle XE 啟動成本，可移除此排除。
-    （MySQL 已在主 CI 加入 service container，移出排除清單。）
+    （MySQL、Oracle 已在主 CI 加入 service container，移出排除清單。）
   -->
-  <Property Name="sonar.coverage.exclusions">tests/**,samples/**,src/Bee.Db/Providers/Oracle/**</Property>
+  <Property Name="sonar.coverage.exclusions">tests/**,samples/**</Property>
 
   <!--
     排除「設計上對稱實作」的重複行偵測。
