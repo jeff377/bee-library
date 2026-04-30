@@ -79,19 +79,8 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLServer));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
-            dbSettings.Items!.Add(new DatabaseItem
-            {
-                Id = "common",
-                DatabaseType = DatabaseType.SQLServer,
-                ConnectionString = connStr
-            });
-            dbSettings.Items!.Add(new DatabaseItem
-            {
-                Id = TestDbConventions.GetDatabaseId(DatabaseType.SQLServer),
-                DatabaseType = DatabaseType.SQLServer,
-                ConnectionString = connStr
-            });
+            AddDatabaseItemIfMissing("common", DatabaseType.SQLServer, connStr);
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLServer), DatabaseType.SQLServer, connStr);
         }
 
         /// <summary>
@@ -107,13 +96,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.PostgreSQL));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
-            dbSettings.Items!.Add(new DatabaseItem
-            {
-                Id = TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL),
-                DatabaseType = DatabaseType.PostgreSQL,
-                ConnectionString = connStr
-            });
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL), DatabaseType.PostgreSQL, connStr);
         }
 
         /// <summary>
@@ -130,17 +113,16 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLite));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
-            dbSettings.Items!.Add(new DatabaseItem
-            {
-                Id = TestDbConventions.GetDatabaseId(DatabaseType.SQLite),
-                DatabaseType = DatabaseType.SQLite,
-                ConnectionString = connStr
-            });
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLite), DatabaseType.SQLite, connStr);
 
             // Hold one open connection for the fixture's lifetime — see field comment.
-            _sqliteKeepAlive = new Microsoft.Data.Sqlite.SqliteConnection(connStr);
-            _sqliteKeepAlive.Open();
+            // 在 single-process 多 assembly 場景下，第二個 fixture instance 不再開新連線
+            // （第一個 instance 持有的連線已足夠維持 in-memory db 存活）。
+            if (_sqliteKeepAlive == null)
+            {
+                _sqliteKeepAlive = new Microsoft.Data.Sqlite.SqliteConnection(connStr);
+                _sqliteKeepAlive.Open();
+            }
         }
 
         /// <summary>
@@ -158,13 +140,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.MySQL));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
-            dbSettings.Items!.Add(new DatabaseItem
-            {
-                Id = TestDbConventions.GetDatabaseId(DatabaseType.MySQL),
-                DatabaseType = DatabaseType.MySQL,
-                ConnectionString = connStr
-            });
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.MySQL), DatabaseType.MySQL, connStr);
         }
 
         /// <summary>
@@ -188,13 +164,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.Oracle));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
-            dbSettings.Items!.Add(new DatabaseItem
-            {
-                Id = TestDbConventions.GetDatabaseId(DatabaseType.Oracle),
-                DatabaseType = DatabaseType.Oracle,
-                ConnectionString = connStr
-            });
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.Oracle), DatabaseType.Oracle, connStr);
         }
 
         /// <summary>
@@ -206,6 +176,22 @@ namespace Bee.Tests.Shared
             using var cmd = connection.CreateCommand();
             cmd.CommandText = "ALTER SESSION SET NLS_COMP='LINGUISTIC' NLS_SORT='BINARY_CI'";
             cmd.ExecuteNonQuery();
+        }
+
+        // Idempotent helper：當同一個 process 載入多個 test assembly 時（例如 VS Code Test Explorer
+        // 走 single-host 模式），各 assembly 都會新建 GlobalFixture，但 BackendInfo.DefineAccess 的
+        // DatabaseSettings.Items 是 process-wide static — 若直接 Add 已存在的 Id，KeyedCollection
+        // 會丟 ArgumentException 拖垮整個 fixture，連帶讓所有 [Collection("Initialize")] 測試失敗。
+        private static void AddDatabaseItemIfMissing(string id, DatabaseType dbType, string connStr)
+        {
+            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            if (dbSettings.Items!.Contains(id)) return;
+            dbSettings.Items.Add(new DatabaseItem
+            {
+                Id = id,
+                DatabaseType = dbType,
+                ConnectionString = connStr
+            });
         }
 
         private static string FindRepoRoot(string startDir)
