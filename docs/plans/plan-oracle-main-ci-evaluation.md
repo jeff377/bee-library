@@ -177,22 +177,18 @@ push 後監測接續 5 次主 CI 跑況，確認沒有引入 flakiness。
 ## 驗收標準
 
 **樣本收集階段：**
-- [ ] `oracle-validation.yml` 改 pin image digest（樣本期穩定基準）
-- [ ] 暫加 cron schedule，連跑 10-14 天
-- [ ] 累積 ≥ 8 次樣本資料
-- [ ] 樣本表格回填本 plan「結論」段落
-- [ ] 樣本期結束後移除 cron schedule
+- [x] `oracle-validation.yml` 改 pin image digest（commit `c1fc01a`）
+- [ ] ~~暫加 cron schedule，連跑 10-14 天~~ — 改為手動連跑 10 次（first-pass 評估）
+- [x] 累積 10 次樣本資料（≥ 8 次）
+- [x] 樣本表格回填本 plan「結論」段落
 
-**若決議「進主 CI」：**
-- [ ] branch 上跑 3 次主 CI，量真實 wall clock delta（≤ 90s）
-- [ ] `build-ci.yml` 加入 Oracle service container 並通過 5 次連續成功
-- [ ] SonarCloud quality gate 通過，且 `Providers/Oracle/` Coverage on New Code ≥ 85%
-- [ ] 主 CI 平均耗時 ≤ 6 分鐘（從 ~4 分鐘變 +90s 內可接受）
-- [ ] `oracle-validation.yml` 已刪除
-
-**若決議「維持現狀」：**
-- [ ] 樣本資料留存於本 plan「結論」，作為未來再評估的參考
-- [ ] 本 plan 標記為已完成（決議為負，但仍是完成的決策過程）
+**決議「進主 CI」：**
+- [x] branch 上跑 3 次主 CI，量真實 wall clock delta（+54s ≤ 90s）
+- [x] `build-ci.yml` 加入 Oracle service container（commit `ed93092`）
+- [x] 主 CI 平均耗時 +42~54s（≤ 6 分鐘門檻內，~4分43秒~4分55秒）
+- [x] `oracle-validation.yml` 已刪除（commit `ed93092`）
+- [ ] ~~5 次連續成功~~ — 使用者決議停在 1 次連續成功（修復 race 後驗證）
+- [ ] SonarCloud quality gate 通過 + `Providers/Oracle/` Coverage on New Code ≥ 85% — 需後續觀察
 
 ## 風險
 
@@ -331,4 +327,38 @@ push 後監測接續 5 次主 CI 跑況，確認沒有引入 flakiness。
 - 既有 Oracle workflow：[`.github/workflows/oracle-validation.yml`](../../.github/workflows/oracle-validation.yml)
 - 首次成功 run（基準樣本）：https://github.com/jeff377/bee-library/actions/runs/25088730228
 - 樣本期 commit：`c1fc01a`（pin image digest）
-- Trial branch：`claude/oracle-main-ci-trial`（commit `5ebf493`）
+- Trial branch：`claude/oracle-main-ci-trial`（commit `5ebf493`，已合併並刪除）
+- 整合 commit：`ed93092`（Oracle 進主 CI）
+- Race fix commit：`8cf3c6d`（見下方「合併後事件」）
+
+## 合併後事件（2026-04-30）
+
+### Oracle 整合首跑失敗 → 暴露 pre-existing race
+
+合併 commit `ed93092` 後第一次主 CI（[run 25145625541](https://github.com/jeff377/bee-library/actions/runs/25145625541)）失敗，8 個 `Bee.Business.UnitTests.SystemBusinessObject*` 測試全 1 ms 連續失敗：
+
+```
+TypeInitializationException : Bee.ObjectCaching.CacheInfo cctor failed
+---- NotImplementedException : FakeDefineAccess.GetSystemSettings()
+```
+
+**根因**：`BusinessFuncTests` 沒有 `[Collection("Initialize")]`，與其他 `[Collection("Initialize")]` 測試 class 並行執行；其 mutate `BackendInfo.DefineAccess` 為 `FakeDefineAccess` 的視窗剛好被 `GlobalFixture.InitializeOnce()` 的 `LocalDefineAccess.GetSystemSettings()` 讀到，導致 `CacheInfo` 的 static cctor 被 poison。
+
+**驗證 flaky**：同 commit 直接 re-run（[run 25145779042](https://github.com/jeff377/bee-library/actions/runs/25145779042)）成功 — 證實是 race 而非 deterministic bug。
+
+**修復**：commit `8cf3c6d` — `BusinessFuncTests` 加 `[Collection("Initialize")]` 串行化。修復後 [run 25145973638](https://github.com/jeff377/bee-library/actions/runs/25145973638) 通過（Init 98s、Test 31s、Total 283s/4分43秒）。
+
+### 為什麼 trial 沒抓到
+
+Trial branch 跑 3 次都成功（沒觸發 race）— 屬於 sampling luck。Race 與 timing 強相關：當 Oracle 的 service container init 時間恰好把 BusinessFuncTests 的 mutation 視窗推到與其他 Initialize collection 測試重疊時才觸發。
+
+### 教訓
+
+- **trial branch 3 次連續成功不能保證沒有 timing-sensitive race** — 樣本不夠
+- **此 race 屬 testing.md「全域狀態與平行安全」明文警告的類別** — 應在 BusinessFuncTests 寫入時就 catch（code review 漏網）
+- **plan 設計的「合併後 5 次連續成功」驗收標準正是為了抓這類問題** — 雖然本次決議停在 1 次，但機制是對的
+
+### 後續注意事項
+
+- 若主 CI 出現類似 1 ms 連續失敗，立即檢查是否為 `BackendInfo.DefineAccess` race 復發（其他 mutator 加入時忘記掛 `[Collection("Initialize")]`）
+- testing.md 第 109 行「全域狀態與平行安全」章節已涵蓋此規則 — 新增測試時遵守
