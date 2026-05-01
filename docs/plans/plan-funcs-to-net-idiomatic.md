@@ -99,7 +99,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 |---|------|-------|--------|------|-------|
 | 1 | `GzipFunc` | 2 | C | ✅ | 2026-05-01 |
 | 2 | `BusinessFunc` | 2 | B+D | ✅ | 2026-05-01 |
-| 3 | `DefineFunc` | 3 | B | 📝 | — |
+| 3 | `DefineFunc` | 5 | B+C+D | ✅ | 2026-05-01 |
 | 4 | `DateTimeFunc` | 5 | B | 📝 | — |
 | 5 | `HttpFunc` | 5 | B | 📝 | — |
 | 6 | `DbFunc` | 7 | B/D | 📝 | — |
@@ -171,6 +171,15 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 - **path B(domain interface 擴充)**:第一參數為 domain interface 且能讀成「subject 動作」者,轉擴充方法,類別命名 `<Interface 主體>Extensions`(例:`BusinessFunc.InvokeExecFunc` → `ExecFuncHandlerExtensions.InvokeExecFunc`)
 - **不保留** grab-bag 共用靜態類:即使預期未來有更多 BO 共用方法,也應依方法本身屬性判斷歸屬,而非預先建立空殼類
 - 跨 test project 共用 fake 的策略:**就地建立 minimal nested fake**,避免移動到 `Bee.Tests.Shared` 引發 visibility 變動(僅當同一 fake 被多處重複使用時才共享)
+
+### Path B + C + D 三路拆分 — 由 `DefineFunc`(2026-05-01)定案
+
+進一步擴充上述原則:
+
+- **Enum 擴充方法**:domain enum 的轉換/查詢方法用 `<EnumName>Extensions.ToXxx(this EnumName)` 命名(例:`DefineFunc.GetDefineType` → `DefineTypeExtensions.ToClrType`),對齊 path B + .NET `To*` 慣例
+- **Path C 命名延伸**:當方法承載「框架級命名約定」的查表(例:`"Amount" → "N2"`),改名到能呈現「這是預設組」語意的類別 —— 例 `NumberFormatPresets`(而非 `NumberFormatNames` 之類過弱的名稱);類名已含領域字眼時,方法名不重複(`ToFormatString` 而非 `ToNumberFormatString`)
+- **Path D 進一步**:當原 `*Func` 方法是某 domain object 上 instance method 的「外包裝實作」(例:`FormSchema.GetListLayout` → `DefineFunc.GetListLayout` 又繞回來),應**直接內聯**回該 instance method,連帶私有 helper 一起搬入,徹底消除 wrapper 環呼叫
+- **不為假設的未來設計**:即便已預期某 API 未來會擴充(例:`NumberFormatPresets` 未來可能加 enum overload),**現在只搬最低限度的內容**,不預先抽常數、enum、overload。等真的需要時再加
 
 預期會碰到的決策點:
 - 多個類別都有 `string` 擴充方法時,集中到同一個 `StringExtensions` 還是

@@ -145,8 +145,43 @@ namespace Bee.Definition.Forms
         /// </summary>
         public LayoutGrid GetListLayout()
         {
-            return DefineFunc.GetListLayout(this);
+            var table = MasterTable;
+            string[] fieldNames = StrFunc.Split(ListFields, ",");
+
+            var grid = new LayoutGrid { TableName = ProgId };
+            // Add sys_RowID hidden column
+            grid.Columns!.Add(SysFields.RowId, "Row ID", ColumnControlType.TextEdit).Visible = false;
+            // Add list display columns
+            foreach (string fieldName in fieldNames)
+            {
+                var field = table!.Fields![fieldName];
+                if (field != null)
+                {
+                    grid.Columns.Add(ToLayoutColumn(field));
+                }
+            }
+            return grid;
         }
+
+        private static LayoutColumn ToLayoutColumn(FormField field)
+        {
+            var column = new LayoutColumn(field.FieldName, field.Caption, ToColumnControlType(field.ControlType));
+            column.Width = field.Width > 0 ? field.Width : 120;
+            column.DisplayFormat = field.DisplayFormat;
+            column.NumberFormat = field.NumberFormat;
+            return column;
+        }
+
+        private static ColumnControlType ToColumnControlType(ControlType type) => type switch
+        {
+            ControlType.TextEdit       => ColumnControlType.TextEdit,
+            ControlType.ButtonEdit     => ColumnControlType.ButtonEdit,
+            ControlType.DateEdit       => ColumnControlType.DateEdit,
+            ControlType.YearMonthEdit  => ColumnControlType.YearMonthEdit,
+            ControlType.DropDownEdit   => ColumnControlType.DropDownEdit,
+            ControlType.CheckEdit      => ColumnControlType.CheckEdit,
+            _                          => ColumnControlType.TextEdit,
+        };
 
         /// <summary>
         /// Returns a string representation of this object.

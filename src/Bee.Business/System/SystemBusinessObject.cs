@@ -200,7 +200,7 @@ namespace Bee.Business.System
         private static SaveDefineResult SaveDefineCore(SaveDefineArgs args)
         {
             // Deserialize XML to the target object
-            var type = DefineFunc.GetDefineType(args.DefineType);
+            var type = args.DefineType.ToClrType();
             object? defineObject = SerializeFunc.XmlToObject(args.Xml, type);
             if (defineObject == null)
                 throw new InvalidOperationException($"Failed to deserialize XML to {type.Name} object.");
