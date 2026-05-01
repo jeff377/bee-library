@@ -98,9 +98,9 @@ namespace Bee.Base
         public static bool Contains(string? s, string value, bool ignoreCase = true)
         {
             if (s is null) return false;
-            return s.IndexOf(value, ignoreCase
+            return s.Contains(value, ignoreCase
                 ? StringComparison.CurrentCultureIgnoreCase
-                : StringComparison.CurrentCulture) >= 0;
+                : StringComparison.CurrentCulture);
         }
 
         /// <summary>
