@@ -1,6 +1,6 @@
 # 計畫：`*Func` 系列全面 .NET 慣例化重構（主計畫）
 
-**狀態：📝 擬定中**
+**狀態：🚧 進行中**
 
 ## 動機
 
@@ -97,7 +97,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 
 | # | 類別 | 方法數 | 主 path | 狀態 | 完成日 |
 |---|------|-------|--------|------|-------|
-| 1 | `GzipFunc` | 3 | C | 📝 | — |
+| 1 | `GzipFunc` | 2 | C | ✅ | 2026-05-01 |
 | 2 | `BusinessFunc` | 3 | D | 📝 | — |
 | 3 | `DefineFunc` | 3 | B | 📝 | — |
 | 4 | `DateTimeFunc` | 5 | B | 📝 | — |
@@ -155,7 +155,13 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 
 執行過程中浮現的共通決策記在此處,後續類別遵循同樣 pattern:
 
-> *(尚未開始,待第一個類別執行時記入)*
+### Path C(改名)— 由 `GzipFunc → Gzip`(2026-05-01)定案
+
+- **去掉 `Func` 後綴**,以名詞作為靜態 utility 類名,對齊 BCL `Path`、
+  `Convert`、`Encoding`、`Convert` 等慣例
+- 不另立 `*Extensions` 命名 —— 沒有 `this` 擴充就不用 `*Extensions`
+- 不擴充 `byte[]`、`object` 等過度通用型別,以免污染 IntelliSense
+- Namespace 維持原樣(本例 `Bee.Base.Serialization`),不另開新層級
 
 預期會碰到的決策點:
 - 多個類別都有 `string` 擴充方法時,集中到同一個 `StringExtensions` 還是

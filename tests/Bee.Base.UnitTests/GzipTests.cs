@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Bee.Base.UnitTests
 {
-    public class GzipFuncTests
+    public class GzipTests
     {
         /// <summary>
         /// 測試壓縮功能，檢查資料是否能成功壓縮。
@@ -18,14 +18,14 @@ namespace Bee.Base.UnitTests
             byte[] originalBytes = Encoding.UTF8.GetBytes(originalText);
 
             // 執行壓縮
-            byte[] compressedData = GzipFunc.Compress(originalBytes);
+            byte[] compressedData = Gzip.Compress(originalBytes);
 
             // 驗證壓縮後的資料不為空
             Assert.NotNull(compressedData);
             Assert.NotEmpty(compressedData);
 
             // 驗證壓縮後的資料可以成功解壓縮
-            byte[] decompressedData = GzipFunc.Decompress(compressedData);
+            byte[] decompressedData = Gzip.Decompress(compressedData);
             string decompressedText = Encoding.UTF8.GetString(decompressedData);
 
             // 驗證解壓縮後的資料與原始資料一致
@@ -44,10 +44,10 @@ namespace Bee.Base.UnitTests
             byte[] originalBytes = Encoding.UTF8.GetBytes(originalText);
 
             // 執行壓縮
-            byte[] compressedData = GzipFunc.Compress(originalBytes);
+            byte[] compressedData = Gzip.Compress(originalBytes);
 
             // 執行解壓縮
-            byte[] uncompressedData = GzipFunc.Decompress(compressedData);
+            byte[] uncompressedData = Gzip.Decompress(compressedData);
 
             // 驗證解壓縮後的資料不為空
             Assert.NotNull(uncompressedData);
@@ -64,9 +64,9 @@ namespace Bee.Base.UnitTests
         {
             // 壓縮 51 MB 的 0x00（高度壓縮比），觸發 > 50 MB 上限
             byte[] payload = new byte[51 * 1024 * 1024];
-            byte[] compressed = GzipFunc.Compress(payload);
+            byte[] compressed = Gzip.Compress(payload);
 
-            var ex = Assert.Throws<InvalidDataException>(() => GzipFunc.Decompress(compressed));
+            var ex = Assert.Throws<InvalidDataException>(() => Gzip.Decompress(compressed));
             Assert.Contains("Decompressed data exceeds", ex.Message);
         }
     }

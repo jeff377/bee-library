@@ -19,7 +19,7 @@ namespace Bee.Api.Core.Transformers
         /// <returns>The compressed byte data.</returns>
         public byte[] Compress(byte[] bytes)
         {
-            return GzipFunc.Compress(bytes);
+            return Gzip.Compress(bytes);
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Bee.Api.Core.Transformers
         /// <returns>The decompressed byte data.</returns>
         public byte[] Decompress(byte[] bytes)
         {
-            return GzipFunc.Decompress(bytes);
+            return Gzip.Decompress(bytes);
         }
     }
 }

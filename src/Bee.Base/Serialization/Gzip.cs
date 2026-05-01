@@ -5,7 +5,7 @@ namespace Bee.Base.Serialization
     /// <summary>
     /// Utility library for GZip compression and decompression.
     /// </summary>
-    public static class GzipFunc
+    public static class Gzip
     {
         /// <summary>
         /// Maximum allowed decompressed size in bytes (50 MB). Prevents decompression bomb (zip bomb) attacks.
