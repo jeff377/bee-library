@@ -43,7 +43,7 @@ namespace Bee.Api.Core.JsonRpc
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            if (Result != null) Result?.SetSerializeState(serializeState);
+            if (Result != null) Result.SetSerializeState(serializeState);
         }
 
         #endregion
