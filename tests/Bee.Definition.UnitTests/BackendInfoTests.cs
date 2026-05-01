@@ -1,7 +1,11 @@
 using System.ComponentModel;
 using Bee.Base.Security;
+using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
+using Bee.Definition.Storage;
 
 namespace Bee.Definition.UnitTests
 {
@@ -147,6 +151,79 @@ namespace Bee.Definition.UnitTests
             public bool IsLockedOut(string userId) => false;
             public void RecordFailure(string userId) { }
             public void Reset(string userId) { }
+        }
+
+        [Fact]
+        [DisplayName("GetDatabaseItem 於 databaseId 為空字串時應拋 ArgumentNullException")]
+        public void GetDatabaseItem_EmptyId_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => BackendInfo.GetDatabaseItem(string.Empty));
+        }
+
+        [Fact]
+        [DisplayName("GetDatabaseItem 於找不到對應項目時應拋 KeyNotFoundException")]
+        public void GetDatabaseItem_NotFound_ThrowsKeyNotFoundException()
+        {
+            var original = BackendInfo.DefineAccess;
+            try
+            {
+                BackendInfo.DefineAccess = new FakeDefineAccess();
+
+                Assert.Throws<KeyNotFoundException>(() => BackendInfo.GetDatabaseItem("missing"));
+            }
+            finally
+            {
+                BackendInfo.DefineAccess = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("GetDatabaseItem 於存在對應項目時應回傳該 DatabaseItem")]
+        public void GetDatabaseItem_Found_ReturnsItem()
+        {
+            var original = BackendInfo.DefineAccess;
+            try
+            {
+                var fake = new FakeDefineAccess();
+                fake.Settings.Items!.Add(new DatabaseItem { Id = "common", DisplayName = "共用" });
+                BackendInfo.DefineAccess = fake;
+
+                var item = BackendInfo.GetDatabaseItem("common");
+
+                Assert.NotNull(item);
+                Assert.Equal("common", item.Id);
+                Assert.Equal("共用", item.DisplayName);
+            }
+            finally
+            {
+                BackendInfo.DefineAccess = original;
+            }
+        }
+
+        /// <summary>
+        /// 測試用 <see cref="IDefineAccess"/>;除 <see cref="GetDatabaseSettings"/> 外其他方法皆拋 <see cref="NotImplementedException"/>。
+        /// </summary>
+        private sealed class FakeDefineAccess : IDefineAccess
+        {
+            public DatabaseSettings Settings { get; } = new DatabaseSettings();
+
+            public DatabaseSettings GetDatabaseSettings() => Settings;
+
+            public object GetDefine(DefineType defineType, string[]? keys = null) => throw new NotImplementedException();
+            public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null) => throw new NotImplementedException();
+            public SystemSettings GetSystemSettings() => throw new NotImplementedException();
+            public void SaveSystemSettings(SystemSettings settings) => throw new NotImplementedException();
+            public void SaveDatabaseSettings(DatabaseSettings settings) => throw new NotImplementedException();
+            public ProgramSettings GetProgramSettings() => throw new NotImplementedException();
+            public void SaveProgramSettings(ProgramSettings settings) => throw new NotImplementedException();
+            public DbSchemaSettings GetDbSchemaSettings() => throw new NotImplementedException();
+            public void SaveDbSchemaSettings(DbSchemaSettings settings) => throw new NotImplementedException();
+            public TableSchema GetTableSchema(string dbName, string tableName) => throw new NotImplementedException();
+            public void SaveTableSchema(string dbName, TableSchema tableSchema) => throw new NotImplementedException();
+            public FormSchema GetFormSchema(string progId) => throw new NotImplementedException();
+            public void SaveFormSchema(FormSchema formSchema) => throw new NotImplementedException();
+            public FormLayout GetFormLayout(string layoutId) => throw new NotImplementedException();
+            public void SaveFormLayout(FormLayout formLayout) => throw new NotImplementedException();
         }
     }
 }

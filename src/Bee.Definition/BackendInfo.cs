@@ -112,6 +112,24 @@ namespace Bee.Definition
         public static ILoginAttemptTracker? LoginAttemptTracker { get; set; }
 
         /// <summary>
+        /// Gets the database item for the specified database identifier.
+        /// </summary>
+        /// <param name="databaseId">The database identifier.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="databaseId"/> is null or empty.</exception>
+        /// <exception cref="KeyNotFoundException">Thrown when no matching database item exists.</exception>
+        public static DatabaseItem GetDatabaseItem(string databaseId)
+        {
+            if (string.IsNullOrWhiteSpace(databaseId))
+                throw new ArgumentNullException(nameof(databaseId));
+
+            var settings = DefineAccess.GetDatabaseSettings();
+            if (!settings.Items!.Contains(databaseId))
+                throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
+
+            return settings.Items[databaseId];
+        }
+
+        /// <summary>
         /// Initializes the backend with the specified configuration.
         /// </summary>
         /// <param name="configuration">Backend parameters and environment settings.</param>

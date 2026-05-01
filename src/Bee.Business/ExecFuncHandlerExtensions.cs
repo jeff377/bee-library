@@ -1,42 +1,24 @@
-using Bee.Definition.Settings;
+using System.Runtime.ExceptionServices;
 using Bee.Base;
 using Bee.Business.Attributes;
-using Bee.Definition;
-using System.Runtime.ExceptionServices;
 using Bee.Definition.Security;
 
 namespace Bee.Business
 {
     /// <summary>
-    /// Shared utility library for business logic.
+    /// Extension methods for <see cref="IExecFuncHandler"/>.
     /// </summary>
-    public static class BusinessFunc
+    public static class ExecFuncHandlerExtensions
     {
-        /// <summary>
-        /// Gets the database item for the specified database identifier.
-        /// </summary>
-        /// <param name="databaseId">The database identifier.</param>
-        public static DatabaseItem GetDatabaseItem(string databaseId)
-        {
-            if (StrFunc.IsEmpty(databaseId))
-                throw new ArgumentNullException(nameof(databaseId));
-
-            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
-            if (!settings.Items!.Contains(databaseId))
-                throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
-
-            return settings.Items[databaseId];
-        }
-
         /// <summary>
         /// Invokes an ExecFunc method by reflection.
         /// </summary>
-        /// <param name="execFunc">The handler that implements the method identified by FuncID.</param>
+        /// <param name="handler">The handler that implements the method identified by FuncID.</param>
         /// <param name="currentRequirement">The access requirement of the current call.</param>
         /// <param name="args">The input arguments.</param>
         /// <param name="result">The output result.</param>
         public static void InvokeExecFunc(
-            IExecFuncHandler execFunc,
+            this IExecFuncHandler handler,
             ApiAccessRequirement currentRequirement,
             ExecFuncArgs args,
             ExecFuncResult result)
@@ -44,7 +26,7 @@ namespace Bee.Business
             try
             {
                 // Invoke the custom method corresponding to FuncID by reflection
-                var method = execFunc.GetType().GetMethod(args.FuncId);
+                var method = handler.GetType().GetMethod(args.FuncId);
                 if (method == null)
                     throw new MissingMethodException($"Method {args.FuncId} not found.");
 
@@ -59,7 +41,7 @@ namespace Bee.Business
                 if (required == ApiAccessRequirement.Authenticated && currentRequirement == ApiAccessRequirement.Anonymous)
                     throw new UnauthorizedAccessException($"FuncID '{args.FuncId}' requires authentication.");
 
-                method.Invoke(execFunc, new object[] { args, result });
+                method.Invoke(handler, new object[] { args, result });
             }
             catch (Exception ex)
             {
@@ -68,7 +50,5 @@ namespace Bee.Business
                 throw; // 不會執行到，純粹為了編譯器
             }
         }
-
-
     }
 }

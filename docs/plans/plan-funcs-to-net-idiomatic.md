@@ -98,7 +98,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | # | 類別 | 方法數 | 主 path | 狀態 | 完成日 |
 |---|------|-------|--------|------|-------|
 | 1 | `GzipFunc` | 2 | C | ✅ | 2026-05-01 |
-| 2 | `BusinessFunc` | 3 | D | 📝 | — |
+| 2 | `BusinessFunc` | 2 | B+D | ✅ | 2026-05-01 |
 | 3 | `DefineFunc` | 3 | B | 📝 | — |
 | 4 | `DateTimeFunc` | 5 | B | 📝 | — |
 | 5 | `HttpFunc` | 5 | B | 📝 | — |
@@ -162,6 +162,15 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 - 不另立 `*Extensions` 命名 —— 沒有 `this` 擴充就不用 `*Extensions`
 - 不擴充 `byte[]`、`object` 等過度通用型別,以免污染 IntelliSense
 - Namespace 維持原樣(本例 `Bee.Base.Serialization`),不另開新層級
+
+### Path D + B 拆分 — 由 `BusinessFunc`(2026-05-01)定案
+
+當原 `*Func` 類別內方法屬性各異,**逐一判斷後可整個刪除類別,讓每個方法找到自然歸屬**:
+
+- **path D(domain integration)**:方法本質屬於某 domain object 既有職責,直接搬該 object 作 static method,不另立 utility(例:`BusinessFunc.GetDatabaseItem` → `BackendInfo.GetDatabaseItem`)
+- **path B(domain interface 擴充)**:第一參數為 domain interface 且能讀成「subject 動作」者,轉擴充方法,類別命名 `<Interface 主體>Extensions`(例:`BusinessFunc.InvokeExecFunc` → `ExecFuncHandlerExtensions.InvokeExecFunc`)
+- **不保留** grab-bag 共用靜態類:即使預期未來有更多 BO 共用方法,也應依方法本身屬性判斷歸屬,而非預先建立空殼類
+- 跨 test project 共用 fake 的策略:**就地建立 minimal nested fake**,避免移動到 `Bee.Tests.Shared` 引發 visibility 變動(僅當同一 fake 被多處重複使用時才共享)
 
 預期會碰到的決策點:
 - 多個類別都有 `string` 擴充方法時,集中到同一個 `StringExtensions` 還是

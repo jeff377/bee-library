@@ -1,69 +1,14 @@
 using System.ComponentModel;
 using Bee.Business.UnitTests.Fakes;
-using Bee.Definition;
-using Bee.Definition.Settings;
 using Bee.Definition.Security;
 
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="BusinessFunc"/> 測試;涵蓋 <see cref="BusinessFunc.GetDatabaseItem"/>
-    /// 與 <see cref="BusinessFunc.InvokeExecFunc"/>。
+    /// <see cref="ExecFuncHandlerExtensions.InvokeExecFunc"/> 測試。
     /// </summary>
-    [Collection("Initialize")] // 串行化：本檔測試會 mutate BackendInfo.DefineAccess（global state），
-    // 必須與其他讀取 BackendInfo.DefineAccess 的 [Collection("Initialize")] class 串行，
-    // 否則 mutation 會在 concurrent test 中 leak 到 LocalDefineAccess 路徑，
-    // 觸發 CacheInfo cctor poison（NotImplementedException → TypeInitializationException）。
-    // 詳見 testing.md「全域狀態與平行安全」章節。
-    public class BusinessFuncTests
+    public class ExecFuncHandlerExtensionsTests
     {
-        [Fact]
-        [DisplayName("GetDatabaseItem 於 databaseId 為空字串時應拋 ArgumentNullException")]
-        public void GetDatabaseItem_EmptyId_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() => BusinessFunc.GetDatabaseItem(string.Empty));
-        }
-
-        [Fact]
-        [DisplayName("GetDatabaseItem 於找不到對應項目時應拋 KeyNotFoundException")]
-        public void GetDatabaseItem_NotFound_ThrowsKeyNotFoundException()
-        {
-            var original = BackendInfo.DefineAccess;
-            try
-            {
-                BackendInfo.DefineAccess = new FakeDefineAccess();
-
-                Assert.Throws<KeyNotFoundException>(() => BusinessFunc.GetDatabaseItem("missing"));
-            }
-            finally
-            {
-                BackendInfo.DefineAccess = original;
-            }
-        }
-
-        [Fact]
-        [DisplayName("GetDatabaseItem 於存在對應項目時應回傳該 DatabaseItem")]
-        public void GetDatabaseItem_Found_ReturnsItem()
-        {
-            var original = BackendInfo.DefineAccess;
-            try
-            {
-                var fake = new FakeDefineAccess();
-                fake.Settings.Items!.Add(new DatabaseItem { Id = "common", DisplayName = "共用" });
-                BackendInfo.DefineAccess = fake;
-
-                var item = BusinessFunc.GetDatabaseItem("common");
-
-                Assert.NotNull(item);
-                Assert.Equal("common", item.Id);
-                Assert.Equal("共用", item.DisplayName);
-            }
-            finally
-            {
-                BackendInfo.DefineAccess = original;
-            }
-        }
-
         [Fact]
         [DisplayName("InvokeExecFunc 呼叫不存在的方法應拋 MissingMethodException")]
         public void InvokeExecFunc_MethodNotFound_ThrowsMissingMethodException()
@@ -73,7 +18,7 @@ namespace Bee.Business.UnitTests
             var result = new ExecFuncResult();
 
             Assert.Throws<MissingMethodException>(() =>
-                BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Authenticated, args, result));
+                handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result));
         }
 
         [Fact]
@@ -85,7 +30,7 @@ namespace Bee.Business.UnitTests
             var result = new ExecFuncResult();
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Anonymous, args, result));
+                handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, args, result));
         }
 
         [Fact]
@@ -96,7 +41,7 @@ namespace Bee.Business.UnitTests
             var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.Anonymous));
             var result = new ExecFuncResult();
 
-            BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Anonymous, args, result);
+            handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, args, result);
 
             Assert.Equal("Anonymous", result.Parameters.GetValue<string>("Called"));
             Assert.Equal(nameof(FakeExecFuncHandler.Anonymous), result.Parameters.GetValue<string>("FuncId"));
@@ -110,7 +55,7 @@ namespace Bee.Business.UnitTests
             var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.Authenticated));
             var result = new ExecFuncResult();
 
-            BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Authenticated, args, result);
+            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result);
 
             Assert.Equal("Authenticated", result.Parameters.GetValue<string>("Called"));
         }
@@ -123,7 +68,7 @@ namespace Bee.Business.UnitTests
             var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.Anonymous));
             var result = new ExecFuncResult();
 
-            BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Authenticated, args, result);
+            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result);
 
             Assert.Equal("Anonymous", result.Parameters.GetValue<string>("Called"));
         }
@@ -137,7 +82,7 @@ namespace Bee.Business.UnitTests
             var result = new ExecFuncResult();
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Anonymous, args, result));
+                handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, args, result));
         }
 
         [Fact]
@@ -148,7 +93,7 @@ namespace Bee.Business.UnitTests
             var args = new ExecFuncArgs(nameof(FakeExecFuncHandler.NoAttribute));
             var result = new ExecFuncResult();
 
-            BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Authenticated, args, result);
+            handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result);
 
             Assert.Equal("NoAttribute", result.Parameters.GetValue<string>("Called"));
         }
@@ -162,7 +107,7 @@ namespace Bee.Business.UnitTests
             var result = new ExecFuncResult();
 
             var ex = Assert.Throws<InvalidOperationException>(() =>
-                BusinessFunc.InvokeExecFunc(handler, ApiAccessRequirement.Anonymous, args, result));
+                handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, args, result));
             Assert.Equal("fake-inner-exception", ex.Message);
         }
     }
