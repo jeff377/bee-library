@@ -55,8 +55,8 @@ namespace Bee.Api.Core.UnitTests
                     else
                     {
                         // 其他複雜型別（不支援深層遞迴比對），轉為 JSON 比較
-                        var json1 = SerializeFunc.ObjectToXml(originalValue!);
-                        var json2 = SerializeFunc.ObjectToXml(deserializedValue!);
+                        var json1 = XmlCodec.Serialize(originalValue!);
+                        var json2 = XmlCodec.Serialize(deserializedValue!);
                         Assert.Equal(json1, json2);
                     }
                 }

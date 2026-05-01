@@ -170,8 +170,8 @@ namespace Bee.Definition.UnitTests.Filters
             );
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(root);
-            var restored = SerializeFunc.XmlToObject<FilterGroup>(xml);
+            var xml = XmlCodec.Serialize(root);
+            var restored = XmlCodec.Deserialize<FilterGroup>(xml);
 
             // Assert
             Assert.NotNull(restored);

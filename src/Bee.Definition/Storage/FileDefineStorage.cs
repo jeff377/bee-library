@@ -21,7 +21,7 @@ namespace Bee.Definition.Storage
         {
             string filePath = DefinePathInfo.GetDbTableSettingsFilePath();
             ValidateFilePath(filePath);
-            return SerializeFunc.XmlFileToObject<DbSchemaSettings>(filePath);
+            return XmlCodec.DeserializeFromFile<DbSchemaSettings>(filePath);
         }
 
         /// <summary>
@@ -31,7 +31,7 @@ namespace Bee.Definition.Storage
         public void SaveDbSchemaSettings(DbSchemaSettings settings)
         {
             string filePath = DefinePathInfo.GetDbTableSettingsFilePath();
-            SerializeFunc.ObjectToXmlFile(settings, filePath);
+            XmlCodec.SerializeToFile(settings, filePath);
         }
 
         /// <summary>
@@ -43,7 +43,7 @@ namespace Bee.Definition.Storage
         {
             string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableName);
             ValidateFilePath(filePath);
-            return SerializeFunc.XmlFileToObject<TableSchema>(filePath);
+            return XmlCodec.DeserializeFromFile<TableSchema>(filePath);
         }
 
         /// <summary>
@@ -54,7 +54,7 @@ namespace Bee.Definition.Storage
         public void SaveTableSchema(string dbName, TableSchema tableSchema)
         {
             string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableSchema.TableName);
-            SerializeFunc.ObjectToXmlFile(tableSchema, filePath);
+            XmlCodec.SerializeToFile(tableSchema, filePath);
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Bee.Definition.Storage
         {
             string filePath = DefinePathInfo.GetFormSchemaFilePath(progId);
             ValidateFilePath(filePath);
-            return SerializeFunc.XmlFileToObject<FormSchema>(filePath);
+            return XmlCodec.DeserializeFromFile<FormSchema>(filePath);
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Bee.Definition.Storage
         public void SaveFormSchema(FormSchema formSchema)
         {
             string filePath = DefinePathInfo.GetFormSchemaFilePath(formSchema.ProgId);
-            SerializeFunc.ObjectToXmlFile(formSchema, filePath);
+            XmlCodec.SerializeToFile(formSchema, filePath);
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Bee.Definition.Storage
         {
             string filePath = DefinePathInfo.GetFormLayoutFilePath(layoutId);
             ValidateFilePath(filePath);
-            return SerializeFunc.XmlFileToObject<FormLayout>(filePath);
+            return XmlCodec.DeserializeFromFile<FormLayout>(filePath);
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace Bee.Definition.Storage
         public void SaveFormLayout(FormLayout formLayout)
         {
             string filePath = DefinePathInfo.GetFormLayoutFilePath(formLayout.LayoutId);
-            SerializeFunc.ObjectToXmlFile(formLayout, filePath);
+            XmlCodec.SerializeToFile(formLayout, filePath);
         }
 
         /// <summary>

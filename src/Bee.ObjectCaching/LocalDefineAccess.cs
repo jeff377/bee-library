@@ -108,7 +108,7 @@ namespace Bee.ObjectCaching
         {
             // Save system settings to file
             string filePath = DefinePathInfo.GetSystemSettingsFilePath();
-            SerializeFunc.ObjectToXmlFile(settings, filePath);
+            XmlCodec.SerializeToFile(settings, filePath);
             // Invalidate the cache
             var cache = new SystemSettingsCache();
             cache.Remove();
@@ -133,7 +133,7 @@ namespace Bee.ObjectCaching
 
             // Save database settings to file
             sFilePath = DefinePathInfo.GetDatabaseSettingsFilePath();
-            SerializeFunc.ObjectToXmlFile(settings, sFilePath);
+            XmlCodec.SerializeToFile(settings, sFilePath);
             // Invalidate the cache
             oCache = new DatabaseSettingsCache();
             oCache.Remove();
@@ -158,7 +158,7 @@ namespace Bee.ObjectCaching
 
             // Save program settings to file, then invalidate the cache
             sFilePath = DefinePathInfo.GetProgramSettingsFilePath();
-            SerializeFunc.ObjectToXmlFile(settings, sFilePath);
+            XmlCodec.SerializeToFile(settings, sFilePath);
             oCache = new ProgramSettingsCache();
             oCache.Remove();
         }

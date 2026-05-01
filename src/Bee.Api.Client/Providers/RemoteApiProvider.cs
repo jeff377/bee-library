@@ -48,7 +48,7 @@ namespace Bee.Api.Client.Providers
             var headers = CreateHeaders();
             string body = request.ToJson();  // Serialize input parameters to JSON
             string json = await HttpUtilities.PostAsync(Endpoint, body, headers).ConfigureAwait(false); // Call the Web API
-            var response = SerializeFunc.JsonToObject<JsonRpcResponse>(json);  // Deserialize JSON response
+            var response = JsonCodec.Deserialize<JsonRpcResponse>(json);  // Deserialize JSON response
             return response!;
         }
 

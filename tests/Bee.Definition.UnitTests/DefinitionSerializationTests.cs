@@ -22,15 +22,15 @@ namespace Bee.Definition.UnitTests
             // XML 序列化
             if (isXml)
             {
-                string xml = SerializeFunc.ObjectToXml(value);
-                value2 = SerializeFunc.XmlToObject<T>(xml);
+                string xml = XmlCodec.Serialize(value);
+                value2 = XmlCodec.Deserialize<T>(xml);
                 Assert.NotNull(value2);
             }
             // JSON 序列化
             if (isJson)
             {
-                string json = SerializeFunc.ObjectToJson(value);
-                value2 = SerializeFunc.JsonToObject<T>(json);
+                string json = JsonCodec.Serialize(value);
+                value2 = JsonCodec.Deserialize<T>(json);
                 Assert.NotNull(value2);
             }
         }

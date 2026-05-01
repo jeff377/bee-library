@@ -25,8 +25,8 @@ namespace Bee.Definition.UnitTests
             table.Fields!.Add("sys_name", "員工姓名", FieldDbType.String);
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(original);
-            var restored = SerializeFunc.XmlToObject<FormSchema>(xml);
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<FormSchema>(xml);
 
             // Assert
             Assert.NotNull(restored);
@@ -49,8 +49,8 @@ namespace Bee.Definition.UnitTests
             table.Fields!.Add("sys_id", "部門編號", FieldDbType.String);
 
             // Act
-            var json = SerializeFunc.ObjectToJson(original);
-            var restored = SerializeFunc.JsonToObject<FormSchema>(json);
+            var json = JsonCodec.Serialize(original);
+            var restored = JsonCodec.Deserialize<FormSchema>(json);
 
             // Assert
             Assert.NotNull(restored);
@@ -74,8 +74,8 @@ namespace Bee.Definition.UnitTests
             original.Indexes!.AddPrimaryKey("sys_no");
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(original);
-            var restored = SerializeFunc.XmlToObject<TableSchema>(xml);
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<TableSchema>(xml);
 
             // Assert
             Assert.NotNull(restored);
@@ -136,8 +136,8 @@ namespace Bee.Definition.UnitTests
             original.Groups!.Add(group);
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(original);
-            var restored = SerializeFunc.XmlToObject<FormLayout>(xml);
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<FormLayout>(xml);
 
             // Assert
             Assert.NotNull(restored);
@@ -182,8 +182,8 @@ namespace Bee.Definition.UnitTests
             });
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(original);
-            var restored = SerializeFunc.XmlToObject<DatabaseSettings>(xml);
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<DatabaseSettings>(xml);
 
             // Assert
             Assert.NotNull(restored);
@@ -217,8 +217,8 @@ namespace Bee.Definition.UnitTests
             var original = new ProgramSettings();
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(original);
-            var restored = SerializeFunc.XmlToObject<ProgramSettings>(xml);
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<ProgramSettings>(xml);
 
             // Assert
             Assert.NotNull(restored);
@@ -232,8 +232,8 @@ namespace Bee.Definition.UnitTests
             var original = new DbSchemaSettings();
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(original);
-            var restored = SerializeFunc.XmlToObject<DbSchemaSettings>(xml);
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<DbSchemaSettings>(xml);
 
             // Assert
             Assert.NotNull(restored);
@@ -249,8 +249,8 @@ namespace Bee.Definition.UnitTests
             original.BackendConfiguration.DatabaseId = "common";
 
             // Act
-            var json = SerializeFunc.ObjectToJson(original);
-            var restored = SerializeFunc.JsonToObject<SystemSettings>(json);
+            var json = JsonCodec.Serialize(original);
+            var restored = JsonCodec.Deserialize<SystemSettings>(json);
 
             // Assert
             Assert.NotNull(restored);

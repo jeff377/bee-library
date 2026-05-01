@@ -7,7 +7,7 @@ namespace Bee.Base.UnitTests
 {
     /// <summary>
     /// JSON DataSet/DataTable 序列化測試。
-    /// 驗證自訂 DataTableJsonConverter / DataSetJsonConverter 透過 SerializeFunc 的往返正確性，
+    /// 驗證自訂 DataTableJsonConverter / DataSetJsonConverter 透過 JsonCodec 的往返正確性，
     /// 涵蓋所有 FieldDbType 欄位型別、RowState 保留、DBNull 處理、DataRelation、PrimaryKey 及邊界條件。
     /// 已遷移至 System.Text.Json，作為自訂 Converter 的回歸驗收標準。
     /// </summary>
@@ -16,21 +16,21 @@ namespace Bee.Base.UnitTests
         #region Helper
 
         /// <summary>
-        /// 透過 SerializeFunc 執行 DataTable JSON 序列化往返。
+        /// 透過 JsonCodec 執行 DataTable JSON 序列化往返。
         /// </summary>
         private static DataTable JsonRoundTripTable(DataTable table)
         {
-            string json = SerializeFunc.ObjectToJson(table, includeTypeName: false);
-            return SerializeFunc.JsonToObject<DataTable>(json, includeTypeName: false)!;
+            string json = JsonCodec.Serialize(table, includeTypeName: false);
+            return JsonCodec.Deserialize<DataTable>(json, includeTypeName: false)!;
         }
 
         /// <summary>
-        /// 透過 SerializeFunc 執行 DataSet JSON 序列化往返。
+        /// 透過 JsonCodec 執行 DataSet JSON 序列化往返。
         /// </summary>
         private static DataSet JsonRoundTripDataSet(DataSet dataSet)
         {
-            string json = SerializeFunc.ObjectToJson(dataSet, includeTypeName: false);
-            return SerializeFunc.JsonToObject<DataSet>(json, includeTypeName: false)!;
+            string json = JsonCodec.Serialize(dataSet, includeTypeName: false);
+            return JsonCodec.Deserialize<DataSet>(json, includeTypeName: false)!;
         }
 
         #endregion
@@ -449,8 +449,8 @@ namespace Bee.Base.UnitTests
         [DisplayName("DataTable JSON 序列化 null 值")]
         public void DataTable_JsonSerialize_Null_ReturnsNull()
         {
-            string json = SerializeFunc.ObjectToJson((DataTable?)null!, includeTypeName: false);
-            var restored = SerializeFunc.JsonToObject<DataTable?>(json, includeTypeName: false);
+            string json = JsonCodec.Serialize((DataTable?)null!, includeTypeName: false);
+            var restored = JsonCodec.Deserialize<DataTable?>(json, includeTypeName: false);
 
             Assert.Null(restored);
         }

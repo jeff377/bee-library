@@ -174,7 +174,7 @@ namespace Bee.Business.System
                     value = cloneable.CreateSerializableCopy();
                 }
                 // Serialize the object to XML
-                result.Xml = SerializeFunc.ObjectToXml(value);
+                result.Xml = XmlCodec.Serialize(value);
             }
 
             return result;
@@ -201,7 +201,7 @@ namespace Bee.Business.System
         {
             // Deserialize XML to the target object
             var type = args.DefineType.ToClrType();
-            object? defineObject = SerializeFunc.XmlToObject(args.Xml, type);
+            object? defineObject = XmlCodec.Deserialize(args.Xml, type);
             if (defineObject == null)
                 throw new InvalidOperationException($"Failed to deserialize XML to {type.Name} object.");
 

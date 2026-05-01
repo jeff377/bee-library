@@ -104,7 +104,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | 5 | `HttpFunc` | 4 | C | ✅ | 2026-05-01 |
 | 6 | `DbFunc` | 6 | A+B+C+D | ✅ | 2026-05-01 |
 | 7 | `DataSetFunc` | 7 | A+B | ✅ | 2026-05-01 |
-| 8 | `SerializeFunc` | 10 | C | 📝 | — |
+| 8 | `SerializeFunc` | 9 | C | ✅ | 2026-05-01 |
 | 9 | `CacheFunc` | 14 | B/D | 📝 | — |
 | 10 | `FileFunc` | 22 | A/B | 📝 | — |
 | 11 | `StrFunc` | 40 | A/B | 📝 | — |
@@ -198,6 +198,15 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 - 短名 `Gzip` 安全是因為 BCL 沒有 `*.Gzip` namespace
 - **選名前先 grep BCL namespace 清單**,或建立後本地跑一次 `dotnet build` 確認 CA1724 不觸發
 - 命名衝突解法依優先序:換複數(`Http` → `HttpUtilities`)、加領域前綴、加 `*Helpers` 後綴(避免 `*Helper` 單數,在 .NET 已過時且仍可能與舊 type 撞名)
+
+### 多 format 工具類分拆 — 由 `SerializeFunc`(2026-05-01)定案
+
+當 `*Func` 內含多個 format-specific 方法群(本例 XML 與 JSON):
+
+- 分成各 format 的 `<Format>Codec` 獨立類,對齊既有 `MessagePackCodec` idiom(1 format = 1 codec)
+- 共用 lifecycle 邏輯抽 `internal static` helper class(C# 靜態類無法繼承,只能用 helper class 共用),不放 base class
+- 順手把方法名改為 BCL idiomatic:類名已含領域字眼(Xml/Json)時,方法名不重複(`XmlCodec.Serialize` 而非 `XmlCodec.SerializeXml`),對齊 BCL `JsonSerializer.Serialize/Deserialize` 慣例
+- 跨 test project 共用 fixture / fake:抽到 `*TestFixtures.cs` 檔,各 test class 透過 abstract base class 繼承,而非 `IClassFixture<T>`(per-class state 用繼承較直接)
 
 ### Path D 命名 shadowing 檢查 — 由 `DbFunc.InferDbType`(2026-05-01)補強
 

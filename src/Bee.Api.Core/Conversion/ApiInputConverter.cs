@@ -29,7 +29,7 @@ namespace Bee.Api.Core.Conversion
 
             // Handle JsonElement (from JSON deserialization over HTTP).
             // PropertyNameCaseInsensitive is required because the framework serializes
-            // with camelCase naming policy (see SerializeFunc.GetJsonSerializerOptions).
+            // with camelCase naming policy (see JsonCodec internal options).
             if (source is JsonElement element)
             {
                 return JsonSerializer.Deserialize(element.GetRawText(), targetType, CaseInsensitiveOptions);

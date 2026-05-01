@@ -29,7 +29,7 @@ namespace Bee.ObjectCaching.Define
             if (!FileFunc.FileExists(filePath))
                 throw new FileNotFoundException($"The file {filePath} does not exist.");
 
-            var settings =  SerializeFunc.XmlFileToObject<DatabaseSettings>(filePath);
+            var settings =  XmlCodec.DeserializeFromFile<DatabaseSettings>(filePath);
 
             // Raise the global database settings changed event
             GlobalEvents.RaiseDatabaseSettingsChanged();

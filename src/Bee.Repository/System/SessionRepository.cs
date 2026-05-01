@@ -23,7 +23,7 @@ namespace Bee.Repository.System
         /// <param name="sessionUser">The session user data to persist.</param>
         private static void Insert(SessionUser sessionUser)
         {
-            string xml = SerializeFunc.ObjectToXml(sessionUser);
+            string xml = XmlCodec.Serialize(sessionUser);
             string sql = "INSERT INTO st_session \n" +
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
@@ -70,7 +70,7 @@ namespace Bee.Repository.System
             }
 
             string xml = BaseFunc.CStr(row["session_user_xml"]);
-            var user = SerializeFunc.XmlToObject<SessionUser>(xml);
+            var user = XmlCodec.Deserialize<SessionUser>(xml);
             // If the session is one-time use, delete it after retrieval
             if (user!.OneTime) { Delete(accessToken); }
             return user;

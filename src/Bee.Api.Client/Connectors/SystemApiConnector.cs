@@ -123,7 +123,7 @@ namespace Bee.Api.Client.Connectors
             // Retrieve common parameters and environment configuration for initialization
             var request = new GetCommonConfigurationRequest();
             var result = await ExecuteAsync<GetCommonConfigurationResponse>(SystemActions.GetCommonConfiguration, request, PayloadFormat.Plain).ConfigureAwait(false);
-            var configuration = SerializeFunc.XmlToObject<CommonConfiguration>(result.CommonConfiguration)!;
+            var configuration = XmlCodec.Deserialize<CommonConfiguration>(result.CommonConfiguration)!;
             SysInfo.Initialize(configuration);
             // Initialize API service options: configure serializer, compressor, and encryptor implementations
             ApiServiceOptions.Initialize(configuration.ApiPayloadOptions);
@@ -223,7 +223,7 @@ namespace Bee.Api.Client.Connectors
             };
             var result = await ExecuteAsync<GetDefineResponse>(SystemActions.GetDefine, request).ConfigureAwait(false);
             if (StrFunc.IsNotEmpty(result.Xml))
-                return SerializeFunc.XmlToObject<T>(result.Xml)!;
+                return XmlCodec.Deserialize<T>(result.Xml)!;
             else
                 return default!;
         }
@@ -252,7 +252,7 @@ namespace Bee.Api.Client.Connectors
             var request = new SaveDefineRequest()
             {
                 DefineType = defineType,
-                Xml = SerializeFunc.ObjectToXml(defineObject),
+                Xml = XmlCodec.Serialize(defineObject),
                 Keys = keys
             };
             await ExecuteAsync<SaveDefineResponse>(SystemActions.SaveDefine, request).ConfigureAwait(false);

@@ -88,8 +88,8 @@ namespace Bee.Definition.UnitTests
             var original = new SortField("sys_id", SortDirection.Desc);
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(original);
-            var restored = SerializeFunc.XmlToObject<SortField>(xml);
+            var xml = XmlCodec.Serialize(original);
+            var restored = XmlCodec.Deserialize<SortField>(xml);
 
             // Assert
             Assert.NotNull(restored);
@@ -105,8 +105,8 @@ namespace Bee.Definition.UnitTests
             var original = new SortField("sys_id", SortDirection.Desc);
 
             // Act
-            var json = SerializeFunc.ObjectToJson(original);
-            var restored = SerializeFunc.JsonToObject<SortField>(json);
+            var json = JsonCodec.Serialize(original);
+            var restored = JsonCodec.Deserialize<SortField>(json);
 
             // Assert
             Assert.NotNull(restored);
@@ -126,8 +126,8 @@ namespace Bee.Definition.UnitTests
             };
 
             // Act
-            var xml = SerializeFunc.ObjectToXml(collection);
-            var restored = SerializeFunc.XmlToObject<SortFieldCollection>(xml);
+            var xml = XmlCodec.Serialize(collection);
+            var restored = XmlCodec.Deserialize<SortFieldCollection>(xml);
 
             // Assert
             Assert.NotNull(restored);

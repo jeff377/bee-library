@@ -11,7 +11,7 @@ namespace Bee.Base.Serialization
         /// <param name="value">The object to serialize.</param>
         public static string ToXml(this IObjectSerializeBase value)
         {
-            return SerializeFunc.ObjectToXml(value);
+            return XmlCodec.Serialize(value);
         }
 
         /// <summary>
@@ -20,7 +20,7 @@ namespace Bee.Base.Serialization
         /// <param name="value">The object to serialize.</param>
         public static string ToJson(this IObjectSerializeBase value)
         {
-            return SerializeFunc.ObjectToJson(value);
+            return JsonCodec.Serialize(value);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Bee.Base.Serialization
         /// <param name="filePath">The XML file path.</param>
         public static void ToXmlFile(this IObjectSerializeFile value, string filePath)
         {
-            SerializeFunc.ObjectToXmlFile(value, filePath);
+            XmlCodec.SerializeToFile(value, filePath);
         }
 
         /// <summary>
@@ -40,7 +40,7 @@ namespace Bee.Base.Serialization
         /// <param name="filePath">The JSON file path.</param>
         public static void ToJsonFile(this IObjectSerializeFile value, string filePath)
         {
-            SerializeFunc.ObjectToJsonFile(value, filePath);
+            JsonCodec.SerializeToFile(value, filePath);
         }
 
         /// <summary>
@@ -56,9 +56,9 @@ namespace Bee.Base.Serialization
 
             sExtension = FileFunc.GetExtension(value.ObjectFilePath);
             if (StrFunc.IsEquals(sExtension, ".xml"))
-                SerializeFunc.ObjectToXmlFile(value, value.ObjectFilePath);
+                XmlCodec.SerializeToFile(value, value.ObjectFilePath);
             else if (StrFunc.IsEquals(sExtension, ".json"))
-                SerializeFunc.ObjectToJsonFile(value, value.ObjectFilePath);
+                JsonCodec.SerializeToFile(value, value.ObjectFilePath);
             else
                 throw new NotSupportedException();
         }

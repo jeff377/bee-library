@@ -87,7 +87,7 @@ namespace Bee.Api.AspNetCore.Controllers
 
             try
             {
-                var request = SerializeFunc.JsonToObject<JsonRpcRequest>(json);
+                var request = JsonCodec.Deserialize<JsonRpcRequest>(json);
                 if (request == null || string.IsNullOrWhiteSpace(request.Method))
                 {
                     throw new JsonRpcException(StatusCodes.Status400BadRequest,

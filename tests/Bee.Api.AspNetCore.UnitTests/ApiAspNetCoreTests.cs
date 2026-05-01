@@ -85,7 +85,7 @@ namespace Bee.Api.AspNetCore.UnitTests
             Assert.Equal("application/json", contentResult.ContentType);
             Assert.False(string.IsNullOrWhiteSpace(contentResult.Content));
 
-            var response = SerializeFunc.JsonToObject<JsonRpcResponse>(contentResult.Content);
+            var response = JsonCodec.Deserialize<JsonRpcResponse>(contentResult.Content);
             return ApiOutputConverter.ConvertResultValue<TResult>(response!.Result!.Value!)!;
         }
 
