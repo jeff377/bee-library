@@ -28,7 +28,7 @@ namespace Bee.Api.Core.Messages
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            if (_parameters != null) _parameters?.SetSerializeState(serializeState);
+            if (_parameters != null) _parameters.SetSerializeState(serializeState);
         }
 
         #endregion
