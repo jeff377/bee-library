@@ -1,39 +1,44 @@
 using Bee.ObjectCaching.Database;
 using Bee.ObjectCaching.Define;
-using Bee.ObjectCaching.Runtime;
 
 namespace Bee.ObjectCaching
 {
     /// <summary>
-    /// Cache instance container that centrally manages singleton instances of all cache classes, using <see cref="Lazy{T}"/> for deferred initialization.
+    /// Cache instance container that centrally manages singleton instances of all cache classes,
+    /// using <see cref="Lazy{T}"/> for deferred initialization.
     /// </summary>
-    internal static class CacheContainer
+    public static class CacheContainer
     {
         private static readonly Lazy<SystemSettingsCache> _systemSettings = new Lazy<SystemSettingsCache>(() => new SystemSettingsCache());
-        internal static SystemSettingsCache SystemSettings => _systemSettings.Value;
+        /// <summary>Gets the system settings cache.</summary>
+        public static SystemSettingsCache SystemSettings => _systemSettings.Value;
 
         private static readonly Lazy<DatabaseSettingsCache> _databaseSettings = new Lazy<DatabaseSettingsCache>(() => new DatabaseSettingsCache());
-        internal static DatabaseSettingsCache DatabaseSettings => _databaseSettings.Value;
+        /// <summary>Gets the database settings cache.</summary>
+        public static DatabaseSettingsCache DatabaseSettings => _databaseSettings.Value;
 
         private static readonly Lazy<ProgramSettingsCache> _programSettings = new Lazy<ProgramSettingsCache>(() => new ProgramSettingsCache());
-        internal static ProgramSettingsCache ProgramSettings => _programSettings.Value;
+        /// <summary>Gets the program settings cache.</summary>
+        public static ProgramSettingsCache ProgramSettings => _programSettings.Value;
 
         private static readonly Lazy<DbSchemaSettingsCache> _dbSchemaSettings = new Lazy<DbSchemaSettingsCache>(() => new DbSchemaSettingsCache());
-        internal static DbSchemaSettingsCache DbSchemaSettings => _dbSchemaSettings.Value;
+        /// <summary>Gets the database schema settings cache.</summary>
+        public static DbSchemaSettingsCache DbSchemaSettings => _dbSchemaSettings.Value;
 
         private static readonly Lazy<TableSchemaCache> _tableSchema = new Lazy<TableSchemaCache>(() => new TableSchemaCache());
-        internal static TableSchemaCache TableSchema => _tableSchema.Value;
+        /// <summary>Gets the table schema cache, keyed by database name and table name.</summary>
+        public static TableSchemaCache TableSchema => _tableSchema.Value;
 
         private static readonly Lazy<FormSchemaCache> _formSchema = new Lazy<FormSchemaCache>(() => new FormSchemaCache());
-        internal static FormSchemaCache FormSchema => _formSchema.Value;
+        /// <summary>Gets the form schema cache, keyed by program identifier.</summary>
+        public static FormSchemaCache FormSchema => _formSchema.Value;
 
         private static readonly Lazy<FormLayoutCache> _formLayout = new Lazy<FormLayoutCache>(() => new FormLayoutCache());
-        internal static FormLayoutCache FormLayout => _formLayout.Value;
+        /// <summary>Gets the form layout cache, keyed by layout identifier.</summary>
+        public static FormLayoutCache FormLayout => _formLayout.Value;
 
         private static readonly Lazy<SessionInfoCache> _sessionInfo = new Lazy<SessionInfoCache>(() => new SessionInfoCache());
-        internal static SessionInfoCache SessionInfo => _sessionInfo.Value;
-
-        private static readonly Lazy<ViewStateCache> viewState = new Lazy<ViewStateCache>(() => new ViewStateCache());
-        internal static ViewStateCache ViewState => viewState.Value;
+        /// <summary>Gets the session information cache, keyed by access token.</summary>
+        public static SessionInfoCache SessionInfo => _sessionInfo.Value;
     }
 }

@@ -12,7 +12,7 @@ namespace Bee.ObjectCaching.Services
         /// </summary>
         public SessionInfo Get(Guid accessToken)
         {
-            return CacheFunc.GetSessionInfo(accessToken)!;
+            return CacheContainer.SessionInfo.Get(accessToken)!;
         }
 
         /// <summary>
@@ -20,7 +20,7 @@ namespace Bee.ObjectCaching.Services
         /// </summary>
         public void Set(SessionInfo sessionInfo)
         {
-            CacheFunc.SetSessionInfo(sessionInfo);
+            CacheContainer.SessionInfo.Set(sessionInfo);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Bee.ObjectCaching.Services
         /// </summary>
         public void Remove(Guid accessToken)
         {
-            CacheFunc.RemoveSessionInfo(accessToken);   
+            CacheContainer.SessionInfo.Remove(accessToken);   
         }
     }
 }

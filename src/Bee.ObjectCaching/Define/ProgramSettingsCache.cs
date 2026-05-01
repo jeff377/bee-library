@@ -8,7 +8,7 @@ namespace Bee.ObjectCaching.Define
     /// <summary>
     /// Program settings cache.
     /// </summary>
-    internal class ProgramSettingsCache : ObjectCache<ProgramSettings>
+    public class ProgramSettingsCache : ObjectCache<ProgramSettings>
     {
         /// <summary>
         /// Gets the cache item expiration policy.

@@ -46,7 +46,7 @@ namespace Bee.ObjectCaching.UnitTests
                 UserName = "Test User"
             };
             BackendInfo.SessionInfoService.Set(sessionInfo);
-            var sessionInfoFromCache = CacheFunc.GetSessionInfo(sessionInfo.AccessToken);
+            var sessionInfoFromCache = CacheContainer.SessionInfo.Get(sessionInfo.AccessToken);
             Assert.NotNull(sessionInfoFromCache);
             Assert.Equal(sessionInfo.AccessToken, sessionInfoFromCache!.AccessToken);
 

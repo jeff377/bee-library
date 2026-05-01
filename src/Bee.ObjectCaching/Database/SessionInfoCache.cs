@@ -5,7 +5,7 @@ namespace Bee.ObjectCaching.Database
     /// <summary>
     /// Session information cache.
     /// </summary>
-    internal class SessionInfoCache : KeyObjectCache<SessionInfo>
+    public class SessionInfoCache : KeyObjectCache<SessionInfo>
     {
         /// <summary>
         /// Creates an instance of the session information.

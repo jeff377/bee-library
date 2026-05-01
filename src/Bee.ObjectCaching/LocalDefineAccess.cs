@@ -97,7 +97,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public SystemSettings GetSystemSettings()
         {
-            return CacheFunc.GetSystemSettings()!;
+            return CacheContainer.SystemSettings.Get()!;
         }
 
         /// <summary>
@@ -119,7 +119,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public DatabaseSettings GetDatabaseSettings()
         {
-            return CacheFunc.GetDatabaseSettings()!;
+            return CacheContainer.DatabaseSettings.Get()!;
         }
 
         /// <summary>
@@ -144,7 +144,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public ProgramSettings GetProgramSettings()
         {
-            return CacheFunc.GetProgramSettings()!;
+            return CacheContainer.ProgramSettings.Get()!;
         }
 
         /// <summary>
@@ -168,7 +168,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public DbSchemaSettings GetDbSchemaSettings()
         {
-            return CacheFunc.GetDbSchemaSettings()!;
+            return CacheContainer.DbSchemaSettings.Get()!;
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace Bee.ObjectCaching
         /// <param name="tableName">The table name.</param>
         public TableSchema GetTableSchema(string dbName, string tableName)
         {
-            return CacheFunc.GetTableSchema(dbName, tableName)!;
+            return CacheContainer.TableSchema.Get(dbName, tableName)!;
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace Bee.ObjectCaching
         /// <param name="progId">The program identifier.</param>
         public FormSchema GetFormSchema(string progId)
         {
-            return CacheFunc.GetFormSchema(progId)!;
+            return CacheContainer.FormSchema.Get(progId)!;
         }
 
         /// <summary>
@@ -239,7 +239,7 @@ namespace Bee.ObjectCaching
         /// <param name="layoutId">The layout identifier.</param>
         public FormLayout GetFormLayout(string layoutId)
         {
-            return CacheFunc.GetFormLayout(layoutId)!;
+            return CacheContainer.FormLayout.Get(layoutId)!;
         }
 
         /// <summary>

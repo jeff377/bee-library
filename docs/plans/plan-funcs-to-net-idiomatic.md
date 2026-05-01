@@ -105,7 +105,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | 6 | `DbFunc` | 6 | A+B+C+D | ✅ | 2026-05-01 |
 | 7 | `DataSetFunc` | 7 | A+B | ✅ | 2026-05-01 |
 | 8 | `SerializeFunc` | 9 | C | ✅ | 2026-05-01 |
-| 9 | `CacheFunc` | 14 | B/D | 📝 | — |
+| 9 | `CacheFunc` | 11 | A+D | ✅ | 2026-05-01 |
 | 10 | `FileFunc` | 22 | A/B | 📝 | — |
 | 11 | `StrFunc` | 40 | A/B | 📝 | — |
 | 12 | `BaseFunc` | 46 | 全部 | 📝 | — |
@@ -207,6 +207,15 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 - 共用 lifecycle 邏輯抽 `internal static` helper class(C# 靜態類無法繼承,只能用 helper class 共用),不放 base class
 - 順手把方法名改為 BCL idiomatic:類名已含領域字眼(Xml/Json)時,方法名不重複(`XmlCodec.Serialize` 而非 `XmlCodec.SerializeXml`),對齊 BCL `JsonSerializer.Serialize/Deserialize` 慣例
 - 跨 test project 共用 fixture / fake:抽到 `*TestFixtures.cs` 檔,各 test class 透過 abstract base class 繼承,而非 `IClassFixture<T>`(per-class state 用繼承較直接)
+
+### 消除純 facade — 由 `CacheFunc`(2026-05-01)定案
+
+當 `*Func` 內所有方法都是 1-line delegation 到某個內部 container/class:
+
+- **判斷準則**:facade 是否提供額外語意(預設值/組合/轉換)?**完全沒有 → 消除 facade、公開內部 container**;有 → 保留 facade(path C 改名)
+- 公開原本 internal 的 class 是合理 path D 副作用,只要該類本來就設計為消費者可用(有 public Get/Set 等方法),且實作細節仍藏在 protected/private
+- 連帶可順手清理 dead code(本例 `ViewStateCache` 是舊 .NET Framework Web Forms 遺物,0 prod caller,連同所屬資料夾整個刪除)
+- **避免 base class shadowing**:在 owning class 加新 overload 時,先檢查是否與 base class 的同名 method 簽章衝突(CS0114);衝突時優先**不加 overload,讓 caller 顯式傳值**,而非用 `new` keyword shadow(語意混淆)
 
 ### Path D 命名 shadowing 檢查 — 由 `DbFunc.InferDbType`(2026-05-01)補強
 

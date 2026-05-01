@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching.Define
     /// <summary>
     /// Form schema definition cache.
     /// </summary>
-    internal class FormSchemaCache : KeyObjectCache<FormSchema>
+    public class FormSchemaCache : KeyObjectCache<FormSchema>
     {
         /// <summary>
         /// Gets the cache item expiration policy.

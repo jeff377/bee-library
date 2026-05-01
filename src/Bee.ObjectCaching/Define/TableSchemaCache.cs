@@ -8,7 +8,7 @@ namespace Bee.ObjectCaching.Define
     /// <summary>
     /// Table schema cache.
     /// </summary>
-    internal class TableSchemaCache : KeyObjectCache<TableSchema>
+    public class TableSchemaCache : KeyObjectCache<TableSchema>
     {
         /// <summary>
         /// Gets the cache item expiration policy.

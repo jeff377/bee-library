@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching.Define
     /// <summary>
     /// Form layout cache.
     /// </summary>
-    internal class FormLayoutCache : KeyObjectCache<FormLayout>
+    public class FormLayoutCache : KeyObjectCache<FormLayout>
     {
         /// <summary>
         /// Gets the cache item expiration policy.

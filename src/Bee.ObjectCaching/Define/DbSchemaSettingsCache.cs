@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching.Define
     /// <summary>
     /// Database schema settings cache.
     /// </summary>
-    internal class DbSchemaSettingsCache : ObjectCache<DbSchemaSettings>
+    public class DbSchemaSettingsCache : ObjectCache<DbSchemaSettings>
     {
         /// <summary>
         /// Gets the cache item expiration policy.

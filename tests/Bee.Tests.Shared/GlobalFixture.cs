@@ -88,7 +88,7 @@ namespace Bee.Tests.Shared
         /// 在 SystemSettings.xml 中），所以同時註冊兩個 Id 指向同一個 SQL Server 連線：
         /// <list type="bullet">
         /// <item><c>common</c>：用於 prod code 路徑（<see cref="BackendInfo.DatabaseId"/> 預設值），
-        /// 例如 <c>SessionRepository.GetSession</c> 與 <c>CacheFunc.GetTableSchema(tableName)</c>。</item>
+        /// 例如 <c>SessionRepository.GetSession</c> 與 <c>CacheContainer.TableSchema.Get(dbName, tableName)</c>。</item>
         /// <item><c>common_sqlserver</c>：用於 <c>[DbFact(DatabaseType.SQLServer)]</c> 明確 DB 類型測試。</item>
         /// </list>
         /// </summary>

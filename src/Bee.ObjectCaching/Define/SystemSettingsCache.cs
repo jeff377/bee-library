@@ -8,7 +8,7 @@ namespace Bee.ObjectCaching.Define
     /// <summary>
     /// System settings cache.
     /// </summary>
-    internal class SystemSettingsCache : ObjectCache<SystemSettings>
+    public class SystemSettingsCache : ObjectCache<SystemSettings>
     {
         /// <summary>
         /// Gets the cache item expiration policy.
