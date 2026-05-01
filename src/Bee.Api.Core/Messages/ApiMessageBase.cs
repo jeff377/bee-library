@@ -8,7 +8,6 @@ namespace Bee.Api.Core.Messages
     /// <summary>
     /// Base class for API message objects (requests and responses) with serialization support.
     /// </summary>
-    [Serializable]
     public abstract class ApiMessageBase : IObjectSerialize
     {
         private ParameterCollection? _parameters = null;

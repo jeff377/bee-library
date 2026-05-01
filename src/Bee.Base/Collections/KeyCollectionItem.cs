@@ -9,7 +9,6 @@ namespace Bee.Base.Collections
     /// <summary>
     /// Base class for strongly-typed keyed collection items.
     /// </summary>
-    [Serializable]
     public abstract class KeyCollectionItem : IKeyCollectionItem, ITagProperty, IObjectSerialize
     {
         private string _key = string.Empty;

@@ -6,7 +6,6 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// A collection of field mappings.
     /// </summary>
-    [Serializable]
     public class FieldMappingCollection : CollectionBase<FieldMapping>
     {
         /// <summary>

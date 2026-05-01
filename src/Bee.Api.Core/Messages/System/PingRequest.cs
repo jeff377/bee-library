@@ -7,7 +7,6 @@ namespace Bee.Api.Core.Messages.System
     /// API request for the ping operation.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class PingRequest : ApiRequest, IPingRequest
     {
         /// <summary>

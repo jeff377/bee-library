@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Background service parameters and environment settings.
     /// </summary>
-    [Serializable]
     [XmlType("BackgroundServiceConfiguration")]
     [Description("Background service parameters and environment settings.")]
     [TreeNode("BackgroundService")]

@@ -7,7 +7,6 @@ namespace Bee.Definition.Sorting
     /// A collection of sort fields.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class SortFieldCollection : MessagePackCollectionBase<SortField>
     {
         /// <summary>

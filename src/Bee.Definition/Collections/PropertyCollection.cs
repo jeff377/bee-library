@@ -7,7 +7,6 @@ namespace Bee.Definition.Collections
     /// <summary>
     /// A custom property collection.
     /// </summary>
-    [Serializable]
     [Description("Custom property collection.")]
     public class PropertyCollection : KeyCollectionBase<Property>
     {

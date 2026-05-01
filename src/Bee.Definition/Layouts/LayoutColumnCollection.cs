@@ -7,7 +7,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A collection of grid layout columns.
     /// </summary>
-    [Serializable]
     [Description("Grid layout column collection.")]
     [TreeNode("Columns", false)]
     public class LayoutColumnCollection : CollectionBase<LayoutColumn>

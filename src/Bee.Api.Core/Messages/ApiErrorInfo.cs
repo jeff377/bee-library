@@ -7,7 +7,6 @@ namespace Bee.Api.Core.Messages
     /// Carries error information for an API method call across the JSON-RPC boundary.
     /// This is a serializable DTO, not a thrown exception.
     /// </summary>
-    [Serializable]
     public class ApiErrorInfo : IObjectSerializeBase
     {
         #region Constructors

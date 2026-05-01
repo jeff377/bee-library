@@ -7,7 +7,6 @@ namespace Bee.Api.Core.Messages.System
     /// API response for the get definition operation.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class GetDefineResponse : ApiResponse, IGetDefineResponse
     {
         /// <summary>

@@ -10,7 +10,6 @@ namespace Bee.Base.Collections
     /// Base class for strongly-typed collections.
     /// </summary>
     /// <typeparam name="T">The type of the collection items.</typeparam>
-    [Serializable]
     public abstract class CollectionBase<T> : Collection<T>, ICollectionBase, IObjectSerialize, ITagProperty
         where T : class, ICollectionItem  // Item type must implement ICollectionItem
     {

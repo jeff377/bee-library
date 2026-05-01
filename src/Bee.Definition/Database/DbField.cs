@@ -11,7 +11,6 @@ namespace Bee.Definition.Database
     /// <summary>
     /// Database field schema.
     /// </summary>
-    [Serializable]
     [XmlType("DbField")]
     [Description("Database field schema.")]
     [TreeNode]

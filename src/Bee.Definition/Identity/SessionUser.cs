@@ -6,7 +6,6 @@ namespace Bee.Definition.Identity
     /// User data stored in session info.
     /// Retains the information needed to reconstruct a <see cref="SessionInfo"/>; this data is persisted in the database.
     /// </summary>
-    [Serializable]
     public class SessionUser
     {
         /// <summary>

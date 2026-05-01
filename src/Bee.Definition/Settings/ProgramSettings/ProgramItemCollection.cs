@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A collection of program items.
     /// </summary>
-    [Serializable]
     [Description("Program item collection.")]
     [TreeNode("Program Items", false)]
     public class ProgramItemCollection : KeyCollectionBase<ProgramItem>

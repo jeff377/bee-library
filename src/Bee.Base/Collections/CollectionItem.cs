@@ -9,7 +9,6 @@ namespace Bee.Base.Collections
     /// <summary>
     /// Base class for strongly-typed collection items.
     /// </summary>
-    [Serializable]
     public abstract class CollectionItem : ICollectionItem, ITagProperty, IObjectSerialize
     {
         private ICollectionBase? _collection;

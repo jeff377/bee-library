@@ -12,7 +12,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Database settings.
     /// </summary>
-    [Serializable]
     [XmlType("DatabaseSettings")]
     [Description("Database settings.")]
     [TreeNode("Database Settings")]

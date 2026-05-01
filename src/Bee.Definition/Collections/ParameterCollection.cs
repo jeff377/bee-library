@@ -6,7 +6,6 @@ namespace Bee.Definition.Collections
     /// A parameter item collection with serialization support.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class ParameterCollection : MessagePackKeyCollectionBase<Parameter>
     {
         /// <summary>

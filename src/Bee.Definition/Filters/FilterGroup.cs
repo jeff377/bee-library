@@ -8,7 +8,6 @@ namespace Bee.Definition.Filters
     /// A filter condition group that combines multiple nodes with AND/OR logic.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public sealed class FilterGroup : FilterNode
     {
         /// <summary>

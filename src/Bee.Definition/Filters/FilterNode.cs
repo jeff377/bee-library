@@ -8,7 +8,6 @@ namespace Bee.Definition.Filters
     /// Abstract base class for filter nodes.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     [Union(0, typeof(FilterCondition))]
     [Union(1, typeof(FilterGroup))]
     [XmlInclude(typeof(FilterCondition))]

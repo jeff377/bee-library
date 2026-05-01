@@ -13,7 +13,6 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// A form field definition.
     /// </summary>
-    [Serializable]
     [XmlType("FormField")]
     [Description("Form field.")]
     [TreeNode]

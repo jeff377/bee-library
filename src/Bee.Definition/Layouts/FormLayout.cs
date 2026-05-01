@@ -10,7 +10,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// Form layout configuration.
     /// </summary>
-    [Serializable]
     [XmlType("FormLayout")]
     [Description("Form layout configuration.")]
     [TreeNode]

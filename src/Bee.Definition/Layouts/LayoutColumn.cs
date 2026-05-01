@@ -10,7 +10,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A grid layout column.
     /// </summary>
-    [Serializable]
     [XmlType("LayoutColumn")]
     [Description("Grid layout column.")]
     [TreeNode]

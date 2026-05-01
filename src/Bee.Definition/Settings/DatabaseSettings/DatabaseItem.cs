@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A database configuration item.
     /// </summary>
-    [Serializable]
     [XmlType("DatabaseItem")]
     [Description("Database item.")]
     [TreeNode]

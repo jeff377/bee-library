@@ -9,7 +9,6 @@ namespace Bee.Definition.Database
     /// <summary>
     /// Table schema.
     /// </summary>
-    [Serializable]
     [XmlType("TableSchema")]
     [Description("Table schema.")]
     [TreeNode]

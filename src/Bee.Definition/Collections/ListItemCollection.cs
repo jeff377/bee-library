@@ -7,7 +7,6 @@ namespace Bee.Definition.Collections
     /// <summary>
     /// List item collection.
     /// </summary>
-    [Serializable]
     public class ListItemCollection : KeyCollectionBase<ListItem>
     {
         #region Constructors

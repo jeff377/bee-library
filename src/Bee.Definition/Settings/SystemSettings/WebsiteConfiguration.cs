@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Website parameters and environment settings.
     /// </summary>
-    [Serializable]
     [XmlType("WebsiteConfiguration")]
     [Description("Website parameters and environment settings.")]
     [TreeNode("Website")]

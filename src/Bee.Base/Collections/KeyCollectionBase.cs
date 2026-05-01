@@ -10,7 +10,6 @@ namespace Bee.Base.Collections
     /// Base class for strongly-typed keyed collections.
     /// </summary>
     /// <typeparam name="T">The type of the collection items.</typeparam>
-    [Serializable]
     public class KeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty
         where T : class, IKeyCollectionItem  // Item type must implement IKeyCollectionItem
     {

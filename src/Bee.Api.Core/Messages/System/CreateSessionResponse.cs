@@ -7,7 +7,6 @@ namespace Bee.Api.Core.Messages.System
     /// API response for the create session operation.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class CreateSessionResponse : ApiResponse, ICreateSessionResponse
     {
         /// <summary>

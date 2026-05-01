@@ -10,7 +10,6 @@ namespace Bee.Definition.Collections
     /// A parameter item.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     [XmlType("Parameter")]
     [DefaultProperty("Value")]
     public class Parameter : MessagePackKeyCollectionItem

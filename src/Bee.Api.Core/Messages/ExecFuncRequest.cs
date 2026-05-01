@@ -7,7 +7,6 @@ namespace Bee.Api.Core.Messages
     /// API request type for executing a custom method.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class ExecFuncRequest : ApiRequest, IExecFuncRequest
     {
         /// <summary>

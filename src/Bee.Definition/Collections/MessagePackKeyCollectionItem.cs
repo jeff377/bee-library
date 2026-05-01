@@ -12,7 +12,6 @@ namespace Bee.Definition.Collections
     /// <summary>
     /// A strongly-typed collection item with a key value.
     /// </summary>
-    [Serializable]
     public abstract class MessagePackKeyCollectionItem : IKeyCollectionItem, ITagProperty, IObjectSerialize
     {
         private string _key = string.Empty;

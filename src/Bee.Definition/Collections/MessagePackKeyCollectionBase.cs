@@ -14,7 +14,6 @@ namespace Bee.Definition.Collections
     /// Strongly typed keyed collection with MessagePack support.
     /// </summary>
     /// <typeparam name="T">The collection item type.</typeparam>
-    [Serializable]
     public class MessagePackKeyCollectionBase<T> : KeyedCollection<string, T>, IKeyCollectionBase, IObjectSerialize, ITagProperty, IMessagePackSerializationCallbackReceiver
         where T : class, IKeyCollectionItem  // Item type must implement IKeyCollectionItem interface
     {

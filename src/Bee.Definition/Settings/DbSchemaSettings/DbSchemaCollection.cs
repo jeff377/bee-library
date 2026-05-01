@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A collection of database schema definitions.
     /// </summary>
-    [Serializable]
     [Description("Database schema collection.")]
     [TreeNode("Database Schemas", false)]
     public class DbSchemaCollection : KeyCollectionBase<DbSchema>

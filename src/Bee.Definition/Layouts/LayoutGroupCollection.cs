@@ -7,7 +7,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A collection of layout groups.
     /// </summary>
-    [Serializable]
     [Description("Layout group collection.")]
     [TreeNode("Groups", false)]
     public class LayoutGroupCollection : CollectionBase<LayoutGroup>

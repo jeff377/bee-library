@@ -6,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Provides API payload handling options, such as serialization, compression, and encryption.
     /// </summary>
-    [Serializable]
     [XmlType("ApiPayloadOptions")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     [Description("Provides API payload handling options, such as serialization, compression, and encryption.")]

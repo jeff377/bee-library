@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Program settings (program list).
     /// </summary>
-    [Serializable]
     [XmlType("ProgramSettings")]
     [Description("Program settings.")]
     [TreeNode("Program Settings")]

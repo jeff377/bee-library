@@ -8,7 +8,6 @@ namespace Bee.Definition.Database
     /// Database field schema collection.
     /// </summary>
     [TreeNode("Fields", true)]
-    [Serializable]
     public class DbFieldCollection : KeyCollectionBase<DbField>
     {
         /// <summary>

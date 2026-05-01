@@ -5,7 +5,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A collection of service endpoint list items.
     /// </summary>
-    [Serializable]
     public class EndpointItemCollection : CollectionBase<EndpointItem>
     {
         /// <summary>

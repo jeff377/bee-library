@@ -6,7 +6,6 @@ namespace Bee.Definition.Database
     /// <summary>
     /// Index field collection.
     /// </summary>
-    [Serializable]
     public class IndexFieldCollection : KeyCollectionBase<IndexField>
     {
         /// <summary>

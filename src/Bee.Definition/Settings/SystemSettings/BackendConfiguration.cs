@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Backend parameters and environment settings.
     /// </summary>
-    [Serializable]
     [XmlType("BackendConfiguration")]
     [Description("Backend parameters and environment settings.")]
     [TreeNode("Backend")]

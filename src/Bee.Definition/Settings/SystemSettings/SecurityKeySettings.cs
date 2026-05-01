@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Encryption key settings for storing encryption information in configuration files.
     /// </summary>
-    [Serializable]
     [XmlType("SecurityKeySettings")]
     [Description("Encryption key settings.")]
     [TreeNode("Security Keys")]

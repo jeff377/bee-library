@@ -9,7 +9,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A layout item.
     /// </summary>
-    [Serializable]
     [XmlType("LayoutItem")]
     [Description("Layout item.")]
     [TreeNode]

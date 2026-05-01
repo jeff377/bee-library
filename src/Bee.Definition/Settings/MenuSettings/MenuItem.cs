@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A menu item.
     /// </summary>
-    [Serializable]
     [XmlType("MenuItem")]
     [Description("Menu item.")]
     [TreeNode]

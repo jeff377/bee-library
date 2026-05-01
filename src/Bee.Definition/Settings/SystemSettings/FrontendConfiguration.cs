@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Frontend parameters and environment settings.
     /// </summary>
-    [Serializable]
     [XmlType("FrontendConfiguration")]
     [Description("Frontend parameters and environment settings.")]
     [TreeNode("Frontend")]

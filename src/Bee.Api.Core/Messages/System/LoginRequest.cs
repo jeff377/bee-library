@@ -7,7 +7,6 @@ namespace Bee.Api.Core.Messages.System
     /// API request for the login operation.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class LoginRequest : ApiRequest, ILoginRequest
     {
         /// <summary>

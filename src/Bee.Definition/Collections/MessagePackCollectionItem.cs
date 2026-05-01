@@ -12,7 +12,6 @@ namespace Bee.Definition.Collections
     /// <summary>
     /// Strongly typed collection item with MessagePack support.
     /// </summary>
-    [Serializable]
     public abstract class MessagePackCollectionItem : ICollectionItem, ITagProperty, IObjectSerialize
     {
         private ICollectionBase? _collection = null;

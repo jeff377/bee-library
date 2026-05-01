@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Master key source, including source type and corresponding parameter value.
     /// </summary>
-    [Serializable]
     [XmlType("MasterKeySource")]
     [Description("Master key source.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

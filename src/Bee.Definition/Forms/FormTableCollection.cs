@@ -7,7 +7,6 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// A collection of form tables.
     /// </summary>
-    [Serializable]
     [Description("Form table collection.")]
     [TreeNode("Tables", false)]
     public class FormTableCollection : KeyCollectionBase<FormTable>

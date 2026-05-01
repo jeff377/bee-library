@@ -8,7 +8,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Client settings.
     /// </summary>
-    [Serializable]
     [XmlType("ClientSettings")]
     [Description("Client settings.")]
     public class ClientSettings : IObjectSerializeFile

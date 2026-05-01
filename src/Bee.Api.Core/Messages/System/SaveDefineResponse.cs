@@ -7,7 +7,6 @@ namespace Bee.Api.Core.Messages.System
     /// API response for the save definition operation.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class SaveDefineResponse : ApiResponse, ISaveDefineResponse
     {
     }

@@ -8,7 +8,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A grid layout for tabular data.
     /// </summary>
-    [Serializable]
     [XmlType("LayoutGrid")]
     [Description("Grid layout for tabular data.")]
     [TreeNode]

@@ -8,7 +8,6 @@ namespace Bee.Definition.Database
     /// <summary>
     /// An index field.
     /// </summary>
-    [Serializable]
     [XmlType("IndexField")]
     [Description("Index field.")]
     public class IndexField : KeyCollectionItem

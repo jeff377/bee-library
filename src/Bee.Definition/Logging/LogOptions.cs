@@ -6,7 +6,6 @@ namespace Bee.Definition.Logging
     /// <summary>
     /// Logging options for controlling whether each module logs information.
     /// </summary>
-    [Serializable]
     [Description("Logging options for controlling whether each module logs information.")]
     [TreeNode("Logging")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

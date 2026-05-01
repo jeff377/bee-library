@@ -13,7 +13,6 @@ namespace Bee.Definition.Collections
     /// Strongly typed collection with MessagePack support.
     /// </summary>
     /// <typeparam name="T">The collection item type.</typeparam>
-    [Serializable]
     public abstract class MessagePackCollectionBase<T> : Collection<T>, ICollectionBase, IObjectSerialize, ITagProperty
         where T : class, ICollectionItem  // Item type must implement ICollectionItem interface
     {

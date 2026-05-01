@@ -7,7 +7,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A collection of layout items.
     /// </summary>
-    [Serializable]
     [Description("Layout item collection.")]
     [TreeNode("Items", false)]
     public class LayoutItemCollection : CollectionBase<LayoutItemBase>

@@ -6,7 +6,6 @@ namespace Bee.Api.Core.JsonRpc
     /// <summary>
     /// JSON-RPC request model.
     /// </summary>
-    [Serializable]
     public class JsonRpcRequest : IObjectSerialize
     {
         #region 建構函式

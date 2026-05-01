@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A database server configuration.
     /// </summary>
-    [Serializable]
     [XmlType("DatabaseServer")]
     [Description("Database server.")]
     [TreeNode]

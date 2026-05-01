@@ -6,7 +6,6 @@ namespace Bee.Definition.Filters
     /// A single-field filter condition (e.g., Name LIKE '%Lee%', Age &gt; 18).
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public sealed class FilterCondition : FilterNode
     {
         /// <summary>

@@ -10,7 +10,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A menu folder.
     /// </summary>
-    [Serializable]
     [XmlType("MenuFolder")]
     [Description("Menu folder.")]
     [TreeNode("{0}", "DisplayName")]

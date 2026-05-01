@@ -6,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A collection of menu items.
     /// </summary>
-    [Serializable]
     [TreeNode("Items", false)]
     public class MenuItemCollection : KeyCollectionBase<MenuItem>
     {

@@ -7,7 +7,6 @@ namespace Bee.Definition.Logging
     /// Options for logging abnormal SQL executions in the DbAccess module.
     /// Includes thresholds for affected rows, result rows, and execution time.
     /// </summary>
-    [Serializable]
     [Description("Options for logging abnormal SQL executions in the DbAccess module.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class DbAccessAnomalyLogOptions

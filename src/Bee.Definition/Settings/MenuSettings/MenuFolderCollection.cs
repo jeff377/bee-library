@@ -6,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A collection of menu folders.
     /// </summary>
-    [Serializable]
     [TreeNode("Folders", false)]
     public class MenuFolderCollection : KeyCollectionBase<MenuFolder>
     {

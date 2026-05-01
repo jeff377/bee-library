@@ -10,7 +10,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A layout group.
     /// </summary>
-    [Serializable]
     [XmlType("LayoutGroup")]
     [Description("Layout group.")]
     [TreeNode]

@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Common parameters and environment settings.
     /// </summary>
-    [Serializable]
     [XmlType("CommonConfiguration")]
     [Description("Common parameters and environment settings.")]
     [TreeNode("Common")]

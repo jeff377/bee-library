@@ -7,7 +7,6 @@ namespace Bee.Api.Core.Messages.System
     /// API request for the get common configuration operation.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class GetCommonConfigurationRequest : ApiRequest, IGetCommonConfigurationRequest
     {
     }

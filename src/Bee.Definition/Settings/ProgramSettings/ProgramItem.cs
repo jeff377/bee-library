@@ -8,7 +8,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A program item.
     /// </summary>
-    [Serializable]
     [XmlType("ProgramItem")]
     [Description("Program item.")]
     [TreeNode]

@@ -8,7 +8,6 @@ namespace Bee.Definition.Database
     /// Table index collection.
     /// </summary>
     [TreeNode("Indexes", true)]
-    [Serializable]
     public class TableSchemaIndexCollection : KeyCollectionBase<TableSchemaIndex>
     {
         /// <summary>

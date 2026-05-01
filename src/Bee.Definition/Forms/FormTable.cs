@@ -11,7 +11,6 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// A form table definition.
     /// </summary>
-    [Serializable]
     [XmlType("FormTable")]
     [Description("Form table.")]
     [TreeNode]

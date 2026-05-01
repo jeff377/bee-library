@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A collection of database items.
     /// </summary>
-    [Serializable]
     [Description("Database item collection.")]
     [TreeNode("Databases", true)]
     public class DatabaseItemCollection : KeyCollectionBase<DatabaseItem>

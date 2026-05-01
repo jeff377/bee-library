@@ -273,6 +273,39 @@ namespace Bee.Definition.UnitTests.Settings
         }
 
         [Fact]
+        [DisplayName("CreateSerializableCopy + BeforeSerialize 不應污染原始 cache 物件的 Password")]
+        public void CreateSerializableCopy_BeforeSerialize_DoesNotMutateOriginalCache()
+        {
+            // Regression: GetDefineCore must serialize a deep copy so that BeforeSerialize's
+            // in-place encryption does not write ciphertext back to the cached instance.
+            // Removing CreateSerializableCopy() from the pipeline would re-introduce the bug.
+            var originalKey = BackendInfo.ConfigEncryptionKey;
+            try
+            {
+                BackendInfo.ConfigEncryptionKey = AesCbcHmacKeyGenerator.GenerateCombinedKey();
+                var cached = new DatabaseSettings();
+                cached.Servers!.Add(new DatabaseServer { Id = "S1", Password = "plain-server" });
+                cached.Items!.Add(new DatabaseItem { Id = "D1", Password = "plain-item" });
+
+                // Simulates SystemBusinessObject.GetDefineCore: deep-copy then serialize-encrypt the copy.
+                var copy = (DatabaseSettings)((ISerializableClone)cached).CreateSerializableCopy();
+                copy.BeforeSerialize(SerializeFormat.Xml);
+
+                Assert.StartsWith("enc:", copy.Servers![0].Password);
+                Assert.StartsWith("enc:", copy.Items![0].Password);
+
+                Assert.Equal("plain-server", cached.Servers![0].Password);
+                Assert.Equal("plain-item", cached.Items![0].Password);
+                Assert.NotSame(cached.Servers[0], copy.Servers[0]);
+                Assert.NotSame(cached.Items[0], copy.Items[0]);
+            }
+            finally
+            {
+                BackendInfo.ConfigEncryptionKey = originalKey;
+            }
+        }
+
+        [Fact]
         [DisplayName("AfterDeserialize 於無效 base64 的 enc: Password 應回傳空字串")]
         public void AfterDeserialize_InvalidBase64_ReturnsEmpty()
         {

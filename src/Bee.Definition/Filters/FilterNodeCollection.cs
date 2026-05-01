@@ -7,7 +7,6 @@ namespace Bee.Definition.Filters
     /// A collection of filter nodes.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class FilterNodeCollection : MessagePackCollectionBase<FilterNode>
     {
         /// <summary>

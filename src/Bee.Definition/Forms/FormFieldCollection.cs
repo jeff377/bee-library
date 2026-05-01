@@ -8,7 +8,6 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// A collection of form fields.
     /// </summary>
-    [Serializable]
     [Description("Form field collection.")]
     [TreeNode("Fields", true)]
     public class FormFieldCollection : KeyCollectionBase<FormField>

@@ -10,7 +10,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// System settings.
     /// </summary>
-    [Serializable]
     [XmlType("SystemSettings")]
     [Description("System settings.")]
     [TreeNode("System Settings")]

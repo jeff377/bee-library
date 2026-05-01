@@ -170,12 +170,6 @@ new Regex(pattern, RegexOptions.Compiled);
 
 取得 SHA 的方法：`gh api repos/<org>/<name>/git/ref/tags/<tag> --jq .object.sha`
 
-## 14. 序列化
-
-| 規則 | 原則 |
-|------|------|
-| **S5766** | `[Serializable]` marker 類別之建構子若**未**實作 `(SerializationInfo, StreamingContext)`、屬性皆為原始型別、不經 `BinaryFormatter` 反序列化，則非實際反序列化入口，於 Sonar UI 標記 **Safe** 並說明理由即可，不必改程式 |
-
 ---
 
 ## 不納入之規則

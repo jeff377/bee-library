@@ -8,7 +8,6 @@ namespace Bee.Api.Core.Messages.System
     /// API request for the save definition operation.
     /// </summary>
     [MessagePackObject]
-    [Serializable]
     public class SaveDefineRequest : ApiRequest, ISaveDefineRequest
     {
         /// <summary>

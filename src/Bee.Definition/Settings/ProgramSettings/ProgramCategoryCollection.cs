@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A collection of program categories.
     /// </summary>
-    [Serializable]
     [Description("Program category collection.")]
     [TreeNode("Categories", false)]
     public class ProgramCategoryCollection : KeyCollectionBase<ProgramCategory>

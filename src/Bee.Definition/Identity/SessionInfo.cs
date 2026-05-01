@@ -5,7 +5,6 @@ namespace Bee.Definition.Identity
     /// <summary>
     /// Backend session info that records runtime data for the connection established between a user and the server.
     /// </summary>
-    [Serializable]
     public class SessionInfo : IKeyObject, IUserInfo
     {
         #region IKeyObject Interface
