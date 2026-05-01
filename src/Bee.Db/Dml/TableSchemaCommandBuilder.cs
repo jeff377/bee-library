@@ -49,7 +49,7 @@ namespace Bee.Db.Dml
         /// <returns>The quoted identifier.</returns>
         private string QuoteIdentifier(string identifier)
         {
-            return DbFunc.QuoteIdentifier(DatabaseType, identifier);
+            return DatabaseType.QuoteIdentifier(identifier);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Bee.Db.Dml
         /// <param name="name">The parameter name without the prefix character.</param>
         private string GetParameterName(string name)
         {
-            return DbFunc.GetParameterName(DatabaseType, name);
+            return DatabaseType.GetParameterName(name);
         }
 
         /// <summary>

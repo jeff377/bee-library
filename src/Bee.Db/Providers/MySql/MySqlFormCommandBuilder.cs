@@ -14,7 +14,7 @@ namespace Bee.Db.Providers.MySql
     /// and <see cref="PostgreSql.PgFormCommandBuilder"/>; all four methods delegate to
     /// the dialect-agnostic cores in <see cref="Bee.Db.Dml"/> with
     /// <see cref="DatabaseType.MySQL"/>, so backtick identifier quoting and other
-    /// MySQL-specific output flow from the <see cref="DbFunc"/> dictionaries.
+    /// MySQL-specific output flow from the <see cref="DatabaseTypeExtensions"/> dictionaries.
     /// </summary>
     public class MySqlFormCommandBuilder : IFormCommandBuilder
     {

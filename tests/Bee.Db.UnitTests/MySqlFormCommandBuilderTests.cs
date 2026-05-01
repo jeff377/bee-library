@@ -12,7 +12,7 @@ namespace Bee.Db.UnitTests
     /// Pure-syntax tests for <see cref="MySqlFormCommandBuilder"/>. Verifies that the
     /// MySQL provider routes through the dialect-agnostic cores in <see cref="Bee.Db.Dml"/>
     /// with <see cref="Bee.Definition.Database.DatabaseType.MySQL"/> and emits backtick-quoted
-    /// identifiers (per <see cref="DbFunc.QuoteIdentifier"/>).
+    /// identifiers (per <see cref="DatabaseTypeExtensions.QuoteIdentifier"/>).
     /// </summary>
     [Collection("Initialize")]
     public class MySqlFormCommandBuilderTests

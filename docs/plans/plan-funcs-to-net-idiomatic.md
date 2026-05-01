@@ -102,7 +102,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | 3 | `DefineFunc` | 5 | B+C+D | ✅ | 2026-05-01 |
 | 4 | `DateTimeFunc` | 4 | A+B | ✅ | 2026-05-01 |
 | 5 | `HttpFunc` | 4 | C | ✅ | 2026-05-01 |
-| 6 | `DbFunc` | 7 | B/D | 📝 | — |
+| 6 | `DbFunc` | 6 | A+B+C+D | ✅ | 2026-05-01 |
 | 7 | `DataSetFunc` | 8 | B | 📝 | — |
 | 8 | `SerializeFunc` | 10 | C | 📝 | — |
 | 9 | `CacheFunc` | 14 | B/D | 📝 | — |
@@ -198,6 +198,17 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 - 短名 `Gzip` 安全是因為 BCL 沒有 `*.Gzip` namespace
 - **選名前先 grep BCL namespace 清單**,或建立後本地跑一次 `dotnet build` 確認 CA1724 不觸發
 - 命名衝突解法依優先序:換複數(`Http` → `HttpUtilities`)、加領域前綴、加 `*Helpers` 後綴(避免 `*Helper` 單數,在 .NET 已過時且仍可能與舊 type 撞名)
+
+### Path D 命名 shadowing 檢查 — 由 `DbFunc.InferDbType`(2026-05-01)補強
+
+當 path D 計畫把方法搬入某 owning class 為 `private static` 時,需檢查:
+
+- **目標 class 內既有的 property / field / method 名稱會否與方法 body 引用的 type 名稱衝突**(C# member lookup 規則:enclosing type member 會優先於 namespace 內的 type)
+- 例:`DbParameterSpec` 已有 public property `DbType`(型別 `System.Data.DbType?`),搬入方法 body 內 `DbType.String` 會優先解析為 property,觸發 `CS0120`
+- 解法優先序:
+  1. **改走 path C**(獨立類)—— 衝突往往是 path D 不適用的訊號,改用獨立 noun-form static class 最乾淨
+  2. 退而求其次:body 內全部用 fully-qualified name(`System.Data.DbType.String`)
+  3. 不建議:在檔頂加 `using` alias(影響整個檔可讀性)、改名 owning class 的 property(public API breaking)
 
 預期會碰到的決策點:
 - 多個類別都有 `string` 擴充方法時,集中到同一個 `StringExtensions` 還是

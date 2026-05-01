@@ -1,11 +1,9 @@
 using System.ComponentModel;
-using System.Data;
-using Microsoft.Data.SqlClient;
 using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {
-    public class DbFuncTests
+    public class DatabaseTypeExtensionsTests
     {
         #region QuoteIdentifier 跳脫測試
 
@@ -16,7 +14,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("QuoteIdentifier SQL Server 應正確跳脫 ] 字元")]
         public void QuoteIdentifier_SqlServer_EscapesBracket(DatabaseType dbType, string identifier, string expected)
         {
-            var result = DbFunc.QuoteIdentifier(dbType, identifier);
+            var result = dbType.QuoteIdentifier(identifier);
             Assert.Equal(expected, result);
         }
 
@@ -26,7 +24,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("QuoteIdentifier MySQL 應正確跳脫 ` 字元")]
         public void QuoteIdentifier_MySql_EscapesBacktick(DatabaseType dbType, string identifier, string expected)
         {
-            var result = DbFunc.QuoteIdentifier(dbType, identifier);
+            var result = dbType.QuoteIdentifier(identifier);
             Assert.Equal(expected, result);
         }
 
@@ -38,7 +36,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("QuoteIdentifier SQLite/PostgreSQL 應正確跳脫雙引號（保留原大小寫）")]
         public void QuoteIdentifier_SqlitePg_EscapesDoubleQuote(DatabaseType dbType, string identifier, string expected)
         {
-            var result = DbFunc.QuoteIdentifier(dbType, identifier);
+            var result = dbType.QuoteIdentifier(identifier);
             Assert.Equal(expected, result);
         }
 
@@ -52,7 +50,7 @@ namespace Bee.Db.UnitTests
             // Oracle 採 quoted-UPPERCASE 策略：framework 對 Oracle 識別符在 emit 階段 UPPER 化
             // 後加引號，與 Oracle 內部「unquoted fold to UPPER」自然儲存對齊。SQL Server / MySQL
             // 不分大小寫，不需此處理；PostgreSQL / SQLite 保留 case-sensitive 原樣存放。
-            var result = DbFunc.QuoteIdentifier(DatabaseType.Oracle, identifier);
+            var result = DatabaseType.Oracle.QuoteIdentifier(identifier);
             Assert.Equal(expected, result);
         }
 
@@ -61,7 +59,7 @@ namespace Bee.Db.UnitTests
         public void QuoteIdentifier_UnsupportedType_Throws()
         {
             Assert.Throws<NotSupportedException>(() =>
-                DbFunc.QuoteIdentifier((DatabaseType)999, "Test"));
+                ((DatabaseType)999).QuoteIdentifier("Test"));
         }
 
         #endregion
@@ -77,7 +75,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetParameterPrefix 應回傳對應資料庫的參數前綴")]
         public void GetParameterPrefix_ReturnsCorrectPrefix(DatabaseType dbType, string expected)
         {
-            var result = DbFunc.GetParameterPrefix(dbType);
+            var result = dbType.GetParameterPrefix();
             Assert.Equal(expected, result);
         }
 
@@ -86,7 +84,7 @@ namespace Bee.Db.UnitTests
         public void GetParameterPrefix_UnsupportedType_Throws()
         {
             Assert.Throws<NotSupportedException>(() =>
-                DbFunc.GetParameterPrefix((DatabaseType)999));
+                ((DatabaseType)999).GetParameterPrefix());
         }
 
         #endregion
@@ -102,89 +100,8 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetParameterName 應依資料庫類型加上對應前綴")]
         public void GetParameterName_AppendsPrefix(DatabaseType dbType, string name, string expected)
         {
-            var result = DbFunc.GetParameterName(dbType, name);
+            var result = dbType.GetParameterName(name);
             Assert.Equal(expected, result);
-        }
-
-        #endregion
-
-        #region InferDbType 測試
-
-        // 此測試資料需涵蓋多種 CLR 型別（string/int/DateTime/Guid/byte[] 等），
-        // 故 TheoryData 僅能以 object 作為第一型別參數；xUnit1045 警告不適用於此刻意設計。
-#pragma warning disable xUnit1045 // Avoid using TheoryData type arguments that might not be serializable
-        public static TheoryData<object, DbType> InferDbType_Inputs() => new()
-        {
-            { "abc", DbType.String },
-            { 1, DbType.Int32 },
-            { (long)1, DbType.Int64 },
-            { (short)1, DbType.Int16 },
-            { (byte)1, DbType.Byte },
-            { true, DbType.Boolean },
-            { new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc), DbType.DateTime },
-            { 1.5m, DbType.Decimal },
-            { 1.5d, DbType.Double },
-            { 1.5f, DbType.Single },
-            { Guid.NewGuid(), DbType.Guid },
-            { new byte[] { 1, 2 }, DbType.Binary },
-            { TimeSpan.FromSeconds(1), DbType.Time },
-        };
-
-        [Theory]
-        [MemberData(nameof(InferDbType_Inputs))]
-        [DisplayName("InferDbType 應依值的型別回傳對應 DbType")]
-        public void InferDbType_KnownTypes_ReturnsExpected(object value, DbType expected)
-        {
-            var result = DbFunc.InferDbType(value);
-            Assert.Equal(expected, result);
-        }
-#pragma warning restore xUnit1045
-
-        [Fact]
-        [DisplayName("InferDbType 對 null 值應回傳 null")]
-        public void InferDbType_Null_ReturnsNull()
-        {
-            Assert.Null(DbFunc.InferDbType(null!));
-        }
-
-        [Fact]
-        [DisplayName("InferDbType 對 DBNull 應回傳 null")]
-        public void InferDbType_DBNull_ReturnsNull()
-        {
-            Assert.Null(DbFunc.InferDbType(DBNull.Value));
-        }
-
-        [Fact]
-        [DisplayName("InferDbType 對不支援型別應回傳 null")]
-        public void InferDbType_UnsupportedType_ReturnsNull()
-        {
-            Assert.Null(DbFunc.InferDbType(new object()));
-        }
-
-        #endregion
-
-        #region SqlFormat 測試
-
-        [Fact]
-        [DisplayName("SqlFormat 應將 {0}/{1} 替換為對應參數名稱")]
-        public void SqlFormat_ReplacesPositionalPlaceholders()
-        {
-            using var cmd = new SqlCommand();
-            cmd.Parameters.Add(new SqlParameter("@p0", "x"));
-            cmd.Parameters.Add(new SqlParameter("@p1", 1));
-
-            var result = DbFunc.SqlFormat("SELECT * FROM T WHERE A = {0} AND B = {1}", cmd.Parameters);
-
-            Assert.Equal("SELECT * FROM T WHERE A = @p0 AND B = @p1", result);
-        }
-
-        [Fact]
-        [DisplayName("SqlFormat 空 Parameters 集合應原樣回傳")]
-        public void SqlFormat_EmptyParameters_ReturnsOriginal()
-        {
-            using var cmd = new SqlCommand();
-            var result = DbFunc.SqlFormat("SELECT 1", cmd.Parameters);
-            Assert.Equal("SELECT 1", result);
         }
 
         #endregion

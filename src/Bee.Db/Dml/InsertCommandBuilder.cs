@@ -54,7 +54,7 @@ namespace Bee.Db.Dml
                 var value = row[field.FieldName];
                 if (value == DBNull.Value) continue;
 
-                columns.Add(DbFunc.QuoteIdentifier(_databaseType, field.FieldName));
+                columns.Add(_databaseType.QuoteIdentifier(field.FieldName));
                 values.Add(value);
             }
 
@@ -65,7 +65,7 @@ namespace Bee.Db.Dml
             string dbTableName = !string.IsNullOrWhiteSpace(formTable.DbTableName)
                 ? formTable.DbTableName
                 : formTable.TableName;
-            string quotedTable = DbFunc.QuoteIdentifier(_databaseType, dbTableName);
+            string quotedTable = _databaseType.QuoteIdentifier(dbTableName);
 
             var sql = new StringBuilder();
             sql.Append("INSERT INTO ").Append(quotedTable).Append(" (");

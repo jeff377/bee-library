@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Db.Manager;
 using System.Globalization;
 using Bee.Base;
 using Bee.Db.Dml;
@@ -40,7 +41,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(result.Table);
 
             // 由外部管理連線
-            using (var conn = DbFunc.CreateConnection("common_sqlserver"))
+            using (var conn = DbConnectionManager.CreateConnection("common_sqlserver"))
             {
                 dbAccess = new DbAccess(conn);
                 result = dbAccess.Execute(command);

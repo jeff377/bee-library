@@ -14,7 +14,7 @@ namespace Bee.Db.Providers.Oracle
     /// and <see cref="Sqlite.SqliteFormCommandBuilder"/>; all four methods delegate to
     /// the dialect-agnostic cores in <see cref="Bee.Db.Dml"/> with
     /// <see cref="DatabaseType.Oracle"/>, so double-quote identifier quoting and
-    /// <c>:</c> bind-variable prefix flow from the <see cref="DbFunc"/> dictionaries.
+    /// <c>:</c> bind-variable prefix flow from the <see cref="DatabaseTypeExtensions"/> dictionaries.
     /// </summary>
     public class OracleFormCommandBuilder : IFormCommandBuilder
     {

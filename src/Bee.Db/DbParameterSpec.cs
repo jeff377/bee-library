@@ -22,9 +22,9 @@ namespace Bee.Db
         /// <param name="value">The parameter value.</param>
         public DbParameterSpec(string name, object value)
         {
-            Name= name;
-            Value= value;
-            DbType = DbFunc.InferDbType(value);
+            Name = name;
+            Value = value;
+            DbType = DbTypeMapper.Infer(value);
         }
 
         /// <summary>

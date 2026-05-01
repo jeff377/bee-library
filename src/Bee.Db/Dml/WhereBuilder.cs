@@ -32,7 +32,7 @@ namespace Bee.Db.Dml
             var filter = (selectContext != null)
                                ? RemapFilterNodeFields(root, selectContext)
                                : root;
-            var prefix = DbFunc.GetParameterPrefix(_databaseType);
+            var prefix = _databaseType.GetParameterPrefix();
             var parameters = new DefaultParameterCollector(prefix);
             var core = InternalWhereBuilder.BuildNode(filter, parameters);
             var sql = includeWhereKeyword && !string.IsNullOrEmpty(core) ? "WHERE " + core : core;
@@ -85,7 +85,7 @@ namespace Bee.Db.Dml
 
         private string QuoteIdentifier(string identifier)
         {
-            return DbFunc.QuoteIdentifier(_databaseType, identifier);
+            return _databaseType.QuoteIdentifier(identifier);
         }
     }
 }

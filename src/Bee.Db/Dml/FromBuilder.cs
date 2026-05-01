@@ -46,7 +46,7 @@ namespace Bee.Db.Dml
 
         private string QuoteIdentifier(string identifier)
         {
-            return DbFunc.QuoteIdentifier(_databaseType, identifier);
+            return _databaseType.QuoteIdentifier(identifier);
         }
     }
 }

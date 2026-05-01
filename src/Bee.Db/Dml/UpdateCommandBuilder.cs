@@ -64,7 +64,7 @@ namespace Bee.Db.Dml
                 var current = row[field.FieldName, DataRowVersion.Current];
                 if (Equals(original, current)) continue;
 
-                string quotedCol = DbFunc.QuoteIdentifier(_databaseType, field.FieldName);
+                string quotedCol = _databaseType.QuoteIdentifier(field.FieldName);
                 setClauses.Add($"{quotedCol} = {{{values.Count}}}");
                 values.Add(current);
             }
@@ -76,8 +76,8 @@ namespace Bee.Db.Dml
             string dbTableName = !string.IsNullOrWhiteSpace(formTable.DbTableName)
                 ? formTable.DbTableName
                 : formTable.TableName;
-            string quotedTable = DbFunc.QuoteIdentifier(_databaseType, dbTableName);
-            string quotedRowId = DbFunc.QuoteIdentifier(_databaseType, SysFields.RowId);
+            string quotedTable = _databaseType.QuoteIdentifier(dbTableName);
+            string quotedRowId = _databaseType.QuoteIdentifier(SysFields.RowId);
 
             values.Add(row[SysFields.RowId, DataRowVersion.Original]);
 

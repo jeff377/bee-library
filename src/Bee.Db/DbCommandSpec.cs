@@ -127,7 +127,7 @@ namespace Bee.Db
             if (string.IsNullOrWhiteSpace(CommandText))
                 throw new InvalidOperationException("CommandText cannot be null or empty.");
 
-            string parameterPrefix = DbFunc.GetParameterPrefix(databaseType);
+            string parameterPrefix = databaseType.GetParameterPrefix();
             var cmd = connection.CreateCommand();
             // Pass through for StoredProcedure; skip parameter resolution
             cmd.CommandText = (CommandType == CommandType.StoredProcedure)

@@ -1,5 +1,6 @@
 using Bee.Base;
 using Bee.Db;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
 
@@ -62,7 +63,7 @@ namespace Bee.Tests.Shared
         /// </summary>
         private static void VerifyConnection(string databaseId)
         {
-            using var conn = DbFunc.CreateConnection(databaseId);
+            using var conn = DbConnectionManager.CreateConnection(databaseId);
             conn.Open();
             Console.WriteLine($"DbGlobalFixture: {databaseId} connection verified (State={conn.State})");
         }
@@ -95,14 +96,14 @@ namespace Bee.Tests.Shared
             // 表名與欄位名一律 dialect-quote：Oracle 對 unquoted 識別符自動轉 UPPERCASE，
             // 而 framework CREATE TABLE 是 quoted lowercase 形式，unquoted SELECT/INSERT
             // 會找不到 ST_USER。對其他 DB（quoted 後仍為原大小寫）行為一致。
-            string tbl = DbFunc.QuoteIdentifier(dbType, "st_user");
-            string colRowId = DbFunc.QuoteIdentifier(dbType, "sys_rowid");
-            string colId = DbFunc.QuoteIdentifier(dbType, "sys_id");
-            string colName = DbFunc.QuoteIdentifier(dbType, "sys_name");
-            string colPwd = DbFunc.QuoteIdentifier(dbType, "password");
-            string colEmail = DbFunc.QuoteIdentifier(dbType, "email");
-            string colNote = DbFunc.QuoteIdentifier(dbType, "note");
-            string colInsTime = DbFunc.QuoteIdentifier(dbType, "sys_insert_time");
+            string tbl = dbType.QuoteIdentifier("st_user");
+            string colRowId = dbType.QuoteIdentifier("sys_rowid");
+            string colId = dbType.QuoteIdentifier("sys_id");
+            string colName = dbType.QuoteIdentifier("sys_name");
+            string colPwd = dbType.QuoteIdentifier("password");
+            string colEmail = dbType.QuoteIdentifier("email");
+            string colNote = dbType.QuoteIdentifier("note");
+            string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
 
             var check = new DbCommandSpec(DbCommandKind.Scalar,
                 $"SELECT COUNT(*) FROM {tbl} WHERE {colId} = {{0}}", "001");

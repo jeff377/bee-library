@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
+using Bee.Db.Manager;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
 
@@ -71,7 +72,7 @@ namespace Bee.Db.UnitTests
         public void Execute_WithTransaction_ScalarKind_ReturnsScalar()
         {
             var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbFunc.CreateConnection("common_sqlserver");
+            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
             conn.Open();
             using var tran = conn.BeginTransaction();
 
@@ -89,7 +90,7 @@ namespace Bee.Db.UnitTests
         public void Execute_WithTransaction_DataTableKind_ReturnsTable()
         {
             var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbFunc.CreateConnection("common_sqlserver");
+            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
             conn.Open();
             using var tran = conn.BeginTransaction();
 
@@ -109,7 +110,7 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteAsync_WithTransaction_ScalarKind_ReturnsScalar()
         {
             var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbFunc.CreateConnection("common_sqlserver");
+            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
             await conn.OpenAsync();
             await using var tran = await conn.BeginTransactionAsync();
 
@@ -127,7 +128,7 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteAsync_WithTransaction_DataTableKind_ReturnsTable()
         {
             var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbFunc.CreateConnection("common_sqlserver");
+            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
             await conn.OpenAsync();
             await using var tran = await conn.BeginTransactionAsync();
 

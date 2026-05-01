@@ -1,6 +1,8 @@
 using Bee.Base;
 using Bee.Definition;
 using System.Collections.Concurrent;
+using System.Data;
+using System.Data.Common;
 
 namespace Bee.Db.Manager
 {
@@ -109,6 +111,36 @@ namespace Bee.Db.Manager
                 ?? throw new InvalidOperationException($"Unknown database type: {databaseType}.");
 
             return new DbConnectionInfo(databaseType, provider, connectionString);
+        }
+
+        /// <summary>
+        /// Creates a database connection for the specified database identifier.
+        /// If a connection initializer is registered for the underlying database type
+        /// (see <see cref="DbProviderRegistry.GetConnectionInitializer"/>), it is wired to
+        /// the connection's <see cref="DbConnection.StateChange"/> event so that it runs
+        /// automatically each time the connection transitions from <c>Closed</c> to <c>Open</c>.
+        /// </summary>
+        /// <param name="databaseId">The database identifier.</param>
+        public static DbConnection CreateConnection(string databaseId)
+        {
+            var connInfo = GetConnectionInfo(databaseId);
+
+            var provider = DbProviderRegistry.Get(connInfo.DatabaseType)
+                    ?? throw new InvalidOperationException($"Unknown database type: {connInfo.DatabaseType}.");
+            var connection = provider.CreateConnection()
+                    ?? throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");
+            connection.ConnectionString = connInfo.ConnectionString;
+
+            var initializer = DbProviderRegistry.GetConnectionInitializer(connInfo.DatabaseType);
+            if (initializer != null)
+            {
+                connection.StateChange += (sender, e) =>
+                {
+                    if (e.OriginalState == ConnectionState.Closed && e.CurrentState == ConnectionState.Open)
+                        initializer((DbConnection)sender!);
+                };
+            }
+            return connection;
         }
 
         /// <summary>

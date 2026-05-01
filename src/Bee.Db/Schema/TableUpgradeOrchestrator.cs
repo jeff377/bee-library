@@ -95,7 +95,7 @@ namespace Bee.Db.Schema
 
             foreach (var stage in plan.Stages)
             {
-                using var conn = DbFunc.CreateConnection(databaseId);
+                using var conn = DbConnectionManager.CreateConnection(databaseId);
                 conn.Open();
                 using var txn = conn.BeginTransaction();
                 try

@@ -12,8 +12,8 @@ namespace Bee.Db.UnitTests
     /// Pure-syntax tests for <see cref="OracleFormCommandBuilder"/>. Verifies that the
     /// Oracle provider routes through the dialect-agnostic cores in <see cref="Bee.Db.Dml"/>
     /// with <see cref="Bee.Definition.Database.DatabaseType.Oracle"/> and emits double-quoted
-    /// identifiers + <c>:</c> bind-variable prefixes (per <see cref="DbFunc.QuoteIdentifier"/>
-    /// and <see cref="DbFunc.GetDbParameterPrefix"/>).
+    /// identifiers + <c>:</c> bind-variable prefixes (per <see cref="DatabaseTypeExtensions.QuoteIdentifier"/>
+    /// and <see cref="DatabaseTypeExtensions.GetParameterPrefix"/>).
     /// </summary>
     [Collection("Initialize")]
     public class OracleFormCommandBuilderTests
@@ -112,7 +112,7 @@ namespace Bee.Db.UnitTests
             var spec = builder.BuildInsert("Foo", row);
 
             // form-builder 層輸出位置佔位符 {0}；Oracle 的 :pN 由 CreateCommand 階段
-            // 透過 DbFunc.GetDbParameterPrefix(DatabaseType.Oracle) 注入，純語法測試不涵蓋。
+            // 透過 DatabaseType.Oracle.GetParameterPrefix() 注入，純語法測試不涵蓋。
             Assert.Contains("{0}", spec.CommandText);
         }
     }

@@ -51,7 +51,7 @@ namespace Bee.Db.Dml
             string dbTableName = !string.IsNullOrWhiteSpace(formTable.DbTableName)
                 ? formTable.DbTableName
                 : formTable.TableName;
-            string quotedTable = DbFunc.QuoteIdentifier(_databaseType, dbTableName);
+            string quotedTable = _databaseType.QuoteIdentifier(dbTableName);
 
             string sql = $"DELETE FROM {quotedTable} {whereResult.WhereClause}";
             return new DbCommandSpec(DbCommandKind.NonQuery, sql, whereResult.Parameters);
@@ -80,7 +80,7 @@ namespace Bee.Db.Dml
                         $"DELETE filter cannot reference {field.Type} field '{cond.FieldName}'. "
                         + "Only physical columns of the target table are supported.");
 
-                string quoted = DbFunc.QuoteIdentifier(_databaseType, cond.FieldName);
+                string quoted = _databaseType.QuoteIdentifier(cond.FieldName);
                 return new FilterCondition
                 {
                     FieldName = quoted,
