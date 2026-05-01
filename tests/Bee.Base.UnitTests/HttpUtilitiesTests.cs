@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Bee.Base.UnitTests
 {
-    public class HttpFuncTests
+    public class HttpUtilitiesTests
     {
         [Theory]
         [InlineData("http://example.com", true)]
@@ -19,7 +19,7 @@ namespace Bee.Base.UnitTests
         [DisplayName("IsUrl 應僅對絕對 http/https URL 回傳 true")]
         public void IsUrl_RecognizesHttpSchemes(string input, bool expected)
         {
-            Assert.Equal(expected, HttpFunc.IsUrl(input));
+            Assert.Equal(expected, HttpUtilities.IsUrl(input));
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Bee.Base.UnitTests
             await using var server = await LoopbackHttpServer.StartAsync();
 
             var headers = new NameValueCollection { { "X-Test", "abc" } };
-            string result = await HttpFunc.GetAsync(server.BuildUrl("/ping"), headers);
+            string result = await HttpUtilities.GetAsync(server.BuildUrl("/ping"), headers);
 
             Assert.Equal("pong", result);
             Assert.Contains("GET /ping", server.LastRequest);
@@ -42,7 +42,7 @@ namespace Bee.Base.UnitTests
         {
             await using var server = await LoopbackHttpServer.StartAsync();
 
-            var result = await HttpFunc.PostAsync(server.BuildUrl("/submit"), "{\"k\":1}");
+            var result = await HttpUtilities.PostAsync(server.BuildUrl("/submit"), "{\"k\":1}");
 
             Assert.Equal("pong", result);
             Assert.Contains("POST /submit", server.LastRequest);
@@ -57,7 +57,7 @@ namespace Bee.Base.UnitTests
             await using var server = await LoopbackHttpServer.StartAsync(statusLine: "HTTP/1.1 500 Internal Server Error", body: "fail");
 
             await Assert.ThrowsAsync<HttpRequestException>(
-                () => HttpFunc.GetAsync(server.BuildUrl("/boom")));
+                () => HttpUtilities.GetAsync(server.BuildUrl("/boom")));
         }
 
         [Fact]
@@ -66,7 +66,7 @@ namespace Bee.Base.UnitTests
         {
             await using var server = await LoopbackHttpServer.StartAsync();
 
-            bool result = await HttpFunc.IsEndpointReachableAsync(server.BuildUrl("/probe"));
+            bool result = await HttpUtilities.IsEndpointReachableAsync(server.BuildUrl("/probe"));
 
             Assert.True(result);
         }
@@ -77,7 +77,7 @@ namespace Bee.Base.UnitTests
         {
             await using var server = await LoopbackHttpServer.StartAsync(statusLine: "HTTP/1.1 404 Not Found", body: string.Empty);
 
-            bool result = await HttpFunc.IsEndpointReachableAsync(server.BuildUrl("/missing"));
+            bool result = await HttpUtilities.IsEndpointReachableAsync(server.BuildUrl("/missing"));
 
             Assert.True(result);
         }
@@ -87,7 +87,7 @@ namespace Bee.Base.UnitTests
         public async Task IsEndpointReachableAsync_ConnectionRefused_ReturnsFalse()
         {
             // 127.0.0.1:1 為 reserved port,本機不會有服務監聽,連線必然被拒絕
-            bool result = await HttpFunc.IsEndpointReachableAsync("http://127.0.0.1:1/probe");
+            bool result = await HttpUtilities.IsEndpointReachableAsync("http://127.0.0.1:1/probe");
 
             Assert.False(result);
         }
@@ -98,7 +98,7 @@ namespace Bee.Base.UnitTests
         {
             await using var stall = await StallingServer.StartAsync();
 
-            bool result = await HttpFunc.IsEndpointReachableAsync(
+            bool result = await HttpUtilities.IsEndpointReachableAsync(
                 stall.BuildUrl("/never"),
                 timeout: TimeSpan.FromMilliseconds(200));
 
@@ -106,7 +106,7 @@ namespace Bee.Base.UnitTests
         }
 
         /// <summary>
-        /// Minimal single-request HTTP loopback server used to exercise HttpFunc without requiring
+        /// Minimal single-request HTTP loopback server used to exercise HttpUtilities without requiring
         /// external infrastructure or mocking HttpClient internals.
         /// </summary>
         private sealed class LoopbackHttpServer : IAsyncDisposable

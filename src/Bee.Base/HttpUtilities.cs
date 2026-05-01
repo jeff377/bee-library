@@ -7,7 +7,7 @@ namespace Bee.Base
     /// <summary>
     /// Utility library for HTTP operations.
     /// </summary>
-    public static class HttpFunc
+    public static class HttpUtilities
     {
         private static readonly ConcurrentDictionary<string, HttpClient> _clientMap = new ConcurrentDictionary<string, HttpClient>();
 

@@ -101,7 +101,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | 2 | `BusinessFunc` | 2 | B+D | ✅ | 2026-05-01 |
 | 3 | `DefineFunc` | 5 | B+C+D | ✅ | 2026-05-01 |
 | 4 | `DateTimeFunc` | 4 | A+B | ✅ | 2026-05-01 |
-| 5 | `HttpFunc` | 5 | B | 📝 | — |
+| 5 | `HttpFunc` | 4 | C | ✅ | 2026-05-01 |
 | 6 | `DbFunc` | 7 | B/D | 📝 | — |
 | 7 | `DataSetFunc` | 8 | B | 📝 | — |
 | 8 | `SerializeFunc` | 10 | C | 📝 | — |
@@ -188,6 +188,16 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 - **`object` 不擴充**:第一參數為 `object` 的方法不轉擴充方法(會污染所有型別 IntelliSense),改走 path A inline 或 path C 的 noun-form static utility(例:`DateTimeFunc.IsDate(object)` → inline 至 `BaseFunc.CDateTime` 用 `is DateTime` + `DateTime.TryParse`)
 - **預設值/隱式約定的判斷**:當 helper 唯一加值是「強制某預設」(例:`InvariantCulture`),如果該預設應該被呼叫端意識到,不該藏在 helper 裡 —— 直接用 BCL 並把預設明示給呼叫端,而非透過 helper 隱含預設(本例 `DateTimeFunc.Format` 直接刪除)
 - **Inline 後的測試覆蓋**:刪除 helper 前確認 caller 已有完整測試覆蓋 inlined 邏輯;若有,helper 自身的測試可一併刪除,避免重複測試
+
+### Path C 命名衝突檢查 — 由 `HttpFunc → HttpUtilities`(2026-05-01)補強
+
+選靜態類名時必須避開**所有** BCL namespace 末段名稱(不只是 type 名稱):
+
+- Roslyn analyzer **CA1724** 對 namespace-vs-type 同名也會警告;在 `TreatWarningsAsErrors=true` 下會編譯失敗
+- 常見地雷:`Http`(`System.Net.Http`)、`Json`(`System.Text.Json`)、`Xml`(`System.Xml`)、`Linq`(`System.Linq`)、`Threading`(`System.Threading`)、`Diagnostics` 等
+- 短名 `Gzip` 安全是因為 BCL 沒有 `*.Gzip` namespace
+- **選名前先 grep BCL namespace 清單**,或建立後本地跑一次 `dotnet build` 確認 CA1724 不觸發
+- 命名衝突解法依優先序:換複數(`Http` → `HttpUtilities`)、加領域前綴、加 `*Helpers` 後綴(避免 `*Helper` 單數,在 .NET 已過時且仍可能與舊 type 撞名)
 
 預期會碰到的決策點:
 - 多個類別都有 `string` 擴充方法時,集中到同一個 `StringExtensions` 還是

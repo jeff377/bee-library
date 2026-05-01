@@ -27,7 +27,7 @@ namespace Bee.Api.Client
                 // Return local connection type
                 return ConnectType.Local;
             }
-            else if (HttpFunc.IsUrl(endpoint))    // URL: validate remote connection settings
+            else if (HttpUtilities.IsUrl(endpoint))    // URL: validate remote connection settings
             {
                 // Validate remote connection settings
                 ValidateRemote(endpoint);
@@ -121,7 +121,7 @@ namespace Bee.Api.Client
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));
             // Pre-check transport-level reachability before establishing the connector
-            if (!SyncExecutor.Run(() => HttpFunc.IsEndpointReachableAsync(endpoint)))
+            if (!SyncExecutor.Run(() => HttpUtilities.IsEndpointReachableAsync(endpoint)))
                 throw new InvalidOperationException($"Endpoint not reachable: {endpoint}");
             // Use remote connection to execute the Ping method
             var connector = new SystemApiConnector(endpoint, Guid.Empty);
