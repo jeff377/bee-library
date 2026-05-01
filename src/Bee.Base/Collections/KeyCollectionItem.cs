@@ -33,7 +33,7 @@ namespace Bee.Base.Collections
                 if (_key != value)
                 {
                     // Notify the owning collection of the key change
-                    if (_collection != null && !StrFunc.IsEquals(_key, value))
+                    if (_collection != null && !StringUtilities.IsEquals(_key, value))
                         _collection.ChangeItemKey(value, this);
                     _key = value;
                 }

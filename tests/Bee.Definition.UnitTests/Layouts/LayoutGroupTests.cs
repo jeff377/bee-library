@@ -79,7 +79,7 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
-        [DisplayName("FindGrid 於大小寫不同時仍能找到（使用 StrFunc.IsEquals）")]
+        [DisplayName("FindGrid 於大小寫不同時仍能找到(使用 StringUtilities.IsEquals)")]
         public void FindGrid_CaseInsensitiveMatch_ReturnsGrid()
         {
             var group = new LayoutGroup();

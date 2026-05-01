@@ -51,13 +51,13 @@ namespace Bee.Base.Serialization
         {
             string sExtension;
 
-            if (StrFunc.IsEmpty(value.ObjectFilePath))
+            if (StringUtilities.IsEmpty(value.ObjectFilePath))
                 throw new ArgumentException("ObjectFilePath is empty");
 
             sExtension = Path.GetExtension(value.ObjectFilePath);
-            if (StrFunc.IsEquals(sExtension, ".xml"))
+            if (StringUtilities.IsEquals(sExtension, ".xml"))
                 XmlCodec.SerializeToFile(value, value.ObjectFilePath);
-            else if (StrFunc.IsEquals(sExtension, ".json"))
+            else if (StringUtilities.IsEquals(sExtension, ".json"))
                 JsonCodec.SerializeToFile(value, value.ObjectFilePath);
             else
                 throw new NotSupportedException();

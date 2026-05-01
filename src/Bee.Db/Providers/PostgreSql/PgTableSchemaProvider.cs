@@ -252,7 +252,7 @@ namespace Bee.Db.Providers.PostgreSql
         /// <param name="length">The character maximum length (0 when not applicable).</param>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
-            switch (StrFunc.ToLower(dataType))
+            switch ((dataType ?? string.Empty).ToLower())
             {
                 case "character":
                 case "char":
@@ -309,7 +309,7 @@ namespace Bee.Db.Providers.PostgreSql
         /// <param name="originalDefaultValue">The framework built-in default value.</param>
         public static string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
         {
-            if (StrFunc.IsEmpty(defaultValue)) return string.Empty;
+            if (StringUtilities.IsEmpty(defaultValue)) return string.Empty;
 
             // Strip an optional ::type cast suffix (e.g. 'abc'::character varying, '0'::integer).
             int castIndex = defaultValue.IndexOf("::", StringComparison.Ordinal);
@@ -318,7 +318,7 @@ namespace Bee.Db.Providers.PostgreSql
 
             // For string-like types: strip the surrounding single quotes and unescape doubled quotes.
             string normalized;
-            switch (StrFunc.ToLower(dataType))
+            switch ((dataType ?? string.Empty).ToLower())
             {
                 case "character":
                 case "char":
@@ -332,7 +332,7 @@ namespace Bee.Db.Providers.PostgreSql
                     break;
             }
 
-            return StrFunc.Equals(originalDefaultValue, normalized) ? string.Empty : normalized;
+            return StringUtilities.IsEquals(originalDefaultValue, normalized) ? string.Empty : normalized;
         }
 
         /// <summary>

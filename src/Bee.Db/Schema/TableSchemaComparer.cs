@@ -101,17 +101,17 @@ namespace Bee.Db.Schema
         private static void AddDescriptionDrift(List<DescriptionChange> target, DescriptionLevel level, string fieldName, string defineValue, string realValue)
         {
             // Conservative: empty define is treated as "not specified", do not remove existing DB description
-            if (StrFunc.IsEmpty(defineValue))
+            if (StringUtilities.IsEmpty(defineValue))
                 return;
             // No drift when values match
-            if (StrFunc.IsEquals(defineValue, realValue))
+            if (StringUtilities.IsEquals(defineValue, realValue))
                 return;
             target.Add(new DescriptionChange
             {
                 Level = level,
                 FieldName = fieldName,
                 NewValue = defineValue,
-                IsNew = StrFunc.IsEmpty(realValue),
+                IsNew = StringUtilities.IsEmpty(realValue),
             });
         }
 
@@ -152,7 +152,7 @@ namespace Bee.Db.Schema
             // Return false immediately if any index does not match
             foreach (TableSchemaIndex index in compareTable.Indexes!)
             {
-                string name = StrFunc.Format(index.Name, compareTable.TableName);
+                string name = StringUtilities.Format(index.Name, compareTable.TableName);
                 if (this.RealTable!.Indexes!.Contains(name))
                 {
                     if (!index.Compare(this.RealTable.Indexes[name]))
@@ -227,7 +227,7 @@ namespace Bee.Db.Schema
                 }
 
                 // DB does not yet have the target name — check for a rename hint.
-                if (StrFunc.IsNotEmpty(defineField.OriginalFieldName)
+                if (StringUtilities.IsNotEmpty(defineField.OriginalFieldName)
                     && this.RealTable.Fields!.Contains(defineField.OriginalFieldName))
                 {
                     var oldRealField = this.RealTable.Fields[defineField.OriginalFieldName];
@@ -256,7 +256,7 @@ namespace Bee.Db.Schema
         {
             foreach (TableSchemaIndex defineIndex in this.DefineTable.Indexes!)
             {
-                string formattedName = StrFunc.Format(defineIndex.Name, this.DefineTable.TableName);
+                string formattedName = StringUtilities.Format(defineIndex.Name, this.DefineTable.TableName);
                 if (this.RealTable!.Indexes!.Contains(formattedName))
                 {
                     var realIndex = this.RealTable.Indexes[formattedName];

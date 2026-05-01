@@ -20,7 +20,7 @@ namespace Bee.Definition.Database
 
             var tableSchema = new TableSchema
             {
-                TableName = StrFunc.IsEmpty(formTable.DbTableName) ? formTable.TableName : formTable.DbTableName,
+                TableName = StringUtilities.IsEmpty(formTable.DbTableName) ? formTable.TableName : formTable.DbTableName,
                 DisplayName = formTable.DisplayName
             };
 
@@ -75,7 +75,7 @@ namespace Bee.Definition.Database
 
             // Create foreign key indexes
             if (formTable.Fields == null) { return; }
-            foreach (var field in formTable.Fields.Where(f => StrFunc.IsNotEmpty(f.RelationProgId)))
+            foreach (var field in formTable.Fields.Where(f => StringUtilities.IsNotEmpty(f.RelationProgId)))
             {
                 // Include field name to avoid duplicates
                 tableSchema.Indexes!.Add("fk_{0}_{field.FieldName}", field.FieldName, false);

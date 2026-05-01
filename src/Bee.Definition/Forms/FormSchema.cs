@@ -133,7 +133,7 @@ namespace Bee.Definition.Forms
         {
             get
             {
-                if (StrFunc.IsEmpty(this.ProgId) || !this.Tables!.Contains(this.ProgId))
+                if (StringUtilities.IsEmpty(this.ProgId) || !this.Tables!.Contains(this.ProgId))
                     return null;
                 else
                     return this.Tables![this.ProgId];
@@ -146,7 +146,7 @@ namespace Bee.Definition.Forms
         public LayoutGrid GetListLayout()
         {
             var table = MasterTable;
-            string[] fieldNames = StrFunc.Split(ListFields, ",");
+            string[] fieldNames = StringUtilities.Split(ListFields, ",");
 
             var grid = new LayoutGrid { TableName = ProgId };
             // Add sys_RowID hidden column

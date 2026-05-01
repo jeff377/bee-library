@@ -17,7 +17,7 @@ namespace Bee.ObjectCaching.Define
         protected override CacheItemPolicy GetPolicy(string key)
         {
             // Parse the member key to extract the database name and table name
-            StrFunc.SplitLeft(key, ".", out string dbName, out string tableName);
+            key.SplitLeft(".", out string dbName, out string tableName);
 
             // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
@@ -33,7 +33,7 @@ namespace Bee.ObjectCaching.Define
         protected override TableSchema? CreateInstance(string key)
         {
             // Parse the member key to extract the database name and table name
-            StrFunc.SplitLeft(key, ".", out string dbName, out string tableName);
+            key.SplitLeft(".", out string dbName, out string tableName);
             return BackendInfo.DefineStorage.GetTableSchema(dbName, tableName);
         }
 

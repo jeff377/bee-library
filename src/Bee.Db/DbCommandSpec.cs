@@ -215,13 +215,16 @@ namespace Bee.Db
 
         private string ExpandParametersVariable(string commandText)
         {
-            if (!StrFunc.Contains(commandText, CommandTextVariable.Parameters))
+            if (!StringUtilities.Contains(commandText, CommandTextVariable.Parameters))
                 return commandText;
 
             var sb = new StringBuilder();
             for (int i = 0; i < Parameters.Count; i++)
-                StrFunc.Merge(sb, "{" + i + "}", ",");
-            return StrFunc.Replace(commandText, CommandTextVariable.Parameters, sb.ToString());
+            {
+                if (sb.Length > 0) sb.Append(',');
+                sb.Append('{').Append(i).Append('}');
+            }
+            return StringUtilities.Replace(commandText, CommandTextVariable.Parameters, sb.ToString());
         }
 
         private string ResolveNumericKey(int index)

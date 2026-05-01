@@ -92,7 +92,7 @@ namespace Bee.Db.Providers.MySql
             if (primaryKey == null) return;
 
             if (primaryKey.IndexFields!.Count != 1
-                || !StrFunc.IsEquals(primaryKey.IndexFields[0].FieldName, autoIncrementField.FieldName))
+                || !StringUtilities.IsEquals(primaryKey.IndexFields[0].FieldName, autoIncrementField.FieldName))
             {
                 throw new InvalidOperationException(
                     $"On MySQL, AutoIncrement field '{autoIncrementField.FieldName}' must be the single-column primary key. "
@@ -115,10 +115,10 @@ namespace Bee.Db.Providers.MySql
 
             var sb = new StringBuilder();
             sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {MySqlSchemaSyntax.QuoteName(tableName)} (\r\n{fields}");
-            if (StrFunc.IsNotEmpty(primaryKey))
+            if (StringUtilities.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append(CultureInfo.InvariantCulture, $"\r\n){GetTableSuffix()};");
-            if (StrFunc.IsNotEmpty(indexes))
+            if (StringUtilities.IsNotEmpty(indexes))
                 sb.Append(CultureInfo.InvariantCulture, $"\r\n{indexes}");
             return sb.ToString();
         }
@@ -131,7 +131,7 @@ namespace Bee.Db.Providers.MySql
         /// </summary>
         private string GetTableSuffix()
         {
-            if (StrFunc.IsEmpty(TableSchema.DisplayName))
+            if (StringUtilities.IsEmpty(TableSchema.DisplayName))
                 return BaseTableSuffix;
             return $"{BaseTableSuffix} COMMENT='{MySqlSchemaSyntax.EscapeSqlString(TableSchema.DisplayName)}'";
         }
@@ -175,7 +175,7 @@ namespace Bee.Db.Providers.MySql
                     $"{MySqlSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             return $"CONSTRAINT {MySqlSchemaSyntax.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
@@ -200,7 +200,7 @@ namespace Bee.Db.Providers.MySql
         /// <param name="index">The table schema index definition.</param>
         private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
         {
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             var fieldBuilder = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)
             {

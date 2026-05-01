@@ -28,7 +28,7 @@ namespace Bee.Base.Data
             if (!BaseFunc.IsNullOrDBNull(defaultValue))
                 column.AllowDBNull = false;
 
-            if (StrFunc.IsNotEmpty(caption))
+            if (StringUtilities.IsNotEmpty(caption))
                 column.Caption = caption;
 
             table.Columns.Add(column);
@@ -104,7 +104,7 @@ namespace Bee.Base.Data
         /// <param name="fieldNames">A comma-separated string of column names that form the primary key.</param>
         public static void SetPrimaryKey(this DataTable table, string fieldNames)
         {
-            string[] fieldNameArray = StrFunc.Split(fieldNames, ",");
+            string[] fieldNameArray = StringUtilities.Split(fieldNames, ",");
             var dataColumns = new DataColumn[fieldNameArray.Length];
             int iIndex = 0;
             foreach (string fieldName in fieldNameArray)

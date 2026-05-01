@@ -70,7 +70,7 @@ namespace Bee.Base
         /// <param name="value">The string to check.</param>
         public static bool IsEmpty(string value)
         {
-            return StrFunc.IsEmpty(value, true);
+            return StringUtilities.IsEmpty(value, true);
         }
 
         /// <summary>
@@ -169,9 +169,9 @@ namespace Bee.Base
         /// <param name="defaultValue">The default value.</param>
         public static bool CBool(string value, bool defaultValue = false)
         {
-            if (StrFunc.IsEmpty(value))
+            if (StringUtilities.IsEmpty(value))
                 return defaultValue;
-            if (StrFunc.IsEqualsOr(value, "1", "T", "TRUE", "Y", "YES", "是", "真"))
+            if (StringUtilities.IsEqualsOr(value, "1", "T", "TRUE", "Y", "YES", "是", "真"))
                 return true;
             else
                 return false;
@@ -246,7 +246,7 @@ namespace Bee.Base
         /// <param name="length">The expected length.</param>
         public static bool IsNumeric(string value, int length)
         {
-            if (BaseFunc.IsNumeric(value) && StrFunc.Length(value) == length)
+            if (BaseFunc.IsNumeric(value) && value.Length == length)
                 return true;
             else
                 return false;
@@ -365,7 +365,7 @@ namespace Bee.Base
             string sValue;
 
             if (IsNullOrDBNull(value)) { return defaultValue; }
-            if (StrFunc.IsEmpty(value)) { return defaultValue; }
+            if (StringUtilities.IsEmpty(value)) { return defaultValue; }
             if (value is DateTime dt) { return dt; }
             if (DateTime.TryParse(BaseFunc.CStr(value), CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)) { return parsed; }
 
@@ -397,35 +397,35 @@ namespace Bee.Base
             // Only all-numeric strings are valid for date conversion
             if (!BaseFunc.IsNumeric(sValue)) { return DateTime.MinValue; }
             // Attempt date conversion based on the string length
-            iLen = StrFunc.Length(sValue);
+            iLen = sValue.Length;
             switch (iLen)
             {
                 case 8: // 8-digit Gregorian date, e.g. 20150312
                     sDate = sValue.Insert(4, "-").Insert(7, "-");
                     break;
                 case 7: // 7-digit ROC date, e.g. 1040312
-                    sDate = StrFunc.Format("{0}-{1}-{2}", BaseFunc.CInt(StrFunc.Left(sValue, 3)) + 1911,
-                        StrFunc.Substring(sValue, 3, 2), StrFunc.Substring(sValue, 5, 2));
+                    sDate = StringUtilities.Format("{0}-{1}-{2}", BaseFunc.CInt(sValue.Substring(0, 3)) + 1911,
+                        sValue.Substring(3, 2), sValue.Substring(5, 2));
                     break;
                 case 6: // 6-digit Gregorian year-month, e.g. 201503
                     sDate = BaseFunc.CStr(value).Insert(4, "-") + "-01";
                     break;
                 case 5: // 5-digit ROC year-month, e.g. 10403
-                    sDate = StrFunc.Format("{0}-{1}-01", BaseFunc.CInt(StrFunc.Left(sValue, 3)) + 1911,
-                        StrFunc.Substring(sValue, 3, 2));
+                    sDate = StringUtilities.Format("{0}-{1}-01", BaseFunc.CInt(sValue.Substring(0, 3)) + 1911,
+                        sValue.Substring(3, 2));
                     break;
                 case 4: // 4-digit Gregorian year, e.g. 2015
-                    sDate = StrFunc.Format("{0}-01-01", sValue);
+                    sDate = StringUtilities.Format("{0}-01-01", sValue);
                     break;
                 case 3: // 3-digit ROC year, e.g. 104
-                    sDate = StrFunc.Format("{0}-01-01", BaseFunc.CInt(sValue) + 1911);
+                    sDate = StringUtilities.Format("{0}-01-01", BaseFunc.CInt(sValue) + 1911);
                     break;
                 default:
                     sDate = string.Empty;
                     break;
             }
 
-            if (StrFunc.IsNotEmpty(sDate))
+            if (StringUtilities.IsNotEmpty(sDate))
                 return Convert.ToDateTime(sDate, CultureInfo.InvariantCulture);
             else
                 return DateTime.MinValue;

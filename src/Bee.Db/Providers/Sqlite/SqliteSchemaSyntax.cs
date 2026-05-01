@@ -73,11 +73,11 @@ namespace Bee.Db.Providers.Sqlite
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
-                    return StrFunc.Format("'{0}'", StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
+                    return StringUtilities.Format("'{0}'", StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
                 default:
-                    return StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
+                    return StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
             }
         }
 
@@ -100,7 +100,7 @@ namespace Bee.Db.Providers.Sqlite
             string collateClause = IsTextType(field.DbType) ? " COLLATE NOCASE" : string.Empty;
             string nullability = field.AllowNull ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
-            string defaultClause = StrFunc.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
+            string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
             return $"{QuoteName(field.FieldName)} {dbType}{collateClause} {nullability}{defaultClause}";
         }
 

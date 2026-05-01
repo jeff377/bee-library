@@ -77,7 +77,7 @@ namespace Bee.Db.Providers.Sqlite
             if (primaryKey == null) return;
 
             if (primaryKey.IndexFields!.Count != 1
-                || !StrFunc.IsEquals(primaryKey.IndexFields[0].FieldName, autoIncrementField.FieldName))
+                || !StringUtilities.IsEquals(primaryKey.IndexFields[0].FieldName, autoIncrementField.FieldName))
             {
                 throw new InvalidOperationException(
                     $"On SQLite, AutoIncrement field '{autoIncrementField.FieldName}' must be the single-column primary key. "
@@ -101,10 +101,10 @@ namespace Bee.Db.Providers.Sqlite
 
             var sb = new StringBuilder();
             sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {SqliteSchemaSyntax.QuoteName(tableName)} (\r\n{fields}");
-            if (StrFunc.IsNotEmpty(primaryKey))
+            if (StringUtilities.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append("\r\n);");
-            if (StrFunc.IsNotEmpty(indexes))
+            if (StringUtilities.IsNotEmpty(indexes))
                 sb.Append(CultureInfo.InvariantCulture, $"\r\n{indexes}");
             return sb.ToString();
         }
@@ -148,7 +148,7 @@ namespace Bee.Db.Providers.Sqlite
                     $"{SqliteSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             return $"CONSTRAINT {SqliteSchemaSyntax.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
@@ -173,7 +173,7 @@ namespace Bee.Db.Providers.Sqlite
         /// <param name="index">The table schema index definition.</param>
         private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
         {
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             var fieldBuilder = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)
             {

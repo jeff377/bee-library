@@ -15,15 +15,15 @@ namespace Bee.Definition
         /// <returns>The corresponding .NET format string, or empty when the preset is empty or unknown.</returns>
         public static string ToFormatString(string preset)
         {
-            if (StrFunc.IsEmpty(preset))
+            if (StringUtilities.IsEmpty(preset))
                 return string.Empty;
-            else if (StrFunc.IsEquals(preset, "Quantity"))
+            else if (StringUtilities.IsEquals(preset, "Quantity"))
                 return "N0";
-            else if (StrFunc.IsEquals(preset, "UnitPrice"))
+            else if (StringUtilities.IsEquals(preset, "UnitPrice"))
                 return "N2";
-            else if (StrFunc.IsEquals(preset, "Amount"))
+            else if (StringUtilities.IsEquals(preset, "Amount"))
                 return "N2";
-            else if (StrFunc.IsEquals(preset, "Cost"))
+            else if (StringUtilities.IsEquals(preset, "Cost"))
                 return "N4";
             else
                 return string.Empty;

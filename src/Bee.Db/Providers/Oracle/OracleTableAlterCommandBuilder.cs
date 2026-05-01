@@ -114,7 +114,7 @@ namespace Bee.Db.Providers.Oracle
         /// </summary>
         private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
         {
-            string indexName = StrFunc.Format(index.Name, tableName);
+            string indexName = StringUtilities.Format(index.Name, tableName);
 
             if (index.PrimaryKey)
             {

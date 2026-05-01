@@ -17,7 +17,7 @@ namespace Bee.Api.Client
         /// <param name="allowGenerateSettings">Whether to auto-generate missing settings files (SystemSettings.xml and DatabaseSettings.xml) for local connections.</param>
         public static ConnectType Validate(string endpoint, bool allowGenerateSettings = false)
         {
-            if (StrFunc.IsEmpty(endpoint))
+            if (StringUtilities.IsEmpty(endpoint))
                 throw new ArgumentException("Input cannot be null or empty.", nameof(endpoint));
 
             if (FileUtilities.IsLocalPath(endpoint))  // Local path: validate local connection settings
@@ -50,7 +50,7 @@ namespace Bee.Api.Client
             // Verify the application supports local connections
             if (!ApiClientInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Local))
                 throw new InvalidOperationException("Local connections are not supported.");
-            if (StrFunc.IsEmpty(definePath))
+            if (StringUtilities.IsEmpty(definePath))
                 throw new ArgumentException("Definition path must be specified.", nameof(definePath));
 
             if (allowGenerateSettings) // Auto-generate missing settings files (used by tool applications)
@@ -118,7 +118,7 @@ namespace Bee.Api.Client
             // Verify the application supports remote connections
             if (!ApiClientInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
                 throw new InvalidOperationException("Remote connections are not supported.");
-            if (StrFunc.IsEmpty(endpoint))
+            if (StringUtilities.IsEmpty(endpoint))
                 throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));
             // Pre-check transport-level reachability before establishing the connector
             if (!SyncExecutor.Run(() => HttpUtilities.IsEndpointReachableAsync(endpoint)))

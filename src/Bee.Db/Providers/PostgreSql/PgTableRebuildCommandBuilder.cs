@@ -109,8 +109,8 @@ namespace Bee.Db.Providers.PostgreSql
             // Rename indexes (and the PK constraint, which is also exposed as an index in PG) so they follow the table.
             foreach (var indexName in schema.Indexes!.Select(index => index.Name))
             {
-                string oldIndexName = StrFunc.Format(indexName, oldTable);
-                string newIndexName = StrFunc.Format(indexName, newTable);
+                string oldIndexName = StringUtilities.Format(indexName, oldTable);
+                string newIndexName = StringUtilities.Format(indexName, newTable);
                 sb.Append(CultureInfo.InvariantCulture,
                     $"ALTER INDEX {PgSchemaSyntax.QuoteName(oldIndexName)} RENAME TO {PgSchemaSyntax.QuoteName(newIndexName)};\n");
             }

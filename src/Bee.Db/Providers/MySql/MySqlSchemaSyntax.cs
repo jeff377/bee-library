@@ -86,11 +86,11 @@ namespace Bee.Db.Providers.MySql
             switch (field.DbType)
             {
                 case FieldDbType.String:
-                    return StrFunc.Format("'{0}'", StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
+                    return StringUtilities.Format("'{0}'", StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
                 default:
-                    return StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
+                    return StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
             }
         }
 
@@ -111,7 +111,7 @@ namespace Bee.Db.Providers.MySql
             string dbType = MySqlTypeMapping.GetMySqlType(field);
             string nullability = field.AllowNull ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
-            string defaultClause = StrFunc.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
+            string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
             string commentClause = GetCommentClause(field.Caption);
             return $"{QuoteName(field.FieldName)} {dbType} {nullability}{defaultClause}{commentClause}";
         }
@@ -135,7 +135,7 @@ namespace Bee.Db.Providers.MySql
         /// </summary>
         private static string GetCommentClause(string caption)
         {
-            return StrFunc.IsEmpty(caption) ? string.Empty : $" COMMENT '{EscapeSqlString(caption)}'";
+            return StringUtilities.IsEmpty(caption) ? string.Empty : $" COMMENT '{EscapeSqlString(caption)}'";
         }
     }
 }

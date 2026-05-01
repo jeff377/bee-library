@@ -365,7 +365,7 @@ namespace Bee.Db.Providers.Oracle
         /// </summary>
         private static string NormalizeDataTypeName(string dataType)
         {
-            string lower = StrFunc.ToLower(dataType ?? string.Empty).Trim();
+            string lower = (dataType ?? string.Empty).ToLower().Trim();
             int parenStart = lower.IndexOf('(');
             if (parenStart < 0) return lower;
             int parenEnd = lower.IndexOf(')', parenStart);
@@ -384,7 +384,7 @@ namespace Bee.Db.Providers.Oracle
         /// </summary>
         public static string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
         {
-            if (StrFunc.IsEmpty(defaultValue)) return string.Empty;
+            if (StringUtilities.IsEmpty(defaultValue)) return string.Empty;
 
             string trimmed = defaultValue.Trim();
 

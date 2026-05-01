@@ -103,7 +103,7 @@ namespace Bee.Db.Providers.MySql
         /// </summary>
         private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
         {
-            string indexName = StrFunc.Format(index.Name, tableName);
+            string indexName = StringUtilities.Format(index.Name, tableName);
             string fields = BuildIndexFieldList(index);
 
             if (index.PrimaryKey)

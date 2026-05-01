@@ -206,16 +206,16 @@ namespace Bee.Definition
             var settings = configuration.SecurityKeySettings;
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, autoCreateMasterKey);
 
-            if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
+            if (StringUtilities.IsNotEmpty(settings.ApiEncryptionKey))
                 BackendInfo.ApiEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ApiEncryptionKey);
 
-            if (StrFunc.IsNotEmpty(settings.CookieEncryptionKey))
+            if (StringUtilities.IsNotEmpty(settings.CookieEncryptionKey))
                 BackendInfo.CookieEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.CookieEncryptionKey);
 
-            if (StrFunc.IsNotEmpty(settings.ConfigEncryptionKey))
+            if (StringUtilities.IsNotEmpty(settings.ConfigEncryptionKey))
                 BackendInfo.ConfigEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ConfigEncryptionKey);
 
-            if (StrFunc.IsNotEmpty(settings.DatabaseEncryptionKey))
+            if (StringUtilities.IsNotEmpty(settings.DatabaseEncryptionKey))
                 BackendInfo.DatabaseEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.DatabaseEncryptionKey);
         }
     }

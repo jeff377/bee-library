@@ -61,14 +61,14 @@ namespace Bee.Definition.UnitTests
             apiKey = Array.Empty<byte>();
             cookieKey = Array.Empty<byte>();
             // 解密 API 金鑰，如果設定中有提供。
-            if (StrFunc.IsNotEmpty(settings.ApiEncryptionKey))
+            if (StringUtilities.IsNotEmpty(settings.ApiEncryptionKey))
             {
                 byte[] bytes = Convert.FromBase64String(settings.ApiEncryptionKey);
                 apiKey = AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);
             }
 
             // 解密 Cookie 金鑰，如果設定中有提供。
-            if (StrFunc.IsNotEmpty(settings.CookieEncryptionKey))
+            if (StringUtilities.IsNotEmpty(settings.CookieEncryptionKey))
             {
                 byte[] bytes = Convert.FromBase64String(settings.CookieEncryptionKey);
                 cookieKey = AesCbcHmacCryptor.Decrypt(bytes, aesKey, hmacKey);

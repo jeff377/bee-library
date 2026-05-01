@@ -32,7 +32,7 @@ namespace Bee.Api.Client.Connectors
         /// <param name="accessToken">The access token.</param>
         protected ApiConnector(string endpoint, Guid accessToken)
         {
-            if (StrFunc.IsEmpty(endpoint))
+            if (StringUtilities.IsEmpty(endpoint))
                 throw new ArgumentException("Endpoint cannot be null or empty.", nameof(endpoint));
 
             AccessToken = accessToken;
@@ -85,9 +85,9 @@ namespace Bee.Api.Client.Connectors
         /// </summary>
         private static void ValidateArgs(string progId, string action)
         {
-            if (StrFunc.IsEmpty(progId))
+            if (StringUtilities.IsEmpty(progId))
                 throw new ArgumentException("progId cannot be null or empty.", nameof(progId));
-            if (StrFunc.IsEmpty(action))
+            if (StringUtilities.IsEmpty(action))
                 throw new ArgumentException("action cannot be null or empty.", nameof(action));
         }
 

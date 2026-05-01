@@ -107,18 +107,18 @@ namespace Bee.Db.Providers.Oracle
 
             var sb = new StringBuilder();
             sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {OracleSchemaSyntax.QuoteName(tableName)} (\r\n{fields}");
-            if (StrFunc.IsNotEmpty(primaryKey))
+            if (StringUtilities.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append("\r\n)");
             list.Add(sb.ToString());
 
             string tableComment = GetTableCommentStatementInternal(tableName);
-            if (StrFunc.IsNotEmpty(tableComment)) list.Add(tableComment);
+            if (StringUtilities.IsNotEmpty(tableComment)) list.Add(tableComment);
 
             foreach (DbField field in this.TableSchema.Fields!)
             {
                 string commentStmt = OracleSchemaSyntax.GetCommentStatement(tableName, field);
-                if (StrFunc.IsNotEmpty(commentStmt)) list.Add(commentStmt);
+                if (StringUtilities.IsNotEmpty(commentStmt)) list.Add(commentStmt);
             }
 
             foreach (TableSchemaIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
@@ -163,7 +163,7 @@ namespace Bee.Db.Providers.Oracle
             if (primaryKey == null) return;
 
             if (primaryKey.IndexFields!.Count != 1
-                || !StrFunc.IsEquals(primaryKey.IndexFields[0].FieldName, autoIncrementField.FieldName))
+                || !StringUtilities.IsEquals(primaryKey.IndexFields[0].FieldName, autoIncrementField.FieldName))
             {
                 throw new InvalidOperationException(
                     $"On Oracle, AutoIncrement field '{autoIncrementField.FieldName}' must be the single-column primary key. "
@@ -176,7 +176,7 @@ namespace Bee.Db.Providers.Oracle
         /// </summary>
         private static string BuildIndexStatement(string tableName, TableSchemaIndex index)
         {
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             var fieldBuilder = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)
             {
@@ -244,7 +244,7 @@ namespace Bee.Db.Providers.Oracle
                 fieldBuilder.Append(OracleSchemaSyntax.QuoteName(fieldName));
             }
 
-            string name = StrFunc.Format(pkConstraintNamePattern, tableName);
+            string name = StringUtilities.Format(pkConstraintNamePattern, tableName);
             return $"CONSTRAINT {OracleSchemaSyntax.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
@@ -257,7 +257,7 @@ namespace Bee.Db.Providers.Oracle
         /// </summary>
         private string GetTableCommentStatementInternal(string tableName)
         {
-            if (StrFunc.IsEmpty(TableSchema.DisplayName))
+            if (StringUtilities.IsEmpty(TableSchema.DisplayName))
                 return string.Empty;
 
             return $"COMMENT ON TABLE {OracleSchemaSyntax.QuoteName(tableName)} IS '{OracleSchemaSyntax.EscapeSqlString(TableSchema.DisplayName)}'";

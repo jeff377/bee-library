@@ -58,7 +58,7 @@ namespace Bee.Definition.Collections
         /// </summary>
         public override string ToString()
         {
-            return StrFunc.Format("{0}={1}", this.Name, this.Value!);
+            return StringUtilities.Format("{0}={1}", this.Name, this.Value!);
         }
     }
 }

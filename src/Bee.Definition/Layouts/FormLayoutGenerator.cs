@@ -85,11 +85,11 @@ namespace Bee.Definition.Layouts
                 };
 
                 // Set the related program ID
-                if (StrFunc.IsNotEmpty(field.LookupProgId))
+                if (StringUtilities.IsNotEmpty(field.LookupProgId))
                 {
                     layoutItem.ProgId = field.LookupProgId;
                 }
-                else if (StrFunc.IsNotEmpty(field.RelationProgId))
+                else if (StringUtilities.IsNotEmpty(field.RelationProgId))
                 {
                     layoutItem.ProgId = field.RelationProgId;
                 }

@@ -90,7 +90,7 @@ namespace Bee.Db.Schema
             var sb = new StringBuilder();
             foreach (var sql in plan.AllStatements)
             {
-                if (StrFunc.IsEmpty(sql)) continue;
+                if (StringUtilities.IsEmpty(sql)) continue;
                 if (sb.Length > 0) sb.AppendLine();
                 sb.AppendLine(sql);
             }

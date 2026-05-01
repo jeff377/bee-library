@@ -103,7 +103,7 @@ namespace Bee.Db.Schema
                     var stagedAccess = new DbAccess(conn);
                     foreach (var sql in stage.Statements)
                     {
-                        if (StrFunc.IsEmpty(sql)) continue;
+                        if (StringUtilities.IsEmpty(sql)) continue;
                         var cmd = new DbCommandSpec(DbCommandKind.NonQuery, sql);
                         stagedAccess.Execute(cmd, txn);
                     }
@@ -204,7 +204,7 @@ namespace Bee.Db.Schema
             if (_dialect is not SqlDialectFactory) return;
 
             var descSql = SqlExtendedPropertyCommandBuilder.GetCommandText(tableName, diff.DescriptionChanges);
-            if (StrFunc.IsNotEmpty(descSql))
+            if (StringUtilities.IsNotEmpty(descSql))
                 stages.Add(new UpgradeStage(UpgradeStageKind.SyncDescriptions, new[] { descSql }));
         }
 

@@ -14,7 +14,7 @@ namespace Bee.Base.Data
         public static DataTable? GetMasterTable(this DataSet dataSet)
         {
             if (dataSet == null) { return null; }
-            if (StrFunc.IsEmpty(dataSet.DataSetName)) { return null; }
+            if (StringUtilities.IsEmpty(dataSet.DataSetName)) { return null; }
             if (!dataSet.Tables.Contains(dataSet.DataSetName)) { return null; }
             // The master table is the one whose TableName equals the DataSetName
             return dataSet.Tables[dataSet.DataSetName];

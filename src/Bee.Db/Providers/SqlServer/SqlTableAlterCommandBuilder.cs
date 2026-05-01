@@ -94,7 +94,7 @@ namespace Bee.Db.Providers.SqlServer
 
             // Re-add default when the new field has a default expression (non-nullable fields always do).
             string newDefaultExpression = SqlSchemaSyntax.GetDefaultExpression(newField);
-            if ((defaultChanged || columnSpecChanged) && StrFunc.IsNotEmpty(newDefaultExpression))
+            if ((defaultChanged || columnSpecChanged) && StringUtilities.IsNotEmpty(newDefaultExpression))
                 statements.Add(BuildAddDefaultConstraintStatement(tableName, newField, newDefaultExpression));
 
             return statements;
@@ -111,7 +111,7 @@ namespace Bee.Db.Providers.SqlServer
 
         private static bool HasDefaultChanged(DbField oldField, DbField newField)
         {
-            return !StrFunc.IsEquals(oldField.DefaultValue, newField.DefaultValue)
+            return !StringUtilities.IsEquals(oldField.DefaultValue, newField.DefaultValue)
                 || oldField.AllowNull != newField.AllowNull;
         }
 
@@ -153,7 +153,7 @@ namespace Bee.Db.Providers.SqlServer
 
         private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
         {
-            string indexName = StrFunc.Format(index.Name, tableName);
+            string indexName = StringUtilities.Format(index.Name, tableName);
             string fields = BuildIndexFieldList(index);
 
             if (index.PrimaryKey)

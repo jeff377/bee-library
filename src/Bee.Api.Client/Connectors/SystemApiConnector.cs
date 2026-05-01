@@ -222,7 +222,7 @@ namespace Bee.Api.Client.Connectors
                 Keys = keys
             };
             var result = await ExecuteAsync<GetDefineResponse>(SystemActions.GetDefine, request).ConfigureAwait(false);
-            if (StrFunc.IsNotEmpty(result.Xml))
+            if (StringUtilities.IsNotEmpty(result.Xml))
                 return XmlCodec.Deserialize<T>(result.Xml)!;
             else
                 return default!;

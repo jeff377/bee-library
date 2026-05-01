@@ -134,7 +134,7 @@ namespace Bee.Db.Providers.Sqlite
             var sb = new StringBuilder();
             foreach (var index in schema.Indexes!.Where(i => !i.PrimaryKey))
             {
-                string name = StrFunc.Format(index.Name, tableName);
+                string name = StringUtilities.Format(index.Name, tableName);
                 string fields = BuildIndexFieldList(index);
                 string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
                 sb.Append(CultureInfo.InvariantCulture,

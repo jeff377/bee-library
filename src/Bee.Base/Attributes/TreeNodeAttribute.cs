@@ -74,14 +74,14 @@
             if (attribute == null) { return value.ToString() ?? string.Empty; }
 
             string displayText;
-            if (StrFunc.IsNotEmpty(attribute.PropertyName))
+            if (StringUtilities.IsNotEmpty(attribute.PropertyName))
             {
                 // DisplayFormat is a composite format string
-                var names = StrFunc.Split(attribute.PropertyName, ",");
+                var names = StringUtilities.Split(attribute.PropertyName, ",");
                 var args = new object[names.Length];
                 for (int N1 = 0; N1 < names.Length; N1++)
                     args[N1] = BaseFunc.GetPropertyValue(value, names[N1])!;
-                displayText = StrFunc.Format(attribute.DisplayFormat, args);
+                displayText = StringUtilities.Format(attribute.DisplayFormat, args);
             }
             else
             {
@@ -89,7 +89,7 @@
                 displayText = attribute.DisplayFormat;
             }
 
-            if (StrFunc.IsEmpty(displayText))
+            if (StringUtilities.IsEmpty(displayText))
             {
                 if (value is IDisplayName displayName)
                     displayText = displayName.DisplayName ?? string.Empty;

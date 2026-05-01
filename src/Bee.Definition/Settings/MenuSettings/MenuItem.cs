@@ -71,7 +71,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         public override string ToString()
         {
-            return StrFunc.Format("{0} - {1}", this.ProgId, this.DisplayName);
+            return StringUtilities.Format("{0} - {1}", this.ProgId, this.DisplayName);
         }
     }
 }

@@ -88,7 +88,7 @@ namespace Bee.Definition.Layouts
         {
             foreach (LayoutItemBase item in this.Items!)
             {
-                if (item is LayoutGrid grid && StrFunc.IsEquals(grid.TableName, tableName))
+                if (item is LayoutGrid grid && StringUtilities.IsEquals(grid.TableName, tableName))
                     return grid;
             }
             return null;

@@ -251,7 +251,7 @@ namespace Bee.Db.Providers.MySql
         /// </remarks>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
-            switch (StrFunc.ToLower(dataType))
+            switch ((dataType ?? string.Empty).ToLower())
             {
                 case "char":
                     return length == 36 ? FieldDbType.Guid : FieldDbType.String;
@@ -308,7 +308,7 @@ namespace Bee.Db.Providers.MySql
         /// </summary>
         public static string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
         {
-            if (StrFunc.IsEmpty(defaultValue)) return string.Empty;
+            if (StringUtilities.IsEmpty(defaultValue)) return string.Empty;
 
             string trimmed = defaultValue.Trim();
 

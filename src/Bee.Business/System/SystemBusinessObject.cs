@@ -97,7 +97,7 @@ namespace Bee.Business.System
 
             // 4. Return the encrypted key and access token
             string encryptedKey = string.Empty;
-            if (StrFunc.IsNotEmpty(args.ClientPublicKey))
+            if (StringUtilities.IsNotEmpty(args.ClientPublicKey))
             {
                 encryptedKey = RsaCryptor.EncryptWithPublicKey(
                     Convert.ToBase64String(encryptionKey),

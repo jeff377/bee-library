@@ -74,7 +74,7 @@ namespace Bee.Db.Manager
             string dbName = databaseItem.DbName;
 
             // If a ServerId is specified, retrieve the connection string template from the corresponding server
-            if (StrFunc.IsNotEmpty(databaseItem.ServerId))
+            if (StringUtilities.IsNotEmpty(databaseItem.ServerId))
             {
                 var server = settings.Servers![databaseItem.ServerId];
                 if (server == null)
@@ -88,19 +88,19 @@ namespace Bee.Db.Manager
                 databaseType = server.DatabaseType;
 
                 // DatabaseItem can override the server's UserId/Password if specified
-                if (StrFunc.IsEmpty(userId))
+                if (StringUtilities.IsEmpty(userId))
                     userId = server.UserId;
-                if (StrFunc.IsEmpty(password))
+                if (StringUtilities.IsEmpty(password))
                     password = server.Password;
             }
 
             // Substitute placeholders in the connection string
-            if (StrFunc.IsNotEmpty(dbName))
-                connectionString = StrFunc.Replace(connectionString, "{@DbName}", dbName);
-            if (StrFunc.IsNotEmpty(userId))
-                connectionString = StrFunc.Replace(connectionString, "{@UserId}", userId);
-            if (StrFunc.IsNotEmpty(password))
-                connectionString = StrFunc.Replace(connectionString, "{@Password}", password);
+            if (StringUtilities.IsNotEmpty(dbName))
+                connectionString = StringUtilities.Replace(connectionString, "{@DbName}", dbName);
+            if (StringUtilities.IsNotEmpty(userId))
+                connectionString = StringUtilities.Replace(connectionString, "{@UserId}", userId);
+            if (StringUtilities.IsNotEmpty(password))
+                connectionString = StringUtilities.Replace(connectionString, "{@Password}", password);
 
             // Validate the connection string
             if (string.IsNullOrWhiteSpace(connectionString))

@@ -36,7 +36,7 @@ namespace Bee.Definition.Collections
                 if (_key != value)
                 {
                     // Change the item key value
-                    if (_collection != null && !StrFunc.IsEquals(_key, value))
+                    if (_collection != null && !StringUtilities.IsEquals(_key, value))
                         _collection.ChangeItemKey(value, this);
                     _key = value;
                 }

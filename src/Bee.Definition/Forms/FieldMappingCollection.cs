@@ -27,7 +27,7 @@ namespace Bee.Definition.Forms
         /// <param name="destinationField">The destination field name.</param>
         public FieldMapping? FindByDestination(string destinationField)
         {
-            return this.FirstOrDefault(m => StrFunc.IsEquals(m.DestinationField, destinationField));
+            return this.FirstOrDefault(m => StringUtilities.IsEquals(m.DestinationField, destinationField));
         }
     }
 }

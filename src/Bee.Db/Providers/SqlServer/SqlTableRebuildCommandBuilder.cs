@@ -112,8 +112,8 @@ namespace Bee.Db.Providers.SqlServer
             // Rename indexes (including PK) so they follow the table.
             foreach (var indexName in schema.Indexes!.Select(index => index.Name))
             {
-                string oldIndexName = StrFunc.Format(indexName, oldTable);
-                string newIndexName = StrFunc.Format(indexName, newTable);
+                string oldIndexName = StringUtilities.Format(indexName, oldTable);
+                string newIndexName = StringUtilities.Format(indexName, newTable);
                 string oldQualified = SqlSchemaSyntax.EscapeSqlString($"dbo.{oldTable}.{oldIndexName}");
                 string escapedNew = SqlSchemaSyntax.EscapeSqlString(newIndexName);
                 sb.Append(CultureInfo.InvariantCulture, $"EXEC sp_rename N'{oldQualified}', N'{escapedNew}', N'INDEX';\n");

@@ -75,7 +75,7 @@ namespace Bee.Db.Providers.SqlServer
         private string GetCreateTableCommandText(string tableName = "")
         {
             // Table name
-            string dbTableName = StrFunc.IsNotEmpty(tableName) ? tableName : this.TableSchema.TableName;
+            string dbTableName = StringUtilities.IsNotEmpty(tableName) ? tableName : this.TableSchema.TableName;
             // Build the column definitions clause
             string fields = GetFieldsCommandText();
             // Build the primary key constraint clause
@@ -86,15 +86,15 @@ namespace Bee.Db.Providers.SqlServer
             var sb = new StringBuilder();
             // Assemble the CREATE TABLE statement
             sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {QuoteName(dbTableName)} (\r\n{fields}");
-            if (StrFunc.IsNotEmpty(primaryKey))
+            if (StringUtilities.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append("\r\n);");
             // Append the index creation statements
-            if (StrFunc.IsNotEmpty(indexs))
+            if (StringUtilities.IsNotEmpty(indexs))
                 sb.Append(CultureInfo.InvariantCulture, $"\r\n{indexs}");
             // Append extended property statements for table and column descriptions
             string extendedProperty = GetExtendedPropertyCommandText(dbTableName);
-            if (StrFunc.IsNotEmpty(extendedProperty))
+            if (StringUtilities.IsNotEmpty(extendedProperty))
                 sb.Append(CultureInfo.InvariantCulture, $"\r\n{extendedProperty}");
             return sb.ToString();
         }
@@ -107,10 +107,10 @@ namespace Bee.Db.Providers.SqlServer
         {
             var sb = new StringBuilder();
             // Table-level description sourced from DisplayName
-            if (StrFunc.IsNotEmpty(this.TableSchema.DisplayName))
+            if (StringUtilities.IsNotEmpty(this.TableSchema.DisplayName))
                 sb.AppendLine(GetAddTableExtendedPropertyCommand(dbTableName, this.TableSchema.DisplayName));
             // Column-level descriptions sourced from Caption
-            foreach (var field in this.TableSchema.Fields!.Where(f => StrFunc.IsNotEmpty(f.Caption)))
+            foreach (var field in this.TableSchema.Fields!.Where(f => StringUtilities.IsNotEmpty(f.Caption)))
             {
                 sb.AppendLine(GetAddColumnExtendedPropertyCommand(dbTableName, field.FieldName, field.Caption));
             }
@@ -156,7 +156,7 @@ namespace Bee.Db.Providers.SqlServer
             {
                 // Get the SQL fragment for this column
                 string text = GetFieldCommandText(field);
-                if (StrFunc.IsNotEmpty(text))
+                if (StringUtilities.IsNotEmpty(text))
                 {
                     if (sb.Length > 0)
                         sb.Append(",\r\n");
@@ -179,12 +179,12 @@ namespace Bee.Db.Providers.SqlServer
             // Default value
             string defaultValue = GetDefaultValue(field);
             string defaultText;
-            if (StrFunc.IsNotEmpty(defaultValue))
+            if (StringUtilities.IsNotEmpty(defaultValue))
                 defaultText = $"DEFAULT ({defaultValue})";
             else
                 defaultText = string.Empty;
 
-            if (StrFunc.IsEmpty(defaultText))
+            if (StringUtilities.IsEmpty(defaultText))
                 return $"{QuoteName(field.FieldName)} {dbType} {allowNull}";
             else
                 return $"{QuoteName(field.FieldName)} {dbType} {allowNull} {defaultText}";
@@ -258,11 +258,11 @@ namespace Bee.Db.Providers.SqlServer
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
-                    return StrFunc.Format("N'{0}'", StrFunc.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue);
+                    return StringUtilities.Format("N'{0}'", StringUtilities.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue);
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
                 default:
-                    return StrFunc.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue;
+                    return StringUtilities.IsEmpty(defaultValue) ? originalDefaultValue : defaultValue;
             }
         }
 
@@ -284,7 +284,7 @@ namespace Bee.Db.Providers.SqlServer
                 fieldBuilder.Append(CultureInfo.InvariantCulture, $"{QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             return $"CONSTRAINT {QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
@@ -311,7 +311,7 @@ namespace Bee.Db.Providers.SqlServer
         private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
         {
             // Index name
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             // Index fields
             var fieldBuilder = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)

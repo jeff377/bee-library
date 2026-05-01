@@ -107,12 +107,12 @@ namespace Bee.Db.Providers.PostgreSql
 
             // 3) Default change (a nullable column has no DEFAULT in this framework, see
             // PgSchemaSyntax.GetDefaultExpression)
-            bool defaultChanged = !StrFunc.IsEquals(oldField.DefaultValue, newField.DefaultValue)
+            bool defaultChanged = !StringUtilities.IsEquals(oldField.DefaultValue, newField.DefaultValue)
                 || oldField.AllowNull != newField.AllowNull;
             if (defaultChanged)
             {
                 string newDefault = PgSchemaSyntax.GetDefaultExpression(newField);
-                if (StrFunc.IsNotEmpty(newDefault))
+                if (StringUtilities.IsNotEmpty(newDefault))
                     statements.Add($"ALTER TABLE {quotedTable} ALTER COLUMN {quotedColumn} SET DEFAULT {newDefault};");
                 else
                     statements.Add($"ALTER TABLE {quotedTable} ALTER COLUMN {quotedColumn} DROP DEFAULT;");
@@ -123,7 +123,7 @@ namespace Bee.Db.Providers.PostgreSql
 
         private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
         {
-            string indexName = StrFunc.Format(index.Name, tableName);
+            string indexName = StringUtilities.Format(index.Name, tableName);
             string fields = BuildIndexFieldList(index);
 
             if (index.PrimaryKey)

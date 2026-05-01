@@ -83,11 +83,11 @@ namespace Bee.Db.Providers.Oracle
             switch (field.DbType)
             {
                 case FieldDbType.String:
-                    return StrFunc.Format("'{0}'", StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
+                    return StringUtilities.Format("'{0}'", StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
                 default:
-                    return StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
+                    return StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
             }
         }
 
@@ -109,7 +109,7 @@ namespace Bee.Db.Providers.Oracle
             string dbType = OracleTypeMapping.GetOracleType(field);
             string nullability = field.AllowNull ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
-            string defaultClause = StrFunc.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
+            string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
             return $"{QuoteName(field.FieldName)} {dbType}{defaultClause} {nullability}";
         }
 
@@ -134,7 +134,7 @@ namespace Bee.Db.Providers.Oracle
         /// <param name="field">The field definition.</param>
         public static string GetCommentStatement(string tableName, DbField field)
         {
-            if (StrFunc.IsEmpty(field.Caption))
+            if (StringUtilities.IsEmpty(field.Caption))
                 return string.Empty;
 
             return $"COMMENT ON COLUMN {QuoteName(tableName)}.{QuoteName(field.FieldName)} IS '{EscapeSqlString(field.Caption)}'";

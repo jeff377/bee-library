@@ -115,11 +115,11 @@ namespace Bee.Db.Providers.SqlServer
             {
                 case FieldDbType.String:
                 case FieldDbType.Text:
-                    return StrFunc.Format("N'{0}'", StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue);
+                    return StringUtilities.Format("N'{0}'", StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue);
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
                 default:
-                    return StrFunc.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
+                    return StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
             }
         }
 
@@ -132,7 +132,7 @@ namespace Bee.Db.Providers.SqlServer
             string dbType = ConvertDbType(field);
             string nullability = field.AllowNull ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
-            string defaultClause = StrFunc.IsNotEmpty(defaultExpression) ? $" DEFAULT ({defaultExpression})" : string.Empty;
+            string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT ({defaultExpression})" : string.Empty;
             return $"{QuoteName(field.FieldName)} {dbType} {nullability}{defaultClause}";
         }
     }

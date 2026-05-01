@@ -116,7 +116,7 @@ namespace Bee.Definition.Layouts
             {
                 foreach (LayoutItemBase baseItem in group.Items!)
                 {
-                    if (baseItem is LayoutItem item && StrFunc.IsEquals(item.FieldName, fieldName))
+                    if (baseItem is LayoutItem item && StringUtilities.IsEquals(item.FieldName, fieldName))
                         return item;
                 }
             }

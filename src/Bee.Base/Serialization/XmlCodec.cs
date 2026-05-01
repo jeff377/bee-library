@@ -50,7 +50,7 @@ namespace Bee.Base.Serialization
         /// <param name="type">The object type.</param>
         public static object? Deserialize(string xml, Type type)
         {
-            if (StrFunc.IsEmpty(xml))
+            if (StringUtilities.IsEmpty(xml))
                 return default;
 
             object? value;

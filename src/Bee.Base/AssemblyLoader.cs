@@ -22,7 +22,7 @@ namespace Bee.Base
 
             // Search in the current AppDomain
             var match = AppDomain.CurrentDomain.GetAssemblies()
-                .FirstOrDefault(a => StrFunc.IsEquals(a.ManifestModule.Name, assemblyName));
+                .FirstOrDefault(a => StringUtilities.IsEquals(a.ManifestModule.Name, assemblyName));
             if (match != null)
             {
                 _loadedAssemblies[assemblyName] = match;
@@ -55,7 +55,7 @@ namespace Bee.Base
 
             // Resolve the full path of the assembly
             string assemblyFile;
-            if (StrFunc.IsEmpty(Path.GetDirectoryName(assemblyName)))
+            if (StringUtilities.IsEmpty(Path.GetDirectoryName(assemblyName)))
                 assemblyFile = Path.Combine(FileUtilities.GetAssemblyPath(), assemblyName);
             else
                 assemblyFile = assemblyName;
@@ -125,18 +125,18 @@ namespace Bee.Base
         private static void GetAssemblyAndType(string fullTypeName, out string assemblyName, out string typeName)
         {
             string leftPart, rightPart;
-            if (StrFunc.Contains(fullTypeName, ","))
+            if (StringUtilities.Contains(fullTypeName, ","))
             {
                 // Example: "Bee.Business.TBusinessObject, Bee.Business"
-                StrFunc.SplitLeft(fullTypeName, ",", out leftPart, out rightPart);
-                assemblyName = StrFunc.Format("{0}.dll", StrFunc.Trim(rightPart));
+                fullTypeName.SplitLeft(",", out leftPart, out rightPart);
+                assemblyName = StringUtilities.Format("{0}.dll", StringUtilities.Trim(rightPart));
                 typeName = leftPart;
             }
             else
             {
                 // Example: "Bee.Business.TBusinessObject"
-                StrFunc.SplitRight(fullTypeName, ".", out leftPart, out rightPart);
-                assemblyName = StrFunc.Format("{0}.dll", leftPart);
+                fullTypeName.SplitRight(".", out leftPart, out rightPart);
+                assemblyName = StringUtilities.Format("{0}.dll", leftPart);
                 typeName = fullTypeName;
             }
         }

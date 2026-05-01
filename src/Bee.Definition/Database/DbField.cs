@@ -177,7 +177,7 @@ namespace Bee.Definition.Database
             if ((DbType == FieldDbType.Decimal) && (Precision != source.Precision || Scale != source.Scale))
                 return false;
             // Compare default value
-            if (!StrFunc.IsEquals(DefaultValue, source.DefaultValue)) { return false; }
+            if (!StringUtilities.IsEquals(DefaultValue, source.DefaultValue)) { return false; }
 
             return true;
         }

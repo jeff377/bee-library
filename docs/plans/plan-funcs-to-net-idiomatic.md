@@ -107,7 +107,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | 8 | `SerializeFunc` | 9 | C | ✅ | 2026-05-01 |
 | 9 | `CacheFunc` | 11 | A+D | ✅ | 2026-05-01 |
 | 10 | `FileFunc` | 21 | A+C | ✅ | 2026-05-01 |
-| 11 | `StrFunc` | 40 | A/B | 📝 | — |
+| 11 | `StrFunc` | 39 | A+B+C+D | ✅ | 2026-05-01 |
 | 12 | `BaseFunc` | 46 | 全部 | 📝 | — |
 
 > 狀態圖示:`📝` 待開始 / `🚧` 進行中 / `✅` 已完成 / `⏸` 暫停
@@ -186,8 +186,20 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 當 `*Func` 方法只有 1-2 個 prod callers 且 body 是 BCL 1-line 包裝,直接 inline 到 caller、刪除原 helper。比保留薄殼更清楚:
 
 - **`object` 不擴充**:第一參數為 `object` 的方法不轉擴充方法(會污染所有型別 IntelliSense),改走 path A inline 或 path C 的 noun-form static utility(例:`DateTimeFunc.IsDate(object)` → inline 至 `BaseFunc.CDateTime` 用 `is DateTime` + `DateTime.TryParse`)
-- **預設值/隱式約定的判斷**:當 helper 唯一加值是「強制某預設」(例:`InvariantCulture`),如果該預設應該被呼叫端意識到,不該藏在 helper 裡 —— 直接用 BCL 並把預設明示給呼叫端,而非透過 helper 隱含預設(本例 `DateTimeFunc.Format` 直接刪除)
 - **Inline 後的測試覆蓋**:刪除 helper 前確認 caller 已有完整測試覆蓋 inlined 邏輯;若有,helper 自身的測試可一併刪除,避免重複測試
+
+> **2026-05-01 修正**:原本此處有「helper 唯一加值是強制某預設(如 `InvariantCulture`)時應 inline 並強制 caller 明示預設」的條目,但 `StrFunc` 重構時定案的「**框架封裝預設值**」原則(見下節)取代此判斷。`DateTimeFunc.Format` 刪除是因為 0 prod caller,不是因為 InvariantCulture 應該被 caller 明示。
+
+### 框架封裝預設值(culture / case-sensitivity / null handling)— 由 `StrFunc`(2026-05-01)定案
+
+**核心原則**:Bee.NET 是 ERP 框架,業務情境字串比較預設不區大小寫、格式化預設用 InvariantCulture。**只要方法需要指定 `CultureInfo` 或 `StringComparison`,框架就封裝起來,呼叫端不需傳這些參數**,簡化 caller 複雜度:
+
+- **不該 inline 至 BCL**:即便 BCL 有對應方法(`string.Equals(s1, s2, StringComparison)`、`string.Format(culture, ...)`),inline 後呼叫端會被迫每次傳這些參數。對 ERP 業務碼是多餘負擔
+- **保留為 framework helper**:helper 內部用框架統一的 default,呼叫端只在「需要不同行為」時才傳第二個參數覆蓋
+- **改名對齊 BCL 詞彙**:如果原 helper 名稱(如 `LeftWith`、`Pos`)較不直覺,可順手改成 BCL 慣用名(`StartsWith`、`IndexOf`),即使行為不同(default IgnoreCase),讓 .NET 老手讀起來熟悉
+- **不擴充 `string`**:方法名與 BCL `string` instance method 衝突時(`StartsWith`/`Contains`/`IndexOf`),擴充方法會被 BCL 覆蓋永不執行,必須走 static utility 形式(`StringUtilities.StartsWith(s, prefix)`)
+
+**預期適用範圍**:不只 `StrFunc`,後續 `BaseFunc` 的型別轉換(`CDateTime`/`CInt`/`CDecimal` 等需 culture 的解析)也走同模式。
 
 ### Path C 命名衝突檢查 — 由 `HttpFunc → HttpUtilities`(2026-05-01)補強
 

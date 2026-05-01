@@ -96,7 +96,7 @@ namespace Bee.Definition.Settings
         /// <returns></returns>
         public MenuItem? FindItem(string progId)
         {
-            var matched = this.Items!.FirstOrDefault(i => StrFunc.IsEquals(i.ProgId, progId));
+            var matched = this.Items!.FirstOrDefault(i => StringUtilities.IsEquals(i.ProgId, progId));
             if (matched != null) return matched;
 
             foreach (MenuFolder folder in this.Folders!)
@@ -115,7 +115,7 @@ namespace Bee.Definition.Settings
         /// <returns></returns>
         public string GetLanguageKey()
         {
-            return StrFunc.Format("MenuFolder_{0}", this.FolderId);
+            return StringUtilities.Format("MenuFolder_{0}", this.FolderId);
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Bee.Definition.Settings
         /// <returns></returns>
         public override string ToString()
         {
-            return StrFunc.Format("{0} - {1}", this.FolderId, this.DisplayName);
+            return StringUtilities.Format("{0} - {1}", this.FolderId, this.DisplayName);
         }
     }
 }

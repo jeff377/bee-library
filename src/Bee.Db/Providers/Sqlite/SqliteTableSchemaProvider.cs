@@ -166,7 +166,7 @@ namespace Bee.Db.Providers.Sqlite
             foreach (DataRow row in listResult.Rows)
             {
                 string origin = BaseFunc.CStr(row["origin"]);
-                if (StrFunc.IsEquals(origin, "pk")) continue;
+                if (StringUtilities.IsEquals(origin, "pk")) continue;
 
                 string indexName = BaseFunc.CStr(row["name"]);
                 bool unique = BaseFunc.CBool(row["unique"]);
@@ -280,7 +280,7 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         public static FieldDbType MapToFieldDbType(string baseType, bool isPrimaryKey)
         {
-            string normalized = StrFunc.ToUpper(baseType ?? string.Empty);
+            string normalized = (baseType ?? string.Empty).ToUpper();
             switch (normalized)
             {
                 case "VARCHAR":
@@ -333,7 +333,7 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         public static string ParseDefaultValue(string rawDefault, FieldDbType dbType, string originalDefault)
         {
-            if (StrFunc.IsEmpty(rawDefault)) return string.Empty;
+            if (StringUtilities.IsEmpty(rawDefault)) return string.Empty;
 
             string trimmed = rawDefault.Trim();
 
@@ -346,7 +346,7 @@ namespace Bee.Db.Providers.Sqlite
                 trimmed.Length >= 2 && trimmed.StartsWith('\'') && trimmed.EndsWith('\''))
                 trimmed = trimmed.Substring(1, trimmed.Length - 2).Replace("''", "'");
 
-            return StrFunc.IsEquals(originalDefault, trimmed) ? string.Empty : trimmed;
+            return StringUtilities.IsEquals(originalDefault, trimmed) ? string.Empty : trimmed;
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Bee.Definition.Database
                 PrimaryKey = true
             };
 
-            string[] fieldNames = StrFunc.Split(fields, ",");
+            string[] fieldNames = StringUtilities.Split(fields, ",");
             foreach (string fieldName in fieldNames)
                 index.IndexFields!.Add(fieldName);
             Add(index);
@@ -52,7 +52,7 @@ namespace Bee.Definition.Database
             oIndex = new TableSchemaIndex();
             oIndex.Name = name;
             oIndex.Unique = unique;
-            oFields = StrFunc.Split(fields, ",");
+            oFields = StringUtilities.Split(fields, ",");
             foreach (string fieldName in oFields)
                 oIndex.IndexFields!.Add(fieldName);
             Add(oIndex);

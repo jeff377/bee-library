@@ -64,7 +64,7 @@ namespace Bee.Base
         /// </summary>
         public static string GetAssemblyPath()
         {
-            if (StrFunc.IsEmpty(AppDomain.CurrentDomain.RelativeSearchPath))
+            if (StringUtilities.IsEmpty(AppDomain.CurrentDomain.RelativeSearchPath))
                 return AppDomain.CurrentDomain.BaseDirectory;
             return AppDomain.CurrentDomain.RelativeSearchPath!;
         }

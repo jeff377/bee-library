@@ -20,12 +20,12 @@ namespace Bee.Repository.System
             var provider = DbProviderRegistry.Get(item.DatabaseType);
 
             var connectionString = item.ConnectionString;
-            if (StrFunc.IsNotEmpty(item.DbName))
-                connectionString = StrFunc.Replace(connectionString, "{@DbName}", item.DbName);
-            if (StrFunc.IsNotEmpty(item.UserId))
-                connectionString = StrFunc.Replace(connectionString, "{@UserId}", item.UserId);
-            if (StrFunc.IsNotEmpty(item.Password))
-                connectionString = StrFunc.Replace(connectionString, "{@Password}", item.Password);
+            if (StringUtilities.IsNotEmpty(item.DbName))
+                connectionString = StringUtilities.Replace(connectionString, "{@DbName}", item.DbName);
+            if (StringUtilities.IsNotEmpty(item.UserId))
+                connectionString = StringUtilities.Replace(connectionString, "{@UserId}", item.UserId);
+            if (StringUtilities.IsNotEmpty(item.Password))
+                connectionString = StringUtilities.Replace(connectionString, "{@Password}", item.Password);
 
             using (var connection = provider.CreateConnection()!)
             {

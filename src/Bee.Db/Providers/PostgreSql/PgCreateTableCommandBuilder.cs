@@ -50,12 +50,12 @@ namespace Bee.Db.Providers.PostgreSql
 
             var sb = new StringBuilder();
             sb.Append(CultureInfo.InvariantCulture, $"CREATE TABLE {PgSchemaSyntax.QuoteName(tableName)} (\r\n{fields}");
-            if (StrFunc.IsNotEmpty(primaryKey))
+            if (StringUtilities.IsNotEmpty(primaryKey))
                 sb.Append(CultureInfo.InvariantCulture, $",\r\n  {primaryKey}");
             sb.Append("\r\n);");
-            if (StrFunc.IsNotEmpty(indexes))
+            if (StringUtilities.IsNotEmpty(indexes))
                 sb.Append(CultureInfo.InvariantCulture, $"\r\n{indexes}");
-            if (StrFunc.IsNotEmpty(comments))
+            if (StringUtilities.IsNotEmpty(comments))
                 sb.Append(CultureInfo.InvariantCulture, $"\r\n{comments}");
             return sb.ToString();
         }
@@ -93,7 +93,7 @@ namespace Bee.Db.Providers.PostgreSql
                     $"{PgSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
             }
 
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             return $"CONSTRAINT {PgSchemaSyntax.QuoteName(name)} PRIMARY KEY ({fieldBuilder})";
         }
 
@@ -118,7 +118,7 @@ namespace Bee.Db.Providers.PostgreSql
         /// <param name="index">The table schema index definition.</param>
         private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
         {
-            string name = StrFunc.Format(index.Name, tableName);
+            string name = StringUtilities.Format(index.Name, tableName);
             var fieldBuilder = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)
             {
@@ -140,10 +140,10 @@ namespace Bee.Db.Providers.PostgreSql
         private string GetCommentCommandText(string tableName)
         {
             var sb = new StringBuilder();
-            if (StrFunc.IsNotEmpty(this.TableSchema.DisplayName))
+            if (StringUtilities.IsNotEmpty(this.TableSchema.DisplayName))
                 sb.AppendLine(BuildTableCommentStatement(tableName, this.TableSchema.DisplayName));
 
-            foreach (var field in this.TableSchema.Fields!.Where(f => StrFunc.IsNotEmpty(f.Caption)))
+            foreach (var field in this.TableSchema.Fields!.Where(f => StringUtilities.IsNotEmpty(f.Caption)))
             {
                 sb.AppendLine(BuildColumnCommentStatement(tableName, field.FieldName, field.Caption));
             }

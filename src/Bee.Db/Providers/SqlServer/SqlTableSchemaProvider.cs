@@ -225,7 +225,7 @@ namespace Bee.Db.Providers.SqlServer
             // Set the String field length
             if (dbField.DbType == FieldDbType.String)
             {
-                if (StrFunc.ToUpper(row.GetFieldValue<string>("DbType")) == "NVARCHAR")
+                if (StringUtilities.IsEquals(row.GetFieldValue<string>("DbType"), "NVARCHAR"))
                     dbField.Length = row.GetFieldValue<int>("Length") / 2;
                 else
                     dbField.Length = row.GetFieldValue<int>("Length");
@@ -252,7 +252,7 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="length">The data length.</param>
         public static FieldDbType GetFieldDbType(string dataType, int dataPrecision, int dataScale, int length)
         {
-            switch (StrFunc.ToUpper(dataType))
+            switch ((dataType ?? string.Empty).ToUpper())
             {
                 case "NCHAR":
                     return FieldDbType.String;
@@ -298,27 +298,27 @@ namespace Bee.Db.Providers.SqlServer
         /// <param name="originalDefaultValue">The built-in default value.</param>
         public static string ParseDBDefaultValue(string dataType, string defaultValue, string originalDefaultValue)
         {
-            switch (StrFunc.ToUpper(dataType))
+            switch ((dataType ?? string.Empty).ToUpper())
             {
                 case "CHAR":
                 case "VARCHAR":
-                    defaultValue = StrFunc.LeftRightCut(defaultValue, "('", "')");
+                    defaultValue = defaultValue.LeftRightCut("('", "')");
                     break;
                 case "NCHAR":
                 case "NVARCHAR":
-                    defaultValue = StrFunc.LeftRightCut(defaultValue, "(N'", "')");
-                    defaultValue = StrFunc.LeftRightCut(defaultValue, "('", "')");
+                    defaultValue = defaultValue.LeftRightCut("(N'", "')");
+                    defaultValue = defaultValue.LeftRightCut("('", "')");
                     break;
                 case "BIT":
                 case "INT":
                 case "MONEY":
                 case "FLOAT":
-                    defaultValue = StrFunc.LeftRightCut(defaultValue, "((", "))");
+                    defaultValue = defaultValue.LeftRightCut("((", "))");
                     break;
                 case "DATE":
                 case "DATETIME":
                 case "UNIQUEIDENTIFIER":
-                    defaultValue = StrFunc.LeftRightCut(defaultValue, "(", ")");
+                    defaultValue = defaultValue.LeftRightCut("(", ")");
                     break;
                 default:
                     defaultValue = string.Empty;
@@ -326,7 +326,7 @@ namespace Bee.Db.Providers.SqlServer
             }
 
             // Return empty if the database default matches the built-in default.
-            if (StrFunc.Equals(originalDefaultValue, defaultValue))
+            if (StringUtilities.IsEquals(originalDefaultValue, defaultValue))
                 return string.Empty;
             else
                 return defaultValue;

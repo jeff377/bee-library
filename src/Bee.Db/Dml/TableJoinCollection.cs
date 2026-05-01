@@ -16,7 +16,7 @@ namespace Bee.Db.Dml
         {
             if (string.IsNullOrEmpty(rightAlias))
                 return null;
-            return this.FirstOrDefault(item => StrFunc.Equals(item.RightAlias, rightAlias));
+            return this.FirstOrDefault(item => StringUtilities.IsEquals(item.RightAlias, rightAlias));
         }
     }
 }

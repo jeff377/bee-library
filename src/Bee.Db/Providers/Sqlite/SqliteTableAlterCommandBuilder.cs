@@ -88,7 +88,7 @@ namespace Bee.Db.Providers.Sqlite
                 throw new NotSupportedException(
                     "SQLite cannot add a PRIMARY KEY to an existing table via ALTER; this requires a rebuild.");
 
-            string indexName = StrFunc.Format(index.Name, tableName);
+            string indexName = StringUtilities.Format(index.Name, tableName);
             string fields = BuildIndexFieldList(index);
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
             return $"CREATE {uniqueClause}INDEX {SqliteSchemaSyntax.QuoteName(indexName)} ON {SqliteSchemaSyntax.QuoteName(tableName)} ({fields});";

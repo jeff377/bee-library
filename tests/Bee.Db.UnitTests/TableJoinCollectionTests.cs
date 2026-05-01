@@ -64,14 +64,16 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("FindRightAlias 採大小寫敏感比對（StrFunc.Equals 解析為 object.Equals）")]
-        public void FindRightAlias_CaseSensitive_DifferentCaseReturnsNull()
+        [DisplayName("FindRightAlias 採大小寫不敏感比對(框架預設 IgnoreCase)")]
+        public void FindRightAlias_CaseInsensitive_DifferentCaseFound()
         {
-            // StrFunc 沒有定義 static Equals，此呼叫實際解析至 object.Equals(object, object)
-            // → 字串比對為 ordinal case-sensitive
+            // FindRightAlias 使用 StringUtilities.IsEquals(case-insensitive 預設),
+            // 即使輸入小寫 "d" 也能找到大寫的 "D" alias。
             var collection = BuildSampleCollection();
 
-            Assert.Null(collection.FindRightAlias("d"));
+            var join = collection.FindRightAlias("d");
+
+            Assert.NotNull(join);
         }
 
         [Fact]

@@ -24,9 +24,9 @@
         {
             string[] oValues;
 
-            if (StrFunc.IsEmpty(s)) { return; }
+            if (StringUtilities.IsEmpty(s)) { return; }
 
-            oValues = StrFunc.Split(s, delimiter);
+            oValues = StringUtilities.Split(s, delimiter);
             foreach (string value in oValues)
                 this.Add(value);
         }

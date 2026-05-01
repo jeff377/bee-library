@@ -41,7 +41,7 @@ namespace Bee.Db.Dml
             foreach (var field in _formTable.Fields!)
             {
                 // Skip non-foreign-key fields
-                if (field.Type != FieldType.DbField || StrFunc.IsEmpty(field.RelationProgId)) { continue; }
+                if (field.Type != FieldType.DbField || StringUtilities.IsEmpty(field.RelationProgId)) { continue; }
 
                 // Retrieve the referenced field mappings resolved through this foreign key field
                 var fieldMappings = GetUsedRelationFieldMappings(field);
@@ -114,7 +114,7 @@ namespace Bee.Db.Dml
                 {
                     var fieldMapping = new QueryFieldMapping()
                     {
-                        FieldName = StrFunc.IsEmpty(queryFieldName) ? mapping.DestinationField : queryFieldName,
+                        FieldName = StringUtilities.IsEmpty(queryFieldName) ? mapping.DestinationField : queryFieldName,
                         SourceAlias = join.RightAlias,
                         SourceField = srcField.FieldName,
                         TableJoin = join
@@ -141,11 +141,11 @@ namespace Bee.Db.Dml
         {
             // Uses base-26 progression: A → B → C ... → Z → ZA → ZB ... (multi-character expansion)
             string baseValues = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            string nextAlias = StrFunc.GetNextId(tableAlias, baseValues);
+            string nextAlias = StringUtilities.GetNextId(tableAlias, baseValues);
             // If the generated alias is a reserved SQL keyword, advance to the next one
             while (SqlKeywords.Contains(nextAlias))
             {
-                nextAlias = StrFunc.GetNextId(nextAlias, baseValues);
+                nextAlias = StringUtilities.GetNextId(nextAlias, baseValues);
             }
             return nextAlias;
         }

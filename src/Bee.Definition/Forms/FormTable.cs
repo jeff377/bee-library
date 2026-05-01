@@ -113,7 +113,7 @@ namespace Bee.Definition.Forms
             foreach (var field in Fields!)
             {
                 if (field.Type != FieldType.DbField ||
-                    StrFunc.IsEmpty(field.RelationProgId) ||
+                    StringUtilities.IsEmpty(field.RelationProgId) ||
                     BaseFunc.IsEmpty(field.RelationFieldMappings!))
                     continue;
 
