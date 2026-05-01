@@ -284,7 +284,7 @@ namespace Bee.Db
                     using var reader = cmd.ExecuteReader();
                     table.Load(reader);
                 }
-                DataSetFunc.UpperColumnName(table);
+                table.UppercaseColumnNames();
                 return DbCommandResult.ForTable(table);
             }
         }
@@ -626,7 +626,7 @@ namespace Bee.Db
                 {
                     var table = new DataTable("DataTable");
                     table.Load(reader);
-                    DataSetFunc.UpperColumnName(table);
+                    table.UppercaseColumnNames();
                     return DbCommandResult.ForTable(table);
                 }
             }

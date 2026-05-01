@@ -56,7 +56,7 @@ namespace Bee.Base.Data
         public static DataColumn AddColumn(this DataTable table, string fieldName, FieldDbType dbType)
         {
             var dataType = DbTypeConverter.ToType(dbType);
-            object defaultValue = DataSetFunc.GetDefaultValue(dbType);
+            object defaultValue = dbType.GetDefaultValue();
             return AddColumn(table, fieldName, dataType, defaultValue);
         }
 
@@ -123,6 +123,16 @@ namespace Bee.Base.Data
         {
             // A null table or a table with zero rows is considered empty
             return dataTable == null || (dataTable.Rows.Count == 0);
+        }
+
+        /// <summary>
+        /// Converts all column names in the table to uppercase.
+        /// </summary>
+        /// <param name="dataTable">The target table.</param>
+        public static void UppercaseColumnNames(this DataTable dataTable)
+        {
+            foreach (DataColumn column in dataTable.Columns)
+                column.ColumnName = column.ColumnName.ToUpper();
         }
     }
 }

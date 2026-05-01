@@ -38,7 +38,7 @@ namespace Bee.Db
                 DbType = DbTypeConverter.ToDbType(field.DbType),
                 SourceColumn = field.FieldName,
                 SourceVersion = sourceVersion,
-                Value = field.AllowNull ? null : DataSetFunc.GetDefaultValue(field.DbType),
+                Value = field.AllowNull ? null : field.DbType.GetDefaultValue(),
                 Size = (field.DbType == FieldDbType.String) ? field.Length : 0,
             };
             Add(parameter);

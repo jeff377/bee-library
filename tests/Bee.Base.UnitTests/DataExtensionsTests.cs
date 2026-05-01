@@ -183,6 +183,20 @@ namespace Bee.Base.UnitTests
             table.Rows.Add(1);
             Assert.False(table.IsEmpty());
         }
+
+        [Fact]
+        [DisplayName("UppercaseColumnNames 應將所有欄位名轉為大寫")]
+        public void UppercaseColumnNames_ConvertsAllColumnsToUpperCase()
+        {
+            var table = new DataTable();
+            table.Columns.Add("name", typeof(string));
+            table.Columns.Add("age", typeof(int));
+
+            table.UppercaseColumnNames();
+
+            Assert.Equal("NAME", table.Columns[0].ColumnName);
+            Assert.Equal("AGE", table.Columns[1].ColumnName);
+        }
     }
 
     public class DataSetExtensionsTests
