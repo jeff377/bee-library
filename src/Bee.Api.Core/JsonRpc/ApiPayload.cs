@@ -28,7 +28,7 @@ namespace Bee.Api.Core.JsonRpc
             SerializeState = serializeState;
             if (Value is IObjectSerialize objectSerialize)
             {
-                objectSerialize?.SetSerializeState(serializeState);
+                objectSerialize.SetSerializeState(serializeState);
             }
         }
 
