@@ -10,6 +10,45 @@
 | 屬性 / 方法 | PascalCase | `ValidateAccess`, `CreateSession` |
 | 私有欄位 | `_camelCase`（底線前綴） | `_isTokenValid`, `_accessToken` |
 | 參數 | camelCase | `accessToken`, `sessionId` |
+| 擴充方法類別 | `<TypeName>Extensions` | `StringExtensions`, `DateTimeExtensions`, `ExceptionExtensions` |
+| 名詞型 static utility | `<Domain>Utilities` 或純名詞 | `StringUtilities`, `HttpUtilities`, `ValueUtilities`, `Gzip`, `XmlCodec` |
+
+> **`*Func` 後綴已棄用**（2026-05-01 全面移除）。現存程式碼不應再新增 `*Func` 命名的靜態類別。
+
+## 靜態工具類別與擴充方法
+
+新方法依其本身屬性選擇歸屬，**不要建立 grab-bag 共用類**：
+
+| 路徑 | 適用條件 | 命名 / 位置 | 範例 |
+|------|---------|-----------|------|
+| **A. 直接用 BCL** | BCL 已有等價功能 | 不寫 wrapper，呼叫端直接 inline | `Guid.NewGuid()`、`ArgumentException.ThrowIfNullOrWhiteSpace`、`RandomNumberGenerator.GetInt32` |
+| **B. 擴充方法** | 第一參數為 BCL 或 domain 型別，能讀為「subject 動作」 | `<TypeName>Extensions`，與目標型別同 namespace | `s.SplitLeft(...)` → `StringExtensions`、`ex.Unwrap()` → `ExceptionExtensions` |
+| **C. 名詞型 static utility** | 純功能集合，無自然 domain 歸屬 | `<Domain>Utilities` 或單純名詞 | `StringUtilities.IsEqualsOr(...)`、`HttpUtilities.SendAsync(...)`、`ValueUtilities.CStr(...)` |
+| **D. 移到 domain class** | 方法本質屬於某 domain object 既有職責 | 該物件的 `static` 或 instance method | `BackendInfo.GetDatabaseItem`、`FormSchema.GetListLayout` |
+
+### 細部原則
+
+- **不擴充 `object`**：第一參數為 `object` 的方法不轉擴充方法（會污染**所有**型別 IntelliSense）。改走 path A inline 或 path C noun-form static
+- **不與 BCL instance method 同名擴充**：擴充方法會被 BCL instance method 永久覆蓋（C# member resolution 規則）。`string.StartsWith` / `string.Contains` / `string.IndexOf` 衝突時必須走 path C（`StringUtilities.StartsWith(s, prefix)`）
+- **框架封裝預設值**：helper 內部處理 `CultureInfo` / `StringComparison` 等文化/大小寫預設（ERP 預設 InvariantCulture + 不區大小寫），呼叫端只在覆蓋預設時傳第二個參數。**不要把 `string.Format(CultureInfo.InvariantCulture, ...)` 散落到呼叫端**
+- **0-caller 框架公開 API 保留**：作為框架對外 API surface（如 `ValueUtilities.Cxxx` 型別轉換家族），即使 prod 0 caller 仍保留；純 BCL wrapper 且 0 caller 才直接刪
+- **消除純 facade**：1-line delegation wrapper 不保留 —— 公開內部 container，呼叫端直接用
+- **不為假設的未來建類**：即使預期未來會新增共用方法，也應依方法屬性逐一找歸屬，現在只搬最低必要內容
+
+### Path C 命名衝突檢查（CA1724）
+
+選名詞型 utility 名稱時必須避開**所有** BCL namespace 末段名稱：
+
+- Roslyn analyzer **CA1724** 對 namespace-vs-type 同名也會告警；`TreatWarningsAsErrors=true` 下會編譯失敗
+- 常見地雷：`Http`（`System.Net.Http`）、`Json`（`System.Text.Json`）、`Xml`（`System.Xml`）、`Linq`、`Threading`、`Diagnostics`
+- 衝突解法優先序：加 `Utilities` 後綴（`Http` → `HttpUtilities`）、加領域前綴
+- **避免 `*Helper` 後綴**：在 .NET 已過時，且仍可能與舊 type 撞名
+
+### Path D shadowing 檢查
+
+把方法搬到 owning class 為 `private static` 前，確認 enclosing type member 不會與方法 body 引用的 type 名稱衝突（C# member lookup 規則：enclosing type member 優先於 namespace 內的 type）。
+
+衝突時優先**改走 path C**（獨立類）—— 衝突往往是 path D 不適用的訊號。
 
 ## 檔案組織
 

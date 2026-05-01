@@ -35,10 +35,10 @@ public void CreateSession_ReturnsValidToken()
 [Theory]
 [InlineData(DefineType.SystemSettings, typeof(SystemSettings))]
 [InlineData(DefineType.UserSettings, typeof(UserSettings))]
-[DisplayName("GetDefineType 回傳正確型別")]
-public void GetDefineType_ValidType(DefineType defineType, Type expectedType)
+[DisplayName("ToClrType 回傳正確型別")]
+public void ToClrType_ValidType(DefineType defineType, Type expectedType)
 {
-    var result = DefineFunc.GetDefineType(defineType);
+    var result = defineType.ToClrType();
     Assert.Equal(expectedType, result);
 }
 ```

@@ -24,11 +24,11 @@ var cmd = new DbCommandSpec(DbCommandKind.Scalar,
 
 ```csharp
 // ✅ 正確
-using var conn = DbFunc.CreateConnection("common");
+using var conn = DbConnectionManager.CreateConnection("common");
 conn.Open();
 
 // ❌ 禁止
-var conn = DbFunc.CreateConnection("common");
+var conn = DbConnectionManager.CreateConnection("common");
 conn.Open();
 // ... 可能因例外而未執行 Dispose
 conn.Dispose();
