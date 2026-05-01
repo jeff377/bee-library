@@ -33,7 +33,7 @@ namespace Bee.Base
         /// <param name="value">The value to check.</param>
         public static bool IsEmpty(object? value)
         {
-            return IsEmpty(BaseFunc.CStr(value!));
+            return IsEmpty(ValueUtilities.CStr(value!));
         }
 
         /// <summary>

@@ -86,7 +86,7 @@ namespace Bee.Api.Core.JsonRpc
             }
             catch (Exception ex)
             {
-                var rootEx = BaseFunc.UnwrapException(ex);
+                var rootEx = ex.Unwrap();
                 // Only expose the exception message for known user-facing exception types.
                 // System/infrastructure exceptions return a generic message to avoid leaking internals.
                 string message = IsUserFacingException(rootEx) ? rootEx.Message : "Internal server error";

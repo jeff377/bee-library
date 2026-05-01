@@ -1,7 +1,6 @@
 using Bee.Definition.Collections;
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 
@@ -129,7 +128,7 @@ namespace Bee.Definition.Layouts
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _listItems!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _listItems!)) { return null; }
                 if (_listItems == null) { _listItems = []; }
                 return _listItems;
             }
@@ -145,7 +144,7 @@ namespace Bee.Definition.Layouts
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _extendedProperties!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _extendedProperties!)) { return null; }
                 if (_extendedProperties == null) { _extendedProperties = []; }
                 return _extendedProperties;
             }
@@ -158,8 +157,8 @@ namespace Bee.Definition.Layouts
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_listItems!, serializeState);
-            BaseFunc.SetSerializeState(_extendedProperties!, serializeState);
+            _listItems?.SetSerializeState(serializeState);
+            _extendedProperties?.SetSerializeState(serializeState);
         }
 
         /// <summary>

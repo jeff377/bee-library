@@ -157,7 +157,7 @@ namespace Bee.Api.Client.Connectors
             }
 
             // If Encrypted is requested but no encryption key is set, downgrade to Encoded to prevent encryption failure.
-            if (format == PayloadFormat.Encrypted && BaseFunc.IsEmpty(ApiClientInfo.ApiEncryptionKey))
+            if (format == PayloadFormat.Encrypted && ValueUtilities.IsEmpty(ApiClientInfo.ApiEncryptionKey))
             {
                 format = PayloadFormat.Encoded;
             }

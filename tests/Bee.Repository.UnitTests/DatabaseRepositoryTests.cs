@@ -28,7 +28,7 @@ namespace Bee.Repository.UnitTests
         public void UpgradeTableSchema_EmptyDatabaseId_ThrowsArgumentException(string? databaseId)
         {
             var repo = CreateRepository();
-            Assert.Throws<ArgumentException>(() => repo.UpgradeTableSchema(databaseId!, ValidDbName, ValidTableName));
+            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(databaseId!, ValidDbName, ValidTableName));
         }
 
         [Theory]
@@ -39,7 +39,7 @@ namespace Bee.Repository.UnitTests
         public void UpgradeTableSchema_EmptyDbName_ThrowsArgumentException(string? dbName)
         {
             var repo = CreateRepository();
-            Assert.Throws<ArgumentException>(() => repo.UpgradeTableSchema(ValidDatabaseId, dbName!, ValidTableName));
+            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(ValidDatabaseId, dbName!, ValidTableName));
         }
 
         [Theory]
@@ -50,7 +50,7 @@ namespace Bee.Repository.UnitTests
         public void UpgradeTableSchema_EmptyTableName_ThrowsArgumentException(string? tableName)
         {
             var repo = CreateRepository();
-            Assert.Throws<ArgumentException>(() => repo.UpgradeTableSchema(ValidDatabaseId, ValidDbName, tableName!));
+            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(ValidDatabaseId, ValidDbName, tableName!));
         }
 
         [Fact]

@@ -46,7 +46,7 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_folders!, serializeState);
+            _folders?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _folders!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _folders!)) { return null; }
                 if (_folders == null) { _folders = new MenuFolderCollection(this); }
                 return _folders;
             }

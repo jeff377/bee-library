@@ -1,26 +1,20 @@
-﻿using System.Collections;
-using System.ComponentModel;
+using System.Collections;
 using System.Globalization;
-using System.Reflection;
-using System.Security.Cryptography;
 using Bee.Base.Data;
-using Bee.Base.Serialization;
 
 namespace Bee.Base
 {
     /// <summary>
-    /// Core utility library.
+    /// Framework-level value utilities. Encapsulates ERP-context defaults
+    /// (<see cref="CultureInfo.InvariantCulture"/> formatting, ROC date parsing,
+    /// null/DBNull-safe handling) inside these helpers so call sites do not have to
+    /// pass <see cref="CultureInfo"/> or <see cref="NumberStyles"/> repeatedly. Provides
+    /// emptiness checks (<c>IsEmpty</c>, <c>IsNullOrDBNull</c>) and the framework's
+    /// public type-conversion API (the <c>Cxxx</c> family).
     /// </summary>
-    public static class BaseFunc
+    public static class ValueUtilities
     {
-        /// <summary>
-        /// Determines whether the specified value is DBNull.
-        /// </summary>
-        /// <param name="value">The value to check.</param>
-        public static bool IsDBNull(object value)
-        {
-            return Convert.IsDBNull(value);
-        }
+        #region IsNullOrDBNull / IsEmpty
 
         /// <summary>
         /// Determines whether the specified value is null or DBNull.
@@ -29,16 +23,6 @@ namespace Bee.Base
         public static bool IsNullOrDBNull(object? value)
         {
             return value == null || Convert.IsDBNull(value);
-        }
-
-        /// <summary>
-        /// Determines whether the specified byte array is null or has zero length.
-        /// </summary>
-        /// <param name="bytes">The byte array to check.</param>
-        /// <returns>True if null or empty; otherwise, false.</returns>
-        public static bool IsNullOrEmpty(byte[] bytes)
-        {
-            return bytes == null || bytes.Length == 0;
         }
 
         /// <summary>
@@ -88,8 +72,8 @@ namespace Bee.Base
         /// <param name="value">The date value to check.</param>
         public static bool IsEmpty(DateTime value)
         {
-            // The minimum DateTime value in SQL databases is 1753/1/1; values earlier than this are treated as empty
-            // Null, DbNull, and DateTime.MinValue are all treated as empty
+            // The minimum DateTime value in SQL databases is 1753/1/1; values earlier than this are treated as empty.
+            // Null, DbNull, and DateTime.MinValue are all treated as empty.
             return (IsNullOrDBNull(value) || value < new DateTime(1753, 1, 1, 0, 0, 0, DateTimeKind.Unspecified));
         }
 
@@ -127,14 +111,9 @@ namespace Bee.Base
             return data == null || data.Length == 0;
         }
 
-        /// <summary>
-        /// Gets the name of the specified enum member.
-        /// </summary>
-        /// <param name="value">The enum value.</param>
-        public static string? GetEnumName(Enum value)
-        {
-            return Enum.GetName(value.GetType(), value);
-        }
+        #endregion
+
+        #region CStr / CBool
 
         /// <summary>
         /// Converts the specified value to a string.
@@ -144,11 +123,11 @@ namespace Bee.Base
         public static string CStr(object value, string defaultValue)
         {
             // Return the default value if null or DBNull
-            if (BaseFunc.IsNullOrDBNull(value))
+            if (IsNullOrDBNull(value))
                 return defaultValue;
             // Return the enum name if the value is an enum type
             if (value is Enum e)
-                return GetEnumName(e) ?? string.Empty;
+                return Enum.GetName(e.GetType(), e) ?? string.Empty;
             // Convert to string
             return value.ToString() ?? string.Empty;
         }
@@ -159,7 +138,7 @@ namespace Bee.Base
         /// <param name="value">The value to convert.</param>
         public static string CStr(object value)
         {
-            return BaseFunc.CStr(value, string.Empty);
+            return CStr(value, string.Empty);
         }
 
         /// <summary>
@@ -187,8 +166,12 @@ namespace Bee.Base
             return value is bool ? (bool)value : CBool(CStr(value), defaultValue);
         }
 
+        #endregion
+
+        #region CEnum
+
         /// <summary>
-        /// Converts the specified string to an enum value.
+        /// Converts the specified string to an enum value (case-insensitive).
         /// </summary>
         /// <param name="value">The value to convert.</param>
         /// <param name="type">The enum type.</param>
@@ -198,7 +181,7 @@ namespace Bee.Base
         }
 
         /// <summary>
-        /// Converts the specified string to an enum value.
+        /// Converts the specified string to an enum value (case-insensitive).
         /// </summary>
         /// <typeparam name="T">The enum type.</typeparam>
         /// <param name="value">The value to convert.</param>
@@ -206,6 +189,10 @@ namespace Bee.Base
         {
             return (T)CEnum(value, typeof(T));
         }
+
+        #endregion
+
+        #region IsNumeric / ConvertToNumber
 
         /// <summary>
         /// Determines whether the specified object can be treated as a numeric value (supports string, bool, and enum).
@@ -238,7 +225,6 @@ namespace Bee.Base
             return double.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out _);
         }
 
-
         /// <summary>
         /// Determines whether the specified string is a numeric value of the given length.
         /// </summary>
@@ -246,7 +232,7 @@ namespace Bee.Base
         /// <param name="length">The expected length.</param>
         public static bool IsNumeric(string value, int length)
         {
-            if (BaseFunc.IsNumeric(value) && value.Length == length)
+            if (IsNumeric(value) && value.Length == length)
                 return true;
             else
                 return false;
@@ -270,8 +256,7 @@ namespace Bee.Base
                 if (IsEmpty(s))
                     return 0;
 
-                double result;
-                if (double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out result))
+                if (double.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out double result))
                     return result;
             }
 
@@ -288,12 +273,15 @@ namespace Bee.Base
                 value is float || value is double || value is decimal)
                 return value;
 
-            double fallback;
-            if (double.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out fallback))
+            if (double.TryParse(value.ToString(), NumberStyles.Any, CultureInfo.InvariantCulture, out double fallback))
                 return fallback;
 
             throw new InvalidCastException($"Cannot convert '{value}' to number.");
         }
+
+        #endregion
+
+        #region CInt / CDouble / CDecimal
 
         /// <summary>
         /// Converts the specified value to an integer; returns the default value if conversion fails.
@@ -302,7 +290,7 @@ namespace Bee.Base
         /// <param name="defaultValue">The default value.</param>
         public static int CInt(object value, int defaultValue = 0)
         {
-            if (BaseFunc.IsNullOrDBNull(value)) { return defaultValue; }
+            if (IsNullOrDBNull(value)) { return defaultValue; }
 
             try
             {
@@ -311,7 +299,15 @@ namespace Bee.Base
                 else
                     return Convert.ToInt32(ConvertToNumber(value), CultureInfo.InvariantCulture);
             }
-            catch
+            catch (InvalidCastException)
+            {
+                return defaultValue;
+            }
+            catch (FormatException)
+            {
+                return defaultValue;
+            }
+            catch (OverflowException)
             {
                 return defaultValue;
             }
@@ -324,13 +320,21 @@ namespace Bee.Base
         /// <param name="defaultValue">The default value.</param>
         public static double CDouble(object value, double defaultValue = 0)
         {
-            if (BaseFunc.IsNullOrDBNull(value)) { return defaultValue; }
+            if (IsNullOrDBNull(value)) { return defaultValue; }
 
             try
             {
                 return Convert.ToDouble(ConvertToNumber(value == null ? defaultValue : value), CultureInfo.InvariantCulture);
             }
-            catch
+            catch (InvalidCastException)
+            {
+                return defaultValue;
+            }
+            catch (FormatException)
+            {
+                return defaultValue;
+            }
+            catch (OverflowException)
             {
                 return defaultValue;
             }
@@ -343,39 +347,55 @@ namespace Bee.Base
         /// <param name="defaultValue">The default value.</param>
         public static decimal CDecimal(object value, decimal defaultValue = 0)
         {
-            if (BaseFunc.IsNullOrDBNull(value)) { return defaultValue; }
+            if (IsNullOrDBNull(value)) { return defaultValue; }
 
             try
             {
                 return Convert.ToDecimal(ConvertToNumber(value == null ? defaultValue : value), CultureInfo.InvariantCulture);
             }
-            catch
+            catch (InvalidCastException)
+            {
+                return defaultValue;
+            }
+            catch (FormatException)
+            {
+                return defaultValue;
+            }
+            catch (OverflowException)
             {
                 return defaultValue;
             }
         }
 
+        #endregion
+
+        #region CDateTime / CDate
+
         /// <summary>
-        /// Converts the specified value to a DateTime.
+        /// Converts the specified value to a DateTime. Supports Gregorian and ROC date strings
+        /// (e.g. <c>20150312</c>, <c>1040312</c>); the framework parses with
+        /// <see cref="CultureInfo.InvariantCulture"/> so call sites do not pass culture.
         /// </summary>
         /// <param name="value">The value to convert.</param>
         /// <param name="defaultValue">The default value.</param>
         public static DateTime CDateTime(object value, DateTime defaultValue = default)
         {
-            string sValue;
-
             if (IsNullOrDBNull(value)) { return defaultValue; }
             if (StringUtilities.IsEmpty(value)) { return defaultValue; }
             if (value is DateTime dt) { return dt; }
-            if (DateTime.TryParse(BaseFunc.CStr(value), CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)) { return parsed; }
+            if (DateTime.TryParse(CStr(value), CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)) { return parsed; }
 
             try
             {
                 // Convert to string and strip date separator characters
-                sValue = BaseFunc.CStr(value);
+                var sValue = CStr(value);
                 return StrToDate(sValue);
             }
-            catch
+            catch (FormatException)
+            {
+                return defaultValue;
+            }
+            catch (OverflowException)
             {
                 return defaultValue;
             }
@@ -395,7 +415,7 @@ namespace Bee.Base
             sValue = value.Replace("/", string.Empty);
             sValue = sValue.Replace("-", string.Empty);
             // Only all-numeric strings are valid for date conversion
-            if (!BaseFunc.IsNumeric(sValue)) { return DateTime.MinValue; }
+            if (!IsNumeric(sValue)) { return DateTime.MinValue; }
             // Attempt date conversion based on the string length
             iLen = sValue.Length;
             switch (iLen)
@@ -404,21 +424,21 @@ namespace Bee.Base
                     sDate = sValue.Insert(4, "-").Insert(7, "-");
                     break;
                 case 7: // 7-digit ROC date, e.g. 1040312
-                    sDate = StringUtilities.Format("{0}-{1}-{2}", BaseFunc.CInt(sValue.Substring(0, 3)) + 1911,
+                    sDate = StringUtilities.Format("{0}-{1}-{2}", CInt(sValue.Substring(0, 3)) + 1911,
                         sValue.Substring(3, 2), sValue.Substring(5, 2));
                     break;
                 case 6: // 6-digit Gregorian year-month, e.g. 201503
-                    sDate = BaseFunc.CStr(value).Insert(4, "-") + "-01";
+                    sDate = CStr(value).Insert(4, "-") + "-01";
                     break;
                 case 5: // 5-digit ROC year-month, e.g. 10403
-                    sDate = StringUtilities.Format("{0}-{1}-01", BaseFunc.CInt(sValue.Substring(0, 3)) + 1911,
+                    sDate = StringUtilities.Format("{0}-{1}-01", CInt(sValue.Substring(0, 3)) + 1911,
                         sValue.Substring(3, 2));
                     break;
                 case 4: // 4-digit Gregorian year, e.g. 2015
                     sDate = StringUtilities.Format("{0}-01-01", sValue);
                     break;
                 case 3: // 3-digit ROC year, e.g. 104
-                    sDate = StringUtilities.Format("{0}-01-01", BaseFunc.CInt(sValue) + 1911);
+                    sDate = StringUtilities.Format("{0}-01-01", CInt(sValue) + 1911);
                     break;
                 default:
                     sDate = string.Empty;
@@ -440,6 +460,10 @@ namespace Bee.Base
         {
             return CDateTime(value, defaultValue).Date;
         }
+
+        #endregion
+
+        #region CGuid
 
         /// <summary>
         /// Converts the specified string to a Guid value.
@@ -468,6 +492,10 @@ namespace Bee.Base
             else
                 return Guid.Empty;
         }
+
+        #endregion
+
+        #region CFieldValue / CDbFieldValue
 
         /// <summary>
         /// Converts the specified value to the appropriate field data type.
@@ -506,266 +534,11 @@ namespace Bee.Base
         /// <param name="value">The input value.</param>
         public static object CDbFieldValue(FieldDbType dbType, object value)
         {
-            if (value is DateTime && BaseFunc.CDateTime(value) == DateTime.MinValue)
+            if (value is DateTime && CDateTime(value) == DateTime.MinValue)
                 return DBNull.Value;
             return CFieldValue(dbType, value);
         }
 
-        /// <summary>
-        /// Sets the serialization state on the specified object.
-        /// </summary>
-        /// <param name="objectSerialize">The object serialization interface.</param>
-        /// <param name="serializeState">The serialization state to set.</param>
-        public static void SetSerializeState(IObjectSerialize objectSerialize, SerializeState serializeState)
-        {
-            objectSerialize?.SetSerializeState(serializeState);
-        }
-
-        /// <summary>
-        /// Determines whether the value is empty during serialization; null and DBNull are both treated as empty.
-        /// </summary>
-        /// <param name="serializeState">The serialization state.</param>
-        /// <param name="value">The value to check.</param>
-        public static bool IsSerializeEmpty(SerializeState serializeState, object value)
-        {
-            if (serializeState != SerializeState.Serialize) { return false; }
-
-            switch (value)
-            {
-                case null:
-                    return true;
-                case IObjectSerializeEmpty objectSerializeEmpty:
-                    return objectSerializeEmpty.IsSerializeEmpty;
-                case IList listValue:
-                    return IsEmpty(listValue);
-                case IEnumerable enumerableValue:
-                    return IsEmpty(enumerableValue);
-                default:
-                    return false;
-            }
-        }
-
-        /// <summary>
-        /// Generates a new Guid value.
-        /// </summary>
-        public static Guid NewGuid()
-        {
-            return Guid.NewGuid();
-        }
-
-        /// <summary>
-        /// Generates a new Guid value as a string.
-        /// </summary>
-        public static string NewGuidString()
-        {
-            return NewGuid().ToString();
-        }
-
-        /// <summary>
-        /// Returns a cryptographically secure random integer.
-        /// </summary>
-        /// <param name="min">The inclusive minimum value.</param>
-        /// <param name="max">The exclusive maximum value.</param>
-        /// <returns>A random integer between min (inclusive) and max (exclusive).</returns>
-        public static int RndInt(int min, int max)
-        {
-            return RandomNumberGenerator.GetInt32(min, max);
-        }
-
-
-        /// <summary>
-        /// Creates an instance of the specified type.
-        /// </summary>
-        /// <param name="assemblyName">The assembly name.</param>
-        /// <param name="typeName">The type name.</param>
-        /// <param name="args">Constructor arguments.</param>
-        public static object? CreateInstance(string assemblyName, string typeName, params object[] args)
-        {
-            return AssemblyLoader.CreateInstance(assemblyName, typeName, args);
-        }
-
-        /// <summary>
-        /// Creates an instance of the specified type.
-        /// </summary>
-        /// <param name="typeName">The type name, in the format "Bee.Business.TBusinessObject, Bee.Business" or "Bee.Business.TBusinessObject".</param>
-        /// <param name="args">Constructor arguments.</param>
-        public static object? CreateInstance(string typeName, params object[] args)
-        {
-            return AssemblyLoader.CreateInstance(typeName, args);
-        }
-
-        /// <summary>
-        /// Gets the specified attribute from a component.
-        /// </summary>
-        /// <param name="component">The component.</param>
-        /// <param name="attributeType">The attribute type.</param>
-        public static Attribute? GetAttribute(object component, Type attributeType)
-        {
-            return TypeDescriptor.GetAttributes(component)[attributeType];
-        }
-
-        /// <summary>
-        /// Gets the specified attribute from a property of a component.
-        /// </summary>
-        /// <param name="component">The component.</param>
-        /// <param name="propertyName">The property name.</param>
-        /// <param name="attributeType">The attribute type.</param>
-        public static Attribute? GetPropertyAttribute(object component, string propertyName, Type attributeType)
-        {
-            var property = TypeDescriptor.GetProperties(component)[propertyName];
-            return property?.Attributes[attributeType];
-        }
-
-        /// <summary>
-        /// Gets the value of the specified property from a component.
-        /// </summary>
-        /// <param name="component">The component.</param>
-        /// <param name="propertyName">The property name.</param>
-        public static object? GetPropertyValue(object component, string propertyName)
-        {
-            var property = TypeDescriptor.GetProperties(component)[propertyName];
-            return property?.GetValue(component);
-        }
-
-        /// <summary>
-        /// Sets the value of the specified property on a component.
-        /// </summary>
-        /// <param name="component">The object.</param>
-        /// <param name="propertyName">The property name.</param>
-        /// <param name="propertyValue">The property value to set.</param>
-        public static void SetPropertyValue(object component, string propertyName, object? propertyValue)
-        {
-            TypeDescriptor.GetProperties(component)[propertyName]?.SetValue(component, propertyValue);
-        }
-
-        /// <summary>
-        /// Determines whether the specified value is of the given generic type.
-        /// </summary>
-        /// <param name="value">The value to check.</param>
-        /// <param name="genericType">The generic type.</param>
-        public static bool IsGenericType(object value, Type genericType)
-        {
-            ArgumentNullException.ThrowIfNull(value);
-            ArgumentNullException.ThrowIfNull(genericType);
-
-            Type? type = value.GetType();
-
-            // Check whether this type is the specified generic type
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)
-                return true;
-
-            // Check whether this type inherits from the specified generic type
-            while ((type = type.BaseType) != null && type != typeof(object))
-            {
-                if (type.IsGenericType && type.GetGenericTypeDefinition() == genericType)
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Verifies whether the object's type matches any of the specified types.
-        /// </summary>
-        /// <param name="value">The object to verify.</param>
-        /// <param name="types">An array of types to check against.</param>
-        public static bool CheckTypes(object value, params Type[] types)
-        {
-            return types.Any(t => t.IsInstanceOfType(value));
-        }
-
-        /// <summary>
-        /// Gets the command-line arguments as a dictionary.
-        /// </summary>
-        public static Dictionary<string, string> GetCommandLineArgs()
-        {
-            return ParseCommandLineArgs(Environment.GetCommandLineArgs());
-        }
-
-        /// <summary>
-        /// Parses the specified command-line argument array into a dictionary.
-        /// The first element (typically the executable name) is skipped.
-        /// </summary>
-        /// <param name="args">The argument array to parse.</param>
-        internal static Dictionary<string, string> ParseCommandLineArgs(string[] args)
-        {
-            var result = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-            int i = 1; // Skip args[0] (the executable name)
-            while (i < args.Length)
-            {
-                if (!args[i].StartsWith("--"))
-                {
-                    i++;
-                    continue;
-                }
-
-                string key = args[i].Substring(2); // Strip the "--" prefix
-                // If the next argument exists and does not start with "-" (i.e., it's not a new option),
-                // use it as the value; otherwise, default to "true" (for flag-style options like "--flag").
-                if (i + 1 < args.Length && !args[i + 1].StartsWith('-'))
-                {
-                    result[key] = args[i + 1];
-                    i += 2;
-                }
-                else
-                {
-                    result[key] = "true";
-                    i++;
-                }
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Validates that multiple parameters are not null, or (if strings) not empty or whitespace-only.
-        /// </summary>
-        /// <param name="parameters">The collection of parameters and names to validate, as (value, paramName) tuples.</param>
-        public static void EnsureNotNullOrWhiteSpace(params (object value, string paramName)[] parameters)
-        {
-            foreach (var p in parameters)
-            {
-                if (p.value == null)
-                {
-                    throw new ArgumentException($"{p.paramName} is required.", p.paramName);
-                }
-
-                if (p.value is string str && string.IsNullOrWhiteSpace(str))
-                {
-                    throw new ArgumentException($"{p.paramName} cannot be empty or whitespace.", p.paramName);
-                }
-            }
-        }
-
-
-        /// <summary>
-        /// Unwraps an exception to its core cause by removing common wrapper layers.
-        /// <list type="bullet">
-        /// <item><description>If the exception is an <see cref="AggregateException"/>, returns the first inner exception.</description></item>
-        /// <item><description>If the exception is a <see cref="System.Reflection.TargetInvocationException"/>, returns its inner exception.</description></item>
-        /// <item><description>Otherwise, returns the exception itself.</description></item>
-        /// </list>
-        /// </summary>
-        /// <param name="ex">The exception to process.</param>
-        /// <returns>The innermost exception; never null.</returns>
-        public static Exception UnwrapException(Exception ex)
-        {
-            ArgumentNullException.ThrowIfNull(ex);
-
-            while (true)
-            {
-                if (ex is AggregateException aex && aex.InnerExceptions.Count > 0)
-                {
-                    ex = aex.Flatten().InnerExceptions[0];
-                    continue;
-                }
-                if (ex is TargetInvocationException tie && tie.InnerException != null)
-                {
-                    ex = tie.InnerException;
-                    continue;
-                }
-                return ex;
-            }
-        }
-
+        #endregion
     }
 }

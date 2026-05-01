@@ -81,7 +81,7 @@ namespace Bee.Definition.Forms
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _fields!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _fields!)) { return null; }
                 if (_fields == null) { _fields = new FormFieldCollection(this); }
                 return _fields;
             }
@@ -114,7 +114,7 @@ namespace Bee.Definition.Forms
             {
                 if (field.Type != FieldType.DbField ||
                     StringUtilities.IsEmpty(field.RelationProgId) ||
-                    BaseFunc.IsEmpty(field.RelationFieldMappings!))
+                    ValueUtilities.IsEmpty(field.RelationFieldMappings!))
                     continue;
 
                 foreach (var mapping in field.RelationFieldMappings!)
@@ -139,7 +139,7 @@ namespace Bee.Definition.Forms
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_fields!, serializeState);
+            _fields?.SetSerializeState(serializeState);
         }
 
         /// <summary>

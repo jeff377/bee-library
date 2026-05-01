@@ -44,11 +44,9 @@ namespace Bee.Repository.System
         public bool UpgradeTableSchema(string databaseId, string dbName, string tableName)
         {
             // Ensure required parameters are not empty
-            BaseFunc.EnsureNotNullOrWhiteSpace(
-                (databaseId, nameof(databaseId)),
-                (dbName, nameof(dbName)),
-                (tableName, nameof(tableName))
-            );
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
+            ArgumentException.ThrowIfNullOrWhiteSpace(dbName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
             var builder = new TableSchemaBuilder(databaseId);
             return builder.Execute(dbName, tableName);
         }

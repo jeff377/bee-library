@@ -42,7 +42,7 @@ namespace Bee.Definition.Collections
         {
             foreach (DataRow row in table.Rows)
             {
-                Add(BaseFunc.CStr(row[valueField]), BaseFunc.CStr(row[textField]));
+                Add(ValueUtilities.CStr(row[valueField]), ValueUtilities.CStr(row[textField]));
             }
         }
     }

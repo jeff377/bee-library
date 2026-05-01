@@ -1,7 +1,7 @@
 using System.ComponentModel;
+using System.Security.Cryptography;
 using Bee.Db.Manager;
 using System.Globalization;
-using Bee.Base;
 using Bee.Db.Dml;
 using Bee.Definition;
 using Bee.Tests.Shared;
@@ -92,7 +92,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteNonQuery 更新資料應成功執行")]
         public void ExecuteNonQuery_UpdateRow_Executes()
         {
-            int i = BaseFunc.RndInt(0, 100);
+            int i = RandomNumberGenerator.GetInt32(0, 100);
             string sql = "Update st_user Set note={1} Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
             var dbAccess = new DbAccess("common_sqlserver");
@@ -105,7 +105,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteNonQueryAsync 非同步更新資料應成功執行")]
         public async Task ExecuteNonQueryAsync_UpdateRow_Executes()
         {
-            int i = BaseFunc.RndInt(0, 100);
+            int i = RandomNumberGenerator.GetInt32(0, 100);
             string sql = "Update st_user Set note={1} Where sys_id = {0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, "001", i);
             var dbAccess = new DbAccess("common_sqlserver");
@@ -166,7 +166,7 @@ namespace Bee.Db.UnitTests
             Assert.True(table.Rows.Count > 0, "st_user 無任何資料");
 
             // 2. 修改第一筆資料
-            int i = BaseFunc.RndInt(0, 100);
+            int i = RandomNumberGenerator.GetInt32(0, 100);
             var row = table.Rows[0];
             row["note"] = i.ToString(CultureInfo.InvariantCulture);
 
@@ -189,7 +189,7 @@ namespace Bee.Db.UnitTests
             batch.UseTransaction = true;
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
                     "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001"));
-            int i = BaseFunc.RndInt(0, 100);
+            int i = RandomNumberGenerator.GetInt32(0, 100);
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.NonQuery,
                      "UPDATE st_user SET note={1} WHERE sys_id = {0}", "001", i));
 
@@ -206,7 +206,7 @@ namespace Bee.Db.UnitTests
             batch.UseTransaction = true;
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
                     "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001"));
-            int i = BaseFunc.RndInt(0, 100);
+            int i = RandomNumberGenerator.GetInt32(0, 100);
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.NonQuery,
                      "UPDATE st_user SET note={1} WHERE sys_id = {0}", "001", i));
 

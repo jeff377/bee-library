@@ -109,7 +109,7 @@ namespace Bee.Tests.Shared
                 $"SELECT COUNT(*) FROM {tbl} WHERE {colId} = {{0}}", "001");
             var result = dbAccess.Execute(check);
 
-            if (BaseFunc.CInt(result.Scalar!) == 0)
+            if (ValueUtilities.CInt(result.Scalar!) == 0)
             {
                 var (uuid, now) = GetSeedExpressions(dbType);
                 // password/email/note 使用單空白字元而非空字串：Oracle 將 empty string 視為

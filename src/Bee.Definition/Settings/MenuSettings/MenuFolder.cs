@@ -3,6 +3,7 @@ using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Collections;
+using Bee.Base.Serialization;
 
 namespace Bee.Definition.Settings
 {
@@ -67,7 +68,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _folders!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _folders!)) { return null; }
                 if (_folders == null) { _folders = new MenuFolderCollection(this); }
                 return _folders;
             }
@@ -83,7 +84,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
                 if (_items == null) { _items = new MenuItemCollection(this); }
                 return _items;
             }

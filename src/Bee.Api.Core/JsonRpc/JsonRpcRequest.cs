@@ -1,4 +1,3 @@
-using Bee.Base;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
 
@@ -35,7 +34,7 @@ namespace Bee.Api.Core.JsonRpc
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(Params, serializeState);
+            Params?.SetSerializeState(serializeState);
         }
 
         #endregion

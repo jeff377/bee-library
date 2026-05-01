@@ -1,4 +1,3 @@
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
@@ -46,8 +45,8 @@ namespace Bee.Definition.Database
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_fields!, serializeState);
-            BaseFunc.SetSerializeState(_indexes!, serializeState);
+            _fields?.SetSerializeState(serializeState);
+            _indexes?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -104,7 +103,7 @@ namespace Bee.Definition.Database
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _fields!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _fields!)) { return null; }
                 if (_fields == null) { _fields = new DbFieldCollection(this); }
                 return _fields;
             }
@@ -121,7 +120,7 @@ namespace Bee.Definition.Database
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _indexes!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _indexes!)) { return null; }
                 if (_indexes == null) { _indexes = new TableSchemaIndexCollection(this); }
                 return _indexes;
             }

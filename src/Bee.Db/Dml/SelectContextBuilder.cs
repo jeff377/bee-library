@@ -45,7 +45,7 @@ namespace Bee.Db.Dml
 
                 // Retrieve the referenced field mappings resolved through this foreign key field
                 var fieldMappings = GetUsedRelationFieldMappings(field);
-                if (BaseFunc.IsEmpty(fieldMappings)) { continue; }
+                if (ValueUtilities.IsEmpty(fieldMappings)) { continue; }
 
                 // Use "<MainTable>.<FieldName>.<SourceProgId>" as the unique JOIN key
                 string key = $"{_formTable.TableName}.{field.FieldName}.{field.RelationProgId}";

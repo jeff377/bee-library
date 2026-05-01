@@ -1,4 +1,3 @@
-using Bee.Base;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
 using System.ComponentModel;
@@ -88,7 +87,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _endpointItems)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _endpointItems)) { return null; }
                 if (_endpointItems == null) { _endpointItems = []; }
                 return _endpointItems;
             }

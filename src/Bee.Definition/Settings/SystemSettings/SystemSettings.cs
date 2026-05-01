@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using System.Text.Json.Serialization;
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 
@@ -118,7 +117,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _ExtendedProperties!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _ExtendedProperties!)) { return null; }
                 if (_ExtendedProperties == null) { _ExtendedProperties = []; }
                 return _ExtendedProperties;
             }

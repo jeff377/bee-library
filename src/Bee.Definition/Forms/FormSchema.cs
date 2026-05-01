@@ -57,7 +57,7 @@ namespace Bee.Definition.Forms
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_tables!, serializeState);
+            _tables?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace Bee.Definition.Forms
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _tables!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _tables!)) { return null; }
                 if (_tables == null) { _tables = new FormTableCollection(this); }
                 return _tables;
             }

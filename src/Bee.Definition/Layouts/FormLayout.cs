@@ -45,7 +45,7 @@ namespace Bee.Definition.Layouts
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_groups!, serializeState);
+            _groups?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Bee.Definition.Layouts
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _groups!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _groups!)) { return null; }
                 if (_groups == null) { _groups = []; }
                 return _groups;
             }

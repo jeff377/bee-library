@@ -74,7 +74,7 @@ namespace Bee.Db.Providers.SqlServer
             string sql = "Select Count(*) From sys.tables A Where A.name={0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
             var result = _dbAccess.Execute(command);
-            int count = BaseFunc.CInt(result.Scalar!);
+            int count = ValueUtilities.CInt(result.Scalar!);
             return count > 0;
         }
 
@@ -88,7 +88,7 @@ namespace Bee.Db.Providers.SqlServer
                          "N'MS_Description', N'SCHEMA', N'dbo', N'TABLE', {0}, NULL, NULL)) AS nvarchar(max)), N'')";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
             var result = _dbAccess.Execute(command);
-            return BaseFunc.CStr(result.Scalar!);
+            return ValueUtilities.CStr(result.Scalar!);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Bee.Db.Providers.SqlServer
             if (table.DefaultView.IsEmpty()) { return; }
 
             // Get the index name
-            string name = BaseFunc.CStr(table.DefaultView[0]["name"]);
+            string name = ValueUtilities.CStr(table.DefaultView[0]["name"]);
             // 取得主索引
             var tableIndex = new TableSchemaIndex();
             tableIndex.PrimaryKey = true;
@@ -136,8 +136,8 @@ namespace Bee.Db.Providers.SqlServer
             foreach (DataRowView row in table.DefaultView)
             {
                 var indexField = new IndexField();
-                indexField.FieldName = BaseFunc.CStr(row["FieldName"]);
-                indexField.SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
+                indexField.FieldName = ValueUtilities.CStr(row["FieldName"]);
+                indexField.SortDirection = ValueUtilities.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
                 tableIndex.IndexFields!.Add(indexField);
             }
             // Remove the processed primary key rows
@@ -154,8 +154,8 @@ namespace Bee.Db.Providers.SqlServer
             while (!table.IsEmpty())
             {
                 var oRow = table.Rows[0];
-                string name = BaseFunc.CStr(oRow["Name"]);  // Get the index name
-                bool isUnique = BaseFunc.CBool(oRow["IsUnique"]);
+                string name = ValueUtilities.CStr(oRow["Name"]);  // Get the index name
+                bool isUnique = ValueUtilities.CBool(oRow["IsUnique"]);
 
                 var tableIndex = new TableSchemaIndex();
                 tableIndex.Name = name;
@@ -168,8 +168,8 @@ namespace Bee.Db.Providers.SqlServer
                 foreach (DataRowView rowView in table.DefaultView)
                 {
                     var indexField = new IndexField();
-                    indexField.FieldName = BaseFunc.CStr(rowView["FieldName"]);
-                    indexField.SortDirection = BaseFunc.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
+                    indexField.FieldName = ValueUtilities.CStr(rowView["FieldName"]);
+                    indexField.SortDirection = ValueUtilities.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc;
                     tableIndex.IndexFields!.Add(indexField);
                 }
                 // Remove the processed index rows

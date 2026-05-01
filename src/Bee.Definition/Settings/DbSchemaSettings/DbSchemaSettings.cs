@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
@@ -46,7 +45,7 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_databases!, serializeState);
+            _databases?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -85,7 +84,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _databases!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _databases!)) { return null; }
                 if (_databases == null) { _databases = new DbSchemaCollection(this); }
                 return _databases;
             }

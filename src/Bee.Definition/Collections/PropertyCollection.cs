@@ -42,7 +42,7 @@ namespace Bee.Definition.Collections
         public bool GetValue(string name, bool defaultValue)
         {
             if (this.Contains(name))
-                return BaseFunc.CBool(this[name].Value);
+                return ValueUtilities.CBool(this[name].Value);
             else
                 return defaultValue;
         }
@@ -55,7 +55,7 @@ namespace Bee.Definition.Collections
         public int GetValue(string name, int defaultValue)
         {
             if (this.Contains(name))
-                return BaseFunc.CInt(this[name].Value);
+                return ValueUtilities.CInt(this[name].Value);
             else
                 return defaultValue;
         }

@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
@@ -60,7 +59,7 @@ namespace Bee.Definition.Database
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _indexFields!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _indexFields!)) { return null; }
                 if (_indexFields == null) { _indexFields = []; }
                 return _indexFields;
             }
@@ -73,7 +72,7 @@ namespace Bee.Definition.Database
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_indexFields!, serializeState);
+            _indexFields?.SetSerializeState(serializeState);
         }
 
         /// <summary>

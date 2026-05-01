@@ -62,14 +62,14 @@ namespace Bee.Repository.System
             var row = table.Rows[0];
 
             // If the session has expired, delete it and return null
-            DateTime endTime = BaseFunc.CDateTime(row["sys_invalid_time"]);
+            DateTime endTime = ValueUtilities.CDateTime(row["sys_invalid_time"]);
             if (endTime < DateTime.UtcNow)
             {
                 Delete(accessToken);
                 return null;
             }
 
-            string xml = BaseFunc.CStr(row["session_user_xml"]);
+            string xml = ValueUtilities.CStr(row["session_user_xml"]);
             var user = XmlCodec.Deserialize<SessionUser>(xml);
             // If the session is one-time use, delete it after retrieval
             if (user!.OneTime) { Delete(accessToken); }
@@ -95,9 +95,9 @@ namespace Bee.Repository.System
 
             var user = new SessionUser()
             {
-                AccessToken = BaseFunc.NewGuid(),
+                AccessToken = Guid.NewGuid(),
                 UserID = userID,
-                UserName = BaseFunc.CStr(row[SysFields.Name]),
+                UserName = ValueUtilities.CStr(row[SysFields.Name]),
                 EndTime = DateTime.UtcNow.AddSeconds(expiresIn),
                 OneTime = oneTime
             };

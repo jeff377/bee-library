@@ -38,7 +38,7 @@ namespace Bee.Db.Schema
 
         private static IDialectFactory ResolveDialect(string databaseId)
         {
-            BaseFunc.EnsureNotNullOrWhiteSpace((databaseId, nameof(databaseId)));
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
             return DbDialectRegistry.Get(connInfo.DatabaseType);
         }
@@ -89,7 +89,7 @@ namespace Bee.Db.Schema
         public static bool Execute(UpgradePlan plan, string databaseId)
         {
             ArgumentNullException.ThrowIfNull(plan);
-            BaseFunc.EnsureNotNullOrWhiteSpace((databaseId, nameof(databaseId)));
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
 
             if (plan.IsEmpty) return false;
 

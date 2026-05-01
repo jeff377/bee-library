@@ -144,7 +144,7 @@ namespace Bee.Api.AspNetCore.Controllers
             }
             catch (Exception ex)
             {
-                var rootEx = BaseFunc.UnwrapException(ex);
+                var rootEx = ex.Unwrap();
                 string message = IsDevelopment
                     ? rootEx.Message
                     : string.Empty;

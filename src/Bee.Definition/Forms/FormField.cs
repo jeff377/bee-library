@@ -1,4 +1,3 @@
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
@@ -166,7 +165,7 @@ namespace Bee.Definition.Forms
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _relationFieldMappings!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _relationFieldMappings!)) { return null; }
                 if (_relationFieldMappings == null) { _relationFieldMappings = []; }
                 return _relationFieldMappings;
             }
@@ -194,7 +193,7 @@ namespace Bee.Definition.Forms
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _lookupFieldMappings!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _lookupFieldMappings!)) { return null; }
                 if (_lookupFieldMappings == null) { _lookupFieldMappings = []; }
                 return _lookupFieldMappings;
             }
@@ -240,8 +239,8 @@ namespace Bee.Definition.Forms
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_relationFieldMappings!, serializeState);
-            BaseFunc.SetSerializeState(_lookupFieldMappings!, serializeState);
+            _relationFieldMappings?.SetSerializeState(serializeState);
+            _lookupFieldMappings?.SetSerializeState(serializeState);
         }
 
         /// <summary>

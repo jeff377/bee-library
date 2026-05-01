@@ -88,7 +88,7 @@ namespace Bee.Api.Core.JsonRpc
 
             if (sourceFormat == PayloadFormat.Encrypted)
             {
-                if (encryptionKey == null || BaseFunc.IsEmpty(encryptionKey))
+                if (encryptionKey == null || ValueUtilities.IsEmpty(encryptionKey))
                     throw new InvalidOperationException("Missing encryption key for encrypted payload.");
 
                 bytes = transformer.Decrypt(bytes, encryptionKey);

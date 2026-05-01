@@ -74,7 +74,7 @@ namespace Bee.Definition.Layouts
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _items!)) { return null; }
                 if (_items == null) { _items = []; }
                 return _items;
             }
@@ -101,7 +101,7 @@ namespace Bee.Definition.Layouts
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_items!, serializeState);
+            _items?.SetSerializeState(serializeState);
         }
 
         /// <summary>

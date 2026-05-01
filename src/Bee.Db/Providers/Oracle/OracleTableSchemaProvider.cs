@@ -87,7 +87,7 @@ namespace Bee.Db.Providers.Oracle
             string sql = "SELECT COUNT(*) FROM USER_TABLES WHERE TABLE_NAME = {0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, storageName);
             var result = _dbAccess.Execute(command);
-            return BaseFunc.CInt(result.Scalar!) > 0;
+            return ValueUtilities.CInt(result.Scalar!) > 0;
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace Bee.Db.Providers.Oracle
             string sql = "SELECT COALESCE(COMMENTS, '') FROM USER_TAB_COMMENTS WHERE TABLE_NAME = {0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, storageName);
             var result = _dbAccess.Execute(command);
-            return BaseFunc.CStr(result.Scalar!);
+            return ValueUtilities.CStr(result.Scalar!);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Bee.Db.Providers.Oracle
             table.DefaultView.Sort = "KeyOrdinal";
             if (table.DefaultView.IsEmpty()) return;
 
-            string name = BaseFunc.CStr(table.DefaultView[0]["Name"]).ToLowerInvariant();
+            string name = ValueUtilities.CStr(table.DefaultView[0]["Name"]).ToLowerInvariant();
             var tableIndex = new TableSchemaIndex
             {
                 PrimaryKey = true,
@@ -153,8 +153,8 @@ namespace Bee.Db.Providers.Oracle
             {
                 var indexField = new IndexField
                 {
-                    FieldName = BaseFunc.CStr(row["FieldName"]).ToLowerInvariant(),
-                    SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
+                    FieldName = ValueUtilities.CStr(row["FieldName"]).ToLowerInvariant(),
+                    SortDirection = ValueUtilities.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
                 };
                 tableIndex.IndexFields!.Add(indexField);
             }
@@ -172,9 +172,9 @@ namespace Bee.Db.Providers.Oracle
                 // The "Name" column carries Oracle's UPPERCASE storage form; we still need to
                 // RowFilter on the original string before lowercase-ing for the framework
                 // surface, otherwise the filter no longer matches the stored value.
-                string storageName = BaseFunc.CStr(oRow["Name"]);
+                string storageName = ValueUtilities.CStr(oRow["Name"]);
                 string name = storageName.ToLowerInvariant();
-                bool isUnique = BaseFunc.CBool(oRow["IsUnique"]);
+                bool isUnique = ValueUtilities.CBool(oRow["IsUnique"]);
 
                 var tableIndex = new TableSchemaIndex
                 {
@@ -189,8 +189,8 @@ namespace Bee.Db.Providers.Oracle
                 {
                     var indexField = new IndexField
                     {
-                        FieldName = BaseFunc.CStr(rowView["FieldName"]).ToLowerInvariant(),
-                        SortDirection = BaseFunc.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
+                        FieldName = ValueUtilities.CStr(rowView["FieldName"]).ToLowerInvariant(),
+                        SortDirection = ValueUtilities.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
                     };
                     tableIndex.IndexFields!.Add(indexField);
                 }

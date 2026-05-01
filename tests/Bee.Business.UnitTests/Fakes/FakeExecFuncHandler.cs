@@ -37,7 +37,7 @@ namespace Bee.Business.UnitTests.Fakes
 
         /// <summary>
         /// 測試例外展開：原始例外被 reflection 包成 <see cref="System.Reflection.TargetInvocationException"/>，
-        /// 經由 <c>BaseFunc.UnwrapException</c> 應還原為原始型別。
+        /// 經由 <c>ExceptionExtensions.Unwrap</c> 應還原為原始型別。
         /// </summary>
         [ExecFuncAccessControl(ApiAccessRequirement.Anonymous)]
         public static void Throws(ExecFuncArgs args, ExecFuncResult result)

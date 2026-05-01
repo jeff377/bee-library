@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
-using Bee.Base;
+using System.Security.Cryptography;
 using Bee.Db.Dml;
 using Bee.Definition;
 using Bee.Tests.Shared;
@@ -94,7 +94,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(table);
             Assert.True(table.Rows.Count > 0, "st_user 中無 sys_id='001' 的資料");
 
-            int rnd = BaseFunc.RndInt(0, 100);
+            int rnd = RandomNumberGenerator.GetInt32(0, 100);
             table.Rows[0]["note"] = rnd.ToString(CultureInfo.InvariantCulture);
 
             var tableSchema = BackendInfo.DefineAccess.GetTableSchema("common", "st_user");

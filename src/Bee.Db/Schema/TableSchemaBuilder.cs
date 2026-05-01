@@ -25,7 +25,7 @@ namespace Bee.Db.Schema
         /// <param name="databaseId">The database identifier.</param>
         public TableSchemaBuilder(string databaseId)
         {
-            BaseFunc.EnsureNotNullOrWhiteSpace((databaseId, nameof(databaseId)));
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             DatabaseId = databaseId;
             var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
             _dialect = DbDialectRegistry.Get(connInfo.DatabaseType);

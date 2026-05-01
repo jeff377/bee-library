@@ -44,7 +44,7 @@ namespace Bee.Db.Providers.Sqlite
         /// <inheritdoc />
         public IReadOnlyList<string> GetStatements(string tableName, ITableChange change)
         {
-            BaseFunc.EnsureNotNullOrWhiteSpace((tableName, nameof(tableName)));
+            ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
             switch (change)
             {
                 case AddFieldChange add:

@@ -1,4 +1,6 @@
-﻿namespace Bee.Base.Attributes
+﻿using System.ComponentModel;
+
+namespace Bee.Base.Attributes
 {
     /// <summary>
     /// Custom attribute applied to a class to describe how the object is presented as a tree node.
@@ -69,7 +71,7 @@
         public static string GetDisplayText(object value)
         {
             // Get the TreeNodeAttribute from the object
-            var attribute = BaseFunc.GetAttribute(value, typeof(TreeNodeAttribute)) as TreeNodeAttribute;
+            var attribute = TypeDescriptor.GetAttributes(value)[typeof(TreeNodeAttribute)] as TreeNodeAttribute;
             // If no attribute is found, return the object's string representation
             if (attribute == null) { return value.ToString() ?? string.Empty; }
 
@@ -80,7 +82,7 @@
                 var names = StringUtilities.Split(attribute.PropertyName, ",");
                 var args = new object[names.Length];
                 for (int N1 = 0; N1 < names.Length; N1++)
-                    args[N1] = BaseFunc.GetPropertyValue(value, names[N1])!;
+                    args[N1] = TypeDescriptor.GetProperties(value)[names[N1]]?.GetValue(value)!;
                 displayText = StringUtilities.Format(attribute.DisplayFormat, args);
             }
             else

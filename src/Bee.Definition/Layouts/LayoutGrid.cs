@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 
@@ -74,7 +73,7 @@ namespace Bee.Definition.Layouts
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _columns!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _columns!)) { return null; }
                 if (_columns == null) { _columns = []; }
                 return _columns;
             }
@@ -87,7 +86,7 @@ namespace Bee.Definition.Layouts
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_columns!, serializeState);
+            _columns?.SetSerializeState(serializeState);
         }
 
         /// <summary>

@@ -72,7 +72,7 @@ namespace Bee.Db.Providers.Sqlite
             const string sql = "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name={0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
             var result = _dbAccess.Execute(command);
-            return BaseFunc.CInt(result.Scalar!) > 0;
+            return ValueUtilities.CInt(result.Scalar!) > 0;
         }
 
         /// <summary>
@@ -129,8 +129,8 @@ namespace Bee.Db.Providers.Sqlite
         private static void ParsePrimaryKey(TableSchema dbTable, DataTable columns, string tableName)
         {
             var pkColumns = columns.AsEnumerable()
-                .Where(r => BaseFunc.CInt(r["pk"]) > 0)
-                .OrderBy(r => BaseFunc.CInt(r["pk"]))
+                .Where(r => ValueUtilities.CInt(r["pk"]) > 0)
+                .OrderBy(r => ValueUtilities.CInt(r["pk"]))
                 .ToList();
 
             if (pkColumns.Count == 0) return;
@@ -146,7 +146,7 @@ namespace Bee.Db.Providers.Sqlite
             {
                 pkIndex.IndexFields!.Add(new IndexField
                 {
-                    FieldName = BaseFunc.CStr(row["name"]),
+                    FieldName = ValueUtilities.CStr(row["name"]),
                     SortDirection = SortDirection.Asc
                 });
             }
@@ -165,11 +165,11 @@ namespace Bee.Db.Providers.Sqlite
 
             foreach (DataRow row in listResult.Rows)
             {
-                string origin = BaseFunc.CStr(row["origin"]);
+                string origin = ValueUtilities.CStr(row["origin"]);
                 if (StringUtilities.IsEquals(origin, "pk")) continue;
 
-                string indexName = BaseFunc.CStr(row["name"]);
-                bool unique = BaseFunc.CBool(row["unique"]);
+                string indexName = ValueUtilities.CStr(row["name"]);
+                bool unique = ValueUtilities.CBool(row["unique"]);
 
                 var indexFields = ReadIndexFields(indexName);
                 if (indexFields.Count == 0) continue;
@@ -200,7 +200,7 @@ namespace Bee.Db.Providers.Sqlite
             var result = ReadDynamicPragma(sql, "IndexInfo");
             var fields = new List<string>();
             foreach (DataRow row in result.Rows)
-                fields.Add(BaseFunc.CStr(row["name"]));
+                fields.Add(ValueUtilities.CStr(row["name"]));
             return fields;
         }
 
@@ -209,10 +209,10 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         private static DbField ParseDbField(DataRow row)
         {
-            string columnName = BaseFunc.CStr(row["name"]);
-            string declaredType = BaseFunc.CStr(row["type"]);
-            bool notNull = BaseFunc.CInt(row["notnull"]) != 0;
-            bool isPrimaryKey = BaseFunc.CInt(row["pk"]) > 0;
+            string columnName = ValueUtilities.CStr(row["name"]);
+            string declaredType = ValueUtilities.CStr(row["type"]);
+            bool notNull = ValueUtilities.CInt(row["notnull"]) != 0;
+            bool isPrimaryKey = ValueUtilities.CInt(row["pk"]) > 0;
 
             // SQLite reports the declared type verbatim. Extract a length / precision / scale
             // hint from forms like "VARCHAR(50)" or "NUMERIC(18,2)".
@@ -235,7 +235,7 @@ namespace Bee.Db.Providers.Sqlite
             }
 
             string originalDefault = SqliteSchemaSyntax.GetDefaultValueExpression(dbField.DbType);
-            string raw = BaseFunc.CStr(row["dflt_value"]);
+            string raw = ValueUtilities.CStr(row["dflt_value"]);
             dbField.DefaultValue = ParseDefaultValue(raw, dbField.DbType, originalDefault);
             return dbField;
         }

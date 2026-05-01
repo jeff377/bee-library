@@ -45,7 +45,7 @@ namespace Bee.Business
             }
             catch (Exception ex)
             {
-                var rootEx = BaseFunc.UnwrapException(ex);
+                var rootEx = ex.Unwrap();
                 ExceptionDispatchInfo.Capture(rootEx).Throw();  // Re-throw preserving the original stack trace
                 throw; // 不會執行到，純粹為了編譯器
             }

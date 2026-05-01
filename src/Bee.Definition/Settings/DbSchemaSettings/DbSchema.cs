@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using Bee.Base.Collections;
@@ -47,7 +46,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _tables!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _tables!)) { return null; }
                 if (_tables == null) { _tables = new TableItemCollection(this); }
                 return _tables;
             }
@@ -60,7 +59,7 @@ namespace Bee.Definition.Settings
         public override void SetSerializeState(SerializeState serializeState)
         {
             base.SetSerializeState(serializeState);
-            BaseFunc.SetSerializeState(_tables!, serializeState);
+            _tables?.SetSerializeState(serializeState);
         }
 
         /// <summary>

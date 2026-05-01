@@ -49,8 +49,8 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_servers!, serializeState);
-            BaseFunc.SetSerializeState(_items!, serializeState);
+            _servers?.SetSerializeState(serializeState);
+            _items?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _servers!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _servers!)) { return null; }
                 if (_servers == null) { _servers = []; }
                 return _servers;
             }
@@ -191,7 +191,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _items!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _items!)) { return null; }
                 if (_items == null) { _items = []; }
                 return _items;
             }

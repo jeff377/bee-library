@@ -1,5 +1,4 @@
 using Bee.Definition.Collections;
-using Bee.Base;
 using Bee.Base.Serialization;
 using MessagePack;
 using System.Text.Json.Serialization;
@@ -29,7 +28,7 @@ namespace Bee.Api.Core.Messages
         public virtual void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            if (_parameters != null) BaseFunc.SetSerializeState(_parameters, serializeState);
+            if (_parameters != null) _parameters?.SetSerializeState(serializeState);
         }
 
         #endregion
@@ -43,7 +42,7 @@ namespace Bee.Api.Core.Messages
             get
             {
                 // Return null when the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(SerializeState, _parameters!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _parameters!)) { return null; }
                 if (_parameters == null) { _parameters = []; }
                 return _parameters;
             }

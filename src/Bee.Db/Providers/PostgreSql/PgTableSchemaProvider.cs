@@ -68,7 +68,7 @@ namespace Bee.Db.Providers.PostgreSql
                          "WHERE table_schema={0} AND table_name={1}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, DefaultSchema, tableName);
             var result = _dbAccess.Execute(command);
-            return BaseFunc.CInt(result.Scalar!) > 0;
+            return ValueUtilities.CInt(result.Scalar!) > 0;
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Bee.Db.Providers.PostgreSql
             string sql = "SELECT COALESCE(obj_description(({0}||'.'||{1})::regclass, 'pg_class'), '')";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, DefaultSchema, tableName);
             var result = _dbAccess.Execute(command);
-            return BaseFunc.CStr(result.Scalar!);
+            return ValueUtilities.CStr(result.Scalar!);
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Bee.Db.Providers.PostgreSql
             table.DefaultView.Sort = "KeyOrdinal";
             if (table.DefaultView.IsEmpty()) return;
 
-            string name = BaseFunc.CStr(table.DefaultView[0]["name"]);
+            string name = ValueUtilities.CStr(table.DefaultView[0]["name"]);
             var tableIndex = new TableSchemaIndex
             {
                 PrimaryKey = true,
@@ -138,8 +138,8 @@ namespace Bee.Db.Providers.PostgreSql
             {
                 var indexField = new IndexField
                 {
-                    FieldName = BaseFunc.CStr(row["FieldName"]),
-                    SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
+                    FieldName = ValueUtilities.CStr(row["FieldName"]),
+                    SortDirection = ValueUtilities.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
                 };
                 tableIndex.IndexFields!.Add(indexField);
             }
@@ -154,8 +154,8 @@ namespace Bee.Db.Providers.PostgreSql
             while (!table.IsEmpty())
             {
                 var oRow = table.Rows[0];
-                string name = BaseFunc.CStr(oRow["Name"]);
-                bool isUnique = BaseFunc.CBool(oRow["IsUnique"]);
+                string name = ValueUtilities.CStr(oRow["Name"]);
+                bool isUnique = ValueUtilities.CBool(oRow["IsUnique"]);
 
                 var tableIndex = new TableSchemaIndex
                 {
@@ -170,8 +170,8 @@ namespace Bee.Db.Providers.PostgreSql
                 {
                     var indexField = new IndexField
                     {
-                        FieldName = BaseFunc.CStr(rowView["FieldName"]),
-                        SortDirection = BaseFunc.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
+                        FieldName = ValueUtilities.CStr(rowView["FieldName"]),
+                        SortDirection = ValueUtilities.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
                     };
                     tableIndex.IndexFields!.Add(indexField);
                 }

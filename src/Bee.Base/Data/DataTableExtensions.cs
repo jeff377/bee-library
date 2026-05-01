@@ -25,7 +25,7 @@ namespace Bee.Base.Data
             if (dataType == typeof(DateTime))
                 column.DateTimeMode = dateTimeMode;
 
-            if (!BaseFunc.IsNullOrDBNull(defaultValue))
+            if (!ValueUtilities.IsNullOrDBNull(defaultValue))
                 column.AllowDBNull = false;
 
             if (StringUtilities.IsNotEmpty(caption))

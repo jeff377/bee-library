@@ -193,7 +193,7 @@ namespace Bee.Definition
         private static T CreateOrDefault<T>(string configured, string fallback) where T : class
         {
             var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
-            return (BaseFunc.CreateInstance(typeName) as T)!;
+            return (AssemblyLoader.CreateInstance(typeName) as T)!;
         }
 
         /// <summary>

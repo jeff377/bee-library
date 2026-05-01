@@ -66,7 +66,7 @@ namespace Bee.Db.Providers.MySql
                          "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = {0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
             var result = _dbAccess.Execute(command);
-            return BaseFunc.CInt(result.Scalar!) > 0;
+            return ValueUtilities.CInt(result.Scalar!) > 0;
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Bee.Db.Providers.MySql
                          "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = {0}";
             var command = new DbCommandSpec(DbCommandKind.Scalar, sql, tableName);
             var result = _dbAccess.Execute(command);
-            return BaseFunc.CStr(result.Scalar!);
+            return ValueUtilities.CStr(result.Scalar!);
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Bee.Db.Providers.MySql
             table.DefaultView.Sort = "KeyOrdinal";
             if (table.DefaultView.IsEmpty()) return;
 
-            string name = BaseFunc.CStr(table.DefaultView[0]["Name"]);
+            string name = ValueUtilities.CStr(table.DefaultView[0]["Name"]);
             var tableIndex = new TableSchemaIndex
             {
                 PrimaryKey = true,
@@ -128,8 +128,8 @@ namespace Bee.Db.Providers.MySql
             {
                 var indexField = new IndexField
                 {
-                    FieldName = BaseFunc.CStr(row["FieldName"]),
-                    SortDirection = BaseFunc.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
+                    FieldName = ValueUtilities.CStr(row["FieldName"]),
+                    SortDirection = ValueUtilities.CBool(row["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
                 };
                 tableIndex.IndexFields!.Add(indexField);
             }
@@ -144,8 +144,8 @@ namespace Bee.Db.Providers.MySql
             while (!table.IsEmpty())
             {
                 var oRow = table.Rows[0];
-                string name = BaseFunc.CStr(oRow["Name"]);
-                bool isUnique = BaseFunc.CBool(oRow["IsUnique"]);
+                string name = ValueUtilities.CStr(oRow["Name"]);
+                bool isUnique = ValueUtilities.CBool(oRow["IsUnique"]);
 
                 var tableIndex = new TableSchemaIndex
                 {
@@ -160,8 +160,8 @@ namespace Bee.Db.Providers.MySql
                 {
                     var indexField = new IndexField
                     {
-                        FieldName = BaseFunc.CStr(rowView["FieldName"]),
-                        SortDirection = BaseFunc.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
+                        FieldName = ValueUtilities.CStr(rowView["FieldName"]),
+                        SortDirection = ValueUtilities.CBool(rowView["IsDesc"]) ? SortDirection.Desc : SortDirection.Asc
                     };
                     tableIndex.IndexFields!.Add(indexField);
                 }

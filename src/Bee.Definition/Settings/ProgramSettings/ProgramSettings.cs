@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
-using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
@@ -46,7 +45,7 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            BaseFunc.SetSerializeState(_categories!, serializeState);
+            _categories?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -78,7 +77,7 @@ namespace Bee.Definition.Settings
             get
             {
                 // Return null if the collection is empty during serialization
-                if (BaseFunc.IsSerializeEmpty(this.SerializeState, _categories!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _categories!)) { return null; }
                 if (_categories == null) { _categories = new ProgramCategoryCollection(this); }
                 return _categories;
             }

@@ -1,6 +1,6 @@
 # 計畫：`*Func` 系列全面 .NET 慣例化重構（主計畫）
 
-**狀態：🚧 進行中**
+**狀態：✅ 已完成（2026-05-01）**
 
 ## 動機
 
@@ -108,7 +108,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | 9 | `CacheFunc` | 11 | A+D | ✅ | 2026-05-01 |
 | 10 | `FileFunc` | 21 | A+C | ✅ | 2026-05-01 |
 | 11 | `StrFunc` | 39 | A+B+C+D | ✅ | 2026-05-01 |
-| 12 | `BaseFunc` | 46 | 全部 | 📝 | — |
+| 12 | `BaseFunc` | 47 | 全部 | ✅ | 2026-05-01 |
 
 > 狀態圖示:`📝` 待開始 / `🚧` 進行中 / `✅` 已完成 / `⏸` 暫停
 
@@ -228,6 +228,18 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 - 公開原本 internal 的 class 是合理 path D 副作用,只要該類本來就設計為消費者可用(有 public Get/Set 等方法),且實作細節仍藏在 protected/private
 - 連帶可順手清理 dead code(本例 `ViewStateCache` 是舊 .NET Framework Web Forms 遺物,0 prod caller,連同所屬資料夾整個刪除)
 - **避免 base class shadowing**:在 owning class 加新 overload 時,先檢查是否與 base class 的同名 method 簽章衝突(CS0114);衝突時優先**不加 overload,讓 caller 顯式傳值**,而非用 `new` keyword shadow(語意混淆)
+
+### 雜類拆分 + `Cxxx` 公開 API 保留 — 由 `BaseFunc`(2026-05-01)定案
+
+當 `*Func` 內方法跨多個關注領域(本例 47 個方法分屬:值檢查、型別轉換、序列化、reflection、命令列、驗證、例外處理):
+
+- **逐方法分流**:每個方法依關注分類,走 path A/B/C/D 各自找到歸屬
+- **`Cxxx` 型別轉換家族整體保留**:即便部分成員 0 prod caller(`CDouble`/`CDecimal`/`CGuid` 等),仍**作為框架公開 API 給 ERP 業務碼使用**;與「0-caller 純 BCL wrapper 直接刪」原則的差別在於**是否屬於 framework 對外提供的 API surface** —— 是,保留;不是,刪
+- **`SetSerializeState(os, state)` 這種純 null-safe wrapper**:當 wrapper 只是把 `os?.Method()` 包成 static 呼叫,**inline 至 caller**(`os?.SetSerializeState(state)`),wrapper 完全沒加值
+- **`EnsureNotNullOrWhiteSpace(params (object,string)[])`**:.NET 8+ 已有 `ArgumentException.ThrowIfNullOrWhiteSpace`,inline 後 caller 寫得更直白(每個參數一行),但要注意 BCL 對 null 拋 `ArgumentNullException`(而原 helper 只拋 `ArgumentException`)—— **既有測試需 `Assert.ThrowsAny<ArgumentException>` 取代 `Assert.Throws<ArgumentException>`**(`ArgumentNullException : ArgumentException` 仍合語意)
+- **`UnwrapException(Exception)` 走 path B**:第一參數為 BCL `Exception`,符合擴充方法條件且 BCL 沒有 `Exception.Unwrap`,改為 `ex.Unwrap()` 提升可讀性
+- **內含 `private static` helper(本例 `StrToDate`)**:跟著主方法搬,無需另開檔
+- **`using` 清理**:大規模搬移後常出現「原 file 已不依賴某 namespace 但 `using` 沒清」的 `IDE0005` 錯誤(`TreatWarningsAsErrors=true` 會 fail);build 報錯時直接刪不再用的 `using`
 
 ### Path D 命名 shadowing 檢查 — 由 `DbFunc.InferDbType`(2026-05-01)補強
 

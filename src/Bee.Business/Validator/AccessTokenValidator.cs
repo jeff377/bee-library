@@ -18,7 +18,7 @@ namespace Bee.Business.Validator
         public bool Validate(Guid accessToken)
         {
             // If AccessToken is Guid.Empty, throw an unauthorized exception
-            if (BaseFunc.IsEmpty(accessToken))
+            if (ValueUtilities.IsEmpty(accessToken))
             {
                 throw new UnauthorizedAccessException("Access token is required.");
             }
