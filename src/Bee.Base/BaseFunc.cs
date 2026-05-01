@@ -366,7 +366,8 @@ namespace Bee.Base
 
             if (IsNullOrDBNull(value)) { return defaultValue; }
             if (StrFunc.IsEmpty(value)) { return defaultValue; }
-            if (DateTimeFunc.IsDate(value)) { return Convert.ToDateTime(value, CultureInfo.InvariantCulture); }
+            if (value is DateTime dt) { return dt; }
+            if (DateTime.TryParse(BaseFunc.CStr(value), CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)) { return parsed; }
 
             try
             {

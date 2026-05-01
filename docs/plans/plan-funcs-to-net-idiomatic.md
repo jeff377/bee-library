@@ -100,7 +100,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | 1 | `GzipFunc` | 2 | C | ✅ | 2026-05-01 |
 | 2 | `BusinessFunc` | 2 | B+D | ✅ | 2026-05-01 |
 | 3 | `DefineFunc` | 5 | B+C+D | ✅ | 2026-05-01 |
-| 4 | `DateTimeFunc` | 5 | B | 📝 | — |
+| 4 | `DateTimeFunc` | 4 | A+B | ✅ | 2026-05-01 |
 | 5 | `HttpFunc` | 5 | B | 📝 | — |
 | 6 | `DbFunc` | 7 | B/D | 📝 | — |
 | 7 | `DataSetFunc` | 8 | B | 📝 | — |
@@ -180,6 +180,14 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 - **Path C 命名延伸**:當方法承載「框架級命名約定」的查表(例:`"Amount" → "N2"`),改名到能呈現「這是預設組」語意的類別 —— 例 `NumberFormatPresets`(而非 `NumberFormatNames` 之類過弱的名稱);類名已含領域字眼時,方法名不重複(`ToFormatString` 而非 `ToNumberFormatString`)
 - **Path D 進一步**:當原 `*Func` 方法是某 domain object 上 instance method 的「外包裝實作」(例:`FormSchema.GetListLayout` → `DefineFunc.GetListLayout` 又繞回來),應**直接內聯**回該 instance method,連帶私有 helper 一起搬入,徹底消除 wrapper 環呼叫
 - **不為假設的未來設計**:即便已預期某 API 未來會擴充(例:`NumberFormatPresets` 未來可能加 enum overload),**現在只搬最低限度的內容**,不預先抽常數、enum、overload。等真的需要時再加
+
+### Path A 「刪除 + inline」 — 由 `DateTimeFunc`(2026-05-01)定案
+
+當 `*Func` 方法只有 1-2 個 prod callers 且 body 是 BCL 1-line 包裝,直接 inline 到 caller、刪除原 helper。比保留薄殼更清楚:
+
+- **`object` 不擴充**:第一參數為 `object` 的方法不轉擴充方法(會污染所有型別 IntelliSense),改走 path A inline 或 path C 的 noun-form static utility(例:`DateTimeFunc.IsDate(object)` → inline 至 `BaseFunc.CDateTime` 用 `is DateTime` + `DateTime.TryParse`)
+- **預設值/隱式約定的判斷**:當 helper 唯一加值是「強制某預設」(例:`InvariantCulture`),如果該預設應該被呼叫端意識到,不該藏在 helper 裡 —— 直接用 BCL 並把預設明示給呼叫端,而非透過 helper 隱含預設(本例 `DateTimeFunc.Format` 直接刪除)
+- **Inline 後的測試覆蓋**:刪除 helper 前確認 caller 已有完整測試覆蓋 inlined 邏輯;若有,helper 自身的測試可一併刪除,避免重複測試
 
 預期會碰到的決策點:
 - 多個類別都有 `string` 擴充方法時,集中到同一個 `StringExtensions` 還是
