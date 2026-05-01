@@ -1,6 +1,5 @@
 using System.Collections;
 using System.ComponentModel;
-using Bee.Base.Data;
 
 namespace Bee.Base.UnitTests
 {
@@ -422,44 +421,6 @@ namespace Bee.Base.UnitTests
             Assert.Equal(Guid.Empty, ValueUtilities.CGuid((object)null!));
             Assert.Equal(Guid.Empty, ValueUtilities.CGuid((object)DBNull.Value));
             Assert.Equal(Guid.Empty, ValueUtilities.CGuid((object)123));
-        }
-
-        // ---- CFieldValue / CDbFieldValue ----
-
-        [Fact]
-        [DisplayName("CFieldValue 依據 FieldDbType 走對應轉換分支")]
-        public void CFieldValue_VariousDbTypes_ReturnsExpectedResult()
-        {
-            Assert.Equal("abc", ValueUtilities.CFieldValue(FieldDbType.String, "abc"));
-            Assert.Equal("abc", ValueUtilities.CFieldValue(FieldDbType.Text, "abc"));
-            Assert.True((bool)ValueUtilities.CFieldValue(FieldDbType.Boolean, "1")!);
-            Assert.Equal(123, ValueUtilities.CFieldValue(FieldDbType.Integer, "123"));
-            Assert.Equal(123.45m, ValueUtilities.CFieldValue(FieldDbType.Decimal, "123.45"));
-            Assert.Equal(123.45m, ValueUtilities.CFieldValue(FieldDbType.Currency, "123.45"));
-
-            var date = new DateTime(2026, 4, 18, 0, 0, 0, DateTimeKind.Unspecified);
-            Assert.Equal(date, ValueUtilities.CFieldValue(FieldDbType.Date, "2026-04-18"));
-            Assert.Equal(date, ValueUtilities.CFieldValue(FieldDbType.DateTime, "2026-04-18"));
-
-            var guid = Guid.NewGuid();
-            Assert.Equal(guid, ValueUtilities.CFieldValue(FieldDbType.Guid, guid.ToString()));
-
-            // 未涵蓋的 FieldDbType 應原樣回傳
-            var raw = new byte[] { 0x01, 0x02 };
-            Assert.Same(raw, ValueUtilities.CFieldValue(FieldDbType.Binary, raw));
-        }
-
-        [Fact]
-        [DisplayName("CDbFieldValue 對 DateTime.MinValue 回傳 DBNull.Value,其餘走 CFieldValue")]
-        public void CDbFieldValue_DateTimeMinValue_ReturnsDBNull()
-        {
-            Assert.Equal(DBNull.Value, ValueUtilities.CDbFieldValue(FieldDbType.DateTime, DateTime.MinValue));
-            Assert.Equal(DBNull.Value, ValueUtilities.CDbFieldValue(FieldDbType.Date, DateTime.MinValue));
-
-            // 一般日期走 CFieldValue
-            var date = new DateTime(2026, 4, 18, 0, 0, 0, DateTimeKind.Unspecified);
-            Assert.Equal(date, ValueUtilities.CDbFieldValue(FieldDbType.DateTime, date));
-            Assert.Equal("abc", ValueUtilities.CDbFieldValue(FieldDbType.String, "abc"));
         }
     }
 }

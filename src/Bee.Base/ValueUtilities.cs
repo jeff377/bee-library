@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Globalization;
-using Bee.Base.Data;
 
 namespace Bee.Base
 {
@@ -491,52 +490,6 @@ namespace Bee.Base
                 return CGuid(s);
             else
                 return Guid.Empty;
-        }
-
-        #endregion
-
-        #region CFieldValue / CDbFieldValue
-
-        /// <summary>
-        /// Converts the specified value to the appropriate field data type.
-        /// </summary>
-        /// <param name="dbType">The field data type.</param>
-        /// <param name="value">The input value.</param>
-        public static object CFieldValue(FieldDbType dbType, object value)
-        {
-            switch (dbType)
-            {
-                case FieldDbType.String:
-                case FieldDbType.Text:
-                    return CStr(value);
-                case FieldDbType.Boolean:
-                    return CBool(value);
-                case FieldDbType.Integer:
-                    return CInt(value);
-                case FieldDbType.Decimal:
-                case FieldDbType.Currency:
-                    return CDecimal(value);
-                case FieldDbType.Date:
-                    return CDate(value);
-                case FieldDbType.DateTime:
-                    return CDateTime(value);
-                case FieldDbType.Guid:
-                    return CGuid(value);
-                default:
-                    return value;
-            }
-        }
-
-        /// <summary>
-        /// Converts the specified value to a database-ready field value.
-        /// </summary>
-        /// <param name="dbType">The field data type.</param>
-        /// <param name="value">The input value.</param>
-        public static object CDbFieldValue(FieldDbType dbType, object value)
-        {
-            if (value is DateTime && CDateTime(value) == DateTime.MinValue)
-                return DBNull.Value;
-            return CFieldValue(dbType, value);
         }
 
         #endregion
