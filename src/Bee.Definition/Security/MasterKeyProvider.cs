@@ -1,5 +1,4 @@
 using Bee.Definition.Settings;
-using Bee.Base;
 using Bee.Base.Security;
 
 namespace Bee.Definition.Security
@@ -65,7 +64,7 @@ namespace Bee.Definition.Security
             // If the path is relative, prepend BackendInfo.DefinePath
             if (!Path.IsPathRooted(filePath))
             {
-                filePath = FileFunc.PathCombine(BackendInfo.DefinePath, filePath);
+                filePath = Path.Combine(BackendInfo.DefinePath, filePath);
             }
 
             if (!File.Exists(filePath))

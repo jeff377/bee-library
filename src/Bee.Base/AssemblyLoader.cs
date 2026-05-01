@@ -55,8 +55,8 @@ namespace Bee.Base
 
             // Resolve the full path of the assembly
             string assemblyFile;
-            if (StrFunc.IsEmpty(FileFunc.GetDirectory(assemblyName)))
-                assemblyFile = FileFunc.PathCombine(FileFunc.GetAssemblyPath(), assemblyName);
+            if (StrFunc.IsEmpty(Path.GetDirectoryName(assemblyName)))
+                assemblyFile = Path.Combine(FileUtilities.GetAssemblyPath(), assemblyName);
             else
                 assemblyFile = assemblyName;
 

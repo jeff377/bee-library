@@ -106,7 +106,7 @@ Bee.NET 定位為要推廣的 ERP 開源框架,對外採用率與第一印象很
 | 7 | `DataSetFunc` | 7 | A+B | ✅ | 2026-05-01 |
 | 8 | `SerializeFunc` | 9 | C | ✅ | 2026-05-01 |
 | 9 | `CacheFunc` | 11 | A+D | ✅ | 2026-05-01 |
-| 10 | `FileFunc` | 22 | A/B | 📝 | — |
+| 10 | `FileFunc` | 21 | A+C | ✅ | 2026-05-01 |
 | 11 | `StrFunc` | 40 | A/B | 📝 | — |
 | 12 | `BaseFunc` | 46 | 全部 | 📝 | — |
 

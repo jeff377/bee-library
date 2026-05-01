@@ -83,7 +83,7 @@ namespace Bee.Base.Serialization
         public static void SerializeToFile(object value, string filePath)
         {
             string json = Serialize(value, true);
-            FileFunc.FileWriteText(filePath, json);
+            FileUtilities.FileWriteText(filePath, json);
             // Set the serialization-bound file
             if (value is IObjectSerializeFile objectSerializeFile) { objectSerializeFile.SetObjectFilePath(filePath); }
         }
@@ -97,7 +97,7 @@ namespace Bee.Base.Serialization
         {
             try
             {
-                string json = FileFunc.FileReadText(filePath);
+                string json = FileUtilities.FileReadText(filePath);
                 T? value = Deserialize<T>(json);
                 // Set the serialization-bound file
                 if (value is IObjectSerializeFile objectSerializeFile) { objectSerializeFile.SetObjectFilePath(filePath); }

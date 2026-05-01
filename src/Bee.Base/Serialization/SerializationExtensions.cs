@@ -54,7 +54,7 @@ namespace Bee.Base.Serialization
             if (StrFunc.IsEmpty(value.ObjectFilePath))
                 throw new ArgumentException("ObjectFilePath is empty");
 
-            sExtension = FileFunc.GetExtension(value.ObjectFilePath);
+            sExtension = Path.GetExtension(value.ObjectFilePath);
             if (StrFunc.IsEquals(sExtension, ".xml"))
                 XmlCodec.SerializeToFile(value, value.ObjectFilePath);
             else if (StrFunc.IsEquals(sExtension, ".json"))

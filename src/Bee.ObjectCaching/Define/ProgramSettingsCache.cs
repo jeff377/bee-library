@@ -1,5 +1,4 @@
-﻿using Bee.Base;
-using Bee.Base.Serialization;
+﻿using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Settings;
 
@@ -26,7 +25,7 @@ namespace Bee.ObjectCaching.Define
         protected override ProgramSettings? CreateInstance()
         {
             string filePath = DefinePathInfo.GetProgramSettingsFilePath();
-            if (!FileFunc.FileExists(filePath))
+            if (!File.Exists(filePath))
                 throw new FileNotFoundException($"The file {filePath} does not exist.");
 
             return XmlCodec.DeserializeFromFile<ProgramSettings>(filePath);

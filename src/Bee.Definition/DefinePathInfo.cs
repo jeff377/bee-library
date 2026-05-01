@@ -1,4 +1,3 @@
-using Bee.Base;
 
 namespace Bee.Definition
 {
@@ -13,7 +12,7 @@ namespace Bee.Definition
         /// <param name="subPath">The sub-path.</param>
         private static string GetDefinePath(string subPath)
         {
-            return FileFunc.PathCombine(BackendInfo.DefinePath, subPath);
+            return Path.Combine(BackendInfo.DefinePath, subPath);
         }
 
         /// <summary>

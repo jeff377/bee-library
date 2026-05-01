@@ -20,7 +20,7 @@ namespace Bee.Api.Client
             if (StrFunc.IsEmpty(endpoint))
                 throw new ArgumentException("Input cannot be null or empty.", nameof(endpoint));
 
-            if (FileFunc.IsLocalPath(endpoint))  // Local path: validate local connection settings
+            if (FileUtilities.IsLocalPath(endpoint))  // Local path: validate local connection settings
             {
                 // Validate local connection settings
                 ValidateLocal(endpoint, allowGenerateSettings);
@@ -62,11 +62,11 @@ namespace Bee.Api.Client
             }
             else // Settings files must already exist (used by regular applications)
             {
-                if (!FileFunc.DirectoryExists(definePath))
+                if (!Directory.Exists(definePath))
                     throw new ArgumentException("Definition path does not exist.", nameof(definePath));
                 // Verify that SystemSettings.xml exists in the specified path
-                string filePath = FileFunc.PathCombine(definePath, "SystemSettings.xml");
-                if (!FileFunc.FileExists(filePath))
+                string filePath = Path.Combine(definePath, "SystemSettings.xml");
+                if (!File.Exists(filePath))
                     throw new FileNotFoundException("SystemSettings.xml file not found in the definition path.", filePath);
             }
         }
@@ -78,8 +78,8 @@ namespace Bee.Api.Client
         private static void ValidateSystemSettings(string definePath)
         {
             // Check for SystemSettings.xml; create it if not found
-            string filePath = FileFunc.PathCombine(definePath, "SystemSettings.xml");
-            if (!FileFunc.FileExists(filePath))
+            string filePath = Path.Combine(definePath, "SystemSettings.xml");
+            if (!File.Exists(filePath))
             {
                 var settings = new SystemSettings();
                 settings.SetObjectFilePath(filePath);
@@ -94,8 +94,8 @@ namespace Bee.Api.Client
         private static void ValidateDatabaseSettings(string definePath)
         {
             // Check for DatabaseSettings.xml; create it if not found
-            string filePath = FileFunc.PathCombine(definePath, "DatabaseSettings.xml");
-            if (!FileFunc.FileExists(filePath))
+            string filePath = Path.Combine(definePath, "DatabaseSettings.xml");
+            if (!File.Exists(filePath))
             {
                 var settings = new DatabaseSettings();
                 var item = new DatabaseItem()

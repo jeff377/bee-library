@@ -73,7 +73,7 @@ namespace Bee.Base.Serialization
         public static void SerializeToFile(object value, string filePath)
         {
             string xml = Serialize(value);
-            FileFunc.FileWriteText(filePath, xml);
+            FileUtilities.FileWriteText(filePath, xml);
             // Set the serialization-bound file
             if (value is IObjectSerializeFile fileSerialize) { fileSerialize.SetObjectFilePath(filePath); }
         }
@@ -88,7 +88,7 @@ namespace Bee.Base.Serialization
             try
             {
                 // Read file contents and deserialize the XML string to an object
-                string xml = FileFunc.FileReadText(filePath);
+                string xml = FileUtilities.FileReadText(filePath);
                 T? value = Deserialize<T>(xml);
                 // Set the serialization-bound file
                 if (value is IObjectSerializeFile objSerializeFile) { objSerializeFile.SetObjectFilePath(filePath); }

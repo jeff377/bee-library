@@ -2,7 +2,6 @@ using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
-using Bee.Base;
 using Bee.Base.Serialization;
 
 namespace Bee.Definition.Storage
@@ -105,7 +104,7 @@ namespace Bee.Definition.Storage
         /// <param name="filePath">The file path.</param>
         private static void ValidateFilePath(string filePath)
         {
-            if (!FileFunc.FileExists(filePath))
+            if (!File.Exists(filePath))
                 throw new FileNotFoundException($"The file {filePath} does not exist.");
         }
     }
