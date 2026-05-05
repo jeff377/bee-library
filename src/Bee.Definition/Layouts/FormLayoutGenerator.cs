@@ -85,15 +85,13 @@ namespace Bee.Definition.Layouts
                     grid.Columns!.Add(LayoutColumnFactory.ToColumn(field));
 
                 // 2. System fields required for grid binding (whitelist), hidden in layout
-                foreach (var sysName in _gridIdentityFields)
+                foreach (var sysName in _gridIdentityFields.Where(s =>
+                    table.Fields.Contains(s) &&
+                    !grid.Columns!.Any(c => StringUtilities.IsEquals(c.FieldName, s))))
                 {
-                    if (table.Fields.Contains(sysName) &&
-                        !grid.Columns!.Any(c => StringUtilities.IsEquals(c.FieldName, sysName)))
-                    {
-                        var col = LayoutColumnFactory.ToColumn(table.Fields[sysName]);
-                        col.Visible = false;
-                        grid.Columns!.Add(col);
-                    }
+                    var col = LayoutColumnFactory.ToColumn(table.Fields[sysName]);
+                    col.Visible = false;
+                    grid.Columns!.Add(col);
                 }
 
                 if (grid.Columns!.Count > 0)

@@ -37,22 +37,19 @@ namespace Bee.Definition.Layouts
 
             // 1. Add columns by ListFields CSV (whitelist)
             string[] fieldNames = StringUtilities.Split(schema.ListFields, ",");
-            foreach (var name in fieldNames)
+            foreach (var name in fieldNames.Where(master.Fields.Contains))
             {
-                if (master.Fields.Contains(name))
-                    grid.Columns!.Add(LayoutColumnFactory.ToColumn(master.Fields[name]));
+                grid.Columns!.Add(LayoutColumnFactory.ToColumn(master.Fields[name]));
             }
 
             // 2. System fields required for list grid binding (whitelist), hidden in layout
-            foreach (var sysName in _gridIdentityFields)
+            foreach (var sysName in _gridIdentityFields.Where(s =>
+                master.Fields.Contains(s) &&
+                !grid.Columns!.Any(c => StringUtilities.IsEquals(c.FieldName, s))))
             {
-                if (master.Fields.Contains(sysName) &&
-                    !grid.Columns!.Any(c => StringUtilities.IsEquals(c.FieldName, sysName)))
-                {
-                    var col = LayoutColumnFactory.ToColumn(master.Fields[sysName]);
-                    col.Visible = false;
-                    grid.Columns!.Add(col);
-                }
+                var col = LayoutColumnFactory.ToColumn(master.Fields[sysName]);
+                col.Visible = false;
+                grid.Columns!.Add(col);
             }
 
             return grid;
