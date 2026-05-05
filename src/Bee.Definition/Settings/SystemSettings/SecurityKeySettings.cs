@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Xml.Serialization;
 using Bee.Base.Attributes;
 
 namespace Bee.Definition.Settings
@@ -7,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Encryption key settings for storing encryption information in configuration files.
     /// </summary>
-    [XmlType("SecurityKeySettings")]
     [Description("Encryption key settings.")]
     [TreeNode("Security Keys")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

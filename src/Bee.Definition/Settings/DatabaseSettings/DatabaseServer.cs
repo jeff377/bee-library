@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A database server configuration.
     /// </summary>
-    [XmlType("DatabaseServer")]
     [Description("Database server.")]
     [TreeNode]
     public class DatabaseServer : KeyCollectionItem

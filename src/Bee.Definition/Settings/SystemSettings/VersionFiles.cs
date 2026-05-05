@@ -6,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Version number and related files.
     /// </summary>
-    [XmlType("VersionFiles")]
     [Description("Version number and related files.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class VersionFiles

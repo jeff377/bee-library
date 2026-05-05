@@ -7,7 +7,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A grid layout column.
     /// </summary>
-    [XmlType("LayoutColumn")]
     [Description("Grid layout column.")]
     [TreeNode]
     public class LayoutColumn : LayoutFieldBase

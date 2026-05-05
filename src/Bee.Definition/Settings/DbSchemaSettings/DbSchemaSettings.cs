@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Database schema settings.
     /// </summary>
-    [XmlType("DbSchemaSettings")]
     [Description("Database schema settings.")]
     [TreeNode("Database Schema")]
     public class DbSchemaSettings : IObjectSerializeFile

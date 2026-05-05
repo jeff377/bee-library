@@ -9,7 +9,6 @@ namespace Bee.Definition.Database
     /// <summary>
     /// Table index schema.
     /// </summary>
-    [XmlType("TableSchemaIndex")]
     [Description("Table index schema.")]
     [TreeNode]
     public class TableSchemaIndex : KeyCollectionItem

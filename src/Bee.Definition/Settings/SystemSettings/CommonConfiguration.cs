@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
@@ -9,7 +8,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Common parameters and environment settings.
     /// </summary>
-    [XmlType("CommonConfiguration")]
     [Description("Common parameters and environment settings.")]
     [TreeNode("Common")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

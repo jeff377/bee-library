@@ -10,7 +10,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Menu settings.
     /// </summary>
-    [XmlType("MenuSettings")]
     [Description("Menu settings.")]
     [TreeNode]
     public class MenuSettings : IObjectSerializeFile, IDisplayName

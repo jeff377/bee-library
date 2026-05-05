@@ -14,7 +14,6 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// A form field definition.
     /// </summary>
-    [XmlType("FormField")]
     [Description("Form field.")]
     [TreeNode]
     public class FormField : KeyCollectionItem

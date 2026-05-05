@@ -7,7 +7,6 @@ namespace Bee.Definition.Collections
     /// <summary>
     /// A custom property.
     /// </summary>
-    [XmlType("Property")]
     [Description("Custom property.")]
     public class Property : KeyCollectionItem
     {

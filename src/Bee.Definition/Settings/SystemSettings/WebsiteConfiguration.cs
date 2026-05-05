@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Xml.Serialization;
 using Bee.Base.Attributes;
 
 namespace Bee.Definition.Settings
@@ -7,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Website parameters and environment settings.
     /// </summary>
-    [XmlType("WebsiteConfiguration")]
     [Description("Website parameters and environment settings.")]
     [TreeNode("Website")]
     public class WebsiteConfiguration

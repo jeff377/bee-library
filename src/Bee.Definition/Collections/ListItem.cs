@@ -7,7 +7,6 @@ namespace Bee.Definition.Collections
     /// <summary>
     /// List item.
     /// </summary>
-    [XmlType("ListItem")]
     public class ListItem : KeyCollectionItem
     {
         #region Constructors

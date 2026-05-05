@@ -10,7 +10,6 @@ namespace Bee.Definition.Layouts
     /// A section in the master area of a <see cref="FormLayout"/>.
     /// All sections share the column division defined by <see cref="FormLayout.ColumnCount"/>.
     /// </summary>
-    [XmlType("LayoutSection")]
     [Description("Layout section.")]
     [TreeNode]
     public class LayoutSection : CollectionItem

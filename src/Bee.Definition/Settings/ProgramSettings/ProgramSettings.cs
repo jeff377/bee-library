@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Program settings (program list).
     /// </summary>
-    [XmlType("ProgramSettings")]
     [Description("Program settings.")]
     [TreeNode("Program Settings")]
     public class ProgramSettings : IObjectSerializeFile

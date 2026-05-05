@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A program category.
     /// </summary>
-    [XmlType("ProgramCategory")]
     [Description("Program category.")]
     [TreeNode]
     public class ProgramCategory : KeyCollectionItem

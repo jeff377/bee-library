@@ -7,7 +7,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A service endpoint list item.
     /// </summary>
-    [XmlType("EndpointItem")]
     [Description("Service endpoint list item.")]
     public class EndpointItem : CollectionItem
     {

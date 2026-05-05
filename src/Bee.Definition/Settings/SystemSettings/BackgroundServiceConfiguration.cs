@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Xml.Serialization;
 using Bee.Base.Attributes;
 
 namespace Bee.Definition.Settings
@@ -7,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Background service parameters and environment settings.
     /// </summary>
-    [XmlType("BackgroundServiceConfiguration")]
     [Description("Background service parameters and environment settings.")]
     [TreeNode("BackgroundService")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

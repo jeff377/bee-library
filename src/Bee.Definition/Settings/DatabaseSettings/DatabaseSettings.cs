@@ -12,7 +12,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Database settings.
     /// </summary>
-    [XmlType("DatabaseSettings")]
     [Description("Database settings.")]
     [TreeNode("Database Settings")]
     public class DatabaseSettings : IObjectSerializeFile, IObjectSerializeProcess, ISerializableClone

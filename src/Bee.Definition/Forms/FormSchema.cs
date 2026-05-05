@@ -11,7 +11,6 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// Form schema definition.
     /// </summary>
-    [XmlType("FormSchema")]
     [Description("Form schema definition.")]
     [TreeNode("Form Schema")]
     public class FormSchema : IObjectSerializeFile

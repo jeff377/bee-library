@@ -7,7 +7,6 @@ namespace Bee.Definition.Forms
     /// <summary>
     /// A field mapping that maps a source field to a destination field.
     /// </summary>
-    [XmlType("FieldMapping")]
     [Description("Field mapping.")]
     public class FieldMapping : CollectionItem
     {

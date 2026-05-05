@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Xml.Serialization;
 using Bee.Base.Attributes;
 
 namespace Bee.Definition.Settings
@@ -7,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Settings for replaceable backend components, defining the type names for various backend services.
     /// </summary>
-    [XmlType("BackendComponents")]
     [Description("Settings for replaceable backend components, defining the type names for various backend services.")]
     [TreeNode("Components")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

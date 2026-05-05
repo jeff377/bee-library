@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel;
-using System.Xml.Serialization;
 using Bee.Base;
 using Bee.Definition.Serialization;
 using MessagePack;
@@ -10,7 +9,6 @@ namespace Bee.Definition.Collections
     /// A parameter item.
     /// </summary>
     [MessagePackObject]
-    [XmlType("Parameter")]
     [DefaultProperty("Value")]
     public class Parameter : MessagePackKeyCollectionItem
     {

@@ -8,7 +8,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A program item.
     /// </summary>
-    [XmlType("ProgramItem")]
     [Description("Program item.")]
     [TreeNode]
     public class ProgramItem : KeyCollectionItem

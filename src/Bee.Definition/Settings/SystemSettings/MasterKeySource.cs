@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Xml.Serialization;
 using Bee.Definition.Security;
 
 namespace Bee.Definition.Settings
@@ -7,7 +6,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Master key source, including source type and corresponding parameter value.
     /// </summary>
-    [XmlType("MasterKeySource")]
     [Description("Master key source.")]
     [TypeConverter(typeof(ExpandableObjectConverter))]
     public class MasterKeySource

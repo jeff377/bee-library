@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A database schema definition.
     /// </summary>
-    [XmlType("DbSchema")]
     [Description("Database schema.")]
     [TreeNode]
     public class DbSchema : KeyCollectionItem

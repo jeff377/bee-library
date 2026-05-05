@@ -7,7 +7,6 @@ namespace Bee.Definition.Layouts
     /// <summary>
     /// A field placed in a master <see cref="LayoutSection"/>.
     /// </summary>
-    [XmlType("LayoutField")]
     [Description("Layout field.")]
     [TreeNode]
     public class LayoutField : LayoutFieldBase

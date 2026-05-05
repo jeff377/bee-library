@@ -11,7 +11,6 @@ namespace Bee.Definition.Database
     /// <summary>
     /// Database field schema.
     /// </summary>
-    [XmlType("DbField")]
     [Description("Database field schema.")]
     [TreeNode]
     public class DbField : KeyCollectionItem, IDefineField

@@ -1,6 +1,5 @@
 using Bee.Definition.Logging;
 using System.ComponentModel;
-using System.Xml.Serialization;
 using Bee.Base.Attributes;
 using Bee.Definition.Database;
 
@@ -9,7 +8,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// Backend parameters and environment settings.
     /// </summary>
-    [XmlType("BackendConfiguration")]
     [Description("Backend parameters and environment settings.")]
     [TreeNode("Backend")]
     [TypeConverter(typeof(ExpandableObjectConverter))]

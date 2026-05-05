@@ -8,7 +8,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A table item in the database schema.
     /// </summary>
-    [XmlType("TableItem")]
     [Description("Table item.")]
     [TreeNode]
     public class TableItem : KeyCollectionItem

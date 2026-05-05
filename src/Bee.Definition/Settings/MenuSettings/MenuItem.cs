@@ -9,7 +9,6 @@ namespace Bee.Definition.Settings
     /// <summary>
     /// A menu item.
     /// </summary>
-    [XmlType("MenuItem")]
     [Description("Menu item.")]
     [TreeNode]
     public class MenuItem : KeyCollectionItem, IDisplayName
