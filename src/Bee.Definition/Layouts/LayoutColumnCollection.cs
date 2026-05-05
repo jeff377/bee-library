@@ -17,7 +17,7 @@ namespace Bee.Definition.Layouts
         /// <param name="fieldName">The field name.</param>
         /// <param name="caption">The caption text.</param>
         /// <param name="controlType">The control type.</param>
-        public LayoutColumn Add(string fieldName, string caption, ColumnControlType controlType)
+        public LayoutColumn Add(string fieldName, string caption, ControlType controlType)
         {
             var column = new LayoutColumn(fieldName, caption, controlType);
             this.Add(column);

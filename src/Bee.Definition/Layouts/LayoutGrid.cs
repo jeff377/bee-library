@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Xml.Serialization;
 using Bee.Base.Attributes;
+using Bee.Base.Collections;
 using Bee.Base.Serialization;
 
 namespace Bee.Definition.Layouts
@@ -11,7 +12,7 @@ namespace Bee.Definition.Layouts
     [XmlType("LayoutGrid")]
     [Description("Grid layout for tabular data.")]
     [TreeNode]
-    public class LayoutGrid : LayoutItemBase
+    public class LayoutGrid : CollectionItem
     {
         private LayoutColumnCollection? _columns = null;
 
@@ -27,11 +28,11 @@ namespace Bee.Definition.Layouts
         /// Initializes a new instance of <see cref="LayoutGrid"/>.
         /// </summary>
         /// <param name="tableName">The table name.</param>
-        /// <param name="displayName">The display name.</param>
-        public LayoutGrid(string tableName, string displayName)
+        /// <param name="caption">The caption text.</param>
+        public LayoutGrid(string tableName, string caption)
         {
             TableName = tableName;
-            DisplayName = displayName;
+            Caption = caption;
         }
 
         #endregion
@@ -46,12 +47,13 @@ namespace Bee.Definition.Layouts
         public string TableName { get; set; } = string.Empty;
 
         /// <summary>
-        /// Gets or sets the display name.
+        /// Gets or sets the caption text.
         /// </summary>
         [XmlAttribute]
         [NotifyParentProperty(true)]
-        [Description("Display name.")]
-        public string DisplayName { get; set; } = string.Empty;
+        [Description("Caption text.")]
+        [DefaultValue("")]
+        public string Caption { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the actions allowed on the grid control.
@@ -71,8 +73,7 @@ namespace Bee.Definition.Layouts
         {
             get
             {
-                // Return null if the collection is empty during serialization
-                if (SerializationUtilities.IsSerializeEmpty(this.SerializeState, _columns!)) { return null; }
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _columns!)) { return null; }
                 if (_columns == null) { _columns = []; }
                 return _columns;
             }
@@ -93,7 +94,7 @@ namespace Bee.Definition.Layouts
         /// </summary>
         public override string ToString()
         {
-            return $"{this.TableName} - {this.DisplayName}";
+            return $"{TableName} - {Caption}";
         }
     }
 }

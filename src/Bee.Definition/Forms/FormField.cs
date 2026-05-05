@@ -5,6 +5,7 @@ using Bee.Base.Collections;
 using System.Text.Json.Serialization;
 using System.ComponentModel;
 using System.Xml.Serialization;
+using Bee.Definition.Collections;
 using Bee.Definition.Database;
 using Bee.Definition.Layouts;
 
@@ -20,6 +21,7 @@ namespace Bee.Definition.Forms
     {
         private FieldMappingCollection? _relationFieldMappings = null;
         private FieldMappingCollection? _lookupFieldMappings = null;
+        private ListItemCollection? _listItems = null;
 
         #region Constructors
 
@@ -208,6 +210,22 @@ namespace Bee.Definition.Forms
         public bool Visible { get; set; } = true;
 
         /// <summary>
+        /// Gets the list item collection used as the option source shared across layouts.
+        /// </summary>
+        [Category(PropertyCategories.Data)]
+        [Description("List item collection.")]
+        [DefaultValue(null)]
+        public ListItemCollection? ListItems
+        {
+            get
+            {
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _listItems!)) { return null; }
+                if (_listItems == null) { _listItems = []; }
+                return _listItems;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the column width. A value greater than 0 is required to take effect.
         /// </summary>
         [Category(PropertyCategories.Layout)]
@@ -240,6 +258,7 @@ namespace Bee.Definition.Forms
             base.SetSerializeState(serializeState);
             _relationFieldMappings?.SetSerializeState(serializeState);
             _lookupFieldMappings?.SetSerializeState(serializeState);
+            _listItems?.SetSerializeState(serializeState);
         }
 
         /// <summary>

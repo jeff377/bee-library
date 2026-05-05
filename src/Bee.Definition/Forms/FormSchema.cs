@@ -140,47 +140,17 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
+        /// Gets the form layout for this schema.
+        /// </summary>
+        /// <param name="layoutId">The layout ID to assign to the generated layout.</param>
+        public FormLayout GetFormLayout(string layoutId = "default")
+            => FormLayoutGenerator.Generate(this, layoutId);
+
+        /// <summary>
         /// Gets the list layout for this form schema.
         /// </summary>
         public LayoutGrid GetListLayout()
-        {
-            var table = MasterTable;
-            string[] fieldNames = StringUtilities.Split(ListFields, ",");
-
-            var grid = new LayoutGrid { TableName = ProgId };
-            // Add sys_RowID hidden column
-            grid.Columns!.Add(SysFields.RowId, "Row ID", ColumnControlType.TextEdit).Visible = false;
-            // Add list display columns
-            foreach (string fieldName in fieldNames)
-            {
-                var field = table!.Fields![fieldName];
-                if (field != null)
-                {
-                    grid.Columns.Add(ToLayoutColumn(field));
-                }
-            }
-            return grid;
-        }
-
-        private static LayoutColumn ToLayoutColumn(FormField field)
-        {
-            var column = new LayoutColumn(field.FieldName, field.Caption, ToColumnControlType(field.ControlType));
-            column.Width = field.Width > 0 ? field.Width : 120;
-            column.DisplayFormat = field.DisplayFormat;
-            column.NumberFormat = field.NumberFormat;
-            return column;
-        }
-
-        private static ColumnControlType ToColumnControlType(ControlType type) => type switch
-        {
-            ControlType.TextEdit       => ColumnControlType.TextEdit,
-            ControlType.ButtonEdit     => ColumnControlType.ButtonEdit,
-            ControlType.DateEdit       => ColumnControlType.DateEdit,
-            ControlType.YearMonthEdit  => ColumnControlType.YearMonthEdit,
-            ControlType.DropDownEdit   => ColumnControlType.DropDownEdit,
-            ControlType.CheckEdit      => ColumnControlType.CheckEdit,
-            _                          => ColumnControlType.TextEdit,
-        };
+            => ListLayoutGenerator.Generate(this);
 
         /// <summary>
         /// Returns a string representation of this object.

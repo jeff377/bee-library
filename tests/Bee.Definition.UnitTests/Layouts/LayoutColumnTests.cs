@@ -17,8 +17,7 @@ namespace Bee.Definition.UnitTests.Layouts
 
             Assert.Equal(string.Empty, column.FieldName);
             Assert.Equal(string.Empty, column.Caption);
-            Assert.Equal(ColumnControlType.TextEdit, column.ControlType);
-            Assert.Equal(string.Empty, column.ProgId);
+            Assert.Equal(ControlType.TextEdit, column.ControlType);
             Assert.True(column.Visible);
             Assert.False(column.ReadOnly);
             Assert.Equal(0, column.Width);
@@ -30,41 +29,20 @@ namespace Bee.Definition.UnitTests.Layouts
         [DisplayName("帶參數建構子應設定 FieldName、Caption 與 ControlType")]
         public void ParameterizedConstructor_SetsProperties()
         {
-            var column = new LayoutColumn("Amount", "金額", ColumnControlType.TextEdit);
+            var column = new LayoutColumn("Amount", "金額", ControlType.TextEdit);
 
             Assert.Equal("Amount", column.FieldName);
             Assert.Equal("金額", column.Caption);
-            Assert.Equal(ColumnControlType.TextEdit, column.ControlType);
+            Assert.Equal(ControlType.TextEdit, column.ControlType);
         }
 
         [Fact]
         [DisplayName("ToString 應回傳 \"FieldName - Caption\"")]
         public void ToString_ReturnsFormatted()
         {
-            var column = new LayoutColumn("Amount", "金額", ColumnControlType.TextEdit);
+            var column = new LayoutColumn("Amount", "金額", ControlType.TextEdit);
 
             Assert.Equal("Amount - 金額", column.ToString());
-        }
-
-        [Fact]
-        [DisplayName("ListItems 未序列化狀態應回傳集合實例")]
-        public void ListItems_DefaultState_ReturnsCollection()
-        {
-            var column = new LayoutColumn();
-
-            var items = column.ListItems;
-
-            Assert.NotNull(items);
-        }
-
-        [Fact]
-        [DisplayName("ListItems 於序列化且集合為空時應回傳 null")]
-        public void ListItems_EmptyDuringSerialize_ReturnsNull()
-        {
-            var column = new LayoutColumn();
-            column.SetSerializeState(SerializeState.Serialize);
-
-            Assert.Null(column.ListItems);
         }
 
         [Fact]
@@ -73,9 +51,7 @@ namespace Bee.Definition.UnitTests.Layouts
         {
             var column = new LayoutColumn();
 
-            var props = column.ExtendedProperties;
-
-            Assert.NotNull(props);
+            Assert.NotNull(column.ExtendedProperties);
         }
 
         [Fact]
@@ -107,8 +83,7 @@ namespace Bee.Definition.UnitTests.Layouts
             {
                 FieldName = "A",
                 Caption = "B",
-                ControlType = ColumnControlType.CheckEdit,
-                ProgId = "P1",
+                ControlType = ControlType.CheckEdit,
                 Visible = false,
                 ReadOnly = true,
                 Width = 120,
@@ -118,8 +93,7 @@ namespace Bee.Definition.UnitTests.Layouts
 
             Assert.Equal("A", column.FieldName);
             Assert.Equal("B", column.Caption);
-            Assert.Equal(ColumnControlType.CheckEdit, column.ControlType);
-            Assert.Equal("P1", column.ProgId);
+            Assert.Equal(ControlType.CheckEdit, column.ControlType);
             Assert.False(column.Visible);
             Assert.True(column.ReadOnly);
             Assert.Equal(120, column.Width);

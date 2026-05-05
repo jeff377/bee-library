@@ -96,7 +96,7 @@ namespace Bee.Definition.UnitTests.Storage
             {
                 // Arrange
                 var storage = new FileDefineStorage();
-                var layout = new FormLayout { LayoutId = "DemoLayout", DisplayName = "示範" };
+                var layout = new FormLayout { LayoutId = "DemoLayout", Caption = "示範" };
 
                 // Act
                 storage.SaveFormLayout(layout);

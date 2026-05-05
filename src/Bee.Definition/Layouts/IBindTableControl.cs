@@ -15,7 +15,7 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets or sets the bound data table.
         /// </summary>
-        DataTable DataTable { get; set; }
+        DataTable? DataTable { get; set; }
 
         /// <summary>
         /// Ends the current edit operation.

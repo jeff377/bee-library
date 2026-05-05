@@ -13,6 +13,6 @@ namespace Bee.Definition.Layouts
         /// <summary>
         /// Gets or sets the field value.
         /// </summary>
-        object FieldValue { get; set; }
+        object? FieldValue { get; set; }
     }
 }

@@ -16,22 +16,22 @@ namespace Bee.Definition.UnitTests.Layouts
             var grid = new LayoutGrid();
 
             Assert.Equal(string.Empty, grid.TableName);
-            Assert.Equal(string.Empty, grid.DisplayName);
+            Assert.Equal(string.Empty, grid.Caption);
             Assert.Equal(GridControlAllowActions.All, grid.AllowActions);
         }
 
         [Fact]
-        [DisplayName("帶參數建構子應設定 TableName 與 DisplayName")]
+        [DisplayName("帶參數建構子應設定 TableName 與 Caption")]
         public void ParameterizedConstructor_SetsProperties()
         {
             var grid = new LayoutGrid("Orders", "訂單");
 
             Assert.Equal("Orders", grid.TableName);
-            Assert.Equal("訂單", grid.DisplayName);
+            Assert.Equal("訂單", grid.Caption);
         }
 
         [Fact]
-        [DisplayName("ToString 應回傳 \"TableName - DisplayName\"")]
+        [DisplayName("ToString 應回傳 \"TableName - Caption\"")]
         public void ToString_ReturnsFormatted()
         {
             var grid = new LayoutGrid("Orders", "訂單");

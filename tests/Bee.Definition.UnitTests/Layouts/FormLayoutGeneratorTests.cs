@@ -6,66 +6,50 @@ using Bee.Definition.Layouts;
 namespace Bee.Definition.UnitTests.Layouts
 {
     /// <summary>
-    /// FormLayoutGenerator 將 FormSchema 轉換為 FormLayout 的測試。
+    /// FormSchema.GetFormLayout 將 FormSchema 轉換為 FormLayout 的測試。
     /// </summary>
     public class FormLayoutGeneratorTests
     {
         [Fact]
-        [DisplayName("Generate 傳入 null 應拋出 ArgumentNullException")]
-        public void Generate_NullFormSchema_ThrowsArgumentNullException()
+        [DisplayName("GetFormLayout 傳入 null FormSchema 透過反射不適用；改測試 FormLayoutGenerator.Generate 透過 FormSchema 入口")]
+        public void GetFormLayout_RequiresLayoutId_ProducesLayoutWithProgIdAndCaption()
         {
-            // Arrange
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => FormLayoutGenerator.Generate(null!));
-        }
-
-        [Fact]
-        [DisplayName("Generate 應將 ProgId / DisplayName 複製到 FormLayout")]
-        public void Generate_CopiesIdAndDisplayName()
-        {
-            // Arrange
             var schema = BuildSchema();
 
-            // Act
-            var layout = FormLayoutGenerator.Generate(schema);
+            var layout = schema.GetFormLayout("default");
 
-            // Assert
-            Assert.Equal("Employee", layout.LayoutId);
-            Assert.Equal("員工", layout.DisplayName);
+            Assert.Equal("default", layout.LayoutId);
+            Assert.Equal("Employee", layout.ProgId);
+            Assert.Equal("員工", layout.Caption);
+            Assert.Equal(2, layout.ColumnCount);
         }
 
         [Fact]
-        [DisplayName("Generate 主檔 Group 應命名為 MainGroup 並為兩欄")]
-        public void Generate_CreatesMainGroupWithTwoColumns()
+        [DisplayName("GetFormLayout 主檔 Section 應命名為 Main 並使用主檔 DisplayName")]
+        public void GetFormLayout_CreatesMainSection()
         {
-            // Arrange
             var schema = BuildSchema();
 
-            // Act
-            var layout = FormLayoutGenerator.Generate(schema);
+            var layout = schema.GetFormLayout("default");
 
-            // Assert
-            var mainGroup = layout.Groups!.FirstOrDefault(g => g.Name == "MainGroup");
-            Assert.NotNull(mainGroup);
-            Assert.Equal(2, mainGroup!.ColumnCount);
-            Assert.True(mainGroup.ShowCaption);
+            Assert.Single(layout.Sections!);
+            var section = layout.Sections![0];
+            Assert.Equal("Main", section.Name);
+            Assert.Equal("員工", section.Caption);
+            Assert.True(section.ShowCaption);
         }
 
         [Fact]
-        [DisplayName("Generate 應忽略 Visible=false 的欄位")]
-        public void Generate_SkipsInvisibleFields()
+        [DisplayName("GetFormLayout 應忽略 Visible=false 的欄位")]
+        public void GetFormLayout_SkipsInvisibleFields()
         {
-            // Arrange
             var schema = BuildSchema();
             schema.MasterTable!.Fields!["sys_id"].Visible = false;
 
-            // Act
-            var layout = FormLayoutGenerator.Generate(schema);
+            var layout = schema.GetFormLayout("default");
 
-            // Assert
-            var mainGroup = layout.Groups!.First(g => g.Name == "MainGroup");
-            Assert.DoesNotContain(mainGroup.Items!.OfType<LayoutItem>(), item => item.FieldName == "sys_id");
+            var section = layout.Sections![0];
+            Assert.DoesNotContain(section.Fields!, f => f.FieldName == "sys_id");
         }
 
         [Theory]
@@ -73,79 +57,57 @@ namespace Bee.Definition.UnitTests.Layouts
         [InlineData(FieldDbType.DateTime, ControlType.DateEdit)]
         [InlineData(FieldDbType.Text, ControlType.MemoEdit)]
         [InlineData(FieldDbType.String, ControlType.TextEdit)]
-        [DisplayName("Generate ControlType=Auto 應依 DbType 推導對應控制型態")]
-        public void Generate_AutoControlType_MapsDbTypeToControlType(FieldDbType dbType, ControlType expected)
+        [DisplayName("GetFormLayout ControlType=Auto 應依 DbType 推導對應控制型態")]
+        public void GetFormLayout_AutoControlType_MapsDbTypeToControlType(FieldDbType dbType, ControlType expected)
         {
-            // Arrange
             var schema = new FormSchema("Demo", "示範");
             var table = schema.Tables!.Add("Demo", "示範");
             table.Fields!.Add(new FormField("field", "欄位", dbType) { ControlType = ControlType.Auto });
 
-            // Act
-            var layout = FormLayoutGenerator.Generate(schema);
+            var layout = schema.GetFormLayout("default");
 
-            // Assert
-            var item = (LayoutItem)layout.Groups!.First().Items!.First();
-            Assert.Equal(expected, item.ControlType);
+            var field = layout.Sections!.First().Fields!.First();
+            Assert.Equal(expected, field.ControlType);
         }
 
         [Fact]
-        [DisplayName("Generate 有 LookupProgId 應設定到 LayoutItem.ProgId")]
-        public void Generate_LookupProgId_SetsLayoutItemProgId()
+        [DisplayName("GetFormLayout 多個 Table 應為主檔以外的每張表建立 Detail Grid")]
+        public void GetFormLayout_MultipleTables_CreatesDetailGrid()
         {
-            // Arrange
-            var schema = new FormSchema("Demo", "示範");
-            var table = schema.Tables!.Add("Demo", "示範");
-            table.Fields!.Add(new FormField("dept_id", "部門", FieldDbType.String)
-            {
-                LookupProgId = "DeptLookup"
-            });
-
-            // Act
-            var layout = FormLayoutGenerator.Generate(schema);
-
-            // Assert
-            var item = (LayoutItem)layout.Groups!.First().Items!.First();
-            Assert.Equal("DeptLookup", item.ProgId);
-        }
-
-        [Fact]
-        [DisplayName("Generate 無 Lookup 但有 RelationProgId 應設定到 LayoutItem.ProgId")]
-        public void Generate_RelationProgId_SetsLayoutItemProgId()
-        {
-            // Arrange
-            var schema = new FormSchema("Demo", "示範");
-            var table = schema.Tables!.Add("Demo", "示範");
-            table.Fields!.Add(new FormField("dept_rowid", "部門", FieldDbType.String)
-            {
-                RelationProgId = "Department"
-            });
-
-            // Act
-            var layout = FormLayoutGenerator.Generate(schema);
-
-            // Assert
-            var item = (LayoutItem)layout.Groups!.First().Items!.First();
-            Assert.Equal("Department", item.ProgId);
-        }
-
-        [Fact]
-        [DisplayName("Generate 多個 Table 應為主檔以外的每個 Table 建立 Group 與 Grid")]
-        public void Generate_MultipleTables_CreatesDetailGroupWithGrid()
-        {
-            // Arrange
             var schema = BuildSchema();
             var detail = schema.Tables!.Add("EmployeeSkill", "員工技能");
             detail.Fields!.Add("skill_name", "技能", FieldDbType.String);
 
-            // Act
-            var layout = FormLayoutGenerator.Generate(schema);
+            var layout = schema.GetFormLayout("default");
 
-            // Assert
-            var detailGroup = layout.Groups!.FirstOrDefault(g => g.Name == "EmployeeSkillGroup");
-            Assert.NotNull(detailGroup);
-            Assert.Single(detailGroup!.Items!);
-            Assert.IsType<LayoutGrid>(detailGroup.Items![0]);
+            Assert.Single(layout.Details!);
+            var grid = layout.Details![0];
+            Assert.Equal("EmployeeSkill", grid.TableName);
+            Assert.Equal("員工技能", grid.Caption);
+        }
+
+        [Fact]
+        [DisplayName("GetFormLayout 主檔所有欄位皆不可見時不應新增 Section")]
+        public void GetFormLayout_MasterAllInvisible_DoesNotAddSection()
+        {
+            var schema = new FormSchema("Demo", "示範");
+            var master = schema.Tables!.Add("Demo", "示範");
+            master.Fields!.Add(new FormField("hidden", "隱藏", FieldDbType.String) { Visible = false });
+
+            var layout = schema.GetFormLayout("default");
+
+            Assert.Empty(layout.Sections!);
+        }
+
+        [Fact]
+        [DisplayName("FormLayoutGenerator 透過 FormSchema 入口傳入 null layoutId 應接受並原樣寫入")]
+        public void GetFormLayout_AcceptsCustomLayoutId()
+        {
+            var schema = BuildSchema();
+
+            var layout = schema.GetFormLayout("manager_view");
+
+            Assert.Equal("manager_view", layout.LayoutId);
         }
 
         private static FormSchema BuildSchema()
