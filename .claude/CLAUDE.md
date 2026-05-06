@@ -96,10 +96,8 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 
 ## 規則導入
 
-@rules/code-style.md
+跨專案共用規則（`code-style`、`scanning`、`pull-request`、`releasing`）由使用者層 `~/.claude/CLAUDE.md` 統一載入，本檔僅引用本專案特化規則：
+
 @rules/testing.md
 @rules/security.md
-@rules/releasing.md
-@rules/scanning.md
 @rules/sonarcloud.md
-@rules/pull-request.md
