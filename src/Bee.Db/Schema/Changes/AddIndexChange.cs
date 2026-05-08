@@ -12,7 +12,7 @@ namespace Bee.Db.Schema.Changes
         /// Initializes a new instance of <see cref="AddIndexChange"/>.
         /// </summary>
         /// <param name="index">The index to be created.</param>
-        public AddIndexChange(DbTableIndex index)
+        public AddIndexChange(TableSchemaIndex index)
         {
             Index = index;
         }
@@ -20,7 +20,7 @@ namespace Bee.Db.Schema.Changes
         /// <summary>
         /// Gets the index to be created (sourced from the defined schema; name may be a template).
         /// </summary>
-        public DbTableIndex Index { get; }
+        public TableSchemaIndex Index { get; }
 
         /// <inheritdoc />
         public string Describe() => $"AddIndexChange on '{Index.Name}'";

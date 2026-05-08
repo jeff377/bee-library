@@ -29,7 +29,7 @@ namespace Bee.Db.UnitTests
             var schema = new TableSchema { TableName = tableName };
             schema.Fields!.Add("id", "Id", FieldDbType.Guid);
             schema.Fields!.Add("name", "Name", FieldDbType.String, 50);
-            var pk = new DbTableIndex { Name = $"pk_{tableName}", PrimaryKey = true, Unique = true };
+            var pk = new TableSchemaIndex { Name = $"pk_{tableName}", PrimaryKey = true, Unique = true };
             pk.IndexFields!.Add("id");
             schema.Indexes!.Add(pk);
             return schema;

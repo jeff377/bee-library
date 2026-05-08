@@ -143,7 +143,7 @@ namespace Bee.Db.Providers.Sqlite
             return sb.ToString();
         }
 
-        private static string BuildIndexFieldList(DbTableIndex index)
+        private static string BuildIndexFieldList(TableSchemaIndex index)
         {
             var sb = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)

@@ -16,13 +16,13 @@ namespace Bee.Db.UnitTests
     {
         private readonly MySqlTableAlterCommandBuilder _builder = new MySqlTableAlterCommandBuilder();
 
-        private static DbTableIndex BuildIndex(string indexName, string field, bool unique)
+        private static TableSchemaIndex BuildIndex(string indexName, string field, bool unique)
         {
             var schema = new TableSchema { TableName = "st_demo" };
             return schema.Indexes!.Add(indexName, field, unique);
         }
 
-        private static DbTableIndex BuildPrimaryKey(string field)
+        private static TableSchemaIndex BuildPrimaryKey(string field)
         {
             var schema = new TableSchema { TableName = "st_demo" };
             return schema.Indexes!.AddPrimaryKey(field);

@@ -141,7 +141,7 @@ namespace Bee.Db.UnitTests
                 Assert.Equal("id", pk.IndexFields![0].FieldName);
 
                 // Secondary (non-primary) index
-                var secondary = schema.Indexes!.Cast<DbTableIndex>().FirstOrDefault(i => !i.PrimaryKey);
+                var secondary = schema.Indexes!.Cast<TableSchemaIndex>().FirstOrDefault(i => !i.PrimaryKey);
                 Assert.NotNull(secondary);
                 Assert.Equal(idxName, secondary!.Name);
                 Assert.Single(secondary.IndexFields!);

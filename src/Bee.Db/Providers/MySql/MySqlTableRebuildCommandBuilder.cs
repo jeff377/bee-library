@@ -155,7 +155,7 @@ namespace Bee.Db.Providers.MySql
             return sb.ToString();
         }
 
-        private static string BuildIndexFieldList(DbTableIndex index)
+        private static string BuildIndexFieldList(TableSchemaIndex index)
         {
             var sb = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)

@@ -186,7 +186,7 @@ namespace Bee.Db.Providers.MySql
         private string GetIndexesCommandText(string tableName)
         {
             var sb = new StringBuilder();
-            foreach (DbTableIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
+            foreach (TableSchemaIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
             {
                 sb.AppendLine(GetIndexCommandText(tableName, index));
             }
@@ -198,7 +198,7 @@ namespace Bee.Db.Providers.MySql
         /// </summary>
         /// <param name="tableName">The table name.</param>
         /// <param name="index">The table schema index definition.</param>
-        private static string GetIndexCommandText(string tableName, DbTableIndex index)
+        private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
         {
             string name = StringUtilities.Format(index.Name, tableName);
             var fieldBuilder = new StringBuilder();

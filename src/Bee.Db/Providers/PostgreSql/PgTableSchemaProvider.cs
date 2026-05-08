@@ -127,7 +127,7 @@ namespace Bee.Db.Providers.PostgreSql
             if (table.DefaultView.IsEmpty()) return;
 
             string name = ValueUtilities.CStr(table.DefaultView[0]["name"]);
-            var tableIndex = new DbTableIndex
+            var tableIndex = new TableSchemaIndex
             {
                 PrimaryKey = true,
                 Name = name,
@@ -157,7 +157,7 @@ namespace Bee.Db.Providers.PostgreSql
                 string name = ValueUtilities.CStr(oRow["Name"]);
                 bool isUnique = ValueUtilities.CBool(oRow["IsUnique"]);
 
-                var tableIndex = new DbTableIndex
+                var tableIndex = new TableSchemaIndex
                 {
                     Name = name,
                     Unique = isUnique

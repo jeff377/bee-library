@@ -8,25 +8,25 @@
     <DbField FieldName="manager_rowid" Caption="部門主管唯一識別" DbType="Guid" />
   </Fields>
   <Indexes>
-    <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+    <TableSchemaIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
       <IndexFields>
         <IndexField FieldName="sys_no" />
       </IndexFields>
-    </DbTableIndex>
-    <DbTableIndex Name="rx_{0}" Unique="true">
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="rx_{0}" Unique="true">
       <IndexFields>
         <IndexField FieldName="sys_rowid" />
       </IndexFields>
-    </DbTableIndex>
-    <DbTableIndex Name="uk_{0}" Unique="true">
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="uk_{0}" Unique="true">
       <IndexFields>
         <IndexField FieldName="sys_id" />
       </IndexFields>
-    </DbTableIndex>
-    <DbTableIndex Name="fk_{0}_manager_rowid">
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="fk_{0}_manager_rowid">
       <IndexFields>
         <IndexField FieldName="manager_rowid" />
       </IndexFields>
-    </DbTableIndex>
+    </TableSchemaIndex>
   </Indexes>
 </TableSchema>

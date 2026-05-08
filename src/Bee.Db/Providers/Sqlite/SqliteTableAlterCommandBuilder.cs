@@ -82,7 +82,7 @@ namespace Bee.Db.Providers.Sqlite
         /// for an existing table; declaring a new primary key on a populated table requires a
         /// rebuild and so should not reach this method as an Alter change.
         /// </summary>
-        private static string BuildAddIndexStatement(string tableName, DbTableIndex index)
+        private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
         {
             if (index.PrimaryKey)
                 throw new NotSupportedException(
@@ -98,7 +98,7 @@ namespace Bee.Db.Providers.Sqlite
         /// Builds the index drop statement. SQLite drops PRIMARY KEY only via table rebuild,
         /// so a PK in DropIndexChange is rejected here.
         /// </summary>
-        private static string BuildDropIndexStatement(DbTableIndex index)
+        private static string BuildDropIndexStatement(TableSchemaIndex index)
         {
             if (index.PrimaryKey)
                 throw new NotSupportedException(
@@ -107,7 +107,7 @@ namespace Bee.Db.Providers.Sqlite
             return $"DROP INDEX {SqliteSchemaSyntax.QuoteName(index.Name)};";
         }
 
-        private static string BuildIndexFieldList(DbTableIndex index)
+        private static string BuildIndexFieldList(TableSchemaIndex index)
         {
             var sb = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)

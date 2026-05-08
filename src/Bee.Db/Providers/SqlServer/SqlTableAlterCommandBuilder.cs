@@ -151,7 +151,7 @@ namespace Bee.Db.Providers.SqlServer
             return $"ALTER TABLE {SqlSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {SqlSchemaSyntax.QuoteName(constraintName)} DEFAULT ({defaultExpression}) FOR {SqlSchemaSyntax.QuoteName(newField.FieldName)};";
         }
 
-        private static string BuildAddIndexStatement(string tableName, DbTableIndex index)
+        private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
         {
             string indexName = StringUtilities.Format(index.Name, tableName);
             string fields = BuildIndexFieldList(index);
@@ -163,7 +163,7 @@ namespace Bee.Db.Providers.SqlServer
             return $"CREATE {uniqueClause}INDEX {SqlSchemaSyntax.QuoteName(indexName)} ON {SqlSchemaSyntax.QuoteName(tableName)} ({fields});";
         }
 
-        private static string BuildDropIndexStatement(string tableName, DbTableIndex index)
+        private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
         {
             // Primary key must be dropped as a constraint.
             if (index.PrimaryKey)
@@ -172,7 +172,7 @@ namespace Bee.Db.Providers.SqlServer
             return $"DROP INDEX {SqlSchemaSyntax.QuoteName(index.Name)} ON {SqlSchemaSyntax.QuoteName(tableName)};";
         }
 
-        private static string BuildIndexFieldList(DbTableIndex index)
+        private static string BuildIndexFieldList(TableSchemaIndex index)
         {
             var sb = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)
