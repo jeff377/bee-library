@@ -2,6 +2,9 @@ using System.ComponentModel;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 
 namespace Bee.Api.AspNetCore.UnitTests
 {
@@ -12,6 +15,19 @@ namespace Bee.Api.AspNetCore.UnitTests
     public class ApiServiceControllerTests
     {
         private sealed class TestController : Controllers.ApiServiceController { }
+
+        private sealed class IsDevelopmentController : Controllers.ApiServiceController
+        {
+            public bool GetIsDevelopment() => IsDevelopment;
+        }
+
+        private sealed class TestHostEnvironment : IHostEnvironment
+        {
+            public string EnvironmentName { get; set; } = "Production";
+            public string ApplicationName { get; set; } = "Test";
+            public string ContentRootPath { get; set; } = "/";
+            public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
+        }
 
         private static async Task<IActionResult> PostAsync(
             string contentType,
@@ -105,6 +121,36 @@ namespace Bee.Api.AspNetCore.UnitTests
 
             var obj = Assert.IsType<ObjectResult>(result);
             Assert.Equal(StatusCodes.Status401Unauthorized, obj.StatusCode);
+        }
+
+        [Fact]
+        [DisplayName("IsDevelopment 在 Development 環境下應回傳 true")]
+        public void IsDevelopment_DevelopmentEnvironment_ReturnsTrue()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<IHostEnvironment>(new TestHostEnvironment { EnvironmentName = "Development" });
+            var context = new DefaultHttpContext { RequestServices = services.BuildServiceProvider() };
+            var controller = new IsDevelopmentController
+            {
+                ControllerContext = new ControllerContext { HttpContext = context }
+            };
+
+            Assert.True(controller.GetIsDevelopment());
+        }
+
+        [Fact]
+        [DisplayName("IsDevelopment 在 Production 環境下應回傳 false")]
+        public void IsDevelopment_ProductionEnvironment_ReturnsFalse()
+        {
+            var services = new ServiceCollection();
+            services.AddSingleton<IHostEnvironment>(new TestHostEnvironment { EnvironmentName = "Production" });
+            var context = new DefaultHttpContext { RequestServices = services.BuildServiceProvider() };
+            var controller = new IsDevelopmentController
+            {
+                ControllerContext = new ControllerContext { HttpContext = context }
+            };
+
+            Assert.False(controller.GetIsDevelopment());
         }
     }
 }
