@@ -150,7 +150,7 @@ namespace Bee.Db.Schema
         private bool CompareIndexes(TableSchema compareTable)
         {
             // Return false immediately if any index does not match
-            foreach (TableSchemaIndex index in compareTable.Indexes!)
+            foreach (DbTableIndex index in compareTable.Indexes!)
             {
                 string name = StringUtilities.Format(index.Name, compareTable.TableName);
                 if (this.RealTable!.Indexes!.Contains(name))
@@ -254,7 +254,7 @@ namespace Bee.Db.Schema
         /// <param name="diff">The diff to populate.</param>
         private void CollectIndexChanges(TableSchemaDiff diff)
         {
-            foreach (TableSchemaIndex defineIndex in this.DefineTable.Indexes!)
+            foreach (DbTableIndex defineIndex in this.DefineTable.Indexes!)
             {
                 string formattedName = StringUtilities.Format(defineIndex.Name, this.DefineTable.TableName);
                 if (this.RealTable!.Indexes!.Contains(formattedName))

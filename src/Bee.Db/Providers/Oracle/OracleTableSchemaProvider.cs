@@ -142,7 +142,7 @@ namespace Bee.Db.Providers.Oracle
             if (table.DefaultView.IsEmpty()) return;
 
             string name = ValueUtilities.CStr(table.DefaultView[0]["Name"]).ToLowerInvariant();
-            var tableIndex = new TableSchemaIndex
+            var tableIndex = new DbTableIndex
             {
                 PrimaryKey = true,
                 Name = name,
@@ -176,7 +176,7 @@ namespace Bee.Db.Providers.Oracle
                 string name = storageName.ToLowerInvariant();
                 bool isUnique = ValueUtilities.CBool(oRow["IsUnique"]);
 
-                var tableIndex = new TableSchemaIndex
+                var tableIndex = new DbTableIndex
                 {
                     Name = name,
                     Unique = isUnique

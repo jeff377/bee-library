@@ -14,7 +14,7 @@ namespace Bee.Definition.Database
     public class TableSchema : IObjectSerializeFile
     {
         private DbFieldCollection? _fields = null;
-        private TableSchemaIndexCollection? _indexes = null;
+        private DbTableIndexCollection? _indexes = null;
 
         #region Constructors
 
@@ -113,13 +113,13 @@ namespace Bee.Definition.Database
         [Description("Index collection.")]
         [Browsable(false)]
         [DefaultValue(null)]
-        public TableSchemaIndexCollection? Indexes
+        public DbTableIndexCollection? Indexes
         {
             get
             {
                 // Return null if the collection is empty during serialization
                 if (SerializationUtilities.IsSerializeEmpty(SerializeState, _indexes!)) { return null; }
-                if (_indexes == null) { _indexes = new TableSchemaIndexCollection(this); }
+                if (_indexes == null) { _indexes = new DbTableIndexCollection(this); }
                 return _indexes;
             }
         }
@@ -127,9 +127,9 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Gets the primary key index.
         /// </summary>
-        public TableSchemaIndex? GetPrimaryKey()
+        public DbTableIndex? GetPrimaryKey()
         {
-            foreach (TableSchemaIndex index in Indexes!)
+            foreach (DbTableIndex index in Indexes!)
             {
                 if (index.PrimaryKey)
                     return index;
@@ -153,7 +153,7 @@ namespace Bee.Definition.Database
             var table = new TableSchema();
             table.TableName = TableName;
             table.DisplayName = DisplayName;
-            foreach (TableSchemaIndex index in Indexes!)
+            foreach (DbTableIndex index in Indexes!)
                 table.Indexes!.Add(index.Clone());
             foreach (DbField field in Fields!)
                 table.Fields!.Add(field.Clone());

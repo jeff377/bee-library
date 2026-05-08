@@ -60,7 +60,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetExecutionKind：AddIndexChange 應為 Alter")]
         public void GetExecutionKind_AddIndex_ReturnsAlter()
         {
-            var index = new TableSchemaIndex { Name = "ix_demo_name" };
+            var index = new DbTableIndex { Name = "ix_demo_name" };
             index.IndexFields!.Add("name");
 
             Assert.Equal(ChangeExecutionKind.Alter, _builder.GetExecutionKind(new AddIndexChange(index)));
@@ -70,7 +70,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetExecutionKind：DropIndexChange 應為 Alter")]
         public void GetExecutionKind_DropIndex_ReturnsAlter()
         {
-            var index = new TableSchemaIndex { Name = "ix_demo_name" };
+            var index = new DbTableIndex { Name = "ix_demo_name" };
             index.IndexFields!.Add("name");
 
             Assert.Equal(ChangeExecutionKind.Alter, _builder.GetExecutionKind(new DropIndexChange(index)));
@@ -174,7 +174,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetStatements：AddIndex 非唯一索引應產生 CREATE INDEX")]
         public void GetStatements_AddRegularIndex_EmitsCreateIndex()
         {
-            var index = new TableSchemaIndex { Name = "ix_{0}_name" };
+            var index = new DbTableIndex { Name = "ix_{0}_name" };
             index.IndexFields!.Add("name");
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(index));
 
@@ -186,7 +186,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetStatements：AddIndex 唯一索引應含 UNIQUE")]
         public void GetStatements_AddUniqueIndex_EmitsUniqueClause()
         {
-            var index = new TableSchemaIndex { Name = "ix_{0}_name", Unique = true };
+            var index = new DbTableIndex { Name = "ix_{0}_name", Unique = true };
             index.IndexFields!.Add("name");
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(index));
 
@@ -198,7 +198,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetStatements：AddIndex 主鍵應產生 ALTER TABLE ADD CONSTRAINT PRIMARY KEY")]
         public void GetStatements_AddPrimaryKey_EmitsAddConstraintPrimaryKey()
         {
-            var index = new TableSchemaIndex { Name = "pk_{0}", PrimaryKey = true, Unique = true };
+            var index = new DbTableIndex { Name = "pk_{0}", PrimaryKey = true, Unique = true };
             index.IndexFields!.Add("id");
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(index));
 
@@ -212,7 +212,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetStatements：DropIndex 非主鍵應產生 DROP INDEX")]
         public void GetStatements_DropRegularIndex_EmitsDropIndex()
         {
-            var index = new TableSchemaIndex { Name = "ix_st_demo_name" };
+            var index = new DbTableIndex { Name = "ix_st_demo_name" };
             index.IndexFields!.Add("name");
             var statements = _builder.GetStatements("st_demo", new DropIndexChange(index));
 
@@ -224,7 +224,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("GetStatements：DropIndex 主鍵應產生 ALTER TABLE DROP CONSTRAINT")]
         public void GetStatements_DropPrimaryKey_EmitsDropConstraint()
         {
-            var index = new TableSchemaIndex { Name = "pk_st_demo", PrimaryKey = true };
+            var index = new DbTableIndex { Name = "pk_st_demo", PrimaryKey = true };
             index.IndexFields!.Add("id");
             var statements = _builder.GetStatements("st_demo", new DropIndexChange(index));
 

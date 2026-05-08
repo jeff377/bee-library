@@ -11,30 +11,30 @@
     <DbField FieldName="end_date" Caption="結束日" DbType="Date" />
   </Fields>
   <Indexes>
-    <TableSchemaIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+    <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
       <IndexFields>
         <IndexField FieldName="sys_no" />
       </IndexFields>
-    </TableSchemaIndex>
-    <TableSchemaIndex Name="rx_{0}" Unique="true">
+    </DbTableIndex>
+    <DbTableIndex Name="rx_{0}" Unique="true">
       <IndexFields>
         <IndexField FieldName="sys_rowid" />
       </IndexFields>
-    </TableSchemaIndex>
-    <TableSchemaIndex Name="uk_{0}" Unique="true">
+    </DbTableIndex>
+    <DbTableIndex Name="uk_{0}" Unique="true">
       <IndexFields>
         <IndexField FieldName="sys_id" />
       </IndexFields>
-    </TableSchemaIndex>
-    <TableSchemaIndex Name="fk_{0}_owner_dept_rowid">
+    </DbTableIndex>
+    <DbTableIndex Name="fk_{0}_owner_dept_rowid">
       <IndexFields>
         <IndexField FieldName="owner_dept_rowid" />
       </IndexFields>
-    </TableSchemaIndex>
-    <TableSchemaIndex Name="fk_{0}_pm_rowid">
+    </DbTableIndex>
+    <DbTableIndex Name="fk_{0}_pm_rowid">
       <IndexFields>
         <IndexField FieldName="pm_rowid" />
       </IndexFields>
-    </TableSchemaIndex>
+    </DbTableIndex>
   </Indexes>
 </TableSchema>

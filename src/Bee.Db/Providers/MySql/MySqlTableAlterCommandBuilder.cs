@@ -101,7 +101,7 @@ namespace Bee.Db.Providers.MySql
         /// <c>ALTER TABLE ... ADD CONSTRAINT name PRIMARY KEY</c>; everything else uses
         /// <c>CREATE [UNIQUE] INDEX</c>.
         /// </summary>
-        private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
+        private static string BuildAddIndexStatement(string tableName, DbTableIndex index)
         {
             string indexName = StringUtilities.Format(index.Name, tableName);
             string fields = BuildIndexFieldList(index);
@@ -118,7 +118,7 @@ namespace Bee.Db.Providers.MySql
         /// <c>ALTER TABLE ... DROP PRIMARY KEY</c> (MySQL has no PK name to reference);
         /// regular indexes use <c>DROP INDEX name ON table</c>.
         /// </summary>
-        private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
+        private static string BuildDropIndexStatement(string tableName, DbTableIndex index)
         {
             if (index.PrimaryKey)
                 return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(tableName)} DROP PRIMARY KEY;";
@@ -126,7 +126,7 @@ namespace Bee.Db.Providers.MySql
             return $"DROP INDEX {MySqlSchemaSyntax.QuoteName(index.Name)} ON {MySqlSchemaSyntax.QuoteName(tableName)};";
         }
 
-        private static string BuildIndexFieldList(TableSchemaIndex index)
+        private static string BuildIndexFieldList(DbTableIndex index)
         {
             var sb = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)

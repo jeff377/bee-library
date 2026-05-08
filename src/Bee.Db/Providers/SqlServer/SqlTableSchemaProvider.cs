@@ -128,7 +128,7 @@ namespace Bee.Db.Providers.SqlServer
             // Get the index name
             string name = ValueUtilities.CStr(table.DefaultView[0]["name"]);
             // 取得主索引
-            var tableIndex = new TableSchemaIndex();
+            var tableIndex = new DbTableIndex();
             tableIndex.PrimaryKey = true;
             tableIndex.Name = name;
             tableIndex.Unique = true;
@@ -157,7 +157,7 @@ namespace Bee.Db.Providers.SqlServer
                 string name = ValueUtilities.CStr(oRow["Name"]);  // Get the index name
                 bool isUnique = ValueUtilities.CBool(oRow["IsUnique"]);
 
-                var tableIndex = new TableSchemaIndex();
+                var tableIndex = new DbTableIndex();
                 tableIndex.Name = name;
                 tableIndex.Unique = isUnique;
                 dbTable.Indexes!.Add(tableIndex);

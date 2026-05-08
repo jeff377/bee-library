@@ -121,7 +121,7 @@ namespace Bee.Db.Providers.PostgreSql
             return statements;
         }
 
-        private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
+        private static string BuildAddIndexStatement(string tableName, DbTableIndex index)
         {
             string indexName = StringUtilities.Format(index.Name, tableName);
             string fields = BuildIndexFieldList(index);
@@ -133,7 +133,7 @@ namespace Bee.Db.Providers.PostgreSql
             return $"CREATE {uniqueClause}INDEX {PgSchemaSyntax.QuoteName(indexName)} ON {PgSchemaSyntax.QuoteName(tableName)} ({fields});";
         }
 
-        private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
+        private static string BuildDropIndexStatement(string tableName, DbTableIndex index)
         {
             // Primary keys are constraints; everything else is an index.
             if (index.PrimaryKey)
@@ -142,7 +142,7 @@ namespace Bee.Db.Providers.PostgreSql
             return $"DROP INDEX {PgSchemaSyntax.QuoteName(index.Name)};";
         }
 
-        private static string BuildIndexFieldList(TableSchemaIndex index)
+        private static string BuildIndexFieldList(DbTableIndex index)
         {
             var sb = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)

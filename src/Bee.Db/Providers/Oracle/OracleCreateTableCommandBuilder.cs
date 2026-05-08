@@ -121,7 +121,7 @@ namespace Bee.Db.Providers.Oracle
                 if (StringUtilities.IsNotEmpty(commentStmt)) list.Add(commentStmt);
             }
 
-            foreach (TableSchemaIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
+            foreach (DbTableIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
             {
                 list.Add(BuildIndexStatement(tableName, index));
             }
@@ -174,7 +174,7 @@ namespace Bee.Db.Providers.Oracle
         /// <summary>
         /// Builds a single CREATE INDEX statement (no trailing semicolon).
         /// </summary>
-        private static string BuildIndexStatement(string tableName, TableSchemaIndex index)
+        private static string BuildIndexStatement(string tableName, DbTableIndex index)
         {
             string name = StringUtilities.Format(index.Name, tableName);
             var fieldBuilder = new StringBuilder();

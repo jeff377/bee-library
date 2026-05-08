@@ -36,7 +36,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("AddIndexChange 應保留 Index 參考")]
         public void AddIndexChange_PreservesIndex()
         {
-            var index = new TableSchemaIndex { Name = "ix_demo_name" };
+            var index = new DbTableIndex { Name = "ix_demo_name" };
             index.IndexFields!.Add("name");
             var change = new AddIndexChange(index);
 
@@ -48,7 +48,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("DropIndexChange 應保留 Index 參考")]
         public void DropIndexChange_PreservesIndex()
         {
-            var index = new TableSchemaIndex { Name = "ix_demo_name" };
+            var index = new DbTableIndex { Name = "ix_demo_name" };
             index.IndexFields!.Add("name");
             var change = new DropIndexChange(index);
 

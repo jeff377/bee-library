@@ -17,13 +17,13 @@ namespace Bee.Db.UnitTests
     {
         private readonly OracleTableAlterCommandBuilder _builder = new OracleTableAlterCommandBuilder();
 
-        private static TableSchemaIndex BuildIndex(string indexName, string field, bool unique)
+        private static DbTableIndex BuildIndex(string indexName, string field, bool unique)
         {
             var schema = new TableSchema { TableName = "st_demo" };
             return schema.Indexes!.Add(indexName, field, unique);
         }
 
-        private static TableSchemaIndex BuildPrimaryKey(string field)
+        private static DbTableIndex BuildPrimaryKey(string field)
         {
             var schema = new TableSchema { TableName = "st_demo" };
             return schema.Indexes!.AddPrimaryKey(field);

@@ -11,7 +11,7 @@ namespace Bee.Definition.Database
     /// </summary>
     [Description("Table index schema.")]
     [TreeNode]
-    public class TableSchemaIndex : KeyCollectionItem
+    public class DbTableIndex : KeyCollectionItem
     {
         private IndexFieldCollection? _indexFields = null;
 
@@ -84,9 +84,9 @@ namespace Bee.Definition.Database
         /// <summary>
         /// Creates a copy of this instance.
         /// </summary>
-        public TableSchemaIndex Clone()
+        public DbTableIndex Clone()
         {
-            var index = new TableSchemaIndex();
+            var index = new DbTableIndex();
             index.Name = Name;
             index.PrimaryKey = PrimaryKey;
             index.Unique = Unique;
@@ -99,7 +99,7 @@ namespace Bee.Definition.Database
         /// Compares whether the schema is identical to another instance.
         /// </summary>
         /// <param name="source">The source object to compare against.</param>
-        public bool Compare(TableSchemaIndex source)
+        public bool Compare(DbTableIndex source)
         {
             // Uniqueness differs, return false
             if (Unique != source.Unique) { return false; }
