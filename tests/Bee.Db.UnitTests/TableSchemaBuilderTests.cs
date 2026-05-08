@@ -38,5 +38,33 @@ namespace Bee.Db.UnitTests
 
             Assert.False(upgraded);
         }
+
+        [Fact]
+        [DisplayName("TableSchemaBuilder 建構子傳入 null 應擲 ArgumentNullException")]
+        public void Constructor_NullId_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new TableSchemaBuilder(null!));
+        }
+
+        [Fact]
+        [DisplayName("TableSchemaBuilder 建構子傳入空字串應擲 ArgumentException")]
+        public void Constructor_EmptyId_ThrowsArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new TableSchemaBuilder(""));
+        }
+
+        [Fact]
+        [DisplayName("TableSchemaBuilder 建構子傳入空白字串應擲 ArgumentException")]
+        public void Constructor_WhitespaceId_ThrowsArgumentException()
+        {
+            Assert.Throws<ArgumentException>(() => new TableSchemaBuilder("   "));
+        }
+
+        [Fact]
+        [DisplayName("TableSchemaBuilder 建構子傳入未登錄的資料庫 ID 應擲 KeyNotFoundException")]
+        public void Constructor_UnknownId_ThrowsKeyNotFoundException()
+        {
+            Assert.Throws<KeyNotFoundException>(() => new TableSchemaBuilder("__nonexistent_db__"));
+        }
     }
 }
