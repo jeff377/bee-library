@@ -75,10 +75,10 @@ namespace Bee.Definition.Database
 
             // Create foreign key indexes
             if (formTable.Fields == null) { return; }
-            foreach (var field in formTable.Fields.Where(f => StringUtilities.IsNotEmpty(f.RelationProgId)))
+            foreach (var fieldName in formTable.Fields.Where(f => StringUtilities.IsNotEmpty(f.RelationProgId)).Select(field => field.FieldName))
             {
                 // Include field name to avoid duplicates
-                tableSchema.Indexes!.Add($"fk_{{0}}_{field.FieldName}", field.FieldName, false);
+                tableSchema.Indexes!.Add($"fk_{{0}}_{fieldName}", fieldName, false);
             }
         }
     }
