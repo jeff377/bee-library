@@ -22,14 +22,15 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
-        [DisplayName("Add 應將新欄位加入集合，Count 增加為 1")]
-        public void Add_ValidParams_IncreasesCollectionCount()
+        [DisplayName("Add 應將欄位加入集合中，可由索引取出")]
+        public void Add_ValidParams_ColumnIsAddedToCollection()
         {
             var collection = new LayoutColumnCollection();
 
-            collection.Add("Name", "姓名", ControlType.TextEdit);
+            var column = collection.Add("Name", "姓名", ControlType.TextEdit);
 
-            Assert.Equal(1, collection.Count);
+            Assert.Single(collection);
+            Assert.Same(column, collection[0]);
         }
 
         [Fact]
@@ -38,10 +39,12 @@ namespace Bee.Definition.UnitTests.Layouts
         {
             var collection = new LayoutColumnCollection();
 
-            collection.Add("Field1", "欄位1", ControlType.TextEdit);
-            collection.Add("Field2", "欄位2", ControlType.CheckEdit);
+            var col1 = collection.Add("Field1", "欄位1", ControlType.TextEdit);
+            var col2 = collection.Add("Field2", "欄位2", ControlType.CheckEdit);
 
             Assert.Equal(2, collection.Count);
+            Assert.Same(col1, collection[0]);
+            Assert.Same(col2, collection[1]);
         }
     }
 }
