@@ -78,7 +78,7 @@ namespace Bee.Definition.Database
             foreach (var field in formTable.Fields.Where(f => StringUtilities.IsNotEmpty(f.RelationProgId)))
             {
                 // Include field name to avoid duplicates
-                tableSchema.Indexes!.Add("fk_{0}_{field.FieldName}", field.FieldName, false);
+                tableSchema.Indexes!.Add($"fk_{{0}}_{field.FieldName}", field.FieldName, false);
             }
         }
     }
