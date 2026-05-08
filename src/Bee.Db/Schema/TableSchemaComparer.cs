@@ -152,10 +152,10 @@ namespace Bee.Db.Schema
             // Return false immediately if any index does not match
             foreach (DbTableIndex index in compareTable.Indexes!)
             {
-                string name = StringUtilities.Format(index.Name, compareTable.TableName);
-                if (this.RealTable!.Indexes!.Contains(name))
+                var realIndex = FindRealIndex(index, compareTable.TableName);
+                if (realIndex != null)
                 {
-                    if (!index.Compare(this.RealTable.Indexes[name]))
+                    if (!index.Compare(realIndex))
                     {
                         // Index exists but differs; mark as upgrade
                         index.UpgradeAction = DbUpgradeAction.Upgrade;
@@ -170,6 +170,29 @@ namespace Bee.Db.Schema
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// Locates the matching index in <see cref="RealTable"/>. PK identity is the
+        /// "single PK per table" flag (MySQL hardcodes the PK name as <c>PRIMARY</c>, so
+        /// matching by formatted name would always miss); other indexes are matched by
+        /// the formatted name.
+        /// </summary>
+        private DbTableIndex? FindRealIndex(DbTableIndex defineIndex, string tableName)
+        {
+            if (defineIndex.PrimaryKey)
+            {
+                foreach (DbTableIndex idx in this.RealTable!.Indexes!)
+                {
+                    if (idx.PrimaryKey) return idx;
+                }
+                return null;
+            }
+
+            string formattedName = StringUtilities.Format(defineIndex.Name, tableName);
+            return this.RealTable!.Indexes!.Contains(formattedName)
+                ? this.RealTable.Indexes[formattedName]
+                : null;
         }
 
         /// <summary>
@@ -256,10 +279,9 @@ namespace Bee.Db.Schema
         {
             foreach (DbTableIndex defineIndex in this.DefineTable.Indexes!)
             {
-                string formattedName = StringUtilities.Format(defineIndex.Name, this.DefineTable.TableName);
-                if (this.RealTable!.Indexes!.Contains(formattedName))
+                var realIndex = FindRealIndex(defineIndex, this.DefineTable.TableName);
+                if (realIndex != null)
                 {
-                    var realIndex = this.RealTable.Indexes[formattedName];
                     if (!defineIndex.Compare(realIndex))
                     {
                         diff.Changes.Add(new DropIndexChange(realIndex.Clone()));
