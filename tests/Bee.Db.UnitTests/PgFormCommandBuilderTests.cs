@@ -85,5 +85,20 @@ namespace Bee.Db.UnitTests
 
             Assert.Contains("DELETE FROM \"tb_foo\"", spec.CommandText);
         }
+
+        [Fact]
+        [DisplayName("BuildSelect 應委派至 PostgreSQL 方言並產生 SELECT 語句")]
+        public void BuildSelect_DelegatesToPostgreSqlDialect()
+        {
+            var schema = new FormSchema("X", "X");
+            var table = schema.Tables!.Add("Foo", "Foo");
+            table.DbTableName = "tb_foo";
+            table.Fields!.AddStringField("name", "Name", 50);
+
+            var builder = new PgFormCommandBuilder(schema);
+            var spec = builder.BuildSelect("Foo", "");
+
+            Assert.Contains("\"tb_foo\"", spec.CommandText);
+        }
     }
 }
