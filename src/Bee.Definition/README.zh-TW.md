@@ -65,7 +65,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 Bee.Definition/
   Attributes/       存取控制屬性（ApiAccessControl、ExecFuncAccessControl）
   Collections/      ListItem、Parameter、PropertyCollection
-  Database/         TableSchema、DbField、DbFieldCollection、TableSchemaIndex、
+  Database/         TableSchema、DbField、DbFieldCollection、DbTableIndex、
                     DatabaseType、FieldType、DbAccessAnomalyLogLevel、DbUpgradeAction
   Documents/        IExcelHelper（文件格式 helper 抽象）
   Filters/          FilterCondition、FilterGroup、FilterNode、FilterNodeKind、

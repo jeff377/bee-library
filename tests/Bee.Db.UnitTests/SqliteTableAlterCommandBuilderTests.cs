@@ -44,7 +44,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite GetExecutionKind：AddIndexChange 應為 Alter")]
         public void GetExecutionKind_AddIndex_ReturnsAlter()
         {
-            var index = new TableSchemaIndex { Name = "ix_demo_name" };
+            var index = new DbTableIndex { Name = "ix_demo_name" };
             index.IndexFields!.Add("name");
             Assert.Equal(ChangeExecutionKind.Alter, _builder.GetExecutionKind(new AddIndexChange(index)));
         }
@@ -53,7 +53,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite GetExecutionKind：DropIndexChange 應為 Alter")]
         public void GetExecutionKind_DropIndex_ReturnsAlter()
         {
-            var index = new TableSchemaIndex { Name = "ix_demo_name" };
+            var index = new DbTableIndex { Name = "ix_demo_name" };
             index.IndexFields!.Add("name");
             Assert.Equal(ChangeExecutionKind.Alter, _builder.GetExecutionKind(new DropIndexChange(index)));
         }
@@ -151,7 +151,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite GetStatements：AddIndex 產生 CREATE INDEX")]
         public void GetStatements_AddIndex_EmitsCreateIndex()
         {
-            var index = new TableSchemaIndex { Name = "ix_{0}_col" };
+            var index = new DbTableIndex { Name = "ix_{0}_col" };
             index.IndexFields!.Add("col");
 
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(index));
@@ -164,7 +164,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite GetStatements：AddIndex Unique 應產生 CREATE UNIQUE INDEX")]
         public void GetStatements_AddIndexUnique_EmitsCreateUniqueIndex()
         {
-            var index = new TableSchemaIndex { Name = "uk_{0}_col", Unique = true };
+            var index = new DbTableIndex { Name = "uk_{0}_col", Unique = true };
             index.IndexFields!.Add("col");
 
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(index));
@@ -176,7 +176,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite GetStatements：AddIndex 帶 PrimaryKey 應擲 NotSupportedException")]
         public void GetStatements_AddPrimaryKeyIndex_Throws()
         {
-            var index = new TableSchemaIndex { Name = "pk_st_demo", PrimaryKey = true };
+            var index = new DbTableIndex { Name = "pk_st_demo", PrimaryKey = true };
             index.IndexFields!.Add("sys_rowid");
 
             Assert.Throws<NotSupportedException>(() =>
@@ -187,7 +187,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite GetStatements：DropIndex 產生 DROP INDEX")]
         public void GetStatements_DropIndex_EmitsDropIndex()
         {
-            var index = new TableSchemaIndex { Name = "ix_st_demo_col" };
+            var index = new DbTableIndex { Name = "ix_st_demo_col" };
             index.IndexFields!.Add("col");
 
             var statements = _builder.GetStatements("st_demo", new DropIndexChange(index));
@@ -200,7 +200,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite GetStatements：DropIndex 帶 PrimaryKey 應擲 NotSupportedException")]
         public void GetStatements_DropPrimaryKeyIndex_Throws()
         {
-            var index = new TableSchemaIndex { Name = "pk_st_demo", PrimaryKey = true };
+            var index = new DbTableIndex { Name = "pk_st_demo", PrimaryKey = true };
             index.IndexFields!.Add("sys_rowid");
 
             Assert.Throws<NotSupportedException>(() =>

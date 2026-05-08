@@ -112,7 +112,7 @@ namespace Bee.Db.Providers.Oracle
         /// <c>CREATE [UNIQUE] INDEX</c>. Oracle PK constraints reject ASC/DESC inside
         /// the column list, so PK column lists are emitted without sort direction.
         /// </summary>
-        private static string BuildAddIndexStatement(string tableName, TableSchemaIndex index)
+        private static string BuildAddIndexStatement(string tableName, DbTableIndex index)
         {
             string indexName = StringUtilities.Format(index.Name, tableName);
 
@@ -133,7 +133,7 @@ namespace Bee.Db.Providers.Oracle
         /// the constraint); regular indexes use <c>DROP INDEX name</c> — note Oracle does
         /// **not** take an <c>ON tablename</c> clause, unlike MySQL.
         /// </summary>
-        private static string BuildDropIndexStatement(string tableName, TableSchemaIndex index)
+        private static string BuildDropIndexStatement(string tableName, DbTableIndex index)
         {
             if (index.PrimaryKey)
                 return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} DROP PRIMARY KEY;";
@@ -145,7 +145,7 @@ namespace Bee.Db.Providers.Oracle
         /// Builds the comma-separated index field list. Sort direction (ASC/DESC) is
         /// only valid on regular indexes; PK constraints reject it on Oracle.
         /// </summary>
-        private static string BuildIndexFieldList(TableSchemaIndex index, bool includeSortDirection)
+        private static string BuildIndexFieldList(DbTableIndex index, bool includeSortDirection)
         {
             var sb = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)

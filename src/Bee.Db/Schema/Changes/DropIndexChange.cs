@@ -13,7 +13,7 @@ namespace Bee.Db.Schema.Changes
         /// Initializes a new instance of <see cref="DropIndexChange"/>.
         /// </summary>
         /// <param name="index">The index as it currently exists in the database.</param>
-        public DropIndexChange(TableSchemaIndex index)
+        public DropIndexChange(DbTableIndex index)
         {
             Index = index;
         }
@@ -21,7 +21,7 @@ namespace Bee.Db.Schema.Changes
         /// <summary>
         /// Gets the index as it currently exists in the database (name is already the actual DB name, not a template).
         /// </summary>
-        public TableSchemaIndex Index { get; }
+        public DbTableIndex Index { get; }
 
         /// <inheritdoc />
         public string Describe() => $"DropIndexChange on '{Index.Name}'";

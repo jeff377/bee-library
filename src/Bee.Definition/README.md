@@ -65,7 +65,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 Bee.Definition/
   Attributes/       Access control attributes (ApiAccessControl, ExecFuncAccessControl)
   Collections/      ListItem, Parameter, PropertyCollection
-  Database/         TableSchema, DbField, DbFieldCollection, TableSchemaIndex,
+  Database/         TableSchema, DbField, DbFieldCollection, DbTableIndex,
                     DatabaseType, FieldType, DbAccessAnomalyLogLevel, DbUpgradeAction
   Documents/        IExcelHelper (document-format helper abstraction)
   Filters/          FilterCondition, FilterGroup, FilterNode, FilterNodeKind,

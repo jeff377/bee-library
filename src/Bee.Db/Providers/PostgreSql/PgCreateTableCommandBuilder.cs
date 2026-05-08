@@ -104,7 +104,7 @@ namespace Bee.Db.Providers.PostgreSql
         private string GetIndexesCommandText(string tableName)
         {
             var sb = new StringBuilder();
-            foreach (TableSchemaIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
+            foreach (DbTableIndex index in this.TableSchema.Indexes!.Where(i => !i.PrimaryKey))
             {
                 sb.AppendLine(GetIndexCommandText(tableName, index));
             }
@@ -116,7 +116,7 @@ namespace Bee.Db.Providers.PostgreSql
         /// </summary>
         /// <param name="tableName">The table name.</param>
         /// <param name="index">The table schema index definition.</param>
-        private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
+        private static string GetIndexCommandText(string tableName, DbTableIndex index)
         {
             string name = StringUtilities.Format(index.Name, tableName);
             var fieldBuilder = new StringBuilder();

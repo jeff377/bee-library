@@ -52,7 +52,7 @@
 | `FormTableCollection` | 表單資料表集合 | FormSchema 內所有 FormTable 的集合 |
 | `FormLayoutGenerator` | 表單版面配置產生器 | 依據 FormSchema 自動產生 FormLayout |
 | `TableSchema` | 資料表結構 | FormSchema 的資料庫投影，對應實體資料表欄位與索引 |
-| `TableSchemaIndex` | 資料表索引 | 資料表的索引定義，含唯一性與主鍵資訊 |
+| `DbTableIndex` | 資料表索引 | 資料表的索引定義，含唯一性與主鍵資訊 |
 | `DbSchemaSettings` | 資料庫結構設定 | 管理所有資料表結構的設定集合 |
 | `DefinePathInfo` | 定義檔案路徑資訊 | 提供各類定義檔（FormSchema、TableSchema 等）的標準路徑 |
 | `DefineFunc` | 定義函式庫 | 定義相關的工具方法集合 |

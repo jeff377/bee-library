@@ -295,7 +295,7 @@ namespace Bee.Db.Providers.SqlServer
         private string GetIndexsCommandText(string tableName)
         {
             var sb = new StringBuilder();
-            foreach (TableSchemaIndex index in this.TableSchema.Indexes!)
+            foreach (DbTableIndex index in this.TableSchema.Indexes!)
             {
                 if (!index.PrimaryKey)
                     sb.AppendLine(GetIndexCommandText(tableName, index));
@@ -308,7 +308,7 @@ namespace Bee.Db.Providers.SqlServer
         /// </summary>
         /// <param name="tableName">The table name.</param>
         /// <param name="index">The table schema index definition.</param>
-        private static string GetIndexCommandText(string tableName, TableSchemaIndex index)
+        private static string GetIndexCommandText(string tableName, DbTableIndex index)
         {
             // Index name
             string name = StringUtilities.Format(index.Name, tableName);

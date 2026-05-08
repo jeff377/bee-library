@@ -136,7 +136,7 @@ namespace Bee.Db.Providers.Sqlite
             if (pkColumns.Count == 0) return;
 
             // Expose under the framework-convention name pk_{table} so name-based comparison matches.
-            var pkIndex = new TableSchemaIndex
+            var pkIndex = new DbTableIndex
             {
                 Name = $"pk_{tableName}",
                 PrimaryKey = true,
@@ -174,7 +174,7 @@ namespace Bee.Db.Providers.Sqlite
                 var indexFields = ReadIndexFields(indexName);
                 if (indexFields.Count == 0) continue;
 
-                var index = new TableSchemaIndex
+                var index = new DbTableIndex
                 {
                     Name = indexName,
                     Unique = unique
