@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="ft_project" DisplayName="專案">
+  <Fields>
+    <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+    <DbField FieldName="sys_id" Caption="專案代碼" DbType="String" />
+    <DbField FieldName="sys_name" Caption="專案名稱" DbType="String" />
+    <DbField FieldName="owner_dept_rowid" Caption="負責部門" DbType="Guid" />
+    <DbField FieldName="pm_rowid" Caption="專案經理" DbType="Guid" />
+    <DbField FieldName="start_date" Caption="開始日" DbType="Date" />
+    <DbField FieldName="end_date" Caption="結束日" DbType="Date" />
+  </Fields>
+  <Indexes>
+    <TableSchemaIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+      <IndexFields>
+        <IndexField FieldName="sys_no" />
+      </IndexFields>
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="rx_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_rowid" />
+      </IndexFields>
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="uk_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_id" />
+      </IndexFields>
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="fk_{0}_owner_dept_rowid">
+      <IndexFields>
+        <IndexField FieldName="owner_dept_rowid" />
+      </IndexFields>
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="fk_{0}_pm_rowid">
+      <IndexFields>
+        <IndexField FieldName="pm_rowid" />
+      </IndexFields>
+    </TableSchemaIndex>
+  </Indexes>
+</TableSchema>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="ft_employee" DisplayName="員工">
+  <Fields>
+    <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+    <DbField FieldName="sys_id" Caption="員工編號" DbType="String" />
+    <DbField FieldName="sys_name" Caption="員工姓名" DbType="String" />
+    <DbField FieldName="dept_rowid" Caption="部門唯一識別" DbType="Guid" />
+  </Fields>
+  <Indexes>
+    <TableSchemaIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+      <IndexFields>
+        <IndexField FieldName="sys_no" />
+      </IndexFields>
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="rx_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_rowid" />
+      </IndexFields>
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="uk_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_id" />
+      </IndexFields>
+    </TableSchemaIndex>
+    <TableSchemaIndex Name="fk_{0}_dept_rowid">
+      <IndexFields>
+        <IndexField FieldName="dept_rowid" />
+      </IndexFields>
+    </TableSchemaIndex>
+  </Indexes>
+</TableSchema>
