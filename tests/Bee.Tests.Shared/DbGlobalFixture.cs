@@ -55,6 +55,7 @@ namespace Bee.Tests.Shared
             catch (Exception ex)
             {
                 Console.WriteLine($"DbGlobalFixture: {dbType} setup skipped — {ex.GetType().Name}: {ex.Message}");
+                Console.WriteLine(ex.ToString());
             }
         }
 

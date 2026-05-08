@@ -198,7 +198,8 @@ namespace Bee.Db.UnitTests
             var statements = _builder.GetStatements("st_demo", new AddIndexChange(index));
 
             var sql = Assert.Single(statements);
-            Assert.Equal("ALTER TABLE \"st_demo\" ADD CONSTRAINT \"pk_st_demo\" PRIMARY KEY (\"id\" ASC);", sql);
+            // PG rejects ASC/DESC inside a PRIMARY KEY constraint — emit bare column name.
+            Assert.Equal("ALTER TABLE \"st_demo\" ADD CONSTRAINT \"pk_st_demo\" PRIMARY KEY (\"id\");", sql);
         }
 
         // ---------- DropIndex statements ----------

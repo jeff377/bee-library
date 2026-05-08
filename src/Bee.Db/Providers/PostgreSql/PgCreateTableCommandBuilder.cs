@@ -78,6 +78,11 @@ namespace Bee.Db.Providers.PostgreSql
         /// <summary>
         /// Gets the inline PRIMARY KEY constraint SQL fragment.
         /// </summary>
+        /// <remarks>
+        /// PostgreSQL rejects ASC/DESC inside a PRIMARY KEY (or UNIQUE) constraint
+        /// (<c>syntax error at or near "ASC"</c>); per-column sort direction is only valid
+        /// on regular indexes. Emit bare column names here.
+        /// </remarks>
         /// <param name="tableName">The table name.</param>
         private string GetPrimaryKeyCommandText(string tableName)
         {
@@ -89,8 +94,7 @@ namespace Bee.Db.Providers.PostgreSql
             {
                 if (fieldBuilder.Length > 0)
                     fieldBuilder.Append(", ");
-                fieldBuilder.Append(CultureInfo.InvariantCulture,
-                    $"{PgSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                fieldBuilder.Append(PgSchemaSyntax.QuoteName(field.FieldName));
             }
 
             string name = StringUtilities.Format(index.Name, tableName);

@@ -124,11 +124,14 @@ namespace Bee.Db.Providers.PostgreSql
         private static string BuildAddIndexStatement(string tableName, DbTableIndex index)
         {
             string indexName = StringUtilities.Format(index.Name, tableName);
-            string fields = BuildIndexFieldList(index);
 
             if (index.PrimaryKey)
-                return $"ALTER TABLE {PgSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {PgSchemaSyntax.QuoteName(indexName)} PRIMARY KEY ({fields});";
+            {
+                string pkFields = BuildIndexFieldList(index, includeSortDirection: false);
+                return $"ALTER TABLE {PgSchemaSyntax.QuoteName(tableName)} ADD CONSTRAINT {PgSchemaSyntax.QuoteName(indexName)} PRIMARY KEY ({pkFields});";
+            }
 
+            string fields = BuildIndexFieldList(index, includeSortDirection: true);
             string uniqueClause = index.Unique ? "UNIQUE " : string.Empty;
             return $"CREATE {uniqueClause}INDEX {PgSchemaSyntax.QuoteName(indexName)} ON {PgSchemaSyntax.QuoteName(tableName)} ({fields});";
         }
@@ -142,14 +145,26 @@ namespace Bee.Db.Providers.PostgreSql
             return $"DROP INDEX {PgSchemaSyntax.QuoteName(index.Name)};";
         }
 
-        private static string BuildIndexFieldList(DbTableIndex index)
+        /// <summary>
+        /// Builds the comma-separated index field list. PostgreSQL rejects ASC/DESC inside
+        /// PRIMARY KEY / UNIQUE constraints; only regular indexes accept per-column sort
+        /// direction.
+        /// </summary>
+        private static string BuildIndexFieldList(DbTableIndex index, bool includeSortDirection)
         {
             var sb = new StringBuilder();
             foreach (IndexField field in index.IndexFields!)
             {
                 if (sb.Length > 0) sb.Append(", ");
-                sb.Append(CultureInfo.InvariantCulture,
-                    $"{PgSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                if (includeSortDirection)
+                {
+                    sb.Append(CultureInfo.InvariantCulture,
+                        $"{PgSchemaSyntax.QuoteName(field.FieldName)} {field.SortDirection.ToString().ToUpperInvariant()}");
+                }
+                else
+                {
+                    sb.Append(PgSchemaSyntax.QuoteName(field.FieldName));
+                }
             }
             return sb.ToString();
         }
