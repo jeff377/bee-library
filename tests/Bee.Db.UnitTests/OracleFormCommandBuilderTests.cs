@@ -115,5 +115,13 @@ namespace Bee.Db.UnitTests
             // 透過 DatabaseType.Oracle.GetParameterPrefix() 注入，純語法測試不涵蓋。
             Assert.Contains("{0}", spec.CommandText);
         }
+
+        [Fact]
+        [DisplayName("ProgID 建構子有效 ProgID 應成功建立實例")]
+        public void Constructor_ValidProgId_Succeeds()
+        {
+            var exception = Record.Exception(() => new OracleFormCommandBuilder("Department"));
+            Assert.Null(exception);
+        }
     }
 }
