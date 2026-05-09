@@ -97,5 +97,29 @@ namespace Bee.Db.UnitTests
 
             Assert.Contains("DELETE FROM `tb_foo`", spec.CommandText);
         }
+
+        [Fact]
+        [DisplayName("ProgID 建構子使用有效 ProgId 應成功載入 FormSchema")]
+        public void Constructor_ValidProgId_LoadsFormSchema()
+        {
+            var exception = Record.Exception(() => new MySqlFormCommandBuilder("Employee"));
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        [DisplayName("ProgID 建構子 GetFormSchema 回傳 null 應擲 ArgumentException")]
+        public void Constructor_ProgId_WhenGetFormSchemaReturnsNull_ThrowsArgumentException()
+        {
+            var original = BackendInfo.DefineAccess;
+            BackendInfo.DefineAccess = new NullFormSchemaAccess();
+            try
+            {
+                Assert.Throws<ArgumentException>(() => new MySqlFormCommandBuilder("any"));
+            }
+            finally
+            {
+                BackendInfo.DefineAccess = original;
+            }
+        }
     }
 }
