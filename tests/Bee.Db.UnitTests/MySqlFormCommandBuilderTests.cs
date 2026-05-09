@@ -97,5 +97,13 @@ namespace Bee.Db.UnitTests
 
             Assert.Contains("DELETE FROM `tb_foo`", spec.CommandText);
         }
+
+        [Fact]
+        [DisplayName("ProgID 建構子有效 ProgID 應成功建立實例")]
+        public void Constructor_ValidProgId_Succeeds()
+        {
+            var exception = Record.Exception(() => new MySqlFormCommandBuilder("Department"));
+            Assert.Null(exception);
+        }
     }
 }
