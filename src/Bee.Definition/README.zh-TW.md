@@ -80,7 +80,7 @@ Bee.Definition/
                     MasterKeyProvider、MasterKeySourceType、
                     ApiAccessRequirement、ApiProtectionLevel
   Serialization/    自訂 MessagePack 格式化器
-  Settings/         SystemSettings、DatabaseSettings、ProgramSettings、MenuSettings、DbSchemaSettings
+  Settings/         SystemSettings、DatabaseSettings、ProgramSettings、MenuSettings、DbCategorySettings
   Sorting/          SortField、SortFieldCollection、SortDirection
   Storage/          IDefineAccess 等
   （根目錄）         跨切面基礎設施：

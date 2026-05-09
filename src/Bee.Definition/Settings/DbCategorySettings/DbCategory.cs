@@ -7,20 +7,20 @@ using Bee.Base.Collections;
 namespace Bee.Definition.Settings
 {
     /// <summary>
-    /// A database schema definition.
+    /// A logical database category definition.
     /// </summary>
-    [Description("Database schema.")]
+    [Description("Database category.")]
     [TreeNode]
-    public class DbSchema : KeyCollectionItem
+    public class DbCategory : KeyCollectionItem
     {
         private TableItemCollection? _tables = null;
 
         /// <summary>
-        /// Gets or sets the database name.
+        /// Gets or sets the category id.
         /// </summary>
         [XmlAttribute]
-        [Description("Database name.")]
-        public string DbName
+        [Description("Category id.")]
+        public string Id
         {
             get { return base.Key; }
             set { base.Key = value; }
@@ -65,7 +65,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         public override string ToString()
         {
-            return $"{DbName} - {DisplayName}";
+            return $"{Id} - {DisplayName}";
         }
     }
 }

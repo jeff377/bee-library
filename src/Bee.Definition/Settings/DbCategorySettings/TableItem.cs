@@ -6,7 +6,7 @@ using Bee.Base.Collections;
 namespace Bee.Definition.Settings
 {
     /// <summary>
-    /// A table item in the database schema.
+    /// A table item in the database category.
     /// </summary>
     [Description("Table item.")]
     [TreeNode]

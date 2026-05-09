@@ -1,13 +1,13 @@
-﻿using Bee.Definition;
+using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 
 namespace Bee.ObjectCaching.Define
 {
     /// <summary>
-    /// Database schema settings cache.
+    /// Database category settings cache.
     /// </summary>
-    public class DbSchemaSettingsCache : ObjectCache<DbSchemaSettings>
+    public class DbCategorySettingsCache : ObjectCache<DbCategorySettings>
     {
         /// <summary>
         /// Gets the cache item expiration policy.
@@ -16,16 +16,16 @@ namespace Bee.ObjectCaching.Define
         {
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineStorage is FileDefineStorage)
-                policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbTableSettingsFilePath() };
+                policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetDbCategorySettingsFilePath() };
             return policy;
         }
 
         /// <summary>
-        /// Creates an instance of the database schema settings.
+        /// Creates an instance of the database category settings.
         /// </summary>
-        protected override DbSchemaSettings? CreateInstance()
+        protected override DbCategorySettings? CreateInstance()
         {
-            return BackendInfo.DefineStorage.GetDbSchemaSettings();
+            return BackendInfo.DefineStorage.GetDbCategorySettings();
         }
     }
 }

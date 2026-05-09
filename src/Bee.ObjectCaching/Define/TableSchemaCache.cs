@@ -16,46 +16,46 @@ namespace Bee.ObjectCaching.Define
         /// <param name="key">The member key.</param>
         protected override CacheItemPolicy GetPolicy(string key)
         {
-            // Parse the member key to extract the database name and table name
-            key.SplitLeft(".", out string dbName, out string tableName);
+            // Parse the member key to extract the category id and table name
+            key.SplitLeft(".", out string categoryId, out string tableName);
 
             // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             if (BackendInfo.DefineStorage is FileDefineStorage)
-                policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetTableSchemaFilePath(dbName, tableName) };
+                policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetTableSchemaFilePath(categoryId, tableName) };
             return policy;
         }
 
         /// <summary>
         /// Creates an instance of the table schema.
         /// </summary>
-        /// <param name="key">The member key, in the format [database name].[table name].</param>
+        /// <param name="key">The member key, in the format [category id].[table name].</param>
         protected override TableSchema? CreateInstance(string key)
         {
-            // Parse the member key to extract the database name and table name
-            key.SplitLeft(".", out string dbName, out string tableName);
-            return BackendInfo.DefineStorage.GetTableSchema(dbName, tableName);
+            // Parse the member key to extract the category id and table name
+            key.SplitLeft(".", out string categoryId, out string tableName);
+            return BackendInfo.DefineStorage.GetTableSchema(categoryId, tableName);
         }
 
         /// <summary>
-        /// Gets the table schema for the specified database and table.
+        /// Gets the table schema for the specified category and table.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
-        public TableSchema? Get(string dbName, string tableName)
+        public TableSchema? Get(string categoryId, string tableName)
         {
-            string key = $"{dbName}.{tableName}";
+            string key = $"{categoryId}.{tableName}";
             return base.Get(key);
         }
 
         /// <summary>
         /// Removes the table schema entry from the cache.
         /// </summary>
-        /// <param name="categoryID">The database category identifier.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
-        public void Remove(string categoryID, string tableName)
+        public void Remove(string categoryId, string tableName)
         {
-            string key = $"{categoryID}.{tableName}";
+            string key = $"{categoryId}.{tableName}";
             base.Remove(key);
         }
     }

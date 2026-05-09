@@ -298,15 +298,15 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        [DisplayName("DbSchemaSettings XML 序列化應正確還原")]
-        public void DbSchemaSettings_XmlRoundtrip_Succeeds()
+        [DisplayName("DbCategorySettings XML 序列化應正確還原")]
+        public void DbCategorySettings_XmlRoundtrip_Succeeds()
         {
             // Arrange
-            var original = new DbSchemaSettings();
+            var original = new DbCategorySettings();
 
             // Act
             var xml = XmlCodec.Serialize(original);
-            var restored = XmlCodec.Deserialize<DbSchemaSettings>(xml);
+            var restored = XmlCodec.Deserialize<DbCategorySettings>(xml);
 
             // Assert
             Assert.NotNull(restored);

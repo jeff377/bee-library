@@ -9,7 +9,7 @@ namespace Bee.Tests.Shared
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Any test that calls a <c>SaveDefine</c>-family method (e.g. <c>SaveDbSchemaSettings</c>,
+    /// Any test that calls a <c>SaveDefine</c>-family method (e.g. <c>SaveDbCategorySettings</c>,
     /// <c>SaveSystemSettings</c>, <c>SaveTableSchema</c>) — directly via
     /// <see cref="LocalDefineAccess"/> or indirectly via <c>SystemBusinessObject.SaveDefine</c> —
     /// MUST wrap the call in <c>using var temp = new TempDefinePath();</c>, otherwise the

@@ -47,11 +47,11 @@ namespace Bee.Business.System
         public static void UpgradeTableSchema(ExecFuncArgs args, ExecFuncResult result)
         {
             string databaseId = args.Parameters.GetValue<string>("DatabaseId");
-            string dbName = args.Parameters.GetValue<string>("DbName");
+            string categoryId = args.Parameters.GetValue<string>("CategoryId");
             string tableName = args.Parameters.GetValue<string>("TableName");
 
             var repo = RepositoryInfo.SystemFactory!.CreateDatabaseRepository();
-            bool upgraded = repo.UpgradeTableSchema(databaseId, dbName, tableName);
+            bool upgraded = repo.UpgradeTableSchema(databaseId, categoryId, tableName);
             result.Parameters.Add("Upgraded", upgraded);
         }
 

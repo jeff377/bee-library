@@ -24,10 +24,10 @@ namespace Bee.Business.UnitTests.Fakes
         public void SaveDatabaseSettings(DatabaseSettings settings) => throw new NotImplementedException();
         public ProgramSettings GetProgramSettings() => throw new NotImplementedException();
         public void SaveProgramSettings(ProgramSettings settings) => throw new NotImplementedException();
-        public DbSchemaSettings GetDbSchemaSettings() => throw new NotImplementedException();
-        public void SaveDbSchemaSettings(DbSchemaSettings settings) => throw new NotImplementedException();
-        public TableSchema GetTableSchema(string dbName, string tableName) => throw new NotImplementedException();
-        public void SaveTableSchema(string dbName, TableSchema tableSchema) => throw new NotImplementedException();
+        public DbCategorySettings GetDbCategorySettings() => throw new NotImplementedException();
+        public void SaveDbCategorySettings(DbCategorySettings settings) => throw new NotImplementedException();
+        public TableSchema GetTableSchema(string categoryId, string tableName) => throw new NotImplementedException();
+        public void SaveTableSchema(string categoryId, TableSchema tableSchema) => throw new NotImplementedException();
         public FormSchema GetFormSchema(string progId) => throw new NotImplementedException();
         public void SaveFormSchema(FormSchema formSchema) => throw new NotImplementedException();
         public FormLayout GetFormLayout(string layoutId) => throw new NotImplementedException();

@@ -14,7 +14,7 @@ namespace Bee.Repository.UnitTests
     public class DatabaseRepositoryTests
     {
         private const string ValidDatabaseId = "common";
-        private const string ValidDbName = "DbName";
+        private const string ValidCategoryId = "common";
         private const string ValidTableName = "TableName";
 
         private static IDatabaseRepository CreateRepository()
@@ -28,18 +28,18 @@ namespace Bee.Repository.UnitTests
         public void UpgradeTableSchema_EmptyDatabaseId_ThrowsArgumentException(string? databaseId)
         {
             var repo = CreateRepository();
-            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(databaseId!, ValidDbName, ValidTableName));
+            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(databaseId!, ValidCategoryId, ValidTableName));
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        [DisplayName("UpgradeTableSchema 空白 dbName 應拋 ArgumentException")]
-        public void UpgradeTableSchema_EmptyDbName_ThrowsArgumentException(string? dbName)
+        [DisplayName("UpgradeTableSchema 空白 categoryId 應拋 ArgumentException")]
+        public void UpgradeTableSchema_EmptyCategoryId_ThrowsArgumentException(string? categoryId)
         {
             var repo = CreateRepository();
-            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(ValidDatabaseId, dbName!, ValidTableName));
+            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(ValidDatabaseId, categoryId!, ValidTableName));
         }
 
         [Theory]
@@ -50,7 +50,7 @@ namespace Bee.Repository.UnitTests
         public void UpgradeTableSchema_EmptyTableName_ThrowsArgumentException(string? tableName)
         {
             var repo = CreateRepository();
-            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(ValidDatabaseId, ValidDbName, tableName!));
+            Assert.ThrowsAny<ArgumentException>(() => repo.UpgradeTableSchema(ValidDatabaseId, ValidCategoryId, tableName!));
         }
 
         [Fact]

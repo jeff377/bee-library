@@ -38,17 +38,17 @@ namespace Bee.Repository.System
         /// Upgrades the table schema for the specified table.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
         /// <remarks>Returns whether the schema was upgraded.</remarks>
-        public bool UpgradeTableSchema(string databaseId, string dbName, string tableName)
+        public bool UpgradeTableSchema(string databaseId, string categoryId, string tableName)
         {
             // Ensure required parameters are not empty
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
-            ArgumentException.ThrowIfNullOrWhiteSpace(dbName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(categoryId);
             ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
             var builder = new TableSchemaBuilder(databaseId);
-            return builder.Execute(dbName, tableName);
+            return builder.Execute(categoryId, tableName);
         }
     }
 }

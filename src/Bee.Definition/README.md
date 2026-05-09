@@ -80,7 +80,7 @@ Bee.Definition/
                     MasterKeyProvider, MasterKeySourceType,
                     ApiAccessRequirement, ApiProtectionLevel
   Serialization/    Custom MessagePack formatters
-  Settings/         SystemSettings, DatabaseSettings, ProgramSettings, MenuSettings, DbSchemaSettings
+  Settings/         SystemSettings, DatabaseSettings, ProgramSettings, MenuSettings, DbCategorySettings
   Sorting/          SortField, SortFieldCollection, SortDirection
   Storage/          IDefineAccess (and friends)
   (root)            Cross-cutting infrastructure:

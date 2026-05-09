@@ -53,7 +53,8 @@
 | `FormLayoutGenerator` | 表單版面配置產生器 | 依據 FormSchema 自動產生 FormLayout |
 | `TableSchema` | 資料表結構 | FormSchema 的資料庫投影，對應實體資料表欄位與索引 |
 | `DbTableIndex` | 資料表索引 | 資料表的索引定義，含唯一性與主鍵資訊 |
-| `DbSchemaSettings` | 資料庫結構設定 | 管理所有資料表結構的設定集合 |
+| `DbCategorySettings` | 資料庫類別設定 | 管理所有邏輯資料庫類別（common / company / log）的設定集合 |
+| `DbCategory` | 資料庫類別 | 邏輯資料庫類別節點，含 `Id`（"common" / "company" 等）與所屬資料表清單 |
 | `DefinePathInfo` | 定義檔案路徑資訊 | 提供各類定義檔（FormSchema、TableSchema 等）的標準路徑 |
 | `DefineFunc` | 定義函式庫 | 定義相關的工具方法集合 |
 | `SessionInfo` | 連線資訊 | 執行期用戶連線狀態，含 AccessToken、語系、時區 |
@@ -214,7 +215,7 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `DefineType` | 定義資料類別 | `DbSchemaSettings`（資料庫結構設定）、`TableSchema`（資料表結構）、`FormSchema`（表單結構定義）、`FormLayout`（表單版面配置） |
+| `DefineType` | 定義資料類別 | `DbCategorySettings`（資料庫類別設定）、`TableSchema`（資料表結構）、`FormSchema`（表單結構定義）、`FormLayout`（表單版面配置） |
 
 ### 資料庫
 
@@ -248,7 +249,7 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 |----------|----------|------|
 | `SystemSettings.xml` | 系統設定檔 | 全域系統參數 |
 | `DatabaseSettings.xml` | 資料庫連線設定檔 | 資料庫連線字串與類型 |
-| `DbSchemaSettings.xml` | 資料庫結構設定檔 | 所有資料表清單與版本資訊 |
+| `DbCategorySettings.xml` | 資料庫類別設定檔 | 所有邏輯資料庫類別與其包含的資料表清單 |
 | `ProgramSettings.xml` | 程式設定檔 | 功能程式的參數設定 |
 | `ClientSettings.xml` | 用戶端設定檔 | 前端 / 用戶端的行為設定 |
 | `FormSchema.xml` | 表單結構定義檔 | 各功能程式的 FormSchema 序列化檔 |

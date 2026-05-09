@@ -22,7 +22,7 @@
 - `DatabaseSettingsCache` -- caches database connection settings
 - `TableSchemaCache` / `FormSchemaCache` -- caches table and form schema definitions
 - `FormLayoutCache` -- caches UI layout metadata
-- `ProgramSettingsCache` / `DbSchemaSettingsCache` -- caches program and DB schema settings
+- `ProgramSettingsCache` / `DbCategorySettingsCache` -- caches program and DB category settings
 
 ### Session & Runtime Caching
 
@@ -74,7 +74,7 @@
 Bee.ObjectCaching/
   Define/      # SystemSettingsCache, DatabaseSettingsCache, TableSchemaCache,
                # FormSchemaCache, FormLayoutCache, ProgramSettingsCache,
-               # DbSchemaSettingsCache
+               # DbCategorySettingsCache
   Database/    # SessionInfoCache
   Runtime/     # ViewStateCache
   Providers/   # ICacheProvider, MemoryCacheProvider

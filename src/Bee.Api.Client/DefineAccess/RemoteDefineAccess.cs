@@ -97,8 +97,8 @@ namespace Bee.Api.Client.DefineAccess
                     return this.GetDatabaseSettings();
                 case DefineType.ProgramSettings:
                     return this.GetProgramSettings();
-                case DefineType.DbSchemaSettings:
-                    return this.GetDbSchemaSettings();
+                case DefineType.DbCategorySettings:
+                    return this.GetDbCategorySettings();
                 case DefineType.TableSchema:
                     ValidateKeys(defineType, keys, 2);
                     return this.GetTableSchema(keys![0], keys[1]);
@@ -188,40 +188,40 @@ namespace Bee.Api.Client.DefineAccess
         }
 
         /// <summary>
-        /// Gets the database schema settings.
+        /// Gets the database category settings.
         /// </summary>
-        public DbSchemaSettings GetDbSchemaSettings()
+        public DbCategorySettings GetDbCategorySettings()
         {
-            return GetDefine<DbSchemaSettings>(DefineType.DbSchemaSettings);
+            return GetDefine<DbCategorySettings>(DefineType.DbCategorySettings);
         }
 
         /// <summary>
-        /// Saves the database schema settings.
+        /// Saves the database category settings.
         /// </summary>
-        /// <param name="settings">The database schema settings.</param>
-        public void SaveDbSchemaSettings(DbSchemaSettings settings)
+        /// <param name="settings">The database category settings.</param>
+        public void SaveDbCategorySettings(DbCategorySettings settings)
         {
-            SaveDefine(DefineType.DbSchemaSettings, settings);
+            SaveDefine(DefineType.DbCategorySettings, settings);
         }
 
         /// <summary>
         /// Gets the table schema for the specified table.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
-        public TableSchema GetTableSchema(string dbName, string tableName)
+        public TableSchema GetTableSchema(string categoryId, string tableName)
         {
-            return GetDefine<TableSchema>(DefineType.TableSchema, new string[] { dbName, tableName });
+            return GetDefine<TableSchema>(DefineType.TableSchema, new string[] { categoryId, tableName });
         }
 
         /// <summary>
         /// Saves the table schema.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableSchema">The table schema.</param>
-        public void SaveTableSchema(string dbName, TableSchema tableSchema)
+        public void SaveTableSchema(string categoryId, TableSchema tableSchema)
         {
-            SaveDefine(DefineType.TableSchema, tableSchema, new string[] { dbName });
+            SaveDefine(DefineType.TableSchema, tableSchema, new string[] { categoryId });
         }
 
         /// <summary>

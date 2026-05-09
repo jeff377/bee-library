@@ -29,8 +29,8 @@ namespace Bee.ObjectCaching
                     return this.GetDatabaseSettings();
                 case DefineType.ProgramSettings:
                     return  this.GetProgramSettings();
-                case DefineType.DbSchemaSettings:
-                    return this.GetDbSchemaSettings();
+                case DefineType.DbCategorySettings:
+                    return this.GetDbCategorySettings();
                 case DefineType.TableSchema:
                     ValidateKeys(defineType, keys, 2);
                     return this.GetTableSchema(keys![0], keys[1]);
@@ -76,8 +76,8 @@ namespace Bee.ObjectCaching
                 case DefineType.ProgramSettings:
                     this.SaveProgramSettings((defineObject as ProgramSettings)!);
                     break;
-                case DefineType.DbSchemaSettings:
-                    this.SaveDbSchemaSettings((defineObject as DbSchemaSettings)!);
+                case DefineType.DbCategorySettings:
+                    this.SaveDbCategorySettings((defineObject as DbCategorySettings)!);
                     break;
                 case DefineType.TableSchema:
                     if (keys == null || keys.Length != 1)
@@ -164,50 +164,50 @@ namespace Bee.ObjectCaching
         }
 
         /// <summary>
-        /// Gets the database schema settings.
+        /// Gets the database category settings.
         /// </summary>
-        public DbSchemaSettings GetDbSchemaSettings()
+        public DbCategorySettings GetDbCategorySettings()
         {
-            return CacheContainer.DbSchemaSettings.Get()!;
+            return CacheContainer.DbCategorySettings.Get()!;
         }
 
         /// <summary>
-        /// Saves the database schema settings.
+        /// Saves the database category settings.
         /// </summary>
-        /// <param name="settings">The database schema settings.</param>
-        public void SaveDbSchemaSettings(DbSchemaSettings settings)
+        /// <param name="settings">The database category settings.</param>
+        public void SaveDbCategorySettings(DbCategorySettings settings)
         {
-            DbSchemaSettingsCache oCache;
+            DbCategorySettingsCache oCache;
 
-            // Save database schema settings, then invalidate the cache
-            BackendInfo.DefineStorage.SaveDbSchemaSettings(settings);
-            oCache = new DbSchemaSettingsCache();
+            // Save database category settings, then invalidate the cache
+            BackendInfo.DefineStorage.SaveDbCategorySettings(settings);
+            oCache = new DbCategorySettingsCache();
             oCache.Remove();
         }
 
         /// <summary>
-        /// Gets the table schema for the specified database and table.
+        /// Gets the table schema for the specified category and table.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
-        public TableSchema GetTableSchema(string dbName, string tableName)
+        public TableSchema GetTableSchema(string categoryId, string tableName)
         {
-            return CacheContainer.TableSchema.Get(dbName, tableName)!;
+            return CacheContainer.TableSchema.Get(categoryId, tableName)!;
         }
 
         /// <summary>
         /// Saves the table schema.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableSchema">The table schema.</param>
-        public void SaveTableSchema(string dbName, TableSchema tableSchema)
+        public void SaveTableSchema(string categoryId, TableSchema tableSchema)
         {
             TableSchemaCache oCache;
 
             // Save the table schema, then invalidate the cache
-            BackendInfo.DefineStorage.SaveTableSchema(dbName, tableSchema);
+            BackendInfo.DefineStorage.SaveTableSchema(categoryId, tableSchema);
             oCache = new TableSchemaCache();
-            oCache.Remove(dbName, tableSchema.TableName);
+            oCache.Remove(categoryId, tableSchema.TableName);
         }
 
         /// <summary>
