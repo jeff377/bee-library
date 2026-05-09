@@ -26,6 +26,14 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("ProgID 建構子指定有效 FormSchema ID 應成功建立")]
+        public void Constructor_ValidProgId_CreatesSuccessfully()
+        {
+            var exception = Record.Exception(() => new PgFormCommandBuilder("Employee"));
+            Assert.Null(exception);
+        }
+
+        [Fact]
         [DisplayName("BuildInsert 應委派至 PostgreSQL 方言並產生 INSERT 語句")]
         public void BuildInsert_DelegatesToPostgreSqlDialect()
         {
