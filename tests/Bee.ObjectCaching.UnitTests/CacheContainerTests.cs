@@ -8,8 +8,8 @@ namespace Bee.ObjectCaching.UnitTests
     public class CacheContainerTests
     {
         [Fact]
-        [DisplayName("TableSchema.Get(dbName, tableName) 應回傳對應 schema")]
-        public void TableSchema_GetWithDbName_ReturnsSchema()
+        [DisplayName("TableSchema.Get(categoryId, tableName) 應回傳對應 schema")]
+        public void TableSchema_GetWithCategoryId_ReturnsSchema()
         {
             var schema = CacheContainer.TableSchema.Get("common", "st_user");
 
@@ -39,10 +39,10 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("DbSchemaSettings.Get 應回傳定義過的 schema 設定")]
-        public void DbSchemaSettings_Get_ReturnsSettings()
+        [DisplayName("DbCategorySettings.Get 應回傳定義過的 category 設定")]
+        public void DbCategorySettings_Get_ReturnsSettings()
         {
-            var settings = CacheContainer.DbSchemaSettings.Get();
+            var settings = CacheContainer.DbCategorySettings.Get();
             Assert.NotNull(settings);
         }
 

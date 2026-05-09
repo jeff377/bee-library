@@ -10,29 +10,29 @@ namespace Bee.Definition.Storage
     public interface IDefineStorage
     {
         /// <summary>
-        /// Gets the database schema settings.
+        /// Gets the database category settings.
         /// </summary>
-        DbSchemaSettings? GetDbSchemaSettings();
+        DbCategorySettings? GetDbCategorySettings();
 
         /// <summary>
-        /// Saves the database schema settings.
+        /// Saves the database category settings.
         /// </summary>
-        /// <param name="settings">The database schema settings.</param>
-        void SaveDbSchemaSettings(DbSchemaSettings settings);
+        /// <param name="settings">The database category settings.</param>
+        void SaveDbCategorySettings(DbCategorySettings settings);
 
         /// <summary>
-        /// Gets the table schema for the specified database and table.
+        /// Gets the table schema for the specified category and table.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
-        TableSchema? GetTableSchema(string dbName, string tableName);
+        TableSchema? GetTableSchema(string categoryId, string tableName);
 
         /// <summary>
-        /// Saves the table schema for the specified database.
+        /// Saves the table schema for the specified category.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableSchema">The table schema.</param>
-        void SaveTableSchema(string dbName, TableSchema tableSchema);
+        void SaveTableSchema(string categoryId, TableSchema tableSchema);
 
         /// <summary>
         /// Gets the form schema for the specified program.

@@ -31,11 +31,11 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("GetDefine(DbSchemaSettings) 應回傳 DbSchemaSettings 實例")]
-        public void GetDefine_DbSchemaSettings_ReturnsDbSchemaSettings()
+        [DisplayName("GetDefine(DbCategorySettings) 應回傳 DbCategorySettings 實例")]
+        public void GetDefine_DbCategorySettings_ReturnsDbCategorySettings()
         {
-            var result = _access.GetDefine(DefineType.DbSchemaSettings);
-            Assert.IsType<DbSchemaSettings>(result);
+            var result = _access.GetDefine(DefineType.DbCategorySettings);
+            Assert.IsType<DbCategorySettings>(result);
         }
 
         [Fact]
@@ -100,8 +100,8 @@ namespace Bee.ObjectCaching.UnitTests
         public void GetDatabaseSettings_ReturnsInstance() => Assert.NotNull(_access.GetDatabaseSettings());
 
         [Fact]
-        [DisplayName("GetDbSchemaSettings 應回傳實例")]
-        public void GetDbSchemaSettings_ReturnsInstance() => Assert.NotNull(_access.GetDbSchemaSettings());
+        [DisplayName("GetDbCategorySettings 應回傳實例")]
+        public void GetDbCategorySettings_ReturnsInstance() => Assert.NotNull(_access.GetDbCategorySettings());
 
         [Fact]
         [DisplayName("GetTableSchema 應回傳實例")]

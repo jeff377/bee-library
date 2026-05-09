@@ -119,13 +119,13 @@ namespace Bee.Api.Client.UnitTests
         }
 
         [Fact]
-        [DisplayName("RemoteDefineAccess.GetDbSchemaSettings 本機連線應回傳資料庫綱要設定")]
-        public void GetDbSchemaSettings_LocalConnector_ReturnsSettings()
+        [DisplayName("RemoteDefineAccess.GetDbCategorySettings 本機連線應回傳資料庫類別設定")]
+        public void GetDbCategorySettings_LocalConnector_ReturnsSettings()
         {
             var connector = new SystemApiConnector(Guid.NewGuid());
             var access = new RemoteDefineAccess(connector);
 
-            var settings = access.GetDbSchemaSettings();
+            var settings = access.GetDbCategorySettings();
 
             Assert.NotNull(settings);
         }

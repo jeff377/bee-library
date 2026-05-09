@@ -22,7 +22,7 @@
 - `DatabaseSettingsCache` -- 快取資料庫連線設定
 - `TableSchemaCache` / `FormSchemaCache` -- 快取資料表與表單結構定義
 - `FormLayoutCache` -- 快取 UI 佈局中繼資料
-- `ProgramSettingsCache` / `DbSchemaSettingsCache` -- 快取程式與資料庫結構設定
+- `ProgramSettingsCache` / `DbCategorySettingsCache` -- 快取程式與資料庫類別設定
 
 ### Session 與執行階段快取
 
@@ -74,7 +74,7 @@
 Bee.ObjectCaching/
   Define/      # SystemSettingsCache、DatabaseSettingsCache、TableSchemaCache、
                # FormSchemaCache、FormLayoutCache、ProgramSettingsCache、
-               # DbSchemaSettingsCache
+               # DbCategorySettingsCache
   Database/    # SessionInfoCache
   Runtime/     # ViewStateCache
   Providers/   # ICacheProvider、MemoryCacheProvider

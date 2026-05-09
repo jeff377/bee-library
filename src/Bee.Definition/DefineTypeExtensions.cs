@@ -9,7 +9,7 @@ namespace Bee.Definition
         {
             { DefineType.SystemSettings,   "Bee.Definition.Settings.SystemSettings" },
             { DefineType.DatabaseSettings, "Bee.Definition.Settings.DatabaseSettings" },
-            { DefineType.DbSchemaSettings, "Bee.Definition.Settings.DbSchemaSettings" },
+            { DefineType.DbCategorySettings, "Bee.Definition.Settings.DbCategorySettings" },
             { DefineType.ProgramSettings,  "Bee.Definition.Settings.ProgramSettings" },
             { DefineType.TableSchema,      "Bee.Definition.Database.TableSchema" },
             { DefineType.FormSchema,       "Bee.Definition.Forms.FormSchema" },

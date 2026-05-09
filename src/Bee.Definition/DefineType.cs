@@ -14,9 +14,9 @@ namespace Bee.Definition
         /// </summary>
         DatabaseSettings,
         /// <summary>
-        /// Database schema settings.
+        /// Database category settings.
         /// </summary>
-        DbSchemaSettings,
+        DbCategorySettings,
         /// <summary>
         /// Program settings list.
         /// </summary>

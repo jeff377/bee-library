@@ -46,18 +46,18 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        [DisplayName("GetDbTableSettingsFilePath 應回傳定義根目錄下的 DbSchemaSettings.xml")]
-        public void GetDbTableSettingsFilePath_ValidDefinePath_ReturnsExpectedPath()
+        [DisplayName("GetDbCategorySettingsFilePath 應回傳定義根目錄下的 DbCategorySettings.xml")]
+        public void GetDbCategorySettingsFilePath_ValidDefinePath_ReturnsExpectedPath()
         {
             WithDefinePath(TestRoot, () =>
             {
-                var path = DefinePathInfo.GetDbTableSettingsFilePath();
-                Assert.Equal(Path.Combine(TestRoot, "DbSchemaSettings.xml"), path);
+                var path = DefinePathInfo.GetDbCategorySettingsFilePath();
+                Assert.Equal(Path.Combine(TestRoot, "DbCategorySettings.xml"), path);
             });
         }
 
         [Fact]
-        [DisplayName("GetTableSchemaFilePath 應組合 TableSchema/<db>/<table>.TableSchema.xml")]
+        [DisplayName("GetTableSchemaFilePath 應組合 TableSchema/<categoryId>/<table>.TableSchema.xml")]
         public void GetTableSchemaFilePath_ValidInput_ReturnsExpectedPath()
         {
             WithDefinePath(TestRoot, () =>

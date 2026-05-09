@@ -5,7 +5,7 @@ using Bee.Base.Collections;
 namespace Bee.Definition.Settings
 {
     /// <summary>
-    /// A collection of table items in a database schema.
+    /// A collection of table items in a database category.
     /// </summary>
     [Description("Table item collection.")]
     [TreeNode("Tables", false)]
@@ -14,8 +14,8 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Initializes a new instance of <see cref="TableItemCollection"/>.
         /// </summary>
-        /// <param name="category">The owning database schema.</param>
-        public TableItemCollection(DbSchema category) : base(category)
+        /// <param name="category">The owning database category.</param>
+        public TableItemCollection(DbCategory category) : base(category)
         { }
     }
 }

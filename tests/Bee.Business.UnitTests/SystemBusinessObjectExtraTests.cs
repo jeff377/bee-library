@@ -146,7 +146,7 @@ namespace Bee.Business.UnitTests
             var bo = new TestableSystemBusinessObject(Guid.Empty, _ => (false, string.Empty));
             var args = new ExecFuncArgs("UpgradeTableSchema");
             args.Parameters.Add("DatabaseId", "common_sqlserver");
-            args.Parameters.Add("DbName", "common");
+            args.Parameters.Add("CategoryId", "common");
             args.Parameters.Add("TableName", "st_user");
 
             var result = bo.ExecFunc(args);

@@ -59,15 +59,15 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("SaveDbSchemaSettings 應透過 DefineStorage 寫入 DbSchemaSettings.xml")]
-        public void SaveDbSchemaSettings_WritesFile()
+        [DisplayName("SaveDbCategorySettings 應透過 DefineStorage 寫入 DbCategorySettings.xml")]
+        public void SaveDbCategorySettings_WritesFile()
         {
             using var temp = new TempDefinePath();
-            var settings = new DbSchemaSettings();
+            var settings = new DbCategorySettings();
 
-            _access.SaveDbSchemaSettings(settings);
+            _access.SaveDbCategorySettings(settings);
 
-            Assert.True(File.Exists(DefinePathInfo.GetDbTableSettingsFilePath()));
+            Assert.True(File.Exists(DefinePathInfo.GetDbCategorySettingsFilePath()));
         }
 
         [Fact]
@@ -158,12 +158,12 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("SaveDefine(DbSchemaSettings) 應委派至 SaveDbSchemaSettings")]
-        public void SaveDefine_DbSchemaSettings_DelegatesToSaveDbSchemaSettings()
+        [DisplayName("SaveDefine(DbCategorySettings) 應委派至 SaveDbCategorySettings")]
+        public void SaveDefine_DbCategorySettings_DelegatesToSaveDbCategorySettings()
         {
             using var temp = new TempDefinePath();
-            _access.SaveDefine(DefineType.DbSchemaSettings, new DbSchemaSettings());
-            Assert.True(File.Exists(DefinePathInfo.GetDbTableSettingsFilePath()));
+            _access.SaveDefine(DefineType.DbCategorySettings, new DbCategorySettings());
+            Assert.True(File.Exists(DefinePathInfo.GetDbCategorySettingsFilePath()));
         }
 
         [Fact]

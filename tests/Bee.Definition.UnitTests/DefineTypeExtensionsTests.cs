@@ -11,7 +11,7 @@ namespace Bee.Definition.UnitTests
         [Theory]
         [InlineData(DefineType.SystemSettings, typeof(SystemSettings))]
         [InlineData(DefineType.DatabaseSettings, typeof(DatabaseSettings))]
-        [InlineData(DefineType.DbSchemaSettings, typeof(DbSchemaSettings))]
+        [InlineData(DefineType.DbCategorySettings, typeof(DbCategorySettings))]
         [InlineData(DefineType.ProgramSettings, typeof(ProgramSettings))]
         [InlineData(DefineType.TableSchema, typeof(TableSchema))]
         [InlineData(DefineType.FormSchema, typeof(FormSchema))]

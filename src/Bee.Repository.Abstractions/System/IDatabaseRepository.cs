@@ -17,9 +17,9 @@ namespace Bee.Repository.Abstractions.System
         /// Upgrades the table schema for the specified table.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
         /// <remarks>Returns whether the schema was upgraded.</remarks>
-        bool UpgradeTableSchema(string databaseId, string dbName, string tableName);
+        bool UpgradeTableSchema(string databaseId, string categoryId, string tableName);
     }
 }

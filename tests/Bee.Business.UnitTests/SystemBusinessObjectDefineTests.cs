@@ -48,18 +48,18 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("SaveDefine 本地呼叫 DbSchemaSettings 應成功執行 SaveDefineCore 路徑")]
-        public void SaveDefine_LocalCallDbSchemaSettings_Succeeds()
+        [DisplayName("SaveDefine 本地呼叫 DbCategorySettings 應成功執行 SaveDefineCore 路徑")]
+        public void SaveDefine_LocalCallDbCategorySettings_Succeeds()
         {
             var bo = new SystemBusinessObject(Guid.Empty, isLocalCall: true);
-            var getResult = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbSchemaSettings });
+            var getResult = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbCategorySettings });
             Assert.False(string.IsNullOrWhiteSpace(getResult.Xml));
 
             // SaveDefine 會寫入 BackendInfo.DefinePath；切換到暫存資料夾避免污染 tests/Define/。
             using var temp = new TempDefinePath();
             var saveResult = bo.SaveDefine(new SaveDefineArgs
             {
-                DefineType = DefineType.DbSchemaSettings,
+                DefineType = DefineType.DbCategorySettings,
                 Xml = getResult.Xml
             });
 

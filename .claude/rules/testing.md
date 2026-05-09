@@ -163,11 +163,11 @@ public class ApiPayloadOptionsFactoryTests { ... }
 
 ## 共享 fixture 檔案隔離
 
-`tests/Define/` 內的 XML 檔案（`SystemSettings.xml`、`DbSchemaSettings.xml` 等）是**多個測試專案共用的固定資料**，由 `DbGlobalFixture` 啟動時讀入、提供 schema / settings 種子。任何測試**不得寫入或修改**這些檔案——一旦被改寫（包括 round-trip 序列化造成的 xmlns 順序、縮排、子節點變動），下次測試讀入時會行為異常或 deserialize 失敗，造成連鎖測試錯誤。
+`tests/Define/` 內的 XML 檔案（`SystemSettings.xml`、`DbCategorySettings.xml` 等）是**多個測試專案共用的固定資料**，由 `DbGlobalFixture` 啟動時讀入、提供 schema / settings 種子。任何測試**不得寫入或修改**這些檔案——一旦被改寫（包括 round-trip 序列化造成的 xmlns 順序、縮排、子節點變動），下次測試讀入時會行為異常或 deserialize 失敗，造成連鎖測試錯誤。
 
 ### 規則
 
-- 任何呼叫 `SaveDefine` 系列方法（`SaveDbSchemaSettings`、`SaveSystemSettings`、`SaveTableSchema`、`SaveFormSchema`、`SaveDefine` 等）**或會間接觸發其呼叫的測試**，必須包覆 `using var temp = new TempDefinePath();`，將 `BackendInfo.DefinePath` 暫時切換至 `%TEMP%` 下的隔離資料夾
+- 任何呼叫 `SaveDefine` 系列方法（`SaveDbCategorySettings`、`SaveSystemSettings`、`SaveTableSchema`、`SaveFormSchema`、`SaveDefine` 等）**或會間接觸發其呼叫的測試**，必須包覆 `using var temp = new TempDefinePath();`，將 `BackendInfo.DefinePath` 暫時切換至 `%TEMP%` 下的隔離資料夾
 - `TempDefinePath` 位於 `tests/Bee.Tests.Shared/TempDefinePath.cs`，dispose 時自動還原原 path 並清理暫存目錄
 - 若測試需要先 `GetDefine` 讀取既有 fixture 再 `SaveDefine`：**先 Get（從原 path）→ 再切到 temp → 再 Save**，避免 GetDefine 在空 temp 內讀不到資料
 
@@ -175,15 +175,15 @@ public class ApiPayloadOptionsFactoryTests { ... }
 
 ```csharp
 [Fact]
-[DisplayName("SaveDbSchemaSettings 應寫入 DbSchemaSettings.xml")]
-public void SaveDbSchemaSettings_WritesFile()
+[DisplayName("SaveDbCategorySettings 應寫入 DbCategorySettings.xml")]
+public void SaveDbCategorySettings_WritesFile()
 {
     using var temp = new TempDefinePath();      // 先切到暫存
-    var settings = new DbSchemaSettings();
+    var settings = new DbCategorySettings();
 
-    _access.SaveDbSchemaSettings(settings);
+    _access.SaveDbCategorySettings(settings);
 
-    Assert.True(File.Exists(DefinePathInfo.GetDbTableSettingsFilePath()));
+    Assert.True(File.Exists(DefinePathInfo.GetDbCategorySettingsFilePath()));
 }
 ```
 
@@ -191,19 +191,19 @@ public void SaveDbSchemaSettings_WritesFile()
 
 ```csharp
 var bo = new SystemBusinessObject(Guid.Empty, isLocalCall: true);
-var getResult = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbSchemaSettings });
+var getResult = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbCategorySettings });
 
 using var temp = new TempDefinePath();          // 取完資料才切
 var saveResult = bo.SaveDefine(new SaveDefineArgs
 {
-    DefineType = DefineType.DbSchemaSettings,
+    DefineType = DefineType.DbCategorySettings,
     Xml = getResult.Xml
 });
 ```
 
 ### 已知違反案例（已修復）
 
-- `SystemBusinessObjectDefineTests.SaveDefine_LocalCallDbSchemaSettings_Succeeds` 曾未隔離，導致 `tests/Define/DbSchemaSettings.xml` 被覆寫（`<Tables>` 子節點清空、xmlns 順序變動）。已用 `TempDefinePath` 包覆修復。
+- `SystemBusinessObjectDefineTests.SaveDefine_LocalCallDbCategorySettings_Succeeds` 曾未隔離，導致 `tests/Define/DbCategorySettings.xml` 被覆寫（`<Tables>` 子節點清空、xmlns 順序變動）。已用 `TempDefinePath` 包覆修復。
 
 ## 常見 analyzer 退件規則
 

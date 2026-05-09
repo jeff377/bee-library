@@ -21,12 +21,12 @@ namespace Bee.ObjectCaching
         /// <summary>Gets the program settings cache.</summary>
         public static ProgramSettingsCache ProgramSettings => _programSettings.Value;
 
-        private static readonly Lazy<DbSchemaSettingsCache> _dbSchemaSettings = new Lazy<DbSchemaSettingsCache>(() => new DbSchemaSettingsCache());
-        /// <summary>Gets the database schema settings cache.</summary>
-        public static DbSchemaSettingsCache DbSchemaSettings => _dbSchemaSettings.Value;
+        private static readonly Lazy<DbCategorySettingsCache> _dbCategorySettings = new Lazy<DbCategorySettingsCache>(() => new DbCategorySettingsCache());
+        /// <summary>Gets the database category settings cache.</summary>
+        public static DbCategorySettingsCache DbCategorySettings => _dbCategorySettings.Value;
 
         private static readonly Lazy<TableSchemaCache> _tableSchema = new Lazy<TableSchemaCache>(() => new TableSchemaCache());
-        /// <summary>Gets the table schema cache, keyed by database name and table name.</summary>
+        /// <summary>Gets the table schema cache, keyed by category id and table name.</summary>
         public static TableSchemaCache TableSchema => _tableSchema.Value;
 
         private static readonly Lazy<FormSchemaCache> _formSchema = new Lazy<FormSchemaCache>(() => new FormSchemaCache());

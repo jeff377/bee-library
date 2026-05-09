@@ -49,24 +49,24 @@ namespace Bee.Definition
         }
 
         /// <summary>
-        /// Gets the file path for the database table list settings file.
+        /// Gets the file path for the database category settings file.
         /// </summary>
-        public static string GetDbTableSettingsFilePath()
+        public static string GetDbCategorySettingsFilePath()
         {
             string sFileName;
 
-            sFileName = "DbSchemaSettings.xml";
+            sFileName = "DbCategorySettings.xml";
             return GetDefinePath(sFileName);
         }
 
         /// <summary>
         /// Gets the file path for the specified table schema.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
-        public static string GetTableSchemaFilePath(string dbName, string tableName)
+        public static string GetTableSchemaFilePath(string categoryId, string tableName)
         {
-            return GetDefinePath(Path.Combine("TableSchema", dbName, $"{tableName}.TableSchema.xml"));
+            return GetDefinePath(Path.Combine("TableSchema", categoryId, $"{tableName}.TableSchema.xml"));
         }
 
         /// <summary>

@@ -7,20 +7,20 @@ using System.Text.Json.Serialization;
 namespace Bee.Definition.Settings
 {
     /// <summary>
-    /// Database schema settings.
+    /// Database category settings.
     /// </summary>
-    [Description("Database schema settings.")]
-    [TreeNode("Database Schema")]
-    public class DbSchemaSettings : IObjectSerializeFile
+    [Description("Database category settings.")]
+    [TreeNode("Database Categories")]
+    public class DbCategorySettings : IObjectSerializeFile
     {
-        private DbSchemaCollection? _databases = null;
+        private DbCategoryCollection? _categories = null;
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of <see cref="DbSchemaSettings"/>.
+        /// Initializes a new instance of <see cref="DbCategorySettings"/>.
         /// </summary>
-        public DbSchemaSettings()
+        public DbCategorySettings()
         {
         }
 
@@ -43,7 +43,7 @@ namespace Bee.Definition.Settings
         public void SetSerializeState(SerializeState serializeState)
         {
             SerializeState = serializeState;
-            _databases?.SetSerializeState(serializeState);
+            _categories?.SetSerializeState(serializeState);
         }
 
         /// <summary>
@@ -73,18 +73,18 @@ namespace Bee.Definition.Settings
         public DateTime CreateTime { get; } = DateTime.Now;
 
         /// <summary>
-        /// Gets the database schema collection.
+        /// Gets the database category collection.
         /// </summary>
-        [Description("Database schema collection.")]
+        [Description("Database category collection.")]
         [DefaultValue(null)]
-        public DbSchemaCollection? Databases
+        public DbCategoryCollection? Categories
         {
             get
             {
                 // Return null if the collection is empty during serialization
-                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _databases!)) { return null; }
-                if (_databases == null) { _databases = new DbSchemaCollection(this); }
-                return _databases;
+                if (SerializationUtilities.IsSerializeEmpty(SerializeState, _categories!)) { return null; }
+                if (_categories == null) { _categories = new DbCategoryCollection(this); }
+                return _categories;
             }
         }
     }

@@ -8,51 +8,51 @@ namespace Bee.Definition.Storage
 {
     /// <summary>
     /// A file-based implementation of define data read and write operations.
-    /// Provides file access for database schema settings, table schema, form schema, and form layout objects.
+    /// Provides file access for database category settings, table schema, form schema, and form layout objects.
     /// Manages persistence of all define data through XML serialization and deserialization.
     /// </summary>
     public class FileDefineStorage : IDefineStorage
     {
         /// <summary>
-        /// Gets the database schema settings.
+        /// Gets the database category settings.
         /// </summary>
-        public DbSchemaSettings? GetDbSchemaSettings()
+        public DbCategorySettings? GetDbCategorySettings()
         {
-            string filePath = DefinePathInfo.GetDbTableSettingsFilePath();
+            string filePath = DefinePathInfo.GetDbCategorySettingsFilePath();
             ValidateFilePath(filePath);
-            return XmlCodec.DeserializeFromFile<DbSchemaSettings>(filePath);
+            return XmlCodec.DeserializeFromFile<DbCategorySettings>(filePath);
         }
 
         /// <summary>
-        /// Saves the database schema settings.
+        /// Saves the database category settings.
         /// </summary>
-        /// <param name="settings">The database schema settings.</param>
-        public void SaveDbSchemaSettings(DbSchemaSettings settings)
+        /// <param name="settings">The database category settings.</param>
+        public void SaveDbCategorySettings(DbCategorySettings settings)
         {
-            string filePath = DefinePathInfo.GetDbTableSettingsFilePath();
+            string filePath = DefinePathInfo.GetDbCategorySettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
         }
 
         /// <summary>
-        /// Gets the table schema for the specified database and table.
+        /// Gets the table schema for the specified category and table.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>
-        public TableSchema? GetTableSchema(string dbName, string tableName)
+        public TableSchema? GetTableSchema(string categoryId, string tableName)
         {
-            string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableName);
+            string filePath = DefinePathInfo.GetTableSchemaFilePath(categoryId, tableName);
             ValidateFilePath(filePath);
             return XmlCodec.DeserializeFromFile<TableSchema>(filePath);
         }
 
         /// <summary>
-        /// Saves the table schema for the specified database.
+        /// Saves the table schema for the specified category.
         /// </summary>
-        /// <param name="dbName">The database name.</param>
+        /// <param name="categoryId">The database category id.</param>
         /// <param name="tableSchema">The table schema.</param>
-        public void SaveTableSchema(string dbName, TableSchema tableSchema)
+        public void SaveTableSchema(string categoryId, TableSchema tableSchema)
         {
-            string filePath = DefinePathInfo.GetTableSchemaFilePath(dbName, tableSchema.TableName);
+            string filePath = DefinePathInfo.GetTableSchemaFilePath(categoryId, tableSchema.TableName);
             XmlCodec.SerializeToFile(tableSchema, filePath);
         }
 

@@ -123,18 +123,18 @@ namespace Bee.Definition.UnitTests.Storage
         }
 
         [Fact]
-        [DisplayName("SaveDbSchemaSettings / GetDbSchemaSettings 應可寫入後讀回")]
-        public void SaveAndGetDbSchemaSettings_RoundTrips()
+        [DisplayName("SaveDbCategorySettings / GetDbCategorySettings 應可寫入後讀回")]
+        public void SaveAndGetDbCategorySettings_RoundTrips()
         {
             WithTempDefinePath(() =>
             {
                 // Arrange
                 var storage = new FileDefineStorage();
-                var settings = new DbSchemaSettings();
+                var settings = new DbCategorySettings();
 
                 // Act
-                storage.SaveDbSchemaSettings(settings);
-                var restored = storage.GetDbSchemaSettings();
+                storage.SaveDbCategorySettings(settings);
+                var restored = storage.GetDbCategorySettings();
 
                 // Assert
                 Assert.NotNull(restored);
@@ -142,8 +142,8 @@ namespace Bee.Definition.UnitTests.Storage
         }
 
         [Fact]
-        [DisplayName("GetDbSchemaSettings 檔案不存在應拋出 FileNotFoundException")]
-        public void GetDbSchemaSettings_FileNotFound_Throws()
+        [DisplayName("GetDbCategorySettings 檔案不存在應拋出 FileNotFoundException")]
+        public void GetDbCategorySettings_FileNotFound_Throws()
         {
             WithTempDefinePath(() =>
             {
@@ -151,7 +151,7 @@ namespace Bee.Definition.UnitTests.Storage
                 var storage = new FileDefineStorage();
 
                 // Act & Assert
-                Assert.Throws<FileNotFoundException>(() => storage.GetDbSchemaSettings());
+                Assert.Throws<FileNotFoundException>(() => storage.GetDbCategorySettings());
             });
         }
 
