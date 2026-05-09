@@ -87,11 +87,23 @@ namespace Bee.ObjectCaching.UnitTests
         public void SaveFormSchema_WritesFile()
         {
             using var temp = new TempDefinePath();
-            var schema = new FormSchema { ProgId = "P_Test" };
+            var schema = new FormSchema { ProgId = "P_Test", CategoryId = "common" };
 
             _access.SaveFormSchema(schema);
 
             Assert.True(File.Exists(DefinePathInfo.GetFormSchemaFilePath("P_Test")));
+        }
+
+        [Fact]
+        [DisplayName("SaveFormSchema 缺少 CategoryId 時應丟 InvalidOperationException")]
+        public void SaveFormSchema_ThrowsWhenCategoryIdEmpty()
+        {
+            using var temp = new TempDefinePath();
+            var schema = new FormSchema { ProgId = "P_NoCategory" };
+
+            var ex = Assert.Throws<InvalidOperationException>(() => _access.SaveFormSchema(schema));
+            Assert.Contains("P_NoCategory", ex.Message);
+            Assert.Contains("CategoryId", ex.Message);
         }
 
         [Fact]

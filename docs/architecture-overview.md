@@ -88,6 +88,7 @@ This is **pragmatic clean architecture** -- preserving dependency direction and 
 - **SQL generation basis**: Repository CRUD dynamically generates SQL from FormSchema
 - **UI derivation source**: FormLayout derives layout structure from FormSchema
 - **DB derivation source**: TableSchema derives table structure from FormSchema
+- **DbCategory routing**: `FormSchema.CategoryId` (required) determines which `DbCategory` the derived TableSchemas belong to (and thus the target connection / file path `TableSchema/{categoryId}/`)
 
 ### Definition Generation Flow
 
