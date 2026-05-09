@@ -38,5 +38,15 @@ namespace Bee.Db.UnitTests
 
             Assert.False(upgraded);
         }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("GetCommandText 資料表不存在時應回傳非空 SQL 字串")]
+        public void GetCommandText_TableNotExists_ReturnsNonEmptySql()
+        {
+            var builder = new TableSchemaBuilder("common_sqlserver");
+            // ft_department 定義存在但 DB 中未建立，差異非空
+            string sql = builder.GetCommandText("common", "ft_department");
+            Assert.False(string.IsNullOrWhiteSpace(sql));
+        }
     }
 }
