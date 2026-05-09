@@ -225,6 +225,12 @@ namespace Bee.ObjectCaching
         /// <param name="formSchema">The form schema.</param>
         public void SaveFormSchema(FormSchema formSchema)
         {
+            ArgumentNullException.ThrowIfNull(formSchema);
+
+            // CategoryId is required: it determines which DbCategory the schema's
+            // tables belong to. Reject persistence of schemas without it.
+            _ = TableSchemaGenerator.GetCategoryId(formSchema);
+
             FormSchemaCache oCache;
 
             // Save the form schema, then invalidate the cache

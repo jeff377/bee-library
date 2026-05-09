@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Definition.Forms;
 using Bee.Base.Data;
+using Bee.Base.Serialization;
 using Bee.Definition.Database;
 
 namespace Bee.Definition.UnitTests
@@ -8,6 +9,30 @@ namespace Bee.Definition.UnitTests
     [Collection("Initialize")]
     public class FormSchemaTests
     {
+        [Fact]
+        [DisplayName("FormSchema 新建物件 CategoryId 應為空字串（必填、無預設值）")]
+        public void CategoryId_NewInstance_DefaultsToEmpty()
+        {
+            var schema = new FormSchema();
+
+            Assert.Equal(string.Empty, schema.CategoryId);
+        }
+
+        [Fact]
+        [DisplayName("FormSchema CategoryId 應透過 XmlAttribute 序列化往返")]
+        public void CategoryId_RoundTripsThroughXml()
+        {
+            var schema = new FormSchema("Demo", "示範") { CategoryId = "sales" };
+
+            var xml = XmlCodec.Serialize(schema);
+            var restored = XmlCodec.Deserialize<FormSchema>(xml);
+
+            Assert.NotNull(restored);
+            Assert.Equal("sales", restored!.CategoryId);
+            Assert.Contains("CategoryId=\"sales\"", xml);
+        }
+
+
         [Fact]
         [DisplayName("FormSchema 建立部門表單定義應包含有效的主檔表")]
         public void CreateFormSchema_DepartmentWithRelations_HasMasterTable()

@@ -10,6 +10,28 @@ namespace Bee.Definition.Database
     public static class TableSchemaGenerator
     {
         /// <summary>
+        /// Returns the database category id of the form schema. This is the
+        /// category under which the generated table schemas should be persisted.
+        /// </summary>
+        /// <param name="formSchema">The form schema.</param>
+        /// <returns>The non-empty category id.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="formSchema"/> is null.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when the form schema does not specify a category id.</exception>
+        public static string GetCategoryId(FormSchema formSchema)
+        {
+            ArgumentNullException.ThrowIfNull(formSchema);
+
+            if (StringUtilities.IsEmpty(formSchema.CategoryId))
+            {
+                throw new InvalidOperationException(
+                    $"FormSchema '{formSchema.ProgId}' does not specify a CategoryId. " +
+                    "Set the CategoryId attribute on the FormSchema root element.");
+            }
+
+            return formSchema.CategoryId;
+        }
+
+        /// <summary>
         /// Generates a table schema from a form table definition.
         /// </summary>
         /// <param name="formTable">The form table.</param>

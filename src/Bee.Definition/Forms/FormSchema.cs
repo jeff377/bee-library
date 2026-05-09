@@ -99,6 +99,17 @@ namespace Bee.Definition.Forms
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the database category id (required).
+        /// Determines which <see cref="Settings.DbCategory"/> the tables in this schema
+        /// belong to, and thus where their generated <see cref="Database.TableSchema"/>
+        /// files are persisted.
+        /// </summary>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Database category id (required).")]
+        public string CategoryId { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the list field collection string, with multiple fields separated by commas.
         /// </summary>
         [XmlAttribute]

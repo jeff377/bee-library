@@ -21,6 +21,33 @@ namespace Bee.Definition.UnitTests.Database
         }
 
         [Fact]
+        [DisplayName("GetCategoryId 傳入 null 應拋出 ArgumentNullException")]
+        public void GetCategoryId_NullFormSchema_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => TableSchemaGenerator.GetCategoryId(null!));
+        }
+
+        [Fact]
+        [DisplayName("GetCategoryId CategoryId 為空字串應拋出 InvalidOperationException 並含 ProgId")]
+        public void GetCategoryId_EmptyCategoryId_ThrowsInvalidOperationException()
+        {
+            var schema = new FormSchema("Demo", "示範");
+
+            var ex = Assert.Throws<InvalidOperationException>(() => TableSchemaGenerator.GetCategoryId(schema));
+            Assert.Contains("Demo", ex.Message);
+            Assert.Contains("CategoryId", ex.Message);
+        }
+
+        [Fact]
+        [DisplayName("GetCategoryId 已設定 CategoryId 應回傳對應字串")]
+        public void GetCategoryId_CategoryIdSet_ReturnsValue()
+        {
+            var schema = new FormSchema("Demo", "示範") { CategoryId = "common" };
+
+            Assert.Equal("common", TableSchemaGenerator.GetCategoryId(schema));
+        }
+
+        [Fact]
         [DisplayName("Generate 有 DbTableName 時應使用 DbTableName 作為表名")]
         public void Generate_DbTableNameSpecified_UsesDbTableName()
         {

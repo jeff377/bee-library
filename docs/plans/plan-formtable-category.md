@@ -1,6 +1,6 @@
 # 計畫：FormSchema 加上 CategoryId 欄位，驅動 TableSchema 自動分類
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-05-09）**
 
 ## 背景
 

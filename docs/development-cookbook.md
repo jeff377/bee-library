@@ -199,6 +199,7 @@ FormSchema 是框架的定義中樞，同時驅動 UI、資料庫與驗證規則
 FormSchema（Single Source of Truth）
 ├── ProgId: "Employee"
 ├── DisplayName: "員工管理"
+├── CategoryId: "common"        ← 必填，決定衍生 TableSchema 落於哪個 DbCategory
 ├── Tables: FormTableCollection
 │   ├── Master: FormTable
 │   │   ├── TableName: "Employee"
@@ -212,6 +213,15 @@ FormSchema（Single Source of Truth）
 ├── → 衍生 FormLayout（UI 維度）
 └── → 驅動 SqlFormCommandBuilder（SQL 產生）
 ```
+
+### CategoryId 與 DbCategory 路由
+
+每個 FormSchema 必須指定 `CategoryId`，對應 `DbCategorySettings.xml` 中某個 `<DbCategory Id="...">` 的識別碼。`CategoryId` 同時決定：
+
+- 該 FormSchema 衍生的所有 `TableSchema` 應持久化於 `TableSchema/{categoryId}/` 子目錄
+- 該 FormSchema 對應的資料表所屬的資料庫連線（透過 DbCategory 推得）
+
+`SaveFormSchema` 會驗證 `CategoryId` 必填（透過 `TableSchemaGenerator.GetCategoryId(formSchema)`），未設定時拋出 `InvalidOperationException`。
 
 ### FormSchema → SQL 產生
 
