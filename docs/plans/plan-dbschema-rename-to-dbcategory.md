@@ -80,8 +80,34 @@
 - `LocalDefineAccess.GetTableSchema(...)` → 同上
 - `DefinePathInfo.GetTableSchemaFilePath(string dbName, string tableName)` → `GetTableSchemaFilePath(string categoryId, string tableName)`
 - `Bee.Db.Schema.TableSchemaBuilder` 系列方法 → 參數名 `categoryId`
+- `IDatabaseRepository.UpgradeTableSchema(string databaseId, string dbName, string tableName)` → `UpgradeTableSchema(string databaseId, string categoryId, string tableName)`
+- `DatabaseRepository.UpgradeTableSchema(...)` → 對齊
+- `SystemExecFuncHandler.UpgradeTableSchema` 內部變數 → `categoryId`
 
 > ⚠️ 注意：實體目錄結構 `Define/TableSchema/<categoryId>/<table>.TableSchema.xml` 不變（`<categoryId>` 仍然是 "common" / "company" 等字串值），只是參數命名語意對齊。
+
+### 兩種 `dbName` 的區分
+
+⚠️ **`Bee.Db` / `Bee.Repository` 內存在兩種 `dbName`，本 plan 只改邏輯分類，不動實體 DB 名稱**：
+
+| 出現位置 | 含義 | 動作 |
+|---------|------|------|
+| `DatabaseItem.DbName`、`DbConnectionManager.cs` 中 `databaseItem.DbName`、`DatabaseRepository.cs` 中 `item.DbName`、connection string `{@DbName}` placeholder | **實體資料庫名稱**，部署期決定 | ❌ 不改 |
+| `TableSchemaBuilder` 方法參數、`UpgradeTableSchema` 中間參數、最終傳給 `GetTableSchema(dbName, tableName)` 的值 | **邏輯分類**，等同 `DbCategory.Id` | ✅ 改為 `categoryId` |
+
+### ExecFunc API contract 改動（破壞性）
+
+`SysFuncIDs.UpgradeTableSchema` 的 JSON-RPC parameter 字串 `"DbName"` → `"CategoryId"`，屬對外 API contract 改動：
+
+```csharp
+// SystemExecFuncHandler.UpgradeTableSchema
+// 之前
+string dbName = args.Parameters.GetValue<string>("DbName");
+// 之後
+string categoryId = args.Parameters.GetValue<string>("CategoryId");
+```
+
+此 ExecFunc 目前無已知外部客戶端，故一次斷舊名、不保留向下相容。對應測試（`SystemBusinessObjectExtraTests`）內 `args.Parameters` key 字串需同步改為 `"CategoryId"`。
 
 ## 影響檔案清單
 
@@ -104,8 +130,10 @@
 | `src/Bee.ObjectCaching/CacheContainer.cs` | 屬性改名 |
 | `src/Bee.ObjectCaching/Define/DbSchemaSettingsCache.cs` | 重命名 |
 | `src/Bee.ObjectCaching/LocalDefineAccess.cs` | 實作對齊 |
-| `src/Bee.Db/Schema/TableSchemaBuilder.cs` | 參數名 `dbName` → `categoryId` |
-| 其他用到 `dbName` 參數的 `Bee.Db` 檔案 | 同上（執行時統一掃描補齊）|
+| `src/Bee.Db/Schema/TableSchemaBuilder.cs` | 5 個方法（`CreateComparer` / `Compare` / `CompareToDiff` / `GetCommandText` / `Execute`）參數 `dbName` → `categoryId` |
+| `src/Bee.Repository.Abstractions/System/IDatabaseRepository.cs` | `UpgradeTableSchema` 簽章 `dbName` → `categoryId` |
+| `src/Bee.Repository/System/DatabaseRepository.cs` | 實作對齊；內部 `builder.Execute(...)` 一併改 |
+| `src/Bee.Business/System/SystemExecFuncHandler.cs` | `args.Parameters.GetValue<string>("DbName")` → `"CategoryId"`；變數名同步改 |
 
 ### Test code（14 個檔案）
 
@@ -125,6 +153,10 @@
 | `tests/Bee.ObjectCaching.UnitTests/LocalDefineAccessSaveTests.cs` | symbol 更新 |
 | `tests/Bee.ObjectCaching.UnitTests/LocalDefineAccessTests.cs` | symbol 更新 |
 | `tests/Bee.Tests.Shared/TempDefinePath.cs` | doc 更新 |
+| `tests/Bee.Db.UnitTests/TableSchemaBuilderTests.cs` | 呼叫處字面值不變（`"common"` 仍合法）；`DisplayName` 中文若提及 dbName 則更新 |
+| `tests/Bee.Repository.UnitTests/DatabaseRepositoryTests.cs` | 常數 `ValidDbName` → `ValidCategoryId`；`DisplayName`「dbName」→「categoryId」 |
+| `tests/Bee.Business.UnitTests/SystemBusinessObjectExtraTests.cs` | ExecFunc parameter key `"DbName"` → `"CategoryId"` |
+| `tests/Bee.Tests.Shared/DbGlobalFixture.cs` | 字面值不變；註解若提及 dbName 則更新 |
 | `tests/Define/DbSchemaSettings.xml` | 改名 + 內容重寫 |
 
 ### 文件
@@ -167,13 +199,19 @@
 10. `CacheContainer.cs`：`DbSchemaSettings` 屬性 → `DbCategorySettings`
 11. `DbSchemaSettingsCache.cs` → `DbCategorySettingsCache.cs`，內容對齊
 12. `LocalDefineAccess.cs` / `RemoteDefineAccess.cs`：實作對齊
-13. `Bee.Db/Schema/TableSchemaBuilder.cs` 與相關呼叫端：`dbName` 參數 → `categoryId`
+13. `Bee.Db/Schema/TableSchemaBuilder.cs`：5 個方法參數 `dbName` → `categoryId`
+14. `Bee.Repository.Abstractions/System/IDatabaseRepository.cs` + `Bee.Repository/System/DatabaseRepository.cs`：`UpgradeTableSchema` 簽章 `dbName` → `categoryId`
+15. `Bee.Business/System/SystemExecFuncHandler.cs`：ExecFunc parameter key `"DbName"` → `"CategoryId"`，變數名同步改
+
+> ⚠️ 全程不改 `DatabaseItem.DbName` 與 connection string 的 `{@DbName}` placeholder（實體 DB 名稱，與邏輯分類無關）。
 
 ### Step 4 — 測試對齊
 
-14. 更新 14 個測試檔案的 symbol
-15. `DbSchemaTests.cs` 重命名為 `DbCategoryTests.cs`
-16. `tests/Define/DbSchemaSettings.xml` → `DbCategorySettings.xml`，內容重寫：
+16. 更新測試檔案的 symbol（含新增的 4 個 Db / Repository / Business 相關測試）
+17. `DbSchemaTests.cs` 重命名為 `DbCategoryTests.cs`
+18. `SystemBusinessObjectExtraTests` 中 ExecFunc parameter key `"DbName"` → `"CategoryId"`
+19. `DatabaseRepositoryTests` 中常數 `ValidDbName` → `ValidCategoryId`
+20. `tests/Define/DbSchemaSettings.xml` → `DbCategorySettings.xml`，內容重寫：
 
     ```xml
     <?xml version="1.0" encoding="utf-8"?>
@@ -191,20 +229,21 @@
 
 ### Step 5 — 文件對齊
 
-17. `docs/terminology.md`：加入新條目、移除舊條目
-18. README（Bee.Definition、Bee.ObjectCaching 各兩語版）
-19. `.claude/rules/testing.md` 範例
+21. `docs/terminology.md`：加入新條目、移除舊條目
+22. README（Bee.Definition、Bee.ObjectCaching 各兩語版）
+23. `.claude/rules/testing.md` 範例
 
 ### Step 6 — 驗證
 
-20. `dotnet build --configuration Release`
-21. `./test.sh`（本機 SQL Server / PostgreSQL container 啟動下）
-22. 抽查若干關鍵測試：`DtoSerializationTests` round-trip、`CacheContainerTests`、`LocalDefineAccessSaveTests`、`DbCategoryTests`
+24. `dotnet build --configuration Release`
+25. `./test.sh`（本機 SQL Server / PostgreSQL container 啟動下）
+26. 抽查若干關鍵測試：`DtoSerializationTests` round-trip、`CacheContainerTests`、`LocalDefineAccessSaveTests`、`DbCategoryTests`、`TableSchemaBuilderTests`、`DatabaseRepositoryTests`、`SystemBusinessObjectExtraTests`
 
 ## 風險與相容性
 
 - **無向下相容需求** — 既然 `DbSchema` 無實際 production 消費者，可一次斷掉所有舊命名。
 - **既有 production XML 檔案** —— 若部署環境已有 `DbSchemaSettings.xml`，需手動 rename 為 `DbCategorySettings.xml` 並更新 root element / 子元素標籤；可寫一次性遷移腳本，但不納入此 plan（按使用者目前說法是無此資料）。
+- **ExecFunc API contract（破壞性）** —— `UpgradeTableSchema` 的 JSON-RPC parameter `"DbName"` → `"CategoryId"`，任何外部呼叫者需同步調整。確認目前無外部消費者後直接斷舊名。
 - **build-ci.yml** —— 預期 strict build 仍能通過；唯一風險是漏改某個引用點。執行步驟結尾的 build + test 為把關。
 - **SonarCloud** —— 改動只是 rename，不引入新 code smell；rename 後 coverage line 計算會有少量浮動，可接受。
 
