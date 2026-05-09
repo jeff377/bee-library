@@ -38,5 +38,23 @@ namespace Bee.Db.UnitTests
 
             Assert.False(upgraded);
         }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("TableSchemaBuilder GetCommandText 指定未存在於 DB 的資料表應回傳非空 SQL")]
+        public void GetCommandText_NewTable_SqlServer_ReturnsNonEmptyScript()
+        {
+            var builder = new TableSchemaBuilder("common_sqlserver");
+            string sql = builder.GetCommandText("common", "ft_project");
+            Assert.NotEmpty(sql);
+        }
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("TableSchemaBuilder GetCommandText PostgreSQL 指定未存在於 DB 的資料表應回傳非空 SQL")]
+        public void GetCommandText_NewTable_PostgreSql_ReturnsNonEmptyScript()
+        {
+            var builder = new TableSchemaBuilder("common_postgresql");
+            string sql = builder.GetCommandText("common", "ft_project");
+            Assert.NotEmpty(sql);
+        }
     }
 }
