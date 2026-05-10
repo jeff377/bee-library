@@ -5,7 +5,7 @@ namespace Bee.Definition.Attributes
     /// <summary>
     /// Attribute for annotating API method access control.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class, Inherited = true)]
     public class ApiAccessControlAttribute : Attribute
     {
         /// <summary>
