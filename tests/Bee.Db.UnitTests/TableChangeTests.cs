@@ -67,5 +67,25 @@ namespace Bee.Db.UnitTests
             Assert.Same(newField, change.NewField);
             Assert.IsType<ITableChange>(change, exactMatch: false);
         }
+
+        [Fact]
+        [DisplayName("AddFieldChange.Describe 應回傳包含欄位名稱的描述字串")]
+        public void AddFieldChange_Describe_ReturnsCorrectString()
+        {
+            var field = new DbField("email", "Email", FieldDbType.String);
+            var change = new AddFieldChange(field);
+
+            Assert.Equal("AddFieldChange on 'email'", change.Describe());
+        }
+
+        [Fact]
+        [DisplayName("AddIndexChange.Describe 應回傳包含索引名稱的描述字串")]
+        public void AddIndexChange_Describe_ReturnsCorrectString()
+        {
+            var index = new DbTableIndex { Name = "ix_test_email" };
+            var change = new AddIndexChange(index);
+
+            Assert.Equal("AddIndexChange on 'ix_test_email'", change.Describe());
+        }
     }
 }
