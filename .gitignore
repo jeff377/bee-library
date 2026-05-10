@@ -29,6 +29,9 @@ docs/blogs/
 # Personal Claude slash commands (author-specific, not synced to GitHub)
 .claude/commands/
 
+# Claude Code agent worktrees (transient, local-only)
+.claude/worktrees/
+
 # AI agent prompts (proprietary, local-only)
 prompts/
 
