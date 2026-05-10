@@ -24,9 +24,11 @@ Bee.NET Framework 是一套採用 **N-Tier + Clean Architecture + MVVM** 混合�
 
 ## 📐 架構總覽
 
-關於 Bee.NET 的分層架構、資料流與設計決策，請參閱[架構總覽文件](docs/architecture-overview.md)。
+關於 Bee.NET 的分層架構、資料流與設計決策，請參閱[架構總覽文件](docs/architecture-overview.zh-TW.md)。
 
 關於 API 合約與 BO 參數的設計原則（Request/Response 與 Args/Result 的使用方式），請參閱 [API/BO 合約設計原則](docs/api-bo-contract-design.zh-TW.md)。
+
+完整開發者文件索引請見 [docs/README.zh-TW.md](docs/README.zh-TW.md)。
 
 ## 📦 組件說明
 

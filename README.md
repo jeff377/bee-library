@@ -28,6 +28,8 @@ For an in-depth look at the layered architecture, data flow, and design decision
 
 For guidelines on API Contract and BO Parameter design (Request/Response vs Args/Result), see the [API/BO Contract Design Principles](docs/api-bo-contract-design.md).
 
+For the full developer documentation index, see [docs/README.md](docs/README.md).
+
 ## 📦 Assembly
 
 ### Shared (Frontend / Backend)
