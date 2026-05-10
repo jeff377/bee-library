@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 
@@ -21,6 +20,14 @@ namespace Bee.Api.AspNetCore.UnitTests
             public IFileProvider ContentRootFileProvider { get; set; } = null!;
         }
 
+        private sealed class FakeServiceProvider : IServiceProvider
+        {
+            private readonly IHostEnvironment _env;
+            public FakeServiceProvider(IHostEnvironment env) => _env = env;
+            public object? GetService(Type serviceType) =>
+                serviceType == typeof(IHostEnvironment) ? _env : null;
+        }
+
         private sealed class TestableController : Controllers.ApiServiceController
         {
             public bool GetIsDevelopment() => IsDevelopment;
@@ -28,9 +35,8 @@ namespace Bee.Api.AspNetCore.UnitTests
 
         private static TestableController CreateController(string environmentName)
         {
-            var services = new ServiceCollection();
-            services.AddSingleton<IHostEnvironment>(new FakeHostEnvironment { EnvironmentName = environmentName });
-            var context = new DefaultHttpContext { RequestServices = services.BuildServiceProvider() };
+            var env = new FakeHostEnvironment { EnvironmentName = environmentName };
+            var context = new DefaultHttpContext { RequestServices = new FakeServiceProvider(env) };
             return new TestableController { ControllerContext = new ControllerContext { HttpContext = context } };
         }
 
