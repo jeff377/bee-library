@@ -11,29 +11,29 @@ This document visualizes the dependencies among the 11 `src/` projects of the Be
 ```mermaid
 graph BT
   subgraph Infrastructure
-    Base["Bee.Base<br/><small>net10.0</small>"]
-    Definition["Bee.Definition<br/><small>net10.0</small>"]
-    Caching["Bee.ObjectCaching<br/><small>net10.0</small>"]
+    Base["Bee.Base"]
+    Definition["Bee.Definition"]
+    Caching["Bee.ObjectCaching"]
   end
 
   subgraph DataAccess [Data Access]
-    RepoAbs["Bee.Repository.Abstractions<br/><small>net10.0</small>"]
-    Db["Bee.Db<br/><small>net10.0</small>"]
-    Repo["Bee.Repository<br/><small>net10.0</small>"]
+    RepoAbs["Bee.Repository.Abstractions"]
+    Db["Bee.Db"]
+    Repo["Bee.Repository"]
   end
 
   subgraph BusinessLogic [Business Logic]
-    Business["Bee.Business<br/><small>net10.0</small>"]
+    Business["Bee.Business"]
   end
 
   subgraph API
-    Contracts["Bee.Api.Contracts<br/><small>net10.0</small>"]
-    Core["Bee.Api.Core<br/><small>net10.0</small>"]
-    AspNet["Bee.Api.AspNetCore<br/><small>net10.0</small>"]
+    Contracts["Bee.Api.Contracts"]
+    Core["Bee.Api.Core"]
+    AspNet["Bee.Api.AspNetCore"]
   end
 
   subgraph ClientLayer [Client]
-    Client["Bee.Api.Client<br/><small>net10.0</small>"]
+    Client["Bee.Api.Client"]
   end
 
   Definition --> Base
