@@ -16,13 +16,13 @@ graph BT
     Caching["Bee.ObjectCaching<br/><small>net10.0</small>"]
   end
 
-  subgraph Data Access
+  subgraph DataAccess [Data Access]
     RepoAbs["Bee.Repository.Abstractions<br/><small>net10.0</small>"]
     Db["Bee.Db<br/><small>net10.0</small>"]
     Repo["Bee.Repository<br/><small>net10.0</small>"]
   end
 
-  subgraph Business Logic
+  subgraph BusinessLogic [Business Logic]
     Business["Bee.Business<br/><small>net10.0</small>"]
   end
 
@@ -32,7 +32,7 @@ graph BT
     AspNet["Bee.Api.AspNetCore<br/><small>net10.0</small>"]
   end
 
-  subgraph Client
+  subgraph ClientLayer [Client]
     Client["Bee.Api.Client<br/><small>net10.0</small>"]
   end
 
