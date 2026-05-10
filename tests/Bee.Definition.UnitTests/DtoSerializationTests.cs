@@ -249,7 +249,8 @@ namespace Bee.Definition.UnitTests
             var original = new DatabaseSettings();
             original.Items!.Add(new DatabaseItem
             {
-                Id = "common",
+                Id = "common_sqlserver",
+                CategoryId = "common",
                 DatabaseType = DatabaseType.SQLServer,
                 ConnectionString = "Server=.;Database=Test"
             });
@@ -261,7 +262,8 @@ namespace Bee.Definition.UnitTests
             // Assert
             Assert.NotNull(restored);
             Assert.Single(restored!.Items!);
-            Assert.Equal("common", restored.Items![0].Id);
+            Assert.Equal("common_sqlserver", restored.Items![0].Id);
+            Assert.Equal("common", restored.Items[0].CategoryId);
             Assert.Equal(DatabaseType.SQLServer, restored.Items[0].DatabaseType);
         }
 

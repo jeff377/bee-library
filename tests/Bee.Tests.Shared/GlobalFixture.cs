@@ -100,8 +100,8 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLServer));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing("common", DatabaseType.SQLServer, connStr);
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLServer), DatabaseType.SQLServer, connStr);
+            AddDatabaseItemIfMissing("common", "common", DatabaseType.SQLServer, connStr);
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLServer), "common", DatabaseType.SQLServer, connStr);
         }
 
         /// <summary>
@@ -117,7 +117,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.PostgreSQL));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL), DatabaseType.PostgreSQL, connStr);
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL), "common", DatabaseType.PostgreSQL, connStr);
         }
 
         /// <summary>
@@ -134,7 +134,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLite));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLite), DatabaseType.SQLite, connStr);
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLite), "common", DatabaseType.SQLite, connStr);
 
             // Hold one open connection for the entire process lifetime — see field comment.
             if (_sqliteKeepAlive == null)
@@ -159,7 +159,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.MySQL));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.MySQL), DatabaseType.MySQL, connStr);
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.MySQL), "common", DatabaseType.MySQL, connStr);
         }
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.Oracle));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.Oracle), DatabaseType.Oracle, connStr);
+            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.Oracle), "common", DatabaseType.Oracle, connStr);
         }
 
         /// <summary>
@@ -201,13 +201,14 @@ namespace Bee.Tests.Shared
         // 走 single-host 模式），各 assembly 都會新建 GlobalFixture，但 BackendInfo.DefineAccess 的
         // DatabaseSettings.Items 是 process-wide static — 若直接 Add 已存在的 Id，KeyedCollection
         // 會丟 ArgumentException 拖垮整個 fixture，連帶讓所有 [Collection("Initialize")] 測試失敗。
-        private static void AddDatabaseItemIfMissing(string id, DatabaseType dbType, string connStr)
+        private static void AddDatabaseItemIfMissing(string id, string categoryId, DatabaseType dbType, string connStr)
         {
             var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
             if (dbSettings.Items!.Contains(id)) return;
             dbSettings.Items.Add(new DatabaseItem
             {
                 Id = id,
+                CategoryId = categoryId,
                 DatabaseType = dbType,
                 ConnectionString = connStr
             });

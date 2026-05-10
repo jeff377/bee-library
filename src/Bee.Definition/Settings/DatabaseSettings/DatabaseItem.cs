@@ -25,6 +25,14 @@ namespace Bee.Definition.Settings
         }
 
         /// <summary>
+        /// Gets or sets the logical database category id this item belongs to (e.g. "common", "company", "log").
+        /// </summary>
+        [XmlAttribute]
+        [Description("Logical database category id this item belongs to (e.g. \"common\", \"company\", \"log\").")]
+        [DefaultValue("")]
+        public string CategoryId { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the display name.
         /// </summary>
         [XmlAttribute]
@@ -87,6 +95,7 @@ namespace Bee.Definition.Settings
             return new DatabaseItem
             {
                 Id = Id,
+                CategoryId = CategoryId,
                 DisplayName = DisplayName,
                 DatabaseType = DatabaseType,
                 ServerId = ServerId,
