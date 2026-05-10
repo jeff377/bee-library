@@ -219,6 +219,22 @@ namespace Bee.Api.Core.UnitTests
                 ApiAccessValidator.ValidateAccess(method!, context));
         }
 
+        [Fact]
+        [DisplayName("ValidateAccess LocalOnly API 遠端呼叫應拋 UnauthorizedAccessException")]
+        public void ValidateAccess_LocalOnlyApi_RemoteCall_Throws()
+        {
+            var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_LocalOnly));
+            var context = new ApiCallContext
+            {
+                Format = PayloadFormat.Plain,
+                IsLocalCall = false,
+                AccessToken = Guid.Empty
+            };
+
+            Assert.Throws<UnauthorizedAccessException>(() =>
+                ApiAccessValidator.ValidateAccess(method!, context));
+        }
+
         private class DummyApi
         {
             [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
