@@ -140,11 +140,12 @@ namespace Bee.Definition
             DatabaseId = configuration.DatabaseId;
             MaxDbCommandTimeout = configuration.MaxDbCommandTimeout;
             LogOptions = configuration.LogOptions;
-                       
+
             if (!SysInfo.IsSingleFile)
             {
                 // Initialize backend service instances
                 InitializeComponents(configuration);
+                ValidateComponents();
             }
 
             // Initialize security keys
@@ -183,6 +184,23 @@ namespace Bee.Definition
                 (Components.SessionInfoService, BackendDefaultTypes.SessionInfoService);
             EnterpriseObjectService = CreateOrDefault<IEnterpriseObjectService>
                 (Components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService);
+        }
+
+        /// <summary>
+        /// Validates that all required backend components are configured.
+        /// Throws <see cref="InvalidOperationException"/> at startup if any required component is missing.
+        /// </summary>
+        internal static void ValidateComponents()
+        {
+            if (ApiEncryptionKeyProvider == null)
+                throw new InvalidOperationException(
+                    $"BackendInfo.{nameof(ApiEncryptionKeyProvider)} is not configured. Ensure BackendInfo.Initialize() is called with a valid configuration.");
+            if (AccessTokenValidator == null)
+                throw new InvalidOperationException(
+                    $"BackendInfo.{nameof(AccessTokenValidator)} is not configured. Ensure BackendInfo.Initialize() is called with a valid configuration.");
+            if (BusinessObjectFactory == null)
+                throw new InvalidOperationException(
+                    $"BackendInfo.{nameof(BusinessObjectFactory)} is not configured. Ensure BackendInfo.Initialize() is called with a valid configuration.");
         }
 
         /// <summary>

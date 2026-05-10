@@ -59,7 +59,10 @@ namespace Bee.Api.Core.Validator
         }
 
         /// <summary>
-        /// Attempts to retrieve the <see cref="ApiAccessControlAttribute"/> from the method or its base definition.
+        /// Attempts to retrieve the <see cref="ApiAccessControlAttribute"/> using the following priority:
+        /// 1. Directly on the method.
+        /// 2. On the base method definition (override inheritance).
+        /// 3. On the declaring class (class-level default).
         /// </summary>
         /// <param name="method">The target method.</param>
         /// <returns>The attribute if found; otherwise, null.</returns>
@@ -70,9 +73,14 @@ namespace Bee.Api.Core.Validator
                 return attr;
 
             var baseMethod = method.GetBaseDefinition();
-            return baseMethod != method
-                ? baseMethod.GetCustomAttribute<ApiAccessControlAttribute>()
-                : null;
+            if (baseMethod != method)
+            {
+                attr = baseMethod.GetCustomAttribute<ApiAccessControlAttribute>();
+                if (attr != null)
+                    return attr;
+            }
+
+            return method.DeclaringType?.GetCustomAttribute<ApiAccessControlAttribute>();
         }
 
         /// <summary>

@@ -1,3 +1,4 @@
+using System.Reflection;
 using Bee.Base;
 using Bee.Base.Tracing;
 using Bee.Definition;
@@ -63,24 +64,25 @@ namespace Bee.Api.Core.JsonRpc
             var response = new JsonRpcResponse(request);
             try
             {
-                // Payload transmission format
                 var format = request.Params.Format;
-                // Get the API encryption key
+
+                // Parse method, create BO, and validate access BEFORE decryption.
+                // This ensures unauthenticated or unauthorized requests are rejected without
+                // performing any decryption work.
+                var (progId, action) = ParseMethod(request.Method);
+                var businessObject = CreateBusinessObject(AccessToken, progId);
+                var method = GetMethod(businessObject, action);
+                ApiAccessValidator.ValidateAccess(method, new ApiCallContext(AccessToken, IsLocalCall, format));
+
+                // Access confirmed: retrieve the encryption key and decrypt the payload.
                 byte[]? apiEncryptionKey = GetApiEncryptionKey(format);
-                // Restore the request payload content
                 ApiPayloadConverter.RestoreFrom(request.Params, format, apiEncryptionKey);
 
-                // Parse the ProgId and Action from the Method property
-                var (progId, action) = ParseMethod(request.Method);
-                // Create the business object and invoke the specified method
-                var value = await ExecuteMethodAsync(progId, action, request.Params.Value, format);
-
-                // Convert BO result to API response type by naming convention
+                // Invoke the method and convert the result.
+                var value = await InvokeMethodAsync(businessObject, method, request.Params.Value);
                 value = ApiOutputConverter.Convert(value!);
 
-                // Return the result
                 response.Result = new JsonRpcResult { Value = value };
-                // Set the response payload format
                 ApiPayloadConverter.TransformTo(response.Result, format, apiEncryptionKey);
                 Tracer.End(ctx);
             }
@@ -125,23 +127,26 @@ namespace Bee.Api.Core.JsonRpc
         }
 
         /// <summary>
-        /// Creates the business object and asynchronously executes the specified method.
+        /// Resolves the <see cref="MethodInfo"/> for the specified action on the given business object.
         /// </summary>
-        /// <param name="progId">The program identifier.</param>
-        /// <param name="action">The action to execute.</param>
-        /// <param name="value">The input argument for the action.</param>
-        /// <param name="format">The payload encoding format for transmission.</param>
-        private async Task<object?> ExecuteMethodAsync(string progId, string action, object? value, PayloadFormat format)
+        /// <param name="businessObject">The business object instance.</param>
+        /// <param name="action">The action name.</param>
+        private static MethodInfo GetMethod(object businessObject, string action)
         {
-            // Create an instance of the business object for the specified progId
-            var businessObject = CreateBusinessObject(AccessToken, progId);
             var method = businessObject.GetType().GetMethod(action);
             if (method == null)
-                throw new MissingMethodException($"Method '{action}' not found in business object '{progId}'.");
+                throw new MissingMethodException($"Method '{action}' not found in business object '{businessObject.GetType().Name}'.");
+            return method;
+        }
 
-            // Access validation
-            ApiAccessValidator.ValidateAccess(method, new ApiCallContext(AccessToken, IsLocalCall, format));
-
+        /// <summary>
+        /// Converts the input argument and asynchronously invokes the specified method on the business object.
+        /// </summary>
+        /// <param name="businessObject">The business object instance.</param>
+        /// <param name="method">The resolved method to invoke.</param>
+        /// <param name="value">The deserialized input argument.</param>
+        private static async Task<object?> InvokeMethodAsync(object businessObject, MethodInfo method, object? value)
+        {
             // Convert the input parameter to the expected BO type if needed
             var methodParams = method.GetParameters();
             if (methodParams.Length > 0 && value != null)
