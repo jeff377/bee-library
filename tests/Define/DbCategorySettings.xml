@@ -14,5 +14,8 @@
 				<TableItem TableName="ft_project" DisplayName="專案" />
 			</Tables>
 		</DbCategory>
+		<DbCategory Id="log" DisplayName="日誌資料庫">
+			<Tables />
+		</DbCategory>
 	</Categories>
 </DbCategorySettings>
