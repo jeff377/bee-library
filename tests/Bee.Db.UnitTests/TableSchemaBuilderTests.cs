@@ -44,7 +44,7 @@ namespace Bee.Db.UnitTests
         public void GetCommandText_NewTable_SqlServer_ReturnsNonEmptyScript()
         {
             var builder = new TableSchemaBuilder("common_sqlserver");
-            string sql = builder.GetCommandText("common", "ft_project");
+            string sql = builder.GetCommandText("company", "ft_project");
             Assert.NotEmpty(sql);
         }
 
@@ -53,7 +53,7 @@ namespace Bee.Db.UnitTests
         public void GetCommandText_NewTable_PostgreSql_ReturnsNonEmptyScript()
         {
             var builder = new TableSchemaBuilder("common_postgresql");
-            string sql = builder.GetCommandText("common", "ft_project");
+            string sql = builder.GetCommandText("company", "ft_project");
             Assert.NotEmpty(sql);
         }
     }

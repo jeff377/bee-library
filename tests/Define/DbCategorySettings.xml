@@ -7,5 +7,12 @@
 				<TableItem TableName="st_session" DisplayName="連線資料" />
 			</Tables>
 		</DbCategory>
+		<DbCategory Id="company" DisplayName="公司資料庫">
+			<Tables>
+				<TableItem TableName="ft_department" DisplayName="部門" />
+				<TableItem TableName="ft_employee" DisplayName="員工" />
+				<TableItem TableName="ft_project" DisplayName="專案" />
+			</Tables>
+		</DbCategory>
 	</Categories>
 </DbCategorySettings>
