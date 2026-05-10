@@ -255,11 +255,11 @@ namespace Bee.Api.Core.UnitTests
         private class ClassLevelApi
         {
             // 沒有方法層級屬性，應使用 Class 層級的 Public + Anonymous
-            public void Method_NoAttribute() { }
+            public static void Method_NoAttribute() { }
 
             // 方法層級屬性覆蓋 Class 層級屬性
             [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Anonymous)]
-            public void Method_WithAttribute() { }
+            public static void Method_WithAttribute() { }
         }
     }
 }
