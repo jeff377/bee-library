@@ -190,7 +190,7 @@ namespace Bee.Definition
         /// Validates that all required backend components are configured.
         /// Throws <see cref="InvalidOperationException"/> at startup if any required component is missing.
         /// </summary>
-        private static void ValidateComponents()
+        internal static void ValidateComponents()
         {
             if (ApiEncryptionKeyProvider == null)
                 throw new InvalidOperationException(

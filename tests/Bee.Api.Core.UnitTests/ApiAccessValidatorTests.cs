@@ -170,6 +170,55 @@ namespace Bee.Api.Core.UnitTests
             }
         }
 
+        [Fact]
+        [DisplayName("ValidateAccess 繼承 Base Method 的屬性：Override 未標記時應使用基底方法屬性")]
+        public void ValidateAccess_BaseMethodAttribute_InheritedByOverride_Succeeds()
+        {
+            var method = typeof(DerivedApi).GetMethod(nameof(DerivedApi.Method_Override));
+            var context = new ApiCallContext
+            {
+                Format = PayloadFormat.Plain,
+                IsLocalCall = false,
+                AccessToken = Guid.Empty
+            };
+
+            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        [DisplayName("ValidateAccess Class 層級屬性：方法未標記時應使用 Class 屬性")]
+        public void ValidateAccess_ClassLevelAttribute_UsedWhenMethodHasNone_Succeeds()
+        {
+            var method = typeof(ClassLevelApi).GetMethod(nameof(ClassLevelApi.Method_NoAttribute));
+            var context = new ApiCallContext
+            {
+                Format = PayloadFormat.Plain,
+                IsLocalCall = false,
+                AccessToken = Guid.Empty
+            };
+
+            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        [DisplayName("ValidateAccess 方法屬性應覆蓋 Class 層級屬性")]
+        public void ValidateAccess_MethodAttributeOverridesClassAttribute_MethodWins()
+        {
+            // Class 層級為 Public，方法標記為 Encrypted；Plain 傳輸應因方法屬性而被拒
+            var method = typeof(ClassLevelApi).GetMethod(nameof(ClassLevelApi.Method_WithAttribute));
+            var context = new ApiCallContext
+            {
+                Format = PayloadFormat.Plain,
+                IsLocalCall = false,
+                AccessToken = Guid.Empty
+            };
+
+            Assert.Throws<UnauthorizedAccessException>(() =>
+                ApiAccessValidator.ValidateAccess(method!, context));
+        }
+
         private class DummyApi
         {
             [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
@@ -188,6 +237,29 @@ namespace Bee.Api.Core.UnitTests
 
             [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
             public static void Method_Authenticated() { }
+        }
+
+        private class BaseApi
+        {
+            [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
+            public virtual void Method_Override() { }
+        }
+
+        private class DerivedApi : BaseApi
+        {
+            // 沒有標記 [ApiAccessControl]，應繼承 BaseApi.Method_Override 的屬性
+            public override void Method_Override() { }
+        }
+
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
+        private class ClassLevelApi
+        {
+            // 沒有方法層級屬性，應使用 Class 層級的 Public + Anonymous
+            public void Method_NoAttribute() { }
+
+            // 方法層級屬性覆蓋 Class 層級屬性
+            [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Anonymous)]
+            public void Method_WithAttribute() { }
         }
     }
 }

@@ -154,6 +154,62 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
+        [DisplayName("ValidateComponents 於 ApiEncryptionKeyProvider 為 null 時應拋 InvalidOperationException")]
+        public void ValidateComponents_ApiEncryptionKeyProviderNull_Throws()
+        {
+            var original = BackendInfo.ApiEncryptionKeyProvider;
+            try
+            {
+                BackendInfo.ApiEncryptionKeyProvider = null!;
+                Assert.Throws<InvalidOperationException>(() => BackendInfo.ValidateComponents());
+            }
+            finally
+            {
+                BackendInfo.ApiEncryptionKeyProvider = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("ValidateComponents 於 AccessTokenValidator 為 null 時應拋 InvalidOperationException")]
+        public void ValidateComponents_AccessTokenValidatorNull_Throws()
+        {
+            var original = BackendInfo.AccessTokenValidator;
+            try
+            {
+                BackendInfo.AccessTokenValidator = null!;
+                Assert.Throws<InvalidOperationException>(() => BackendInfo.ValidateComponents());
+            }
+            finally
+            {
+                BackendInfo.AccessTokenValidator = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("ValidateComponents 於 BusinessObjectFactory 為 null 時應拋 InvalidOperationException")]
+        public void ValidateComponents_BusinessObjectFactoryNull_Throws()
+        {
+            var original = BackendInfo.BusinessObjectFactory;
+            try
+            {
+                BackendInfo.BusinessObjectFactory = null!;
+                Assert.Throws<InvalidOperationException>(() => BackendInfo.ValidateComponents());
+            }
+            finally
+            {
+                BackendInfo.BusinessObjectFactory = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("ValidateComponents 於三個元件皆已配置時不拋例外")]
+        public void ValidateComponents_AllConfigured_Succeeds()
+        {
+            var ex = Record.Exception(() => BackendInfo.ValidateComponents());
+            Assert.Null(ex);
+        }
+
+        [Fact]
         [DisplayName("GetDatabaseItem 於 databaseId 為空字串時應拋 ArgumentNullException")]
         public void GetDatabaseItem_EmptyId_ThrowsArgumentNullException()
         {
