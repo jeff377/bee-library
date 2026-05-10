@@ -1,138 +1,140 @@
-# 開發限制與反模式
+# Development Constraints and Anti-Patterns
 
-> 本文件列出框架的設計限制與禁止事項，供 AI Coding 工具參考，避免產生違反框架慣例的程式碼。
-> 安全相關規範請參閱 [安全規範](../.claude/rules/security.md)。
+[繁體中文](development-constraints.zh-TW.md)
 
-## 初始化順序限制
+> This document lists the framework's design constraints and forbidden practices, as a reference for AI coding tools to avoid generating code that violates framework conventions.
+> For security-related rules, see [Security Rules](../.claude/rules/security.md).
 
-框架使用多個靜態入口點，必須依照以下順序初始化：
+## Initialization Order Constraints
 
-1. `BackendInfo.DefinePath` — 設定定義檔路徑
-2. `BackendInfo.DefineAccess` — 設定定義存取介面（`LocalDefineAccess` 或 `RemoteDefineAccess`）
-3. `SysInfo.Initialize(settings.CommonConfiguration)` — 系統資訊初始化
-4. `BackendInfo.Initialize(settings.BackendConfiguration)` — 後端元件與安全金鑰初始化
-5. `RepositoryInfo` — 首次存取時由靜態建構子自動初始化（依賴步驟 2）
-6. `CacheFunc` — 首次存取時透過 `Lazy<T>` 自動初始化
-7. `ApiServiceOptions.Initialize()` — API 服務元件初始化
+The framework uses several static entry points and must be initialized in the following order:
 
-### 違反後果
+1. `BackendInfo.DefinePath` — set the definition file path
+2. `BackendInfo.DefineAccess` — set the definition access interface (`LocalDefineAccess` or `RemoteDefineAccess`)
+3. `SysInfo.Initialize(settings.CommonConfiguration)` — system info initialization
+4. `BackendInfo.Initialize(settings.BackendConfiguration)` — backend components and security key initialization
+5. `RepositoryInfo` — initialized lazily by its static constructor on first access (depends on step 2)
+6. `CacheContainer` — lazily initialized via `Lazy<T>` on first access
+7. `ApiServiceOptions.Initialize()` — API service component initialization
 
-- 在步驟 2 之前存取 `RepositoryInfo` → 拋出 `InvalidOperationException`
-- 在步驟 4 之前使用加密功能 → 金鑰為空，加密失敗
-- 在步驟 7 之前處理 API 請求 → 序列化/壓縮/加密元件為 null
+### Consequences of Violation
 
-### 參考範例
+- Accessing `RepositoryInfo` before step 2 → throws `InvalidOperationException`
+- Using encryption before step 4 → keys are empty, encryption fails
+- Handling API requests before step 7 → serialization / compression / encryption components are null
 
-`tests/Bee.Tests.Shared/GlobalFixture.cs` 展示了正確的初始化順序。
+### Reference Example
 
-## 跨層禁止事項
+`tests/Bee.Tests.Shared/GlobalFixture.cs` demonstrates the correct initialization order.
 
-| 禁止行為 | 原因 | 正確做法 |
-|----------|------|----------|
-| API 層直接引用 Repository 層 | 違反分層架構 | 透過 Business Object 間接存取 |
-| Business Object 直接建立 `DbConnection` | 繞過連線管理與日誌 | 使用 `DbAccess` 類別 |
-| Client 端存取 `RepositoryInfo` | 僅限 Server 端使用 | 透過 `ApiConnector` 呼叫 API |
-| 跳過 Payload Pipeline 順序 | 破壞加解密一致性 | 維持 Serialize → Compress → Encrypt |
-| 在 BO 中直接回傳 API 型別 | BO 不應依賴 API 序列化格式 | 回傳 BO 型別，由 `ApiOutputConverter` 依命名慣例自動對應 |
+## Cross-Layer Forbidden Practices
 
-## ExecFunc 開發限制
+| Forbidden | Reason | Correct Approach |
+|-----------|--------|------------------|
+| API layer directly references the Repository layer | Violates layered architecture | Access indirectly through a Business Object |
+| Business Object directly creates a `DbConnection` | Bypasses connection management and logging | Use the `DbAccess` class |
+| Client side accesses `RepositoryInfo` | Server-only | Call the API via `ApiConnector` |
+| Skipping the Payload Pipeline order | Breaks encryption / decryption consistency | Maintain Serialize → Compress → Encrypt |
+| BO returns API types directly | BO must not depend on API serialization formats | Return BO types; `ApiOutputConverter` maps them automatically by naming convention |
 
-### 方法簽章規則
+## ExecFunc Development Constraints
 
-ExecFunc handler 方法必須遵守以下規則：
+### Method Signature Rules
 
-- **必須** 是 `public` 方法（反射呼叫需要）
-- **必須** 非泛型（`GetMethod()` 不支援泛型解析）
-- **固定簽章**：`void MethodName(ExecFuncArgs args, ExecFuncResult result)`
-- **FuncId 對應方法名稱**，大小寫敏感
-- 未標記 `[ExecFuncAccessControl]` 的方法預設需要 `Authenticated`
+ExecFunc handler methods must follow these rules:
 
-### 存取控制宣告
+- **Must** be `public` methods (reflection invocation requires it)
+- **Must** be non-generic (`GetMethod()` does not support generic resolution)
+- **Fixed signature**: `void MethodName(ExecFuncArgs args, ExecFuncResult result)`
+- **FuncId maps to method name**, case-sensitive
+- Methods without `[ExecFuncAccessControl]` default to `Authenticated`
+
+### Access Control Declaration
 
 ```csharp
-// 匿名存取
+// Anonymous access
 [ExecFuncAccessControl(ApiAccessRequirement.Anonymous)]
 public void PublicMethod(ExecFuncArgs args, ExecFuncResult result) { }
 
-// 需要登入（預設行為，可省略 Attribute）
+// Login required (default behavior; the attribute can be omitted)
 [ExecFuncAccessControl(ApiAccessRequirement.Authenticated)]
 public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 ```
 
-## 例外處理規則
+## Exception Handling Rules
 
-### Client 可見的例外類型
+### Client-Visible Exception Types
 
-`JsonRpcExecutor` 僅將以下例外類型原樣回傳給 Client：
+`JsonRpcExecutor` only forwards the following exception types to the client unchanged:
 
 - `UnauthorizedAccessException`
-- `ArgumentException`（含 `ArgumentNullException`、`ArgumentOutOfRangeException`）
+- `ArgumentException` (including `ArgumentNullException`, `ArgumentOutOfRangeException`)
 - `InvalidOperationException`
 - `NotSupportedException`
 - `FormatException`
 - `JsonRpcException`
 
-其他所有例外在正式環境一律轉為 `"Internal server error"`，開發環境（`IsDevelopment`）會回傳完整錯誤訊息。
+All other exceptions are converted to `"Internal server error"` in production. In development (`IsDevelopment`), the full error message is returned.
 
-### 設計意圖
+### Design Intent
 
-- 防止內部實作細節洩漏給 Client
-- 如需回傳特定錯誤訊息，使用上述類型或自訂 `JsonRpcException`
+- Prevent leakage of internal implementation details to the client
+- For specific error messages, use the types listed above or a custom `JsonRpcException`
 
-## FormSchema 設計限制
+## FormSchema Design Constraints
 
-- FormSchema 在執行時期為**唯讀**，不可動態新增欄位
-- `SqlFormCommandBuilder.BuildInsertCommand()` 基底實作拋出 `NotSupportedException`，子類別必須覆寫
-- TableSchema 手動調整的部分（精度、索引、預設值）在 FormSchema 更新時會被保留
-- `FormTable.DbTableName` 必須包含 schema 前綴（如 `dbo.Employee`）
+- FormSchema is **read-only** at runtime; fields cannot be added dynamically
+- `IFormCommandBuilder` (in `Bee.Db.Dml`) is the contract for CRUD command construction; the 5 DB providers each implement it independently (`SqlFormCommandBuilder` / `PgFormCommandBuilder` / `MySqlFormCommandBuilder` / `OracleFormCommandBuilder` / `SqliteFormCommandBuilder`), with no common base class
+- Manually adjusted parts of TableSchema (precision, indexes, default values) are preserved when FormSchema is updated
+- `FormTable.DbTableName`: optional field; when empty, `FormTable.TableName` is used as the physical table name. Naming should follow the [Database Naming Conventions](database-naming-conventions.md) (lowercase + snake_case)
 
-## 型別安全限制
+## Type Safety Constraints
 
-### MessagePack 型別白名單
+### MessagePack Type Whitelist
 
-`SafeTypelessFormatter` 和 `SafeMessagePackSerializerOptions` 實施型別白名單機制：
+`SafeTypelessFormatter` and `SafeMessagePackSerializerOptions` enforce a type whitelist:
 
-- 僅已註冊的型別可被反序列化
-- 未註冊的型別會拋出 `MessagePackSerializationException`
-- 新增 API 型別時必須同步註冊到 `ApiContractRegistry`
+- Only registered types can be deserialized
+- Unregistered types throw `MessagePackSerializationException`
+- New API types must be registered in `ApiContractRegistry`
 
-### API 契約命名慣例（強制）
+### API Contract Naming Convention (Mandatory)
 
-API Request/Response 與 BO Args/Result 型別必須遵守命名慣例，`ApiOutputConverter` 才能自動將 BO 回傳值對應到 API 型別（詳見 [ADR-007](adr/adr-007-convention-based-type-resolution.md)）：
+API Request / Response and BO Args / Result types must follow naming conventions so that `ApiOutputConverter` can automatically map BO return values to API types (see [ADR-007](adr/adr-007-convention-based-type-resolution.md)):
 
-| 層級 | 輸入 | 輸出 |
-|------|------|------|
-| BO（`Bee.Business`） | `{Action}Args` | `{Action}Result` |
-| API（`Bee.Api.Core`） | `{Action}Request` | `{Action}Response` |
-| Contract（`Bee.Api.Contracts`） | `I{Action}Request` | `I{Action}Response` |
+| Layer | Input | Output |
+|-------|-------|--------|
+| BO (`Bee.Business`) | `{Action}Args` | `{Action}Result` |
+| API (`Bee.Api.Core`) | `{Action}Request` | `{Action}Response` |
+| Contract (`Bee.Api.Contracts`) | `I{Action}Request` | `I{Action}Response` |
 
-- 偏離命名慣例的型別將無法自動轉換，BO 回傳值會直接流至用戶端造成型別錯誤
-- `ApiContractRegistry` 仍用於 Encoded / Encrypted 格式的 MessagePack Typeless 序列化白名單，但**不再需要手動呼叫 `Register`** 來建立回應映射
+- Types deviating from the naming convention will not be auto-converted; BO return values will pass through to the client and cause type errors
+- `ApiContractRegistry` is still used as a MessagePack Typeless serialization whitelist for Encoded / Encrypted formats, but **manual `Register` calls are no longer required** to set up response mapping
 
-## 帳號安全限制
+## Account Security Constraints
 
-- `LoginAttemptTracker` 預設規則：連續 5 次登入失敗後鎖定帳號 15 分鐘
-- 鎖定期間所有登入嘗試直接拒絕，不檢查密碼
-- 成功登入會重置失敗計數器
+- `LoginAttemptTracker` default policy: lock the account for 15 minutes after 5 consecutive failed login attempts
+- During lockout, all login attempts are rejected directly without checking the password
+- Successful login resets the failure counter
 
-## 資料庫 Schema 限制
+## Database Schema Constraints
 
-框架的 schema 定義（`TableSchema`）與升級機制（`TableUpgradeOrchestrator`）**刻意不支援**下列資料庫層元素：
+The framework's schema definition (`TableSchema`) and upgrade mechanism (`TableUpgradeOrchestrator`) **deliberately do not support** the following database-level elements:
 
-- **Foreign Key 約束**
-- **Trigger**
-- **View**
+- **Foreign Key constraints**
+- **Triggers**
+- **Views**
 
-### 設計原則
+### Design Principle
 
-Referential integrity、business rules 與衍生資料由**程式端（Business Object 層）**處理，schema 定義僅描述資料表結構（欄位、索引、主鍵）。
+Referential integrity, business rules, and derived data are handled by **the application code (Business Object layer)**; the schema definition only describes table structure (columns, indexes, primary keys).
 
-### 設計理由
+### Rationale
 
-- 資料庫層相依會讓跨 provider 支援與 schema 升級成本爆炸
-- 實務 ERP 場景下，BO 層已能完整表達業務規則，不需下推至 DB
-- 升級流程（新增／刪除欄位、改型別）不必處理 FK 暫存／trigger 重建／view 刷新等級聯議題
+- Database-layer dependencies make cross-provider support and schema upgrades extremely costly
+- In real-world ERP scenarios, the BO layer can fully express business rules; pushing them down to the DB is unnecessary
+- Upgrade flows (adding / removing columns, changing types) avoid cascading concerns such as FK suspension, trigger rebuilds, or view refreshes
 
-### 若真的需要 FK / Trigger / View
+### If You Truly Need FK / Trigger / View
 
-不透過框架，改由專案自訂的 migration 腳本手動維護。升級管線不會產生對應 DDL，也不保證相容。
+Maintain them with project-specific migration scripts outside the framework. The upgrade pipeline will not produce corresponding DDL and provides no compatibility guarantees.

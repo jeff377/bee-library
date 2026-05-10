@@ -1,146 +1,147 @@
-# 資料庫命名規範  
+# Database Naming Conventions
 
-本文件定義資料庫表結構及系統欄位的命名規則，適用於所有資料庫物件設計。  
-統一命名風格可避免跨資料庫時產生大小寫與語意不一致問題，並提升可維護性。  
+[繁體中文](database-naming-conventions.zh-TW.md)
 
----
-
-## 1️⃣ 資料庫整體規範  
-
-- 採用 **snake_case** 命名（小寫 + 底線）。  
-- **避免** 使用 PascalCase 或 camelCase，因為部分資料庫（例如 PostgreSQL、Oracle）在有引號時會區分大小寫。  
-- 所有 **資料表** 與 **欄位名稱** 均使用 **小寫字母**。  
-- 系統層級表（例如設定、登入、稽核等）以 `st_` 開頭。  
-- 業務／表單層級表以 `ft_` 開頭。  
+This document defines the naming rules for database tables, columns, and system fields, applicable to all database object designs.
+A unified naming style avoids cross-database case and semantic inconsistencies and improves maintainability.
 
 ---
 
-## 2️⃣ 資料表與欄位命名  
+## 1️⃣ Overall Database Conventions
 
-| 類型 | 命名格式 | 範例 | 備註 |
-|------|-----------|------|------|
-| **表名稱** | `小寫_底線` | `user_accounts` | 明確描述資料內容，表名以名詞為主，不使用動詞。 |
-| **欄位名稱** | `小寫_底線` | `user_id`, `created_at`, `dept_code` | 一律小寫，可使用必要且一致的縮寫；命名應能清楚表達用途。 |
-| **主鍵欄位** | `sys_no` | `sys_no` | 系統自動遞增流水號。 |
-| **唯一識別欄位** | `sys_rowid` | `sys_rowid` | GUID，全域唯一，不可修改。 |
-| **外鍵欄位** | `{entity}_rowid` | `manager_rowid` | 關聯至他表之 `sys_rowid`，由應用層維護關聯一致性。 |
+- Use **snake_case** (lowercase + underscore).
+- **Avoid** PascalCase or camelCase, since some databases (e.g. PostgreSQL, Oracle) become case-sensitive when identifiers are quoted.
+- All **table** and **column** names use **lowercase letters**.
+- System-level tables (settings, login, audit, etc.) use the `st_` prefix.
+- Business / form-level tables use the `ft_` prefix.
 
 ---
 
-## 3️⃣ 索引與預設值命名  
+## 2️⃣ Table and Column Naming
 
-| 類型 | 命名格式 | 範例 | 備註 |
-|------|-----------|------|------|
-| **主鍵索引** | `pk_表名` | `pk_employee` | `sys_no`，資料庫主鍵（流水號） |
-| **唯一識別索引** | `rx_表名` | `rx_employee` | `sys_rowid`，系統同步唯一鍵（全域唯一） |
-| **唯一資料索引** | `uk_表名` | `uk_employee` | `sys_id`，業務編號或單號唯一性 |
-| **外鍵索引** | `fk_表名_欄名` | `fk_employee_dept` | 關聯一致性（欄位對應他表 `sys_rowid`） |
-| **一般索引** | `ix_表名_欄位名` | `ix_users_email` | 查詢加速用（可複合或部分索引） |
-| **預設值約束** | `df_表名_欄位名` | `df_users_created_at` | 欄位預設值定義 |
-
+| Type | Format | Example | Notes |
+|------|--------|---------|-------|
+| **Table name** | `lowercase_underscore` | `user_accounts` | Clearly describe content; use nouns, not verbs. |
+| **Column name** | `lowercase_underscore` | `user_id`, `created_at`, `dept_code` | Always lowercase; consistent abbreviations allowed; names should clearly express purpose. |
+| **Primary key column** | `sys_no` | `sys_no` | Auto-incremented sequential number. |
+| **Unique row identifier** | `sys_rowid` | `sys_rowid` | GUID; globally unique; immutable. |
+| **Foreign key column** | `{entity}_rowid` | `manager_rowid` | References another table's `sys_rowid`; relational integrity is maintained by the application layer. |
 
 ---
 
-## 4️⃣ 系統欄位定義  
+## 3️⃣ Index and Default Value Naming
 
-| 欄位名稱 | 說明 | 備註 |
-|-----------|------|------|
-| `sys_no` | 系統流水號，自動遞增 | 主鍵 |
-| `sys_rowid` | 唯一識別碼（GUID），寫入後不可變 | 全域唯一識別 |
-| `sys_master_rowid` | 明細關聯主檔之邏輯外鍵 | 由應用層控管關聯 |
-| `sys_id` | 資料編號／單據號碼 | 業務層使用 |
-| `sys_name` | 資料名稱／顯示名稱 | 業務層使用 |
-| `sys_valid_date` | 生效日期（含當日） | 區間起始 |
-| `sys_invalid_date` | 失效日期（不含當日） | 區間結束 |
-| `sys_insert_time` | 寫入時間 | 系統自動填入 |
-| `sys_update_time` | 更新時間 | 系統自動填入 |
-| `sys_insert_user_rowid` | 建立者識別（邏輯外鍵） | 指向使用者 sys_rowid |
-| `sys_update_user_rowid` | 更新者識別（邏輯外鍵） | 指向使用者 sys_rowid |
+| Type | Format | Example | Notes |
+|------|--------|---------|-------|
+| **Primary key index** | `pk_table` | `pk_employee` | `sys_no`, the database primary key (sequential number) |
+| **Unique row identifier index** | `rx_table` | `rx_employee` | `sys_rowid`, the system-wide unique key (globally unique) |
+| **Unique data index** | `uk_table` | `uk_employee` | `sys_id`, business identifier or document number uniqueness |
+| **Foreign key index** | `fk_table_column` | `fk_employee_dept` | Relational integrity (column references another table's `sys_rowid`) |
+| **Generic index** | `ix_table_column` | `ix_users_email` | Query acceleration (composite or partial indexes allowed) |
+| **Default value constraint** | `df_table_column` | `df_users_created_at` | Column default value definition |
 
 ---
 
-## 5️⃣ 跨資料庫大小寫敏感性對照  
+## 4️⃣ System Field Definitions
 
-不同資料庫對「識別符」（table、column、index 名）與「資料內容」（字串值比對）的大小寫處理規則差異很大。  
-此節列出 Bee.NET 支援的 5 種資料庫的實際行為，作為 schema 設計與手寫 SQL 的參考依據。  
-
-### 5.1 識別符（table、column、index 名）  
-
-| 資料庫 | 未加引號識別符 | 加引號識別符 | 內部儲存 |
-|--------|--------------|------------|---------|
-| **SQL Server** | 不分大小寫¹ | 不分大小寫¹ | 保留原寫法，比對時不分大小寫 |
-| **PostgreSQL** | fold 至 **lowercase** | case-sensitive，原樣保留 | 依規則決定 |
-| **MySQL** | Table 名視 OS / `lower_case_table_names`²；Column / Index 名**永遠**不分大小寫 | 同左 | 同左 |
-| **SQLite** | 不分大小寫 | 不分大小寫 | 保留原寫法 |
-| **Oracle** | fold 至 **UPPERCASE** | case-sensitive，原樣保留 | 依規則決定 |
-
-¹ 取決於 database / column collation；Bee.NET 預期使用 `_CI_`（Case-Insensitive）類 collation，預設值即符合。  
-² Linux 預設敏感（table 名對應 filesystem 檔名）；Windows / macOS 預設不敏感。可由 `lower_case_table_names` 全域設定覆寫。  
-
-#### 同一 DB 內三者是否一致  
-
-| 資料庫 | Table / Column / Index 行為一致性 |
-|--------|------------------------------|
-| SQL Server | ✅ 一致（皆由 collation 決定） |
-| PostgreSQL | ✅ 一致（皆走「未引號 → lower、引號 → 原樣」） |
-| **MySQL** | ❌ **不一致**（table 視 OS、column / index 永遠不分） |
-| SQLite | ✅ 一致（皆不分大小寫） |
-| Oracle | ✅ 一致（皆走「未引號 → UPPER、引號 → 原樣」） |
-
-PostgreSQL 與 Oracle 是「**相反方向**」的 fold：同一支未加引號 SQL，PG 視為 lowercase、Oracle 視為 UPPERCASE。  
-這是這兩個 DB 在跨資料庫場景中最常造成問題的根因。  
-
-### 5.2 資料內容（字串值比對）  
-
-| 資料庫 | 預設字串比對 | Bee.NET 處理 |
-|--------|----------|-----------|
-| **SQL Server** | 不分大小寫¹ | 維持預設 |
-| **PostgreSQL** | **分大小寫**（byte 比對） | 維持預設；應用層需顯式使用 `ILIKE` 或 `LOWER()` |
-| **MySQL** | 不分大小寫¹ | 維持預設 |
-| **SQLite** | **分大小寫**（`BINARY`） | 可在 column 上加 `COLLATE NOCASE` |
-| **Oracle** | **分大小寫**（`BINARY`） | 連線啟動時設定 session NLS：`NLS_COMP='LINGUISTIC'` + `NLS_SORT='BINARY_CI'`，使 `=`、`LIKE` 改為不分大小寫 |
-
-¹ 取決於 column collation，預設 collation（SQL Server `*_CI_*`、MySQL `*_ci`）即不分大小寫。  
-
-> **注意：識別符與資料內容是兩個獨立層次**  
-> - 識別符敏感性由 SQL parser 階段決定，影響 schema 物件的查找  
-> - 資料內容敏感性由 SQL 執行階段決定，受 collation / NLS / `COLLATE` 子句影響  
-> - 兩層的設定彼此獨立，不會互相影響  
-
-### 5.3 Bee.NET adapter 的識別符策略  
-
-Framework 對 5 DB 採「**統一加引號 + DB 各自最自然的大小寫**」策略，由 adapter 在邊界處理 case 翻譯：  
-
-| DB | DDL/DML 中識別符儲存形式 | 引號方式 |
-|----|---------------------|---------|
-| SQL Server | 原樣（小寫，案例不敏感） | `[name]` |
-| PostgreSQL | **小寫**（fold 一致） | `"name"` |
-| MySQL | 原樣（小寫） | `` `name` `` |
-| SQLite | 原樣（小寫） | `"name"` |
-| **Oracle** | **UPPERCASE**（與 Oracle 預設 fold 方向一致） | `"NAME"` |
-
-Oracle 是 outlier：framework 在 emit DDL/DML 時將識別符 `.ToUpperInvariant()` 後再加引號（`OracleSchemaHelper.QuoteName` / `DbFunc.QuoteIdentifier(Oracle, ...)`），因此 Oracle 內部 data dictionary 看到的是 UPPERCASE（如 `ST_USER`、`SYS_NO`、`COMMENT`）。  
-讀取端（`OracleTableSchemaProvider`）在從 `USER_TAB_COLUMNS` 等 view 取回後，將識別符 `.ToLowerInvariant()` 才裝進 `TableSchema` / `DbField`。  
-
-> **抽象一致性**：`FormSchema`、`Bee.Repository`、`Bee.Business` 等上層只看得到 lowercase 識別符（如 `st_user`），不需要知道 Oracle 內部存的是 UPPERCASE。case 翻譯被完全封裝在 Oracle adapter 內部。  
-
-#### 為什麼 Oracle 採 UPPERCASE 儲存  
-
-1. **與 Oracle 慣例對齊**：DBA 在 SQL Developer / DBeaver / sqlplus 看到的物件名為 `ST_USER`，符合 Oracle 預設 unquoted-fold-to-UPPER 行為的視覺結果  
-2. **手寫 SQL 對 Oracle 友善**：`SELECT * FROM st_user` 由 Oracle parser fold 為 `ST_USER` 剛好對應 storage，**不必每處都加引號**（與其他 4 DB 維持 lowercase 直觀寫法一致）  
-3. **Reserved word 仍能用作欄位**：因為 framework 仍 emit `"COMMENT"`、`"ORDER"` 加引號形式，Oracle parser 視為 quoted identifier 而非 reserved word token，命名上不需禁用 reserved words  
-
-#### 命名規範的驗證面  
-
-第 1～4 節的「全小寫 + snake_case」命名規範，背後對應以下觀察：  
-
-1. **跨 DB 抽象上一律小寫**：FormSchema 中的識別符宣告永遠是 lowercase，由 framework 各 DB adapter 翻譯成該 DB 的儲存形式  
-2. **Oracle 內部 UPPERCASE 是封裝細節**：開發者寫 FormSchema、Repository、BO 時不需感知 Oracle 用 UPPERCASE，這是 adapter 邊界內部行為  
-3. **Reserved words 建議避開**：雖然 framework 加引號可規避 reserved word 衝突（5 DB 都豁免於 quoted identifier 規則），但仍建議避開 `comment`、`order`、`user`、`size`、`group`、`level`、`number` 等常見 reserved words，降低手寫 SQL 與工具相容的麻煩  
-4. **資料內容比對 case-insensitive**：framework 已抹平 5 DB 差異（Oracle 以 session NLS 補齊），手寫 SQL 寫 `WHERE name = 'jeff'` 在 5 DB 上行為一致  
+| Field Name | Description | Notes |
+|------------|-------------|-------|
+| `sys_no` | System sequential number, auto-incremented | Primary key |
+| `sys_rowid` | Unique identifier (GUID); immutable after insert | Globally unique identifier |
+| `sys_master_rowid` | Logical foreign key from a detail row to its master record | Relations maintained by the application layer |
+| `sys_id` | Record number / document number | Used by the business layer |
+| `sys_name` | Record name / display name | Used by the business layer |
+| `sys_valid_date` | Effective date (inclusive) | Range start |
+| `sys_invalid_date` | Expiry date (exclusive) | Range end |
+| `sys_insert_time` | Insert timestamp | Filled by the system |
+| `sys_update_time` | Update timestamp | Filled by the system |
+| `sys_insert_user_rowid` | Creator identifier (logical foreign key) | References user `sys_rowid` |
+| `sys_update_user_rowid` | Updater identifier (logical foreign key) | References user `sys_rowid` |
 
 ---
 
-## ✅ 結語  
+## 5️⃣ Cross-Database Case Sensitivity Reference
 
-統一的命名規範可確保資料庫結構清晰、一致，降低開發與維護的溝通成本，並在多系統整合時提升可靠性與擴充性。  
+Different databases handle the case of "identifiers" (table / column / index names) and "data values" (string comparisons) very differently.
+This section lists the actual behavior of the 5 databases supported by Bee.NET, as a reference for schema design and hand-written SQL.
+
+### 5.1 Identifiers (Table / Column / Index Names)
+
+| Database | Unquoted Identifier | Quoted Identifier | Internal Storage |
+|----------|---------------------|-------------------|------------------|
+| **SQL Server** | Case-insensitive¹ | Case-insensitive¹ | Original case preserved; comparison is case-insensitive |
+| **PostgreSQL** | Folded to **lowercase** | Case-sensitive, preserved as-is | Determined by the rule above |
+| **MySQL** | Tables depend on OS / `lower_case_table_names`²; columns / indexes are **always** case-insensitive | Same as left | Same as left |
+| **SQLite** | Case-insensitive | Case-insensitive | Original case preserved |
+| **Oracle** | Folded to **UPPERCASE** | Case-sensitive, preserved as-is | Determined by the rule above |
+
+¹ Depends on database / column collation; Bee.NET expects `_CI_` (Case-Insensitive) collations, which is the default.
+² On Linux, sensitive by default (table names map to filesystem files); on Windows / macOS, insensitive by default. Can be overridden globally via `lower_case_table_names`.
+
+#### Whether the Three Are Consistent Within a Single DB
+
+| Database | Table / Column / Index Behavior Consistency |
+|----------|---------------------------------------------|
+| SQL Server | ✅ Consistent (all governed by collation) |
+| PostgreSQL | ✅ Consistent (all follow "unquoted → lower, quoted → as-is") |
+| **MySQL** | ❌ **Inconsistent** (tables depend on OS; columns / indexes are always case-insensitive) |
+| SQLite | ✅ Consistent (all case-insensitive) |
+| Oracle | ✅ Consistent (all follow "unquoted → UPPER, quoted → as-is") |
+
+PostgreSQL and Oracle fold in **opposite directions**: the same unquoted SQL is interpreted as lowercase by PG and as UPPERCASE by Oracle.
+This is the root cause of most cross-database problems involving these two DBs.
+
+### 5.2 Data Values (String Comparison)
+
+| Database | Default String Comparison | Bee.NET Handling |
+|----------|---------------------------|------------------|
+| **SQL Server** | Case-insensitive¹ | Use defaults |
+| **PostgreSQL** | **Case-sensitive** (byte comparison) | Use defaults; the application must explicitly use `ILIKE` or `LOWER()` |
+| **MySQL** | Case-insensitive¹ | Use defaults |
+| **SQLite** | **Case-sensitive** (`BINARY`) | Add `COLLATE NOCASE` on the column if needed |
+| **Oracle** | **Case-sensitive** (`BINARY`) | Set session NLS at connection startup: `NLS_COMP='LINGUISTIC'` + `NLS_SORT='BINARY_CI'`, making `=` and `LIKE` case-insensitive |
+
+¹ Depends on column collation; the default collations (SQL Server `*_CI_*`, MySQL `*_ci`) are case-insensitive.
+
+> **Note: identifiers and data values are two independent layers**
+> - Identifier sensitivity is determined at the SQL parser stage and affects schema object lookup
+> - Data value sensitivity is determined at the SQL execution stage, governed by collation / NLS / `COLLATE` clauses
+> - The two layers are independent and do not affect each other
+
+### 5.3 Bee.NET Adapter's Identifier Strategy
+
+The framework adopts a "**uniformly quoted + each DB's most natural case**" strategy across the 5 DBs, with adapters handling case translation at the boundary:
+
+| DB | Identifier Storage Form in DDL/DML | Quoting |
+|----|------------------------------------|---------|
+| SQL Server | As-is (lowercase, case-insensitive) | `[name]` |
+| PostgreSQL | **Lowercase** (consistent with fold direction) | `"name"` |
+| MySQL | As-is (lowercase) | `` `name` `` |
+| SQLite | As-is (lowercase) | `"name"` |
+| **Oracle** | **UPPERCASE** (consistent with Oracle's default fold direction) | `"NAME"` |
+
+Oracle is the outlier: when emitting DDL/DML, the framework `.ToUpperInvariant()`s identifiers and then quotes them (via the extension method `DatabaseType.Oracle.QuoteIdentifier(...)`, defined in `Bee.Db.DatabaseTypeExtensions`), so Oracle's data dictionary stores them as UPPERCASE (e.g. `ST_USER`, `SYS_NO`, `COMMENT`).
+On the read side, `OracleTableSchemaProvider` `.ToLowerInvariant()`s identifiers retrieved from views like `USER_TAB_COLUMNS` before placing them into `TableSchema` / `DbField`.
+
+> **Abstraction consistency**: upper layers like `FormSchema`, `Bee.Repository`, and `Bee.Business` only see lowercase identifiers (e.g. `st_user`); they don't need to know that Oracle stores them as UPPERCASE internally. Case translation is fully encapsulated inside the Oracle adapter.
+
+#### Why Oracle Uses UPPERCASE Storage
+
+1. **Aligns with Oracle conventions**: in SQL Developer / DBeaver / sqlplus, DBAs see object names like `ST_USER`, matching the visual result of Oracle's default unquoted-fold-to-UPPER behavior.
+2. **Friendly to hand-written SQL on Oracle**: `SELECT * FROM st_user` is folded by the Oracle parser to `ST_USER`, matching storage exactly — **no need to quote everywhere** (consistent with the intuitive lowercase style used on the other 4 DBs).
+3. **Reserved words remain usable as columns**: because the framework still emits `"COMMENT"`, `"ORDER"` in quoted form, the Oracle parser treats them as quoted identifiers rather than reserved word tokens, so naming need not avoid reserved words.
+
+#### Validation Side of the Naming Convention
+
+The "all-lowercase + snake_case" naming convention in sections 1–4 corresponds to the following observations:
+
+1. **Cross-DB abstraction is uniformly lowercase**: identifier declarations in FormSchema are always lowercase; the framework's per-DB adapters translate to that DB's storage form.
+2. **Oracle's internal UPPERCASE is an encapsulated detail**: when developers write FormSchema, Repository, or BO code, they need not be aware that Oracle uses UPPERCASE — that is internal adapter behavior at the boundary.
+3. **Avoiding reserved words is recommended**: although the framework's quoting can sidestep reserved word collisions (all 5 DBs exempt quoted identifiers from reserved-word rules), it's still recommended to avoid common reserved words like `comment`, `order`, `user`, `size`, `group`, `level`, `number` to reduce friction with hand-written SQL and tools.
+4. **Data value comparison is case-insensitive**: the framework smooths over the differences across the 5 DBs (Oracle's session NLS makes up the gap), so hand-written `WHERE name = 'jeff'` behaves consistently across all 5 DBs.
+
+---
+
+## ✅ Conclusion
+
+A unified naming convention ensures clarity and consistency in database structure, lowers communication cost during development and maintenance, and improves reliability and extensibility when integrating across systems.

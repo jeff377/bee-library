@@ -1,38 +1,38 @@
-# Project Dependency Map
+# 專案相依性全景圖
 
-[繁體中文](dependency-map.zh-TW.md)
+[English](dependency-map.md)
 
-This document visualizes the dependencies among the 11 `src/` projects of the Bee.NET framework.
+本文件以視覺化方式呈現 Bee.NET 框架中 11 個 `src/` 專案之間的相依關係。
 
-**How to read**: an arrow A → B means "A depends on B"; the diagram is laid out bottom-up, with the most foundational packages (no dependencies) at the bottom.
+**閱讀方式**：箭頭方向 A → B 表示「A 依賴 B」；圖表由下而上排列，最底層為無相依性的基礎套件。
 
-## Dependency Diagram
+## 相依性圖表
 
 ```mermaid
 graph BT
-  subgraph Infrastructure
+  subgraph 基礎設施層
     Base["Bee.Base<br/><small>net10.0</small>"]
     Definition["Bee.Definition<br/><small>net10.0</small>"]
     Caching["Bee.ObjectCaching<br/><small>net10.0</small>"]
   end
 
-  subgraph Data Access
+  subgraph 資料存取層
     RepoAbs["Bee.Repository.Abstractions<br/><small>net10.0</small>"]
     Db["Bee.Db<br/><small>net10.0</small>"]
     Repo["Bee.Repository<br/><small>net10.0</small>"]
   end
 
-  subgraph Business Logic
+  subgraph 商業邏輯層
     Business["Bee.Business<br/><small>net10.0</small>"]
   end
 
-  subgraph API
+  subgraph API 層
     Contracts["Bee.Api.Contracts<br/><small>net10.0</small>"]
     Core["Bee.Api.Core<br/><small>net10.0</small>"]
     AspNet["Bee.Api.AspNetCore<br/><small>net10.0</small>"]
   end
 
-  subgraph Client
+  subgraph 用戶端
     Client["Bee.Api.Client<br/><small>net10.0</small>"]
   end
 
@@ -52,24 +52,24 @@ graph BT
   Client --> Core
 ```
 
-## External Package Dependencies
+## 外部相依套件
 
-| Project | External Packages |
-|---------|-------------------|
+| 專案 | 外部套件 |
+|------|----------|
 | Bee.Base | *(none)* |
 | Bee.Definition | MessagePack 3.x |
 | Bee.Db | *(none)* |
-| Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x, Microsoft.Extensions.FileProviders.Physical 10.x |
+| Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x、Microsoft.Extensions.FileProviders.Physical 10.x |
 | Bee.Api.AspNetCore | `FrameworkReference: Microsoft.AspNetCore.App` |
 | Bee.Api.Contracts / Bee.Api.Core / Bee.Api.Client / Bee.Business / Bee.Repository / Bee.Repository.Abstractions | *(none)* |
 
-## Target Framework Summary
+## 目標框架摘要
 
-All projects target a single framework: `net10.0`.
+所有專案皆以 `net10.0` 單一目標發布。
 
-## Architectural Notes
+## 架構要點
 
-- **Bee.Base** is the lowest-level foundation package with no internal dependencies.
-- **Bee.Definition** is the most depended-on project, with 6 direct dependents (Contracts, Db, RepoAbs, Caching, Business, Core).
-- **Bee.Api.AspNetCore** is the API hosting package, used for server-side deployment.
-- Both the client (Bee.Api.Client) and the server (Bee.Api.AspNetCore) share protocol logic via **Bee.Api.Core**, ensuring consistent serialization and encryption behavior.
+- **Bee.Base** 為最底層基礎套件，無任何內部相依性。
+- **Bee.Definition** 為被依賴次數最多的專案，共有 6 個直接相依者（Contracts、Db、RepoAbs、Caching、Business、Core）。
+- **Bee.Api.AspNetCore** 為 API 託管套件，適用於伺服器端部署。
+- 用戶端（Bee.Api.Client）與伺服器端（Bee.Api.AspNetCore）皆透過 **Bee.Api.Core** 共享協定邏輯，確保序列化與加解密行為一致。

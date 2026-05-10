@@ -1,38 +1,40 @@
-# 端到端開發指引
+# End-to-End Development Cookbook
 
-> 本文件說明 Bee.NET 框架的核心開發流程，幫助開發者（與 AI Coding 工具）理解從定義到 API 的完整串接方式。
+[繁體中文](development-cookbook.zh-TW.md)
 
-## 框架初始化順序
+> This document explains the core development flow of the Bee.NET framework, helping developers (and AI coding tools) understand the full chain from definition to API.
 
-框架使用靜態入口點進行初始化，順序至關重要。
+## Framework Initialization Order
 
-### 初始化流程
+The framework uses static entry points for initialization; order is critical.
+
+### Initialization Flow
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│ 1. BackendInfo.DefinePath = <定義檔路徑>              │
-│ 2. BackendInfo.DefineAccess = new LocalDefineAccess() │
-│    （或 RemoteDefineAccess）                          │
+│ 1. BackendInfo.DefinePath = <definition file path>  │
+│ 2. BackendInfo.DefineAccess = new LocalDefineAccess()│
+│    (or RemoteDefineAccess)                           │
 ├─────────────────────────────────────────────────────┤
-│ 3. settings = DefineAccess.GetSystemSettings()        │
-│ 4. SysInfo.Initialize(settings.CommonConfiguration)   │
+│ 3. settings = DefineAccess.GetSystemSettings()       │
+│ 4. SysInfo.Initialize(settings.CommonConfiguration)  │
 ├─────────────────────────────────────────────────────┤
-│ 5. BackendInfo.Initialize(                            │
-│      settings.BackendConfiguration,                   │
-│      autoCreateMasterKey: true)                       │
-│    → 初始化 Provider、安全金鑰                         │
+│ 5. BackendInfo.Initialize(                           │
+│      settings.BackendConfiguration,                  │
+│      autoCreateMasterKey: true)                      │
+│    → Initialize providers and security keys          │
 ├─────────────────────────────────────────────────────┤
-│ 6. RepositoryInfo（自動，首次存取觸發）                  │
-│ 7. CacheFunc（自動，Lazy<T> 延遲初始化）                │
-│ 8. ApiServiceOptions.Initialize(payloadOptions)       │
+│ 6. RepositoryInfo (auto, triggered on first access)  │
+│ 7. CacheContainer (auto, Lazy<T> deferred init)      │
+│ 8. ApiServiceOptions.Initialize(payloadOptions)      │
 └─────────────────────────────────────────────────────┘
 ```
 
-參考實作：`tests/Bee.Tests.Shared/GlobalFixture.cs`
+Reference implementation: `tests/Bee.Tests.Shared/GlobalFixture.cs`
 
-## 請求處理管線
+## Request Processing Pipeline
 
-### 完整請求流程
+### Full Request Flow
 
 ```mermaid
 sequenceDiagram
@@ -42,90 +44,90 @@ sequenceDiagram
     participant E as Executor JsonRpcExecutor
     participant B as Business Object
 
-    C->>C: 建立 JsonRpcRequest method = ProgId.Action
-    C->>C: Payload 轉換 Serialize Compress Encrypt
+    C->>C: Build JsonRpcRequest method = ProgId.Action
+    C->>C: Payload conversion Serialize Compress Encrypt
     C->>P: Execute(request)
 
     alt Remote HTTP
         P->>S: POST /api Headers: ApiKey, Bearer Token
-        S->>S: 驗證 Content-Type
-        S->>S: 解析 JsonRpcRequest
-        S->>S: 驗證 Authorization
+        S->>S: Validate Content-Type
+        S->>S: Parse JsonRpcRequest
+        S->>S: Validate Authorization
         S->>E: ExecuteAsync(request)
-    else Local 同進程
+    else Local in-process
         P->>E: ExecuteAsync(request)
     end
 
-    E->>E: 解析 Method 為 ProgId + Action
-    E->>E: 還原 Payload 解密 解壓 反序列化
-    E->>B: 建立 BO via BusinessObjectProvider
-    E->>E: ApiAccessValidator 驗證存取權限
-    E->>E: ApiInputConverter 轉換參數型別
-    E->>B: 反射呼叫 Action 方法
-    B-->>E: 回傳結果
-    E->>E: ApiOutputConverter 依命名慣例轉為 API Response
-    E->>E: 轉換 Payload 格式
+    E->>E: Parse Method into ProgId + Action
+    E->>E: Restore Payload Decrypt Decompress Deserialize
+    E->>B: Build BO via BusinessObjectProvider
+    E->>E: ApiAccessValidator validates access
+    E->>E: ApiInputConverter converts argument types
+    E->>B: Reflection-invoke Action method
+    B-->>E: Return result
+    E->>E: ApiOutputConverter converts to API Response by naming convention
+    E->>E: Convert Payload format
     E-->>C: JsonRpcResponse
 ```
 
-### Payload 格式
+### Payload Formats
 
-| 格式 | 處理流程 | 適用場景 |
-|------|----------|----------|
-| Plain | 無轉換 | Local 呼叫、開發除錯 |
-| Encoded | Serialize → Compress | 一般 API 呼叫 |
-| Encrypted | Serialize → Compress → Encrypt | 敏感資料傳輸 |
+| Format | Pipeline | Use Cases |
+|--------|----------|-----------|
+| Plain | No transformation | Local calls, dev debugging |
+| Encoded | Serialize → Compress | General API calls |
+| Encrypted | Serialize → Compress → Encrypt | Sensitive data transmission |
 
-降級規則：要求 Encrypted 但無加密金鑰時，自動降級為 Encoded。
+Downgrade rule: requesting Encrypted without an encryption key automatically downgrades to Encoded.
 
-## API 契約三層分離
+## API Contract Three-Tier Separation
 
-框架將 API 型別分為三層，避免序列化屬性汙染商業邏輯：
+The framework separates API types into three tiers, preventing serialization attributes from polluting business logic:
 
-### 層級對照
+### Tier Mapping
 
-| 層級 | 組件 | 基底類別 | 特徵 |
-|------|------|----------|------|
-| Contract | Bee.Api.Contracts | 無（純介面） | `ILoginRequest`、`ILoginResponse` 等 |
-| API Type | Bee.Api.Core | `ApiRequest` / `ApiResponse` | 實作 Contract 介面 + MessagePack `[Key]` 屬性 |
-| BO Type | Bee.Business | `BusinessArgs` / `BusinessResult` | 實作 Contract 介面，純 POCO |
+| Tier | Assembly | Base Class | Characteristics |
+|------|----------|------------|-----------------|
+| Contract | Bee.Api.Contracts | None (pure interface) | `ILoginRequest`, `ILoginResponse`, etc. |
+| API Type | Bee.Api.Core | `ApiRequest` / `ApiResponse` | Implements Contract interface + MessagePack `[Key]` attributes |
+| BO Type | Bee.Business | `BusinessArgs` / `BusinessResult` | Implements Contract interface, pure POCO |
 
-### 型別轉換流程
+### Type Conversion Flow
 
 ```text
-Client 發送 → LoginRequest (API Type, MessagePack)
+Client sends → LoginRequest (API Type, MessagePack)
     ↓ JsonRpcExecutor
-    ↓ ApiInputConverter 屬性對應（{Action}Request → {Action}Args）
-BO 接收 → LoginArgs (BO Type, POCO)
-    ↓ 商業邏輯處理
-BO 回傳 → LoginResult (BO Type, POCO)
-    ↓ ApiOutputConverter 命名慣例推導（{Action}Result → {Action}Response）
-Client 接收 → LoginResponse (API Type, MessagePack)
+    ↓ ApiInputConverter property mapping ({Action}Request → {Action}Args)
+BO receives → LoginArgs (BO Type, POCO)
+    ↓ business logic
+BO returns → LoginResult (BO Type, POCO)
+    ↓ ApiOutputConverter naming convention ({Action}Result → {Action}Response)
+Client receives → LoginResponse (API Type, MessagePack)
 ```
 
-### 關鍵元件
+### Key Components
 
-- **ApiInputConverter**：將 API Request 的屬性值對應到 BO Args（依屬性名稱匹配），並處理 HTTP 傳入的 `JsonElement`
-- **ApiOutputConverter**：執行後將 BO `{Action}Result` 以反射自動對應到 `{Action}Response`，結果以 `ConcurrentDictionary` 快取（詳見 [ADR-007](adr/adr-007-convention-based-type-resolution.md)）
-- **ApiContractRegistry**：供 MessagePack Typeless 序列化（Encoded / Encrypted 格式）使用的型別白名單，與輸出映射無關
+- **ApiInputConverter**: maps API Request property values to BO Args (matched by property name) and handles `JsonElement` from HTTP input
+- **ApiOutputConverter**: after execution, automatically maps BO `{Action}Result` to `{Action}Response` via reflection; results cached in `ConcurrentDictionary` (see [ADR-007](adr/adr-007-convention-based-type-resolution.md))
+- **ApiContractRegistry**: type whitelist used by MessagePack Typeless serialization (Encoded / Encrypted formats); unrelated to output mapping
 
-## ExecFunc 自訂函式模式
+## ExecFunc Custom Function Pattern
 
-ExecFunc 是框架提供的擴展機制，允許開發者新增自訂商業邏輯而不需修改框架核心。
+ExecFunc is the framework's extension mechanism, allowing developers to add custom business logic without modifying the framework core.
 
-### 開發步驟
+### Development Steps
 
-#### 1. 定義 Handler 類別
+#### 1. Define a Handler Class
 
-繼承或實作 `IExecFuncHandler`，在對應的 Handler 類別中新增方法：
+Inherit or implement `IExecFuncHandler`, and add methods to the corresponding handler class:
 
-- 表單層級：`FormExecFuncHandler`
-- 系統層級：`SystemExecFuncHandler`
+- Form-level: `FormExecFuncHandler`
+- System-level: `SystemExecFuncHandler`
 
-#### 2. 實作方法
+#### 2. Implement Methods
 
 ```csharp
-// 表單層級範例
+// Form-level example
 public class FormExecFuncHandler
 {
     /// <summary>
@@ -137,7 +139,7 @@ public class FormExecFuncHandler
     }
 }
 
-// 系統層級範例（需要認證）
+// System-level example (authentication required)
 public class SystemExecFuncHandler
 {
     /// <summary>
@@ -157,14 +159,14 @@ public class SystemExecFuncHandler
 }
 ```
 
-#### 3. Client 端呼叫
+#### 3. Client-Side Invocation
 
 ```csharp
-// 表單層級
+// Form-level
 var connector = new FormApiConnector("Employee", accessToken);
 var result = connector.ExecFunc("Hello", new ParameterCollection());
 
-// 系統層級
+// System-level
 var sysConnector = new SystemApiConnector(accessToken);
 var result = sysConnector.ExecFunc("UpgradeTableSchema", new ParameterCollection
 {
@@ -174,81 +176,81 @@ var result = sysConnector.ExecFunc("UpgradeTableSchema", new ParameterCollection
 });
 ```
 
-### 執行流程
+### Execution Flow
 
 ```text
 Client: connector.ExecFunc("Hello", params)
   → ApiConnector.Execute<ExecFuncResult>("ExecFunc", args)
   → JsonRpcRequest { method: "Employee.ExecFunc" }
-  → JsonRpcExecutor 呼叫 FormBusinessObject.ExecFunc()
+  → JsonRpcExecutor calls FormBusinessObject.ExecFunc()
   → BusinessObject.DoExecFunc()
   → BusinessFunc.InvokeExecFunc()
-    → handler.GetType().GetMethod("Hello")  // 反射取得方法
-    → 檢查 [ExecFuncAccessControl] 屬性
-    → method.Invoke(handler, args, result)  // 反射呼叫
-  → 回傳 ExecFuncResult
+    → handler.GetType().GetMethod("Hello")  // reflection lookup
+    → check [ExecFuncAccessControl] attribute
+    → method.Invoke(handler, args, result)  // reflection invocation
+  → return ExecFuncResult
 ```
 
-## FormSchema 驅動開發
+## FormSchema-Driven Development
 
-FormSchema 是框架的定義中樞，同時驅動 UI、資料庫與驗證規則。
+FormSchema is the framework's definition hub, simultaneously driving UI, database, and validation rules.
 
-### 核心概念
+### Core Concept
 
 ```text
-FormSchema（Single Source of Truth）
+FormSchema (Single Source of Truth)
 ├── ProgId: "Employee"
-├── DisplayName: "員工管理"
-├── CategoryId: "common"        ← 必填，決定衍生 TableSchema 落於哪個 DbCategory
+├── DisplayName: "Employee Management"
+├── CategoryId: "common"        ← required, determines which DbCategory the derived TableSchema belongs to
 ├── Tables: FormTableCollection
 │   ├── Master: FormTable
 │   │   ├── TableName: "Employee"
 │   │   ├── DbTableName: "dbo.Employee"
 │   │   └── Fields: FormFieldCollection
-│   └── Detail: FormTable（明細表）
+│   └── Detail: FormTable (detail table)
 │       ├── TableName: "EmployeeHistory"
 │       └── Fields: FormFieldCollection
 │
-├── → 衍生 TableSchema（資料庫維度）
-├── → 衍生 FormLayout（UI 維度）
-└── → 驅動 SqlFormCommandBuilder（SQL 產生）
+├── → derives TableSchema (database dimension)
+├── → derives FormLayout (UI dimension)
+└── → drives IFormCommandBuilder family (SQL generation)
 ```
 
-### CategoryId 與 DbCategory 路由
+### CategoryId and DbCategory Routing
 
-每個 FormSchema 必須指定 `CategoryId`，對應 `DbCategorySettings.xml` 中某個 `<DbCategory Id="...">` 的識別碼。`CategoryId` 同時決定：
+Every FormSchema must specify `CategoryId`, which corresponds to the `Id` of a `<DbCategory Id="...">` in `DbCategorySettings.xml`. `CategoryId` simultaneously determines:
 
-- 該 FormSchema 衍生的所有 `TableSchema` 應持久化於 `TableSchema/{categoryId}/` 子目錄
-- 該 FormSchema 對應的資料表所屬的資料庫連線（透過 DbCategory 推得）
+- TableSchemas derived from this FormSchema are persisted under the `TableSchema/{categoryId}/` subdirectory
+- Which database connection the tables of this FormSchema belong to (derived via DbCategory)
 
-`SaveFormSchema` 會驗證 `CategoryId` 必填（透過 `TableSchemaGenerator.GetCategoryId(formSchema)`），未設定時拋出 `InvalidOperationException`。
+`SaveFormSchema` validates that `CategoryId` is non-empty (via `TableSchemaGenerator.GetCategoryId(formSchema)`); throws `InvalidOperationException` when missing.
 
-### FormSchema → SQL 產生
+### FormSchema → SQL Generation
 
 ```text
-FormApiConnector 查詢資料
-  → FormBusinessObject 處理請求
-  → SqlFormCommandBuilder(progId)
-    → 從 BackendInfo.DefineAccess 取得 FormSchema
+FormApiConnector queries data
+  → FormBusinessObject handles the request
+  → IFormCommandBuilder (per-DB provider) is used
+    → Retrieves FormSchema from BackendInfo.DefineAccess
     → SelectCommandBuilder.Build(tableName, fields, filter, sort)
-      → IFromBuilder: 產生 FROM 子句（含 JOIN）
-      → IWhereBuilder: 從 FilterCondition 產生 WHERE 子句
-      → ISelectBuilder: 產生 SELECT 欄位清單
-      → ISortBuilder: 產生 ORDER BY 子句
-    → 回傳參數化的 DbCommandSpec
-  → DbAccess.Execute(spec) 執行查詢
+      → IFromBuilder: produce FROM clause (with JOIN)
+      → IWhereBuilder: produce WHERE clause from FilterCondition
+      → ISelectBuilder: produce SELECT field list
+      → ISortBuilder: produce ORDER BY clause
+    → returns parameterized DbCommandSpec
+  → DbAccess.Execute(spec) executes the query
 ```
 
-### FilterCondition 查詢建構
+### FilterCondition Query Construction
 
 ```csharp
-// 建立篩選條件
+// Build a filter
 var filter = new FilterGroup(LogicalOperator.And)
 {
     FilterCondition.Equal("Department", "IT"),
-    FilterCondition.Contains("Name", "王"),
+    FilterCondition.Contains("Name", "Wang"),
     FilterCondition.Between("Salary", 30000, 80000)
 };
 ```
 
-可用的比較運算子：`Equal`、`Like`、`Contains`、`StartsWith`、`Between`、`In`、`GreaterThan`、`LessThan` 等。
+Available comparison operators: `Equal`, `Like`, `Contains`, `StartsWith`, `Between`, `In`, `GreaterThan`, `LessThan`, etc.
