@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Definition.Database;
 using Microsoft.Data.SqlClient;
 
 namespace Bee.Db.UnitTests
@@ -26,7 +27,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("DbAccess(DbConnection) 連線為 null 應擲 ArgumentNullException")]
         public void Constructor_NullExternalConnection_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new DbAccess((System.Data.Common.DbConnection)null!));
+            Assert.Throws<ArgumentNullException>(() => new DbAccess((System.Data.Common.DbConnection)null!, DatabaseType.SQLServer));
         }
 
         [Fact]
@@ -34,7 +35,7 @@ namespace Bee.Db.UnitTests
         public void Execute_NullCommand_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
 
             Assert.Throws<ArgumentNullException>(() => dbAccess.Execute(null!));
         }
@@ -44,7 +45,7 @@ namespace Bee.Db.UnitTests
         public void Execute_NullTransaction_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
             var spec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT 1");
 
             Assert.Throws<ArgumentNullException>(() => dbAccess.Execute(spec, null!));
@@ -55,7 +56,7 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteAsync_NullCommand_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
 
             await Assert.ThrowsAsync<ArgumentNullException>(async () => await dbAccess.ExecuteAsync(null!));
         }
@@ -65,7 +66,7 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteAsync_NullTransaction_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
             var spec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT 1");
 
             await Assert.ThrowsAsync<ArgumentNullException>(
@@ -77,7 +78,7 @@ namespace Bee.Db.UnitTests
         public void ExecuteBatch_NullBatch_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
 
             Assert.Throws<ArgumentNullException>(() => dbAccess.ExecuteBatch(null!));
         }
@@ -87,7 +88,7 @@ namespace Bee.Db.UnitTests
         public void ExecuteBatch_EmptyCommands_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
             var batch = new DbBatchSpec();
             // Commands 預設為新的空集合
 
@@ -99,7 +100,7 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteBatchAsync_NullBatch_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
 
             await Assert.ThrowsAsync<ArgumentNullException>(
                 async () => await dbAccess.ExecuteBatchAsync(null!));
@@ -110,7 +111,7 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteBatchAsync_EmptyCommands_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
             var batch = new DbBatchSpec();
 
             await Assert.ThrowsAsync<ArgumentException>(
@@ -122,7 +123,7 @@ namespace Bee.Db.UnitTests
         public void UpdateDataTable_NullSpec_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
 
             Assert.Throws<ArgumentNullException>(() => dbAccess.UpdateDataTable(null!));
         }
@@ -132,7 +133,7 @@ namespace Bee.Db.UnitTests
         public void UpdateDataTable_AllNullCommands_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
             var spec = new DataTableUpdateSpec
             {
                 DataTable = new System.Data.DataTable(),
@@ -149,7 +150,7 @@ namespace Bee.Db.UnitTests
         public void Query_NullCommand_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
 
             Assert.Throws<ArgumentNullException>(() => dbAccess.Query<object>(null!));
         }
@@ -159,7 +160,7 @@ namespace Bee.Db.UnitTests
         public async Task QueryAsync_NullCommand_Throws()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
 
             await Assert.ThrowsAsync<ArgumentNullException>(
                 async () => await dbAccess.QueryAsync<object>(null!));
@@ -170,7 +171,7 @@ namespace Bee.Db.UnitTests
         public void ToString_ContainsTypeAndProvider()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
 
             var text = dbAccess.ToString();
 
@@ -184,7 +185,7 @@ namespace Bee.Db.UnitTests
         public void UpdateDataTable_NullDataTable_ThrowsArgumentException()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
             var spec = new DataTableUpdateSpec
             {
                 DataTable = null!,

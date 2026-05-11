@@ -37,7 +37,7 @@ namespace Bee.Db.UnitTests
 
         private static UpgradePlan PlanFor(TableSchema define, TableSchema? real, UpgradeOptions? options = null)
         {
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
             return new TableUpgradeOrchestrator(s_dialect).Plan(diff, options);
         }
 
@@ -103,7 +103,7 @@ namespace Bee.Db.UnitTests
             define.Fields!["display_name"].DbType = FieldDbType.Integer;
             define.Fields!["display_name"].Length = 0;
 
-            var diff = new TableSchemaComparer(define, BuildRealSchema()).CompareToDiff();
+            var diff = new TableSchemaComparer(define, BuildRealSchema(), DatabaseType.SQLServer).CompareToDiff();
             var orchestrator = new TableUpgradeOrchestrator(s_dialect);
 
             Assert.Throws<InvalidOperationException>(() => orchestrator.Plan(diff));
@@ -163,7 +163,7 @@ namespace Bee.Db.UnitTests
             var define = BuildDefineSchema();
             define.Fields!["name"].Length = 30; // 由 real 50 縮為 30
 
-            var diff = new TableSchemaComparer(define, BuildRealSchema()).CompareToDiff();
+            var diff = new TableSchemaComparer(define, BuildRealSchema(), DatabaseType.SQLServer).CompareToDiff();
             var orchestrator = new TableUpgradeOrchestrator(s_dialect);
 
             Assert.Throws<InvalidOperationException>(() => orchestrator.Plan(diff));
@@ -176,7 +176,7 @@ namespace Bee.Db.UnitTests
             var define = BuildDefineSchema();
             define.Fields!["name"].Length = 30;
 
-            var diff = new TableSchemaComparer(define, BuildRealSchema()).CompareToDiff();
+            var diff = new TableSchemaComparer(define, BuildRealSchema(), DatabaseType.SQLServer).CompareToDiff();
             var options = new UpgradeOptions { AllowColumnNarrowing = true };
             var plan = new TableUpgradeOrchestrator(s_dialect).Plan(diff, options);
 
@@ -192,7 +192,7 @@ namespace Bee.Db.UnitTests
             var orchestrator = new TableUpgradeOrchestrator(new NotSupportedDialect());
             var define = BuildDefineSchema();
             define.Fields!.Add("age", "Age", FieldDbType.Integer);
-            var diff = new TableSchemaComparer(define, BuildRealSchema()).CompareToDiff();
+            var diff = new TableSchemaComparer(define, BuildRealSchema(), DatabaseType.SQLServer).CompareToDiff();
 
             Assert.Throws<InvalidOperationException>(() => orchestrator.Plan(diff));
         }

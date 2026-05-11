@@ -46,7 +46,7 @@ namespace Bee.Db.UnitTests
 
         private static string BuildSql(TableSchema define, TableSchema? real)
         {
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.MySQL).CompareToDiff();
             var rebuilder = new MySqlDialectFactory().CreateTableRebuildCommandBuilder();
             return rebuilder.GetCommandText(diff);
         }
@@ -147,7 +147,7 @@ namespace Bee.Db.UnitTests
         public void GetCommandText_NewTableDiff_Throws()
         {
             var define = BuildDefineSchema();
-            var diff = new TableSchemaComparer(define, realTable: null).CompareToDiff();
+            var diff = new TableSchemaComparer(define, realTable: null, DatabaseType.MySQL).CompareToDiff();
             var rebuilder = new MySqlDialectFactory().CreateTableRebuildCommandBuilder();
 
             Assert.Throws<InvalidOperationException>(() => rebuilder.GetCommandText(diff));

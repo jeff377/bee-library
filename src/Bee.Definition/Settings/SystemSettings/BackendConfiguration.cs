@@ -1,7 +1,6 @@
 using Bee.Definition.Logging;
 using System.ComponentModel;
 using Bee.Base.Attributes;
-using Bee.Definition.Database;
 
 namespace Bee.Definition.Settings
 {
@@ -14,23 +13,7 @@ namespace Bee.Definition.Settings
     public class BackendConfiguration
     {
         /// <summary>
-        /// Database type.
-        /// </summary>
-        [Category("Database")]
-        [Description("Database type.")]
-        [DefaultValue(DatabaseType.SQLServer)]
-        public DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
-
-        /// <summary>
-        /// Default database ID.
-        /// </summary>
-        [Category("Database")]
-        [Description("Default database ID.")]
-        [DefaultValue("")]
-        public string DatabaseId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Maximum DbCommand timeout (seconds). 
+        /// Maximum DbCommand timeout (seconds).
         /// Default is 60 seconds. Set to 0 for unlimited.
         /// </summary>
         [Category("Database")]

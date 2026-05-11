@@ -16,6 +16,7 @@ namespace Bee.Db.Schema
     public class TableSchemaBuilder
     {
         private readonly IDialectFactory _dialect;
+        private readonly DatabaseType _databaseType;
 
         #region Constructors
 
@@ -28,6 +29,7 @@ namespace Bee.Db.Schema
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             DatabaseId = databaseId;
             var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
+            _databaseType = connInfo.DatabaseType;
             _dialect = DbDialectRegistry.Get(connInfo.DatabaseType);
         }
 
@@ -50,7 +52,7 @@ namespace Bee.Db.Schema
             var realTable = provider.GetTableSchema(tableName);
             // Defined table schema from the form definitions
             var defineTable = BackendInfo.DefineAccess.GetTableSchema(categoryId, tableName);
-            return new TableSchemaComparer(defineTable, realTable);
+            return new TableSchemaComparer(defineTable, realTable, _databaseType);
         }
 
         /// <summary>

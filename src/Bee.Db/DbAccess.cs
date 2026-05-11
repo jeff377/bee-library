@@ -1,7 +1,6 @@
 using System.Data;
 using System.Data.Common;
 using Bee.Base.Data;
-using Bee.Definition;
 
 using Bee.Db.Manager;
 using Bee.Definition.Database;
@@ -40,10 +39,11 @@ namespace Bee.Db
         /// The connection lifetime is managed by the caller.
         /// </summary>
         /// <param name="externalConnection">The externally provided database connection.</param>
-        public DbAccess(DbConnection externalConnection)
+        /// <param name="databaseType">The database type of the external connection.</param>
+        public DbAccess(DbConnection externalConnection, DatabaseType databaseType)
         {
             _externalConnection = externalConnection ?? throw new ArgumentNullException(nameof(externalConnection));
-            DatabaseType = BackendInfo.DatabaseType;
+            DatabaseType = databaseType;
             Provider = DbProviderRegistry.Get(DatabaseType)
                 ?? throw new InvalidOperationException($"Unknown database type: {DatabaseType}.");
         }

@@ -38,7 +38,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildDefineSchema();
             var real = BuildRealSchema();
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var sql = new SqlTableRebuildCommandBuilder().GetCommandText(diff);
 
@@ -53,7 +53,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildDefineSchema();
             var real = BuildRealSchema();
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var sql = new SqlTableRebuildCommandBuilder().GetCommandText(diff);
 
@@ -72,7 +72,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildDefineSchema();
             var real = BuildRealSchema(withExtraLegacyField: true);
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var sql = new SqlTableRebuildCommandBuilder().GetCommandText(diff);
 
@@ -84,7 +84,7 @@ namespace Bee.Db.UnitTests
         public void GetCommandText_NewTableDiff_Throws()
         {
             var define = BuildDefineSchema();
-            var diff = new TableSchemaComparer(define, realTable: null).CompareToDiff();
+            var diff = new TableSchemaComparer(define, realTable: null, DatabaseType.SQLServer).CompareToDiff();
 
             Assert.Throws<InvalidOperationException>(() => new SqlTableRebuildCommandBuilder().GetCommandText(diff));
         }

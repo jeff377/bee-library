@@ -98,7 +98,7 @@ namespace Bee.Db.UnitTests
             table.Rows[0]["note"] = rnd.ToString(CultureInfo.InvariantCulture);
 
             var tableSchema = BackendInfo.DefineAccess.GetTableSchema("common", "st_user");
-            var builder = new TableSchemaCommandBuilder(tableSchema);
+            var builder = new TableSchemaCommandBuilder(dbAccess.DatabaseType, tableSchema);
             var updateSpec = builder.BuildUpdateSpec(table);
             updateSpec.UseTransaction = true;
             updateSpec.IsolationLevel = IsolationLevel.ReadCommitted;

@@ -49,16 +49,6 @@ namespace Bee.Definition
         public static byte[] DatabaseEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
-        /// Gets or sets the database type.
-        /// </summary>
-        public static DatabaseType DatabaseType { get; set; } = DatabaseType.SQLServer;
-
-        /// <summary>
-        /// Gets or sets the default database identifier.
-        /// </summary>
-        public static string DatabaseId { get; set; } = string.Empty;
-
-        /// <summary>
         /// Gets or sets the maximum DbCommand timeout (seconds). Default is 60 seconds; 0 means unlimited.
         /// </summary>
         public static int MaxDbCommandTimeout { get; set; } = 60;
@@ -136,8 +126,6 @@ namespace Bee.Definition
         /// <param name="autoCreateMasterKey">Whether to automatically create the master key if it does not exist.</param>
         public static void Initialize(BackendConfiguration configuration, bool autoCreateMasterKey)
         {
-            DatabaseType = configuration.DatabaseType;
-            DatabaseId = configuration.DatabaseId;
             MaxDbCommandTimeout = configuration.MaxDbCommandTimeout;
             LogOptions = configuration.LogOptions;
 
@@ -146,6 +134,7 @@ namespace Bee.Definition
                 // Initialize backend service instances
                 InitializeComponents(configuration);
                 ValidateComponents();
+                ValidateDatabaseSettings();
             }
 
             // Initialize security keys
@@ -184,6 +173,20 @@ namespace Bee.Definition
                 (Components.SessionInfoService, BackendDefaultTypes.SessionInfoService);
             EnterpriseObjectService = CreateOrDefault<IEnterpriseObjectService>
                 (Components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService);
+        }
+
+        /// <summary>
+        /// Validates that the database settings contain the framework-required
+        /// system database entry. The framework expects a <c>DatabaseItem</c> with
+        /// <c>Id="common"</c> for shared system tables (e.g., st_user, st_session).
+        /// Throws <see cref="InvalidOperationException"/> at startup if missing.
+        /// </summary>
+        internal static void ValidateDatabaseSettings()
+        {
+            var settings = DefineAccess.GetDatabaseSettings();
+            if (settings.Items == null || !settings.Items.Contains(DbCategoryIds.Common))
+                throw new InvalidOperationException(
+                    $"DatabaseSettings must contain a DatabaseItem with Id='{DbCategoryIds.Common}'.");
         }
 
         /// <summary>

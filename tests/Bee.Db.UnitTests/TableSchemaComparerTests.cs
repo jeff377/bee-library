@@ -41,7 +41,7 @@ namespace Bee.Db.UnitTests
         public void Compare_NullRealTable_MarksTableAsNew()
         {
             var define = BuildBaseSchema();
-            var comparer = new TableSchemaComparer(define, null);
+            var comparer = new TableSchemaComparer(define, null, DatabaseType.SQLServer);
 
             var result = comparer.Compare();
 
@@ -54,7 +54,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildBaseSchema();
             var real = BuildRealSchema();
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
 
             var result = comparer.Compare();
 
@@ -69,7 +69,7 @@ namespace Bee.Db.UnitTests
             define.Fields!.Add("age", "Age", FieldDbType.Integer);
 
             var real = BuildRealSchema();
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
 
             var result = comparer.Compare();
 
@@ -85,7 +85,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Fields!["name"].Length = 30;  // 與 define 的 50 不同
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             var result = comparer.Compare();
 
             Assert.Equal(DbUpgradeAction.Upgrade, result.UpgradeAction);
@@ -100,7 +100,7 @@ namespace Bee.Db.UnitTests
             define.Indexes!.Add("ix_{0}_name", "name", false);
             var real = BuildRealSchema();
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             var result = comparer.Compare();
 
             Assert.Equal(DbUpgradeAction.Upgrade, result.UpgradeAction);
@@ -119,7 +119,7 @@ namespace Bee.Db.UnitTests
             // 真實表的索引名稱已格式化為 "ix_st_demo_name"，且 unique 標記不同
             real.Indexes!.Add("ix_st_demo_name", "name", false);
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             var result = comparer.Compare();
 
             Assert.Equal(DbUpgradeAction.Upgrade, result.UpgradeAction);
@@ -137,7 +137,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Fields!.Add("legacy_col", "Legacy", FieldDbType.String, 10);
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             var result = comparer.Compare();
 
             Assert.Equal(DbUpgradeAction.Upgrade, result.UpgradeAction);
@@ -150,7 +150,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildBaseSchema();
             var real = BuildRealSchema();
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
 
             Assert.Same(define, comparer.DefineTable);
             Assert.Same(real, comparer.RealTable);
@@ -165,7 +165,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.DisplayName = string.Empty; // DB 尚未寫入
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             var result = comparer.Compare();
 
             Assert.Equal(DbUpgradeAction.None, result.UpgradeAction);
@@ -184,7 +184,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Fields!["name"].Caption = "舊名稱"; // DB 已存在不同值
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             var result = comparer.Compare();
 
             Assert.Equal(DbUpgradeAction.None, result.UpgradeAction);
@@ -206,7 +206,7 @@ namespace Bee.Db.UnitTests
             real.DisplayName = "DB 既有表說明";
             real.Fields!["name"].Caption = "DB 既有欄位說明";
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             var result = comparer.Compare();
 
             Assert.Equal(DbUpgradeAction.None, result.UpgradeAction);
@@ -222,7 +222,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Fields!["name"].Length = 30; // 觸發 schema Upgrade
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             var result = comparer.Compare();
 
             Assert.Equal(DbUpgradeAction.Upgrade, result.UpgradeAction);
@@ -237,7 +237,7 @@ namespace Bee.Db.UnitTests
             var define = BuildBaseSchema();
             define.DisplayName = "示範資料表";
 
-            var comparer = new TableSchemaComparer(define, null);
+            var comparer = new TableSchemaComparer(define, null, DatabaseType.SQLServer);
             comparer.Compare();
 
             Assert.Empty(comparer.DescriptionChanges);
@@ -251,7 +251,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Fields!.Add("legacy_col", "舊欄位說明", FieldDbType.String, 10);
 
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
             comparer.Compare();
 
             // legacy_col 不在 define 中，不應產生對應的 Column DescriptionChange
@@ -265,7 +265,7 @@ namespace Bee.Db.UnitTests
         public void CompareToDiff_NullRealTable_ReturnsNewTableDiffWithNoChanges()
         {
             var define = BuildBaseSchema();
-            var comparer = new TableSchemaComparer(define, null);
+            var comparer = new TableSchemaComparer(define, null, DatabaseType.SQLServer);
 
             var diff = comparer.CompareToDiff();
 
@@ -279,7 +279,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildBaseSchema();
             var real = BuildRealSchema();
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
 
             var diff = comparer.CompareToDiff();
 
@@ -295,7 +295,7 @@ namespace Bee.Db.UnitTests
             define.Fields!.Add("age", "Age", FieldDbType.Integer);
             var real = BuildRealSchema();
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var addChange = Assert.Single(diff.Changes.OfType<AddFieldChange>());
             Assert.Equal("age", addChange.Field.FieldName);
@@ -310,7 +310,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Fields!["name"].Length = 30;
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var alterChange = Assert.Single(diff.Changes.OfType<AlterFieldChange>());
             Assert.Equal("name", alterChange.NewField.FieldName);
@@ -326,7 +326,7 @@ namespace Bee.Db.UnitTests
             define.Indexes!.Add("ix_{0}_name", "name", false);
             var real = BuildRealSchema();
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var addIndex = Assert.Single(diff.Changes.OfType<AddIndexChange>());
             Assert.Equal("ix_{0}_name", addIndex.Index.Name);
@@ -342,7 +342,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Indexes!.Add("ix_st_demo_name", "name", false);
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var drop = Assert.Single(diff.Changes.OfType<DropIndexChange>());
             var add = Assert.Single(diff.Changes.OfType<AddIndexChange>());
@@ -358,7 +358,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Fields!.Add("legacy_col", "Legacy", FieldDbType.String, 10);
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             Assert.Empty(diff.Changes);
         }
@@ -371,7 +371,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Indexes!.Add("ix_st_demo_legacy", "name", false);
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             Assert.Empty(diff.Changes);
         }
@@ -384,7 +384,7 @@ namespace Bee.Db.UnitTests
             define.DisplayName = "示範資料表";
             var real = BuildRealSchema();
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var change = Assert.Single(diff.DescriptionChanges);
             Assert.Equal(DescriptionLevel.Table, change.Level);
@@ -401,7 +401,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.DisplayName = "DB 既有表說明";
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             Assert.Empty(diff.DescriptionChanges);
         }
@@ -415,7 +415,7 @@ namespace Bee.Db.UnitTests
             var real = BuildRealSchema();
             real.Fields!["name"].Length = 30;
 
-            new TableSchemaComparer(define, real).CompareToDiff();
+            new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             // define 上未被設定 UpgradeAction
             Assert.Equal(DbUpgradeAction.None, define.UpgradeAction);
@@ -430,7 +430,7 @@ namespace Bee.Db.UnitTests
             var define = BuildBaseSchema();
             define.DisplayName = "示範";
             var real = BuildRealSchema();
-            var comparer = new TableSchemaComparer(define, real);
+            var comparer = new TableSchemaComparer(define, real, DatabaseType.SQLServer);
 
             comparer.CompareToDiff();
 
@@ -449,7 +449,7 @@ namespace Bee.Db.UnitTests
             define.Fields!["display_name"].OriginalFieldName = "name";
             var real = BuildRealSchema();
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             var rename = Assert.Single(diff.Changes.OfType<RenameFieldChange>());
             Assert.Equal("name", rename.OldFieldName);
@@ -468,7 +468,7 @@ namespace Bee.Db.UnitTests
             define.Fields!["display_name"].Length = 100; // 與 real 的 50 不同
             var real = BuildRealSchema();
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             Assert.Single(diff.Changes.OfType<RenameFieldChange>());
             var alter = Assert.Single(diff.Changes.OfType<AlterFieldChange>());
@@ -490,7 +490,7 @@ namespace Bee.Db.UnitTests
             real.Fields!.Remove("name");
             real.Fields!.Add("display_name", "Display Name", FieldDbType.String, 50);
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             Assert.Empty(diff.Changes.OfType<RenameFieldChange>());
             Assert.Empty(diff.Changes.OfType<AddFieldChange>());
@@ -505,7 +505,7 @@ namespace Bee.Db.UnitTests
             define.Fields!["new_col"].OriginalFieldName = "ghost_col"; // ghost 舊名不存在於 DB
             var real = BuildRealSchema();
 
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
 
             Assert.Empty(diff.Changes.OfType<RenameFieldChange>());
             var add = Assert.Single(diff.Changes.OfType<AddFieldChange>());

@@ -57,6 +57,17 @@ namespace Bee.Tests.Shared
             var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
             BackendInfo.DefinePath = Path.Combine(repoRoot, "tests", "Define");
             BackendInfo.DefineAccess = new LocalDefineAccess();
+            // 註冊各 DB 的 ADO.NET provider + dialect factory + DatabaseItem（依環境變數）；
+            // 必須先於 BackendInfo.Initialize，因為 startup ValidateDatabaseSettings 會檢查
+            // Id='common' 的 DatabaseItem 是否存在。
+            RegisterSqlServer();
+            RegisterPostgreSql();
+            RegisterSqlite();
+            RegisterMySql();
+            RegisterOracle();
+            // Fallback：若上述 DB 環境變數都未設（無 DB 整合測試的情境），
+            // 仍需確保 Id='common' 存在,以通過 startup 驗證。
+            EnsureFallbackCommonDatabaseItem();
             // 系統初始化
             var settings = BackendInfo.DefineAccess.GetSystemSettings();
             settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
@@ -73,22 +84,33 @@ namespace Bee.Tests.Shared
             }
             SysInfo.Initialize(settings.CommonConfiguration);
             BackendInfo.Initialize(settings.BackendConfiguration, autoCreateMasterKey: true);
-            // 註冊各 DB 的 ADO.NET provider + dialect factory；每個 DB 各自獨立、未設環境變數則跳過。
-            RegisterSqlServer();
-            RegisterPostgreSql();
-            RegisterSqlite();
-            RegisterMySql();
-            RegisterOracle();
             Console.WriteLine("GlobalFixture Initialized");
         }
 
         /// <summary>
+        /// 確保 DatabaseSettings 含有 Id='common' 的 DatabaseItem,作為 startup 驗證的後備.
+        /// 純單元測試（無 DB 整合測試的情境）下,連線字串保持空字串,任何試圖實際連線的測試
+        /// 會自然失敗——但純邏輯/序列化測試只關心 startup 通過,不需實際連線。
+        /// </summary>
+        private static void EnsureFallbackCommonDatabaseItem()
+        {
+            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            if (dbSettings.Items!.Contains("common")) return;
+            dbSettings.Items.Add(new DatabaseItem
+            {
+                Id = "common",
+                CategoryId = "common",
+                DatabaseType = DatabaseType.SQLServer,
+                ConnectionString = string.Empty
+            });
+        }
+
+        /// <summary>
         /// 註冊 SQL Server 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
-        /// SQL Server 是測試 fixture 的「邏輯預設」（<c>BackendConfiguration.DatabaseId="common"</c>
-        /// 在 SystemSettings.xml 中），所以同時註冊兩個 Id 指向同一個 SQL Server 連線：
+        /// SQL Server 是測試 fixture 的「邏輯預設」，所以同時註冊兩個 Id 指向同一個 SQL Server 連線：
         /// <list type="bullet">
-        /// <item><c>common</c>：用於 prod code 路徑（<see cref="BackendInfo.DatabaseId"/> 預設值），
-        /// 例如 <c>SessionRepository.GetSession</c> 與 <c>CacheContainer.TableSchema.Get(categoryId, tableName)</c>。</item>
+        /// <item><c>common</c>：對應 framework 慣例 <c>DbCategoryIds.Common</c>，prod code 路徑使用
+        /// （例如 <c>SessionRepository.GetSession</c> 與 <c>CacheContainer.TableSchema.Get(categoryId, tableName)</c>）。</item>
         /// <item><c>common_sqlserver</c>：用於 <c>[DbFact(DatabaseType.SQLServer)]</c> 明確 DB 類型測試。</item>
         /// </list>
         /// </summary>
@@ -106,7 +128,7 @@ namespace Bee.Tests.Shared
 
         /// <summary>
         /// 註冊 PostgreSQL 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
-        /// 與 SQL Server 不同，PG 並非 fixture 的「邏輯預設」（<see cref="BackendInfo.DatabaseId"/> 仍為 "common"
+        /// 與 SQL Server 不同，PG 並非 fixture 的「邏輯預設」（framework 慣例 <c>DbCategoryIds.Common</c>
         /// 對應 SQL Server），所以只註冊一個明確的 Id（<c>common_postgresql</c>）。
         /// </summary>
         private static void RegisterPostgreSql()
@@ -146,7 +168,7 @@ namespace Bee.Tests.Shared
 
         /// <summary>
         /// 註冊 MySQL 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
-        /// MySQL 並非 fixture 的「邏輯預設」（<see cref="BackendInfo.DatabaseId"/> 仍為 "common"
+        /// MySQL 並非 fixture 的「邏輯預設」（framework 慣例 <c>DbCategoryIds.Common</c>
         /// 對應 SQL Server），所以只註冊一個明確的 Id（<c>common_mysql</c>）。
         /// 本機未設 <c>BEE_TEST_CONNSTR_MYSQL</c>（如未跑 MySQL container）則僅完成 dialect 註冊，
         /// 後續以 <c>[DbFact(DatabaseType.MySQL)]</c> 標記的整合測試會自動跳過。
@@ -164,7 +186,7 @@ namespace Bee.Tests.Shared
 
         /// <summary>
         /// 註冊 Oracle 的 ADO.NET provider 與 dialect factory，並依環境變數建立 <see cref="DatabaseItem"/>。
-        /// Oracle 並非 fixture 的「邏輯預設」（<see cref="BackendInfo.DatabaseId"/> 仍為 "common"
+        /// Oracle 並非 fixture 的「邏輯預設」（framework 慣例 <c>DbCategoryIds.Common</c>
         /// 對應 SQL Server），所以只註冊一個明確的 Id（<c>common_oracle</c>）。
         /// 同時掛上 connection-open hook：每次新連線開啟後執行
         /// <c>ALTER SESSION SET NLS_COMP='LINGUISTIC' NLS_SORT='BINARY_CI'</c>，讓字串比對在

@@ -1,5 +1,5 @@
 using System.ComponentModel;
-using Bee.Definition;
+using Bee.Definition.Database;
 using Bee.Definition.Identity;
 
 namespace Bee.ObjectCaching.UnitTests
@@ -18,11 +18,11 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("TableSchema.Get 以 BackendInfo.DatabaseId 作為預設資料庫應回傳 schema")]
-        public void TableSchema_GetWithDefaultDatabase_ReturnsSchema()
+        [DisplayName("TableSchema.Get 以 DbCategoryIds.Common 作為系統資料庫應回傳 schema")]
+        public void TableSchema_GetWithCommonDatabase_ReturnsSchema()
         {
-            // 由 SystemSettings.xml 內的 <DatabaseId>common</DatabaseId> 提供預設值
-            var schema = CacheContainer.TableSchema.Get(BackendInfo.DatabaseId, "st_user");
+            // framework 慣例：CategoryId="common" 的 DatabaseItem 其 Id 也為 "common"
+            var schema = CacheContainer.TableSchema.Get(DbCategoryIds.Common, "st_user");
 
             Assert.NotNull(schema);
             Assert.Equal("st_user", schema!.TableName, ignoreCase: true);

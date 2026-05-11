@@ -1,6 +1,6 @@
 # 計畫：移除 BackendInfo 資料庫全域設定，導入 Category-based 路由
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-05-11）**
 
 > 本計畫為 [BackendInfo DI 遷移主計畫](plan-backendinfo-to-di-migration.md) 的**前置作業**。
 > 完成後 DI Phase 2（Bee.Db 配置注入）的範圍會大幅簡化。
@@ -23,14 +23,6 @@ public static int MaxDbCommandTimeout { get; set; } = 60;
 - **`DatabaseId` 不是固定字串**：多租戶部署下 company 變 `company001`、`company002`...；按年封存下 log 變 `log2025`、`log2026`...，「全域預設 DB」概念失效
 - **`MaxDbCommandTimeout` 是真正 process-level 設定**：本計畫**不移除**，僅 DatabaseType / DatabaseId 在範圍內
 
-### 缺失的功能
-
-目前框架無法表達「使用者登入後屬於哪個 company 資料庫」：
-
-- 多租戶部署下，登入 company001 的使用者應只能存取 `company001` DatabaseItem
-- 現況 `SessionInfo` 缺欄位記錄此資訊，業務層只能自行 hack（如約定 UserId 前綴）
-- 應該由框架明確支援：`SessionInfo.CompanyDatabaseId`
-
 ### 與 DI 主計畫的關係
 
 DI 主計畫 Phase 2 原本要把 `DatabaseType / DatabaseId / MaxDbCommandTimeout` 三者打包成 `DbOptions` 注入。完成本計畫後：
@@ -47,9 +39,10 @@ DI 主計畫 Phase 2 原本要把 `DatabaseType / DatabaseId / MaxDbCommandTimeo
 2. 移除 `BackendInfo.DatabaseType` 與 `BackendInfo.DatabaseId` 兩個屬性
 3. 各 callsite 改為從「context 已知的 DatabaseItem」取得 DatabaseType
 4. `SessionRepository` 改為明確使用 `DbCategoryIds.Common`，不再讀全域預設
-5. `SessionInfo` 新增 `CompanyDatabaseId` 欄位，支援多租戶 company 路由
-6. 啟動驗證新增 `common` DatabaseItem 唯一性與 Id 命名檢查
-7. 不破壞 `MaxDbCommandTimeout` 既有行為（保留為 BackendInfo 屬性，DI plan 再處理）
+5. 啟動驗證新增 `Id='common'` DatabaseItem 存在性檢查
+6. 不破壞 `MaxDbCommandTimeout` 既有行為（保留為 BackendInfo 屬性，DI plan 再處理）
+
+> **不在本計畫範圍**：`SessionInfo` 新增 company / log 路由欄位刻意延後 — 待 `CompanyInfo` 與 log routing 設計成熟後另立計畫處理（詳見 §不納入範圍 與 §後續關聯計畫）。
 
 ## 範圍評估
 
@@ -60,7 +53,6 @@ DI 主計畫 Phase 2 原本要把 `DatabaseType / DatabaseId / MaxDbCommandTimeo
 | `src/Bee.Definition/Database/DbCategoryIds.cs`（**新增**） | 常數類別 |
 | `src/Bee.Definition/BackendInfo.cs` | 移除 2 屬性 + 啟動驗證強化 |
 | `src/Bee.Definition/BackendConfiguration.cs`（或對應檔） | 移除 2 對應欄位 |
-| `src/Bee.Definition/Identity/SessionInfo.cs` | 新增 `CompanyDatabaseId` 屬性 |
 | `src/Bee.Db/DbAccess.cs` | 改為從 `DatabaseSettings` 查 DatabaseType |
 | `src/Bee.Db/Dml/TableSchemaCommandBuilder.cs` | 移除 1-arg ctor 或要求顯式傳 DatabaseType |
 | `src/Bee.Definition/Database/DbTableIndex.cs` | 比對方法接收 DatabaseType 參數 |
@@ -73,8 +65,6 @@ DI 主計畫 Phase 2 原本要把 `DatabaseType / DatabaseId / MaxDbCommandTimeo
 | `tests/Bee.Db.UnitTests/TableSchemaCommandBuilderTests.cs` | 對應修正 |
 | `tests/Bee.ObjectCaching.UnitTests/CacheContainerTests.cs` | 2 處改使用 `DbCategoryIds.Common` |
 | `tests/Bee.Tests.Shared/GlobalFixture.cs` | 4 處註解更新（移除 `BackendInfo.DatabaseId` 引用） |
-| `tests/Bee.Definition.UnitTests/SessionInfoTests.cs` | 新增 `CompanyDatabaseId` 序列化測試 |
-| `tests/Bee.Repository.UnitTests/SessionRepositoryTests.cs`（若有） | CompanyDatabaseId round-trip 測試 |
 
 ### 範圍量化
 
@@ -83,8 +73,7 @@ DI 主計畫 Phase 2 原本要把 `DatabaseType / DatabaseId / MaxDbCommandTimeo
 | `BackendInfo.DatabaseType` callsite | 3 src + 1 test |
 | `BackendInfo.DatabaseId` callsite | 4 src + 2 test |
 | 新增 class | 1（`DbCategoryIds`） |
-| 新增 SessionInfo 欄位 | 1（`CompanyDatabaseId`） |
-| 預估 PR 大小 | < 300 lines diff |
+| 預估 PR 大小 | < 250 lines diff |
 
 ## 設計
 
@@ -97,10 +86,19 @@ namespace Bee.Definition.Database;
 /// Built-in database category identifiers used by the framework.
 /// </summary>
 /// <remarks>
-/// These are <b>CategoryId</b> values (logical classification), not <b>DatabaseId</b> values
-/// (physical connections). In multi-tenant or time-archived deployments, the actual
-/// <see cref="DatabaseItem.Id"/> may differ (e.g., <c>company001</c>, <c>log2025</c>),
-/// but the <see cref="DatabaseItem.CategoryId"/> remains one of these constants.
+/// These constants serve two roles:
+/// <list type="bullet">
+/// <item><b>CategoryId</b> values for logical classification on <see cref="DatabaseItem.CategoryId"/>
+/// and <see cref="FormSchema.CategoryId"/>.</item>
+/// <item><b>DatabaseId</b> conventions for framework system routing (e.g.,
+/// <c>SessionRepository</c> uses <see cref="Common"/> as the literal <see cref="DatabaseItem.Id"/>
+/// for the shared system database).</item>
+/// </list>
+/// In multi-tenant or time-archived deployments, the physical <see cref="DatabaseItem.Id"/>
+/// may diverge from the CategoryId (e.g., <c>company001</c>, <c>log2025</c>), but the
+/// <see cref="DatabaseItem.CategoryId"/> remains one of these constants — and for the
+/// <see cref="Common"/> category, the framework requires Id == CategoryId == "common"
+/// (enforced at startup).
 /// </remarks>
 public static class DbCategoryIds
 {
@@ -115,7 +113,7 @@ public static class DbCategoryIds
 }
 ```
 
-**故意只放 CategoryId 不放 DatabaseId**：DatabaseId 在動態切分部署（多租戶、按年）下是運算結果，無法靜態化。
+**為何不另立 `WellKnownDatabaseIds`**：framework 慣例下「common 類別的物理連線 Id 也叫 common」，CategoryId 與 DatabaseId 在此處名稱重合。獨立兩組常數會分裂同一概念，反而誤導；單一常數類加註釋說明雙角色更清楚。
 
 ### 2. `BackendInfo` 修改
 
@@ -134,31 +132,7 @@ public static int MaxDbCommandTimeout { get; set; } = 60;  // 真 process-level 
 
 **`BackendConfiguration` 對應欄位同步移除**。
 
-### 3. `SessionInfo` 新增欄位
-
-```csharp
-public class SessionInfo : IKeyObject, IUserInfo
-{
-    // ... 既有欄位 ...
-
-    /// <summary>
-    /// Gets or sets the company database identifier for this session.
-    /// Set during login based on the user's company affiliation; used by business
-    /// objects to route company-scoped data access to the correct DatabaseItem.
-    /// </summary>
-    /// <remarks>
-    /// In single-company deployments, this typically equals <see cref="DbCategoryIds.Company"/>.
-    /// In multi-tenant deployments, this is the specific DatabaseItem.Id (e.g., "company001").
-    /// </remarks>
-    public string CompanyDatabaseId { get; set; } = string.Empty;
-}
-```
-
-**序列化**：`SessionInfo` 透過 XML 序列化儲存於 `st_session.session_user_xml`（Text 欄位）— **不需 DB schema migration**。
-**新登入**：登入流程設定此欄位（具體實作待業務層；本計畫不規範如何決定 company DatabaseId，僅提供欄位）。
-**既有 session**：反序列化舊資料時欄位為空字串，業務層應有 fallback 或要求重新登入。
-
-### 4. 各 callsite 處理
+### 3. 各 callsite 處理
 
 #### `DbAccess.cs:46`
 
@@ -208,9 +182,9 @@ var dbAccess = new DbAccess(BackendInfo.DatabaseId);
 var dbAccess = new DbAccess(DbCategoryIds.Common);
 ```
 
-依賴慣例「`CategoryId=common` 的 DatabaseItem.Id 也命名為 `common`」— 此慣例由新啟動驗證保證。
+此處 `DbCategoryIds.Common` 字面值作為 `DatabaseItem.Id`（即 framework system DB 連線 ID）使用，由啟動驗證保證 `Id='common'` 的 DatabaseItem 必存在。
 
-### 5. 啟動驗證強化
+### 4. 啟動驗證強化
 
 現有 P1 `ValidateComponents()` 之外，新增 `ValidateDatabaseSettings()`：
 
@@ -220,46 +194,37 @@ private static void ValidateDatabaseSettings()
     if (SysInfo.IsSingleFile) return;
 
     var settings = DefineAccess.GetDatabaseSettings();
-    var commonItems = settings.Items!.Where(i => i.CategoryId == DbCategoryIds.Common).ToArray();
-
-    if (commonItems.Length == 0)
+    if (settings.Items == null || !settings.Items.Contains(DbCategoryIds.Common))
         throw new InvalidOperationException(
-            $"DatabaseSettings must contain exactly one DatabaseItem with CategoryId='{DbCategoryIds.Common}'.");
-
-    if (commonItems.Length > 1)
-        throw new InvalidOperationException(
-            $"DatabaseSettings contains {commonItems.Length} DatabaseItems with CategoryId='{DbCategoryIds.Common}'; expected exactly 1.");
-
-    if (commonItems[0].Id != DbCategoryIds.Common)
-        throw new InvalidOperationException(
-            $"DatabaseItem with CategoryId='{DbCategoryIds.Common}' must also have Id='{DbCategoryIds.Common}' (convention required for framework session table routing).");
+            $"DatabaseSettings must contain a DatabaseItem with Id='{DbCategoryIds.Common}'.");
 }
 ```
 
-在 `BackendInfo.Initialize()` 末尾呼叫，與 `ValidateComponents()` 並列為啟動期安全網。
+在 `BackendInfo.Initialize()` 末尾呼叫,與 `ValidateComponents()` 並列為啟動期安全網。
 
-**設計取捨**：此驗證是「Fail-Fast 換取簡潔慣例」。若未來需放寬「common.Id 必為 common」這個約束，可改為 `DatabaseSettings.Items` 提供 `GetSingleByCategoryId(string)` helper，再由 `SessionRepository` 走查表路徑 — 但目前慣例已夠用，不過度設計。
+**設計取捨**:
+- `DatabaseItemCollection` 繼承自 `KeyCollectionBase<DatabaseItem>`,以 `Id` 為唯一 key,本身已保證不重複,因此不需要額外的 Id 重複性檢查
+- Framework runtime 路由(如 `SessionRepository`)實際依據是 `DatabaseItem.Id`,而非 `CategoryId`;`CategoryId` 屬於 UI / schema 歸屬用的邏輯分類
+- 因此只需驗證「`Id='common'` 的 DatabaseItem 存在」即可,單一 `Contains` 檢查同時涵蓋「唯一」與「命名慣例」兩個面向
 
 ## 執行階段（單一 PR 內順序）
 
 1. 新增 `DbCategoryIds.cs` 常數類別
-2. `SessionInfo` 新增 `CompanyDatabaseId` 屬性 + 對應測試
-3. `BackendInfo` 新增 `ValidateDatabaseSettings()`（先加邏輯，後續 callsite 替換才依賴此驗證）
-4. 替換 4 處 `BackendInfo.DatabaseId` → `DbCategoryIds.Common`
-5. 替換 3 處 `BackendInfo.DatabaseType` → 各 callsite 處理（DatabaseItem 查表 / 方法參數化）
-6. 移除 `BackendInfo.DatabaseType` 與 `DatabaseId` 屬性
-7. 移除 `BackendConfiguration` 對應欄位
-8. 更新測試（含 `GlobalFixture.cs` 註解）
-9. 更新 [database-settings-guide.zh-TW.md](../database-settings-guide.zh-TW.md) 與英文版（如有提到全域 DB 預設處）
-10. 跑完整測試（`./test.sh` 全綠）+ build with `TreatWarningsAsErrors`
+2. `BackendInfo` 新增 `ValidateDatabaseSettings()`（先加邏輯，後續 callsite 替換才依賴此驗證）
+3. 替換 4 處 `BackendInfo.DatabaseId` → `DbCategoryIds.Common`
+4. 替換 3 處 `BackendInfo.DatabaseType` → 各 callsite 處理（DatabaseItem 查表 / 方法參數化）
+5. 移除 `BackendInfo.DatabaseType` 與 `DatabaseId` 屬性
+6. 移除 `BackendConfiguration` 對應欄位
+7. 更新測試（含 `GlobalFixture.cs` 註解）
+8. 更新 [database-settings-guide.zh-TW.md](../database-settings-guide.zh-TW.md) 與英文版（如有提到全域 DB 預設處）
+9. 跑完整測試（`./test.sh` 全綠）+ build with `TreatWarningsAsErrors`
 
 ## 測試策略
 
 ### 新增測試
 
 - `DbCategoryIdsTests`（基本字串值驗證）
-- `SessionInfoTests`：`CompanyDatabaseId` 序列化 round-trip
-- `BackendInfoTests`：`ValidateDatabaseSettings` 三種失敗情境（無 common、多筆 common、common.Id 不匹配）
+- `BackendInfoTests`：`ValidateDatabaseSettings` 失敗情境（`DatabaseSettings` 中不存在 `Id='common'` 的 DatabaseItem）
 
 ### 既有測試調整
 
@@ -283,13 +248,6 @@ private static void ValidateDatabaseSettings()
 
 **Release notes 必須列出**：建議讀取者改用 `BackendInfo.GetDatabaseItem(id).DatabaseType`；寫入者通常是 boot-time 配置，改用 `DatabaseSettings.xml` 設定。
 
-### Session XML 向下相容
-
-舊 `st_session.session_user_xml` 內容無 `<CompanyDatabaseId/>` 節點：
-- XML 反序列化容忍缺欄位 → `CompanyDatabaseId = ""`（預設值）
-- 業務層讀取空字串時應有 fallback 或強制使用者重新登入
-- **無需 migration script**，舊 session 自然 expire 後即清除
-
 ### 配置檔
 
 `SystemSettings.xml`（即 `BackendConfiguration` 序列化來源）中對應 `DatabaseType` / `DatabaseId` 欄位 → migration 時移除。
@@ -300,17 +258,15 @@ private static void ValidateDatabaseSettings()
 | 風險 | 緩解 |
 |------|------|
 | `DbAccess` 改為查 `DatabaseSettings` 取 DatabaseType 多一次查表 | DatabaseSettings 已快取（`CacheContainer.DatabaseSettings` 20 秒 sliding），查找 O(1)；效能影響可忽略 |
-| 某些測試 fixture 未遵守「common 唯一」慣例 | 啟動驗證在 fixture init 時暴露，立即修正 fixture |
+| 某些測試 fixture 未包含 `Id='common'` 的 DatabaseItem | 啟動驗證在 fixture init 時暴露，立即修正 fixture |
 | `TableSchemaCommandBuilder` 移除 1-arg ctor 是 breaking change | grep 確認 src/ tests/ samples/ 中所有呼叫點都已改為 2-arg；外部使用者透過 release notes 引導 |
-| 舊 session 反序列化遇到新欄位 → 預期空字串，但若業務層未處理可能 NRE | 業務層 fallback 規格在 release notes 明列；建議部署前先 invalidate 舊 session |
 | `BackendConfiguration` 欄位移除可能破壞既有 `SystemSettings.xml` 反序列化 | XmlSerializer 對未知節點預設忽略，不破壞；但需測試確認 |
 
 ## 成功標準
 
 - [ ] `grep -rn "BackendInfo\.\(DatabaseType\|DatabaseId\)" src/ tests/` 結果為 0
 - [ ] `DbCategoryIds` 常數類別建立，三個常數定義正確
-- [ ] `SessionInfo.CompanyDatabaseId` 屬性存在且通過序列化 round-trip 測試
-- [ ] 啟動驗證能正確攔截三種違反慣例的 `DatabaseSettings` 配置
+- [ ] 啟動驗證能正確攔截缺少 `Id='common'` DatabaseItem 的 `DatabaseSettings` 配置
 - [ ] `./test.sh` 全綠（含 SQL Server / PostgreSQL 路徑）
 - [ ] `dotnet build --configuration Release` 在 `TreatWarningsAsErrors` 下通過
 - [ ] `database-settings-guide` 雙語版同步更新
@@ -318,15 +274,30 @@ private static void ValidateDatabaseSettings()
 
 ## 不納入範圍
 
-- **如何決定 `SessionInfo.CompanyDatabaseId` 的值**：登入流程的業務邏輯（如「依使用者 → 公司 → DatabaseId」對照規則）由業務層自訂，本計畫只提供欄位
-- **log DatabaseId 動態推導 helper**：按年份取 `log2025` 等的 helper（如 `LogDatabaseRouter`）值得做但與本計畫主軸無關，另立小計畫
+- **`SessionInfo` 多租戶 company 路由欄位**：未來預期走「`SessionInfo.CompanyId` → `CompanyInfo.DatabaseId` 查表」路徑，但 `CompanyInfo` 尚未設計；先 ship 空字串欄位等於擺設，因此延後至 `CompanyInfo` 相關計畫一併處理
+- **Log 路由（含 `SessionInfo.LogDatabaseId` / `ILogDatabaseRouter`）**：log 路由本質是「寫入當下根據多 input 計算」的函式（詳見 §Log 路由設計考量），與本計畫主軸無關，另立計畫
 - **MaxDbCommandTimeout 處理**：留待 DI 主計畫 Phase 2 一併評估（保留 static / 改 Options / 改 const 三種方案）
 - **公開 API obsolete 過渡期**：本計畫直接 breaking，依 v5.0 release notes 引導；不引入 `[Obsolete]` 中間階段
 - **多 common DatabaseItem 支援**：明確排除 — 框架慣例維持「common 唯一」，未來若有需要再評估
 
-## Log 路由與未來計畫
+## Company / Log 路由設計考量（供後續計畫參考）
 
-### 為何 SessionInfo 只加 CompanyDatabaseId，不加 LogDatabaseId
+本計畫只完成「移除 BackendInfo 全域 DB 設定」，company / log 路由刻意延後。以下整理留待後續計畫參考的設計脈絡。
+
+### Company 路由：建議走 `CompanyId → CompanyInfo` lookup，不直接存 `DatabaseId`
+
+`SessionInfo` 未來需要記錄「使用者登入的公司」以支援多租戶部署。直觀做法是直接加 `CompanyDatabaseId` 欄位，但更乾淨的設計是：
+
+```
+SessionInfo.CompanyId (業務維度) → CompanyInfo.DatabaseId (部署細節)
+```
+
+**理由**：
+- `CompanyId` 是業務主鍵，公司搬資料庫不影響其 ID；session 不會 stale
+- 一個 Company 未來若拆讀寫庫、加 archive 庫，單一 `DatabaseId` 字串無法表達
+- 部署細節集中於 `CompanyInfo`（DB 表或設定檔），session 只記業務識別
+
+### Log 路由：是函式，不是 session 屬性
 
 Company 路由與 log 路由本質不同：
 
@@ -335,14 +306,14 @@ Company 路由與 log 路由本質不同：
 | **Company** | 租戶 | 登入後整個 session 不變 | 登入時 |
 | **Business Log** | 租戶 × 時間 × log 類型 | 跨年、跨類型會變 | 寫入當下 |
 
-把 LogDatabaseId 也塞進 SessionInfo 會有幾個問題：
+把 `LogDatabaseId` 塞進 `SessionInfo` 會有幾個問題：
 
 1. 登入時設定的值跨年後 stale
 2. 多軸切分（tenant × year × kind）無法用單一字串表達
 3. Pre-session 場景（登入失敗、系統事件）沒有 session 也需要寫 log
 4. 未來改路由策略時，session 內已存的字串解釋規則難以變更
 
-**正確抽象**：log 路由是「寫入當下根據多 input 計算」的函式，不是 session 屬性。
+**正確抽象**：log 路由是「寫入當下根據多 input 計算」的函式（如 `ILogDatabaseRouter.Resolve(ctx)`），不是 session 屬性。
 
 ### 兩種 log 的概念分野
 
@@ -353,36 +324,6 @@ Company 路由與 log 路由本質不同：
 
 現有 `ILogWriter`（`NullLogWriter` / `ConsoleLogWriter`）屬於前者，**不會被擴充為後者**。Business log 該有獨立抽象（如 `IAuditLogWriter` + `ILogDatabaseRouter`），與 `ILogWriter` 並存且互不引用。
 
-### 未來計畫草圖（不在本 plan 範圍）
-
-```csharp
-public interface ILogDatabaseRouter
-{
-    string Resolve(LogRoutingContext ctx);
-}
-
-public sealed class LogRoutingContext
-{
-    public SessionInfo? Session { get; init; }   // null for pre-session events
-    public DateTime WhenUtc { get; init; }
-    public LogKind Kind { get; init; }
-}
-
-public enum LogKind { Login, Execution, Browse, DataChange, SystemError }
-```
-
-不同部署註冊不同實作：`SingleLogDatabaseRouter` / `YearlyLogDatabaseRouter` / `TenantYearlyLogDatabaseRouter` 等。
-
-`SessionInfo.CompanyDatabaseId` 是 router 的 input 之一，但 router 還會看時間、類型、是否有 session — 因此 router 是 DI 注入的服務（在 DI 主計畫 Phase 4 BO 注入後，BO 可直接 `IAuditLogWriter` + `ILogDatabaseRouter`）。
-
-### 預期時序
-
-1. **本計畫**（DB cleanup）：完成 CompanyDatabaseId、不動 log 路由
-2. **DI 主計畫**：完成 BO 注入、`ILogDatabaseRouter` 預留為將注入的服務
-3. **後續獨立計畫** `plan-log-database-routing.md`（未撰寫）：設計並實作 router 策略集、`IAuditLogWriter`、log table schema
-
-本計畫範圍刻意限縮，避免 log 路由設計尚未成熟時就在 `SessionInfo` 內放會 stale 的欄位。
-
 ## 後續關聯計畫
 
 完成本計畫後，[plan-backendinfo-to-di-migration.md](plan-backendinfo-to-di-migration.md) Phase 2 範圍重新評估：
@@ -391,4 +332,5 @@ public enum LogKind { Login, Execution, Browse, DataChange, SystemError }
 - 直接於 Phase 2 sub-plan 中決定「保留 static / 改 IOptions / 改 const」
 
 未來另立計畫：
-- `plan-log-database-routing.md`（待撰寫）：business log DB 路由設計
+- **`plan-company-database-routing.md`（待撰寫）**：設計 `CompanyInfo`（儲存形式：DB 表 vs 設定檔）、`SessionInfo.CompanyId` 欄位、登入流程 hook、BO 端如何取得 company DatabaseId
+- **`plan-log-database-routing.md`（待撰寫）**：設計 `ILogDatabaseRouter` 策略集、`IAuditLogWriter`、log table schema

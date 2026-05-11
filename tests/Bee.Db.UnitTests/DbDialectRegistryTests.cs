@@ -107,7 +107,7 @@ namespace Bee.Db.UnitTests
             define.Fields!.Add("id", "Id", FieldDbType.Guid);
             var real = new TableSchema { TableName = "st_sample" };
             real.Fields!.Add("id", "Id", FieldDbType.Guid);
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
             // 強制加一筆變化讓 rebuild 產出非空 SQL
             diff.Changes.Add(new AddFieldChange(new DbFieldForTest()));
 

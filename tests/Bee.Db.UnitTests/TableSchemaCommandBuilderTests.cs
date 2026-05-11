@@ -31,22 +31,13 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("單參數建構子應採用 BackendInfo 的 DatabaseType")]
-        public void Constructor_SingleArg_UsesBackendDatabaseType()
-        {
-            var schema = BuildSampleSchema();
-            var builder = new TableSchemaCommandBuilder(schema);
-            Assert.Equal(BackendInfo.DatabaseType, builder.DatabaseType);
-            Assert.Same(schema, builder.TableSchema);
-        }
-
-        [Fact]
-        [DisplayName("雙參數建構子應使用顯式指定的 DatabaseType")]
-        public void Constructor_TwoArgs_UsesSpecifiedDatabaseType()
+        [DisplayName("建構子應使用顯式指定的 DatabaseType")]
+        public void Constructor_UsesSpecifiedDatabaseType()
         {
             var schema = BuildSampleSchema();
             var builder = new TableSchemaCommandBuilder(DatabaseType.MySQL, schema);
             Assert.Equal(DatabaseType.MySQL, builder.DatabaseType);
+            Assert.Same(schema, builder.TableSchema);
         }
 
         #endregion

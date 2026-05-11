@@ -25,14 +25,6 @@ namespace Bee.Db.Dml
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="TableSchemaCommandBuilder"/> using the globally configured database type.
-        /// </summary>
-        /// <param name="tableSchema">The table schema definition.</param>
-        public TableSchemaCommandBuilder(TableSchema tableSchema)
-            : this(BackendInfo.DatabaseType, tableSchema)
-        { }
-
-        /// <summary>
         /// Gets the database type.
         /// </summary>
         public DatabaseType DatabaseType { get; }

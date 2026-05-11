@@ -100,7 +100,7 @@ namespace Bee.Definition.UnitTests
         {
             var settings = new SystemSettings();
             settings.CommonConfiguration.Version = "1.0.0";
-            settings.BackendConfiguration.DatabaseId = "default";
+            settings.BackendConfiguration.ApiKey = "default";
             SerializeObject<SystemSettings>(settings, true, false);
         }
 

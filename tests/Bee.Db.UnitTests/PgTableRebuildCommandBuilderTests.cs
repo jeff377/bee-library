@@ -38,7 +38,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildDefineSchema();
             var real = BuildRealSchema();
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.PostgreSQL).CompareToDiff();
 
             var sql = new PgTableRebuildCommandBuilder().GetCommandText(diff);
 
@@ -53,7 +53,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildDefineSchema();
             var real = BuildRealSchema();
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.PostgreSQL).CompareToDiff();
 
             var sql = new PgTableRebuildCommandBuilder().GetCommandText(diff);
 
@@ -67,7 +67,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildDefineSchema();
             var real = BuildRealSchema();
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.PostgreSQL).CompareToDiff();
 
             var sql = new PgTableRebuildCommandBuilder().GetCommandText(diff);
 
@@ -86,7 +86,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildDefineSchema();
             var real = BuildRealSchema(withExtraLegacyField: true);
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.PostgreSQL).CompareToDiff();
 
             var sql = new PgTableRebuildCommandBuilder().GetCommandText(diff);
 
@@ -99,7 +99,7 @@ namespace Bee.Db.UnitTests
         {
             var define = BuildDefineSchema();
             var real = BuildRealSchema();
-            var diff = new TableSchemaComparer(define, real).CompareToDiff();
+            var diff = new TableSchemaComparer(define, real, DatabaseType.PostgreSQL).CompareToDiff();
 
             var sql = new PgTableRebuildCommandBuilder().GetCommandText(diff);
 
@@ -112,7 +112,7 @@ namespace Bee.Db.UnitTests
         public void GetCommandText_NewTableDiff_Throws()
         {
             var define = BuildDefineSchema();
-            var diff = new TableSchemaComparer(define, realTable: null).CompareToDiff();
+            var diff = new TableSchemaComparer(define, realTable: null, DatabaseType.PostgreSQL).CompareToDiff();
 
             Assert.Throws<InvalidOperationException>(() => new PgTableRebuildCommandBuilder().GetCommandText(diff));
         }

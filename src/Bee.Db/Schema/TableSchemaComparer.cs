@@ -14,10 +14,13 @@ namespace Bee.Db.Schema
         /// </summary>
         /// <param name="defineTable">The defined table schema.</param>
         /// <param name="realTable">The actual table schema from the database.</param>
-        public TableSchemaComparer(TableSchema defineTable, TableSchema? realTable)
+        /// <param name="databaseType">The database type whose index/field semantics should drive comparison
+        /// (e.g., SQL Server distinguishes ASC/DESC at the index-field level; others do not).</param>
+        public TableSchemaComparer(TableSchema defineTable, TableSchema? realTable, DatabaseType databaseType)
         {
             DefineTable = defineTable;
             RealTable = realTable;
+            DatabaseType = databaseType;
         }
 
         /// <summary>
@@ -29,6 +32,11 @@ namespace Bee.Db.Schema
         /// Gets the actual table schema from the database.
         /// </summary>
         public TableSchema? RealTable { get; }
+
+        /// <summary>
+        /// Gets the database type driving the comparison semantics.
+        /// </summary>
+        public DatabaseType DatabaseType { get; }
 
         /// <summary>
         /// Gets the description drift between the defined and the actual schema.
@@ -155,7 +163,7 @@ namespace Bee.Db.Schema
                 var realIndex = FindRealIndex(index, compareTable.TableName);
                 if (realIndex != null)
                 {
-                    if (!index.Compare(realIndex))
+                    if (!index.Compare(realIndex, DatabaseType))
                     {
                         // Index exists but differs; mark as upgrade
                         index.UpgradeAction = DbUpgradeAction.Upgrade;
@@ -282,7 +290,7 @@ namespace Bee.Db.Schema
                 var realIndex = FindRealIndex(defineIndex, this.DefineTable.TableName);
                 if (realIndex != null)
                 {
-                    if (!defineIndex.Compare(realIndex))
+                    if (!defineIndex.Compare(realIndex, DatabaseType))
                     {
                         diff.Changes.Add(new DropIndexChange(realIndex.Clone()));
                         diff.Changes.Add(new AddIndexChange(defineIndex.Clone()));

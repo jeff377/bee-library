@@ -29,7 +29,7 @@ namespace Bee.Db.UnitTests
         public void Execute_WithTransaction_NullConnection_ThrowsInvalidOperation()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
             var spec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT 1");
             using var tran = new NullConnectionTransaction();
 
@@ -41,7 +41,7 @@ namespace Bee.Db.UnitTests
         public async Task ExecuteAsync_WithTransaction_NullConnection_ThrowsInvalidOperation()
         {
             using var conn = new SqlConnection();
-            var dbAccess = new DbAccess(conn);
+            var dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
             var spec = new DbCommandSpec(DbCommandKind.Scalar, "SELECT 1");
             using var tran = new NullConnectionTransaction();
 

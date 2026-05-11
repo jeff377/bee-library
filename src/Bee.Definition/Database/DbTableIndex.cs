@@ -99,7 +99,9 @@ namespace Bee.Definition.Database
         /// Compares whether the schema is identical to another instance.
         /// </summary>
         /// <param name="source">The source object to compare against.</param>
-        public bool Compare(DbTableIndex source)
+        /// <param name="databaseType">The database type used to determine sort-direction semantics
+        /// (only SQL Server distinguishes ASC/DESC at the index-field level).</param>
+        public bool Compare(DbTableIndex source, DatabaseType databaseType)
         {
             // Uniqueness differs, return false
             if (Unique != source.Unique) { return false; }
@@ -111,7 +113,7 @@ namespace Bee.Definition.Database
                 // Index field does not exist, return false
                 if (!source.IndexFields!.Contains(indexField.FieldName)) { return false; }
                 // Sort direction differs, return false
-                if (BackendInfo.DatabaseType == DatabaseType.SQLServer && indexField.SortDirection != source.IndexFields![indexField.FieldName].SortDirection) { return false; }
+                if (databaseType == DatabaseType.SQLServer && indexField.SortDirection != source.IndexFields![indexField.FieldName].SortDirection) { return false; }
             }
             return true;
         }

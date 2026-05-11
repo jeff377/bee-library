@@ -43,7 +43,7 @@ namespace Bee.Db.UnitTests
             // 由外部管理連線
             using (var conn = DbConnectionManager.CreateConnection("common_sqlserver"))
             {
-                dbAccess = new DbAccess(conn);
+                dbAccess = new DbAccess(conn, DatabaseType.SQLServer);
                 result = dbAccess.Execute(command);
                 Assert.NotNull(result.Table);
             }
@@ -172,7 +172,7 @@ namespace Bee.Db.UnitTests
 
             // 3. 用 DbTableCommandBuilder 建立 DataTableUpdateSpec
             var tableSchema = BackendInfo.DefineAccess.GetTableSchema("common", "st_user");
-            var builder = new TableSchemaCommandBuilder(tableSchema);
+            var builder = new TableSchemaCommandBuilder(dbAccess.DatabaseType, tableSchema);
             var updateSpec = builder.BuildUpdateSpec(table);
 
             // 4. 執行 UpdateDataTable

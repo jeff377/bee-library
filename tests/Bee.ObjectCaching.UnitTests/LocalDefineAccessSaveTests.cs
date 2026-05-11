@@ -25,7 +25,7 @@ namespace Bee.ObjectCaching.UnitTests
         {
             using var temp = new TempDefinePath();
             var settings = new SystemSettings();
-            settings.BackendConfiguration.DatabaseId = "saved_id";
+            settings.BackendConfiguration.ApiKey = "saved_id";
 
             _access.SaveSystemSettings(settings);
 
