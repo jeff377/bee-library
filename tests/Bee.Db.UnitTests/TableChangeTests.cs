@@ -57,6 +57,16 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("DropIndexChange.Describe 應回傳含索引名的描述字串")]
+        public void DropIndexChange_Describe_ReturnsIndexName()
+        {
+            var index = new TableSchemaIndex { Name = "ix_user_email" };
+            var change = new DropIndexChange(index);
+
+            Assert.Equal("DropIndexChange on 'ix_user_email'", change.Describe());
+        }
+
+        [Fact]
         [DisplayName("RenameFieldChange 應保留 OldFieldName 與 NewField")]
         public void RenameFieldChange_PreservesOldNameAndNewField()
         {
