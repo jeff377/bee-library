@@ -36,6 +36,15 @@ namespace Bee.Definition.UnitTests.Logging
         }
 
         [Fact]
+        [DisplayName("LogEntry Category 屬性可設定與讀取")]
+        public void LogEntry_Category_CanBeSetAndRead()
+        {
+            var entry = new LogEntry { Category = 3 };
+
+            Assert.Equal((short)3, entry.Category);
+        }
+
+        [Fact]
         [DisplayName("LogOptions 預設應包含非 null 的 DbAccess 選項")]
         public void LogOptions_Defaults_HasDbAccessOptions()
         {
