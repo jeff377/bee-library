@@ -74,8 +74,16 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(factory.CreateCreateTableCommandBuilder());
             Assert.NotNull(factory.CreateTableAlterCommandBuilder());
             Assert.NotNull(factory.CreateTableRebuildCommandBuilder());
-            // CreateTableSchemaProvider / CreateFormCommandBuilder 與 MySQL 同樣依賴
-            // databaseId / FormSchema，由整合與 builder 測試覆蓋（plan Phase C-2 / B-3）。
+            // CreateTableSchemaProvider 與 MySQL 同樣依賴 databaseId，由整合測試覆蓋。
+        }
+
+        [Fact]
+        [DisplayName("OracleDialectFactory：CreateFormCommandBuilder 找不到 progId 應擲 FileNotFoundException")]
+        public void CreateFormCommandBuilder_UnknownProgId_Throws()
+        {
+            var factory = new OracleDialectFactory();
+
+            Assert.Throws<System.IO.FileNotFoundException>(() => factory.CreateFormCommandBuilder("__not_exists__"));
         }
     }
 }
