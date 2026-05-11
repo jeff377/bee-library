@@ -324,9 +324,71 @@ private static void ValidateDatabaseSettings()
 - **公開 API obsolete 過渡期**：本計畫直接 breaking，依 v5.0 release notes 引導；不引入 `[Obsolete]` 中間階段
 - **多 common DatabaseItem 支援**：明確排除 — 框架慣例維持「common 唯一」，未來若有需要再評估
 
+## Log 路由與未來計畫
+
+### 為何 SessionInfo 只加 CompanyDatabaseId，不加 LogDatabaseId
+
+Company 路由與 log 路由本質不同：
+
+| 路由 | 維度 | 變動頻率 | 何時可知 |
+|------|------|----------|----------|
+| **Company** | 租戶 | 登入後整個 session 不變 | 登入時 |
+| **Business Log** | 租戶 × 時間 × log 類型 | 跨年、跨類型會變 | 寫入當下 |
+
+把 LogDatabaseId 也塞進 SessionInfo 會有幾個問題：
+
+1. 登入時設定的值跨年後 stale
+2. 多軸切分（tenant × year × kind）無法用單一字串表達
+3. Pre-session 場景（登入失敗、系統事件）沒有 session 也需要寫 log
+4. 未來改路由策略時，session 內已存的字串解釋規則難以變更
+
+**正確抽象**：log 路由是「寫入當下根據多 input 計算」的函式，不是 session 屬性。
+
+### 兩種 log 的概念分野
+
+| 類型 | 對象 | 用途 | 儲存 |
+|------|------|------|------|
+| **Diagnostic log**（現有 `ILogWriter`） | 開發者 | 設計階段監看、anomaly 追蹤、debug | Console / File |
+| **Business log**（登入/執行/瀏覽/異動） | 營運稽核 | 法規遵循、營運追蹤、跨年查詢 | Log DB（依路由分流） |
+
+現有 `ILogWriter`（`NullLogWriter` / `ConsoleLogWriter`）屬於前者，**不會被擴充為後者**。Business log 該有獨立抽象（如 `IAuditLogWriter` + `ILogDatabaseRouter`），與 `ILogWriter` 並存且互不引用。
+
+### 未來計畫草圖（不在本 plan 範圍）
+
+```csharp
+public interface ILogDatabaseRouter
+{
+    string Resolve(LogRoutingContext ctx);
+}
+
+public sealed class LogRoutingContext
+{
+    public SessionInfo? Session { get; init; }   // null for pre-session events
+    public DateTime WhenUtc { get; init; }
+    public LogKind Kind { get; init; }
+}
+
+public enum LogKind { Login, Execution, Browse, DataChange, SystemError }
+```
+
+不同部署註冊不同實作：`SingleLogDatabaseRouter` / `YearlyLogDatabaseRouter` / `TenantYearlyLogDatabaseRouter` 等。
+
+`SessionInfo.CompanyDatabaseId` 是 router 的 input 之一，但 router 還會看時間、類型、是否有 session — 因此 router 是 DI 注入的服務（在 DI 主計畫 Phase 4 BO 注入後，BO 可直接 `IAuditLogWriter` + `ILogDatabaseRouter`）。
+
+### 預期時序
+
+1. **本計畫**（DB cleanup）：完成 CompanyDatabaseId、不動 log 路由
+2. **DI 主計畫**：完成 BO 注入、`ILogDatabaseRouter` 預留為將注入的服務
+3. **後續獨立計畫** `plan-log-database-routing.md`（未撰寫）：設計並實作 router 策略集、`IAuditLogWriter`、log table schema
+
+本計畫範圍刻意限縮，避免 log 路由設計尚未成熟時就在 `SessionInfo` 內放會 stale 的欄位。
+
 ## 後續關聯計畫
 
 完成本計畫後，[plan-backendinfo-to-di-migration.md](plan-backendinfo-to-di-migration.md) Phase 2 範圍重新評估：
 
 - `DbOptions` 結構可能不需要（只剩 `MaxDbCommandTimeout`）
 - 直接於 Phase 2 sub-plan 中決定「保留 static / 改 IOptions / 改 const」
+
+未來另立計畫：
+- `plan-log-database-routing.md`（待撰寫）：business log DB 路由設計
