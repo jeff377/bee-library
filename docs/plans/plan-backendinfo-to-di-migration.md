@@ -4,6 +4,10 @@
 
 > 本文件為主計畫（main plan），定義整體目標、原則、階段路線。
 > 各階段的細部執行步驟另以 sub-plan 文件描述，列於文末。
+>
+> **前置計畫**：[plan-remove-backendinfo-db-globals.md](plan-remove-backendinfo-db-globals.md)
+> — 先移除 `BackendInfo.DatabaseType` / `DatabaseId` 並導入 `DbCategoryIds` 常數與 `SessionInfo.CompanyDatabaseId`，
+> 完成後 Phase 2 範圍會大幅簡化。
 
 ## 背景
 
@@ -136,11 +140,12 @@ SystemSettings
 **獨立價值**：即使不繼續 DI 化，新結構也比扁平屬性更可讀；提供未來 DI 註冊的「Options-shaped」介面。
 
 ### Phase 2：Bee.Db 配置注入（低風險）
-**目標**：底層配置（DatabaseType、DatabaseId、MaxDbCommandTimeout）改為注入式。
+**前置**：[plan-remove-backendinfo-db-globals.md](plan-remove-backendinfo-db-globals.md) 完成。
+**目標**：底層配置（完成前置後僅剩 `MaxDbCommandTimeout`）改為注入式。
 
-- 設計 `IDbAccessFactory`，內部接收 `IOptions<DbOptions>`
-- `DbAccess` 提供雙建構式：DI 版（接收 `DbOptions`）+ 過渡版（從 `BackendInfo.ToDbOptions()` 取得，標 `[Obsolete]`）
-- 12 個 Bee.Db 檔案逐一改為使用注入或工廠
+- 評估是否仍需 `DbOptions` 包裝（僅一個欄位，候選方案：保留 static / `IOptions<DbOptions>` / 直接注入 `int`）
+- 設計 `IDbAccessFactory`，內部接收選定的配置形式
+- `DbAccess` 提供雙建構式：DI 版 + 過渡版（從 BackendInfo 取得，標 `[Obsolete]`）
 - 跨層調用點仍可呼叫無參數建構式，向下相容
 
 **獨立價值**：證明 DI 模式在最簡單的純配置場景可行，建立後續階段的 pattern 基準。
