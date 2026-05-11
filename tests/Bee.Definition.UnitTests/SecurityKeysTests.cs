@@ -75,6 +75,15 @@ namespace Bee.Definition.UnitTests
             }
         }
 
+        [Fact]
+        [DisplayName("SecurityKeySettings.ToString 應回傳類別名稱字串")]
+        public void SecurityKeySettings_ToString_ReturnsClassName()
+        {
+            var settings = new SecurityKeySettings();
+
+            Assert.Equal(nameof(SecurityKeySettings), settings.ToString());
+        }
+
         /// <summary>
         /// 將 master key 寫入暫存檔，回傳檔案路徑。
         /// </summary>

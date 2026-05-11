@@ -60,8 +60,24 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(factory.CreateCreateTableCommandBuilder());
             Assert.NotNull(factory.CreateTableAlterCommandBuilder());
             Assert.NotNull(factory.CreateTableRebuildCommandBuilder());
-            // CreateTableSchemaProvider / CreateFormCommandBuilder 倚賴 databaseId / FormSchema，
-            // 由整合與 builder 測試覆蓋。
+        }
+
+        [Fact]
+        [DisplayName("PG DialectFactory 應能建立 FormCommandBuilder 實例")]
+        public void DialectFactory_CreateFormCommandBuilder_ReturnsInstance()
+        {
+            var factory = new PgDialectFactory();
+
+            Assert.NotNull(factory.CreateFormCommandBuilder("Employee"));
+        }
+
+        [Fact]
+        [DisplayName("PG DialectFactory 應能建立 TableSchemaProvider 實例")]
+        public void DialectFactory_CreateTableSchemaProvider_ReturnsInstance()
+        {
+            var factory = new PgDialectFactory();
+
+            Assert.NotNull(factory.CreateTableSchemaProvider("common_postgresql"));
         }
     }
 }
