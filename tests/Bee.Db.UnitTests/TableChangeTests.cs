@@ -60,7 +60,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("DropIndexChange.Describe 應回傳含索引名的描述字串")]
         public void DropIndexChange_Describe_ReturnsIndexName()
         {
-            var index = new TableSchemaIndex { Name = "ix_user_email" };
+            var index = new DbTableIndex { Name = "ix_user_email" };
             var change = new DropIndexChange(index);
 
             Assert.Equal("DropIndexChange on 'ix_user_email'", change.Describe());
