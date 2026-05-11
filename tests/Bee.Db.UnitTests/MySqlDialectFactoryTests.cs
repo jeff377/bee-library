@@ -66,7 +66,15 @@ namespace Bee.Db.UnitTests
             // CreateTableSchemaProvider 在實作後會 ctor 內 new DbAccess(databaseId)，
             // CI 未設 BEE_TEST_CONNSTR_MYSQL 時 'common_mysql' 沒註冊到 DbConnectionManager
             // → KeyNotFoundException；改由 MySqlIntegrationTests 覆蓋。
-            // CreateFormCommandBuilder 同理：實作後查 FormSchema，由 MySqlFormCommandBuilderTests 覆蓋。
+        }
+
+        [Fact]
+        [DisplayName("MySqlDialectFactory：CreateFormCommandBuilder 找不到 progId 應擲 FileNotFoundException")]
+        public void CreateFormCommandBuilder_UnknownProgId_Throws()
+        {
+            var factory = new MySqlDialectFactory();
+
+            Assert.Throws<System.IO.FileNotFoundException>(() => factory.CreateFormCommandBuilder("__not_exists__"));
         }
     }
 }
