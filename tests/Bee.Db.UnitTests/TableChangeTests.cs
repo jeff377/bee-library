@@ -97,5 +97,15 @@ namespace Bee.Db.UnitTests
 
             Assert.Equal("AddIndexChange on 'ix_test_email'", change.Describe());
         }
+
+        [Fact]
+        [DisplayName("RenameFieldChange.Describe 應回傳含舊欄位名稱與新欄位名稱的描述字串")]
+        public void RenameFieldChange_Describe_ReturnsCorrectString()
+        {
+            var newField = new DbField("employee_name", "Employee Name", FieldDbType.String);
+            var change = new RenameFieldChange("emp_name", newField);
+
+            Assert.Equal("RenameFieldChange 'emp_name' -> 'employee_name'", change.Describe());
+        }
     }
 }
