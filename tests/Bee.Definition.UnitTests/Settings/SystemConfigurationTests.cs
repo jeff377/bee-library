@@ -36,6 +36,15 @@ namespace Bee.Definition.UnitTests.Settings
         }
 
         [Fact]
+        [DisplayName("BackendConfiguration.ToString 應回傳型別名稱")]
+        public void BackendConfiguration_ToString_ReturnsTypeName()
+        {
+            var config = new BackendConfiguration();
+
+            Assert.Equal(nameof(BackendConfiguration), config.ToString());
+        }
+
+        [Fact]
         [DisplayName("VersionFiles 預設值應為空字串")]
         public void VersionFiles_Default_HasEmptyProperties()
         {
