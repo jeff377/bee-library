@@ -60,5 +60,16 @@ namespace Bee.Base.UnitTests
         {
             Assert.Throws<ArgumentException>(() => MemberPath.Of(() => 123));
         }
+
+        [Fact]
+        [DisplayName("Of 以 object 泛型參數存取值型別屬性應觸發 UnaryExpression 分支並回傳路徑")]
+        public void Of_ValueTypeAsObject_UnaryExpression_ReturnsPath()
+        {
+            // 明確指定 T=object 強制編譯器插入 Convert(UnaryExpression) 以裝箱值型別，
+            // 觸發 expression.Body is UnaryExpression 分支（MemberPath.cs 第 21-22 行）。
+            var path = MemberPath.Of<object>(() => Holder.IntValue);
+
+            Assert.Equal("Holder.IntValue", path);
+        }
     }
 }
