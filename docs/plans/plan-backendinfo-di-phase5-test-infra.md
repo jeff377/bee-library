@@ -1,8 +1,72 @@
 # 計畫：Phase 5 — 測試基礎設施重寫（per-class ServiceProvider、廢除 Initialize collection / TempDefinePath、並行恢復）
 
-**狀態：📝 擬定中**
+**狀態：🚧 進行中（架構基建 PR 5.1–5.4d 完成，剩 bulk migration + 清理）**
 
 > 本文件為主計畫 [plan-backendinfo-to-di-migration.md](plan-backendinfo-to-di-migration.md) 的 **Phase 5** sub-plan，獨立可 ship。
+
+## 實作進度
+
+| PR | 主題 | Commit | 備註 |
+|----|------|--------|------|
+| 5.1 | BackendInfo 屬性清空（Logging 死碼 / DatabaseSettingsCryptor / SecurityKeys） | `5037c128` | ✅ |
+| 5.1b | SysInfo.IsDebugMode 推下 / 廢除 `[Collection("SysInfo")]` | `188f9fe1` | ✅ |
+| 5.2 | DefinePathInfo → PathOptions 注入（static 改為 shim） | `de28bc2e` | ✅ 偏離：static facade 暫留至 5.7 |
+| 5.3a | RepositoryInfo 徹底刪除 + 4 consumers ctor/Services 注入 | `e6e0c09f` | ✅ |
+| 5.3b | IDbConnectionManager interface + DbConnectionManagerService | `067f9d59` | ✅ 偏離：static facade 暫留至 5.7 |
+| 5.3c | ICacheContainer interface + CacheContainerService | `d5a4f873` | ✅ 同上 |
+| 5.4a | BeeTestFixture / BeeTestFixtureBuilder 骨幹 | `40f2fcda` | ✅ |
+| 5.4b | SharedDatabaseState 抽出 + UseSharedDatabases() | `6f1a90c5` | ✅ |
+| 5.4c | SessionInfoService 改 ctor 注入 ICacheContainer | `f761c393` | ✅ |
+| 5.4d | Cache key prefix 隔離（opt-in），達成真 per-fixture 資料隔離 | `9bfac037` + `93ee78a9` | ✅ fix follow-up：CacheContainerService 預設不帶 prefix，BeeTestFixture 才透過 service replacement 加上 |
+
+## 偏離原計畫紀要
+
+實作過程中採用了幾個原計畫沒寫的折衷：
+
+1. **三個 static class 保留為 shim**：原計畫想在各 PR 內直接刪除 `DefinePathInfo` / `CacheContainer` / `DbConnectionManager` 靜態類別，但 5+ 個 src consumer + 66+ 個測試呼叫點需同步遷移；硬刪會與後續 PR 5.4 fixture 重寫衝突，因此改採「保留 thin shim、PR 5.7 集中清理」。原則上維持向後相容，consumer 邊遷移、shim 邊縮窄。
+2. **Cache prefix 改 opt-in 而非預設**：PR 5.4d 起初讓 `CacheContainerService` 每 instance 自動帶 `cc_{Guid}` prefix，結果破壞 `GlobalFixture` 的 bootstrap-then-DI handoff（bootstrap 寫的 DatabaseItem key 與 DI singleton prefix 不同 → KeyNotFoundException）。fix 後改為「預設空 prefix、`BeeTestFixtureBuilder` 才用 `services.Replace` 注入帶 prefix 的實例」。
+3. **BeeTestFixture 與 GlobalFixture 雙軌共存**：BeeTestFixture ctor 內 `_ = new GlobalFixture();` 觸發既有 once-init lock 共享 process-wide static 初始化。原計畫想完全替換，實際採漸進式雙軌（避免 fixture / shim 同步刪改）。
+
+## 剩餘工作
+
+機械型 bulk migration，依測試專案分批；每個 PR 內單一 test project 完整遷移，build 綠：
+
+### PR 5.4e–5.4j（按專案遷移，依複雜度排序）
+
+每個 PR 約 5–15 個 test class，內容相似：
+
+- `[Collection("Initialize")]` / `BaseTests` 繼承 → `IClassFixture<BeeTestFixture>` + ctor 注入 `_fx`
+- `BeeTestServices.GetRequiredService<T>()` → `_fx.GetRequiredService<T>()`
+- `TestBeeContext.Create()` → `TestBeeContext.Create(_fx)`（需新增 `TestBeeContext.Create(BeeTestFixture)` overload）
+- `TestSessionFactory.CreateAccessToken(...)` → 新增 `(BeeTestFixture, ...)` overload
+- `TempDefinePath` 使用點 → fixture subclass `WritableDefineFixture : BeeTestFixture` 配 `UseTempDefinePath()`，或單測試局部 `new BeeTestFixture(b => b.UseTempDefinePath())`
+
+建議順序（由簡至難）：
+
+| PR | 範圍 | 估約 |
+|----|------|------|
+| 5.4e | `Bee.Api.AspNetCore.UnitTests` (1 class, 11 tests) | 入門 PoC |
+| 5.4f | `Bee.Definition.UnitTests` 內 BeeTestFixture-using 部分（剩 ~7 class 帶 `[Collection("Initialize")]`） | small |
+| 5.4g | `Bee.ObjectCaching.UnitTests`（含 TempDefinePath 16 sites + LocalDefineAccess 寫檔測試） | 中 |
+| 5.4h | `Bee.Api.Core.UnitTests` + `Bee.Api.Client.UnitTests`（後者含 `ApiClientInfo.LocalServiceProvider` 限制） | 中 |
+| 5.4i | `Bee.Repository.UnitTests` + `Bee.Db.UnitTests`（含 `[DbFact]` 整合 + 66 個 `new DbAccess(id)` 呼叫點） | 大 |
+| 5.4j | `Bee.Business.UnitTests`（最多 BO test，含 `TestBeeContext.CreateWithOverrides` 使用） | 大 |
+
+### PR 5.5–5.7 清理
+
+只能在所有 test project 遷移完成後執行：
+
+- **PR 5.5**：刪除 `BeeTestServices` static class / `TestBeeContext.Create()` 無參數 overload / `TestSessionFactory.CreateAccessToken(...)` 無 fixture overload（grep 確認 0 caller 後）
+- **PR 5.6**：刪除 `TempDefinePath` / `BaseTests` / `GlobalCollection` / `GlobalFixture` / `DbGlobalFixture`；移除 `BeeTestFixture` ctor 內 `_ = new GlobalFixture();` 觸發（須改為直接呼叫 `SharedDatabaseState.EnsureRegistered`）
+- **PR 5.7**：刪除 `DefinePathInfo` / `CacheContainer` 靜態 facade / `DbConnectionManager` 靜態 facade / `DbConnectionManagerBootstrapper` / `CacheBootstrapper`；`AddBeeFramework` 簡化（不再需要 bootstrappers 把 DI singleton 寫入 static）
+
+### PR 5.8 文件 + CI
+
+- `docs/architecture-overview.md` 反映新測試 fixture 模型
+- `.claude/rules/testing.md` 更新「全域狀態與平行安全」段落
+- `MEMORY.md` 更新 `feedback_simple_config_no_dedicated_test` 等記憶
+- `xunit.runner.json` 確認 `parallelizeTestCollections: true`
+- CI 時間量測
 
 ## 背景
 
