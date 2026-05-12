@@ -8,7 +8,7 @@
 
 ### 主計畫定位
 
-Phase 0 是整個 BackendInfo → DI 遷移的前置清理。在動到 BackendInfo 任何屬性訪問點之前，先解掉一個結構性耦合：**`IDefineAccess` 同時負責「啟動期讀 `SystemSettings.xml`」與「runtime 服務」兩件事**。後續 Phase 3 要把 `IDefineAccess` 改成乾淨的 runtime DI 服務時，必須先讓「啟動期讀檔」不再依賴它。
+Phase 0 是整個 BackendInfo → DI 遷移的前置清理。在動到 BackendInfo 任何屬性訪問點之前，先解掉一個結構性耦合：**`IDefineAccess` 同時負責「啟動期讀 `SystemSettings.xml`」與「runtime 服務」兩件事**。後續 Phase 2 要把 `IDefineAccess` 改成乾淨的 runtime DI 服務時，必須先讓「啟動期讀檔」不再依賴它。
 
 ### chicken-and-egg 現況
 
@@ -62,13 +62,13 @@ BackendInfo.DefineAccess.GetSystemSettings()        // IDefineAccess 介面
 - 不改 `IDefineAccess` 介面定義
 - 不刪除 `SystemSettingsCache`（runtime path 仍需）
 - 不改 `BackendInfo.Initialize` 的簽章（仍接收 `BackendConfiguration`，由呼叫端從 `SystemSettings.BackendConfiguration` 抽出）
-- 不引入 DI 容器（DI 改造在 Phase 2 開始）
+- 不引入 DI 容器（DI 改造在 Phase 1 開始）
 
 ### 關於 `BackendInfo.DefinePath` 的後續安排
 
 `BackendInfo.DefinePath` 是跨層使用的「資料目錄根」配置值（`DefinePathInfo`、`MasterKeyProvider` 與多個測試 fixture 都讀它），**Phase 0 完全不動**。`SystemSettingsLoader.Load()` 取得檔案路徑時透過既有的 `DefinePathInfo.GetSystemSettingsFilePath()` facade，等於「站在現有路徑解析機制之上」，不新增對 `BackendInfo.DefinePath` 的直接引用。
 
-預計在 **Phase 3** 處理 `BackendInfo.DefinePath` 的移除（與 `IDefineAccess`、`MasterKeyProvider`、`DatabaseSettings` 一起，因為它們同屬 `Bee.Definition` 層 + Security 子層）。屆時引入 `PathOptions` 之類的注入式配置，一次轉完所有讀取點。Phase 0 期間 `BackendInfo.DefinePath` 行為與現況完全相同。
+預計在 **Phase 2** 處理 `BackendInfo.DefinePath` 的移除（與 `IDefineAccess`、`MasterKeyProvider`、`DatabaseSettings` 一起，因為它們同屬 `Bee.Definition` 層 + Security 子層）。屆時引入 `PathOptions` 之類的注入式配置，一次轉完所有讀取點。Phase 0 期間 `BackendInfo.DefinePath` 行為與現況完全相同。
 
 ## 設計
 
@@ -164,7 +164,7 @@ namespace Bee.Definition
 |------|------|
 | `tests/Bee.Tests.Shared/GlobalFixture.cs` | `InitializeOnce()` 中將 `var settings = BackendInfo.DefineAccess.GetSystemSettings();` 改為 `var settings = SystemSettingsLoader.Load();`，並加上中文註解說明 boot-time vs runtime 兩條路徑分工 |
 
-**注意**：`BackendInfo.DefineAccess = new LocalDefineAccess();` 那行（line 59）**保留**，因為前面的 `RegisterSqlServer()`、`EnsureFallbackCommonDatabaseItem()` 等仍需透過 `DefineAccess.GetDatabaseSettings()` 寫入 `DatabaseSettings.Items`。這條依賴會在 Phase 3 處理（屆時 `DatabaseSettings.Items` 改為注入式 `IDatabaseSettingsProvider`）。Phase 0 只解 SystemSettings 那一條 boot-time chicken-and-egg。
+**注意**：`BackendInfo.DefineAccess = new LocalDefineAccess();` 那行（line 59）**保留**，因為前面的 `RegisterSqlServer()`、`EnsureFallbackCommonDatabaseItem()` 等仍需透過 `DefineAccess.GetDatabaseSettings()` 寫入 `DatabaseSettings.Items`。這條依賴會在 Phase 2 處理（屆時 `DatabaseSettings.Items` 改為注入式 `IDatabaseSettingsProvider`）。Phase 0 只解 SystemSettings 那一條 boot-time chicken-and-egg。
 
 ### 既有測試影響
 
@@ -209,7 +209,7 @@ namespace Bee.Definition
 |------|------|
 | 既有測試依賴「先 set DefineAccess」的隱含順序 | grep `BackendInfo.DefineAccess = ` 全 repo 確認；目前找到的點都是 `GlobalFixture` 與測試專用，可一併調整 |
 | 啟動期讀檔失敗的錯誤訊息變化 | 新類別與既有 `SystemSettingsCache.CreateInstance` 都丟 `FileNotFoundException`；訊息文字微調但型別一致，不破壞既有 `Assert.Throws<FileNotFoundException>` 測試 |
-| 與後續 Phase 1 XML 結構重構的衝突 | Phase 0 不動 XML 結構與 `SystemSettings` POCO，Phase 1 改 schema 時 `SystemSettingsLoader` 自然吃新結構（反序列化目標型別自動切換）；無相依衝突 |
+| 與後續 phase 的 XML 結構演進 | Phase 0 不動 XML 結構與 `SystemSettings` POCO；後續 phase 改 schema 時 `SystemSettingsLoader` 自然吃新結構（反序列化目標型別自動切換）；無相依衝突 |
 
 ## 提交策略
 
@@ -224,6 +224,6 @@ namespace Bee.Definition
 
 ## 完成後狀態
 
-- 主計畫第 285 行 Phase 0 checkbox 打勾
-- Phase 3 動工時可確認：boot 期不再需要 `IDefineAccess`，後者可純粹作為 runtime 服務由 DI 管理
-- `GlobalFixture` 啟動序列簡化一行，為 Phase 6 測試 fixture 重寫做暖身
+- 主計畫頂部「Sub-plan 進度」表 Phase 0 狀態更新為 ✅ 已完成
+- Phase 2 動工時可確認：boot 期不再需要 `IDefineAccess`，後者可純粹作為 runtime 服務由 DI 管理
+- `GlobalFixture` 啟動序列簡化一行，為 Phase 5 測試 fixture 重寫做暖身

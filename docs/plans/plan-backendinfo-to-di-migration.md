@@ -1,13 +1,29 @@
 # 計畫：BackendInfo 由 Service Locator 改為 DI（主計畫）
 
-**狀態：📝 擬定中**
+**狀態：🚧 進行中**
 
 > 本文件為主計畫（main plan），定義整體目標、原則、階段路線。
-> 各階段的細部執行步驟另以 sub-plan 文件描述，列於文末。
+> 各階段的細部執行步驟另以 sub-plan 文件描述。
 >
 > **前置計畫**：[plan-remove-backendinfo-db-globals.md](plan-remove-backendinfo-db-globals.md)
 > — 先移除 `BackendInfo.DatabaseType` / `DatabaseId` 並導入 `DbCategoryIds` 常數與 `SessionInfo.CompanyDatabaseId`，
-> 完成後 Phase 2 範圍會大幅簡化。
+> 完成後 Phase 1 範圍會大幅簡化。
+
+## Sub-plan 進度
+
+| Phase | 主題 | 狀態 | Sub-plan |
+|-------|------|------|----------|
+| 0 | 前置清理（`SystemSettingsLoader`） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase0-systemsettings-loader.md](plan-backendinfo-di-phase0-systemsettings-loader.md) |
+| 1 | Bee.Db 配置注入 | 📝 未開始 | — |
+| 2 | ObjectCaching 與 DefineAccess（含 DefinePath） | 📝 未開始 | — |
+| 3 | Business 與 Repository 層注入（含 `IBeeContext`） | 📝 未開始 | — |
+| 4 | Api.Core 與 Api.AspNetCore | 📝 未開始 | — |
+| 5 | 測試基礎設施重寫 | 📝 未開始 | — |
+| 6 | 移除 BackendInfo 空殼 | 📝 未開始 | — |
+
+> 狀態圖例：📝 未開始 / 🚧 進行中 / ✅ 已完成
+>
+> 原 Phase 1（SystemSettings 結構重構）已撤除：XML 結構變動隨各 phase 實際需求逐步推進，不單獨抽出。原 Phase 6（跨平台支援）已撤除：MAUI/Desktop 為 client side，不在 BackendInfo 重構範圍。
 
 ## 背景
 
@@ -134,26 +150,12 @@ DI 容器無法直接管理「runtime 才知道參數的服務」，這類需透
 
 ERP 開發者新增 BO 完全不接觸 DI API。
 
-### 5. SystemSettings 結構與 Options 一致化
-
-現有 `BackendConfiguration` 內含 `Components`（型別名稱）、`SecurityKeySettings`（金鑰）、配置欄位散落於頂層。重構為：
-
-```
-SystemSettings
-├── Database         : DbOptions
-├── Encryption       : EncryptionOptions
-├── Log              : LogOptions
-└── Services         : ServiceRegistry
-```
-
-讓 `SystemSettings.Database` 物件**本身就是** `DbOptions`（可直接 `Options.Create(settings.Database)` 註冊），消除「XML 模型 ↔ Options」雙型別維護成本。
-
-### 6. 階段獨立可 ship
+### 5. 階段獨立可 ship
 
 每個階段完成後：
 - 整個 repo build 通過、所有測試綠燈
 - 該 phase 對應層的 `BackendInfo` 屬性**已從程式碼中刪除**（不是 `[Obsolete]` 標記）
-- `BackendInfo` 隨各 phase 縮減；Phase 7 刪除剩餘空殼類別本身
+- `BackendInfo` 隨各 phase 縮減；Phase 6 刪除剩餘空殼類別本身
 
 ## 階段路線圖
 
@@ -166,45 +168,7 @@ SystemSettings
 
 **獨立價值**：解開現有 boot-time chicken-and-egg 耦合，後續 DI 階段才能順利註冊。
 
-### Phase 1：SystemSettings 結構重構（低風險）
-**目標**：讓 `SystemSettings.xml` 結構與未來的 Options 類別 1:1 對應，作為 XML 反序列化目標型別。
-
-**相容性決策**：目前框架尚無外部消費者（NuGet 套件未廣泛採用），採**直接破壞性變更**，不撰寫 migration tool、不維持雙格式相容。
-
-**執行步驟**：
-
-- 設計新 `DbOptions`、`EncryptionOptions`、`LogOptions`、`ServiceRegistry` 類別
-  - 這些是 **POCO**，僅作為 XML 反序列化的目標型別，**不必然**透過 `IOptions<T>` 註冊（單欄位配置可直接以構造參數傳遞，見 Phase 2）
-- 新建 `SystemSettings` 容器組合上述四個區段（取代扁平的 `BackendConfiguration`）
-- 既有 `tests/Define/SystemSettings.xml` 等 fixture 直接以新結構重寫（破壞性變更，無 migration）
-- `BackendInfo.Initialize` 內部改吃新結構（仍是 Service Locator，但拆解動作留到 Phase 3 以後）
-
-**新 XML 結構示意**：
-
-```xml
-<SystemSettings>
-  <Database>
-    <MaxCommandTimeout>60</MaxCommandTimeout>
-  </Database>
-  <Encryption>
-    <ApiAesKey>...</ApiAesKey>
-    <!-- 4 個加密金鑰 -->
-  </Encryption>
-  <Log>
-    <!-- LogOptions 既有欄位 -->
-  </Log>
-  <Services>
-    <!-- 8 個服務的型別名稱（替換預設實作用） -->
-  </Services>
-</SystemSettings>
-```
-
-**獨立價值**：
-- XML 從扁平屬性升級為分組結構，可讀性提升
-- 為 Phase 2 起的 DI 化提供「Options-shaped」反序列化目標
-- 一次性清理 fixture 與 sample 的舊格式，避免遷移期雙格式並存
-
-### Phase 2：Bee.Db 配置注入（低風險）
+### Phase 1：Bee.Db 配置注入（低風險）
 **前置**：[plan-remove-backendinfo-db-globals.md](plan-remove-backendinfo-db-globals.md) 完成。
 **目標**：拆解 `DbCommandSpec` → `BackendInfo` 的耦合，讓 Bee.Db 完全脫離 Bee.Definition 的 static 配置。
 
@@ -225,7 +189,7 @@ SystemSettings
 - 解掉一處「測試修改 production static」違規（與 testing.md 平行安全規則一致）
 - 證明「簡單配置不一定走 `IOptions<T>`」——直接構造參數注入即可，為後續階段提供 pattern 參考
 
-### Phase 3：ObjectCaching 與 DefineAccess（高風險，最重要）
+### Phase 2：ObjectCaching 與 DefineAccess（高風險，最重要）
 **目標**：拆解 `IDefineAccess` 的 boot-time vs runtime 雙重職責。
 
 - 確認 Phase 0 抽出的 `SystemSettingsLoader` 已涵蓋所有 boot-time 用例
@@ -239,12 +203,12 @@ SystemSettings
 **風險**：此階段是設計負債最大的拆解（`DatabaseSettings.Items` static side effect、boot-time vs runtime 雙重職責），實際 `BackendInfo.DefineAccess` 引用 39 處跨多層分布。
 **緩解**：sub-plan 細化 PR 切分策略；本階段為單一 PR（不分批），確保 main 上不存在「一半已注入、一半仍讀 BackendInfo.DefineAccess」狀態。
 
-### Phase 4：Business 與 Repository 層注入（中–高風險）
+### Phase 3：Business 與 Repository 層注入（中–高風險）
 **目標**：BO 與 Repository 透過 `IBeeContext` 取得依賴，廢除對 BackendInfo 的呼叫；BO 維持零 DI 註冊。
 
 **執行步驟**：
 
-1. 設計 `IBeeContext` 介面（成員清單依 Phase 3 完成後的 BO 依賴盤點決定，預期 ≤ 5 個核心服務）
+1. 設計 `IBeeContext` 介面（成員清單依 Phase 2 完成後的 BO 依賴盤點決定，預期 ≤ 5 個核心服務）
 2. `SystemBusinessObject` / `FormBusinessObject` 兩個 base class ctor 改為 `(IBeeContext, Guid accessToken, [string progId,] bool isLocalCall)`，於 base 內解包至 `protected` 屬性
 3. 重新設計 `BusinessObjectFactory`：
    - `CreateSystemBusinessObject` 透過 `ActivatorUtilities.CreateInstance(sp, type, accessToken, isLocalCall)`
@@ -259,7 +223,7 @@ SystemSettings
 - BO-to-BO 呼叫透過共同介面 `ExecFunc(args)`，不依賴具體型別
 - 測試可建簡單 `TestBeeContext`（屬性 setter 開放）後 `new RequisitionBO(testCtx, token, "Requisition", true)`，不需 `BackendInfo.Initialize`
 
-### Phase 5：Api.Core 與 Api.AspNetCore（中風險）
+### Phase 4：Api.Core 與 Api.AspNetCore（中風險）
 **目標**：API 層全面 DI 化，建立組裝入口。
 
 - `JsonRpcExecutor` 改為 scoped，建構式注入 `IBusinessObjectFactory`、`IAccessTokenValidator`
@@ -269,7 +233,7 @@ SystemSettings
 
 **獨立價值**：Web 應用可完全脫離 `BackendInfo`，作為 v5.0 推薦寫法。
 
-### Phase 6：測試基礎設施重寫（中風險）
+### Phase 5：測試基礎設施重寫（中風險）
 **目標**：移除 `GlobalFixture`、`TempDefinePath`、`[Collection("Initialize")]`。
 
 - 設計 `BeeTestFixture` — 每個測試 class 建獨立 `ServiceProvider`（取代 process-wide init）
@@ -279,10 +243,10 @@ SystemSettings
 
 **獨立價值**：測試執行加速（無 process-wide lock）、隔離性提升。
 
-### Phase 7：移除 BackendInfo 空殼
+### Phase 6：移除 BackendInfo 空殼
 **目標**：刪除已縮減至空殼的 `BackendInfo` 與 `BackendConfiguration` 類別。
 
-進入此 phase 時，`BackendInfo` 的所有屬性已在 Phase 2-5 中隨對應層的轉換被逐一刪除，剩下的應該是無成員的空類別或只剩 `Initialize` 之類的入口（也已無實質作用）。
+進入此 phase 時，`BackendInfo` 的所有屬性已在 Phase 1-4 中隨對應層的轉換被逐一刪除，剩下的應該是無成員的空類別或只剩 `Initialize` 之類的入口（也已無實質作用）。
 
 - 刪除 `BackendInfo.cs` 與 `BackendConfiguration.cs`
 - 移除任何尚未清掉的 `BackendInfo.Initialize` 呼叫點
@@ -297,17 +261,17 @@ SystemSettings
 
 - 每個 phase 在單一 PR 內完成該層所有 `BackendInfo` 引用的刪除
 - 不使用 `[Obsolete]` 過渡標記、不引入 dual-ctor、不建相容 adapter
-- `BackendInfo` 隨各 phase 推進**逐屬性縮減**；Phase 7 刪除剩餘空殼
+- `BackendInfo` 隨各 phase 推進**逐屬性縮減**；Phase 6 刪除剩餘空殼
 - 不引入 `BackendInfo.Bind(IServiceProvider)` 或任何 static `IServiceProvider` 持有點（避免 Service Locator 換皮）
 
 ## 測試策略
 
-### 過渡期（Phase 1–6）
+### 過渡期（Phase 1–5）
 - 既有測試保留 `GlobalFixture` 機制，逐 phase 遷移
 - 新增測試一律使用新 DI fixture（建立範本後跟進）
 - CI 上要求「未遷移檔案 + 新 fixture 檔案」**都**綠燈
 
-### 完成後（Phase 7）
+### 完成後（Phase 6）
 - 廢除 `[Collection("Initialize")]` 串行限制
 - 廢除 `TempDefinePath`（檔案隔離由 `IDefineAccess` mock 處理）
 - 並行測試完全恢復，CI 時間預期縮短
@@ -322,11 +286,11 @@ SystemSettings
 
 | 風險 | 緩解方案 |
 |------|---------|
-| **Phase 3 `DefineAccess` 拆解過大** | 主計畫中標為「最高優先 sub-plan」，先單獨設計再開始 Phase 3 實作 |
+| **Phase 2 `DefineAccess` 拆解過大** | 主計畫中標為「最高優先 sub-plan」，先單獨設計再開始 Phase 2 實作 |
 | **BO 建構式擴張**（constructor over-injection） | 採用 `IBeeContext` 聚合常用服務 + base class 解包至具名屬性；BO 子類 ctor 簽章嚴格固定（見設計原則 §4） |
 | **公開 API 破壞性變更**（samples、外部使用者） | 目前無外部消費者；v5.0 release notes 標注破壞性變更 |
 | **單一 PR 內中間 commit build 破裂** | 允許（PR 合進 main 那刻必須綠即可）；rebase / squash 在合 PR 時處理 |
-| **測試遷移工作量大**（實際 ~82 處） | 集中於 Phase 6 處理，PR 控制在 < 1500 lines diff |
+| **測試遷移工作量大**（實際 ~82 處） | 集中於 Phase 5 處理，PR 控制在 < 1500 lines diff |
 
 ## 成功標準
 
@@ -336,25 +300,12 @@ SystemSettings
 - [ ] CI 通過時間相較 v4.x 不退步（理想：因移除全域初始化鎖而加速）
 - [ ] `docs/architecture-overview.md` 中無 `BackendInfo` 字樣（除歷史背景章節）
 
-## 後續 Sub-plans 清單
-
-各 phase 在動工前都會寫一份 sub-plan，存於 `docs/plans/`，由主計畫連結追蹤：
-
-- [x] `plan-backendinfo-di-phase0-systemsettings-loader.md` — Phase 0 ✅ 已完成（2026-05-12）
-- [ ] `plan-backendinfo-di-phase1-options-restructure.md` — Phase 1
-- [ ] `plan-backendinfo-di-phase2-bee-db-options.md` — Phase 2
-- [ ] `plan-backendinfo-di-phase3-defineaccess-decouple.md` — Phase 3（**最關鍵，需先深度設計**）
-- [ ] `plan-backendinfo-di-phase4-business-injection.md` — Phase 4
-- [ ] `plan-backendinfo-di-phase5-api-layer-di.md` — Phase 5
-- [ ] `plan-backendinfo-di-phase6-test-infra.md` — Phase 6
-- [ ] `plan-backendinfo-di-phase7-remove-backendinfo.md` — Phase 7
-
-每個 sub-plan 完成後在本文件對應 checkbox 打勾，方便追蹤主計畫進度。
+> Sub-plan 進度追蹤見[本文件頂部「Sub-plan 進度」表格](#sub-plan-進度)。每完成一個 phase 同步更新該表狀態與連結。
 
 ## 未決議題（待 sub-plan 進一步討論）
 
-- Phase 3：`DatabaseSettings.Items` static side effect 拆解方案（`IDatabaseSettingsProvider` vs 其他模式）
-- Phase 4：`IBeeContext` 應包含哪幾個服務（盤點現有 BO 對 BackendInfo 服務的依賴交集後決定，預期 ≤ 5 個核心服務）
-- Phase 4：progId → BO Type 對應 XML 的檔名與結構（命名候選：`FormBusinessObjects.xml` / `BoRouting.xml`）
-- Phase 5：JsonRpcExecutor 的 lifetime 抉擇（Scoped vs Transient）
-- Phase 6：測試 fixture 是否完全自訂或重用 `Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`
+- Phase 2：`DatabaseSettings.Items` static side effect 拆解方案（`IDatabaseSettingsProvider` vs 其他模式）
+- Phase 3：`IBeeContext` 應包含哪幾個服務（盤點現有 BO 對 BackendInfo 服務的依賴交集後決定，預期 ≤ 5 個核心服務）
+- Phase 3：progId → BO Type 對應 XML 的檔名與結構（命名候選：`FormBusinessObjects.xml` / `BoRouting.xml`）
+- Phase 4：JsonRpcExecutor 的 lifetime 抉擇（Scoped vs Transient）
+- Phase 5：測試 fixture 是否完全自訂或重用 `Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`
