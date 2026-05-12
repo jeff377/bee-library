@@ -8,9 +8,8 @@ using Bee.Definition.Storage;
 namespace Bee.Definition.UnitTests
 {
     /// <summary>
-    /// <see cref="BackendInfo"/> 的剩餘成員測試。Phase 4 之後 <c>BackendInfo</c> 僅保留
-    /// 4 個加密金鑰 + <c>LogOptions</c> + <c>LogWriter</c>；Phase 5/6 統一移至 <c>IOptions&lt;T&gt;</c>。
-    /// 同時保留 <see cref="DefineAccessDatabaseSettingsProvider"/> 的單元測試，避免額外建獨立檔案。
+    /// <see cref="DefineAccessDatabaseSettingsProvider"/> 單元測試。
+    /// （檔名仍稱 BackendInfoTests 是 Phase 4 殘留；待全面 fixture 重寫時重命名。）
     /// </summary>
     public class BackendInfoTests
     {

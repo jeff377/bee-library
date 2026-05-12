@@ -14,14 +14,30 @@ namespace Bee.ObjectCaching
     public class LocalDefineAccess : IDefineAccess
     {
         private readonly IDefineStorage _storage;
+        private readonly byte[] _configEncryptionKey;
 
         /// <summary>
         /// Initializes a new instance of <see cref="LocalDefineAccess"/>.
         /// </summary>
         /// <param name="storage">The define storage used for read fallback and writes.</param>
-        public LocalDefineAccess(IDefineStorage storage)
+        public LocalDefineAccess(IDefineStorage storage) : this(storage, Array.Empty<byte>())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="LocalDefineAccess"/> with an explicit
+        /// configuration encryption key for transparent encrypt/decrypt of <see cref="DatabaseSettings"/>
+        /// password fields at read/save time.
+        /// </summary>
+        /// <param name="storage">The define storage used for read fallback and writes.</param>
+        /// <param name="configEncryptionKey">
+        /// The 64-byte combined AES + HMAC key used to encrypt <see cref="DatabaseServer.Password"/> /
+        /// <see cref="DatabaseItem.Password"/> in <c>DatabaseSettings.xml</c>. Empty disables the crypto path.
+        /// </param>
+        public LocalDefineAccess(IDefineStorage storage, byte[] configEncryptionKey)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _configEncryptionKey = configEncryptionKey ?? Array.Empty<byte>();
         }
 
         /// <summary>
@@ -124,20 +140,26 @@ namespace Bee.ObjectCaching
         }
 
         /// <summary>
-        /// Gets the database settings.
+        /// Gets the database settings. <see cref="DatabaseServer.Password"/> and
+        /// <see cref="DatabaseItem.Password"/> are decrypted in place on first read
+        /// (subsequent cache hits see plain text and the decrypt step is an idempotent no-op).
         /// </summary>
         public DatabaseSettings GetDatabaseSettings()
         {
-            return CacheContainer.DatabaseSettings.Get()!;
+            var settings = CacheContainer.DatabaseSettings.Get()!;
+            DatabaseSettingsCryptor.DecryptInPlace(settings, _configEncryptionKey);
+            return settings;
         }
 
         /// <summary>
-        /// Saves the database settings.
+        /// Saves the database settings. Plain-text <see cref="DatabaseServer.Password"/> /
+        /// <see cref="DatabaseItem.Password"/> are encrypted in place (already-prefixed
+        /// <c>enc:</c> values pass through) before serializing to XML.
         /// </summary>
         /// <param name="settings">The database settings.</param>
         public void SaveDatabaseSettings(DatabaseSettings settings)
         {
-            // Save database settings to file
+            DatabaseSettingsCryptor.EncryptInPlace(settings, _configEncryptionKey);
             string filePath = DefinePathInfo.GetDatabaseSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
             // Invalidate the cache

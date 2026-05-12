@@ -18,7 +18,7 @@
 | 2 | ObjectCaching 與 DefineAccess（含 DefinePath） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase2-defineaccess-decouple.md](plan-backendinfo-di-phase2-defineaccess-decouple.md) |
 | 3 | Business 與 Repository 層注入（含 `IBeeContext`） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase3-business-injection.md](plan-backendinfo-di-phase3-business-injection.md) |
 | 4 | Api.Core 與 Api.AspNetCore | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase4-api-di.md](plan-backendinfo-di-phase4-api-di.md) |
-| 5 | 測試基礎設施重寫 | 📝 未開始 | — |
+| 5 | 測試基礎設施重寫 | 📝 擬定中 | [plan-backendinfo-di-phase5-test-infra.md](plan-backendinfo-di-phase5-test-infra.md) |
 | 6 | 移除 BackendInfo 空殼 | 📝 未開始 | — |
 
 > 狀態圖例：📝 未開始 / 🚧 進行中 / ✅ 已完成

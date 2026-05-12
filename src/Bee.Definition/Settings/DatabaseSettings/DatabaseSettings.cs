@@ -1,8 +1,5 @@
 using System.ComponentModel;
-using System.Text;
 using System.Xml.Serialization;
-using Bee.Base;
-using Bee.Base.Security;
 using Bee.Base.Attributes;
 using Bee.Base.Serialization;
 using System.Text.Json.Serialization;
@@ -14,7 +11,7 @@ namespace Bee.Definition.Settings
     /// </summary>
     [Description("Database settings.")]
     [TreeNode("Database Settings")]
-    public class DatabaseSettings : IObjectSerializeFile, IObjectSerializeProcess, ISerializableClone
+    public class DatabaseSettings : IObjectSerializeFile, ISerializableClone
     {
         private DatabaseServerCollection? _servers = null;
         private DatabaseItemCollection? _items = null;
@@ -66,80 +63,6 @@ namespace Bee.Definition.Settings
         public void SetObjectFilePath(string filePath)
         {
             ObjectFilePath = filePath;
-        }
-
-        #endregion
-
-        #region IObjectSerializeProcess Interface
-
-        /// <summary>
-        /// Called before serialization.
-        /// </summary>
-        /// <param name="serializeFormat">The serialization format.</param>
-        public void BeforeSerialize(SerializeFormat serializeFormat)
-        {
-            var combinedKey = BackendInfo.ConfigEncryptionKey;
-            if (combinedKey == null || combinedKey.Length == 0) return;
-
-            AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
-
-            foreach (var server in Servers!.Where(s => StringUtilities.IsNotEmpty(s.Password) && !s.Password.StartsWith("enc:")))
-            {
-                byte[] plainBytes = Encoding.UTF8.GetBytes(server.Password);
-                byte[] encrypted = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
-                server.Password = "enc:" + Convert.ToBase64String(encrypted);
-            }
-
-            foreach (var item in Items!.Where(i => StringUtilities.IsNotEmpty(i.Password) && !i.Password.StartsWith("enc:")))
-            {
-                byte[] plainBytes = Encoding.UTF8.GetBytes(item.Password);
-                byte[] encrypted = AesCbcHmacCryptor.Encrypt(plainBytes, aesKey, hmacKey);
-                item.Password = "enc:" + Convert.ToBase64String(encrypted);
-            }
-        }
-
-        /// <summary>
-        /// Called after serialization.
-        /// </summary>
-        /// <param name="serializeFormat">The serialization format.</param>
-        public void AfterSerialize(SerializeFormat serializeFormat)
-        {
-        }
-
-        /// <summary>
-        /// Called after deserialization.
-        /// </summary>
-        /// <param name="serializeFormat">The serialization format.</param>
-        public void AfterDeserialize(SerializeFormat serializeFormat)
-        {
-            var combinedKey = BackendInfo.ConfigEncryptionKey;
-            if (combinedKey == null || combinedKey.Length == 0) return;
-
-            AesCbcHmacKeyGenerator.FromCombinedKey(combinedKey, out var aesKey, out var hmacKey);
-
-            foreach (var server in Servers!)
-                server.Password = DecryptPassword(server.Password, aesKey, hmacKey);
-
-            foreach (var item in Items!)
-                item.Password = DecryptPassword(item.Password, aesKey, hmacKey);
-        }
-
-        private static string DecryptPassword(string password, byte[] aesKey, byte[] hmacKey)
-        {
-            if (StringUtilities.IsEmpty(password) || !password.StartsWith("enc:"))
-                return password;
-
-            try
-            {
-                string base64 = password.Substring(4);
-                byte[] encrypted = Convert.FromBase64String(base64);
-                byte[] plain = AesCbcHmacCryptor.Decrypt(encrypted, aesKey, hmacKey);
-                return Encoding.UTF8.GetString(plain);
-            }
-            catch
-            {
-                return string.Empty;
-            }
         }
 
         #endregion

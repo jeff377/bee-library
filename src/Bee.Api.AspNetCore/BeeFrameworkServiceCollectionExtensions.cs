@@ -35,19 +35,19 @@ namespace Bee.Api.AspNetCore
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
 
-            // 1. Decrypt security keys + apply log options (stays on BackendInfo for now;
-            //    Phase 5/6 moves to IOptions<T>).
-            InitializeSecurityKeys(configuration, autoCreateMasterKey);
-            BackendInfo.LogOptions = configuration.LogOptions;
+            // 1. Decrypt the security keys once and thread them through downstream ctors.
+            //    Each key is byte[]; empty means "not configured" (callers gracefully no-op
+            //    when the relevant crypto path runs without a key).
+            var keys = DecryptSecurityKeys(configuration.SecurityKeySettings, autoCreateMasterKey);
 
             var components = configuration.Components;
 
             // 2. IDefineStorage / IDefineAccess — singletons; IDefineAccess construction
-            //    supports both (IDefineStorage) and parameterless ctor shapes.
+            //    supports (IDefineStorage, byte[]), (IDefineStorage), and parameterless ctor shapes.
             services.AddSingleton<IDefineStorage>(_ => CreateOrDefault<IDefineStorage>(
                 components.DefineStorage, BackendDefaultTypes.DefineStorage));
             services.AddSingleton<IDefineAccess>(sp =>
-                ResolveDefineAccess(components.DefineAccess, sp.GetRequiredService<IDefineStorage>()));
+                ResolveDefineAccess(components.DefineAccess, sp.GetRequiredService<IDefineStorage>(), keys.ConfigEncryptionKey));
 
             // 3. Database settings provider (used by DbConnectionManager bootstrap).
             services.AddSingleton<IDatabaseSettingsProvider>(sp =>
@@ -76,7 +76,7 @@ namespace Bee.Api.AspNetCore
             // 6. IApiEncryptionKeyProvider — Static needs the configured key byte[]; Dynamic
             //    needs ISessionInfoService. Phase 5/6 unifies via IOptions<T> + DI ctor.
             services.AddSingleton<IApiEncryptionKeyProvider>(sp =>
-                CreateApiEncryptionKeyProvider(sp, components.ApiEncryptionKeyProvider));
+                CreateApiEncryptionKeyProvider(sp, components.ApiEncryptionKeyProvider, keys.ApiEncryptionKey));
 
             // 7. Login attempt tracker — optional service with no default impl. Apps wanting
             //    brute-force protection register their own impl via
@@ -108,14 +108,18 @@ namespace Bee.Api.AspNetCore
 
         /// <summary>
         /// Resolves the configured <see cref="IDefineAccess"/> implementation. Supports
-        /// <c>(IDefineStorage)</c> ctor (used by <c>LocalDefineAccess</c>) and parameterless
-        /// ctor (used by implementations that manage their own dependencies).
+        /// <c>(IDefineStorage, byte[])</c> ctor (used by <c>LocalDefineAccess</c> with
+        /// the config encryption key), <c>(IDefineStorage)</c>, and parameterless ctors.
         /// </summary>
-        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage)
+        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage, byte[] configEncryptionKey)
         {
             var resolvedName = string.IsNullOrWhiteSpace(typeName) ? BackendDefaultTypes.DefineAccess : typeName;
             var type = AssemblyLoader.GetType(resolvedName)
                 ?? throw new InvalidOperationException($"IDefineAccess type '{resolvedName}' not found.");
+
+            var ctorWithKey = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(byte[]) });
+            if (ctorWithKey != null)
+                return (IDefineAccess)ctorWithKey.Invoke(new object[] { storage, configEncryptionKey });
 
             var ctorWithStorage = type.GetConstructor(new[] { typeof(IDefineStorage) });
             if (ctorWithStorage != null)
@@ -153,17 +157,17 @@ namespace Bee.Api.AspNetCore
 
         /// <summary>
         /// Creates the configured <see cref="IApiEncryptionKeyProvider"/>. The static provider
-        /// needs the shared API key byte[] (decrypted into <see cref="BackendInfo.ApiEncryptionKey"/>);
-        /// the dynamic provider needs <see cref="ISessionInfoService"/> via DI.
+        /// receives the decrypted API key byte[] directly; the dynamic provider relies on
+        /// <see cref="ISessionInfoService"/> resolved through DI.
         /// </summary>
-        private static IApiEncryptionKeyProvider CreateApiEncryptionKeyProvider(IServiceProvider sp, string? configured)
+        private static IApiEncryptionKeyProvider CreateApiEncryptionKeyProvider(IServiceProvider sp, string? configured, byte[] apiEncryptionKey)
         {
             var typeName = string.IsNullOrWhiteSpace(configured) ? BackendDefaultTypes.ApiEncryptionKeyProvider : configured;
             var type = AssemblyLoader.GetType(typeName)
                 ?? throw new InvalidOperationException($"Type '{typeName}' not found for IApiEncryptionKeyProvider.");
 
             if (type == typeof(StaticApiEncryptionKeyProvider))
-                return new StaticApiEncryptionKeyProvider(BackendInfo.ApiEncryptionKey);
+                return new StaticApiEncryptionKeyProvider(apiEncryptionKey);
             return (IApiEncryptionKeyProvider)ActivatorUtilities.CreateInstance(sp, type);
         }
 
@@ -193,26 +197,34 @@ namespace Bee.Api.AspNetCore
         }
 
         /// <summary>
-        /// Decrypts security keys from the configuration and stores them on
-        /// <see cref="BackendInfo"/> for downstream consumption. Kept on <c>BackendInfo</c>
-        /// as transitional storage in Phase 4; Phase 5/6 migrates to <c>IOptions&lt;T&gt;</c>.
+        /// Decrypts the four security keys from <paramref name="settings"/> in one pass
+        /// using the master key. Empty entries map to empty byte arrays so downstream
+        /// crypto paths see a consistent "no key configured" sentinel.
         /// </summary>
-        private static void InitializeSecurityKeys(BackendConfiguration configuration, bool autoCreateMasterKey)
+        private static SecurityKeys DecryptSecurityKeys(SecurityKeySettings settings, bool autoCreateMasterKey)
         {
-            var settings = configuration.SecurityKeySettings;
             byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, autoCreateMasterKey);
 
-            if (StringUtilities.IsNotEmpty(settings.ApiEncryptionKey))
-                BackendInfo.ApiEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ApiEncryptionKey);
+            return new SecurityKeys(
+                ApiEncryptionKey: Decrypt(masterKey, settings.ApiEncryptionKey),
+                CookieEncryptionKey: Decrypt(masterKey, settings.CookieEncryptionKey),
+                ConfigEncryptionKey: Decrypt(masterKey, settings.ConfigEncryptionKey),
+                DatabaseEncryptionKey: Decrypt(masterKey, settings.DatabaseEncryptionKey));
 
-            if (StringUtilities.IsNotEmpty(settings.CookieEncryptionKey))
-                BackendInfo.CookieEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.CookieEncryptionKey);
-
-            if (StringUtilities.IsNotEmpty(settings.ConfigEncryptionKey))
-                BackendInfo.ConfigEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.ConfigEncryptionKey);
-
-            if (StringUtilities.IsNotEmpty(settings.DatabaseEncryptionKey))
-                BackendInfo.DatabaseEncryptionKey = EncryptionKeyProtector.DecryptEncryptedKey(masterKey, settings.DatabaseEncryptionKey);
+            static byte[] Decrypt(byte[] masterKey, string? encryptedKey)
+                => StringUtilities.IsNotEmpty(encryptedKey)
+                    ? EncryptionKeyProtector.DecryptEncryptedKey(masterKey, encryptedKey!)
+                    : Array.Empty<byte>();
         }
+
+        /// <summary>
+        /// Decrypted security keys bundle. Each field is the 64-byte combined AES + HMAC
+        /// key (or empty when not configured).
+        /// </summary>
+        private readonly record struct SecurityKeys(
+            byte[] ApiEncryptionKey,
+            byte[] CookieEncryptionKey,
+            byte[] ConfigEncryptionKey,
+            byte[] DatabaseEncryptionKey);
     }
 }
