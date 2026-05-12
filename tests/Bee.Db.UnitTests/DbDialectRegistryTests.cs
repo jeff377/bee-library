@@ -117,6 +117,13 @@ namespace Bee.Db.UnitTests
             Assert.Contains("tmp_st_sample", sql);
         }
 
+        [Fact]
+        [DisplayName("CreateFormCommandBuilder 找不到 progId 應擲 FileNotFoundException")]
+        public void CreateFormCommandBuilder_UnknownProgId_ThrowsFileNotFoundException()
+        {
+            Assert.Throws<System.IO.FileNotFoundException>(() => _factory.CreateFormCommandBuilder("__not_exists__"));
+        }
+
         // 測試用 helper（避免為了單一煙霧測試依賴較重的 schema 建構）
         private sealed class DbFieldForTest : global::Bee.Definition.Database.DbField
         {
