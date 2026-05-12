@@ -27,44 +27,55 @@
 | **可測試性** | 159 個測試引用 BackendInfo；需要 `GlobalFixture`、`TempDefinePath`、`[Collection("Initialize")]` 等繁瑣機制維持隔離 |
 | **依賴顯性** | BO 在程式碼內呼叫 `BackendInfo.SessionInfoService.Get(...)`，建構式看不出依賴，IDE 無法靜態分析 |
 | **生命週期** | 全部服務都是 process-wide singleton；Web 場景下 `ISessionInfoService` 應為 per-request scoped，目前以「執行緒上下文 + 靜態服務」混搭 |
-| **多平台適配** | 即將支援 MAUI / Desktop；Service Locator 在跨平台情境下生命週期語意難以表達 |
 | **初始化耦合** | `DefineAccess` 既是 boot-time 配置來源（讀 `SystemSettings.xml`）又是 runtime 服務，職責不清 |
 | **反射建構** | `BusinessObjectFactory` 用 `AssemblyLoader.CreateInstance` 建 BO，BO 無法宣告依賴 |
 
 ### 為何選擇 DI
 
-- .NET 10 三種應用模型（ASP.NET Core / MAUI / Desktop with Generic Host）皆原生支援 `Microsoft.Extensions.DependencyInjection`，註冊邏輯可跨平台共用
+- .NET 10 ASP.NET Core 原生支援 `Microsoft.Extensions.DependencyInjection`；本框架的後端宿主程式碼可直接受益
 - DI 容器強制把依賴宣告於建構式 → 編譯期可見、IDE 可分析、測試可注入 mock
 - Options Pattern 與 `IValidateOptions<T>` 支援啟動期驗證，比 `BackendInfo.Initialize` 內部偷偷拋例外更早失敗
-- 生命週期（Singleton / Scoped / Transient）語意明確，scope 邊界各平台可一致實作
+- 生命週期（Singleton / Scoped / Transient）語意明確，per-request scope 邊界清楚
+
+### 範圍邊界
+
+**本計畫聚焦後端**（`Bee.Api.AspNetCore` host 內執行的服務層）。
+
+**不在本計畫範圍內**：
+
+- **遠端模式 client**（MAUI / Desktop 等應用透過 `Bee.Api.Client` 走 JSON-RPC 呼叫後端）—— 不 host BO / Repository / `IDefineAccess`，純粹是 API 消費者
+- **`Bee.Api.Client` 近端模式**（in-process 呼叫，例如工具程式直接執行後端邏輯）—— 此模式下確實需要在 client process 內初始化後端服務，但未來再考慮如何套用本計畫的 DI 註冊邏輯
+
+**對近端模式的設計約束**：`AddBeeFramework()` extension 應設計成「host-agnostic 的 `IServiceCollection` 註冊邏輯」，不要綁死 ASP.NET Core 專屬型別（如 `WebApplicationBuilder`）。如此未來近端模式（如 Console / 工具程式）可重用同一份註冊邏輯，只需各自決定 ServiceProvider 的建立方式與 scope 管理策略。
 
 ## 目標
 
 1. 移除 `BackendInfo` 類別，所有 Service Locator 呼叫點改為建構式注入或工廠模式
 2. `SystemSettings.xml` 的配置仍由 XML 驅動，但反序列化後直接對映 Options 型別
-3. 框架同時支援 Web / MAUI / Desktop，共用同一份服務註冊邏輯
-4. 測試基礎設施簡化 — 廢除 `GlobalFixture` 全域初始化、`TempDefinePath` swap、`[Collection("Initialize")]` 串行
-5. 公開 API surface（`samples/` 與 BO 建構式）的破壞性變更控制在 v5.0 單一版本內完成
+3. 測試基礎設施簡化 — 廢除 `GlobalFixture` 全域初始化、`TempDefinePath` swap、`[Collection("Initialize")]` 串行
+4. 整個遷移於 v5.0 完成，無外部消費者故採全 DI 路徑、不留相容過渡層
 
 ## 不變條件（Invariants）
 
 執行各階段時必須維持：
 
-- **`SystemSettings.xml` 仍是配置主來源** — 不引入 `appsettings.json` 取代（MAUI 等平台讀檔行為一致性）
+- **`SystemSettings.xml` 仍是配置主來源** — 不引入 `appsettings.json` 取代
 - **8 個核心服務的可置換性** — 使用者仍可在 XML 中宣告自訂實作型別替換預設
 - **加密管線順序** — `序列化 → 壓縮 → 加密` 不變，DI 化不影響密碼學設計
 - **每個階段必須可獨立 ship** — 不允許「重構半套既不能 ship 也不能回頭」
-- **跨 commit 期間 build 必須通過** — 不能用 long-lived branch
+- **每個 phase 在單一 PR 內完成該層所有 `BackendInfo` 引用的刪除**（無外部消費者，採全 DI 路徑，不留 `[Obsolete]` 過渡 API、不引入相容 adapter；PR 合進 main 那一刻 build 必須綠）
 
 ## 範圍評估摘要
 
-| 維度 | 數量 |
-|------|------|
-| `BackendInfo.*` 總引用點 | 217（`src/` 58、`tests/` 159） |
-| 跨層 | 6 層（Definition / Base / Db / ObjectCaching / Business / Repository / Api.Core / Api.AspNetCore） |
-| 服務介面 | 8 個必選 + 1 個可選 |
-| 配置值欄位 | 5 個純配置 + 4 個加密金鑰 |
-| 測試 fixture 需重寫 | `GlobalFixture`、`TempDefinePath`、`BackendInfoTests` 及 159 個呼叫點 |
+| 維度 | 數量 | 備註 |
+|------|------|------|
+| `BackendInfo.*` 總引用點 | 217（`src/` 58、`tests/` 159） | — |
+| 隨 `BackendInfo` 刪除自然消失 | ~84 | `BackendInfoTests.cs`（52）、`DatabaseSettingsTests.cs`（25）、`BackendInfo.cs` 自我引用（7） |
+| **實際需要轉換** | **~133** | src 約 51 + tests 約 82 |
+| 跨層 | 6 層（Definition / Base / Db / ObjectCaching / Business / Repository / Api.Core / Api.AspNetCore） | — |
+| 服務介面 | 8 個必選 + 1 個可選 | — |
+| 配置值欄位 | 5 個純配置 + 4 個加密金鑰 | — |
+| 外部消費者 | 0 | 採全 DI 一次到位，不留相容層 |
 
 ## 設計原則
 
@@ -77,27 +88,53 @@
 
 ### 2. 生命週期決策
 
-| 服務 | Web | MAUI / Desktop | 備註 |
-|------|-----|----------------|------|
-| `IDbAccessFactory`、`IBusinessObjectFactory`、`IDefineAccess`、`IDefineStorage` | Singleton | Singleton | 一致 |
-| `ICacheDataSourceProvider`、`IEnterpriseObjectService` | Singleton | Singleton | 一致 |
-| `ISessionInfoService` | Scoped（per request） | Singleton（per app） | **平台差異點** |
-| `IAccessTokenValidator` | Scoped | Singleton 或不註冊 | 平台差異點 |
-| `IApiEncryptionKeyProvider` | Scoped | Singleton | 平台差異點 |
-| `ILoginAttemptTracker` | Singleton（含 cache） | Singleton 或不註冊 | 一致 |
+ASP.NET Core 後端宿主：
 
-跨平台差異透過「平台專屬的 `Add<Platform>Bee()` extension」處理，核心 `AddBeeFramework()` 不涉及平台分支。
+| 服務 | Lifetime |
+|------|---------|
+| `IDbAccessFactory`、`IBusinessObjectFactory`、`IDefineAccess`、`IDefineStorage` | Singleton |
+| `ICacheDataSourceProvider`、`IEnterpriseObjectService` | Singleton |
+| `IFormBoTypeResolver` | Singleton |
+| `IBeeContext` | Scoped（per request） |
+| `ISessionInfoService` | Scoped（per request） |
+| `IAccessTokenValidator` | Scoped |
+| `IApiEncryptionKeyProvider` | Scoped |
+| `ILoginAttemptTracker` | Singleton（含 cache） |
 
 ### 3. 工廠模式適用範圍
 
 DI 容器無法直接管理「runtime 才知道參數的服務」，這類需透過工廠：
 
 - `IDbAccessFactory` — 因 `DbAccess` 依連線 ID 建立
-- `IBusinessObjectFactory` — 因 BO 名稱由 JSON-RPC 請求決定（保留現有介面，但內部改用 `IServiceProvider` + `ActivatorUtilities.CreateInstance`）
+- `IBusinessObjectFactory` — 因 BO 由 `accessToken` / `progId` 等 runtime 值派發（保留現有 `CreateSystemBusinessObject` / `CreateFormBusinessObject(progId)` 介面，內部改用 `IServiceProvider` + `ActivatorUtilities.CreateInstance`）
 
 `IServiceProvider` **只允許**出現在這兩個工廠類別內，其他業務類別禁止注入 — 否則退化回 Service Locator。
 
-### 4. SystemSettings 結構與 Options 一致化
+### 4. BO 建構式統一與零 DI 註冊
+
+**動機**：ERP 應用會有上千個 `FormBusinessObject` 子類，由 progId XML 表派發；應用開發者寫新 BO 時不應接觸 DI API。
+
+**規則**：
+
+- **共同介面**：所有 BO 仍實作 `IBusinessObject`（`ExecFunc` / `ExecFuncAnonymous`）；BO-to-BO 呼叫只透過此介面 + `ExecFuncArgs`，**禁止**呼叫具名方法
+- **兩個 base class，ctor 簽章嚴格固定**：
+  - `SystemBusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall)`
+  - `FormBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall)`
+- **`IBeeContext` 聚合常用服務**（`ISessionInfoService` / `IDbAccessFactory` / `IBusinessObjectFactory` 等），base class 解包到具名 `protected` 屬性供子類使用
+- **BO 子類 ctor 必須照搬 base 簽章**（不允許子類追加額外注入參數）—— 任何特化服務都從 `IBeeContext` 取得
+- **BO 不註冊 DI 容器**；factory 透過 `ActivatorUtilities.CreateInstance(sp, boType, accessToken, progId, isLocalCall)` 建構
+- **progId → BO Type 對應由 XML 宣告**（`IFormBoTypeResolver` 啟動時讀入），不在 DI 註冊
+
+**結果**：
+
+| 角色 | 註冊 DI? | 工作量 |
+|------|---------|--------|
+| 框架核心服務（`IBeeContext` 等 8 個） | ✅ | 一次性 |
+| BO 子類（上千個） | ❌ | 寫類別 + 加 XML 一行 |
+
+ERP 開發者新增 BO 完全不接觸 DI API。
+
+### 5. SystemSettings 結構與 Options 一致化
 
 現有 `BackendConfiguration` 內含 `Components`（型別名稱）、`SecurityKeySettings`（金鑰）、配置欄位散落於頂層。重構為：
 
@@ -111,12 +148,12 @@ SystemSettings
 
 讓 `SystemSettings.Database` 物件**本身就是** `DbOptions`（可直接 `Options.Create(settings.Database)` 註冊），消除「XML 模型 ↔ Options」雙型別維護成本。
 
-### 5. 階段獨立可 ship
+### 6. 階段獨立可 ship
 
 每個階段完成後：
 - 整個 repo build 通過、所有測試綠燈
-- 不留 half-migrated 狀態（不允許「一半類別已注入、一半仍讀 BackendInfo」混搭超過一個 PR 的時間）
-- `BackendInfo` 在最終階段才刪除；中間階段以 `[Obsolete]` 標記過渡 API
+- 該 phase 對應層的 `BackendInfo` 屬性**已從程式碼中刪除**（不是 `[Obsolete]` 標記）
+- `BackendInfo` 隨各 phase 縮減；Phase 7 刪除剩餘空殼類別本身
 
 ## 階段路線圖
 
@@ -130,25 +167,63 @@ SystemSettings
 **獨立價值**：解開現有 boot-time chicken-and-egg 耦合，後續 DI 階段才能順利註冊。
 
 ### Phase 1：SystemSettings 結構重構（低風險）
-**目標**：讓 SystemSettings 結構與未來的 Options 類別 1:1 對應。
+**目標**：讓 `SystemSettings.xml` 結構與未來的 Options 類別 1:1 對應，作為 XML 反序列化目標型別。
+
+**相容性決策**：目前框架尚無外部消費者（NuGet 套件未廣泛採用），採**直接破壞性變更**，不撰寫 migration tool、不維持雙格式相容。
+
+**執行步驟**：
 
 - 設計新 `DbOptions`、`EncryptionOptions`、`LogOptions`、`ServiceRegistry` 類別
-- 重構 `BackendConfiguration` 或新建 `SystemSettings` 容器以組合上述 Options
-- 撰寫 XML schema migration tool（一次性轉換既有 `SystemSettings.xml`）
-- `BackendInfo.Initialize` 仍是 Service Locator，但內部改吃新結構
+  - 這些是 **POCO**，僅作為 XML 反序列化的目標型別，**不必然**透過 `IOptions<T>` 註冊（單欄位配置可直接以構造參數傳遞，見 Phase 2）
+- 新建 `SystemSettings` 容器組合上述四個區段（取代扁平的 `BackendConfiguration`）
+- 既有 `tests/Define/SystemSettings.xml` 等 fixture 直接以新結構重寫（破壞性變更，無 migration）
+- `BackendInfo.Initialize` 內部改吃新結構（仍是 Service Locator，但拆解動作留到 Phase 3 以後）
 
-**獨立價值**：即使不繼續 DI 化，新結構也比扁平屬性更可讀；提供未來 DI 註冊的「Options-shaped」介面。
+**新 XML 結構示意**：
+
+```xml
+<SystemSettings>
+  <Database>
+    <MaxCommandTimeout>60</MaxCommandTimeout>
+  </Database>
+  <Encryption>
+    <ApiAesKey>...</ApiAesKey>
+    <!-- 4 個加密金鑰 -->
+  </Encryption>
+  <Log>
+    <!-- LogOptions 既有欄位 -->
+  </Log>
+  <Services>
+    <!-- 8 個服務的型別名稱（替換預設實作用） -->
+  </Services>
+</SystemSettings>
+```
+
+**獨立價值**：
+- XML 從扁平屬性升級為分組結構，可讀性提升
+- 為 Phase 2 起的 DI 化提供「Options-shaped」反序列化目標
+- 一次性清理 fixture 與 sample 的舊格式，避免遷移期雙格式並存
 
 ### Phase 2：Bee.Db 配置注入（低風險）
 **前置**：[plan-remove-backendinfo-db-globals.md](plan-remove-backendinfo-db-globals.md) 完成。
-**目標**：底層配置（完成前置後僅剩 `MaxDbCommandTimeout`）改為注入式。
+**目標**：拆解 `DbCommandSpec` → `BackendInfo` 的耦合，讓 Bee.Db 完全脫離 Bee.Definition 的 static 配置。
 
-- 評估是否仍需 `DbOptions` 包裝（僅一個欄位，候選方案：保留 static / `IOptions<DbOptions>` / 直接注入 `int`）
-- 設計 `IDbAccessFactory`，內部接收選定的配置形式
-- `DbAccess` 提供雙建構式：DI 版 + 過渡版（從 BackendInfo 取得，標 `[Obsolete]`）
-- 跨層調用點仍可呼叫無參數建構式，向下相容
+完成前置後，`BackendInfo` 上 DB 相關只剩 `MaxDbCommandTimeout`（cap 值）。但問題本質不是「單一欄位放哪」，而是 **`DbCommandSpec` setter 內部讀 static**（`src/Bee.Db/DbCommandSpec.cs:101`）——`DbCommandSpec` 是 DTO，用 `new` 建立於數百個呼叫點，沒有 DI 路徑，才被迫 reach 到 BackendInfo。這是 Bee.Db 黏住 BackendInfo 的根因。
 
-**獨立價值**：證明 DI 模式在最簡單的純配置場景可行，建立後續階段的 pattern 基準。
+**執行步驟**：
+
+1. clamping 邏輯從 `DbCommandSpec.CommandTimeout` setter 搬到 `DbAccess` 執行路徑（`Execute` 系列方法）
+2. `DbCommandSpec` 變純 DTO，`CommandTimeout` setter 只存值不夾值
+3. `DbAccess` 透過 `IDbAccessFactory` 構造參數拿到 cap（per-app 配置，不需 `IOptions<T>` 包裝單一 int）
+4. 刪除 `DbCommandSpecTests` 中兩個操弄 static 的 cap 測試（`CommandTimeout_ExceedsCap_UsesCap` / `CommandTimeout_NoCap_UsesValue`），不寫替代測試
+5. 移除 `BackendInfo.MaxDbCommandTimeout` 屬性與 `BackendConfiguration.MaxDbCommandTimeout` 欄位
+
+**對下游的意義**：多 app 場景（APP 30s / Web 60s / 排程 120s）自然支援——各 host 註冊 `IDbAccessFactory` 時傳入該 app 的 cap，不再共享 process-wide static。
+
+**獨立價值**：
+- Bee.Db 完全脫離 BackendInfo（DI 改造的第一個乾淨切點）
+- 解掉一處「測試修改 production static」違規（與 testing.md 平行安全規則一致）
+- 證明「簡單配置不一定走 `IOptions<T>`」——直接構造參數注入即可，為後續階段提供 pattern 參考
 
 ### Phase 3：ObjectCaching 與 DefineAccess（高風險，最重要）
 **目標**：拆解 `IDefineAccess` 的 boot-time vs runtime 雙重職責。
@@ -160,18 +235,28 @@ SystemSettings
 
 **獨立價值**：解掉本次遷移最大的設計負債，後續 Business / Repository 層才能順利改造。
 
-**風險**：此階段牽涉 266 次 `BackendInfo.DefineAccess.*` 呼叫，需仔細設計過渡期共存策略。
-**緩解**：sub-plan 中再細化 — 可能需要 feature flag 或臨時的 adapter pattern。
+**風險**：此階段是設計負債最大的拆解（`DatabaseSettings.Items` static side effect、boot-time vs runtime 雙重職責），實際 `BackendInfo.DefineAccess` 引用 39 處跨多層分布。
+**緩解**：sub-plan 細化 PR 切分策略；本階段為單一 PR（不分批），確保 main 上不存在「一半已注入、一半仍讀 BackendInfo.DefineAccess」狀態。
 
 ### Phase 4：Business 與 Repository 層注入（中–高風險）
-**目標**：BO 與 Repository 建構式注入依賴，廢除對 BackendInfo 的呼叫。
+**目標**：BO 與 Repository 透過 `IBeeContext` 取得依賴，廢除對 BackendInfo 的呼叫；BO 維持零 DI 註冊。
 
-- 重新設計 `IBusinessObjectFactory.Create()` 使用 `IServiceProvider` + `ActivatorUtilities.CreateInstance`
-- BO 基底類別建構式加入常用依賴（`ISessionInfoService`、`IDbAccessFactory` 等）
-- 處理 `samples/` 中現有 `new XxxBusinessObject(...)` 呼叫的相容性（**破壞性變更**）
-- 4 個 Bee.Business 檔案、1 個 Bee.Repository 檔案改造
+**執行步驟**：
 
-**獨立價值**：BO 依賴顯性化，測試可直接 `new UserBO(mockSession, mockDb)`，不需 `BackendInfo.Initialize`。
+1. 設計 `IBeeContext` 介面（成員清單依 Phase 3 完成後的 BO 依賴盤點決定，預期 ≤ 5 個核心服務）
+2. `SystemBusinessObject` / `FormBusinessObject` 兩個 base class ctor 改為 `(IBeeContext, Guid accessToken, [string progId,] bool isLocalCall)`，於 base 內解包至 `protected` 屬性
+3. 重新設計 `BusinessObjectFactory`：
+   - `CreateSystemBusinessObject` 透過 `ActivatorUtilities.CreateInstance(sp, type, accessToken, isLocalCall)`
+   - `CreateFormBusinessObject(progId, ...)` 透過 `IFormBoTypeResolver.Resolve(progId)` 取得 Type 後同樣以 `ActivatorUtilities` 建構
+4. 設計 `IFormBoTypeResolver` 與對應 XML 結構（progId → 型別全名），啟動時讀入建立快取
+5. 改造 4 個 Bee.Business 檔案、1 個 Bee.Repository 檔案
+6. 處理 `samples/` 中現有 `new XxxBusinessObject(...)` 呼叫（**破壞性變更**，改走 factory）
+7. 介面 `IBusinessObjectFactory` 的回傳型別從 `object` 收緊為 `IBusinessObject`
+
+**獨立價值**：
+- BO 依賴透過 base 統一管理；ERP 開發者新增 BO 不接觸 DI API
+- BO-to-BO 呼叫透過共同介面 `ExecFunc(args)`，不依賴具體型別
+- 測試可建簡單 `TestBeeContext`（屬性 setter 開放）後 `new RequisitionBO(testCtx, token, "Requisition", true)`，不需 `BackendInfo.Initialize`
 
 ### Phase 5：Api.Core 與 Api.AspNetCore（中風險）
 **目標**：API 層全面 DI 化，建立組裝入口。
@@ -183,17 +268,7 @@ SystemSettings
 
 **獨立價值**：Web 應用可完全脫離 `BackendInfo`，作為 v5.0 推薦寫法。
 
-### Phase 6：跨平台支援（MAUI / Desktop）
-**目標**：提供平台專屬註冊 extension，驗證跨平台可行性。
-
-- 新增 `Bee.Maui`（或 `Bee.Hosting.Maui`）專案，提供 `MauiAppBuilder.UseBeeFramework()`
-- 新增 `Bee.Desktop`（或重用 Generic Host），提供 `IHostBuilder.UseBeeFramework()`
-- 設計平台專屬 `ISessionInfoService` 實作（Web: HttpContext-backed、MAUI/Desktop: in-memory singleton）
-- 建立 sample 專案各一份
-
-**獨立價值**：證明 DI 改造後框架可跨三介面使用。
-
-### Phase 7：測試基礎設施重寫（中風險）
+### Phase 6：測試基礎設施重寫（中風險）
 **目標**：移除 `GlobalFixture`、`TempDefinePath`、`[Collection("Initialize")]`。
 
 - 設計 `BeeTestFixture` — 每個測試 class 建獨立 `ServiceProvider`（取代 process-wide init）
@@ -203,51 +278,35 @@ SystemSettings
 
 **獨立價值**：測試執行加速（無 process-wide lock）、隔離性提升。
 
-### Phase 8：移除 BackendInfo
-**目標**：所有過渡 API 清除，`BackendInfo` 類別刪除。
+### Phase 7：移除 BackendInfo 空殼
+**目標**：刪除已縮減至空殼的 `BackendInfo` 與 `BackendConfiguration` 類別。
+
+進入此 phase 時，`BackendInfo` 的所有屬性已在 Phase 2-5 中隨對應層的轉換被逐一刪除，剩下的應該是無成員的空類別或只剩 `Initialize` 之類的入口（也已無實質作用）。
 
 - 刪除 `BackendInfo.cs` 與 `BackendConfiguration.cs`
-- 刪除所有 `[Obsolete]` 標記的過渡建構式
+- 移除任何尚未清掉的 `BackendInfo.Initialize` 呼叫點
 - 更新 `docs/architecture-overview.md`、`docs/development-cookbook.md` 反映新模型
 - 發 v5.0 release notes
 
 **獨立價值**：技術債清零，新人不再看到 Service Locator 範例。
 
-## 跨平台支援考量
-
-組裝入口的階層：
-
-```
-Bee.Core (AddBeeFramework)
-   ├── Bee.Api.AspNetCore.AddBeeWeb
-   ├── Bee.Maui.UseBeeMobile
-   └── Bee.Desktop.UseBeeDesktop
-```
-
-- `AddBeeFramework` 負責「跨平台一致的部分」（純配置、Singleton 服務、工廠）
-- 平台 extension 補上「平台專屬部分」（`ISessionInfoService` 實作、scope 行為）
-
-各平台 sample 專案於 Phase 6 建立，作為合約驗證點。
-
 ## 相容性策略
 
-| 期間 | BackendInfo 狀態 | 對 user code 衝擊 |
-|------|-----------------|-------------------|
-| Phase 0–2 | 完整保留，無 `[Obsolete]` | 零衝擊（內部重整） |
-| Phase 3–5 | 過渡建構式 / adapter 出現，標 `[Obsolete]` 但仍可運作 | 編譯警告但不破壞 |
-| Phase 6–7 | 過渡 API 全標 `[Obsolete]`，新平台 sample 全用 DI | 警告 + 文件引導遷移 |
-| Phase 8（v5.0） | 刪除 | 破壞性，release notes 標注 |
+無外部消費者，**採全 DI 路徑、不留相容層**：
 
-過渡期間「BackendInfo 與 DI 並存」的關鍵約束：**BackendInfo 內部實作改為從 DI container 解析**（而非自己反射建構），確保兩種寫法行為等價。
+- 每個 phase 在單一 PR 內完成該層所有 `BackendInfo` 引用的刪除
+- 不使用 `[Obsolete]` 過渡標記、不引入 dual-ctor、不建相容 adapter
+- `BackendInfo` 隨各 phase 推進**逐屬性縮減**；Phase 7 刪除剩餘空殼
+- 不引入 `BackendInfo.Bind(IServiceProvider)` 或任何 static `IServiceProvider` 持有點（避免 Service Locator 換皮）
 
 ## 測試策略
 
-### 過渡期（Phase 1–7）
+### 過渡期（Phase 1–6）
 - 既有測試保留 `GlobalFixture` 機制，逐 phase 遷移
 - 新增測試一律使用新 DI fixture（建立範本後跟進）
 - CI 上要求「未遷移檔案 + 新 fixture 檔案」**都**綠燈
 
-### 完成後（Phase 8）
+### 完成後（Phase 7）
 - 廢除 `[Collection("Initialize")]` 串行限制
 - 廢除 `TempDefinePath`（檔案隔離由 `IDefineAccess` mock 處理）
 - 並行測試完全恢復，CI 時間預期縮短
@@ -263,17 +322,15 @@ Bee.Core (AddBeeFramework)
 | 風險 | 緩解方案 |
 |------|---------|
 | **Phase 3 `DefineAccess` 拆解過大** | 主計畫中標為「最高優先 sub-plan」，先單獨設計再開始 Phase 3 實作 |
-| **BO 建構式擴張**（constructor over-injection） | 設計 `IBeeContext` 聚合常用服務作為單一注入點，避免每個 BO 注入 5+ 服務 |
-| **公開 API 破壞性變更**（samples、外部使用者） | v5.0 release notes 提供完整 migration guide；保留 v4.x 維護分支 1 個 release 週期 |
-| **過渡期 `BackendInfo` 與 DI 行為分歧** | BackendInfo 內部改為從 DI 解析（單一 source of truth） |
-| **MAUI 平台特殊性**（檔案系統、resource 載入） | Phase 6 建立 MAUI sample 時實機驗證；ARM Mac 與 Windows 各跑一次 |
-| **測試遷移工作量大**（159 處） | 逐 phase 遷移（不跨 phase 批改），每 phase PR 控制在 < 500 lines diff |
+| **BO 建構式擴張**（constructor over-injection） | 採用 `IBeeContext` 聚合常用服務 + base class 解包至具名屬性；BO 子類 ctor 簽章嚴格固定（見設計原則 §4） |
+| **公開 API 破壞性變更**（samples、外部使用者） | 目前無外部消費者；v5.0 release notes 標注破壞性變更 |
+| **單一 PR 內中間 commit build 破裂** | 允許（PR 合進 main 那刻必須綠即可）；rebase / squash 在合 PR 時處理 |
+| **測試遷移工作量大**（實際 ~82 處） | 集中於 Phase 6 處理，PR 控制在 < 1500 lines diff |
 
 ## 成功標準
 
 - [ ] `grep -r "BackendInfo\." src/ tests/` 結果為 0（除 BackendInfo.cs 本身已刪除）
 - [ ] 所有 `samples/` 專案以 `AddBeeFramework` 啟動，不呼叫 `BackendInfo.Initialize`
-- [ ] `Bee.Api.AspNetCore`、`Bee.Maui`、`Bee.Desktop` 各有 hello-world sample 並通過手動驗證
 - [ ] `dotnet test` 不依賴 `GlobalFixture` 或 `[Collection("Initialize")]`
 - [ ] CI 通過時間相較 v4.x 不退步（理想：因移除全域初始化鎖而加速）
 - [ ] `docs/architecture-overview.md` 中無 `BackendInfo` 字樣（除歷史背景章節）
@@ -288,16 +345,15 @@ Bee.Core (AddBeeFramework)
 - [ ] `plan-backendinfo-di-phase3-defineaccess-decouple.md` — Phase 3（**最關鍵，需先深度設計**）
 - [ ] `plan-backendinfo-di-phase4-business-injection.md` — Phase 4
 - [ ] `plan-backendinfo-di-phase5-api-layer-di.md` — Phase 5
-- [ ] `plan-backendinfo-di-phase6-multiplatform.md` — Phase 6
-- [ ] `plan-backendinfo-di-phase7-test-infra.md` — Phase 7
-- [ ] `plan-backendinfo-di-phase8-remove-backendinfo.md` — Phase 8
+- [ ] `plan-backendinfo-di-phase6-test-infra.md` — Phase 6
+- [ ] `plan-backendinfo-di-phase7-remove-backendinfo.md` — Phase 7
 
 每個 sub-plan 完成後在本文件對應 checkbox 打勾，方便追蹤主計畫進度。
 
 ## 未決議題（待 sub-plan 進一步討論）
 
 - Phase 3：`DatabaseSettings.Items` static side effect 拆解方案（`IDatabaseSettingsProvider` vs 其他模式）
-- Phase 4：BO 是否引入 `IBeeContext` 聚合介面，避免建構式爆炸
+- Phase 4：`IBeeContext` 應包含哪幾個服務（盤點現有 BO 對 BackendInfo 服務的依賴交集後決定，預期 ≤ 5 個核心服務）
+- Phase 4：progId → BO Type 對應 XML 的檔名與結構（命名候選：`FormBusinessObjects.xml` / `BoRouting.xml`）
 - Phase 5：JsonRpcExecutor 的 lifetime 抉擇（Scoped vs Transient）
-- Phase 6：MAUI 平台 `SystemSettings.xml` 載入方式（嵌入式 resource vs `FileSystem.AppDataDirectory`）
-- Phase 7：測試 fixture 是否完全自訂或重用 `Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`
+- Phase 6：測試 fixture 是否完全自訂或重用 `Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory`
