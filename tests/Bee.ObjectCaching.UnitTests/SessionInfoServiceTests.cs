@@ -8,11 +8,15 @@ namespace Bee.ObjectCaching.UnitTests
     [Collection("Initialize")]
     public class SessionInfoServiceTests
     {
+        private static SessionInfoService NewService()
+            => new SessionInfoService(new CacheContainerService(new Bee.Definition.Storage.FileDefineStorage(
+                new PathOptions { DefinePath = Path.GetTempPath() })));
+
         [Fact]
         [DisplayName("Set/Get/Remove 流程應正確操作 Session 快取")]
         public void Set_Get_Remove_Flow_Works()
         {
-            var service = new SessionInfoService();
+            var service = NewService();
             var token = Guid.NewGuid();
             var info = new SessionInfo
             {
@@ -35,7 +39,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("Get 不存在的 token 應回傳 null")]
         public void Get_MissingToken_ReturnsNull()
         {
-            var service = new SessionInfoService();
+            var service = NewService();
             Assert.Null(service.Get(Guid.NewGuid()));
         }
 

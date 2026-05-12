@@ -89,8 +89,9 @@ namespace Bee.Api.AspNetCore
             services.AddSingleton<IAccessTokenValidator>(sp =>
                 CreateConfigurableService<IAccessTokenValidator>(sp,
                     components.AccessTokenValidator, BackendDefaultTypes.AccessTokenValidator));
-            services.AddSingleton<ISessionInfoService>(_ => CreateOrDefault<ISessionInfoService>(
-                components.SessionInfoService, BackendDefaultTypes.SessionInfoService));
+            services.AddSingleton<ISessionInfoService>(sp =>
+                CreateConfigurableService<ISessionInfoService>(sp,
+                    components.SessionInfoService, BackendDefaultTypes.SessionInfoService));
             services.AddSingleton<ICacheDataSourceProvider>(sp =>
                 CreateConfigurableService<ICacheDataSourceProvider>(sp,
                     components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider));

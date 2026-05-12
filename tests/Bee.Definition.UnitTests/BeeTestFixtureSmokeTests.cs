@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Definition.Identity;
 using Bee.Definition.Storage;
 using Bee.ObjectCaching;
 using Bee.Tests.Shared;
@@ -100,6 +101,43 @@ namespace Bee.Definition.UnitTests
             var paths = _fx.GetRequiredService<PathOptions>();
             Assert.NotNull(access);
             Assert.Equal(_fx.DefinePath, paths.DefinePath);
+        }
+    }
+
+    /// <summary>
+    /// 驗證 PR 5.4c 後 <see cref="ISessionInfoService"/> 由 ctor 注入
+    /// <see cref="ICacheContainer"/>，每個 fixture 有獨立的 service / cache container instance。
+    /// 但底層 <c>CacheInfo.Provider</c> 仍為 process-wide static MemoryCache，所以
+    /// 共用快取鍵的資料仍跨 fixture 可見；完整 per-fixture 資料隔離待後續 PR 把
+    /// <c>CacheInfo</c> 改為 DI 注入後再驗證。
+    /// </summary>
+    public class BeeTestFixturePerInstanceIsolationTests
+    {
+        [Fact]
+        [DisplayName("兩個 BeeTestFixture 的 ISessionInfoService 應為獨立 instance")]
+        public void TwoFixtures_HaveIndependentSessionServices()
+        {
+            using var fxA = new BeeTestFixture();
+            using var fxB = new BeeTestFixture();
+
+            var svcA = fxA.GetRequiredService<ISessionInfoService>();
+            var svcB = fxB.GetRequiredService<ISessionInfoService>();
+
+            Assert.NotSame(svcA, svcB);
+        }
+
+        [Fact]
+        [DisplayName("兩個 BeeTestFixture 的 ICacheContainer 應為獨立 instance")]
+        public void TwoFixtures_HaveIndependentCacheContainers()
+        {
+            using var fxA = new BeeTestFixture();
+            using var fxB = new BeeTestFixture();
+
+            var cacheA = fxA.GetRequiredService<ICacheContainer>();
+            var cacheB = fxB.GetRequiredService<ICacheContainer>();
+
+            Assert.NotSame(cacheA, cacheB);
+            Assert.NotSame(cacheA.SessionInfo, cacheB.SessionInfo);
         }
     }
 }
