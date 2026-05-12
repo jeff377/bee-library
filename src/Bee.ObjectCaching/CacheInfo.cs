@@ -37,7 +37,7 @@ namespace Bee.ObjectCaching
         /// <param name="configuration">The backend configuration.</param>
         public static void Initialize(BackendConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            ArgumentNullException.ThrowIfNull(configuration);
             var configured = configuration.Components.CacheProvider;
             if (string.IsNullOrWhiteSpace(configured)) return;
 
