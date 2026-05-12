@@ -33,7 +33,7 @@ namespace Bee.Repository.Abstractions
         /// <param name="configuration">The backend configuration.</param>
         public static void Initialize(BackendConfiguration configuration)
         {
-            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            ArgumentNullException.ThrowIfNull(configuration);
             var components = configuration.Components;
             SystemFactory = CreateOrDefault<ISystemRepositoryFactory>
                 (components.SystemRepositoryFactory, BackendDefaultTypes.SystemRepositoryFactory);
