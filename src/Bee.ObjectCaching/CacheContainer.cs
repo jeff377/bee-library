@@ -30,7 +30,7 @@ namespace Bee.ObjectCaching
         /// <param name="storage">The define storage shared by storage-backed caches.</param>
         public static void Initialize(IDefineStorage storage)
         {
-            if (storage == null) throw new ArgumentNullException(nameof(storage));
+            ArgumentNullException.ThrowIfNull(storage);
 
             _systemSettings = new SystemSettingsCache();
             _databaseSettings = new DatabaseSettingsCache();
