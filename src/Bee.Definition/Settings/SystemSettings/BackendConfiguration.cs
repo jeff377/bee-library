@@ -13,15 +13,6 @@ namespace Bee.Definition.Settings
     public class BackendConfiguration
     {
         /// <summary>
-        /// Maximum DbCommand timeout (seconds).
-        /// Default is 60 seconds. Set to 0 for unlimited.
-        /// </summary>
-        [Category("Database")]
-        [Description("Maximum DbCommand timeout (seconds). Default is 60 seconds. Set to 0 for unlimited.")]
-        [DefaultValue(60)]
-        public int MaxDbCommandTimeout { get; set; } = 60;
-
-        /// <summary>
         /// Logging options for configuring log parameters.
         /// </summary>
         [Category("Logging")]

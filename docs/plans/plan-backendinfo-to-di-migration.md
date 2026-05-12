@@ -14,7 +14,7 @@
 | Phase | 主題 | 狀態 | Sub-plan |
 |-------|------|------|----------|
 | 0 | 前置清理（`SystemSettingsLoader`） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase0-systemsettings-loader.md](plan-backendinfo-di-phase0-systemsettings-loader.md) |
-| 1 | Bee.Db 配置注入 | 📝 未開始 | — |
+| 1 | Bee.Db 配置注入 | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase1-bee-db-config.md](plan-backendinfo-di-phase1-bee-db-config.md) |
 | 2 | ObjectCaching 與 DefineAccess（含 DefinePath） | 📝 未開始 | — |
 | 3 | Business 與 Repository 層注入（含 `IBeeContext`） | 📝 未開始 | — |
 | 4 | Api.Core 與 Api.AspNetCore | 📝 未開始 | — |

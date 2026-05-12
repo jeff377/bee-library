@@ -1,6 +1,5 @@
 using Bee.Base;
 using Bee.Base.Collections;
-using Bee.Definition;
 using System.Data;
 using System.Data.Common;
 using System.Text;
@@ -15,7 +14,6 @@ namespace Bee.Db
     public class DbCommandSpec : CollectionItem
     {
         private const int DefaultTimeout = 30;  // Default timeout in seconds
-        private int _commandTimeout = DefaultTimeout;
         // Pre-compiled placeholder regex: {key}; supports {{key}} as an escape (outputs {key})
         private static readonly Regex PlaceholderRegex =
             new Regex(@"\{(?<key>[^\}]+)\}|\{\{(?<escaped>[^\}]+)\}\}", RegexOptions.Compiled, TimeSpan.FromSeconds(1));
@@ -88,28 +86,12 @@ namespace Bee.Db
         public CommandType CommandType { get; set; } = CommandType.Text;
 
         /// <summary>
-        /// Gets or sets the command execution timeout in seconds.
-        /// - 0 or negative → uses the default value of 30 seconds.
-        /// - Greater than the global cap → the global cap is applied.
-        /// - Any other positive value → used as-is.
+        /// Gets or sets the command execution timeout in seconds. Stored as-is;
+        /// the effective value applied to <see cref="DbCommand.CommandTimeout"/> is
+        /// resolved by <see cref="DbAccess"/> at execution time (non-positive →
+        /// default 30 sec; values exceeding the per-app cap are clamped).
         /// </summary>
-        public int CommandTimeout
-        {
-            get => _commandTimeout;
-            set
-            {
-                int cap = BackendInfo.MaxDbCommandTimeout;
-
-                if (value <= 0)
-                {
-                    _commandTimeout = DefaultTimeout; // Default value
-                }
-                else
-                {
-                    _commandTimeout = (cap > 0 && value > cap) ? cap : value;
-                }
-            }
-        }
+        public int CommandTimeout { get; set; } = DefaultTimeout;
 
         /// <summary>
         /// Gets the parameter specifications for this command.

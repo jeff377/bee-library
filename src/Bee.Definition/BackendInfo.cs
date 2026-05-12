@@ -49,11 +49,6 @@ namespace Bee.Definition
         public static byte[] DatabaseEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
-        /// Gets or sets the maximum DbCommand timeout (seconds). Default is 60 seconds; 0 means unlimited.
-        /// </summary>
-        public static int MaxDbCommandTimeout { get; set; } = 60;
-
-        /// <summary>
         /// Gets or sets the API key provider, used to obtain the AES+HMAC keys required for transport data encryption/decryption.
         /// Supports shared keys and session keys dynamically generated at each login.
         /// </summary>
@@ -126,7 +121,6 @@ namespace Bee.Definition
         /// <param name="autoCreateMasterKey">Whether to automatically create the master key if it does not exist.</param>
         public static void Initialize(BackendConfiguration configuration, bool autoCreateMasterKey)
         {
-            MaxDbCommandTimeout = configuration.MaxDbCommandTimeout;
             LogOptions = configuration.LogOptions;
 
             if (!SysInfo.IsSingleFile)

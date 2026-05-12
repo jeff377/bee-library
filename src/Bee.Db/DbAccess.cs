@@ -12,8 +12,10 @@ namespace Bee.Db
     /// </summary>
     public class DbAccess
     {
+        private const int DefaultCommandTimeout = 30;
         private readonly DbConnection? _externalConnection = null;
         private readonly string _connectionString = string.Empty;
+        private readonly int _maxCommandTimeout;
 
         #region 建構函式
 
@@ -21,7 +23,14 @@ namespace Bee.Db
         /// Initializes a new instance of <see cref="DbAccess"/> for the specified database identifier.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
-        public DbAccess(string databaseId)
+        /// <param name="maxCommandTimeout">
+        /// Per-app upper bound applied to each <see cref="DbCommand.CommandTimeout"/>;
+        /// 0 (default) disables the cap, in which case the value supplied via
+        /// <see cref="DbCommandSpec.CommandTimeout"/> is used as-is.
+        /// Typically supplied by <see cref="IDbAccessFactory"/> at the host level
+        /// (e.g. 30 sec for mobile API, 60 sec for web, 120 sec for batch service).
+        /// </param>
+        public DbAccess(string databaseId, int maxCommandTimeout = 0)
         {
             if (string.IsNullOrWhiteSpace(databaseId))
                 throw new ArgumentException("databaseId cannot be null or empty.", nameof(databaseId));
@@ -32,6 +41,7 @@ namespace Bee.Db
             DatabaseType = connInfo.DatabaseType;
             Provider = connInfo.Provider;
             _connectionString = connInfo.ConnectionString;
+            _maxCommandTimeout = maxCommandTimeout;
         }
 
         /// <summary>
@@ -40,15 +50,32 @@ namespace Bee.Db
         /// </summary>
         /// <param name="externalConnection">The externally provided database connection.</param>
         /// <param name="databaseType">The database type of the external connection.</param>
-        public DbAccess(DbConnection externalConnection, DatabaseType databaseType)
+        /// <param name="maxCommandTimeout">
+        /// Per-app upper bound applied to each <see cref="DbCommand.CommandTimeout"/>;
+        /// 0 (default) disables the cap. See the other constructor overload for details.
+        /// </param>
+        public DbAccess(DbConnection externalConnection, DatabaseType databaseType, int maxCommandTimeout = 0)
         {
             _externalConnection = externalConnection ?? throw new ArgumentNullException(nameof(externalConnection));
             DatabaseType = databaseType;
             Provider = DbProviderRegistry.Get(DatabaseType)
                 ?? throw new InvalidOperationException($"Unknown database type: {DatabaseType}.");
+            _maxCommandTimeout = maxCommandTimeout;
         }
 
         #endregion
+
+        /// <summary>
+        /// Resolves the effective <see cref="DbCommand.CommandTimeout"/> value:
+        /// non-positive → <c>DefaultCommandTimeout</c> (30 sec); cap=0 → as-is;
+        /// otherwise → <c>min(requested, cap)</c>.
+        /// </summary>
+        private int ResolveTimeout(int requested)
+        {
+            if (requested <= 0) return DefaultCommandTimeout;
+            if (_maxCommandTimeout <= 0) return requested;
+            return Math.Min(requested, _maxCommandTimeout);
+        }
 
         /// <summary>
         /// Gets the database type.
@@ -226,6 +253,7 @@ namespace Bee.Db
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
+                cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
                 if (transaction != null) cmd.Transaction = transaction;
                 var rows = cmd.ExecuteNonQuery();
                 return DbCommandResult.ForRowsAffected(rows);
@@ -243,6 +271,7 @@ namespace Bee.Db
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
+                cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
                 if (transaction != null) cmd.Transaction = transaction;
                 var value = cmd.ExecuteScalar();
                 return DbCommandResult.ForScalar(value);
@@ -265,6 +294,7 @@ namespace Bee.Db
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
+                cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
                 if (transaction != null) cmd.Transaction = transaction;
 
                 var adapter = Provider.CreateDataAdapter();
@@ -301,15 +331,18 @@ namespace Bee.Db
 
             using (var scope = CreateScope())
             using (var cmd = command.CreateCommand(DatabaseType, scope.Connection!))
-            using (var reader = cmd.ExecuteReader())
             {
-                var list = new List<T>();
-                var mapper = ILMapper<T>.CreateMapFunc(reader);
-                foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
+                cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
+                using (var reader = cmd.ExecuteReader())
                 {
-                    list.Add(item);
+                    var list = new List<T>();
+                    var mapper = ILMapper<T>.CreateMapFunc(reader);
+                    foreach (var item in ILMapper<T>.MapToEnumerable(reader, mapper))
+                    {
+                        list.Add(item);
+                    }
+                    return list;
                 }
-                return list;
             }
         }
 
@@ -334,6 +367,9 @@ namespace Bee.Db
                     insert = spec.InsertCommand?.CreateCommand(DatabaseType, scope.Connection!);
                     update = spec.UpdateCommand?.CreateCommand(DatabaseType, scope.Connection!);
                     delete = spec.DeleteCommand?.CreateCommand(DatabaseType, scope.Connection!);
+                    if (insert != null) insert.CommandTimeout = ResolveTimeout(spec.InsertCommand!.CommandTimeout);
+                    if (update != null) update.CommandTimeout = ResolveTimeout(spec.UpdateCommand!.CommandTimeout);
+                    if (delete != null) delete.CommandTimeout = ResolveTimeout(spec.DeleteCommand!.CommandTimeout);
 
                     var adapter = Provider.CreateDataAdapter()
                                   ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
@@ -584,6 +620,7 @@ namespace Bee.Db
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
+                cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
                 if (transaction != null) cmd.Transaction = transaction;
                 var rows = await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                 return DbCommandResult.ForRowsAffected(rows);
@@ -602,6 +639,7 @@ namespace Bee.Db
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
+                cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
                 if (transaction != null) cmd.Transaction = transaction;
                 var value = await cmd.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
                 return DbCommandResult.ForScalar(value);
@@ -620,6 +658,7 @@ namespace Bee.Db
         {
             using (var cmd = command.CreateCommand(DatabaseType, connection))
             {
+                cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
                 if (transaction != null) cmd.Transaction = transaction; // Set the transaction first
 
                 using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
@@ -645,15 +684,18 @@ namespace Bee.Db
 
             using (var scope = await CreateScopeAsync(cancellationToken).ConfigureAwait(false))
             using (var cmd = command.CreateCommand(DatabaseType, scope.Connection!))
-            using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
             {
-                var list = new List<T>();
-                var mapper = ILMapper<T>.CreateMapFunc(reader); // Build a mapper based on the current column set
-                while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
+                using (var reader = await cmd.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    list.Add(mapper(reader));
+                    var list = new List<T>();
+                    var mapper = ILMapper<T>.CreateMapFunc(reader); // Build a mapper based on the current column set
+                    while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        list.Add(mapper(reader));
+                    }
+                    return list;
                 }
-                return list;
             }
         }
 

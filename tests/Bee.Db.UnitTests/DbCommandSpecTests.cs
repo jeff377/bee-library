@@ -1,6 +1,5 @@
 using System.ComponentModel;
 using System.Data;
-using Bee.Definition;
 using Microsoft.Data.SqlClient;
 using Bee.Definition.Database;
 
@@ -97,68 +96,6 @@ namespace Bee.Db.UnitTests
         {
             Assert.Throws<ArgumentNullException>(() =>
                 new DbCommandSpec(DbCommandKind.NonQuery, commandText!, new Dictionary<string, object>()));
-        }
-
-        #endregion
-
-        #region CommandTimeout setter 測試
-
-        [Fact]
-        [DisplayName("CommandTimeout 設為 0 應套用預設值 30")]
-        public void CommandTimeout_Zero_UsesDefault()
-        {
-            var spec = new DbCommandSpec { CommandTimeout = 0 };
-            Assert.Equal(30, spec.CommandTimeout);
-        }
-
-        [Fact]
-        [DisplayName("CommandTimeout 設為負值應套用預設值 30")]
-        public void CommandTimeout_Negative_UsesDefault()
-        {
-            var spec = new DbCommandSpec { CommandTimeout = -10 };
-            Assert.Equal(30, spec.CommandTimeout);
-        }
-
-        [Fact]
-        [DisplayName("CommandTimeout 設為合法值且未超過 cap 應原樣使用")]
-        public void CommandTimeout_WithinCap_UsesValue()
-        {
-            var spec = new DbCommandSpec { CommandTimeout = 45 };
-            Assert.Equal(45, spec.CommandTimeout);
-        }
-
-        [Fact]
-        [DisplayName("CommandTimeout 設為超過 cap 應套用 cap 值")]
-        public void CommandTimeout_ExceedsCap_UsesCap()
-        {
-            int original = BackendInfo.MaxDbCommandTimeout;
-            try
-            {
-                BackendInfo.MaxDbCommandTimeout = 60;
-                var spec = new DbCommandSpec { CommandTimeout = 9999 };
-                Assert.Equal(60, spec.CommandTimeout);
-            }
-            finally
-            {
-                BackendInfo.MaxDbCommandTimeout = original;
-            }
-        }
-
-        [Fact]
-        [DisplayName("MaxDbCommandTimeout cap 為 0 時不限制 CommandTimeout")]
-        public void CommandTimeout_NoCap_UsesValue()
-        {
-            int original = BackendInfo.MaxDbCommandTimeout;
-            try
-            {
-                BackendInfo.MaxDbCommandTimeout = 0;
-                var spec = new DbCommandSpec { CommandTimeout = 9999 };
-                Assert.Equal(9999, spec.CommandTimeout);
-            }
-            finally
-            {
-                BackendInfo.MaxDbCommandTimeout = original;
-            }
         }
 
         #endregion
