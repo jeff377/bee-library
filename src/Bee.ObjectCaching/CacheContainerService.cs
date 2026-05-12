@@ -18,16 +18,25 @@ namespace Bee.ObjectCaching
     {
         /// <summary>
         /// Initializes a new <see cref="CacheContainerService"/> bound to the supplied storage.
-        /// Each instance generates a unique <see cref="CachePrefix"/> so multiple containers
-        /// can coexist over the shared <see cref="CacheInfo.Provider"/> without colliding —
-        /// essential for per-test-fixture isolation.
+        /// Uses empty <see cref="CachePrefix"/> by default so legacy bootstrap-then-DI flows
+        /// (e.g. <c>GlobalFixture</c>) share the process-wide <see cref="CacheInfo.Provider"/>
+        /// key namespace across multiple container instances.
         /// </summary>
         /// <param name="storage">The define storage shared by storage-backed caches.</param>
-        public CacheContainerService(IDefineStorage storage)
+        public CacheContainerService(IDefineStorage storage) : this(storage, string.Empty) { }
+
+        /// <summary>
+        /// Initializes a new <see cref="CacheContainerService"/> with an explicit cache key
+        /// prefix. Test fixtures use a unique prefix to achieve per-instance data isolation
+        /// over the shared <see cref="CacheInfo.Provider"/>.
+        /// </summary>
+        /// <param name="storage">The define storage shared by storage-backed caches.</param>
+        /// <param name="cachePrefix">Per-owner cache namespace; <see cref="string.Empty"/> means "share the legacy unprefixed namespace".</param>
+        public CacheContainerService(IDefineStorage storage, string cachePrefix)
         {
             ArgumentNullException.ThrowIfNull(storage);
+            CachePrefix = cachePrefix ?? string.Empty;
 
-            CachePrefix = "cc_" + Guid.NewGuid().ToString("N");
             SystemSettings = new SystemSettingsCache(CachePrefix);
             DatabaseSettings = new DatabaseSettingsCache(CachePrefix);
             ProgramSettings = new ProgramSettingsCache(CachePrefix);
@@ -39,8 +48,9 @@ namespace Bee.ObjectCaching
         }
 
         /// <summary>
-        /// The unique namespace prefix used by every cache instance this container owns.
-        /// Surfaced primarily for diagnostics — consumers should not rely on its format.
+        /// The namespace prefix used by every cache instance this container owns.
+        /// Empty for the legacy unprefixed mode; non-empty when explicit isolation
+        /// is required (e.g. per-fixture test containers).
         /// </summary>
         public string CachePrefix { get; }
 

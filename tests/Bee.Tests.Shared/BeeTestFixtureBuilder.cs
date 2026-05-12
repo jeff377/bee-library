@@ -2,7 +2,10 @@ using Bee.Api.AspNetCore;
 using Bee.Definition;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
+using Bee.Definition.Storage;
+using Bee.ObjectCaching;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bee.Tests.Shared
 {
@@ -92,6 +95,14 @@ namespace Bee.Tests.Shared
 
             var services = new ServiceCollection();
             services.AddBeeFramework(settings.BackendConfiguration, paths, autoCreateMasterKey: true);
+
+            // Per-fixture cache isolation: replace AddBeeFramework's default unprefixed
+            // ICacheContainer with one that uses a unique cache key prefix. Each fixture
+            // therefore owns its own keyspace over the process-wide CacheInfo.Provider.
+            var cachePrefix = "fx_" + Guid.NewGuid().ToString("N");
+            services.Replace(ServiceDescriptor.Singleton<ICacheContainer>(sp =>
+                new CacheContainerService(sp.GetRequiredService<IDefineStorage>(), cachePrefix)));
+
             var provider = services.BuildServiceProvider();
 
             if (_useSharedDatabases)
