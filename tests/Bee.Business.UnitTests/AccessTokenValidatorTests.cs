@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Bee.Business.Validator;
-using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
 {
@@ -11,11 +11,14 @@ namespace Bee.Business.UnitTests
     [Collection("Initialize")]
     public class AccessTokenValidatorTests
     {
+        private static AccessTokenValidator CreateValidator()
+            => new(BeeTestServices.GetRequiredService<ISessionInfoService>());
+
         [Fact]
         [DisplayName("Validate(Guid.Empty) 應拋 UnauthorizedAccessException")]
         public void Validate_Empty_ThrowsUnauthorized()
         {
-            var provider = new AccessTokenValidator();
+            var provider = CreateValidator();
             Assert.Throws<UnauthorizedAccessException>(() => provider.Validate(Guid.Empty));
         }
 
@@ -23,7 +26,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("Validate 未知 AccessToken 應拋 UnauthorizedAccessException")]
         public void Validate_UnknownToken_ThrowsUnauthorized()
         {
-            var provider = new AccessTokenValidator();
+            var provider = CreateValidator();
             var token = Guid.NewGuid();
 
             Assert.Throws<UnauthorizedAccessException>(() => provider.Validate(token));
@@ -33,7 +36,8 @@ namespace Bee.Business.UnitTests
         [DisplayName("Validate 過期 Session 應拋 UnauthorizedAccessException")]
         public void Validate_ExpiredSession_ThrowsUnauthorized()
         {
-            var provider = new AccessTokenValidator();
+            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var provider = new AccessTokenValidator(sessionService);
             var token = Guid.NewGuid();
             var expired = new SessionInfo
             {
@@ -43,7 +47,7 @@ namespace Bee.Business.UnitTests
                 ExpiredAt = DateTime.UtcNow.AddMinutes(-5),
                 ApiEncryptionKey = new byte[64]
             };
-            BackendInfo.SessionInfoService.Set(expired);
+            sessionService.Set(expired);
 
             try
             {
@@ -51,7 +55,7 @@ namespace Bee.Business.UnitTests
             }
             finally
             {
-                BackendInfo.SessionInfoService.Remove(token);
+                sessionService.Remove(token);
             }
         }
 
@@ -59,7 +63,8 @@ namespace Bee.Business.UnitTests
         [DisplayName("Validate 有效 Session 應回傳 true")]
         public void Validate_ValidSession_ReturnsTrue()
         {
-            var provider = new AccessTokenValidator();
+            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var provider = new AccessTokenValidator(sessionService);
             var token = Guid.NewGuid();
             var session = new SessionInfo
             {
@@ -69,7 +74,7 @@ namespace Bee.Business.UnitTests
                 ExpiredAt = DateTime.UtcNow.AddHours(1),
                 ApiEncryptionKey = new byte[64]
             };
-            BackendInfo.SessionInfoService.Set(session);
+            sessionService.Set(session);
 
             try
             {
@@ -77,7 +82,7 @@ namespace Bee.Business.UnitTests
             }
             finally
             {
-                BackendInfo.SessionInfoService.Remove(token);
+                sessionService.Remove(token);
             }
         }
     }

@@ -1,9 +1,9 @@
 using System.Data;
 using Bee.Db.Dml;
-using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
+using Bee.Definition.Storage;
 using Bee.Definition.Sorting;
 
 namespace Bee.Db.Providers.Oracle
@@ -18,29 +18,18 @@ namespace Bee.Db.Providers.Oracle
     /// </summary>
     public class OracleFormCommandBuilder : IFormCommandBuilder
     {
-        #region 建構函式
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="OracleFormCommandBuilder"/> using the specified program ID.
-        /// </summary>
-        /// <param name="progId">The form program identifier.</param>
-        public OracleFormCommandBuilder(string progId)
-        {
-            FormSchema = BackendInfo.DefineAccess.GetFormSchema(progId);
-            if (FormSchema == null)
-                throw new ArgumentException($"Form definition not found for program ID '{progId}'.", nameof(progId));
-        }
+        private readonly IDefineAccess _defineAccess;
 
         /// <summary>
         /// Initializes a new instance of <see cref="OracleFormCommandBuilder"/> using the specified form schema.
         /// </summary>
         /// <param name="formDefine">The form schema definition.</param>
-        public OracleFormCommandBuilder(FormSchema formDefine)
+        /// <param name="defineAccess">The define access service used to resolve relation-form schemas during SELECT construction.</param>
+        public OracleFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
         {
             FormSchema = formDefine ?? throw new ArgumentNullException(nameof(formDefine));
+            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
         }
-
-        #endregion
 
         /// <summary>
         /// Gets the form schema definition.
@@ -56,7 +45,7 @@ namespace Bee.Db.Providers.Oracle
         /// <param name="sortFields">The sort field collection.</param>
         public DbCommandSpec BuildSelect(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
         {
-            var builder = new SelectCommandBuilder(FormSchema, DatabaseType.Oracle);
+            var builder = new SelectCommandBuilder(FormSchema, DatabaseType.Oracle, _defineAccess);
             return builder.Build(tableName, selectFields, filter, sortFields);
         }
 

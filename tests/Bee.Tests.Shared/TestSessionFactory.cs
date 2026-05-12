@@ -1,12 +1,12 @@
-using Bee.Definition;
 using Bee.Definition.Identity;
 
 namespace Bee.Tests.Shared
 {
     /// <summary>
     /// 測試專用的 Session 輔助工具。
-    /// 直接在 <see cref="BackendInfo.SessionInfoService"/> 植入一個有效 SessionInfo，
-    /// 讓需要 AccessToken 的測試不必走 Login 流程（預設 <c>AuthenticateUser</c> 回傳 false）。
+    /// 直接在 <see cref="BeeTestServices.GetRequiredService{T}"/> 取得的 <see cref="ISessionInfoService"/>
+    /// 植入一個有效 SessionInfo，讓需要 AccessToken 的測試不必走 Login 流程
+    /// （預設 <c>AuthenticateUser</c> 回傳 false）。
     /// </summary>
     public static class TestSessionFactory
     {
@@ -19,7 +19,7 @@ namespace Bee.Tests.Shared
         public static Guid CreateAccessToken(string userId = "test", TimeSpan? expiresIn = null)
         {
             var accessToken = Guid.NewGuid();
-            BackendInfo.SessionInfoService.Set(new SessionInfo
+            BeeTestServices.GetRequiredService<ISessionInfoService>().Set(new SessionInfo
             {
                 AccessToken = accessToken,
                 UserId = userId,

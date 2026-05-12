@@ -7,6 +7,7 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// <see cref="FormBusinessObject"/> 行為測試，透過內部 <c>FormExecFuncHandler.Hello</c> 驗證反射派發。
     /// </summary>
+    [Collection("Initialize")]
     public class FormBusinessObjectTests
     {
         [Fact]

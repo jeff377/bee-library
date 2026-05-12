@@ -9,6 +9,7 @@ using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.UnitTests
 {
@@ -106,7 +107,7 @@ namespace Bee.Db.UnitTests
                 CreateTable(dbAccess, BuildCrudTableSchema(tableName));
 
                 var formSchema = BuildCrudFormSchema(tableName);
-                var formBuilder = new OracleFormCommandBuilder(formSchema);
+                var formBuilder = new OracleFormCommandBuilder(formSchema, BeeTestServices.GetRequiredService<IDefineAccess>());
                 var rowId = Guid.NewGuid();
 
                 // INSERT
@@ -239,7 +240,7 @@ namespace Bee.Db.UnitTests
                 table.Fields!.AddStringField("comment", "Comment", 100);
                 table.Fields!.Add("order", "Order", FieldDbType.Integer);
 
-                var formBuilder = new OracleFormCommandBuilder(formSchema);
+                var formBuilder = new OracleFormCommandBuilder(formSchema, BeeTestServices.GetRequiredService<IDefineAccess>());
                 var rowId = Guid.NewGuid();
 
                 var insertRow = NewRow(formSchema, tableName, rowId);

@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using Bee.Business.Providers;
-using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
 {
@@ -11,11 +11,14 @@ namespace Bee.Business.UnitTests
     [Collection("Initialize")]
     public class DynamicApiEncryptionKeyProviderTests
     {
+        private static DynamicApiEncryptionKeyProvider CreateProvider()
+            => new(BeeTestServices.GetRequiredService<ISessionInfoService>());
+
         [Fact]
         [DisplayName("GetKey(Guid.Empty) 應拋 UnauthorizedAccessException")]
         public void GetKey_Empty_ThrowsUnauthorized()
         {
-            var provider = new DynamicApiEncryptionKeyProvider();
+            var provider = CreateProvider();
             Assert.Throws<UnauthorizedAccessException>(() => provider.GetKey(Guid.Empty));
         }
 
@@ -23,7 +26,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetKey 未知 AccessToken 應拋 UnauthorizedAccessException")]
         public void GetKey_UnknownToken_ThrowsUnauthorized()
         {
-            var provider = new DynamicApiEncryptionKeyProvider();
+            var provider = CreateProvider();
             var unknownToken = Guid.NewGuid();
 
             Assert.Throws<UnauthorizedAccessException>(() => provider.GetKey(unknownToken));
@@ -33,7 +36,8 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetKey 有效 Session 應回傳對應的 ApiEncryptionKey")]
         public void GetKey_ValidSession_ReturnsKey()
         {
-            var provider = new DynamicApiEncryptionKeyProvider();
+            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var provider = new DynamicApiEncryptionKeyProvider(sessionService);
             var token = Guid.NewGuid();
             var key = new byte[64];
             for (int i = 0; i < key.Length; i++) key[i] = (byte)i;
@@ -46,7 +50,7 @@ namespace Bee.Business.UnitTests
                 ExpiredAt = DateTime.UtcNow.AddHours(1),
                 ApiEncryptionKey = key
             };
-            BackendInfo.SessionInfoService.Set(session);
+            sessionService.Set(session);
 
             try
             {
@@ -55,7 +59,7 @@ namespace Bee.Business.UnitTests
             }
             finally
             {
-                BackendInfo.SessionInfoService.Remove(token);
+                sessionService.Remove(token);
             }
         }
 
@@ -63,7 +67,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GenerateKeyForLogin 應回傳 64 bytes")]
         public void GenerateKeyForLogin_Returns64Bytes()
         {
-            var provider = new DynamicApiEncryptionKeyProvider();
+            var provider = CreateProvider();
 
             var key = provider.GenerateKeyForLogin();
 

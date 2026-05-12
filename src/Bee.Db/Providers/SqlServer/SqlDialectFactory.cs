@@ -2,6 +2,8 @@ using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
 using Bee.Db.Schema;
+using Bee.Definition.Forms;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.Providers.SqlServer
 {
@@ -23,7 +25,8 @@ namespace Bee.Db.Providers.SqlServer
         public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new SqlTableRebuildCommandBuilder();
 
         /// <inheritdoc />
-        public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new SqlFormCommandBuilder(progId);
+        public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
+            => new SqlFormCommandBuilder(formDefine, defineAccess);
 
         /// <inheritdoc />
         public string GetDefaultValueExpression(FieldDbType dbType) => SqlSchemaSyntax.GetDefaultValueExpression(dbType);

@@ -1,47 +1,48 @@
 using Bee.Definition;
+using Bee.Definition.Identity;
+using Bee.Definition.Storage;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Tests.Shared
 {
     /// <summary>
-    /// Test helper that builds an <see cref="IBeeContext"/> snapshot from the current
-    /// <see cref="BackendInfo"/> statics. Use in test fakes or direct-construction tests
-    /// once <see cref="Bee.Tests.Shared.GlobalFixture"/> has run.
+    /// Test helper that builds an <see cref="IBeeContext"/> snapshot from the process-wide
+    /// <see cref="BeeTestServices.Provider"/>. Use in test fakes or direct-construction tests
+    /// once <see cref="GlobalFixture"/> has run.
     /// </summary>
     public static class TestBeeContext
     {
         /// <summary>
-        /// Creates a <see cref="BeeContext"/> from the current <see cref="BackendInfo"/>
-        /// statics. Returns a fresh instance per call (cheap; just snapshotting refs).
+        /// Creates a <see cref="BeeContext"/> from the current <see cref="BeeTestServices"/>
+        /// provider. Returns a fresh instance per call (cheap; just snapshotting refs).
         /// </summary>
         public static IBeeContext Create()
         {
+            var sp = BeeTestServices.Provider;
             return new BeeContext
             {
-                DefineAccess = BackendInfo.DefineAccess,
-                SessionInfoService = BackendInfo.SessionInfoService,
-                BoFactory = BackendInfo.BusinessObjectFactory,
-                Services = TestServiceProvider.Instance,
+                DefineAccess = sp.GetRequiredService<IDefineAccess>(),
+                SessionInfoService = sp.GetRequiredService<ISessionInfoService>(),
+                BoFactory = sp.GetRequiredService<IBusinessObjectFactory>(),
+                Services = sp,
             };
         }
 
         /// <summary>
-        /// Minimal <see cref="IServiceProvider"/> for tests; returns BackendInfo statics
-        /// for the rare services BO may need (parallels Bee.Business.BackendInfoServiceProvider
-        /// but lives in tests for visibility).
+        /// Creates a <see cref="BeeContext"/> with one or more service overrides applied on top
+        /// of the process-wide provider. Handy for tests that need to inject a fake
+        /// <c>ILoginAttemptTracker</c> etc. without rebuilding the container.
         /// </summary>
-        private sealed class TestServiceProvider : IServiceProvider
+        public static IBeeContext CreateWithOverrides(params (Type ServiceType, object? Instance)[] overrides)
         {
-            public static readonly TestServiceProvider Instance = new();
-
-            public object? GetService(Type serviceType)
+            var sp = BeeTestServices.Provider;
+            return new BeeContext
             {
-                if (serviceType == typeof(Bee.Definition.Security.IApiEncryptionKeyProvider)) return BackendInfo.ApiEncryptionKeyProvider;
-                if (serviceType == typeof(Bee.Definition.Security.ILoginAttemptTracker))      return BackendInfo.LoginAttemptTracker;
-                if (serviceType == typeof(Bee.Definition.Security.IAccessTokenValidator))     return BackendInfo.AccessTokenValidator;
-                if (serviceType == typeof(Bee.Definition.IEnterpriseObjectService))  return BackendInfo.EnterpriseObjectService;
-                if (serviceType == typeof(Bee.Definition.ICacheDataSourceProvider))  return BackendInfo.CacheDataSourceProvider;
-                return null;
-            }
+                DefineAccess = sp.GetRequiredService<IDefineAccess>(),
+                SessionInfoService = sp.GetRequiredService<ISessionInfoService>(),
+                BoFactory = sp.GetRequiredService<IBusinessObjectFactory>(),
+                Services = new TestOverrideServiceProvider(sp, overrides),
+            };
         }
     }
 }

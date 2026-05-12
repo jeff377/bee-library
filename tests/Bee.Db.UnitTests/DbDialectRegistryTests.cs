@@ -6,6 +6,8 @@ using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Storage;
 using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
@@ -118,10 +120,15 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("CreateFormCommandBuilder 找不到 progId 應擲 FileNotFoundException")]
-        public void CreateFormCommandBuilder_UnknownProgId_ThrowsFileNotFoundException()
+        [DisplayName("CreateFormCommandBuilder 應回傳 SqlFormCommandBuilder")]
+        public void CreateFormCommandBuilder_ReturnsSqlImpl()
         {
-            Assert.Throws<System.IO.FileNotFoundException>(() => _factory.CreateFormCommandBuilder("__not_exists__"));
+            var schema = new FormSchema("Foo", "Foo");
+            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
+
+            var builder = _factory.CreateFormCommandBuilder(schema, defineAccess);
+
+            Assert.IsType<SqlFormCommandBuilder>(builder);
         }
 
         // 測試用 helper（避免為了單一煙霧測試依賴較重的 schema 建構）

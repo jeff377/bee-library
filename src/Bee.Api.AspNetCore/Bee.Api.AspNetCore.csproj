@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -15,6 +15,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bee.Api.Core\Bee.Api.Core.csproj" />
+    <ProjectReference Include="..\Bee.Business\Bee.Business.csproj" />
+    <ProjectReference Include="..\Bee.Db\Bee.Db.csproj" />
+    <ProjectReference Include="..\Bee.ObjectCaching\Bee.ObjectCaching.csproj" />
+    <ProjectReference Include="..\Bee.Repository\Bee.Repository.csproj" />
   </ItemGroup>
 
 </Project>

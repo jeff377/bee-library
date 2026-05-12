@@ -1,9 +1,9 @@
 using System.Data;
 using Bee.Db.Dml;
-using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
 using Bee.Definition.Sorting;
 
 namespace Bee.Db.Providers.Sqlite
@@ -16,28 +16,18 @@ namespace Bee.Db.Providers.Sqlite
     /// </summary>
     public class SqliteFormCommandBuilder : IFormCommandBuilder
     {
-        #region 建構函式
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="SqliteFormCommandBuilder"/> using the specified program ID.
-        /// </summary>
-        /// <param name="progID">The program identifier.</param>
-        public SqliteFormCommandBuilder(string progID)
-        {
-            FormSchema = BackendInfo.DefineAccess.GetFormSchema(progID);
-            if (FormSchema == null)
-                throw new ArgumentException($"Form definition not found for program ID '{progID}'.", nameof(progID));
-        }
+        private readonly IDefineAccess _defineAccess;
 
         /// <summary>
         /// Initializes a new instance of <see cref="SqliteFormCommandBuilder"/> using the specified form schema.
         /// </summary>
-        public SqliteFormCommandBuilder(FormSchema formDefine)
+        /// <param name="formDefine">The form schema definition.</param>
+        /// <param name="defineAccess">The define access service used to resolve relation-form schemas during SELECT construction.</param>
+        public SqliteFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
         {
             FormSchema = formDefine ?? throw new ArgumentNullException(nameof(formDefine));
+            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
         }
-
-        #endregion
 
         /// <summary>
         /// Gets the form schema definition.
@@ -53,7 +43,7 @@ namespace Bee.Db.Providers.Sqlite
         /// <param name="sortFields">The sort field collection.</param>
         public DbCommandSpec BuildSelect(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
         {
-            var builder = new SelectCommandBuilder(FormSchema, DatabaseType.SQLite);
+            var builder = new SelectCommandBuilder(FormSchema, DatabaseType.SQLite, _defineAccess);
             return builder.Build(tableName, selectFields, filter, sortFields);
         }
 

@@ -20,7 +20,7 @@ namespace Bee.Definition.Database
     /// <c>company001</c>, <c>log2025</c>), but the <c>DatabaseItem.CategoryId</c>
     /// remains one of these constants. For the <see cref="Common"/> category,
     /// the framework requires Id == CategoryId == "common" (enforced at startup
-    /// by <c>BackendInfo.Initialize</c>).
+    /// by <c>services.AddBeeFramework</c>).
     /// </para>
     /// </remarks>
     public static class DbCategoryIds

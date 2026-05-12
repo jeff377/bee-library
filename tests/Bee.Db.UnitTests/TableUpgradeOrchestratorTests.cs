@@ -7,6 +7,8 @@ using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.UnitTests
 {
@@ -205,7 +207,7 @@ namespace Bee.Db.UnitTests
             public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => _inner.CreateCreateTableCommandBuilder();
             public ITableAlterCommandBuilder CreateTableAlterCommandBuilder() => new NotSupportedBuilder();
             public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => _inner.CreateTableRebuildCommandBuilder();
-            public IFormCommandBuilder CreateFormCommandBuilder(string progId) => _inner.CreateFormCommandBuilder(progId);
+            public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess) => _inner.CreateFormCommandBuilder(formDefine, defineAccess);
             public string GetDefaultValueExpression(FieldDbType dbType) => _inner.GetDefaultValueExpression(dbType);
         }
 

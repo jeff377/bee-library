@@ -5,6 +5,8 @@ using Bee.Db.Providers.MySql;
 using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -17,6 +19,8 @@ namespace Bee.Db.UnitTests
     [Collection("Initialize")]
     public class MySqlFormCommandBuilderTests
     {
+        private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
+
         private static FormSchema BuildFooSchema()
         {
             var schema = new FormSchema("X", "X");
@@ -27,25 +31,28 @@ namespace Bee.Db.UnitTests
             return schema;
         }
 
+        private static MySqlFormCommandBuilder NewBuilder()
+            => new(BuildFooSchema(), DefineAccess);
+
         [Fact]
         [DisplayName("FormSchema 建構子 null 應擲 ArgumentNullException")]
         public void Constructor_NullFormSchema_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new MySqlFormCommandBuilder((FormSchema)null!));
+            Assert.Throws<ArgumentNullException>(() => new MySqlFormCommandBuilder(null!, DefineAccess));
         }
 
         [Fact]
-        [DisplayName("ProgID 建構子找不到 FormSchema 檔案應擲例外")]
-        public void Constructor_UnknownProgId_Throws()
+        [DisplayName("FormSchema 建構子 null IDefineAccess 應擲 ArgumentNullException")]
+        public void Constructor_NullDefineAccess_Throws()
         {
-            Assert.Throws<System.IO.FileNotFoundException>(() => new MySqlFormCommandBuilder("__not_exists__"));
+            Assert.Throws<ArgumentNullException>(() => new MySqlFormCommandBuilder(BuildFooSchema(), null!));
         }
 
         [Fact]
         [DisplayName("BuildSelect 應委派至 MySQL 方言並產生 SELECT 語句（backtick 識別符）")]
         public void BuildSelect_DelegatesToMySqlDialect()
         {
-            var builder = new MySqlFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
 
             var spec = builder.BuildSelect("Foo", "name", null, null);
 
@@ -62,7 +69,7 @@ namespace Bee.Db.UnitTests
             var row = dt.NewRow();
             row["name"] = "n";
 
-            var builder = new MySqlFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
             var spec = builder.BuildInsert("Foo", row);
 
             Assert.Contains("INSERT INTO `tb_foo`", spec.CommandText);
@@ -82,7 +89,7 @@ namespace Bee.Db.UnitTests
             dt.AcceptChanges();
             row["name"] = "new";
 
-            var builder = new MySqlFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
             var spec = builder.BuildUpdate("Foo", row);
 
             Assert.Contains("UPDATE `tb_foo`", spec.CommandText);
@@ -92,7 +99,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("BuildDelete 應委派至 MySQL 方言並產生 DELETE 語句")]
         public void BuildDelete_DelegatesToMySqlDialect()
         {
-            var builder = new MySqlFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
             var spec = builder.BuildDelete("Foo", FilterCondition.Equal(SysFields.RowId, Guid.NewGuid()));
 
             Assert.Contains("DELETE FROM `tb_foo`", spec.CommandText);

@@ -3,6 +3,7 @@ using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages.System;
 using Bee.Base.Serialization;
 using Bee.Definition;
+using Bee.Definition.Security;
 using Bee.Tests.Shared;
 using Bee.Api.Core.Messages;
 
@@ -12,6 +13,19 @@ namespace Bee.Api.Core.UnitTests
     public class JsonRpcExecutorTests
     {
         private Guid _accessToken;
+
+        private static JsonRpcExecutor NewExecutor(Guid accessToken, bool isLocalCall = true)
+        {
+            var executor = new JsonRpcExecutor(
+                BeeTestServices.GetRequiredService<IBusinessObjectFactory>(),
+                BeeTestServices.GetRequiredService<IAccessTokenValidator>(),
+                BeeTestServices.GetRequiredService<IApiEncryptionKeyProvider>())
+            {
+                AccessToken = accessToken,
+                IsLocalCall = isLocalCall,
+            };
+            return executor;
+        }
 
         /// <summary>
         /// 執行 API 方法。
@@ -33,7 +47,7 @@ namespace Bee.Api.Core.UnitTests
                 Id = Guid.NewGuid().ToString()
             };
 
-            var executor = new JsonRpcExecutor(accessToken);
+            var executor = NewExecutor(accessToken);
             var response = executor.Execute(request);
             return (T)response.Result!.Value!;
         }
@@ -99,9 +113,9 @@ namespace Bee.Api.Core.UnitTests
                 Id = Guid.NewGuid().ToString()
             };
 
-            string json = request.ToJson();
+            _ = request.ToJson();
             // 執行 API 方法
-            var executor = new JsonRpcExecutor(accessToken);
+            var executor = NewExecutor(accessToken);
             var response = executor.Execute(request);
             // 取得 ExecFunc 方法傳出結果
             var execFuncResult = response.Result!.Value as ExecFuncResponse;

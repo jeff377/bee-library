@@ -4,6 +4,7 @@ using Bee.Business.UnitTests.Fakes;
 using Bee.Definition;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
 
 namespace Bee.Business.UnitTests
 {
@@ -160,7 +161,7 @@ namespace Bee.Business.UnitTests
         {
             var bo = new TestableSystemBusinessObject(Guid.Empty, _ => (false, string.Empty));
             var args = new ExecFuncArgs("TestConnection");
-            var dbItem = BackendInfo.DefineAccess.GetDatabaseSettings().Items!["common_sqlserver"];
+            var dbItem = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings().Items!["common_sqlserver"];
             args.Parameters.Add("DatabaseItem", dbItem);
 
             var exception = Record.Exception(() => bo.ExecFunc(args));

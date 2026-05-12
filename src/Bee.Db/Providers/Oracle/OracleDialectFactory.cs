@@ -2,6 +2,8 @@ using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
 using Bee.Db.Schema;
+using Bee.Definition.Forms;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.Providers.Oracle
 {
@@ -29,7 +31,8 @@ namespace Bee.Db.Providers.Oracle
         public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new OracleTableRebuildCommandBuilder();
 
         /// <inheritdoc />
-        public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new OracleFormCommandBuilder(progId);
+        public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
+            => new OracleFormCommandBuilder(formDefine, defineAccess);
 
         /// <inheritdoc />
         public string GetDefaultValueExpression(FieldDbType dbType) =>

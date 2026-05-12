@@ -3,9 +3,12 @@ using Bee.Base.Data;
 using Bee.Db.Dml;
 using Bee.Definition.Forms;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
+    [Collection("Initialize")]
     public class SelectCommandBuilderTests
     {
         private static FormSchema BuildSimpleSchema()
@@ -18,6 +21,9 @@ namespace Bee.Db.UnitTests
             return schema;
         }
 
+        private static SelectCommandBuilder NewBuilder(FormSchema schema, DatabaseType dbType = DatabaseType.SQLServer)
+            => new(schema, dbType, BeeTestServices.GetRequiredService<IDefineAccess>());
+
         [Theory]
         [InlineData("")]
         [InlineData("   ")]
@@ -25,7 +31,7 @@ namespace Bee.Db.UnitTests
         public void Build_EmptyTableName_Throws(string tableName)
         {
             var schema = BuildSimpleSchema();
-            var builder = new SelectCommandBuilder(schema, DatabaseType.SQLServer);
+            var builder = NewBuilder(schema);
 
             Assert.Throws<ArgumentException>(() => builder.Build(tableName, string.Empty));
         }
@@ -35,7 +41,7 @@ namespace Bee.Db.UnitTests
         public void Build_NullTableName_Throws()
         {
             var schema = BuildSimpleSchema();
-            var builder = new SelectCommandBuilder(schema, DatabaseType.SQLServer);
+            var builder = NewBuilder(schema);
 
             Assert.Throws<ArgumentException>(() => builder.Build(null!, string.Empty));
         }
@@ -45,7 +51,7 @@ namespace Bee.Db.UnitTests
         public void Build_SimpleSchema_ProducesSelectAndFromClauses()
         {
             var schema = BuildSimpleSchema();
-            var builder = new SelectCommandBuilder(schema, DatabaseType.SQLServer);
+            var builder = NewBuilder(schema);
 
             var spec = builder.Build("demo", string.Empty);
 
@@ -61,7 +67,7 @@ namespace Bee.Db.UnitTests
         public void Build_WithSelectFields_RestrictsColumns()
         {
             var schema = BuildSimpleSchema();
-            var builder = new SelectCommandBuilder(schema, DatabaseType.SQLServer);
+            var builder = NewBuilder(schema);
 
             var spec = builder.Build("demo", "Id");
 

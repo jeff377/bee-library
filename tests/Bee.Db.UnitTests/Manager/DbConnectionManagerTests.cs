@@ -3,6 +3,8 @@ using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Db.Manager;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests.Manager
 {
@@ -17,7 +19,7 @@ namespace Bee.Db.UnitTests.Manager
 
         private static DatabaseItem AddItem(string id, Action<DatabaseItem> configure)
         {
-            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            var settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             var item = new DatabaseItem { Id = id, DatabaseType = DatabaseType.SQLServer };
             configure(item);
             settings.Items!.Add(item);
@@ -26,7 +28,7 @@ namespace Bee.Db.UnitTests.Manager
 
         private static void RemoveItem(string id)
         {
-            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            var settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             if (settings.Items!.Contains(id))
                 settings.Items!.Remove(settings.Items[id]!);
             DbConnectionManager.Remove(id);
@@ -34,7 +36,7 @@ namespace Bee.Db.UnitTests.Manager
 
         private static DatabaseServer AddServer(string id, Action<DatabaseServer> configure)
         {
-            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            var settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             var server = new DatabaseServer { Id = id, DatabaseType = DatabaseType.SQLServer };
             configure(server);
             settings.Servers!.Add(server);
@@ -43,7 +45,7 @@ namespace Bee.Db.UnitTests.Manager
 
         private static void RemoveServer(string id)
         {
-            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            var settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             if (settings.Servers!.Contains(id))
                 settings.Servers!.Remove(settings.Servers[id]!);
         }

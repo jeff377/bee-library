@@ -2,8 +2,8 @@ using System.Text;
 using Bee.Base;
 using Bee.Db.Manager;
 using Bee.Db.Providers;
-using Bee.Definition;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.Schema
 {
@@ -17,6 +17,7 @@ namespace Bee.Db.Schema
     {
         private readonly IDialectFactory _dialect;
         private readonly DatabaseType _databaseType;
+        private readonly IDefineAccess _defineAccess;
 
         #region Constructors
 
@@ -24,10 +25,12 @@ namespace Bee.Db.Schema
         /// Initializes a new instance of <see cref="TableSchemaBuilder"/>.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
-        public TableSchemaBuilder(string databaseId)
+        /// <param name="defineAccess">The define access service used to fetch the defined table schema.</param>
+        public TableSchemaBuilder(string databaseId, IDefineAccess defineAccess)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             DatabaseId = databaseId;
+            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
             var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
             _databaseType = connInfo.DatabaseType;
             _dialect = DbDialectRegistry.Get(connInfo.DatabaseType);
@@ -51,7 +54,7 @@ namespace Bee.Db.Schema
             var provider = _dialect.CreateTableSchemaProvider(this.DatabaseId);
             var realTable = provider.GetTableSchema(tableName);
             // Defined table schema from the form definitions
-            var defineTable = BackendInfo.DefineAccess.GetTableSchema(categoryId, tableName);
+            var defineTable = _defineAccess.GetTableSchema(categoryId, tableName);
             return new TableSchemaComparer(defineTable, realTable, _databaseType);
         }
 

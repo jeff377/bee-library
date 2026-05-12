@@ -3,8 +3,9 @@ using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Providers.Sqlite;
 using Bee.Db.Schema;
-using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -53,12 +54,15 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("SqliteDialectFactory：CreateFormCommandBuilder 找不到 progId 應擲 FileNotFoundException")]
-        public void CreateFormCommandBuilder_UnknownProgId_Throws()
+        [DisplayName("SqliteDialectFactory：CreateFormCommandBuilder 應回傳 SqliteFormCommandBuilder")]
+        public void CreateFormCommandBuilder_ReturnsSqliteImpl()
         {
-            // Factory delegates to SqliteFormCommandBuilder(progID); the underlying GetFormSchema
-            // throws when the form file is missing. This still drives line coverage of the factory.
-            Assert.Throws<System.IO.FileNotFoundException>(() => _factory.CreateFormCommandBuilder("__not_exists__"));
+            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
+            var schema = new Bee.Definition.Forms.FormSchema("Foo", "Foo");
+
+            var builder = _factory.CreateFormCommandBuilder(schema, defineAccess);
+
+            Assert.IsType<SqliteFormCommandBuilder>(builder);
         }
 
         [Theory]

@@ -6,7 +6,7 @@ using Bee.Tests.Shared;
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="SystemBusinessObject"/> 與 <c>BackendInfo.DefineAccess</c> 整合的純邏輯測試（記憶體存取，不走 DB）。
+    /// <see cref="SystemBusinessObject"/> 與 <c>IDefineAccess</c>（透過 DI 解析）整合的純邏輯測試（記憶體存取，不走 DB）。
     /// </summary>
     [Collection("Initialize")]
     public class SystemBusinessObjectDefineTests

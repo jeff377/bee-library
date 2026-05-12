@@ -3,6 +3,9 @@ using Bee.Base.Data;
 using Bee.Db.Manager;
 using Bee.Db.Providers.PostgreSql;
 using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -67,8 +70,10 @@ namespace Bee.Db.UnitTests
         public void DialectFactory_CreateFormCommandBuilder_ReturnsInstance()
         {
             var factory = new PgDialectFactory();
+            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
+            var schema = new FormSchema("Foo", "Foo");
 
-            Assert.NotNull(factory.CreateFormCommandBuilder("Employee"));
+            Assert.NotNull(factory.CreateFormCommandBuilder(schema, defineAccess));
         }
 
         [Fact]

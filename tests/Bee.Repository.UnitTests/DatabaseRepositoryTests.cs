@@ -1,8 +1,9 @@
 using System.ComponentModel;
 using Bee.Definition.Settings;
+using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
-using Bee.Repository.Factories;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests
 {
@@ -18,7 +19,7 @@ namespace Bee.Repository.UnitTests
         private const string ValidTableName = "TableName";
 
         private static IDatabaseRepository CreateRepository()
-            => new SystemRepositoryFactory().CreateDatabaseRepository();
+            => BeeTestServices.GetRequiredService<ISystemRepositoryFactory>().CreateDatabaseRepository();
 
         [Theory]
         [InlineData(null)]

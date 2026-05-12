@@ -1,3 +1,4 @@
+using Bee.Api.AspNetCore;
 using Bee.Base;
 using Bee.ObjectCaching;
 using Bee.Db.Manager;
@@ -11,6 +12,7 @@ using Bee.Definition.Settings;
 using Bee.Definition.Database;
 using Bee.Definition.Security;
 using Bee.Definition.Storage;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Tests.Shared
 {
@@ -22,9 +24,9 @@ namespace Bee.Tests.Shared
     public class GlobalFixture : IDisposable
     {
         // VS Code Test Explorer 走 single-host 模式時,9 個 test collection 各自會新建一個
-        // GlobalFixture/DbGlobalFixture instance,並行進入 ctor。BackendInfo.DefineAccess /
-        // DbProviderRegistry 等都是 process-wide static,並行 init 會造成 KeyedCollection 重複 Add、
-        // BackendInfo.Initialize 重入等問題,連帶讓 [Collection("Initialize")] 測試大量失敗。
+        // GlobalFixture/DbGlobalFixture instance,並行進入 ctor。BeeTestServices.Provider /
+        // DbProviderRegistry 等都是 process-wide static,並行 init 會造成 KeyedCollection 重複 Add 等
+        // 問題,連帶讓 [Collection("Initialize")] 測試大量失敗。
         // terminal 的 dotnet test 對每個 assembly 開獨立 process,沒有此 race。
         // 用 lock + once flag 確保整個 process 內只執行一次 init,後續 fixture instance 直接 return。
         private static readonly object _initLock = new();
@@ -61,30 +63,27 @@ namespace Bee.Tests.Shared
                 DefinePath = Path.Combine(repoRoot, "tests", "Define")
             });
 
-            // 在 BackendInfo.Initialize 之前，需要先有一個臨時 DefineAccess 讓
-            // RegisterSqlServer()/EnsureFallbackCommonDatabaseItem() 等能透過
-            // DefineAccess.GetDatabaseSettings() 寫入 DatabaseSettings.Items；
-            // 此暫時 access 會在 BackendInfo.Initialize 內部被正式的實例覆寫。
-            //
-            // ⚠ 注意：這個 DefineAccess 是基於 FileDefineStorage + 暫時的 CacheContainer。
-            // 完整 wire-up 在 BackendInfo.Initialize 內由反射統一處理。
+            // Bootstrap 暫時用一個 DefineAccess 讓 RegisterXxx() / EnsureFallbackCommonDatabaseItem
+            // 在 AddBeeFramework 執行前就能寫入 DatabaseSettings.Items；CacheContainer 必須先初始化
+            // 才能讓 LocalDefineAccess 透過快取讀寫 DatabaseSettings。
+            // ⚠ 這個 bootstrap access 只活在 InitializeOnce scope 內，不對外公開；DI 容器內由
+            // AddBeeFramework 重新建立正式的 IDefineAccess 實例。
             var bootstrapStorage = new FileDefineStorage();
             CacheContainer.Initialize(bootstrapStorage);
-            BackendInfo.DefineAccess = new LocalDefineAccess(bootstrapStorage);
+            var bootstrapAccess = new LocalDefineAccess(bootstrapStorage);
             // 註冊各 DB 的 ADO.NET provider + dialect factory + DatabaseItem（依環境變數）；
-            // 必須先於 BackendInfo.Initialize，因為 startup ValidateDatabaseSettings 會檢查
+            // 必須先於 AddBeeFramework，因為 startup 過程的 DatabaseSettings 驗證會檢查
             // Id='common' 的 DatabaseItem 是否存在。
-            RegisterSqlServer();
-            RegisterPostgreSql();
-            RegisterSqlite();
-            RegisterMySql();
-            RegisterOracle();
+            RegisterSqlServer(bootstrapAccess);
+            RegisterPostgreSql(bootstrapAccess);
+            RegisterSqlite(bootstrapAccess);
+            RegisterMySql(bootstrapAccess);
+            RegisterOracle(bootstrapAccess);
             // Fallback：若上述 DB 環境變數都未設（無 DB 整合測試的情境），
             // 仍需確保 Id='common' 存在,以通過 startup 驗證。
-            EnsureFallbackCommonDatabaseItem();
+            EnsureFallbackCommonDatabaseItem(bootstrapAccess);
             // 系統初始化：boot-time 讀檔走 SystemSettingsLoader（不依賴 IDefineAccess）。
-            // 與 runtime cache-backed 路徑 (BackendInfo.DefineAccess.GetSystemSettings()) 分工，
-            // 詳見 plan-backendinfo-di-phase0-systemsettings-loader.md。
+            // 與 runtime cache-backed 路徑分工，詳見 plan-backendinfo-di-phase0-systemsettings-loader.md。
             var settings = SystemSettingsLoader.Load();
             settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
             // CI 環境改用環境變數作為 MasterKey 來源,避免在 tests/Define/ 下建立 Master.key
@@ -99,7 +98,23 @@ namespace Bee.Tests.Shared
                 };
             }
             SysInfo.Initialize(settings.CommonConfiguration);
-            BackendInfo.Initialize(settings.BackendConfiguration, autoCreateMasterKey: true);
+
+            // 用 AddBeeFramework 建 DI 容器，取代原本的 BackendInfo.Initialize。
+            var services = new ServiceCollection();
+            services.AddBeeFramework(settings.BackendConfiguration, autoCreateMasterKey: true);
+            var provider = services.BuildServiceProvider();
+            // 顯式 eager-resolve bootstrappers（等同 production app.UseBeeFramework() 的效果），
+            // 觸發 CacheContainer / DbConnectionManager / RepositoryInfo 三個 process-wide
+            // 靜態 wire-up。
+            provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.ICacheBootstrapper>();
+            provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.IDbConnectionManagerBootstrapper>();
+            provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.IRepositoryInfoBootstrapper>();
+
+            BeeTestServices.Initialize(provider);
+            // Bee.Api.Client 近端模式（in-process）需要透過 ApiClientInfo.LocalServiceProvider
+            // 取得後端服務；測試 fixture 預設指向同一個 process-wide 容器。Phase 4 transitional —
+            // 主計畫 §「範圍邊界」說明此 holder 是 Bee.Api.Client 重構前的暫時做法。
+            Bee.Api.Client.ApiClientInfo.LocalServiceProvider = provider;
             Console.WriteLine("GlobalFixture Initialized");
         }
 
@@ -108,9 +123,9 @@ namespace Bee.Tests.Shared
         /// 純單元測試（無 DB 整合測試的情境）下,連線字串保持空字串,任何試圖實際連線的測試
         /// 會自然失敗——但純邏輯/序列化測試只關心 startup 通過,不需實際連線。
         /// </summary>
-        private static void EnsureFallbackCommonDatabaseItem()
+        private static void EnsureFallbackCommonDatabaseItem(IDefineAccess bootstrapAccess)
         {
-            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            var dbSettings = bootstrapAccess.GetDatabaseSettings();
             if (dbSettings.Items!.Contains("common")) return;
             dbSettings.Items.Add(new DatabaseItem
             {
@@ -130,7 +145,7 @@ namespace Bee.Tests.Shared
         /// <item><c>common_sqlserver</c>：用於 <c>[DbFact(DatabaseType.SQLServer)]</c> 明確 DB 類型測試。</item>
         /// </list>
         /// </summary>
-        private static void RegisterSqlServer()
+        private static void RegisterSqlServer(IDefineAccess bootstrapAccess)
         {
             DbProviderRegistry.Register(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
@@ -138,8 +153,8 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLServer));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing("common", "common", DatabaseType.SQLServer, connStr);
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLServer), "common", DatabaseType.SQLServer, connStr);
+            AddDatabaseItemIfMissing(bootstrapAccess, "common", "common", DatabaseType.SQLServer, connStr);
+            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.SQLServer), "common", DatabaseType.SQLServer, connStr);
         }
 
         /// <summary>
@@ -147,7 +162,7 @@ namespace Bee.Tests.Shared
         /// 與 SQL Server 不同，PG 並非 fixture 的「邏輯預設」（framework 慣例 <c>DbCategoryIds.Common</c>
         /// 對應 SQL Server），所以只註冊一個明確的 Id（<c>common_postgresql</c>）。
         /// </summary>
-        private static void RegisterPostgreSql()
+        private static void RegisterPostgreSql(IDefineAccess bootstrapAccess)
         {
             DbProviderRegistry.Register(DatabaseType.PostgreSQL, Npgsql.NpgsqlFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.PostgreSQL, new PgDialectFactory());
@@ -155,7 +170,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.PostgreSQL));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL), "common", DatabaseType.PostgreSQL, connStr);
+            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL), "common", DatabaseType.PostgreSQL, connStr);
         }
 
         /// <summary>
@@ -164,7 +179,7 @@ namespace Bee.Tests.Shared
         /// （in-memory + shared cache，零 IO，CI 與本機行為一致）。同時保留一條長生命週期連線
         /// 防止 in-memory database 在所有測試連線關閉時被釋放。
         /// </summary>
-        private static void RegisterSqlite()
+        private static void RegisterSqlite(IDefineAccess bootstrapAccess)
         {
             DbProviderRegistry.Register(DatabaseType.SQLite, Microsoft.Data.Sqlite.SqliteFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
@@ -172,7 +187,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLite));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.SQLite), "common", DatabaseType.SQLite, connStr);
+            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.SQLite), "common", DatabaseType.SQLite, connStr);
 
             // Hold one open connection for the entire process lifetime — see field comment.
             if (_sqliteKeepAlive == null)
@@ -189,7 +204,7 @@ namespace Bee.Tests.Shared
         /// 本機未設 <c>BEE_TEST_CONNSTR_MYSQL</c>（如未跑 MySQL container）則僅完成 dialect 註冊，
         /// 後續以 <c>[DbFact(DatabaseType.MySQL)]</c> 標記的整合測試會自動跳過。
         /// </summary>
-        private static void RegisterMySql()
+        private static void RegisterMySql(IDefineAccess bootstrapAccess)
         {
             DbProviderRegistry.Register(DatabaseType.MySQL, MySqlConnector.MySqlConnectorFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.MySQL, new MySqlDialectFactory());
@@ -197,7 +212,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.MySQL));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.MySQL), "common", DatabaseType.MySQL, connStr);
+            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.MySQL), "common", DatabaseType.MySQL, connStr);
         }
 
         /// <summary>
@@ -210,7 +225,7 @@ namespace Bee.Tests.Shared
         /// 本機未設 <c>BEE_TEST_CONNSTR_ORACLE</c> 則僅完成 dialect 註冊，後續以
         /// <c>[DbFact(DatabaseType.Oracle)]</c> 標記的整合測試會自動跳過。
         /// </summary>
-        private static void RegisterOracle()
+        private static void RegisterOracle(IDefineAccess bootstrapAccess)
         {
             DbProviderRegistry.Register(
                 DatabaseType.Oracle,
@@ -221,7 +236,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.Oracle));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(TestDbConventions.GetDatabaseId(DatabaseType.Oracle), "common", DatabaseType.Oracle, connStr);
+            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.Oracle), "common", DatabaseType.Oracle, connStr);
         }
 
         /// <summary>
@@ -236,12 +251,12 @@ namespace Bee.Tests.Shared
         }
 
         // Idempotent helper：當同一個 process 載入多個 test assembly 時（例如 VS Code Test Explorer
-        // 走 single-host 模式），各 assembly 都會新建 GlobalFixture，但 BackendInfo.DefineAccess 的
-        // DatabaseSettings.Items 是 process-wide static — 若直接 Add 已存在的 Id，KeyedCollection
-        // 會丟 ArgumentException 拖垮整個 fixture，連帶讓所有 [Collection("Initialize")] 測試失敗。
-        private static void AddDatabaseItemIfMissing(string id, string categoryId, DatabaseType dbType, string connStr)
+        // 走 single-host 模式），各 assembly 都會新建 GlobalFixture，但 DatabaseSettings.Items 是
+        // process-wide static — 若直接 Add 已存在的 Id，KeyedCollection 會丟 ArgumentException
+        // 拖垮整個 fixture，連帶讓所有 [Collection("Initialize")] 測試失敗。
+        private static void AddDatabaseItemIfMissing(IDefineAccess bootstrapAccess, string id, string categoryId, DatabaseType dbType, string connStr)
         {
-            var dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            var dbSettings = bootstrapAccess.GetDatabaseSettings();
             if (dbSettings.Items!.Contains(id)) return;
             dbSettings.Items.Add(new DatabaseItem
             {

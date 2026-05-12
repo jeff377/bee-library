@@ -1,4 +1,5 @@
 using Bee.Definition.Settings;
+using Bee.Definition.Storage;
 using Bee.Base;
 using Bee.Db.Manager;
 using Bee.Db.Schema;
@@ -11,6 +12,13 @@ namespace Bee.Repository.System
     /// </summary>
     internal class DatabaseRepository : IDatabaseRepository
     {
+        private readonly IDefineAccess _defineAccess;
+
+        public DatabaseRepository(IDefineAccess defineAccess)
+        {
+            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
+        }
+
         /// <summary>
         /// Tests the database connection and throws an exception on failure.
         /// </summary>
@@ -47,7 +55,7 @@ namespace Bee.Repository.System
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             ArgumentException.ThrowIfNullOrWhiteSpace(categoryId);
             ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
-            var builder = new TableSchemaBuilder(databaseId);
+            var builder = new TableSchemaBuilder(databaseId, _defineAccess);
             return builder.Execute(categoryId, tableName);
         }
     }

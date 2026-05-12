@@ -1,5 +1,4 @@
 using System.Reflection;
-using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Security;
 using Bee.Api.Core.Messages;
@@ -18,8 +17,11 @@ namespace Bee.Api.Core.Validator
         /// </summary>
         /// <param name="method">The API method to validate.</param>
         /// <param name="context">The current API call context.</param>
-        public static void ValidateAccess(MethodInfo method, ApiCallContext context)
+        /// <param name="tokenValidator">The access-token validator used when the method requires authentication.</param>
+        public static void ValidateAccess(MethodInfo method, ApiCallContext context, IAccessTokenValidator tokenValidator)
         {
+            ArgumentNullException.ThrowIfNull(tokenValidator);
+
             var attr = FindAccessAttribute(method);
             if (attr == null)
             {
@@ -32,7 +34,7 @@ namespace Bee.Api.Core.Validator
                 return;
 
             // Check whether an AccessToken is required
-            if (attr.AccessRequirement == ApiAccessRequirement.Authenticated && !IsTokenValid(context.AccessToken))
+            if (attr.AccessRequirement == ApiAccessRequirement.Authenticated && !IsTokenValid(context.AccessToken, tokenValidator))
                 throw new UnauthorizedAccessException("AccessToken is required or invalid.");
 
             if (attr.ProtectionLevel == ApiProtectionLevel.LocalOnly && !context.IsLocalCall)
@@ -86,16 +88,12 @@ namespace Bee.Api.Core.Validator
         /// <summary>
         /// Validates the AccessToken. Returns false if the token is empty or invalid.
         /// </summary>
-        private static bool IsTokenValid(Guid accessToken)
+        private static bool IsTokenValid(Guid accessToken, IAccessTokenValidator tokenValidator)
         {
             if (accessToken == Guid.Empty)
                 return false;
 
-            var provider = BackendInfo.AccessTokenValidator;
-            if (provider == null)
-                throw new InvalidOperationException("AccessTokenValidator is not configured.");
-
-            return provider.Validate(accessToken);
+            return tokenValidator.Validate(accessToken);
         }
     }
 

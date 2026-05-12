@@ -6,6 +6,7 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// <see cref="BusinessObject"/> 基底行為測試。
     /// </summary>
+    [Collection("Initialize")]
     public class BusinessObjectTests
     {
         [Fact]

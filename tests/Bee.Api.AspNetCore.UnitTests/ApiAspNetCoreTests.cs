@@ -7,6 +7,7 @@ using Bee.Definition;
 using Bee.Tests.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using Bee.Api.Core.Conversion;
 using Bee.Api.Core.Messages;
 
@@ -25,6 +26,18 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// 測試用的 ApiServiceController 類別。
         /// </summary>
         public class ApiServiceController : Controllers.ApiServiceController { }
+
+        /// <summary>
+        /// 測試用 <see cref="IHostEnvironment"/>；ApiServiceController.IsDevelopment 會解析此服務。
+        /// </summary>
+        private sealed class TestHostEnvironment : IHostEnvironment
+        {
+            public string EnvironmentName { get; set; } = Environments.Development;
+            public string ApplicationName { get; set; } = "Tests";
+            public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+            public Microsoft.Extensions.FileProviders.IFileProvider ContentRootFileProvider { get; set; }
+                = new Microsoft.Extensions.FileProviders.NullFileProvider();
+        }
 
         /// <summary>
         /// 取得 JSON-RPC 請求模型的 JSON 字串。
@@ -62,7 +75,15 @@ namespace Bee.Api.AspNetCore.UnitTests
             string json = GetRpcRequestJson(progId, action, args);
 
             var requestBody = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            var context = new DefaultHttpContext();
+            var context = new DefaultHttpContext
+            {
+                // Phase 4 後 ApiServiceController 透過 HttpContext.RequestServices 解析
+                // JsonRpcExecutor 與 IHostEnvironment；測試使用 TestOverrideServiceProvider 在
+                // BeeTestServices.Provider 之上補上一個 IHostEnvironment fake。
+                RequestServices = new TestOverrideServiceProvider(
+                    BeeTestServices.Provider,
+                    (typeof(IHostEnvironment), new TestHostEnvironment()))
+            };
             const string apiKey = "valid-api-key";
             var authorization = $"Bearer {accessToken}";
             context.Request.Headers["X-Api-Key"] = apiKey;

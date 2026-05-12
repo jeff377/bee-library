@@ -1,4 +1,5 @@
 using Bee.Definition.Filters;
+using Bee.Definition.Storage;
 using Bee.Definition.Forms;
 using Bee.Definition.Database;
 using Bee.Definition.Sorting;
@@ -12,16 +13,19 @@ namespace Bee.Db.Dml
     {
         private readonly FormSchema _formDefine;
         private readonly DatabaseType _databaseType;
+        private readonly IDefineAccess _defineAccess;
 
         /// <summary>
         /// Initializes a new instance of <see cref="SelectCommandBuilder"/>.
         /// </summary>
         /// <param name="formDefine">The form schema definition.</param>
         /// <param name="databaseType">The database type.</param>
-        public SelectCommandBuilder(FormSchema formDefine, DatabaseType databaseType)
+        /// <param name="defineAccess">The define access service used to resolve relation-form schemas.</param>
+        public SelectCommandBuilder(FormSchema formDefine, DatabaseType databaseType, IDefineAccess defineAccess)
         {
             _formDefine = formDefine;
             _databaseType = databaseType;
+            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
         }
 
         /// <summary>
@@ -71,10 +75,10 @@ namespace Bee.Db.Dml
         /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        private static SelectContext GetSelectContext(FormTable formTable, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
+        private SelectContext GetSelectContext(FormTable formTable, string selectFields, FilterNode? filter, SortFieldCollection? sortFields)
         {
             var usedFieldNames = GetUsedFieldNames(formTable, selectFields, filter, sortFields);
-            var builder = new SelectContextBuilder(formTable, usedFieldNames);
+            var builder = new SelectContextBuilder(formTable, usedFieldNames, _defineAccess);
             return builder.Build();
         }
 

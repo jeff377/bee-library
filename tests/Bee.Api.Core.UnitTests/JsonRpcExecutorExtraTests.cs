@@ -2,32 +2,50 @@ using System.ComponentModel;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition;
+using Bee.Definition.Security;
+using Bee.Tests.Shared;
 
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
     /// JsonRpcExecutor 補強測試：
-    /// 涵蓋錯誤路徑（ParseMethod 例外、空 progId、未知 action）、ExecuteAsync 路徑與建構子屬性。
+    /// 涵蓋錯誤路徑（ParseMethod 例外、空 progId、未知 action）、ExecuteAsync 路徑與屬性設定。
     /// </summary>
     [Collection("Initialize")]
     public class JsonRpcExecutorExtraTests
     {
+        private static JsonRpcExecutor NewExecutor(Guid accessToken, bool isLocalCall = false)
+        {
+            var executor = new JsonRpcExecutor(
+                BeeTestServices.GetRequiredService<IBusinessObjectFactory>(),
+                BeeTestServices.GetRequiredService<IAccessTokenValidator>(),
+                BeeTestServices.GetRequiredService<IApiEncryptionKeyProvider>())
+            {
+                AccessToken = accessToken,
+                IsLocalCall = isLocalCall,
+            };
+            return executor;
+        }
+
         [Fact]
-        [DisplayName("建構子應正確設定 AccessToken 與 IsLocalCall")]
-        public void Constructor_SetsProperties()
+        [DisplayName("屬性 setter 應正確設定 AccessToken 與 IsLocalCall")]
+        public void Properties_AssignableAfterConstruction()
         {
             var token = Guid.NewGuid();
-            var executor = new JsonRpcExecutor(token, isLocalCall: true);
+            var executor = NewExecutor(token, isLocalCall: true);
 
             Assert.Equal(token, executor.AccessToken);
             Assert.True(executor.IsLocalCall);
         }
 
         [Fact]
-        [DisplayName("建構子 isLocalCall 預設為 false")]
-        public void Constructor_IsLocalCall_DefaultsToFalse()
+        [DisplayName("IsLocalCall 預設為 false")]
+        public void IsLocalCall_DefaultsToFalse()
         {
-            var executor = new JsonRpcExecutor(Guid.NewGuid());
+            var executor = new JsonRpcExecutor(
+                BeeTestServices.GetRequiredService<IBusinessObjectFactory>(),
+                BeeTestServices.GetRequiredService<IAccessTokenValidator>(),
+                BeeTestServices.GetRequiredService<IApiEncryptionKeyProvider>());
             Assert.False(executor.IsLocalCall);
         }
 
@@ -42,7 +60,7 @@ namespace Bee.Api.Core.UnitTests
                 Id = Guid.NewGuid().ToString()
             };
 
-            var response = await new JsonRpcExecutor(Guid.Empty).ExecuteAsync(request);
+            var response = await NewExecutor(Guid.Empty, isLocalCall: true).ExecuteAsync(request);
 
             Assert.NotNull(response.Result);
             Assert.Null(response.Error);
@@ -60,7 +78,7 @@ namespace Bee.Api.Core.UnitTests
                 Id = "1"
             };
 
-            var response = new JsonRpcExecutor(Guid.Empty).Execute(request);
+            var response = NewExecutor(Guid.Empty, isLocalCall: true).Execute(request);
 
             Assert.Null(response.Result);
             Assert.NotNull(response.Error);
@@ -79,7 +97,7 @@ namespace Bee.Api.Core.UnitTests
                 Id = "1"
             };
 
-            var response = new JsonRpcExecutor(Guid.Empty).Execute(request);
+            var response = NewExecutor(Guid.Empty, isLocalCall: true).Execute(request);
 
             Assert.NotNull(response.Error);
             Assert.Contains("Invalid method format", response.Error!.Message);
@@ -97,7 +115,7 @@ namespace Bee.Api.Core.UnitTests
                 Id = "1"
             };
 
-            var response = new JsonRpcExecutor(Guid.Empty).Execute(request);
+            var response = NewExecutor(Guid.Empty, isLocalCall: true).Execute(request);
 
             Assert.NotNull(response.Error);
             Assert.Contains("ProgId", response.Error!.Message);
@@ -114,7 +132,7 @@ namespace Bee.Api.Core.UnitTests
                 Id = "1"
             };
 
-            var response = new JsonRpcExecutor(Guid.Empty).Execute(request);
+            var response = NewExecutor(Guid.Empty, isLocalCall: true).Execute(request);
 
             Assert.NotNull(response.Error);
             Assert.Equal(-1, response.Error!.Code);
@@ -126,7 +144,7 @@ namespace Bee.Api.Core.UnitTests
         public void Execute_NonSystemProgId_InvokesCreateFormBusinessObject()
         {
             // 使用已定義的 Department progId,未知 action 會被 MissingMethodException 攔截;
-            // 無論 Form BO 是否成功建立,CreateBusinessObject 的 else 分支 (line 201)
+            // 無論 Form BO 是否成功建立,CreateBusinessObject 的 else 分支
             // 皆會被執行,覆蓋 CreateFormBusinessObject 的 delegation。
             var request = new JsonRpcRequest
             {
@@ -135,7 +153,7 @@ namespace Bee.Api.Core.UnitTests
                 Id = "1"
             };
 
-            var response = new JsonRpcExecutor(Guid.Empty).Execute(request);
+            var response = NewExecutor(Guid.Empty, isLocalCall: true).Execute(request);
 
             Assert.NotNull(response.Error);
         }
@@ -152,7 +170,7 @@ namespace Bee.Api.Core.UnitTests
                 Id = id
             };
 
-            var response = new JsonRpcExecutor(Guid.Empty).Execute(request);
+            var response = NewExecutor(Guid.Empty, isLocalCall: true).Execute(request);
 
             Assert.Equal(request.Method, response.Method);
             Assert.Equal(id, response.Id);

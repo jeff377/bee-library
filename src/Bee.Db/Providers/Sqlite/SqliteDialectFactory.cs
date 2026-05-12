@@ -2,6 +2,8 @@ using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
 using Bee.Db.Schema;
+using Bee.Definition.Forms;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.Providers.Sqlite
 {
@@ -25,7 +27,8 @@ namespace Bee.Db.Providers.Sqlite
         public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => new SqliteTableRebuildCommandBuilder();
 
         /// <inheritdoc />
-        public IFormCommandBuilder CreateFormCommandBuilder(string progId) => new SqliteFormCommandBuilder(progId);
+        public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess)
+            => new SqliteFormCommandBuilder(formDefine, defineAccess);
 
         /// <inheritdoc />
         public string GetDefaultValueExpression(FieldDbType dbType) =>

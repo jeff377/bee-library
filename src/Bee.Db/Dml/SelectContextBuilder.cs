@@ -2,6 +2,7 @@ using Bee.Definition.Forms;
 using Bee.Base;
 using Bee.Definition;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.Dml
 {
@@ -14,6 +15,7 @@ namespace Bee.Db.Dml
     {
         private readonly FormTable _formTable;
         private readonly HashSet<string> _usedFieldNames;
+        private readonly IDefineAccess _defineAccess;
         private string _currentTableAlias = "A";  // Current table alias in use
 
         /// <summary>
@@ -21,10 +23,12 @@ namespace Bee.Db.Dml
         /// </summary>
         /// <param name="formTable">The form table.</param>
         /// <param name="usedFieldNames">The set of field names used by the query.</param>
-        public SelectContextBuilder(FormTable formTable, HashSet<string> usedFieldNames)
+        /// <param name="defineAccess">The define access service used to resolve relation-form schemas.</param>
+        public SelectContextBuilder(FormTable formTable, HashSet<string> usedFieldNames, IDefineAccess defineAccess)
         {
             _formTable = formTable;
             _usedFieldNames = usedFieldNames;
+            _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
         }
 
         /// <summary>
@@ -67,7 +71,7 @@ namespace Bee.Db.Dml
         private void AddTableJoin(SelectContext context, string key, FormField foreignKeyField, FieldMappingCollection fieldMappings,
             string leftTable, string leftAlias, string queryFieldName = "")
         {
-            var srcFormDefine = BackendInfo.DefineAccess.GetFormSchema(foreignKeyField.RelationProgId);
+            var srcFormDefine = _defineAccess.GetFormSchema(foreignKeyField.RelationProgId);
             if (srcFormDefine == null)
             {
                 throw new InvalidOperationException(

@@ -3,6 +3,9 @@ using Bee.Base.Data;
 using Bee.Db.Manager;
 using Bee.Db.Providers.Oracle;
 using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -78,12 +81,16 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("OracleDialectFactory：CreateFormCommandBuilder 找不到 progId 應擲 FileNotFoundException")]
-        public void CreateFormCommandBuilder_UnknownProgId_Throws()
+        [DisplayName("OracleDialectFactory：CreateFormCommandBuilder 應回傳 OracleFormCommandBuilder")]
+        public void CreateFormCommandBuilder_ReturnsOracleImpl()
         {
             var factory = new OracleDialectFactory();
+            var schema = new FormSchema("Foo", "Foo");
+            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
 
-            Assert.Throws<System.IO.FileNotFoundException>(() => factory.CreateFormCommandBuilder("__not_exists__"));
+            var builder = factory.CreateFormCommandBuilder(schema, defineAccess);
+
+            Assert.IsType<OracleFormCommandBuilder>(builder);
         }
     }
 }

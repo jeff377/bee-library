@@ -4,18 +4,24 @@ using Bee.Db.Providers.SqlServer;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
 using Bee.Definition.Sorting;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.UnitTests
 {
     [Collection("Initialize")]
     public class BuildSelectTests
     {
+        private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
+
+        private static SqlFormCommandBuilder NewBuilder(string progId)
+            => new(DefineAccess.GetFormSchema(progId), DefineAccess);
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("BuildSelect 僅選取主檔欄位時不應產生 JOIN")]
         public void BuildSelect_SelectOnlyMasterFields_NoJoin()
         {
             // 測試：只 Select 主檔欄位，不應產生任何 JOIN
-            var builder = new SqlFormCommandBuilder("Project");
+            var builder = NewBuilder("Project");
             var command = builder.BuildSelect("Project", "sys_id,sys_name", null, null);
 
             Assert.NotNull(command);
@@ -29,7 +35,7 @@ namespace Bee.Db.UnitTests
         public void BuildSelect_WhereOnReferencedField_GeneratesJoin()
         {
             // 測試：Select 主檔欄位，但 Where 條件使用參考欄位，應只 JOIN 該參考表
-            var builder = new SqlFormCommandBuilder("Project");
+            var builder = NewBuilder("Project");
             // 查詢 PM 的專案資料，PM 姓名開頭為「張」
             var filter = new FilterCondition("ref_pm_name", ComparisonOperator.StartsWith, "張");
             // 建立 Select 語法
@@ -46,7 +52,7 @@ namespace Bee.Db.UnitTests
         public void BuildSelect_OrderByReferencedField_GeneratesJoin()
         {
             // 測試：Select 主檔欄位，但 Order By 使用參考欄位，應只 JOIN 該參考表
-            var builder = new SqlFormCommandBuilder("Project");
+            var builder = NewBuilder("Project");
             // 以 PM 姓名做排序
             var sortFields = new SortFieldCollection
             {
@@ -66,7 +72,7 @@ namespace Bee.Db.UnitTests
         public void BuildSelect_SelectWithMultipleReferences_GeneratesMultipleJoins()
         {
             // 測試：Select 包含多個參考欄位，應 JOIN 對應的多個參考表
-            var builder = new SqlFormCommandBuilder("Project");
+            var builder = NewBuilder("Project");
 
             // 假設 ref_owner_dept_name 和 ref_pm_dept_name 來自不同的參考表
             var command = builder.BuildSelect("Project", "sys_id,sys_name,ref_owner_dept_name,ref_pm_dept_name", null, null);
@@ -89,7 +95,7 @@ namespace Bee.Db.UnitTests
         public void BuildSelect_FilterGroupWithMultipleConditions_GeneratesParametersAndJoin()
         {
             // 測試：FilterGroup 包含多個條件，使用不同參考欄位
-            var builder = new SqlFormCommandBuilder("Project");
+            var builder = NewBuilder("Project");
 
             var filterGroup = FilterGroup.All(
                 FilterCondition.Contains("sys_name", "專案"),
@@ -120,7 +126,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SqlFormCommandBuilder 建立 Select 命令應成功")]
         public void BuildSelect_WithAndWithoutFields_ReturnsCommands()
         {
-            var builder = new SqlFormCommandBuilder("Employee");
+            var builder = NewBuilder("Employee");
             var command = builder.BuildSelect("Employee", string.Empty, null, null);
             var command2 = builder.BuildSelect("Employee", "sys_id,sys_name,ref_dept_name,ref_supervisor_name", null, null);
 
@@ -134,7 +140,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SqlFormCommandBuilder 搭配篩選條件與排序建立 Select 命令應成功")]
         public void BuildSelect_WithFilterAndSort_ReturnsCommands()
         {
-            var builder = new SqlFormCommandBuilder("Employee");
+            var builder = NewBuilder("Employee");
 
             // 建立一個 FilterCondition 表示 sys_id = '001'
             var filter = new FilterCondition

@@ -2,6 +2,8 @@ using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
 using Bee.Db.Schema;
+using Bee.Definition.Forms;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.Providers
 {
@@ -35,10 +37,11 @@ namespace Bee.Db.Providers
         ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder();
 
         /// <summary>
-        /// Creates a form command builder for the given form program identifier.
+        /// Creates a form command builder for the specified form schema.
         /// </summary>
-        /// <param name="progId">The form program identifier.</param>
-        IFormCommandBuilder CreateFormCommandBuilder(string progId);
+        /// <param name="formDefine">The form schema definition.</param>
+        /// <param name="defineAccess">The define access service used to resolve relation-form schemas during SELECT construction.</param>
+        IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess);
 
         /// <summary>
         /// Gets the provider-specific default value expression for the given logical field type,

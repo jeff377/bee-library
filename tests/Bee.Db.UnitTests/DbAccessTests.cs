@@ -3,9 +3,9 @@ using System.Security.Cryptography;
 using Bee.Db.Manager;
 using System.Globalization;
 using Bee.Db.Dml;
-using Bee.Definition;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
 
 namespace Bee.Db.UnitTests
 {
@@ -171,7 +171,7 @@ namespace Bee.Db.UnitTests
             row["note"] = i.ToString(CultureInfo.InvariantCulture);
 
             // 3. 用 DbTableCommandBuilder 建立 DataTableUpdateSpec
-            var tableSchema = BackendInfo.DefineAccess.GetTableSchema("common", "st_user");
+            var tableSchema = BeeTestServices.GetRequiredService<IDefineAccess>().GetTableSchema("common", "st_user");
             var builder = new TableSchemaCommandBuilder(dbAccess.DatabaseType, tableSchema);
             var updateSpec = builder.BuildUpdateSpec(table);
 

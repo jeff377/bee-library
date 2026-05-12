@@ -5,6 +5,8 @@ using Bee.Db.Providers.Sqlite;
 using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -21,33 +23,29 @@ namespace Bee.Db.UnitTests
             return schema;
         }
 
+        private static SqliteFormCommandBuilder NewBuilder(FormSchema schema)
+            => new(schema, BeeTestServices.GetRequiredService<IDefineAccess>());
+
         [Fact]
         [DisplayName("FormSchema 建構子 null 應擲 ArgumentNullException")]
         public void Constructor_NullFormSchema_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new SqliteFormCommandBuilder((FormSchema)null!));
+            Assert.Throws<ArgumentNullException>(() => new SqliteFormCommandBuilder(
+                null!, BeeTestServices.GetRequiredService<IDefineAccess>()));
         }
 
         [Fact]
-        [DisplayName("ProgID 建構子找不到 FormSchema 檔案應擲例外")]
-        public void Constructor_UnknownProgId_Throws()
+        [DisplayName("FormSchema 建構子 null IDefineAccess 應擲 ArgumentNullException")]
+        public void Constructor_NullDefineAccess_Throws()
         {
-            Assert.Throws<System.IO.FileNotFoundException>(() => new SqliteFormCommandBuilder("__not_exists__"));
-        }
-
-        [Fact]
-        [DisplayName("ProgID 建構子指定有效 FormSchema ID 應成功建立")]
-        public void Constructor_ValidProgId_CreatesSuccessfully()
-        {
-            var exception = Record.Exception(() => new SqliteFormCommandBuilder("Employee"));
-            Assert.Null(exception);
+            Assert.Throws<ArgumentNullException>(() => new SqliteFormCommandBuilder(BuildFooSchema(), null!));
         }
 
         [Fact]
         [DisplayName("BuildSelect 應委派至 SQLite 方言並產生 SELECT 語句")]
         public void BuildSelect_DelegatesToSqliteDialect()
         {
-            var builder = new SqliteFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder(BuildFooSchema());
 
             var spec = builder.BuildSelect("Foo", "name", null, null);
 
@@ -64,7 +62,7 @@ namespace Bee.Db.UnitTests
             var row = dt.NewRow();
             row["name"] = "n";
 
-            var builder = new SqliteFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder(BuildFooSchema());
             var spec = builder.BuildInsert("Foo", row);
 
             Assert.Contains("INSERT INTO \"tb_foo\"", spec.CommandText);
@@ -84,7 +82,7 @@ namespace Bee.Db.UnitTests
             dt.AcceptChanges();
             row["name"] = "new";
 
-            var builder = new SqliteFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder(BuildFooSchema());
             var spec = builder.BuildUpdate("Foo", row);
 
             Assert.Contains("UPDATE \"tb_foo\"", spec.CommandText);
@@ -94,7 +92,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("BuildDelete 應委派至 SQLite 方言並產生 DELETE 語句")]
         public void BuildDelete_DelegatesToSqliteDialect()
         {
-            var builder = new SqliteFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder(BuildFooSchema());
             var spec = builder.BuildDelete("Foo", FilterCondition.Equal(SysFields.RowId, Guid.NewGuid()));
 
             Assert.Contains("DELETE FROM \"tb_foo\"", spec.CommandText);

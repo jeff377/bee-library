@@ -50,11 +50,13 @@ namespace Bee.Definition
 
     /// <summary>
     /// Minimal generic extensions on <see cref="IServiceProvider"/>.
-    /// Defined here to avoid taking a hard dependency on
-    /// <c>Microsoft.Extensions.DependencyInjection.Abstractions</c>; Phase 4
-    /// may switch to that package as part of full DI integration.
+    /// Internal so it does not collide with
+    /// <c>Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions</c>
+    /// when host code consumes both namespaces; exposed via <c>InternalsVisibleTo</c>
+    /// to <c>Bee.Business</c> so BO base classes can use it for the rare per-method
+    /// service lookups.
     /// </summary>
-    public static class BeeServiceProviderExtensions
+    internal static class BeeServiceProviderExtensions
     {
         /// <summary>
         /// Resolves a service of type <typeparamref name="T"/>; returns <c>null</c>

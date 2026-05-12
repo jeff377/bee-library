@@ -1,7 +1,9 @@
 using System.ComponentModel;
+using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 using Bee.Repository.Factories;
 using Bee.Repository.System;
+using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests
 {
@@ -11,13 +13,13 @@ namespace Bee.Repository.UnitTests
     [Collection("Initialize")]
     public class SystemRepositoryFactoryTests
     {
+        private static ISystemRepositoryFactory Factory => BeeTestServices.GetRequiredService<ISystemRepositoryFactory>();
+
         [Fact]
         [DisplayName("CreateDatabaseRepository 應回傳 DatabaseRepository 型別")]
         public void CreateDatabaseRepository_ReturnsDatabaseRepositoryType()
         {
-            var factory = new SystemRepositoryFactory();
-
-            var repo = factory.CreateDatabaseRepository();
+            var repo = Factory.CreateDatabaseRepository();
 
             Assert.NotNull(repo);
             Assert.IsType<IDatabaseRepository>(repo, exactMatch: false);
@@ -27,9 +29,7 @@ namespace Bee.Repository.UnitTests
         [DisplayName("CreateSessionRepository 應回傳 SessionRepository 型別")]
         public void CreateSessionRepository_ReturnsSessionRepositoryType()
         {
-            var factory = new SystemRepositoryFactory();
-
-            var repo = factory.CreateSessionRepository();
+            var repo = Factory.CreateSessionRepository();
 
             Assert.NotNull(repo);
             Assert.IsType<SessionRepository>(repo);
@@ -39,10 +39,8 @@ namespace Bee.Repository.UnitTests
         [DisplayName("CreateDatabaseRepository 每次呼叫應回傳新實例")]
         public void CreateDatabaseRepository_EachCallReturnsNewInstance()
         {
-            var factory = new SystemRepositoryFactory();
-
-            var first = factory.CreateDatabaseRepository();
-            var second = factory.CreateDatabaseRepository();
+            var first = Factory.CreateDatabaseRepository();
+            var second = Factory.CreateDatabaseRepository();
 
             Assert.NotSame(first, second);
         }
@@ -51,12 +49,17 @@ namespace Bee.Repository.UnitTests
         [DisplayName("CreateSessionRepository 每次呼叫應回傳新實例")]
         public void CreateSessionRepository_EachCallReturnsNewInstance()
         {
-            var factory = new SystemRepositoryFactory();
-
-            var first = factory.CreateSessionRepository();
-            var second = factory.CreateSessionRepository();
+            var first = Factory.CreateSessionRepository();
+            var second = Factory.CreateSessionRepository();
 
             Assert.NotSame(first, second);
+        }
+
+        [Fact]
+        [DisplayName("SystemRepositoryFactory 直接構造傳入 null IDefineAccess 應拋 ArgumentNullException")]
+        public void Ctor_NullDefineAccess_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(() => new SystemRepositoryFactory(null!));
         }
     }
 }

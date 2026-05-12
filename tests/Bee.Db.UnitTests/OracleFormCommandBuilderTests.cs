@@ -5,6 +5,8 @@ using Bee.Db.Providers.Oracle;
 using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -18,6 +20,8 @@ namespace Bee.Db.UnitTests
     [Collection("Initialize")]
     public class OracleFormCommandBuilderTests
     {
+        private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
+
         private static FormSchema BuildFooSchema()
         {
             var schema = new FormSchema("X", "X");
@@ -28,25 +32,28 @@ namespace Bee.Db.UnitTests
             return schema;
         }
 
+        private static OracleFormCommandBuilder NewBuilder()
+            => new(BuildFooSchema(), DefineAccess);
+
         [Fact]
         [DisplayName("FormSchema 建構子 null 應擲 ArgumentNullException")]
         public void Constructor_NullFormSchema_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new OracleFormCommandBuilder((FormSchema)null!));
+            Assert.Throws<ArgumentNullException>(() => new OracleFormCommandBuilder(null!, DefineAccess));
         }
 
         [Fact]
-        [DisplayName("ProgID 建構子找不到 FormSchema 檔案應擲例外")]
-        public void Constructor_UnknownProgId_Throws()
+        [DisplayName("FormSchema 建構子 null IDefineAccess 應擲 ArgumentNullException")]
+        public void Constructor_NullDefineAccess_Throws()
         {
-            Assert.Throws<System.IO.FileNotFoundException>(() => new OracleFormCommandBuilder("__not_exists__"));
+            Assert.Throws<ArgumentNullException>(() => new OracleFormCommandBuilder(BuildFooSchema(), null!));
         }
 
         [Fact]
         [DisplayName("BuildSelect 應委派至 Oracle 方言並產生 SELECT 語句（雙引號識別符）")]
         public void BuildSelect_DelegatesToOracleDialect()
         {
-            var builder = new OracleFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
 
             var spec = builder.BuildSelect("Foo", "name", null, null);
 
@@ -63,7 +70,7 @@ namespace Bee.Db.UnitTests
             var row = dt.NewRow();
             row["name"] = "n";
 
-            var builder = new OracleFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
             var spec = builder.BuildInsert("Foo", row);
 
             Assert.Contains("INSERT INTO \"TB_FOO\"", spec.CommandText);
@@ -83,7 +90,7 @@ namespace Bee.Db.UnitTests
             dt.AcceptChanges();
             row["name"] = "new";
 
-            var builder = new OracleFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
             var spec = builder.BuildUpdate("Foo", row);
 
             Assert.Contains("UPDATE \"TB_FOO\"", spec.CommandText);
@@ -93,7 +100,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("BuildDelete 應委派至 Oracle 方言並產生 DELETE 語句")]
         public void BuildDelete_DelegatesToOracleDialect()
         {
-            var builder = new OracleFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
             var spec = builder.BuildDelete("Foo", FilterCondition.Equal(SysFields.RowId, Guid.NewGuid()));
 
             Assert.Contains("DELETE FROM \"TB_FOO\"", spec.CommandText);
@@ -108,7 +115,7 @@ namespace Bee.Db.UnitTests
             var row = dt.NewRow();
             row["name"] = "n";
 
-            var builder = new OracleFormCommandBuilder(BuildFooSchema());
+            var builder = NewBuilder();
             var spec = builder.BuildInsert("Foo", row);
 
             // form-builder 層輸出位置佔位符 {0}；Oracle 的 :pN 由 CreateCommand 階段

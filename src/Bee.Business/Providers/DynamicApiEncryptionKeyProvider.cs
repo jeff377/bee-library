@@ -1,7 +1,7 @@
 using Bee.Definition.Security;
 using Bee.Base;
 using Bee.Base.Security;
-using Bee.Definition;
+using Bee.Definition.Identity;
 
 namespace Bee.Business.Providers
 {
@@ -10,6 +10,17 @@ namespace Bee.Business.Providers
     /// </summary>
     public class DynamicApiEncryptionKeyProvider : IApiEncryptionKeyProvider
     {
+        private readonly ISessionInfoService _sessionInfoService;
+
+        /// <summary>
+        /// Initializes a new <see cref="DynamicApiEncryptionKeyProvider"/>.
+        /// </summary>
+        /// <param name="sessionInfoService">The session info access service.</param>
+        public DynamicApiEncryptionKeyProvider(ISessionInfoService sessionInfoService)
+        {
+            _sessionInfoService = sessionInfoService ?? throw new ArgumentNullException(nameof(sessionInfoService));
+        }
+
         /// <summary>
         /// Gets the encryption key for API transmission data.
         /// </summary>
@@ -23,7 +34,7 @@ namespace Bee.Business.Providers
                 throw new UnauthorizedAccessException("Access token is required.");
             }
 
-            var sessionInfo = BackendInfo.SessionInfoService.Get(accessToken);
+            var sessionInfo = _sessionInfoService.Get(accessToken);
             return sessionInfo?.ApiEncryptionKey
                 ?? throw new UnauthorizedAccessException("Session key not found or expired.");
         }

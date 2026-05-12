@@ -1,13 +1,11 @@
 using System.ComponentModel;
 using Bee.Api.Core.Validator;
-using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Security;
 using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.UnitTests
 {
-    [Collection("Initialize")]
     public class ApiAccessValidatorTests
     {
         private sealed class FakeTokenProvider : IAccessTokenValidator
@@ -15,6 +13,10 @@ namespace Bee.Api.Core.UnitTests
             public bool Result { get; init; }
             public bool Validate(Guid accessToken) => Result;
         }
+
+        // Tests that don't exercise the token-validator branch pass a "deny-all" stub by default;
+        // never reached for paths that short-circuit before the token check.
+        private static readonly FakeTokenProvider _denyAll = new() { Result = false };
 
         [Fact]
         [DisplayName("ValidateAccess 於方法未標記 ApiAccessControl 時應拋 UnauthorizedAccessException")]
@@ -29,7 +31,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                ApiAccessValidator.ValidateAccess(method!, context));
+                ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
         }
 
         [Fact]
@@ -45,82 +47,57 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                ApiAccessValidator.ValidateAccess(method!, context));
+                ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
         }
 
         [Fact]
         [DisplayName("ValidateAccess 於 Authenticated 要求且 provider 回傳 false 時應拋")]
         public void ValidateAccess_Authenticated_InvalidToken_Throws()
         {
-            var original = BackendInfo.AccessTokenValidator;
-            try
+            var fake = new FakeTokenProvider { Result = false };
+            var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
+            var context = new ApiCallContext
             {
-                BackendInfo.AccessTokenValidator = new FakeTokenProvider { Result = false };
-                var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
-                var context = new ApiCallContext
-                {
-                    Format = PayloadFormat.Encrypted,
-                    IsLocalCall = false,
-                    AccessToken = Guid.NewGuid()
-                };
+                Format = PayloadFormat.Encrypted,
+                IsLocalCall = false,
+                AccessToken = Guid.NewGuid()
+            };
 
-                Assert.Throws<UnauthorizedAccessException>(() =>
-                    ApiAccessValidator.ValidateAccess(method!, context));
-            }
-            finally
-            {
-                BackendInfo.AccessTokenValidator = original;
-            }
+            Assert.Throws<UnauthorizedAccessException>(() =>
+                ApiAccessValidator.ValidateAccess(method!, context, fake));
         }
 
         [Fact]
         [DisplayName("ValidateAccess 於 Authenticated 要求且 provider 回傳 true 時應通過")]
         public void ValidateAccess_Authenticated_ValidToken_Succeeds()
         {
-            var original = BackendInfo.AccessTokenValidator;
-            try
+            var fake = new FakeTokenProvider { Result = true };
+            var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
+            var context = new ApiCallContext
             {
-                BackendInfo.AccessTokenValidator = new FakeTokenProvider { Result = true };
-                var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
-                var context = new ApiCallContext
-                {
-                    Format = PayloadFormat.Encrypted,
-                    IsLocalCall = false,
-                    AccessToken = Guid.NewGuid()
-                };
+                Format = PayloadFormat.Encrypted,
+                IsLocalCall = false,
+                AccessToken = Guid.NewGuid()
+            };
 
-                var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context));
-                Assert.Null(ex);
-            }
-            finally
-            {
-                BackendInfo.AccessTokenValidator = original;
-            }
+            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, fake));
+            Assert.Null(ex);
         }
 
         [Fact]
-        [DisplayName("ValidateAccess 於 AccessToken 非 Empty 但 provider 未設定時應拋 InvalidOperationException")]
-        public void ValidateAccess_Authenticated_ProviderNotConfigured_Throws()
+        [DisplayName("ValidateAccess 傳入 null tokenValidator 應拋 ArgumentNullException")]
+        public void ValidateAccess_NullTokenValidator_Throws()
         {
-            var original = BackendInfo.AccessTokenValidator;
-            try
+            var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
+            var context = new ApiCallContext
             {
-                BackendInfo.AccessTokenValidator = null!;
-                var method = typeof(DummyApi).GetMethod(nameof(DummyApi.Method_Authenticated));
-                var context = new ApiCallContext
-                {
-                    Format = PayloadFormat.Encrypted,
-                    IsLocalCall = false,
-                    AccessToken = Guid.NewGuid()
-                };
+                Format = PayloadFormat.Encrypted,
+                IsLocalCall = false,
+                AccessToken = Guid.NewGuid()
+            };
 
-                Assert.Throws<InvalidOperationException>(() =>
-                    ApiAccessValidator.ValidateAccess(method!, context));
-            }
-            finally
-            {
-                BackendInfo.AccessTokenValidator = original;
-            }
+            Assert.Throws<ArgumentNullException>(() =>
+                ApiAccessValidator.ValidateAccess(method!, context, null!));
         }
 
         [Theory]
@@ -160,13 +137,13 @@ namespace Bee.Api.Core.UnitTests
             // Act & Assert
             if (expectedSuccess)
             {
-                var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context));
+                var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
                 Assert.Null(ex);
             }
             else
             {
                 Assert.Throws<UnauthorizedAccessException>(() =>
-                    ApiAccessValidator.ValidateAccess(method!, context));
+                    ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
             }
         }
 
@@ -182,7 +159,7 @@ namespace Bee.Api.Core.UnitTests
                 AccessToken = Guid.Empty
             };
 
-            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context));
+            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
             Assert.Null(ex);
         }
 
@@ -198,7 +175,7 @@ namespace Bee.Api.Core.UnitTests
                 AccessToken = Guid.Empty
             };
 
-            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context));
+            var ex = Record.Exception(() => ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
             Assert.Null(ex);
         }
 
@@ -216,7 +193,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                ApiAccessValidator.ValidateAccess(method!, context));
+                ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
         }
 
         [Fact]
@@ -232,7 +209,7 @@ namespace Bee.Api.Core.UnitTests
             };
 
             Assert.Throws<UnauthorizedAccessException>(() =>
-                ApiAccessValidator.ValidateAccess(method!, context));
+                ApiAccessValidator.ValidateAccess(method!, context, _denyAll));
         }
 
         private class DummyApi

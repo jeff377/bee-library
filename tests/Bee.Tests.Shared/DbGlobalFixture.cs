@@ -3,6 +3,7 @@ using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
 
 namespace Bee.Tests.Shared
 {
@@ -76,7 +77,7 @@ namespace Bee.Tests.Shared
         /// </summary>
         private static void EnsureSchema(string databaseId)
         {
-            var builder = new TableSchemaBuilder(databaseId);
+            var builder = new TableSchemaBuilder(databaseId, BeeTestServices.GetRequiredService<IDefineAccess>());
 
             bool created = builder.Execute("common", "st_user");
             Console.WriteLine($"DbGlobalFixture: {databaseId} st_user schema — {(created ? "created/upgraded" : "up-to-date")}");

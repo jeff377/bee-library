@@ -1,6 +1,6 @@
 using Bee.Definition.Security;
 using Bee.Base;
-using Bee.Definition;
+using Bee.Definition.Identity;
 
 namespace Bee.Business.Validator
 {
@@ -10,6 +10,17 @@ namespace Bee.Business.Validator
     /// </summary>
     public class AccessTokenValidator : IAccessTokenValidator
     {
+        private readonly ISessionInfoService _sessionInfoService;
+
+        /// <summary>
+        /// Initializes a new <see cref="AccessTokenValidator"/>.
+        /// </summary>
+        /// <param name="sessionInfoService">The session info access service.</param>
+        public AccessTokenValidator(ISessionInfoService sessionInfoService)
+        {
+            _sessionInfoService = sessionInfoService ?? throw new ArgumentNullException(nameof(sessionInfoService));
+        }
+
         /// <summary>
         /// Validates whether the specified access token is valid.
         /// </summary>
@@ -23,7 +34,7 @@ namespace Bee.Business.Validator
                 throw new UnauthorizedAccessException("Access token is required.");
             }
 
-            var sessionInfo = BackendInfo.SessionInfoService.Get(accessToken);
+            var sessionInfo = _sessionInfoService.Get(accessToken);
             if (sessionInfo == null)
                 throw new UnauthorizedAccessException("Session key not found or expired.");
 

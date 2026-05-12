@@ -5,32 +5,32 @@ using Bee.Db.Providers.PostgreSql;
 using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
     [Collection("Initialize")]
     public class PgFormCommandBuilderTests
     {
+        private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
+
+        private static PgFormCommandBuilder NewBuilder(FormSchema schema)
+            => new(schema, DefineAccess);
+
         [Fact]
         [DisplayName("FormSchema 建構子 null 應擲 ArgumentNullException")]
         public void Constructor_NullFormSchema_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new PgFormCommandBuilder((FormSchema)null!));
+            Assert.Throws<ArgumentNullException>(() => new PgFormCommandBuilder(null!, DefineAccess));
         }
 
         [Fact]
-        [DisplayName("ProgID 建構子找不到 FormSchema 檔案應擲例外")]
-        public void Constructor_UnknownProgId_Throws()
+        [DisplayName("FormSchema 建構子 null IDefineAccess 應擲 ArgumentNullException")]
+        public void Constructor_NullDefineAccess_Throws()
         {
-            Assert.Throws<System.IO.FileNotFoundException>(() => new PgFormCommandBuilder("__not_exists__"));
-        }
-
-        [Fact]
-        [DisplayName("ProgID 建構子指定有效 FormSchema ID 應成功建立")]
-        public void Constructor_ValidProgId_CreatesSuccessfully()
-        {
-            var exception = Record.Exception(() => new PgFormCommandBuilder("Employee"));
-            Assert.Null(exception);
+            var schema = new FormSchema("X", "X");
+            Assert.Throws<ArgumentNullException>(() => new PgFormCommandBuilder(schema, null!));
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Bee.Db.UnitTests
             var row = dt.NewRow();
             row["name"] = "n";
 
-            var builder = new PgFormCommandBuilder(schema);
+            var builder = NewBuilder(schema);
             var spec = builder.BuildInsert("Foo", row);
 
             Assert.Contains("\"tb_foo\"", spec.CommandText);
@@ -73,7 +73,7 @@ namespace Bee.Db.UnitTests
             dt.AcceptChanges();
             row["name"] = "new";
 
-            var builder = new PgFormCommandBuilder(schema);
+            var builder = NewBuilder(schema);
             var spec = builder.BuildUpdate("Foo", row);
 
             Assert.Contains("UPDATE \"tb_foo\"", spec.CommandText);
@@ -88,7 +88,7 @@ namespace Bee.Db.UnitTests
             table.DbTableName = "tb_foo";
             table.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
 
-            var builder = new PgFormCommandBuilder(schema);
+            var builder = NewBuilder(schema);
             var spec = builder.BuildDelete("Foo", FilterCondition.Equal(SysFields.RowId, Guid.NewGuid()));
 
             Assert.Contains("DELETE FROM \"tb_foo\"", spec.CommandText);
@@ -103,7 +103,7 @@ namespace Bee.Db.UnitTests
             table.DbTableName = "tb_foo";
             table.Fields!.AddStringField("name", "Name", 50);
 
-            var builder = new PgFormCommandBuilder(schema);
+            var builder = NewBuilder(schema);
             var spec = builder.BuildSelect("Foo", "");
 
             Assert.Contains("\"tb_foo\"", spec.CommandText);

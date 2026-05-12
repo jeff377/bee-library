@@ -2,6 +2,7 @@ using System.Reflection;
 using Bee.Base;
 using Bee.Base.Tracing;
 using Bee.Definition;
+using Bee.Definition.Security;
 using Bee.Api.Core.Validator;
 using Bee.Api.Core.Conversion;
 using Bee.Api.Core.Messages;
@@ -15,15 +16,24 @@ namespace Bee.Api.Core.JsonRpc
     {
         private static readonly char[] MethodSeparators = new[] { '.' };
 
+        private readonly IBusinessObjectFactory _boFactory;
+        private readonly IAccessTokenValidator _tokenValidator;
+        private readonly IApiEncryptionKeyProvider _keyProvider;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonRpcExecutor"/> class.
         /// </summary>
-        /// <param name="accessToken">The access token.</param>
-        /// <param name="isLocalCall">Indicates whether the call originates from a local source.</param>
-        public JsonRpcExecutor(Guid accessToken, bool isLocalCall = false)
+        /// <param name="boFactory">The business-object factory.</param>
+        /// <param name="tokenValidator">The access-token validator.</param>
+        /// <param name="keyProvider">The API encryption key provider.</param>
+        public JsonRpcExecutor(
+            IBusinessObjectFactory boFactory,
+            IAccessTokenValidator tokenValidator,
+            IApiEncryptionKeyProvider keyProvider)
         {
-            AccessToken = accessToken;
-            IsLocalCall = isLocalCall;
+            _boFactory = boFactory ?? throw new ArgumentNullException(nameof(boFactory));
+            _tokenValidator = tokenValidator ?? throw new ArgumentNullException(nameof(tokenValidator));
+            _keyProvider = keyProvider ?? throw new ArgumentNullException(nameof(keyProvider));
         }
 
         /// <summary>
@@ -72,7 +82,7 @@ namespace Bee.Api.Core.JsonRpc
                 var (progId, action) = ParseMethod(request.Method);
                 var businessObject = CreateBusinessObject(AccessToken, progId);
                 var method = GetMethod(businessObject, action);
-                ApiAccessValidator.ValidateAccess(method, new ApiCallContext(AccessToken, IsLocalCall, format));
+                ApiAccessValidator.ValidateAccess(method, new ApiCallContext(AccessToken, IsLocalCall, format), _tokenValidator);
 
                 // Access confirmed: retrieve the encryption key and decrypt the payload.
                 byte[]? apiEncryptionKey = GetApiEncryptionKey(format);
@@ -105,7 +115,7 @@ namespace Bee.Api.Core.JsonRpc
         private byte[]? GetApiEncryptionKey(PayloadFormat format)
         {
             return format == PayloadFormat.Encrypted
-                ? BackendInfo.ApiEncryptionKeyProvider.GetKey(AccessToken)
+                ? _keyProvider.GetKey(AccessToken)
                 : null;
         }
 
@@ -199,9 +209,9 @@ namespace Bee.Api.Core.JsonRpc
                 throw new ArgumentException("ProgId cannot be null or empty.", nameof(progId));
 
             if (progId == SysProgIds.System)
-                return BackendInfo.BusinessObjectFactory.CreateSystemBusinessObject(accessToken, IsLocalCall);
+                return _boFactory.CreateSystemBusinessObject(accessToken, IsLocalCall);
             else
-                return BackendInfo.BusinessObjectFactory.CreateFormBusinessObject(accessToken, progId, IsLocalCall);
+                return _boFactory.CreateFormBusinessObject(accessToken, progId, IsLocalCall);
         }
     }
 

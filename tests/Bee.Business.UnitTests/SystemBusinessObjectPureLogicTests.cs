@@ -7,8 +7,10 @@ namespace Bee.Business.UnitTests
 {
     /// <summary>
     /// <see cref="SystemBusinessObject"/> 不依賴 Repository / DefineAccess 的純邏輯分支測試。
-    /// 這些測試不在早期 guard 前觸及後端，因此不需 <c>[Collection("Initialize")]</c>。
+    /// Phase 4 之後 BO ctor 需要 IBeeContext，<see cref="TestBeeContext.Create"/> 透過
+    /// <see cref="BeeTestServices"/> 取得 DI 服務，因此這些測試需加入 Initialize collection。
     /// </summary>
+    [Collection("Initialize")]
     public class SystemBusinessObjectPureLogicTests
     {
         [Fact]

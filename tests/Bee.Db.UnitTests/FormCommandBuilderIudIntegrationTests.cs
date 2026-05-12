@@ -4,6 +4,7 @@ using Bee.Base.Data;
 using Bee.Db.Dml;
 using Bee.Definition;
 using Bee.Definition.Filters;
+using Bee.Definition.Storage;
 using Bee.Definition.Forms;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
@@ -74,7 +75,7 @@ namespace Bee.Db.UnitTests
                 Assert.Equal(1, dbAccess.Execute(insertSpec).RowsAffected);
 
                 // SELECT verifies the row exists.
-                var selectSpec = new SelectCommandBuilder(schema, databaseType)
+                var selectSpec = new SelectCommandBuilder(schema, databaseType, BeeTestServices.GetRequiredService<IDefineAccess>())
                     .Build(UserTableName, "sys_rowid,sys_name,note", FilterCondition.Equal("sys_rowid", rowId));
                 var afterInsert = dbAccess.Execute(selectSpec).Table;
                 Assert.NotNull(afterInsert);
@@ -114,7 +115,7 @@ namespace Bee.Db.UnitTests
             }
 
             // Verify deletion.
-            var verifySpec = new SelectCommandBuilder(schema, databaseType)
+            var verifySpec = new SelectCommandBuilder(schema, databaseType, BeeTestServices.GetRequiredService<IDefineAccess>())
                 .Build(UserTableName, "sys_rowid", FilterCondition.Equal("sys_rowid", rowId));
             var afterDelete = dbAccess.Execute(verifySpec).Table;
             Assert.NotNull(afterDelete);

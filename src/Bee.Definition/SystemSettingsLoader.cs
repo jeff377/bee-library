@@ -10,20 +10,20 @@ namespace Bee.Definition
     /// <para>
     /// This loader has no service dependencies and is safe to call before any other
     /// framework component is initialized. It is intended for the boot-time read
-    /// (one-shot, before <see cref="BackendInfo.Initialize(BackendConfiguration)"/>).
+    /// (one-shot, before <c>AddBeeFramework</c>).
     /// </para>
     /// <para>
-    /// Runtime access (cached, file-watch-aware) continues to go through
-    /// <c>BackendInfo.DefineAccess.GetSystemSettings()</c>; this loader does not
+    /// Runtime access (cached, file-watch-aware) continues to go through the
+    /// DI-resolved <c>IDefineAccess.GetSystemSettings()</c>; this loader does not
     /// replace that path.
     /// </para>
     /// <para>
     /// Typical boot-time usage:
     /// <code>
-    /// BackendInfo.DefinePath = "...";
+    /// DefinePathInfo.Initialize(new PathOptions { DefinePath = "..." });
     /// var settings = SystemSettingsLoader.Load();
     /// SysInfo.Initialize(settings.CommonConfiguration);
-    /// BackendInfo.Initialize(settings.BackendConfiguration);
+    /// services.AddBeeFramework(settings.BackendConfiguration);
     /// </code>
     /// </para>
     /// </remarks>

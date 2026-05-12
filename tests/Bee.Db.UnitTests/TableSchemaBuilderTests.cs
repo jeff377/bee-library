@@ -1,18 +1,22 @@
 using System.ComponentModel;
 using Bee.Db.Schema;
-using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
     [Collection("Initialize")]
     public class TableSchemaBuilderTests
     {
+        private static TableSchemaBuilder NewBuilder(string databaseId)
+            => new(databaseId, BeeTestServices.GetRequiredService<IDefineAccess>());
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("TableSchemaBuilder 比對結構一致的資料表應回傳 None")]
         public void Compare_UpToDateTable_ReturnsNoneAction()
         {
-            var builder = new TableSchemaBuilder("common_sqlserver");
+            var builder = NewBuilder("common_sqlserver");
             var result = builder.Compare("common", "st_user");
 
             Assert.NotNull(result);
@@ -23,7 +27,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("TableSchemaBuilder 取得命令文字應回傳空字串（結構已同步）")]
         public void GetCommandText_UpToDateTable_ReturnsEmpty()
         {
-            var builder = new TableSchemaBuilder("common_sqlserver");
+            var builder = NewBuilder("common_sqlserver");
             string sql = builder.GetCommandText("common", "st_user");
 
             Assert.Equal(string.Empty, sql);
@@ -33,7 +37,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("TableSchemaBuilder Execute 結構已同步時應回傳 false")]
         public void Execute_UpToDateTable_ReturnsFalse()
         {
-            var builder = new TableSchemaBuilder("common_sqlserver");
+            var builder = NewBuilder("common_sqlserver");
             bool upgraded = builder.Execute("common", "st_user");
 
             Assert.False(upgraded);
@@ -43,7 +47,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("TableSchemaBuilder GetCommandText 指定未存在於 DB 的資料表應回傳非空 SQL")]
         public void GetCommandText_NewTable_SqlServer_ReturnsNonEmptyScript()
         {
-            var builder = new TableSchemaBuilder("common_sqlserver");
+            var builder = NewBuilder("common_sqlserver");
             string sql = builder.GetCommandText("company", "ft_project");
             Assert.NotEmpty(sql);
         }
@@ -52,7 +56,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("TableSchemaBuilder GetCommandText PostgreSQL 指定未存在於 DB 的資料表應回傳非空 SQL")]
         public void GetCommandText_NewTable_PostgreSql_ReturnsNonEmptyScript()
         {
-            var builder = new TableSchemaBuilder("common_postgresql");
+            var builder = NewBuilder("common_postgresql");
             string sql = builder.GetCommandText("company", "ft_project");
             Assert.NotEmpty(sql);
         }

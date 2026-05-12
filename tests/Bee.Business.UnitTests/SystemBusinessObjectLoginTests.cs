@@ -2,7 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Security;
 using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;
-using Bee.Definition;
+using Bee.Definition.Identity;
 using Bee.Definition.Security;
 using Bee.Tests.Shared;
 
@@ -30,6 +30,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("Login 驗證成功應產生 AccessToken 與到期時間並建立 SessionInfo")]
         public void Login_Authenticated_ReturnsValidSessionToken()
         {
+            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
             var bo = new TestableSystemBusinessObject(
                 Guid.Empty,
                 _ => (true, "User One"));
@@ -45,7 +46,7 @@ namespace Bee.Business.UnitTests
             // 未提供 ClientPublicKey → EncryptedApiEncryptionKey 保持空字串
             Assert.Equal(string.Empty, result.ApiEncryptionKey);
 
-            var session = BackendInfo.SessionInfoService.Get(result.AccessToken);
+            var session = sessionService.Get(result.AccessToken);
             try
             {
                 Assert.NotNull(session);
@@ -54,7 +55,7 @@ namespace Bee.Business.UnitTests
             }
             finally
             {
-                BackendInfo.SessionInfoService.Remove(result.AccessToken);
+                sessionService.Remove(result.AccessToken);
             }
         }
 
@@ -62,6 +63,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("Login 提供 ClientPublicKey 應以 RSA 加密 ApiEncryptionKey")]
         public void Login_WithClientPublicKey_EncryptsApiKey()
         {
+            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
             var bo = new TestableSystemBusinessObject(
                 Guid.Empty,
@@ -81,13 +83,13 @@ namespace Bee.Business.UnitTests
                 var sessionKeyBase64 = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
                 Assert.False(string.IsNullOrWhiteSpace(sessionKeyBase64));
 
-                var session = BackendInfo.SessionInfoService.Get(result.AccessToken);
+                var session = sessionService.Get(result.AccessToken);
                 Assert.NotNull(session);
                 Assert.Equal(Convert.ToBase64String(session!.ApiEncryptionKey), sessionKeyBase64);
             }
             finally
             {
-                BackendInfo.SessionInfoService.Remove(result.AccessToken);
+                sessionService.Remove(result.AccessToken);
             }
         }
 
@@ -96,23 +98,16 @@ namespace Bee.Business.UnitTests
         public void Login_AuthenticateFails_ThrowsAndRecordsFailure()
         {
             var tracker = new RecordingTracker();
-            var original = BackendInfo.LoginAttemptTracker;
-            BackendInfo.LoginAttemptTracker = tracker;
-            try
-            {
-                var bo = new TestableSystemBusinessObject(
-                    Guid.Empty,
-                    _ => (false, string.Empty));
-                var args = new LoginArgs { UserId = "bad", Password = "bad" };
+            var ctx = TestBeeContext.CreateWithOverrides((typeof(ILoginAttemptTracker), tracker));
+            var bo = new TestableSystemBusinessObject(
+                ctx,
+                Guid.Empty,
+                _ => (false, string.Empty));
+            var args = new LoginArgs { UserId = "bad", Password = "bad" };
 
-                Assert.Throws<UnauthorizedAccessException>(() => bo.Login(args));
-                Assert.Equal(1, tracker.FailureCount);
-                Assert.Equal(0, tracker.ResetCount);
-            }
-            finally
-            {
-                BackendInfo.LoginAttemptTracker = original;
-            }
+            Assert.Throws<UnauthorizedAccessException>(() => bo.Login(args));
+            Assert.Equal(1, tracker.FailureCount);
+            Assert.Equal(0, tracker.ResetCount);
         }
 
         [Fact]
@@ -121,57 +116,44 @@ namespace Bee.Business.UnitTests
         {
             var tracker = new RecordingTracker { LockedOut = true };
             var authCalls = 0;
-            var original = BackendInfo.LoginAttemptTracker;
-            BackendInfo.LoginAttemptTracker = tracker;
-            try
-            {
-                var bo = new TestableSystemBusinessObject(
-                    Guid.Empty,
-                    _ =>
-                    {
-                        authCalls++;
-                        return (true, "anything");
-                    });
-                var args = new LoginArgs { UserId = "locked", Password = "x" };
+            var ctx = TestBeeContext.CreateWithOverrides((typeof(ILoginAttemptTracker), tracker));
+            var bo = new TestableSystemBusinessObject(
+                ctx,
+                Guid.Empty,
+                _ =>
+                {
+                    authCalls++;
+                    return (true, "anything");
+                });
+            var args = new LoginArgs { UserId = "locked", Password = "x" };
 
-                Assert.Throws<UnauthorizedAccessException>(() => bo.Login(args));
-                Assert.Equal(0, authCalls);
-                Assert.Equal(0, tracker.FailureCount);
-            }
-            finally
-            {
-                BackendInfo.LoginAttemptTracker = original;
-            }
+            Assert.Throws<UnauthorizedAccessException>(() => bo.Login(args));
+            Assert.Equal(0, authCalls);
+            Assert.Equal(0, tracker.FailureCount);
         }
 
         [Fact]
         [DisplayName("Login 驗證成功且 tracker 非 null 應呼叫 Reset")]
         public void Login_SuccessWithTracker_CallsReset()
         {
+            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
             var tracker = new RecordingTracker();
-            var original = BackendInfo.LoginAttemptTracker;
-            BackendInfo.LoginAttemptTracker = tracker;
+            var ctx = TestBeeContext.CreateWithOverrides((typeof(ILoginAttemptTracker), tracker));
+            var bo = new TestableSystemBusinessObject(
+                ctx,
+                Guid.Empty,
+                _ => (true, "ok"));
+            var args = new LoginArgs { UserId = "u", Password = "p" };
+
+            var result = bo.Login(args);
             try
             {
-                var bo = new TestableSystemBusinessObject(
-                    Guid.Empty,
-                    _ => (true, "ok"));
-                var args = new LoginArgs { UserId = "u", Password = "p" };
-
-                var result = bo.Login(args);
-                try
-                {
-                    Assert.Equal(1, tracker.ResetCount);
-                    Assert.Equal(0, tracker.FailureCount);
-                }
-                finally
-                {
-                    BackendInfo.SessionInfoService.Remove(result.AccessToken);
-                }
+                Assert.Equal(1, tracker.ResetCount);
+                Assert.Equal(0, tracker.FailureCount);
             }
             finally
             {
-                BackendInfo.LoginAttemptTracker = original;
+                sessionService.Remove(result.AccessToken);
             }
         }
 

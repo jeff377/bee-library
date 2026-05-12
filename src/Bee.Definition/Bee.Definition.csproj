@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Bee.Business" />
     <InternalsVisibleTo Include="Bee.Definition.UnitTests" />
   </ItemGroup>
 

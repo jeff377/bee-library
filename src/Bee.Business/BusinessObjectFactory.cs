@@ -11,45 +11,34 @@ namespace Bee.Business
     /// (<see cref="SystemBusinessObject"/> or <see cref="FormBusinessObject"/>) for incoming API calls.
     /// </summary>
     /// <remarks>
-    /// Cross-cutting services for the per-call <see cref="IBeeContext"/> are installed via
-    /// <see cref="Initialize(IDefineAccess, ISessionInfoService)"/>, called by
-    /// <c>BackendInfo.Initialize</c> via reflection. The <c>Services</c> escape hatch
-    /// is backed by <see cref="BackendInfoServiceProvider"/> until Phase 4 swaps for a real DI scope.
+    /// Dependencies are supplied via constructor injection by the host DI container. The injected
+    /// <see cref="IServiceProvider"/> is the same provider that backs <see cref="IBeeContext.Services"/>
+    /// — it is forwarded to every BO instance so the rare escape-hatch resolutions (login-only
+    /// helpers etc.) reach the host's request scope.
     /// </remarks>
     public class BusinessObjectFactory : IBusinessObjectFactory
     {
-        private static IDefineAccess? _defineAccess;
-        private static ISessionInfoService? _sessionInfoService;
-        private static readonly IServiceProvider _services = new BackendInfoServiceProvider();
-
+        private readonly IServiceProvider _services;
+        private readonly IDefineAccess _defineAccess;
+        private readonly ISessionInfoService _sessionInfoService;
         private readonly IFormBoTypeResolver _resolver;
 
         /// <summary>
-        /// Installs the cross-cutting services used to build per-call <see cref="IBeeContext"/>.
-        /// Must be called once at host startup before any BO is created; typically invoked by
-        /// <c>BackendInfo.Initialize</c>.
+        /// Initializes a new <see cref="BusinessObjectFactory"/>.
         /// </summary>
+        /// <param name="services">The host service provider used as the BO escape hatch.</param>
         /// <param name="defineAccess">The define access service.</param>
-        /// <param name="sessionInfoService">The session-info access service.</param>
-        public static void Initialize(IDefineAccess defineAccess, ISessionInfoService sessionInfoService)
+        /// <param name="sessionInfoService">The session info access service.</param>
+        /// <param name="resolver">The progId → BO type resolver.</param>
+        public BusinessObjectFactory(
+            IServiceProvider services,
+            IDefineAccess defineAccess,
+            ISessionInfoService sessionInfoService,
+            IFormBoTypeResolver resolver)
         {
+            _services = services ?? throw new ArgumentNullException(nameof(services));
             _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
             _sessionInfoService = sessionInfoService ?? throw new ArgumentNullException(nameof(sessionInfoService));
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="BusinessObjectFactory"/> using the default
-        /// <see cref="DefaultFormBoTypeResolver"/>.
-        /// </summary>
-        public BusinessObjectFactory() : this(new DefaultFormBoTypeResolver())
-        { }
-
-        /// <summary>
-        /// Initializes a new <see cref="BusinessObjectFactory"/> with a custom resolver.
-        /// </summary>
-        /// <param name="resolver">The progId → BO type resolver.</param>
-        public BusinessObjectFactory(IFormBoTypeResolver resolver)
-        {
             _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         }
 
@@ -77,19 +66,12 @@ namespace Bee.Business
             return Activator.CreateInstance(type, ctx, accessToken, progId, isLocalCall)!;
         }
 
-        private IBeeContext BuildContext()
+        private IBeeContext BuildContext() => new BeeContext
         {
-            if (_defineAccess == null || _sessionInfoService == null)
-                throw new InvalidOperationException(
-                    "BusinessObjectFactory has not been initialized. Call BusinessObjectFactory.Initialize(defineAccess, sessionInfoService) at startup (BackendInfo.Initialize handles this).");
-
-            return new BeeContext
-            {
-                DefineAccess = _defineAccess,
-                SessionInfoService = _sessionInfoService,
-                BoFactory = this,
-                Services = _services,
-            };
-        }
+            DefineAccess = _defineAccess,
+            SessionInfoService = _sessionInfoService,
+            BoFactory = this,
+            Services = _services,
+        };
     }
 }

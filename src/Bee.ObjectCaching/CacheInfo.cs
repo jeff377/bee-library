@@ -25,7 +25,8 @@ namespace Bee.ObjectCaching
 
         /// <summary>
         /// Initializes the cache provider from the backend configuration.
-        /// Called by <c>BackendInfo.Initialize</c> after settings are loaded.
+        /// Called by <c>CacheBootstrapper</c> (registered by <c>AddBeeFramework</c>) after
+        /// settings are loaded.
         /// </summary>
         /// <remarks>
         /// Only replaces <see cref="Provider"/> when the configured type differs from the

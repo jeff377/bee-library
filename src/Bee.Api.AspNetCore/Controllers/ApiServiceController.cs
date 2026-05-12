@@ -133,7 +133,9 @@ namespace Bee.Api.AspNetCore.Controllers
         {
             try
             {
-                var executor = new JsonRpcExecutor(accessToken);
+                var executor = HttpContext.RequestServices.GetRequiredService<JsonRpcExecutor>();
+                executor.AccessToken = accessToken;
+                executor.IsLocalCall = false;
                 var result = await executor.ExecuteAsync(request);
                 return new ContentResult
                 {

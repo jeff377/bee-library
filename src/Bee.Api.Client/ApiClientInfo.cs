@@ -34,5 +34,18 @@ namespace Bee.Api.Client
         /// </summary>
         public static byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
 
+        /// <summary>
+        /// Gets or sets the in-process backend service provider used by <c>LocalApiProvider</c>.
+        /// Set this once at startup to the result of
+        /// <c>services.AddBeeFramework(configuration).BuildServiceProvider()</c> when the
+        /// application wants to execute backend logic in-process.
+        /// </summary>
+        /// <remarks>
+        /// Phase 4 transitional storage — see plan-backendinfo-di-phase4-api-di.md and the main
+        /// plan's range-boundary section: <c>Bee.Api.Client</c> near-end mode is out-of-scope
+        /// for the DI migration; a follow-up phase will refactor it to constructor injection.
+        /// </remarks>
+        public static IServiceProvider? LocalServiceProvider { get; set; }
+
     }
 }
