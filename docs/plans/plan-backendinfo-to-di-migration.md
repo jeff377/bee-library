@@ -227,16 +227,37 @@ ERP 開發者新增 BO 完全不接觸 DI API。
 - 測試可建簡單 `TestBeeContext`（屬性 setter 開放）後 `new RequisitionBO(testCtx, token, "Requisition", true)`，不需 `BackendInfo.Initialize`
 
 ### Phase 4：Api.Core 與 Api.AspNetCore（中風險）
-**目標**：API 層全面 DI 化，建立組裝入口；補上 `IBeeContext.Services` 逃生口完成 BO 注入閉環。
+**目標**：API 層全面 DI 化，建立組裝入口；補上 `IBeeContext.Services` 逃生口完成 BO 注入閉環；清理 Phase 3 預留的所有遺留項。
 
-- `JsonRpcExecutor` 改為 scoped，建構式注入 `IBusinessObjectFactory`、`IAccessTokenValidator`
+#### 從 Phase 3 繼承的待辦項（明確）
+
+**屬性移除**：
+- [ ] `BackendInfo.DefineAccess`（property + Initialize 內 ResolveDefineAccess wire-up；GlobalFixture / 測試 fixture 改用其他注入機制）
+- [ ] `BackendInfo.SessionInfoService`（consumers：`AccessTokenValidator`、`DynamicApiEncryptionKeyProvider`）
+- [ ] `BackendInfo.ApiEncryptionKeyProvider`（consumers：`JsonRpcExecutor`、`StaticApiEncryptionKeyProvider`；SystemBO 已用 `Services.GetService<T>`）
+- [ ] `BackendInfo.LoginAttemptTracker`（only consumer was SystemBO，已用 `Services.GetService<T>`；屬性可隨 Phase 4 移除）
+- [ ] `BackendInfo.AccessTokenValidator`（consumer：`ApiAccessValidator`）
+- [ ] `BackendInfo.BusinessObjectFactory`（consumer：`JsonRpcExecutor.CreateBusinessObject`）
+- [ ] `BackendInfo.CacheDataSourceProvider` / `BackendInfo.EnterpriseObjectService`（盤點 consumer 後決定移除）
+
+**Bee.Db DML helpers 重構**（Phase 3 推遲）：
+- [ ] 5 個 `*FormCommandBuilder` 移除 `(string progId)` ctor，保留 `(FormSchema)` ctor
+- [ ] `IDialectFactory.CreateFormCommandBuilder(string)` 介面方法 + 5 個 DialectFactory 實作移除
+- [ ] `SelectContextBuilder` ctor 接 `IDefineAccess`；`SelectCommandBuilder` 對應調整、傳遞
+- [ ] `TableSchemaBuilder` ctor 接 `IDefineAccess`；`DatabaseRepository` 對應調整
+- [ ] 對應測試遷移（含刪除測 `(string progId)` ctor 的測試方法）
+
+**核心交付項**：
+- `JsonRpcExecutor` 改為 scoped，建構式注入 `IBusinessObjectFactory`、`IAccessTokenValidator`、`IApiEncryptionKeyProvider`
 - `Bee.Api.AspNetCore` 提供 `IServiceCollection.AddBeeFramework(IConfiguration)` extension
-- `BusinessObjectFactory` 內部完全移除反射 `AssemblyLoader`，改用 `ActivatorUtilities`
+- `BusinessObjectFactory` 內部移除反射 `AssemblyLoader`，改用 `ActivatorUtilities`
 - ASP.NET Core middleware 處理 scope 建立
 - **替換 `IBeeContext.Services` 實作**：Phase 3 留下的 `BackendInfoServiceProvider`（轉發到 BackendInfo.X）換成真 DI scope 的 `IServiceProvider`，BO 程式碼完全不變
-- 處理 Phase 3 留下的 `BackendInfo.SessionInfoService` / `BackendInfo.ApiEncryptionKeyProvider` / `BackendInfo.AccessTokenValidator` / `BackendInfo.BusinessObjectFactory` 等 API 層引用
+- `BackendInfo.Initialize` 流程簡化／逐步移除（待 Phase 5/6 測試 fixture 重寫後完全消失）
 
 **獨立價值**：Web 應用可完全脫離 `BackendInfo`，作為 v5.0 推薦寫法。
+
+**參考實作**：Phase 1-3 commits（`e832802a`、`d8a7cd41`、`ce2a9ece`）；Phase 3 sub-plan「實作時調整」段落記錄了重要的 infra 修正（`AssemblyLoader` 從 byte-load 改為 default load context）。
 
 ### Phase 5：測試基礎設施重寫（中風險）
 **目標**：移除 `GlobalFixture`、`TempDefinePath`、`[Collection("Initialize")]`。
