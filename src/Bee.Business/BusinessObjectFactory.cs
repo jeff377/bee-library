@@ -77,7 +77,7 @@ namespace Bee.Business
             return Activator.CreateInstance(type, ctx, accessToken, progId, isLocalCall)!;
         }
 
-        private IBeeContext BuildContext()
+        private BeeContext BuildContext()
         {
             if (_defineAccess == null || _sessionInfoService == null)
                 throw new InvalidOperationException(
