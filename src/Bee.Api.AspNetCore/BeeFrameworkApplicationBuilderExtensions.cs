@@ -12,15 +12,14 @@ namespace Bee.Api.AspNetCore
     {
         /// <summary>
         /// Eager-resolves the bootstrap markers registered by <c>AddBeeFramework</c> so the
-        /// underlying static initialization (<c>CacheContainer</c>, <c>DbConnectionManager</c>,
-        /// <c>RepositoryInfo</c>) runs before any request is handled.
+        /// underlying static initialization (<c>CacheContainer</c>, <c>DbConnectionManager</c>)
+        /// runs before any request is handled.
         /// </summary>
         public static IApplicationBuilder UseBeeFramework(this IApplicationBuilder app)
         {
             ArgumentNullException.ThrowIfNull(app);
             app.ApplicationServices.GetRequiredService<ICacheBootstrapper>();
             app.ApplicationServices.GetRequiredService<IDbConnectionManagerBootstrapper>();
-            app.ApplicationServices.GetRequiredService<IRepositoryInfoBootstrapper>();
             return app;
         }
     }

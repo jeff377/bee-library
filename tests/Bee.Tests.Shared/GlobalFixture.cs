@@ -106,11 +106,10 @@ namespace Bee.Tests.Shared
             services.AddBeeFramework(settings.BackendConfiguration, pathOptions, autoCreateMasterKey: true);
             var provider = services.BuildServiceProvider();
             // 顯式 eager-resolve bootstrappers（等同 production app.UseBeeFramework() 的效果），
-            // 觸發 CacheContainer / DbConnectionManager / RepositoryInfo 三個 process-wide
-            // 靜態 wire-up。
+            // 觸發 CacheContainer / DbConnectionManager 兩個 process-wide 靜態 wire-up。
+            // RepositoryInfo bootstrapper 已於 PR 5.3a 隨 RepositoryInfo 靜態類別一起刪除。
             provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.ICacheBootstrapper>();
             provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.IDbConnectionManagerBootstrapper>();
-            provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.IRepositoryInfoBootstrapper>();
 
             BeeTestServices.Initialize(provider);
             // Bee.Api.Client 近端模式（in-process）需要透過 ApiClientInfo.LocalServiceProvider

@@ -3,7 +3,7 @@ using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Attributes;
-using Bee.Repository.Abstractions;
+using Bee.Repository.Abstractions.Factories;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 
@@ -150,7 +150,7 @@ namespace Bee.Business.System
                     $"args.ExpiresIn must be between 1 and {MaxExpiresInSeconds} seconds.");
 
             // Create a new user session
-            var repo = RepositoryInfo.SystemFactory!.CreateSessionRepository();
+            var repo = Services.GetRequiredService<ISystemRepositoryFactory>().CreateSessionRepository();
             var user = repo.CreateSession(args.UserID, args.ExpiresIn, args.OneTime);
             // Return the access token
             return new CreateSessionResult()
@@ -256,7 +256,7 @@ namespace Bee.Business.System
         /// </summary>
         protected override void DoExecFunc(ExecFuncArgs args, ExecFuncResult result)
         {
-            var handler = new SystemExecFuncHandler(AccessToken);
+            var handler = new SystemExecFuncHandler(AccessToken, Services.GetRequiredService<ISystemRepositoryFactory>());
             handler.InvokeExecFunc(ApiAccessRequirement.Authenticated, args, result);
         }
 
@@ -265,7 +265,7 @@ namespace Bee.Business.System
         /// </summary>
         protected override void DoExecFuncAnonymous(ExecFuncArgs args, ExecFuncResult result)
         {
-            var handler = new SystemExecFuncHandler(AccessToken);
+            var handler = new SystemExecFuncHandler(AccessToken, Services.GetRequiredService<ISystemRepositoryFactory>());
             handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, args, result);
         }
     }

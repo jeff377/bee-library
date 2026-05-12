@@ -21,8 +21,8 @@ namespace Bee.Api.AspNetCore
         /// <summary>
         /// Registers Bee.NET framework services and decrypts security keys from
         /// <paramref name="configuration"/>. Call <c>app.UseBeeFramework()</c> after building
-        /// the service provider to fire the cache + DbConnectionManager + RepositoryInfo
-        /// bootstrappers in the correct order.
+        /// the service provider to fire the cache + DbConnectionManager bootstrappers
+        /// in the correct order.
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="configuration">The backend configuration (from SystemSettings.xml).</param>
@@ -82,8 +82,9 @@ namespace Bee.Api.AspNetCore
                     components.AccessTokenValidator, BackendDefaultTypes.AccessTokenValidator));
             services.AddSingleton<ISessionInfoService>(_ => CreateOrDefault<ISessionInfoService>(
                 components.SessionInfoService, BackendDefaultTypes.SessionInfoService));
-            services.AddSingleton<ICacheDataSourceProvider>(_ => CreateOrDefault<ICacheDataSourceProvider>(
-                components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider));
+            services.AddSingleton<ICacheDataSourceProvider>(sp =>
+                CreateConfigurableService<ICacheDataSourceProvider>(sp,
+                    components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider));
             services.AddSingleton<IEnterpriseObjectService>(_ => CreateOrDefault<IEnterpriseObjectService>(
                 components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService));
 
@@ -102,16 +103,13 @@ namespace Bee.Api.AspNetCore
             services.AddSingleton<IBusinessObjectFactory>(sp =>
                 CreateBusinessObjectFactory(sp, components.BusinessObjectFactory));
 
-            // 9. Repository factories + transitional RepositoryInfo bootstrapper.
+            // 9. Repository factories — consumed via ctor injection (PR 5.3a dropped the
+            //    RepositoryInfo static + bootstrapper).
             services.AddSingleton<ISystemRepositoryFactory>(sp =>
                 CreateConfigurableService<ISystemRepositoryFactory>(sp,
                     components.SystemRepositoryFactory, BackendDefaultTypes.SystemRepositoryFactory));
             services.AddSingleton<IFormRepositoryFactory>(_ => CreateOrDefault<IFormRepositoryFactory>(
                 components.FormRepositoryFactory, BackendDefaultTypes.FormRepositoryFactory));
-            services.AddSingleton<IRepositoryInfoBootstrapper>(sp =>
-                new RepositoryInfoBootstrapper(
-                    sp.GetRequiredService<ISystemRepositoryFactory>(),
-                    sp.GetRequiredService<IFormRepositoryFactory>()));
 
             // 10. JsonRpcExecutor — transient (per request); its dependencies (factories,
             //     validators, key providers) are resolved from the container at construction.
