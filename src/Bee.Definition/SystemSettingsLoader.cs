@@ -20,10 +20,10 @@ namespace Bee.Definition
     /// <para>
     /// Typical boot-time usage:
     /// <code>
-    /// DefinePathInfo.Initialize(new PathOptions { DefinePath = "..." });
-    /// var settings = SystemSettingsLoader.Load();
+    /// var paths = new PathOptions { DefinePath = "..." };
+    /// var settings = SystemSettingsLoader.Load(paths);
     /// SysInfo.Initialize(settings.CommonConfiguration);
-    /// services.AddBeeFramework(settings.BackendConfiguration);
+    /// services.AddBeeFramework(settings.BackendConfiguration, paths);
     /// </code>
     /// </para>
     /// </remarks>
@@ -31,15 +31,18 @@ namespace Bee.Definition
     {
         /// <summary>
         /// Loads <see cref="SystemSettings"/> from the file path derived from the
-        /// configured <see cref="DefinePathInfo.CurrentOptions"/> via
-        /// <see cref="DefinePathInfo.GetSystemSettingsFilePath"/>.
+        /// supplied <see cref="PathOptions"/>.
         /// </summary>
+        /// <param name="paths">The path options that locate <c>SystemSettings.xml</c>.</param>
         /// <returns>The deserialized <see cref="SystemSettings"/> instance.</returns>
         /// <exception cref="FileNotFoundException">
         /// Thrown when the resolved file does not exist.
         /// </exception>
-        public static SystemSettings Load()
-            => Load(DefinePathInfo.GetSystemSettingsFilePath());
+        public static SystemSettings Load(PathOptions paths)
+        {
+            ArgumentNullException.ThrowIfNull(paths);
+            return Load(paths.GetSystemSettingsFilePath());
+        }
 
         /// <summary>
         /// Loads <see cref="SystemSettings"/> from an explicit file path.

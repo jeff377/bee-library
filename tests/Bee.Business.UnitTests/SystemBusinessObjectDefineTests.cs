@@ -1,6 +1,8 @@
 using System.ComponentModel;
 using Bee.Business.System;
 using Bee.Definition;
+using Bee.Definition.Storage;
+using Bee.ObjectCaching;
 using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
@@ -51,13 +53,18 @@ namespace Bee.Business.UnitTests
         [DisplayName("SaveDefine 本地呼叫 DbCategorySettings 應成功執行 SaveDefineCore 路徑")]
         public void SaveDefine_LocalCallDbCategorySettings_Succeeds()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty, isLocalCall: true);
-            var getResult = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbCategorySettings });
+            // 先用共享 fixture 取得 XML（讀路徑）
+            var getBo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty, isLocalCall: true);
+            var getResult = getBo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbCategorySettings });
             Assert.False(string.IsNullOrWhiteSpace(getResult.Xml));
 
-            // SaveDefine 會寫入 BackendInfo.DefinePath；切換到暫存資料夾避免污染 tests/Define/。
+            // SaveDefine 會寫檔；改用獨立 IDefineAccess（指向暫存資料夾）避免污染 tests/Define/。
             using var temp = new TempDefinePath();
-            var saveResult = bo.SaveDefine(new SaveDefineArgs
+            var tempAccess = new LocalDefineAccess(new FileDefineStorage(temp.Options), temp.Options);
+            var saveBo = new SystemBusinessObject(
+                TestBeeContext.CreateWithDefineAccess(tempAccess), Guid.Empty, isLocalCall: true);
+
+            var saveResult = saveBo.SaveDefine(new SaveDefineArgs
             {
                 DefineType = DefineType.DbCategorySettings,
                 Xml = getResult.Xml

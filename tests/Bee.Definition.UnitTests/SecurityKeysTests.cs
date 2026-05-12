@@ -55,7 +55,7 @@ namespace Bee.Definition.UnitTests
         /// <param name="settings">金鑰設定。</param>
         private static void LoadSecurityKey(SecurityKeySettings settings, out byte[] apiKey, out byte[] cookieKey)
         {
-            byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource);
+            byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, definePath: string.Empty);
             AesCbcHmacKeyGenerator.FromCombinedKey(masterKey, out var aesKey, out var hmacKey);
 
             apiKey = Array.Empty<byte>();

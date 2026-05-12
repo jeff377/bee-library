@@ -58,19 +58,21 @@ namespace Bee.Tests.Shared
             // 全域初始化邏輯,例如載入設定檔、建立資料庫、啟動 API
             // 設定定義路徑（相對於測試輸出目錄往上找 tests/Bee.Tests.Shared/Define）
             var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
-            DefinePathInfo.Initialize(new PathOptions
+            var pathOptions = new PathOptions
             {
                 DefinePath = Path.Combine(repoRoot, "tests", "Define")
-            });
+            };
+            // DefinePathInfo 仍由 cache 層讀取 (Phase 5 PR 5.3 才會解耦)；同步設定避免 race。
+            DefinePathInfo.Initialize(pathOptions);
 
             // Bootstrap 暫時用一個 DefineAccess 讓 RegisterXxx() / EnsureFallbackCommonDatabaseItem
             // 在 AddBeeFramework 執行前就能寫入 DatabaseSettings.Items；CacheContainer 必須先初始化
             // 才能讓 LocalDefineAccess 透過快取讀寫 DatabaseSettings。
             // ⚠ 這個 bootstrap access 只活在 InitializeOnce scope 內，不對外公開；DI 容器內由
             // AddBeeFramework 重新建立正式的 IDefineAccess 實例。
-            var bootstrapStorage = new FileDefineStorage();
+            var bootstrapStorage = new FileDefineStorage(pathOptions);
             CacheContainer.Initialize(bootstrapStorage);
-            var bootstrapAccess = new LocalDefineAccess(bootstrapStorage);
+            var bootstrapAccess = new LocalDefineAccess(bootstrapStorage, pathOptions);
             // 註冊各 DB 的 ADO.NET provider + dialect factory + DatabaseItem（依環境變數）；
             // 必須先於 AddBeeFramework，因為 startup 過程的 DatabaseSettings 驗證會檢查
             // Id='common' 的 DatabaseItem 是否存在。
@@ -84,7 +86,7 @@ namespace Bee.Tests.Shared
             EnsureFallbackCommonDatabaseItem(bootstrapAccess);
             // 系統初始化：boot-time 讀檔走 SystemSettingsLoader（不依賴 IDefineAccess）。
             // 與 runtime cache-backed 路徑分工，詳見 plan-backendinfo-di-phase0-systemsettings-loader.md。
-            var settings = SystemSettingsLoader.Load();
+            var settings = SystemSettingsLoader.Load(pathOptions);
             settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
             // CI 環境改用環境變數作為 MasterKey 來源,避免在 tests/Define/ 下建立 Master.key
             // 汙染 MasterKeyProviderTests.GetMasterKey_EmptyFilePath_UsesDefaultFileName 等
@@ -101,7 +103,7 @@ namespace Bee.Tests.Shared
 
             // 用 AddBeeFramework 建 DI 容器，取代原本的 BackendInfo.Initialize。
             var services = new ServiceCollection();
-            services.AddBeeFramework(settings.BackendConfiguration, autoCreateMasterKey: true);
+            services.AddBeeFramework(settings.BackendConfiguration, pathOptions, autoCreateMasterKey: true);
             var provider = services.BuildServiceProvider();
             // 顯式 eager-resolve bootstrappers（等同 production app.UseBeeFramework() 的效果），
             // 觸發 CacheContainer / DbConnectionManager / RepositoryInfo 三個 process-wide

@@ -27,7 +27,7 @@ namespace Bee.Definition.UnitTests.Security
                 {
                     Type = MasterKeySourceType.File,
                     Value = filePath
-                });
+                }, definePath: string.Empty);
 
                 // Assert
                 Assert.Equal(expected, actual);
@@ -51,7 +51,7 @@ namespace Bee.Definition.UnitTests.Security
                 {
                     Type = MasterKeySourceType.File,
                     Value = missing
-                }));
+                }, definePath: string.Empty));
         }
 
         [Fact]
@@ -66,6 +66,7 @@ namespace Bee.Definition.UnitTests.Security
                 // Act
                 byte[] result = MasterKeyProvider.GetMasterKey(
                     new MasterKeySource { Type = MasterKeySourceType.File, Value = filePath },
+                    definePath: string.Empty,
                     autoCreate: true);
 
                 // Assert
@@ -95,7 +96,7 @@ namespace Bee.Definition.UnitTests.Security
                     {
                         Type = MasterKeySourceType.File,
                         Value = filePath
-                    }));
+                    }, definePath: string.Empty));
                 Assert.IsType<FormatException>(ex.InnerException);
             }
             finally
@@ -120,7 +121,7 @@ namespace Bee.Definition.UnitTests.Security
                     {
                         Type = MasterKeySourceType.File,
                         Value = filePath
-                    }));
+                    }, definePath: string.Empty));
             }
             finally
             {
@@ -144,7 +145,7 @@ namespace Bee.Definition.UnitTests.Security
                 {
                     Type = MasterKeySourceType.Environment,
                     Value = varName
-                });
+                }, definePath: string.Empty);
 
                 // Assert
                 Assert.Equal(expected, actual);
@@ -169,7 +170,7 @@ namespace Bee.Definition.UnitTests.Security
                 {
                     Type = MasterKeySourceType.Environment,
                     Value = varName
-                }));
+                }, definePath: string.Empty));
         }
 
         [Fact]
@@ -185,6 +186,7 @@ namespace Bee.Definition.UnitTests.Security
                 // Act
                 byte[] result = MasterKeyProvider.GetMasterKey(
                     new MasterKeySource { Type = MasterKeySourceType.Environment, Value = varName },
+                    definePath: string.Empty,
                     autoCreate: true);
 
                 // Assert
@@ -212,8 +214,8 @@ namespace Bee.Definition.UnitTests.Security
                 Value = "   "
             };
 
-            // Act & Assert
-            var ex = Record.Exception(() => MasterKeyProvider.GetMasterKey(source));
+            // Act & Assert: definePath 為 temp 空資料夾，預期默認檔名 Master.key 不存在 → 拋例外
+            var ex = Record.Exception(() => MasterKeyProvider.GetMasterKey(source, temp.Path));
             Assert.NotNull(ex);
         }
 
@@ -234,7 +236,7 @@ namespace Bee.Definition.UnitTests.Security
                 };
 
                 // Act & Assert
-                Assert.Throws<InvalidOperationException>(() => MasterKeyProvider.GetMasterKey(source));
+                Assert.Throws<InvalidOperationException>(() => MasterKeyProvider.GetMasterKey(source, definePath: string.Empty));
             }
             finally
             {
@@ -253,7 +255,7 @@ namespace Bee.Definition.UnitTests.Security
                 Value = "irrelevant"
             };
 
-            var ex = Assert.Throws<InvalidOperationException>(() => MasterKeyProvider.GetMasterKey(source));
+            var ex = Assert.Throws<InvalidOperationException>(() => MasterKeyProvider.GetMasterKey(source, definePath: string.Empty));
             Assert.Contains("Unsupported", ex.Message);
         }
 
@@ -270,6 +272,7 @@ namespace Bee.Definition.UnitTests.Security
             {
                 byte[] actual = MasterKeyProvider.GetMasterKey(
                     new MasterKeySource { Type = MasterKeySourceType.File, Value = filePath },
+                    definePath: string.Empty,
                     autoCreate: true);
 
                 Assert.Equal(expected, actual);

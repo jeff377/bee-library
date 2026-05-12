@@ -3,26 +3,24 @@ using Bee.Definition;
 namespace Bee.Tests.Shared
 {
     /// <summary>
-    /// Test helper that redirects <see cref="DefinePathInfo"/> to a temporary
-    /// directory for the duration of a test, then restores the original path and deletes
-    /// the temp directory on dispose.
+    /// Test helper that creates a per-instance <see cref="PathOptions"/> pointing at a fresh
+    /// temporary directory, and (for the transitional cache layer that still reads
+    /// <see cref="DefinePathInfo"/> statically) swaps the global facade for the scope's lifetime.
     /// </summary>
     /// <remarks>
     /// <para>
-    /// Any test that calls a <c>SaveDefine</c>-family method (e.g. <c>SaveDbCategorySettings</c>,
-    /// <c>SaveSystemSettings</c>, <c>SaveTableSchema</c>) — directly via
-    /// <see cref="Bee.ObjectCaching.LocalDefineAccess"/> or indirectly via
-    /// <c>SystemBusinessObject.SaveDefine</c> — MUST wrap the call in
-    /// <c>using var temp = new TempDefinePath();</c>, otherwise the production
-    /// fixture files under <c>tests/Define/</c> will be overwritten and cause
-    /// subsequent tests that read those fixtures to fail with stale or empty data.
+    /// PR 5.2 migrated <c>FileDefineStorage</c> / <c>LocalDefineAccess</c> / <c>MasterKeyProvider</c>
+    /// to ctor-inject <see cref="PathOptions"/>. Tests that construct those types directly
+    /// should pass <see cref="Options"/> instead of relying on the swap. The legacy
+    /// <see cref="DefinePathInfo"/> swap is preserved until PR 5.3 / 5.4 finishes migrating
+    /// the cache layer and test fixtures.
     /// </para>
     /// <para>
     /// Single-process safe; not safe across processes (relies on the test runner running
     /// within one AppDomain). xUnit's collection-level parallelism does not affect this
-    /// because <see cref="DefinePathInfo"/> holds global state — tests using this
-    /// helper should already participate in the <c>"Initialize"</c> collection or another
-    /// collection that serializes against fixture-mutating tests.
+    /// because <see cref="DefinePathInfo"/> still holds global state — tests using this
+    /// helper should participate in the <c>"Initialize"</c> collection (or another that
+    /// serializes against fixture-mutating tests) for the cache-layer interactions.
     /// </para>
     /// </remarks>
     public sealed class TempDefinePath : IDisposable
@@ -36,15 +34,24 @@ namespace Bee.Tests.Shared
         public string Path { get; }
 
         /// <summary>
-        /// Creates a new temporary directory under the OS temp folder and switches
-        /// <see cref="DefinePathInfo"/> to point at it.
+        /// Gets the <see cref="PathOptions"/> instance bound to <see cref="Path"/>. Inject
+        /// this directly into <c>FileDefineStorage</c> / <c>LocalDefineAccess</c> /
+        /// <c>SystemSettingsLoader</c> calls inside the test body.
+        /// </summary>
+        public PathOptions Options { get; }
+
+        /// <summary>
+        /// Creates a new temporary directory under the OS temp folder, binds a fresh
+        /// <see cref="PathOptions"/> to it, and switches the legacy <see cref="DefinePathInfo"/>
+        /// facade to point at the same options for cache-layer compatibility.
         /// </summary>
         public TempDefinePath()
         {
             _original = DefinePathInfo.CurrentOptions;
             Path = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bee-define-{Guid.NewGuid():N}");
             Directory.CreateDirectory(Path);
-            DefinePathInfo.Initialize(new PathOptions { DefinePath = Path });
+            Options = new PathOptions { DefinePath = Path };
+            DefinePathInfo.Initialize(Options);
         }
 
         /// <summary>

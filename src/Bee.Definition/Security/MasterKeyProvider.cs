@@ -15,16 +15,21 @@ namespace Bee.Definition.Security
         /// Gets the master key content.
         /// </summary>
         /// <param name="source">The master key source configuration.</param>
+        /// <param name="definePath">
+        /// Root directory used to resolve a relative <see cref="MasterKeySourceType.File"/>
+        /// path (typically the configured <c>DefinePath</c>). Ignored for environment-variable
+        /// sources or when <see cref="MasterKeySource.Value"/> is absolute.
+        /// </param>
         /// <param name="autoCreate">Indicates whether to automatically create the master key if it does not exist.</param>
         /// <returns>The decoded master key as a byte array.</returns>
-        public static byte[] GetMasterKey(MasterKeySource source, bool autoCreate =false)
+        public static byte[] GetMasterKey(MasterKeySource source, string definePath, bool autoCreate = false)
         {
             string keyText;
 
             switch (source.Type)
             {
                 case MasterKeySourceType.File:
-                    keyText = LoadFromFile(source.Value, autoCreate);
+                    keyText = LoadFromFile(source.Value, definePath, autoCreate);
                     break;
 
                 case MasterKeySourceType.Environment:
@@ -52,9 +57,10 @@ namespace Bee.Definition.Security
         /// Loads the master key content from a file.
         /// </summary>
         /// <param name="filePath">The file path.</param>
+        /// <param name="definePath">Root directory used to resolve relative <paramref name="filePath"/> values.</param>
         /// <param name="autoCreate">Indicates whether to automatically create the master key if the file does not exist.</param>
         /// <returns>The master key content.</returns>
-        private static string LoadFromFile(string filePath, bool autoCreate)
+        private static string LoadFromFile(string filePath, string definePath, bool autoCreate)
         {
             if (string.IsNullOrWhiteSpace(filePath))
             {
@@ -64,7 +70,7 @@ namespace Bee.Definition.Security
             // If the path is relative, prepend the configured define path.
             if (!Path.IsPathRooted(filePath))
             {
-                filePath = Path.Combine(DefinePathInfo.CurrentOptions.DefinePath, filePath);
+                filePath = Path.Combine(definePath ?? string.Empty, filePath);
             }
 
             if (!File.Exists(filePath))

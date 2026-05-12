@@ -13,7 +13,10 @@ namespace Bee.ObjectCaching.UnitTests
         private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };
         private static readonly string[] s_formSchemaKeys = { "Department" };
 
-        private readonly LocalDefineAccess _access = new LocalDefineAccess(new FileDefineStorage());
+        // 共用 fixture path：透過 DefinePathInfo 暫存 facade 取得（PR 5.3 後改由 BeeTestFixture 注入）。
+        private readonly LocalDefineAccess _access = new LocalDefineAccess(
+            new FileDefineStorage(DefinePathInfo.CurrentOptions),
+            DefinePathInfo.CurrentOptions);
 
         [Fact]
         [DisplayName("GetDefine(SystemSettings) 應回傳 SystemSettings 實例")]

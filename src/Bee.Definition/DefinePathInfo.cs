@@ -1,15 +1,13 @@
-
 namespace Bee.Definition
 {
     /// <summary>
-    /// Provides file path information for define data files.
+    /// Transitional static facade over <see cref="PathOptions"/> file-path methods.
+    /// Phase 5 PR 5.2 moved the canonical path computations onto <see cref="PathOptions"/>;
+    /// this class delegates to the currently installed <see cref="PathOptions"/> instance
+    /// so existing static callers (cache layer + test helpers) keep working.
+    /// Removed in PR 5.4 along with <c>TempDefinePath</c> when the test fixture rewrite
+    /// switches everything to ctor-injected <see cref="PathOptions"/>.
     /// </summary>
-    /// <remarks>
-    /// Internally holds a <see cref="PathOptions"/> instance installed via
-    /// <see cref="Initialize"/> (typically called at host startup, or by test
-    /// helpers such as <c>TempDefinePath</c>). The static API surface is
-    /// preserved; callers do not change.
-    /// </remarks>
     public static class DefinePathInfo
     {
         private static PathOptions _options = new();
@@ -30,85 +28,26 @@ namespace Bee.Definition
             _options = options ?? throw new ArgumentNullException(nameof(options));
         }
 
-        /// <summary>
-        /// Gets the define data path combined with an optional sub-path.
-        /// </summary>
-        /// <param name="subPath">The sub-path.</param>
-        private static string GetDefinePath(string subPath)
-        {
-            return Path.Combine(_options.DefinePath, subPath);
-        }
+        /// <summary>Gets the absolute path of <c>SystemSettings.xml</c>.</summary>
+        public static string GetSystemSettingsFilePath() => _options.GetSystemSettingsFilePath();
 
-        /// <summary>
-        /// Gets the file path for the system settings file.
-        /// </summary>
-        public static string GetSystemSettingsFilePath()
-        {
-            string sFileName;
+        /// <summary>Gets the absolute path of <c>DatabaseSettings.xml</c>.</summary>
+        public static string GetDatabaseSettingsFilePath() => _options.GetDatabaseSettingsFilePath();
 
-            sFileName = "SystemSettings.xml";
-            return GetDefinePath(sFileName);
-        }
+        /// <summary>Gets the absolute path of <c>ProgramSettings.xml</c>.</summary>
+        public static string GetProgramSettingsFilePath() => _options.GetProgramSettingsFilePath();
 
-        /// <summary>
-        /// Gets the file path for the database settings file.
-        /// </summary>
-        public static string GetDatabaseSettingsFilePath()
-        {
-            string sFileName;
+        /// <summary>Gets the absolute path of <c>DbCategorySettings.xml</c>.</summary>
+        public static string GetDbCategorySettingsFilePath() => _options.GetDbCategorySettingsFilePath();
 
-            sFileName = "DatabaseSettings.xml";
-            return GetDefinePath(sFileName);
-        }
-
-        /// <summary>
-        /// Gets the file path for the program settings file.
-        /// </summary>
-        public static string GetProgramSettingsFilePath()
-        {
-            string sFileName;
-
-            sFileName = "ProgramSettings.xml";
-            return GetDefinePath(sFileName);
-        }
-
-        /// <summary>
-        /// Gets the file path for the database category settings file.
-        /// </summary>
-        public static string GetDbCategorySettingsFilePath()
-        {
-            string sFileName;
-
-            sFileName = "DbCategorySettings.xml";
-            return GetDefinePath(sFileName);
-        }
-
-        /// <summary>
-        /// Gets the file path for the specified table schema.
-        /// </summary>
-        /// <param name="categoryId">The database category id.</param>
-        /// <param name="tableName">The table name.</param>
+        /// <summary>Gets the absolute path of the TableSchema XML for the given category + table.</summary>
         public static string GetTableSchemaFilePath(string categoryId, string tableName)
-        {
-            return GetDefinePath(Path.Combine("TableSchema", categoryId, $"{tableName}.TableSchema.xml"));
-        }
+            => _options.GetTableSchemaFilePath(categoryId, tableName);
 
-        /// <summary>
-        /// Gets the file path for the specified form schema.
-        /// </summary>
-        /// <param name="progId">The program ID.</param>
-        public static string GetFormSchemaFilePath(string progId)
-        {
-            return GetDefinePath(Path.Combine("FormSchema", $"{progId}.FormSchema.xml"));
-        }
+        /// <summary>Gets the absolute path of the FormSchema XML for the given progId.</summary>
+        public static string GetFormSchemaFilePath(string progId) => _options.GetFormSchemaFilePath(progId);
 
-        /// <summary>
-        /// Gets the file path for the specified form layout.
-        /// </summary>
-        /// <param name="layoutId">The form layout ID.</param>
-        public static string GetFormLayoutFilePath(string layoutId)
-        {
-            return GetDefinePath(Path.Combine("FormLayout", $"{layoutId}.FormLayout.xml"));
-        }
+        /// <summary>Gets the absolute path of the FormLayout XML for the given layout id.</summary>
+        public static string GetFormLayoutFilePath(string layoutId) => _options.GetFormLayoutFilePath(layoutId);
     }
 }

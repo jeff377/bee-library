@@ -44,5 +44,23 @@ namespace Bee.Tests.Shared
                 Services = new TestOverrideServiceProvider(sp, overrides),
             };
         }
+
+        /// <summary>
+        /// Creates a <see cref="BeeContext"/> with a custom <see cref="IDefineAccess"/> swapped in.
+        /// Used by tests that need to redirect <c>Save*</c> writes to an isolated temp directory
+        /// while keeping every other service resolved from the process-wide provider.
+        /// </summary>
+        public static IBeeContext CreateWithDefineAccess(IDefineAccess defineAccess)
+        {
+            ArgumentNullException.ThrowIfNull(defineAccess);
+            var sp = BeeTestServices.Provider;
+            return new BeeContext
+            {
+                DefineAccess = defineAccess,
+                SessionInfoService = sp.GetRequiredService<ISessionInfoService>(),
+                BoFactory = sp.GetRequiredService<IBusinessObjectFactory>(),
+                Services = sp,
+            };
+        }
     }
 }

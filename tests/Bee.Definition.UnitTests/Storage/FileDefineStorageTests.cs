@@ -10,7 +10,7 @@ namespace Bee.Definition.UnitTests.Storage
 {
     /// <summary>
     /// FileDefineStorage 讀寫 XML 檔案的行為測試。
-    /// 各測試使用隔離的臨時目錄做為 BackendInfo.DefinePath，避免互相汙染。
+    /// 各測試使用隔離的臨時目錄做為 DefinePath，避免互相汙染。
     /// </summary>
     [Collection("Initialize")]
     public class FileDefineStorageTests
@@ -19,10 +19,10 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("SaveFormSchema / GetFormSchema 應可寫入後讀回相同結構")]
         public void SaveAndGetFormSchema_RoundTrips()
         {
-            WithTempDefinePath(() =>
+            WithTempDefinePath(paths =>
             {
                 // Arrange
-                var storage = new FileDefineStorage();
+                var storage = new FileDefineStorage(paths);
                 var schema = new FormSchema("Demo", "示範");
                 var table = schema.Tables!.Add("Demo", "示範");
                 table.Fields!.Add("sys_id", "編號", FieldDbType.String);
@@ -42,10 +42,10 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("GetFormSchema 檔案不存在應拋出 FileNotFoundException")]
         public void GetFormSchema_FileNotFound_Throws()
         {
-            WithTempDefinePath(() =>
+            WithTempDefinePath(paths =>
             {
                 // Arrange
-                var storage = new FileDefineStorage();
+                var storage = new FileDefineStorage(paths);
 
                 // Act & Assert
                 Assert.Throws<FileNotFoundException>(() => storage.GetFormSchema("nonexistent"));
@@ -56,10 +56,10 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("SaveTableSchema / GetTableSchema 應可寫入後讀回")]
         public void SaveAndGetTableSchema_RoundTrips()
         {
-            WithTempDefinePath(() =>
+            WithTempDefinePath(paths =>
             {
                 // Arrange
-                var storage = new FileDefineStorage();
+                var storage = new FileDefineStorage(paths);
                 var schema = new TableSchema { TableName = "ft_demo", DisplayName = "Demo" };
                 schema.Fields!.Add("sys_no", "流水號", FieldDbType.AutoIncrement);
 
@@ -78,10 +78,10 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("GetTableSchema 檔案不存在應拋出 FileNotFoundException")]
         public void GetTableSchema_FileNotFound_Throws()
         {
-            WithTempDefinePath(() =>
+            WithTempDefinePath(paths =>
             {
                 // Arrange
-                var storage = new FileDefineStorage();
+                var storage = new FileDefineStorage(paths);
 
                 // Act & Assert
                 Assert.Throws<FileNotFoundException>(() => storage.GetTableSchema("common", "missing"));
@@ -92,10 +92,10 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("SaveFormLayout / GetFormLayout 應可寫入後讀回")]
         public void SaveAndGetFormLayout_RoundTrips()
         {
-            WithTempDefinePath(() =>
+            WithTempDefinePath(paths =>
             {
                 // Arrange
-                var storage = new FileDefineStorage();
+                var storage = new FileDefineStorage(paths);
                 var layout = new FormLayout { LayoutId = "DemoLayout", Caption = "示範" };
 
                 // Act
@@ -112,10 +112,10 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("GetFormLayout 檔案不存在應拋出 FileNotFoundException")]
         public void GetFormLayout_FileNotFound_Throws()
         {
-            WithTempDefinePath(() =>
+            WithTempDefinePath(paths =>
             {
                 // Arrange
-                var storage = new FileDefineStorage();
+                var storage = new FileDefineStorage(paths);
 
                 // Act & Assert
                 Assert.Throws<FileNotFoundException>(() => storage.GetFormLayout("missing"));
@@ -126,10 +126,10 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("SaveDbCategorySettings / GetDbCategorySettings 應可寫入後讀回")]
         public void SaveAndGetDbCategorySettings_RoundTrips()
         {
-            WithTempDefinePath(() =>
+            WithTempDefinePath(paths =>
             {
                 // Arrange
-                var storage = new FileDefineStorage();
+                var storage = new FileDefineStorage(paths);
                 var settings = new DbCategorySettings();
 
                 // Act
@@ -145,10 +145,10 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("GetDbCategorySettings 檔案不存在應拋出 FileNotFoundException")]
         public void GetDbCategorySettings_FileNotFound_Throws()
         {
-            WithTempDefinePath(() =>
+            WithTempDefinePath(paths =>
             {
                 // Arrange
-                var storage = new FileDefineStorage();
+                var storage = new FileDefineStorage(paths);
 
                 // Act & Assert
                 Assert.Throws<FileNotFoundException>(() => storage.GetDbCategorySettings());
@@ -156,22 +156,21 @@ namespace Bee.Definition.UnitTests.Storage
         }
 
         /// <summary>
-        /// 暫時將 <see cref="DefinePathInfo"/> 指向新建立的臨時目錄，
-        /// 測試結束後還原原值並刪除目錄。
+        /// 建立新的臨時目錄並把對應的 <see cref="PathOptions"/> 傳給 <paramref name="action"/>，
+        /// 測試結束後刪除目錄。Tests inject the supplied <see cref="PathOptions"/> directly into
+        /// <see cref="FileDefineStorage"/> rather than relying on the shared
+        /// <see cref="DefinePathInfo"/> static facade.
         /// </summary>
-        private static void WithTempDefinePath(Action action)
+        private static void WithTempDefinePath(Action<PathOptions> action)
         {
-            var original = DefinePathInfo.CurrentOptions;
             var tempDir = Path.Combine(Path.GetTempPath(), $"bee-define-{Guid.NewGuid():N}");
             Directory.CreateDirectory(tempDir);
             try
             {
-                DefinePathInfo.Initialize(new PathOptions { DefinePath = tempDir });
-                action();
+                action(new PathOptions { DefinePath = tempDir });
             }
             finally
             {
-                DefinePathInfo.Initialize(original);
                 if (Directory.Exists(tempDir))
                     Directory.Delete(tempDir, recursive: true);
             }

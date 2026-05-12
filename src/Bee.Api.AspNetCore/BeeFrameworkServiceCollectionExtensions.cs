@@ -26,28 +26,42 @@ namespace Bee.Api.AspNetCore
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="configuration">The backend configuration (from SystemSettings.xml).</param>
+        /// <param name="pathOptions">
+        /// Path configuration that locates definition files (SystemSettings.xml, FormSchema/, etc.).
+        /// Registered as a singleton so framework services can ctor-inject it directly.
+        /// </param>
         /// <param name="autoCreateMasterKey">Whether to auto-create the master key file if missing.</param>
         public static IServiceCollection AddBeeFramework(
             this IServiceCollection services,
             BackendConfiguration configuration,
+            PathOptions pathOptions,
             bool autoCreateMasterKey = false)
         {
             ArgumentNullException.ThrowIfNull(services);
             ArgumentNullException.ThrowIfNull(configuration);
+            ArgumentNullException.ThrowIfNull(pathOptions);
 
             // 1. Decrypt the security keys once and thread them through downstream ctors.
             //    Each key is byte[]; empty means "not configured" (callers gracefully no-op
             //    when the relevant crypto path runs without a key).
-            var keys = DecryptSecurityKeys(configuration.SecurityKeySettings, autoCreateMasterKey);
+            var keys = DecryptSecurityKeys(configuration.SecurityKeySettings, pathOptions.DefinePath, autoCreateMasterKey);
 
             var components = configuration.Components;
 
-            // 2. IDefineStorage / IDefineAccess — singletons; IDefineAccess construction
-            //    supports (IDefineStorage, byte[]), (IDefineStorage), and parameterless ctor shapes.
-            services.AddSingleton<IDefineStorage>(_ => CreateOrDefault<IDefineStorage>(
-                components.DefineStorage, BackendDefaultTypes.DefineStorage));
+            // 2. PathOptions — registered as a singleton so consumers can ctor-inject it
+            //    instead of reading the transitional DefinePathInfo static facade.
+            services.AddSingleton(pathOptions);
+
+            // 3. IDefineStorage / IDefineAccess — singletons; both ctor shapes accept PathOptions
+            //    so file path resolution flows through DI rather than DefinePathInfo.
+            services.AddSingleton<IDefineStorage>(sp => CreateDefineStorage(
+                components.DefineStorage, BackendDefaultTypes.DefineStorage, sp.GetRequiredService<PathOptions>()));
             services.AddSingleton<IDefineAccess>(sp =>
-                ResolveDefineAccess(components.DefineAccess, sp.GetRequiredService<IDefineStorage>(), keys.ConfigEncryptionKey));
+                ResolveDefineAccess(
+                    components.DefineAccess,
+                    sp.GetRequiredService<IDefineStorage>(),
+                    sp.GetRequiredService<PathOptions>(),
+                    keys.ConfigEncryptionKey));
 
             // 3. Database settings provider (used by DbConnectionManager bootstrap).
             services.AddSingleton<IDatabaseSettingsProvider>(sp =>
@@ -108,18 +122,23 @@ namespace Bee.Api.AspNetCore
 
         /// <summary>
         /// Resolves the configured <see cref="IDefineAccess"/> implementation. Supports
-        /// <c>(IDefineStorage, byte[])</c> ctor (used by <c>LocalDefineAccess</c> with
-        /// the config encryption key), <c>(IDefineStorage)</c>, and parameterless ctors.
+        /// <c>(IDefineStorage, PathOptions, byte[])</c> ctor (used by <c>LocalDefineAccess</c>
+        /// with the config encryption key), <c>(IDefineStorage, PathOptions)</c>,
+        /// <c>(IDefineStorage)</c> (legacy), and parameterless ctors.
         /// </summary>
-        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage, byte[] configEncryptionKey)
+        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage, PathOptions paths, byte[] configEncryptionKey)
         {
             var resolvedName = string.IsNullOrWhiteSpace(typeName) ? BackendDefaultTypes.DefineAccess : typeName;
             var type = AssemblyLoader.GetType(resolvedName)
                 ?? throw new InvalidOperationException($"IDefineAccess type '{resolvedName}' not found.");
 
-            var ctorWithKey = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(byte[]) });
-            if (ctorWithKey != null)
-                return (IDefineAccess)ctorWithKey.Invoke(new object[] { storage, configEncryptionKey });
+            var ctorPathsKey = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(PathOptions), typeof(byte[]) });
+            if (ctorPathsKey != null)
+                return (IDefineAccess)ctorPathsKey.Invoke(new object[] { storage, paths, configEncryptionKey });
+
+            var ctorPaths = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(PathOptions) });
+            if (ctorPaths != null)
+                return (IDefineAccess)ctorPaths.Invoke(new object[] { storage, paths });
 
             var ctorWithStorage = type.GetConstructor(new[] { typeof(IDefineStorage) });
             if (ctorWithStorage != null)
@@ -127,6 +146,25 @@ namespace Bee.Api.AspNetCore
 
             return (IDefineAccess?)Activator.CreateInstance(type)
                 ?? throw new InvalidOperationException($"Failed to construct IDefineAccess: {resolvedName}");
+        }
+
+        /// <summary>
+        /// Constructs the configured <see cref="IDefineStorage"/> implementation. Prefers
+        /// the <c>(PathOptions)</c> ctor (used by <see cref="FileDefineStorage"/> after
+        /// Phase 5 PR 5.2); falls back to a parameterless ctor for legacy implementations.
+        /// </summary>
+        private static IDefineStorage CreateDefineStorage(string? configured, string fallback, PathOptions paths)
+        {
+            var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
+            var type = AssemblyLoader.GetType(typeName)
+                ?? throw new InvalidOperationException($"IDefineStorage type '{typeName}' not found.");
+
+            var ctorWithPaths = type.GetConstructor(new[] { typeof(PathOptions) });
+            if (ctorWithPaths != null)
+                return (IDefineStorage)ctorWithPaths.Invoke(new object[] { paths });
+
+            return (AssemblyLoader.CreateInstance(typeName) as IDefineStorage)
+                ?? throw new InvalidOperationException($"Failed to construct IDefineStorage: {typeName}");
         }
 
         /// <summary>
@@ -201,9 +239,9 @@ namespace Bee.Api.AspNetCore
         /// using the master key. Empty entries map to empty byte arrays so downstream
         /// crypto paths see a consistent "no key configured" sentinel.
         /// </summary>
-        private static SecurityKeys DecryptSecurityKeys(SecurityKeySettings settings, bool autoCreateMasterKey)
+        private static SecurityKeys DecryptSecurityKeys(SecurityKeySettings settings, string definePath, bool autoCreateMasterKey)
         {
-            byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, autoCreateMasterKey);
+            byte[] masterKey = MasterKeyProvider.GetMasterKey(settings.MasterKeySource, definePath, autoCreateMasterKey);
 
             return new SecurityKeys(
                 ApiEncryptionKey: Decrypt(masterKey, settings.ApiEncryptionKey),

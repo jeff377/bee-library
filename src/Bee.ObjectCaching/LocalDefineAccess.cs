@@ -14,13 +14,16 @@ namespace Bee.ObjectCaching
     public class LocalDefineAccess : IDefineAccess
     {
         private readonly IDefineStorage _storage;
+        private readonly PathOptions _paths;
         private readonly byte[] _configEncryptionKey;
 
         /// <summary>
-        /// Initializes a new instance of <see cref="LocalDefineAccess"/>.
+        /// Initializes a new instance of <see cref="LocalDefineAccess"/> with the supplied
+        /// <see cref="PathOptions"/> for file path resolution.
         /// </summary>
         /// <param name="storage">The define storage used for read fallback and writes.</param>
-        public LocalDefineAccess(IDefineStorage storage) : this(storage, Array.Empty<byte>())
+        /// <param name="paths">The path options for SaveSystemSettings / SaveDatabaseSettings / SaveProgramSettings file targets.</param>
+        public LocalDefineAccess(IDefineStorage storage, PathOptions paths) : this(storage, paths, Array.Empty<byte>())
         {
         }
 
@@ -30,13 +33,15 @@ namespace Bee.ObjectCaching
         /// password fields at read/save time.
         /// </summary>
         /// <param name="storage">The define storage used for read fallback and writes.</param>
+        /// <param name="paths">The path options for SaveSystemSettings / SaveDatabaseSettings / SaveProgramSettings file targets.</param>
         /// <param name="configEncryptionKey">
         /// The 64-byte combined AES + HMAC key used to encrypt <see cref="DatabaseServer.Password"/> /
         /// <see cref="DatabaseItem.Password"/> in <c>DatabaseSettings.xml</c>. Empty disables the crypto path.
         /// </param>
-        public LocalDefineAccess(IDefineStorage storage, byte[] configEncryptionKey)
+        public LocalDefineAccess(IDefineStorage storage, PathOptions paths, byte[] configEncryptionKey)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+            _paths = paths ?? throw new ArgumentNullException(nameof(paths));
             _configEncryptionKey = configEncryptionKey ?? Array.Empty<byte>();
         }
 
@@ -133,7 +138,7 @@ namespace Bee.ObjectCaching
         public void SaveSystemSettings(SystemSettings settings)
         {
             // Save system settings to file
-            string filePath = DefinePathInfo.GetSystemSettingsFilePath();
+            string filePath = _paths.GetSystemSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
             // Invalidate the cache
             CacheContainer.SystemSettings.Remove();
@@ -160,7 +165,7 @@ namespace Bee.ObjectCaching
         public void SaveDatabaseSettings(DatabaseSettings settings)
         {
             DatabaseSettingsCryptor.EncryptInPlace(settings, _configEncryptionKey);
-            string filePath = DefinePathInfo.GetDatabaseSettingsFilePath();
+            string filePath = _paths.GetDatabaseSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
             // Invalidate the cache
             CacheContainer.DatabaseSettings.Remove();
@@ -181,7 +186,7 @@ namespace Bee.ObjectCaching
         public void SaveProgramSettings(ProgramSettings settings)
         {
             // Save program settings to file, then invalidate the cache
-            string filePath = DefinePathInfo.GetProgramSettingsFilePath();
+            string filePath = _paths.GetProgramSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
             CacheContainer.ProgramSettings.Remove();
         }
