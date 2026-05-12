@@ -14,6 +14,7 @@ namespace Bee.Tests.Shared
     public sealed class BeeTestFixtureBuilder
     {
         private bool _useTempDefinePath;
+        private bool _useSharedDatabases;
         private Action<BackendConfiguration>? _configureBackend;
 
         /// <summary>
@@ -25,6 +26,20 @@ namespace Bee.Tests.Shared
         public BeeTestFixtureBuilder UseTempDefinePath()
         {
             _useTempDefinePath = true;
+            return this;
+        }
+
+        /// <summary>
+        /// Opts the fixture into the process-wide shared database setup: registers
+        /// ADO.NET providers + dialect factories per <c>DatabaseType</c>, seeds the
+        /// matching <c>DatabaseItem</c> entries (when <c>BEE_TEST_CONNSTR_*</c> env
+        /// vars are set), and creates/upgrades the shared <c>st_user</c>/<c>st_session</c>
+        /// schemas plus seed user. Idempotent across the process — use for fixtures
+        /// driving <c>[DbFact]</c> integration tests.
+        /// </summary>
+        public BeeTestFixtureBuilder UseSharedDatabases()
+        {
+            _useSharedDatabases = true;
             return this;
         }
 
@@ -77,7 +92,18 @@ namespace Bee.Tests.Shared
 
             var services = new ServiceCollection();
             services.AddBeeFramework(settings.BackendConfiguration, paths, autoCreateMasterKey: true);
-            return services.BuildServiceProvider();
+            var provider = services.BuildServiceProvider();
+
+            if (_useSharedDatabases)
+            {
+                // Schema + seed are process-wide (idempotent); resolved IDefineAccess
+                // shares the same DatabaseSettings cache that SharedDatabaseState
+                // populated via GlobalFixture's bootstrap path.
+                SharedDatabaseState.EnsureSchemaAndSeed(
+                    provider.GetRequiredService<Bee.Definition.Storage.IDefineAccess>());
+            }
+
+            return provider;
         }
 
         private static string FindRepoRoot(string startDir)
