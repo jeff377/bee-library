@@ -86,5 +86,25 @@ namespace Bee.Base.UnitTests
             Assert.True(result.IsSuccess);
             Assert.Equal("ok", result.Message);
         }
+
+        [Fact]
+        [DisplayName("LoadAssembly 短名稱（不含副檔名）應能正確載入並快取組件")]
+        public void LoadAssembly_ShortName_LoadsAndCachesAssembly()
+        {
+            // "Bee.Base" 無 .dll 副檔名，FindAssembly 以 ManifestModule.Name 比對會找不到，
+            // 因此觸發 Assembly.Load(AssemblyName) 載入路徑。
+            var assembly = AssemblyLoader.LoadAssembly("Bee.Base");
+            Assert.NotNull(assembly);
+            Assert.Equal("Bee.Base", assembly.GetName().Name);
+        }
+
+        [Fact]
+        [DisplayName("LoadAssembly 不存在的組件名稱應拋出 FileNotFoundException")]
+        public void LoadAssembly_NonExistentAssembly_ThrowsFileNotFoundException()
+        {
+            // Assembly.Load 失敗後走 LoadFile fallback，兩者皆找不到時拋出 FileNotFoundException。
+            Assert.Throws<FileNotFoundException>(() =>
+                AssemblyLoader.LoadAssembly("Does.Not.Exist.dll"));
+        }
     }
 }
