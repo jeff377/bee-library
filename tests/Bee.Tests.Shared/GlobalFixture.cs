@@ -68,8 +68,10 @@ namespace Bee.Tests.Shared
             // Fallback：若上述 DB 環境變數都未設（無 DB 整合測試的情境），
             // 仍需確保 Id='common' 存在,以通過 startup 驗證。
             EnsureFallbackCommonDatabaseItem();
-            // 系統初始化
-            var settings = BackendInfo.DefineAccess.GetSystemSettings();
+            // 系統初始化：boot-time 讀檔走 SystemSettingsLoader（不依賴 IDefineAccess）。
+            // 與 runtime cache-backed 路徑 (BackendInfo.DefineAccess.GetSystemSettings()) 分工，
+            // 詳見 plan-backendinfo-di-phase0-systemsettings-loader.md。
+            var settings = SystemSettingsLoader.Load();
             settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
             // CI 環境改用環境變數作為 MasterKey 來源,避免在 tests/Define/ 下建立 Master.key
             // 汙染 MasterKeyProviderTests.GetMasterKey_EmptyFilePath_UsesDefaultFileName 等

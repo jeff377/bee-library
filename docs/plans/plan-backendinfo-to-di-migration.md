@@ -230,6 +230,7 @@ SystemSettings
 
 - 確認 Phase 0 抽出的 `SystemSettingsLoader` 已涵蓋所有 boot-time 用例
 - `IDefineAccess` 改為純 runtime 服務，由 DI 注入消費端
+- **移除 `BackendInfo.DefinePath`**：引入 `PathOptions`（或同等注入式配置），轉換所有讀取點（`DefinePathInfo`、`MasterKeyProvider`、相關測試 fixture）
 - 處理 `DatabaseSettings.Items` 這個 process-wide static 副作用（候選方案：改為 `IDatabaseSettingsProvider` 服務）
 - Bee.ObjectCaching 的 6 個檔案改為注入式存取
 
@@ -339,7 +340,7 @@ SystemSettings
 
 各 phase 在動工前都會寫一份 sub-plan，存於 `docs/plans/`，由主計畫連結追蹤：
 
-- [ ] `plan-backendinfo-di-phase0-systemsettings-loader.md` — Phase 0
+- [x] `plan-backendinfo-di-phase0-systemsettings-loader.md` — Phase 0 ✅ 已完成（2026-05-12）
 - [ ] `plan-backendinfo-di-phase1-options-restructure.md` — Phase 1
 - [ ] `plan-backendinfo-di-phase2-bee-db-options.md` — Phase 2
 - [ ] `plan-backendinfo-di-phase3-defineaccess-decouple.md` — Phase 3（**最關鍵，需先深度設計**）
