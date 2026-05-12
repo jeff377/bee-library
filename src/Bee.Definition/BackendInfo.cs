@@ -116,6 +116,8 @@ namespace Bee.Definition
             Initialize(configuration, false);
         }
 
+        private const string InitializeMethodName = "Initialize";
+
         /// <summary>
         /// Initializes backend service instances and wires up <c>Bee.ObjectCaching</c>
         /// + <c>Bee.Db</c> static state. Cross-layer wire-up uses reflection to avoid a
@@ -137,14 +139,14 @@ namespace Bee.Definition
 
             // 3. Wire up Bee.ObjectCaching static state via reflection.
             InvokeStaticMethod("Bee.ObjectCaching.CacheContainer, Bee.ObjectCaching",
-                "Initialize", new object[] { storage });
+                InitializeMethodName, new object[] { storage });
             InvokeStaticMethod("Bee.ObjectCaching.CacheInfo, Bee.ObjectCaching",
-                "Initialize", new object[] { configuration });
+                InitializeMethodName, new object[] { configuration });
 
             // 4. Wire up Bee.Db.DbConnectionManager via reflection.
             var dbProvider = new DefineAccessDatabaseSettingsProvider(DefineAccess);
             InvokeStaticMethod("Bee.Db.Manager.DbConnectionManager, Bee.Db",
-                "Initialize", new object[] { dbProvider });
+                InitializeMethodName, new object[] { dbProvider });
 
             // 5. Other services (no inter-dependencies).
             ApiEncryptionKeyProvider = CreateOrDefault<IApiEncryptionKeyProvider>
@@ -162,9 +164,9 @@ namespace Bee.Definition
 
             // 6. Wire up Phase 3 BusinessObjectFactory + RepositoryInfo per-call context plumbing.
             InvokeStaticMethod("Bee.Business.BusinessObjectFactory, Bee.Business",
-                "Initialize", new object[] { DefineAccess, SessionInfoService });
+                InitializeMethodName, new object[] { DefineAccess, SessionInfoService });
             InvokeStaticMethod("Bee.Repository.Abstractions.RepositoryInfo, Bee.Repository.Abstractions",
-                "Initialize", new object[] { configuration });
+                InitializeMethodName, new object[] { configuration });
         }
 
         /// <summary>
