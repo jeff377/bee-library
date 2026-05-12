@@ -18,21 +18,31 @@ namespace Bee.ObjectCaching
     {
         /// <summary>
         /// Initializes a new <see cref="CacheContainerService"/> bound to the supplied storage.
+        /// Each instance generates a unique <see cref="CachePrefix"/> so multiple containers
+        /// can coexist over the shared <see cref="CacheInfo.Provider"/> without colliding —
+        /// essential for per-test-fixture isolation.
         /// </summary>
         /// <param name="storage">The define storage shared by storage-backed caches.</param>
         public CacheContainerService(IDefineStorage storage)
         {
             ArgumentNullException.ThrowIfNull(storage);
 
-            SystemSettings = new SystemSettingsCache();
-            DatabaseSettings = new DatabaseSettingsCache();
-            ProgramSettings = new ProgramSettingsCache();
-            DbCategorySettings = new DbCategorySettingsCache(storage);
-            TableSchema = new TableSchemaCache(storage);
-            FormSchema = new FormSchemaCache(storage);
-            FormLayout = new FormLayoutCache(storage);
-            SessionInfo = new SessionInfoCache();
+            CachePrefix = "cc_" + Guid.NewGuid().ToString("N");
+            SystemSettings = new SystemSettingsCache(CachePrefix);
+            DatabaseSettings = new DatabaseSettingsCache(CachePrefix);
+            ProgramSettings = new ProgramSettingsCache(CachePrefix);
+            DbCategorySettings = new DbCategorySettingsCache(storage, CachePrefix);
+            TableSchema = new TableSchemaCache(storage, CachePrefix);
+            FormSchema = new FormSchemaCache(storage, CachePrefix);
+            FormLayout = new FormLayoutCache(storage, CachePrefix);
+            SessionInfo = new SessionInfoCache(CachePrefix);
         }
+
+        /// <summary>
+        /// The unique namespace prefix used by every cache instance this container owns.
+        /// Surfaced primarily for diagnostics — consumers should not rely on its format.
+        /// </summary>
+        public string CachePrefix { get; }
 
         /// <inheritdoc/>
         public SystemSettingsCache SystemSettings { get; }

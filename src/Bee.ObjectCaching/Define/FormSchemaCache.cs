@@ -15,7 +15,8 @@ namespace Bee.ObjectCaching.Define
         /// Initializes a new instance of <see cref="FormSchemaCache"/>.
         /// </summary>
         /// <param name="storage">The define storage backing this cache.</param>
-        public FormSchemaCache(IDefineStorage storage)
+        /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="KeyObjectCache{T}"/>).</param>
+        public FormSchemaCache(IDefineStorage storage, string cachePrefix = "") : base(cachePrefix)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         }

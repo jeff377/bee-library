@@ -8,6 +8,12 @@ namespace Bee.ObjectCaching.Database
     public class SessionInfoCache : KeyObjectCache<SessionInfo>
     {
         /// <summary>
+        /// Initializes a new <see cref="SessionInfoCache"/>.
+        /// </summary>
+        /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="KeyObjectCache{T}"/>).</param>
+        public SessionInfoCache(string cachePrefix = "") : base(cachePrefix) { }
+
+        /// <summary>
         /// Creates an instance of the session information.
         /// </summary>
         /// <param name="key">The access token.</param>

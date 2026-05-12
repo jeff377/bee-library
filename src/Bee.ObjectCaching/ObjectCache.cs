@@ -1,17 +1,27 @@
-﻿namespace Bee.ObjectCaching
+namespace Bee.ObjectCaching
 {
     /// <summary>
     /// Base class for single-object caches.
     /// </summary>
     public abstract class ObjectCache<T> where T : class
     {
+        private readonly string _cachePrefix;
+
         #region 建構函式
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ObjectCache{T}"/> class.
         /// </summary>
-        protected ObjectCache()
-        { }
+        /// <param name="cachePrefix">
+        /// Per-owner namespace prepended to <see cref="GetKey"/>. Allows separate
+        /// <see cref="CacheContainerService"/> instances (e.g. per-fixture test containers)
+        /// to share the process-wide <see cref="CacheInfo.Provider"/> without colliding.
+        /// Empty for the legacy non-prefixed path.
+        /// </param>
+        protected ObjectCache(string cachePrefix = "")
+        {
+            _cachePrefix = cachePrefix ?? string.Empty;
+        }
 
         #endregion
 
@@ -30,7 +40,9 @@
         /// </summary>
         protected virtual string GetKey()
         {
-            return typeof(T).Name;
+            return string.IsNullOrEmpty(_cachePrefix)
+                ? typeof(T).Name
+                : _cachePrefix + "_" + typeof(T).Name;
         }
 
         /// <summary>

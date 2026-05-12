@@ -15,7 +15,8 @@ namespace Bee.ObjectCaching.Define
         /// Initializes a new instance of <see cref="DbCategorySettingsCache"/>.
         /// </summary>
         /// <param name="storage">The define storage backing this cache.</param>
-        public DbCategorySettingsCache(IDefineStorage storage)
+        /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="ObjectCache{T}"/>).</param>
+        public DbCategorySettingsCache(IDefineStorage storage, string cachePrefix = "") : base(cachePrefix)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
         }

@@ -105,11 +105,9 @@ namespace Bee.Definition.UnitTests
     }
 
     /// <summary>
-    /// 驗證 PR 5.4c 後 <see cref="ISessionInfoService"/> 由 ctor 注入
-    /// <see cref="ICacheContainer"/>，每個 fixture 有獨立的 service / cache container instance。
-    /// 但底層 <c>CacheInfo.Provider</c> 仍為 process-wide static MemoryCache，所以
-    /// 共用快取鍵的資料仍跨 fixture 可見；完整 per-fixture 資料隔離待後續 PR 把
-    /// <c>CacheInfo</c> 改為 DI 注入後再驗證。
+    /// 驗證 PR 5.4c/5.4d 後每個 BeeTestFixture 都有獨立 ICacheContainer，
+    /// 透過 cache key prefix 隔離 process-wide CacheInfo.Provider 內的資料，
+    /// 達成真正的 per-fixture session 隔離。
     /// </summary>
     public class BeeTestFixturePerInstanceIsolationTests
     {
@@ -138,6 +136,29 @@ namespace Bee.Definition.UnitTests
 
             Assert.NotSame(cacheA, cacheB);
             Assert.NotSame(cacheA.SessionInfo, cacheB.SessionInfo);
+        }
+
+        [Fact]
+        [DisplayName("Fixture A 寫入的 session 不應被 Fixture B 看到（per-fixture cache 隔離）")]
+        public void Session_WrittenInFixtureA_NotVisibleInFixtureB()
+        {
+            using var fxA = new BeeTestFixture();
+            using var fxB = new BeeTestFixture();
+
+            var token = Guid.NewGuid();
+            fxA.GetRequiredService<ISessionInfoService>().Set(new SessionInfo
+            {
+                AccessToken = token,
+                UserId = "isolated-user",
+                UserName = "isolated-user",
+                ExpiredAt = DateTime.UtcNow.AddHours(1),
+                ApiEncryptionKey = Array.Empty<byte>(),
+            });
+
+            // Fixture A 看得到自己寫入的 session
+            Assert.NotNull(fxA.GetRequiredService<ISessionInfoService>().Get(token));
+            // Fixture B 的 ICacheContainer 有獨立 CachePrefix，看不到 A 的 session
+            Assert.Null(fxB.GetRequiredService<ISessionInfoService>().Get(token));
         }
     }
 }

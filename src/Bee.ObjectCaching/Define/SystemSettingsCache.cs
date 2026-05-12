@@ -10,6 +10,12 @@ namespace Bee.ObjectCaching.Define
     public class SystemSettingsCache : ObjectCache<SystemSettings>
     {
         /// <summary>
+        /// Initializes a new <see cref="SystemSettingsCache"/>.
+        /// </summary>
+        /// <param name="cachePrefix">Per-owner cache namespace (see <see cref="ObjectCache{T}"/>).</param>
+        public SystemSettingsCache(string cachePrefix = "") : base(cachePrefix) { }
+
+        /// <summary>
         /// Gets the cache item expiration policy.
         /// </summary>
         protected override CacheItemPolicy GetPolicy()

@@ -1,4 +1,4 @@
-﻿using Bee.Base;
+using Bee.Base;
 
 namespace Bee.ObjectCaching
 {
@@ -7,13 +7,23 @@ namespace Bee.ObjectCaching
     /// </summary>
     public abstract class KeyObjectCache<T> where T : class
     {
+        private readonly string _cachePrefix;
+
         #region 建構函式
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KeyObjectCache{T}"/> class.
         /// </summary>
-        protected KeyObjectCache()
-        { }
+        /// <param name="cachePrefix">
+        /// Per-owner namespace prepended to <see cref="GetCacheKey"/>. Allows separate
+        /// <see cref="CacheContainerService"/> instances (e.g. per-fixture test containers)
+        /// to share the process-wide <see cref="CacheInfo.Provider"/> without colliding.
+        /// Empty for the legacy non-prefixed path.
+        /// </param>
+        protected KeyObjectCache(string cachePrefix = "")
+        {
+            _cachePrefix = cachePrefix ?? string.Empty;
+        }
 
         #endregion
 
@@ -34,7 +44,8 @@ namespace Bee.ObjectCaching
         /// <param name="key">The member key.</param>
         protected virtual string GetCacheKey(string key)
         {
-            return (typeof(T).Name + "_" + key).ToLowerInvariant();
+            string suffix = (typeof(T).Name + "_" + key).ToLowerInvariant();
+            return string.IsNullOrEmpty(_cachePrefix) ? suffix : _cachePrefix + "_" + suffix;
         }
 
         /// <summary>
