@@ -1,6 +1,4 @@
-﻿using Bee.Base;
-
-namespace Bee.Api.Core.Transformers
+﻿namespace Bee.Api.Core.Transformers
 {
     /// <summary>
     /// Factory class that creates API payload encoding components based on configuration values.
@@ -48,9 +46,15 @@ namespace Bee.Api.Core.Transformers
         /// Creates the encryptor component with the specified name.
         /// </summary>
         /// <param name="name">The encryptor name, e.g., "aes-cbc-hmac", or "none" for no encryption.</param>
+        /// <param name="isDebugMode">
+        /// Whether the host is running in debug/development mode. Required: <c>"none"</c> /
+        /// empty-string encryptors are only permitted when this flag is <c>true</c> so that
+        /// production deployments cannot accidentally disable transport encryption.
+        /// </param>
         /// <returns>The encryptor component.</returns>
         /// <exception cref="NotSupportedException">The encryptor name is not supported.</exception>
-        public static IApiPayloadEncryptor CreateEncryptor(string name)
+        /// <exception cref="InvalidOperationException"><paramref name="name"/> is <c>"none"</c> / empty and <paramref name="isDebugMode"/> is <c>false</c>.</exception>
+        public static IApiPayloadEncryptor CreateEncryptor(string name, bool isDebugMode)
         {
             switch (name)
             {
@@ -58,7 +62,7 @@ namespace Bee.Api.Core.Transformers
                     return new AesPayloadEncryptor();
                 case "none":
                 case "":
-                    if (!SysInfo.IsDebugMode)
+                    if (!isDebugMode)
                         throw new InvalidOperationException(
                             "NoEncryptionEncryptor is only permitted in debug/development mode. Configure a valid encryptor for production.");
                     return new NoEncryptionEncryptor();

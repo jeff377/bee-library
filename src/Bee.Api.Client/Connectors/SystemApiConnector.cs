@@ -126,7 +126,7 @@ namespace Bee.Api.Client.Connectors
             var configuration = XmlCodec.Deserialize<CommonConfiguration>(result.CommonConfiguration)!;
             SysInfo.Initialize(configuration);
             // Initialize API service options: configure serializer, compressor, and encryptor implementations
-            ApiServiceOptions.Initialize(configuration.ApiPayloadOptions);
+            ApiServiceOptions.Initialize(configuration.ApiPayloadOptions, configuration.IsDebugMode);
         }
 
         /// <summary>

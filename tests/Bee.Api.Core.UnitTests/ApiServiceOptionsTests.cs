@@ -1,7 +1,6 @@
 using System.ComponentModel;
 using Bee.Api.Core.Authorization;
 using Bee.Api.Core.Transformers;
-using Bee.Base;
 using Bee.Definition.Settings;
 
 namespace Bee.Api.Core.UnitTests
@@ -9,7 +8,6 @@ namespace Bee.Api.Core.UnitTests
     /// <summary>
     /// ApiServiceOptions 測試。由於 ApiServiceOptions 為靜態類別，測試會保存／還原原始實作以避免影響其他測試。
     /// </summary>
-    [Collection("SysInfo")]
     public class ApiServiceOptionsTests
     {
         [Fact]
@@ -34,16 +32,14 @@ namespace Bee.Api.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("Initialize(ApiPayloadOptions) 應依名稱建立對應實作")]
+        [DisplayName("Initialize(ApiPayloadOptions, isDebugMode) 應依名稱建立對應實作")]
         public void Initialize_WithOptions_SetsImplementations()
         {
             var originalSerializer = ApiServiceOptions.PayloadSerializer;
             var originalCompressor = ApiServiceOptions.PayloadCompressor;
             var originalEncryptor = ApiServiceOptions.PayloadEncryptor;
-            var originalDebugMode = SysInfo.IsDebugMode;
             try
             {
-                SysInfo.IsDebugMode = true;
                 var options = new ApiPayloadOptions
                 {
                     Serializer = "messagepack",
@@ -51,7 +47,7 @@ namespace Bee.Api.Core.UnitTests
                     Encryptor = "none"
                 };
 
-                ApiServiceOptions.Initialize(options);
+                ApiServiceOptions.Initialize(options, isDebugMode: true);
 
                 Assert.IsType<MessagePackPayloadSerializer>(ApiServiceOptions.PayloadSerializer);
                 Assert.IsType<NoCompressionCompressor>(ApiServiceOptions.PayloadCompressor);
@@ -62,7 +58,6 @@ namespace Bee.Api.Core.UnitTests
                 ApiServiceOptions.PayloadSerializer = originalSerializer;
                 ApiServiceOptions.PayloadCompressor = originalCompressor;
                 ApiServiceOptions.PayloadEncryptor = originalEncryptor;
-                SysInfo.IsDebugMode = originalDebugMode;
             }
         }
 

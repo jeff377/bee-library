@@ -1,13 +1,11 @@
 using System.ComponentModel;
 using Bee.Api.Core.Transformers;
-using Bee.Base;
 
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
     /// ApiPayloadOptionsFactory 測試。
     /// </summary>
-    [Collection("SysInfo")]
     public class ApiPayloadOptionsFactoryTests
     {
         [Fact]
@@ -57,7 +55,7 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("CreateEncryptor(\"aes-cbc-hmac\") 應回傳 AesPayloadEncryptor")]
         public void CreateEncryptor_AesCbcHmac_ReturnsAesPayloadEncryptor()
         {
-            var encryptor = ApiPayloadOptionsFactory.CreateEncryptor("aes-cbc-hmac");
+            var encryptor = ApiPayloadOptionsFactory.CreateEncryptor("aes-cbc-hmac", isDebugMode: false);
 
             Assert.IsType<AesPayloadEncryptor>(encryptor);
         }
@@ -68,43 +66,23 @@ namespace Bee.Api.Core.UnitTests
         [DisplayName("CreateEncryptor(\"none\"/\"\") 於 Debug 模式下應回傳 NoEncryptionEncryptor")]
         public void CreateEncryptor_None_DebugMode_ReturnsNoEncryptionEncryptor(string name)
         {
-            var originalDebugMode = SysInfo.IsDebugMode;
-            try
-            {
-                SysInfo.IsDebugMode = true;
+            var encryptor = ApiPayloadOptionsFactory.CreateEncryptor(name, isDebugMode: true);
 
-                var encryptor = ApiPayloadOptionsFactory.CreateEncryptor(name);
-
-                Assert.IsType<NoEncryptionEncryptor>(encryptor);
-            }
-            finally
-            {
-                SysInfo.IsDebugMode = originalDebugMode;
-            }
+            Assert.IsType<NoEncryptionEncryptor>(encryptor);
         }
 
         [Fact]
         [DisplayName("CreateEncryptor(\"none\") 於非 Debug 模式下應拋出 InvalidOperationException")]
         public void CreateEncryptor_None_ProductionMode_Throws()
         {
-            var originalDebugMode = SysInfo.IsDebugMode;
-            try
-            {
-                SysInfo.IsDebugMode = false;
-
-                Assert.Throws<InvalidOperationException>(() => ApiPayloadOptionsFactory.CreateEncryptor("none"));
-            }
-            finally
-            {
-                SysInfo.IsDebugMode = originalDebugMode;
-            }
+            Assert.Throws<InvalidOperationException>(() => ApiPayloadOptionsFactory.CreateEncryptor("none", isDebugMode: false));
         }
 
         [Fact]
         [DisplayName("CreateEncryptor 傳入未支援名稱應拋出 NotSupportedException")]
         public void CreateEncryptor_Unknown_Throws()
         {
-            Assert.Throws<NotSupportedException>(() => ApiPayloadOptionsFactory.CreateEncryptor("rsa"));
+            Assert.Throws<NotSupportedException>(() => ApiPayloadOptionsFactory.CreateEncryptor("rsa", isDebugMode: true));
         }
     }
 }

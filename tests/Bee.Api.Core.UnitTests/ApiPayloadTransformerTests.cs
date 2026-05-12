@@ -1,13 +1,11 @@
 using System.ComponentModel;
 using Bee.Api.Core.Transformers;
-using Bee.Base;
 
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
     /// ApiPayloadTransformer 測試。需保存／還原 <see cref="ApiServiceOptions"/> 靜態狀態以避免影響其他測試。
     /// </summary>
-    [Collection("SysInfo")]
     public class ApiPayloadTransformerTests
     {
         [Fact]
@@ -56,10 +54,8 @@ namespace Bee.Api.Core.UnitTests
         public void EncryptDecrypt_NoEncryption_ReturnsSameBytes()
         {
             var originalEncryptor = ApiServiceOptions.PayloadEncryptor;
-            var originalDebugMode = SysInfo.IsDebugMode;
             try
             {
-                SysInfo.IsDebugMode = true;
                 ApiServiceOptions.PayloadEncryptor = new NoEncryptionEncryptor();
                 var transformer = new ApiPayloadTransformer();
                 var raw = new byte[] { 1, 2, 3, 4 };
@@ -74,7 +70,6 @@ namespace Bee.Api.Core.UnitTests
             finally
             {
                 ApiServiceOptions.PayloadEncryptor = originalEncryptor;
-                SysInfo.IsDebugMode = originalDebugMode;
             }
         }
 

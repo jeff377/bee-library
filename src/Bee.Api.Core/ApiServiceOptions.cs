@@ -20,11 +20,16 @@ namespace Bee.Api.Core
         /// Initializes the API service options by configuring the serializer, compressor, and encryptor implementations.
         /// </summary>
         /// <param name="payloadOptions">Provides options related to API payload processing, such as serialization, compression, and encryption.</param>
-        public static void Initialize(ApiPayloadOptions payloadOptions)
+        /// <param name="isDebugMode">
+        /// Whether the host is running in debug/development mode. Forwarded to
+        /// <see cref="ApiPayloadOptionsFactory.CreateEncryptor(string, bool)"/> so the
+        /// <c>"none"</c> encryptor is rejected in production builds.
+        /// </param>
+        public static void Initialize(ApiPayloadOptions payloadOptions, bool isDebugMode)
         {
             PayloadSerializer = ApiPayloadOptionsFactory.CreateSerializer(payloadOptions.Serializer);
             PayloadCompressor = ApiPayloadOptionsFactory.CreateCompressor(payloadOptions.Compressor);
-            PayloadEncryptor = ApiPayloadOptionsFactory.CreateEncryptor(payloadOptions.Encryptor);
+            PayloadEncryptor = ApiPayloadOptionsFactory.CreateEncryptor(payloadOptions.Encryptor, isDebugMode);
         }
 
         /// <summary>
