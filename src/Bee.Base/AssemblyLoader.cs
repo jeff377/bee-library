@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Bee.Base
 {
@@ -65,13 +66,12 @@ namespace Bee.Base
             }
             catch (FileNotFoundException)
             {
-                // Fallback: load by full file path. LoadFile keeps the assembly distinct from
-                // the default context — only reach here when default-context resolution fails
-                // (e.g. assembly lives outside probing path).
+                // Fallback: load by full file path into the default load context.
+                // Reached only when the assembly lives outside the probing path.
                 string assemblyFile = StringUtilities.IsEmpty(Path.GetDirectoryName(assemblyName))
                     ? Path.Combine(FileUtilities.GetAssemblyPath(), assemblyName)
                     : assemblyName;
-                assembly = Assembly.LoadFile(assemblyFile);
+                assembly = AssemblyLoadContext.Default.LoadFromAssemblyPath(assemblyFile);
             }
             _loadedAssemblies[assemblyName] = assembly;
 
