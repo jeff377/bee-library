@@ -1,196 +1,72 @@
-using Bee.Base;
 using Bee.Definition;
-using System.Collections.Concurrent;
-using System.Data;
 using System.Data.Common;
 
 namespace Bee.Db.Manager
 {
     /// <summary>
-    /// Resolves and caches database connection information.
-    /// Combines DatabaseItem, DatabaseServer, and <see cref="DbProviderRegistry"/>
-    /// data into ready-to-use <see cref="DbConnectionInfo"/> instances,
-    /// then caches the result and refreshes when database settings change.
+    /// Transitional static facade over <see cref="IDbConnectionManager"/>. Phase 5 PR 5.3b
+    /// moved the canonical implementation to <see cref="DbConnectionManagerService"/> and
+    /// reserved <see cref="IDbConnectionManager"/> for ctor injection. This shim continues
+    /// to serve direct <c>new DbAccess("id")</c> test call sites until the test fixture
+    /// rewrite in PR 5.4 finishes migrating them.
     /// </summary>
     public static class DbConnectionManager
     {
-        private static IDatabaseSettingsProvider? _provider;
+        private static IDbConnectionManager? _instance;
 
         /// <summary>
-        /// Static constructor; runs when the class is first referenced.
+        /// Installs a process-wide <see cref="IDbConnectionManager"/> instance. Called by
+        /// the framework bootstrapper at host startup (or by test fixtures bootstrapping
+        /// the legacy static path).
         /// </summary>
-        static DbConnectionManager()
+        /// <param name="instance">The instance to install. Replaces the previous one if any.</param>
+        public static void Initialize(IDbConnectionManager instance)
         {
-            // Subscribe to database settings changed events
-            GlobalEvents.DatabaseSettingsChanged += OnDatabaseSettingsChanged;
+            _instance = instance ?? throw new ArgumentNullException(nameof(instance));
         }
 
         /// <summary>
-        /// Installs the database settings provider. Must be called at host startup before any
-        /// <see cref="GetConnectionInfo"/> invocation.
+        /// Installs a process-wide instance backed by the supplied database settings provider.
+        /// Convenience overload that preserves the pre-PR-5.3b API shape used by tests.
         /// </summary>
         /// <param name="provider">The database settings provider.</param>
         public static void Initialize(IDatabaseSettingsProvider provider)
         {
-            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
-            Clear();
+            Initialize(new DbConnectionManagerService(provider));
         }
 
-        private static void OnDatabaseSettingsChanged(object? sender, EventArgs e)
-        {
-            Clear();
-        }
+        private static IDbConnectionManager Instance
+            => _instance ?? throw new InvalidOperationException(
+                "DbConnectionManager has not been initialized. Call DbConnectionManager.Initialize(provider) before use.");
 
         /// <summary>
-        /// Thread-safe cache of connection information.
+        /// Gets or creates the connection information for the specified database (cached).
         /// </summary>
-        private static readonly ConcurrentDictionary<string, DbConnectionInfo> _cache
-            = new ConcurrentDictionary<string, DbConnectionInfo>();
-
-        /// <summary>
-        /// Gets or creates the connection information for the specified database (with caching).
-        /// The first call creates and caches the connection info; subsequent calls return the cached result.
-        /// </summary>
-        /// <param name="databaseId">The database identifier.</param>
-        /// <returns>A <see cref="DbConnectionInfo"/> containing the database type, provider, and connection string.</returns>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="databaseId"/> is null or empty.</exception>
-        /// <exception cref="InvalidOperationException">Thrown when the database item is not found, the provider is not registered, or the connection string is invalid.</exception>
-        public static DbConnectionInfo GetConnectionInfo(string databaseId)
-        {
-            if (string.IsNullOrWhiteSpace(databaseId))
-                throw new ArgumentNullException(nameof(databaseId), "Database ID cannot be null or empty.");
-
-            return _cache.GetOrAdd(databaseId, CreateConnectionInfo);
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="DbConnectionInfo"/> for the specified database identifier.
-        /// </summary>
-        /// <param name="databaseId">The database identifier.</param>
-        /// <returns>The newly created connection information object.</returns>
-        /// <exception cref="InvalidOperationException">Thrown when the database item is not found, the provider is not registered, or the connection string is invalid.</exception>
-        private static DbConnectionInfo CreateConnectionInfo(string databaseId)
-        {
-            if (_provider == null)
-                throw new InvalidOperationException(
-                    "DbConnectionManager has not been initialized. Call DbConnectionManager.Initialize(provider) before use.");
-
-            // Retrieve database settings via the configured provider
-            var settings = _provider.Get();
-
-            // Get the database item
-            var databaseItem = settings.Items![databaseId];
-            if (databaseItem == null)
-                throw new InvalidOperationException($"DatabaseItem for id '{databaseId}' was not found.");
-
-            // Default to the DatabaseItem settings
-            var databaseType = databaseItem.DatabaseType;
-            string connectionString = databaseItem.ConnectionString;
-            string userId = databaseItem.UserId;
-            string password = databaseItem.Password;
-            string dbName = databaseItem.DbName;
-
-            // If a ServerId is specified, retrieve the connection string template from the corresponding server
-            if (StringUtilities.IsNotEmpty(databaseItem.ServerId))
-            {
-                var server = settings.Servers![databaseItem.ServerId];
-                if (server == null)
-                {
-                    throw new InvalidOperationException(
-                        $"DatabaseServer '{databaseItem.ServerId}' referenced by DatabaseItem '{databaseId}' was not found.");
-                }
-
-                // Use the server settings as the base
-                connectionString = server.ConnectionString;
-                databaseType = server.DatabaseType;
-
-                // DatabaseItem can override the server's UserId/Password if specified
-                if (StringUtilities.IsEmpty(userId))
-                    userId = server.UserId;
-                if (StringUtilities.IsEmpty(password))
-                    password = server.Password;
-            }
-
-            // Substitute placeholders in the connection string
-            if (StringUtilities.IsNotEmpty(dbName))
-                connectionString = StringUtilities.Replace(connectionString, "{@DbName}", dbName);
-            if (StringUtilities.IsNotEmpty(userId))
-                connectionString = StringUtilities.Replace(connectionString, "{@UserId}", userId);
-            if (StringUtilities.IsNotEmpty(password))
-                connectionString = StringUtilities.Replace(connectionString, "{@Password}", password);
-
-            // Validate the connection string
-            if (string.IsNullOrWhiteSpace(connectionString))
-                throw new InvalidOperationException($"Connection string for database '{databaseId}' is null or empty.");
-
-            // Retrieve the database provider factory
-            var provider = DbProviderRegistry.Get(databaseType)
-                ?? throw new InvalidOperationException($"Unknown database type: {databaseType}.");
-
-            return new DbConnectionInfo(databaseType, provider, connectionString);
-        }
+        public static DbConnectionInfo GetConnectionInfo(string databaseId) => Instance.GetConnectionInfo(databaseId);
 
         /// <summary>
         /// Creates a database connection for the specified database identifier.
-        /// If a connection initializer is registered for the underlying database type
-        /// (see <see cref="DbProviderRegistry.GetConnectionInitializer"/>), it is wired to
-        /// the connection's <see cref="DbConnection.StateChange"/> event so that it runs
-        /// automatically each time the connection transitions from <c>Closed</c> to <c>Open</c>.
         /// </summary>
-        /// <param name="databaseId">The database identifier.</param>
-        public static DbConnection CreateConnection(string databaseId)
-        {
-            var connInfo = GetConnectionInfo(databaseId);
-
-            var provider = DbProviderRegistry.Get(connInfo.DatabaseType)
-                    ?? throw new InvalidOperationException($"Unknown database type: {connInfo.DatabaseType}.");
-            var connection = provider.CreateConnection()
-                    ?? throw new InvalidOperationException("Failed to create a database connection: DbProviderFactory.CreateConnection() returned null.");
-            connection.ConnectionString = connInfo.ConnectionString;
-
-            var initializer = DbProviderRegistry.GetConnectionInitializer(connInfo.DatabaseType);
-            if (initializer != null)
-            {
-                connection.StateChange += (sender, e) =>
-                {
-                    if (e.OriginalState == ConnectionState.Closed && e.CurrentState == ConnectionState.Open)
-                        initializer((DbConnection)sender!);
-                };
-            }
-            return connection;
-        }
+        public static DbConnection CreateConnection(string databaseId) => Instance.CreateConnection(databaseId);
 
         /// <summary>
-        /// Removes the cached connection information for the specified database (used when settings change).
+        /// Removes the cached connection information for the specified database.
         /// </summary>
-        /// <param name="databaseId">The database identifier.</param>
-        /// <returns><c>true</c> if the cache entry was successfully removed; <c>false</c> if it did not exist.</returns>
-        public static bool Remove(string databaseId)
-        {
-            return _cache.TryRemove(databaseId, out _);
-        }
+        public static bool Remove(string databaseId) => Instance.Remove(databaseId);
 
         /// <summary>
         /// Clears all cached connection information.
         /// </summary>
-        public static void Clear()
-        {
-            _cache.Clear();
-        }
+        public static void Clear() => Instance.Clear();
 
         /// <summary>
         /// Determines whether the connection information for the specified database is cached.
         /// </summary>
-        /// <param name="databaseId">The database identifier.</param>
-        /// <returns><c>true</c> if the entry is cached; otherwise, <c>false</c>.</returns>
-        public static bool Contains(string databaseId)
-        {
-            return _cache.ContainsKey(databaseId);
-        }
+        public static bool Contains(string databaseId) => Instance.Contains(databaseId);
 
         /// <summary>
-        /// Gets the number of connection information entries currently in the cache.
+        /// Gets the number of cached connection information entries.
         /// </summary>
-        public static int Count => _cache.Count;
+        public static int Count => Instance.Count;
     }
 }

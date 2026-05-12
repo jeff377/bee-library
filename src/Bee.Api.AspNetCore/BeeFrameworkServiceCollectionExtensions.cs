@@ -3,6 +3,7 @@ using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Business;
 using Bee.Business.Providers;
+using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
@@ -67,11 +68,16 @@ namespace Bee.Api.AspNetCore
             services.AddSingleton<IDatabaseSettingsProvider>(sp =>
                 new DefineAccessDatabaseSettingsProvider(sp.GetRequiredService<IDefineAccess>()));
 
-            // 4. ObjectCaching + DbConnectionManager bootstrappers (eager-resolved by UseBeeFramework).
+            // 4. IDbConnectionManager — DI-injectable singleton (PR 5.3b). The static
+            //    DbConnectionManager facade is wired up by the bootstrapper below.
+            services.AddSingleton<IDbConnectionManager>(sp =>
+                new DbConnectionManagerService(sp.GetRequiredService<IDatabaseSettingsProvider>()));
+
+            // 5. ObjectCaching + DbConnectionManager bootstrappers (eager-resolved by UseBeeFramework).
             services.AddSingleton<ICacheBootstrapper>(sp =>
                 new CacheBootstrapper(sp.GetRequiredService<IDefineStorage>(), configuration));
             services.AddSingleton<IDbConnectionManagerBootstrapper>(sp =>
-                new DbConnectionManagerBootstrapper(sp.GetRequiredService<IDatabaseSettingsProvider>()));
+                new DbConnectionManagerBootstrapper(sp.GetRequiredService<IDbConnectionManager>()));
 
             // 5. Replaceable core services. Lifetimes default to Singleton in Phase 4 —
             //    no consumer requires per-request scope today, and registering as Scoped
