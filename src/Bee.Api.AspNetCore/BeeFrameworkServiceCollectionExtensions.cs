@@ -5,6 +5,7 @@ using Bee.Business;
 using Bee.Business.Providers;
 using Bee.Db.Manager;
 using Bee.Definition;
+using Bee.ObjectCaching;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
@@ -68,14 +69,16 @@ namespace Bee.Api.AspNetCore
             services.AddSingleton<IDatabaseSettingsProvider>(sp =>
                 new DefineAccessDatabaseSettingsProvider(sp.GetRequiredService<IDefineAccess>()));
 
-            // 4. IDbConnectionManager — DI-injectable singleton (PR 5.3b). The static
-            //    DbConnectionManager facade is wired up by the bootstrapper below.
+            // 4. ICacheContainer / IDbConnectionManager — DI-injectable singletons (PR 5.3b/c).
+            //    The legacy static facades are wired by the bootstrappers below.
+            services.AddSingleton<ICacheContainer>(sp =>
+                new CacheContainerService(sp.GetRequiredService<IDefineStorage>()));
             services.AddSingleton<IDbConnectionManager>(sp =>
                 new DbConnectionManagerService(sp.GetRequiredService<IDatabaseSettingsProvider>()));
 
             // 5. ObjectCaching + DbConnectionManager bootstrappers (eager-resolved by UseBeeFramework).
             services.AddSingleton<ICacheBootstrapper>(sp =>
-                new CacheBootstrapper(sp.GetRequiredService<IDefineStorage>(), configuration));
+                new CacheBootstrapper(sp.GetRequiredService<ICacheContainer>(), configuration));
             services.AddSingleton<IDbConnectionManagerBootstrapper>(sp =>
                 new DbConnectionManagerBootstrapper(sp.GetRequiredService<IDbConnectionManager>()));
 
