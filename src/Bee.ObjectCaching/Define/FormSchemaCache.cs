@@ -9,6 +9,17 @@ namespace Bee.ObjectCaching.Define
     /// </summary>
     public class FormSchemaCache : KeyObjectCache<FormSchema>
     {
+        private readonly IDefineStorage _storage;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="FormSchemaCache"/>.
+        /// </summary>
+        /// <param name="storage">The define storage backing this cache.</param>
+        public FormSchemaCache(IDefineStorage storage)
+        {
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        }
+
         /// <summary>
         /// Gets the cache item expiration policy.
         /// </summary>
@@ -19,7 +30,7 @@ namespace Bee.ObjectCaching.Define
             string progId = key;
             // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            if (BackendInfo.DefineStorage is FileDefineStorage)
+            if (_storage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetFormSchemaFilePath(progId) };
             return policy;
         }
@@ -32,7 +43,7 @@ namespace Bee.ObjectCaching.Define
         {
             // Program identifier
             string progId = key;
-            return BackendInfo.DefineStorage.GetFormSchema(progId);
+            return _storage.GetFormSchema(progId);
         }
     }
 }

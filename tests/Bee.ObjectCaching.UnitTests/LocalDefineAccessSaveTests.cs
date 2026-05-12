@@ -4,6 +4,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
+using Bee.Definition.Storage;
 using Bee.Tests.Shared;
 
 namespace Bee.ObjectCaching.UnitTests
@@ -17,7 +18,7 @@ namespace Bee.ObjectCaching.UnitTests
     {
         private static readonly string[] DbViaDefineKeys = { "db_via_define" };
 
-        private readonly LocalDefineAccess _access = new LocalDefineAccess();
+        private readonly LocalDefineAccess _access = new LocalDefineAccess(new FileDefineStorage());
 
         [Fact]
         [DisplayName("SaveSystemSettings 應寫入 SystemSettings.xml 並可再讀回")]

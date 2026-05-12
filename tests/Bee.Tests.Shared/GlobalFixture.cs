@@ -10,6 +10,7 @@ using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Definition.Database;
 using Bee.Definition.Security;
+using Bee.Definition.Storage;
 
 namespace Bee.Tests.Shared
 {
@@ -55,8 +56,21 @@ namespace Bee.Tests.Shared
             // 全域初始化邏輯,例如載入設定檔、建立資料庫、啟動 API
             // 設定定義路徑（相對於測試輸出目錄往上找 tests/Bee.Tests.Shared/Define）
             var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
-            BackendInfo.DefinePath = Path.Combine(repoRoot, "tests", "Define");
-            BackendInfo.DefineAccess = new LocalDefineAccess();
+            DefinePathInfo.Initialize(new PathOptions
+            {
+                DefinePath = Path.Combine(repoRoot, "tests", "Define")
+            });
+
+            // 在 BackendInfo.Initialize 之前，需要先有一個臨時 DefineAccess 讓
+            // RegisterSqlServer()/EnsureFallbackCommonDatabaseItem() 等能透過
+            // DefineAccess.GetDatabaseSettings() 寫入 DatabaseSettings.Items；
+            // 此暫時 access 會在 BackendInfo.Initialize 內部被正式的實例覆寫。
+            //
+            // ⚠ 注意：這個 DefineAccess 是基於 FileDefineStorage + 暫時的 CacheContainer。
+            // 完整 wire-up 在 BackendInfo.Initialize 內由反射統一處理。
+            var bootstrapStorage = new FileDefineStorage();
+            CacheContainer.Initialize(bootstrapStorage);
+            BackendInfo.DefineAccess = new LocalDefineAccess(bootstrapStorage);
             // 註冊各 DB 的 ADO.NET provider + dialect factory + DatabaseItem（依環境變數）；
             // 必須先於 BackendInfo.Initialize，因為 startup ValidateDatabaseSettings 會檢查
             // Id='common' 的 DatabaseItem 是否存在。

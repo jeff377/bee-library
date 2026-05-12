@@ -93,19 +93,19 @@ namespace Bee.Definition.UnitTests
         }
 
         /// <summary>
-        /// 暫時設定 <see cref="BackendInfo.DefinePath"/>，並在 action 執行完畢後復原原值。
+        /// 暫時設定 <see cref="DefinePathInfo"/>，並在 action 執行完畢後復原原值。
         /// </summary>
         private static void WithDefinePath(string definePath, Action action)
         {
-            var original = BackendInfo.DefinePath;
+            var original = DefinePathInfo.CurrentOptions;
             try
             {
-                BackendInfo.DefinePath = definePath;
+                DefinePathInfo.Initialize(new PathOptions { DefinePath = definePath });
                 action();
             }
             finally
             {
-                BackendInfo.DefinePath = original;
+                DefinePathInfo.Initialize(original);
             }
         }
     }

@@ -4,7 +4,6 @@ using Bee.Db.Manager;
 using Bee.Db.Providers;
 using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema.Changes;
-using Bee.Definition;
 
 namespace Bee.Db.Schema
 {
@@ -94,7 +93,7 @@ namespace Bee.Db.Schema
 
             if (plan.IsEmpty) return false;
 
-            var databaseType = BackendInfo.GetDatabaseItem(databaseId).DatabaseType;
+            var databaseType = DbConnectionManager.GetConnectionInfo(databaseId).DatabaseType;
 
             foreach (var stage in plan.Stages)
             {

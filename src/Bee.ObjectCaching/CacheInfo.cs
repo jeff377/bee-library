@@ -1,7 +1,6 @@
-﻿using Bee.Base;
-using Bee.ObjectCaching.Providers;
-using Bee.Definition;
+using Bee.Base;
 using Bee.Definition.Settings;
+using Bee.ObjectCaching.Providers;
 
 namespace Bee.ObjectCaching
 {
@@ -9,56 +8,43 @@ namespace Bee.ObjectCaching
     /// Provides a static interface for accessing the cache provider.
     /// </summary>
     /// <remarks>
-    /// This class is responsible for initializing and managing the cache provider instance,
-    /// and exposes a static <c>Provider</c> property for accessing it.
-    /// The cache provider is determined based on the backend configuration; if none is specified,
-    /// the default <c>MemoryCacheProvider</c> is used.
+    /// Defaults to <see cref="MemoryCacheProvider"/>. Host startup may call
+    /// <see cref="Initialize"/> with the backend configuration to switch to a
+    /// user-specified provider.
     /// </remarks>
     public static class CacheInfo
     {
         /// <summary>
-        /// Static constructor that initializes the cache provider.
-        /// </summary>
-        static CacheInfo()
-        {
-            if (SysInfo.IsSingleFile) { return; }
-            if (BackendInfo.DefineAccess == null) { return; }
-
-            var settings = BackendInfo.DefineAccess.GetSystemSettings();
-            Initialize(settings.BackendConfiguration);
-        }
-
-        /// <summary>
         /// Gets or sets the cache provider instance.
         /// </summary>
         /// <value>
-        /// Defaults to <c>MemoryCacheProvider</c>, but can be overridden based on the backend configuration.
+        /// Defaults to <see cref="MemoryCacheProvider"/>; can be overridden via
+        /// <see cref="Initialize"/> based on the backend configuration.
         /// </value>
         public static ICacheProvider Provider { get; set; } = new MemoryCacheProvider();
 
         /// <summary>
-        /// Initializes the cache provider based on the backend configuration.
+        /// Initializes the cache provider from the backend configuration.
+        /// Called by <c>BackendInfo.Initialize</c> after settings are loaded.
         /// </summary>
+        /// <remarks>
+        /// Only replaces <see cref="Provider"/> when the configured type differs from the
+        /// current provider's runtime type. This preserves cached entries when host startup
+        /// invokes <see cref="Initialize"/> after the default provider has already received
+        /// data (e.g. test fixtures that pre-populate <c>DatabaseSettings.Items</c>).
+        /// </remarks>
         /// <param name="configuration">The backend configuration.</param>
-        private static void Initialize(BackendConfiguration configuration)
+        public static void Initialize(BackendConfiguration configuration)
         {
-            var components = configuration.Components;
-            // Create the cache provider from configuration or fall back to the default
-            Provider = CreateOrDefault<ICacheProvider>
-                (components.CacheProvider, BackendDefaultTypes.CacheProvider)!;
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
+            var configured = configuration.Components.CacheProvider;
+            if (string.IsNullOrWhiteSpace(configured)) return;
+
+            var newType = Type.GetType(configured);
+            if (newType != null && newType == Provider.GetType()) return;
+
+            Provider = (AssemblyLoader.CreateInstance(configured) as ICacheProvider)!;
         }
 
-        /// <summary>
-        /// Creates an instance of the specified type, using <paramref name="fallback"/> if <paramref name="configured"/> is empty.
-        /// </summary>
-        /// <typeparam name="T">The type of instance to create.</typeparam>
-        /// <param name="configured">The type name specified in the configuration.</param>
-        /// <param name="fallback">The default type name to use when no type is configured.</param>
-        /// <returns>The created instance, or null if the type cannot be instantiated.</returns>
-        private static T? CreateOrDefault<T>(string configured, string fallback) where T : class
-        {
-            var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
-            return AssemblyLoader.CreateInstance(typeName) as T;
-        }
     }
 }

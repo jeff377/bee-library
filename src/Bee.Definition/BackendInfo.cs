@@ -3,7 +3,6 @@ using Bee.Definition.Storage;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Base;
-using Bee.Definition.Database;
 using Bee.Definition.Identity;
 
 namespace Bee.Definition
@@ -22,11 +21,6 @@ namespace Bee.Definition
         /// Gets or sets the logging options for configuring log-related parameters.
         /// </summary>
         public static LogOptions LogOptions { get; set; } = new LogOptions();
-
-        /// <summary>
-        /// Gets or sets the definition data path.
-        /// </summary>
-        public static string DefinePath { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the API transport encryption key.
@@ -71,11 +65,6 @@ namespace Bee.Definition
         public static ICacheDataSourceProvider CacheDataSourceProvider { get; set; } = null!;
 
         /// <summary>
-        /// Gets or sets the define data storage.
-        /// </summary>
-        public static IDefineStorage DefineStorage { get; set; } = null!;
-
-        /// <summary>
         /// Gets or sets the define data access.
         /// </summary>
         public static IDefineAccess DefineAccess { get; set; } = null!;
@@ -97,24 +86,6 @@ namespace Bee.Definition
         public static ILoginAttemptTracker? LoginAttemptTracker { get; set; }
 
         /// <summary>
-        /// Gets the database item for the specified database identifier.
-        /// </summary>
-        /// <param name="databaseId">The database identifier.</param>
-        /// <exception cref="ArgumentNullException">Thrown when <paramref name="databaseId"/> is null or empty.</exception>
-        /// <exception cref="KeyNotFoundException">Thrown when no matching database item exists.</exception>
-        public static DatabaseItem GetDatabaseItem(string databaseId)
-        {
-            if (string.IsNullOrWhiteSpace(databaseId))
-                throw new ArgumentNullException(nameof(databaseId));
-
-            var settings = DefineAccess.GetDatabaseSettings();
-            if (!settings.Items!.Contains(databaseId))
-                throw new KeyNotFoundException($"{nameof(databaseId)} '{databaseId}' not found.");
-
-            return settings.Items[databaseId];
-        }
-
-        /// <summary>
         /// Initializes the backend with the specified configuration.
         /// </summary>
         /// <param name="configuration">Backend parameters and environment settings.</param>
@@ -125,7 +96,8 @@ namespace Bee.Definition
 
             if (!SysInfo.IsSingleFile)
             {
-                // Initialize backend service instances
+                // Initialize backend service instances (DefineAccess builds first; OC and DbConnectionManager
+                // wire up against the resulting IDefineAccess + IDefineStorage)
                 InitializeComponents(configuration);
                 ValidateComponents();
                 ValidateDatabaseSettings();
@@ -145,12 +117,36 @@ namespace Bee.Definition
         }
 
         /// <summary>
-        /// Initializes backend service instances.
+        /// Initializes backend service instances and wires up <c>Bee.ObjectCaching</c>
+        /// + <c>Bee.Db</c> static state. Cross-layer wire-up uses reflection to avoid a
+        /// compile-time dependency from <c>Bee.Definition</c> into higher layers.
         /// </summary>
         /// <param name="configuration">Backend parameters and environment settings.</param>
         private static void InitializeComponents(BackendConfiguration configuration)
         {
             var Components = configuration.Components;
+
+            // 1. Build IDefineStorage (no dependencies). Held only as a local; not exposed as static.
+            var storage = CreateOrDefault<IDefineStorage>(
+                Components.DefineStorage, BackendDefaultTypes.DefineStorage);
+
+            // 2. Build IDefineAccess. Two ctor shapes are supported — (IDefineStorage) and
+            // parameterless — covering the dominant patterns without locking implementations
+            // to a specific dependency shape.
+            DefineAccess = ResolveDefineAccess(Components.DefineAccess, storage);
+
+            // 3. Wire up Bee.ObjectCaching static state via reflection.
+            InvokeStaticMethod("Bee.ObjectCaching.CacheContainer, Bee.ObjectCaching",
+                "Initialize", new object[] { storage });
+            InvokeStaticMethod("Bee.ObjectCaching.CacheInfo, Bee.ObjectCaching",
+                "Initialize", new object[] { configuration });
+
+            // 4. Wire up Bee.Db.DbConnectionManager via reflection.
+            var dbProvider = new DefineAccessDatabaseSettingsProvider(DefineAccess);
+            InvokeStaticMethod("Bee.Db.Manager.DbConnectionManager, Bee.Db",
+                "Initialize", new object[] { dbProvider });
+
+            // 5. Other services (no inter-dependencies).
             ApiEncryptionKeyProvider = CreateOrDefault<IApiEncryptionKeyProvider>
                 (Components.ApiEncryptionKeyProvider, BackendDefaultTypes.ApiEncryptionKeyProvider);
             AccessTokenValidator = CreateOrDefault<IAccessTokenValidator>
@@ -159,14 +155,43 @@ namespace Bee.Definition
                 (Components.BusinessObjectFactory, BackendDefaultTypes.BusinessObjectFactory);
             CacheDataSourceProvider = CreateOrDefault<ICacheDataSourceProvider>
                 (Components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider);
-            DefineStorage = CreateOrDefault<IDefineStorage>
-                (Components.DefineStorage, BackendDefaultTypes.DefineStorage);
-            DefineAccess = CreateOrDefault<IDefineAccess>
-                (Components.DefineAccess, BackendDefaultTypes.DefineAccess);
             SessionInfoService = CreateOrDefault<ISessionInfoService>
                 (Components.SessionInfoService, BackendDefaultTypes.SessionInfoService);
             EnterpriseObjectService = CreateOrDefault<IEnterpriseObjectService>
                 (Components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService);
+        }
+
+        /// <summary>
+        /// Resolves the configured <see cref="IDefineAccess"/> implementation. Supports
+        /// <c>(IDefineStorage)</c> ctor (used by <c>LocalDefineAccess</c>) and parameterless
+        /// ctor (used by implementations that manage their own dependencies).
+        /// </summary>
+        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage)
+        {
+            var resolvedName = string.IsNullOrWhiteSpace(typeName) ? BackendDefaultTypes.DefineAccess : typeName;
+            var type = Type.GetType(resolvedName)
+                ?? throw new InvalidOperationException($"IDefineAccess type '{resolvedName}' not found.");
+
+            var ctorWithStorage = type.GetConstructor(new[] { typeof(IDefineStorage) });
+            if (ctorWithStorage != null)
+                return (IDefineAccess)ctorWithStorage.Invoke(new object[] { storage });
+
+            return (IDefineAccess?)Activator.CreateInstance(type)
+                ?? throw new InvalidOperationException($"Failed to construct IDefineAccess: {resolvedName}");
+        }
+
+        /// <summary>
+        /// Invokes a public static method on a type referenced only by name. Used to call
+        /// <c>Initialize</c> hooks in <c>Bee.ObjectCaching</c> and <c>Bee.Db</c> without
+        /// taking compile-time references on those higher layers.
+        /// </summary>
+        private static void InvokeStaticMethod(string typeName, string methodName, object[] args)
+        {
+            var type = Type.GetType(typeName)
+                ?? throw new InvalidOperationException($"Type '{typeName}' not found for static wire-up.");
+            var method = type.GetMethod(methodName)
+                ?? throw new InvalidOperationException($"Method '{methodName}' not found on '{typeName}'.");
+            method.Invoke(null, args);
         }
 
         /// <summary>
@@ -177,10 +202,7 @@ namespace Bee.Definition
         /// </summary>
         internal static void ValidateDatabaseSettings()
         {
-            var settings = DefineAccess.GetDatabaseSettings();
-            if (settings.Items == null || !settings.Items.Contains(DbCategoryIds.Common))
-                throw new InvalidOperationException(
-                    $"DatabaseSettings must contain a DatabaseItem with Id='{DbCategoryIds.Common}'.");
+            new DefineAccessDatabaseSettingsProvider(DefineAccess).ValidateRequired();
         }
 
         /// <summary>

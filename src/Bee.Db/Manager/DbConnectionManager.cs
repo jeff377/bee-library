@@ -14,6 +14,8 @@ namespace Bee.Db.Manager
     /// </summary>
     public static class DbConnectionManager
     {
+        private static IDatabaseSettingsProvider? _provider;
+
         /// <summary>
         /// Static constructor; runs when the class is first referenced.
         /// </summary>
@@ -21,6 +23,17 @@ namespace Bee.Db.Manager
         {
             // Subscribe to database settings changed events
             GlobalEvents.DatabaseSettingsChanged += OnDatabaseSettingsChanged;
+        }
+
+        /// <summary>
+        /// Installs the database settings provider. Must be called at host startup before any
+        /// <see cref="GetConnectionInfo"/> invocation.
+        /// </summary>
+        /// <param name="provider">The database settings provider.</param>
+        public static void Initialize(IDatabaseSettingsProvider provider)
+        {
+            _provider = provider ?? throw new ArgumentNullException(nameof(provider));
+            Clear();
         }
 
         private static void OnDatabaseSettingsChanged(object? sender, EventArgs e)
@@ -58,8 +71,12 @@ namespace Bee.Db.Manager
         /// <exception cref="InvalidOperationException">Thrown when the database item is not found, the provider is not registered, or the connection string is invalid.</exception>
         private static DbConnectionInfo CreateConnectionInfo(string databaseId)
         {
-            // Retrieve database settings via DefineAccess (internally cached)
-            var settings = BackendInfo.DefineAccess.GetDatabaseSettings();
+            if (_provider == null)
+                throw new InvalidOperationException(
+                    "DbConnectionManager has not been initialized. Call DbConnectionManager.Initialize(provider) before use.");
+
+            // Retrieve database settings via the configured provider
+            var settings = _provider.Get();
 
             // Get the database item
             var databaseItem = settings.Items![databaseId];

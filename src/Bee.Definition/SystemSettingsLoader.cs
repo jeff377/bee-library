@@ -30,8 +30,8 @@ namespace Bee.Definition
     public static class SystemSettingsLoader
     {
         /// <summary>
-        /// Loads <see cref="SystemSettings"/> from the file path derived from
-        /// <see cref="BackendInfo.DefinePath"/> via
+        /// Loads <see cref="SystemSettings"/> from the file path derived from the
+        /// configured <see cref="DefinePathInfo.CurrentOptions"/> via
         /// <see cref="DefinePathInfo.GetSystemSettingsFilePath"/>.
         /// </summary>
         /// <returns>The deserialized <see cref="SystemSettings"/> instance.</returns>

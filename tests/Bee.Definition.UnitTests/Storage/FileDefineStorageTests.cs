@@ -156,22 +156,22 @@ namespace Bee.Definition.UnitTests.Storage
         }
 
         /// <summary>
-        /// 暫時將 <see cref="BackendInfo.DefinePath"/> 指向新建立的臨時目錄，
+        /// 暫時將 <see cref="DefinePathInfo"/> 指向新建立的臨時目錄，
         /// 測試結束後還原原值並刪除目錄。
         /// </summary>
         private static void WithTempDefinePath(Action action)
         {
-            var original = BackendInfo.DefinePath;
+            var original = DefinePathInfo.CurrentOptions;
             var tempDir = Path.Combine(Path.GetTempPath(), $"bee-define-{Guid.NewGuid():N}");
             Directory.CreateDirectory(tempDir);
             try
             {
-                BackendInfo.DefinePath = tempDir;
+                DefinePathInfo.Initialize(new PathOptions { DefinePath = tempDir });
                 action();
             }
             finally
             {
-                BackendInfo.DefinePath = original;
+                DefinePathInfo.Initialize(original);
                 if (Directory.Exists(tempDir))
                     Directory.Delete(tempDir, recursive: true);
             }

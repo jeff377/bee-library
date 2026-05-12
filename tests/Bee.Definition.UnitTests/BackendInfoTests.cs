@@ -210,50 +210,34 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        [DisplayName("GetDatabaseItem 於 databaseId 為空字串時應拋 ArgumentNullException")]
-        public void GetDatabaseItem_EmptyId_ThrowsArgumentNullException()
+        [DisplayName("DefineAccessDatabaseSettingsProvider.GetItem 於 databaseId 為空字串時應拋 ArgumentNullException")]
+        public void Provider_GetItem_EmptyId_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => BackendInfo.GetDatabaseItem(string.Empty));
+            var provider = new DefineAccessDatabaseSettingsProvider(new FakeDefineAccess());
+            Assert.Throws<ArgumentNullException>(() => provider.GetItem(string.Empty));
         }
 
         [Fact]
-        [DisplayName("GetDatabaseItem 於找不到對應項目時應拋 KeyNotFoundException")]
-        public void GetDatabaseItem_NotFound_ThrowsKeyNotFoundException()
+        [DisplayName("DefineAccessDatabaseSettingsProvider.GetItem 於找不到對應項目時應拋 KeyNotFoundException")]
+        public void Provider_GetItem_NotFound_ThrowsKeyNotFoundException()
         {
-            var original = BackendInfo.DefineAccess;
-            try
-            {
-                BackendInfo.DefineAccess = new FakeDefineAccess();
-
-                Assert.Throws<KeyNotFoundException>(() => BackendInfo.GetDatabaseItem("missing"));
-            }
-            finally
-            {
-                BackendInfo.DefineAccess = original;
-            }
+            var provider = new DefineAccessDatabaseSettingsProvider(new FakeDefineAccess());
+            Assert.Throws<KeyNotFoundException>(() => provider.GetItem("missing"));
         }
 
         [Fact]
-        [DisplayName("GetDatabaseItem 於存在對應項目時應回傳該 DatabaseItem")]
-        public void GetDatabaseItem_Found_ReturnsItem()
+        [DisplayName("DefineAccessDatabaseSettingsProvider.GetItem 於存在對應項目時應回傳該 DatabaseItem")]
+        public void Provider_GetItem_Found_ReturnsItem()
         {
-            var original = BackendInfo.DefineAccess;
-            try
-            {
-                var fake = new FakeDefineAccess();
-                fake.Settings.Items!.Add(new DatabaseItem { Id = "common", DisplayName = "共用" });
-                BackendInfo.DefineAccess = fake;
+            var fake = new FakeDefineAccess();
+            fake.Settings.Items!.Add(new DatabaseItem { Id = "common", DisplayName = "共用" });
+            var provider = new DefineAccessDatabaseSettingsProvider(fake);
 
-                var item = BackendInfo.GetDatabaseItem("common");
+            var item = provider.GetItem("common");
 
-                Assert.NotNull(item);
-                Assert.Equal("common", item.Id);
-                Assert.Equal("共用", item.DisplayName);
-            }
-            finally
-            {
-                BackendInfo.DefineAccess = original;
-            }
+            Assert.NotNull(item);
+            Assert.Equal("common", item.Id);
+            Assert.Equal("共用", item.DisplayName);
         }
 
         /// <summary>

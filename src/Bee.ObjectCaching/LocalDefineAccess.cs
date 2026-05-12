@@ -1,5 +1,4 @@
 using Bee.Base.Serialization;
-using Bee.ObjectCaching.Define;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
@@ -14,6 +13,17 @@ namespace Bee.ObjectCaching
     /// </summary>
     public class LocalDefineAccess : IDefineAccess
     {
+        private readonly IDefineStorage _storage;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="LocalDefineAccess"/>.
+        /// </summary>
+        /// <param name="storage">The define storage used for read fallback and writes.</param>
+        public LocalDefineAccess(IDefineStorage storage)
+        {
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        }
+
         /// <summary>
         /// Gets definition data.
         /// </summary>
@@ -110,8 +120,7 @@ namespace Bee.ObjectCaching
             string filePath = DefinePathInfo.GetSystemSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
             // Invalidate the cache
-            var cache = new SystemSettingsCache();
-            cache.Remove();
+            CacheContainer.SystemSettings.Remove();
         }
 
         /// <summary>
@@ -128,15 +137,11 @@ namespace Bee.ObjectCaching
         /// <param name="settings">The database settings.</param>
         public void SaveDatabaseSettings(DatabaseSettings settings)
         {
-            DatabaseSettingsCache oCache;
-            string sFilePath;
-
             // Save database settings to file
-            sFilePath = DefinePathInfo.GetDatabaseSettingsFilePath();
-            XmlCodec.SerializeToFile(settings, sFilePath);
+            string filePath = DefinePathInfo.GetDatabaseSettingsFilePath();
+            XmlCodec.SerializeToFile(settings, filePath);
             // Invalidate the cache
-            oCache = new DatabaseSettingsCache();
-            oCache.Remove();
+            CacheContainer.DatabaseSettings.Remove();
         }
 
         /// <summary>
@@ -153,14 +158,10 @@ namespace Bee.ObjectCaching
         /// <param name="settings">The program settings.</param>
         public void SaveProgramSettings(ProgramSettings settings)
         {
-            ProgramSettingsCache oCache;
-            string sFilePath;
-
             // Save program settings to file, then invalidate the cache
-            sFilePath = DefinePathInfo.GetProgramSettingsFilePath();
-            XmlCodec.SerializeToFile(settings, sFilePath);
-            oCache = new ProgramSettingsCache();
-            oCache.Remove();
+            string filePath = DefinePathInfo.GetProgramSettingsFilePath();
+            XmlCodec.SerializeToFile(settings, filePath);
+            CacheContainer.ProgramSettings.Remove();
         }
 
         /// <summary>
@@ -177,12 +178,9 @@ namespace Bee.ObjectCaching
         /// <param name="settings">The database category settings.</param>
         public void SaveDbCategorySettings(DbCategorySettings settings)
         {
-            DbCategorySettingsCache oCache;
-
             // Save database category settings, then invalidate the cache
-            BackendInfo.DefineStorage.SaveDbCategorySettings(settings);
-            oCache = new DbCategorySettingsCache();
-            oCache.Remove();
+            _storage.SaveDbCategorySettings(settings);
+            CacheContainer.DbCategorySettings.Remove();
         }
 
         /// <summary>
@@ -202,12 +200,9 @@ namespace Bee.ObjectCaching
         /// <param name="tableSchema">The table schema.</param>
         public void SaveTableSchema(string categoryId, TableSchema tableSchema)
         {
-            TableSchemaCache oCache;
-
             // Save the table schema, then invalidate the cache
-            BackendInfo.DefineStorage.SaveTableSchema(categoryId, tableSchema);
-            oCache = new TableSchemaCache();
-            oCache.Remove(categoryId, tableSchema.TableName);
+            _storage.SaveTableSchema(categoryId, tableSchema);
+            CacheContainer.TableSchema.Remove(categoryId, tableSchema.TableName);
         }
 
         /// <summary>
@@ -231,12 +226,9 @@ namespace Bee.ObjectCaching
             // tables belong to. Reject persistence of schemas without it.
             _ = TableSchemaGenerator.GetCategoryId(formSchema);
 
-            FormSchemaCache oCache;
-
             // Save the form schema, then invalidate the cache
-            BackendInfo.DefineStorage.SaveFormSchema(formSchema);
-            oCache = new FormSchemaCache();
-            oCache.Remove(formSchema.ProgId);
+            _storage.SaveFormSchema(formSchema);
+            CacheContainer.FormSchema.Remove(formSchema.ProgId);
         }
 
         /// <summary>
@@ -254,12 +246,9 @@ namespace Bee.ObjectCaching
         /// <param name="formLayout">The form layout.</param>
         public void SaveFormLayout(FormLayout formLayout)
         {
-            FormLayoutCache oCache;
-
             // Save the form layout, then invalidate the cache
-            BackendInfo.DefineStorage.SaveFormLayout(formLayout);
-            oCache = new FormLayoutCache();
-            oCache.Remove(formLayout.LayoutId);
+            _storage.SaveFormLayout(formLayout);
+            CacheContainer.FormLayout.Remove(formLayout.LayoutId);
         }
     }
 }

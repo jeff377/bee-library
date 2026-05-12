@@ -10,6 +10,17 @@ namespace Bee.ObjectCaching.Define
     /// </summary>
     public class TableSchemaCache : KeyObjectCache<TableSchema>
     {
+        private readonly IDefineStorage _storage;
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="TableSchemaCache"/>.
+        /// </summary>
+        /// <param name="storage">The define storage backing this cache.</param>
+        public TableSchemaCache(IDefineStorage storage)
+        {
+            _storage = storage ?? throw new ArgumentNullException(nameof(storage));
+        }
+
         /// <summary>
         /// Gets the cache item expiration policy.
         /// </summary>
@@ -21,7 +32,7 @@ namespace Bee.ObjectCaching.Define
 
             // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
-            if (BackendInfo.DefineStorage is FileDefineStorage)
+            if (_storage is FileDefineStorage)
                 policy.ChangeMonitorFilePaths = new string[] { DefinePathInfo.GetTableSchemaFilePath(categoryId, tableName) };
             return policy;
         }
@@ -34,7 +45,7 @@ namespace Bee.ObjectCaching.Define
         {
             // Parse the member key to extract the category id and table name
             key.SplitLeft(".", out string categoryId, out string tableName);
-            return BackendInfo.DefineStorage.GetTableSchema(categoryId, tableName);
+            return _storage.GetTableSchema(categoryId, tableName);
         }
 
         /// <summary>

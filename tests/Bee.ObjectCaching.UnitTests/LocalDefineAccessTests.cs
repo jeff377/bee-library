@@ -3,6 +3,7 @@ using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Settings;
+using Bee.Definition.Storage;
 
 namespace Bee.ObjectCaching.UnitTests
 {
@@ -12,7 +13,7 @@ namespace Bee.ObjectCaching.UnitTests
         private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };
         private static readonly string[] s_formSchemaKeys = { "Department" };
 
-        private readonly LocalDefineAccess _access = new LocalDefineAccess();
+        private readonly LocalDefineAccess _access = new LocalDefineAccess(new FileDefineStorage());
 
         [Fact]
         [DisplayName("GetDefine(SystemSettings) 應回傳 SystemSettings 實例")]

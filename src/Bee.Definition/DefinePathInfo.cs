@@ -4,15 +4,39 @@ namespace Bee.Definition
     /// <summary>
     /// Provides file path information for define data files.
     /// </summary>
+    /// <remarks>
+    /// Internally holds a <see cref="PathOptions"/> instance installed via
+    /// <see cref="Initialize"/> (typically called at host startup, or by test
+    /// helpers such as <c>TempDefinePath</c>). The static API surface is
+    /// preserved; callers do not change.
+    /// </remarks>
     public static class DefinePathInfo
     {
+        private static PathOptions _options = new();
+
+        /// <summary>
+        /// The current path options snapshot. Exposed primarily for test helpers
+        /// (e.g. <c>TempDefinePath</c>) that need to save and restore state.
+        /// </summary>
+        public static PathOptions CurrentOptions => _options;
+
+        /// <summary>
+        /// Installs the path options. Typically called once at host startup;
+        /// test helpers may call this transiently to swap and restore paths.
+        /// </summary>
+        /// <param name="options">The path options.</param>
+        public static void Initialize(PathOptions options)
+        {
+            _options = options ?? throw new ArgumentNullException(nameof(options));
+        }
+
         /// <summary>
         /// Gets the define data path combined with an optional sub-path.
         /// </summary>
         /// <param name="subPath">The sub-path.</param>
         private static string GetDefinePath(string subPath)
         {
-            return Path.Combine(BackendInfo.DefinePath, subPath);
+            return Path.Combine(_options.DefinePath, subPath);
         }
 
         /// <summary>

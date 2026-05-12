@@ -61,10 +61,10 @@ namespace Bee.Definition.Security
                 filePath = "Master.key";
             }
 
-            // If the path is relative, prepend BackendInfo.DefinePath
+            // If the path is relative, prepend the configured define path.
             if (!Path.IsPathRooted(filePath))
             {
-                filePath = Path.Combine(BackendInfo.DefinePath, filePath);
+                filePath = Path.Combine(DefinePathInfo.CurrentOptions.DefinePath, filePath);
             }
 
             if (!File.Exists(filePath))
