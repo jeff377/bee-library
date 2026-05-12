@@ -1,3 +1,4 @@
+using Bee.Definition;
 using Bee.Definition.Security;
 
 namespace Bee.Business.Form
@@ -12,11 +13,12 @@ namespace Bee.Business.Form
         /// <summary>
         /// Initializes a new instance of the <see cref="FormBusinessObject"/> class.
         /// </summary>
+        /// <param name="ctx">The per-call context aggregating cross-cutting services.</param>
         /// <param name="accessToken">The access token.</param>
         /// <param name="progId">The program identifier.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public FormBusinessObject(Guid accessToken, string progId, bool isLocalCall = true)
-            : base(accessToken, isLocalCall)
+        public FormBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+            : base(ctx, accessToken, isLocalCall)
         {
             ProgId = progId;
         }

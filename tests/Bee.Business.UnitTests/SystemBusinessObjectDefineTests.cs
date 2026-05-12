@@ -15,7 +15,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetCommonConfiguration 應回傳非空 XML")]
         public void GetCommonConfiguration_ReturnsNonEmptyXml()
         {
-            var bo = new SystemBusinessObject(Guid.Empty);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty);
 
             var result = bo.GetCommonConfiguration(new GetCommonConfigurationArgs());
 
@@ -26,7 +26,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetDefine 本地呼叫 DatabaseSettings 應回傳 XML")]
         public void GetDefine_LocalCallDatabaseSettings_ReturnsXml()
         {
-            var bo = new SystemBusinessObject(Guid.Empty, isLocalCall: true);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty, isLocalCall: true);
             var args = new GetDefineArgs { DefineType = DefineType.DatabaseSettings };
 
             var result = bo.GetDefine(args);
@@ -39,7 +39,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetDefine 本地呼叫 SystemSettings 應回傳 XML")]
         public void GetDefine_LocalCallSystemSettings_ReturnsXml()
         {
-            var bo = new SystemBusinessObject(Guid.Empty, isLocalCall: true);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty, isLocalCall: true);
             var args = new GetDefineArgs { DefineType = DefineType.SystemSettings };
 
             var result = bo.GetDefine(args);
@@ -51,7 +51,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("SaveDefine 本地呼叫 DbCategorySettings 應成功執行 SaveDefineCore 路徑")]
         public void SaveDefine_LocalCallDbCategorySettings_Succeeds()
         {
-            var bo = new SystemBusinessObject(Guid.Empty, isLocalCall: true);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty, isLocalCall: true);
             var getResult = bo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbCategorySettings });
             Assert.False(string.IsNullOrWhiteSpace(getResult.Xml));
 

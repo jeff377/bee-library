@@ -4,6 +4,11 @@ namespace Bee.Definition
     /// Factory for creating business objects. Used by the API layer to create the BO instance
     /// that handles a particular API call (system-level or form-level).
     /// </summary>
+    /// <remarks>
+    /// Return type is <see cref="object"/> rather than <c>IBusinessObject</c> to avoid a
+    /// reverse dependency from <c>Bee.Definition</c> to <c>Bee.Business</c> (where
+    /// <c>IBusinessObject</c> lives). Callers cast to <c>IBusinessObject</c> at use sites.
+    /// </remarks>
     public interface IBusinessObjectFactory
     {
         /// <summary>

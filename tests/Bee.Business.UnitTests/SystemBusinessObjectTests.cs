@@ -24,7 +24,7 @@ namespace Bee.Business.UnitTests
         public void CreateSession_ValidArgs_ReturnsTokenWithExpiry()
         {
             // Arrange
-            var business = new SystemBusinessObject(Guid.Empty);
+            var business = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty);
             var args = new CreateSessionArgs
             {
                 UserID = "001",
@@ -56,7 +56,7 @@ namespace Bee.Business.UnitTests
             // 產生 RSA 金鑰對
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
 
-            var sbo = new SystemBusinessObject(Guid.Empty);
+            var sbo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty);
             var args = new LoginArgs
             {
                 UserId = "testuser",

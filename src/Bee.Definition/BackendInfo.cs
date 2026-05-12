@@ -159,6 +159,12 @@ namespace Bee.Definition
                 (Components.SessionInfoService, BackendDefaultTypes.SessionInfoService);
             EnterpriseObjectService = CreateOrDefault<IEnterpriseObjectService>
                 (Components.EnterpriseObjectService, BackendDefaultTypes.EnterpriseObjectService);
+
+            // 6. Wire up Phase 3 BusinessObjectFactory + RepositoryInfo per-call context plumbing.
+            InvokeStaticMethod("Bee.Business.BusinessObjectFactory, Bee.Business",
+                "Initialize", new object[] { DefineAccess, SessionInfoService });
+            InvokeStaticMethod("Bee.Repository.Abstractions.RepositoryInfo, Bee.Repository.Abstractions",
+                "Initialize", new object[] { configuration });
         }
 
         /// <summary>
@@ -187,7 +193,11 @@ namespace Bee.Definition
         /// </summary>
         private static void InvokeStaticMethod(string typeName, string methodName, object[] args)
         {
-            var type = Type.GetType(typeName)
+            // Use AssemblyLoader so we resolve the SAME Type identity as services built via
+            // CreateOrDefault (which goes through AssemblyLoader). Mixing Type.GetType (default
+            // load context) with AssemblyLoader's byte-loaded assembly would create two distinct
+            // Type identities, splitting the static-field state.
+            var type = AssemblyLoader.GetType(typeName)
                 ?? throw new InvalidOperationException($"Type '{typeName}' not found for static wire-up.");
             var method = type.GetMethod(methodName)
                 ?? throw new InvalidOperationException($"Method '{methodName}' not found on '{typeName}'.");

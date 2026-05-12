@@ -6,7 +6,9 @@ namespace Bee.Business.UnitTests
 {
     /// <summary>
     /// <see cref="BusinessObjectFactory"/> 工廠方法測試。
+    /// 加入 Initialize collection 確保 <c>GlobalFixture</c> 已執行（factory 需先 wire-up）。
     /// </summary>
+    [Collection("Initialize")]
     public class BusinessObjectFactoryTests
     {
         [Fact]

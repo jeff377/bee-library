@@ -53,15 +53,26 @@ namespace Bee.Base
             if (assembly != null)
                 return assembly;
 
-            // Resolve the full path of the assembly
-            string assemblyFile;
-            if (StringUtilities.IsEmpty(Path.GetDirectoryName(assemblyName)))
-                assemblyFile = Path.Combine(FileUtilities.GetAssemblyPath(), assemblyName);
-            else
-                assemblyFile = assemblyName;
-
-            // Load the assembly by bytes to avoid locking the file on disk
-            assembly = Assembly.Load(File.ReadAllBytes(assemblyFile));
+            // Load via AssemblyName so the assembly resolves into the default load context.
+            // Loading via Assembly.Load(byte[]) would create a SEPARATE assembly identity
+            // (anonymous load context), splitting static-field state between this loader's
+            // copy and project-referenced copies — breaking cross-layer wire-up.
+            // The simple name (no path, no .dll) is what AssemblyName accepts.
+            var simpleName = Path.GetFileNameWithoutExtension(assemblyName);
+            try
+            {
+                assembly = Assembly.Load(new AssemblyName(simpleName));
+            }
+            catch (FileNotFoundException)
+            {
+                // Fallback: load by full file path. LoadFile keeps the assembly distinct from
+                // the default context — only reach here when default-context resolution fails
+                // (e.g. assembly lives outside probing path).
+                string assemblyFile = StringUtilities.IsEmpty(Path.GetDirectoryName(assemblyName))
+                    ? Path.Combine(FileUtilities.GetAssemblyPath(), assemblyName)
+                    : assemblyName;
+                assembly = Assembly.LoadFile(assemblyFile);
+            }
             _loadedAssemblies[assemblyName] = assembly;
 
             return assembly;

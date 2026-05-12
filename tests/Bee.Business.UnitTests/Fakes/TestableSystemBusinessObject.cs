@@ -1,4 +1,5 @@
 using Bee.Business.System;
+using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests.Fakes
 {
@@ -14,7 +15,7 @@ namespace Bee.Business.UnitTests.Fakes
             Guid accessToken,
             Func<LoginArgs, (bool Authenticated, string UserName)> authenticator,
             bool isLocalCall = true)
-            : base(accessToken, isLocalCall)
+            : base(TestBeeContext.Create(), accessToken, isLocalCall)
         {
             _authenticator = authenticator;
         }

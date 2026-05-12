@@ -16,7 +16,7 @@
 | 0 | 前置清理（`SystemSettingsLoader`） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase0-systemsettings-loader.md](plan-backendinfo-di-phase0-systemsettings-loader.md) |
 | 1 | Bee.Db 配置注入 | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase1-bee-db-config.md](plan-backendinfo-di-phase1-bee-db-config.md) |
 | 2 | ObjectCaching 與 DefineAccess（含 DefinePath） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase2-defineaccess-decouple.md](plan-backendinfo-di-phase2-defineaccess-decouple.md) |
-| 3 | Business 與 Repository 層注入（含 `IBeeContext`） | 📝 未開始 | — |
+| 3 | Business 與 Repository 層注入（含 `IBeeContext`） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase3-business-injection.md](plan-backendinfo-di-phase3-business-injection.md) |
 | 4 | Api.Core 與 Api.AspNetCore | 📝 未開始 | — |
 | 5 | 測試基礎設施重寫 | 📝 未開始 | — |
 | 6 | 移除 BackendInfo 空殼 | 📝 未開始 | — |
@@ -136,8 +136,11 @@ DI 容器無法直接管理「runtime 才知道參數的服務」，這類需透
 - **兩個 base class，ctor 簽章嚴格固定**：
   - `SystemBusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall)`
   - `FormBusinessObject(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall)`
-- **`IBeeContext` 聚合常用服務**（`ISessionInfoService` / `IDbAccessFactory` / `IBusinessObjectFactory` 等），base class 解包到具名 `protected` 屬性供子類使用
-- **BO 子類 ctor 必須照搬 base 簽章**（不允許子類追加額外注入參數）—— 任何特化服務都從 `IBeeContext` 取得
+- **`IBeeContext` 聚合 3 個 BO 必用核心服務**（`IDefineAccess` / `ISessionInfoService` / `IBusinessObjectFactory`）加上 `IServiceProvider Services` 逃生口，base class 解包到具名 `protected` 屬性供子類使用
+  - `IDbAccessFactory` **不在 IBeeContext** —— DB 存取屬 `Bee.Repository` 層職責，BO 透過 Repository 間接操作
+  - **`IServiceProvider Services`**：特殊方法逃生口（rare per-method needs，如 `SystemBO.Login` 需要的 `IApiEncryptionKeyProvider` / `ILoginAttemptTracker`）。明確限定用途、greppable
+  - Phase 3 內 `Services` 用 `BackendInfoServiceProvider` 暫時實作（轉發到 BackendInfo.X 靜態查表）；Phase 4 替換為真 DI scope 的 `IServiceProvider`，BO 程式碼不變
+- **BO 子類 ctor 必須照搬 base 簽章**（不允許子類追加額外注入參數）—— 任何特化服務都從 `IBeeContext` 取得（含 `Services` 逃生口）
 - **BO 不註冊 DI 容器**；factory 透過 `ActivatorUtilities.CreateInstance(sp, boType, accessToken, progId, isLocalCall)` 建構
 - **progId → BO Type 對應由 XML 宣告**（`IFormBoTypeResolver` 啟動時讀入），不在 DI 註冊
 
@@ -224,12 +227,14 @@ ERP 開發者新增 BO 完全不接觸 DI API。
 - 測試可建簡單 `TestBeeContext`（屬性 setter 開放）後 `new RequisitionBO(testCtx, token, "Requisition", true)`，不需 `BackendInfo.Initialize`
 
 ### Phase 4：Api.Core 與 Api.AspNetCore（中風險）
-**目標**：API 層全面 DI 化，建立組裝入口。
+**目標**：API 層全面 DI 化，建立組裝入口；補上 `IBeeContext.Services` 逃生口完成 BO 注入閉環。
 
 - `JsonRpcExecutor` 改為 scoped，建構式注入 `IBusinessObjectFactory`、`IAccessTokenValidator`
 - `Bee.Api.AspNetCore` 提供 `IServiceCollection.AddBeeFramework(IConfiguration)` extension
 - `BusinessObjectFactory` 內部完全移除反射 `AssemblyLoader`，改用 `ActivatorUtilities`
 - ASP.NET Core middleware 處理 scope 建立
+- **替換 `IBeeContext.Services` 實作**：Phase 3 留下的 `BackendInfoServiceProvider`（轉發到 BackendInfo.X）換成真 DI scope 的 `IServiceProvider`，BO 程式碼完全不變
+- 處理 Phase 3 留下的 `BackendInfo.SessionInfoService` / `BackendInfo.ApiEncryptionKeyProvider` / `BackendInfo.AccessTokenValidator` / `BackendInfo.BusinessObjectFactory` 等 API 層引用
 
 **獨立價值**：Web 應用可完全脫離 `BackendInfo`，作為 v5.0 推薦寫法。
 

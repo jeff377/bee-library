@@ -19,10 +19,11 @@ namespace Bee.Business.System
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemBusinessObject"/> class.
         /// </summary>
+        /// <param name="ctx">The per-call context aggregating cross-cutting services.</param>
         /// <param name="accessToken">The access token.</param>
         /// <param name="isLocalCall">Whether the call originates from a local source.</param>
-        public SystemBusinessObject(Guid accessToken, bool isLocalCall = true)
-            : base(accessToken, isLocalCall)
+        public SystemBusinessObject(IBeeContext ctx, Guid accessToken, bool isLocalCall = true)
+            : base(ctx, accessToken, isLocalCall)
         { }
 
         #endregion
@@ -50,7 +51,7 @@ namespace Bee.Business.System
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual GetCommonConfigurationResult GetCommonConfiguration(GetCommonConfigurationArgs args)
         {
-            var settings = BackendInfo.DefineAccess.GetSystemSettings();
+            var settings = DefineAccess.GetSystemSettings();
             var commonConfiguration = settings.CommonConfiguration;
             return new GetCommonConfigurationResult()
             {
@@ -65,7 +66,10 @@ namespace Bee.Business.System
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual LoginResult Login(LoginArgs args)
         {
-            var tracker = BackendInfo.LoginAttemptTracker;
+            // Rare per-method needs (LoginAttemptTracker, ApiEncryptionKeyProvider)
+            // resolved via IBeeContext.Services escape hatch — Phase 3 backs this
+            // with BackendInfo statics; Phase 4 swaps for real DI scope.
+            var tracker = Services.GetService<ILoginAttemptTracker>();
 
             // 0. Check if the account is locked out due to excessive failed attempts
             if (tracker != null && tracker.IsLockedOut(args.UserId))
@@ -82,7 +86,8 @@ namespace Bee.Business.System
             tracker?.Reset(args.UserId);
 
             // 2. Generate an encryption key on login (may be shared or random)
-            byte[] encryptionKey = BackendInfo.ApiEncryptionKeyProvider.GenerateKeyForLogin();
+            byte[] encryptionKey = Services.GetRequiredService<IApiEncryptionKeyProvider>()
+                .GenerateKeyForLogin();
 
             // 3. Create SessionInfo and store it in the cache
             var sessionInfo = new SessionInfo
@@ -93,7 +98,7 @@ namespace Bee.Business.System
                 ExpiredAt = DateTime.UtcNow.AddHours(1),
                 ApiEncryptionKey = encryptionKey
             };
-            BackendInfo.SessionInfoService.Set(sessionInfo);
+            SessionInfoService.Set(sessionInfo);
 
             // 4. Return the encrypted key and access token
             string encryptedKey = string.Empty;
@@ -159,11 +164,10 @@ namespace Bee.Business.System
         /// Core method for retrieving definition data.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        private static GetDefineResult GetDefineCore(GetDefineArgs args)
+        private GetDefineResult GetDefineCore(GetDefineArgs args)
         {
             var result = new GetDefineResult();
-            var access = BackendInfo.DefineAccess;
-            object value = access.GetDefine(args.DefineType, args.Keys);
+            object value = DefineAccess.GetDefine(args.DefineType, args.Keys);
 
             if (value != null)
             {
@@ -197,7 +201,7 @@ namespace Bee.Business.System
         /// Core method for saving definition data.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        private static SaveDefineResult SaveDefineCore(SaveDefineArgs args)
+        private SaveDefineResult SaveDefineCore(SaveDefineArgs args)
         {
             // Deserialize XML to the target object
             var type = args.DefineType.ToClrType();
@@ -206,8 +210,7 @@ namespace Bee.Business.System
                 throw new InvalidOperationException($"Failed to deserialize XML to {type.Name} object.");
 
             // Save the definition data
-            var access = BackendInfo.DefineAccess;
-            access.SaveDefine(args.DefineType, defineObject, args.Keys);
+            DefineAccess.SaveDefine(args.DefineType, defineObject, args.Keys);
             var result = new SaveDefineResult();
             return result;
         }

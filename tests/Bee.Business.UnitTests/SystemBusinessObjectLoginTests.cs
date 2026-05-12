@@ -4,6 +4,7 @@ using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Definition;
 using Bee.Definition.Security;
+using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
 {
@@ -179,7 +180,7 @@ namespace Bee.Business.UnitTests
         public void BaseAuthenticateUser_DefaultsToFalse()
         {
             // 基底類別未覆寫時 AuthenticateUser 永遠回 false，Login 必拋 UnauthorizedAccessException。
-            var bo = new SystemBusinessObject(Guid.Empty);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty);
             var args = new LoginArgs { UserId = "u", Password = "p" };
 
             Assert.Throws<UnauthorizedAccessException>(() => bo.Login(args));

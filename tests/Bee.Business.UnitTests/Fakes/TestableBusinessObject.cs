@@ -1,3 +1,5 @@
+using Bee.Tests.Shared;
+
 namespace Bee.Business.UnitTests.Fakes
 {
     /// <summary>
@@ -7,7 +9,7 @@ namespace Bee.Business.UnitTests.Fakes
     public class TestableBusinessObject : BusinessObject
     {
         public TestableBusinessObject(Guid accessToken, bool isLocalCall = true)
-            : base(accessToken, isLocalCall)
+            : base(TestBeeContext.Create(), accessToken, isLocalCall)
         {
         }
 
@@ -36,7 +38,7 @@ namespace Bee.Business.UnitTests.Fakes
     public class BareBusinessObject : BusinessObject
     {
         public BareBusinessObject(Guid accessToken, bool isLocalCall = true)
-            : base(accessToken, isLocalCall)
+            : base(TestBeeContext.Create(), accessToken, isLocalCall)
         {
         }
     }

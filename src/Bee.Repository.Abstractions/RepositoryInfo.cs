@@ -1,6 +1,6 @@
-using Bee.Definition.Settings;
 using Bee.Base;
 using Bee.Definition;
+using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
 
 namespace Bee.Repository.Abstractions
@@ -8,20 +8,13 @@ namespace Bee.Repository.Abstractions
     /// <summary>
     /// Provides static access to the system and form repository factories.
     /// </summary>
+    /// <remarks>
+    /// Installed via <see cref="Initialize(BackendConfiguration)"/> at host startup;
+    /// <c>BackendInfo.Initialize</c> invokes this via reflection (avoids reverse
+    /// dependency from <c>Bee.Definition</c> into <c>Bee.Repository.Abstractions</c>).
+    /// </remarks>
     public static class RepositoryInfo
     {
-        /// <summary>
-        /// Initializes static members of the <see cref="RepositoryInfo"/> class.
-        /// </summary>
-        static RepositoryInfo()
-        {
-            if (SysInfo.IsSingleFile) { return; }
-            if (BackendInfo.DefineAccess == null) { return; }
-
-            var settings = BackendInfo.DefineAccess.GetSystemSettings();
-            Initialize(settings.BackendConfiguration);
-        }
-
         /// <summary>
         /// Gets or sets the system repository factory.
         /// </summary>
@@ -33,15 +26,17 @@ namespace Bee.Repository.Abstractions
         public static IFormRepositoryFactory? FormFactory { get; set; }
 
         /// <summary>
-        /// Initializes the repository factories from the given backend configuration.
+        /// Installs the repository factories from the given backend configuration.
+        /// Must be called once at host startup; typically invoked by
+        /// <c>BackendInfo.Initialize</c>.
         /// </summary>
-        private static void Initialize(BackendConfiguration configuration)
+        /// <param name="configuration">The backend configuration.</param>
+        public static void Initialize(BackendConfiguration configuration)
         {
+            if (configuration == null) throw new ArgumentNullException(nameof(configuration));
             var components = configuration.Components;
-            // Set the system repository factory
             SystemFactory = CreateOrDefault<ISystemRepositoryFactory>
                 (components.SystemRepositoryFactory, BackendDefaultTypes.SystemRepositoryFactory);
-            // Set the form repository factory
             FormFactory = CreateOrDefault<IFormRepositoryFactory>
                 (components.FormRepositoryFactory, BackendDefaultTypes.FormRepositoryFactory);
         }
