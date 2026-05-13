@@ -2,9 +2,8 @@ namespace Bee.Api.Client
 {
     /// <summary>
     /// API client runtime information; shared connection parameters and settings for the API client,
-    /// across WinForms, Web, and App targets. Counterpart of <see cref="Bee.Definition.BackendInfo"/>
-    /// for the client side. Contains only application-level and connection settings; does not hold
-    /// user session state.
+    /// across WinForms, Web, and App targets. Client-side counterpart of the backend configuration.
+    /// Contains only application-level and connection settings; does not hold user session state.
     /// </summary>
     public static class ApiClientInfo
     {
