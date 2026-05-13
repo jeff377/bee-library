@@ -59,7 +59,6 @@ namespace Bee.Api.Contracts
 
 ```csharp
 [MessagePackObject]
-[Serializable]
 public class LoginRequest : ApiRequest, ILoginRequest
 {
     [Key(100)] public string UserId { get; set; } = string.Empty;
@@ -68,7 +67,6 @@ public class LoginRequest : ApiRequest, ILoginRequest
 }
 
 [MessagePackObject]
-[Serializable]
 public class LoginResponse : ApiResponse, ILoginResponse
 {
     [Key(100)] public Guid AccessToken { get; set; } = Guid.Empty;
@@ -173,11 +171,11 @@ public class RecalcArgs : BusinessArgs
 
 ## 序列化規則
 
-| 層級 | `[MessagePackObject]` | `[Key(n)]` | `[Serializable]` | `IObjectSerialize` |
-|------|:---:|:---:|:---:|:---:|
-| 合約介面 | 否 | 否 | 否 | 否 |
-| API 型別 | **是** | **是**（從 100 起） | **是** | 是（基底提供） |
-| BO 型別 | 否 | 否 | 否 | 否 |
+| 層級 | `[MessagePackObject]` | `[Key(n)]` | `IObjectSerialize` |
+|------|:---:|:---:|:---:|
+| 合約介面 | 否 | 否 | 否 |
+| API 型別 | **是** | **是**（從 100 起） | 是（基底提供） |
+| BO 型別 | 否 | 否 | 否 |
 
 - `[Key(0)]` 保留給基底類別的 `ParameterCollection` 屬性
 - 自訂屬性的 Key 從 100 開始，避免與基底衝突

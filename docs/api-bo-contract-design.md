@@ -59,7 +59,6 @@ Inherit `ApiRequest` / `ApiResponse`, implement contract interfaces, and carry M
 
 ```csharp
 [MessagePackObject]
-[Serializable]
 public class LoginRequest : ApiRequest, ILoginRequest
 {
     [Key(100)] public string UserId { get; set; } = string.Empty;
@@ -68,7 +67,6 @@ public class LoginRequest : ApiRequest, ILoginRequest
 }
 
 [MessagePackObject]
-[Serializable]
 public class LoginResponse : ApiResponse, ILoginResponse
 {
     [Key(100)] public Guid AccessToken { get; set; } = Guid.Empty;
@@ -173,11 +171,11 @@ public class RecalcArgs : BusinessArgs
 
 ## Serialization Rules
 
-| Layer | `[MessagePackObject]` | `[Key(n)]` | `[Serializable]` | `IObjectSerialize` |
-|-------|:---:|:---:|:---:|:---:|
-| Contract interface | No | No | No | No |
-| API type | **Yes** | **Yes** (from 100) | **Yes** | Yes (provided by base) |
-| BO type | No | No | No | No |
+| Layer | `[MessagePackObject]` | `[Key(n)]` | `IObjectSerialize` |
+|-------|:---:|:---:|:---:|
+| Contract interface | No | No | No |
+| API type | **Yes** | **Yes** (from 100) | Yes (provided by base) |
+| BO type | No | No | No |
 
 - `[Key(0)]` is reserved for the base class `ParameterCollection` property
 - Custom property keys start at 100 to avoid conflicts with the base class
