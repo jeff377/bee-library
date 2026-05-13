@@ -18,6 +18,7 @@
 | 5.4b | SharedDatabaseState 抽出 + UseSharedDatabases() | `6f1a90c5` | ✅ |
 | 5.4c | SessionInfoService 改 ctor 注入 ICacheContainer | `f761c393` | ✅ |
 | 5.4d | Cache key prefix 隔離（opt-in），達成真 per-fixture 資料隔離 | `9bfac037` + `93ee78a9` | ✅ fix follow-up：CacheContainerService 預設不帶 prefix，BeeTestFixture 才透過 service replacement 加上 |
+| 5.4e | `Bee.Api.AspNetCore.UnitTests` 遷移至 `IClassFixture<BeeTestFixture>`（3 class / 11 tests） | （本 PR） | ✅ 新增 `TestSessionFactory.CreateAccessToken(BeeTestFixture, ...)` overload；刪除 `GlobalCollection.cs` |
 
 ## 偏離原計畫紀要
 

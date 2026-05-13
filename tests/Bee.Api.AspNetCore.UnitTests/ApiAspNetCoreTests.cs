@@ -13,13 +13,14 @@ using Bee.Api.Core.Messages;
 
 namespace Bee.Api.AspNetCore.UnitTests
 {
-    [Collection("Initialize")]
-    public class ApiAspNetCoreTests
+    public class ApiAspNetCoreTests : IClassFixture<BeeTestFixture>
     {
+        private readonly BeeTestFixture _fx;
         private Guid _accessToken;
 
-        static ApiAspNetCoreTests()
+        public ApiAspNetCoreTests(BeeTestFixture fx)
         {
+            _fx = fx;
         }
 
         /// <summary>
@@ -69,7 +70,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         /// <param name="action">執行動作。</param>
         /// <param name="args">JSON-RPC 傳入參數。</param>
         /// <returns>反序列化後的執行結果。</returns>
-        private static async Task<TResult> ExecuteRpcAsync<TResult>(Guid accessToken, string progId, string action, object args)
+        private async Task<TResult> ExecuteRpcAsync<TResult>(Guid accessToken, string progId, string action, object args)
         {
             // 建立 JSON-RPC 請求內容
             string json = GetRpcRequestJson(progId, action, args);
@@ -79,9 +80,9 @@ namespace Bee.Api.AspNetCore.UnitTests
             {
                 // Phase 4 後 ApiServiceController 透過 HttpContext.RequestServices 解析
                 // JsonRpcExecutor 與 IHostEnvironment；測試使用 TestOverrideServiceProvider 在
-                // BeeTestServices.Provider 之上補上一個 IHostEnvironment fake。
+                // per-class fixture 的 IServiceProvider 之上補上一個 IHostEnvironment fake。
                 RequestServices = new TestOverrideServiceProvider(
-                    BeeTestServices.Provider,
+                    _fx.Provider,
                     (typeof(IHostEnvironment), new TestHostEnvironment()))
             };
             const string apiKey = "valid-api-key";
@@ -116,7 +117,7 @@ namespace Bee.Api.AspNetCore.UnitTests
         private Guid GetAccessToken()
         {
             if (_accessToken == Guid.Empty)
-                _accessToken = TestSessionFactory.CreateAccessToken();
+                _accessToken = TestSessionFactory.CreateAccessToken(_fx);
             return _accessToken;
         }
 

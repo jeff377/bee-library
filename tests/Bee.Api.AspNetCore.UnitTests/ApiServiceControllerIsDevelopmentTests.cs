@@ -8,8 +8,9 @@ namespace Bee.Api.AspNetCore.UnitTests
 {
     /// <summary>
     /// 測試 <see cref="Controllers.ApiServiceController.IsDevelopment"/> 屬性。
+    /// 使用自製 <c>FakeServiceProvider</c> 注入 <see cref="IHostEnvironment"/>，
+    /// 不需要 BeeTestFixture 或共享的後端 DI 容器。
     /// </summary>
-    [Collection("Initialize")]
     public class ApiServiceControllerIsDevelopmentTests
     {
         private sealed class FakeHostEnvironment : IHostEnvironment

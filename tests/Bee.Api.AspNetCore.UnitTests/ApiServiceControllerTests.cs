@@ -7,8 +7,8 @@ namespace Bee.Api.AspNetCore.UnitTests
 {
     /// <summary>
     /// Tests for error-path branches in <see cref="Controllers.ApiServiceController"/>.
+    /// 純錯誤路徑驗證（415/400/401），不依賴 BeeTestFixture / 後端 DI 容器。
     /// </summary>
-    [Collection("Initialize")]
     public class ApiServiceControllerTests
     {
         private sealed class TestController : Controllers.ApiServiceController { }
