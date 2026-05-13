@@ -18,12 +18,15 @@
 | 2 | ObjectCaching 與 DefineAccess（含 DefinePath） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase2-defineaccess-decouple.md](plan-backendinfo-di-phase2-defineaccess-decouple.md) |
 | 3 | Business 與 Repository 層注入（含 `IBeeContext`） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase3-business-injection.md](plan-backendinfo-di-phase3-business-injection.md) |
 | 4 | Api.Core 與 Api.AspNetCore | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase4-api-di.md](plan-backendinfo-di-phase4-api-di.md) |
-| 5 | 測試基礎設施重寫 | 📝 擬定中 | [plan-backendinfo-di-phase5-test-infra.md](plan-backendinfo-di-phase5-test-infra.md) |
+| 5 | 測試基礎設施重寫 | ✅ 已完成（2026-05-13） | [plan-backendinfo-di-phase5-test-infra.md](plan-backendinfo-di-phase5-test-infra.md) |
 | 6 | 移除 BackendInfo 空殼 | 📝 未開始 | — |
+| 7 | DbConnectionManager 靜態 facade 移除 + DbAccess ctor DI 化 | 📝 擬定中 | [plan-backendinfo-di-phase7-dbconnectionmanager.md](plan-backendinfo-di-phase7-dbconnectionmanager.md) |
 
 > 狀態圖例：📝 未開始 / 🚧 進行中 / ✅ 已完成
 >
 > 原 Phase 1（SystemSettings 結構重構）已撤除：XML 結構變動隨各 phase 實際需求逐步推進，不單獨抽出。原 Phase 6（跨平台支援）已撤除：MAUI/Desktop 為 client side，不在 BackendInfo 重構範圍。
+>
+> Phase 7 於 Phase 5 收尾時新增：原計畫將 `DbConnectionManager` 靜態 facade 移除歸併到 Phase 5，但 scope cascade 至 84+ 測試呼叫點 + 5 src 點，獨立 phase 處理較佳。執行順序：Phase 6 → Phase 7。
 
 ## 背景
 
@@ -259,13 +262,19 @@ ERP 開發者新增 BO 完全不接觸 DI API。
 
 **參考實作**：Phase 1-3 commits（`e832802a`、`d8a7cd41`、`ce2a9ece`）；Phase 3 sub-plan「實作時調整」段落記錄了重要的 infra 修正（`AssemblyLoader` 從 byte-load 改為 default load context）。
 
-### Phase 5：測試基礎設施重寫（中風險）
+### Phase 5：測試基礎設施重寫（中風險）— ✅ 已完成
 **目標**：移除 `GlobalFixture`、`TempDefinePath`、`[Collection("Initialize")]`。
 
-- 設計 `BeeTestFixture` — 每個測試 class 建獨立 `ServiceProvider`（取代 process-wide init）
-- 重寫 159 個測試引用點為「從 fixture 取 scope」
-- `TempDefinePath` 廢除，改為「fixture 內注入 in-memory `IDefineAccess`」
-- 並行測試的 static state 競爭問題自然解消
+實際落地：
+
+- `BeeTestFixture` / `SharedDbFixture` 設計完成，每個測試 class 透過 `IClassFixture<T>` 取得獨立 `IServiceProvider`
+- 70+ test class 從 `[Collection("Initialize")]` / `BeeTestServices` 遷移至 fixture-based DI
+- `TempDefinePath` 廢除 —— 寫檔測試改用 `b.UseTempDefinePath()` fixture builder 或 method-level inline temp dir
+- 7 個 cache class（`SystemSettingsCache` 等）改 ctor 注入 `PathOptions`；`LocalDefineAccess` 改 ctor 注入 `ICacheContainer`
+- 刪除：`BeeTestServices` / `GlobalFixture` / `BaseTests` / `TempDefinePath` / `DefinePathInfo` / `CacheContainer` 靜態 facade / `ICacheBootstrapper`
+- xUnit 平行恢復：本機 wall 1m47s / user 4m49s = ~2.7x parallel speedup（2749 tests）
+
+唯一遺留：`DbConnectionManager` 靜態 facade（5 src 點 + 84 測試 `new DbAccess(id)` 點），獨立到 Phase 7 處理。
 
 **獨立價值**：測試執行加速（無 process-wide lock）、隔離性提升。
 
@@ -280,6 +289,20 @@ ERP 開發者新增 BO 完全不接觸 DI API。
 - 發 v5.0 release notes
 
 **獨立價值**：技術債清零，新人不再看到 Service Locator 範例。
+
+### Phase 7：DbConnectionManager 靜態 facade 移除 + DbAccess ctor DI 化
+**目標**：移除 `DbConnectionManager` 靜態 facade、廢除 `[Collection("DbConnectionState")]`、將 `DbAccess` ctor 改為要求 `IDbConnectionManager`。
+
+Phase 5 收尾時 `DbConnectionManager` 靜態 facade 暫留 —— 5 處 src 消費點 + 84 處測試 `new DbAccess(databaseId)` 呼叫點仍透過靜態取連線資訊。獨立 phase 處理：
+
+- 5 src 點（`DbAccess` / `DbAccessFactory` / `SqliteTableSchemaProvider` / `TableUpgradeOrchestrator` / `TableSchemaBuilder`）改 ctor 注入 `IDbConnectionManager`
+- 84 處測試 `new DbAccess(id)` 改走 `IDbAccessFactory.Create(databaseId)`（建議補 `BeeTestFixture.NewDbAccess(id)` 便利屬性）
+- `DbConnectionManagerTests` / `DbAccessFactoryTests` 改測 DI instance；`[Collection("DbConnectionState")]` 廢除
+- 刪除 `DbConnectionManager.cs` 靜態 facade、`IDbConnectionManagerBootstrapper`、`DbConnectionStateCollection.cs`
+
+完成後：Bee.NET 框架所有「BackendInfo 系」靜態 facade 全部退場；剩餘 process-wide static 僅為 registry-style 一次寫入（`SysInfo` / `CacheInfo.Provider` / `DbProviderRegistry` / `DbDialectRegistry` / `ApiClientInfo.LocalServiceProvider`）。
+
+**獨立價值**：DI 化里程碑收尾；全 repo 0 `[Collection]` 序列化要求；test wall-clock 進一步加速空間。
 
 ## 相容性策略
 
@@ -297,10 +320,11 @@ ERP 開發者新增 BO 完全不接觸 DI API。
 - 新增測試一律使用新 DI fixture（建立範本後跟進）
 - CI 上要求「未遷移檔案 + 新 fixture 檔案」**都**綠燈
 
-### 完成後（Phase 6）
-- 廢除 `[Collection("Initialize")]` 串行限制
-- 廢除 `TempDefinePath`（檔案隔離由 `IDefineAccess` mock 處理）
-- 並行測試完全恢復，CI 時間預期縮短
+### Phase 5 完成後（2026-05-13）
+- ✅ 廢除 `[Collection("Initialize")]` 串行限制
+- ✅ 廢除 `TempDefinePath`（fixture-level `UseTempDefinePath()` 或 method-level inline temp dir 取代）
+- ✅ 並行測試恢復至本機 ~2.7x parallel speedup
+- 唯一保留的窄序列化 `[Collection("DbConnectionState")]`（2 個 class）待 Phase 7 清理
 
 ### 整合測試
 每個 phase 完成必須通過：
