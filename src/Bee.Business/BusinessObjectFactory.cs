@@ -66,7 +66,7 @@ namespace Bee.Business
             return Activator.CreateInstance(type, ctx, accessToken, progId, isLocalCall)!;
         }
 
-        private IBeeContext BuildContext() => new BeeContext
+        private BeeContext BuildContext() => new BeeContext
         {
             DefineAccess = _defineAccess,
             SessionInfoService = _sessionInfoService,
