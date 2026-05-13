@@ -6,31 +6,36 @@
 
 ## 框架初始化順序
 
-框架使用靜態入口點進行初始化，順序至關重要。
+Phase 5 之後框架以標準 `IServiceCollection` DI 容器註冊；所有 framework 服務透過
+ctor 注入解析，不再透過靜態入口點。
 
-### 初始化流程
+### Host 啟動流程
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│ 1. BackendInfo.DefinePath = <定義檔路徑>              │
-│ 2. BackendInfo.DefineAccess = new LocalDefineAccess() │
-│    （或 RemoteDefineAccess）                          │
+│ 1. paths = new PathOptions { DefinePath = "..." }    │
+│ 2. settings = SystemSettingsLoader.Load(paths)       │
+│ 3. SysInfo.Initialize(settings.CommonConfiguration)  │
 ├─────────────────────────────────────────────────────┤
-│ 3. settings = DefineAccess.GetSystemSettings()        │
-│ 4. SysInfo.Initialize(settings.CommonConfiguration)   │
+│ 4. services.AddBeeFramework(                         │
+│      settings.BackendConfiguration,                  │
+│      paths,                                          │
+│      autoCreateMasterKey: true)                      │
+│    → 註冊 IDefineStorage / IDefineAccess /           │
+│      ICacheContainer / IDbConnectionManager /        │
+│      ISessionInfoService / IBusinessObjectFactory /  │
+│      JsonRpcExecutor                                 │
 ├─────────────────────────────────────────────────────┤
-│ 5. BackendInfo.Initialize(                            │
-│      settings.BackendConfiguration,                   │
-│      autoCreateMasterKey: true)                       │
-│    → 初始化 Provider、安全金鑰                         │
-├─────────────────────────────────────────────────────┤
-│ 6. RepositoryInfo（自動，首次存取觸發）                  │
-│ 7. CacheFunc（自動，Lazy<T> 延遲初始化）                │
-│ 8. ApiServiceOptions.Initialize(payloadOptions)       │
+│ 5. provider = services.BuildServiceProvider()        │
+│ 6. app.UseBeeFramework()（僅 ASP.NET）                │
+│    → Eager-resolve IDbConnectionManagerBootstrapper  │
+│      （wire 過渡期 DbConnectionManager static，供    │
+│      legacy `new DbAccess(id)` 呼叫點使用）          │
 └─────────────────────────────────────────────────────┘
 ```
 
-參考實作：`tests/Bee.Tests.Shared/GlobalFixture.cs`
+參考實作：`tests/Bee.Tests.Shared/TestProcessBootstrap.cs` — 以 `tests/Define/`
+作為 `DefinePath` 套用同一流程。
 
 ## 請求處理管線
 
@@ -142,6 +147,13 @@ public class FormExecFuncHandler
 // 系統層級範例（需要認證）
 public class SystemExecFuncHandler
 {
+    private readonly ISystemRepositoryFactory _systemFactory;
+
+    public SystemExecFuncHandler(ISystemRepositoryFactory systemFactory)
+    {
+        _systemFactory = systemFactory;
+    }
+
     /// <summary>
     /// Upgrades the table schema for the specified database.
     /// </summary>
@@ -152,7 +164,7 @@ public class SystemExecFuncHandler
         string dbName = args.Parameters.GetValue<string>("DbName");
         string tableName = args.Parameters.GetValue<string>("TableName");
 
-        var repo = RepositoryInfo.SystemProvider.DatabaseRepository;
+        var repo = _systemFactory.CreateDatabaseRepository();
         bool upgraded = repo.UpgradeTableSchema(databaseId, dbName, tableName);
         result.Parameters.Add("Upgraded", upgraded);
     }

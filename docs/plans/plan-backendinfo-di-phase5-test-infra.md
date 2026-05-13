@@ -1,6 +1,8 @@
 # 計畫：Phase 5 — 測試基礎設施重寫（per-class ServiceProvider、廢除 Initialize collection / TempDefinePath、並行恢復）
 
-**狀態：🚧 進行中（架構基建 PR 5.1–5.4d 完成，剩 bulk migration + 清理）**
+**狀態：✅ 已完成（2026-05-13，PR 5.1–5.8）**
+
+> Phase 5 主要目標（test infra DI 化、廢除 `[Collection("Initialize")]` / `TempDefinePath` / `GlobalFixture` / `BeeTestServices`、cache PathOptions 注入）全部達成。剩餘 `DbConnectionManager` 靜態 facade 移除留待後續 PR 與 Phase 6 一併處理（仍由 `new DbAccess(id)` 66+ 測試呼叫點與 5 處 src 消費點依賴；scope 與 5.4i 相當，獨立 PR 處理較佳）。
 
 > 本文件為主計畫 [plan-backendinfo-to-di-migration.md](plan-backendinfo-to-di-migration.md) 的 **Phase 5** sub-plan，獨立可 ship。
 
@@ -26,7 +28,35 @@
 | 5.4j | `Bee.Business.UnitTests` 全脫 `[Collection("Initialize")]`（11 class，Python script） | `bb99ac99` | ✅ 全部改 `IClassFixture<SharedDbFixture>`；`SystemBusinessObjectTests` 既有空 ctor 刪除（xUnit 限一個 public ctor）；既有 `BeeTestServices.GetRequiredService<T>()` / `TestBeeContext.Create()` 保留待 PR 5.5；刪除 `GlobalCollection.cs`；本機 5x stress test 全綠（108/109 + 1 skip） |
 | 5.5 | 刪除 `BeeTestServices` static class 與 `TestSessionFactory.CreateAccessToken()` / `TestBeeContext.Create()` 無 fixture overload | `ccabf02d` | ✅ 70+ 個 caller 改 `_fx.GetRequiredService<T>()` / `TestBeeContext.Create(_fx)` / `TestBeeContext.CreateWithOverrides(_fx, ...)` / `TestBeeContext.CreateWithDefineAccess(_fx, ...)`；`Fakes/TestableBusinessObject`/`BareBusinessObject`/`TestableSystemBusinessObject` 統一改為 ctor 必收 `IBeeContext`（取消便利 overload）；6 個 `private static <T> Prop => BeeTestServices.GetRequiredService<T>()` 改成 instance；數個 `private static` helper 方法（NewBuilder/RunRoundTrip）需引用 `_fx` 也順帶脫 `static`。`BeeTestServices.cs` / `DbGlobalFixture.cs` / `Bee.Tests.Shared/GlobalCollection.cs` 刪除；`GlobalFixture.cs` 內 `BeeTestServices.Initialize` 寫入點移除（仍保留 ApiClientInfo.LocalServiceProvider wire-up） |
 | 5.6 | 刪除 `GlobalFixture` / `BaseTests`，BeeTestFixture 改透過 `TestProcessBootstrap.EnsureInitialized` 一次性初始化 | `235aad97` | ✅ 新增 `TestProcessBootstrap` static helper（從原 GlobalFixture.InitializeOnce 搬出）；`BeeTestFixture` ctor 改呼叫 `TestProcessBootstrap.EnsureInitialized()` 取代 `_ = new GlobalFixture()`；5 個 Bee.ObjectCaching.UnitTests legacy 測試（CacheContainerTests/CacheTests/DatabaseSettingsCacheTests/SystemSettingsCacheTests/LocalDefineAccessTests）`[Collection("Initialize")]` 改為本地 `[CollectionDefinition("CacheState")]`（純序列化用，不綁 fixture），3 個 class 補 `IClassFixture<SharedDbFixture>` 觸發 bootstrap；`SystemBusinessObjectDefineTests` 剩餘 1 個 TempDefinePath 改 inline temp-dir helper；刪除 `Bee.Tests.Shared/GlobalFixture.cs` / `Bee.Tests.Shared/BaseTests.cs` / `Bee.ObjectCaching.UnitTests/GlobalCollection.cs`；`TempDefinePath` 暫留（2 個 cache file-load 測試使用，待 PR 5.7 cache PathOptions 注入後脫除）；本機 full suite + 3x ObjectCaching stress test 全綠 |
-| 5.7 | Cache PathOptions 注入 + 刪除 `CacheContainer` / `DefinePathInfo` 靜態 facade、`CacheBootstrapper`、`TempDefinePath`、`CacheStateCollection` | （本 PR） | ✅ 7 個 cache class（System/Database/Program/DbCategory/TableSchema/FormSchema/FormLayout）改 ctor 注入 `PathOptions`；`CacheContainerService` 透過注入 PathOptions 傳遞給每個 cache；`LocalDefineAccess` 改 ctor 注入 `ICacheContainer`（取代 `CacheContainer.X` 靜態呼叫）。Cache file-load 測試（DatabaseSettingsCacheTests/SystemSettingsCacheTests）改直接 `new XxxCache(paths)` 構造，不再操弄 DefinePathInfo；CacheContainerTests 改透過 `_fx.GetRequiredService<ICacheContainer>()` instance 解析。Bee.ObjectCaching.UnitTests 5 個 legacy 測試全脫 `[Collection("CacheState")]`；刪除 `src/Bee.Definition/DefinePathInfo.cs` / `src/Bee.ObjectCaching/CacheContainer.cs` / `src/Bee.Api.AspNetCore/Bootstrapping/ICacheBootstrapper.cs` / `tests/Bee.Tests.Shared/TempDefinePath.cs` / `tests/Bee.ObjectCaching.UnitTests/CacheStateCollection.cs`；`AddBeeFramework` 改直接呼叫 `CacheInfo.Initialize(configuration)`，移除 ICacheBootstrapper 註冊；`UseBeeFramework` 不再 resolve ICacheBootstrapper。BeeTestFixtureBuilder 移除 per-fixture cache prefix（PR 5.4d 引入）—— 與 SharedDatabaseState 的 bootstrap 路徑撞 key 導致 DatabaseSettings.Items race；session 隔離由 production Guid AccessToken 隨機性自然保證。DbConnectionManager 靜態 facade 暫留（仍由 `new DbAccess(id)` 66+ 測試呼叫點依賴），後續 PR 處理。本機 full suite + 3x ObjectCaching/Db stress test 全綠（2749 pass + 1 skip） |
+| 5.7 | Cache PathOptions 注入 + 刪除 `CacheContainer` / `DefinePathInfo` 靜態 facade、`CacheBootstrapper`、`TempDefinePath`、`CacheStateCollection` | `db8194ce` | ✅ 7 個 cache class（System/Database/Program/DbCategory/TableSchema/FormSchema/FormLayout）改 ctor 注入 `PathOptions`；`CacheContainerService` 透過注入 PathOptions 傳遞給每個 cache；`LocalDefineAccess` 改 ctor 注入 `ICacheContainer`（取代 `CacheContainer.X` 靜態呼叫）。Cache file-load 測試（DatabaseSettingsCacheTests/SystemSettingsCacheTests）改直接 `new XxxCache(paths)` 構造，不再操弄 DefinePathInfo；CacheContainerTests 改透過 `_fx.GetRequiredService<ICacheContainer>()` instance 解析。Bee.ObjectCaching.UnitTests 5 個 legacy 測試全脫 `[Collection("CacheState")]`；刪除 `src/Bee.Definition/DefinePathInfo.cs` / `src/Bee.ObjectCaching/CacheContainer.cs` / `src/Bee.Api.AspNetCore/Bootstrapping/ICacheBootstrapper.cs` / `tests/Bee.Tests.Shared/TempDefinePath.cs` / `tests/Bee.ObjectCaching.UnitTests/CacheStateCollection.cs`；`AddBeeFramework` 改直接呼叫 `CacheInfo.Initialize(configuration)`，移除 ICacheBootstrapper 註冊；`UseBeeFramework` 不再 resolve ICacheBootstrapper。BeeTestFixtureBuilder 移除 per-fixture cache prefix（PR 5.4d 引入）—— 與 SharedDatabaseState 的 bootstrap 路徑撞 key 導致 DatabaseSettings.Items race；session 隔離由 production Guid AccessToken 隨機性自然保證。DbConnectionManager 靜態 facade 暫留（仍由 `new DbAccess(id)` 66+ 測試呼叫點依賴），後續 PR 處理。本機 full suite + 3x ObjectCaching/Db stress test 全綠（2749 pass + 1 skip） |
+| 5.8 | 文件 + CI metrics 收尾 | （本 PR） | ✅ 更新 Phase 5 plan 狀態 + 完成日期；`.claude/rules/testing.md` §「全域狀態與平行安全」更新到 Phase 5 結尾的新模型；MEMORY.md 補 fixture migration 心得；確認 xUnit 預設 `parallelizeTestCollections: true`（無需 `xunit.runner.json`）；本機 test 時間量測（見下） |
+
+## 本機 test wall-clock 量測（PR 5.8）
+
+2026-05-13 本機（macOS / 10 個 logical core）`./test.sh` 量測：
+
+| 指標 | 數值 |
+|------|------|
+| Wall clock | 1m47s |
+| User CPU | 4m49s |
+| Parallel speedup | ~2.7x（user / wall） |
+| 測試總數 | 2749 pass + 1 skip |
+
+各 assembly：
+
+| Assembly | 持續時間 | 測試數 |
+|----------|----------|--------|
+| Bee.Base | 4s | 447 |
+| Bee.Definition | 13s | 478 |
+| Bee.Api.Core | 12s | 239 |
+| Bee.Api.AspNetCore | 13s | 16 |
+| Bee.ObjectCaching | 30s | 79 |
+| Bee.Api.Client | 30s | 72 |
+| Bee.Business | 30s | 108 (+1 skip) |
+| Bee.Repository | 31s | 38 |
+| Bee.Db | 13s | 1272 |
+
+Phase 5 的 per-class fixture + 並行恢復明顯生效：assembly 內測試以多核心並行展開（DB 測試受 SQL Server / Oracle 連線時間主導，wall 30s 雖長，但 user CPU 揭示同時跑多 class）。CI 量測待 GitHub Actions runner（2 core）回報後比對。
 
 ## 偏離原計畫紀要
 

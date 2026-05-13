@@ -6,31 +6,37 @@
 
 ## Framework Initialization Order
 
-The framework uses static entry points for initialization; order is critical.
+After Phase 5 the framework registers itself in the standard `IServiceCollection`
+DI container; framework services are resolved through ctor injection rather than
+static entry points.
 
-### Initialization Flow
+### Host Startup Flow
 
 ```text
 ┌─────────────────────────────────────────────────────┐
-│ 1. BackendInfo.DefinePath = <definition file path>  │
-│ 2. BackendInfo.DefineAccess = new LocalDefineAccess()│
-│    (or RemoteDefineAccess)                           │
+│ 1. paths = new PathOptions { DefinePath = "..." }   │
+│ 2. settings = SystemSettingsLoader.Load(paths)      │
+│ 3. SysInfo.Initialize(settings.CommonConfiguration) │
 ├─────────────────────────────────────────────────────┤
-│ 3. settings = DefineAccess.GetSystemSettings()       │
-│ 4. SysInfo.Initialize(settings.CommonConfiguration)  │
+│ 4. services.AddBeeFramework(                        │
+│      settings.BackendConfiguration,                 │
+│      paths,                                         │
+│      autoCreateMasterKey: true)                     │
+│    → Registers IDefineStorage / IDefineAccess /     │
+│      ICacheContainer / IDbConnectionManager /       │
+│      ISessionInfoService / IBusinessObjectFactory / │
+│      JsonRpcExecutor                                │
 ├─────────────────────────────────────────────────────┤
-│ 5. BackendInfo.Initialize(                           │
-│      settings.BackendConfiguration,                  │
-│      autoCreateMasterKey: true)                      │
-│    → Initialize providers and security keys          │
-├─────────────────────────────────────────────────────┤
-│ 6. RepositoryInfo (auto, triggered on first access)  │
-│ 7. CacheContainer (auto, Lazy<T> deferred init)      │
-│ 8. ApiServiceOptions.Initialize(payloadOptions)      │
+│ 5. provider = services.BuildServiceProvider()       │
+│ 6. app.UseBeeFramework() (ASP.NET only)             │
+│    → Eager-resolves IDbConnectionManagerBootstrapper│
+│      (wires the transitional DbConnectionManager    │
+│      static for legacy `new DbAccess(id)` sites)    │
 └─────────────────────────────────────────────────────┘
 ```
 
-Reference implementation: `tests/Bee.Tests.Shared/GlobalFixture.cs`
+Reference implementation: `tests/Bee.Tests.Shared/TestProcessBootstrap.cs` — applies
+the same flow for the test process with `tests/Define/` as the `DefinePath`.
 
 ## Request Processing Pipeline
 
@@ -142,6 +148,13 @@ public class FormExecFuncHandler
 // System-level example (authentication required)
 public class SystemExecFuncHandler
 {
+    private readonly ISystemRepositoryFactory _systemFactory;
+
+    public SystemExecFuncHandler(ISystemRepositoryFactory systemFactory)
+    {
+        _systemFactory = systemFactory;
+    }
+
     /// <summary>
     /// Upgrades the table schema for the specified database.
     /// </summary>
@@ -152,7 +165,7 @@ public class SystemExecFuncHandler
         string dbName = args.Parameters.GetValue<string>("DbName");
         string tableName = args.Parameters.GetValue<string>("TableName");
 
-        var repo = RepositoryInfo.SystemProvider.DatabaseRepository;
+        var repo = _systemFactory.CreateDatabaseRepository();
         bool upgraded = repo.UpgradeTableSchema(databaseId, dbName, tableName);
         result.Parameters.Add("Upgraded", upgraded);
     }
