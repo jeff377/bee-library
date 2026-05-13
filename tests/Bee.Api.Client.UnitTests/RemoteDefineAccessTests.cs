@@ -10,15 +10,21 @@ namespace Bee.Api.Client.UnitTests
 {
     /// <summary>
     /// 針對 <see cref="RemoteDefineAccess"/> 參數防護與不支援型別的純邏輯測試。
-    /// 以 local <see cref="SystemApiConnector"/> 建構，但測試案例僅涵蓋在呼叫實際遠端之前就應拋出的錯誤路徑。
+    /// 以 local <see cref="SystemApiConnector"/> 建構，需要 <c>ApiClientInfo.LocalServiceProvider</c>
+    /// 由 <see cref="Bee.Tests.Shared.GlobalFixture"/> 一次性 wire up；
+    /// 透過 <see cref="Bee.Tests.Shared.BeeTestFixture"/> 的 ctor 觸發完成。
     /// </summary>
-    [Collection("Initialize")]
-    public class RemoteDefineAccessTests
+    public class RemoteDefineAccessTests : IClassFixture<Bee.Tests.Shared.BeeTestFixture>
     {
         private static readonly string[] s_singleKey = { "onlyOne" };
         private static readonly string[] s_twoKeys = { "a", "b" };
         private static readonly string[] s_employeeKey = { "Employee" };
         private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };
+
+        public RemoteDefineAccessTests(Bee.Tests.Shared.BeeTestFixture _)
+        {
+            // fixture 僅用於觸發 GlobalFixture 一次性 wire up ApiClientInfo.LocalServiceProvider。
+        }
 
         private static RemoteDefineAccess CreateAccess()
         {

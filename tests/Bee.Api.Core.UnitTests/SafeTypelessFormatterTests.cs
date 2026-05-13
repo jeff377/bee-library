@@ -6,9 +6,8 @@ using Bee.Definition.Serialization;
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
-    /// SafeTypelessFormatter 安全性測試
+    /// SafeTypelessFormatter 安全性測試（純序列化邏輯，無 process-wide state 相依）。
     /// </summary>
-    [Collection("Initialize")]
     public class SafeTypelessFormatterTests
     {
         [Fact(DisplayName = "ParameterCollection 允許安全的基礎型別序列化")]

@@ -7,9 +7,19 @@ using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.UnitTests
 {
-    [Collection("Initialize")]
-    public class SystemApiConnectorTests
+    /// <summary>
+    /// 透過 <see cref="SharedDbFixture"/> 觸發 GlobalFixture 的 <c>ApiClientInfo.LocalServiceProvider</c>
+    /// 與 SharedDatabaseState 初始化；本機模式 [DbFact] 測試會走過 LocalApiProvider 解析後端
+    /// JsonRpcExecutor，並透過 SQL Server 完成 CreateSession 流程。
+    /// </summary>
+    public class SystemApiConnectorTests : IClassFixture<SharedDbFixture>
     {
+        public SystemApiConnectorTests(SharedDbFixture _)
+        {
+            // fixture 僅用於觸發 GlobalFixture / SharedDatabaseState 初始化；
+            // 測試方法直接使用 process-wide ApiClientInfo.LocalServiceProvider。
+        }
+
         /// <summary>
         /// 測試 SystemApiConnector 的 CreateSession 方法。
         /// </summary>

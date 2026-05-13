@@ -9,17 +9,22 @@ using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Core.UnitTests
 {
-    [Collection("Initialize")]
-    public class JsonRpcExecutorTests
+    public class JsonRpcExecutorTests : IClassFixture<BeeTestFixture>
     {
+        private readonly BeeTestFixture _fx;
         private Guid _accessToken;
 
-        private static JsonRpcExecutor NewExecutor(Guid accessToken, bool isLocalCall = true)
+        public JsonRpcExecutorTests(BeeTestFixture fx)
+        {
+            _fx = fx;
+        }
+
+        private JsonRpcExecutor NewExecutor(Guid accessToken, bool isLocalCall = true)
         {
             var executor = new JsonRpcExecutor(
-                BeeTestServices.GetRequiredService<IBusinessObjectFactory>(),
-                BeeTestServices.GetRequiredService<IAccessTokenValidator>(),
-                BeeTestServices.GetRequiredService<IApiEncryptionKeyProvider>())
+                _fx.GetRequiredService<IBusinessObjectFactory>(),
+                _fx.GetRequiredService<IAccessTokenValidator>(),
+                _fx.GetRequiredService<IApiEncryptionKeyProvider>())
             {
                 AccessToken = accessToken,
                 IsLocalCall = isLocalCall,
@@ -34,7 +39,7 @@ namespace Bee.Api.Core.UnitTests
         /// <param name="progId">程式代碼。</param>
         /// <param name="action">執行動作。</param>
         /// <param name="value">傳入值。</param>
-        private static T ApiExecute<T>(Guid accessToken, string progId, string action, object value)
+        private T ApiExecute<T>(Guid accessToken, string progId, string action, object value)
         {
             // 設定 JSON-RPC 請求模型
             var request = new JsonRpcRequest()
@@ -58,7 +63,7 @@ namespace Bee.Api.Core.UnitTests
         private Guid GetAccessToken()
         {
             if (_accessToken == Guid.Empty)
-                _accessToken = TestSessionFactory.CreateAccessToken();
+                _accessToken = TestSessionFactory.CreateAccessToken(_fx);
             return _accessToken;
         }
 

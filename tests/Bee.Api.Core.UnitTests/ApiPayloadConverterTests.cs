@@ -5,9 +5,8 @@ using Bee.Api.Core.Messages;
 namespace Bee.Api.Core.UnitTests
 {
     /// <summary>
-    /// ApiPayloadConverter TypeName 白名單驗證測試
+    /// ApiPayloadConverter TypeName 白名單驗證測試（純邏輯，無 process-wide state 相依）。
     /// </summary>
-    [Collection("Initialize")]
     public class ApiPayloadConverterTests
     {
         private static byte[] MakeKey()

@@ -2,7 +2,12 @@ using System.ComponentModel;
 
 namespace Bee.Api.Client.UnitTests
 {
-    [Collection("Initialize")]
+    /// <summary>
+    /// ApiConnectValidator 路徑驗證測試。每個用例以 try/finally 還原
+    /// <see cref="ApiClientInfo.SupportedConnectTypes"/>；類別內測試串列執行（xUnit 預設），
+    /// 與其他 test class 平行時的 race 風險：<c>ApiClientInfoTests</c> 也會 mutate 同一 static，
+    /// 但兩者皆走 snapshot/restore，沿用既有設計。
+    /// </summary>
     public class ApiConnectValidatorTests
     {
         [Theory]

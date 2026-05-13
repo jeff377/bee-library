@@ -11,15 +11,21 @@ namespace Bee.Api.Core.UnitTests
     /// JsonRpcExecutor 補強測試：
     /// 涵蓋錯誤路徑（ParseMethod 例外、空 progId、未知 action）、ExecuteAsync 路徑與屬性設定。
     /// </summary>
-    [Collection("Initialize")]
-    public class JsonRpcExecutorExtraTests
+    public class JsonRpcExecutorExtraTests : IClassFixture<BeeTestFixture>
     {
-        private static JsonRpcExecutor NewExecutor(Guid accessToken, bool isLocalCall = false)
+        private readonly BeeTestFixture _fx;
+
+        public JsonRpcExecutorExtraTests(BeeTestFixture fx)
+        {
+            _fx = fx;
+        }
+
+        private JsonRpcExecutor NewExecutor(Guid accessToken, bool isLocalCall = false)
         {
             var executor = new JsonRpcExecutor(
-                BeeTestServices.GetRequiredService<IBusinessObjectFactory>(),
-                BeeTestServices.GetRequiredService<IAccessTokenValidator>(),
-                BeeTestServices.GetRequiredService<IApiEncryptionKeyProvider>())
+                _fx.GetRequiredService<IBusinessObjectFactory>(),
+                _fx.GetRequiredService<IAccessTokenValidator>(),
+                _fx.GetRequiredService<IApiEncryptionKeyProvider>())
             {
                 AccessToken = accessToken,
                 IsLocalCall = isLocalCall,
@@ -43,9 +49,9 @@ namespace Bee.Api.Core.UnitTests
         public void IsLocalCall_DefaultsToFalse()
         {
             var executor = new JsonRpcExecutor(
-                BeeTestServices.GetRequiredService<IBusinessObjectFactory>(),
-                BeeTestServices.GetRequiredService<IAccessTokenValidator>(),
-                BeeTestServices.GetRequiredService<IApiEncryptionKeyProvider>());
+                _fx.GetRequiredService<IBusinessObjectFactory>(),
+                _fx.GetRequiredService<IAccessTokenValidator>(),
+                _fx.GetRequiredService<IApiEncryptionKeyProvider>());
             Assert.False(executor.IsLocalCall);
         }
 
