@@ -10,9 +10,10 @@ namespace Bee.Business.UnitTests
     /// <see cref="BusinessObjectFactory"/> 工廠方法測試。
     /// 透過 <see cref="BeeTestServices"/> 解析 DI-注入後的 factory 實例。
     /// </summary>
-    [Collection("Initialize")]
-    public class BusinessObjectFactoryTests
+    public class BusinessObjectFactoryTests : IClassFixture<SharedDbFixture>
     {
+        public BusinessObjectFactoryTests(SharedDbFixture _) { }
+
         private static IBusinessObjectFactory Factory => BeeTestServices.GetRequiredService<IBusinessObjectFactory>();
 
         [Fact]

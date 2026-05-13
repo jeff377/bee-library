@@ -10,9 +10,10 @@ namespace Bee.Business.UnitTests
     /// Phase 4 之後 BO ctor 需要 IBeeContext，<see cref="TestBeeContext.Create"/> 透過
     /// <see cref="BeeTestServices"/> 取得 DI 服務，因此這些測試需加入 Initialize collection。
     /// </summary>
-    [Collection("Initialize")]
-    public class SystemBusinessObjectPureLogicTests
+    public class SystemBusinessObjectPureLogicTests : IClassFixture<SharedDbFixture>
     {
+        public SystemBusinessObjectPureLogicTests(SharedDbFixture _) { }
+
         [Fact]
         [DisplayName("Ping 應回傳 Status=ok、回應 TraceId 與 UTC ServerTime")]
         public void Ping_ReturnsExpectedValues()

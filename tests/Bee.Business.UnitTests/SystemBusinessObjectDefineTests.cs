@@ -10,9 +10,10 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// <see cref="SystemBusinessObject"/> 與 <c>IDefineAccess</c>（透過 DI 解析）整合的純邏輯測試（記憶體存取，不走 DB）。
     /// </summary>
-    [Collection("Initialize")]
-    public class SystemBusinessObjectDefineTests
+    public class SystemBusinessObjectDefineTests : IClassFixture<SharedDbFixture>
     {
+        public SystemBusinessObjectDefineTests(SharedDbFixture _) { }
+
         [Fact]
         [DisplayName("GetCommonConfiguration 應回傳非空 XML")]
         public void GetCommonConfiguration_ReturnsNonEmptyXml()

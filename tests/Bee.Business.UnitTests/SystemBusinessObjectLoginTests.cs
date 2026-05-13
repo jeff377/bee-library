@@ -12,9 +12,10 @@ namespace Bee.Business.UnitTests
     /// <see cref="SystemBusinessObject.Login"/> 分支測試，使用 <see cref="TestableSystemBusinessObject"/>
     /// 覆寫 AuthenticateUser 以觸發成功/失敗/鎖定等路徑。
     /// </summary>
-    [Collection("Initialize")]
-    public class SystemBusinessObjectLoginTests
+    public class SystemBusinessObjectLoginTests : IClassFixture<SharedDbFixture>
     {
+        public SystemBusinessObjectLoginTests(SharedDbFixture _) { }
+
         private sealed class RecordingTracker : ILoginAttemptTracker
         {
             public bool LockedOut { get; set; }

@@ -8,9 +8,10 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// <see cref="DynamicApiEncryptionKeyProvider"/> 行為測試。
     /// </summary>
-    [Collection("Initialize")]
-    public class DynamicApiEncryptionKeyProviderTests
+    public class DynamicApiEncryptionKeyProviderTests : IClassFixture<SharedDbFixture>
     {
+        public DynamicApiEncryptionKeyProviderTests(SharedDbFixture _) { }
+
         private static DynamicApiEncryptionKeyProvider CreateProvider()
             => new(BeeTestServices.GetRequiredService<ISessionInfoService>());
 

@@ -7,9 +7,10 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// <see cref="FormBusinessObject"/> 行為測試，透過內部 <c>FormExecFuncHandler.Hello</c> 驗證反射派發。
     /// </summary>
-    [Collection("Initialize")]
-    public class FormBusinessObjectTests
+    public class FormBusinessObjectTests : IClassFixture<SharedDbFixture>
     {
+        public FormBusinessObjectTests(SharedDbFixture _) { }
+
         [Fact]
         [DisplayName("建構子應設定 AccessToken、ProgId、IsLocalCall")]
         public void Constructor_SetsProperties()

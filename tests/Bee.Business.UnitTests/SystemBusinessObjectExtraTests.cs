@@ -14,9 +14,10 @@ namespace Bee.Business.UnitTests
     /// CheckPackageUpdate / GetPackage 未實作的 NotSupportedException、
     /// 以及 ExecFunc（本地呼叫）基本路徑。
     /// </summary>
-    [Collection("Initialize")]
-    public class SystemBusinessObjectExtraTests
+    public class SystemBusinessObjectExtraTests : IClassFixture<SharedDbFixture>
     {
+        public SystemBusinessObjectExtraTests(SharedDbFixture _) { }
+
         private static readonly string[] DepartmentKeys = { "Department" };
 
         [Fact]

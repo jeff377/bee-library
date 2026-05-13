@@ -9,9 +9,10 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// <see cref="CacheDataSourceProvider"/> 測試。
     /// </summary>
-    [Collection("Initialize")]
-    public class CacheDataSourceProviderTests
+    public class CacheDataSourceProviderTests : IClassFixture<SharedDbFixture>
     {
+        public CacheDataSourceProviderTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetSessionUser 傳入不存在的 Token 應回傳 null")]
         public void GetSessionUser_UnknownToken_ReturnsNull()

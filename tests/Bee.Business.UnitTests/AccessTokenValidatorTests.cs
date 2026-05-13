@@ -8,9 +8,10 @@ namespace Bee.Business.UnitTests
     /// <summary>
     /// <see cref="AccessTokenValidator"/> 行為測試。
     /// </summary>
-    [Collection("Initialize")]
-    public class AccessTokenValidatorTests
+    public class AccessTokenValidatorTests : IClassFixture<SharedDbFixture>
     {
+        public AccessTokenValidatorTests(SharedDbFixture _) { }
+
         private static AccessTokenValidator CreateValidator()
             => new(BeeTestServices.GetRequiredService<ISessionInfoService>());
 

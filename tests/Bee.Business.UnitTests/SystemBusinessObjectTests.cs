@@ -6,15 +6,9 @@ using Bee.Definition.Database;
 
 namespace Bee.Business.UnitTests
 {
-    [Collection("Initialize")]
-    public class SystemBusinessObjectTests
+    public class SystemBusinessObjectTests : IClassFixture<SharedDbFixture>
     {
-        /// <summary>
-        /// 建構函式。
-        /// </summary>
-        public SystemBusinessObjectTests()
-        {
-        }
+        public SystemBusinessObjectTests(SharedDbFixture _) { }
 
         /// <summary>
         /// 建立連線。
