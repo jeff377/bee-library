@@ -106,7 +106,7 @@ DatabaseItem  Id="log_2026"   CategoryId="log"      ──► log_2026  (log tab
 
 The `log_YYYY` physical DBs all have identical table structures (all derived from `DbCategory["log"].Tables`). The application writes using the DatabaseId for the current year, and queries can aggregate across multiple DatabaseItems. Scenarios 3 and 4 can stack (e.g. partitioning by both company and year).
 
-The application is unaware of the deployment shape: it always retrieves connections through `BackendInfo.GetDatabaseItem(databaseId)`. The only difference is how the application layer decides which `databaseId` to pass:
+The application is unaware of the deployment shape: it always retrieves connections through `IDatabaseSettingsProvider.GetItem(databaseId)` (DI ctor injected). The only difference is how the application layer decides which `databaseId` to pass:
 
 - Scenarios 1, 2: fixed mapping (category → DatabaseId)
 - Scenario 3: derived from the current tenant id (e.g. `$"company{tenantId:D3}"`)
@@ -205,12 +205,12 @@ Example:
 
 `DatabaseServer.Password` and `DatabaseItem.Password` are encrypted automatically during XML serialization:
 
-- **Encryption**: AES-CBC-HMAC (key sourced from `BackendInfo.ConfigEncryptionKey`)
+- **Encryption**: AES-CBC-HMAC (key derived from the configured `ConfigEncryptionKey`, threaded into `LocalDefineAccess` via ctor injection at `AddBeeFramework` time)
 - **Storage format**: `enc:` prefix + Base64-encoded ciphertext
 - **Timing**:
   - Before serialization (`BeforeSerialize`): unencrypted Passwords are encrypted automatically
   - After deserialization (`AfterDeserialize`): Passwords starting with `enc:` are decrypted automatically
-- **Behavior**: if `BackendInfo.ConfigEncryptionKey` is not set, encryption / decryption is skipped (plaintext storage, development environments only)
+- **Behavior**: if `ConfigEncryptionKey` is empty, encryption / decryption is skipped (plaintext storage, development environments only)
 
 Implementation: [`DatabaseSettings.cs`](../src/Bee.Definition/Settings/DatabaseSettings/DatabaseSettings.cs) — `BeforeSerialize` / `AfterDeserialize` / `DecryptPassword`.
 
@@ -265,19 +265,25 @@ The framework uses three default logical categories:
 
 ### 4.1 Unified Entry
 
-Both settings are accessed through `BackendInfo.DefineAccess`:
+Both settings are accessed through `IDefineAccess` (DI ctor injected):
 
 ```csharp
-// Read
-DatabaseSettings dbSettings = BackendInfo.DefineAccess.GetDatabaseSettings();
-DbCategorySettings catSettings = BackendInfo.DefineAccess.GetDbCategorySettings();
+public class MyService(IDefineAccess defineAccess)
+{
+    public void Demo()
+    {
+        // Read
+        DatabaseSettings dbSettings = defineAccess.GetDatabaseSettings();
+        DbCategorySettings catSettings = defineAccess.GetDbCategorySettings();
 
-// Write
-BackendInfo.DefineAccess.SaveDatabaseSettings(dbSettings);
-BackendInfo.DefineAccess.SaveDbCategorySettings(catSettings);
+        // Write
+        defineAccess.SaveDatabaseSettings(dbSettings);
+        defineAccess.SaveDbCategorySettings(catSettings);
+    }
+}
 ```
 
-`DefineAccess` is injected during initialization, either as `LocalDefineAccess` (file system) or `RemoteDefineAccess` (via API).
+`IDefineAccess` is registered as a singleton during `AddBeeFramework`, defaulting to `LocalDefineAccess` (file system); projects can configure `RemoteDefineAccess` (via API) through the XML `Components` registry.
 
 ### 4.2 Caching
 
@@ -296,15 +302,15 @@ Behavior:
 ### 4.3 Common Lookups
 
 ```csharp
-// Get a single connection entry (internally uses DatabaseSettings.Items[databaseId])
-DatabaseItem item = BackendInfo.GetDatabaseItem("company_main");
+// Get a single connection entry (DI-injected IDatabaseSettingsProvider)
+DatabaseItem item = dbSettingsProvider.GetItem("company_main");
 
 // Get all tables under a category (via the indexer)
 DbCategory company = catSettings.Categories!["company"];
 foreach (var table in company.Tables!) { ... }
 ```
 
-`BackendInfo.GetDatabaseItem` throws `KeyNotFoundException` when the id is not found, allowing callers to detect unknown connections.
+`IDatabaseSettingsProvider.GetItem` throws `KeyNotFoundException` when the id is not found, allowing callers to detect unknown connections.
 
 ### 4.4 API Access Restrictions
 
@@ -379,7 +385,7 @@ This design fully decouples schema definitions (which tables, what structure) fr
 ⚠️ **At runtime, retrieving a connection goes entirely through `DatabaseItem.Id` and is completely independent of `DbCategorySettings`**:
 
 ```csharp
-DatabaseItem item = BackendInfo.GetDatabaseItem(databaseId);
+DatabaseItem item = dbSettingsProvider.GetItem(databaseId);
 // Use item.ConnectionString / DbName / UserId / Password to establish the connection and run SQL
 ```
 
@@ -394,7 +400,7 @@ Application code chooses `databaseId` based on "which logical category the data 
 | Log writes | log | Year-based archival | The `log_YYYY` for the current year (e.g. `$"log_{DateTime.UtcNow.Year}"`) |
 | Log cross-year queries | log | Year-based archival | Multiple DatabaseIds for the year range, queried separately and aggregated |
 
-Regardless of the underlying scenario, the application always uses the same entry `BackendInfo.GetDatabaseItem(databaseId)`; the only difference is "how to derive the databaseId string from the current context":
+Regardless of the underlying scenario, the application always uses the same entry `IDatabaseSettingsProvider.GetItem(databaseId)`; the only difference is "how to derive the databaseId string from the current context":
 
 - Scenarios 1, 2: fixed mapping (category → DatabaseId), can be written as constants
 - Scenarios 3, 4: requires the current context (tenant id, operation time, etc.); the framework does not provide a context → databaseId mapping mechanism — the application layer maintains it and derives the DatabaseId on its own
@@ -408,7 +414,7 @@ CategoryId and DbCategorySettings are used only at the design phase (§5.1–5.2
 
 ### 6.1 File Paths
 
-Both settings files are located at the root of `BackendInfo.DefinePath`:
+Both settings files are located at the root of `PathOptions.DefinePath`:
 
 | Settings | File Path | Resolution |
 |----------|-----------|------------|

@@ -21,14 +21,6 @@ namespace Bee.Definition.Settings
         public LogOptions LogOptions { get; set; } = new LogOptions();
 
         /// <summary>
-        /// API KEY.
-        /// </summary>
-        [Category("API")]
-        [Description("API KEY.")]
-        [DefaultValue("")]
-        public string ApiKey { get; set; } = string.Empty;
-
-        /// <summary>
         /// Encryption key settings.
         /// </summary>
         [Category("Security")]

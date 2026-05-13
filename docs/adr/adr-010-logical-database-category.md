@@ -1,5 +1,7 @@
 # ADR-010：邏輯資料庫分類（DbCategory）解耦資料庫部署彈性
 
+> **註記**：本文中 `BackendInfo.GetDatabaseItem(databaseId)` 範例在 v5.0 後等價為 `IDatabaseSettingsProvider.GetItem(databaseId)`（DI ctor 注入）。設計理念不變。
+
 ## 狀態
 
 已採納（2026-05-10）

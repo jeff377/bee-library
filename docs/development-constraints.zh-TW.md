@@ -7,25 +7,25 @@
 
 ## 初始化順序限制
 
-框架使用多個靜態入口點，必須依照以下順序初始化：
+框架透過標準的 `IServiceCollection` DI 容器註冊；框架服務以 ctor 注入解析，不再使用靜態入口點。Host 啟動必須依以下四步進行：
 
-1. `BackendInfo.DefinePath` — 設定定義檔路徑
-2. `BackendInfo.DefineAccess` — 設定定義存取介面（`LocalDefineAccess` 或 `RemoteDefineAccess`）
-3. `SysInfo.Initialize(settings.CommonConfiguration)` — 系統資訊初始化
-4. `BackendInfo.Initialize(settings.BackendConfiguration)` — 後端元件與安全金鑰初始化
-5. `RepositoryInfo` — 首次存取時由靜態建構子自動初始化（依賴步驟 2）
-6. `CacheFunc` — 首次存取時透過 `Lazy<T>` 自動初始化
-7. `ApiServiceOptions.Initialize()` — API 服務元件初始化
+1. `var paths = new PathOptions { DefinePath = "..." }` — 指向定義檔目錄
+2. `var settings = SystemSettingsLoader.Load(paths)` — 讀取 `SystemSettings.xml`（boot-time only；runtime 快取存取走 DI 注入的 `IDefineAccess`）
+3. `SysInfo.Initialize(settings.CommonConfiguration)` — process-wide debug flag / payload options
+4. `services.AddBeeFramework(settings.BackendConfiguration, paths)` — 註冊框架服務
+5. `services.BuildServiceProvider()` 後 `app.UseBeeFramework()`（僅 ASP.NET）
+
+完整參考見 [development-cookbook.zh-TW.md § Framework Initialization Order](development-cookbook.zh-TW.md#framework-initialization-order)。
 
 ### 違反後果
 
-- 在步驟 2 之前存取 `RepositoryInfo` → 拋出 `InvalidOperationException`
-- 在步驟 4 之前使用加密功能 → 金鑰為空，加密失敗
-- 在步驟 7 之前處理 API 請求 → 序列化/壓縮/加密元件為 null
+- 在 `AddBeeFramework` 之前解析框架服務 → DI 容器拋 `InvalidOperationException`（服務未註冊）
+- `SystemSettingsLoader.Load` 指向不存在的 `SystemSettings.xml` → 拋 `FileNotFoundException`
+- 在 ASP.NET host 上跳過 `app.UseBeeFramework()` → `new DbAccess(databaseId)` 舊呼叫點失效（bootstrapper 負責 wire 過渡用的 `DbConnectionManager` 靜態 shim）
 
 ### 參考範例
 
-`tests/Bee.Tests.Shared/GlobalFixture.cs` 展示了正確的初始化順序。
+`tests/Bee.Tests.Shared/TestProcessBootstrap.cs` 展示測試 process 的正確初始化順序。
 
 ## 跨層禁止事項
 

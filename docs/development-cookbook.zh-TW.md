@@ -243,7 +243,7 @@ FormSchema（Single Source of Truth）
 FormApiConnector 查詢資料
   → FormBusinessObject 處理請求
   → SqlFormCommandBuilder(progId)
-    → 從 BackendInfo.DefineAccess 取得 FormSchema
+    → 從 IDefineAccess（DI ctor 注入）取得 FormSchema
     → SelectCommandBuilder.Build(tableName, fields, filter, sort)
       → IFromBuilder: 產生 FROM 子句（含 JOIN）
       → IWhereBuilder: 從 FilterCondition 產生 WHERE 子句

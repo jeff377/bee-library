@@ -32,7 +32,7 @@ namespace Bee.ObjectCaching.UnitTests
             using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var settings = new SystemSettings();
-            settings.BackendConfiguration.ApiKey = "saved_id";
+            settings.BackendConfiguration.SecurityKeySettings.MasterKeySource.Value = "saved_id";
 
             access.SaveSystemSettings(settings);
 

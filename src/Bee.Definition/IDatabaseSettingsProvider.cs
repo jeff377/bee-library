@@ -6,9 +6,8 @@ namespace Bee.Definition
 {
     /// <summary>
     /// Provides access to the current <see cref="DatabaseSettings"/> snapshot
-    /// (with <see cref="DatabaseSettings.Items"/> populated). Replaces the former
-    /// <c>BackendInfo.GetDatabaseItem</c> / <c>BackendInfo.ValidateDatabaseSettings</c>
-    /// static helpers.
+    /// (with <see cref="DatabaseSettings.Items"/> populated). Resolved through
+    /// DI ctor injection.
     /// </summary>
     public interface IDatabaseSettingsProvider
     {

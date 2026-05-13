@@ -26,7 +26,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 - **FormSchema 作為定義中樞** — 單一 FormSchema 同時驅動 UI 渲染（FormLayout）、資料庫投影（TableSchema）與驗證規則，消除跨層規格不一致的問題。
 - **結構化篩選與排序模型** — `FilterCondition` 與 `FilterGroup` 組成樹狀查詢模型，並提供工廠方法（`Equal`、`Contains`、`Between`、`In` 等），實現型別安全的查詢建構。
 - **雙軌序列化支援** — 型別同時標註 MessagePack（高效能二進位）與 XML 序列化屬性，兼顧 API 傳輸效率與人類可讀的組態檔案。
-- **Provider 模式與 BackendInfo** — 靜態註冊表（`BackendInfo`）持有執行時期的各項 Provider（加密、快取、日誌、Session），以慣例解析，使 Definition 層與具體實作解耦。
+- **DI 注入的執行時期服務** — `IDefineAccess`、`ISessionInfoService`、`IDatabaseSettingsProvider`、`IApiEncryptionKeyProvider`、`IAccessTokenValidator` 等介面在此宣告，於 host 啟動時由 `AddBeeFramework` 註冊到 DI 容器，使 Definition 層與具體實作解耦。
 - **安全合約** — `IAccessTokenValidationProvider`、`IApiEncryptionKeyProvider` 等介面定義安全邊界，不強制綁定實作細節。
 - **DefineType 驅動的 CRUD** — `DefineType` 列舉與 `DefineFunc` 工具類別將定義類別對應至 CLR 型別，透過 `IDefineAccess` 與 `IDefineStorage` 實現泛型載入/儲存。
 - **集中式設定模型** — `SystemSettings`、`DatabaseSettings`、`ProgramSettings` 與 `MenuSettings` 提供具型別的組態介面，取代零散的鍵值查詢。
@@ -41,7 +41,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 | `FilterCondition` / `FilterGroup` | 可組合的查詢篩選樹 |
 | `SortField` / `SortFieldCollection` | 查詢排序描述 |
 | `SystemSettings` / `DatabaseSettings` / `ProgramSettings` | 組態定義型別 |
-| `BackendInfo` | 執行時期服務的靜態 Provider 註冊表 |
+| `IDatabaseSettingsProvider` | DI 服務，提供當前 `DatabaseSettings` 快照與查找輔助 |
 | `SessionInfo` / `SessionUser` | Session 與使用者上下文 |
 | `IDefineAccess` / `IDefineStorage` | 定義載入/儲存合約 |
 | `IBusinessObjectProvider` | 商業物件建立的工廠合約 |
@@ -52,10 +52,9 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 ## 設計慣例
 
 - **MessagePack `[Key]` + XML `[XmlElement]` 雙重標註** — 每個可序列化屬性同時攜帶兩種屬性標籤，以支援二進位與 XML 兩種通道。
-- **Provider 模式** — `BackendInfo` 以介面型別（如 `ILogWriter`、`IApiEncryptionKeyProvider`）公開靜態屬性，具體型別在啟動時透過 `BackendDefaultTypes` 常數註冊。
+- **以 XML 註冊表選擇可替換服務** — `BackendComponents`（位於 `SystemSettings.xml`）為每個可替換介面（`IDefineAccess`、`ISessionInfoService` 等）宣告對應的具體型別名稱。`AddBeeFramework` 在啟動時讀取註冊表，將設定的型別註冊到 DI 容器；`BackendDefaultTypes` 持有框架預設型別名稱常數。
 - **FilterCondition 的工廠方法** — 偏好使用 `FilterCondition.Equal(...)` 而非 `new FilterCondition { ... }`，以提升可讀性與一致性。
 - **DefineType 列舉作為分派鍵** — `DefineFunc.GetDefineType()` 將列舉值對應至 CLR 型別，實現泛型定義 CRUD，無需硬編碼型別參考。
-- **不可變預設值** — `BackendInfo` 屬性初始化為安全預設值（`NullLogWriter`、空陣列），確保系統不會遇到 null Provider。
 - **XML 文件註解使用英文** — 所有公開 API 皆附帶英文 XML 文件，確保 NuGet 使用者在 IntelliSense 中的可讀性。
 - **啟用 Nullable Reference Types** — 專案啟用 NRT（`<Nullable>enable</Nullable>`）並將警告視為錯誤，在編譯時期強制 null 安全性。
 
@@ -84,11 +83,12 @@ Bee.Definition/
   Sorting/          SortField、SortFieldCollection、SortDirection
   Storage/          IDefineAccess 等
   （根目錄）         跨切面基礎設施：
-                    BackendInfo、BackendDefaultTypes、DefineFunc、DefinePathInfo、
-                    DefineType、GlobalEvents、PropertyCategories、
+                    BackendDefaultTypes、DefineFunc、DefineType、
+                    GlobalEvents、PropertyCategories、
                     SysFields、SysFuncIDs、SysProgIds、SystemActions、
-                    ApplicationType、InitializeOptions、
-                    IBusinessObjectProvider、ICacheDataSourceProvider、IEnterpriseObjectService
+                    ApplicationType、InitializeOptions、PathOptions、
+                    IDatabaseSettingsProvider、IBusinessObjectProvider、
+                    ICacheDataSourceProvider、IEnterpriseObjectService
 ```
 
 命名空間佈局遵循 [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md) 的設計原則：

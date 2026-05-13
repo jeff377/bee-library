@@ -2,6 +2,10 @@
 
 ## 狀態
 
+**Superseded（v5.0，2026-05）** —— 框架已全面改為 DI ctor 注入。本 ADR 保留作為歷史決策紀錄；遷移細節見 [plan-backendinfo-to-di-migration.md](../plans/plan-backendinfo-to-di-migration.md)。
+
+## 原狀態
+
 已採納
 
 ## 背景

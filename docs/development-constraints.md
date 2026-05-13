@@ -7,25 +7,25 @@
 
 ## Initialization Order Constraints
 
-The framework uses several static entry points and must be initialized in the following order:
+The framework registers itself in the standard `IServiceCollection` DI container; framework services are resolved through ctor injection rather than static entry points. Host startup must run the following four steps in order:
 
-1. `BackendInfo.DefinePath` — set the definition file path
-2. `BackendInfo.DefineAccess` — set the definition access interface (`LocalDefineAccess` or `RemoteDefineAccess`)
-3. `SysInfo.Initialize(settings.CommonConfiguration)` — system info initialization
-4. `BackendInfo.Initialize(settings.BackendConfiguration)` — backend components and security key initialization
-5. `RepositoryInfo` — initialized lazily by its static constructor on first access (depends on step 2)
-6. `CacheContainer` — lazily initialized via `Lazy<T>` on first access
-7. `ApiServiceOptions.Initialize()` — API service component initialization
+1. `var paths = new PathOptions { DefinePath = "..." }` — locate definition files
+2. `var settings = SystemSettingsLoader.Load(paths)` — read `SystemSettings.xml` (boot-time only; runtime cached access goes through DI-resolved `IDefineAccess`)
+3. `SysInfo.Initialize(settings.CommonConfiguration)` — process-wide debug flag / payload options
+4. `services.AddBeeFramework(settings.BackendConfiguration, paths)` — register framework services
+5. `services.BuildServiceProvider()` followed by `app.UseBeeFramework()` (ASP.NET only)
+
+See [development-cookbook.md § Framework Initialization Order](development-cookbook.md#framework-initialization-order) for the canonical reference.
 
 ### Consequences of Violation
 
-- Accessing `RepositoryInfo` before step 2 → throws `InvalidOperationException`
-- Using encryption before step 4 → keys are empty, encryption fails
-- Handling API requests before step 7 → serialization / compression / encryption components are null
+- Resolving framework services before `AddBeeFramework` → DI container throws `InvalidOperationException` (service not registered)
+- Calling `SystemSettingsLoader.Load` on a path with no `SystemSettings.xml` → throws `FileNotFoundException`
+- Skipping `app.UseBeeFramework()` on ASP.NET hosts → `new DbAccess(databaseId)` legacy call sites fail (the bootstrapper wires the transitional `DbConnectionManager` static shim)
 
 ### Reference Example
 
-`tests/Bee.Tests.Shared/GlobalFixture.cs` demonstrates the correct initialization order.
+`tests/Bee.Tests.Shared/TestProcessBootstrap.cs` demonstrates the correct initialization order for the test process.
 
 ## Cross-Layer Forbidden Practices
 

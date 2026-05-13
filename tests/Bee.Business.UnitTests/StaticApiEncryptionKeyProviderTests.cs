@@ -5,7 +5,7 @@ namespace Bee.Business.UnitTests
 {
     /// <summary>
     /// <see cref="StaticApiEncryptionKeyProvider"/> 行為測試。
-    /// Phase 4 之後 provider 透過 ctor 注入 byte[] 金鑰；測試也跟著用直接構造，不再操弄 BackendInfo 靜態。
+    /// Provider 透過 ctor 注入 byte[] 金鑰；測試直接構造，不依賴任何 process-wide static。
     /// </summary>
     public class StaticApiEncryptionKeyProviderTests
     {

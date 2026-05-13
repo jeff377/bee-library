@@ -66,9 +66,9 @@ namespace Bee.Business.System
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Anonymous)]
         public virtual LoginResult Login(LoginArgs args)
         {
-            // Rare per-method needs (LoginAttemptTracker, ApiEncryptionKeyProvider)
-            // resolved via IBeeContext.Services escape hatch — Phase 3 backs this
-            // with BackendInfo statics; Phase 4 swaps for real DI scope.
+            // Rare per-method needs (ILoginAttemptTracker, IApiEncryptionKeyProvider) resolved
+            // via IBeeContext.Services escape hatch — ILoginAttemptTracker is an optional service
+            // apps register if they need brute-force protection.
             var tracker = Services.GetService<ILoginAttemptTracker>();
 
             // 0. Check if the account is locked out due to excessive failed attempts

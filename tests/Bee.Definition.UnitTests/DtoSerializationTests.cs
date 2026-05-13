@@ -321,7 +321,7 @@ namespace Bee.Definition.UnitTests
             // Arrange
             var original = new SystemSettings();
             original.CommonConfiguration.Version = "4.0.1";
-            original.BackendConfiguration.ApiKey = "common";
+            original.BackendConfiguration.SecurityKeySettings.MasterKeySource.Value = "common";
 
             // Act
             var json = JsonCodec.Serialize(original);
@@ -330,7 +330,7 @@ namespace Bee.Definition.UnitTests
             // Assert
             Assert.NotNull(restored);
             Assert.Equal("4.0.1", restored!.CommonConfiguration.Version);
-            Assert.Equal("common", restored.BackendConfiguration.ApiKey);
+            Assert.Equal("common", restored.BackendConfiguration.SecurityKeySettings.MasterKeySource.Value);
         }
     }
 }

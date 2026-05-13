@@ -244,7 +244,7 @@ Every FormSchema must specify `CategoryId`, which corresponds to the `Id` of a `
 FormApiConnector queries data
   → FormBusinessObject handles the request
   → IFormCommandBuilder (per-DB provider) is used
-    → Retrieves FormSchema from BackendInfo.DefineAccess
+    → Retrieves FormSchema from IDefineAccess (DI ctor injected)
     → SelectCommandBuilder.Build(tableName, fields, filter, sort)
       → IFromBuilder: produce FROM clause (with JOIN)
       → IWhereBuilder: produce WHERE clause from FilterCondition

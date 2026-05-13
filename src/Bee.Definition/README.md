@@ -26,7 +26,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 - **FormSchema as the definition hub** — a single FormSchema simultaneously drives UI rendering (FormLayout), database projection (TableSchema), and validation rules, eliminating cross-layer specification drift.
 - **Structured filter & sort model** — `FilterCondition` and `FilterGroup` compose a tree-based query model with factory methods (`Equal`, `Contains`, `Between`, `In`, etc.) for type-safe query building.
 - **Dual serialization support** — types are annotated for both MessagePack (high-performance binary) and XML serialization, enabling efficient API transport and human-readable configuration files.
-- **Provider pattern via BackendInfo** — a static registry (`BackendInfo`) holds runtime providers (encryption, caching, logging, session) resolved by convention, decoupling Definition from concrete implementations.
+- **DI-injected runtime services** — interfaces such as `IDefineAccess`, `ISessionInfoService`, `IDatabaseSettingsProvider`, `IApiEncryptionKeyProvider`, and `IAccessTokenValidator` are defined here and registered through `AddBeeFramework` at host startup, decoupling Definition from concrete implementations.
 - **Security contracts** — interfaces like `IAccessTokenValidationProvider` and `IApiEncryptionKeyProvider` define security boundaries without imposing implementation details.
 - **DefineType-driven CRUD** — the `DefineType` enum and `DefineFunc` utility map definition categories to CLR types, enabling generic load/save through `IDefineAccess` and `IDefineStorage`.
 - **Centralized settings model** — `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, and `MenuSettings` provide a typed configuration surface that replaces ad-hoc key-value lookups.
@@ -41,7 +41,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 | `FilterCondition` / `FilterGroup` | Composable query filter tree |
 | `SortField` / `SortFieldCollection` | Query sort descriptors |
 | `SystemSettings` / `DatabaseSettings` / `ProgramSettings` | Configuration definition types |
-| `BackendInfo` | Static provider registry for runtime services |
+| `IDatabaseSettingsProvider` | DI service exposing the current `DatabaseSettings` snapshot and lookup helpers |
 | `SessionInfo` / `SessionUser` | Session and user context |
 | `IDefineAccess` / `IDefineStorage` | Definition load/save contracts |
 | `IBusinessObjectProvider` | Factory contract for business object creation |
@@ -52,10 +52,9 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 ## Design Conventions
 
 - **MessagePack `[Key]` + XML `[XmlElement]` dual annotation** — every serializable property carries both attributes to support binary and XML channels.
-- **Provider Pattern** — `BackendInfo` exposes static properties typed to interfaces (e.g., `ILogWriter`, `IApiEncryptionKeyProvider`). Concrete types are registered at startup via `BackendDefaultTypes` constants.
+- **Replaceable services via XML registry** — `BackendComponents` (in `SystemSettings.xml`) declares the concrete type name for each replaceable interface (`IDefineAccess`, `ISessionInfoService`, etc.). `AddBeeFramework` reads the registry at startup and registers the configured types in the DI container; `BackendDefaultTypes` holds the framework-default type-name constants.
 - **Factory methods on FilterCondition** — prefer `FilterCondition.Equal(...)` over `new FilterCondition { ... }` for readability and consistency.
 - **DefineType enum as dispatch key** — `DefineFunc.GetDefineType()` maps enum values to CLR types, enabling generic definition CRUD without hard-coding type references.
-- **Immutable defaults** — `BackendInfo` properties initialize to safe defaults (`NullLogWriter`, empty arrays) so the system never encounters null providers.
 - **XML doc comments in English** — all public APIs carry English XML documentation to ensure IntelliSense readability for NuGet consumers worldwide.
 - **Nullable Reference Types enabled** — the project opts into NRT (`<Nullable>enable</Nullable>`) and treats warnings as errors, enforcing null-safety at compile time.
 
@@ -84,11 +83,12 @@ Bee.Definition/
   Sorting/          SortField, SortFieldCollection, SortDirection
   Storage/          IDefineAccess (and friends)
   (root)            Cross-cutting infrastructure:
-                    BackendInfo, BackendDefaultTypes, DefineFunc, DefinePathInfo,
-                    DefineType, GlobalEvents, PropertyCategories,
+                    BackendDefaultTypes, DefineFunc, DefineType,
+                    GlobalEvents, PropertyCategories,
                     SysFields, SysFuncIDs, SysProgIds, SystemActions,
-                    ApplicationType, InitializeOptions,
-                    IBusinessObjectProvider, ICacheDataSourceProvider, IEnterpriseObjectService
+                    ApplicationType, InitializeOptions, PathOptions,
+                    IDatabaseSettingsProvider, IBusinessObjectProvider,
+                    ICacheDataSourceProvider, IEnterpriseObjectService
 ```
 
 The namespace layout follows the design principles in [ADR-008](../../docs/adr/adr-008-bee-db-namespace-layout.md):
