@@ -19,7 +19,8 @@
 | 5.4c | SessionInfoService 改 ctor 注入 ICacheContainer | `f761c393` | ✅ |
 | 5.4d | Cache key prefix 隔離（opt-in），達成真 per-fixture 資料隔離 | `9bfac037` + `93ee78a9` | ✅ fix follow-up：CacheContainerService 預設不帶 prefix，BeeTestFixture 才透過 service replacement 加上 |
 | 5.4e | `Bee.Api.AspNetCore.UnitTests` 遷移至 `IClassFixture<BeeTestFixture>`（3 class / 11 tests） | `52038841` | ✅ 新增 `TestSessionFactory.CreateAccessToken(BeeTestFixture, ...)` overload；刪除 `GlobalCollection.cs` |
-| 5.4f | `Bee.Definition.UnitTests` 廢除 `[Collection("Initialize")]`（4 class）+ 4 個 TempDefinePath sites | （本 PR） | ✅ `DefinePathInfoTests` 重寫為 `PathOptionsFilePathTests`（測 PathOptions instance）；`SystemSettingsLoaderTests`/`MasterKeyProviderTests` 改用 local temp-dir helper；`FormSchemaTests`/`FileDefineStorageTests` 純脫 Collection；刪除 `GlobalCollection.cs` |
+| 5.4f | `Bee.Definition.UnitTests` 廢除 `[Collection("Initialize")]`（4 class）+ 4 個 TempDefinePath sites | `3cfd05c4` | ✅ `DefinePathInfoTests` 重寫為 `PathOptionsFilePathTests`（測 PathOptions instance）；`SystemSettingsLoaderTests`/`MasterKeyProviderTests` 改用 local temp-dir helper；`FormSchemaTests`/`FileDefineStorageTests` 純脫 Collection；刪除 `GlobalCollection.cs` |
+| 5.4g | `Bee.ObjectCaching.UnitTests` 部分遷移：14/16 TempDefinePath sites + 2 class 脫 Collection | （本 PR） | ✅ `LocalDefineAccessSaveTests` 全脫 Collection + 14 個 TempDefinePath → local TempDir；`SessionInfoServiceTests` 脫 Collection；`CacheTests`/`LocalDefineAccessTests` 改 `IClassFixture<BeeTestFixture>` hybrid（仍保 Collection 等 5.7 cache 注入 PathOptions）；修復 `MemoryCacheProviderTests` 中 PhysicalFileProvider watcher 在 `Path.GetTempPath()` 根目錄被平行測試誤觸發的 race（改用獨立子資料夾）；2 個 cache file-load 測試（`DatabaseSettingsCacheTests`/`SystemSettingsCacheTests`）暫留 TempDefinePath + Collection，待 5.7 |
 
 ## 偏離原計畫紀要
 

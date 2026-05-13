@@ -107,22 +107,17 @@ namespace Bee.ObjectCaching.UnitTests
         public void Set_WithFileChangeMonitor_DoesNotThrow()
         {
             using var provider = CreateProvider();
-            var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".tmp");
+            using var watchDir = WatchDirectory.Create();
+            var tempFile = Path.Combine(watchDir.Path, "watched.tmp");
             File.WriteAllText(tempFile, "x");
-            try
+
+            var policy = new CacheItemPolicy
             {
-                var policy = new CacheItemPolicy
-                {
-                    ChangeMonitorFilePaths = new[] { tempFile },
-                    SlidingExpiration = TimeSpan.FromMinutes(1)
-                };
-                provider.Set("with-monitor", "v", policy);
-                Assert.Equal("v", provider.Get("with-monitor"));
-            }
-            finally
-            {
-                File.Delete(tempFile);
-            }
+                ChangeMonitorFilePaths = new[] { tempFile },
+                SlidingExpiration = TimeSpan.FromMinutes(1)
+            };
+            provider.Set("with-monitor", "v", policy);
+            Assert.Equal("v", provider.Get("with-monitor"));
         }
 
         [Fact]
@@ -130,33 +125,64 @@ namespace Bee.ObjectCaching.UnitTests
         public async Task Set_WithFileChangeMonitor_EvictsOnFileChange()
         {
             using var provider = CreateProvider();
-            var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N") + ".tmp");
+            using var watchDir = WatchDirectory.Create();
+            var tempFile = Path.Combine(watchDir.Path, "watched.tmp");
             File.WriteAllText(tempFile, "initial");
-            try
+
+            var policy = new CacheItemPolicy
             {
-                var policy = new CacheItemPolicy
-                {
-                    ChangeMonitorFilePaths = new[] { tempFile },
-                    SlidingExpiration = TimeSpan.FromMinutes(10)
-                };
-                provider.Set("watched", "v", policy);
-                Assert.True(provider.Contains("watched"));
+                ChangeMonitorFilePaths = new[] { tempFile },
+                SlidingExpiration = TimeSpan.FromMinutes(10)
+            };
+            provider.Set("watched", "v", policy);
+            Assert.True(provider.Contains("watched"));
 
-                // Trigger a file change; PhysicalFileProvider polls every ~4 seconds by default.
-                File.WriteAllText(tempFile, "changed");
+            // Trigger a file change; PhysicalFileProvider polls every ~4 seconds by default.
+            File.WriteAllText(tempFile, "changed");
 
-                // PhysicalFileProvider polls every ~4 seconds in polling mode; allow generous slack on CI.
-                var deadline = DateTime.UtcNow.AddSeconds(20);
-                while (provider.Contains("watched") && DateTime.UtcNow < deadline)
-                {
-                    await Task.Delay(200);
-                }
-
-                Assert.False(provider.Contains("watched"));
+            // PhysicalFileProvider polls every ~4 seconds in polling mode; allow generous slack on CI.
+            var deadline = DateTime.UtcNow.AddSeconds(20);
+            while (provider.Contains("watched") && DateTime.UtcNow < deadline)
+            {
+                await Task.Delay(200);
             }
-            finally
+
+            Assert.False(provider.Contains("watched"));
+        }
+
+        /// <summary>
+        /// 每測試獨立的暫存資料夾，包住要被監控的檔案。
+        /// </summary>
+        /// <remarks>
+        /// <see cref="Microsoft.Extensions.FileProviders.PhysicalFileProvider"/> 對監控的檔案實際上是 watch
+        /// 該檔案所在的父資料夾；若父資料夾被多個平行測試共用（如 <see cref="Path.GetTempPath"/>），
+        /// 別的測試在那層建立或刪除其他檔案會誤觸發 change token，使本測試的快取項目被提前驅逐。
+        /// 用獨立子資料夾隔離 watcher 即可避免此 race。
+        /// </remarks>
+        private sealed class WatchDirectory : IDisposable
+        {
+            public string Path { get; }
+
+            private WatchDirectory(string path) { Path = path; }
+
+            public static WatchDirectory Create()
             {
-                File.Delete(tempFile);
+                var dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bee-mctest-{Guid.NewGuid():N}");
+                Directory.CreateDirectory(dir);
+                return new WatchDirectory(dir);
+            }
+
+            public void Dispose()
+            {
+                try
+                {
+                    if (Directory.Exists(Path))
+                        Directory.Delete(Path, recursive: true);
+                }
+                catch (IOException)
+                {
+                    // best effort
+                }
             }
         }
     }

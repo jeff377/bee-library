@@ -5,7 +5,11 @@ using Bee.Definition.Identity;
 
 namespace Bee.ObjectCaching.UnitTests
 {
-    [Collection("Initialize")]
+    /// <summary>
+    /// <see cref="SessionInfoService"/> 行為測試。每個測試自建獨立的
+    /// <see cref="CacheContainerService"/>（不共用 process-wide cache），
+    /// 不依賴 <see cref="DefinePathInfo"/>，可與其他 test class 平行執行。
+    /// </summary>
     public class SessionInfoServiceTests
     {
         private static SessionInfoService NewService()

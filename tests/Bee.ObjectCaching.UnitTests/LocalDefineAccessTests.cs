@@ -4,19 +4,29 @@ using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.ObjectCaching.UnitTests
 {
+    /// <summary>
+    /// <see cref="LocalDefineAccess"/> 讀取路徑測試。透過 fixture 的 DI 容器解析共用實例
+    /// （path = <c>tests/Define</c>），仍保留 <c>[Collection("Initialize")]</c> 序列化—— Get 路徑
+    /// 在 cache miss 時走 process-wide <see cref="CacheContainer"/> 與 <see cref="DefinePathInfo"/>
+    /// 靜態，可能與 <c>DatabaseSettingsCacheTests</c> 等 mutator 競爭；待 PR 5.7 cache 改注入 PathOptions
+    /// 後再脫除 Collection。
+    /// </summary>
     [Collection("Initialize")]
-    public class LocalDefineAccessTests
+    public class LocalDefineAccessTests : IClassFixture<BeeTestFixture>
     {
         private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };
         private static readonly string[] s_formSchemaKeys = { "Department" };
 
-        // 共用 fixture path：透過 DefinePathInfo 暫存 facade 取得（PR 5.3 後改由 BeeTestFixture 注入）。
-        private readonly LocalDefineAccess _access = new LocalDefineAccess(
-            new FileDefineStorage(DefinePathInfo.CurrentOptions),
-            DefinePathInfo.CurrentOptions);
+        private readonly IDefineAccess _access;
+
+        public LocalDefineAccessTests(BeeTestFixture fx)
+        {
+            _access = fx.GetRequiredService<IDefineAccess>();
+        }
 
         [Fact]
         [DisplayName("GetDefine(SystemSettings) 應回傳 SystemSettings 實例")]

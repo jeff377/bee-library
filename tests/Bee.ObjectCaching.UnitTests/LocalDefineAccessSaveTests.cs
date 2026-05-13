@@ -5,17 +5,19 @@ using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
-using Bee.Tests.Shared;
 
 namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
     /// <see cref="LocalDefineAccess"/> 所有 Save 方法的覆蓋測試。
-    /// 以暫存 DefinePath 隔離測試檔案，避免污染共用的 tests/Define 目錄。
-    /// 各測試內以 <see cref="TempDefinePath.Options"/> 構造 <see cref="LocalDefineAccess"/>，
-    /// 寫入目標即為當次測試的隔離暫存區。
+    /// 各測試以本地 <see cref="TempDir"/> 隔離 <see cref="PathOptions"/>，直接傳給
+    /// <see cref="LocalDefineAccess"/> ctor —— 不操弄 <see cref="DefinePathInfo"/>
+    /// process-wide static，可與其他 test class 平行執行。
     /// </summary>
-    [Collection("Initialize")]
+    /// <remarks>
+    /// Save 路徑會呼叫 <c>CacheContainer.X.Remove(key)</c> 失效 process-wide 快取，但 keys
+    /// 皆為本測試特有（如 <c>dbX/t_sample</c>、<c>P_Test</c>），不會影響其他測試。
+    /// </remarks>
     public class LocalDefineAccessSaveTests
     {
         private static readonly string[] DbViaDefineKeys = { "db_via_define" };
@@ -27,7 +29,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveSystemSettings 應寫入 SystemSettings.xml 並可再讀回")]
         public void SaveSystemSettings_WritesFile()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var settings = new SystemSettings();
             settings.BackendConfiguration.ApiKey = "saved_id";
@@ -43,7 +45,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveDatabaseSettings 應寫入 DatabaseSettings.xml")]
         public void SaveDatabaseSettings_WritesFile()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var settings = new DatabaseSettings();
 
@@ -56,7 +58,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveProgramSettings 應寫入 ProgramSettings.xml")]
         public void SaveProgramSettings_WritesFile()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var settings = new ProgramSettings();
 
@@ -69,7 +71,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveDbCategorySettings 應透過 DefineStorage 寫入 DbCategorySettings.xml")]
         public void SaveDbCategorySettings_WritesFile()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var settings = new DbCategorySettings();
 
@@ -82,7 +84,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveTableSchema 應寫入對應資料庫資料夾下的 TableSchema xml")]
         public void SaveTableSchema_WritesFile()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var schema = new TableSchema { TableName = "t_sample" };
 
@@ -95,7 +97,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveFormSchema 應寫入以 ProgId 命名的 FormSchema xml")]
         public void SaveFormSchema_WritesFile()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var schema = new FormSchema { ProgId = "P_Test", CategoryId = "common" };
 
@@ -108,7 +110,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveFormSchema 缺少 CategoryId 時應丟 InvalidOperationException")]
         public void SaveFormSchema_ThrowsWhenCategoryIdEmpty()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var schema = new FormSchema { ProgId = "P_NoCategory" };
 
@@ -121,7 +123,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveFormLayout 應寫入以 LayoutId 命名的 FormLayout xml")]
         public void SaveFormLayout_WritesFile()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var layout = new FormLayout { LayoutId = "L_Test" };
 
@@ -139,7 +141,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveDefine(SystemSettings) 應委派至 SaveSystemSettings")]
         public void SaveDefine_SystemSettings_DelegatesToSaveSystemSettings()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             access.SaveDefine(DefineType.SystemSettings, new SystemSettings());
             Assert.True(File.Exists(temp.Options.GetSystemSettingsFilePath()));
@@ -149,7 +151,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveDefine(DatabaseSettings) 應委派至 SaveDatabaseSettings")]
         public void SaveDefine_DatabaseSettings_DelegatesToSaveDatabaseSettings()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             access.SaveDefine(DefineType.DatabaseSettings, new DatabaseSettings());
             Assert.True(File.Exists(temp.Options.GetDatabaseSettingsFilePath()));
@@ -159,7 +161,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveDefine(ProgramSettings) 應委派至 SaveProgramSettings")]
         public void SaveDefine_ProgramSettings_DelegatesToSaveProgramSettings()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             access.SaveDefine(DefineType.ProgramSettings, new ProgramSettings());
             Assert.True(File.Exists(temp.Options.GetProgramSettingsFilePath()));
@@ -169,7 +171,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveDefine(DbCategorySettings) 應委派至 SaveDbCategorySettings")]
         public void SaveDefine_DbCategorySettings_DelegatesToSaveDbCategorySettings()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             access.SaveDefine(DefineType.DbCategorySettings, new DbCategorySettings());
             Assert.True(File.Exists(temp.Options.GetDbCategorySettingsFilePath()));
@@ -179,7 +181,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveDefine(TableSchema) 帶單一 key 應委派至 SaveTableSchema")]
         public void SaveDefine_TableSchema_WithKey_DelegatesToSaveTableSchema()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var schema = new TableSchema { TableName = "t_via_define" };
             access.SaveDefine(DefineType.TableSchema, schema, DbViaDefineKeys);
@@ -190,11 +192,43 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("SaveDefine(FormLayout) 應委派至 SaveFormLayout")]
         public void SaveDefine_FormLayout_DelegatesToSaveFormLayout()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var access = CreateAccess(temp.Options);
             var layout = new FormLayout { LayoutId = "L_via_define" };
             access.SaveDefine(DefineType.FormLayout, layout);
             Assert.True(File.Exists(temp.Options.GetFormLayoutFilePath("L_via_define")));
+        }
+
+        private sealed class TempDir : IDisposable
+        {
+            public string Path { get; }
+            public PathOptions Options { get; }
+
+            private TempDir(string path)
+            {
+                Path = path;
+                Options = new PathOptions { DefinePath = path };
+            }
+
+            public static TempDir Create()
+            {
+                var dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bee-save-{Guid.NewGuid():N}");
+                Directory.CreateDirectory(dir);
+                return new TempDir(dir);
+            }
+
+            public void Dispose()
+            {
+                try
+                {
+                    if (Directory.Exists(Path))
+                        Directory.Delete(Path, recursive: true);
+                }
+                catch (IOException)
+                {
+                    // best effort
+                }
+            }
         }
     }
 }
