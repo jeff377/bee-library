@@ -5,9 +5,10 @@ using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class DbAccessStringMethodTests
+    public class DbAccessStringMethodTests : IClassFixture<SharedDbFixture>
     {
+        public DbAccessStringMethodTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteNonQuery 字串多載應回傳影響列數")]
         public void ExecuteNonQuery_ValidSql_ReturnsRowsAffected()

@@ -10,9 +10,10 @@ namespace Bee.Repository.UnitTests
     /// <summary>
     /// 針對 <see cref="SystemRepositoryFactory"/> 工廠方法的純邏輯測試。
     /// </summary>
-    [Collection("Initialize")]
-    public class SystemRepositoryFactoryTests
+    public class SystemRepositoryFactoryTests : IClassFixture<SharedDbFixture>
     {
+        public SystemRepositoryFactoryTests(SharedDbFixture _) { }
+
         private static ISystemRepositoryFactory Factory => BeeTestServices.GetRequiredService<ISystemRepositoryFactory>();
 
         [Fact]

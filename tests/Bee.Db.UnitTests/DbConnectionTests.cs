@@ -5,9 +5,10 @@ using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class DbConnectionTests
+    public class DbConnectionTests : IClassFixture<SharedDbFixture>
     {
+        public DbConnectionTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("OpenConnection 使用環境變數連線字串應成功連線")]
         public void OpenConnection_WithEnvConnStr_Succeeds()

@@ -4,12 +4,14 @@ using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class SqlTableAlterCommandBuilderTests
+    public class SqlTableAlterCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public SqlTableAlterCommandBuilderTests(SharedDbFixture _) { }
+
         private readonly SqlTableAlterCommandBuilder _builder = new();
 
         // ---------- GetExecutionKind ----------

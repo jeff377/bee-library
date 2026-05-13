@@ -16,9 +16,10 @@ namespace Bee.Db.UnitTests
     /// with <see cref="Bee.Definition.Database.DatabaseType.MySQL"/> and emits backtick-quoted
     /// identifiers (per <see cref="DatabaseTypeExtensions.QuoteIdentifier"/>).
     /// </summary>
-    [Collection("Initialize")]
-    public class MySqlFormCommandBuilderTests
+    public class MySqlFormCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public MySqlFormCommandBuilderTests(SharedDbFixture _) { }
+
         private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
 
         private static FormSchema BuildFooSchema()

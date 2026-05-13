@@ -12,9 +12,11 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class DbDialectRegistryTests
+    public class DbDialectRegistryTests : IClassFixture<SharedDbFixture>
     {
+        public DbDialectRegistryTests(SharedDbFixture _) { }
+
+
         [Fact]
         [DisplayName("Register + Get 應成功取回對應的工廠")]
         public void RegisterAndGet_ReturnsSameFactory()
@@ -51,9 +53,10 @@ namespace Bee.Db.UnitTests
         }
     }
 
-    [Collection("Initialize")]
-    public class SqlDialectFactoryTests
+    public class SqlDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
+        public SqlDialectFactoryTests(SharedDbFixture _) { }
+
         private readonly SqlDialectFactory _factory = new();
 
         [DbFact(DatabaseType.SQLServer)]

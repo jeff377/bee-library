@@ -17,9 +17,10 @@ namespace Bee.Db.UnitTests
     /// configured database. Uses an in-memory FormSchema mirroring that table so the test does
     /// not depend on a checked-in FormSchema XML.
     /// </summary>
-    [Collection("Initialize")]
-    public class FormCommandBuilderIudIntegrationTests
+    public class FormCommandBuilderIudIntegrationTests : IClassFixture<SharedDbFixture>
     {
+        public FormCommandBuilderIudIntegrationTests(SharedDbFixture _) { }
+
         private const string UserTableName = "User";
         private const string UserDbTableName = "st_user";
 

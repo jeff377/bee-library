@@ -6,9 +6,10 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class TableSchemaBuilderTests
+    public class TableSchemaBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public TableSchemaBuilderTests(SharedDbFixture _) { }
+
         private static TableSchemaBuilder NewBuilder(string databaseId)
             => new(databaseId, BeeTestServices.GetRequiredService<IDefineAccess>());
 

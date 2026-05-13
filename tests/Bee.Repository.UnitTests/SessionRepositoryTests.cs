@@ -5,9 +5,10 @@ using Bee.Definition.Database;
 
 namespace Bee.Repository.UnitTests
 {
-    [Collection("Initialize")]
-    public class SessionRepositoryTests
+    public class SessionRepositoryTests : IClassFixture<SharedDbFixture>
     {
+        public SessionRepositoryTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateSession 傳入有效使用者編號應建立 Session")]
         public void CreateSession_ValidUserId_CreatesSession()

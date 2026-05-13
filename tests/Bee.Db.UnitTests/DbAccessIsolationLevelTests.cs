@@ -9,9 +9,10 @@ using Bee.Definition.Storage;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class DbAccessIsolationLevelTests
+    public class DbAccessIsolationLevelTests : IClassFixture<SharedDbFixture>
     {
+        public DbAccessIsolationLevelTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteBatch 以指定 IsolationLevel 執行批次交易應成功")]
         public void ExecuteBatch_WithIsolationLevel_Succeeds()

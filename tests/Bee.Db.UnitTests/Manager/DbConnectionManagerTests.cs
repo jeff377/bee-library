@@ -12,9 +12,12 @@ namespace Bee.Db.UnitTests.Manager
     /// DbConnectionManager 的快取與連線資訊組裝測試。
     /// 使用唯一 databaseId 以避免與其他測試共用的全域快取互相干擾。
     /// </summary>
-    [Collection("Initialize")]
-    public class DbConnectionManagerTests
+    [Collection("DbConnectionState")]
+    public class DbConnectionManagerTests : IClassFixture<SharedDbFixture>
     {
+        public DbConnectionManagerTests(SharedDbFixture _) { }
+
+
         private static string NewId(string label) => $"bee_dcm_{label}_{Guid.NewGuid():N}";
 
         private static DatabaseItem AddItem(string id, Action<DatabaseItem> configure)

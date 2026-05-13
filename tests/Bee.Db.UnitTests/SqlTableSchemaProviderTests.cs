@@ -5,9 +5,10 @@ using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class SqlTableSchemaProviderTests
+    public class SqlTableSchemaProviderTests : IClassFixture<SharedDbFixture>
     {
+        public SqlTableSchemaProviderTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SqlTableSchemaProvider 取得資料表結構應成功")]
         public void GetTableSchema_ValidTableName_ReturnsSchema()

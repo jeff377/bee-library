@@ -7,9 +7,12 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests.Manager
 {
-    [Collection("Initialize")]
-    public class DbAccessFactoryTests
+    [Collection("DbConnectionState")]
+    public class DbAccessFactoryTests : IClassFixture<SharedDbFixture>
     {
+        public DbAccessFactoryTests(SharedDbFixture _) { }
+
+
         [Fact]
         [DisplayName("DbAccessFactory 預設建構子應建立實例")]
         public void DbAccessFactory_DefaultConstructor_CreatesInstance()

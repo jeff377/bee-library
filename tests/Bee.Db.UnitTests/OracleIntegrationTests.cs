@@ -23,9 +23,10 @@ namespace Bee.Db.UnitTests
     /// Oracle connection string is configured (<see cref="DbFactAttribute"/> handles the
     /// env-var check).
     /// </summary>
-    [Collection("Initialize")]
-    public class OracleIntegrationTests
+    public class OracleIntegrationTests : IClassFixture<SharedDbFixture>
     {
+        public OracleIntegrationTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.Oracle)]
         [DisplayName("Oracle SchemaProvider 應讀回 fixture 建好的 st_user 表")]
         public void SchemaProvider_ReadsFixtureTable()

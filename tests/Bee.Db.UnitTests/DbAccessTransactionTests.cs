@@ -8,9 +8,10 @@ using Bee.Definition.Database;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class DbAccessTransactionTests
+    public class DbAccessTransactionTests : IClassFixture<SharedDbFixture>
     {
+        public DbAccessTransactionTests(SharedDbFixture _) { }
+
         /// <summary>
         /// Fake transaction whose connection is always null, for testing null-connection guards.
         /// </summary>

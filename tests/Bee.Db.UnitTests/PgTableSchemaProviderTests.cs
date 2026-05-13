@@ -6,9 +6,10 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class PgTableSchemaProviderTests
+    public class PgTableSchemaProviderTests : IClassFixture<SharedDbFixture>
     {
+        public PgTableSchemaProviderTests(SharedDbFixture _) { }
+
         private const string DatabaseId = "common_postgresql";
 
         [DbFact(DatabaseType.PostgreSQL)]

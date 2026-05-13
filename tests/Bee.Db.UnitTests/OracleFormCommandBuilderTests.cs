@@ -17,9 +17,10 @@ namespace Bee.Db.UnitTests
     /// identifiers + <c>:</c> bind-variable prefixes (per <see cref="DatabaseTypeExtensions.QuoteIdentifier"/>
     /// and <see cref="DatabaseTypeExtensions.GetParameterPrefix"/>).
     /// </summary>
-    [Collection("Initialize")]
-    public class OracleFormCommandBuilderTests
+    public class OracleFormCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public OracleFormCommandBuilderTests(SharedDbFixture _) { }
+
         private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
 
         private static FormSchema BuildFooSchema()

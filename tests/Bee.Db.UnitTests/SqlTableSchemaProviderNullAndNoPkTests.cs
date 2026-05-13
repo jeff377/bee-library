@@ -33,9 +33,11 @@ namespace Bee.Db.UnitTests
     /// <c>ParsePrimaryKey</c> 在無主鍵時的提前返回路徑。
     /// 依賴 SQL Server 連線；環境變數未設時自動跳過。
     /// </summary>
-    [Collection("Initialize")]
-    public class SqlTableSchemaProviderDecimalAndNoPkTests
+    public class SqlTableSchemaProviderDecimalAndNoPkTests : IClassFixture<SharedDbFixture>
     {
+        public SqlTableSchemaProviderDecimalAndNoPkTests(SharedDbFixture _) { }
+
+
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SQL Server SchemaProvider 讀回 DECIMAL(15,3) 欄位時應正確設定 Precision 與 Scale（ParseDbField Decimal 分支）")]
         public void GetTableSchema_DecimalField_ReturnsPrecisionAndScale()

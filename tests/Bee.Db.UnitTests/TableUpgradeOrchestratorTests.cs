@@ -9,12 +9,14 @@ using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class TableUpgradeOrchestratorTests
+    public class TableUpgradeOrchestratorTests : IClassFixture<SharedDbFixture>
     {
+        public TableUpgradeOrchestratorTests(SharedDbFixture _) { }
+
         private static readonly IDialectFactory s_dialect = new SqlDialectFactory();
 
         private static TableSchema BuildDefineSchema(string tableName = "st_demo")

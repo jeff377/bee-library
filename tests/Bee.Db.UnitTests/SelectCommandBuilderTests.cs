@@ -8,9 +8,10 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class SelectCommandBuilderTests
+    public class SelectCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public SelectCommandBuilderTests(SharedDbFixture _) { }
+
         private static FormSchema BuildSimpleSchema()
         {
             var schema = new FormSchema("demo", "Demo Form");

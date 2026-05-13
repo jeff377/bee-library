@@ -26,9 +26,10 @@ namespace Bee.Db.UnitTests
                 DbProviderRegistry.Get((DatabaseType)9999));
         }
 
-        [Collection("Initialize")]
-        public class WithInitializedFixture
+        public class WithInitializedFixture : IClassFixture<Bee.Tests.Shared.SharedDbFixture>
         {
+            public WithInitializedFixture(Bee.Tests.Shared.SharedDbFixture _) { }
+
             [Fact]
             [DisplayName("Get 已註冊型別應回傳對應 factory（透過 fixture 註冊）")]
             public void Get_RegisteredType_ReturnsFactory()

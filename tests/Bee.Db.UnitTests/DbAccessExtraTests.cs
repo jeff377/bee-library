@@ -1,12 +1,14 @@
 using System.ComponentModel;
 using Bee.Definition.Database;
 using Microsoft.Data.SqlClient;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class DbAccessExtraTests
+    public class DbAccessExtraTests : IClassFixture<SharedDbFixture>
     {
+        public DbAccessExtraTests(SharedDbFixture _) { }
+
         [Theory]
         [InlineData("")]
         [InlineData("   ")]

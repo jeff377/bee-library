@@ -10,9 +10,10 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class PgFormCommandBuilderTests
+    public class PgFormCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public PgFormCommandBuilderTests(SharedDbFixture _) { }
+
         private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
 
         private static PgFormCommandBuilder NewBuilder(FormSchema schema)

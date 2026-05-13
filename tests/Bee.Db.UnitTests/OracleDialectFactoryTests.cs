@@ -21,9 +21,10 @@ namespace Bee.Db.UnitTests
     /// and will be filled in by follow-up commits — see
     /// docs/plans/plan-oracle-support.md.
     /// </remarks>
-    [Collection("Initialize")]
-    public class OracleDialectFactoryTests
+    public class OracleDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
+        public OracleDialectFactoryTests(SharedDbFixture _) { }
+
         [Fact]
         [DisplayName("Oracle DialectFactory 應透過 DbDialectRegistry 註冊成功")]
         public void DialectFactory_IsRegistered()

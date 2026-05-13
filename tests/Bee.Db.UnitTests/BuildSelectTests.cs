@@ -8,9 +8,10 @@ using Bee.Definition.Storage;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class BuildSelectTests
+    public class BuildSelectTests : IClassFixture<SharedDbFixture>
     {
+        public BuildSelectTests(SharedDbFixture _) { }
+
         private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
 
         private static SqlFormCommandBuilder NewBuilder(string progId)

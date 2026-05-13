@@ -4,12 +4,14 @@ using Bee.Db.Providers.PostgreSql;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class PgTableAlterCommandBuilderTests
+    public class PgTableAlterCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public PgTableAlterCommandBuilderTests(SharedDbFixture _) { }
+
         private readonly PgTableAlterCommandBuilder _builder = new();
 
         // ---------- GetExecutionKind ----------

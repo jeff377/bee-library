@@ -4,12 +4,14 @@ using Bee.Base.Data;
 using Bee.Db.Dml;
 using Bee.Definition;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class TableSchemaCommandBuilderTests
+    public class TableSchemaCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public TableSchemaCommandBuilderTests(SharedDbFixture _) { }
+
         private static TableSchema BuildSampleSchema()
         {
             var schema = new TableSchema { TableName = "st_demo" };

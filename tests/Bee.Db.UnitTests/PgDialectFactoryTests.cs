@@ -15,9 +15,10 @@ namespace Bee.Db.UnitTests
     /// provider factory and the dialect factory at startup, so subsequent PG
     /// builder/integration tests can resolve them via the registries.
     /// </summary>
-    [Collection("Initialize")]
-    public class PgDialectFactoryTests
+    public class PgDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
+        public PgDialectFactoryTests(SharedDbFixture _) { }
+
         [Fact]
         [DisplayName("PG DialectFactory 應透過 DbDialectRegistry 註冊成功")]
         public void DialectFactory_IsRegistered()

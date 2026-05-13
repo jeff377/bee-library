@@ -3,12 +3,14 @@ using Bee.Base.Data;
 using Bee.Db.Providers.Sqlite;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class SqliteTableRebuildCommandBuilderTests
+    public class SqliteTableRebuildCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public SqliteTableRebuildCommandBuilderTests(SharedDbFixture _) { }
+
         private static TableSchema BuildDefineSchema()
         {
             var schema = new TableSchema { TableName = "st_demo" };

@@ -3,12 +3,14 @@ using Bee.Base.Data;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class TableSchemaDiffTests
+    public class TableSchemaDiffTests : IClassFixture<SharedDbFixture>
     {
+        public TableSchemaDiffTests(SharedDbFixture _) { }
+
         private static TableSchema BuildSchema(string tableName = "st_demo")
         {
             var schema = new TableSchema { TableName = tableName };

@@ -3,6 +3,7 @@ using Bee.Base.Data;
 using Bee.Db.Providers.Oracle;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -17,9 +18,10 @@ namespace Bee.Db.UnitTests
     /// <see cref="OracleDialectFactory.CreateTableRebuildCommandBuilder"/> rather than
     /// instantiating it directly.
     /// </remarks>
-    [Collection("Initialize")]
-    public class OracleTableRebuildCommandBuilderTests
+    public class OracleTableRebuildCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public OracleTableRebuildCommandBuilderTests(SharedDbFixture _) { }
+
         private static TableSchema BuildDefineSchema()
         {
             var schema = new TableSchema { TableName = "st_demo" };

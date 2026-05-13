@@ -6,9 +6,10 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class TableUpgradeOrchestratorIntegrationTests
+    public class TableUpgradeOrchestratorIntegrationTests : IClassFixture<SharedDbFixture>
     {
+        public TableUpgradeOrchestratorIntegrationTests(SharedDbFixture _) { }
+
         private const string DatabaseId = "common_sqlserver";
 
         private static TableSchema BuildSchema(string tableName, int nameLength = 50)

@@ -3,12 +3,14 @@ using Bee.Base.Data;
 using Bee.Db.Providers.PostgreSql;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class PgAlterCompatibilityRulesTests
+    public class PgAlterCompatibilityRulesTests : IClassFixture<SharedDbFixture>
     {
+        public PgAlterCompatibilityRulesTests(SharedDbFixture _) { }
+
         [Theory]
         [InlineData(FieldDbType.String, FieldDbType.String)]
         [InlineData(FieldDbType.Short, FieldDbType.Short)]

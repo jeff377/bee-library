@@ -4,12 +4,14 @@ using Bee.Db.Providers.Sqlite;
 using Bee.Db.Schema;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class SqliteTableAlterCommandBuilderTests
+    public class SqliteTableAlterCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public SqliteTableAlterCommandBuilderTests(SharedDbFixture _) { }
+
         private readonly SqliteTableAlterCommandBuilder _builder = new();
 
         /// <summary>

@@ -12,9 +12,10 @@ namespace Bee.Db.UnitTests
     /// <c>utf8mb4_0900_ai_ci</c>. Skipped when no MySQL connection string is configured
     /// (<see cref="DbFactAttribute"/> handles the env-var check).
     /// </summary>
-    [Collection("Initialize")]
-    public class MySqlIntegrationTests
+    public class MySqlIntegrationTests : IClassFixture<SharedDbFixture>
     {
+        public MySqlIntegrationTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.MySQL)]
         [DisplayName("MySQL SchemaProvider 應讀回 fixture 建好的 st_user 表")]
         public void SchemaProvider_ReadsFixtureTable()

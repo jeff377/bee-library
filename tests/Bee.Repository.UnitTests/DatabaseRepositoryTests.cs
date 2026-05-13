@@ -11,9 +11,10 @@ namespace Bee.Repository.UnitTests
     /// 針對 <see cref="IDatabaseRepository"/> 預設實作的純邏輯測試。
     /// 透過 <see cref="SystemRepositoryFactory"/> 取得實例（避免直接依賴 internal 型別）。
     /// </summary>
-    [Collection("Initialize")]
-    public class DatabaseRepositoryTests
+    public class DatabaseRepositoryTests : IClassFixture<SharedDbFixture>
     {
+        public DatabaseRepositoryTests(SharedDbFixture _) { }
+
         private const string ValidDatabaseId = "common";
         private const string ValidCategoryId = "common";
         private const string ValidTableName = "TableName";

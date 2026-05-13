@@ -2,12 +2,14 @@ using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Db.Schema.Changes;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class TableChangeTests
+    public class TableChangeTests : IClassFixture<SharedDbFixture>
     {
+        public TableChangeTests(SharedDbFixture _) { }
+
         [Fact]
         [DisplayName("AddFieldChange 應保留 Field 參考且為 TableChange 子類")]
         public void AddFieldChange_PreservesField()

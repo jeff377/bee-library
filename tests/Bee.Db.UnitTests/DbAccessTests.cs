@@ -9,9 +9,10 @@ using Bee.Definition.Storage;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class DbAccessTests
+    public class DbAccessTests : IClassFixture<SharedDbFixture>
     {
+        public DbAccessTests(SharedDbFixture _) { }
+
         public class User
         {
             public string? UserID { get; set; }

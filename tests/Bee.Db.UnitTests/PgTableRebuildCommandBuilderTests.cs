@@ -3,12 +3,14 @@ using Bee.Base.Data;
 using Bee.Db.Providers.PostgreSql;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class PgTableRebuildCommandBuilderTests
+    public class PgTableRebuildCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public PgTableRebuildCommandBuilderTests(SharedDbFixture _) { }
+
         private static TableSchema BuildDefineSchema()
         {
             var schema = new TableSchema { TableName = "st_demo" };

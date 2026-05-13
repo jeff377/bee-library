@@ -12,9 +12,10 @@ namespace Bee.Db.UnitTests
     /// <c>ParsePrimaryKey</c> 在無主鍵時的提前返回路徑。
     /// 依賴 MySQL 連線；環境變數未設時自動跳過。
     /// </summary>
-    [Collection("Initialize")]
-    public class MySqlTableSchemaProviderExtraTests
+    public class MySqlTableSchemaProviderExtraTests : IClassFixture<SharedDbFixture>
     {
+        public MySqlTableSchemaProviderExtraTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.MySQL)]
         [DisplayName("MySQL SchemaProvider 讀回 DECIMAL(15,3) 欄位時應正確設定 Precision 與 Scale（ParseDbField Decimal 分支）")]
         public void GetTableSchema_DecimalField_ReturnsPrecisionAndScale()

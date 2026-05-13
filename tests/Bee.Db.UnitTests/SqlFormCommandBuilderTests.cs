@@ -10,9 +10,10 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class SqlFormCommandBuilderTests
+    public class SqlFormCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public SqlFormCommandBuilderTests(SharedDbFixture _) { }
+
         private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
 
         private static SqlFormCommandBuilder NewBuilder(FormSchema schema)

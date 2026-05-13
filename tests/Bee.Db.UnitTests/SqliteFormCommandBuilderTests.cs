@@ -10,9 +10,10 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class SqliteFormCommandBuilderTests
+    public class SqliteFormCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public SqliteFormCommandBuilderTests(SharedDbFixture _) { }
+
         private static FormSchema BuildFooSchema()
         {
             var schema = new FormSchema("X", "X");

@@ -21,9 +21,10 @@ namespace Bee.Db.UnitTests
     /// and will be filled in by follow-up commits — see
     /// docs/plans/plan-mysql-support.md.
     /// </remarks>
-    [Collection("Initialize")]
-    public class MySqlDialectFactoryTests
+    public class MySqlDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
+        public MySqlDialectFactoryTests(SharedDbFixture _) { }
+
         [Fact]
         [DisplayName("MySQL DialectFactory 應透過 DbDialectRegistry 註冊成功")]
         public void DialectFactory_IsRegistered()

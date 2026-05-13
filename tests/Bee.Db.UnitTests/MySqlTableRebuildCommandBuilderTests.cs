@@ -3,6 +3,7 @@ using Bee.Base.Data;
 using Bee.Db.Providers.MySql;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -17,9 +18,10 @@ namespace Bee.Db.UnitTests
     /// <see cref="MySqlDialectFactory.CreateTableRebuildCommandBuilder"/> rather than
     /// instantiating it directly.
     /// </remarks>
-    [Collection("Initialize")]
-    public class MySqlTableRebuildCommandBuilderTests
+    public class MySqlTableRebuildCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
+        public MySqlTableRebuildCommandBuilderTests(SharedDbFixture _) { }
+
         private static TableSchema BuildDefineSchema()
         {
             var schema = new TableSchema { TableName = "st_demo" };

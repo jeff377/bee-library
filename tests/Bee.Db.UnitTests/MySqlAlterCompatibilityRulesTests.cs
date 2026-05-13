@@ -4,6 +4,7 @@ using Bee.Base.Data;
 using Bee.Db.Providers.MySql;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
@@ -11,9 +12,10 @@ namespace Bee.Db.UnitTests
     /// 對應 <c>MySqlAlterCompatibilityRules</c>（internal static class）的純規則測試。
     /// 透過 reflection 呼叫，避免修改 production 可見性。
     /// </summary>
-    [Collection("Initialize")]
-    public class MySqlAlterCompatibilityRulesTests
+    public class MySqlAlterCompatibilityRulesTests : IClassFixture<SharedDbFixture>
     {
+        public MySqlAlterCompatibilityRulesTests(SharedDbFixture _) { }
+
         private static readonly Type s_rulesType =
             typeof(MySqlDialectFactory).Assembly.GetType("Bee.Db.Providers.MySql.MySqlAlterCompatibilityRules", throwOnError: true)!;
 

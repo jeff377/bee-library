@@ -2,12 +2,14 @@ using System.ComponentModel;
 using System.Data;
 using Microsoft.Data.SqlClient;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class DbCommandSpecTests
+    public class DbCommandSpecTests : IClassFixture<SharedDbFixture>
     {
+        public DbCommandSpecTests(SharedDbFixture _) { }
+
         #region 建構子測試
 
         [Fact]

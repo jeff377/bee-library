@@ -3,12 +3,14 @@ using Bee.Base.Data;
 using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
+using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    [Collection("Initialize")]
-    public class SqlAlterCompatibilityRulesTests
+    public class SqlAlterCompatibilityRulesTests : IClassFixture<SharedDbFixture>
     {
+        public SqlAlterCompatibilityRulesTests(SharedDbFixture _) { }
+
         [Theory]
         [InlineData(FieldDbType.String, FieldDbType.String)]
         [InlineData(FieldDbType.Short, FieldDbType.Short)]

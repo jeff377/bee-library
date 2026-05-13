@@ -14,9 +14,10 @@ namespace Bee.Db.UnitTests
     /// 只驗證回傳的具體型別與委派至 SqliteSchemaSyntax.GetDefaultValueExpression 的一致性，
     /// 不觸及任何資料庫連線。
     /// </summary>
-    [Collection("Initialize")]
-    public class SqliteDialectFactoryTests
+    public class SqliteDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
+        public SqliteDialectFactoryTests(SharedDbFixture _) { }
+
         private readonly SqliteDialectFactory _factory = new();
 
         [DbFact(DatabaseType.SQLite)]

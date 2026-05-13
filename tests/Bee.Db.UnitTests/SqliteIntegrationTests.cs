@@ -12,9 +12,10 @@ namespace Bee.Db.UnitTests
     /// FormMap IUD round-trip is covered separately in
     /// <see cref="FormCommandBuilderIudIntegrationTests"/>.
     /// </summary>
-    [Collection("Initialize")]
-    public class SqliteIntegrationTests
+    public class SqliteIntegrationTests : IClassFixture<SharedDbFixture>
     {
+        public SqliteIntegrationTests(SharedDbFixture _) { }
+
         [DbFact(DatabaseType.SQLite)]
         [DisplayName("SQLite SchemaProvider 應讀回 fixture 建好的 st_user 表")]
         public void SchemaProvider_ReadsFixtureTable()
