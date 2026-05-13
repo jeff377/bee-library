@@ -16,7 +16,7 @@ ADR-003（採用靜態 Service Locator）的前提已不再適用：
 
 ## 決策
 
-全面採用建構式注入（ctor injection）；以 `IServiceCollection.AddBeeFramework(BackendConfiguration, PathOptions)` 為框架服務註冊入口，由 `Bee.Hosting` 套件提供（5.0 起；4.x 由 `Bee.Api.AspNetCore` 提供）。`Bee.Api.AspNetCore` 仍負責 ASP.NET Core 整合（`UseBeeFramework` 與 `ApiServiceController`）。
+全面採用建構式注入（ctor injection）；以 `IServiceCollection.AddBeeFramework(BackendConfiguration, PathOptions)` 為框架服務註冊入口，由 `Bee.Hosting` 套件提供（4.3 起；4.2 以前由 `Bee.Api.AspNetCore` 提供）。`Bee.Api.AspNetCore` 仍負責 ASP.NET Core 整合（`UseBeeFramework` 與 `ApiServiceController`）。
 
 設計範圍與不變條件詳見主計畫 [plan-backendinfo-to-di-migration.md](../plans/plan-backendinfo-to-di-migration.md) §「不變條件」與「設計原則」。
 

@@ -22,6 +22,7 @@ static entry points.
 │      settings.BackendConfiguration,                 │
 │      paths,                                         │
 │      autoCreateMasterKey: true)                     │
+│    → from Bee.Hosting (composition root)            │
 │    → Registers IDefineStorage / IDefineAccess /     │
 │      ICacheContainer / IDbConnectionManager /       │
 │      ISessionInfoService / IBusinessObjectFactory / │
@@ -32,6 +33,11 @@ static entry points.
 │    a no-op hook reserved for future middleware)     │
 └─────────────────────────────────────────────────────┘
 ```
+
+Host package selection:
+
+- **ASP.NET Core web host**: reference `Bee.Api.AspNetCore` (it transitively pulls in `Bee.Hosting`). Add `using Bee.Hosting;` for `AddBeeFramework` and `using Bee.Api.AspNetCore;` for `UseBeeFramework`.
+- **Non-ASP.NET Core host** (WinForms / WPF / Console / Worker Service / integration tests): reference `Bee.Hosting` directly. No `Microsoft.AspNetCore.App` dependency. After `BuildServiceProvider()`, set `ApiClientInfo.LocalServiceProvider = sp` to enable `Bee.Api.Client`'s near-end (in-process) mode.
 
 Reference implementation: `tests/Bee.Tests.Shared/TestProcessBootstrap.cs` — applies
 the same flow for the test process with `tests/Define/` as the `DefinePath`.

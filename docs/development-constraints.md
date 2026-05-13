@@ -12,8 +12,8 @@ The framework registers itself in the standard `IServiceCollection` DI container
 1. `var paths = new PathOptions { DefinePath = "..." }` — locate definition files
 2. `var settings = SystemSettingsLoader.Load(paths)` — read `SystemSettings.xml` (boot-time only; runtime cached access goes through DI-resolved `IDefineAccess`)
 3. `SysInfo.Initialize(settings.CommonConfiguration)` — process-wide debug flag / payload options
-4. `services.AddBeeFramework(settings.BackendConfiguration, paths)` — register framework services
-5. `services.BuildServiceProvider()` followed by `app.UseBeeFramework()` (ASP.NET only)
+4. `services.AddBeeFramework(settings.BackendConfiguration, paths)` — register framework services (extension from `Bee.Hosting`)
+5. `services.BuildServiceProvider()` followed by `app.UseBeeFramework()` (ASP.NET Core hosts only — non-web hosts feed the resulting `IServiceProvider` to `ApiClientInfo.LocalServiceProvider` for near-end mode instead)
 
 See [development-cookbook.md § Framework Initialization Order](development-cookbook.md#framework-initialization-order) for the canonical reference.
 

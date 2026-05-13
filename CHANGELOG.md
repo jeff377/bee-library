@@ -7,13 +7,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [5.0.0]
+## [4.3.0]
+
+> Bee.NET is in pre-stable evolution; minor releases may include namespace moves while the public surface still has no external consumers. This release moves `AddBeeFramework` to a dedicated package — strictly a SemVer-major change, but treated as minor under the pre-stable policy.
 
 ### Added
 
 - **New package `Bee.Hosting`** — composition root for the Bee.NET framework. Registers all backend services (`IDefineAccess`, `IDbAccessFactory`, `IBusinessObjectFactory`, `JsonRpcExecutor`, etc.) into any `IServiceCollection` without depending on ASP.NET Core. Non-ASP.NET Core hosts (WinForms, WPF, Console, Worker Service, integration tests) can now register the framework without pulling in `Microsoft.AspNetCore.App`.
 
-### Changed (Breaking)
+### Changed
 
 - **`BeeFrameworkServiceCollectionExtensions.AddBeeFramework` moved from `Bee.Api.AspNetCore` to `Bee.Hosting`.**
   - Namespace changed from `Bee.Api.AspNetCore` to `Bee.Hosting`.
@@ -38,8 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ```diff
   <!-- *.csproj -->
-- <PackageReference Include="Bee.Api.AspNetCore" Version="4.*" />
-+ <PackageReference Include="Bee.Hosting" Version="5.*" />
+- <PackageReference Include="Bee.Api.AspNetCore" Version="4.2.*" />
++ <PackageReference Include="Bee.Hosting" Version="4.3.*" />
 ```
 
 ```csharp

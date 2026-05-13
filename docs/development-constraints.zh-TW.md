@@ -12,8 +12,8 @@
 1. `var paths = new PathOptions { DefinePath = "..." }` — 指向定義檔目錄
 2. `var settings = SystemSettingsLoader.Load(paths)` — 讀取 `SystemSettings.xml`（boot-time only；runtime 快取存取走 DI 注入的 `IDefineAccess`）
 3. `SysInfo.Initialize(settings.CommonConfiguration)` — process-wide debug flag / payload options
-4. `services.AddBeeFramework(settings.BackendConfiguration, paths)` — 註冊框架服務
-5. `services.BuildServiceProvider()` 後 `app.UseBeeFramework()`（僅 ASP.NET）
+4. `services.AddBeeFramework(settings.BackendConfiguration, paths)` — 註冊框架服務（擴充方法來自 `Bee.Hosting`）
+5. `services.BuildServiceProvider()` 後 `app.UseBeeFramework()`（僅 ASP.NET Core 宿主；非 web 宿主則把產出的 `IServiceProvider` 設給 `ApiClientInfo.LocalServiceProvider` 啟用近端模式）
 
 完整參考見 [development-cookbook.zh-TW.md § Framework Initialization Order](development-cookbook.zh-TW.md#framework-initialization-order)。
 

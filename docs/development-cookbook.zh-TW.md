@@ -21,6 +21,7 @@ ctor 注入解析，不再透過靜態入口點。
 │      settings.BackendConfiguration,                  │
 │      paths,                                          │
 │      autoCreateMasterKey: true)                      │
+│    → 來自 Bee.Hosting（composition root）            │
 │    → 註冊 IDefineStorage / IDefineAccess /           │
 │      ICacheContainer / IDbConnectionManager /        │
 │      ISessionInfoService / IBusinessObjectFactory /  │
@@ -31,6 +32,11 @@ ctor 注入解析，不再透過靜態入口點。
 │    保留作未來 middleware 註冊點）                    │
 └─────────────────────────────────────────────────────┘
 ```
+
+宿主套件選擇：
+
+- **ASP.NET Core web host**：引用 `Bee.Api.AspNetCore`（會透過遞移帶入 `Bee.Hosting`）。啟動程式加上 `using Bee.Hosting;`（取 `AddBeeFramework`）與 `using Bee.Api.AspNetCore;`（取 `UseBeeFramework`）
+- **非 ASP.NET Core 宿主**（WinForms / WPF / Console / Worker Service / 整合測試）：直接引用 `Bee.Hosting`，不會拖入 `Microsoft.AspNetCore.App`。`BuildServiceProvider()` 後設定 `ApiClientInfo.LocalServiceProvider = sp` 即可啟用 `Bee.Api.Client` 的近端（in-process）模式
 
 參考實作：`tests/Bee.Tests.Shared/TestProcessBootstrap.cs` — 以 `tests/Define/`
 作為 `DefinePath` 套用同一流程。

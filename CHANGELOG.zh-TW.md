@@ -6,13 +6,15 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號採用 [語意化版本](https://semver.org/lang/zh-TW/)。
 
-## [5.0.0]
+## [4.3.0]
+
+> Bee.NET 仍處於 pre-stable 演進階段；對外公開 API 表面尚無外部消費者，minor 版本允許包含命名空間搬遷。本次調整以嚴格 SemVer 觀點屬 major，pre-stable 政策下以 minor 發佈。
 
 ### 新增
 
 - **新套件 `Bee.Hosting`** — Bee.NET 框架的 composition root。將所有後端服務（`IDefineAccess`、`IDbAccessFactory`、`IBusinessObjectFactory`、`JsonRpcExecutor` 等）註冊到任意 `IServiceCollection`，不依賴 ASP.NET Core。非 ASP.NET Core 宿主（WinForms、WPF、Console、Worker Service、整合測試）現在可以註冊框架而不必拖入 `Microsoft.AspNetCore.App`。
 
-### 變更（破壞性）
+### 變更
 
 - **`BeeFrameworkServiceCollectionExtensions.AddBeeFramework` 從 `Bee.Api.AspNetCore` 搬至 `Bee.Hosting`。**
   - 命名空間從 `Bee.Api.AspNetCore` 改為 `Bee.Hosting`
@@ -37,8 +39,8 @@
 
 ```diff
   <!-- *.csproj -->
-- <PackageReference Include="Bee.Api.AspNetCore" Version="4.*" />
-+ <PackageReference Include="Bee.Hosting" Version="5.*" />
+- <PackageReference Include="Bee.Api.AspNetCore" Version="4.2.*" />
++ <PackageReference Include="Bee.Hosting" Version="4.3.*" />
 ```
 
 ```csharp

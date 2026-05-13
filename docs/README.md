@@ -12,7 +12,7 @@ This directory contains the public-facing developer documentation for the Bee.NE
 |----------|-------------|
 | [Architecture Overview](architecture-overview.md) | Definition-Driven Architecture: design philosophy and practical patterns for ERP systems |
 | [Terminology](terminology.md) | English ↔ Chinese term reference for the framework |
-| [Project Dependency Map](dependency-map.md) | Visualization of the dependencies among the 11 `src/` projects |
+| [Project Dependency Map](dependency-map.md) | Visualization of the dependencies among the 12 `src/` projects |
 
 ## Development Guides
 

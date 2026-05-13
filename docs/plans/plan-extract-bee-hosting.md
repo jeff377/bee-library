@@ -33,7 +33,7 @@
 - 新增 `tests/Bee.Hosting.UnitTests/`，搬 `BeeFrameworkServiceCollectionExtensionsTests.cs` 過去
 - `tests/Bee.Tests.Shared` 改 ref `Bee.Hosting`（不再透過 `Bee.Api.AspNetCore`）
 - 更新 XML 註解、README、ADR 中所有指向 `Bee.Api.AspNetCore.BeeFrameworkServiceCollectionExtensions` 的字串
-- bump 版本至 **5.0.0**，CHANGELOG 標 breaking change
+- bump 版本至 **4.3.0**（pre-stable 期間 namespace 搬遷以 minor 發佈；無外部消費者），CHANGELOG 標明命名空間變更與遷移指引
 
 ### 不包含
 
@@ -182,24 +182,26 @@ Bee.Repository 看似無編譯期 using，但 [BeeFrameworkServiceCollectionExte
 - `docs/adr/adr-011-di-replaces-service-locator.md:19`
 - `docs/plans/plan-backendinfo-to-di-migration.md:257`（不動 archive，保留歷史脈絡）
 
-### Step 8：bump 版本至 5.0.0
+### Step 8：bump 版本至 4.3.0
 
 `src/Directory.Build.props`：
 
 ```xml
-<Version>5.0.0</Version>
-<AssemblyVersion>5.0.0.0</AssemblyVersion>
-<FileVersion>5.0.0.0</FileVersion>
+<Version>4.3.0</Version>
+<AssemblyVersion>4.3.0.0</AssemblyVersion>
+<FileVersion>4.3.0.0</FileVersion>
 ```
+
+> pre-stable 政策：尚無外部消費者，namespace 搬遷以 minor 發佈而非 major bump。
 
 ### Step 9：CHANGELOG / Migration Guide
 
 `CHANGELOG.md`（若不存在則新建）寫明：
 
 ```markdown
-## 5.0.0
+## 4.3.0
 
-### Breaking Changes
+### Changed
 
 - **`AddBeeFramework` 已從 `Bee.Api.AspNetCore` 搬移至新套件 `Bee.Hosting`。**
   - 命名空間從 `Bee.Api.AspNetCore` 改為 `Bee.Hosting`
@@ -238,7 +240,7 @@ Bee.Repository 看似無編譯期 using，但 [BeeFrameworkServiceCollectionExte
 - [ ] `Bee.Tests.Shared` 編譯後輸出目錄**不含** `Microsoft.AspNetCore.*.dll`（驗證測試基礎建設已脫離 ASP.NET Core）
 - [ ] `Bee.Hosting` 編譯後輸出目錄**不含** `Microsoft.AspNetCore.*.dll`
 - [ ] `Bee.Hosting` 編譯後輸出目錄**包含** `Bee.Repository.dll`（保證執行期反射載入）
-- [ ] `dotnet pack` 產出 `Bee.Hosting.5.0.0.nupkg` 與所有現有套件 5.0.0
+- [ ] `dotnet pack` 產出 `Bee.Hosting.4.3.0.nupkg` 與所有現有套件 4.3.0
 - [ ] `grep -rn "Bee.Api.AspNetCore.BeeFrameworkServiceCollectionExtensions" src/ docs/adr/ docs/plans/plan-backendinfo-to-di-migration.md`（不含 docs/archive/） 0 個結果
 - [ ] ADR-011 文字更新為 `Bee.Hosting` 提供入口
 
@@ -246,7 +248,7 @@ Bee.Repository 看似無編譯期 using，但 [BeeFrameworkServiceCollectionExte
 
 | 風險 | 影響 | 緩解 |
 |------|------|------|
-| 外部 host 升級漏改 `using Bee.Hosting;` | 編譯錯誤 `AddBeeFramework not found` | 5.0 主版本 bump + CHANGELOG 明示，IDE「Add using」會主動提示 |
+| 外部 host 升級漏改 `using Bee.Hosting;` | 編譯錯誤 `AddBeeFramework not found` | pre-stable 期間尚無外部消費者；CHANGELOG 明示 namespace 變更，IDE「Add using」會主動提示 |
 | `Bee.Repository.dll` 在某些 host 部署環境漏 copy | 反射載入 `SystemRepositoryFactory` 失敗 | Bee.Hosting 透過 ProjectReference 強制帶入，MSBuild 自動 copy；驗收標準明列 |
 | bee-ui-core 既有用戶誤以為要 ref Bee.Hosting | 不必要的相依擴散 | README 寫清楚「bee-ui-core 只 ref Bee.Api.Client；`AddBeeFramework` 由宿主呼叫」 |
 | ADR-011 / 公開文件殘留舊 namespace | 開發者誤導 | Step 7 一次性 sweep；驗收標準 `grep` 0 結果 |

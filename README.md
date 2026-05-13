@@ -50,7 +50,8 @@ For the full developer documentation index, see [docs/README.md](docs/README.md)
 | **Bee.Db.dll** | Database abstraction with dynamic SQL command generation and connection binding. |
 | **Bee.Repository.dll** | Common repository base classes and FormSchema-driven data access mechanisms. |
 | **Bee.Business.dll** | Core business logic (Business Object / BO) implementing use-case workflows. |
-| **Bee.Api.AspNetCore.dll** | JSON-RPC 2.0 API controller for ASP.NET Core; unified endpoint for backend method dispatch. |
+| **Bee.Hosting.dll** | Composition root — `AddBeeFramework` extension registering all backend services into any `IServiceCollection` (no ASP.NET Core dependency). Used by ASP.NET Core, WinForms, Console, and Worker Service hosts. |
+| **Bee.Api.AspNetCore.dll** | JSON-RPC 2.0 API controller for ASP.NET Core (`UseBeeFramework` middleware + `ApiServiceController`). |
 
 ### Frontend
 
