@@ -16,8 +16,9 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class SqliteDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
-        public SqliteDialectFactoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public SqliteDialectFactoryTests(SharedDbFixture fx) { _fx = fx; }
         private readonly SqliteDialectFactory _factory = new();
 
         [DbFact(DatabaseType.SQLite)]
@@ -58,7 +59,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SqliteDialectFactory：CreateFormCommandBuilder 應回傳 SqliteFormCommandBuilder")]
         public void CreateFormCommandBuilder_ReturnsSqliteImpl()
         {
-            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
+            var defineAccess = _fx.GetRequiredService<IDefineAccess>();
             var schema = new Bee.Definition.Forms.FormSchema("Foo", "Foo");
 
             var builder = _factory.CreateFormCommandBuilder(schema, defineAccess);

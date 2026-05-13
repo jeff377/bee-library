@@ -13,14 +13,15 @@ namespace Bee.Repository.UnitTests
     /// </summary>
     public class DatabaseRepositoryTests : IClassFixture<SharedDbFixture>
     {
-        public DatabaseRepositoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public DatabaseRepositoryTests(SharedDbFixture fx) { _fx = fx; }
         private const string ValidDatabaseId = "common";
         private const string ValidCategoryId = "common";
         private const string ValidTableName = "TableName";
 
-        private static IDatabaseRepository CreateRepository()
-            => BeeTestServices.GetRequiredService<ISystemRepositoryFactory>().CreateDatabaseRepository();
+        private IDatabaseRepository CreateRepository()
+            => _fx.GetRequiredService<ISystemRepositoryFactory>().CreateDatabaseRepository();
 
         [Theory]
         [InlineData(null)]

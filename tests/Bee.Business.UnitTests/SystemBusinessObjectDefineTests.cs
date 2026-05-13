@@ -12,13 +12,14 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class SystemBusinessObjectDefineTests : IClassFixture<SharedDbFixture>
     {
-        public SystemBusinessObjectDefineTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public SystemBusinessObjectDefineTests(SharedDbFixture fx) { _fx = fx; }
         [Fact]
         [DisplayName("GetCommonConfiguration 應回傳非空 XML")]
         public void GetCommonConfiguration_ReturnsNonEmptyXml()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
 
             var result = bo.GetCommonConfiguration(new GetCommonConfigurationArgs());
 
@@ -29,7 +30,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetDefine 本地呼叫 DatabaseSettings 應回傳 XML")]
         public void GetDefine_LocalCallDatabaseSettings_ReturnsXml()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty, isLocalCall: true);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: true);
             var args = new GetDefineArgs { DefineType = DefineType.DatabaseSettings };
 
             var result = bo.GetDefine(args);
@@ -42,7 +43,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetDefine 本地呼叫 SystemSettings 應回傳 XML")]
         public void GetDefine_LocalCallSystemSettings_ReturnsXml()
         {
-            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty, isLocalCall: true);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: true);
             var args = new GetDefineArgs { DefineType = DefineType.SystemSettings };
 
             var result = bo.GetDefine(args);
@@ -55,7 +56,7 @@ namespace Bee.Business.UnitTests
         public void SaveDefine_LocalCallDbCategorySettings_Succeeds()
         {
             // 先用共享 fixture 取得 XML（讀路徑）
-            var getBo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty, isLocalCall: true);
+            var getBo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty, isLocalCall: true);
             var getResult = getBo.GetDefine(new GetDefineArgs { DefineType = DefineType.DbCategorySettings });
             Assert.False(string.IsNullOrWhiteSpace(getResult.Xml));
 
@@ -63,7 +64,7 @@ namespace Bee.Business.UnitTests
             using var temp = new TempDefinePath();
             var tempAccess = new LocalDefineAccess(new FileDefineStorage(temp.Options), temp.Options);
             var saveBo = new SystemBusinessObject(
-                TestBeeContext.CreateWithDefineAccess(tempAccess), Guid.Empty, isLocalCall: true);
+                TestBeeContext.CreateWithDefineAccess(_fx, tempAccess), Guid.Empty, isLocalCall: true);
 
             var saveResult = saveBo.SaveDefine(new SaveDefineArgs
             {

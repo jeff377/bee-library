@@ -10,10 +10,11 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class AccessTokenValidatorTests : IClassFixture<SharedDbFixture>
     {
-        public AccessTokenValidatorTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-        private static AccessTokenValidator CreateValidator()
-            => new(BeeTestServices.GetRequiredService<ISessionInfoService>());
+        public AccessTokenValidatorTests(SharedDbFixture fx) { _fx = fx; }
+        private AccessTokenValidator CreateValidator()
+            => new(_fx.GetRequiredService<ISessionInfoService>());
 
         [Fact]
         [DisplayName("Validate(Guid.Empty) 應拋 UnauthorizedAccessException")]
@@ -37,7 +38,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("Validate 過期 Session 應拋 UnauthorizedAccessException")]
         public void Validate_ExpiredSession_ThrowsUnauthorized()
         {
-            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
             var provider = new AccessTokenValidator(sessionService);
             var token = Guid.NewGuid();
             var expired = new SessionInfo
@@ -64,7 +65,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("Validate 有效 Session 應回傳 true")]
         public void Validate_ValidSession_ReturnsTrue()
         {
-            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
             var provider = new AccessTokenValidator(sessionService);
             var token = Guid.NewGuid();
             var session = new SessionInfo

@@ -8,13 +8,14 @@ namespace Bee.Business.UnitTests
 {
     /// <summary>
     /// <see cref="BusinessObjectFactory"/> 工廠方法測試。
-    /// 透過 <see cref="BeeTestServices"/> 解析 DI-注入後的 factory 實例。
+    /// 透過 per-class <see cref="SharedDbFixture"/> 解析 DI-注入後的 factory 實例。
     /// </summary>
     public class BusinessObjectFactoryTests : IClassFixture<SharedDbFixture>
     {
-        public BusinessObjectFactoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-        private static IBusinessObjectFactory Factory => BeeTestServices.GetRequiredService<IBusinessObjectFactory>();
+        public BusinessObjectFactoryTests(SharedDbFixture fx) { _fx = fx; }
+        private IBusinessObjectFactory Factory => _fx.GetRequiredService<IBusinessObjectFactory>();
 
         [Fact]
         [DisplayName("CreateSystemBusinessObject 應回傳 SystemBusinessObject 並保留 AccessToken")]

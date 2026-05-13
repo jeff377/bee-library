@@ -17,8 +17,9 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class PgDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
-        public PgDialectFactoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public PgDialectFactoryTests(SharedDbFixture fx) { _fx = fx; }
         [Fact]
         [DisplayName("PG DialectFactory 應透過 DbDialectRegistry 註冊成功")]
         public void DialectFactory_IsRegistered()
@@ -71,7 +72,7 @@ namespace Bee.Db.UnitTests
         public void DialectFactory_CreateFormCommandBuilder_ReturnsInstance()
         {
             var factory = new PgDialectFactory();
-            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
+            var defineAccess = _fx.GetRequiredService<IDefineAccess>();
             var schema = new FormSchema("Foo", "Foo");
 
             Assert.NotNull(factory.CreateFormCommandBuilder(schema, defineAccess));

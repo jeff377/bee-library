@@ -16,7 +16,6 @@ namespace Bee.Db.UnitTests
     {
         public DbDialectRegistryTests(SharedDbFixture _) { }
 
-
         [Fact]
         [DisplayName("Register + Get 應成功取回對應的工廠")]
         public void RegisterAndGet_ReturnsSameFactory()
@@ -55,7 +54,9 @@ namespace Bee.Db.UnitTests
 
     public class SqlDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
-        public SqlDialectFactoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+
+        public SqlDialectFactoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private readonly SqlDialectFactory _factory = new();
 
@@ -127,7 +128,7 @@ namespace Bee.Db.UnitTests
         public void CreateFormCommandBuilder_ReturnsSqlImpl()
         {
             var schema = new FormSchema("Foo", "Foo");
-            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
+            var defineAccess = _fx.GetRequiredService<IDefineAccess>();
 
             var builder = _factory.CreateFormCommandBuilder(schema, defineAccess);
 

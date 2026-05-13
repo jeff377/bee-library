@@ -23,8 +23,9 @@ namespace Bee.Db.UnitTests
     /// </remarks>
     public class MySqlDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
-        public MySqlDialectFactoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public MySqlDialectFactoryTests(SharedDbFixture fx) { _fx = fx; }
         [Fact]
         [DisplayName("MySQL DialectFactory 應透過 DbDialectRegistry 註冊成功")]
         public void DialectFactory_IsRegistered()
@@ -78,7 +79,7 @@ namespace Bee.Db.UnitTests
         {
             var factory = new MySqlDialectFactory();
             var schema = new FormSchema("Foo", "Foo");
-            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
+            var defineAccess = _fx.GetRequiredService<IDefineAccess>();
 
             var builder = factory.CreateFormCommandBuilder(schema, defineAccess);
 

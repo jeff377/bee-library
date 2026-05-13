@@ -23,8 +23,9 @@ namespace Bee.Db.UnitTests
     /// </remarks>
     public class OracleDialectFactoryTests : IClassFixture<SharedDbFixture>
     {
-        public OracleDialectFactoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public OracleDialectFactoryTests(SharedDbFixture fx) { _fx = fx; }
         [Fact]
         [DisplayName("Oracle DialectFactory 應透過 DbDialectRegistry 註冊成功")]
         public void DialectFactory_IsRegistered()
@@ -87,7 +88,7 @@ namespace Bee.Db.UnitTests
         {
             var factory = new OracleDialectFactory();
             var schema = new FormSchema("Foo", "Foo");
-            var defineAccess = BeeTestServices.GetRequiredService<IDefineAccess>();
+            var defineAccess = _fx.GetRequiredService<IDefineAccess>();
 
             var builder = factory.CreateFormCommandBuilder(schema, defineAccess);
 

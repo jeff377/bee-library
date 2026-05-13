@@ -25,8 +25,9 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class OracleIntegrationTests : IClassFixture<SharedDbFixture>
     {
-        public OracleIntegrationTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public OracleIntegrationTests(SharedDbFixture fx) { _fx = fx; }
         [DbFact(DatabaseType.Oracle)]
         [DisplayName("Oracle SchemaProvider 應讀回 fixture 建好的 st_user 表")]
         public void SchemaProvider_ReadsFixtureTable()
@@ -108,7 +109,7 @@ namespace Bee.Db.UnitTests
                 CreateTable(dbAccess, BuildCrudTableSchema(tableName));
 
                 var formSchema = BuildCrudFormSchema(tableName);
-                var formBuilder = new OracleFormCommandBuilder(formSchema, BeeTestServices.GetRequiredService<IDefineAccess>());
+                var formBuilder = new OracleFormCommandBuilder(formSchema, _fx.GetRequiredService<IDefineAccess>());
                 var rowId = Guid.NewGuid();
 
                 // INSERT
@@ -241,7 +242,7 @@ namespace Bee.Db.UnitTests
                 table.Fields!.AddStringField("comment", "Comment", 100);
                 table.Fields!.Add("order", "Order", FieldDbType.Integer);
 
-                var formBuilder = new OracleFormCommandBuilder(formSchema, BeeTestServices.GetRequiredService<IDefineAccess>());
+                var formBuilder = new OracleFormCommandBuilder(formSchema, _fx.GetRequiredService<IDefineAccess>());
                 var rowId = Guid.NewGuid();
 
                 var insertRow = NewRow(formSchema, tableName, rowId);

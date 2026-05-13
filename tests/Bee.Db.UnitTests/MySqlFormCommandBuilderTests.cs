@@ -18,9 +18,10 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class MySqlFormCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
-        public MySqlFormCommandBuilderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-        private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
+        public MySqlFormCommandBuilderTests(SharedDbFixture fx) { _fx = fx; }
+        private IDefineAccess DefineAccess => _fx.GetRequiredService<IDefineAccess>();
 
         private static FormSchema BuildFooSchema()
         {
@@ -32,7 +33,7 @@ namespace Bee.Db.UnitTests
             return schema;
         }
 
-        private static MySqlFormCommandBuilder NewBuilder()
+        private MySqlFormCommandBuilder NewBuilder()
             => new(BuildFooSchema(), DefineAccess);
 
         [Fact]

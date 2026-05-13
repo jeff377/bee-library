@@ -12,22 +12,22 @@ namespace Bee.Tests.Shared
     /// <summary>
     /// Process-wide test bootstrap. Initialises shared statics
     /// (<see cref="DefinePathInfo"/>, <c>CacheContainer</c>, <c>DbConnectionManager</c>,
-    /// <c>SysInfo</c>, DB provider registry) once per process, then builds and exposes
-    /// the legacy shared <see cref="IServiceProvider"/> via <see cref="BeeTestServices"/>.
+    /// <c>SysInfo</c>, DB provider registry) once per process, then wires the resulting
+    /// provider into <see cref="Bee.Api.Client.ApiClientInfo.LocalServiceProvider"/>.
     /// </summary>
     /// <remarks>
     /// Phase 5 PR 5.4b extracted DB provider/dialect/item registration into
     /// <see cref="SharedDatabaseState"/>; <see cref="BeeTestFixture"/> shares the same
-    /// helper. <see cref="GlobalFixture"/> itself remains as the entrypoint that legacy
-    /// <c>[Collection("Initialize")]</c> tests bind to until PR 5.4d retires it.
+    /// helper. <see cref="GlobalFixture"/> itself remains as the entrypoint that the
+    /// 5 remaining <c>Bee.ObjectCaching.UnitTests</c> classes still in
+    /// <c>[Collection("Initialize")]</c> bind to (待 PR 5.7 cache 改注入 PathOptions 後脫除）。
     /// </remarks>
     public class GlobalFixture : IDisposable
     {
         // VS Code Test Explorer 走 single-host 模式時,9 個 test collection 各自會新建一個
-        // GlobalFixture/DbGlobalFixture instance,並行進入 ctor。BeeTestServices.Provider /
-        // DbProviderRegistry 等都是 process-wide static,並行 init 會造成 KeyedCollection 重複 Add 等
-        // 問題,連帶讓 [Collection("Initialize")] 測試大量失敗。
-        // terminal 的 dotnet test 對每個 assembly 開獨立 process,沒有此 race。
+        // GlobalFixture instance,並行進入 ctor。DbProviderRegistry 等都是 process-wide static,
+        // 並行 init 會造成 KeyedCollection 重複 Add 等問題,連帶讓 [Collection("Initialize")] 測試
+        // 大量失敗。terminal 的 dotnet test 對每個 assembly 開獨立 process,沒有此 race。
         // 用 lock + once flag 確保整個 process 內只執行一次 init,後續 fixture instance 直接 return。
         private static readonly object _initLock = new();
         private static bool _initialized;
@@ -98,7 +98,6 @@ namespace Bee.Tests.Shared
             provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.ICacheBootstrapper>();
             provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.IDbConnectionManagerBootstrapper>();
 
-            BeeTestServices.Initialize(provider);
             // Bee.Api.Client 近端模式（in-process）需要透過 ApiClientInfo.LocalServiceProvider
             // 取得後端服務；測試 fixture 預設指向同一個 process-wide 容器。Phase 4 transitional —
             // 主計畫 §「範圍邊界」說明此 holder 是 Bee.Api.Client 重構前的暫時做法。

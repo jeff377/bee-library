@@ -10,9 +10,9 @@ namespace Bee.Db.UnitTests.Manager
     [Collection("DbConnectionState")]
     public class DbAccessFactoryTests : IClassFixture<SharedDbFixture>
     {
-        public DbAccessFactoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-
+        public DbAccessFactoryTests(SharedDbFixture fx) { _fx = fx; }
         [Fact]
         [DisplayName("DbAccessFactory 預設建構子應建立實例")]
         public void DbAccessFactory_DefaultConstructor_CreatesInstance()
@@ -37,7 +37,7 @@ namespace Bee.Db.UnitTests.Manager
         public void Create_ValidDatabaseId_ReturnsDbAccessWithCorrectType()
         {
             string id = $"bee_factory_{Guid.NewGuid():N}";
-            DatabaseSettings settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
+            DatabaseSettings settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             settings.Items!.Add(new DatabaseItem
             {
                 Id = id,

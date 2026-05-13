@@ -12,8 +12,9 @@ namespace Bee.Db.UnitTests
 {
     public class SqliteFormCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
-        public SqliteFormCommandBuilderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public SqliteFormCommandBuilderTests(SharedDbFixture fx) { _fx = fx; }
         private static FormSchema BuildFooSchema()
         {
             var schema = new FormSchema("X", "X");
@@ -24,15 +25,15 @@ namespace Bee.Db.UnitTests
             return schema;
         }
 
-        private static SqliteFormCommandBuilder NewBuilder(FormSchema schema)
-            => new(schema, BeeTestServices.GetRequiredService<IDefineAccess>());
+        private SqliteFormCommandBuilder NewBuilder(FormSchema schema)
+            => new(schema, _fx.GetRequiredService<IDefineAccess>());
 
         [Fact]
         [DisplayName("FormSchema 建構子 null 應擲 ArgumentNullException")]
         public void Constructor_NullFormSchema_Throws()
         {
             Assert.Throws<ArgumentNullException>(() => new SqliteFormCommandBuilder(
-                null!, BeeTestServices.GetRequiredService<IDefineAccess>()));
+                null!, _fx.GetRequiredService<IDefineAccess>()));
         }
 
         [Fact]

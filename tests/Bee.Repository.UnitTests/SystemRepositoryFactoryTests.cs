@@ -12,9 +12,10 @@ namespace Bee.Repository.UnitTests
     /// </summary>
     public class SystemRepositoryFactoryTests : IClassFixture<SharedDbFixture>
     {
-        public SystemRepositoryFactoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-        private static ISystemRepositoryFactory Factory => BeeTestServices.GetRequiredService<ISystemRepositoryFactory>();
+        public SystemRepositoryFactoryTests(SharedDbFixture fx) { _fx = fx; }
+        private ISystemRepositoryFactory Factory => _fx.GetRequiredService<ISystemRepositoryFactory>();
 
         [Fact]
         [DisplayName("CreateDatabaseRepository 應回傳 DatabaseRepository 型別")]

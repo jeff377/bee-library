@@ -10,8 +10,9 @@ namespace Bee.Db.UnitTests
 {
     public class SelectCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
-        public SelectCommandBuilderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public SelectCommandBuilderTests(SharedDbFixture fx) { _fx = fx; }
         private static FormSchema BuildSimpleSchema()
         {
             var schema = new FormSchema("demo", "Demo Form");
@@ -22,8 +23,8 @@ namespace Bee.Db.UnitTests
             return schema;
         }
 
-        private static SelectCommandBuilder NewBuilder(FormSchema schema, DatabaseType dbType = DatabaseType.SQLServer)
-            => new(schema, dbType, BeeTestServices.GetRequiredService<IDefineAccess>());
+        private SelectCommandBuilder NewBuilder(FormSchema schema, DatabaseType dbType = DatabaseType.SQLServer)
+            => new(schema, dbType, _fx.GetRequiredService<IDefineAccess>());
 
         [Theory]
         [InlineData("")]

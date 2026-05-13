@@ -15,40 +15,40 @@ namespace Bee.Db.UnitTests.Manager
     [Collection("DbConnectionState")]
     public class DbConnectionManagerTests : IClassFixture<SharedDbFixture>
     {
-        public DbConnectionManagerTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-
+        public DbConnectionManagerTests(SharedDbFixture fx) { _fx = fx; }
         private static string NewId(string label) => $"bee_dcm_{label}_{Guid.NewGuid():N}";
 
-        private static DatabaseItem AddItem(string id, Action<DatabaseItem> configure)
+        private DatabaseItem AddItem(string id, Action<DatabaseItem> configure)
         {
-            var settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
+            var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             var item = new DatabaseItem { Id = id, DatabaseType = DatabaseType.SQLServer };
             configure(item);
             settings.Items!.Add(item);
             return item;
         }
 
-        private static void RemoveItem(string id)
+        private void RemoveItem(string id)
         {
-            var settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
+            var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             if (settings.Items!.Contains(id))
                 settings.Items!.Remove(settings.Items[id]!);
             DbConnectionManager.Remove(id);
         }
 
-        private static DatabaseServer AddServer(string id, Action<DatabaseServer> configure)
+        private DatabaseServer AddServer(string id, Action<DatabaseServer> configure)
         {
-            var settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
+            var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             var server = new DatabaseServer { Id = id, DatabaseType = DatabaseType.SQLServer };
             configure(server);
             settings.Servers!.Add(server);
             return server;
         }
 
-        private static void RemoveServer(string id)
+        private void RemoveServer(string id)
         {
-            var settings = BeeTestServices.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
+            var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             if (settings.Servers!.Contains(id))
                 settings.Servers!.Remove(settings.Servers[id]!);
         }

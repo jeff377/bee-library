@@ -10,11 +10,12 @@ namespace Bee.Db.UnitTests
 {
     public class BuildSelectTests : IClassFixture<SharedDbFixture>
     {
-        public BuildSelectTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-        private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
+        public BuildSelectTests(SharedDbFixture fx) { _fx = fx; }
+        private IDefineAccess DefineAccess => _fx.GetRequiredService<IDefineAccess>();
 
-        private static SqlFormCommandBuilder NewBuilder(string progId)
+        private SqlFormCommandBuilder NewBuilder(string progId)
             => new(DefineAccess.GetFormSchema(progId), DefineAccess);
 
         [DbFact(DatabaseType.SQLServer)]

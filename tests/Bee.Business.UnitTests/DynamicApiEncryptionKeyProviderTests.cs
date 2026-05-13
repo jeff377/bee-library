@@ -10,10 +10,11 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class DynamicApiEncryptionKeyProviderTests : IClassFixture<SharedDbFixture>
     {
-        public DynamicApiEncryptionKeyProviderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-        private static DynamicApiEncryptionKeyProvider CreateProvider()
-            => new(BeeTestServices.GetRequiredService<ISessionInfoService>());
+        public DynamicApiEncryptionKeyProviderTests(SharedDbFixture fx) { _fx = fx; }
+        private DynamicApiEncryptionKeyProvider CreateProvider()
+            => new(_fx.GetRequiredService<ISessionInfoService>());
 
         [Fact]
         [DisplayName("GetKey(Guid.Empty) 應拋 UnauthorizedAccessException")]
@@ -37,7 +38,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("GetKey 有效 Session 應回傳對應的 ApiEncryptionKey")]
         public void GetKey_ValidSession_ReturnsKey()
         {
-            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
             var provider = new DynamicApiEncryptionKeyProvider(sessionService);
             var token = Guid.NewGuid();
             var key = new byte[64];

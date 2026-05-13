@@ -19,8 +19,9 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class FormCommandBuilderIudIntegrationTests : IClassFixture<SharedDbFixture>
     {
-        public FormCommandBuilderIudIntegrationTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public FormCommandBuilderIudIntegrationTests(SharedDbFixture fx) { _fx = fx; }
         private const string UserTableName = "User";
         private const string UserDbTableName = "st_user";
 
@@ -51,7 +52,7 @@ namespace Bee.Db.UnitTests
             return dt;
         }
 
-        private static void RunRoundTrip(DatabaseType databaseType)
+        private void RunRoundTrip(DatabaseType databaseType)
         {
             var schema = BuildUserSchema();
             var databaseId = TestDbConventions.GetDatabaseId(databaseType);
@@ -76,7 +77,7 @@ namespace Bee.Db.UnitTests
                 Assert.Equal(1, dbAccess.Execute(insertSpec).RowsAffected);
 
                 // SELECT verifies the row exists.
-                var selectSpec = new SelectCommandBuilder(schema, databaseType, BeeTestServices.GetRequiredService<IDefineAccess>())
+                var selectSpec = new SelectCommandBuilder(schema, databaseType, _fx.GetRequiredService<IDefineAccess>())
                     .Build(UserTableName, "sys_rowid,sys_name,note", FilterCondition.Equal("sys_rowid", rowId));
                 var afterInsert = dbAccess.Execute(selectSpec).Table;
                 Assert.NotNull(afterInsert);
@@ -116,7 +117,7 @@ namespace Bee.Db.UnitTests
             }
 
             // Verify deletion.
-            var verifySpec = new SelectCommandBuilder(schema, databaseType, BeeTestServices.GetRequiredService<IDefineAccess>())
+            var verifySpec = new SelectCommandBuilder(schema, databaseType, _fx.GetRequiredService<IDefineAccess>())
                 .Build(UserTableName, "sys_rowid", FilterCondition.Equal("sys_rowid", rowId));
             var afterDelete = dbAccess.Execute(verifySpec).Table;
             Assert.NotNull(afterDelete);

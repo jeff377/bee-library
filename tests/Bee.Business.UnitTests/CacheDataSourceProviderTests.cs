@@ -11,13 +11,14 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class CacheDataSourceProviderTests : IClassFixture<SharedDbFixture>
     {
-        public CacheDataSourceProviderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public CacheDataSourceProviderTests(SharedDbFixture fx) { _fx = fx; }
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("GetSessionUser 傳入不存在的 Token 應回傳 null")]
         public void GetSessionUser_UnknownToken_ReturnsNull()
         {
-            var factory = BeeTestServices.GetRequiredService<ISystemRepositoryFactory>();
+            var factory = _fx.GetRequiredService<ISystemRepositoryFactory>();
             var provider = new CacheDataSourceProvider(factory);
 
             var result = provider.GetSessionUser(Guid.NewGuid());

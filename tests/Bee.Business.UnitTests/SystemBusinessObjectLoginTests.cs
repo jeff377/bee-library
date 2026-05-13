@@ -14,8 +14,9 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class SystemBusinessObjectLoginTests : IClassFixture<SharedDbFixture>
     {
-        public SystemBusinessObjectLoginTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public SystemBusinessObjectLoginTests(SharedDbFixture fx) { _fx = fx; }
         private sealed class RecordingTracker : ILoginAttemptTracker
         {
             public bool LockedOut { get; set; }
@@ -31,8 +32,9 @@ namespace Bee.Business.UnitTests
         [DisplayName("Login 驗證成功應產生 AccessToken 與到期時間並建立 SessionInfo")]
         public void Login_Authenticated_ReturnsValidSessionToken()
         {
-            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
             var bo = new TestableSystemBusinessObject(
+                TestBeeContext.Create(_fx),
                 Guid.Empty,
                 _ => (true, "User One"));
             var args = new LoginArgs { UserId = "user01", Password = "pwd" };
@@ -64,9 +66,10 @@ namespace Bee.Business.UnitTests
         [DisplayName("Login 提供 ClientPublicKey 應以 RSA 加密 ApiEncryptionKey")]
         public void Login_WithClientPublicKey_EncryptsApiKey()
         {
-            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
             RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
             var bo = new TestableSystemBusinessObject(
+                TestBeeContext.Create(_fx),
                 Guid.Empty,
                 _ => (true, "RSA User"));
             var args = new LoginArgs
@@ -99,7 +102,7 @@ namespace Bee.Business.UnitTests
         public void Login_AuthenticateFails_ThrowsAndRecordsFailure()
         {
             var tracker = new RecordingTracker();
-            var ctx = TestBeeContext.CreateWithOverrides((typeof(ILoginAttemptTracker), tracker));
+            var ctx = TestBeeContext.CreateWithOverrides(_fx, (typeof(ILoginAttemptTracker), tracker));
             var bo = new TestableSystemBusinessObject(
                 ctx,
                 Guid.Empty,
@@ -117,7 +120,7 @@ namespace Bee.Business.UnitTests
         {
             var tracker = new RecordingTracker { LockedOut = true };
             var authCalls = 0;
-            var ctx = TestBeeContext.CreateWithOverrides((typeof(ILoginAttemptTracker), tracker));
+            var ctx = TestBeeContext.CreateWithOverrides(_fx, (typeof(ILoginAttemptTracker), tracker));
             var bo = new TestableSystemBusinessObject(
                 ctx,
                 Guid.Empty,
@@ -137,9 +140,9 @@ namespace Bee.Business.UnitTests
         [DisplayName("Login 驗證成功且 tracker 非 null 應呼叫 Reset")]
         public void Login_SuccessWithTracker_CallsReset()
         {
-            var sessionService = BeeTestServices.GetRequiredService<ISessionInfoService>();
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
             var tracker = new RecordingTracker();
-            var ctx = TestBeeContext.CreateWithOverrides((typeof(ILoginAttemptTracker), tracker));
+            var ctx = TestBeeContext.CreateWithOverrides(_fx, (typeof(ILoginAttemptTracker), tracker));
             var bo = new TestableSystemBusinessObject(
                 ctx,
                 Guid.Empty,
@@ -163,7 +166,7 @@ namespace Bee.Business.UnitTests
         public void BaseAuthenticateUser_DefaultsToFalse()
         {
             // 基底類別未覆寫時 AuthenticateUser 永遠回 false，Login 必拋 UnauthorizedAccessException。
-            var bo = new SystemBusinessObject(TestBeeContext.Create(), Guid.Empty);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
             var args = new LoginArgs { UserId = "u", Password = "p" };
 
             Assert.Throws<UnauthorizedAccessException>(() => bo.Login(args));

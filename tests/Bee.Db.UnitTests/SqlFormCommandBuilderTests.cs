@@ -12,11 +12,12 @@ namespace Bee.Db.UnitTests
 {
     public class SqlFormCommandBuilderTests : IClassFixture<SharedDbFixture>
     {
-        public SqlFormCommandBuilderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-        private static IDefineAccess DefineAccess => BeeTestServices.GetRequiredService<IDefineAccess>();
+        public SqlFormCommandBuilderTests(SharedDbFixture fx) { _fx = fx; }
+        private IDefineAccess DefineAccess => _fx.GetRequiredService<IDefineAccess>();
 
-        private static SqlFormCommandBuilder NewBuilder(FormSchema schema)
+        private SqlFormCommandBuilder NewBuilder(FormSchema schema)
             => new(schema, DefineAccess);
 
         [Fact]

@@ -9,15 +9,16 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class FormBusinessObjectTests : IClassFixture<SharedDbFixture>
     {
-        public FormBusinessObjectTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public FormBusinessObjectTests(SharedDbFixture fx) { _fx = fx; }
         [Fact]
         [DisplayName("建構子應設定 AccessToken、ProgId、IsLocalCall")]
         public void Constructor_SetsProperties()
         {
             var token = Guid.NewGuid();
 
-            var bo = new FormBusinessObject(TestBeeContext.Create(), token, "prog01", isLocalCall: false);
+            var bo = new FormBusinessObject(TestBeeContext.Create(_fx), token, "prog01", isLocalCall: false);
 
             Assert.Equal(token, bo.AccessToken);
             Assert.Equal("prog01", bo.ProgId);
@@ -28,7 +29,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("ExecFunc Hello 應填入預設訊息")]
         public void ExecFunc_Hello_FillsExpectedMessage()
         {
-            var bo = new FormBusinessObject(TestBeeContext.Create(), Guid.NewGuid(), "prog01");
+            var bo = new FormBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid(), "prog01");
 
             var result = bo.ExecFunc(new ExecFuncArgs("Hello"));
 
@@ -41,7 +42,7 @@ namespace Bee.Business.UnitTests
         {
             // FormExecFuncHandler.Hello 未標 ExecFuncAccessControl，預設視為 Authenticated，
             // 因此匿名呼叫時應被 InvokeExecFunc 阻擋。
-            var bo = new FormBusinessObject(TestBeeContext.Create(), Guid.NewGuid(), "prog01");
+            var bo = new FormBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid(), "prog01");
 
             Assert.Throws<UnauthorizedAccessException>(() =>
                 bo.ExecFuncAnonymous(new ExecFuncArgs("Hello")));
@@ -51,7 +52,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("ExecFunc 呼叫不存在的方法應拋 MissingMethodException")]
         public void ExecFunc_UnknownMethod_ThrowsMissingMethod()
         {
-            var bo = new FormBusinessObject(TestBeeContext.Create(), Guid.NewGuid(), "prog01");
+            var bo = new FormBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid(), "prog01");
 
             Assert.Throws<MissingMethodException>(() =>
                 bo.ExecFunc(new ExecFuncArgs("DoesNotExist")));

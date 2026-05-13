@@ -1,6 +1,5 @@
 using Bee.Business.System;
 using Bee.Definition;
-using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests.Fakes
 {
@@ -11,13 +10,6 @@ namespace Bee.Business.UnitTests.Fakes
     public class TestableSystemBusinessObject : SystemBusinessObject
     {
         private readonly Func<LoginArgs, (bool Authenticated, string UserName)> _authenticator;
-
-        public TestableSystemBusinessObject(
-            Guid accessToken,
-            Func<LoginArgs, (bool Authenticated, string UserName)> authenticator,
-            bool isLocalCall = true)
-            : this(TestBeeContext.Create(), accessToken, authenticator, isLocalCall)
-        { }
 
         public TestableSystemBusinessObject(
             IBeeContext ctx,

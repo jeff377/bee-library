@@ -11,8 +11,9 @@ namespace Bee.Db.UnitTests
 {
     public class DbAccessTests : IClassFixture<SharedDbFixture>
     {
-        public DbAccessTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public DbAccessTests(SharedDbFixture fx) { _fx = fx; }
         public class User
         {
             public string? UserID { get; set; }
@@ -172,7 +173,7 @@ namespace Bee.Db.UnitTests
             row["note"] = i.ToString(CultureInfo.InvariantCulture);
 
             // 3. 用 DbTableCommandBuilder 建立 DataTableUpdateSpec
-            var tableSchema = BeeTestServices.GetRequiredService<IDefineAccess>().GetTableSchema("common", "st_user");
+            var tableSchema = _fx.GetRequiredService<IDefineAccess>().GetTableSchema("common", "st_user");
             var builder = new TableSchemaCommandBuilder(dbAccess.DatabaseType, tableSchema);
             var updateSpec = builder.BuildUpdateSpec(table);
 

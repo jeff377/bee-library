@@ -8,10 +8,11 @@ namespace Bee.Db.UnitTests
 {
     public class TableSchemaBuilderTests : IClassFixture<SharedDbFixture>
     {
-        public TableSchemaBuilderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
-        private static TableSchemaBuilder NewBuilder(string databaseId)
-            => new(databaseId, BeeTestServices.GetRequiredService<IDefineAccess>());
+        public TableSchemaBuilderTests(SharedDbFixture fx) { _fx = fx; }
+        private TableSchemaBuilder NewBuilder(string databaseId)
+            => new(databaseId, _fx.GetRequiredService<IDefineAccess>());
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("TableSchemaBuilder 比對結構一致的資料表應回傳 None")]

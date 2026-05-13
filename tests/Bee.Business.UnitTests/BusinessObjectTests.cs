@@ -9,14 +9,16 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class BusinessObjectTests : IClassFixture<SharedDbFixture>
     {
-        public BusinessObjectTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+
+        public BusinessObjectTests(SharedDbFixture fx) { _fx = fx; }
 
         [Fact]
         [DisplayName("建構子應正確設定 AccessToken 與 IsLocalCall")]
         public void Constructor_SetsProperties()
         {
             var token = Guid.NewGuid();
-            var bo = new TestableBusinessObject(token, isLocalCall: false);
+            var bo = new TestableBusinessObject(TestBeeContext.Create(_fx), token, isLocalCall: false);
 
             Assert.Equal(token, bo.AccessToken);
             Assert.False(bo.IsLocalCall);
@@ -26,7 +28,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("IsLocalCall 預設為 true")]
         public void Constructor_DefaultIsLocalCall_IsTrue()
         {
-            var bo = new TestableBusinessObject(Guid.NewGuid());
+            var bo = new TestableBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid());
             Assert.True(bo.IsLocalCall);
         }
 
@@ -34,7 +36,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("ExecFunc 應委派至 DoExecFunc 覆寫")]
         public void ExecFunc_DelegatesToDoExecFunc()
         {
-            var bo = new TestableBusinessObject(Guid.NewGuid());
+            var bo = new TestableBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid());
             var args = new ExecFuncArgs("Hello");
 
             var result = bo.ExecFunc(args);
@@ -49,7 +51,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("ExecFuncAnonymous 應委派至 DoExecFuncAnonymous 覆寫")]
         public void ExecFuncAnonymous_DelegatesToDoExecFuncAnonymous()
         {
-            var bo = new TestableBusinessObject(Guid.NewGuid());
+            var bo = new TestableBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid());
             var args = new ExecFuncArgs("Hi");
 
             var result = bo.ExecFuncAnonymous(args);
@@ -64,7 +66,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("未覆寫 DoExecFunc 時 ExecFunc 應回傳空結果不拋例外")]
         public void ExecFunc_WithoutOverride_ReturnsEmptyResult()
         {
-            var bo = new BareBusinessObject(Guid.NewGuid());
+            var bo = new BareBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid());
 
             var result = bo.ExecFunc(new ExecFuncArgs("Anything"));
 
@@ -76,7 +78,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("未覆寫 DoExecFuncAnonymous 時 ExecFuncAnonymous 應回傳空結果不拋例外")]
         public void ExecFuncAnonymous_WithoutOverride_ReturnsEmptyResult()
         {
-            var bo = new BareBusinessObject(Guid.NewGuid());
+            var bo = new BareBusinessObject(TestBeeContext.Create(_fx), Guid.NewGuid());
 
             var result = bo.ExecFuncAnonymous(new ExecFuncArgs("Anything"));
 

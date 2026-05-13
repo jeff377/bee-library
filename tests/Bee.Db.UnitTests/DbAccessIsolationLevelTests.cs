@@ -11,8 +11,9 @@ namespace Bee.Db.UnitTests
 {
     public class DbAccessIsolationLevelTests : IClassFixture<SharedDbFixture>
     {
-        public DbAccessIsolationLevelTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
 
+        public DbAccessIsolationLevelTests(SharedDbFixture fx) { _fx = fx; }
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteBatch 以指定 IsolationLevel 執行批次交易應成功")]
         public void ExecuteBatch_WithIsolationLevel_Succeeds()
@@ -98,7 +99,7 @@ namespace Bee.Db.UnitTests
             int rnd = RandomNumberGenerator.GetInt32(0, 100);
             table.Rows[0]["note"] = rnd.ToString(CultureInfo.InvariantCulture);
 
-            var tableSchema = BeeTestServices.GetRequiredService<IDefineAccess>().GetTableSchema("common", "st_user");
+            var tableSchema = _fx.GetRequiredService<IDefineAccess>().GetTableSchema("common", "st_user");
             var builder = new TableSchemaCommandBuilder(dbAccess.DatabaseType, tableSchema);
             var updateSpec = builder.BuildUpdateSpec(table);
             updateSpec.UseTransaction = true;
