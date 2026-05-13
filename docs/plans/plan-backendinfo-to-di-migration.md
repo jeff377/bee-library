@@ -5,22 +5,24 @@
 > 本文件為主計畫（main plan），定義整體目標、原則、階段路線。
 > 各階段的細部執行步驟另以 sub-plan 文件描述。
 >
-> **前置計畫**：[plan-remove-backendinfo-db-globals.md](plan-remove-backendinfo-db-globals.md)
+> **前置計畫**：`plan-remove-backendinfo-db-globals.md`（已歸檔至 `docs/archive/`）
 > — 先移除 `BackendInfo.DatabaseType` / `DatabaseId` 並導入 `DbCategoryIds` 常數與 `SessionInfo.CompanyDatabaseId`，
 > 完成後 Phase 1 範圍會大幅簡化。
+>
+> **Sub-plan 歸檔說明**：本主計畫完成後，7 個 phase sub-plan + 1 個前置 plan 均歸檔至 `docs/archive/`（gitignored，不上 GitHub）。下方 sub-plan 進度表的連結僅作識別用途，本機 checkout 仍可在 `docs/archive/` 目錄存取，或透過 `git log --diff-filter=D -- docs/plans/plan-backendinfo-*.md` 查歷史 commit。
 
 ## Sub-plan 進度
 
 | Phase | 主題 | 狀態 | Sub-plan |
 |-------|------|------|----------|
-| 0 | 前置清理（`SystemSettingsLoader`） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase0-systemsettings-loader.md](plan-backendinfo-di-phase0-systemsettings-loader.md) |
-| 1 | Bee.Db 配置注入 | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase1-bee-db-config.md](plan-backendinfo-di-phase1-bee-db-config.md) |
-| 2 | ObjectCaching 與 DefineAccess（含 DefinePath） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase2-defineaccess-decouple.md](plan-backendinfo-di-phase2-defineaccess-decouple.md) |
-| 3 | Business 與 Repository 層注入（含 `IBeeContext`） | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase3-business-injection.md](plan-backendinfo-di-phase3-business-injection.md) |
-| 4 | Api.Core 與 Api.AspNetCore | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase4-api-di.md](plan-backendinfo-di-phase4-api-di.md) |
-| 5 | 測試基礎設施重寫 | ✅ 已完成（2026-05-13） | [plan-backendinfo-di-phase5-test-infra.md](plan-backendinfo-di-phase5-test-infra.md) |
-| 6 | 移除 BackendInfo 空殼 | ✅ 已完成（2026-05-13） | [plan-backendinfo-di-phase6-backendinfo-deletion.md](plan-backendinfo-di-phase6-backendinfo-deletion.md) |
-| 7 | DbConnectionManager 靜態 facade 移除 + DbAccess ctor DI 化 | ✅ 已完成（2026-05-13） | [plan-backendinfo-di-phase7-dbconnectionmanager.md](plan-backendinfo-di-phase7-dbconnectionmanager.md) |
+| 0 | 前置清理（`SystemSettingsLoader`） | ✅ 已完成（2026-05-12） | `plan-backendinfo-di-phase0-systemsettings-loader.md` |
+| 1 | Bee.Db 配置注入 | ✅ 已完成（2026-05-12） | `plan-backendinfo-di-phase1-bee-db-config.md` |
+| 2 | ObjectCaching 與 DefineAccess（含 DefinePath） | ✅ 已完成（2026-05-12） | `plan-backendinfo-di-phase2-defineaccess-decouple.md` |
+| 3 | Business 與 Repository 層注入（含 `IBeeContext`） | ✅ 已完成（2026-05-12） | `plan-backendinfo-di-phase3-business-injection.md` |
+| 4 | Api.Core 與 Api.AspNetCore | ✅ 已完成（2026-05-12） | `plan-backendinfo-di-phase4-api-di.md` |
+| 5 | 測試基礎設施重寫 | ✅ 已完成（2026-05-13） | `plan-backendinfo-di-phase5-test-infra.md` |
+| 6 | 移除 BackendInfo 空殼 | ✅ 已完成（2026-05-13） | `plan-backendinfo-di-phase6-backendinfo-deletion.md` |
+| 7 | DbConnectionManager 靜態 facade 移除 + DbAccess ctor DI 化 | ✅ 已完成（2026-05-13） | `plan-backendinfo-di-phase7-dbconnectionmanager.md` |
 
 > 狀態圖例：📝 未開始 / 🚧 進行中 / ✅ 已完成
 >
@@ -175,7 +177,7 @@ ERP 開發者新增 BO 完全不接觸 DI API。
 **獨立價值**：解開現有 boot-time chicken-and-egg 耦合，後續 DI 階段才能順利註冊。
 
 ### Phase 1：Bee.Db 配置注入（低風險）
-**前置**：[plan-remove-backendinfo-db-globals.md](plan-remove-backendinfo-db-globals.md) 完成。
+**前置**：`plan-remove-backendinfo-db-globals.md` 完成。
 **目標**：拆解 `DbCommandSpec` → `BackendInfo` 的耦合，讓 Bee.Db 完全脫離 Bee.Definition 的 static 配置。
 
 完成前置後，`BackendInfo` 上 DB 相關只剩 `MaxDbCommandTimeout`（cap 值）。但問題本質不是「單一欄位放哪」，而是 **`DbCommandSpec` setter 內部讀 static**（`src/Bee.Db/DbCommandSpec.cs:101`）——`DbCommandSpec` 是 DTO，用 `new` 建立於數百個呼叫點，沒有 DI 路徑，才被迫 reach 到 BackendInfo。這是 Bee.Db 黏住 BackendInfo 的根因。

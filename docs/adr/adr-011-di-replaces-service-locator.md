@@ -79,6 +79,6 @@ ADR-003（採用靜態 Service Locator）的前提已不再適用：
 | 文件 | 內容 |
 |------|------|
 | [plan-backendinfo-to-di-migration.md](../plans/plan-backendinfo-to-di-migration.md) | 主計畫：整體目標、不變條件、7 個 phase 路線圖、設計原則 |
-| Phase 0–7 sub-plans（同目錄） | 各層改造的執行細節與盤點 |
+| Phase 0–7 sub-plans | 各層改造的執行細節與盤點（已歸檔至 `docs/archive/`，git history 可查） |
 | [docs/development-cookbook.md](../development-cookbook.md) | DI 化後的初始化流程與請求管線 |
 | [docs/development-constraints.md](../development-constraints.md) | 初始化順序限制（DI 模型） |
