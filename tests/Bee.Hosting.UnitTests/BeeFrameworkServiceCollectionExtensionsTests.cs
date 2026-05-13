@@ -3,7 +3,7 @@ using Bee.Definition;
 using Bee.Definition.Settings;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bee.Api.AspNetCore.UnitTests
+namespace Bee.Hosting.UnitTests
 {
     public class BeeFrameworkServiceCollectionExtensionsTests
     {

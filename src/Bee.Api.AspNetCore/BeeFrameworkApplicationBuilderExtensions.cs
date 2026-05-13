@@ -4,7 +4,7 @@ namespace Bee.Api.AspNetCore
 {
     /// <summary>
     /// Host-side activation for the Bee.NET framework. Pair with
-    /// <see cref="BeeFrameworkServiceCollectionExtensions.AddBeeFramework"/>.
+    /// <see cref="Bee.Hosting.BeeFrameworkServiceCollectionExtensions.AddBeeFramework"/>.
     /// </summary>
     /// <remarks>
     /// As of Phase 7 this extension performs no bootstrap work — all framework

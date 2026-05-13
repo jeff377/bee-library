@@ -14,6 +14,7 @@
     <Project Path="src/Bee.Business/Bee.Business.csproj" />
     <Project Path="src/Bee.Db/Bee.Db.csproj" />
     <Project Path="src/Bee.Definition/Bee.Definition.csproj" />
+    <Project Path="src/Bee.Hosting/Bee.Hosting.csproj" />
     <Project Path="src/Bee.ObjectCaching/Bee.ObjectCaching.csproj" />
     <Project Path="src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj" Id="30b306b6-0aab-475e-8df0-e1a0801e56a6" />
     <Project Path="src/Bee.Repository/Bee.Repository.csproj" Id="f78f3849-45b9-426e-a7b0-6edbd7fe256d" />
@@ -26,6 +27,7 @@
     <Project Path="tests/Bee.Business.UnitTests/Bee.Business.UnitTests.csproj" />
     <Project Path="tests/Bee.Db.UnitTests/Bee.Db.UnitTests.csproj" />
     <Project Path="tests/Bee.Definition.UnitTests/Bee.Definition.UnitTests.csproj" />
+    <Project Path="tests/Bee.Hosting.UnitTests/Bee.Hosting.UnitTests.csproj" />
     <Project Path="tests/Bee.ObjectCaching.UnitTests/Bee.ObjectCaching.UnitTests.csproj" />
     <Project Path="tests/Bee.Repository.UnitTests/Bee.Repository.UnitTests.csproj" Id="37be88f7-d67a-40a7-91a3-23583c6b85f1" />
     <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />

@@ -9,7 +9,7 @@ namespace Bee.Db.Manager
     /// <remarks>
     /// Resolved through DI ctor injection; <see cref="DbConnectionManagerService"/>
     /// is the default implementation registered by
-    /// <c>BeeFrameworkServiceCollectionExtensions.AddBeeFramework</c>.
+    /// <c>Bee.Hosting.BeeFrameworkServiceCollectionExtensions.AddBeeFramework</c>.
     /// </remarks>
     public interface IDbConnectionManager
     {

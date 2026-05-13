@@ -14,11 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Bee.Api.Core\Bee.Api.Core.csproj" />
-    <ProjectReference Include="..\Bee.Business\Bee.Business.csproj" />
-    <ProjectReference Include="..\Bee.Db\Bee.Db.csproj" />
-    <ProjectReference Include="..\Bee.ObjectCaching\Bee.ObjectCaching.csproj" />
-    <ProjectReference Include="..\Bee.Repository\Bee.Repository.csproj" />
+    <ProjectReference Include="..\Bee.Hosting\Bee.Hosting.csproj" />
   </ItemGroup>
 
 </Project>

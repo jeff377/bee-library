@@ -13,7 +13,7 @@ using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Factories;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bee.Api.AspNetCore
+namespace Bee.Hosting
 {
     /// <summary>
     /// Registers Bee.NET framework services in the DI container.

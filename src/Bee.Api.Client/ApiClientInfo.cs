@@ -3,7 +3,7 @@ namespace Bee.Api.Client
     /// <summary>
     /// API client runtime information; shared connection parameters and settings for the API client,
     /// across WinForms, Web, and App targets. Provides the client-side counterpart to the backend's
-    /// DI-registered services (see <c>Bee.Api.AspNetCore.BeeFrameworkServiceCollectionExtensions.AddBeeFramework</c>).
+    /// DI-registered services (see <c>Bee.Hosting.BeeFrameworkServiceCollectionExtensions.AddBeeFramework</c>).
     /// Contains only application-level and connection settings; does not hold user session state.
     /// </summary>
     public static class ApiClientInfo

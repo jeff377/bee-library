@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Bee.Api.AspNetCore\Bee.Api.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Hosting\Bee.Hosting.csproj" />
     <ProjectReference Include="..\Bee.Tests.Shared\Bee.Tests.Shared.csproj" />
   </ItemGroup>
 

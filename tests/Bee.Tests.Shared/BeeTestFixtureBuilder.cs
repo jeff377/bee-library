@@ -1,9 +1,9 @@
-using Bee.Api.AspNetCore;
+using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
+using Bee.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Bee.Db.Manager;
 
 namespace Bee.Tests.Shared
 {
