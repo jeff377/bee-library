@@ -4,11 +4,10 @@ using Bee.ObjectCaching.Define;
 namespace Bee.ObjectCaching
 {
     /// <summary>
-    /// Exposes the eight cache instances managed by the framework. Phase 5 PR 5.3c
-    /// added this interface alongside the existing <see cref="CacheContainer"/> static
-    /// facade. New consumers should ctor-inject <see cref="ICacheContainer"/>; the
-    /// static class remains as a transitional shim for legacy callers and is removed
-    /// once the test fixture rewrite (PR 5.4) finishes migrating them.
+    /// Exposes the eight cache instances managed by the framework. Consumers ctor-inject
+    /// <see cref="ICacheContainer"/>; the implementation is supplied by
+    /// <see cref="CacheContainerService"/> registered as a Singleton by
+    /// <c>AddBeeFramework</c>.
     /// </summary>
     public interface ICacheContainer
     {

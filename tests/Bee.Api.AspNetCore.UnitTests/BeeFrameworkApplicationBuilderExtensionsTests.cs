@@ -9,7 +9,6 @@ namespace Bee.Api.AspNetCore.UnitTests
 {
     public class BeeFrameworkApplicationBuilderExtensionsTests
     {
-        private sealed class FakeCacheBootstrapper : ICacheBootstrapper { }
         private sealed class FakeDbConnectionManagerBootstrapper : IDbConnectionManagerBootstrapper { }
 
         private sealed class FakeApplicationBuilder : IApplicationBuilder
@@ -35,7 +34,6 @@ namespace Bee.Api.AspNetCore.UnitTests
         public void UseBeeFramework_ValidApp_ResolvesBootstrappersAndReturnsSameApp()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<ICacheBootstrapper, FakeCacheBootstrapper>();
             services.AddSingleton<IDbConnectionManagerBootstrapper, FakeDbConnectionManagerBootstrapper>();
             var provider = services.BuildServiceProvider();
 

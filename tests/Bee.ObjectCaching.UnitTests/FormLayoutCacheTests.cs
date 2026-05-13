@@ -27,10 +27,12 @@ namespace Bee.ObjectCaching.UnitTests
             public void SaveFormLayout(FormLayout formLayout) => throw new NotImplementedException();
         }
 
+        private static readonly PathOptions s_emptyPaths = new();
+
         private sealed class TestableFormLayoutCache : FormLayoutCache
         {
             public TestableFormLayoutCache(IDefineStorage storage, string cachePrefix = "")
-                : base(storage, cachePrefix) { }
+                : base(storage, s_emptyPaths, cachePrefix) { }
 
             public CacheItemPolicy GetCachePolicy(string key) => GetPolicy(key);
         }
@@ -39,7 +41,7 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("建構子傳入 null storage 應拋出 ArgumentNullException")]
         public void Constructor_NullStorage_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => new FormLayoutCache(null!));
+            Assert.Throws<ArgumentNullException>(() => new FormLayoutCache(null!, s_emptyPaths));
         }
 
         [Fact]
@@ -74,7 +76,7 @@ namespace Bee.ObjectCaching.UnitTests
             string prefix = Guid.NewGuid().ToString("N");
             var layout = new FormLayout();
             var stub = new StubDefineStorage(layout);
-            var cache = new FormLayoutCache(stub, prefix);
+            var cache = new FormLayoutCache(stub, s_emptyPaths, prefix);
 
             var result = cache.Get("TestLayout");
 
@@ -88,7 +90,7 @@ namespace Bee.ObjectCaching.UnitTests
         {
             string prefix = Guid.NewGuid().ToString("N");
             var stub = new StubDefineStorage();
-            var cache = new FormLayoutCache(stub, prefix);
+            var cache = new FormLayoutCache(stub, s_emptyPaths, prefix);
 
             var result = cache.Get("NonExistent");
 

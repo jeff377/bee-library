@@ -15,33 +15,40 @@ namespace Bee.ObjectCaching
     {
         private readonly IDefineStorage _storage;
         private readonly PathOptions _paths;
+        private readonly ICacheContainer _cache;
         private readonly byte[] _configEncryptionKey;
 
         /// <summary>
         /// Initializes a new instance of <see cref="LocalDefineAccess"/> with the supplied
-        /// <see cref="PathOptions"/> for file path resolution.
+        /// <see cref="PathOptions"/> for file path resolution. Constructs a default
+        /// <see cref="CacheContainerService"/> internally — convenience overload for tests
+        /// that don't already have an <see cref="ICacheContainer"/> on hand.
         /// </summary>
         /// <param name="storage">The define storage used for read fallback and writes.</param>
         /// <param name="paths">The path options for SaveSystemSettings / SaveDatabaseSettings / SaveProgramSettings file targets.</param>
-        public LocalDefineAccess(IDefineStorage storage, PathOptions paths) : this(storage, paths, Array.Empty<byte>())
+        public LocalDefineAccess(IDefineStorage storage, PathOptions paths)
+            : this(storage, paths, new CacheContainerService(storage, paths), Array.Empty<byte>())
         {
         }
 
         /// <summary>
         /// Initializes a new instance of <see cref="LocalDefineAccess"/> with an explicit
-        /// configuration encryption key for transparent encrypt/decrypt of <see cref="DatabaseSettings"/>
-        /// password fields at read/save time.
+        /// <see cref="ICacheContainer"/> + configuration encryption key. Production DI uses
+        /// this overload; the per-host singleton cache is shared across all
+        /// <see cref="IDefineAccess"/> consumers.
         /// </summary>
         /// <param name="storage">The define storage used for read fallback and writes.</param>
         /// <param name="paths">The path options for SaveSystemSettings / SaveDatabaseSettings / SaveProgramSettings file targets.</param>
+        /// <param name="cache">The cache container used for read/write invalidation.</param>
         /// <param name="configEncryptionKey">
         /// The 64-byte combined AES + HMAC key used to encrypt <see cref="DatabaseServer.Password"/> /
         /// <see cref="DatabaseItem.Password"/> in <c>DatabaseSettings.xml</c>. Empty disables the crypto path.
         /// </param>
-        public LocalDefineAccess(IDefineStorage storage, PathOptions paths, byte[] configEncryptionKey)
+        public LocalDefineAccess(IDefineStorage storage, PathOptions paths, ICacheContainer cache, byte[] configEncryptionKey)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _paths = paths ?? throw new ArgumentNullException(nameof(paths));
+            _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _configEncryptionKey = configEncryptionKey ?? Array.Empty<byte>();
         }
 
@@ -128,7 +135,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public SystemSettings GetSystemSettings()
         {
-            return CacheContainer.SystemSettings.Get()!;
+            return _cache.SystemSettings.Get()!;
         }
 
         /// <summary>
@@ -141,7 +148,7 @@ namespace Bee.ObjectCaching
             string filePath = _paths.GetSystemSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
             // Invalidate the cache
-            CacheContainer.SystemSettings.Remove();
+            _cache.SystemSettings.Remove();
         }
 
         /// <summary>
@@ -151,7 +158,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public DatabaseSettings GetDatabaseSettings()
         {
-            var settings = CacheContainer.DatabaseSettings.Get()!;
+            var settings = _cache.DatabaseSettings.Get()!;
             DatabaseSettingsCryptor.DecryptInPlace(settings, _configEncryptionKey);
             return settings;
         }
@@ -168,7 +175,7 @@ namespace Bee.ObjectCaching
             string filePath = _paths.GetDatabaseSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
             // Invalidate the cache
-            CacheContainer.DatabaseSettings.Remove();
+            _cache.DatabaseSettings.Remove();
         }
 
         /// <summary>
@@ -176,7 +183,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public ProgramSettings GetProgramSettings()
         {
-            return CacheContainer.ProgramSettings.Get()!;
+            return _cache.ProgramSettings.Get()!;
         }
 
         /// <summary>
@@ -188,7 +195,7 @@ namespace Bee.ObjectCaching
             // Save program settings to file, then invalidate the cache
             string filePath = _paths.GetProgramSettingsFilePath();
             XmlCodec.SerializeToFile(settings, filePath);
-            CacheContainer.ProgramSettings.Remove();
+            _cache.ProgramSettings.Remove();
         }
 
         /// <summary>
@@ -196,7 +203,7 @@ namespace Bee.ObjectCaching
         /// </summary>
         public DbCategorySettings GetDbCategorySettings()
         {
-            return CacheContainer.DbCategorySettings.Get()!;
+            return _cache.DbCategorySettings.Get()!;
         }
 
         /// <summary>
@@ -207,7 +214,7 @@ namespace Bee.ObjectCaching
         {
             // Save database category settings, then invalidate the cache
             _storage.SaveDbCategorySettings(settings);
-            CacheContainer.DbCategorySettings.Remove();
+            _cache.DbCategorySettings.Remove();
         }
 
         /// <summary>
@@ -217,7 +224,7 @@ namespace Bee.ObjectCaching
         /// <param name="tableName">The table name.</param>
         public TableSchema GetTableSchema(string categoryId, string tableName)
         {
-            return CacheContainer.TableSchema.Get(categoryId, tableName)!;
+            return _cache.TableSchema.Get(categoryId, tableName)!;
         }
 
         /// <summary>
@@ -229,7 +236,7 @@ namespace Bee.ObjectCaching
         {
             // Save the table schema, then invalidate the cache
             _storage.SaveTableSchema(categoryId, tableSchema);
-            CacheContainer.TableSchema.Remove(categoryId, tableSchema.TableName);
+            _cache.TableSchema.Remove(categoryId, tableSchema.TableName);
         }
 
         /// <summary>
@@ -238,7 +245,7 @@ namespace Bee.ObjectCaching
         /// <param name="progId">The program identifier.</param>
         public FormSchema GetFormSchema(string progId)
         {
-            return CacheContainer.FormSchema.Get(progId)!;
+            return _cache.FormSchema.Get(progId)!;
         }
 
         /// <summary>
@@ -255,7 +262,7 @@ namespace Bee.ObjectCaching
 
             // Save the form schema, then invalidate the cache
             _storage.SaveFormSchema(formSchema);
-            CacheContainer.FormSchema.Remove(formSchema.ProgId);
+            _cache.FormSchema.Remove(formSchema.ProgId);
         }
 
         /// <summary>
@@ -264,7 +271,7 @@ namespace Bee.ObjectCaching
         /// <param name="layoutId">The layout identifier.</param>
         public FormLayout GetFormLayout(string layoutId)
         {
-            return CacheContainer.FormLayout.Get(layoutId)!;
+            return _cache.FormLayout.Get(layoutId)!;
         }
 
         /// <summary>
@@ -275,7 +282,7 @@ namespace Bee.ObjectCaching
         {
             // Save the form layout, then invalidate the cache
             _storage.SaveFormLayout(formLayout);
-            CacheContainer.FormLayout.Remove(formLayout.LayoutId);
+            _cache.FormLayout.Remove(formLayout.LayoutId);
         }
     }
 }

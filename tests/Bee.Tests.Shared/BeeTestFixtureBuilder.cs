@@ -2,10 +2,7 @@ using Bee.Api.AspNetCore;
 using Bee.Definition;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
-using Bee.Definition.Storage;
-using Bee.ObjectCaching;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bee.Tests.Shared
 {
@@ -96,12 +93,11 @@ namespace Bee.Tests.Shared
             var services = new ServiceCollection();
             services.AddBeeFramework(settings.BackendConfiguration, paths, autoCreateMasterKey: true);
 
-            // Per-fixture cache isolation: replace AddBeeFramework's default unprefixed
-            // ICacheContainer with one that uses a unique cache key prefix. Each fixture
-            // therefore owns its own keyspace over the process-wide CacheInfo.Provider.
-            var cachePrefix = "fx_" + Guid.NewGuid().ToString("N");
-            services.Replace(ServiceDescriptor.Singleton<ICacheContainer>(sp =>
-                new CacheContainerService(sp.GetRequiredService<IDefineStorage>(), cachePrefix)));
+            // Cache key prefix 設計（PR 5.4d 引入）已於 PR 5.7 撤除：cache 改為 ctor 注入
+            // PathOptions 後，bootstrap 與 fixture 的 ICacheContainer instance 不同，但底層
+            // CacheInfo.Provider 仍共享；保留 prefix 會讓 SharedDatabaseState 對 bootstrap
+            // 的 DatabaseSettings.Items mutation 在 fixture-prefixed cache 看不到。
+            // session-isolation 需求由 production code 的 Guid AccessToken 隨機性自然保證。
 
             var provider = services.BuildServiceProvider();
 

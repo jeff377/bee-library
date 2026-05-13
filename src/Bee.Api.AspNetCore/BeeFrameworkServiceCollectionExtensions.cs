@@ -23,8 +23,9 @@ namespace Bee.Api.AspNetCore
         /// <summary>
         /// Registers Bee.NET framework services and decrypts security keys from
         /// <paramref name="configuration"/>. Call <c>app.UseBeeFramework()</c> after building
-        /// the service provider to fire the cache + DbConnectionManager bootstrappers
-        /// in the correct order.
+        /// the service provider to eager-resolve <see cref="IDbConnectionManagerBootstrapper"/>
+        /// (writes the DI-resolved <see cref="IDbConnectionManager"/> to the transitional
+        /// static shim used by <c>new DbAccess(databaseId)</c>).
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="configuration">The backend configuration (from SystemSettings.xml).</param>
@@ -50,35 +51,37 @@ namespace Bee.Api.AspNetCore
 
             var components = configuration.Components;
 
-            // 2. PathOptions — registered as a singleton so consumers can ctor-inject it
-            //    instead of reading the transitional DefinePathInfo static facade.
+            // 2. PathOptions — registered as a singleton so consumers can ctor-inject it.
             services.AddSingleton(pathOptions);
 
-            // 3. IDefineStorage / IDefineAccess — singletons; both ctor shapes accept PathOptions
-            //    so file path resolution flows through DI rather than DefinePathInfo.
+            // 3. Underlying cache provider (in-memory / Redis / ...). Idempotent — no-op
+            //    when the configured type matches the current provider's runtime type.
+            CacheInfo.Initialize(configuration);
+
+            // 4. IDefineStorage / IDefineAccess / ICacheContainer — singletons.
             services.AddSingleton<IDefineStorage>(sp => CreateDefineStorage(
                 components.DefineStorage, BackendDefaultTypes.DefineStorage, sp.GetRequiredService<PathOptions>()));
+            services.AddSingleton<ICacheContainer>(sp =>
+                new CacheContainerService(
+                    sp.GetRequiredService<IDefineStorage>(),
+                    sp.GetRequiredService<PathOptions>()));
             services.AddSingleton<IDefineAccess>(sp =>
                 ResolveDefineAccess(
                     components.DefineAccess,
                     sp.GetRequiredService<IDefineStorage>(),
                     sp.GetRequiredService<PathOptions>(),
+                    sp.GetRequiredService<ICacheContainer>(),
                     keys.ConfigEncryptionKey));
 
-            // 3. Database settings provider (used by DbConnectionManager bootstrap).
+            // 5. Database settings provider (used by DbConnectionManager bootstrap).
             services.AddSingleton<IDatabaseSettingsProvider>(sp =>
                 new DefineAccessDatabaseSettingsProvider(sp.GetRequiredService<IDefineAccess>()));
 
-            // 4. ICacheContainer / IDbConnectionManager — DI-injectable singletons (PR 5.3b/c).
-            //    The legacy static facades are wired by the bootstrappers below.
-            services.AddSingleton<ICacheContainer>(sp =>
-                new CacheContainerService(sp.GetRequiredService<IDefineStorage>()));
+            // 6. IDbConnectionManager — DI-injectable singleton (PR 5.3b). The legacy static
+            //    facade is wired by the bootstrapper below (still used by `new DbAccess(id)`
+            //    test sites until a future PR migrates them to ctor injection).
             services.AddSingleton<IDbConnectionManager>(sp =>
                 new DbConnectionManagerService(sp.GetRequiredService<IDatabaseSettingsProvider>()));
-
-            // 5. ObjectCaching + DbConnectionManager bootstrappers (eager-resolved by UseBeeFramework).
-            services.AddSingleton<ICacheBootstrapper>(sp =>
-                new CacheBootstrapper(sp.GetRequiredService<ICacheContainer>(), configuration));
             services.AddSingleton<IDbConnectionManagerBootstrapper>(sp =>
                 new DbConnectionManagerBootstrapper(sp.GetRequiredService<IDbConnectionManager>()));
 
@@ -130,19 +133,20 @@ namespace Bee.Api.AspNetCore
 
         /// <summary>
         /// Resolves the configured <see cref="IDefineAccess"/> implementation. Supports
-        /// <c>(IDefineStorage, PathOptions, byte[])</c> ctor (used by <c>LocalDefineAccess</c>
-        /// with the config encryption key), <c>(IDefineStorage, PathOptions)</c>,
-        /// <c>(IDefineStorage)</c> (legacy), and parameterless ctors.
+        /// <c>(IDefineStorage, PathOptions, ICacheContainer, byte[])</c> ctor (used by
+        /// <c>LocalDefineAccess</c> with the cache + config encryption key),
+        /// <c>(IDefineStorage, PathOptions)</c>, <c>(IDefineStorage)</c> (legacy), and
+        /// parameterless ctors.
         /// </summary>
-        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage, PathOptions paths, byte[] configEncryptionKey)
+        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage, PathOptions paths, ICacheContainer cache, byte[] configEncryptionKey)
         {
             var resolvedName = string.IsNullOrWhiteSpace(typeName) ? BackendDefaultTypes.DefineAccess : typeName;
             var type = AssemblyLoader.GetType(resolvedName)
                 ?? throw new InvalidOperationException($"IDefineAccess type '{resolvedName}' not found.");
 
-            var ctorPathsKey = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(PathOptions), typeof(byte[]) });
-            if (ctorPathsKey != null)
-                return (IDefineAccess)ctorPathsKey.Invoke(new object[] { storage, paths, configEncryptionKey });
+            var ctorFull = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(PathOptions), typeof(ICacheContainer), typeof(byte[]) });
+            if (ctorFull != null)
+                return (IDefineAccess)ctorFull.Invoke(new object[] { storage, paths, cache, configEncryptionKey });
 
             var ctorPaths = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(PathOptions) });
             if (ctorPaths != null)

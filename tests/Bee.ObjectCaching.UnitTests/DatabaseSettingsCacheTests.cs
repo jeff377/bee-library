@@ -1,25 +1,33 @@
 using System.ComponentModel;
+using Bee.Definition;
 using Bee.ObjectCaching.Define;
-using Bee.Tests.Shared;
 
 namespace Bee.ObjectCaching.UnitTests
 {
-    [Collection("CacheState")]
-    public class DatabaseSettingsCacheTests : IClassFixture<SharedDbFixture>
+    /// <summary>
+    /// <see cref="DatabaseSettingsCache"/> 純邏輯測試 —— 構造 cache instance 時直接傳入指向
+    /// 空目錄的 <see cref="PathOptions"/>，不操弄 process-wide static，可與其他 test class 平行執行。
+    /// </summary>
+    public class DatabaseSettingsCacheTests
     {
-        public DatabaseSettingsCacheTests(SharedDbFixture _) { }
-
-
         [Fact]
         [DisplayName("CreateInstance 在 DatabaseSettings.xml 不存在時應拋出 FileNotFoundException")]
         public void CreateInstance_FileMissing_ThrowsFileNotFoundException()
         {
-            var cache = new DatabaseSettingsCache();
-            cache.Remove();
+            var tempDir = Path.Combine(Path.GetTempPath(), $"bee-dbcache-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var paths = new PathOptions { DefinePath = tempDir };
+                // Per-test cache prefix 確保 instance 不會與其他 fixture 的 cache 互相干擾。
+                var cache = new DatabaseSettingsCache(paths, cachePrefix: $"dbc_{Guid.NewGuid():N}");
 
-            using var temp = new TempDefinePath();
-
-            Assert.Throws<FileNotFoundException>(() => cache.Get());
+                Assert.Throws<FileNotFoundException>(() => cache.Get());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
+            }
         }
     }
 }

@@ -11,14 +11,14 @@ namespace Bee.Api.AspNetCore
     public static class BeeFrameworkApplicationBuilderExtensions
     {
         /// <summary>
-        /// Eager-resolves the bootstrap markers registered by <c>AddBeeFramework</c> so the
-        /// underlying static initialization (<c>CacheContainer</c>, <c>DbConnectionManager</c>)
-        /// runs before any request is handled.
+        /// Eager-resolves the <see cref="IDbConnectionManagerBootstrapper"/> marker so the
+        /// legacy <c>DbConnectionManager</c> static facade is wired before any request is
+        /// handled. The <see cref="Bee.ObjectCaching.ICacheContainer"/> is fully DI-driven
+        /// (PR 5.7) and no longer requires a bootstrap step.
         /// </summary>
         public static IApplicationBuilder UseBeeFramework(this IApplicationBuilder app)
         {
             ArgumentNullException.ThrowIfNull(app);
-            app.ApplicationServices.GetRequiredService<ICacheBootstrapper>();
             app.ApplicationServices.GetRequiredService<IDbConnectionManagerBootstrapper>();
             return app;
         }

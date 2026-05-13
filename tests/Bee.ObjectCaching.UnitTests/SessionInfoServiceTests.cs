@@ -7,14 +7,16 @@ namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
     /// <see cref="SessionInfoService"/> 行為測試。每個測試自建獨立的
-    /// <see cref="CacheContainerService"/>（不共用 process-wide cache），
-    /// 不依賴 <see cref="DefinePathInfo"/>，可與其他 test class 平行執行。
+    /// <see cref="CacheContainerService"/>（不共用 process-wide cache），可與其他 test class 平行執行。
     /// </summary>
     public class SessionInfoServiceTests
     {
         private static SessionInfoService NewService()
-            => new SessionInfoService(new CacheContainerService(new Bee.Definition.Storage.FileDefineStorage(
-                new PathOptions { DefinePath = Path.GetTempPath() })));
+        {
+            var paths = new PathOptions { DefinePath = Path.GetTempPath() };
+            var storage = new Bee.Definition.Storage.FileDefineStorage(paths);
+            return new SessionInfoService(new CacheContainerService(storage, paths));
+        }
 
         [Fact]
         [DisplayName("Set/Get/Remove 流程應正確操作 Session 快取")]

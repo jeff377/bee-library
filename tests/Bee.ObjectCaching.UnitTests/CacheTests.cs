@@ -6,14 +6,9 @@ using Bee.Tests.Shared;
 namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
-    /// 透過 fixture 的 DI 容器執行快取行為測試。仍保留 <c>[Collection("CacheState")]</c>
-    /// 與 <see cref="GlobalFixture"/> 序列化—— GetSystemSettings / GetDatabaseSettings 仍會在
-    /// cache miss 時走 process-wide <see cref="CacheContainer"/> 與 <see cref="DefinePathInfo"/>
-    /// 靜態路徑，可能與 <c>DatabaseSettingsCacheTests</c> / <c>SystemSettingsCacheTests</c> 等
-    /// 操弄 DefinePathInfo 的測試 race；待 PR 5.7 將 cache 改為接 <see cref="PathOptions"/> 注入
-    /// 後再脫除 Collection。
+    /// 透過 fixture 的 DI 容器執行快取行為測試。PR 5.7 後 cache 改為接 <c>PathOptions</c> 注入，
+    /// 不再走 process-wide static，可與其他 test class 平行執行。
     /// </summary>
-    [Collection("CacheState")]
     public class CacheTests : IClassFixture<BeeTestFixture>
     {
         private readonly BeeTestFixture _fx;
