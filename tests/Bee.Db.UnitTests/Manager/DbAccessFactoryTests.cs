@@ -1,24 +1,23 @@
 using System.ComponentModel;
+using Bee.Db.Manager;
 using Bee.Definition.Database;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
-using Bee.Db.Manager;
 using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests.Manager
 {
-    [Collection("DbConnectionState")]
     public class DbAccessFactoryTests : IClassFixture<SharedDbFixture>
     {
         private readonly SharedDbFixture _fx;
 
         public DbAccessFactoryTests(SharedDbFixture fx) { _fx = fx; }
+
         [Fact]
-        [DisplayName("DbAccessFactory 預設建構子應建立實例")]
-        public void DbAccessFactory_DefaultConstructor_CreatesInstance()
+        [DisplayName("DbAccessFactory 構造子需要 IDbConnectionManager")]
+        public void DbAccessFactory_NullManager_Throws()
         {
-            var factory = new DbAccessFactory();
-            Assert.NotNull(factory);
+            Assert.Throws<ArgumentNullException>(() => new DbAccessFactory(null!));
         }
 
         [Theory]
@@ -28,7 +27,7 @@ namespace Bee.Db.UnitTests.Manager
         [DisplayName("DbAccessFactory 指定 maxCommandTimeout 應建立實例")]
         public void DbAccessFactory_WithTimeout_CreatesInstance(int timeout)
         {
-            var factory = new DbAccessFactory(timeout);
+            var factory = new DbAccessFactory(_fx.GetRequiredService<IDbConnectionManager>(), timeout);
             Assert.NotNull(factory);
         }
 
@@ -44,10 +43,11 @@ namespace Bee.Db.UnitTests.Manager
                 DatabaseType = DatabaseType.SQLServer,
                 ConnectionString = "Server=test;"
             });
+            var manager = _fx.GetRequiredService<IDbConnectionManager>();
 
             try
             {
-                var factory = new DbAccessFactory(30);
+                var factory = new DbAccessFactory(manager, 30);
                 var dbAccess = factory.Create(id);
 
                 Assert.NotNull(dbAccess);
@@ -56,7 +56,7 @@ namespace Bee.Db.UnitTests.Manager
             finally
             {
                 settings.Items!.Remove(settings.Items[id]!);
-                DbConnectionManager.Remove(id);
+                manager.Remove(id);
             }
         }
     }

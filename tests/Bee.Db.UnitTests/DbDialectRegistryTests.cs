@@ -66,7 +66,7 @@ namespace Bee.Db.UnitTests
         {
             // ctor 內 new DbAccess("common_sqlserver") 需要 DbConnectionManager 已註冊連線；
             // 未設 BEE_TEST_CONNSTR_SQLSERVER 時 GlobalFixture 不會註冊，故以 [DbFact] 跳過。
-            var provider = _factory.CreateTableSchemaProvider("common_sqlserver");
+            var provider = _factory.CreateTableSchemaProvider("common_sqlserver", _fx.GetRequiredService<IDbConnectionManager>());
 
             Assert.IsType<SqlTableSchemaProvider>(provider);
             Assert.Equal("common_sqlserver", provider.DatabaseId);

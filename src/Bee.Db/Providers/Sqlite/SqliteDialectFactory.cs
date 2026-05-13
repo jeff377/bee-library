@@ -1,6 +1,7 @@
 using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
@@ -15,7 +16,8 @@ namespace Bee.Db.Providers.Sqlite
     public class SqliteDialectFactory : IDialectFactory
     {
         /// <inheritdoc />
-        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId) => new SqliteTableSchemaProvider(databaseId);
+        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId, IDbConnectionManager connectionManager)
+            => new SqliteTableSchemaProvider(databaseId, connectionManager);
 
         /// <inheritdoc />
         public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new SqliteCreateTableCommandBuilder();

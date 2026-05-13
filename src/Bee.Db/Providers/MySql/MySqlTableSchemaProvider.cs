@@ -1,6 +1,7 @@
 using System.Data;
 using Bee.Base;
 using Bee.Base.Data;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
 using Bee.Definition.Sorting;
@@ -27,10 +28,13 @@ namespace Bee.Db.Providers.MySql
         /// Initializes a new instance of <see cref="MySqlTableSchemaProvider"/>.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
-        public MySqlTableSchemaProvider(string databaseId)
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
+        public MySqlTableSchemaProvider(string databaseId, IDbConnectionManager connectionManager)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
+            ArgumentNullException.ThrowIfNull(connectionManager);
             DatabaseId = databaseId;
-            _dbAccess = new DbAccess(databaseId);
+            _dbAccess = new DbAccess(databaseId, connectionManager);
         }
 
         /// <inheritdoc />

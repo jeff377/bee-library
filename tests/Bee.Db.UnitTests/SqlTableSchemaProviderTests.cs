@@ -2,18 +2,20 @@ using System.ComponentModel;
 using Bee.Db.Providers.SqlServer;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
     public class SqlTableSchemaProviderTests : IClassFixture<SharedDbFixture>
     {
-        public SqlTableSchemaProviderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public SqlTableSchemaProviderTests(SharedDbFixture fx) { _fx = fx; }
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("SqlTableSchemaProvider 取得資料表結構應成功")]
         public void GetTableSchema_ValidTableName_ReturnsSchema()
         {
-            var helper = new SqlTableSchemaProvider("common_sqlserver");
+            var helper = new SqlTableSchemaProvider("common_sqlserver", _fx.GetRequiredService<IDbConnectionManager>());
             var dbTable = helper.GetTableSchema("st_user");
             Assert.NotNull(dbTable);
         }
@@ -22,7 +24,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SqlTableSchemaProvider 取得不存在資料表應回傳 null")]
         public void GetTableSchema_NonExistentTable_ReturnsNull()
         {
-            var helper = new SqlTableSchemaProvider("common_sqlserver");
+            var helper = new SqlTableSchemaProvider("common_sqlserver", _fx.GetRequiredService<IDbConnectionManager>());
             var dbTable = helper.GetTableSchema("bee_nonexistent_table_xyz_99999");
             Assert.Null(dbTable);
         }
@@ -31,7 +33,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("SqlTableSchemaProvider DatabaseId 應等於建構子傳入的值")]
         public void Constructor_DatabaseId_IsSet()
         {
-            var helper = new SqlTableSchemaProvider("common_sqlserver");
+            var helper = new SqlTableSchemaProvider("common_sqlserver", _fx.GetRequiredService<IDbConnectionManager>());
             Assert.Equal("common_sqlserver", helper.DatabaseId);
         }
 
@@ -40,7 +42,7 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_WithExtendedProperty_ReturnsDisplayName()
         {
             string tableName = $"bee_test_desc_{Guid.NewGuid():N}";
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             try
             {
                 // 建立只有一個欄位的測試表
@@ -51,7 +53,7 @@ namespace Bee.Db.UnitTests
                     "EXEC sp_addextendedproperty @name=N'MS_Description', @value=N'測試表說明'," +
                     $" @level0type=N'SCHEMA', @level0name=N'dbo', @level1type=N'TABLE', @level1name=N'{tableName}';"));
 
-                var provider = new SqlTableSchemaProvider("common_sqlserver");
+                var provider = new SqlTableSchemaProvider("common_sqlserver", _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -69,13 +71,13 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_WithoutExtendedProperty_ReturnsEmptyDisplayName()
         {
             string tableName = $"bee_test_desc_{Guid.NewGuid():N}";
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             try
             {
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"CREATE TABLE [{tableName}] ([id] [int] NOT NULL);"));
 
-                var provider = new SqlTableSchemaProvider("common_sqlserver");
+                var provider = new SqlTableSchemaProvider("common_sqlserver", _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);

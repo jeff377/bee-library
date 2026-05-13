@@ -1,6 +1,7 @@
 using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
@@ -19,7 +20,8 @@ namespace Bee.Db.Providers.MySql
     public class MySqlDialectFactory : IDialectFactory
     {
         /// <inheritdoc />
-        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId) => new MySqlTableSchemaProvider(databaseId);
+        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId, IDbConnectionManager connectionManager)
+            => new MySqlTableSchemaProvider(databaseId, connectionManager);
 
         /// <inheritdoc />
         public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new MySqlCreateTableCommandBuilder();

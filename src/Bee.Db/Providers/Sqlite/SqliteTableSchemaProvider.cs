@@ -23,16 +23,21 @@ namespace Bee.Db.Providers.Sqlite
     /// </remarks>
     public class SqliteTableSchemaProvider : ITableSchemaProvider
     {
+        private readonly IDbConnectionManager _connectionManager;
         private readonly DbAccess _dbAccess;
 
         /// <summary>
         /// Initializes a new instance of <see cref="SqliteTableSchemaProvider"/>.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
-        public SqliteTableSchemaProvider(string databaseId)
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
+        public SqliteTableSchemaProvider(string databaseId, IDbConnectionManager connectionManager)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
+            ArgumentNullException.ThrowIfNull(connectionManager);
             DatabaseId = databaseId;
-            _dbAccess = new DbAccess(databaseId);
+            _connectionManager = connectionManager;
+            _dbAccess = new DbAccess(databaseId, connectionManager);
         }
 
         /// <summary>
@@ -99,7 +104,7 @@ namespace Bee.Db.Providers.Sqlite
         /// </summary>
         private DataTable ReadDynamicPragma(string sql, string resultTableName)
         {
-            var connInfo = DbConnectionManager.GetConnectionInfo(DatabaseId);
+            var connInfo = _connectionManager.GetConnectionInfo(DatabaseId);
             using var conn = connInfo.Provider.CreateConnection()
                 ?? throw new InvalidOperationException("Provider returned a null DbConnection.");
             conn.ConnectionString = connInfo.ConnectionString;

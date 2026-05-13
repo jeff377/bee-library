@@ -6,6 +6,7 @@ using Bee.Db.Schema;
 using Bee.Definition.Database;
 using Bee.Definition.Storage;
 using Bee.Tests.Shared;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
@@ -27,7 +28,7 @@ namespace Bee.Db.UnitTests
         {
             // 需要實際 databaseId（DbAccess 建構需查 connection registry），改以 DbFact 限制執行條件。
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
-            ITableSchemaProvider provider = _factory.CreateTableSchemaProvider(databaseId);
+            ITableSchemaProvider provider = _factory.CreateTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
             Assert.IsType<SqliteTableSchemaProvider>(provider);
         }
 

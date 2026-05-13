@@ -74,18 +74,19 @@ namespace Bee.Tests.Shared
         /// </summary>
         /// <param name="access">An <see cref="IDefineAccess"/> resolving the same
         /// <c>DatabaseSettings</c> that <see cref="EnsureRegistered"/> populated.</param>
-        public static void EnsureSchemaAndSeed(IDefineAccess access)
+        public static void EnsureSchemaAndSeed(IDefineAccess access, IDbConnectionManager connectionManager)
         {
             ArgumentNullException.ThrowIfNull(access);
+            ArgumentNullException.ThrowIfNull(connectionManager);
             lock (_schemaLock)
             {
                 if (_schemaInitialised) return;
 
-                EnsureDatabase(DatabaseType.SQLServer, access);
-                EnsureDatabase(DatabaseType.PostgreSQL, access);
-                EnsureDatabase(DatabaseType.SQLite, access);
-                EnsureDatabase(DatabaseType.MySQL, access);
-                EnsureDatabase(DatabaseType.Oracle, access);
+                EnsureDatabase(DatabaseType.SQLServer, access, connectionManager);
+                EnsureDatabase(DatabaseType.PostgreSQL, access, connectionManager);
+                EnsureDatabase(DatabaseType.SQLite, access, connectionManager);
+                EnsureDatabase(DatabaseType.MySQL, access, connectionManager);
+                EnsureDatabase(DatabaseType.Oracle, access, connectionManager);
 
                 _schemaInitialised = true;
             }
@@ -191,7 +192,7 @@ namespace Bee.Tests.Shared
             });
         }
 
-        private static void EnsureDatabase(DatabaseType dbType, IDefineAccess access)
+        private static void EnsureDatabase(DatabaseType dbType, IDefineAccess access, IDbConnectionManager connectionManager)
         {
             var envVar = TestDbConventions.GetConnectionStringEnvVar(dbType);
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envVar))) return;
@@ -199,9 +200,9 @@ namespace Bee.Tests.Shared
             var databaseId = TestDbConventions.GetDatabaseId(dbType);
             try
             {
-                VerifyConnection(databaseId);
-                EnsureSchema(databaseId, access);
-                EnsureSeedData(dbType, databaseId);
+                VerifyConnection(databaseId, connectionManager);
+                EnsureSchema(databaseId, access, connectionManager);
+                EnsureSeedData(dbType, databaseId, connectionManager);
             }
             catch (Exception ex)
             {
@@ -210,16 +211,16 @@ namespace Bee.Tests.Shared
             }
         }
 
-        private static void VerifyConnection(string databaseId)
+        private static void VerifyConnection(string databaseId, IDbConnectionManager connectionManager)
         {
-            using var conn = DbConnectionManager.CreateConnection(databaseId);
+            using var conn = connectionManager.CreateConnection(databaseId);
             conn.Open();
             Console.WriteLine($"SharedDatabaseState: {databaseId} connection verified (State={conn.State})");
         }
 
-        private static void EnsureSchema(string databaseId, IDefineAccess access)
+        private static void EnsureSchema(string databaseId, IDefineAccess access, IDbConnectionManager connectionManager)
         {
-            var builder = new TableSchemaBuilder(databaseId, access);
+            var builder = new TableSchemaBuilder(databaseId, access, connectionManager);
 
             bool created = builder.Execute("common", "st_user");
             Console.WriteLine($"SharedDatabaseState: {databaseId} st_user schema — {(created ? "created/upgraded" : "up-to-date")}");
@@ -228,9 +229,9 @@ namespace Bee.Tests.Shared
             Console.WriteLine($"SharedDatabaseState: {databaseId} st_session schema — {(created ? "created/upgraded" : "up-to-date")}");
         }
 
-        private static void EnsureSeedData(DatabaseType dbType, string databaseId)
+        private static void EnsureSeedData(DatabaseType dbType, string databaseId, IDbConnectionManager connectionManager)
         {
-            var dbAccess = new DbAccess(databaseId);
+            var dbAccess = new DbAccess(databaseId, connectionManager);
 
             // 表名與欄位名一律 dialect-quote：Oracle 對 unquoted 識別符自動轉 UPPERCASE，
             // 而 framework CREATE TABLE 是 quoted lowercase 形式，unquoted SELECT/INSERT

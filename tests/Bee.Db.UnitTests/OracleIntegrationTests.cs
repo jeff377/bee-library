@@ -10,6 +10,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
@@ -33,7 +34,7 @@ namespace Bee.Db.UnitTests
         public void SchemaProvider_ReadsFixtureTable()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.Oracle);
-            var provider = new Bee.Db.Providers.Oracle.OracleTableSchemaProvider(databaseId);
+            var provider = new Bee.Db.Providers.Oracle.OracleTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
 
             var schema = provider.GetTableSchema("st_user");
 
@@ -50,7 +51,7 @@ namespace Bee.Db.UnitTests
         public void SchemaProvider_UnknownTable_ReturnsNull()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.Oracle);
-            var provider = new Bee.Db.Providers.Oracle.OracleTableSchemaProvider(databaseId);
+            var provider = new Bee.Db.Providers.Oracle.OracleTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
 
             var schema = provider.GetTableSchema("__no_such_table__");
 
@@ -62,7 +63,7 @@ namespace Bee.Db.UnitTests
         public void StringComparison_IsCaseInsensitive()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.Oracle);
-            var dbAccess = new Bee.Db.DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
 
             // 手寫 minimal DDL 以聚焦於驗證 Oracle 對 session-level NLS 的執行行為，
             // 與 OracleCreateTableCommandBuilder 純語法測試獨立。Oracle 無 DROP TABLE
@@ -101,7 +102,7 @@ namespace Bee.Db.UnitTests
         public void FormCrud_QuotedLowercaseTable_InsertSelectUpdateDelete_Succeeds()
         {
             const string tableName = "tb_it_crud";
-            var dbAccess = new DbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
             DropQuotedTable(dbAccess, tableName);
 
             try
@@ -157,7 +158,7 @@ namespace Bee.Db.UnitTests
         {
             const string masterTable = "tb_it_master";
             const string detailTable = "tb_it_detail";
-            var dbAccess = new DbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
             DropQuotedTable(dbAccess, detailTable);
             DropQuotedTable(dbAccess, masterTable);
 
@@ -221,7 +222,7 @@ namespace Bee.Db.UnitTests
         public void ReservedWordFieldName_QuotedLowercase_CrudSucceeds()
         {
             const string tableName = "tb_it_reserved";
-            var dbAccess = new DbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
             DropQuotedTable(dbAccess, tableName);
 
             try
@@ -271,7 +272,7 @@ namespace Bee.Db.UnitTests
             // 整個腳本需在呼叫端拆分後逐條送出，或由 builder API 改為 GetStatements()。此測試
             // 因此只覆蓋 Alter（已採 GetStatements 模式），Rebuild 端到端驗證留待後續另案。
             const string tableName = "tb_it_alter";
-            var dbAccess = new DbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
             DropQuotedTable(dbAccess, tableName);
 
             try
@@ -296,7 +297,7 @@ namespace Bee.Db.UnitTests
                     dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, stmt));
                 }
 
-                var provider = new OracleTableSchemaProvider(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+                var provider = new OracleTableSchemaProvider(TestDbConventions.GetDatabaseId(DatabaseType.Oracle), _fx.GetRequiredService<IDbConnectionManager>());
                 var afterAlter = provider.GetTableSchema(tableName);
                 Assert.NotNull(afterAlter);
                 Assert.True(afterAlter!.Fields!.Contains("age"));

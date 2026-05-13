@@ -3,6 +3,7 @@ using Bee.Base.Data;
 using Bee.Db.Providers.SqlServer;
 using Bee.Definition.Database;
 using Bee.Tests.Shared;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
@@ -35,7 +36,8 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class SqlTableSchemaProviderDecimalAndNoPkTests : IClassFixture<SharedDbFixture>
     {
-        public SqlTableSchemaProviderDecimalAndNoPkTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public SqlTableSchemaProviderDecimalAndNoPkTests(SharedDbFixture fx) { _fx = fx; }
 
 
         [DbFact(DatabaseType.SQLServer)]
@@ -43,7 +45,7 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_DecimalField_ReturnsPrecisionAndScale()
         {
             const string tableName = "tb_ex_decimal";
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             DropSqlTable(dbAccess, tableName);
 
             try
@@ -53,7 +55,7 @@ namespace Bee.Db.UnitTests
                     "([id] UNIQUEIDENTIFIER NOT NULL, [amount] DECIMAL(15,3) NOT NULL, " +
                     "CONSTRAINT [PK_TB_EX_DECIMAL] PRIMARY KEY ([id]))"));
 
-                var provider = new SqlTableSchemaProvider("common_sqlserver");
+                var provider = new SqlTableSchemaProvider("common_sqlserver", _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -74,7 +76,7 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_TableWithUniqueIndexNoPk_ParsePrimaryKeyReturnsEarlyAndIndexPresent()
         {
             const string tableName = "tb_ex_nopk";
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             DropSqlTable(dbAccess, tableName);
 
             try
@@ -84,7 +86,7 @@ namespace Bee.Db.UnitTests
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     "CREATE UNIQUE INDEX [UX_TB_EX_NOPK] ON [tb_ex_nopk] ([code])"));
 
-                var provider = new SqlTableSchemaProvider("common_sqlserver");
+                var provider = new SqlTableSchemaProvider("common_sqlserver", _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);

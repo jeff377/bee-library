@@ -23,6 +23,12 @@ namespace Bee.Db
         /// Initializes a new instance of <see cref="DbAccess"/> for the specified database identifier.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
+        /// <param name="connectionManager">
+        /// The DI-resolved connection manager that supplies <see cref="DbConnectionInfo"/>
+        /// for <paramref name="databaseId"/>. Typically obtained via
+        /// <see cref="IDbAccessFactory.Create(string)"/>; direct construction is permitted
+        /// when callers already hold an injected manager.
+        /// </param>
         /// <param name="maxCommandTimeout">
         /// Per-app upper bound applied to each <see cref="DbCommand.CommandTimeout"/>;
         /// 0 (default) disables the cap, in which case the value supplied via
@@ -30,13 +36,12 @@ namespace Bee.Db
         /// Typically supplied by <see cref="IDbAccessFactory"/> at the host level
         /// (e.g. 30 sec for mobile API, 60 sec for web, 120 sec for batch service).
         /// </param>
-        public DbAccess(string databaseId, int maxCommandTimeout = 0)
+        public DbAccess(string databaseId, IDbConnectionManager connectionManager, int maxCommandTimeout = 0)
         {
-            if (string.IsNullOrWhiteSpace(databaseId))
-                throw new ArgumentException("databaseId cannot be null or empty.", nameof(databaseId));
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
+            ArgumentNullException.ThrowIfNull(connectionManager);
 
-            // Retrieve cached connection information from DbConnectionManager
-            var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
+            var connInfo = connectionManager.GetConnectionInfo(databaseId);
 
             DatabaseType = connInfo.DatabaseType;
             Provider = connInfo.Provider;

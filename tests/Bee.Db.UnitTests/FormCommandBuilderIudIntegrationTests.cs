@@ -56,7 +56,7 @@ namespace Bee.Db.UnitTests
         {
             var schema = BuildUserSchema();
             var databaseId = TestDbConventions.GetDatabaseId(databaseType);
-            var dbAccess = new DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
 
             var rowId = Guid.NewGuid();
             var sysId = string.Concat("ut_", Guid.NewGuid().ToString("N").AsSpan(0, 12));

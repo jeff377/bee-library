@@ -183,12 +183,9 @@ public class DbConnectionManagerTests { ... }
 public class DbAccessFactoryTests { ... }
 ```
 
-### 目前仍存在的窄序列化（待後續 PR 處理）
+### 目前仍存在的窄序列化
 
-- `Bee.Db.UnitTests/Manager/{DbConnectionManagerTests, DbAccessFactoryTests}` 共享 process-wide
-  `DbConnectionManager` static 快取（`Clear()` 等破壞性操作會 race），透過
-  `[Collection("DbConnectionState")]` 序列化。`DbConnectionManager` 靜態 facade 移除 + `DbAccess`
-  ctor 注入 `IDbConnectionManager` 後可脫除。
+Phase 7 後全 repo 0 處 `[Collection("...")]` 序列化要求；測試以 fixture-scoped DI instance 取代 process-wide static，race 風險已自然消除。
 
 ## 共享 fixture 檔案隔離
 

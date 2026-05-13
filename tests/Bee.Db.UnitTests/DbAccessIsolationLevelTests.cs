@@ -26,7 +26,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001"));
 
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var result = dbAccess.ExecuteBatch(batch);
 
             Assert.NotNull(result);
@@ -45,7 +45,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001"));
 
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var result = await dbAccess.ExecuteBatchAsync(batch);
 
             Assert.NotNull(result);
@@ -60,7 +60,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.DataTable,
                 "SELECT sys_id FROM st_user WHERE sys_id = {0}", "001"));
 
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var result = dbAccess.ExecuteBatch(batch);
 
             Assert.NotNull(result);
@@ -76,7 +76,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.DataTable,
                 "SELECT sys_id FROM st_user WHERE sys_id = {0}", "001"));
 
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var result = await dbAccess.ExecuteBatchAsync(batch);
 
             Assert.NotNull(result);
@@ -88,7 +88,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("UpdateDataTable 以指定 IsolationLevel 執行更新應成功")]
         public void UpdateDataTable_WithIsolationLevel_Succeeds()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
 
             var cmd = new DbCommandSpec(DbCommandKind.DataTable,
                 "SELECT * FROM st_user WHERE sys_id = {0}", "001");

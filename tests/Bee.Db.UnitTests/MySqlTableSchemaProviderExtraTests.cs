@@ -3,6 +3,7 @@ using Bee.Base.Data;
 using Bee.Db.Providers.MySql;
 using Bee.Definition.Database;
 using Bee.Tests.Shared;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
@@ -14,7 +15,8 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class MySqlTableSchemaProviderExtraTests : IClassFixture<SharedDbFixture>
     {
-        public MySqlTableSchemaProviderExtraTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public MySqlTableSchemaProviderExtraTests(SharedDbFixture fx) { _fx = fx; }
 
         [DbFact(DatabaseType.MySQL)]
         [DisplayName("MySQL SchemaProvider 讀回 DECIMAL(15,3) 欄位時應正確設定 Precision 與 Scale（ParseDbField Decimal 分支）")]
@@ -22,7 +24,7 @@ namespace Bee.Db.UnitTests
         {
             const string tableName = "tb_ex_decimal";
             string databaseId = TestDbConventions.GetDatabaseId(DatabaseType.MySQL);
-            var dbAccess = new DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
             DropMySqlTable(dbAccess, tableName);
 
             try
@@ -33,7 +35,7 @@ namespace Bee.Db.UnitTests
                     "CONSTRAINT PK_TB_EX_DECIMAL PRIMARY KEY (id)) " +
                     "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"));
 
-                var provider = new MySqlTableSchemaProvider(databaseId);
+                var provider = new MySqlTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -55,7 +57,7 @@ namespace Bee.Db.UnitTests
         {
             const string tableName = "tb_ex_nopk";
             string databaseId = TestDbConventions.GetDatabaseId(DatabaseType.MySQL);
-            var dbAccess = new DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
             DropMySqlTable(dbAccess, tableName);
 
             try
@@ -66,7 +68,7 @@ namespace Bee.Db.UnitTests
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     "CREATE UNIQUE INDEX UX_TB_EX_NOPK ON tb_ex_nopk (code)"));
 
-                var provider = new MySqlTableSchemaProvider(databaseId);
+                var provider = new MySqlTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);

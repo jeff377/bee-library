@@ -1,6 +1,7 @@
 using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
@@ -19,7 +20,8 @@ namespace Bee.Db.Providers
         /// Creates the schema reader bound to the given database identifier.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
-        ITableSchemaProvider CreateTableSchemaProvider(string databaseId);
+        /// <param name="connectionManager">The DI-resolved connection manager, forwarded to the schema provider.</param>
+        ITableSchemaProvider CreateTableSchemaProvider(string databaseId, IDbConnectionManager connectionManager);
 
         /// <summary>
         /// Creates the CREATE TABLE builder for new tables.

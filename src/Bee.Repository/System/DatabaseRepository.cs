@@ -13,10 +13,12 @@ namespace Bee.Repository.System
     internal class DatabaseRepository : IDatabaseRepository
     {
         private readonly IDefineAccess _defineAccess;
+        private readonly IDbConnectionManager _connectionManager;
 
-        public DatabaseRepository(IDefineAccess defineAccess)
+        public DatabaseRepository(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
         {
             _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
+            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
         /// <summary>
@@ -55,7 +57,7 @@ namespace Bee.Repository.System
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             ArgumentException.ThrowIfNullOrWhiteSpace(categoryId);
             ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
-            var builder = new TableSchemaBuilder(databaseId, _defineAccess);
+            var builder = new TableSchemaBuilder(databaseId, _defineAccess, _connectionManager);
             return builder.Execute(categoryId, tableName);
         }
     }

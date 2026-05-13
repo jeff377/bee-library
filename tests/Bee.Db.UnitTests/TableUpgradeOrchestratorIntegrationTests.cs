@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Bee.Base.Data;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
 using Bee.Tests.Shared;
@@ -8,9 +9,13 @@ namespace Bee.Db.UnitTests
 {
     public class TableUpgradeOrchestratorIntegrationTests : IClassFixture<SharedDbFixture>
     {
-        public TableUpgradeOrchestratorIntegrationTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public TableUpgradeOrchestratorIntegrationTests(SharedDbFixture fx) { _fx = fx; }
 
         private const string DatabaseId = "common_sqlserver";
+
+        private TableUpgradeOrchestrator CreateOrchestrator()
+            => new(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
 
         private static TableSchema BuildSchema(string tableName, int nameLength = 50)
         {
@@ -21,25 +26,25 @@ namespace Bee.Db.UnitTests
             return schema;
         }
 
-        private static void DropIfExists(string tableName)
+        private void DropIfExists(string tableName)
         {
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             var sql = $"IF OBJECT_ID(N'{tableName}', N'U') IS NOT NULL DROP TABLE [{tableName}];";
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql));
         }
 
-        private static bool TableExists(string tableName)
+        private bool TableExists(string tableName)
         {
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             var spec = new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM sys.tables WHERE name = {0}", tableName);
             var result = dbAccess.Execute(spec);
             return Convert.ToInt32(result.Scalar!, System.Globalization.CultureInfo.InvariantCulture) > 0;
         }
 
-        private static bool ColumnExists(string tableName, string columnName)
+        private bool ColumnExists(string tableName, string columnName)
         {
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             var spec = new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM sys.columns WHERE object_id = OBJECT_ID({0}) AND name = {1}",
                 tableName, columnName);
@@ -47,9 +52,9 @@ namespace Bee.Db.UnitTests
             return Convert.ToInt32(result.Scalar!, System.Globalization.CultureInfo.InvariantCulture) > 0;
         }
 
-        private static int GetColumnLength(string tableName, string columnName)
+        private int GetColumnLength(string tableName, string columnName)
         {
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             var spec = new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT max_length FROM sys.columns WHERE object_id = OBJECT_ID({0}) AND name = {1}",
                 tableName, columnName);
@@ -58,20 +63,20 @@ namespace Bee.Db.UnitTests
             return Convert.ToInt32(result.Scalar!, System.Globalization.CultureInfo.InvariantCulture) / 2;
         }
 
-        private static int CountRows(string tableName)
+        private int CountRows(string tableName)
         {
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             var spec = new DbCommandSpec(DbCommandKind.Scalar, $"SELECT COUNT(*) FROM [{tableName}]");
             var result = dbAccess.Execute(spec);
             return Convert.ToInt32(result.Scalar!, System.Globalization.CultureInfo.InvariantCulture);
         }
 
-        private static UpgradePlan PlanFor(string tableName, TableSchema define, UpgradeOptions? options = null)
+        private UpgradePlan PlanFor(string tableName, TableSchema define, UpgradeOptions? options = null)
         {
-            var provider = new Providers.SqlServer.SqlTableSchemaProvider(DatabaseId);
+            var provider = new Providers.SqlServer.SqlTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
             var real = provider.GetTableSchema(tableName);
             var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
-            return new TableUpgradeOrchestrator(DatabaseId).Plan(diff, options);
+            return CreateOrchestrator().Plan(diff, options);
         }
 
         [DbFact(DatabaseType.SQLServer)]
@@ -79,7 +84,7 @@ namespace Bee.Db.UnitTests
         public void Execute_EmptyPlan_ReturnsFalse()
         {
             var plan = new UpgradePlan(UpgradeExecutionMode.NoChange);
-            var executed = TableUpgradeOrchestrator.Execute(plan, DatabaseId);
+            var executed = CreateOrchestrator().Execute(plan, DatabaseId);
             Assert.False(executed);
         }
 
@@ -94,7 +99,7 @@ namespace Bee.Db.UnitTests
                 var plan = PlanFor(tableName, BuildSchema(tableName));
 
                 Assert.Equal(UpgradeExecutionMode.Create, plan.Mode);
-                var executed = TableUpgradeOrchestrator.Execute(plan, DatabaseId);
+                var executed = CreateOrchestrator().Execute(plan, DatabaseId);
 
                 Assert.True(executed);
                 Assert.True(TableExists(tableName));
@@ -115,8 +120,8 @@ namespace Bee.Db.UnitTests
             {
                 // 先建表並塞資料
                 var initial = BuildSchema(tableName);
-                TableUpgradeOrchestrator.Execute(PlanFor(tableName, initial), DatabaseId);
-                var dbAccess = new DbAccess(DatabaseId);
+                CreateOrchestrator().Execute(PlanFor(tableName, initial), DatabaseId);
+                var dbAccess = _fx.NewDbAccess(DatabaseId);
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"INSERT INTO [{tableName}] (sys_rowid, name) VALUES (NEWID(), {{0}})", "Alice"));
 
@@ -126,7 +131,7 @@ namespace Bee.Db.UnitTests
                 var plan = PlanFor(tableName, updated);
 
                 Assert.Equal(UpgradeExecutionMode.Alter, plan.Mode);
-                TableUpgradeOrchestrator.Execute(plan, DatabaseId);
+                CreateOrchestrator().Execute(plan, DatabaseId);
 
                 Assert.True(ColumnExists(tableName, "age"));
                 Assert.Equal(1, CountRows(tableName));
@@ -146,13 +151,13 @@ namespace Bee.Db.UnitTests
             try
             {
                 var initial = BuildSchema(tableName, nameLength: 50);
-                TableUpgradeOrchestrator.Execute(PlanFor(tableName, initial), DatabaseId);
+                CreateOrchestrator().Execute(PlanFor(tableName, initial), DatabaseId);
 
                 var widened = BuildSchema(tableName, nameLength: 100);
                 var plan = PlanFor(tableName, widened);
 
                 Assert.Equal(UpgradeExecutionMode.Alter, plan.Mode);
-                TableUpgradeOrchestrator.Execute(plan, DatabaseId);
+                CreateOrchestrator().Execute(plan, DatabaseId);
 
                 Assert.Equal(100, GetColumnLength(tableName, "name"));
             }
@@ -171,10 +176,10 @@ namespace Bee.Db.UnitTests
             try
             {
                 var initial = BuildSchema(tableName);
-                TableUpgradeOrchestrator.Execute(PlanFor(tableName, initial), DatabaseId);
+                CreateOrchestrator().Execute(PlanFor(tableName, initial), DatabaseId);
 
                 // 插入數值格式字串，rebuild 時 CAST 仍能成功
-                var dbAccess = new DbAccess(DatabaseId);
+                var dbAccess = _fx.NewDbAccess(DatabaseId);
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"INSERT INTO [{tableName}] (sys_rowid, name) VALUES (NEWID(), '42')"));
 
@@ -186,7 +191,7 @@ namespace Bee.Db.UnitTests
                 var plan = PlanFor(tableName, updated);
                 Assert.Equal(UpgradeExecutionMode.Rebuild, plan.Mode);
 
-                TableUpgradeOrchestrator.Execute(plan, DatabaseId);
+                CreateOrchestrator().Execute(plan, DatabaseId);
 
                 // 驗證資料列仍存在（值轉型成功）
                 Assert.Equal(1, CountRows(tableName));
@@ -206,12 +211,12 @@ namespace Bee.Db.UnitTests
             try
             {
                 var define = BuildSchema(tableName);
-                TableUpgradeOrchestrator.Execute(PlanFor(tableName, define), DatabaseId);
+                CreateOrchestrator().Execute(PlanFor(tableName, define), DatabaseId);
 
                 var plan2 = PlanFor(tableName, define);
 
                 Assert.Equal(UpgradeExecutionMode.NoChange, plan2.Mode);
-                Assert.False(TableUpgradeOrchestrator.Execute(plan2, DatabaseId));
+                Assert.False(CreateOrchestrator().Execute(plan2, DatabaseId));
             }
             finally
             {
@@ -229,8 +234,8 @@ namespace Bee.Db.UnitTests
             {
                 // 建表後手動加入「第三方」欄位 legacy_col
                 var initial = BuildSchema(tableName);
-                TableUpgradeOrchestrator.Execute(PlanFor(tableName, initial), DatabaseId);
-                var dbAccess = new DbAccess(DatabaseId);
+                CreateOrchestrator().Execute(PlanFor(tableName, initial), DatabaseId);
+                var dbAccess = _fx.NewDbAccess(DatabaseId);
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"ALTER TABLE [{tableName}] ADD [legacy_col] [nvarchar](10) NULL;"));
 
@@ -242,7 +247,7 @@ namespace Bee.Db.UnitTests
                 var plan = PlanFor(tableName, updated);
                 Assert.Equal(UpgradeExecutionMode.Rebuild, plan.Mode);
 
-                TableUpgradeOrchestrator.Execute(plan, DatabaseId);
+                CreateOrchestrator().Execute(plan, DatabaseId);
 
                 // rebuild 後 legacy_col 應仍存在
                 Assert.True(ColumnExists(tableName, "legacy_col"));

@@ -1,6 +1,4 @@
-using Bee.Api.AspNetCore.Bootstrapping;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Api.AspNetCore
 {
@@ -8,18 +6,20 @@ namespace Bee.Api.AspNetCore
     /// Host-side activation for the Bee.NET framework. Pair with
     /// <see cref="BeeFrameworkServiceCollectionExtensions.AddBeeFramework"/>.
     /// </summary>
+    /// <remarks>
+    /// As of Phase 7 this extension performs no bootstrap work — all framework
+    /// services are resolved through ctor injection. The method is retained as an
+    /// API hook for future middleware registration without breaking existing host
+    /// startup code.
+    /// </remarks>
     public static class BeeFrameworkApplicationBuilderExtensions
     {
         /// <summary>
-        /// Eager-resolves the <see cref="IDbConnectionManagerBootstrapper"/> marker so the
-        /// legacy <c>DbConnectionManager</c> static facade is wired before any request is
-        /// handled. The <see cref="Bee.ObjectCaching.ICacheContainer"/> is fully DI-driven
-        /// (PR 5.7) and no longer requires a bootstrap step.
+        /// No-op activation hook reserved for future framework middleware.
         /// </summary>
         public static IApplicationBuilder UseBeeFramework(this IApplicationBuilder app)
         {
             ArgumentNullException.ThrowIfNull(app);
-            app.ApplicationServices.GetRequiredService<IDbConnectionManagerBootstrapper>();
             return app;
         }
     }

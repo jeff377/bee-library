@@ -18,6 +18,7 @@ namespace Bee.Db.Schema
         private readonly IDialectFactory _dialect;
         private readonly DatabaseType _databaseType;
         private readonly IDefineAccess _defineAccess;
+        private readonly IDbConnectionManager _connectionManager;
 
         #region Constructors
 
@@ -26,12 +27,14 @@ namespace Bee.Db.Schema
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
         /// <param name="defineAccess">The define access service used to fetch the defined table schema.</param>
-        public TableSchemaBuilder(string databaseId, IDefineAccess defineAccess)
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
+        public TableSchemaBuilder(string databaseId, IDefineAccess defineAccess, IDbConnectionManager connectionManager)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             DatabaseId = databaseId;
             _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
-            var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
+            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
+            var connInfo = connectionManager.GetConnectionInfo(databaseId);
             _databaseType = connInfo.DatabaseType;
             _dialect = DbDialectRegistry.Get(connInfo.DatabaseType);
         }
@@ -51,7 +54,7 @@ namespace Bee.Db.Schema
         private TableSchemaComparer CreateComparer(string categoryId, string tableName)
         {
             // Actual table schema from the database
-            var provider = _dialect.CreateTableSchemaProvider(this.DatabaseId);
+            var provider = _dialect.CreateTableSchemaProvider(this.DatabaseId, _connectionManager);
             var realTable = provider.GetTableSchema(tableName);
             // Defined table schema from the form definitions
             var defineTable = _defineAccess.GetTableSchema(categoryId, tableName);
@@ -89,7 +92,7 @@ namespace Bee.Db.Schema
         public string GetCommandText(string categoryId, string tableName, UpgradeOptions? options = null)
         {
             var diff = CompareToDiff(categoryId, tableName);
-            var plan = new TableUpgradeOrchestrator(_dialect).Plan(diff, options);
+            var plan = new TableUpgradeOrchestrator(_dialect, _connectionManager).Plan(diff, options);
             if (plan.IsEmpty) return string.Empty;
 
             var sb = new StringBuilder();
@@ -113,8 +116,9 @@ namespace Bee.Db.Schema
         public bool Execute(string categoryId, string tableName, UpgradeOptions? options = null)
         {
             var diff = CompareToDiff(categoryId, tableName);
-            var plan = new TableUpgradeOrchestrator(_dialect).Plan(diff, options);
-            return TableUpgradeOrchestrator.Execute(plan, this.DatabaseId);
+            var orchestrator = new TableUpgradeOrchestrator(_dialect, _connectionManager);
+            var plan = orchestrator.Plan(diff, options);
+            return orchestrator.Execute(plan, this.DatabaseId);
         }
     }
 }

@@ -1,10 +1,10 @@
 using System.ComponentModel;
 using Bee.Definition;
 using Bee.Definition.Settings;
-using Bee.Db.Manager;
 using Bee.Definition.Database;
 using Bee.Definition.Storage;
 using Bee.Tests.Shared;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests.Manager
 {
@@ -12,12 +12,17 @@ namespace Bee.Db.UnitTests.Manager
     /// DbConnectionManager 的快取與連線資訊組裝測試。
     /// 使用唯一 databaseId 以避免與其他測試共用的全域快取互相干擾。
     /// </summary>
-    [Collection("DbConnectionState")]
+    
     public class DbConnectionManagerTests : IClassFixture<SharedDbFixture>
     {
         private readonly SharedDbFixture _fx;
+        private readonly IDbConnectionManager _manager;
 
-        public DbConnectionManagerTests(SharedDbFixture fx) { _fx = fx; }
+        public DbConnectionManagerTests(SharedDbFixture fx)
+        {
+            _fx = fx;
+            _manager = _fx.GetRequiredService<IDbConnectionManager>();
+        }
         private static string NewId(string label) => $"bee_dcm_{label}_{Guid.NewGuid():N}";
 
         private DatabaseItem AddItem(string id, Action<DatabaseItem> configure)
@@ -34,7 +39,7 @@ namespace Bee.Db.UnitTests.Manager
             var settings = _fx.GetRequiredService<IDefineAccess>().GetDatabaseSettings();
             if (settings.Items!.Contains(id))
                 settings.Items!.Remove(settings.Items[id]!);
-            DbConnectionManager.Remove(id);
+            _manager.Remove(id);
         }
 
         private DatabaseServer AddServer(string id, Action<DatabaseServer> configure)
@@ -60,7 +65,7 @@ namespace Bee.Db.UnitTests.Manager
         [DisplayName("GetConnectionInfo 空白 databaseId 應拋 ArgumentNullException")]
         public void GetConnectionInfo_EmptyId_ThrowsArgumentNullException(string? id)
         {
-            Assert.Throws<ArgumentNullException>(() => DbConnectionManager.GetConnectionInfo(id!));
+            Assert.Throws<ArgumentNullException>(() => _manager.GetConnectionInfo(id!));
         }
 
         [Fact]
@@ -70,7 +75,7 @@ namespace Bee.Db.UnitTests.Manager
             // KeyedCollection 的 indexer 在找不到時直接拋出 KeyNotFoundException；
             // 原始碼的 null 檢查實際上不會被命中。
             var id = NewId("unknown");
-            Assert.Throws<KeyNotFoundException>(() => DbConnectionManager.GetConnectionInfo(id));
+            Assert.Throws<KeyNotFoundException>(() => _manager.GetConnectionInfo(id));
         }
 
         [Fact]
@@ -81,7 +86,7 @@ namespace Bee.Db.UnitTests.Manager
             AddItem(id, i => i.ConnectionString = string.Empty);
             try
             {
-                Assert.Throws<InvalidOperationException>(() => DbConnectionManager.GetConnectionInfo(id));
+                Assert.Throws<InvalidOperationException>(() => _manager.GetConnectionInfo(id));
             }
             finally
             {
@@ -103,7 +108,7 @@ namespace Bee.Db.UnitTests.Manager
             });
             try
             {
-                var info = DbConnectionManager.GetConnectionInfo(id);
+                var info = _manager.GetConnectionInfo(id);
                 Assert.Contains("db_v", info.ConnectionString);
                 Assert.Contains("user_v", info.ConnectionString);
                 Assert.Contains("pwd_v", info.ConnectionString);
@@ -130,7 +135,7 @@ namespace Bee.Db.UnitTests.Manager
             });
             try
             {
-                Assert.Throws<KeyNotFoundException>(() => DbConnectionManager.GetConnectionInfo(id));
+                Assert.Throws<KeyNotFoundException>(() => _manager.GetConnectionInfo(id));
             }
             finally
             {
@@ -159,7 +164,7 @@ namespace Bee.Db.UnitTests.Manager
             });
             try
             {
-                var info = DbConnectionManager.GetConnectionInfo(itemId);
+                var info = _manager.GetConnectionInfo(itemId);
                 Assert.Contains("srv_host", info.ConnectionString);
                 Assert.Contains("srv_user", info.ConnectionString);
                 Assert.Equal(DatabaseType.SQLServer, info.DatabaseType);
@@ -191,7 +196,7 @@ namespace Bee.Db.UnitTests.Manager
             });
             try
             {
-                var info = DbConnectionManager.GetConnectionInfo(itemId);
+                var info = _manager.GetConnectionInfo(itemId);
                 Assert.Contains("item_user", info.ConnectionString);
                 Assert.Contains("item_pwd", info.ConnectionString);
                 Assert.DoesNotContain("srv_user", info.ConnectionString);
@@ -212,10 +217,10 @@ namespace Bee.Db.UnitTests.Manager
             AddItem(id, i => i.ConnectionString = "Server=abc;");
             try
             {
-                var first = DbConnectionManager.GetConnectionInfo(id);
-                var second = DbConnectionManager.GetConnectionInfo(id);
+                var first = _manager.GetConnectionInfo(id);
+                var second = _manager.GetConnectionInfo(id);
                 Assert.Same(first, second);
-                Assert.True(DbConnectionManager.Contains(id));
+                Assert.True(_manager.Contains(id));
             }
             finally
             {
@@ -231,13 +236,13 @@ namespace Bee.Db.UnitTests.Manager
             AddItem(id, i => i.ConnectionString = "Server=abc;");
             try
             {
-                DbConnectionManager.GetConnectionInfo(id);
-                Assert.True(DbConnectionManager.Contains(id));
+                _manager.GetConnectionInfo(id);
+                Assert.True(_manager.Contains(id));
 
-                var removed = DbConnectionManager.Remove(id);
+                var removed = _manager.Remove(id);
 
                 Assert.True(removed);
-                Assert.False(DbConnectionManager.Contains(id));
+                Assert.False(_manager.Contains(id));
             }
             finally
             {
@@ -250,7 +255,7 @@ namespace Bee.Db.UnitTests.Manager
         public void Remove_NotCachedItem_ReturnsFalse()
         {
             var id = NewId("notcached");
-            Assert.False(DbConnectionManager.Remove(id));
+            Assert.False(_manager.Remove(id));
         }
 
         [Fact]
@@ -263,14 +268,14 @@ namespace Bee.Db.UnitTests.Manager
             AddItem(id2, i => i.ConnectionString = "Server=b;");
             try
             {
-                DbConnectionManager.GetConnectionInfo(id1);
-                DbConnectionManager.GetConnectionInfo(id2);
+                _manager.GetConnectionInfo(id1);
+                _manager.GetConnectionInfo(id2);
 
-                DbConnectionManager.Clear();
+                _manager.Clear();
 
-                Assert.False(DbConnectionManager.Contains(id1));
-                Assert.False(DbConnectionManager.Contains(id2));
-                Assert.Equal(0, DbConnectionManager.Count);
+                Assert.False(_manager.Contains(id1));
+                Assert.False(_manager.Contains(id2));
+                Assert.Equal(0, _manager.Count);
             }
             finally
             {
@@ -287,12 +292,12 @@ namespace Bee.Db.UnitTests.Manager
             AddItem(id, i => i.ConnectionString = "Server=a;");
             try
             {
-                DbConnectionManager.GetConnectionInfo(id);
-                Assert.True(DbConnectionManager.Contains(id));
+                _manager.GetConnectionInfo(id);
+                Assert.True(_manager.Contains(id));
 
                 GlobalEvents.RaiseDatabaseSettingsChanged();
 
-                Assert.False(DbConnectionManager.Contains(id));
+                Assert.False(_manager.Contains(id));
             }
             finally
             {

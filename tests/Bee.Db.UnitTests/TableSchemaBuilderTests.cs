@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Database;
 using Bee.Definition.Storage;
@@ -12,7 +13,7 @@ namespace Bee.Db.UnitTests
 
         public TableSchemaBuilderTests(SharedDbFixture fx) { _fx = fx; }
         private TableSchemaBuilder NewBuilder(string databaseId)
-            => new(databaseId, _fx.GetRequiredService<IDefineAccess>());
+            => new(databaseId, _fx.GetRequiredService<IDefineAccess>(), _fx.GetRequiredService<IDbConnectionManager>());
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("TableSchemaBuilder 比對結構一致的資料表應回傳 None")]

@@ -2,6 +2,7 @@ using Bee.Base;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
 using Bee.Db;
+using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Repository.Abstractions.System;
@@ -18,18 +19,29 @@ namespace Bee.Repository.System
     /// </remarks>
     public class SessionRepository : ISessionRepository
     {
+        private readonly IDbConnectionManager _connectionManager;
+
+        /// <summary>
+        /// Initializes a new <see cref="SessionRepository"/>.
+        /// </summary>
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
+        public SessionRepository(IDbConnectionManager connectionManager)
+        {
+            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
+        }
+
         /// <summary>
         /// Inserts a session record into the database.
         /// </summary>
         /// <param name="sessionUser">The session user data to persist.</param>
-        private static void Insert(SessionUser sessionUser)
+        private void Insert(SessionUser sessionUser)
         {
             string xml = XmlCodec.Serialize(sessionUser);
             string sql = "INSERT INTO st_session \n" +
                                  "(access_token, session_user_xml, sys_insert_time, sys_invalid_time) \n" +
                                  "VALUES (" + CommandTextVariable.Parameters + ")";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, sessionUser.AccessToken, xml, DateTime.Now, sessionUser.EndTime);
-            var dbAccess = new DbAccess(DbCategoryIds.Common);
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
             dbAccess.Execute(command);
         }
 
@@ -37,12 +49,12 @@ namespace Bee.Repository.System
         /// Deletes the session record for the specified access token.
         /// </summary>
         /// <param name="accessToken">The access token.</param>
-        private static void Delete(Guid accessToken)
+        private void Delete(Guid accessToken)
         {
             string sql = "DELETE FROM st_session \n" +
                                  "WHERE access_token={0}";
             var command = new DbCommandSpec(DbCommandKind.NonQuery, sql, accessToken);
-            var dbAccess = new DbAccess(DbCategoryIds.Common);
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
             dbAccess.Execute(command);
         }
 
@@ -56,7 +68,7 @@ namespace Bee.Repository.System
                                  "FROM st_session \n" +
                                  "WHERE access_token={0}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, accessToken);
-            var dbAccess = new DbAccess(DbCategoryIds.Common);
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
             var result = dbAccess.Execute(command);
             var table = result.Table!;
             if (table.IsEmpty()) { return null; }
@@ -88,7 +100,7 @@ namespace Bee.Repository.System
             string sql = "SELECT sys_id, sys_name FROM st_user \n" +
                                  "WHERE sys_id={0}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, userID);
-            var dbAccess = new DbAccess(DbCategoryIds.Common);
+            var dbAccess = new DbAccess(DbCategoryIds.Common, _connectionManager);
             var result = dbAccess.Execute(command);
             var table = result.Table!;
             if (table.IsEmpty()) { throw new InvalidOperationException($"UserID='{userID}' not found"); }

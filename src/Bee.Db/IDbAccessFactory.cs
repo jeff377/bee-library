@@ -1,14 +1,11 @@
+using Bee.Db.Manager;
+
 namespace Bee.Db
 {
     /// <summary>
     /// Creates <see cref="DbAccess"/> instances bound to the per-app configuration
     /// (such as the <see cref="System.Data.Common.DbCommand.CommandTimeout"/> cap).
     /// </summary>
-    /// <remarks>
-    /// Reserved for DI registration in a later phase. Until then, callers may
-    /// continue constructing <see cref="DbAccess"/> directly; the
-    /// <c>maxCommandTimeout</c> constructor parameter defaults to 0 (no cap).
-    /// </remarks>
     public interface IDbAccessFactory
     {
         /// <summary>
@@ -33,22 +30,25 @@ namespace Bee.Db
     /// </remarks>
     public sealed class DbAccessFactory : IDbAccessFactory
     {
+        private readonly IDbConnectionManager _connectionManager;
         private readonly int _maxCommandTimeout;
 
         /// <summary>
         /// Initializes a new <see cref="DbAccessFactory"/>.
         /// </summary>
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
         /// <param name="maxCommandTimeout">
         /// Per-app upper bound applied to each <see cref="System.Data.Common.DbCommand.CommandTimeout"/>;
         /// 0 (default) disables the cap.
         /// </param>
-        public DbAccessFactory(int maxCommandTimeout = 0)
+        public DbAccessFactory(IDbConnectionManager connectionManager, int maxCommandTimeout = 0)
         {
+            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
             _maxCommandTimeout = maxCommandTimeout;
         }
 
         /// <inheritdoc/>
         public DbAccess Create(string databaseId)
-            => new DbAccess(databaseId, _maxCommandTimeout);
+            => new DbAccess(databaseId, _connectionManager, _maxCommandTimeout);
     }
 }

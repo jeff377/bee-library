@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using Bee.Api.AspNetCore.Bootstrapping;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -9,8 +8,6 @@ namespace Bee.Api.AspNetCore.UnitTests
 {
     public class BeeFrameworkApplicationBuilderExtensionsTests
     {
-        private sealed class FakeDbConnectionManagerBootstrapper : IDbConnectionManagerBootstrapper { }
-
         private sealed class FakeApplicationBuilder : IApplicationBuilder
         {
             public IServiceProvider ApplicationServices { get; set; } = null!;
@@ -30,11 +27,10 @@ namespace Bee.Api.AspNetCore.UnitTests
         }
 
         [Fact]
-        [DisplayName("UseBeeFramework 應解析 bootstrapper 並回傳相同 IApplicationBuilder 實例")]
-        public void UseBeeFramework_ValidApp_ResolvesBootstrappersAndReturnsSameApp()
+        [DisplayName("UseBeeFramework 應回傳相同 IApplicationBuilder 實例（Phase 7 後為 no-op）")]
+        public void UseBeeFramework_ValidApp_ReturnsSameApp()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<IDbConnectionManagerBootstrapper, FakeDbConnectionManagerBootstrapper>();
             var provider = services.BuildServiceProvider();
 
             var app = new FakeApplicationBuilder { ApplicationServices = provider };

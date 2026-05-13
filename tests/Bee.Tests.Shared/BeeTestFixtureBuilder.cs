@@ -3,6 +3,7 @@ using Bee.Definition;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Microsoft.Extensions.DependencyInjection;
+using Bee.Db.Manager;
 
 namespace Bee.Tests.Shared
 {
@@ -107,7 +108,8 @@ namespace Bee.Tests.Shared
                 // shares the same DatabaseSettings cache that SharedDatabaseState
                 // populated via GlobalFixture's bootstrap path.
                 SharedDatabaseState.EnsureSchemaAndSeed(
-                    provider.GetRequiredService<Bee.Definition.Storage.IDefineAccess>());
+                    provider.GetRequiredService<Bee.Definition.Storage.IDefineAccess>(),
+                    provider.GetRequiredService<IDbConnectionManager>());
             }
 
             return provider;

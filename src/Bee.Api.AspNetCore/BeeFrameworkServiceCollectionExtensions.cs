@@ -1,8 +1,8 @@
-using Bee.Api.AspNetCore.Bootstrapping;
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Business;
 using Bee.Business.Providers;
+using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.ObjectCaching;
@@ -22,10 +22,11 @@ namespace Bee.Api.AspNetCore
     {
         /// <summary>
         /// Registers Bee.NET framework services and decrypts security keys from
-        /// <paramref name="configuration"/>. Call <c>app.UseBeeFramework()</c> after building
-        /// the service provider to eager-resolve <see cref="IDbConnectionManagerBootstrapper"/>
-        /// (writes the DI-resolved <see cref="IDbConnectionManager"/> to the transitional
-        /// static shim used by <c>new DbAccess(databaseId)</c>).
+        /// <paramref name="configuration"/>. <c>app.UseBeeFramework()</c> remains available
+        /// as an ASP.NET Core integration extension point but no longer performs any
+        /// bootstrap work after Phase 7 removed the transitional <c>DbConnectionManager</c>
+        /// static shim — callers obtain <see cref="DbAccess"/> via
+        /// <see cref="IDbAccessFactory"/> (ctor injected).
         /// </summary>
         /// <param name="services">The service collection.</param>
         /// <param name="configuration">The backend configuration (from SystemSettings.xml).</param>
@@ -77,13 +78,13 @@ namespace Bee.Api.AspNetCore
             services.AddSingleton<IDatabaseSettingsProvider>(sp =>
                 new DefineAccessDatabaseSettingsProvider(sp.GetRequiredService<IDefineAccess>()));
 
-            // 6. IDbConnectionManager — DI-injectable singleton (PR 5.3b). The legacy static
-            //    facade is wired by the bootstrapper below (still used by `new DbAccess(id)`
-            //    test sites until a future PR migrates them to ctor injection).
+            // 6. IDbConnectionManager + IDbAccessFactory — DI-injectable singletons.
+            //    Callers ctor-inject IDbAccessFactory.Create(databaseId) instead of using
+            //    the removed static DbConnectionManager facade.
             services.AddSingleton<IDbConnectionManager>(sp =>
                 new DbConnectionManagerService(sp.GetRequiredService<IDatabaseSettingsProvider>()));
-            services.AddSingleton<IDbConnectionManagerBootstrapper>(sp =>
-                new DbConnectionManagerBootstrapper(sp.GetRequiredService<IDbConnectionManager>()));
+            services.AddSingleton<IDbAccessFactory>(sp =>
+                new DbAccessFactory(sp.GetRequiredService<IDbConnectionManager>()));
 
             // 5. Replaceable core services. Lifetimes default to Singleton in Phase 4 —
             //    no consumer requires per-request scope today, and registering as Scoped

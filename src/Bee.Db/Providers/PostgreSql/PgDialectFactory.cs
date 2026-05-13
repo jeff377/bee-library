@@ -1,6 +1,7 @@
 using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
@@ -13,7 +14,8 @@ namespace Bee.Db.Providers.PostgreSql
     public class PgDialectFactory : IDialectFactory
     {
         /// <inheritdoc />
-        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId) => new PgTableSchemaProvider(databaseId);
+        public ITableSchemaProvider CreateTableSchemaProvider(string databaseId, IDbConnectionManager connectionManager)
+            => new PgTableSchemaProvider(databaseId, connectionManager);
 
         /// <inheritdoc />
         public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => new PgCreateTableCommandBuilder();

@@ -7,7 +7,8 @@ namespace Bee.Db.UnitTests
 {
     public class DbAccessExtraTests : IClassFixture<SharedDbFixture>
     {
-        public DbAccessExtraTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public DbAccessExtraTests(SharedDbFixture fx) { _fx = fx; }
 
         [Theory]
         [InlineData("")]
@@ -15,14 +16,14 @@ namespace Bee.Db.UnitTests
         [DisplayName("DbAccess(string) databaseId 為空白應擲 ArgumentException")]
         public void Constructor_EmptyDatabaseId_Throws(string databaseId)
         {
-            Assert.Throws<ArgumentException>(() => new DbAccess(databaseId));
+            Assert.Throws<ArgumentException>(() => _fx.NewDbAccess(databaseId));
         }
 
         [Fact]
-        [DisplayName("DbAccess(string) databaseId 為 null 應擲 ArgumentException")]
+        [DisplayName("DbAccess(string) databaseId 為 null 應擲 ArgumentNullException")]
         public void Constructor_NullDatabaseId_Throws()
         {
-            Assert.Throws<ArgumentException>(() => new DbAccess((string)null!));
+            Assert.Throws<ArgumentNullException>(() => _fx.NewDbAccess((string)null!));
         }
 
         [Fact]

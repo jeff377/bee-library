@@ -1,3 +1,4 @@
+using Bee.Db.Manager;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
@@ -11,15 +12,18 @@ namespace Bee.Repository.Factories
     public class SystemRepositoryFactory : ISystemRepositoryFactory
     {
         private readonly IDefineAccess _defineAccess;
+        private readonly IDbConnectionManager _connectionManager;
 
         /// <summary>
         /// Initializes a new <see cref="SystemRepositoryFactory"/>.
         /// </summary>
         /// <param name="defineAccess">The define access service used by repositories that need to read
         /// the defined table schema (e.g., schema upgrade).</param>
-        public SystemRepositoryFactory(IDefineAccess defineAccess)
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
+        public SystemRepositoryFactory(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
         {
             _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
+            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
         }
 
         /// <summary>
@@ -27,7 +31,7 @@ namespace Bee.Repository.Factories
         /// </summary>
         public IDatabaseRepository CreateDatabaseRepository()
         {
-            return new DatabaseRepository(_defineAccess);
+            return new DatabaseRepository(_defineAccess, _connectionManager);
         }
 
         /// <summary>
@@ -35,7 +39,7 @@ namespace Bee.Repository.Factories
         /// </summary>
         public ISessionRepository CreateSessionRepository()
         {
-            return new SessionRepository();
+            return new SessionRepository(_connectionManager);
         }
     }
 }

@@ -1,3 +1,4 @@
+using Bee.Db;
 using Bee.Definition;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -92,6 +93,15 @@ namespace Bee.Tests.Shared
         /// </summary>
         public T? GetService<T>() where T : class
             => _provider.GetService<T>();
+
+        /// <summary>
+        /// Convenience: creates a <see cref="DbAccess"/> bound to <paramref name="databaseId"/>
+        /// via the fixture's <see cref="IDbAccessFactory"/>. Use this instead of
+        /// <c>new DbAccess(id)</c> in tests so the connection manager comes from the
+        /// fixture-scoped DI provider rather than any process-wide static.
+        /// </summary>
+        public DbAccess NewDbAccess(string databaseId)
+            => _provider.GetRequiredService<IDbAccessFactory>().Create(databaseId);
 
         /// <summary>
         /// Disposes the per-fixture provider and best-effort deletes the temp <c>DefinePath</c>

@@ -84,7 +84,7 @@ namespace Bee.Db.UnitTests
         {
             var factory = new PgDialectFactory();
 
-            Assert.NotNull(factory.CreateTableSchemaProvider("common_postgresql"));
+            Assert.NotNull(factory.CreateTableSchemaProvider("common_postgresql", _fx.GetRequiredService<IDbConnectionManager>()));
         }
     }
 }

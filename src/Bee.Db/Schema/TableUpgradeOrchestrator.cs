@@ -15,6 +15,7 @@ namespace Bee.Db.Schema
     public class TableUpgradeOrchestrator
     {
         private readonly IDialectFactory _dialect;
+        private readonly IDbConnectionManager _connectionManager;
         private readonly ITableAlterCommandBuilder _alterBuilder;
 
         /// <summary>
@@ -22,24 +23,28 @@ namespace Bee.Db.Schema
         /// resolving the dialect factory from <see cref="DbDialectRegistry"/>.
         /// </summary>
         /// <param name="databaseId">The database identifier used to resolve the dialect factory.</param>
-        public TableUpgradeOrchestrator(string databaseId)
-            : this(ResolveDialect(databaseId))
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
+        public TableUpgradeOrchestrator(string databaseId, IDbConnectionManager connectionManager)
+            : this(ResolveDialect(databaseId, connectionManager), connectionManager)
         { }
 
         /// <summary>
         /// Initializes a new instance of <see cref="TableUpgradeOrchestrator"/> with the supplied dialect factory.
         /// </summary>
         /// <param name="dialect">The dialect factory for the target database.</param>
-        public TableUpgradeOrchestrator(IDialectFactory dialect)
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
+        public TableUpgradeOrchestrator(IDialectFactory dialect, IDbConnectionManager connectionManager)
         {
             _dialect = dialect ?? throw new ArgumentNullException(nameof(dialect));
+            _connectionManager = connectionManager ?? throw new ArgumentNullException(nameof(connectionManager));
             _alterBuilder = _dialect.CreateTableAlterCommandBuilder();
         }
 
-        private static IDialectFactory ResolveDialect(string databaseId)
+        private static IDialectFactory ResolveDialect(string databaseId, IDbConnectionManager connectionManager)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
-            var connInfo = DbConnectionManager.GetConnectionInfo(databaseId);
+            ArgumentNullException.ThrowIfNull(connectionManager);
+            var connInfo = connectionManager.GetConnectionInfo(databaseId);
             return DbDialectRegistry.Get(connInfo.DatabaseType);
         }
 
@@ -86,18 +91,18 @@ namespace Bee.Db.Schema
         /// </summary>
         /// <param name="plan">The plan to execute.</param>
         /// <param name="databaseId">The database identifier to open connections for.</param>
-        public static bool Execute(UpgradePlan plan, string databaseId)
+        public bool Execute(UpgradePlan plan, string databaseId)
         {
             ArgumentNullException.ThrowIfNull(plan);
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
 
             if (plan.IsEmpty) return false;
 
-            var databaseType = DbConnectionManager.GetConnectionInfo(databaseId).DatabaseType;
+            var databaseType = _connectionManager.GetConnectionInfo(databaseId).DatabaseType;
 
             foreach (var stage in plan.Stages)
             {
-                using var conn = DbConnectionManager.CreateConnection(databaseId);
+                using var conn = _connectionManager.CreateConnection(databaseId);
                 conn.Open();
                 using var txn = conn.BeginTransaction();
                 try

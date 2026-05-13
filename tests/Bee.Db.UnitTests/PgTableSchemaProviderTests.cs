@@ -3,12 +3,14 @@ using Bee.Base.Data;
 using Bee.Db.Providers.PostgreSql;
 using Bee.Definition.Database;
 using Bee.Tests.Shared;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
     public class PgTableSchemaProviderTests : IClassFixture<SharedDbFixture>
     {
-        public PgTableSchemaProviderTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public PgTableSchemaProviderTests(SharedDbFixture fx) { _fx = fx; }
 
         private const string DatabaseId = "common_postgresql";
 
@@ -16,7 +18,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("PgTableSchemaProvider 取得資料表結構應成功")]
         public void GetTableSchema_ValidTableName_ReturnsSchema()
         {
-            var helper = new PgTableSchemaProvider(DatabaseId);
+            var helper = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
             var dbTable = helper.GetTableSchema("st_user");
             Assert.NotNull(dbTable);
         }
@@ -25,7 +27,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("PgTableSchemaProvider 取得不存在資料表應回傳 null")]
         public void GetTableSchema_NonExistentTable_ReturnsNull()
         {
-            var helper = new PgTableSchemaProvider(DatabaseId);
+            var helper = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
             var dbTable = helper.GetTableSchema("bee_nonexistent_table_xyz_99999");
             Assert.Null(dbTable);
         }
@@ -34,7 +36,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("PgTableSchemaProvider DatabaseId 應等於建構子傳入的值")]
         public void Constructor_DatabaseId_IsSet()
         {
-            var helper = new PgTableSchemaProvider(DatabaseId);
+            var helper = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
             Assert.Equal(DatabaseId, helper.DatabaseId);
         }
 
@@ -43,7 +45,7 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_WithComment_ReturnsDisplayName()
         {
             string tableName = $"bee_test_desc_{Guid.NewGuid():N}";
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             try
             {
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
@@ -51,7 +53,7 @@ namespace Bee.Db.UnitTests
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"COMMENT ON TABLE \"{tableName}\" IS '測試表說明';"));
 
-                var provider = new PgTableSchemaProvider(DatabaseId);
+                var provider = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -69,13 +71,13 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_WithoutComment_ReturnsEmptyDisplayName()
         {
             string tableName = $"bee_test_desc_{Guid.NewGuid():N}";
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             try
             {
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"CREATE TABLE \"{tableName}\" (\"id\" integer NOT NULL);"));
 
-                var provider = new PgTableSchemaProvider(DatabaseId);
+                var provider = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -93,13 +95,13 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_DecimalColumn_ParsesPrecisionAndScale()
         {
             string tableName = $"bee_test_decimal_{Guid.NewGuid():N}";
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             try
             {
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"CREATE TABLE \"{tableName}\" (\"id\" integer NOT NULL, \"amount\" numeric(12,3) NOT NULL);"));
 
-                var provider = new PgTableSchemaProvider(DatabaseId);
+                var provider = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -121,7 +123,7 @@ namespace Bee.Db.UnitTests
         {
             string tableName = $"bee_test_idx_{Guid.NewGuid():N}";
             string idxName = $"ix_{tableName}_name";
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             try
             {
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
@@ -130,7 +132,7 @@ namespace Bee.Db.UnitTests
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"CREATE INDEX \"{idxName}\" ON \"{tableName}\" (\"name\");"));
 
-                var provider = new PgTableSchemaProvider(DatabaseId);
+                var provider = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -160,13 +162,13 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_NoPrimaryKey_ReturnsSchemaWithoutPk()
         {
             string tableName = $"bee_test_nopk_{Guid.NewGuid():N}";
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             try
             {
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"CREATE TABLE \"{tableName}\" (\"value\" integer NOT NULL);"));
 
-                var provider = new PgTableSchemaProvider(DatabaseId);
+                var provider = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -186,13 +188,13 @@ namespace Bee.Db.UnitTests
         public void GetTableSchema_AutoIncrementColumn_MapsToAutoIncrement()
         {
             string tableName = $"bee_test_identity_{Guid.NewGuid():N}";
-            var dbAccess = new DbAccess(DatabaseId);
+            var dbAccess = _fx.NewDbAccess(DatabaseId);
             try
             {
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"CREATE TABLE \"{tableName}\" (\"id\" integer GENERATED BY DEFAULT AS IDENTITY NOT NULL);"));
 
-                var provider = new PgTableSchemaProvider(DatabaseId);
+                var provider = new PgTableSchemaProvider(DatabaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);

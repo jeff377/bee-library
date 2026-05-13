@@ -1,4 +1,6 @@
 using System.ComponentModel;
+using Bee.Db.Manager;
+using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 using Bee.Repository.Factories;
@@ -61,7 +63,16 @@ namespace Bee.Repository.UnitTests
         [DisplayName("SystemRepositoryFactory 直接構造傳入 null IDefineAccess 應拋 ArgumentNullException")]
         public void Ctor_NullDefineAccess_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new SystemRepositoryFactory(null!));
+            Assert.Throws<ArgumentNullException>(
+                () => new SystemRepositoryFactory(null!, _fx.GetRequiredService<IDbConnectionManager>()));
+        }
+
+        [Fact]
+        [DisplayName("SystemRepositoryFactory 直接構造傳入 null IDbConnectionManager 應拋 ArgumentNullException")]
+        public void Ctor_NullConnectionManager_Throws()
+        {
+            Assert.Throws<ArgumentNullException>(
+                () => new SystemRepositoryFactory(_fx.GetRequiredService<IDefineAccess>(), null!));
         }
     }
 }

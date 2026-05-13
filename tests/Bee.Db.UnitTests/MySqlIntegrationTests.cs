@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using Bee.Base.Data;
+using Bee.Db.Manager;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
 
@@ -14,14 +15,15 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class MySqlIntegrationTests : IClassFixture<SharedDbFixture>
     {
-        public MySqlIntegrationTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public MySqlIntegrationTests(SharedDbFixture fx) { _fx = fx; }
 
         [DbFact(DatabaseType.MySQL)]
         [DisplayName("MySQL SchemaProvider 應讀回 fixture 建好的 st_user 表")]
         public void SchemaProvider_ReadsFixtureTable()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.MySQL);
-            var provider = new Bee.Db.Providers.MySql.MySqlTableSchemaProvider(databaseId);
+            var provider = new Bee.Db.Providers.MySql.MySqlTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
 
             var schema = provider.GetTableSchema("st_user");
 
@@ -38,7 +40,7 @@ namespace Bee.Db.UnitTests
         public void SchemaProvider_UnknownTable_ReturnsNull()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.MySQL);
-            var provider = new Bee.Db.Providers.MySql.MySqlTableSchemaProvider(databaseId);
+            var provider = new Bee.Db.Providers.MySql.MySqlTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
 
             var schema = provider.GetTableSchema("__no_such_table__");
 
@@ -50,7 +52,7 @@ namespace Bee.Db.UnitTests
         public void StringComparison_IsCaseInsensitive()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.MySQL);
-            var dbAccess = new Bee.Db.DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
 
             // 手寫 minimal DDL 以聚焦於驗證 MySQL 對 utf8mb4_0900_ai_ci collation 的執行行為，
             // 與 MySqlCreateTableCommandBuilder 純語法測試獨立。

@@ -71,13 +71,11 @@ namespace Bee.Tests.Shared
             }
             SysInfo.Initialize(settings.CommonConfiguration);
 
-            // 用 AddBeeFramework 建 DI 容器；eager-resolve DbConnectionManager bootstrapper
-            // 觸發 process-wide DbConnectionManager static wire-up（仍被 `new DbAccess(id)`
-            // 測試呼叫點使用，待後續 PR 完成 IDbConnectionManager 全面 ctor 注入後可移除）。
+            // 用 AddBeeFramework 建 DI 容器。Phase 7 後框架不再有 process-wide 靜態 facade，
+            // 所有服務（含 IDbConnectionManager）皆透過 ctor 注入解析。
             var services = new ServiceCollection();
             services.AddBeeFramework(settings.BackendConfiguration, pathOptions, autoCreateMasterKey: true);
             var provider = services.BuildServiceProvider();
-            provider.GetRequiredService<Bee.Api.AspNetCore.Bootstrapping.IDbConnectionManagerBootstrapper>();
 
             // Bee.Api.Client 近端模式（in-process）透過 ApiClientInfo.LocalServiceProvider 取得後端服務；
             // 測試 fixture 預設指向同一個 process-wide 容器。Phase 4 transitional —

@@ -1,11 +1,11 @@
 using System.ComponentModel;
 using Bee.Base.Data;
-using Bee.Db.Manager;
 using Bee.Db.Providers.MySql;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Storage;
 using Bee.Tests.Shared;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {

@@ -7,10 +7,9 @@ namespace Bee.Db.Manager
     /// <see cref="DbConnection"/> objects for a given database identifier.
     /// </summary>
     /// <remarks>
-    /// Phase 5 PR 5.3b introduced this interface alongside the existing
-    /// <see cref="DbConnectionManager"/> static facade. Consumers should ctor-inject
-    /// <see cref="IDbConnectionManager"/>; the static class remains as a transitional
-    /// shim for tests and is removed once test fixtures finish migrating.
+    /// Resolved through DI ctor injection; <see cref="DbConnectionManagerService"/>
+    /// is the default implementation registered by
+    /// <c>BeeFrameworkServiceCollectionExtensions.AddBeeFramework</c>.
     /// </remarks>
     public interface IDbConnectionManager
     {

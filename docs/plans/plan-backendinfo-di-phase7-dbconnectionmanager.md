@@ -1,6 +1,6 @@
 # 計畫：Phase 7 — DbConnectionManager 靜態 facade 移除 + DbAccess ctor DI 化
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-05-13）**
 
 > 本文件為主計畫 [plan-backendinfo-to-di-migration.md](plan-backendinfo-to-di-migration.md) 的 **Phase 7** sub-plan，獨立可 ship。在 Phase 6（`BackendInfo` / `BackendConfiguration` 空殼類別刪除）完成後執行。
 

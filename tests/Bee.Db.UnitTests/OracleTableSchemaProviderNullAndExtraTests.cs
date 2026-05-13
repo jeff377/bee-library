@@ -3,6 +3,7 @@ using Bee.Base.Data;
 using Bee.Db.Providers.Oracle;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
@@ -58,7 +59,8 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class OracleTableSchemaProviderDecimalAndNoPkTests : IClassFixture<SharedDbFixture>
     {
-        public OracleTableSchemaProviderDecimalAndNoPkTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public OracleTableSchemaProviderDecimalAndNoPkTests(SharedDbFixture fx) { _fx = fx; }
 
 
         [DbFact(DatabaseType.Oracle)]
@@ -67,7 +69,7 @@ namespace Bee.Db.UnitTests
         {
             const string tableName = "tb_ex_decimal";
             string databaseId = TestDbConventions.GetDatabaseId(DatabaseType.Oracle);
-            var dbAccess = new DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
             DropOracleTable(dbAccess, tableName);
 
             try
@@ -77,7 +79,7 @@ namespace Bee.Db.UnitTests
                     "(\"id\" RAW(16) NOT NULL, \"amount\" NUMBER(15,3) NOT NULL, " +
                     "CONSTRAINT \"PK_TB_EX_DECIMAL\" PRIMARY KEY (\"id\"))"));
 
-                var provider = new OracleTableSchemaProvider(databaseId);
+                var provider = new OracleTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);
@@ -99,7 +101,7 @@ namespace Bee.Db.UnitTests
         {
             const string tableName = "tb_ex_nopk";
             string databaseId = TestDbConventions.GetDatabaseId(DatabaseType.Oracle);
-            var dbAccess = new DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
             DropOracleTable(dbAccess, tableName);
 
             try
@@ -109,7 +111,7 @@ namespace Bee.Db.UnitTests
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     "CREATE UNIQUE INDEX \"UX_TB_EX_NOPK\" ON \"TB_EX_NOPK\" (\"code\")"));
 
-                var provider = new OracleTableSchemaProvider(databaseId);
+                var provider = new OracleTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema(tableName);
 
                 Assert.NotNull(schema);

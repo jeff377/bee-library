@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Db.Manager;
 using Bee.Repository.System;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
@@ -7,13 +8,14 @@ namespace Bee.Repository.UnitTests
 {
     public class SessionRepositoryTests : IClassFixture<SharedDbFixture>
     {
-        public SessionRepositoryTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public SessionRepositoryTests(SharedDbFixture fx) { _fx = fx; }
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("CreateSession 傳入有效使用者編號應建立 Session")]
         public void CreateSession_ValidUserId_CreatesSession()
         {
-            var repo = new SessionRepository();
+            var repo = new SessionRepository(_fx.GetRequiredService<IDbConnectionManager>());
             var sessionUse = repo.CreateSession("001");
             Assert.NotNull(sessionUse);
             Assert.NotEqual(Guid.Empty, sessionUse.AccessToken);
@@ -23,7 +25,7 @@ namespace Bee.Repository.UnitTests
         [DisplayName("CreateSession 傳入不存在的使用者編號應擲 InvalidOperationException")]
         public void CreateSession_NonExistentUserId_ThrowsInvalidOperation()
         {
-            var repo = new SessionRepository();
+            var repo = new SessionRepository(_fx.GetRequiredService<IDbConnectionManager>());
 
             Assert.Throws<InvalidOperationException>(
                 () => repo.CreateSession("__nonexistent_user_xyz__"));
@@ -33,7 +35,7 @@ namespace Bee.Repository.UnitTests
         [DisplayName("GetSession 傳入不存在的 AccessToken 應回傳 null")]
         public void GetSession_NonExistentToken_ReturnsNull()
         {
-            var repo = new SessionRepository();
+            var repo = new SessionRepository(_fx.GetRequiredService<IDbConnectionManager>());
 
             var result = repo.GetSession(Guid.NewGuid());
 
@@ -44,7 +46,7 @@ namespace Bee.Repository.UnitTests
         [DisplayName("GetSession 傳入有效 Token 應回傳 SessionUser")]
         public void GetSession_ValidToken_ReturnsSessionUser()
         {
-            var repo = new SessionRepository();
+            var repo = new SessionRepository(_fx.GetRequiredService<IDbConnectionManager>());
             var created = repo.CreateSession("001", expiresIn: 3600);
 
             var result = repo.GetSession(created.AccessToken);
@@ -58,7 +60,7 @@ namespace Bee.Repository.UnitTests
         [DisplayName("GetSession 已過期的 Session 應回傳 null")]
         public void GetSession_ExpiredSession_ReturnsNull()
         {
-            var repo = new SessionRepository();
+            var repo = new SessionRepository(_fx.GetRequiredService<IDbConnectionManager>());
             // Create a session that expired 1 hour ago
             var created = repo.CreateSession("001", expiresIn: -3600);
 
@@ -71,7 +73,7 @@ namespace Bee.Repository.UnitTests
         [DisplayName("GetSession 一次性 Session 取回後應被刪除")]
         public void GetSession_OneTimeSession_DeletesAfterRetrieval()
         {
-            var repo = new SessionRepository();
+            var repo = new SessionRepository(_fx.GetRequiredService<IDbConnectionManager>());
             var created = repo.CreateSession("001", expiresIn: 3600, oneTime: true);
 
             var first = repo.GetSession(created.AccessToken);

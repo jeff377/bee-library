@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
 using Bee.Base.Data;
+using Bee.Db.Manager;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
 
@@ -14,14 +15,15 @@ namespace Bee.Db.UnitTests
     /// </summary>
     public class SqliteIntegrationTests : IClassFixture<SharedDbFixture>
     {
-        public SqliteIntegrationTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public SqliteIntegrationTests(SharedDbFixture fx) { _fx = fx; }
 
         [DbFact(DatabaseType.SQLite)]
         [DisplayName("SQLite SchemaProvider 應讀回 fixture 建好的 st_user 表")]
         public void SchemaProvider_ReadsFixtureTable()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
-            var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId);
+            var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
 
             var schema = provider.GetTableSchema("st_user");
 
@@ -38,7 +40,7 @@ namespace Bee.Db.UnitTests
         public void SchemaProvider_UnknownTable_ReturnsNull()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
-            var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId);
+            var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
 
             var schema = provider.GetTableSchema("__no_such_table__");
 
@@ -50,7 +52,7 @@ namespace Bee.Db.UnitTests
         public void StringComparison_IsCaseInsensitive()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
-            var dbAccess = new Bee.Db.DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
 
             // 手寫 minimal DDL 以聚焦於驗證 SQLite 對 COLLATE NOCASE 欄位的執行行為，
             // 與 SqliteCreateTableCommandBuilder 純語法測試獨立。
@@ -82,7 +84,7 @@ namespace Bee.Db.UnitTests
         public void SchemaProvider_ReadsSecondaryIndexes()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
-            var dbAccess = new Bee.Db.DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
 
             // 直接以最小 DDL 建立帶二級索引的表，驗證 ParseIndexes / ReadIndexFields 路徑。
             dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
@@ -96,7 +98,7 @@ namespace Bee.Db.UnitTests
 
             try
             {
-                var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId);
+                var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema("idx_test");
 
                 Assert.NotNull(schema);
@@ -124,7 +126,7 @@ namespace Bee.Db.UnitTests
         public void SchemaProvider_ReadsDecimalPrecisionAndScale()
         {
             var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
-            var dbAccess = new Bee.Db.DbAccess(databaseId);
+            var dbAccess = _fx.NewDbAccess(databaseId);
 
             // NUMERIC(12,3) 觸發 ParseTypeFacets 的多參數分支與 Decimal precision/scale 還原。
             dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
@@ -134,7 +136,7 @@ namespace Bee.Db.UnitTests
 
             try
             {
-                var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId);
+                var provider = new Bee.Db.Providers.Sqlite.SqliteTableSchemaProvider(databaseId, _fx.GetRequiredService<IDbConnectionManager>());
                 var schema = provider.GetTableSchema("dec_test");
 
                 Assert.NotNull(schema);

@@ -1,19 +1,20 @@
 using System.ComponentModel;
-using Bee.Db.Manager;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
     public class DbAccessStringMethodTests : IClassFixture<SharedDbFixture>
     {
-        public DbAccessStringMethodTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public DbAccessStringMethodTests(SharedDbFixture fx) { _fx = fx; }
 
         [DbFact(DatabaseType.SQLServer)]
         [DisplayName("ExecuteNonQuery 字串多載應回傳影響列數")]
         public void ExecuteNonQuery_ValidSql_ReturnsRowsAffected()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             int affected = dbAccess.ExecuteNonQuery(
                 "UPDATE st_user SET note={1} WHERE sys_id={0}", "001", "test-string-overload");
             Assert.True(affected >= 0);
@@ -23,7 +24,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteScalar 字串多載應回傳純量值")]
         public void ExecuteScalar_ValidSql_ReturnsScalarValue()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             object? value = dbAccess.ExecuteScalar(
                 "SELECT COUNT(*) FROM st_user WHERE sys_id={0}", "001");
             Assert.NotNull(value);
@@ -33,7 +34,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteDataTable 字串多載應回傳 DataTable")]
         public void ExecuteDataTable_ValidSql_ReturnsDataTable()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var table = dbAccess.ExecuteDataTable(
                 "SELECT sys_id FROM st_user WHERE sys_id={0}", "001");
             Assert.NotNull(table);
@@ -43,7 +44,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteNonQueryAsync 非同步字串多載應回傳影響列數")]
         public async Task ExecuteNonQueryAsync_ValidSql_ReturnsRowsAffected()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             int affected = await dbAccess.ExecuteNonQueryAsync(
                 "UPDATE st_user SET note={1} WHERE sys_id={0}", "001", "test-async-overload");
             Assert.True(affected >= 0);
@@ -53,7 +54,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteScalarAsync 非同步字串多載應回傳純量值")]
         public async Task ExecuteScalarAsync_ValidSql_ReturnsScalarValue()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             object? value = await dbAccess.ExecuteScalarAsync(
                 "SELECT COUNT(*) FROM st_user WHERE sys_id={0}", "001");
             Assert.NotNull(value);
@@ -63,7 +64,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteDataTableAsync 非同步字串多載應回傳 DataTable")]
         public async Task ExecuteDataTableAsync_ValidSql_ReturnsDataTable()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var table = await dbAccess.ExecuteDataTableAsync(
                 "SELECT sys_id FROM st_user WHERE sys_id={0}", "001");
             Assert.NotNull(table);
@@ -77,7 +78,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id={0}", "001"));
 
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var result = dbAccess.ExecuteBatch(batch);
 
             Assert.NotNull(result);
@@ -92,7 +93,7 @@ namespace Bee.Db.UnitTests
             batch.Commands.Add(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id={0}", "001"));
 
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var result = await dbAccess.ExecuteBatchAsync(batch);
 
             Assert.NotNull(result);
@@ -103,8 +104,8 @@ namespace Bee.Db.UnitTests
         [DisplayName("Execute 含 DbTransaction 多載應成功執行命令")]
         public void Execute_WithTransaction_NonQuery_Succeeds()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
+            using var conn = _fx.GetRequiredService<IDbConnectionManager>().CreateConnection("common_sqlserver");
             conn.Open();
             using var tran = conn.BeginTransaction();
 
@@ -120,8 +121,8 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteAsync 含 DbTransaction 多載應成功執行非同步命令")]
         public async Task ExecuteAsync_WithTransaction_NonQuery_Succeeds()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
+            using var conn = _fx.GetRequiredService<IDbConnectionManager>().CreateConnection("common_sqlserver");
             await conn.OpenAsync();
             await using var tran = await conn.BeginTransactionAsync();
 

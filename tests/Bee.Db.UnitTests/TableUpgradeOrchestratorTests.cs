@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Db.Ddl;
 using Bee.Db.Dml;
+using Bee.Db.Manager;
 using Bee.Db.Providers;
 using Bee.Db.Providers.SqlServer;
 using Bee.Db.Schema;
@@ -18,6 +19,7 @@ namespace Bee.Db.UnitTests
         public TableUpgradeOrchestratorTests(SharedDbFixture _) { }
 
         private static readonly IDialectFactory s_dialect = new SqlDialectFactory();
+        private static readonly IDbConnectionManager s_stubMgr = new StubConnectionManager();
 
         private static TableSchema BuildDefineSchema(string tableName = "st_demo")
         {
@@ -42,7 +44,7 @@ namespace Bee.Db.UnitTests
         private static UpgradePlan PlanFor(TableSchema define, TableSchema? real, UpgradeOptions? options = null)
         {
             var diff = new TableSchemaComparer(define, real, DatabaseType.SQLServer).CompareToDiff();
-            return new TableUpgradeOrchestrator(s_dialect).Plan(diff, options);
+            return new TableUpgradeOrchestrator(s_dialect, s_stubMgr).Plan(diff, options);
         }
 
         [Fact]
@@ -108,7 +110,7 @@ namespace Bee.Db.UnitTests
             define.Fields!["display_name"].Length = 0;
 
             var diff = new TableSchemaComparer(define, BuildRealSchema(), DatabaseType.SQLServer).CompareToDiff();
-            var orchestrator = new TableUpgradeOrchestrator(s_dialect);
+            var orchestrator = new TableUpgradeOrchestrator(s_dialect, s_stubMgr);
 
             Assert.Throws<InvalidOperationException>(() => orchestrator.Plan(diff));
         }
@@ -168,7 +170,7 @@ namespace Bee.Db.UnitTests
             define.Fields!["name"].Length = 30; // 由 real 50 縮為 30
 
             var diff = new TableSchemaComparer(define, BuildRealSchema(), DatabaseType.SQLServer).CompareToDiff();
-            var orchestrator = new TableUpgradeOrchestrator(s_dialect);
+            var orchestrator = new TableUpgradeOrchestrator(s_dialect, s_stubMgr);
 
             Assert.Throws<InvalidOperationException>(() => orchestrator.Plan(diff));
         }
@@ -182,7 +184,7 @@ namespace Bee.Db.UnitTests
 
             var diff = new TableSchemaComparer(define, BuildRealSchema(), DatabaseType.SQLServer).CompareToDiff();
             var options = new UpgradeOptions { AllowColumnNarrowing = true };
-            var plan = new TableUpgradeOrchestrator(s_dialect).Plan(diff, options);
+            var plan = new TableUpgradeOrchestrator(s_dialect, s_stubMgr).Plan(diff, options);
 
             Assert.Equal(UpgradeExecutionMode.Alter, plan.Mode);
             Assert.NotEmpty(plan.Warnings);
@@ -193,7 +195,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("Plan：NotSupported 變化應擲例外")]
         public void Plan_NotSupportedChange_Throws()
         {
-            var orchestrator = new TableUpgradeOrchestrator(new NotSupportedDialect());
+            var orchestrator = new TableUpgradeOrchestrator(new NotSupportedDialect(), new StubConnectionManager());
             var define = BuildDefineSchema();
             define.Fields!.Add("age", "Age", FieldDbType.Integer);
             var diff = new TableSchemaComparer(define, BuildRealSchema(), DatabaseType.SQLServer).CompareToDiff();
@@ -205,12 +207,25 @@ namespace Bee.Db.UnitTests
         private sealed class NotSupportedDialect : IDialectFactory
         {
             private readonly SqlDialectFactory _inner = new();
-            public ITableSchemaProvider CreateTableSchemaProvider(string databaseId) => _inner.CreateTableSchemaProvider(databaseId);
+            public ITableSchemaProvider CreateTableSchemaProvider(string databaseId, IDbConnectionManager connectionManager)
+                => _inner.CreateTableSchemaProvider(databaseId, connectionManager);
             public ICreateTableCommandBuilder CreateCreateTableCommandBuilder() => _inner.CreateCreateTableCommandBuilder();
             public ITableAlterCommandBuilder CreateTableAlterCommandBuilder() => new NotSupportedBuilder();
             public ITableRebuildCommandBuilder CreateTableRebuildCommandBuilder() => _inner.CreateTableRebuildCommandBuilder();
             public IFormCommandBuilder CreateFormCommandBuilder(FormSchema formDefine, IDefineAccess defineAccess) => _inner.CreateFormCommandBuilder(formDefine, defineAccess);
             public string GetDefaultValueExpression(FieldDbType dbType) => _inner.GetDefaultValueExpression(dbType);
+        }
+
+        // Stub connection manager — used solely so TableUpgradeOrchestrator can construct;
+        // the NotSupported path throws before any connection method is invoked.
+        private sealed class StubConnectionManager : IDbConnectionManager
+        {
+            public DbConnectionInfo GetConnectionInfo(string databaseId) => throw new NotSupportedException();
+            public System.Data.Common.DbConnection CreateConnection(string databaseId) => throw new NotSupportedException();
+            public bool Remove(string databaseId) => false;
+            public void Clear() { }
+            public bool Contains(string databaseId) => false;
+            public int Count => 0;
         }
 
         // 自訂 alter builder 讓 GetExecutionKind 永遠回傳 NotSupported，用於驗證 orchestrator 的拒絕行為

@@ -1,6 +1,6 @@
 # 計畫：BackendInfo 由 Service Locator 改為 DI（主計畫）
 
-**狀態：🚧 進行中**
+**狀態：✅ 已完成（2026-05-13）**
 
 > 本文件為主計畫（main plan），定義整體目標、原則、階段路線。
 > 各階段的細部執行步驟另以 sub-plan 文件描述。
@@ -20,7 +20,7 @@
 | 4 | Api.Core 與 Api.AspNetCore | ✅ 已完成（2026-05-12） | [plan-backendinfo-di-phase4-api-di.md](plan-backendinfo-di-phase4-api-di.md) |
 | 5 | 測試基礎設施重寫 | ✅ 已完成（2026-05-13） | [plan-backendinfo-di-phase5-test-infra.md](plan-backendinfo-di-phase5-test-infra.md) |
 | 6 | 移除 BackendInfo 空殼 | ✅ 已完成（2026-05-13） | [plan-backendinfo-di-phase6-backendinfo-deletion.md](plan-backendinfo-di-phase6-backendinfo-deletion.md) |
-| 7 | DbConnectionManager 靜態 facade 移除 + DbAccess ctor DI 化 | 📝 擬定中 | [plan-backendinfo-di-phase7-dbconnectionmanager.md](plan-backendinfo-di-phase7-dbconnectionmanager.md) |
+| 7 | DbConnectionManager 靜態 facade 移除 + DbAccess ctor DI 化 | ✅ 已完成（2026-05-13） | [plan-backendinfo-di-phase7-dbconnectionmanager.md](plan-backendinfo-di-phase7-dbconnectionmanager.md) |
 
 > 狀態圖例：📝 未開始 / 🚧 進行中 / ✅ 已完成
 >

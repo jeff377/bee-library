@@ -1,6 +1,7 @@
 using Bee.Definition.Database;
 using Bee.Base;
 using Bee.Base.Data;
+using Bee.Db.Manager;
 using Bee.Db.Schema;
 using System.Data;
 using Bee.Definition.Sorting;
@@ -20,10 +21,13 @@ namespace Bee.Db.Providers.SqlServer
         /// Initializes a new instance of <see cref="SqlTableSchemaProvider"/>.
         /// </summary>
         /// <param name="databaseId">The database identifier.</param>
-        public SqlTableSchemaProvider(string databaseId)
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
+        public SqlTableSchemaProvider(string databaseId, IDbConnectionManager connectionManager)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
+            ArgumentNullException.ThrowIfNull(connectionManager);
             DatabaseId = databaseId;
-            _dbAccess = new DbAccess(databaseId);
+            _dbAccess = new DbAccess(databaseId, connectionManager);
         }
 
         #endregion

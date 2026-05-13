@@ -2,15 +2,16 @@ using System.ComponentModel;
 using System.Data;
 using System.Data.Common;
 using Microsoft.Data.SqlClient;
-using Bee.Db.Manager;
 using Bee.Tests.Shared;
 using Bee.Definition.Database;
+using Bee.Db.Manager;
 
 namespace Bee.Db.UnitTests
 {
     public class DbAccessTransactionTests : IClassFixture<SharedDbFixture>
     {
-        public DbAccessTransactionTests(SharedDbFixture _) { }
+        private readonly SharedDbFixture _fx;
+        public DbAccessTransactionTests(SharedDbFixture fx) { _fx = fx; }
 
         /// <summary>
         /// Fake transaction whose connection is always null, for testing null-connection guards.
@@ -56,7 +57,7 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteAsync(DbCommandSpec) Scalar 類型應回傳純量值")]
         public async Task ExecuteAsync_ScalarKind_ReturnsScalar()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
             var spec = new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT COUNT(*) FROM st_user WHERE sys_id = {0}", "001");
 
@@ -72,8 +73,8 @@ namespace Bee.Db.UnitTests
         [DisplayName("Execute(spec, transaction) Scalar 類型應回傳純量值")]
         public void Execute_WithTransaction_ScalarKind_ReturnsScalar()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
+            using var conn = _fx.GetRequiredService<IDbConnectionManager>().CreateConnection("common_sqlserver");
             conn.Open();
             using var tran = conn.BeginTransaction();
 
@@ -90,8 +91,8 @@ namespace Bee.Db.UnitTests
         [DisplayName("Execute(spec, transaction) DataTable 類型應回傳資料表")]
         public void Execute_WithTransaction_DataTableKind_ReturnsTable()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
+            using var conn = _fx.GetRequiredService<IDbConnectionManager>().CreateConnection("common_sqlserver");
             conn.Open();
             using var tran = conn.BeginTransaction();
 
@@ -110,8 +111,8 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteAsync(spec, transaction) Scalar 類型應回傳純量值")]
         public async Task ExecuteAsync_WithTransaction_ScalarKind_ReturnsScalar()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
+            using var conn = _fx.GetRequiredService<IDbConnectionManager>().CreateConnection("common_sqlserver");
             await conn.OpenAsync();
             await using var tran = await conn.BeginTransactionAsync();
 
@@ -128,8 +129,8 @@ namespace Bee.Db.UnitTests
         [DisplayName("ExecuteAsync(spec, transaction) DataTable 類型應回傳資料表")]
         public async Task ExecuteAsync_WithTransaction_DataTableKind_ReturnsTable()
         {
-            var dbAccess = new DbAccess("common_sqlserver");
-            using var conn = DbConnectionManager.CreateConnection("common_sqlserver");
+            var dbAccess = _fx.NewDbAccess("common_sqlserver");
+            using var conn = _fx.GetRequiredService<IDbConnectionManager>().CreateConnection("common_sqlserver");
             await conn.OpenAsync();
             await using var tran = await conn.BeginTransactionAsync();
 

@@ -13,9 +13,7 @@ namespace Bee.Db.Manager
     /// database settings change.
     /// </summary>
     /// <remarks>
-    /// Registered as a Singleton by <c>AddBeeFramework</c>. The legacy static
-    /// <see cref="DbConnectionManager"/> facade delegates to a process-wide instance of
-    /// this class for transitional callers that have not yet adopted ctor injection.
+    /// Registered as a Singleton by <c>AddBeeFramework</c>; resolved via ctor injection.
     /// </remarks>
     public sealed class DbConnectionManagerService : IDbConnectionManager
     {
