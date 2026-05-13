@@ -10,12 +10,12 @@ namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
     /// <see cref="LocalDefineAccess"/> 讀取路徑測試。透過 fixture 的 DI 容器解析共用實例
-    /// （path = <c>tests/Define</c>），仍保留 <c>[Collection("Initialize")]</c> 序列化—— Get 路徑
+    /// （path = <c>tests/Define</c>），仍保留 <c>[Collection("CacheState")]</c> 序列化—— Get 路徑
     /// 在 cache miss 時走 process-wide <see cref="CacheContainer"/> 與 <see cref="DefinePathInfo"/>
     /// 靜態，可能與 <c>DatabaseSettingsCacheTests</c> 等 mutator 競爭；待 PR 5.7 cache 改注入 PathOptions
     /// 後再脫除 Collection。
     /// </summary>
-    [Collection("Initialize")]
+    [Collection("CacheState")]
     public class LocalDefineAccessTests : IClassFixture<BeeTestFixture>
     {
         private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };

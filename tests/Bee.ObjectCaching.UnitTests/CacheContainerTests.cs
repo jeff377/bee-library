@@ -1,12 +1,16 @@
 using System.ComponentModel;
 using Bee.Definition.Database;
 using Bee.Definition.Identity;
+using Bee.Tests.Shared;
 
 namespace Bee.ObjectCaching.UnitTests
 {
-    [Collection("Initialize")]
-    public class CacheContainerTests
+    [Collection("CacheState")]
+    public class CacheContainerTests : IClassFixture<SharedDbFixture>
     {
+        public CacheContainerTests(SharedDbFixture _) { }
+
+
         [Fact]
         [DisplayName("TableSchema.Get(categoryId, tableName) 應回傳對應 schema")]
         public void TableSchema_GetWithCategoryId_ReturnsSchema()

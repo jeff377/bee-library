@@ -8,9 +8,8 @@ namespace Bee.Tests.Shared
     /// Each instance owns its own <see cref="IServiceProvider"/> built via
     /// <c>AddBeeFramework</c>; the underlying process-wide statics
     /// (<see cref="DefinePathInfo"/>, <c>CacheContainer</c>, <c>DbConnectionManager</c>,
-    /// <c>SysInfo</c>, DB provider registry) are still initialised once by
-    /// <see cref="GlobalFixture"/> as a transitional measure — that's why this ctor
-    /// constructs a <c>GlobalFixture</c> for its idempotent side-effect.
+    /// <c>SysInfo</c>, DB provider registry) are initialised once by
+    /// <see cref="TestProcessBootstrap.EnsureInitialized"/> on the first construction.
     /// </summary>
     /// <remarks>
     /// <para>
@@ -70,11 +69,10 @@ namespace Bee.Tests.Shared
         {
             ArgumentNullException.ThrowIfNull(configure);
 
-            // Trigger GlobalFixture's once-init for process-wide statics
-            // (DefinePathInfo / CacheContainer / DbConnectionManager / SysInfo /
-            // DB provider registry). The local variable is just here for the
-            // idempotent side-effect; the instance state is unused.
-            _ = new GlobalFixture();
+            // Process-wide statics 一次性初始化（DefinePathInfo / CacheContainer /
+            // DbConnectionManager / SysInfo / DB provider registry /
+            // ApiClientInfo.LocalServiceProvider）。
+            TestProcessBootstrap.EnsureInitialized();
 
             var builder = new BeeTestFixtureBuilder();
             configure(builder);

@@ -61,18 +61,27 @@ namespace Bee.Business.UnitTests
             Assert.False(string.IsNullOrWhiteSpace(getResult.Xml));
 
             // SaveDefine 會寫檔；改用獨立 IDefineAccess（指向暫存資料夾）避免污染 tests/Define/。
-            using var temp = new TempDefinePath();
-            var tempAccess = new LocalDefineAccess(new FileDefineStorage(temp.Options), temp.Options);
-            var saveBo = new SystemBusinessObject(
-                TestBeeContext.CreateWithDefineAccess(_fx, tempAccess), Guid.Empty, isLocalCall: true);
-
-            var saveResult = saveBo.SaveDefine(new SaveDefineArgs
+            var tempDir = Path.Combine(Path.GetTempPath(), $"bee-define-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
             {
-                DefineType = DefineType.DbCategorySettings,
-                Xml = getResult.Xml
-            });
+                var tempPaths = new PathOptions { DefinePath = tempDir };
+                var tempAccess = new LocalDefineAccess(new FileDefineStorage(tempPaths), tempPaths);
+                var saveBo = new SystemBusinessObject(
+                    TestBeeContext.CreateWithDefineAccess(_fx, tempAccess), Guid.Empty, isLocalCall: true);
 
-            Assert.NotNull(saveResult);
+                var saveResult = saveBo.SaveDefine(new SaveDefineArgs
+                {
+                    DefineType = DefineType.DbCategorySettings,
+                    Xml = getResult.Xml
+                });
+
+                Assert.NotNull(saveResult);
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
+            }
         }
     }
 }

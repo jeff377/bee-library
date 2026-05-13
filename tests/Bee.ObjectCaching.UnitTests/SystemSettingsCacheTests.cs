@@ -4,9 +4,11 @@ using Bee.Tests.Shared;
 
 namespace Bee.ObjectCaching.UnitTests
 {
-    [Collection("Initialize")]
-    public class SystemSettingsCacheTests
+    [Collection("CacheState")]
+    public class SystemSettingsCacheTests : IClassFixture<SharedDbFixture>
     {
+        public SystemSettingsCacheTests(SharedDbFixture _) { }
+
         [Fact]
         [DisplayName("CreateInstance 在 SystemSettings.xml 不存在時應拋出 FileNotFoundException")]
         public void CreateInstance_FileMissing_ThrowsFileNotFoundException()
