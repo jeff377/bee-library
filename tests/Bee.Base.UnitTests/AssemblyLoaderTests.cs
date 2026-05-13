@@ -86,5 +86,19 @@ namespace Bee.Base.UnitTests
             Assert.True(result.IsSuccess);
             Assert.Equal("ok", result.Message);
         }
+
+        [Fact]
+        [DisplayName("LoadAssembly 傳入帶目錄的完整路徑應從磁碟載入並回傳組件")]
+        public void LoadAssembly_FullPath_LoadsAssemblyFromDisk()
+        {
+            // 完整路徑（含目錄）使 FindAssembly 無法在 AppDomain 中比對（ManifestModule.Name 只有檔名），
+            // 觸發 LoadAssembly 內 else 分支（assemblyFile = assemblyName）並執行磁碟載入路徑。
+            string fullPath = Path.Combine(AppContext.BaseDirectory, "Bee.Base.dll");
+
+            var assembly = AssemblyLoader.LoadAssembly(fullPath);
+
+            Assert.NotNull(assembly);
+            Assert.Equal("Bee.Base", assembly.GetName().Name);
+        }
     }
 }
