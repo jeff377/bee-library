@@ -5,7 +5,7 @@
       "rule": "csharpsquid:S2094",
       "component": "src/Bee.Definition/BackendInfo.cs",
       "attempts": 1,
-      "reason": "Transitional placeholder; XML doc explicitly schedules deletion for Phase 6 along with BackendConfiguration residual surface. Removing the class is a public API change (public static class) and is deferred until that planned cleanup.",
+      "reason": "Transitional placeholder; deletion 已排入 docs/plans/plan-backendinfo-to-di-migration.md 的 Phase 6（目前狀態：📝 未開始）。即使 BackendInfo 現為空類別，依主計畫「每個 phase 必須在單一 PR 內完成該層所有清理動作」之不變條件，未進入 Phase 6 前不得提前刪除，避免「Phase 6 做一半」的半完成狀態。屆時應一併處理 BackendConfiguration 殘留與 docs 更新。",
       "lastAttempt": "2026-05-13"
     }
   ],
