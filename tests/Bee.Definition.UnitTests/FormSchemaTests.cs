@@ -6,7 +6,6 @@ using Bee.Definition.Database;
 
 namespace Bee.Definition.UnitTests
 {
-    [Collection("Initialize")]
     public class FormSchemaTests
     {
         [Fact]

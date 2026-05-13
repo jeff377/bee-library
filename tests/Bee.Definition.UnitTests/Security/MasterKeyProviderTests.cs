@@ -2,7 +2,6 @@ using System.ComponentModel;
 using Bee.Base.Security;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
-using Bee.Tests.Shared;
 
 namespace Bee.Definition.UnitTests.Security
 {
@@ -205,18 +204,26 @@ namespace Bee.Definition.UnitTests.Security
         public void GetMasterKey_EmptyFilePath_UsesDefaultFileName()
         {
             // Arrange: 空字串會被替換為 "Master.key"，於 DefinePath 下尋找。
-            // 用 TempDefinePath 切到全新空白目錄，確保「預設檔不存在 → 拋 FileNotFoundException」
-            // 的斷言成立（避免被 tests/Define/Master.key 等既存 fixture 干擾）。
-            using var temp = new TempDefinePath();
-            var source = new MasterKeySource
+            // 建立全新空白暫存目錄，確保「預設檔不存在 → 拋 FileNotFoundException」的斷言成立
+            // （避免被 tests/Define/Master.key 等既存 fixture 干擾）。
+            var tempPath = Path.Combine(Path.GetTempPath(), $"bee-mk-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempPath);
+            try
             {
-                Type = MasterKeySourceType.File,
-                Value = "   "
-            };
+                var source = new MasterKeySource
+                {
+                    Type = MasterKeySourceType.File,
+                    Value = "   "
+                };
 
-            // Act & Assert: definePath 為 temp 空資料夾，預期默認檔名 Master.key 不存在 → 拋例外
-            var ex = Record.Exception(() => MasterKeyProvider.GetMasterKey(source, temp.Path));
-            Assert.NotNull(ex);
+                // Act & Assert: definePath 為 temp 空資料夾，預期默認檔名 Master.key 不存在 → 拋例外
+                var ex = Record.Exception(() => MasterKeyProvider.GetMasterKey(source, tempPath));
+                Assert.NotNull(ex);
+            }
+            finally
+            {
+                try { Directory.Delete(tempPath, recursive: true); } catch (IOException) { /* best effort */ }
+            }
         }
 
         [Fact]

@@ -10,9 +10,9 @@ namespace Bee.Definition.UnitTests.Storage
 {
     /// <summary>
     /// FileDefineStorage 讀寫 XML 檔案的行為測試。
-    /// 各測試使用隔離的臨時目錄做為 DefinePath，避免互相汙染。
+    /// 各測試使用隔離的臨時目錄做為 DefinePath（透過 <c>WithTempDefinePath</c>），
+    /// 不操弄 <see cref="DefinePathInfo"/> 等 process-wide static，可與其他 test class 平行執行。
     /// </summary>
-    [Collection("Initialize")]
     public class FileDefineStorageTests
     {
         [Fact]

@@ -1,24 +1,21 @@
 using System.ComponentModel;
 using Bee.Base.Serialization;
 using Bee.Definition.Settings;
-using Bee.Tests.Shared;
 
 namespace Bee.Definition.UnitTests
 {
     /// <summary>
     /// SystemSettingsLoader 啟動期讀檔測試。
-    /// 與 DefinePath 互動的測試使用 <see cref="TempDefinePath"/> 切到隔離目錄，
-    /// 避免動到 tests/Define/SystemSettings.xml 共享 fixture；同時加入 Initialize collection 以避免
-    /// 與其他操弄全域狀態的測試並行執行。
+    /// 每個寫檔測試使用獨立的暫存目錄（透過 <see cref="TempDir"/>），不操弄
+    /// <see cref="DefinePathInfo"/> 等 process-wide static，可與其他 test class 平行執行。
     /// </summary>
-    [Collection("Initialize")]
     public class SystemSettingsLoaderTests
     {
         [Fact]
         [DisplayName("Load(string) 給有效檔案路徑應回傳 SystemSettings 實例")]
         public void Load_ValidFile_ReturnsSettings()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var filePath = Path.Combine(temp.Path, "SystemSettings.xml");
             var original = new SystemSettings();
             XmlCodec.SerializeToFile(original, filePath);
@@ -34,7 +31,7 @@ namespace Bee.Definition.UnitTests
         [DisplayName("Load(string) 對不存在的檔案路徑應丟 FileNotFoundException")]
         public void Load_FileNotFound_ThrowsFileNotFoundException()
         {
-            using var temp = new TempDefinePath();
+            using var temp = TempDir.Create();
             var missingPath = Path.Combine(temp.Path, "Nope.xml");
 
             Assert.Throws<FileNotFoundException>(() => SystemSettingsLoader.Load(missingPath));
@@ -58,12 +55,13 @@ namespace Bee.Definition.UnitTests
         [DisplayName("Load(PathOptions) 應透過 PathOptions 解析 SystemSettings.xml")]
         public void Load_WithPathOptions_ResolvesViaPathOptions()
         {
-            using var temp = new TempDefinePath();
-            var filePath = temp.Options.GetSystemSettingsFilePath();
+            using var temp = TempDir.Create();
+            var paths = new PathOptions { DefinePath = temp.Path };
+            var filePath = paths.GetSystemSettingsFilePath();
             var original = new SystemSettings();
             XmlCodec.SerializeToFile(original, filePath);
 
-            var loaded = SystemSettingsLoader.Load(temp.Options);
+            var loaded = SystemSettingsLoader.Load(paths);
 
             Assert.NotNull(loaded);
             Assert.Equal(filePath, loaded.ObjectFilePath);
@@ -74,6 +72,33 @@ namespace Bee.Definition.UnitTests
         public void Load_NullPathOptions_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => SystemSettingsLoader.Load((PathOptions)null!));
+        }
+
+        private sealed class TempDir : IDisposable
+        {
+            public string Path { get; }
+
+            private TempDir(string path) { Path = path; }
+
+            public static TempDir Create()
+            {
+                var dir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), $"bee-loader-{Guid.NewGuid():N}");
+                Directory.CreateDirectory(dir);
+                return new TempDir(dir);
+            }
+
+            public void Dispose()
+            {
+                try
+                {
+                    if (Directory.Exists(Path))
+                        Directory.Delete(Path, recursive: true);
+                }
+                catch (IOException)
+                {
+                    // best effort
+                }
+            }
         }
     }
 }
