@@ -65,12 +65,13 @@ namespace Bee.Base
             }
             catch (FileNotFoundException)
             {
-                // Fallback: load by full file path via LoadFrom; only reached when
-                // default-context resolution fails (e.g. assembly lives outside probing path).
+                // Fallback: resolve the file path, read its full AssemblyName (version +
+                // culture + public key token), then retry via Assembly.Load so the assembly
+                // enters the default load context rather than an isolated one.
                 string assemblyFile = StringUtilities.IsEmpty(Path.GetDirectoryName(assemblyName))
                     ? Path.Combine(FileUtilities.GetAssemblyPath(), assemblyName)
                     : assemblyName;
-                assembly = Assembly.LoadFrom(assemblyFile);
+                assembly = Assembly.Load(AssemblyName.GetAssemblyName(assemblyFile));
             }
             _loadedAssemblies[assemblyName] = assembly;
 
