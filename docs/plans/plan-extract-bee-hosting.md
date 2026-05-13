@@ -257,7 +257,3 @@ Bee.Repository 看似無編譯期 using，但 [BeeFrameworkServiceCollectionExte
 
 - 若日後需要 `IHostedService`（cache 預熱、scheduled job、graceful shutdown）整合，可在 `Bee.Hosting` 內新增 `IHostBuilder.UseBeeFramework()` 擴充
 - 若 bee-ui-core 提供「ConfigureLocalConnection(IServiceProvider)」之類的便利 helper，由 bee-ui-core 自己加，不需動 bee-library
-- **命名簡化（與下次 break 合併進行）**：
-  - 類別名 `BeeFrameworkServiceCollectionExtensions` → `BeeServiceCollectionExtensions`（在 `Bee.Hosting` namespace 下「Framework」字樣冗餘，對齊 Microsoft 慣例如 `MvcServiceCollectionExtensions`）
-  - namespace 從 `Bee.Hosting` 改為 `Microsoft.Extensions.DependencyInjection`（對齊 Microsoft 套件對 `IServiceCollection` 擴充的標準作法，host 端不需顯式 `using`；需在檔案頂部加 IDE0130 局部 suppress 並註明理由）
-  - 同批次順帶檢視：測試 class 名同步調整、`ApiClientInfo` / `IDbConnectionManager` 等 XML 註解 cref 同步更新
