@@ -30,10 +30,10 @@ namespace Bee.Tests.Shared
     /// </remarks>
     public static class SharedDatabaseState
     {
-        private static readonly object _registerLock = new();
+        private static readonly Lock _registerLock = new();
         private static bool _registered;
 
-        private static readonly object _schemaLock = new();
+        private static readonly Lock _schemaLock = new();
         private static bool _schemaInitialised;
 
         // SQLite in-memory shared-cache databases live only as long as at least one

@@ -1,0 +1,13 @@
+{
+  "issues": [
+    {
+      "key": "AZ4cNTI2VZkBbhtGt5jG",
+      "rule": "csharpsquid:S2094",
+      "component": "src/Bee.Definition/BackendInfo.cs",
+      "attempts": 1,
+      "reason": "Transitional placeholder; XML doc explicitly schedules deletion for Phase 6 along with BackendConfiguration residual surface. Removing the class is a public API change (public static class) and is deferred until that planned cleanup.",
+      "lastAttempt": "2026-05-13"
+    }
+  ],
+  "files": []
+}
