@@ -21,7 +21,7 @@
 
 - 在 `AddBeeFramework` 之前解析框架服務 → DI 容器拋 `InvalidOperationException`（服務未註冊）
 - `SystemSettingsLoader.Load` 指向不存在的 `SystemSettings.xml` → 拋 `FileNotFoundException`
-- 在 ASP.NET host 上跳過 `app.UseBeeFramework()` → `new DbAccess(databaseId)` 舊呼叫點失效（bootstrapper 負責 wire 過渡用的 `DbConnectionManager` 靜態 shim）
+- 直接 `new DbAccess(databaseId)` 而未提供 `IDbConnectionManager` 參數（Phase 7 已移除單參數 ctor）→ 編譯錯誤；改透過 DI 注入的 `IDbAccessFactory.Create(databaseId)` 取得 `DbAccess` 實例
 
 ### 參考範例
 
@@ -33,7 +33,7 @@
 |----------|------|----------|
 | API 層直接引用 Repository 層 | 違反分層架構 | 透過 Business Object 間接存取 |
 | Business Object 直接建立 `DbConnection` | 繞過連線管理與日誌 | 使用 `DbAccess` 類別 |
-| Client 端存取 `RepositoryInfo` | 僅限 Server 端使用 | 透過 `ApiConnector` 呼叫 API |
+| Client 端從 DI 容器解析 Repository 服務 | 僅限 Server 端使用 | 透過 `ApiConnector` 呼叫 API |
 | 跳過 Payload Pipeline 順序 | 破壞加解密一致性 | 維持 Serialize → Compress → Encrypt |
 | 在 BO 中直接回傳 API 型別 | BO 不應依賴 API 序列化格式 | 回傳 BO 型別，由 `ApiOutputConverter` 依命名慣例自動對應 |
 

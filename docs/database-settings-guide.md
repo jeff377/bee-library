@@ -287,12 +287,12 @@ public class MyService(IDefineAccess defineAccess)
 
 ### 4.2 Caching
 
-Both settings are held centrally by [`CacheContainer`](../src/Bee.ObjectCaching/CacheContainer.cs), with `Lazy<T>` lazy initialization:
+Both settings are held centrally by the DI-registered [`ICacheContainer`](../src/Bee.ObjectCaching/ICacheContainer.cs) (default implementation `CacheContainerService`), with `Lazy<T>` lazy initialization:
 
 | Cache | Holder |
 |-------|--------|
-| `DatabaseSettings` | `CacheContainer.DatabaseSettings` (`Lazy<DatabaseSettingsCache>`) |
-| `DbCategorySettings` | `CacheContainer.DbCategorySettings` (`Lazy<DbCategorySettingsCache>`) |
+| `DatabaseSettings` | `ICacheContainer.DatabaseSettings` (`Lazy<DatabaseSettingsCache>`) |
+| `DbCategorySettings` | `ICacheContainer.DbCategorySettings` (`Lazy<DbCategorySettingsCache>`) |
 
 Behavior:
 - **20-second sliding expiration**: reloaded if not accessed for 20 seconds
@@ -354,7 +354,7 @@ TableSchemas derived from FormSchemas are stored in directories grouped by Categ
               └── log/
 ```
 
-Path resolution: [`DefinePathInfo.GetTableSchemaFilePath(categoryId, tableName)`](../src/Bee.Definition/DefinePathInfo.cs).
+Path resolution: [`PathOptions.GetTableSchemaFilePath(categoryId, tableName)`](../src/Bee.Definition/PathOptions.cs) (DI ctor injected).
 
 ### 5.3 Deployment Phase: Deriving the Table List for Each Physical DB
 
@@ -418,8 +418,8 @@ Both settings files are located at the root of `PathOptions.DefinePath`:
 
 | Settings | File Path | Resolution |
 |----------|-----------|------------|
-| DatabaseSettings | `<DefinePath>/DatabaseSettings.xml` | `DefinePathInfo.GetDatabaseSettingsFilePath()` |
-| DbCategorySettings | `<DefinePath>/DbCategorySettings.xml` | `DefinePathInfo.GetDbCategorySettingsFilePath()` |
+| DatabaseSettings | `<DefinePath>/DatabaseSettings.xml` | `PathOptions.GetDatabaseSettingsFilePath()` |
+| DbCategorySettings | `<DefinePath>/DbCategorySettings.xml` | `PathOptions.GetDbCategorySettingsFilePath()` |
 
 ### 6.2 DatabaseSettings.xml Example
 

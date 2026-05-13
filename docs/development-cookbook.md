@@ -28,10 +28,8 @@ static entry points.
 │      JsonRpcExecutor                                │
 ├─────────────────────────────────────────────────────┤
 │ 5. provider = services.BuildServiceProvider()       │
-│ 6. app.UseBeeFramework() (ASP.NET only)             │
-│    → Eager-resolves IDbConnectionManagerBootstrapper│
-│      (wires the transitional DbConnectionManager    │
-│      static for legacy `new DbAccess(id)` sites)    │
+│ 6. app.UseBeeFramework() (ASP.NET only — currently  │
+│    a no-op hook reserved for future middleware)     │
 └─────────────────────────────────────────────────────┘
 ```
 

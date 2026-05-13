@@ -27,10 +27,8 @@ ctor 注入解析，不再透過靜態入口點。
 │      JsonRpcExecutor                                 │
 ├─────────────────────────────────────────────────────┤
 │ 5. provider = services.BuildServiceProvider()        │
-│ 6. app.UseBeeFramework()（僅 ASP.NET）                │
-│    → Eager-resolve IDbConnectionManagerBootstrapper  │
-│      （wire 過渡期 DbConnectionManager static，供    │
-│      legacy `new DbAccess(id)` 呼叫點使用）          │
+│ 6. app.UseBeeFramework()（僅 ASP.NET — 目前為 no-op，│
+│    保留作未來 middleware 註冊點）                    │
 └─────────────────────────────────────────────────────┘
 ```
 

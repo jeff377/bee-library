@@ -21,7 +21,7 @@ See [development-cookbook.md § Framework Initialization Order](development-cook
 
 - Resolving framework services before `AddBeeFramework` → DI container throws `InvalidOperationException` (service not registered)
 - Calling `SystemSettingsLoader.Load` on a path with no `SystemSettings.xml` → throws `FileNotFoundException`
-- Skipping `app.UseBeeFramework()` on ASP.NET hosts → `new DbAccess(databaseId)` legacy call sites fail (the bootstrapper wires the transitional `DbConnectionManager` static shim)
+- Constructing `DbAccess` without an `IDbConnectionManager` argument (the single-arg legacy ctor was removed in Phase 7) → compile error; obtain `DbAccess` instances through DI-injected `IDbAccessFactory.Create(databaseId)`
 
 ### Reference Example
 
@@ -33,7 +33,7 @@ See [development-cookbook.md § Framework Initialization Order](development-cook
 |-----------|--------|------------------|
 | API layer directly references the Repository layer | Violates layered architecture | Access indirectly through a Business Object |
 | Business Object directly creates a `DbConnection` | Bypasses connection management and logging | Use the `DbAccess` class |
-| Client side accesses `RepositoryInfo` | Server-only | Call the API via `ApiConnector` |
+| Client side resolves Repository services from a DI container | Server-only | Call the API via `ApiConnector` |
 | Skipping the Payload Pipeline order | Breaks encryption / decryption consistency | Maintain Serialize → Compress → Encrypt |
 | BO returns API types directly | BO must not depend on API serialization formats | Return BO types; `ApiOutputConverter` maps them automatically by naming convention |
 

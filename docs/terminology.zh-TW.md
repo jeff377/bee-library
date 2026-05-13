@@ -57,7 +57,7 @@
 | `DbTableIndex` | 資料表索引 | 資料表的索引定義，含唯一性與主鍵資訊 |
 | `DbCategorySettings` | 資料庫類別設定 | 管理所有邏輯資料庫類別（common / company / log）的設定集合 |
 | `DbCategory` | 資料庫類別 | 邏輯資料庫類別節點，含 `Id`（"common" / "company" 等）與所屬資料表清單 |
-| `DefinePathInfo` | 定義檔案路徑資訊 | 提供各類定義檔（FormSchema、TableSchema 等）的標準路徑 |
+| `PathOptions` | 定義檔案路徑選項 | DI 注入的 options，提供各類定義檔（FormSchema、TableSchema 等）的標準路徑 |
 | `SessionInfo` | 連線資訊 | 執行期用戶連線狀態，含 AccessToken、語系、時區 |
 | `SortField` | 排序欄位 | 單一排序欄位，含欄位名稱與方向 |
 | `SortFieldCollection` | 排序欄位集合 | 多個 SortField 的集合 |
@@ -161,7 +161,7 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `CacheContainer` | 快取容器 | 集中持有所有快取單例（FormSchema、TableSchema、DatabaseSettings 等） |
+| `ICacheContainer` | 快取容器介面 | DI 註冊的容器，集中持有所有快取單例（FormSchema、TableSchema、DatabaseSettings 等）；預設實作為 `CacheContainerService` |
 | `LocalDefineAccess` | 本機定義存取 | 透過本機快取存取定義資料的實作 |
 | `FormSchemaCache` | 表單結構定義快取 | `FormSchema` 物件的快取容器 |
 | `KeyObjectCache<T>` | 鍵值物件快取 | 以鍵值為索引的泛型物件快取基礎類別 |

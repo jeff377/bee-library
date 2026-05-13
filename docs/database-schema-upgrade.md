@@ -28,8 +28,16 @@ This is the only thing that matters from the application's perspective. Whether 
 The simplest call, suitable for most scenarios:
 
 ```csharp
-var repo = RepositoryInfo.Get<IDatabaseRepository>();
-bool upgraded = repo.UpgradeTableSchema("common", "myDb", "ft_employee");
+// Resolve via DI: inject ISystemRepositoryFactory in the consuming class ctor,
+// then create the repository on demand.
+public class MyService(ISystemRepositoryFactory repoFactory)
+{
+    public bool UpgradeEmployeeTable()
+    {
+        var repo = repoFactory.CreateDatabaseRepository();
+        return repo.UpgradeTableSchema("common", "myDb", "ft_employee");
+    }
+}
 ```
 
 The return value indicates whether an upgrade was actually performed: `false` means the database already matches the definition and nothing needed to change.

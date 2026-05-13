@@ -57,7 +57,7 @@ This document provides a standard term reference for technical writing, ensuring
 | `DbTableIndex` | 資料表索引 | Table index definition, including uniqueness and primary key information |
 | `DbCategorySettings` | 資料庫類別設定 | A collection managing all logical database categories (common / company / log) |
 | `DbCategory` | 資料庫類別 | A logical database category node, with `Id` ("common" / "company", etc.) and the list of tables it owns |
-| `DefinePathInfo` | 定義檔案路徑資訊 | Provides standardized paths for definition files (FormSchema, TableSchema, etc.) |
+| `PathOptions` | 定義檔案路徑選項 | DI-injected options that provide standardized paths for definition files (FormSchema, TableSchema, etc.) |
 | `SessionInfo` | 連線資訊 | Runtime user session state, including AccessToken, locale, time zone |
 | `SortField` | 排序欄位 | A single sort field, with field name and direction |
 | `SortFieldCollection` | 排序欄位集合 | A collection of multiple SortFields |
@@ -161,7 +161,7 @@ This document provides a standard term reference for technical writing, ensuring
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `CacheContainer` | 快取容器 | Centrally holds all cache singletons (FormSchema, TableSchema, DatabaseSettings, etc.) |
+| `ICacheContainer` | 快取容器介面 | DI-registered container that centrally holds all cache singletons (FormSchema, TableSchema, DatabaseSettings, etc.); default implementation `CacheContainerService` |
 | `LocalDefineAccess` | 本機定義存取 | Implementation that accesses definition data via local cache |
 | `FormSchemaCache` | 表單結構定義快取 | Cache container for `FormSchema` objects |
 | `KeyObjectCache<T>` | 鍵值物件快取 | Generic base class for object caches indexed by key |
