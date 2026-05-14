@@ -22,7 +22,7 @@ namespace Bee.Repository.UnitTests
                 _fx.GetRequiredService<IDbConnectionManager>());
 
         [Fact]
-        [DisplayName("Ctor 傳入 null IDefineAccess 應拋出 ArgumentNullException")]
+        [DisplayName("FormRepositoryFactory 傳入 null defineAccess 應拋出 ArgumentNullException")]
         public void Ctor_NullDefineAccess_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => new FormRepositoryFactory(
@@ -32,7 +32,7 @@ namespace Bee.Repository.UnitTests
         }
 
         [Fact]
-        [DisplayName("Ctor 傳入 null IDbAccessFactory 應拋出 ArgumentNullException")]
+        [DisplayName("FormRepositoryFactory 傳入 null dbAccessFactory 應拋出 ArgumentNullException")]
         public void Ctor_NullDbAccessFactory_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => new FormRepositoryFactory(
@@ -42,7 +42,7 @@ namespace Bee.Repository.UnitTests
         }
 
         [Fact]
-        [DisplayName("Ctor 傳入 null IDbConnectionManager 應拋出 ArgumentNullException")]
+        [DisplayName("FormRepositoryFactory 傳入 null connectionManager 應拋出 ArgumentNullException")]
         public void Ctor_NullConnectionManager_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() => new FormRepositoryFactory(
