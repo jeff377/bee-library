@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Bee.Definition;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
