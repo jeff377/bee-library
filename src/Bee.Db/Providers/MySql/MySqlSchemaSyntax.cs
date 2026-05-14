@@ -47,6 +47,9 @@ namespace Bee.Db.Providers.MySql
                 case FieldDbType.Currency:
                     return "0";
                 case FieldDbType.Date:
+                    // MySQL 8.0+ rejects CURRENT_TIMESTAMP as default for DATE columns in strict mode;
+                    // the parenthesised expression syntax is required for non-literal DATE defaults.
+                    return "(CURRENT_DATE)";
                 case FieldDbType.DateTime:
                     return "CURRENT_TIMESTAMP(6)";
                 case FieldDbType.Guid:

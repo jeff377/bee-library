@@ -3,8 +3,8 @@
   <Fields>
     <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
     <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
-    <DbField FieldName="sys_id" Caption="專案代碼" DbType="String" />
-    <DbField FieldName="sys_name" Caption="專案名稱" DbType="String" />
+    <DbField FieldName="sys_id" Caption="專案代碼" DbType="String" Length="20" />
+    <DbField FieldName="sys_name" Caption="專案名稱" DbType="String" Length="50" />
     <DbField FieldName="owner_dept_rowid" Caption="負責部門" DbType="Guid" />
     <DbField FieldName="pm_rowid" Caption="專案經理" DbType="Guid" />
     <DbField FieldName="start_date" Caption="開始日" DbType="Date" />

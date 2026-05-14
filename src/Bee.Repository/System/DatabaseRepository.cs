@@ -25,18 +25,44 @@ namespace Bee.Repository.System
         /// Tests the database connection and throws an exception on failure.
         /// </summary>
         /// <param name="item">The database configuration item.</param>
+        /// <remarks>
+        /// When <see cref="DatabaseItem.ServerId"/> is set, the connection string and
+        /// <see cref="DatabaseItem.DatabaseType"/> are taken from the referenced
+        /// <see cref="DatabaseServer"/>; the item's <c>UserId</c>/<c>Password</c> override
+        /// the server's when non-empty (mirrors <c>DbConnectionManagerService</c>).
+        /// </remarks>
         public void TestConnection(DatabaseItem item)
         {
-            var provider = DbProviderRegistry.Get(item.DatabaseType);
-
+            var databaseType = item.DatabaseType;
             var connectionString = item.ConnectionString;
+            var userId = item.UserId;
+            var password = item.Password;
+
+            if (StringUtilities.IsNotEmpty(item.ServerId))
+            {
+                var settings = _defineAccess.GetDatabaseSettings();
+                if (settings.Servers == null || !settings.Servers.Contains(item.ServerId))
+                {
+                    throw new InvalidOperationException(
+                        $"DatabaseServer '{item.ServerId}' referenced by DatabaseItem '{item.Id}' was not found.");
+                }
+                var server = settings.Servers[item.ServerId];
+                connectionString = server.ConnectionString;
+                databaseType = server.DatabaseType;
+                if (StringUtilities.IsEmpty(userId))
+                    userId = server.UserId;
+                if (StringUtilities.IsEmpty(password))
+                    password = server.Password;
+            }
+
             if (StringUtilities.IsNotEmpty(item.DbName))
                 connectionString = StringUtilities.Replace(connectionString, "{@DbName}", item.DbName);
-            if (StringUtilities.IsNotEmpty(item.UserId))
-                connectionString = StringUtilities.Replace(connectionString, "{@UserId}", item.UserId);
-            if (StringUtilities.IsNotEmpty(item.Password))
-                connectionString = StringUtilities.Replace(connectionString, "{@Password}", item.Password);
+            if (StringUtilities.IsNotEmpty(userId))
+                connectionString = StringUtilities.Replace(connectionString, "{@UserId}", userId);
+            if (StringUtilities.IsNotEmpty(password))
+                connectionString = StringUtilities.Replace(connectionString, "{@Password}", password);
 
+            var provider = DbProviderRegistry.Get(databaseType);
             using (var connection = provider.CreateConnection()!)
             {
                 connection.ConnectionString = connectionString;

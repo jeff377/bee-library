@@ -16,17 +16,21 @@ namespace Bee.Tests.Shared
 {
     /// <summary>
     /// Process-wide test DB infrastructure: registers ADO.NET <c>DbProviderFactory</c>
-    /// + framework <c>IDbDialectFactory</c> per <see cref="DatabaseType"/>, seeds the
-    /// matching <see cref="DatabaseItem"/> into <c>DatabaseSettings</c> when the
-    /// corresponding <c>BEE_TEST_CONNSTR_*</c> env var is set, and (on opt-in)
-    /// creates / upgrades the shared <c>st_user</c>/<c>st_session</c> schemas and
-    /// inserts a seed user. All operations are idempotent and guarded by a single
+    /// + framework <c>IDbDialectFactory</c> per <see cref="DatabaseType"/>, seeds one
+    /// <see cref="DatabaseServer"/> plus one <see cref="DatabaseItem"/> per category
+    /// declared in <c>DbCategorySettings.xml</c> when the corresponding
+    /// <c>BEE_TEST_CONNSTR_*</c> env var is set, and (on opt-in) creates / upgrades the
+    /// physical schema for every <c>(category, table)</c> in <c>DbCategorySettings.xml</c>
+    /// plus inserts a seed user. All operations are idempotent and guarded by a single
     /// process-wide lock so concurrent fixture ctors don't race.
     /// </summary>
     /// <remarks>
-    /// Phase 5 PR 5.4b extracted this helper from <c>GlobalFixture</c> /
-    /// <c>DbGlobalFixture</c> so the new <see cref="BeeTestFixture"/> can opt into
-    /// shared DB setup without depending on the legacy fixtures.
+    /// Each <see cref="DatabaseItem"/> carries <c>DbName = CategoryId</c> so the server's
+    /// <c>{@DbName}</c> placeholder substitution produces a per-category physical database
+    /// (e.g. SQL Server <c>common</c> + <c>company</c>). Oracle is the only exception:
+    /// per-category DbName is left empty and all 5 tables live in the same testuser schema.
+    /// SQLite uses <c>{@DbName}</c> as the in-memory shared-cache filename, producing one
+    /// independent in-memory database per category.
     /// </remarks>
     public static class SharedDatabaseState
     {
@@ -37,13 +41,13 @@ namespace Bee.Tests.Shared
         private static bool _schemaInitialised;
 
         // SQLite in-memory shared-cache databases live only as long as at least one
-        // connection is open; hold one open for the lifetime of the process.
-        private static SqliteConnection? _sqliteKeepAlive;
+        // connection is open; hold one open per category for the lifetime of the process.
+        private static readonly List<SqliteConnection> _sqliteKeepAlive = [];
 
         /// <summary>
-        /// Registers DB providers / dialect factories and seeds <see cref="DatabaseItem"/>
-        /// values for every <see cref="DatabaseType"/> whose connection string env var
-        /// is set. Idempotent across the process.
+        /// Registers DB providers / dialect factories and seeds <see cref="DatabaseServer"/>
+        /// + per-category <see cref="DatabaseItem"/> values for every <see cref="DatabaseType"/>
+        /// whose connection string env var is set. Idempotent across the process.
         /// </summary>
         /// <param name="bootstrapAccess">
         /// A <c>LocalDefineAccess</c> backed by the same <c>CacheContainer</c> the rest
@@ -56,11 +60,12 @@ namespace Bee.Tests.Shared
             {
                 if (_registered) return;
 
-                RegisterSqlServer(bootstrapAccess);
-                RegisterPostgreSql(bootstrapAccess);
-                RegisterSqlite(bootstrapAccess);
-                RegisterMySql(bootstrapAccess);
-                RegisterOracle(bootstrapAccess);
+                var categoryIds = GetCategoryIds(bootstrapAccess);
+                RegisterSqlServer(bootstrapAccess, categoryIds);
+                RegisterPostgreSql(bootstrapAccess, categoryIds);
+                RegisterSqlite(bootstrapAccess, categoryIds);
+                RegisterMySql(bootstrapAccess, categoryIds);
+                RegisterOracle(bootstrapAccess, categoryIds);
                 EnsureFallbackCommonDatabaseItem(bootstrapAccess);
 
                 _registered = true;
@@ -68,12 +73,14 @@ namespace Bee.Tests.Shared
         }
 
         /// <summary>
-        /// Verifies connectivity, creates / upgrades required schemas, and inserts seed
-        /// data for every registered database. Skips any DB whose env var is unset or
+        /// Verifies connectivity, creates / upgrades schemas for every
+        /// <c>(category, table)</c> declared in <c>DbCategorySettings.xml</c>, and inserts
+        /// seed data for every registered database. Skips any DB whose env var is unset or
         /// whose connection fails. Idempotent across the process.
         /// </summary>
         /// <param name="access">An <see cref="IDefineAccess"/> resolving the same
         /// <c>DatabaseSettings</c> that <see cref="EnsureRegistered"/> populated.</param>
+        /// <param name="connectionManager">The DI-resolved connection manager.</param>
         public static void EnsureSchemaAndSeed(IDefineAccess access, IDbConnectionManager connectionManager)
         {
             ArgumentNullException.ThrowIfNull(access);
@@ -92,6 +99,23 @@ namespace Bee.Tests.Shared
             }
         }
 
+        private static List<string> GetCategoryIds(IDefineAccess access)
+        {
+            var settings = access.GetDbCategorySettings();
+            if (settings?.Categories == null || settings.Categories.Count == 0)
+            {
+                // Fallback so registration still produces a usable "common" DatabaseItem
+                // even when DbCategorySettings.xml is missing/empty.
+                return ["common"];
+            }
+            return settings.Categories.Select(c => c.Id).ToList();
+        }
+
+        // Oracle 不走實體 DB 區隔（保持單一 testuser schema 容納所有 category 的表），
+        // 其他 DB 由 {@DbName} 把 CategoryId 代換為實體 DB 名。
+        private static string ResolveDbName(DatabaseType dbType, string categoryId)
+            => dbType == DatabaseType.Oracle ? string.Empty : categoryId;
+
         private static void EnsureFallbackCommonDatabaseItem(IDefineAccess bootstrapAccess)
         {
             var dbSettings = bootstrapAccess.GetDatabaseSettings();
@@ -101,11 +125,12 @@ namespace Bee.Tests.Shared
                 Id = "common",
                 CategoryId = "common",
                 DatabaseType = DatabaseType.SQLServer,
+                DbName = "common",
                 ConnectionString = string.Empty
             });
         }
 
-        private static void RegisterSqlServer(IDefineAccess bootstrapAccess)
+        private static void RegisterSqlServer(IDefineAccess bootstrapAccess, List<string> categoryIds)
         {
             DbProviderRegistry.Register(DatabaseType.SQLServer, Microsoft.Data.SqlClient.SqlClientFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.SQLServer, new SqlDialectFactory());
@@ -113,11 +138,20 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLServer));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(bootstrapAccess, "common", "common", DatabaseType.SQLServer, connStr);
-            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.SQLServer), "common", DatabaseType.SQLServer, connStr);
+            RegisterServerAndItems(bootstrapAccess, DatabaseType.SQLServer, connStr, categoryIds);
+            // Backward-compat: framework convention historically uses the bare "common"
+            // DatabaseItem.Id for the SQL Server default. Bind it to the same server with
+            // DbName="common" so the {@DbName} placeholder resolves identically to common_sqlserver.
+            AddDatabaseItemIfMissing(
+                bootstrapAccess,
+                id: "common",
+                categoryId: "common",
+                dbType: DatabaseType.SQLServer,
+                serverId: TestDbConventions.GetServerId(DatabaseType.SQLServer),
+                dbName: "common");
         }
 
-        private static void RegisterPostgreSql(IDefineAccess bootstrapAccess)
+        private static void RegisterPostgreSql(IDefineAccess bootstrapAccess, List<string> categoryIds)
         {
             DbProviderRegistry.Register(DatabaseType.PostgreSQL, Npgsql.NpgsqlFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.PostgreSQL, new PgDialectFactory());
@@ -125,10 +159,10 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.PostgreSQL));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL), "common", DatabaseType.PostgreSQL, connStr);
+            RegisterServerAndItems(bootstrapAccess, DatabaseType.PostgreSQL, connStr, categoryIds);
         }
 
-        private static void RegisterSqlite(IDefineAccess bootstrapAccess)
+        private static void RegisterSqlite(IDefineAccess bootstrapAccess, List<string> categoryIds)
         {
             DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
@@ -136,18 +170,24 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLite));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.SQLite), "common", DatabaseType.SQLite, connStr);
+            RegisterServerAndItems(bootstrapAccess, DatabaseType.SQLite, connStr, categoryIds);
 
-            // Hold one open connection for the lifetime of the process so the in-memory
-            // shared-cache database stays alive even when all per-test connections close.
-            if (_sqliteKeepAlive == null)
+            // Keep one open connection per category — each {@DbName} substitution maps
+            // to an independent in-memory DB, and the underlying shared-cache store is
+            // reclaimed once the last open connection closes.
+            if (_sqliteKeepAlive.Count == 0)
             {
-                _sqliteKeepAlive = new SqliteConnection(connStr);
-                _sqliteKeepAlive.Open();
+                foreach (var categoryId in categoryIds)
+                {
+                    var resolvedConnStr = StringUtilities.Replace(connStr, "{@DbName}", categoryId);
+                    var conn = new SqliteConnection(resolvedConnStr);
+                    conn.Open();
+                    _sqliteKeepAlive.Add(conn);
+                }
             }
         }
 
-        private static void RegisterMySql(IDefineAccess bootstrapAccess)
+        private static void RegisterMySql(IDefineAccess bootstrapAccess, List<string> categoryIds)
         {
             DbProviderRegistry.Register(DatabaseType.MySQL, MySqlConnector.MySqlConnectorFactory.Instance);
             DbDialectRegistry.Register(DatabaseType.MySQL, new MySqlDialectFactory());
@@ -155,10 +195,10 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.MySQL));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.MySQL), "common", DatabaseType.MySQL, connStr);
+            RegisterServerAndItems(bootstrapAccess, DatabaseType.MySQL, connStr, categoryIds);
         }
 
-        private static void RegisterOracle(IDefineAccess bootstrapAccess)
+        private static void RegisterOracle(IDefineAccess bootstrapAccess, List<string> categoryIds)
         {
             DbProviderRegistry.Register(
                 DatabaseType.Oracle,
@@ -169,7 +209,7 @@ namespace Bee.Tests.Shared
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.Oracle));
             if (string.IsNullOrEmpty(connStr)) return;
 
-            AddDatabaseItemIfMissing(bootstrapAccess, TestDbConventions.GetDatabaseId(DatabaseType.Oracle), "common", DatabaseType.Oracle, connStr);
+            RegisterServerAndItems(bootstrapAccess, DatabaseType.Oracle, connStr, categoryIds);
         }
 
         private static void ApplyOracleSessionSettings(System.Data.Common.DbConnection connection)
@@ -179,7 +219,34 @@ namespace Bee.Tests.Shared
             cmd.ExecuteNonQuery();
         }
 
-        private static void AddDatabaseItemIfMissing(IDefineAccess bootstrapAccess, string id, string categoryId, DatabaseType dbType, string connStr)
+        private static void RegisterServerAndItems(
+            IDefineAccess bootstrapAccess,
+            DatabaseType dbType,
+            string connStr,
+            List<string> categoryIds)
+        {
+            var serverId = TestDbConventions.GetServerId(dbType);
+            AddDatabaseServerIfMissing(bootstrapAccess, serverId, dbType, connStr);
+            foreach (var categoryId in categoryIds)
+            {
+                var id = TestDbConventions.GetDatabaseId(dbType, categoryId);
+                AddDatabaseItemIfMissing(bootstrapAccess, id, categoryId, dbType, serverId, ResolveDbName(dbType, categoryId));
+            }
+        }
+
+        private static void AddDatabaseServerIfMissing(IDefineAccess bootstrapAccess, string serverId, DatabaseType dbType, string connStr)
+        {
+            var dbSettings = bootstrapAccess.GetDatabaseSettings();
+            if (dbSettings.Servers!.Contains(serverId)) return;
+            dbSettings.Servers.Add(new DatabaseServer
+            {
+                Id = serverId,
+                DatabaseType = dbType,
+                ConnectionString = connStr
+            });
+        }
+
+        private static void AddDatabaseItemIfMissing(IDefineAccess bootstrapAccess, string id, string categoryId, DatabaseType dbType, string serverId, string dbName)
         {
             var dbSettings = bootstrapAccess.GetDatabaseSettings();
             if (dbSettings.Items!.Contains(id)) return;
@@ -188,7 +255,9 @@ namespace Bee.Tests.Shared
                 Id = id,
                 CategoryId = categoryId,
                 DatabaseType = dbType,
-                ConnectionString = connStr
+                ServerId = serverId,
+                DbName = dbName,
+                ConnectionString = string.Empty
             });
         }
 
@@ -197,17 +266,104 @@ namespace Bee.Tests.Shared
             var envVar = TestDbConventions.GetConnectionStringEnvVar(dbType);
             if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(envVar))) return;
 
-            var databaseId = TestDbConventions.GetDatabaseId(dbType);
+            var commonDatabaseId = TestDbConventions.GetDatabaseId(dbType);
             try
             {
-                VerifyConnection(databaseId, connectionManager);
-                EnsureSchema(databaseId, access, connectionManager);
-                EnsureSeedData(dbType, databaseId, connectionManager);
+                EnsurePhysicalDatabasesExist(dbType, access);
+                VerifyConnection(commonDatabaseId, connectionManager);
+                EnsureSchema(dbType, access, connectionManager);
+                EnsureSeedData(dbType, commonDatabaseId, connectionManager);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"SharedDatabaseState: {dbType} setup skipped — {ex.GetType().Name}: {ex.Message}");
                 Console.WriteLine(ex.ToString());
+            }
+        }
+
+        // Auto-creates the per-category physical database (e.g. company on SQL Server,
+        // PostgreSQL, MySQL) when missing. Best-effort: connects to the engine's admin
+        // database and runs a CREATE DATABASE statement; on permission failure the
+        // exception is logged and the schema-build step will raise a clearer error.
+        // Oracle and SQLite are skipped (Oracle uses single-schema mode; SQLite in-memory
+        // DBs come into being on first connection).
+        private static void EnsurePhysicalDatabasesExist(DatabaseType dbType, IDefineAccess access)
+        {
+            if (dbType == DatabaseType.Oracle || dbType == DatabaseType.SQLite) return;
+
+            var categorySettings = access.GetDbCategorySettings();
+            if (categorySettings?.Categories == null) return;
+
+            var serverId = TestDbConventions.GetServerId(dbType);
+            var dbSettings = access.GetDatabaseSettings();
+            if (dbSettings.Servers == null || !dbSettings.Servers.Contains(serverId)) return;
+            var serverConnStr = dbSettings.Servers[serverId].ConnectionString;
+
+            var adminDbName = GetAdminDatabaseName(dbType);
+            var adminConnStr = StringUtilities.Replace(serverConnStr, "{@DbName}", adminDbName);
+            var providerFactory = DbProviderRegistry.Get(dbType);
+
+            foreach (var category in categorySettings.Categories)
+            {
+                if (category.Tables == null || category.Tables.Count == 0) continue;
+                var dbName = category.Id;
+                try
+                {
+                    using var conn = providerFactory.CreateConnection()!;
+                    conn.ConnectionString = adminConnStr;
+                    conn.Open();
+                    CreateDatabaseIfMissing(dbType, conn, dbName);
+                    Console.WriteLine($"SharedDatabaseState: {dbType} physical database '{dbName}' ensured");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"SharedDatabaseState: {dbType} CREATE DATABASE '{dbName}' failed (may need manual setup + grant) — {ex.GetType().Name}: {ex.Message}");
+                }
+            }
+        }
+
+        private static string GetAdminDatabaseName(DatabaseType dbType) => dbType switch
+        {
+            DatabaseType.SQLServer => "master",
+            DatabaseType.PostgreSQL => "postgres",
+            // MySQL: an empty initial database is valid; pick the always-present "mysql"
+            // schema to avoid driver-specific edge cases when DB=empty.
+            DatabaseType.MySQL => "mysql",
+            _ => string.Empty
+        };
+
+        private static void CreateDatabaseIfMissing(DatabaseType dbType, System.Data.Common.DbConnection conn, string dbName)
+        {
+            switch (dbType)
+            {
+                case DatabaseType.SQLServer:
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = $"IF DB_ID(N'{dbName}') IS NULL CREATE DATABASE [{dbName}]";
+                    cmd.ExecuteNonQuery();
+                    break;
+                }
+                case DatabaseType.PostgreSQL:
+                {
+                    // PG does not support IF NOT EXISTS on CREATE DATABASE and CREATE DATABASE
+                    // cannot run inside a transaction block; do an explicit existence probe first.
+                    using (var probe = conn.CreateCommand())
+                    {
+                        probe.CommandText = $"SELECT 1 FROM pg_database WHERE datname = '{dbName}'";
+                        if (probe.ExecuteScalar() != null) return;
+                    }
+                    using var create = conn.CreateCommand();
+                    create.CommandText = $"CREATE DATABASE \"{dbName}\"";
+                    create.ExecuteNonQuery();
+                    break;
+                }
+                case DatabaseType.MySQL:
+                {
+                    using var cmd = conn.CreateCommand();
+                    cmd.CommandText = $"CREATE DATABASE IF NOT EXISTS `{dbName}`";
+                    cmd.ExecuteNonQuery();
+                    break;
+                }
             }
         }
 
@@ -218,15 +374,24 @@ namespace Bee.Tests.Shared
             Console.WriteLine($"SharedDatabaseState: {databaseId} connection verified (State={conn.State})");
         }
 
-        private static void EnsureSchema(string databaseId, IDefineAccess access, IDbConnectionManager connectionManager)
+        private static void EnsureSchema(DatabaseType dbType, IDefineAccess access, IDbConnectionManager connectionManager)
         {
-            var builder = new TableSchemaBuilder(databaseId, access, connectionManager);
+            var settings = access.GetDbCategorySettings();
+            if (settings?.Categories == null) return;
 
-            bool created = builder.Execute("common", "st_user");
-            Console.WriteLine($"SharedDatabaseState: {databaseId} st_user schema — {(created ? "created/upgraded" : "up-to-date")}");
+            foreach (var category in settings.Categories)
+            {
+                if (category.Tables == null || category.Tables.Count == 0) continue;
 
-            created = builder.Execute("common", "st_session");
-            Console.WriteLine($"SharedDatabaseState: {databaseId} st_session schema — {(created ? "created/upgraded" : "up-to-date")}");
+                var databaseId = TestDbConventions.GetDatabaseId(dbType, category.Id);
+                var builder = new TableSchemaBuilder(databaseId, access, connectionManager);
+
+                foreach (var table in category.Tables)
+                {
+                    bool created = builder.Execute(category.Id, table.TableName);
+                    Console.WriteLine($"SharedDatabaseState: {databaseId} {table.TableName} schema — {(created ? "created/upgraded" : "up-to-date")}");
+                }
+            }
         }
 
         private static void EnsureSeedData(DatabaseType dbType, string databaseId, IDbConnectionManager connectionManager)

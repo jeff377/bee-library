@@ -3,8 +3,8 @@
   <Fields>
     <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
     <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
-    <DbField FieldName="sys_id" Caption="部門編號" DbType="String" />
-    <DbField FieldName="sys_name" Caption="部門名稱" DbType="String" />
+    <DbField FieldName="sys_id" Caption="部門編號" DbType="String" Length="20" />
+    <DbField FieldName="sys_name" Caption="部門名稱" DbType="String" Length="50" />
     <DbField FieldName="manager_rowid" Caption="部門主管唯一識別" DbType="Guid" />
   </Fields>
   <Indexes>
