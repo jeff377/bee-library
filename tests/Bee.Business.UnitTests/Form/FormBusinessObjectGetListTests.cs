@@ -7,6 +7,7 @@ using Bee.Db.Manager;
 using Bee.Definition.Database;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
+using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Factories;
@@ -56,6 +57,48 @@ namespace Bee.Business.UnitTests.Form
         [DisplayName("SQL Server：GetList 同時套用 Filter 與 Sort 應回傳對應列數與順序")]
         public void GetList_SqlServer_FilterAndSort()
             => RunFilterAndSort(DatabaseType.SQLServer);
+
+        // -------- Paging --------
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：GetList Paging=null 行為與既有不分頁路徑一致；Result.Paging=null")]
+        public void GetList_Sqlite_PagingNull_NoPagingInfo()
+            => RunPagingNullBehavior(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：GetList 分頁含 IncludeTotalCount 應回傳正確 TotalCount/HasMore")]
+        public void GetList_Sqlite_PagedWithTotalCount()
+            => RunPagedWithTotalCount(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：GetList 分頁不含 IncludeTotalCount 應 probe 推算 HasMore 且 TotalCount=null")]
+        public void GetList_Sqlite_PagedWithoutTotalCount()
+            => RunPagedWithoutTotalCount(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：GetList 分頁 Page 超過總頁數應回空 Table 且 HasMore=false")]
+        public void GetList_Sqlite_PagedBeyondLastPage()
+            => RunPagedBeyondLastPage(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：GetList PageSize 超過 MaxPageSize 應 clamp 至上限不丟例外")]
+        public void GetList_Sqlite_PageSizeClampedToCap()
+            => RunPageSizeClampedToCap(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：GetList 分頁 SortFields=null 應 fallback sys_no ASC")]
+        public void GetList_Sqlite_SortFallbackToSysNo()
+            => RunSortFallbackToSysNo(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：GetList 分頁含 IncludeTotalCount 應回傳正確 TotalCount/HasMore")]
+        public void GetList_SqlServer_PagedWithTotalCount()
+            => RunPagedWithTotalCount(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：GetList 分頁不含 IncludeTotalCount 應 probe 推算 HasMore 且 TotalCount=null")]
+        public void GetList_SqlServer_PagedWithoutTotalCount()
+            => RunPagedWithoutTotalCount(DatabaseType.SQLServer);
 
         private void RunExplicitSelectFields(DatabaseType dbType)
         {
@@ -133,6 +176,197 @@ namespace Bee.Business.UnitTests.Form
                 TryDelete(ctx, "Employee", empInARowId);
                 TryDelete(ctx, "Department", deptZRowId);
                 TryDelete(ctx, "Department", deptARowId);
+            }
+        }
+
+        // Seeds 5 employees with sys_id "P{runId}-0" .. "P{runId}-4" and returns the
+        // rowIds plus a StartsWith filter scoped to this run. Caller is responsible
+        // for cleanup via TryDelete.
+        private static (Guid[] rowIds, FilterNode filter, string runId) SeedFivePagingRows(TestContext ctx)
+        {
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var rowIds = new Guid[5];
+            for (int i = 0; i < 5; i++)
+            {
+                rowIds[i] = Guid.NewGuid();
+                InsertEmployee(ctx, rowIds[i], $"P{runId}-{i}", $"員工{i}", Guid.Empty);
+            }
+            return (rowIds, FilterCondition.StartsWith("sys_id", $"P{runId}-"), runId);
+        }
+
+        private void RunPagingNullBehavior(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            var (rowIds, filter, _) = SeedFivePagingRows(ctx);
+            try
+            {
+                var result = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id",
+                    Filter = filter,
+                });
+
+                Assert.NotNull(result.Table);
+                Assert.Equal(5, result.Table!.Rows.Count);
+                Assert.Null(result.Paging);  // 不分頁路徑：Paging 必為 null
+            }
+            finally
+            {
+                foreach (var id in rowIds) TryDelete(ctx, "Employee", id);
+            }
+        }
+
+        private void RunPagedWithTotalCount(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            var (rowIds, filter, runId) = SeedFivePagingRows(ctx);
+            try
+            {
+                var result = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id",
+                    Filter = filter,
+                    SortFields = [new SortField("sys_id", SortDirection.Asc)],
+                    Paging = new PagingOptions { Page = 2, PageSize = 2, IncludeTotalCount = true },
+                });
+
+                Assert.NotNull(result.Table);
+                Assert.Equal(2, result.Table!.Rows.Count);
+                Assert.Equal($"P{runId}-2", result.Table.Rows[0]["sys_id"]);
+                Assert.Equal($"P{runId}-3", result.Table.Rows[1]["sys_id"]);
+
+                Assert.NotNull(result.Paging);
+                Assert.Equal(2, result.Paging!.Page);
+                Assert.Equal(2, result.Paging.PageSize);
+                Assert.Equal(5, result.Paging.TotalCount);
+                Assert.True(result.Paging.HasMore);  // 5 列，第 2 頁取 2 列、後面還有 1 列
+            }
+            finally
+            {
+                foreach (var id in rowIds) TryDelete(ctx, "Employee", id);
+            }
+        }
+
+        private void RunPagedWithoutTotalCount(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            var (rowIds, filter, runId) = SeedFivePagingRows(ctx);
+            try
+            {
+                var result = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id",
+                    Filter = filter,
+                    SortFields = [new SortField("sys_id", SortDirection.Asc)],
+                    Paging = new PagingOptions { Page = 1, PageSize = 2, IncludeTotalCount = false },
+                });
+
+                Assert.NotNull(result.Table);
+                // probe row 已 trim：頁面只留 2 列
+                Assert.Equal(2, result.Table!.Rows.Count);
+                Assert.Equal($"P{runId}-0", result.Table.Rows[0]["sys_id"]);
+                Assert.Equal($"P{runId}-1", result.Table.Rows[1]["sys_id"]);
+
+                Assert.NotNull(result.Paging);
+                Assert.Null(result.Paging!.TotalCount);  // 未要求
+                Assert.True(result.Paging.HasMore);
+            }
+            finally
+            {
+                foreach (var id in rowIds) TryDelete(ctx, "Employee", id);
+            }
+        }
+
+        private void RunPagedBeyondLastPage(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            var (rowIds, filter, _) = SeedFivePagingRows(ctx);
+            try
+            {
+                var result = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id",
+                    Filter = filter,
+                    SortFields = [new SortField("sys_id", SortDirection.Asc)],
+                    Paging = new PagingOptions { Page = 99, PageSize = 2, IncludeTotalCount = true },
+                });
+
+                Assert.NotNull(result.Table);
+                Assert.Empty(result.Table!.Rows);
+
+                Assert.NotNull(result.Paging);
+                Assert.Equal(5, result.Paging!.TotalCount);
+                Assert.False(result.Paging.HasMore);
+            }
+            finally
+            {
+                foreach (var id in rowIds) TryDelete(ctx, "Employee", id);
+            }
+        }
+
+        private void RunPageSizeClampedToCap(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            var (rowIds, filter, _) = SeedFivePagingRows(ctx);
+            try
+            {
+                var result = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id",
+                    Filter = filter,
+                    SortFields = [new SortField("sys_id", SortDirection.Asc)],
+                    // int.MaxValue should be clamped to MaxPageSize (1000) without exceptions.
+                    Paging = new PagingOptions { Page = 1, PageSize = int.MaxValue, IncludeTotalCount = false },
+                });
+
+                Assert.NotNull(result.Table);
+                Assert.Equal(5, result.Table!.Rows.Count);  // 5 列、cap 後 PageSize 仍夠裝下
+                Assert.NotNull(result.Paging);
+                Assert.Equal(1000, result.Paging!.PageSize);  // clamp 結果
+                Assert.False(result.Paging.HasMore);
+            }
+            finally
+            {
+                foreach (var id in rowIds) TryDelete(ctx, "Employee", id);
+            }
+        }
+
+        private void RunSortFallbackToSysNo(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            var (rowIds, filter, runId) = SeedFivePagingRows(ctx);
+            try
+            {
+                // SortFields = null → Repository fallback 套用 sys_no ASC。
+                // sys_no 為 AutoIncrement，種子順序遞增；分頁第 1 頁取 2 列、第 2 頁再取 2 列，
+                // sys_id 也跟著保持 0..4 順序（因為兩個欄位插入順序一致）。
+                var page1 = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id",
+                    Filter = filter,
+                    SortFields = null,
+                    Paging = new PagingOptions { Page = 1, PageSize = 2, IncludeTotalCount = false },
+                });
+
+                Assert.Equal(2, page1.Table!.Rows.Count);
+                Assert.Equal($"P{runId}-0", page1.Table.Rows[0]["sys_id"]);
+                Assert.Equal($"P{runId}-1", page1.Table.Rows[1]["sys_id"]);
+
+                var page2 = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id",
+                    Filter = filter,
+                    SortFields = null,
+                    Paging = new PagingOptions { Page = 2, PageSize = 2, IncludeTotalCount = false },
+                });
+
+                Assert.Equal(2, page2.Table!.Rows.Count);
+                Assert.Equal($"P{runId}-2", page2.Table.Rows[0]["sys_id"]);
+                Assert.Equal($"P{runId}-3", page2.Table.Rows[1]["sys_id"]);
+            }
+            finally
+            {
+                foreach (var id in rowIds) TryDelete(ctx, "Employee", id);
             }
         }
 

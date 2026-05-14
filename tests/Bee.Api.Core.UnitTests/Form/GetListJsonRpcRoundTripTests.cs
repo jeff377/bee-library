@@ -6,6 +6,7 @@ using Bee.Business;
 using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Identity;
+using Bee.Definition.Paging;
 using Bee.Definition.Security;
 using Bee.Definition.Sorting;
 using Bee.Definition.Storage;
@@ -102,6 +103,78 @@ namespace Bee.Api.Core.UnitTests.Form
             Assert.NotNull(stubRepository.LastSortFields);
             Assert.Single(stubRepository.LastSortFields!);
             Assert.Equal("sys_id", stubRepository.LastSortFields![0].FieldName);
+            Assert.Null(stubRepository.LastPaging);
+        }
+
+        [Fact]
+        [DisplayName("Employee.GetList 帶 Paging 應由 executor 透傳到 BO；回傳 PagingInfo 經 ApiOutputConverter 對齊到 Response.Paging")]
+        public void GetList_ThroughJsonRpc_PreservesPagingAndReturnsPagingInfo()
+        {
+            // Arrange: stub repository 回傳 paging 資訊
+            var table = new DataTable("Employee");
+            table.Columns.Add("sys_id", typeof(string));
+            table.Rows.Add("E001");
+            table.Rows.Add("E002");
+
+            var stubPagingInfo = new PagingInfo
+            {
+                Page = 2,
+                PageSize = 25,
+                TotalCount = 100,
+                HasMore = true,
+            };
+            var stubRepository = new StubDataFormRepository(table, stubPagingInfo);
+            var stubFactory = new StubFormRepositoryFactory(stubRepository);
+
+            var overrideServices = new TestOverrideServiceProvider(
+                _fx.Provider,
+                (typeof(IFormRepositoryFactory), stubFactory));
+
+            var boFactory = new BusinessObjectFactory(
+                overrideServices,
+                _fx.GetRequiredService<IDefineAccess>(),
+                _fx.GetRequiredService<ISessionInfoService>(),
+                _fx.GetRequiredService<IFormBoTypeResolver>());
+
+            var executor = new JsonRpcExecutor(
+                boFactory,
+                _fx.GetRequiredService<IAccessTokenValidator>(),
+                _fx.GetRequiredService<IApiEncryptionKeyProvider>())
+            {
+                AccessToken = TestSessionFactory.CreateAccessToken(_fx),
+                IsLocalCall = true,
+            };
+
+            var request = new JsonRpcRequest
+            {
+                Method = $"Employee.{FormActions.GetList}",
+                Params = new JsonRpcParams
+                {
+                    Value = new GetListRequest
+                    {
+                        Paging = new PagingOptions { Page = 2, PageSize = 25, IncludeTotalCount = true },
+                    },
+                },
+                Id = Guid.NewGuid().ToString(),
+            };
+
+            // Act
+            var response = executor.Execute(request);
+
+            // Assert: stub 收到的 PagingOptions
+            Assert.Null(response.Error);
+            Assert.NotNull(stubRepository.LastPaging);
+            Assert.Equal(2, stubRepository.LastPaging!.Page);
+            Assert.Equal(25, stubRepository.LastPaging.PageSize);
+            Assert.True(stubRepository.LastPaging.IncludeTotalCount);
+
+            // Assert: response.Paging 由 ApiOutputConverter 命名慣例 copy 對齊
+            var result = Assert.IsType<GetListResponse>(response.Result!.Value);
+            Assert.NotNull(result.Paging);
+            Assert.Equal(2, result.Paging!.Page);
+            Assert.Equal(25, result.Paging.PageSize);
+            Assert.Equal(100, result.Paging.TotalCount);
+            Assert.True(result.Paging.HasMore);
         }
 
         private sealed class StubFormRepositoryFactory : IFormRepositoryFactory
@@ -116,21 +189,30 @@ namespace Bee.Api.Core.UnitTests.Form
         private sealed class StubDataFormRepository : IDataFormRepository
         {
             private readonly DataTable _table;
-            public StubDataFormRepository(DataTable table) { _table = table; }
+            private readonly PagingInfo? _paging;
+
+            public StubDataFormRepository(DataTable table, PagingInfo? paging = null)
+            {
+                _table = table;
+                _paging = paging;
+            }
 
             public string? LastSelectFields { get; private set; }
             public FilterNode? LastFilter { get; private set; }
             public SortFieldCollection? LastSortFields { get; private set; }
+            public PagingOptions? LastPaging { get; private set; }
 
-            public DataTable? GetList(
+            public DataFormListResult GetList(
                 string selectFields,
                 FilterNode? filter,
-                SortFieldCollection? sortFields)
+                SortFieldCollection? sortFields,
+                PagingOptions? paging = null)
             {
                 LastSelectFields = selectFields;
                 LastFilter = filter;
                 LastSortFields = sortFields;
-                return _table;
+                LastPaging = paging;
+                return new DataFormListResult { Table = _table, Paging = _paging };
             }
         }
     }

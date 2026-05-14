@@ -2,6 +2,7 @@ using Bee.Api.Core.Messages;
 using Bee.Api.Core.Messages.Form;
 using Bee.Definition;
 using Bee.Definition.Filters;
+using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 
 namespace Bee.Api.Client.Connectors
@@ -99,21 +100,26 @@ namespace Bee.Api.Client.Connectors
         /// </param>
         /// <param name="filter">The filter condition tree; <c>null</c> for an unfiltered query.</param>
         /// <param name="sortFields">The sort field collection; <c>null</c> uses the default ordering.</param>
+        /// <param name="paging">The paging options; <c>null</c> returns every matching row.</param>
         /// <remarks>
-        /// <b>This version does NOT paginate.</b> Callers MUST supply a <paramref name="filter"/>
-        /// that bounds the result set; an unbounded query against a large table loads every
-        /// matching row into memory on both the server and the client.
+        /// When <paramref name="paging"/> is <c>null</c> callers should supply a
+        /// <paramref name="filter"/> that bounds the result set, otherwise an
+        /// unbounded query against a large table loads every matching row into memory
+        /// on both the server and the client. Pass a <see cref="PagingOptions"/> to
+        /// page through large result sets.
         /// </remarks>
         public async Task<GetListResponse> GetListAsync(
             string selectFields = "",
             FilterNode? filter = null,
-            SortFieldCollection? sortFields = null)
+            SortFieldCollection? sortFields = null,
+            PagingOptions? paging = null)
         {
             var request = new GetListRequest
             {
                 SelectFields = selectFields,
                 Filter = filter,
                 SortFields = sortFields,
+                Paging = paging,
             };
             return await ExecuteAsync<GetListResponse>(FormActions.GetList, request).ConfigureAwait(false);
         }
@@ -127,13 +133,15 @@ namespace Bee.Api.Client.Connectors
         /// </param>
         /// <param name="filter">The filter condition tree; <c>null</c> for an unfiltered query.</param>
         /// <param name="sortFields">The sort field collection; <c>null</c> uses the default ordering.</param>
+        /// <param name="paging">The paging options; <c>null</c> returns every matching row.</param>
         public GetListResponse GetList(
             string selectFields = "",
             FilterNode? filter = null,
-            SortFieldCollection? sortFields = null)
+            SortFieldCollection? sortFields = null,
+            PagingOptions? paging = null)
         {
             return SyncExecutor.Run(() =>
-                GetListAsync(selectFields, filter, sortFields)
+                GetListAsync(selectFields, filter, sortFields, paging)
             );
         }
     }

@@ -1,5 +1,5 @@
-using System.Data;
 using Bee.Definition.Filters;
+using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 
 namespace Bee.Repository.Abstractions.Form
@@ -19,13 +19,15 @@ namespace Bee.Repository.Abstractions.Form
         /// </param>
         /// <param name="filter">The filter condition tree; <c>null</c> for an unfiltered query.</param>
         /// <param name="sortFields">The sort field collection; <c>null</c> uses the default ordering.</param>
+        /// <param name="paging">The paging options; <c>null</c> returns every matching row.</param>
         /// <returns>
-        /// The result <see cref="DataTable"/>; <c>null</c> when the underlying database
-        /// command produces no table.
+        /// A <see cref="DataFormListResult"/> with the row data and, when paging was
+        /// requested, the corresponding <see cref="PagingInfo"/>.
         /// </returns>
-        DataTable? GetList(
+        DataFormListResult GetList(
             string selectFields,
             FilterNode? filter,
-            SortFieldCollection? sortFields);
+            SortFieldCollection? sortFields,
+            PagingOptions? paging = null);
     }
 }

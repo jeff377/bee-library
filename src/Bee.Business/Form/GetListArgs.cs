@@ -1,5 +1,6 @@
 using Bee.Api.Contracts;
 using Bee.Definition.Filters;
+using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 
 namespace Bee.Business.Form
@@ -25,5 +26,11 @@ namespace Bee.Business.Form
         /// Gets or sets the sort field collection; <c>null</c> uses the default ordering.
         /// </summary>
         public SortFieldCollection? SortFields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the paging options; <c>null</c> means the query is unpaged and
+        /// returns every matching row.
+        /// </summary>
+        public PagingOptions? Paging { get; set; }
     }
 }

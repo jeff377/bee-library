@@ -1,4 +1,5 @@
 using System.Data;
+using Bee.Definition.Paging;
 
 namespace Bee.Api.Contracts
 {
@@ -11,5 +12,10 @@ namespace Bee.Api.Contracts
         /// Gets the result rows.
         /// </summary>
         DataTable? Table { get; }
+
+        /// <summary>
+        /// Gets the paging metadata; <c>null</c> when the query was unpaged.
+        /// </summary>
+        PagingInfo? Paging { get; }
     }
 }

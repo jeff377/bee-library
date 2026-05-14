@@ -1,9 +1,11 @@
-using System.Data;
+using System.Globalization;
 using Bee.Base;
 using Bee.Db;
 using Bee.Db.Manager;
+using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
+using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Form;
@@ -59,11 +61,19 @@ namespace Bee.Repository.Form
         /// </summary>
         public string ProgId { get; }
 
+        /// <summary>
+        /// The framework-wide upper bound for <see cref="PagingOptions.PageSize"/>.
+        /// Values above this cap are clamped on the server to prevent callers from
+        /// accidentally loading huge result sets (for example via <c>int.MaxValue</c>).
+        /// </summary>
+        private const int MaxPageSize = 1000;
+
         /// <inheritdoc/>
-        public DataTable? GetList(
+        public DataFormListResult GetList(
             string selectFields,
             FilterNode? filter,
-            SortFieldCollection? sortFields)
+            SortFieldCollection? sortFields,
+            PagingOptions? paging = null)
         {
             // FormSchema.MasterTable.TableName == ProgId (framework invariant), so we
             // pass ProgId directly as the target table name.
@@ -74,10 +84,88 @@ namespace Bee.Repository.Form
             var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
             var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
                 .CreateFormCommandBuilder(_schema, _defineAccess);
-            var spec = builder.BuildSelect(ProgId, resolvedSelectFields, filter, sortFields);
-
             var dbAccess = _dbAccessFactory.Create(_databaseId);
-            return dbAccess.Execute(spec).Table;
+
+            if (paging == null)
+            {
+                var spec = builder.BuildSelect(ProgId, resolvedSelectFields, filter, sortFields);
+                return new DataFormListResult { Table = dbAccess.Execute(spec).Table };
+            }
+
+            // Paged path: clamp PageSize, supply a deterministic ORDER BY, run optional
+            // COUNT, then the paged SELECT. When IncludeTotalCount is false we take an
+            // extra probe row (PageSize + 1) to compute HasMore without a COUNT round-trip.
+            var pageSize = Math.Clamp(paging.PageSize, 1, MaxPageSize);
+            var page = Math.Max(paging.Page, 1);
+            var skip = (page - 1) * pageSize;
+
+            // Paging requires a deterministic ORDER BY. SQL Server and Oracle reject
+            // OFFSET/FETCH without ORDER BY; PG/SQLite/MySQL allow it but return rows
+            // in undefined order. Falling back here is the Repository's job — the SQL
+            // layer does not know about the `sys_no` convention.
+            var effectiveSort = sortFields ?? DefaultSortForPaging(_schema);
+
+            int? totalCount = null;
+            if (paging.IncludeTotalCount)
+            {
+                var countSpec = builder.BuildCount(ProgId, filter);
+                totalCount = Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture);
+            }
+
+            int take = paging.IncludeTotalCount ? pageSize : pageSize + 1;
+            var pagedSpec = builder.BuildSelect(ProgId, resolvedSelectFields, filter, effectiveSort, skip, take);
+            var table = dbAccess.Execute(pagedSpec).Table!;
+
+            bool hasMore;
+            if (paging.IncludeTotalCount)
+            {
+                hasMore = totalCount > skip + table.Rows.Count;
+            }
+            else
+            {
+                hasMore = table.Rows.Count > pageSize;
+                if (hasMore)
+                {
+                    // Trim the probe row so the caller never sees the extra record.
+                    table.Rows.RemoveAt(table.Rows.Count - 1);
+                }
+            }
+
+            return new DataFormListResult
+            {
+                Table = table,
+                Paging = new PagingInfo
+                {
+                    Page = page,
+                    PageSize = pageSize,
+                    TotalCount = totalCount,
+                    HasMore = hasMore,
+                },
+            };
+        }
+
+        /// <summary>
+        /// Returns the default sort applied to paged queries when the caller does not
+        /// supply a <see cref="SortFieldCollection"/>. Uses <c>sys_no ASC</c> when the
+        /// master table defines it; otherwise throws to force the caller to provide
+        /// an explicit sort (Guid-based <c>sys_rowid</c> would be deterministic but
+        /// meaningless to humans).
+        /// </summary>
+        private static SortFieldCollection DefaultSortForPaging(FormSchema schema)
+        {
+            var masterTable = schema.MasterTable
+                ?? throw new InvalidOperationException(
+                    $"Schema '{schema.ProgId}' has no master table; cannot derive a default paging sort.");
+
+            if (masterTable.Fields == null || !masterTable.Fields.Contains(SysFields.No))
+            {
+                throw new InvalidOperationException(
+                    $"Cannot derive a default paging sort for schema '{schema.ProgId}': " +
+                    $"the master table does not define '{SysFields.No}'. " +
+                    $"Supply an explicit SortFields when calling GetList with paging.");
+            }
+
+            return [new SortField(SysFields.No, SortDirection.Asc)];
         }
     }
 }

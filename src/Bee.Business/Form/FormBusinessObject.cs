@@ -56,12 +56,11 @@ namespace Bee.Business.Form
         /// </summary>
         /// <param name="args">The input arguments.</param>
         /// <remarks>
-        /// <b>This version does NOT paginate.</b> Callers MUST supply a <c>Filter</c>
-        /// that bounds the result set; an unbounded query against a large table loads
-        /// every matching row into memory on both the server and the client. Pagination
-        /// support is tracked separately (see <c>docs/plans/plan-formbo-getlist-paging.md</c>
-        /// when opened) and will be added as an additive, non-breaking
-        /// <c>PagingOptions</c> field on <see cref="GetListArgs"/>.
+        /// When <see cref="GetListArgs.Paging"/> is <c>null</c> the query is unpaged
+        /// and callers should supply a <c>Filter</c> that bounds the result set,
+        /// otherwise an unbounded query against a large table loads every matching
+        /// row into memory on both the server and the client. Set <c>Paging</c> to
+        /// page through large result sets.
         /// </remarks>
         [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual GetListResult GetList(GetListArgs args)
@@ -70,9 +69,13 @@ namespace Bee.Business.Form
 
             var factory = Services.GetRequiredService<IFormRepositoryFactory>();
             var repository = factory.CreateDataFormRepository(ProgId);
-            var table = repository.GetList(args.SelectFields, args.Filter, args.SortFields);
+            var listResult = repository.GetList(args.SelectFields, args.Filter, args.SortFields, args.Paging);
 
-            return new GetListResult { Table = table };
+            return new GetListResult
+            {
+                Table = listResult.Table,
+                Paging = listResult.Paging,
+            };
         }
     }
 }

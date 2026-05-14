@@ -1,5 +1,6 @@
 using Bee.Api.Contracts;
 using Bee.Definition.Filters;
+using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 using MessagePack;
 
@@ -8,10 +9,6 @@ namespace Bee.Api.Core.Messages.Form
     /// <summary>
     /// API request for the form GetList operation.
     /// </summary>
-    /// <remarks>
-    /// <c>Key(103)</c> is reserved for a future <c>PagingOptions</c> field; see
-    /// <c>docs/plans/plan-formbo-getlist.md</c> (Range out / paging section).
-    /// </remarks>
     [MessagePackObject]
     public class GetListRequest : ApiRequest, IGetListRequest
     {
@@ -33,5 +30,12 @@ namespace Bee.Api.Core.Messages.Form
         /// </summary>
         [Key(102)]
         public SortFieldCollection? SortFields { get; set; }
+
+        /// <summary>
+        /// Gets or sets the paging options; <c>null</c> means the query is unpaged and
+        /// returns every matching row.
+        /// </summary>
+        [Key(103)]
+        public PagingOptions? Paging { get; set; }
     }
 }

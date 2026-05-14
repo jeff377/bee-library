@@ -3,6 +3,7 @@ using System.Data;
 using Bee.Api.Core.MessagePack;
 using Bee.Api.Core.Messages.Form;
 using Bee.Definition.Filters;
+using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 
 namespace Bee.Api.Core.UnitTests.Form
@@ -61,7 +62,7 @@ namespace Bee.Api.Core.UnitTests.Form
         }
 
         [Fact]
-        [DisplayName("GetListRequest 三欄都為預設值應 round-trip 為相等內容")]
+        [DisplayName("GetListRequest 四欄都為預設值應 round-trip 為相等內容")]
         public void GetListRequest_DefaultValues_RoundTrip()
         {
             var request = new GetListRequest();
@@ -73,6 +74,27 @@ namespace Bee.Api.Core.UnitTests.Form
             Assert.Equal(string.Empty, restored!.SelectFields);
             Assert.Null(restored.Filter);
             Assert.Null(restored.SortFields);
+            Assert.Null(restored.Paging);
+        }
+
+        [Fact]
+        [DisplayName("GetListRequest 帶 PagingOptions 應 round-trip 還原 Page / PageSize / IncludeTotalCount")]
+        public void GetListRequest_RoundTrip_PreservesPagingOptions()
+        {
+            var request = new GetListRequest
+            {
+                SelectFields = "sys_id",
+                Paging = new PagingOptions { Page = 3, PageSize = 25, IncludeTotalCount = true },
+            };
+
+            var bytes = MessagePackCodec.Serialize(request);
+            var restored = MessagePackCodec.Deserialize<GetListRequest>(bytes);
+
+            Assert.NotNull(restored);
+            Assert.NotNull(restored!.Paging);
+            Assert.Equal(3, restored.Paging!.Page);
+            Assert.Equal(25, restored.Paging.PageSize);
+            Assert.True(restored.Paging.IncludeTotalCount);
         }
 
         [Fact]
@@ -111,6 +133,33 @@ namespace Bee.Api.Core.UnitTests.Form
 
             Assert.NotNull(restored);
             Assert.Null(restored!.Table);
+            Assert.Null(restored.Paging);
+        }
+
+        [Fact]
+        [DisplayName("GetListResponse 帶 PagingInfo 應 round-trip 還原 Page / PageSize / TotalCount / HasMore")]
+        public void GetListResponse_RoundTrip_PreservesPagingInfo()
+        {
+            var response = new GetListResponse
+            {
+                Paging = new PagingInfo
+                {
+                    Page = 2,
+                    PageSize = 50,
+                    TotalCount = 237,
+                    HasMore = true,
+                },
+            };
+
+            var bytes = MessagePackCodec.Serialize(response);
+            var restored = MessagePackCodec.Deserialize<GetListResponse>(bytes);
+
+            Assert.NotNull(restored);
+            Assert.NotNull(restored!.Paging);
+            Assert.Equal(2, restored.Paging!.Page);
+            Assert.Equal(50, restored.Paging.PageSize);
+            Assert.Equal(237, restored.Paging.TotalCount);
+            Assert.True(restored.Paging.HasMore);
         }
     }
 }

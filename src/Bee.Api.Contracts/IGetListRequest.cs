@@ -1,4 +1,5 @@
 using Bee.Definition.Filters;
+using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
 
 namespace Bee.Api.Contracts
@@ -28,5 +29,11 @@ namespace Bee.Api.Contracts
         /// Gets the sort field collection; <c>null</c> uses the default ordering.
         /// </summary>
         SortFieldCollection? SortFields { get; }
+
+        /// <summary>
+        /// Gets the paging options; <c>null</c> means the query is unpaged and
+        /// returns every matching row.
+        /// </summary>
+        PagingOptions? Paging { get; }
     }
 }

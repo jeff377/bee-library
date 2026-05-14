@@ -1,5 +1,6 @@
 using System.Data;
 using Bee.Api.Contracts;
+using Bee.Definition.Paging;
 using MessagePack;
 
 namespace Bee.Api.Core.Messages.Form
@@ -7,10 +8,6 @@ namespace Bee.Api.Core.Messages.Form
     /// <summary>
     /// API response for the form GetList operation.
     /// </summary>
-    /// <remarks>
-    /// <c>Key(101)</c> is reserved for a future <c>PagingInfo</c> field; see
-    /// <c>docs/plans/plan-formbo-getlist.md</c> (Range out / paging section).
-    /// </remarks>
     [MessagePackObject]
     public class GetListResponse : ApiResponse, IGetListResponse
     {
@@ -19,5 +16,11 @@ namespace Bee.Api.Core.Messages.Form
         /// </summary>
         [Key(100)]
         public DataTable? Table { get; set; }
+
+        /// <summary>
+        /// Gets or sets the paging metadata; <c>null</c> when the query was unpaged.
+        /// </summary>
+        [Key(101)]
+        public PagingInfo? Paging { get; set; }
     }
 }
