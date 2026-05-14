@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 using Bee.Api.Core;
 using Bee.Api.Core.Authorization;
@@ -33,6 +34,8 @@ namespace Bee.Api.AspNetCore.Controllers
         /// <param name="authorization">The authorization header value, bound from the <c>Authorization</c> request header.</param>
         [HttpPost]
         [RequestSizeLimit(10 * 1024 * 1024)] // 10 MB
+        [SuppressMessage("Major Code Smell", "S5693:Make sure the content length limit is safe here.",
+            Justification = "10 MB is the agreed upper bound for JSON-RPC payloads across all Bee.Net deployments; raising it beyond this would risk DoS on the server.")]
         public async Task<IActionResult> PostAsync(
             [FromHeader(Name = ApiHeaders.ApiKey)] string? apiKey = null,
             [FromHeader(Name = ApiHeaders.Authorization)] string? authorization = null)
