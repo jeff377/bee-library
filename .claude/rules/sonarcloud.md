@@ -113,7 +113,7 @@ string.Join(", ", new[] { "a", "b", "c" });
 
 | 規則 | 原則 |
 |------|------|
-| **S125** | 移除被註解掉的程式碼；需保留歷史就用 git log（正向寫法見 `code-style.md` §註解規範） |
+| **S125** | 真的是被註解掉的程式碼才移除；需保留歷史就用 git log（正向寫法見 `code-style.md` §註解規範）。**注意：此規則對英文 WHY 註解誤判率高**，啟發式 parser 一遇 `CURRENT_TIMESTAMP` `IDisposable` 等英文識別字 + 行尾 `;` 就會 hit。處理流程：<br>• `/sonar-fix` 已將 S125 排除在自動修正之外（一律進 `humanReview` skip 清單）<br>• 人工 review 該位置：合法 WHY 註解 → SonarCloud UI 標 *False Positive*；真為 dead code → 手動刪除並 commit<br>• 撰寫新註解時用完整英文句子、`.` 結尾、避免行尾 `;`（見 `code-style.md`） |
 | **S1133** | 標記為 `[Obsolete]` 且確定無呼叫者的程式碼應移除 |
 
 ## 10. Reflection 與 Assembly
