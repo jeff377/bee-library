@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Reflection;
 using Bee.Api.Client.Providers;
@@ -147,10 +148,16 @@ namespace Bee.Api.Client.UnitTests
         /// <summary>
         /// 收集追蹤事件的測試用 writer。
         /// </summary>
+        /// <remarks>
+        /// <c>SysInfo.TraceListener</c> 是 process-wide static；當此測試類別把 listener
+        /// 指向本實例時，**所有並行執行的測試類別**透過 Tracer 觸發的事件都會被
+        /// 此 writer 捕捉到。為避免「Collection was modified」的並行列舉錯誤，
+        /// Events 必須使用執行緒安全容器並提供 snapshot 列舉語意。
+        /// </remarks>
         private sealed class CapturingTraceWriter : ITraceWriter
         {
-            public List<TraceEvent> Events { get; } = [];
-            public void Write(TraceEvent evt) => Events.Add(evt);
+            public ConcurrentQueue<TraceEvent> Events { get; } = new();
+            public void Write(TraceEvent evt) => Events.Enqueue(evt);
         }
     }
 }
