@@ -133,10 +133,24 @@ jobs:
         echo "SQL Server did not become ready in time" >&2
         exit 1
 
-    - name: Create test database
+    - name: Create test databases (common + company)
       env:
         SA_PASSWORD: BeeTest_Password123!
-      run: /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P "$SA_PASSWORD" -C -Q "IF DB_ID('common') IS NULL CREATE DATABASE common;"
+        MYSQL_ROOT_PASSWORD: BeeTest_Password123!
+        PGPASSWORD: testpass
+      run: |
+        # SQL Server：sa 可建任何 DB
+        /opt/mssql-tools18/bin/sqlcmd -S localhost,1433 -U sa -P "$SA_PASSWORD" -C -Q \
+          "IF DB_ID('common') IS NULL CREATE DATABASE common; IF DB_ID('company') IS NULL CREATE DATABASE company;"
+        # PostgreSQL：service container 已建 common；補建 company（testuser 為 superuser）
+        psql -h 127.0.0.1 -U testuser -d postgres -c \
+          "SELECT 1 FROM pg_database WHERE datname='company'" | grep -q '1 row' || \
+          psql -h 127.0.0.1 -U testuser -d postgres -c 'CREATE DATABASE company OWNER testuser'
+        # MySQL：service container 已建 common；補建 company + grant testuser（需 root）
+        mysql -h 127.0.0.1 -u root -p"$MYSQL_ROOT_PASSWORD" -e \
+          "CREATE DATABASE IF NOT EXISTS company; \
+           GRANT ALL PRIVILEGES ON company.* TO 'testuser'@'%'; \
+           FLUSH PRIVILEGES;"
 
     # Strict build（analyzer gate）：未經 SonarScanner 包覆，TreatWarningsAsErrors
     # 與 .editorconfig 的 analyzer 規則會真正擋 build。Sonar-wrapped build 會削弱
@@ -160,14 +174,17 @@ jobs:
 
     - name: Test with coverage
       env:
-        BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database=common;User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
-        BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database=common;Username=testuser;Password=testpass"
-        BEE_TEST_CONNSTR_MYSQL: "Server=localhost;Port=3306;Database=common;User=testuser;Password=testpass;"
+        # {@DbName} 由 SharedDatabaseState 為每個 DatabaseItem 代換成 common / company，
+        # 對應上一步預建的兩個實體資料庫；Oracle 例外（不走 DbName 區隔）。
+        BEE_TEST_CONNSTR_SQLSERVER: "Server=localhost,1433;Database={@DbName};User Id=sa;Password=BeeTest_Password123!;Encrypt=True;TrustServerCertificate=True;"
+        BEE_TEST_CONNSTR_POSTGRESQL: "Host=localhost;Port=5432;Database={@DbName};Username=testuser;Password=testpass"
+        BEE_TEST_CONNSTR_MYSQL: "Server=localhost;Port=3306;Database={@DbName};User=testuser;Password=testpass;"
         BEE_TEST_CONNSTR_ORACLE: "Data Source=localhost:1521/FREEPDB1;User Id=testuser;Password=testpass;"
         # SQLite is a pure driver with no service container — in-memory shared cache so
         # multiple connections see the same database (cache=shared) and there is no IO
-        # to clean up between runs.
-        BEE_TEST_CONNSTR_SQLITE: "Data Source=file:bee_test_sqlite?mode=memory&cache=shared"
+        # to clean up between runs. Each {@DbName} substitution maps to an independent
+        # in-memory DB (bee_test_common / bee_test_company / …).
+        BEE_TEST_CONNSTR_SQLITE: "Data Source=file:bee_test_{@DbName}?mode=memory&cache=shared"
       run: dotnet test Bee.Library.slnx --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage;Format=opencover"
 
     - name: SonarScanner End
