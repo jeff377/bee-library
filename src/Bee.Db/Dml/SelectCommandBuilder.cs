@@ -40,7 +40,7 @@ namespace Bee.Db.Dml
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentException("tableName cannot be null or whitespace.", nameof(tableName));
 
-            var formTable = _formDefine.Tables![tableName];
+            var formTable = _formDefine.Tables!.GetOrDefault(tableName);
             if (formTable == null)
                 throw new InvalidOperationException($"Cannot find the specified table: {tableName}");
 
