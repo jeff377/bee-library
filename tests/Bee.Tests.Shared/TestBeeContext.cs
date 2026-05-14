@@ -60,7 +60,7 @@ namespace Bee.Tests.Shared
             };
         }
 
-        private static IBeeContext CreateFrom(IServiceProvider sp)
+        private static BeeContext CreateFrom(IServiceProvider sp)
         {
             return new BeeContext
             {
