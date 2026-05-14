@@ -43,10 +43,24 @@ namespace Bee.Db.Providers.MySql
         /// <param name="selectFields">A comma-separated list of field names; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        public DbCommandSpec BuildSelect(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
+        /// <param name="skip">Rows to skip; null means no offset.</param>
+        /// <param name="take">Rows to take; null means no row limit.</param>
+        public DbCommandSpec BuildSelect(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null,
+            int? skip = null, int? take = null)
         {
             var builder = new SelectCommandBuilder(FormSchema, DatabaseType.MySQL, _defineAccess);
-            return builder.Build(tableName, selectFields, filter, sortFields);
+            return builder.Build(tableName, selectFields, filter, sortFields, skip, take);
+        }
+
+        /// <summary>
+        /// Builds the SELECT COUNT(*) command specification.
+        /// </summary>
+        /// <param name="tableName">The form table name.</param>
+        /// <param name="filter">The filter condition.</param>
+        public DbCommandSpec BuildCount(string tableName, FilterNode? filter = null)
+        {
+            var builder = new SelectCommandBuilder(FormSchema, DatabaseType.MySQL, _defineAccess);
+            return builder.BuildCount(tableName, filter);
         }
 
         /// <summary>

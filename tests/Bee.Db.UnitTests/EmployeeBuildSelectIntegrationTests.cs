@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Data;
+using System.Globalization;
 using Bee.Db.Dml;
 using Bee.Definition.Database;
 using Bee.Definition.Filters;
@@ -157,6 +158,95 @@ namespace Bee.Db.UnitTests
             }
         }
 
+        private void RunPagingSelect(DatabaseType dbType)
+        {
+            var employeeSchema = Access.GetFormSchema("Employee");
+            var db = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType, CategoryId));
+
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var rowIds = new Guid[5];
+            for (int i = 0; i < 5; i++) { rowIds[i] = Guid.NewGuid(); }
+
+            try
+            {
+                // sys_id "P{runId}-0".."P{runId}-4" gives deterministic ORDER BY sys_id ASC
+                for (int i = 0; i < 5; i++)
+                {
+                    InsertEmployee(db, employeeSchema, dbType, rowIds[i], $"P{runId}-{i}", $"員工{i}", Guid.Empty);
+                }
+
+                var filter = FilterCondition.StartsWith("sys_id", $"P{runId}-");
+                var sort = new SortFieldCollection { new SortField("sys_id", SortDirection.Asc) };
+
+                // Page 1: skip=0 take=2 → rows 0,1
+                var page0 = db.Execute(new SelectCommandBuilder(employeeSchema, dbType, Access)
+                    .Build("Employee", "sys_id,sys_name", filter, sort, skip: 0, take: 2)).Table!;
+                Assert.Equal(2, page0.Rows.Count);
+                Assert.Equal($"P{runId}-0", page0.Rows[0]["sys_id"]);
+                Assert.Equal($"P{runId}-1", page0.Rows[1]["sys_id"]);
+
+                // Page 2: skip=2 take=2 → rows 2,3
+                var page1 = db.Execute(new SelectCommandBuilder(employeeSchema, dbType, Access)
+                    .Build("Employee", "sys_id,sys_name", filter, sort, skip: 2, take: 2)).Table!;
+                Assert.Equal(2, page1.Rows.Count);
+                Assert.Equal($"P{runId}-2", page1.Rows[0]["sys_id"]);
+                Assert.Equal($"P{runId}-3", page1.Rows[1]["sys_id"]);
+
+                // Page 3: skip=4 take=2 → row 4 only (partial last page)
+                var page2 = db.Execute(new SelectCommandBuilder(employeeSchema, dbType, Access)
+                    .Build("Employee", "sys_id,sys_name", filter, sort, skip: 4, take: 2)).Table!;
+                Assert.Single(page2.Rows);
+                Assert.Equal($"P{runId}-4", page2.Rows[0]["sys_id"]);
+            }
+            finally
+            {
+                foreach (var id in rowIds)
+                {
+                    TryDelete(db, employeeSchema, dbType, "Employee", id);
+                }
+            }
+        }
+
+        private void RunBuildCount(DatabaseType dbType)
+        {
+            var employeeSchema = Access.GetFormSchema("Employee");
+            var db = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType, CategoryId));
+
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var rowIds = new Guid[5];
+            for (int i = 0; i < 5; i++) { rowIds[i] = Guid.NewGuid(); }
+
+            try
+            {
+                // 3 employees with "C{runId}-A*" prefix and 2 with "C{runId}-B*" prefix.
+                for (int i = 0; i < 3; i++)
+                {
+                    InsertEmployee(db, employeeSchema, dbType, rowIds[i], $"C{runId}-A{i}", $"員工A{i}", Guid.Empty);
+                }
+                for (int i = 0; i < 2; i++)
+                {
+                    InsertEmployee(db, employeeSchema, dbType, rowIds[3 + i], $"C{runId}-B{i}", $"員工B{i}", Guid.Empty);
+                }
+
+                // Filter matches all 5
+                var resultAll = db.Execute(new SelectCommandBuilder(employeeSchema, dbType, Access)
+                    .BuildCount("Employee", FilterCondition.StartsWith("sys_id", $"C{runId}-"))).Scalar;
+                Assert.Equal(5, Convert.ToInt32(resultAll, CultureInfo.InvariantCulture));
+
+                // Filter matches subset of 3 (A* rows)
+                var resultSubset = db.Execute(new SelectCommandBuilder(employeeSchema, dbType, Access)
+                    .BuildCount("Employee", FilterCondition.StartsWith("sys_id", $"C{runId}-A"))).Scalar;
+                Assert.Equal(3, Convert.ToInt32(resultSubset, CultureInfo.InvariantCulture));
+            }
+            finally
+            {
+                foreach (var id in rowIds)
+                {
+                    TryDelete(db, employeeSchema, dbType, "Employee", id);
+                }
+            }
+        }
+
         private static void InsertEmployee(DbAccess db, FormSchema schema, DatabaseType dbType,
             Guid rowId, string sysId, string sysName, Guid deptRowId)
         {
@@ -280,5 +370,89 @@ namespace Bee.Db.UnitTests
         [DisplayName("Oracle：以 ref_dept_name 排序之 SELECT 經實際執行，回傳列依關聯欄位升冪排列")]
         public void SortByRefDeptNameSelect_Oracle()
             => RunSortByRefDeptNameSelect(DatabaseType.Oracle);
+
+        // -------- Paged SELECT (skip / take) per dialect --------
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：分頁 SELECT skip/take 三頁切片皆能取回正確列")]
+        public void PagingSelect_SqlServer() => RunPagingSelect(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("PostgreSQL：分頁 SELECT skip/take 三頁切片皆能取回正確列")]
+        public void PagingSelect_PostgreSql() => RunPagingSelect(DatabaseType.PostgreSQL);
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：分頁 SELECT skip/take 三頁切片皆能取回正確列")]
+        public void PagingSelect_Sqlite() => RunPagingSelect(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.MySQL)]
+        [DisplayName("MySQL：分頁 SELECT skip/take 三頁切片皆能取回正確列")]
+        public void PagingSelect_MySql() => RunPagingSelect(DatabaseType.MySQL);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：分頁 SELECT skip/take 三頁切片皆能取回正確列")]
+        public void PagingSelect_Oracle() => RunPagingSelect(DatabaseType.Oracle);
+
+        // -------- BuildCount per dialect --------
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：BuildCount 以 filter 計數，全集與子集分別回傳 5 / 3")]
+        public void BuildCount_SqlServer() => RunBuildCount(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("PostgreSQL：BuildCount 以 filter 計數，全集與子集分別回傳 5 / 3")]
+        public void BuildCount_PostgreSql() => RunBuildCount(DatabaseType.PostgreSQL);
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：BuildCount 以 filter 計數，全集與子集分別回傳 5 / 3")]
+        public void BuildCount_Sqlite() => RunBuildCount(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.MySQL)]
+        [DisplayName("MySQL：BuildCount 以 filter 計數，全集與子集分別回傳 5 / 3")]
+        public void BuildCount_MySql() => RunBuildCount(DatabaseType.MySQL);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：BuildCount 以 filter 計數，全集與子集分別回傳 5 / 3")]
+        public void BuildCount_Oracle() => RunBuildCount(DatabaseType.Oracle);
+
+        // -------- MySQL UINT64_MAX sentinel: skip without take --------
+
+        [DbFact(DatabaseType.MySQL)]
+        [DisplayName("MySQL：skip 不帶 take 應使用 UINT64_MAX sentinel literal，取回 OFFSET 之後所有列")]
+        public void PagingSelect_MySql_SkipWithoutTake()
+        {
+            var employeeSchema = Access.GetFormSchema("Employee");
+            var db = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(DatabaseType.MySQL, CategoryId));
+
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var rowIds = new Guid[5];
+            for (int i = 0; i < 5; i++) { rowIds[i] = Guid.NewGuid(); }
+
+            try
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    InsertEmployee(db, employeeSchema, DatabaseType.MySQL, rowIds[i], $"M{runId}-{i}", $"員工{i}", Guid.Empty);
+                }
+
+                var filter = FilterCondition.StartsWith("sys_id", $"M{runId}-");
+                var sort = new SortFieldCollection { new SortField("sys_id", SortDirection.Asc) };
+
+                // skip=2 take=null emits `LIMIT 18446744073709551615 OFFSET 2`; MySQL must accept it.
+                var table = db.Execute(new SelectCommandBuilder(employeeSchema, DatabaseType.MySQL, Access)
+                    .Build("Employee", "sys_id", filter, sort, skip: 2, take: null)).Table!;
+                Assert.Equal(3, table.Rows.Count);
+                Assert.Equal($"M{runId}-2", table.Rows[0]["sys_id"]);
+                Assert.Equal($"M{runId}-3", table.Rows[1]["sys_id"]);
+                Assert.Equal($"M{runId}-4", table.Rows[2]["sys_id"]);
+            }
+            finally
+            {
+                foreach (var id in rowIds)
+                {
+                    TryDelete(db, employeeSchema, DatabaseType.MySQL, "Employee", id);
+                }
+            }
+        }
     }
 }

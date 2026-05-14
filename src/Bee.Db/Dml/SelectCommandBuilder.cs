@@ -35,7 +35,17 @@ namespace Bee.Db.Dml
         /// <param name="selectFields">A comma-separated list of field names to retrieve; empty string retrieves all fields.</param>
         /// <param name="filter">The filter condition.</param>
         /// <param name="sortFields">The sort field collection.</param>
-        public DbCommandSpec Build(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null)
+        /// <param name="skip">Rows to skip; null means no offset.</param>
+        /// <param name="take">Rows to take; null means no row limit.</param>
+        /// <remarks>
+        /// When paging is requested without a sort, the resulting SQL may fail on
+        /// dialects that require ORDER BY with OFFSET/FETCH (SQL Server, Oracle).
+        /// The SQL layer deliberately does not add a fallback sort; callers that
+        /// know the schema (typically the Repository layer) are responsible for
+        /// supplying a deterministic order.
+        /// </remarks>
+        public DbCommandSpec Build(string tableName, string selectFields, FilterNode? filter = null, SortFieldCollection? sortFields = null,
+            int? skip = null, int? take = null)
         {
             if (string.IsNullOrWhiteSpace(tableName))
                 throw new ArgumentException("tableName cannot be null or whitespace.", nameof(tableName));
@@ -64,8 +74,63 @@ namespace Bee.Db.Dml
                 sqlParts.Add(orderByClause);
             }
 
+            var limitClause = new LimitBuilder(_databaseType).Build(skip, take);
+            if (!string.IsNullOrWhiteSpace(limitClause))
+            {
+                sqlParts.Add(limitClause);
+            }
+
             string sql = string.Join(Environment.NewLine, sqlParts);
             return new DbCommandSpec(DbCommandKind.DataTable, sql, parameters);
+        }
+
+        /// <summary>
+        /// Builds a SELECT COUNT(*) <see cref="DbCommandSpec"/> using the supplied filter.
+        /// Only the JOINs required to satisfy the filter are emitted; this is intentionally
+        /// narrower than <see cref="Build"/> which materialises every selected column.
+        /// </summary>
+        /// <param name="tableName">The table name.</param>
+        /// <param name="filter">The filter condition.</param>
+        public DbCommandSpec BuildCount(string tableName, FilterNode? filter = null)
+        {
+            if (string.IsNullOrWhiteSpace(tableName))
+                throw new ArgumentException("tableName cannot be null or whitespace.", nameof(tableName));
+
+            var formTable = _formDefine.Tables!.GetOrDefault(tableName);
+            if (formTable == null)
+                throw new InvalidOperationException($"Cannot find the specified table: {tableName}");
+
+            var selectContext = GetCountContext(formTable, filter);
+
+            var sqlParts = new List<string>
+            {
+                "SELECT COUNT(*)",
+                BuildFromClause(formTable, selectContext.Joins)
+            };
+
+            var (whereClause, parameters) = BuildWhereClause(filter, selectContext);
+            if (!string.IsNullOrWhiteSpace(whereClause))
+            {
+                sqlParts.Add(whereClause);
+            }
+
+            string sql = string.Join(Environment.NewLine, sqlParts);
+            return new DbCommandSpec(DbCommandKind.Scalar, sql, parameters);
+        }
+
+        /// <summary>
+        /// Gets the JOIN relationships required for a COUNT query — only the fields used
+        /// by the filter trigger JOINs. Unlike <see cref="GetSelectContext"/>, the
+        /// projected columns are irrelevant for COUNT(*) and are deliberately excluded
+        /// to avoid emitting unnecessary JOINs.
+        /// </summary>
+        /// <param name="formTable">The form table definition.</param>
+        /// <param name="filter">The filter condition.</param>
+        private SelectContext GetCountContext(FormTable formTable, FilterNode? filter)
+        {
+            var usedFieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            CollectFilterFields(filter, usedFieldNames);
+            return new SelectContextBuilder(formTable, usedFieldNames, _defineAccess).Build();
         }
 
         /// <summary>
