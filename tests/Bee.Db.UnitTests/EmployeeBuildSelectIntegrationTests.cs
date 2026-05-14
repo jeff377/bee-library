@@ -250,5 +250,35 @@ namespace Bee.Db.UnitTests
         [DisplayName("SQLite：以 ref_dept_name 排序之 SELECT 經實際執行，回傳列依關聯欄位升冪排列")]
         public void SortByRefDeptNameSelect_Sqlite()
             => RunSortByRefDeptNameSelect(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.MySQL)]
+        [DisplayName("MySQL：以 Employee FormSchema 產生的 SELECT 經實際執行，單階與多階關聯欄位皆能取回正確值")]
+        public void ChainedSupervisorSelect_MySql()
+            => RunChainedSupervisorSelect(DatabaseType.MySQL);
+
+        [DbFact(DatabaseType.MySQL)]
+        [DisplayName("MySQL：以 ref_dept_id 為篩選條件之 SELECT 經實際執行，僅回傳對應部門的員工")]
+        public void FilterByRefDeptIdSelect_MySql()
+            => RunFilterByRefDeptIdSelect(DatabaseType.MySQL);
+
+        [DbFact(DatabaseType.MySQL)]
+        [DisplayName("MySQL：以 ref_dept_name 排序之 SELECT 經實際執行，回傳列依關聯欄位升冪排列")]
+        public void SortByRefDeptNameSelect_MySql()
+            => RunSortByRefDeptNameSelect(DatabaseType.MySQL);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：以 Employee FormSchema 產生的 SELECT 經實際執行，單階與多階關聯欄位皆能取回正確值")]
+        public void ChainedSupervisorSelect_Oracle()
+            => RunChainedSupervisorSelect(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：以 ref_dept_id 為篩選條件之 SELECT 經實際執行，僅回傳對應部門的員工")]
+        public void FilterByRefDeptIdSelect_Oracle()
+            => RunFilterByRefDeptIdSelect(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：以 ref_dept_name 排序之 SELECT 經實際執行，回傳列依關聯欄位升冪排列")]
+        public void SortByRefDeptNameSelect_Oracle()
+            => RunSortByRefDeptNameSelect(DatabaseType.Oracle);
     }
 }
