@@ -1,9 +1,10 @@
 # Skill 草稿：bee-library 新增 BO 方法 + API 合約流程
 
-**狀態：✅ 已轉為正式 skill（2026-05-14），落地於 `~/.claude/skills/bee-add-bo-method/SKILL.md`**
+**狀態：✅ 已轉為正式 skill（2026-05-14），落地於 `.claude/skills/bee-add-bo-method/SKILL.md`（gitignored，僅本機）**
 
-> 本草稿保留供 plan-formbo-getlist.md 引用使用；後續維護以正式 skill 為主。
-> 兩份內容如有差異，**以正式 skill 為準**。本草稿凍結於 2026-05-14。
+> `.claude/skills/` 整個目錄在 `.gitignore` 內（personal skills 不進公開 repo），
+> 因此本草稿是 GitHub 上唯一可見的版本，仍作為公開閱讀來源；本機開發以正式
+> skill 為主。兩份內容如有差異，**以正式 skill 為準**。本草稿凍結於 2026-05-14。
 
 ## 目的
 
