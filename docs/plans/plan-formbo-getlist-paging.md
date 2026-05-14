@@ -1,6 +1,6 @@
 # 計畫：FormBO.GetList 分頁支援（BO / API / Client 層）
 
-**狀態：📝 擬定中 — 依賴 `plan-selectcommand-paging.md`（SQL 層 primitive）先落地**
+**狀態：✅ 已完成（2026-05-15）**
 
 ## 背景
 
