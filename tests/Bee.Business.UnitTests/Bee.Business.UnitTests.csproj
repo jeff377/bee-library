@@ -28,6 +28,7 @@
     <ProjectReference Include="..\..\src\Bee.ObjectCaching\Bee.ObjectCaching.csproj" />
     <ProjectReference Include="..\..\src\Bee.Db\Bee.Db.csproj" />
     <ProjectReference Include="..\..\src\Bee.Definition\Bee.Definition.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Repository\Bee.Repository.csproj" />
     <ProjectReference Include="..\Bee.Tests.Shared\Bee.Tests.Shared.csproj" />
   </ItemGroup>
 

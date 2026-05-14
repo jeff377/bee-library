@@ -1,5 +1,7 @@
 using Bee.Definition;
+using Bee.Definition.Attributes;
 using Bee.Definition.Security;
+using Bee.Repository.Abstractions.Factories;
 
 namespace Bee.Business.Form
 {
@@ -46,6 +48,31 @@ namespace Bee.Business.Form
         {
             var handler = new FormExecFuncHandler(AccessToken);
             handler.InvokeExecFunc(ApiAccessRequirement.Anonymous, args, result);
+        }
+
+        /// <summary>
+        /// Retrieves list-view rows by executing the FormSchema-driven SELECT statement
+        /// for <see cref="ProgId"/>.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        /// <remarks>
+        /// <b>This version does NOT paginate.</b> Callers MUST supply a <c>Filter</c>
+        /// that bounds the result set; an unbounded query against a large table loads
+        /// every matching row into memory on both the server and the client. Pagination
+        /// support is tracked separately (see <c>docs/plans/plan-formbo-getlist-paging.md</c>
+        /// when opened) and will be added as an additive, non-breaking
+        /// <c>PagingOptions</c> field on <see cref="GetListArgs"/>.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        public virtual GetListResult GetList(GetListArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            var factory = Services.GetRequiredService<IFormRepositoryFactory>();
+            var repository = factory.CreateDataFormRepository(ProgId);
+            var table = repository.GetList(args.SelectFields, args.Filter, args.SortFields);
+
+            return new GetListResult { Table = table };
         }
     }
 }

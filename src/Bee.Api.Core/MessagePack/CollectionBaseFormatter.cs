@@ -18,10 +18,19 @@ namespace Bee.Api.Core.MessagePack
         /// Serializes the collection object to MessagePack format.
         /// </summary>
         /// <param name="writer">The MessagePack writer.</param>
-        /// <param name="value">The collection to serialize.</param>
+        /// <param name="value">The collection to serialize; <c>null</c> is written as nil.</param>
         /// <param name="options">The serialization options.</param>
         public void Serialize(ref MessagePackWriter writer, TCollection value, MessagePackSerializerOptions options)
         {
+            // Nullable collection fields on `[MessagePackObject]` types (e.g.
+            // `SortFieldCollection? SortFields`) reach this formatter as null when
+            // unset; emit nil so the wire format remains valid.
+            if (value == null)
+            {
+                writer.WriteNil();
+                return;
+            }
+
             writer.WriteArrayHeader(value.Count);
 
             foreach (var item in value)
@@ -35,9 +44,12 @@ namespace Bee.Api.Core.MessagePack
         /// </summary>
         /// <param name="reader">The MessagePack reader.</param>
         /// <param name="options">The deserialization options.</param>
-        /// <returns>The deserialized collection object.</returns>
+        /// <returns>The deserialized collection object, or <c>null</c> when the wire format is nil.</returns>
         public TCollection Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
+            if (reader.TryReadNil())
+                return null!;
+
             var count = reader.ReadArrayHeader();
             var collection = new TCollection();
 

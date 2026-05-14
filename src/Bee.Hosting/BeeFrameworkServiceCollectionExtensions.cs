@@ -122,8 +122,9 @@ namespace Bee.Hosting
             services.AddSingleton<ISystemRepositoryFactory>(sp =>
                 CreateConfigurableService<ISystemRepositoryFactory>(sp,
                     components.SystemRepositoryFactory, BackendDefaultTypes.SystemRepositoryFactory));
-            services.AddSingleton<IFormRepositoryFactory>(_ => CreateOrDefault<IFormRepositoryFactory>(
-                components.FormRepositoryFactory, BackendDefaultTypes.FormRepositoryFactory));
+            services.AddSingleton<IFormRepositoryFactory>(sp =>
+                CreateConfigurableService<IFormRepositoryFactory>(sp,
+                    components.FormRepositoryFactory, BackendDefaultTypes.FormRepositoryFactory));
 
             // 10. JsonRpcExecutor — transient (per request); its dependencies (factories,
             //     validators, key providers) are resolved from the container at construction.

@@ -1,6 +1,11 @@
 # 計畫：FormBusinessObject.GetList — BO 方法 + API 合約
 
-**狀態：📝 擬定中（本版不含分頁；分頁拆至後續 plan 處理）**
+**狀態：✅ 已完成（2026-05-14；P0–P3 全部落地。本版不含分頁，分頁拆至後續 plan 處理）**
+
+> **設計簡化（2026-05-14）**：移除 `TableName` 屬性 —— 框架已強制
+> `FormSchema.MasterTable.TableName == ProgId`，GetList 的目標表永遠是
+> master table，由 `ProgId` 直接決定，不需要在 request 上重複攜帶。
+> 詳列子表查詢屬未來分階段擴充範疇，不在本 plan 內。
 
 ## 背景
 
@@ -40,11 +45,12 @@
 namespace Bee.Api.Contracts
 {
     /// <summary>Contract interface for the GetList request.</summary>
+    /// <remarks>
+    /// Target table is always the master table of the schema identified by ProgId
+    /// (framework invariant: FormSchema.MasterTable.TableName == ProgId).
+    /// </remarks>
     public interface IGetListRequest
     {
-        /// <summary>FormTable name; empty falls back to master table.</summary>
-        string TableName { get; }
-
         /// <summary>Comma-separated field names; empty falls back to FormSchema.ListFields, then all fields.</summary>
         string SelectFields { get; }
 
@@ -102,11 +108,10 @@ namespace Bee.Api.Core.Messages.Form
     [MessagePackObject]
     public class GetListRequest : ApiRequest, IGetListRequest
     {
-        [Key(100)] public string TableName { get; set; } = string.Empty;
-        [Key(101)] public string SelectFields { get; set; } = string.Empty;
-        [Key(102)] public FilterNode? Filter { get; set; }
-        [Key(103)] public SortFieldCollection? SortFields { get; set; }
-        // Key(104) 保留給未來 PagingOptions（見「範圍外 / 分頁」段落）。
+        [Key(100)] public string SelectFields { get; set; } = string.Empty;
+        [Key(101)] public FilterNode? Filter { get; set; }
+        [Key(102)] public SortFieldCollection? SortFields { get; set; }
+        // Key(103) 保留給未來 PagingOptions（見「範圍外 / 分頁」段落）。
         // 實作時請勿佔用此編號。
     }
 }
@@ -127,11 +132,11 @@ namespace Bee.Api.Core.Messages.Form
 }
 ```
 
-> **`[Key]` 預留約定**：本 plan 在 `GetListArgs` / `GetListRequest` 預留
-> `Key(104)`、在 `GetListResult` / `GetListResponse` 預留 `Key(101)` 給未來的
-> 分頁欄位。同樣的編號約定須一併套用在 `Bee.Business/Form/GetListArgs.cs` /
-> `GetListResult.cs` —— 雖然 BO 端的 POCO 目前不標 `[Key]`（沒有 MessagePack
-> 屬性），但若日後改成走 contract registry 對映，編號需與 wire DTO 同步。
+> **`[Key]` 預留約定**：本 plan 在 `GetListRequest` 預留 `Key(103)`、在
+> `GetListResponse` 預留 `Key(101)` 給未來的分頁欄位。同樣的編號約定須一併
+> 套用在 `Bee.Business/Form/GetListArgs.cs` / `GetListResult.cs` —— 雖然 BO 端
+> 的 POCO 目前不標 `[Key]`（沒有 MessagePack 屬性），但若日後改成走 contract
+> registry 對映，編號需與 wire DTO 同步。
 
 > 新建資料夾 `Bee.Api.Core/Messages/Form/`（既有 `Messages/System/` 同層）。
 >
@@ -172,7 +177,6 @@ namespace Bee.Business.Form
 {
     public class GetListArgs : BusinessArgs, IGetListRequest
     {
-        public string TableName { get; set; } = string.Empty;
         public string SelectFields { get; set; } = string.Empty;
         public FilterNode? Filter { get; set; }
         public SortFieldCollection? SortFields { get; set; }
@@ -247,14 +251,14 @@ private static string ResolveSelectFields(string requested, FormSchema schema)
 > 的第二條 API 路徑，造成未來分頁 plan 落地時要回頭移除截斷邏輯。呼叫端責任：
 > 以 `Filter` 控制結果量；XML `<remarks>` 段落已明示此限制。
 
-> P1 階段需確認的依賴：
-> - `FormBusinessObject` 是否已可取得 `IDefineAccess`、`IDbAccessFactory`、
->   `IFormCommandBuilderFactory`（透過 `BusinessObject.Context` / DI ctor）
-> - `IFormCommandBuilderFactory` 是否已存在；若無則本計畫**不**新建，改在
->   `GetList` 內以 `databaseType` switch 取對應 builder（與既有
->   `FormCommandBuilderIudIntegrationTests` 模式一致）。傾向新建 factory，但
->   先 P1 探勘決定。
-> - `BusinessObject.DefineAccess` 屬性是否存在；不存在則改走 `Context.DefineAccess`。
+> P0 已確認的依賴（2026-05-14）：
+> - `BusinessObject.DefineAccess` ✅ 已存在（[BusinessObject.cs:49](../../src/Bee.Business/BusinessObject.cs:49)）。
+> - `IDbAccessFactory` ✅ 已 DI 註冊，BO 透過 `Services.GetRequiredService<IDbAccessFactory>()` 取得。
+> - **不**新建 `IFormCommandBuilderFactory`：直接走既有
+>   `DbDialectRegistry.Get(databaseType).CreateFormCommandBuilder(schema, DefineAccess)`，
+>   與 `TableSchemaBuilder` / `TableUpgradeOrchestrator` 取 dialect 的方式一致。
+> - `databaseId` 解析：直接使用 `schema.CategoryId`（框架僅強制
+>   `common`==`common`；多租戶部署 host 端覆寫）。
 
 ## Client connector 包裝
 
@@ -262,14 +266,12 @@ private static string ResolveSelectFields(string requested, FormSchema schema)
 
 ```csharp
 public async Task<GetListResponse> GetListAsync(
-    string tableName = "",
     string selectFields = "",
     FilterNode? filter = null,
     SortFieldCollection? sortFields = null)
 {
     var request = new GetListRequest
     {
-        TableName = tableName,
         SelectFields = selectFields,
         Filter = filter,
         SortFields = sortFields
@@ -278,34 +280,28 @@ public async Task<GetListResponse> GetListAsync(
 }
 
 public GetListResponse GetList(
-    string tableName = "",
     string selectFields = "",
     FilterNode? filter = null,
     SortFieldCollection? sortFields = null)
-    => SyncExecutor.Run(() => GetListAsync(tableName, selectFields, filter, sortFields));
+    => SyncExecutor.Run(() => GetListAsync(selectFields, filter, sortFields));
 ```
 
 > 預設 `PayloadFormat.Encrypted`（base 預設值；對齊 GetDefine）。
 
-## ApiContractRegistry 註冊
+## ApiContractRegistry 註冊 — **不需要（P0 已釐清）**
 
-`ApiContractRegistry.Register<TContract, TApi>()` 目前在 src/ 內**尚無任何呼叫**
-（grep 結果為空），代表現行 BO 直接回傳 `GetDefineResult` 等型別走非 typed
-serialization 路徑（依賴 transformer 對未標 MessagePack attr 的物件的容忍度）。
+`ApiContractRegistry.Register<TContract, TApi>()` 在 `src/` 內**無任何呼叫**
+（僅測試檔案使用）。BO→Wire 的型別轉換由
+[ApiOutputConverter.cs:74-86](../../src/Bee.Api.Core/Conversion/ApiOutputConverter.cs:74)
+的命名慣例反射處理（`XxxResult` → `XxxResponse`，僅限 `Bee.Api.Core` assembly）。
 
-P0 探勘任務：
+`ApiContractRegistry` 是針對非慣例命名 POCO 的 fallback 機制（未實際啟用）。
+GetList 走慣例路徑即可：BO 回 `GetListResult`、Wire DTO 為 `GetListResponse`，
+名稱對齊自然 match。
 
-1. 跑一次既有 IUD 整合測試 + 開啟對應 BO method 真實 round-trip，驗證未註冊
-   contract 的物件能否正確跨 wire。
-2. 若不能 → 本計畫範圍包含建立統一註冊點（建議放在
-   `Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs` 的 `AddBeeFramework`
-   初始化路徑，集中註冊：`ILoginResponse → LoginResponse`、
-   `IGetDefineResponse → GetDefineResponse`、`IGetListResponse → GetListResponse`
-   等），並同步補齊既有對外型別。
-3. 若可（typed registry 純為可選優化）→ 本計畫**不**動 registry，只新增
-   `GetListResponse` 一條，依現行慣例。
-
-> 此處的不確定性會影響 P3 步驟的工作量；P0 探勘完成後再定 commit 切分。
+型別白名單（`SysInfo.AllowedTypeNamespaces`，[SysInfo.cs:49](../../src/Bee.Base/SysInfo.cs:49)）
+預設已含 `Bee.Api.Core` / `Bee.Business` / `Bee.Definition`，
+`SafeTypelessFormatter` 反序列化可通過 GetList 涉及之所有型別。
 
 ## 測試計畫
 
@@ -342,15 +338,34 @@ P0 探勘任務：
 
 ## 階段切分（PR 粒度）
 
-### P0：探勘（read-only，不改碼）
+### P0：探勘（read-only，不改碼）— **已完成（2026-05-14）**
 
-1. 確認 `FormBusinessObject` 可取得 `DefineAccess` / `DbAccessFactory` /
-   `FormCommandBuilderFactory`（或等價物）。
-2. 確認 `FilterNode` 是否已有 `[Union]` 設定可直接 MessagePack 序列化。
-3. 確認 `ApiContractRegistry` 是否需要呼叫 `Register<>` 才能正確跨 wire。
+1. **FormBusinessObject 取服務** ✅
+   - `BusinessObject` 已有 `DefineAccess` 屬性（透過 `IBeeContext._ctx.DefineAccess`）。
+   - `IDbAccessFactory` / `IDbConnectionManager` 已在
+     `BeeFrameworkServiceCollectionExtensions.AddBeeFramework` 註冊為 singleton；
+     BO 透過 `Services.GetRequiredService<IDbAccessFactory>()`（escape hatch）取得。
+   - `IFormCommandBuilder` 工廠：走 `DbDialectRegistry.Get(databaseType)
+     .CreateFormCommandBuilder(schema, defineAccess)`（靜態 registry，無需 DI）。
+   - **結論**：本計畫**不**需擴 `IBeeContext` 公開簽章；P2 走 `Services` 取
+     `IDbAccessFactory` + `DbDialectRegistry` 靜態取 dialect。
+2. **FilterNode union 序列化** ✅ 已預先驗證（見「已知風險」段落 #1）。
+3. **ApiContractRegistry** ✅ **不需顯式註冊**
+   - `src/` 內 0 處 `ApiContractRegistry.Register<>` 呼叫。
+   - `ApiOutputConverter`（[ApiOutputConverter.cs:74-86](../../src/Bee.Api.Core/Conversion/ApiOutputConverter.cs:74)）
+     採命名慣例反射 `XxxResult` → `XxxResponse`（限 `Bee.Api.Core` assembly），
+     自動完成 BO Result → Wire Response 的型別轉換。
+   - `SysInfo.AllowedTypeNamespaces`（[SysInfo.cs:49](../../src/Bee.Base/SysInfo.cs:49)）
+     預設已含 `Bee.Api.Core` / `Bee.Business` / `Bee.Definition`，
+     `SafeTypelessFormatter` 反序列化白名單可直接通過 GetList 涉及的所有型別。
+   - **結論**：原 P4「ApiContractRegistry 統一註冊」**不執行**（移除）。
 
-**產出**：本計畫文件 P0 補完「P1 階段需確認的依賴」段落實際狀況，並校準
-後續階段的工作量。
+**CategoryId → databaseId 路由說明**：
+- 框架僅強制 `common` 類別的 `DatabaseItem.Id == "common"`；其他類別（`company` /
+  `log`）的 Id 可在多租戶部署中分歧（`company001`、`log2025`）。
+- 本計畫 P2 採最簡實作：`databaseId = schema.CategoryId`。多租戶部署可由 host
+  override `FormBusinessObject` 並改寫 `ResolveDatabaseId`（或日後抽
+  `IDbCategoryResolver` 服務，超出本計畫範圍）。
 
 ### P1：合約層落地（單一 PR）
 
@@ -363,21 +378,81 @@ P0 探勘任務：
 
 若 P0 發現 `FilterNode` 缺 `[Union]` → 同 PR 補上（含對應序列化測試）。
 
-### P2：BO 實作（單一 PR）
+### P2：BO 實作（單一 PR）— **已完成（2026-05-14）**
 
+**設計變更 A**：BO **不**直接呼叫 `Bee.Db`，走 Repository 抽象
+(`IDataFormRepository`)。理由：`Bee.Business.csproj` 預設不依賴 `Bee.Db`
+（依 [dependency-map.md:46](../dependency-map.md:46)），FormSchema-driven CRUD
+的執行該由 Repository 層承接。
+
+**設計變更 B**：移除 `TableName` 屬性。框架已強制
+`FormSchema.MasterTable.TableName == ProgId`，GetList 永遠針對 master table，
+由 `ProgId` 決定目標表，不需在 request 上重複攜帶。Wire DTO `Key` 編號
+往下移為 `100-102`（保留 `103` 給未來分頁）。
+
+新增檔案：
 - `src/Bee.Business/Form/GetListArgs.cs`
 - `src/Bee.Business/Form/GetListResult.cs`
-- `src/Bee.Business/Form/FormBusinessObject.cs` 新增 `GetList` 方法
-- BO 端測試（P0 確認可行的 DB 子集）
 
-### P3：Client 包裝（單一 PR）
+修改檔案：
+- `src/Bee.Business/Form/FormBusinessObject.cs` 新增 `GetList`，透過
+  `Services.GetRequiredService<IFormRepositoryFactory>()` 取 Repository
+- `src/Bee.Repository.Abstractions/Form/IDataFormRepository.cs` 加
+  `GetList(tableName, selectFields, filter, sortFields) → DataTable?`
+- `src/Bee.Repository/Form/DataFormRepository.cs` 實作 GetList：
+  - ctor 注入 FormSchema / IDefineAccess / IDbAccessFactory /
+    IDbConnectionManager / databaseId
+  - `MasterTable.TableName` / `ListFields` fallback 邏輯放在 Repository（不在 BO）
+- `src/Bee.Repository/Factories/FormRepositoryFactory.cs` ctor 改注入
+  IDefineAccess / IDbAccessFactory / IDbConnectionManager；`CreateDataFormRepository`
+  解析 schema、用 `schema.CategoryId` 當 databaseId
+- `src/Bee.Hosting/BeeFrameworkServiceCollectionExtensions.cs` 把
+  `IFormRepositoryFactory` 註冊從 `CreateOrDefault`（parameterless）
+  改為 `CreateConfigurableService`（DI-aware）
 
-- `src/Bee.Api.Client/Connectors/FormApiConnector.cs` 新增 `GetListAsync` / `GetList`
-- API round-trip 測試
+測試：
+- `tests/Bee.Business.UnitTests/Form/FormBusinessObjectGetListTests.cs`
+  （SQLite + SQL Server × ExplicitSelectFields / FilterAndSort + null args）
+  — Bee.Business.UnitTests.csproj 加 `Bee.Repository` ProjectReference
+- 刪除過時的 `tests/Bee.Repository.UnitTests/DataFormRepositoryTests.cs` /
+  `FormRepositoryFactoryTests.cs`（trivial 屬性 setter 測試，重構後需 DI
+  服務才能建構、覆蓋價值低，整合測試承接）
 
-### P4（可選）：ApiContractRegistry 統一註冊
+Release build 0 warning / 0 error；SQLite + null args 測試通過
+（SQL Server 失敗為本機 Docker daemon 未啟動的環境問題，與本 plan 無關）。
 
-僅當 P0 確認 registry 路徑為必需時才執行；否則略過。
+### P3：Client 包裝（單一 PR）— **已完成（2026-05-14）**
+
+- [FormApiConnector.cs](../../src/Bee.Api.Client/Connectors/FormApiConnector.cs)
+  新增 `GetListAsync` / `GetList`，預設 `PayloadFormat.Encrypted`
+- 拆兩層 round-trip 測試：
+  - 純 wire-level：
+    [GetListMessagePackTests.cs](../../tests/Bee.Api.Core.UnitTests/Form/GetListMessagePackTests.cs)
+    驗證 `GetListRequest` 帶 `FilterGroup + FilterCondition` 巢狀 union 與
+    `GetListResponse.Table` (`DataTable`) 經 `MessagePackCodec` round-trip
+    完整還原；default 值（Filter / SortFields 皆 null）亦可正常 round-trip
+  - JsonRpcExecutor dispatch：
+    [GetListJsonRpcRoundTripTests.cs](../../tests/Bee.Api.Core.UnitTests/Form/GetListJsonRpcRoundTripTests.cs)
+    用 stub `IDataFormRepository` + `TestOverrideServiceProvider` 覆蓋 DI，
+    驗證 `Employee.GetList` 經 executor 派發到 BO method、`ApiInputConverter`
+    保留 Filter/SortFields、`ApiOutputConverter` 命名慣例反射有作用
+
+**P3 附帶修正**：[CollectionBaseFormatter.cs](../../src/Bee.Api.Core/MessagePack/CollectionBaseFormatter.cs)
+新增 nil 進 nil 出處理。原本對 nullable collection 欄位（如
+`SortFieldCollection? SortFields = null`）會 NRE，使 default `GetListRequest`
+無法序列化。本修正影響面僅限於透過 `CollectionBaseFormatter<,>` 註冊的
+collection 型別（`FilterNodeCollection` / `SortFieldCollection`），其他既有
+測試行為不變。
+
+Release build 0w/0e；5 個 wire 層測試 + 3 個 P2 BO 層測試（SQLite + null
+args）全部通過。
+
+### ~~P4（可選）：ApiContractRegistry 統一註冊~~ — **不執行**
+
+P0 探勘確認 `ApiOutputConverter` 的命名慣例反射（`XxxResult` → `XxxResponse`）
+已涵蓋 GetList round-trip 需求；`ApiContractRegistry.Register<>` 在 `src/`
+完全無 caller，現有 BO（含 `SystemBusinessObject.GetDefine`）皆以慣例路徑跨 wire。
+本計畫不引入額外 registry 註冊。
 
 ## 範圍外
 
@@ -415,12 +490,14 @@ P0 探勘任務：
    走框架 resolver，不可直接用裸 `MessagePackSerializer.Serialize(...,
    ContractlessStandardResolver.Options)` —— 後者會讓 collection 元素掉光、
    無錯誤拋出。
-2. **DbAccess / FormCommandBuilder 取得方式**：若 FormBusinessObject 尚未注入
-   對應服務（目前看起來只有 `ProgId` 屬性），需在 P2 階段擴充 BO 建構或
-   `IBeeContext` 暴露；此調整若涉及公開簽章可能會擴大本計畫範圍，需於 P0
-   評估。
-3. **ApiContractRegistry 一致性**：目前無註冊呼叫的事實若會擾動既有測試，
-   P0 須排除，避免本計畫被既有問題拖累。
+2. ~~**DbAccess / FormCommandBuilder 取得方式**~~ — **已釐清（2026-05-14）**：
+   不擴 `IBeeContext` 公開簽章；P2 透過 `BusinessObject.Services` escape hatch 取
+   `IDbAccessFactory`，並走 `DbDialectRegistry.Get(...)` 靜態 registry 取
+   dialect。`BusinessObject.DefineAccess` 已存在可直接用。
+3. ~~**ApiContractRegistry 一致性**~~ — **已釐清（2026-05-14）**：
+   `src/` 內無任何 `Register<>` 呼叫；`ApiOutputConverter` 慣例反射涵蓋
+   `GetListResult` → `GetListResponse` 的 BO→Wire 轉換；型別白名單預設已含
+   涉及之命名空間。本計畫無需動 registry。
 
 ## 為後續 session 提示的暖機資訊
 

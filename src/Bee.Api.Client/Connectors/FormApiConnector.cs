@@ -1,5 +1,8 @@
-using Bee.Definition;
 using Bee.Api.Core.Messages;
+using Bee.Api.Core.Messages.Form;
+using Bee.Definition;
+using Bee.Definition.Filters;
+using Bee.Definition.Sorting;
 
 namespace Bee.Api.Client.Connectors
 {
@@ -85,6 +88,53 @@ namespace Bee.Api.Client.Connectors
         public async Task<ExecFuncResponse> ExecFuncLocalAsync(ExecFuncRequest args)
         {
             return await ExecuteAsync<ExecFuncResponse>(SystemActions.ExecFuncLocal, args).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves list-view rows from the master table of <see cref="ProgId"/>.
+        /// </summary>
+        /// <param name="selectFields">
+        /// The comma-separated field names to retrieve; an empty value falls back to
+        /// <c>FormSchema.ListFields</c>, then to all fields.
+        /// </param>
+        /// <param name="filter">The filter condition tree; <c>null</c> for an unfiltered query.</param>
+        /// <param name="sortFields">The sort field collection; <c>null</c> uses the default ordering.</param>
+        /// <remarks>
+        /// <b>This version does NOT paginate.</b> Callers MUST supply a <paramref name="filter"/>
+        /// that bounds the result set; an unbounded query against a large table loads every
+        /// matching row into memory on both the server and the client.
+        /// </remarks>
+        public async Task<GetListResponse> GetListAsync(
+            string selectFields = "",
+            FilterNode? filter = null,
+            SortFieldCollection? sortFields = null)
+        {
+            var request = new GetListRequest
+            {
+                SelectFields = selectFields,
+                Filter = filter,
+                SortFields = sortFields,
+            };
+            return await ExecuteAsync<GetListResponse>(FormActions.GetList, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Retrieves list-view rows from the master table of <see cref="ProgId"/>.
+        /// </summary>
+        /// <param name="selectFields">
+        /// The comma-separated field names to retrieve; an empty value falls back to
+        /// <c>FormSchema.ListFields</c>, then to all fields.
+        /// </param>
+        /// <param name="filter">The filter condition tree; <c>null</c> for an unfiltered query.</param>
+        /// <param name="sortFields">The sort field collection; <c>null</c> uses the default ordering.</param>
+        public GetListResponse GetList(
+            string selectFields = "",
+            FilterNode? filter = null,
+            SortFieldCollection? sortFields = null)
+        {
+            return SyncExecutor.Run(() =>
+                GetListAsync(selectFields, filter, sortFields)
+            );
         }
     }
 }
