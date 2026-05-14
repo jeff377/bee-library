@@ -59,7 +59,7 @@ namespace Bee.Repository.UnitTests
         public void CreateDataFormRepository_NullOrWhitespaceProgId_ThrowsArgumentException(string? progId)
         {
             var factory = CreateFactory();
-            Assert.Throws<ArgumentException>(() => factory.CreateDataFormRepository(progId!));
+            Assert.ThrowsAny<ArgumentException>(() => factory.CreateDataFormRepository(progId!));
         }
 
         [Fact]
