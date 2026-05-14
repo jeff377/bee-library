@@ -1,7 +1,12 @@
 using System.ComponentModel;
+using Bee.Base.Data;
 using Bee.Db.Manager;
 using Bee.Db.Schema;
+using Bee.Definition;
 using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.Tests.Shared;
 
@@ -64,6 +69,97 @@ namespace Bee.Db.UnitTests
             var builder = NewBuilder(TestDbConventions.GetDatabaseId(DatabaseType.PostgreSQL, "company"));
             string sql = builder.GetCommandText("company", "ft_project");
             Assert.Equal(string.Empty, sql);
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("TableSchemaBuilder GetCommandText SQL Server 有欄位差異時應回傳非空 SQL 升級指令")]
+        public void GetCommandText_SchemaDrift_SqlServer_ReturnsNonEmptySql()
+        {
+            const string tableName = "zz_tsb_getcommand_test";
+            const string databaseId = "common_sqlserver";
+            var db = _fx.NewDbAccess(databaseId);
+            db.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                $"IF OBJECT_ID(N'{tableName}', N'U') IS NOT NULL DROP TABLE [{tableName}]; " +
+                $"CREATE TABLE [{tableName}] ([sys_rowid] uniqueidentifier NOT NULL, " +
+                $"CONSTRAINT [pk_{tableName}] PRIMARY KEY ([sys_rowid]));"));
+            try
+            {
+                var builder = new TableSchemaBuilder(
+                    databaseId,
+                    new StubDefineAccess(BuildDriftSchema(tableName)),
+                    _fx.GetRequiredService<IDbConnectionManager>());
+
+                string sql = builder.GetCommandText("test", tableName);
+
+                Assert.NotEmpty(sql);
+            }
+            finally
+            {
+                db.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"IF OBJECT_ID(N'{tableName}', N'U') IS NOT NULL DROP TABLE [{tableName}];"));
+            }
+        }
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("TableSchemaBuilder GetCommandText PostgreSQL 有欄位差異時應回傳非空 SQL 升級指令")]
+        public void GetCommandText_SchemaDrift_PostgreSql_ReturnsNonEmptySql()
+        {
+            const string tableName = "zz_tsb_getcommand_test";
+            const string databaseId = "common_postgresql";
+            var db = _fx.NewDbAccess(databaseId);
+            db.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                $"DROP TABLE IF EXISTS {tableName}; " +
+                $"CREATE TABLE {tableName} (sys_rowid uuid NOT NULL, " +
+                $"CONSTRAINT pk_{tableName} PRIMARY KEY (sys_rowid));"));
+            try
+            {
+                var builder = new TableSchemaBuilder(
+                    databaseId,
+                    new StubDefineAccess(BuildDriftSchema(tableName)),
+                    _fx.GetRequiredService<IDbConnectionManager>());
+
+                string sql = builder.GetCommandText("test", tableName);
+
+                Assert.NotEmpty(sql);
+            }
+            finally
+            {
+                db.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    $"DROP TABLE IF EXISTS {tableName};"));
+            }
+        }
+
+        private static TableSchema BuildDriftSchema(string tableName)
+        {
+            var schema = new TableSchema { TableName = tableName };
+            schema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            schema.Fields!.Add("name", "Name", FieldDbType.String, 50);
+            schema.Indexes!.AddPrimaryKey(SysFields.RowId);
+            return schema;
+        }
+
+        private sealed class StubDefineAccess : IDefineAccess
+        {
+            private readonly TableSchema _schema;
+            public StubDefineAccess(TableSchema schema) { _schema = schema; }
+
+            public TableSchema GetTableSchema(string categoryId, string tableName) => _schema;
+
+            public object GetDefine(DefineType defineType, string[]? keys = null) => throw new NotSupportedException();
+            public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null) => throw new NotSupportedException();
+            public SystemSettings GetSystemSettings() => throw new NotSupportedException();
+            public void SaveSystemSettings(SystemSettings settings) => throw new NotSupportedException();
+            public DatabaseSettings GetDatabaseSettings() => throw new NotSupportedException();
+            public void SaveDatabaseSettings(DatabaseSettings settings) => throw new NotSupportedException();
+            public ProgramSettings GetProgramSettings() => throw new NotSupportedException();
+            public void SaveProgramSettings(ProgramSettings settings) => throw new NotSupportedException();
+            public DbCategorySettings GetDbCategorySettings() => throw new NotSupportedException();
+            public void SaveDbCategorySettings(DbCategorySettings settings) => throw new NotSupportedException();
+            public void SaveTableSchema(string categoryId, TableSchema tableSchema) => throw new NotSupportedException();
+            public FormSchema GetFormSchema(string progId) => throw new NotSupportedException();
+            public void SaveFormSchema(FormSchema formSchema) => throw new NotSupportedException();
+            public FormLayout GetFormLayout(string layoutId) => throw new NotSupportedException();
+            public void SaveFormLayout(FormLayout formLayout) => throw new NotSupportedException();
         }
     }
 }
