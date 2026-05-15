@@ -6,6 +6,12 @@ namespace Bee.Business.System
     public interface ISystemBusinessObject : IBusinessObject
     {
         /// <summary>
+        /// Performs the login operation.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        LoginResult Login(LoginArgs args);
+
+        /// <summary>
         /// Creates a new user session.
         /// </summary>
         /// <param name="args">The input arguments.</param>
