@@ -1,6 +1,6 @@
 # 計畫：bo repo 三類資料庫存取路由
 
-**狀態：✅ 設計已確認，待執行**
+**狀態：✅ 已完成（2026-05-15）**
 
 > **前置 plan**：[plan-system-bo-session-lifecycle.md](plan-system-bo-session-lifecycle.md)（已完成）
 > 本 plan 依賴前置 plan 提供的 `SessionInfo.CompanyId`、`CompanyInfo`、`ICompanyInfoService`。
@@ -325,12 +325,12 @@ services.AddSingleton<IRepositoryDatabaseRouter, RepositoryDatabaseRouter>();
 
 | Phase | 內容 | 狀態 |
 |-------|------|------|
-| **P0** | 探勘：grep 找所有 `CreateDataFormRepository(` 與 `IDbAccessFactory.Create(` 的 caller | 待執行 |
-| **P1** | 新增 `DbScope` enum + `IRepositoryDatabaseRouter` 介面 + 實作 + DI 註冊 + 單元測試 | 待執行 |
-| **P2** | `IFormRepositoryFactory` 介面變更（加 `accessToken`）+ `FormRepositoryFactory` 內部 string → enum 轉換並呼叫 router | 待執行 |
-| **P3** | `BusinessObject` 加 helper（`ResolveDatabaseId(DbScope)` + `CreateDataFormRepository(progId)`） | 待執行 |
-| **P4** | 遷移既有 caller（`FormBusinessObject.GetList` 等），更新測試簽名 | 待執行 |
-| **P5** | 整合測試驗證 router 在實際 BO + DB 路徑下行為正確（既有測試環境的 categoryId 路由 + 多 CompanyInfo 配置情境） | 待執行 |
+| **P0** | 探勘：grep 找所有 `CreateDataFormRepository(` 與 `IDbAccessFactory.Create(` 的 caller | ✅ 已完成（2026-05-15） |
+| **P1** | 新增 `DbScope` enum + `IRepositoryDatabaseRouter` 介面 + 實作 + DI 註冊 + 單元測試 | ✅ 已完成（2026-05-15） |
+| **P2** | `IFormRepositoryFactory` 介面變更（加 `accessToken`）+ `FormRepositoryFactory` 內部 string → enum 轉換並呼叫 router | ✅ 已完成（2026-05-15） |
+| **P3** | `BusinessObject` 加 helper（`ResolveDatabaseId(DbScope)` + `CreateDataFormRepository(progId)`） | ✅ 已完成（2026-05-15） |
+| **P4** | 遷移既有 caller（`FormBusinessObject.GetList` 等），更新測試簽名 | ✅ 已完成（2026-05-15） |
+| **P5** | 整合測試驗證 router 在實際 BO + DB 路徑下行為正確（既有 `FormBusinessObjectGetListTests` 走完整路徑通過 → 隱性驗證；多 CompanyInfo 場景由 `RepositoryDatabaseRouterTests` 涵蓋） | ✅ 已完成（2026-05-15） |
 
 ## 測試策略
 
