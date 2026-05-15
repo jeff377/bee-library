@@ -76,6 +76,14 @@ namespace Bee.Definition.Settings
         public string SessionInfoService { get; set; } = BackendDefaultTypes.SessionInfoService;
 
         /// <summary>
+        /// Company info service type.
+        /// </summary>
+        [Category("Service")]
+        [Description("Company info service type.")]
+        [DefaultValue(BackendDefaultTypes.CompanyInfoService)]
+        public string CompanyInfoService { get; set; } = BackendDefaultTypes.CompanyInfoService;
+
+        /// <summary>
         /// Unified access service type for commonly used enterprise business objects.
         /// </summary>
         [Category("Service")]

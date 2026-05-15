@@ -266,7 +266,7 @@ Login → EnterCompany(A) → 業務呼叫 → EnterCompany(B) → LeaveCompany 
 | Phase | 內容 | 狀態 |
 |-------|------|------|
 | **P1** | 共用基礎：`SessionInfo.CompanyId` 欄位、`CompanyInfo` 類別、`SystemActions` 常數、錯誤碼定義 | ✅ 已完成（2026-05-15） |
-| **P2** | CompanyInfo 快取層：`ICompanyInfoService` + 註冊 + `ICacheContainer.CompanyInfo` | 待執行 |
+| **P2** | CompanyInfo 快取層：`ICompanyInfoService` + 註冊 + `ICacheContainer.CompanyInfo` | ✅ 已完成（2026-05-15） |
 | **P3** | `EnterCompany` 方法（含 contract / wire / BO / client / 測試）；權限驗證點留 TODO | 待執行 |
 | **P4** | `LeaveCompany` 方法（同上） | 待執行 |
 | **P5** | `Logout` 方法（同上） | 待執行 |

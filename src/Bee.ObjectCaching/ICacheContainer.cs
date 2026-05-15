@@ -4,7 +4,7 @@ using Bee.ObjectCaching.Define;
 namespace Bee.ObjectCaching
 {
     /// <summary>
-    /// Exposes the eight cache instances managed by the framework. Consumers ctor-inject
+    /// Exposes the nine cache instances managed by the framework. Consumers ctor-inject
     /// <see cref="ICacheContainer"/>; the implementation is supplied by
     /// <see cref="CacheContainerService"/> registered as a Singleton by
     /// <c>AddBeeFramework</c>.
@@ -34,5 +34,8 @@ namespace Bee.ObjectCaching
 
         /// <summary>The session information cache, keyed by access token.</summary>
         SessionInfoCache SessionInfo { get; }
+
+        /// <summary>The company information cache, keyed by company id.</summary>
+        CompanyInfoCache CompanyInfo { get; }
     }
 }

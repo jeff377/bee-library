@@ -96,6 +96,9 @@ namespace Bee.Hosting
             services.AddSingleton<ISessionInfoService>(sp =>
                 CreateConfigurableService<ISessionInfoService>(sp,
                     components.SessionInfoService, BackendDefaultTypes.SessionInfoService));
+            services.AddSingleton<ICompanyInfoService>(sp =>
+                CreateConfigurableService<ICompanyInfoService>(sp,
+                    components.CompanyInfoService, BackendDefaultTypes.CompanyInfoService));
             services.AddSingleton<ICacheDataSourceProvider>(sp =>
                 CreateConfigurableService<ICacheDataSourceProvider>(sp,
                     components.CacheDataSourceProvider, BackendDefaultTypes.CacheDataSourceProvider));
