@@ -58,7 +58,9 @@ This document provides a standard term reference for technical writing, ensuring
 | `DbCategorySettings` | 資料庫類別設定 | A collection managing all logical database categories (common / company / log) |
 | `DbCategory` | 資料庫類別 | A logical database category node, with `Id` ("common" / "company", etc.) and the list of tables it owns |
 | `PathOptions` | 定義檔案路徑選項 | DI-injected options that provide standardized paths for definition files (FormSchema, TableSchema, etc.) |
-| `SessionInfo` | 連線資訊 | Runtime user session state, including AccessToken, locale, time zone |
+| `SessionInfo` | 連線資訊 | Runtime user session state, including AccessToken, UserId, locale, time zone, and `CompanyId` (nullable; set by `EnterCompany`, cleared by `LeaveCompany` / `Logout`) |
+| `CompanyInfo` | 公司資訊 | Metadata describing a company the user may enter for a session: `CompanyId`, `CompanyName`, `CompanyDatabaseId` (the `DatabaseSettings` id used for the `company` category during this session) |
+| `DbScope` | 資料庫範疇 | Type-safe enum representing a bo repo's database access intent: `Common` / `Company` / `Log`. Decoupled from `schema.CategoryId` (the string XML attribute) — same three values but the enum is the runtime intent passed to `IRepositoryDatabaseRouter` |
 | `SortField` | 排序欄位 | A single sort field, with field name and direction |
 | `SortFieldCollection` | 排序欄位集合 | A collection of multiple SortFields |
 
@@ -130,6 +132,8 @@ This document provides a standard term reference for technical writing, ensuring
 |---------|------|-------------|
 | `IDataFormRepository` | 資料表單 Repository 介面 | FormSchema-driven CRUD operations (auto-generated SQL) |
 | `IReportFormRepository` | 報表表單 Repository 介面 | For complex queries and reporting; SQL implemented by BO (AnyCode) |
+| `IRepositoryDatabaseRouter` | Repository 資料庫路由介面 | Resolves the physical `databaseId` for a given `DbScope` and access token. `Common` / `Log` map to fixed databaseIds; `Company` resolves via `SessionInfo.CompanyId` → `CompanyInfo.CompanyDatabaseId` |
+| `IFormRepositoryFactory` | 表單 Repository 工廠介面 | Creates form-level repositories. `CreateDataFormRepository(progId, accessToken)` reads the form schema, converts `CategoryId` to `DbScope`, and delegates routing to the router |
 
 ---
 
@@ -161,10 +165,12 @@ This document provides a standard term reference for technical writing, ensuring
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `ICacheContainer` | 快取容器介面 | DI-registered container that centrally holds all cache singletons (FormSchema, TableSchema, DatabaseSettings, etc.); default implementation `CacheContainerService` |
+| `ICacheContainer` | 快取容器介面 | DI-registered container that centrally holds all cache singletons (FormSchema, TableSchema, DatabaseSettings, SessionInfo, CompanyInfo, etc.); default implementation `CacheContainerService` |
 | `LocalDefineAccess` | 本機定義存取 | Implementation that accesses definition data via local cache |
 | `FormSchemaCache` | 表單結構定義快取 | Cache container for `FormSchema` objects |
-| `KeyObjectCache<T>` | 鍵值物件快取 | Generic base class for object caches indexed by key |
+| `KeyObjectCache<T>` | 鍵值物件快取 | Generic base class for object caches indexed by key. Includes negative caching: `CreateInstance` returning null is recorded as a sentinel for a short TTL (default 5 min absolute), so repeated lookups of unknown keys do not re-invoke the create path |
+| `ISessionInfoService` | Session 資訊服務介面 | Access wrapper around `SessionInfoCache`; populated by `Login`, mutated by `EnterCompany` / `LeaveCompany`, removed by `Logout` |
+| `ICompanyInfoService` | 公司資訊服務介面 | Access wrapper around `CompanyInfoCache`; consumed by `IRepositoryDatabaseRouter` to resolve `DbScope.Company` |
 
 ---
 

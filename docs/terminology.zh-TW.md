@@ -58,7 +58,9 @@
 | `DbCategorySettings` | 資料庫類別設定 | 管理所有邏輯資料庫類別（common / company / log）的設定集合 |
 | `DbCategory` | 資料庫類別 | 邏輯資料庫類別節點，含 `Id`（"common" / "company" 等）與所屬資料表清單 |
 | `PathOptions` | 定義檔案路徑選項 | DI 注入的 options，提供各類定義檔（FormSchema、TableSchema 等）的標準路徑 |
-| `SessionInfo` | 連線資訊 | 執行期用戶連線狀態，含 AccessToken、語系、時區 |
+| `SessionInfo` | 連線資訊 | 執行期用戶連線狀態，含 AccessToken、UserId、語系、時區，以及 `CompanyId`（nullable；由 `EnterCompany` 寫入、由 `LeaveCompany` / `Logout` 清除） |
+| `CompanyInfo` | 公司資訊 | 描述使用者可進入之公司的中繼資料：`CompanyId`、`CompanyName`、`CompanyDatabaseId`（該公司 session 期間使用的 `company` 類 `DatabaseSettings` id） |
+| `DbScope` | 資料庫範疇 | 型別安全 enum，表達 bo repo 的資料庫存取意圖：`Common` / `Company` / `Log`。與 `schema.CategoryId`（XML 字串屬性）**概念脫勾**——值對應一致，但 enum 是傳給 `IRepositoryDatabaseRouter` 的執行時意圖 |
 | `SortField` | 排序欄位 | 單一排序欄位，含欄位名稱與方向 |
 | `SortFieldCollection` | 排序欄位集合 | 多個 SortField 的集合 |
 
@@ -130,6 +132,8 @@
 |----------|----------|------|
 | `IDataFormRepository` | 資料表單 Repository 介面 | FormSchema 驅動的 CRUD 操作（自動產生 SQL） |
 | `IReportFormRepository` | 報表表單 Repository 介面 | 複雜查詢與報表用，由 BO 自行實作 SQL（AnyCode） |
+| `IRepositoryDatabaseRouter` | Repository 資料庫路由介面 | 從 `DbScope` 與 access token 解析出實際 `databaseId`。`Common` / `Log` 對映固定 databaseId；`Company` 透過 `SessionInfo.CompanyId` → `CompanyInfo.CompanyDatabaseId` 解析 |
+| `IFormRepositoryFactory` | 表單 Repository 工廠介面 | 建立 form-level repository。`CreateDataFormRepository(progId, accessToken)` 讀取 schema、把 `CategoryId` 轉成 `DbScope`、再委派給 router 解析 databaseId |
 
 ---
 
@@ -161,10 +165,12 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `ICacheContainer` | 快取容器介面 | DI 註冊的容器，集中持有所有快取單例（FormSchema、TableSchema、DatabaseSettings 等）；預設實作為 `CacheContainerService` |
+| `ICacheContainer` | 快取容器介面 | DI 註冊的容器，集中持有所有快取單例（FormSchema、TableSchema、DatabaseSettings、SessionInfo、CompanyInfo 等）；預設實作為 `CacheContainerService` |
 | `LocalDefineAccess` | 本機定義存取 | 透過本機快取存取定義資料的實作 |
 | `FormSchemaCache` | 表單結構定義快取 | `FormSchema` 物件的快取容器 |
-| `KeyObjectCache<T>` | 鍵值物件快取 | 以鍵值為索引的泛型物件快取基礎類別 |
+| `KeyObjectCache<T>` | 鍵值物件快取 | 以鍵值為索引的泛型物件快取基礎類別。內含負向快取：`CreateInstance` 回 null 時記入哨兵值並設短 TTL（預設 5 分鐘絕對過期），避免重複查詢同一無效 key 反覆觸發 create 路徑 |
+| `ISessionInfoService` | Session 資訊服務介面 | `SessionInfoCache` 的存取包裝；由 `Login` 寫入、`EnterCompany` / `LeaveCompany` 變動、`Logout` 移除 |
+| `ICompanyInfoService` | 公司資訊服務介面 | `CompanyInfoCache` 的存取包裝；由 `IRepositoryDatabaseRouter` 消費以解析 `DbScope.Company` |
 
 ---
 

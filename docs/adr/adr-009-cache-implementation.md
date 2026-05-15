@@ -97,8 +97,41 @@ Bee.NET 為純 .NET 10 新框架、未發佈、無相容包袱，適合一次完
 4. **直接導入 DI（`IServiceCollection.AddMemoryCache()`）**
    - 拒絕原因：與 Bee.NET 既有 service-locator 模式（`CacheInfo.Provider`）不一致；屬另一個重構議題
 
+## 後續延伸：負向快取（2026-05-15）
+
+`KeyObjectCache<T>.Get` 原本對「`CreateInstance` 回 null」的結果**不寫入**快取——下次同一個 key 再來會穿透到資料源（檔案 IO / DB 查詢）。攻擊者送無效 key、程式 bug 用錯誤 key、上層忘記前置檢查都會放大這個 cache penetration 問題。
+
+[`plan-keyobjectcache-negative-cache`](../plans/plan-keyobjectcache-negative-cache.md) 引入負向快取：
+
+### 設計要點
+
+- **`MissMarker` 哨兵**：`KeyObjectCacheSentinel.MissMarker` 為單一 process-wide `object` 實例（非泛型 static 避免 [S2743]：每個 closed type 都建立獨立哨兵的浪費）。Cache miss 後若 `CreateInstance` 回 null，寫入此哨兵；`Get` 命中哨兵時直接回 null，不再呼叫 `CreateInstance`
+- **`GetNegativePolicy(key)` virtual 方法**：預設 5 分鐘**絕對**過期（比正向快取 20 分鐘 sliding 短；絕對過期確保攻擊者反覆戳同 key 不會延長 TTL）。子類 override 回 null 即停用負向快取
+- **`Set` / `Remove` 行為不變**：同一個 cacheKey 寫入正向值或 `Remove` 自然覆蓋 / 清除哨兵，不需特別處理
+
+### `SessionInfoCache` 例外停用
+
+`SessionInfoCache.CreateInstance` 永遠回 null（session 入 cache 只走 `Login` 的 `Set` 路徑、不從 backing store 重建）。若啟用負向快取，匿名流量會用任意 access token 灌出大量 marker entry 但無實際保護價值——session lookup 對未知 token 本來就 fast-return null。`SessionInfoCache` override `GetNegativePolicy` 回 null 停用。
+
+其他 `KeyObjectCache<T>` 子類（`FormSchemaCache` / `TableSchemaCache` / `FormLayoutCache`）的 `CreateInstance` 會讀檔，反覆讀無效檔名是真實放大風險，**保留預設**負向快取。
+
+### 對外 API 變更
+
+| 對象 | 變更 |
+|------|------|
+| `KeyObjectCache<T>.GetNegativePolicy(string key)` | **新增** virtual method，預設回 5 分鐘 absolute TTL；回 null 停用負向快取 |
+| `KeyObjectCacheSentinel`（internal） | **新增** static class 持有單一 `MissMarker` 實例 |
+| `KeyObjectCache<T>.Get(string key)` | 行為變更：cache miss + `CreateInstance` 回 null 時，依 `GetNegativePolicy` 決定是否寫入哨兵；命中哨兵直接回 null |
+| `Set` / `Remove` | 行為不變 |
+
+### 已知影響
+
+- 第二次查詢已知不存在的 key 不再觸發 `CreateInstance`，預設 5 分鐘內穩定回 null
+- 既有測試若依賴「`CreateInstance` 每次都被呼叫」的副作用會 fail；本次落地時順帶修正 `KeyObjectCacheTests` 的相關預期
+
 ## 相關文件
 
 - 計畫：[`plan-cache-migration.md`](../plans/plan-cache-migration.md)
+- 計畫：[`plan-keyobjectcache-negative-cache.md`](../plans/plan-keyobjectcache-negative-cache.md)
 - 套件 README：[`src/Bee.ObjectCaching/README.md`](../../src/Bee.ObjectCaching/README.md)
-- 相關 commit：[`8099d03`](https://github.com/jeff377/bee-library/commit/8099d03)（移除 `DbChangeMonitor` placeholder）
+- 相關 commit：[`8099d03`](https://github.com/jeff377/bee-library/commit/8099d03)（移除 `DbChangeMonitor` placeholder）、[`715c159e`](https://github.com/jeff377/bee-library/commit/715c159e)（負向快取）
