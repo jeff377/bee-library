@@ -28,6 +28,12 @@ namespace Bee.ObjectCaching
         #endregion
 
         /// <summary>
+        /// Sentinel stored in the cache to mark keys whose <see cref="CreateInstance"/>
+        /// returned <c>null</c>. Distinguished from cached values by reference equality.
+        /// </summary>
+        private static readonly object MissMarker = new();
+
+        /// <summary>
         /// Gets the cache item expiration policy.
         /// </summary>
         /// <param name="key">The member key.</param>
@@ -36,6 +42,25 @@ namespace Bee.ObjectCaching
             // Default: sliding expiration of 20 minutes
             var policy = new CacheItemPolicy(CacheTimeKind.SlidingTime, 20);
             return policy;
+        }
+
+        /// <summary>
+        /// Gets the cache item expiration policy applied when <see cref="CreateInstance"/>
+        /// returns <c>null</c> (negative caching).
+        /// </summary>
+        /// <remarks>
+        /// Returning a non-null policy stores a sentinel marker for the key, so subsequent
+        /// <see cref="Get"/> calls within the policy's lifetime return <c>null</c> without
+        /// invoking <see cref="CreateInstance"/> again. This guards against repeated lookups
+        /// of keys whose underlying data does not exist (cache penetration).
+        /// Return <c>null</c> to disable negative caching for this cache type.
+        /// </remarks>
+        /// <param name="key">The member key.</param>
+        protected virtual CacheItemPolicy? GetNegativePolicy(string key)
+        {
+            // Default: 5-minute absolute expiration, shorter than the positive policy so
+            // real data created externally becomes visible within a bounded delay.
+            return new CacheItemPolicy(CacheTimeKind.AbsoluteTime, 5);
         }
 
         /// <summary>
@@ -63,17 +88,24 @@ namespace Bee.ObjectCaching
         /// <param name="key">The member key.</param>
         public virtual T? Get(string key)
         {
-            // Get the cache key
             string cacheKey = GetCacheKey(key);
-            // Return the cached object if it already exists in the cache
-            if (CacheInfo.Provider.Get(cacheKey) is T cached)
-                return cached;
+            var cached = CacheInfo.Provider.Get(cacheKey);
 
-            // Create and insert the object into the cache, then return it
+            // Negative cache hit: short-circuit without invoking CreateInstance.
+            if (ReferenceEquals(cached, MissMarker))
+                return null;
+
+            if (cached is T t)
+                return t;
+
             var value = CreateInstance(key);
             if (value != null)
             {
-                CacheInfo.Provider.Set(cacheKey, value!, GetPolicy(key));
+                CacheInfo.Provider.Set(cacheKey, value, GetPolicy(key));
+            }
+            else if (GetNegativePolicy(key) is { } negPolicy)
+            {
+                CacheInfo.Provider.Set(cacheKey, MissMarker, negPolicy);
             }
             return value;
         }

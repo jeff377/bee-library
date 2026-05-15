@@ -18,11 +18,16 @@ namespace Bee.ObjectCaching.UnitTests
         {
             private readonly string _prefix;
             private readonly Func<string, KeyedPayload?> _factory;
+            private readonly bool _disableNegativeCache;
 
-            public StubKeyObjectCache(string prefix, Func<string, KeyedPayload?> factory)
+            public StubKeyObjectCache(
+                string prefix,
+                Func<string, KeyedPayload?> factory,
+                bool disableNegativeCache = false)
             {
                 _prefix = prefix;
                 _factory = factory;
+                _disableNegativeCache = disableNegativeCache;
             }
 
             public int CreateInstanceCallCount { get; private set; }
@@ -35,6 +40,9 @@ namespace Bee.ObjectCaching.UnitTests
                 CreateInstanceCallCount++;
                 return _factory(key);
             }
+
+            protected override CacheItemPolicy? GetNegativePolicy(string key)
+                => _disableNegativeCache ? null : base.GetNegativePolicy(key);
         }
 
         // 不實作 IKeyObject，測試 Set(value) 的例外路徑
@@ -62,14 +70,62 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("CreateInstance 回傳 null 時不應寫入快取")]
-        public void Get_CreateInstanceReturnsNull_DoesNotCache()
+        [DisplayName("CreateInstance 回 null 時，第二次 Get 應命中 negative cache 不再呼叫 CreateInstance")]
+        public void Get_CreateInstanceReturnsNull_CachesNegativeMarker()
         {
             var prefix = Guid.NewGuid().ToString("N");
             var cache = new StubKeyObjectCache(prefix, _ => null);
 
             Assert.Null(cache.Get("missing"));
             Assert.Null(cache.Get("missing"));
+            Assert.Equal(1, cache.CreateInstanceCallCount);
+
+            cache.Remove("missing");
+        }
+
+        [Fact]
+        [DisplayName("GetNegativePolicy 回 null 時停用 negative cache，每次 Get 都重呼 CreateInstance")]
+        public void Get_GetNegativePolicyReturnsNull_DoesNotCacheMiss()
+        {
+            var prefix = Guid.NewGuid().ToString("N");
+            var cache = new StubKeyObjectCache(prefix, _ => null, disableNegativeCache: true);
+
+            Assert.Null(cache.Get("missing"));
+            Assert.Null(cache.Get("missing"));
+            Assert.Equal(2, cache.CreateInstanceCallCount);
+        }
+
+        [Fact]
+        [DisplayName("Set 應覆寫 negative marker，後續 Get 取得真實物件")]
+        public void Set_OverwritesNegativeMarker()
+        {
+            var prefix = Guid.NewGuid().ToString("N");
+            var cache = new StubKeyObjectCache(prefix, _ => null);
+            var payload = new KeyedPayload { Id = "key", Value = "v" };
+
+            Assert.Null(cache.Get("key"));
+            Assert.Equal(1, cache.CreateInstanceCallCount);
+
+            cache.Set("key", payload);
+            Assert.Same(payload, cache.Get("key"));
+            Assert.Equal(1, cache.CreateInstanceCallCount);
+
+            cache.Remove("key");
+        }
+
+        [Fact]
+        [DisplayName("Remove 應清除 negative marker，下次 Get 重新呼叫 CreateInstance")]
+        public void Remove_ClearsNegativeMarker()
+        {
+            var prefix = Guid.NewGuid().ToString("N");
+            var cache = new StubKeyObjectCache(prefix, _ => null);
+
+            Assert.Null(cache.Get("key"));
+            Assert.Equal(1, cache.CreateInstanceCallCount);
+
+            cache.Remove("key");
+
+            Assert.Null(cache.Get("key"));
             Assert.Equal(2, cache.CreateInstanceCallCount);
         }
 
