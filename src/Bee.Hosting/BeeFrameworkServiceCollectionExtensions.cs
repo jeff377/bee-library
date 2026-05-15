@@ -10,6 +10,8 @@ using Bee.Definition.Identity;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
+using Bee.Repository;
+using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.Factories;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -122,6 +124,7 @@ namespace Bee.Hosting
 
             // 9. Repository factories — consumed via ctor injection (PR 5.3a dropped the
             //    RepositoryInfo static + bootstrapper).
+            services.AddSingleton<IRepositoryDatabaseRouter, RepositoryDatabaseRouter>();
             services.AddSingleton<ISystemRepositoryFactory>(sp =>
                 CreateConfigurableService<ISystemRepositoryFactory>(sp,
                     components.SystemRepositoryFactory, BackendDefaultTypes.SystemRepositoryFactory));
