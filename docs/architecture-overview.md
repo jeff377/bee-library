@@ -214,32 +214,42 @@ DataSet is purely a **data container** and contains no business logic whatsoever
 ### Typical Method Structure
 
 ```csharp
-public class SalesOrderBO
+public class SalesOrderBO : BusinessObject
 {
-    // CRUD: via FormSchema-driven Repository
+    // CRUD: via FormSchema-driven Repository (auto-routed to the right DB)
     public void Save(DataSet ds)
     {
         // 1. Validate DataSet data based on FormSchema
-        // 2. Call FormSchema-driven Repository to execute INSERT / UPDATE
+        // 2. Use the BO base helper — DB routing is automatic
+        var repository = CreateDataFormRepository(ProgId);
+        // 3. Repository executes INSERT / UPDATE on the resolved database
     }
 
-    public void Delete(DataSet ds) { ... }
-
-    // Reports: BO implements directly with full control
+    // Reports: BO selects DB scope explicitly, implements SQL directly
     public DataSet GetSalesSummaryReport(ReportFilter filter)
     {
-        // Write complex SQL or call Stored Procedure directly
-    }
-
-    // Batch: BO implements directly, controlling transaction and batching logic
-    public void BatchUpdatePrices(IEnumerable<PriceRule> rules)
-    {
-        // Custom transaction boundaries, error compensation strategies
+        var dbId = ResolveDatabaseId(DbScope.Company);   // type-safe, no magic string
+        var repo = new SalesReportRepo(
+            Services.GetRequiredService<IDbAccessFactory>(), dbId);
+        // ... custom SQL via repo
     }
 }
 ```
 
 A single BO can mix both Repository strategies; the caller does not need to know which track is used underneath.
+
+### Session Lifecycle and Database Scope
+
+BO method execution is bracketed by a two-phase session lifecycle (see [ADR-012](adr/adr-012-session-company-context.md)):
+
+```
+Login(account, password)   ──→  Logged-in (SessionInfo.CompanyId = null)
+EnterCompany(companyId)    ──→  In-company (SessionInfo.CompanyId = ...)
+LeaveCompany()             ──→  back to Logged-in
+Logout()                   ──→  Session destroyed (implicitly clears CompanyId)
+```
+
+Three logical database scopes (`DbScope.Common` / `DbScope.Log` / `DbScope.Company`) map to physical databases via `IRepositoryDatabaseRouter`. `Common` and `Log` route to fixed databaseIds and can be used pre-EnterCompany; `Company` requires the session to have entered a company.
 
 ---
 

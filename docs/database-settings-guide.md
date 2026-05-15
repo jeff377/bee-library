@@ -400,13 +400,21 @@ Application code chooses `databaseId` based on "which logical category the data 
 | Log writes | log | Year-based archival | The `log_YYYY` for the current year (e.g. `$"log_{DateTime.UtcNow.Year}"`) |
 | Log cross-year queries | log | Year-based archival | Multiple DatabaseIds for the year range, queried separately and aggregated |
 
-Regardless of the underlying scenario, the application always uses the same entry `IDatabaseSettingsProvider.GetItem(databaseId)`; the only difference is "how to derive the databaseId string from the current context":
+Regardless of the underlying scenario, the application always uses the same entry `IDatabaseSettingsProvider.GetItem(databaseId)`; the only difference is "how to derive the databaseId string from the current context".
 
-- Scenarios 1, 2: fixed mapping (category → DatabaseId), can be written as constants
-- Scenarios 3, 4: requires the current context (tenant id, operation time, etc.); the framework does not provide a context → databaseId mapping mechanism — the application layer maintains it and derives the DatabaseId on its own
-- Aggregating across multiple DatabaseItems (e.g. log cross-year queries) is coordinated by the application layer via multiple connection retrievals and merging the results
+For bo repos (the BO-layer Repositories) the framework provides `IRepositoryDatabaseRouter` (see [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md)) so that BO code does not have to derive the databaseId by hand:
 
-CategoryId and DbCategorySettings are used only at the design phase (§5.1–5.2) and the deployment phase (§5.3) described above.
+| Source | How the databaseId is derived |
+|--------|------------------------------|
+| `DbScope.Common` | Fixed string `"common"` (no session required) |
+| `DbScope.Log` | Fixed string `"log"` (no session required; `Login` / `Logout` etc. can write audit log pre-EnterCompany) |
+| `DbScope.Company` | `SessionInfo.CompanyId` (set by `EnterCompany`) → `CompanyInfo.CompanyDatabaseId` (looked up from `ICompanyInfoService`) |
+
+BO methods consume the router via `BusinessObject.ResolveDatabaseId(DbScope)` or, for FormSchema-driven CRUD, the `CreateDataFormRepository(progId)` helper which routes automatically based on the schema's `CategoryId`.
+
+Cross-DatabaseItem aggregation (e.g. log year-range queries) and explicit archive access (e.g. reading `log_2024`) are not part of the default routing path — the application layer specifies the target databaseId directly and creates a custom bo repo via `IDbAccessFactory`.
+
+CategoryId and DbCategorySettings are used only at the design phase (§5.1–5.2) and the deployment phase (§5.3) described above. At runtime, BO methods speak in terms of `DbScope` (the runtime access intent) rather than CategoryId strings.
 
 ---
 

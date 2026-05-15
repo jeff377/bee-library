@@ -33,6 +33,8 @@
 |----------|------|----------|
 | API 層直接引用 Repository 層 | 違反分層架構 | 透過 Business Object 間接存取 |
 | Business Object 直接建立 `DbConnection` | 繞過連線管理與日誌 | 使用 `DbAccess` 類別 |
+| BO 引用 `Bee.Db`（`Bee.Business.csproj` 無 `Bee.Db` 的 `ProjectReference`） | BO 是業務邏輯的薄殼，資料存取屬於 Repository | FormSchema-driven CRUD → `IDataFormRepository`；自訂查詢 → 自訂 bo repo 配合 `IDbAccessFactory` |
+| BO 寫死 `databaseId` 字串或直接讀 `SessionInfo.CompanyId` / `CompanyInfo` | 將 BO 與路由實作耦合；部署設定變更時會壞 | 使用 `BusinessObject.ResolveDatabaseId(DbScope)`（自訂 bo repo）或 `CreateDataFormRepository(progId)`（FormSchema CRUD）；helper 內部委派給 `IRepositoryDatabaseRouter`，這是單一真相來源 |
 | Client 端從 DI 容器解析 Repository 服務 | 僅限 Server 端使用 | 透過 `ApiConnector` 呼叫 API |
 | 跳過 Payload Pipeline 順序 | 破壞加解密一致性 | 維持 Serialize → Compress → Encrypt |
 | 在 BO 中直接回傳 API 型別 | BO 不應依賴 API 序列化格式 | 回傳 BO 型別，由 `ApiOutputConverter` 依命名慣例自動對應 |

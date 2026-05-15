@@ -400,13 +400,21 @@ DatabaseItem item = dbSettingsProvider.GetItem(databaseId);
 | 日誌寫入 | log | 按年封存 | 依當前年份選 `log_YYYY`（如 `$"log_{DateTime.UtcNow.Year}"`） |
 | 日誌跨年查詢 | log | 按年封存 | 依查詢年份範圍取多筆 DatabaseId，分別查詢後聚合 |
 
-無論底層是哪種狀況，業務端程式碼都是同一個入口 `IDatabaseSettingsProvider.GetItem(databaseId)`，差異只在「依當前情境推導 databaseId 字串」這一步：
+無論底層是哪種狀況，業務端程式碼都是同一個入口 `IDatabaseSettingsProvider.GetItem(databaseId)`，差異只在「依當前情境推導 databaseId 字串」這一步。
 
-- 狀況 1、2：固定對照（分類 → DatabaseId），可寫成常數
-- 狀況 3、4：需有當前情境的 context（租戶 ID、操作時間等），框架不提供 context → databaseId 的對照管理機制，由業務層自行維護並推導 DatabaseId
-- 跨多筆 DatabaseItem 聚合（如 log 跨多年查詢）由業務層協調多次連線取資料後合併
+對於 bo repo（BO 層消費的 Repository），框架透過 `IRepositoryDatabaseRouter`（見 [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md)）統一推導，BO 程式碼不需手寫：
 
-CategoryId 與 DbCategorySettings 只在前述的設計階段（5.1–5.2）與部署階段（5.3）使用。
+| 來源 | databaseId 推導方式 |
+|------|---------------------|
+| `DbScope.Common` | 固定字串 `"common"`（不需 session） |
+| `DbScope.Log` | 固定字串 `"log"`（不需 session；Login / Logout 等 pre-EnterCompany 方法也能寫 audit log） |
+| `DbScope.Company` | `SessionInfo.CompanyId`（由 `EnterCompany` 寫入）→ `CompanyInfo.CompanyDatabaseId`（由 `ICompanyInfoService` 取得） |
+
+BO 方法透過 `BusinessObject.ResolveDatabaseId(DbScope)` 或（FormSchema-driven CRUD 用）`CreateDataFormRepository(progId)` helper 消費 router；後者依 schema 的 `CategoryId` 自動路由。
+
+跨 DatabaseItem 聚合（如 log 跨年查詢）與封存資料的明確存取（如查 `log_2024`）不在預設路由範圍內——業務層直接指定目標 databaseId、透過 `IDbAccessFactory` 建自訂 bo repo。
+
+CategoryId 與 DbCategorySettings 只在前述的設計階段（5.1–5.2）與部署階段（5.3）使用。執行時 BO 方法用 `DbScope`（執行時存取意圖）表達，不再操作 CategoryId 字串。
 
 ---
 

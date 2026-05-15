@@ -237,9 +237,36 @@ FormSchema（Single Source of Truth）
 每個 FormSchema 必須指定 `CategoryId`，對應 `DbCategorySettings.xml` 中某個 `<DbCategory Id="...">` 的識別碼。`CategoryId` 同時決定：
 
 - 該 FormSchema 衍生的所有 `TableSchema` 應持久化於 `TableSchema/{categoryId}/` 子目錄
-- 該 FormSchema 對應的資料表所屬的資料庫連線（透過 DbCategory 推得）
+- 該 FormSchema 對應的資料表所屬的資料庫連線（透過 DbCategory → `DbScope` → `IRepositoryDatabaseRouter` 解析）
 
 `SaveFormSchema` 會驗證 `CategoryId` 必填（透過 `TableSchemaGenerator.GetCategoryId(formSchema)`），未設定時拋出 `InvalidOperationException`。
+
+### BO 方法中取得 DatabaseId
+
+BO 方法**不應**寫死 `databaseId` 字串，也**不應**自行讀 `SessionInfo.CompanyId` / `CompanyInfo`。改用 `BusinessObject` 基底提供的 helper：
+
+```csharp
+// FormSchema-driven CRUD —— one-liner，自動路由
+var repository = CreateDataFormRepository(ProgId);
+// 等同於：
+// Services.GetRequiredService<IFormRepositoryFactory>()
+//         .CreateDataFormRepository(ProgId, AccessToken);
+
+// 自訂 bo repo —— 取目標 scope 的 databaseId 再建 repo
+var dbId = ResolveDatabaseId(DbScope.Log);   // "log"（不需 session）
+var dbId = ResolveDatabaseId(DbScope.Company); // 透過 session.CompanyId → CompanyInfo.CompanyDatabaseId
+var repo = new MonthlySalesReportRepo(Services.GetRequiredService<IDbAccessFactory>(), dbId);
+```
+
+`DbScope` 解析規則：
+
+| `DbScope` | 解析後 `databaseId` | 需要 session？ |
+|-----------|---------------------|---------------|
+| `Common` | 固定 `"common"` | 否 |
+| `Log` | 固定 `"log"` | 否（Login / Logout 等 pre-EnterCompany 方法可寫 audit log） |
+| `Company` | `SessionInfo.CompanyId` → `CompanyInfo.CompanyDatabaseId` | 是——未準備好會拋 `UnauthorizedAccessException` / `CompanyNotEntered` |
+
+詳見 [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md) 與 [ADR-012](adr/adr-012-session-company-context.md)。
 
 ### FormSchema → SQL 產生
 

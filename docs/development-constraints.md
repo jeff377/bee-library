@@ -33,6 +33,8 @@ See [development-cookbook.md § Framework Initialization Order](development-cook
 |-----------|--------|------------------|
 | API layer directly references the Repository layer | Violates layered architecture | Access indirectly through a Business Object |
 | Business Object directly creates a `DbConnection` | Bypasses connection management and logging | Use the `DbAccess` class |
+| BO references `Bee.Db` (`Bee.Business.csproj` has no `ProjectReference` to `Bee.Db`) | BO is a thin shell over business logic; data access belongs to Repository | FormSchema-driven CRUD → `IDataFormRepository`; custom queries → ad-hoc bo repo with `IDbAccessFactory` |
+| BO hard-codes a `databaseId` string or reads `SessionInfo.CompanyId` / `CompanyInfo` directly | Couples BO to the routing implementation; breaks when deployments change | Use `BusinessObject.ResolveDatabaseId(DbScope)` (custom bo repo) or `CreateDataFormRepository(progId)` (FormSchema CRUD); the helpers delegate to `IRepositoryDatabaseRouter` which is the single source of truth |
 | Client side resolves Repository services from a DI container | Server-only | Call the API via `ApiConnector` |
 | Skipping the Payload Pipeline order | Breaks encryption / decryption consistency | Maintain Serialize → Compress → Encrypt |
 | BO returns API types directly | BO must not depend on API serialization formats | Return BO types; `ApiOutputConverter` maps them automatically by naming convention |

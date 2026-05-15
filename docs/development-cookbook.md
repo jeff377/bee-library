@@ -238,9 +238,36 @@ FormSchema (Single Source of Truth)
 Every FormSchema must specify `CategoryId`, which corresponds to the `Id` of a `<DbCategory Id="...">` in `DbCategorySettings.xml`. `CategoryId` simultaneously determines:
 
 - TableSchemas derived from this FormSchema are persisted under the `TableSchema/{categoryId}/` subdirectory
-- Which database connection the tables of this FormSchema belong to (derived via DbCategory)
+- Which database connection the tables of this FormSchema belong to (derived via DbCategory → `DbScope` → `IRepositoryDatabaseRouter`)
 
 `SaveFormSchema` validates that `CategoryId` is non-empty (via `TableSchemaGenerator.GetCategoryId(formSchema)`); throws `InvalidOperationException` when missing.
+
+### Resolving DatabaseId in a BO Method
+
+A BO method should never hard-code a `databaseId` string or read `SessionInfo.CompanyId` / `CompanyInfo` directly. Use the `BusinessObject` base helpers instead:
+
+```csharp
+// FormSchema-driven CRUD — one-liner, auto-routed
+var repository = CreateDataFormRepository(ProgId);
+// Equivalent to:
+// Services.GetRequiredService<IFormRepositoryFactory>()
+//         .CreateDataFormRepository(ProgId, AccessToken);
+
+// Custom bo repo — resolve databaseId for the target scope, then build the repo
+var dbId = ResolveDatabaseId(DbScope.Log);   // "log" (no session needed)
+var dbId = ResolveDatabaseId(DbScope.Company); // routes via session.CompanyId → CompanyInfo.CompanyDatabaseId
+var repo = new MonthlySalesReportRepo(Services.GetRequiredService<IDbAccessFactory>(), dbId);
+```
+
+`DbScope` resolution rules:
+
+| `DbScope` | Resolved `databaseId` | Requires session? |
+|-----------|----------------------|-------------------|
+| `Common` | Fixed `"common"` | No |
+| `Log` | Fixed `"log"` | No (Login / Logout etc. can write audit log pre-EnterCompany) |
+| `Company` | `SessionInfo.CompanyId` → `CompanyInfo.CompanyDatabaseId` | Yes — throws `UnauthorizedAccessException` / `CompanyNotEntered` if not ready |
+
+See [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md) for the routing design and [ADR-012](adr/adr-012-session-company-context.md) for the session lifecycle that drives `DbScope.Company`.
 
 ### FormSchema → SQL Generation
 
