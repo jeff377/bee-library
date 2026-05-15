@@ -271,5 +271,30 @@ namespace Bee.Api.Client.Connectors
             );
         }
 
+        /// <summary>
+        /// Asynchronously enters the specified company for the current session.
+        /// Also used to switch between companies — the previous company binding is overwritten.
+        /// </summary>
+        /// <param name="companyId">The id of the company to enter.</param>
+        public async Task<EnterCompanyResponse> EnterCompanyAsync(string companyId)
+        {
+            var request = new EnterCompanyRequest()
+            {
+                CompanyId = companyId
+            };
+            return await ExecuteAsync<EnterCompanyResponse>(SystemActions.EnterCompany, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Enters the specified company for the current session.
+        /// </summary>
+        /// <param name="companyId">The id of the company to enter.</param>
+        public EnterCompanyResponse EnterCompany(string companyId)
+        {
+            return SyncExecutor.Run(() =>
+                EnterCompanyAsync(companyId)
+            );
+        }
+
     }
 }

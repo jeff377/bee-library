@@ -121,6 +121,42 @@ namespace Bee.Business.System
         }
 
         /// <summary>
+        /// Enters the specified company for the current session. Also used to switch
+        /// between companies — the previous <c>CompanyId</c> is overwritten.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the target company id.</param>
+        /// <remarks>
+        /// Permission validation is not performed in this base implementation; any
+        /// authenticated user can enter any existing company. The full permission
+        /// model (user-company access table, role-based rules) is the subject of a
+        /// follow-up plan and should be wired in at the marked extension point.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual EnterCompanyResult EnterCompany(EnterCompanyArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            if (string.IsNullOrWhiteSpace(args.CompanyId))
+                throw new ArgumentException("CompanyId is required.", nameof(args));
+
+            var sessionInfo = SessionInfoService.Get(AccessToken)
+                ?? throw new UnauthorizedAccessException("Session not found or has expired.");
+
+            var companyInfoService = Services.GetRequiredService<ICompanyInfoService>();
+            var companyInfo = companyInfoService.Get(args.CompanyId)
+                ?? throw new InvalidOperationException("Company access denied.");
+
+            // TODO(plan-company-access-permission): Validate that this user is allowed
+            // to enter the requested company. The merged "no access / not exists" error
+            // surface (per plan D8) means permission failures should throw the same
+            // InvalidOperationException with the "Company access denied." message.
+
+            sessionInfo.CompanyId = args.CompanyId;
+            SessionInfoService.Set(sessionInfo);
+
+            return new EnterCompanyResult { Company = companyInfo };
+        }
+
+        /// <summary>
         /// Validates the user's credentials.
         /// </summary>
         /// <param name="args">The login arguments.</param>

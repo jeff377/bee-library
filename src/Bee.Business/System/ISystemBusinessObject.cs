@@ -22,5 +22,11 @@ namespace Bee.Business.System
         /// </summary>
         /// <param name="args">The input arguments.</param>
         SaveDefineResult SaveDefine(SaveDefineArgs args);
+
+        /// <summary>
+        /// Enters the specified company for the current session.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the target company id.</param>
+        EnterCompanyResult EnterCompany(EnterCompanyArgs args);
     }
 }
