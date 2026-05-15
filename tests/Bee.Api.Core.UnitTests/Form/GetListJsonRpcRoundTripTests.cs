@@ -181,7 +181,7 @@ namespace Bee.Api.Core.UnitTests.Form
         {
             private readonly IDataFormRepository _data;
             public StubFormRepositoryFactory(IDataFormRepository data) { _data = data; }
-            public IDataFormRepository CreateDataFormRepository(string progId) => _data;
+            public IDataFormRepository CreateDataFormRepository(string progId, Guid accessToken) => _data;
             public IReportFormRepository CreateReportFormRepository(string progId)
                 => throw new NotSupportedException();
         }

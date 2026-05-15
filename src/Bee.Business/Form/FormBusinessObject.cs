@@ -1,7 +1,6 @@
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Security;
-using Bee.Repository.Abstractions.Factories;
 
 namespace Bee.Business.Form
 {
@@ -67,8 +66,7 @@ namespace Bee.Business.Form
         {
             ArgumentNullException.ThrowIfNull(args);
 
-            var factory = Services.GetRequiredService<IFormRepositoryFactory>();
-            var repository = factory.CreateDataFormRepository(ProgId);
+            var repository = CreateDataFormRepository(ProgId);
             var listResult = repository.GetList(args.SelectFields, args.Filter, args.SortFields, args.Paging);
 
             return new GetListResult

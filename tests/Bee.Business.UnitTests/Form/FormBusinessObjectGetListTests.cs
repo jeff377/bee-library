@@ -467,7 +467,7 @@ namespace Bee.Business.UnitTests.Form
         {
             private readonly IDataFormRepository _repository;
             public StubFactory(IDataFormRepository repository) => _repository = repository;
-            public IDataFormRepository CreateDataFormRepository(string progId) => _repository;
+            public IDataFormRepository CreateDataFormRepository(string progId, Guid accessToken) => _repository;
             public IReportFormRepository CreateReportFormRepository(string progId)
                 => throw new NotSupportedException();
         }

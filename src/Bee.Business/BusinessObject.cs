@@ -3,6 +3,9 @@ using Bee.Definition.Attributes;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 using Bee.Definition.Storage;
+using Bee.Repository.Abstractions;
+using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.Form;
 
 namespace Bee.Business
 {
@@ -59,6 +62,25 @@ namespace Bee.Business
         /// (e.g. login-only helpers). Use sparingly; greppable for audit.
         /// </summary>
         protected IServiceProvider Services => _ctx.Services;
+
+        /// <summary>
+        /// Resolves the physical databaseId for the supplied <see cref="DbScope"/>,
+        /// using the current <see cref="AccessToken"/> for the per-session lookup
+        /// path (<see cref="DbScope.Company"/>).
+        /// </summary>
+        /// <param name="scope">The bo repo's access intent.</param>
+        protected string ResolveDatabaseId(DbScope scope)
+            => Services.GetRequiredService<IRepositoryDatabaseRouter>()
+                       .Resolve(scope, AccessToken);
+
+        /// <summary>
+        /// Convenience wrapper around <see cref="IFormRepositoryFactory.CreateDataFormRepository"/>
+        /// that auto-passes the current <see cref="AccessToken"/>.
+        /// </summary>
+        /// <param name="progId">The program identifier.</param>
+        protected IDataFormRepository CreateDataFormRepository(string progId)
+            => Services.GetRequiredService<IFormRepositoryFactory>()
+                       .CreateDataFormRepository(progId, AccessToken);
 
         /// <summary>
         /// Executes a custom method; requires authentication.
