@@ -6,11 +6,11 @@ using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
 {
-    public class TableSchemaBuilderExtraTests : IClassFixture<BeeTestFixture>
+    public class TableSchemaBuilderExtraTests : IClassFixture<SharedDbFixture>
     {
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
 
-        public TableSchemaBuilderExtraTests(BeeTestFixture fx) { _fx = fx; }
+        public TableSchemaBuilderExtraTests(SharedDbFixture fx) { _fx = fx; }
 
         [Fact]
         [DisplayName("TableSchemaBuilder 建構子傳入空白 databaseId 應拋出 ArgumentException")]
