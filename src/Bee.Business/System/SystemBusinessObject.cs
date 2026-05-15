@@ -183,6 +183,34 @@ namespace Bee.Business.System
         }
 
         /// <summary>
+        /// Destroys the current session, clearing any company context first.
+        /// </summary>
+        /// <param name="args">The input arguments (currently carries no fields).</param>
+        /// <remarks>
+        /// Idempotent — calling on an unknown or already-expired access token succeeds
+        /// without error. The clean-up sequence is: clear <c>SessionInfo.CompanyId</c>
+        /// (no-op if already null), then remove the session entry from the cache. Callers
+        /// do not need to call <c>LeaveCompany</c> before <c>Logout</c>.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LogoutResult Logout(LogoutArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            // Get-and-clear company context first so any consumer holding a SessionInfo
+            // reference sees the clean state before the cache entry disappears.
+            var sessionInfo = SessionInfoService.Get(AccessToken);
+            if (sessionInfo != null && sessionInfo.CompanyId != null)
+            {
+                sessionInfo.CompanyId = null;
+                SessionInfoService.Set(sessionInfo);
+            }
+
+            SessionInfoService.Remove(AccessToken);
+            return new LogoutResult();
+        }
+
+        /// <summary>
         /// Validates the user's credentials.
         /// </summary>
         /// <param name="args">The login arguments.</param>

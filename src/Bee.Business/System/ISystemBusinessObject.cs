@@ -34,5 +34,11 @@ namespace Bee.Business.System
         /// </summary>
         /// <param name="args">The input arguments (currently carries no fields).</param>
         LeaveCompanyResult LeaveCompany(LeaveCompanyArgs args);
+
+        /// <summary>
+        /// Destroys the current session, clearing any company context first.
+        /// </summary>
+        /// <param name="args">The input arguments (currently carries no fields).</param>
+        LogoutResult Logout(LogoutArgs args);
     }
 }

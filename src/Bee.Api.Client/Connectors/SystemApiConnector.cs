@@ -314,5 +314,23 @@ namespace Bee.Api.Client.Connectors
             return SyncExecutor.Run(() => LeaveCompanyAsync());
         }
 
+        /// <summary>
+        /// Asynchronously destroys the current session, clearing any company context first.
+        /// Idempotent — succeeds even if the session is already expired or unknown.
+        /// </summary>
+        public async Task<LogoutResponse> LogoutAsync()
+        {
+            var request = new LogoutRequest();
+            return await ExecuteAsync<LogoutResponse>(SystemActions.Logout, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Destroys the current session, clearing any company context first.
+        /// </summary>
+        public LogoutResponse Logout()
+        {
+            return SyncExecutor.Run(() => LogoutAsync());
+        }
+
     }
 }
