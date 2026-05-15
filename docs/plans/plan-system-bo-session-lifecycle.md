@@ -72,6 +72,8 @@ public class CompanyInfo : IKeyObject
 
 IsActive / Culture / TimeZone / 有效期間等欄位後續按需擴充，不在本計畫範圍。
 
+> **2026-05-15 修訂**：後續 [plan-bo-repo-db-routing.md](plan-bo-repo-db-routing.md) D9 決議 `DbScope.Log` 改為固定 databaseId `"log"`（pre-session 也可寫 audit log），因此 `LogDatabaseId` 變 dead field 並被移除。**目前 CompanyInfo 實際只有 3 個欄位**（CompanyId / CompanyName / CompanyDatabaseId）。多公司 log 隔離由後續 `sys_company_rowid` 列級分區處理，不靠 LogDatabaseId。
+
 ### D3：CompanyInfo 快取策略——獨立 company-level
 
 新增 `ICompanyInfoService` + `CompanyInfoCache`，類比 `ISessionInfoService` 模式，keyed by CompanyId，跨 session 共享。

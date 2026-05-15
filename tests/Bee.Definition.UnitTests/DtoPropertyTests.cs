@@ -44,8 +44,7 @@ namespace Bee.Definition.UnitTests
             {
                 CompanyId = "C001",
                 CompanyName = "Acme",
-                CompanyDatabaseId = "biz_shared_01",
-                LogDatabaseId = "log_shared_01"
+                CompanyDatabaseId = "biz_shared_01"
             };
 
             // Act & Assert
@@ -63,7 +62,6 @@ namespace Bee.Definition.UnitTests
             Assert.Equal(string.Empty, info.CompanyId);
             Assert.Equal(string.Empty, info.CompanyName);
             Assert.Equal(string.Empty, info.CompanyDatabaseId);
-            Assert.Equal(string.Empty, info.LogDatabaseId);
         }
 
         [Fact]

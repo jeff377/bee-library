@@ -28,8 +28,7 @@ namespace Bee.Business.UnitTests
             {
                 CompanyId = companyId,
                 CompanyName = "Acme",
-                CompanyDatabaseId = "biz_01",
-                LogDatabaseId = "log_01"
+                CompanyDatabaseId = "biz_01"
             });
             var accessToken = TestSessionFactory.CreateAccessToken(_fx);
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
@@ -42,7 +41,6 @@ namespace Bee.Business.UnitTests
                 Assert.Equal(companyId, result.Company.CompanyId);
                 Assert.Equal("Acme", result.Company.CompanyName);
                 Assert.Equal("biz_01", result.Company.CompanyDatabaseId);
-                Assert.Equal("log_01", result.Company.LogDatabaseId);
 
                 var session = sessionService.Get(accessToken);
                 Assert.NotNull(session);

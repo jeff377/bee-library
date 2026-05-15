@@ -8,10 +8,12 @@ namespace Bee.Definition.Identity
     /// </summary>
     /// <remarks>
     /// Returned by <c>EnterCompany</c> and resolved by company-aware repositories
-    /// via the cached <c>ICompanyInfoService</c>. The two database id properties
-    /// reference logical <c>DatabaseSettings</c> entries; multiple companies may
-    /// point at the same id and rely on the <c>sys_company_rowid</c> column for
-    /// row-level isolation.
+    /// via the cached <c>ICompanyInfoService</c>. <c>CompanyDatabaseId</c> references
+    /// a logical <c>DatabaseSettings</c> entry; multiple companies may point at the
+    /// same id and rely on the <c>sys_company_rowid</c> column for row-level
+    /// isolation. The log database is shared across all companies under a fixed
+    /// <c>"log"</c> databaseId (see <c>DbScope.Log</c> in plan-bo-repo-db-routing),
+    /// so there is no per-company log database id property.
     /// </remarks>
     [MessagePackObject]
     public class CompanyInfo : IKeyObject
@@ -46,13 +48,6 @@ namespace Bee.Definition.Identity
         /// </summary>
         [Key(2)]
         public string CompanyDatabaseId { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Gets or sets the logical <c>DatabaseSettings</c> id used for the
-        /// log-category database during this session.
-        /// </summary>
-        [Key(3)]
-        public string LogDatabaseId { get; set; } = string.Empty;
 
         /// <summary>
         /// Returns a string representation of this object.

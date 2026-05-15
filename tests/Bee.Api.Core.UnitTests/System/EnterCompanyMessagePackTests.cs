@@ -48,8 +48,7 @@ namespace Bee.Api.Core.UnitTests.System
                 {
                     CompanyId = "C001",
                     CompanyName = "Acme",
-                    CompanyDatabaseId = "biz_shared_01",
-                    LogDatabaseId = "log_shared_01"
+                    CompanyDatabaseId = "biz_shared_01"
                 }
             };
 
@@ -60,7 +59,6 @@ namespace Bee.Api.Core.UnitTests.System
             Assert.Equal("C001", restored!.Company.CompanyId);
             Assert.Equal("Acme", restored.Company.CompanyName);
             Assert.Equal("biz_shared_01", restored.Company.CompanyDatabaseId);
-            Assert.Equal("log_shared_01", restored.Company.LogDatabaseId);
         }
     }
 }

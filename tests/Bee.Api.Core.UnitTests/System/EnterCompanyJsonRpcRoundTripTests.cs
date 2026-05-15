@@ -37,8 +37,7 @@ namespace Bee.Api.Core.UnitTests.System
             {
                 CompanyId = "C001",
                 CompanyName = "Acme",
-                CompanyDatabaseId = "biz_shared_01",
-                LogDatabaseId = "log_shared_01"
+                CompanyDatabaseId = "biz_shared_01"
             });
 
             var accessToken = TestSessionFactory.CreateAccessToken(_fx);
@@ -78,7 +77,6 @@ namespace Bee.Api.Core.UnitTests.System
             Assert.Equal("C001", result.Company.CompanyId);
             Assert.Equal("Acme", result.Company.CompanyName);
             Assert.Equal("biz_shared_01", result.Company.CompanyDatabaseId);
-            Assert.Equal("log_shared_01", result.Company.LogDatabaseId);
 
             // SessionInfo.CompanyId 已寫入
             var session = _fx.GetRequiredService<ISessionInfoService>().Get(accessToken);

@@ -28,8 +28,7 @@ namespace Bee.ObjectCaching.UnitTests
             {
                 CompanyId = "C001",
                 CompanyName = "Acme",
-                CompanyDatabaseId = "biz_shared_01",
-                LogDatabaseId = "log_shared_01"
+                CompanyDatabaseId = "biz_shared_01"
             };
 
             service.Set(info);
@@ -39,7 +38,6 @@ namespace Bee.ObjectCaching.UnitTests
             Assert.Equal("C001", loaded.CompanyId);
             Assert.Equal("Acme", loaded.CompanyName);
             Assert.Equal("biz_shared_01", loaded.CompanyDatabaseId);
-            Assert.Equal("log_shared_01", loaded.LogDatabaseId);
 
             service.Remove("C001");
             Assert.Null(service.Get("C001"));

@@ -28,8 +28,8 @@ namespace Bee.Business.UnitTests
             var companyService = _fx.GetRequiredService<ICompanyInfoService>();
             var companyA = UniqueCompanyId();
             var companyB = UniqueCompanyId();
-            companyService.Set(new CompanyInfo { CompanyId = companyA, CompanyName = "Acme", CompanyDatabaseId = "biz_a", LogDatabaseId = "log_a" });
-            companyService.Set(new CompanyInfo { CompanyId = companyB, CompanyName = "Bee", CompanyDatabaseId = "biz_b", LogDatabaseId = "log_b" });
+            companyService.Set(new CompanyInfo { CompanyId = companyA, CompanyName = "Acme", CompanyDatabaseId = "biz_a" });
+            companyService.Set(new CompanyInfo { CompanyId = companyB, CompanyName = "Bee", CompanyDatabaseId = "biz_b" });
 
             try
             {
