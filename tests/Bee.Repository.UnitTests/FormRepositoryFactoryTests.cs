@@ -9,11 +9,11 @@ using Bee.Tests.Shared;
 
 namespace Bee.Repository.UnitTests
 {
-    public class FormRepositoryFactoryTests : IClassFixture<BeeTestFixture>
+    public class FormRepositoryFactoryTests : IClassFixture<SharedDbFixture>
     {
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
 
-        public FormRepositoryFactoryTests(BeeTestFixture fx) { _fx = fx; }
+        public FormRepositoryFactoryTests(SharedDbFixture fx) { _fx = fx; }
 
         private FormRepositoryFactory NewFactory() => new(
             _fx.GetRequiredService<IDefineAccess>(),
