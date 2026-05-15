@@ -145,11 +145,6 @@ namespace Bee.Business.System
             var companyInfo = companyInfoService.Get(args.CompanyId)
                 ?? throw new InvalidOperationException("Company access denied.");
 
-            // TODO(plan-company-access-permission): Validate that this user is allowed
-            // to enter the requested company. The merged "no access / not exists" error
-            // surface (per plan D8) means permission failures should throw the same
-            // InvalidOperationException with the "Company access denied." message.
-
             sessionInfo.CompanyId = args.CompanyId;
             SessionInfoService.Set(sessionInfo);
 
