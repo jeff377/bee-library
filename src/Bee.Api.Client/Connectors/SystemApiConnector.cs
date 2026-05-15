@@ -296,5 +296,23 @@ namespace Bee.Api.Client.Connectors
             );
         }
 
+        /// <summary>
+        /// Asynchronously clears the company context from the current session.
+        /// Idempotent — returns success even if the session has not entered a company.
+        /// </summary>
+        public async Task<LeaveCompanyResponse> LeaveCompanyAsync()
+        {
+            var request = new LeaveCompanyRequest();
+            return await ExecuteAsync<LeaveCompanyResponse>(SystemActions.LeaveCompany, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Clears the company context from the current session.
+        /// </summary>
+        public LeaveCompanyResponse LeaveCompany()
+        {
+            return SyncExecutor.Run(() => LeaveCompanyAsync());
+        }
+
     }
 }

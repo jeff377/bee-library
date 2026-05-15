@@ -157,6 +157,32 @@ namespace Bee.Business.System
         }
 
         /// <summary>
+        /// Clears the company context from the current session while keeping the session alive.
+        /// </summary>
+        /// <param name="args">The input arguments (currently carries no fields).</param>
+        /// <remarks>
+        /// Idempotent — calling on a session that has never entered a company succeeds
+        /// without error. To completely sign out, use <c>Logout</c> instead, which
+        /// performs the same clear-up internally before destroying the session.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual LeaveCompanyResult LeaveCompany(LeaveCompanyArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            var sessionInfo = SessionInfoService.Get(AccessToken)
+                ?? throw new UnauthorizedAccessException("Session not found or has expired.");
+
+            if (sessionInfo.CompanyId != null)
+            {
+                sessionInfo.CompanyId = null;
+                SessionInfoService.Set(sessionInfo);
+            }
+
+            return new LeaveCompanyResult();
+        }
+
+        /// <summary>
         /// Validates the user's credentials.
         /// </summary>
         /// <param name="args">The login arguments.</param>

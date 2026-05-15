@@ -28,5 +28,11 @@ namespace Bee.Business.System
         /// </summary>
         /// <param name="args">The input arguments carrying the target company id.</param>
         EnterCompanyResult EnterCompany(EnterCompanyArgs args);
+
+        /// <summary>
+        /// Clears the company context from the current session while keeping the session alive.
+        /// </summary>
+        /// <param name="args">The input arguments (currently carries no fields).</param>
+        LeaveCompanyResult LeaveCompany(LeaveCompanyArgs args);
     }
 }
