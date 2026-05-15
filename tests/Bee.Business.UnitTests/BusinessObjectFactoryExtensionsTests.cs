@@ -27,7 +27,6 @@ namespace Bee.Business.UnitTests
             IFormBusinessObject bo = Factory.CreateFormBO(token, "prog01");
 
             Assert.NotNull(bo);
-            Assert.IsAssignableFrom<IFormBusinessObject>(bo);
             Assert.IsType<FormBusinessObject>(bo);
         }
 
@@ -49,7 +48,6 @@ namespace Bee.Business.UnitTests
             ISystemBusinessObject bo = Factory.CreateSystemBO(token);
 
             Assert.NotNull(bo);
-            Assert.IsAssignableFrom<ISystemBusinessObject>(bo);
             Assert.IsType<SystemBusinessObject>(bo);
         }
 

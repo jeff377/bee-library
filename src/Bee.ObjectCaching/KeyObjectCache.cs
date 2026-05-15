@@ -3,6 +3,21 @@ using Bee.Base;
 namespace Bee.ObjectCaching
 {
     /// <summary>
+    /// Holds the single process-wide sentinel used by <see cref="KeyObjectCache{T}"/>
+    /// to mark negative cache entries. Placed in a non-generic type so every closed
+    /// type of <see cref="KeyObjectCache{T}"/> shares the same reference.
+    /// </summary>
+    internal static class KeyObjectCacheSentinel
+    {
+        /// <summary>
+        /// Sentinel stored in the cache to mark keys whose
+        /// <see cref="KeyObjectCache{T}.CreateInstance"/> returned <c>null</c>.
+        /// Distinguished from cached values by reference equality.
+        /// </summary>
+        public static readonly object MissMarker = new();
+    }
+
+    /// <summary>
     /// Base class for caching same-type objects accessed by key.
     /// </summary>
     public abstract class KeyObjectCache<T> where T : class
@@ -26,12 +41,6 @@ namespace Bee.ObjectCaching
         }
 
         #endregion
-
-        /// <summary>
-        /// Sentinel stored in the cache to mark keys whose <see cref="CreateInstance"/>
-        /// returned <c>null</c>. Distinguished from cached values by reference equality.
-        /// </summary>
-        private static readonly object MissMarker = new();
 
         /// <summary>
         /// Gets the cache item expiration policy.
@@ -92,7 +101,7 @@ namespace Bee.ObjectCaching
             var cached = CacheInfo.Provider.Get(cacheKey);
 
             // Negative cache hit: short-circuit without invoking CreateInstance.
-            if (ReferenceEquals(cached, MissMarker))
+            if (ReferenceEquals(cached, KeyObjectCacheSentinel.MissMarker))
                 return null;
 
             if (cached is T t)
@@ -105,7 +114,7 @@ namespace Bee.ObjectCaching
             }
             else if (GetNegativePolicy(key) is { } negPolicy)
             {
-                CacheInfo.Provider.Set(cacheKey, MissMarker, negPolicy);
+                CacheInfo.Provider.Set(cacheKey, KeyObjectCacheSentinel.MissMarker, negPolicy);
             }
             return value;
         }
