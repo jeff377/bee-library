@@ -76,6 +76,14 @@ namespace Bee.Db.Providers.PostgreSql
                     return StringUtilities.Format("'{0}'", StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
+                case FieldDbType.Boolean:
+                {
+                    // PG `BOOLEAN` only accepts `TRUE`/`FALSE` literals, not the integer `1`/`0`
+                    // that other dialects accept. The framework keeps `"1"`/`"0"` as the canonical
+                    // user-facing form; PG translates here at the SQL emission boundary.
+                    string raw = StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
+                    return StringUtilities.IsEquals(raw, "1") ? "TRUE" : "FALSE";
+                }
                 default:
                     return StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : field.DefaultValue;
             }

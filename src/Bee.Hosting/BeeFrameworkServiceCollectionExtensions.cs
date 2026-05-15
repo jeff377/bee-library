@@ -13,6 +13,7 @@ using Bee.Definition.Storage;
 using Bee.Repository;
 using Bee.Repository.Abstractions;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Hosting
@@ -131,6 +132,14 @@ namespace Bee.Hosting
             services.AddSingleton<IFormRepositoryFactory>(sp =>
                 CreateConfigurableService<IFormRepositoryFactory>(sp,
                     components.FormRepositoryFactory, BackendDefaultTypes.FormRepositoryFactory));
+
+            // Repositories that ctor-inject into upstream services (CompanyInfoService,
+            // EnterCompany permission check). Owned by the factory but exposed to DI so
+            // ActivatorUtilities can resolve them without a service-locator pattern.
+            services.AddSingleton<ICompanyRepository>(sp =>
+                sp.GetRequiredService<ISystemRepositoryFactory>().CreateCompanyRepository());
+            services.AddSingleton<IUserCompanyRepository>(sp =>
+                sp.GetRequiredService<ISystemRepositoryFactory>().CreateUserCompanyRepository());
 
             // 10. JsonRpcExecutor — transient (per request); its dependencies (factories,
             //     validators, key providers) are resolved from the container at construction.

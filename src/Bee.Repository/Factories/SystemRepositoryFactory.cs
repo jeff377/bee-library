@@ -41,5 +41,21 @@ namespace Bee.Repository.Factories
         {
             return new SessionRepository(_connectionManager);
         }
+
+        /// <summary>
+        /// Creates an <see cref="ICompanyRepository"/>.
+        /// </summary>
+        public ICompanyRepository CreateCompanyRepository()
+        {
+            return new CompanyRepository(_connectionManager);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="IUserCompanyRepository"/>.
+        /// </summary>
+        public IUserCompanyRepository CreateUserCompanyRepository()
+        {
+            return new UserCompanyRepository(_connectionManager);
+        }
     }
 }

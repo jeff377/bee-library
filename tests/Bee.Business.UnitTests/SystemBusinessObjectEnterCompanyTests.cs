@@ -1,70 +1,117 @@
 using System.ComponentModel;
 using Bee.Business.System;
+using Bee.Db;
 using Bee.Definition.Identity;
 using Bee.Tests.Shared;
 
 namespace Bee.Business.UnitTests
 {
     /// <summary>
-    /// <see cref="SystemBusinessObject.EnterCompany"/> 行為測試。每個測試用獨立的
-    /// AccessToken 與 CompanyId，避免共享 fixture 內的 session / company cache 互相干擾。
+    /// <see cref="SystemBusinessObject.EnterCompany"/> 行為測試。透過 seed user '001' 與
+    /// seed company 'C001' 走真實 DB 對照路徑；其他情境用 SQL helper 動態建 company / 對照
+    /// 並於 finally 清理。
     /// </summary>
     public class SystemBusinessObjectEnterCompanyTests : IClassFixture<SharedDbFixture>
     {
+        private const string SeedUserId = "001";
+        private const string SeedCompanyId = "C001";
         private readonly SharedDbFixture _fx;
 
         public SystemBusinessObjectEnterCompanyTests(SharedDbFixture fx) { _fx = fx; }
 
-        private static string UniqueCompanyId() => "C_" + Guid.NewGuid().ToString("N")[..12];
+        #region Helpers (SQL Server only — BO tests bind to `common` databaseId which points to SQL Server)
+
+        private DbAccess Common() => _fx.NewDbAccess("common");
+
+        private Guid InsertCompany(string companyId, bool enabled)
+        {
+            var rowId = Guid.NewGuid();
+            string enabledLiteral = enabled ? "1" : "0";
+            var insert = new DbCommandSpec(DbCommandKind.NonQuery,
+                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, enabled, sys_insert_time) " +
+                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {enabledLiteral}, GETDATE())",
+                rowId, companyId, "BO 測試公司", "common");
+            Common().Execute(insert);
+            return rowId;
+        }
+
+        private Guid InsertGrant(Guid userRowId, Guid companyRowId)
+        {
+            var rowId = Guid.NewGuid();
+            var insert = new DbCommandSpec(DbCommandKind.NonQuery,
+                "INSERT INTO st_user_company (sys_rowid, user_rowid, company_rowid, sys_insert_time) " +
+                "VALUES ({0}, {1}, {2}, GETDATE())",
+                rowId, userRowId, companyRowId);
+            Common().Execute(insert);
+            return rowId;
+        }
+
+        private void DeleteCompany(Guid companyRowId)
+        {
+            var delete = new DbCommandSpec(DbCommandKind.NonQuery,
+                "DELETE FROM st_company WHERE sys_rowid = {0}", companyRowId);
+            Common().Execute(delete);
+        }
+
+        private void DeleteGrant(Guid grantRowId)
+        {
+            var delete = new DbCommandSpec(DbCommandKind.NonQuery,
+                "DELETE FROM st_user_company WHERE sys_rowid = {0}", grantRowId);
+            Common().Execute(delete);
+        }
+
+        private Guid LookupUserRowId(string userId)
+        {
+            var spec = new DbCommandSpec(DbCommandKind.Scalar,
+                "SELECT sys_rowid FROM st_user WHERE sys_id = {0}", userId);
+            var result = Common().Execute(spec);
+            var value = result.Scalar;
+            if (value is Guid g) return g;
+            if (value is byte[] b && b.Length == 16) return new Guid(b);
+            if (value is string s && Guid.TryParse(s, out var parsed)) return parsed;
+            throw new InvalidOperationException($"Cannot resolve user rowid for '{userId}'.");
+        }
+
+        #endregion
 
         [Fact]
-        [DisplayName("EnterCompany 對已存在的 CompanyId 應回傳 CompanyInfo 並設定 SessionInfo.CompanyId")]
+        [DisplayName("EnterCompany seed 對照存在時應回傳 CompanyInfo 並設定 SessionInfo.CompanyId")]
         public void EnterCompany_ValidCompany_BindsAndReturns()
         {
-            var companyService = _fx.GetRequiredService<ICompanyInfoService>();
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
-            var companyId = UniqueCompanyId();
-            companyService.Set(new CompanyInfo
-            {
-                CompanyId = companyId,
-                CompanyName = "Acme",
-                CompanyDatabaseId = "biz_01"
-            });
-            var accessToken = TestSessionFactory.CreateAccessToken(_fx);
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
 
             try
             {
-                var result = bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyId });
+                var result = bo.EnterCompany(new EnterCompanyArgs { CompanyId = SeedCompanyId });
 
                 Assert.NotNull(result);
-                Assert.Equal(companyId, result.Company.CompanyId);
-                Assert.Equal("Acme", result.Company.CompanyName);
-                Assert.Equal("biz_01", result.Company.CompanyDatabaseId);
+                Assert.Equal(SeedCompanyId, result.Company.CompanyId);
 
                 var session = sessionService.Get(accessToken);
                 Assert.NotNull(session);
-                Assert.Equal(companyId, session.CompanyId);
+                Assert.Equal(SeedCompanyId, session.CompanyId);
             }
             finally
             {
-                companyService.Remove(companyId);
                 sessionService.Remove(accessToken);
             }
         }
 
         [Fact]
-        [DisplayName("EnterCompany 對不存在的 CompanyId 應拋 InvalidOperationException 且 SessionInfo.CompanyId 不變")]
-        public void EnterCompany_UnknownCompany_ThrowsAndLeavesSessionUnchanged()
+        [DisplayName("EnterCompany 不存在的 CompanyId 應拋 Company access denied")]
+        public void EnterCompany_UnknownCompany_ThrowsAccessDenied()
         {
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
-            var accessToken = TestSessionFactory.CreateAccessToken(_fx);
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+            var unknown = "UNK_" + Guid.NewGuid().ToString("N")[..6];
 
             try
             {
                 var ex = Assert.Throws<InvalidOperationException>(
-                    () => bo.EnterCompany(new EnterCompanyArgs { CompanyId = UniqueCompanyId() }));
+                    () => bo.EnterCompany(new EnterCompanyArgs { CompanyId = unknown }));
                 Assert.Contains("Company access denied", ex.Message);
 
                 var session = sessionService.Get(accessToken);
@@ -78,31 +125,97 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("EnterCompany 切換到不同 CompanyId 應覆寫 SessionInfo.CompanyId")]
-        public void EnterCompany_SwitchToAnotherCompany_Overwrites()
+        [DisplayName("EnterCompany 公司存在但 user 沒被 grant 應拋 Company access denied")]
+        public void EnterCompany_NoAccess_ThrowsAccessDenied()
         {
-            var companyService = _fx.GetRequiredService<ICompanyInfoService>();
-            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
-            var companyA = UniqueCompanyId();
-            var companyB = UniqueCompanyId();
-            companyService.Set(new CompanyInfo { CompanyId = companyA, CompanyName = "A" });
-            companyService.Set(new CompanyInfo { CompanyId = companyB, CompanyName = "B" });
-            var accessToken = TestSessionFactory.CreateAccessToken(_fx);
-            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
-
+            var companyId = "NOGRANT_" + Guid.NewGuid().ToString("N")[..6];
+            var companyRowId = InsertCompany(companyId, enabled: true);
             try
             {
-                bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyA });
-                Assert.Equal(companyA, sessionService.Get(accessToken)!.CompanyId);
+                var sessionService = _fx.GetRequiredService<ISessionInfoService>();
+                var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
+                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
 
-                bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyB });
-                Assert.Equal(companyB, sessionService.Get(accessToken)!.CompanyId);
+                try
+                {
+                    var ex = Assert.Throws<InvalidOperationException>(
+                        () => bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyId }));
+                    Assert.Contains("Company access denied", ex.Message);
+                }
+                finally
+                {
+                    sessionService.Remove(accessToken);
+                }
             }
             finally
             {
-                companyService.Remove(companyA);
-                companyService.Remove(companyB);
-                sessionService.Remove(accessToken);
+                DeleteCompany(companyRowId);
+            }
+        }
+
+        [Fact]
+        [DisplayName("EnterCompany 公司停用但 user 已 grant 應拋 Company access denied")]
+        public void EnterCompany_DisabledCompany_ThrowsAccessDenied()
+        {
+            var companyId = "DIS_" + Guid.NewGuid().ToString("N")[..6];
+            var companyRowId = InsertCompany(companyId, enabled: false);
+            var userRowId = LookupUserRowId(SeedUserId);
+            var grantRowId = InsertGrant(userRowId, companyRowId);
+            try
+            {
+                var sessionService = _fx.GetRequiredService<ISessionInfoService>();
+                var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
+                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+
+                try
+                {
+                    var ex = Assert.Throws<InvalidOperationException>(
+                        () => bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyId }));
+                    Assert.Contains("Company access denied", ex.Message);
+                }
+                finally
+                {
+                    sessionService.Remove(accessToken);
+                }
+            }
+            finally
+            {
+                DeleteGrant(grantRowId);
+                DeleteCompany(companyRowId);
+            }
+        }
+
+        [Fact]
+        [DisplayName("EnterCompany 切換到另一已 grant 的 company 應覆寫 SessionInfo.CompanyId")]
+        public void EnterCompany_SwitchToAnotherCompany_Overwrites()
+        {
+            var companyB = "ALT_" + Guid.NewGuid().ToString("N")[..6];
+            var companyBRowId = InsertCompany(companyB, enabled: true);
+            var userRowId = LookupUserRowId(SeedUserId);
+            var grantRowId = InsertGrant(userRowId, companyBRowId);
+            try
+            {
+                var sessionService = _fx.GetRequiredService<ISessionInfoService>();
+                var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
+                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+
+                try
+                {
+                    bo.EnterCompany(new EnterCompanyArgs { CompanyId = SeedCompanyId });
+                    Assert.Equal(SeedCompanyId, sessionService.Get(accessToken)!.CompanyId);
+
+                    bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyB });
+                    Assert.Equal(companyB, sessionService.Get(accessToken)!.CompanyId);
+                }
+                finally
+                {
+                    sessionService.Remove(accessToken);
+                }
+            }
+            finally
+            {
+                DeleteGrant(grantRowId);
+                DeleteCompany(companyBRowId);
             }
         }
 
@@ -110,23 +223,18 @@ namespace Bee.Business.UnitTests
         [DisplayName("EnterCompany 對同一 CompanyId 重複呼叫應 idempotent")]
         public void EnterCompany_SameCompany_Idempotent()
         {
-            var companyService = _fx.GetRequiredService<ICompanyInfoService>();
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
-            var companyId = UniqueCompanyId();
-            companyService.Set(new CompanyInfo { CompanyId = companyId, CompanyName = "Acme" });
-            var accessToken = TestSessionFactory.CreateAccessToken(_fx);
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
 
             try
             {
-                bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyId });
-                bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyId });
-
-                Assert.Equal(companyId, sessionService.Get(accessToken)!.CompanyId);
+                bo.EnterCompany(new EnterCompanyArgs { CompanyId = SeedCompanyId });
+                bo.EnterCompany(new EnterCompanyArgs { CompanyId = SeedCompanyId });
+                Assert.Equal(SeedCompanyId, sessionService.Get(accessToken)!.CompanyId);
             }
             finally
             {
-                companyService.Remove(companyId);
                 sessionService.Remove(accessToken);
             }
         }
@@ -135,7 +243,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("EnterCompany 對空 CompanyId 應拋 ArgumentException")]
         public void EnterCompany_EmptyCompanyId_ThrowsArgumentException()
         {
-            var accessToken = TestSessionFactory.CreateAccessToken(_fx);
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
 
@@ -154,7 +262,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("EnterCompany 對 null args 應拋 ArgumentNullException")]
         public void EnterCompany_NullArgs_ThrowsArgumentNullException()
         {
-            var accessToken = TestSessionFactory.CreateAccessToken(_fx);
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
             var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
 

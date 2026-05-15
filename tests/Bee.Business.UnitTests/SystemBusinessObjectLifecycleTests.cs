@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;
+using Bee.Db;
 using Bee.Definition.Identity;
 using Bee.Tests.Shared;
 
@@ -25,20 +26,21 @@ namespace Bee.Business.UnitTests
         public void FullLifecycle_LoginThroughLogout_TransitionsCorrectly()
         {
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
-            var companyService = _fx.GetRequiredService<ICompanyInfoService>();
-            var companyA = UniqueCompanyId();
+            // companyA 用 seed C001（已有 user '001' 對照）；companyB 動態建立 + grant，
+            // 走真實 st_company / st_user_company 路徑符合新加入的 HasAccess 驗證。
+            const string companyA = "C001";
             var companyB = UniqueCompanyId();
-            companyService.Set(new CompanyInfo { CompanyId = companyA, CompanyName = "Acme", CompanyDatabaseId = "biz_a" });
-            companyService.Set(new CompanyInfo { CompanyId = companyB, CompanyName = "Bee", CompanyDatabaseId = "biz_b" });
+            var (companyBRowId, grantBRowId) = InsertCompanyAndGrantForSeedUser(companyB);
 
             try
             {
-                // 1. Login — 用 TestableSystemBusinessObject 繞過預設的 AuthenticateUser=false
+                // 1. Login — 用 TestableSystemBusinessObject 繞過預設的 AuthenticateUser=false；
+                // user id 必須對應 seed user '001'，否則 HasAccess JOIN 找不到對照。
                 var loginBo = new TestableSystemBusinessObject(
                     TestBeeContext.Create(_fx),
                     Guid.Empty,
                     _ => (true, "Integration User"));
-                var loginResult = loginBo.Login(new LoginArgs { UserId = "lifecycle_user", Password = "pwd" });
+                var loginResult = loginBo.Login(new LoginArgs { UserId = "001", Password = "pwd" });
                 Assert.NotEqual(Guid.Empty, loginResult.AccessToken);
                 var accessToken = loginResult.AccessToken;
                 Assert.Null(sessionService.Get(accessToken)!.CompanyId);
@@ -71,9 +73,41 @@ namespace Bee.Business.UnitTests
             }
             finally
             {
-                companyService.Remove(companyA);
-                companyService.Remove(companyB);
+                DeleteGrantAndCompany(grantBRowId, companyBRowId);
             }
+        }
+
+        // BO 整合測試僅綁定 `common` databaseId（SQL Server）；helper 寫 SQL Server 方言即可。
+        private (Guid companyRowId, Guid grantRowId) InsertCompanyAndGrantForSeedUser(string companyId)
+        {
+            var dbAccess = _fx.NewDbAccess("common");
+            var companyRowId = Guid.NewGuid();
+            var grantRowId = Guid.NewGuid();
+
+            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, enabled, sys_insert_time) " +
+                "VALUES ({0}, {1}, {2}, {3}, 1, GETDATE())",
+                companyRowId, companyId, "Lifecycle B", "common"));
+
+            var userLookup = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
+                "SELECT sys_rowid FROM st_user WHERE sys_id = {0}", "001"));
+            var userRowId = (Guid)userLookup.Scalar!;
+
+            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                "INSERT INTO st_user_company (sys_rowid, user_rowid, company_rowid, sys_insert_time) " +
+                "VALUES ({0}, {1}, {2}, GETDATE())",
+                grantRowId, userRowId, companyRowId));
+
+            return (companyRowId, grantRowId);
+        }
+
+        private void DeleteGrantAndCompany(Guid grantRowId, Guid companyRowId)
+        {
+            var dbAccess = _fx.NewDbAccess("common");
+            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                "DELETE FROM st_user_company WHERE sys_rowid = {0}", grantRowId));
+            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                "DELETE FROM st_company WHERE sys_rowid = {0}", companyRowId));
         }
 
         [Fact]

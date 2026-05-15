@@ -23,5 +23,15 @@ namespace Bee.Repository.Abstractions.Factories
         /// Creates an <see cref="ISessionRepository"/>.
         /// </summary>
         ISessionRepository CreateSessionRepository();
+
+        /// <summary>
+        /// Creates an <see cref="ICompanyRepository"/>.
+        /// </summary>
+        ICompanyRepository CreateCompanyRepository();
+
+        /// <summary>
+        /// Creates an <see cref="IUserCompanyRepository"/>.
+        /// </summary>
+        IUserCompanyRepository CreateUserCompanyRepository();
     }
 }

@@ -57,8 +57,11 @@ namespace Bee.Db.UnitTests
         [InlineData("text", "'foo'::text", "", "foo")]
         [InlineData("integer", "0", "", "0")]
         [InlineData("integer", "42", "", "42")]
-        [InlineData("boolean", "true", "", "true")]
-        [InlineData("boolean", "false", "", "false")]
+        [InlineData("boolean", "true", "", "1")]
+        [InlineData("boolean", "false", "", "0")]
+        [InlineData("boolean", "TRUE", "", "1")]
+        [InlineData("boolean", "FALSE", "", "0")]
+        [InlineData("bool", "true", "", "1")]
         [InlineData("date", "CURRENT_TIMESTAMP", "", "CURRENT_TIMESTAMP")]
         [InlineData("timestamp", "CURRENT_TIMESTAMP", "", "CURRENT_TIMESTAMP")]
         [InlineData("uuid", "gen_random_uuid()", "", "gen_random_uuid()")]
@@ -77,6 +80,16 @@ namespace Bee.Db.UnitTests
         {
             // integer 預設值通常為 "0"；剝除可能的 cast 後為 "0"，與內建相同 → 空字串
             var result = PgTableSchemaProvider.ParseDBDefaultValue("integer", "0", "0");
+
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
+        [DisplayName("PG ParseDBDefaultValue boolean false 規範化為 0 並與內建相同時回空字串")]
+        public void ParseDBDefaultValue_BooleanFalseMatchesBuiltin_ReturnsEmpty()
+        {
+            // PG 內建 boolean 預設為 "0"（canonical form）；DB 回 "false" 被規範化為 "0" → 空字串
+            var result = PgTableSchemaProvider.ParseDBDefaultValue("boolean", "false", "0");
 
             Assert.Equal(string.Empty, result);
         }

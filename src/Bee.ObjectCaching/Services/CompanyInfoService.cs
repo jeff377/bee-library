@@ -1,30 +1,47 @@
 using Bee.Definition.Identity;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.ObjectCaching.Services
 {
     /// <summary>
     /// Company information access service. Ctor-injects <see cref="ICacheContainer"/>
-    /// so per-host (or per-test-fixture) DI containers own their own company cache.
+    /// so per-host (or per-test-fixture) DI containers own their own company cache,
+    /// and <see cref="ICompanyRepository"/> so cache misses fall back to <c>st_company</c>.
     /// </summary>
     public class CompanyInfoService : ICompanyInfoService
     {
         private readonly ICacheContainer _cache;
+        private readonly ICompanyRepository _companyRepository;
 
         /// <summary>
-        /// Initializes a new <see cref="CompanyInfoService"/> backed by the supplied cache container.
+        /// Initializes a new <see cref="CompanyInfoService"/>.
         /// </summary>
         /// <param name="cache">The cache container hosting the company cache.</param>
-        public CompanyInfoService(ICacheContainer cache)
+        /// <param name="companyRepository">The DB-backed fallback for cache misses.</param>
+        public CompanyInfoService(ICacheContainer cache, ICompanyRepository companyRepository)
         {
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
+            _companyRepository = companyRepository ?? throw new ArgumentNullException(nameof(companyRepository));
         }
 
         /// <summary>
-        /// Gets the company information from the cache, falling back to the database on a cache miss.
+        /// Gets the company information from the cache; on a cache miss, loads the row from
+        /// <c>st_company</c> via <see cref="ICompanyRepository.GetById"/> and populates the
+        /// cache before returning. Returns <c>null</c> when the company doesn't exist (or is
+        /// disabled — disabled companies are filtered at the repository layer).
         /// </summary>
         public CompanyInfo? Get(string companyId)
         {
-            return _cache.CompanyInfo.Get(companyId);
+            var cached = _cache.CompanyInfo.Get(companyId);
+            if (cached != null) return cached;
+
+            var loaded = _companyRepository.GetById(companyId);
+            if (loaded != null)
+            {
+                _cache.CompanyInfo.Set(loaded);
+                return loaded;
+            }
+            return null;
         }
 
         /// <summary>

@@ -21,26 +21,19 @@ namespace Bee.Api.Core.UnitTests.System
     /// <item>BO 寫入 SessionInfo.CompanyId 後可被 ISessionInfoService 取回</item>
     /// </list>
     /// </summary>
-    public class EnterCompanyJsonRpcRoundTripTests : IClassFixture<BeeTestFixture>
+    public class EnterCompanyJsonRpcRoundTripTests : IClassFixture<SharedDbFixture>
     {
-        private readonly BeeTestFixture _fx;
+        private readonly SharedDbFixture _fx;
 
-        public EnterCompanyJsonRpcRoundTripTests(BeeTestFixture fx) { _fx = fx; }
+        public EnterCompanyJsonRpcRoundTripTests(SharedDbFixture fx) { _fx = fx; }
 
         [Fact]
         [DisplayName("System.EnterCompany 經 JsonRpcExecutor 應派發成功並寫入 SessionInfo.CompanyId")]
         public void EnterCompany_ThroughJsonRpc_DispatchesAndBindsCompany()
         {
-            // Arrange: 預先植入一筆 CompanyInfo + 建立有效 session
-            var companyService = _fx.GetRequiredService<ICompanyInfoService>();
-            companyService.Set(new CompanyInfo
-            {
-                CompanyId = "C001",
-                CompanyName = "Acme",
-                CompanyDatabaseId = "biz_shared_01"
-            });
-
-            var accessToken = TestSessionFactory.CreateAccessToken(_fx);
+            // Arrange: 利用 SharedDatabaseState 已 seed 的 user '001' + company 'C001' 對照，
+            // 走完整的 cache miss → DB fallback + HasAccess JOIN 路徑。
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: "001");
 
             var boFactory = new BusinessObjectFactory(
                 _fx.Provider,
@@ -70,28 +63,24 @@ namespace Bee.Api.Core.UnitTests.System
             // Act
             var response = executor.Execute(request);
 
-            // Assert: response 成功並帶 CompanyInfo
+            // Assert: response 成功並帶 CompanyInfo（cache miss 後從 DB 載入 seed company 'C001'）
             Assert.Null(response.Error);
             var result = Assert.IsType<EnterCompanyResponse>(response.Result!.Value);
             Assert.NotNull(result.Company);
             Assert.Equal("C001", result.Company.CompanyId);
-            Assert.Equal("Acme", result.Company.CompanyName);
-            Assert.Equal("biz_shared_01", result.Company.CompanyDatabaseId);
+            Assert.Equal("測試公司", result.Company.CompanyName);
 
             // SessionInfo.CompanyId 已寫入
             var session = _fx.GetRequiredService<ISessionInfoService>().Get(accessToken);
             Assert.NotNull(session);
             Assert.Equal("C001", session.CompanyId);
-
-            // 清理
-            companyService.Remove("C001");
         }
 
         [Fact]
         [DisplayName("System.EnterCompany 對不存在的 CompanyId 應回 RpcError 且 SessionInfo.CompanyId 不變")]
         public void EnterCompany_UnknownCompany_ReturnsRpcError()
         {
-            var accessToken = TestSessionFactory.CreateAccessToken(_fx);
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: "001");
 
             var boFactory = new BusinessObjectFactory(
                 _fx.Provider,

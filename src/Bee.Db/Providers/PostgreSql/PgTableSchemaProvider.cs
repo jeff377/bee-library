@@ -331,6 +331,14 @@ namespace Bee.Db.Providers.PostgreSql
                 case "text":
                     normalized = StripStringLiteral(trimmed);
                     break;
+                case "boolean":
+                case "bool":
+                    // Map PG-native `true`/`false` back to the canonical `"1"`/`"0"` form
+                    // used by other dialects, so schema diffs compare apples-to-apples.
+                    if (StringUtilities.IsEquals(trimmed, "true")) { normalized = "1"; }
+                    else if (StringUtilities.IsEquals(trimmed, "false")) { normalized = "0"; }
+                    else { normalized = trimmed; }
+                    break;
                 default:
                     normalized = trimmed;
                     break;

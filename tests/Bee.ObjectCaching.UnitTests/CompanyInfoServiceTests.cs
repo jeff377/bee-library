@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Definition;
 using Bee.Definition.Identity;
 using Bee.ObjectCaching.Services;
+using Bee.Repository.Abstractions.System;
 
 namespace Bee.ObjectCaching.UnitTests
 {
@@ -11,12 +12,25 @@ namespace Bee.ObjectCaching.UnitTests
     /// </summary>
     public class CompanyInfoServiceTests
     {
-        private static CompanyInfoService NewService(out CacheContainerService container)
+        private sealed class StubCompanyRepository : ICompanyRepository
+        {
+            private readonly Func<string, CompanyInfo?> _resolver;
+            public int GetByIdCallCount { get; private set; }
+            public StubCompanyRepository() : this(_ => null) { }
+            public StubCompanyRepository(Func<string, CompanyInfo?> resolver) { _resolver = resolver; }
+            public CompanyInfo? GetById(string companyId)
+            {
+                GetByIdCallCount++;
+                return _resolver(companyId);
+            }
+        }
+
+        private static CompanyInfoService NewService(out CacheContainerService container, ICompanyRepository? repo = null)
         {
             var paths = new PathOptions { DefinePath = Path.GetTempPath() };
             var storage = new Bee.Definition.Storage.FileDefineStorage(paths);
             container = new CacheContainerService(storage, paths, "company_svc_" + Guid.NewGuid().ToString("N"));
-            return new CompanyInfoService(container);
+            return new CompanyInfoService(container, repo ?? new StubCompanyRepository());
         }
 
         [Fact]
@@ -44,37 +58,49 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("Get 不存在的 companyId 應回傳 null")]
-        public void Get_MissingCompanyId_ReturnsNull()
+        [DisplayName("Get 不存在且 repository 也無資料時應回 null")]
+        public void Get_MissingCompanyId_RepoEmpty_ReturnsNull()
         {
             var service = NewService(out _);
             Assert.Null(service.Get("UNKNOWN"));
         }
 
         [Fact]
-        [DisplayName("第二次查同一個不存在 companyId 應命中 negative cache（CreateInstance 不再被呼叫）")]
-        public void Get_RepeatedMiss_HitsNegativeCache()
+        [DisplayName("Get cache miss 時應呼叫 repository fallback，並把結果寫回 cache")]
+        public void Get_CacheMiss_LoadsFromRepository_AndPopulatesCache()
         {
-            // 透過 ICacheContainer 暴露 CompanyInfoCache 的 ref，直接驗負向快取行為。
-            var service = NewService(out var container);
-            var cache = container.CompanyInfo;
+            var repo = new StubCompanyRepository(id => id == "DB_ONLY"
+                ? new CompanyInfo { CompanyId = "DB_ONLY", CompanyName = "from-db", CompanyDatabaseId = "common" }
+                : null);
+            var service = NewService(out var container, repo);
 
-            // 先 miss 一次，寫入 negative marker
-            Assert.Null(service.Get("MISS_X"));
-            // 第二次仍回 null（行為一致），且因為 CompanyInfoCache.CreateInstance 永遠回 null，
-            // 我們改檢查 Set 真實資料後 Get 仍可回傳——確保 marker 沒卡死 Set 路徑
-            var info = new CompanyInfo { CompanyId = "MISS_X", CompanyName = "Recovered" };
-            cache.Set(info);
-            var loaded = service.Get("MISS_X");
-            Assert.NotNull(loaded);
-            Assert.Equal("Recovered", loaded.CompanyName);
+            var first = service.Get("DB_ONLY");
+            Assert.NotNull(first);
+            Assert.Equal("from-db", first.CompanyName);
+            Assert.Equal(1, repo.GetByIdCallCount);
+
+            // 第二次應命中 cache，不再打 repository
+            var second = service.Get("DB_ONLY");
+            Assert.NotNull(second);
+            Assert.Equal(1, repo.GetByIdCallCount);
         }
 
         [Fact]
         [DisplayName("Ctor 傳入 null cache 應拋例外")]
         public void Ctor_NullCache_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new CompanyInfoService(null!));
+            Assert.Throws<ArgumentNullException>(
+                () => new CompanyInfoService(null!, new StubCompanyRepository()));
+        }
+
+        [Fact]
+        [DisplayName("Ctor 傳入 null companyRepository 應拋例外")]
+        public void Ctor_NullCompanyRepository_Throws()
+        {
+            var paths = new PathOptions { DefinePath = Path.GetTempPath() };
+            var storage = new Bee.Definition.Storage.FileDefineStorage(paths);
+            var cache = new CacheContainerService(storage, paths, "company_svc_null_repo_" + Guid.NewGuid().ToString("N"));
+            Assert.Throws<ArgumentNullException>(() => new CompanyInfoService(cache, null!));
         }
     }
 }

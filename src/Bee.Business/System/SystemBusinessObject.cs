@@ -4,6 +4,7 @@ using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Repository.Abstractions.Factories;
+using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 
@@ -126,10 +127,12 @@ namespace Bee.Business.System
         /// </summary>
         /// <param name="args">The input arguments carrying the target company id.</param>
         /// <remarks>
-        /// Permission validation is not performed in this base implementation; any
-        /// authenticated user can enter any existing company. The full permission
-        /// model (user-company access table, role-based rules) is the subject of a
-        /// follow-up plan and should be wired in at the marked extension point.
+        /// Permission validation enforces three rules: (1) the target company exists,
+        /// (2) it is enabled, (3) the current user is granted access via the
+        /// <c>st_user_company</c> table. All three failure modes surface as the same
+        /// <see cref="InvalidOperationException"/> with the message
+        /// <c>"Company access denied."</c> so callers cannot enumerate companies by
+        /// probing the error text.
         /// </remarks>
         [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
         public virtual EnterCompanyResult EnterCompany(EnterCompanyArgs args)
@@ -145,10 +148,9 @@ namespace Bee.Business.System
             var companyInfo = companyInfoService.Get(args.CompanyId)
                 ?? throw new InvalidOperationException("Company access denied.");
 
-            // TODO(plan-company-access-permission): Validate that this user is allowed
-            // to enter the requested company. The merged "no access / not exists" error
-            // surface (per plan D8) means permission failures should throw the same
-            // InvalidOperationException with the "Company access denied." message.
+            var userCompanyRepository = Services.GetRequiredService<IUserCompanyRepository>();
+            if (!userCompanyRepository.HasAccess(sessionInfo.UserId, args.CompanyId))
+                throw new InvalidOperationException("Company access denied.");
 
             sessionInfo.CompanyId = args.CompanyId;
             SessionInfoService.Set(sessionInfo);

@@ -60,6 +60,26 @@ namespace Bee.Repository.UnitTests
         }
 
         [Fact]
+        [DisplayName("CreateCompanyRepository 應回傳 CompanyRepository 型別")]
+        public void CreateCompanyRepository_ReturnsCompanyRepositoryType()
+        {
+            var repo = Factory.CreateCompanyRepository();
+
+            Assert.NotNull(repo);
+            Assert.IsType<CompanyRepository>(repo);
+        }
+
+        [Fact]
+        [DisplayName("CreateUserCompanyRepository 應回傳 UserCompanyRepository 型別")]
+        public void CreateUserCompanyRepository_ReturnsUserCompanyRepositoryType()
+        {
+            var repo = Factory.CreateUserCompanyRepository();
+
+            Assert.NotNull(repo);
+            Assert.IsType<UserCompanyRepository>(repo);
+        }
+
+        [Fact]
         [DisplayName("SystemRepositoryFactory 直接構造傳入 null IDefineAccess 應拋 ArgumentNullException")]
         public void Ctor_NullDefineAccess_Throws()
         {
