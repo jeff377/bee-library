@@ -63,11 +63,11 @@ namespace Bee.Repository.UnitTests
         }
 
         [Fact]
-        [DisplayName("CreateDataFormRepository 傳入 null progId 應拋出 ArgumentException")]
-        public void CreateDataFormRepository_NullProgId_ThrowsArgumentException()
+        [DisplayName("CreateDataFormRepository 傳入 null progId 應拋出 ArgumentNullException")]
+        public void CreateDataFormRepository_NullProgId_ThrowsArgumentNullException()
         {
             var factory = NewFactory();
-            Assert.Throws<ArgumentException>(() => factory.CreateDataFormRepository(null!));
+            Assert.Throws<ArgumentNullException>(() => factory.CreateDataFormRepository(null!));
         }
 
         [Fact]
