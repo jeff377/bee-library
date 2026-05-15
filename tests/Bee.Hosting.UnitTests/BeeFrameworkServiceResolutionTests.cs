@@ -3,75 +3,145 @@ using Bee.Business;
 using Bee.Definition;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
+using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Factories;
-using Bee.Tests.Shared;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bee.Hosting.UnitTests
 {
-    /// <summary>
-    /// 驗證 AddBeeFramework 注冊的服務可從 DI 容器正常解析，
-    /// 同時涵蓋各 singleton lambda 中的 CreateConfigurableService 等私有方法路徑。
-    /// </summary>
-    public class BeeFrameworkServiceResolutionTests : IClassFixture<BeeTestFixture>
+    public class BeeFrameworkServiceResolutionTests
     {
-        private readonly BeeTestFixture _fx;
-
-        public BeeFrameworkServiceResolutionTests(BeeTestFixture fx) { _fx = fx; }
-
         [Fact]
         [DisplayName("AddBeeFramework 建立的容器應能解析 IFormRepositoryFactory")]
         public void AddBeeFramework_CanResolve_IFormRepositoryFactory()
         {
-            var service = _fx.GetRequiredService<IFormRepositoryFactory>();
-            Assert.NotNull(service);
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-res-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddBeeFramework(new BackendConfiguration(), new PathOptions { DefinePath = tempDir }, autoCreateMasterKey: true);
+                using var sp = services.BuildServiceProvider();
+                Assert.NotNull(sp.GetRequiredService<IFormRepositoryFactory>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
         }
 
         [Fact]
         [DisplayName("AddBeeFramework 建立的容器應能解析 ISystemRepositoryFactory")]
         public void AddBeeFramework_CanResolve_ISystemRepositoryFactory()
         {
-            var service = _fx.GetRequiredService<ISystemRepositoryFactory>();
-            Assert.NotNull(service);
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-res-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddBeeFramework(new BackendConfiguration(), new PathOptions { DefinePath = tempDir }, autoCreateMasterKey: true);
+                using var sp = services.BuildServiceProvider();
+                Assert.NotNull(sp.GetRequiredService<ISystemRepositoryFactory>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
         }
 
         [Fact]
         [DisplayName("AddBeeFramework 建立的容器應能解析 IBusinessObjectFactory")]
         public void AddBeeFramework_CanResolve_IBusinessObjectFactory()
         {
-            var service = _fx.GetRequiredService<IBusinessObjectFactory>();
-            Assert.NotNull(service);
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-res-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddBeeFramework(new BackendConfiguration(), new PathOptions { DefinePath = tempDir }, autoCreateMasterKey: true);
+                using var sp = services.BuildServiceProvider();
+                Assert.NotNull(sp.GetRequiredService<IBusinessObjectFactory>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
         }
 
         [Fact]
         [DisplayName("AddBeeFramework 建立的容器應能解析 ISessionInfoService")]
         public void AddBeeFramework_CanResolve_ISessionInfoService()
         {
-            var service = _fx.GetRequiredService<ISessionInfoService>();
-            Assert.NotNull(service);
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-res-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddBeeFramework(new BackendConfiguration(), new PathOptions { DefinePath = tempDir }, autoCreateMasterKey: true);
+                using var sp = services.BuildServiceProvider();
+                Assert.NotNull(sp.GetRequiredService<ISessionInfoService>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
         }
 
         [Fact]
         [DisplayName("AddBeeFramework 建立的容器應能解析 IAccessTokenValidator")]
         public void AddBeeFramework_CanResolve_IAccessTokenValidator()
         {
-            var service = _fx.GetRequiredService<IAccessTokenValidator>();
-            Assert.NotNull(service);
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-res-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddBeeFramework(new BackendConfiguration(), new PathOptions { DefinePath = tempDir }, autoCreateMasterKey: true);
+                using var sp = services.BuildServiceProvider();
+                Assert.NotNull(sp.GetRequiredService<IAccessTokenValidator>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
         }
 
         [Fact]
         [DisplayName("AddBeeFramework 建立的容器應能解析 IFormBoTypeResolver")]
         public void AddBeeFramework_CanResolve_IFormBoTypeResolver()
         {
-            var service = _fx.GetRequiredService<IFormBoTypeResolver>();
-            Assert.NotNull(service);
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-res-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddBeeFramework(new BackendConfiguration(), new PathOptions { DefinePath = tempDir }, autoCreateMasterKey: true);
+                using var sp = services.BuildServiceProvider();
+                Assert.NotNull(sp.GetRequiredService<IFormBoTypeResolver>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
         }
 
         [Fact]
         [DisplayName("AddBeeFramework 建立的容器應能解析 IEnterpriseObjectService")]
         public void AddBeeFramework_CanResolve_IEnterpriseObjectService()
         {
-            var service = _fx.GetRequiredService<IEnterpriseObjectService>();
-            Assert.NotNull(service);
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-res-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                services.AddBeeFramework(new BackendConfiguration(), new PathOptions { DefinePath = tempDir }, autoCreateMasterKey: true);
+                using var sp = services.BuildServiceProvider();
+                Assert.NotNull(sp.GetRequiredService<IEnterpriseObjectService>());
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
         }
     }
 }
