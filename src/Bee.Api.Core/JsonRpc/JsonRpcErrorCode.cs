@@ -34,6 +34,22 @@ namespace Bee.Api.Core.JsonRpc
         /// <summary>
         /// Unauthorized access, typically due to credential validation failure (-32001).
         /// </summary>
-        Unauthorized = -32001
+        Unauthorized = -32001,
+
+        /// <summary>
+        /// The session has no company context (EnterCompany was not called or LeaveCompany has cleared it),
+        /// but the requested operation requires one (-32002). Maps to HTTP 409 Conflict.
+        /// </summary>
+        CompanyNotEntered = -32002,
+
+        /// <summary>
+        /// The caller cannot enter the requested company because the company does not exist
+        /// or the user has no permission to access it (-32003). Maps to HTTP 403 Forbidden.
+        /// </summary>
+        /// <remarks>
+        /// The two cases are intentionally merged into a single error code to prevent
+        /// anonymous enumeration of valid company ids via error-code differences.
+        /// </remarks>
+        CompanyAccessDenied = -32003
     }
 }

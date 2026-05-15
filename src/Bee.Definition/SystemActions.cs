@@ -18,6 +18,19 @@ namespace Bee.Definition
         /// </summary>
         public const string Login = "Login";
         /// <summary>
+        /// Destroys the current session, clearing any company context first.
+        /// </summary>
+        public const string Logout = "Logout";
+        /// <summary>
+        /// Enters the specified company for the current session. Also used to switch
+        /// between companies (the previous CompanyId is overwritten).
+        /// </summary>
+        public const string EnterCompany = "EnterCompany";
+        /// <summary>
+        /// Clears the company context from the current session while keeping the session alive.
+        /// </summary>
+        public const string LeaveCompany = "LeaveCompany";
+        /// <summary>
         /// Creates a session. Data encoding is not enabled for this method.
         /// </summary>
         public const string CreateSession = "CreateSession";

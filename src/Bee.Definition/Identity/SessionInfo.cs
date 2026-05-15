@@ -40,6 +40,18 @@ namespace Bee.Definition.Identity
         public string UserName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the ID of the company the user has entered for this session.
+        /// </summary>
+        /// <remarks>
+        /// <c>null</c> means the user has logged in but has not yet entered a company.
+        /// Business operations that depend on a company context (FormBO, ReportBO, etc.)
+        /// must reject requests with a <c>null</c> value via <c>CompanyNotEntered</c>.
+        /// The value is set by <c>EnterCompany</c> and cleared by <c>LeaveCompany</c> /
+        /// <c>Logout</c>.
+        /// </remarks>
+        public string? CompanyId { get; set; }
+
+        /// <summary>
         /// Gets or sets the user culture (e.g., zh-TW, en-US).
         /// </summary>
         public string Culture { get; set; } = "zh-TW";

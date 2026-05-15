@@ -29,9 +29,52 @@ namespace Bee.Definition.UnitTests
 
             // Assert
             Assert.Equal(Guid.Empty, info.AccessToken);
+            Assert.Null(info.CompanyId);
             Assert.Equal("zh-TW", info.Culture);
             Assert.Equal("Asia/Taipei", info.TimeZone);
             Assert.Empty(info.ApiEncryptionKey);
+        }
+
+        [Fact]
+        [DisplayName("CompanyInfo GetKey 應回傳 CompanyId")]
+        public void CompanyInfo_GetKey_ReturnsCompanyId()
+        {
+            // Arrange
+            var info = new CompanyInfo
+            {
+                CompanyId = "C001",
+                CompanyName = "Acme",
+                CompanyDatabaseId = "biz_shared_01",
+                LogDatabaseId = "log_shared_01"
+            };
+
+            // Act & Assert
+            Assert.Equal("C001", info.GetKey());
+        }
+
+        [Fact]
+        [DisplayName("CompanyInfo 預設建構式應產生空字串欄位")]
+        public void CompanyInfo_Defaults_ReturnsEmptyStrings()
+        {
+            // Act
+            var info = new CompanyInfo();
+
+            // Assert
+            Assert.Equal(string.Empty, info.CompanyId);
+            Assert.Equal(string.Empty, info.CompanyName);
+            Assert.Equal(string.Empty, info.CompanyDatabaseId);
+            Assert.Equal(string.Empty, info.LogDatabaseId);
+        }
+
+        [Fact]
+        [DisplayName("CompanyInfo ToString 應回傳 CompanyId : CompanyName 格式")]
+        public void CompanyInfo_ToString_ReturnsFormattedString()
+        {
+            // Arrange
+            var info = new CompanyInfo { CompanyId = "C001", CompanyName = "Acme" };
+
+            // Act & Assert
+            Assert.Equal("C001 : Acme", info.ToString());
         }
 
         [Fact]
