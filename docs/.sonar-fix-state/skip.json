@@ -1,0 +1,15 @@
+{
+  "issues": {},
+  "files": {},
+  "humanReview": {
+    "AZ4q3OyZfdkBgWhNTwf5": {
+      "rule": "csharpsquid:S1135",
+      "severity": "INFO",
+      "component": "src/Bee.Business/System/SystemBusinessObject.cs",
+      "line": 148,
+      "message": "Complete the task associated to this 'TODO' comment.",
+      "reason": "TODO 明確指向已追蹤的 plan-company-access-permission（plan D8），實作權限模型屬該計畫範疇而非 sonar-fix。建議於 SonarCloud UI 標 Won't Fix，或等待對應 plan 落地後一併移除此 TODO。",
+      "lastAttempt": "2026-05-15"
+    }
+  }
+}
