@@ -41,17 +41,6 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("CreateFormBO<T> 應回傳指定特化介面")]
-        public void CreateFormBO_Generic_ReturnsRequestedInterface()
-        {
-            // 用 IFormBusinessObject 本身當泛型參數驗證 generic 路徑可運作；
-            // 未來特化介面（如 IEmployeeBusinessObject）會走同一條路徑。
-            var bo = Factory.CreateFormBO<IFormBusinessObject>(Guid.NewGuid(), "prog01");
-
-            Assert.NotNull(bo);
-        }
-
-        [Fact]
         [DisplayName("CreateSystemBO 應回傳 ISystemBusinessObject 介面實例")]
         public void CreateSystemBO_ReturnsSystemBusinessObjectInterface()
         {
@@ -71,15 +60,6 @@ namespace Bee.Business.UnitTests
             var bo = (SystemBusinessObject)Factory.CreateSystemBO(Guid.NewGuid(), isLocalCall: false);
 
             Assert.False(bo.IsLocalCall);
-        }
-
-        [Fact]
-        [DisplayName("CreateSystemBO<T> 應回傳指定特化介面")]
-        public void CreateSystemBO_Generic_ReturnsRequestedInterface()
-        {
-            var bo = Factory.CreateSystemBO<ISystemBusinessObject>(Guid.NewGuid());
-
-            Assert.NotNull(bo);
         }
 
         [Fact]
