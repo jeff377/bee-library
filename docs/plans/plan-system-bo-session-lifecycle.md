@@ -1,6 +1,6 @@
 # 計畫：SystemBO Session 生命週期方法（Login / EnterCompany / LeaveCompany / Logout）
 
-**狀態：✅ 設計已確認，待執行**
+**狀態：✅ 已完成（2026-05-15）**
 
 > **前置 plan**：[plan-keyobjectcache-negative-cache.md](plan-keyobjectcache-negative-cache.md)
 > 本 plan 的 P2（`CompanyInfoCache` 建立）依賴 `KeyObjectCache<T>` 負向快取支援。
@@ -270,7 +270,7 @@ Login → EnterCompany(A) → 業務呼叫 → EnterCompany(B) → LeaveCompany 
 | **P3** | `EnterCompany` 方法（含 contract / wire / BO / client / 測試）；權限驗證點留 TODO | ✅ 已完成（2026-05-15） |
 | **P4** | `LeaveCompany` 方法（同上） | ✅ 已完成（2026-05-15） |
 | **P5** | `Logout` 方法（同上） | ✅ 已完成（2026-05-15） |
-| **P6** | 全流程整合測試（Login → EnterCompany(A) → EnterCompany(B) → LeaveCompany → EnterCompany(A) → Logout） | 待執行 |
+| **P6** | 全流程整合測試（Login → EnterCompany(A) → EnterCompany(B) → LeaveCompany → EnterCompany(A) → Logout） | ✅ 已完成（2026-05-15） |
 
 每 phase 可獨立 commit、獨立 build & test 通過。
 
