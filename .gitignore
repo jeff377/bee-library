@@ -261,6 +261,10 @@ _pkginfo.txt
 # but keep track of directories ending in .cache
 !?*.[Cc]ache/
 
+# VS Code C# Dev Kit (Roslyn language server) caches
+*.csproj.lscache
+*.sln.lscache
+
 # Others
 ClientBin/
 ~$*
