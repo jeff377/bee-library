@@ -35,7 +35,8 @@ public class MyService(ISystemRepositoryFactory repoFactory)
     public bool UpgradeEmployeeTable()
     {
         var repo = repoFactory.CreateDatabaseRepository();
-        return repo.UpgradeTableSchema("common", "myDb", "ft_employee");
+        // Parameter order: databaseId (physical connection id), categoryId (logical category), tableName
+        return repo.UpgradeTableSchema("myDb", "common", "ft_employee");
     }
 }
 ```
@@ -49,16 +50,17 @@ The return value indicates whether an upgrade was actually performed: `false` me
 When you need finer control (dry-run, `UpgradeOptions`, structured diff), drop down to [TableSchemaBuilder](../src/Bee.Db/Schema/TableSchemaBuilder.cs):
 
 ```csharp
-var builder = new TableSchemaBuilder("common");
+// Resolve defineAccess and connectionManager via DI (e.g. inject in BO / Service ctor)
+var builder = new TableSchemaBuilder("myDb", defineAccess, connectionManager);
 
-// Get the structured diff (no execution)
-TableSchemaDiff diff = builder.CompareToDiff("myDb", "ft_employee");
+// Get the structured diff (no execution); the first argument of subsequent methods is the categoryId
+TableSchemaDiff diff = builder.CompareToDiff("common", "ft_employee");
 
 // Get the SQL that would be executed (no execution)
-string sql = builder.GetCommandText("myDb", "ft_employee");
+string sql = builder.GetCommandText("common", "ft_employee");
 
 // Run the upgrade (UpgradeOptions is optional)
-bool upgraded = builder.Execute("myDb", "ft_employee", new UpgradeOptions
+bool upgraded = builder.Execute("common", "ft_employee", new UpgradeOptions
 {
     AllowColumnNarrowing = true,
 });
@@ -109,8 +111,8 @@ It also carries `DescriptionChanges` (MS_Description / extended-property synchro
 [UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs) holds the `Mode` (`NoChange` / `Create` / `Alter` / `Rebuild`), the `Stages` (staged SQL), and `Warnings`. You can print the SQL directly:
 
 ```csharp
-var diff = builder.CompareToDiff("myDb", "ft_employee");
-var plan = new TableUpgradeOrchestrator("common").Plan(diff);
+var diff = builder.CompareToDiff("common", "ft_employee");
+var plan = new TableUpgradeOrchestrator("myDb", connectionManager).Plan(diff);
 
 Console.WriteLine($"Mode: {plan.Mode}");
 foreach (var sql in plan.AllStatements)
@@ -243,14 +245,14 @@ The following are **outside the scope of automatic upgrade** and must be handled
 For large tables (tens of millions of rows), **strongly recommend a dry-run** to confirm the execution mode:
 
 ```csharp
-var diff = builder.CompareToDiff("myDb", "ft_orders");
-var plan = new TableUpgradeOrchestrator("common").Plan(diff);
+var diff = builder.CompareToDiff("common", "ft_orders");
+var plan = new TableUpgradeOrchestrator("myDb", connectionManager).Plan(diff);
 
 if (plan.Mode == UpgradeExecutionMode.Rebuild)
 {
     // This run will rebuild — schedule a maintenance window
     Console.WriteLine("Rebuild will be triggered:");
-    Console.WriteLine(builder.GetCommandText("myDb", "ft_orders"));
+    Console.WriteLine(builder.GetCommandText("common", "ft_orders"));
 }
 ```
 

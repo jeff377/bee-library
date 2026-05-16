@@ -240,7 +240,7 @@ public LoginResult Login(LoginArgs args) { ... }
    - `IGetOrderRequest.cs` — 輸入屬性
    - `IGetOrderResponse.cs` — 輸出屬性
 
-2. **建立 API 合約型別**（`src/Bee.Api.Core/System/` 或對應模組目錄）
+2. **建立 API 合約型別**（`src/Bee.Api.Core/Messages/System/` 或 `Messages/Form/` 等對應模組目錄；namespace 為 `Bee.Api.Core.Messages.<Module>`）
    - `GetOrderRequest.cs` — 繼承 `ApiRequest`，實作 `IGetOrderRequest`，標記 MessagePack
    - `GetOrderResponse.cs` — 繼承 `ApiResponse`，實作 `IGetOrderResponse`，標記 MessagePack
 

@@ -21,7 +21,7 @@ See [development-cookbook.md § Framework Initialization Order](development-cook
 
 - Resolving framework services before `AddBeeFramework` → DI container throws `InvalidOperationException` (service not registered)
 - Calling `SystemSettingsLoader.Load` on a path with no `SystemSettings.xml` → throws `FileNotFoundException`
-- Constructing `DbAccess` without an `IDbConnectionManager` argument (the single-arg legacy ctor was removed in Phase 7) → compile error; obtain `DbAccess` instances through DI-injected `IDbAccessFactory.Create(databaseId)`
+- Constructing `DbAccess` without an `IDbConnectionManager` argument → compile error (every constructor of `DbAccess` requires `IDbConnectionManager`); obtain `DbAccess` instances through DI-injected `IDbAccessFactory.Create(databaseId)`
 
 ### Reference Example
 

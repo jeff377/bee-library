@@ -115,8 +115,10 @@ FormMap 是 DDA 在資料存取層的具體模式，與 `FormLayout` / `TableSch
 ### 範例 1：純主檔查詢（無 JOIN）
 
 ```csharp
-var builder = new SqlFormCommandBuilder("Project");
-var command = builder.BuildSelectCommand("Project", "sys_id,sys_name");
+// 透過 DI 取得 defineAccess（例如在 BO / Service ctor 注入）
+var projectSchema = defineAccess.GetFormSchema("Project");
+var builder = new SqlFormCommandBuilder(projectSchema, defineAccess);
+var command = builder.BuildSelect("Project", "sys_id,sys_name");
 ```
 
 **產出 SQL：**
@@ -131,7 +133,7 @@ FROM [ft_project] A
 
 ```csharp
 var filter = new FilterCondition("ref_pm_name", ComparisonOperator.StartsWith, "張");
-var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", filter);
+var command = builder.BuildSelect("Project", "sys_id,sys_name", filter);
 ```
 
 **產出 SQL：**
@@ -151,7 +153,7 @@ var sortFields = new SortFieldCollection
 {
     new SortField("ref_pm_dept_name", SortDirection.Asc)
 };
-var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", null, sortFields);
+var command = builder.BuildSelect("Project", "sys_id,sys_name", null, sortFields);
 ```
 
 **產出 SQL：**
@@ -168,7 +170,7 @@ ORDER BY C.[sys_name] ASC
 ### 範例 4：多參考欄位
 
 ```csharp
-var command = builder.BuildSelectCommand("Project",
+var command = builder.BuildSelect("Project",
     "sys_id,sys_name,ref_owner_dept_name,ref_pm_dept_name");
 ```
 
@@ -195,7 +197,7 @@ var sortFields = new SortFieldCollection
 {
     new SortField("sys_id", SortDirection.Asc)
 };
-var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", filterGroup, sortFields);
+var command = builder.BuildSelect("Project", "sys_id,sys_name", filterGroup, sortFields);
 ```
 
 **產出 SQL：**

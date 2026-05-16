@@ -6,9 +6,9 @@
 
 ## Framework Initialization Order
 
-After Phase 5 the framework registers itself in the standard `IServiceCollection`
-DI container; framework services are resolved through ctor injection rather than
-static entry points.
+The framework registers itself in the standard `IServiceCollection` DI container;
+framework services are resolved through ctor injection — there is no static
+entry point (service locator).
 
 ### Host Startup Flow
 

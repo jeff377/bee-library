@@ -21,7 +21,7 @@
 
 - 在 `AddBeeFramework` 之前解析框架服務 → DI 容器拋 `InvalidOperationException`（服務未註冊）
 - `SystemSettingsLoader.Load` 指向不存在的 `SystemSettings.xml` → 拋 `FileNotFoundException`
-- 直接 `new DbAccess(databaseId)` 而未提供 `IDbConnectionManager` 參數（Phase 7 已移除單參數 ctor）→ 編譯錯誤；改透過 DI 注入的 `IDbAccessFactory.Create(databaseId)` 取得 `DbAccess` 實例
+- 直接 `new DbAccess(databaseId)` 而未提供 `IDbConnectionManager` 參數 → 編譯錯誤（框架要求所有 ctor 都帶 `IDbConnectionManager`）；改透過 DI 注入的 `IDbAccessFactory.Create(databaseId)` 取得 `DbAccess` 實例
 
 ### 參考範例
 

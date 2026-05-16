@@ -6,8 +6,8 @@
 
 ## 框架初始化順序
 
-Phase 5 之後框架以標準 `IServiceCollection` DI 容器註冊；所有 framework 服務透過
-ctor 注入解析，不再透過靜態入口點。
+框架以標準 `IServiceCollection` DI 容器註冊；所有 framework 服務透過
+ctor 注入解析，無靜態入口點（service locator）。
 
 ### Host 啟動流程
 

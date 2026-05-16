@@ -35,7 +35,8 @@ public class MyService(ISystemRepositoryFactory repoFactory)
     public bool UpgradeEmployeeTable()
     {
         var repo = repoFactory.CreateDatabaseRepository();
-        return repo.UpgradeTableSchema("common", "myDb", "ft_employee");
+        // 參數順序：databaseId（實體連線識別）、categoryId（邏輯分類）、tableName
+        return repo.UpgradeTableSchema("myDb", "common", "ft_employee");
     }
 }
 ```
@@ -49,16 +50,17 @@ public class MyService(ISystemRepositoryFactory repoFactory)
 需要更細的控制（dry-run、`UpgradeOptions`、結構化 diff）時，直接使用底層的 [TableSchemaBuilder](../src/Bee.Db/Schema/TableSchemaBuilder.cs)：
 
 ```csharp
-var builder = new TableSchemaBuilder("common");
+// 透過 DI 取得 defineAccess 與 connectionManager（例如在 BO / Service ctor 注入）
+var builder = new TableSchemaBuilder("myDb", defineAccess, connectionManager);
 
-// 取得結構化 diff（不執行）
-TableSchemaDiff diff = builder.CompareToDiff("myDb", "ft_employee");
+// 取得結構化 diff（不執行）；後續方法的第一參數為 categoryId
+TableSchemaDiff diff = builder.CompareToDiff("common", "ft_employee");
 
 // 取得即將執行的 SQL（不執行）
-string sql = builder.GetCommandText("myDb", "ft_employee");
+string sql = builder.GetCommandText("common", "ft_employee");
 
 // 執行升級（可選傳 UpgradeOptions）
-bool upgraded = builder.Execute("myDb", "ft_employee", new UpgradeOptions
+bool upgraded = builder.Execute("common", "ft_employee", new UpgradeOptions
 {
     AllowColumnNarrowing = true,
 });
@@ -109,8 +111,8 @@ bool upgraded = builder.Execute("myDb", "ft_employee", new UpgradeOptions
 [UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs) 含 `Mode`（`NoChange` / `Create` / `Alter` / `Rebuild`）、`Stages`（分階段 SQL）與 `Warnings`。可直接列印 SQL：
 
 ```csharp
-var diff = builder.CompareToDiff("myDb", "ft_employee");
-var plan = new TableUpgradeOrchestrator("common").Plan(diff);
+var diff = builder.CompareToDiff("common", "ft_employee");
+var plan = new TableUpgradeOrchestrator("myDb", connectionManager).Plan(diff);
 
 Console.WriteLine($"Mode: {plan.Mode}");
 foreach (var sql in plan.AllStatements)
@@ -243,14 +245,14 @@ Stage 5: SyncDescriptions   extended property（MS_Description）同步
 對大資料表（千萬筆以上）部署前，**強烈建議 dry-run** 先確認模式：
 
 ```csharp
-var diff = builder.CompareToDiff("myDb", "ft_orders");
-var plan = new TableUpgradeOrchestrator("common").Plan(diff);
+var diff = builder.CompareToDiff("common", "ft_orders");
+var plan = new TableUpgradeOrchestrator("myDb", connectionManager).Plan(diff);
 
 if (plan.Mode == UpgradeExecutionMode.Rebuild)
 {
     // 這次會走 rebuild — 排維護視窗
     Console.WriteLine("Rebuild will be triggered:");
-    Console.WriteLine(builder.GetCommandText("myDb", "ft_orders"));
+    Console.WriteLine(builder.GetCommandText("common", "ft_orders"));
 }
 ```
 

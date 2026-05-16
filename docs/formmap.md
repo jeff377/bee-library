@@ -115,8 +115,10 @@ The following examples use three simplified `FormSchema` definitions:
 ### Example 1: Master-Only Query (No JOIN)
 
 ```csharp
-var builder = new SqlFormCommandBuilder("Project");
-var command = builder.BuildSelectCommand("Project", "sys_id,sys_name");
+// Resolve defineAccess via DI (e.g. inject in BO / Service ctor)
+var projectSchema = defineAccess.GetFormSchema("Project");
+var builder = new SqlFormCommandBuilder(projectSchema, defineAccess);
+var command = builder.BuildSelect("Project", "sys_id,sys_name");
 ```
 
 **Generated SQL:**
@@ -131,7 +133,7 @@ No reference fields are used — FormMap produces no JOIN.
 
 ```csharp
 var filter = new FilterCondition("ref_pm_name", ComparisonOperator.StartsWith, "Chang");
-var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", filter);
+var command = builder.BuildSelect("Project", "sys_id,sys_name", filter);
 ```
 
 **Generated SQL:**
@@ -151,7 +153,7 @@ var sortFields = new SortFieldCollection
 {
     new SortField("ref_pm_dept_name", SortDirection.Asc)
 };
-var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", null, sortFields);
+var command = builder.BuildSelect("Project", "sys_id,sys_name", null, sortFields);
 ```
 
 **Generated SQL:**
@@ -168,7 +170,7 @@ ORDER BY C.[sys_name] ASC
 ### Example 4: Multiple Reference Fields
 
 ```csharp
-var command = builder.BuildSelectCommand("Project",
+var command = builder.BuildSelect("Project",
     "sys_id,sys_name,ref_owner_dept_name,ref_pm_dept_name");
 ```
 
@@ -195,7 +197,7 @@ var sortFields = new SortFieldCollection
 {
     new SortField("sys_id", SortDirection.Asc)
 };
-var command = builder.BuildSelectCommand("Project", "sys_id,sys_name", filterGroup, sortFields);
+var command = builder.BuildSelect("Project", "sys_id,sys_name", filterGroup, sortFields);
 ```
 
 **Generated SQL:**

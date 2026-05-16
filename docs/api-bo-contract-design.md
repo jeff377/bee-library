@@ -240,7 +240,7 @@ Using `GetOrder` as an example:
    - `IGetOrderRequest.cs` — input properties
    - `IGetOrderResponse.cs` — output properties
 
-2. **Create API contract types** (`src/Bee.Api.Core/System/` or the appropriate module directory)
+2. **Create API contract types** (`src/Bee.Api.Core/Messages/System/` or `Messages/Form/` etc.; namespace is `Bee.Api.Core.Messages.<Module>`)
    - `GetOrderRequest.cs` — inherits `ApiRequest`, implements `IGetOrderRequest`, with MessagePack
    - `GetOrderResponse.cs` — inherits `ApiResponse`, implements `IGetOrderResponse`, with MessagePack
 

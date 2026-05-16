@@ -62,7 +62,8 @@ DatabaseSettings.Items (3 entries)                  Physical DBs (1)
 ─────────────────────────────                       ────────────────
 DatabaseItem  CategoryId="common"   DbName=erp ──┐
 DatabaseItem  CategoryId="company"  DbName=erp ──┼──► erp (contains st_user, st_session,
-DatabaseItem  CategoryId="log"      DbName=erp ──┘     ft_department, ft_employee,
+DatabaseItem  CategoryId="log"      DbName=erp ──┘     st_company, st_user_company,
+                                                       ft_department, ft_employee,
                                                        ft_project, log tables)
 ```
 
@@ -71,7 +72,7 @@ DatabaseItem  CategoryId="log"      DbName=erp ──┘     ft_department, ft_e
 ```text
 DatabaseSettings.Items (3 entries)                  Physical DBs (3)
 ─────────────────────────────                       ────────────────
-DatabaseItem  CategoryId="common"   DbName=erp_common  ──► erp_common  (st_user, st_session)
+DatabaseItem  CategoryId="common"   DbName=erp_common  ──► erp_common  (st_user, st_session, st_company, st_user_company)
 DatabaseItem  CategoryId="company"  DbName=erp_company ──► erp_company (ft_department, ft_employee, ft_project)
 DatabaseItem  CategoryId="log"      DbName=erp_log     ──► erp_log     (log tables)
 ```
@@ -253,11 +254,13 @@ The framework uses three default logical categories:
 
 | Category Id | Purpose | Typical Tables |
 |-------------|---------|----------------|
-| `common` | Shared database — system tables shared across companies | `st_user`, `st_session` |
+| `common` | Shared database — system tables shared across companies | `st_user`, `st_session`, `st_company`, `st_user_company` |
 | `company` | Company database — business data, separate per company | `ft_department`, `ft_employee`, `ft_project` |
 | `log` | Log database — audit / operation records with frequent writes | (depends on the application) |
 
-**These three are conventions, not framework constraints**; projects can define custom categories, but the `CategoryId` in FormSchema and DatabaseItem must match a category id declared in `DbCategorySettings`.
+**`common` is a framework-mandated contract**: it must exist and `DatabaseItem.Id == CategoryId == "common"` (enforced at startup by `services.AddBeeFramework`; system services such as `SessionRepository` route through the fixed `databaseId = "common"`). See the [`DbCategoryIds`](../src/Bee.Definition/Database/DbCategoryIds.cs) constants.
+
+`company` and `log` are default logical categories provided by the framework; usage is left to the business (a single-tenant setup may skip `log`, multi-tenant setups may add custom categories). For custom categories, the `CategoryId` in FormSchema and DatabaseItem must match a category id declared in `DbCategorySettings`.
 
 ---
 
@@ -347,7 +350,9 @@ TableSchemas derived from FormSchemas are stored in directories grouped by Categ
 <DefinePath>/TableSchema/
               ├── common/
               │     ├── st_user.TableSchema.xml
-              │     └── st_session.TableSchema.xml
+              │     ├── st_session.TableSchema.xml
+              │     ├── st_company.TableSchema.xml
+              │     └── st_user_company.TableSchema.xml
               ├── company/
               │     ├── ft_department.TableSchema.xml
               │     └── ft_employee.TableSchema.xml
@@ -393,7 +398,7 @@ Application code chooses `databaseId` based on "which logical category the data 
 
 | Data to Access | Category | Deployment Scenario | DatabaseId Used |
 |----------------|----------|---------------------|-----------------|
-| `st_user`, `st_session` | common | Any | The `Id` of the DatabaseItem with `CategoryId=common` |
+| `st_user`, `st_session`, `st_company`, `st_user_company` | common | Any | Fixed string `"common"` (framework contract: `DatabaseItem.Id == "common"`) |
 | `ft_employee`, `ft_department` | company | Single company | The `Id` of the entry with `CategoryId=company` |
 | `ft_employee`, `ft_department` | company | Multi-tenant | The `Id` of `companyXXX` for the current tenant (e.g. `$"company{tenantId:D3}"`) |
 | Log writes | log | Single DB | The `Id` of the entry with `CategoryId=log` |
@@ -481,6 +486,8 @@ Both settings files are located at the root of `PathOptions.DefinePath`:
       <Tables>
         <TableItem TableName="st_user" DisplayName="User" />
         <TableItem TableName="st_session" DisplayName="Session" />
+        <TableItem TableName="st_company" DisplayName="Company" />
+        <TableItem TableName="st_user_company" DisplayName="User-Company access" />
       </Tables>
     </DbCategory>
     <DbCategory Id="company" DisplayName="Company Database">
