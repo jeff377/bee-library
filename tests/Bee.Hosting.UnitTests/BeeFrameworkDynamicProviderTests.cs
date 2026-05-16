@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Bee.Business.Providers;
+using Bee.Definition;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Microsoft.Extensions.DependencyInjection;
