@@ -30,5 +30,14 @@ namespace Bee.Base.UnitTests
             Assert.True(result.IsSuccess);
             Assert.Equal("msg", result.Message);
         }
+
+        [Fact]
+        [DisplayName("LoadAssembly 不含 .dll 副檔名時應透過 Assembly.Load 載入正確組件")]
+        public void LoadAssembly_NameWithoutDllExtension_LoadsAssembly()
+        {
+            var assembly = AssemblyLoader.LoadAssembly("Bee.Base");
+            Assert.NotNull(assembly);
+            Assert.Equal("Bee.Base", assembly.GetName().Name);
+        }
     }
 }
