@@ -417,7 +417,7 @@ namespace Bee.Tests.Shared
             string colNote = dbType.QuoteIdentifier("note");
             string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
 
-            var existing = LookupRowId(dbType, dbAccess, tbl, colRowId, colId, "001");
+            var existing = LookupRowId(dbAccess, tbl, colRowId, colId, "001");
             if (existing != Guid.Empty)
             {
                 Console.WriteLine($"SharedDatabaseState: {databaseId} seed user '001' already exists (rowid={existing})");
@@ -447,7 +447,7 @@ namespace Bee.Tests.Shared
             string colEnabled = dbType.QuoteIdentifier("enabled");
             string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
 
-            var existing = LookupRowId(dbType, dbAccess, tbl, colRowId, colId, "C001");
+            var existing = LookupRowId(dbAccess, tbl, colRowId, colId, "C001");
             if (existing != Guid.Empty)
             {
                 Console.WriteLine($"SharedDatabaseState: {databaseId} seed company 'C001' already exists (rowid={existing})");
@@ -500,7 +500,7 @@ namespace Bee.Tests.Shared
         // SELECT sys_rowid by business key; returns Guid.Empty if not found.
         // Handles Oracle RAW(16) (returned as byte[]) and string-storage (SQLite) alongside native Guid.
         private static Guid LookupRowId(
-            DatabaseType dbType, DbAccess dbAccess, string tbl, string colRowId, string colBusinessKey, string businessKey)
+            DbAccess dbAccess, string tbl, string colRowId, string colBusinessKey, string businessKey)
         {
             var spec = new DbCommandSpec(DbCommandKind.Scalar,
                 $"SELECT {colRowId} FROM {tbl} WHERE {colBusinessKey} = {{0}}", businessKey);
