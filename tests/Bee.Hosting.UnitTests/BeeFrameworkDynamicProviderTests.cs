@@ -65,5 +65,29 @@ namespace Bee.Hosting.UnitTests
                 try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
             }
         }
+
+        [Fact]
+        [DisplayName("AddBeeFramework 預設組態解析 IEnterpriseObjectService 應成功（CreateOrDefault 路徑）")]
+        public void AddBeeFramework_DefaultConfig_ResolvesEnterpriseObjectService()
+        {
+            string tempDir = Path.Combine(Path.GetTempPath(), $"bee-fw-eos-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(tempDir);
+            try
+            {
+                var services = new ServiceCollection();
+                var configuration = new BackendConfiguration();
+                var pathOptions = new PathOptions { DefinePath = tempDir };
+                services.AddBeeFramework(configuration, pathOptions, autoCreateMasterKey: true);
+
+                using var sp = services.BuildServiceProvider();
+                var exception = Record.Exception(() => sp.GetRequiredService<IEnterpriseObjectService>());
+
+                Assert.Null(exception);
+            }
+            finally
+            {
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { /* best effort */ }
+            }
+        }
     }
 }
