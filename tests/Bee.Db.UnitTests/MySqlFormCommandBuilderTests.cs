@@ -106,5 +106,16 @@ namespace Bee.Db.UnitTests
 
             Assert.Contains("DELETE FROM `tb_foo`", spec.CommandText);
         }
+
+        [Fact]
+        [DisplayName("BuildCount 應委派至 MySQL 方言並產生 COUNT(*) 語句（backtick 識別符）")]
+        public void BuildCount_DelegatesToMySqlDialect()
+        {
+            var builder = NewBuilder();
+            var spec = builder.BuildCount("Foo");
+
+            Assert.Contains("COUNT(*)", spec.CommandText);
+            Assert.Contains("`tb_foo`", spec.CommandText);
+        }
     }
 }
