@@ -124,5 +124,16 @@ namespace Bee.Db.UnitTests
             // 透過 DatabaseType.Oracle.GetParameterPrefix() 注入，純語法測試不涵蓋。
             Assert.Contains("{0}", spec.CommandText);
         }
+
+        [Fact]
+        [DisplayName("BuildCount 應委派至 Oracle 方言並產生 SELECT COUNT(*) 語句（雙引號識別符）")]
+        public void BuildCount_DelegatesToOracleDialect()
+        {
+            var builder = NewBuilder();
+            var spec = builder.BuildCount("Foo");
+
+            Assert.Contains("COUNT", spec.CommandText, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("\"TB_FOO\"", spec.CommandText);
+        }
     }
 }
