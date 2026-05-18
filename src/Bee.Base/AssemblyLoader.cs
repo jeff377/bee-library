@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Collections.Concurrent;
+using System.Reflection;
 using System.Runtime.Loader;
 
 namespace Bee.Base
@@ -8,8 +9,10 @@ namespace Bee.Base
     /// </summary>
     public static class AssemblyLoader
     {
-        // Cache loaded assemblies to avoid reloading
-        private static readonly Dictionary<string, Assembly> _loadedAssemblies = new Dictionary<string, Assembly>(StringComparer.OrdinalIgnoreCase);
+        // Cache loaded assemblies to avoid reloading. `ConcurrentDictionary` is required because
+        // xUnit collection-per-class parallel runs construct fixtures concurrently, and the
+        // resulting concurrent reads/writes would corrupt a plain `Dictionary`.
+        private static readonly ConcurrentDictionary<string, Assembly> _loadedAssemblies = new(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// Finds the specified assembly.
