@@ -86,7 +86,7 @@ namespace Bee.Repository.UnitTests
         {
             // Seed: 建 disabled company + 對照 user '001' → 該公司；HasAccess 應為 false。
             var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType));
-            var companyId = "DIS_" + Guid.NewGuid().ToString("N").Substring(0, 6);
+            var companyId = string.Concat("DIS_", Guid.NewGuid().ToString("N").AsSpan(0, 6));
             var companyRowId = Guid.NewGuid();
             var linkRowId = Guid.NewGuid();
 
