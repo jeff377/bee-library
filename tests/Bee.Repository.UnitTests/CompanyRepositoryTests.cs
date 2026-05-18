@@ -91,7 +91,7 @@ namespace Bee.Repository.UnitTests
             // 建一筆 disabled company；查詢應回 null。本 sub-test 透過原生 SQL 寫 seed
             // 以避免依賴尚未實作的 admin API。company id 用隨機後綴避免 5 DB 殘留汙染。
             var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType));
-            var companyId = "DISABLED_" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            var companyId = string.Concat("DISABLED_", Guid.NewGuid().ToString("N").AsSpan(0, 8));
             string tbl = dbType.QuoteIdentifier("st_company");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier("sys_id");
