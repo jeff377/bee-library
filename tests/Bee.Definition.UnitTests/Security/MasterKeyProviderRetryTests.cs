@@ -27,7 +27,7 @@ namespace Bee.Definition.UnitTests.Security
                 MasterKeyProvider.GetMasterKey(source, definePath: string.Empty, autoCreate: true));
 
             Assert.NotNull(exception);
-            Assert.IsAssignableFrom<IOException>(exception);
+            Assert.IsType<IOException>(exception, exactMatch: false);
         }
     }
 }
