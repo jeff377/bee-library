@@ -18,7 +18,14 @@
 
 ## Status
 
-Project skeleton only. UI components (DynamicForm / DynamicGrid / FormPage / FormDataObject) are not yet implemented. See [docs/plans/plan-blazor-web-integration.md](../../docs/plans/plan-blazor-web-integration.md) for the full design.
+Phase 1a (layout-only UI) shipped:
+
+- `FormDataObject` derives an in-memory `DataSet` (master row + detail tables) from `FormSchema` and exposes `GetField` / `SetField` for two-way binding.
+- `DynamicForm` renders the master section(s) of a `FormLayout`, dispatching each field to the input element appropriate to its `ControlType` (text / date / month / checkbox / textarea / dropdown).
+- Round-trip server methods (`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync`) are stubbed with `NotImplementedException` and land in Phase 1b together with the BO CRUD plan.
+- `DynamicGrid` and `FormPage` are deferred to Phase 1b.
+
+See [docs/plans/plan-blazor-web-integration.md](../../docs/plans/plan-blazor-web-integration.md) for the full design.
 
 ## Dependency Constraints
 

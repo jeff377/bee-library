@@ -1,0 +1,92 @@
+@using Bee.Definition.Layouts
+@using Bee.Web.Blazor.Wasm.DataObjects
+
+@if (Layout is null || DataObject is null)
+{
+    <div class="bee-dynamic-form bee-dynamic-form--empty"></div>
+}
+else
+{
+    <div class="bee-dynamic-form">
+        @foreach (var section in EnumerateSections())
+        {
+            <fieldset class="bee-dynamic-form__section">
+                @if (section.ShowCaption && !string.IsNullOrEmpty(section.Caption))
+                {
+                    <legend class="bee-dynamic-form__section-caption">@section.Caption</legend>
+                }
+                <div class="bee-dynamic-form__grid" style="@BuildGridStyle()">
+                    @foreach (var field in EnumerateFields(section))
+                    {
+                        var inputId = FieldInputId(field);
+                        var rawValue = DataObject.GetField(field.FieldName);
+
+                        <div class="bee-dynamic-form__field" style="@BuildFieldStyle(field)">
+                            <label class="bee-dynamic-form__label" for="@inputId">
+                                @field.Caption
+                            </label>
+                            @switch (field.ControlType)
+                            {
+                                case ControlType.CheckEdit:
+                                    <input id="@inputId"
+                                           type="checkbox"
+                                           class="bee-dynamic-form__input bee-dynamic-form__input--checkbox"
+                                           disabled="@field.ReadOnly"
+                                           checked="@string.Equals(rawValue, bool.TrueString, StringComparison.OrdinalIgnoreCase)"
+                                           @onchange="e => DataObject.SetField(field.FieldName, e.Value?.ToString())" />
+                                    break;
+
+                                case ControlType.DateEdit:
+                                    <input id="@inputId"
+                                           type="date"
+                                           class="bee-dynamic-form__input bee-dynamic-form__input--date"
+                                           readonly="@field.ReadOnly"
+                                           value="@rawValue"
+                                           @onchange="e => DataObject.SetField(field.FieldName, e.Value?.ToString())" />
+                                    break;
+
+                                case ControlType.YearMonthEdit:
+                                    <input id="@inputId"
+                                           type="month"
+                                           class="bee-dynamic-form__input bee-dynamic-form__input--month"
+                                           readonly="@field.ReadOnly"
+                                           value="@rawValue"
+                                           @onchange="e => DataObject.SetField(field.FieldName, e.Value?.ToString())" />
+                                    break;
+
+                                case ControlType.MemoEdit:
+                                    <textarea id="@inputId"
+                                              class="bee-dynamic-form__input bee-dynamic-form__input--memo"
+                                              readonly="@field.ReadOnly"
+                                              @onchange="e => DataObject.SetField(field.FieldName, e.Value?.ToString())">@rawValue</textarea>
+                                    break;
+
+                                case ControlType.DropDownEdit:
+                                    <select id="@inputId"
+                                            class="bee-dynamic-form__input bee-dynamic-form__input--select"
+                                            disabled="@field.ReadOnly"
+                                            value="@rawValue"
+                                            @onchange="e => DataObject.SetField(field.FieldName, e.Value?.ToString())">
+                                        @foreach (var option in EnumerateOptions(field))
+                                        {
+                                            <option value="@option.Value">@option.Text</option>
+                                        }
+                                    </select>
+                                    break;
+
+                                default:
+                                    <input id="@inputId"
+                                           type="text"
+                                           class="bee-dynamic-form__input bee-dynamic-form__input--text"
+                                           readonly="@field.ReadOnly"
+                                           value="@rawValue"
+                                           @onchange="e => DataObject.SetField(field.FieldName, e.Value?.ToString())" />
+                                    break;
+                            }
+                        </div>
+                    }
+                </div>
+            </fieldset>
+        }
+    </div>
+}

@@ -18,7 +18,14 @@
 
 ## 狀態
 
-僅有專案骨架。UI 元件（DynamicForm / DynamicGrid / FormPage / FormDataObject）尚未實作。完整設計請見 [docs/plans/plan-blazor-web-integration.md](../../docs/plans/plan-blazor-web-integration.md)。
+Phase 1a（Layout-only UI）已上線：
+
+- `FormDataObject` 由 `FormSchema` 推導出記憶體中的 `DataSet`（master row + detail tables），並提供 `GetField` / `SetField` 作為雙向 binding 入口。
+- `DynamicForm` 渲染 `FormLayout` 的 master section，依 `ControlType` 將每個欄位分派到對應的 input 元素（text / date / month / checkbox / textarea / dropdown）。
+- 後端 round-trip 方法（`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync`）目前以 `NotImplementedException` 暫置，待 Phase 1b 與 BO CRUD plan 一起補上。
+- `DynamicGrid` 與 `FormPage` 延後到 Phase 1b。
+
+完整設計請見 [docs/plans/plan-blazor-web-integration.md](../../docs/plans/plan-blazor-web-integration.md)。
 
 ## 相依約束
 
