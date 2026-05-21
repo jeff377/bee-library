@@ -112,11 +112,11 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.DataObjects
 
             dataObject.SetField("is_active", "True");
             Assert.Equal("True", dataObject.GetField("is_active"));
-            Assert.Equal(true, dataObject.MasterRow!["is_active"]);
+            Assert.True((bool)dataObject.MasterRow!["is_active"]);
 
             dataObject.SetField("is_active", "False");
             Assert.Equal("False", dataObject.GetField("is_active"));
-            Assert.Equal(false, dataObject.MasterRow["is_active"]);
+            Assert.False((bool)dataObject.MasterRow["is_active"]);
         }
 
         [Fact]
@@ -222,32 +222,28 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.DataObjects
         [DisplayName("LoadAsync 在 Phase 1a 階段拋出 NotImplementedException")]
         public async Task LoadAsync_Phase1a_Throws()
         {
-            var dataObject = new FormDataObject(BuildEmployeeSchema());
-            await Assert.ThrowsAsync<NotImplementedException>(() => dataObject.LoadAsync(new object()));
+            await Assert.ThrowsAsync<NotImplementedException>(() => FormDataObject.LoadAsync(new object()));
         }
 
         [Fact]
         [DisplayName("SaveAsync 在 Phase 1a 階段拋出 NotImplementedException")]
         public async Task SaveAsync_Phase1a_Throws()
         {
-            var dataObject = new FormDataObject(BuildEmployeeSchema());
-            await Assert.ThrowsAsync<NotImplementedException>(() => dataObject.SaveAsync());
+            await Assert.ThrowsAsync<NotImplementedException>(() => FormDataObject.SaveAsync());
         }
 
         [Fact]
         [DisplayName("DeleteAsync 在 Phase 1a 階段拋出 NotImplementedException")]
         public async Task DeleteAsync_Phase1a_Throws()
         {
-            var dataObject = new FormDataObject(BuildEmployeeSchema());
-            await Assert.ThrowsAsync<NotImplementedException>(() => dataObject.DeleteAsync());
+            await Assert.ThrowsAsync<NotImplementedException>(() => FormDataObject.DeleteAsync());
         }
 
         [Fact]
         [DisplayName("NewAsync 在 Phase 1a 階段拋出 NotImplementedException")]
         public async Task NewAsync_Phase1a_Throws()
         {
-            var dataObject = new FormDataObject(BuildEmployeeSchema());
-            await Assert.ThrowsAsync<NotImplementedException>(() => dataObject.NewAsync());
+            await Assert.ThrowsAsync<NotImplementedException>(() => FormDataObject.NewAsync());
         }
     }
 }
