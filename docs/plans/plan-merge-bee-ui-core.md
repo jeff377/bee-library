@@ -1,6 +1,7 @@
 # 計畫:合併 bee-ui-core 至 bee-library
 
-**狀態:📝 擬定中**
+**狀態:✅ 已完成(2026-05-22)** — bee-library 端合併完成,測試通過;
+bee-ui-core repo archive(§6)由使用者後續處理。
 
 ## 1. 背景
 
