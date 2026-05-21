@@ -1,0 +1,21 @@
+## .NET
+bin/
+obj/
+nupkgs/
+
+## IDE
+.vs/
+.vscode/
+*.user
+*.suo
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Claude Code local settings (OS-specific / per-user)
+.claude/settings.local.json
+.claude/*.lock
+
+## Plan archive (do not sync; local only)
+docs/archive/
