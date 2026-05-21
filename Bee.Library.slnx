@@ -18,6 +18,7 @@
     <Project Path="src/Bee.ObjectCaching/Bee.ObjectCaching.csproj" />
     <Project Path="src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj" Id="30b306b6-0aab-475e-8df0-e1a0801e56a6" />
     <Project Path="src/Bee.Repository/Bee.Repository.csproj" Id="f78f3849-45b9-426e-a7b0-6edbd7fe256d" />
+    <Project Path="src/Bee.UI.Core/Bee.UI.Core.csproj" />
     <Project Path="src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj" />
     <Project Path="src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj" />
   </Folder>
@@ -33,6 +34,7 @@
     <Project Path="tests/Bee.ObjectCaching.UnitTests/Bee.ObjectCaching.UnitTests.csproj" />
     <Project Path="tests/Bee.Repository.UnitTests/Bee.Repository.UnitTests.csproj" Id="37be88f7-d67a-40a7-91a3-23583c6b85f1" />
     <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />
+    <Project Path="tests/Bee.UI.Core.UnitTests/Bee.UI.Core.UnitTests.csproj" />
     <Project Path="tests/Bee.Web.Blazor.Server.UnitTests/Bee.Web.Blazor.Server.UnitTests.csproj" />
     <Project Path="tests/Bee.Web.Blazor.Wasm.UnitTests/Bee.Web.Blazor.Wasm.UnitTests.csproj" />
   </Folder>
