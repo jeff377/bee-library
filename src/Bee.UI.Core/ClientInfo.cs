@@ -4,7 +4,6 @@ using Bee.Api.Client.DefineAccess;
 using Bee.Api.Core.Messages.System;
 using Bee.Base;
 using Bee.Base.Serialization;
-using Bee.Definition;
 using Bee.Definition.Identity;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -15,7 +14,7 @@ namespace Bee.UI.Core
     /// <summary>
     /// Provides client-side connection state and access to API connectors.
     /// </summary>
-    public class ClientInfo
+    public static class ClientInfo
     {
         private static ClientSettings? _clientSettings;
         private static SystemApiConnector? _systemConnector;
@@ -162,7 +161,7 @@ namespace Bee.UI.Core
         {
             var connectType = ApiConnectValidator.Validate(endpoint, AllowGenerateSettings);
             SetConnectType(connectType, endpoint);
-            SystemApiConnector.Initialize();
+            SyncExecutor.Run(() => SystemApiConnector.InitializeAsync());
             EndpointStorage.SaveEndpoint(endpoint);
         }
 
@@ -182,7 +181,7 @@ namespace Bee.UI.Core
                 string endpoint = GetEndpoint();
                 var connectType = ApiConnectValidator.Validate(endpoint, AllowGenerateSettings);
                 SetConnectType(connectType, endpoint);
-                SystemApiConnector.Initialize();
+                SyncExecutor.Run(() => SystemApiConnector.InitializeAsync());
                 return true;
             }
             catch
