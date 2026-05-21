@@ -1,5 +1,5 @@
 using System.Reflection;
-using Bee.Base;
+using Bee.Base.Exceptions;
 using Bee.Base.Tracing;
 using Bee.Definition;
 using Bee.Definition.Security;

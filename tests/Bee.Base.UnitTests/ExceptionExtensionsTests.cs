@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
+using Bee.Base.Exceptions;
 
 namespace Bee.Base.UnitTests
 {

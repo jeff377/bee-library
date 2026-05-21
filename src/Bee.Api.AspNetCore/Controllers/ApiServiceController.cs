@@ -3,7 +3,7 @@ using System.Net.Http.Headers;
 using Bee.Api.Core;
 using Bee.Api.Core.Authorization;
 using Bee.Api.Core.JsonRpc;
-using Bee.Base;
+using Bee.Base.Exceptions;
 using Bee.Base.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

@@ -1,6 +1,6 @@
 using System.Reflection;
 
-namespace Bee.Base
+namespace Bee.Base.Exceptions
 {
     /// <summary>
     /// Extension methods for <see cref="Exception"/>.

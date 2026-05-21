@@ -1,5 +1,5 @@
 using System.Runtime.ExceptionServices;
-using Bee.Base;
+using Bee.Base.Exceptions;
 using Bee.Business.Attributes;
 using Bee.Definition.Security;
 
