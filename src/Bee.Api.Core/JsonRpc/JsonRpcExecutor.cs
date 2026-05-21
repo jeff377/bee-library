@@ -99,10 +99,11 @@ namespace Bee.Api.Core.JsonRpc
             catch (Exception ex)
             {
                 var rootEx = ex.Unwrap();
-                // Only expose the exception message for known user-facing exception types.
-                // System/infrastructure exceptions return a generic message to avoid leaking internals.
-                string message = IsUserFacingException(rootEx) ? rootEx.Message : "Internal server error";
-                response.Error = new JsonRpcError(-1, message);
+                // Map the exception to a (code, message) pair. User-facing exceptions surface
+                // their original message; infrastructure exceptions are flattened to a generic
+                // message to avoid leaking internals.
+                var (code, message) = MapException(rootEx);
+                response.Error = new JsonRpcError((int)code, message);
                 Tracer.End(ctx, TraceStatus.Error, rootEx.Message);
             }
             return response;
@@ -187,14 +188,39 @@ namespace Bee.Api.Core.JsonRpc
         /// Returns true for exception types whose message is safe to surface to API clients.
         /// Business-layer and validation exceptions are user-facing; infrastructure exceptions are not.
         /// </summary>
+        /// <remarks>
+        /// <c>UserMessageException</c> is the preferred type for new code. BCL exceptions
+        /// remain on the whitelist as a transition path; they are scheduled for gradual
+        /// removal once business code has migrated. See plan-user-message-exception.md §D7.
+        /// </remarks>
         private static bool IsUserFacingException(Exception ex)
         {
-            return ex is UnauthorizedAccessException
+            return ex is UserMessageException
+                || ex is UnauthorizedAccessException
                 || ex is ArgumentException          // includes ArgumentNullException, ArgumentOutOfRangeException
                 || ex is InvalidOperationException
                 || ex is NotSupportedException
                 || ex is FormatException
                 || ex is JsonRpcException;
+        }
+
+        /// <summary>
+        /// Maps an exception to the corresponding JSON-RPC error code and message used in
+        /// the response envelope. User-facing exceptions surface their original message;
+        /// infrastructure exceptions return a generic message to avoid leaking internals.
+        /// </summary>
+        /// <param name="ex">The exception (already unwrapped) to map.</param>
+        /// <returns>A tuple of the JSON-RPC error code and the message to expose.</returns>
+        /// <remarks>
+        /// Exposed as <c>internal</c> for direct unit testing through
+        /// <c>InternalsVisibleTo</c>; the mapping is a protocol-level contract, not an
+        /// implementation detail.
+        /// </remarks>
+        internal static (JsonRpcErrorCode code, string message) MapException(Exception ex)
+        {
+            if (IsUserFacingException(ex))
+                return (JsonRpcErrorCode.UserMessage, ex.Message);
+            return (JsonRpcErrorCode.InternalError, "Internal server error");
         }
 
         /// <summary>

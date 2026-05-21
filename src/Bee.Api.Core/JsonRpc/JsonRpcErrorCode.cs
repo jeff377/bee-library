@@ -50,6 +50,19 @@ namespace Bee.Api.Core.JsonRpc
         /// The two cases are intentionally merged into a single error code to prevent
         /// anonymous enumeration of valid company ids via error-code differences.
         /// </remarks>
-        CompanyAccessDenied = -32003
+        CompanyAccessDenied = -32003,
+
+        /// <summary>
+        /// A user-facing business message produced by business logic, intended to be
+        /// shown to the end user (-32099). Acts as a catch-all container for messages
+        /// raised via <c>UserMessageException</c> or the legacy BCL-exception whitelist.
+        /// </summary>
+        /// <remarks>
+        /// The value -32099 is deliberately placed at the tail of the server-defined
+        /// range (-32000 to -32099) to visually separate generic business messages from
+        /// concrete protocol/system errors (-32000) and specific business categories
+        /// (-32001 to -32003). Future specific categories may fill the gap in between.
+        /// </remarks>
+        UserMessage = -32099
     }
 }

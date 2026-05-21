@@ -88,7 +88,7 @@ namespace Bee.Api.Core.UnitTests
 
             Assert.Null(response.Result);
             Assert.NotNull(response.Error);
-            Assert.Equal(-1, response.Error!.Code);
+            Assert.Equal((int)JsonRpcErrorCode.UserMessage, response.Error!.Code);
             Assert.Contains("Invalid method format", response.Error.Message);
         }
 
@@ -141,7 +141,7 @@ namespace Bee.Api.Core.UnitTests
             var response = NewExecutor(Guid.Empty, isLocalCall: true).Execute(request);
 
             Assert.NotNull(response.Error);
-            Assert.Equal(-1, response.Error!.Code);
+            Assert.Equal((int)JsonRpcErrorCode.InternalError, response.Error!.Code);
             Assert.Equal("Internal server error", response.Error.Message);
         }
 
