@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <Description>Blazor WebAssembly component library for Bee.NET (FormSchema-driven UI on top of RemoteApiProvider).</Description>
+    <PackageTags>bee.net;blazor;blazor-wasm;webassembly;rcl;ui</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Api.Client\Bee.Api.Client.csproj" />
+  </ItemGroup>
+
+</Project>

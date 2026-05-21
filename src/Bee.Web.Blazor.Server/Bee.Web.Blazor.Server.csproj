@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <Description>Blazor Server component library for Bee.NET (FormSchema-driven UI on top of LocalApiProvider).</Description>
+    <PackageTags>bee.net;blazor;blazor-server;rcl;ui</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Api.Client\Bee.Api.Client.csproj" />
+  </ItemGroup>
+
+</Project>
