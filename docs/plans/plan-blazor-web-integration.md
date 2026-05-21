@@ -140,6 +140,39 @@ samples/
 
 ---
 
+## 相依矩陣
+
+兩個 RCL 一律採**最小相依**策略：只引用 `Bee.Api.Client`，由宿主決定是否再呼叫 `AddBeeFramework` 註冊後端服務。
+
+| 專案 | ProjectReference | 外部相依 | 目標框架 |
+|------|------------------|---------|---------|
+| `Bee.Web.Blazor.Server` | `Bee.Api.Client` | `Microsoft.AspNetCore.Components.Web` 等 Blazor Server 套件 | `net10.0` |
+| `Bee.Web.Blazor.Wasm` | `Bee.Api.Client` | `Microsoft.AspNetCore.Components.WebAssembly` 等 WASM 套件 | `net10.0`（需 `wasm-tools` workload） |
+
+### 硬性約束
+
+- **`Bee.Web.Blazor.Wasm` 嚴禁相依任何後端組件**（`Bee.Business`、`Bee.Repository`、`Bee.Hosting`、`Bee.Db` 等）
+  - Browser 執行環境無法載入後端組件
+  - 約束已由相依鏈強制：`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition → Bee.Base` 全為純資料/協定層，無 server-only 程式碼
+- **`Bee.Web.Blazor.Server` 雖物理上可相依後端組件，但仍維持只相依 `Bee.Api.Client`**
+  - 與 Wasm 對稱，元件庫程式碼可在兩專案間複製/重構不受相依限制
+  - composition 決定權交還宿主（由宿主自行 `AddBeeFramework`）
+
+### DI 註冊分工
+
+```csharp
+// 宿主程式：分兩步註冊
+builder.Services.AddBeeFramework();              // ← 後端服務（僅 Blazor Server 宿主需要）
+builder.Services.AddBeeBlazor(o => o.UseLocal()); // ← Blazor 元件用 services（含 IApiProvider 解析策略）
+```
+
+`AddBeeBlazor` **不** bundle `AddBeeFramework`，理由：
+- 維持 `Bee.Hosting` 為唯一 composition root 的原則
+- WASM 宿主不可能呼叫 `AddBeeFramework`（Browser 跑不起來），若 bundle 進去會破壞對稱性
+- 宿主可選擇進階配置（如 `AddBeeFramework` 後再覆寫某些服務），bundle 會剝奪這個彈性
+
+---
+
 ## MVVM 設計
 
 ### 模式選擇：code-behind（方式 1）
