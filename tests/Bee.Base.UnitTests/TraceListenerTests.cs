@@ -15,7 +15,7 @@ namespace Bee.Base.UnitTests
         [DisplayName("TraceStart 透過 ITraceListener 介面參考應建立正確 Context")]
         public void TraceStart_ViaInterface_ReturnsContextWithCorrectProperties()
         {
-            ITraceListener listener = new TraceListener(new CapturingWriter());
+            TraceListener listener = new TraceListener(new CapturingWriter());
 
             var ctx = listener.TraceStart(TraceLayers.Business, "detail", name: "TestOp");
 
@@ -29,7 +29,7 @@ namespace Bee.Base.UnitTests
         [DisplayName("TraceStart 省略所有選用參數應建立含預設值的 Context")]
         public void TraceStart_WithOnlyRequiredLayer_CreatesContextWithDefaults()
         {
-            ITraceListener listener = new TraceListener(new CapturingWriter());
+            TraceListener listener = new TraceListener(new CapturingWriter());
 
             var ctx = listener.TraceStart(TraceLayers.Data, name: "TestMethod");
 
@@ -44,7 +44,7 @@ namespace Bee.Base.UnitTests
         public void TraceEnd_ViaInterface_StopsStopwatchAndEmitsEndEvent()
         {
             var writer = new CapturingWriter();
-            ITraceListener listener = new TraceListener(writer);
+            TraceListener listener = new TraceListener(writer);
 
             var ctx = listener.TraceStart(TraceLayers.UI, name: "Op");
             listener.TraceEnd(ctx, TraceStatus.Ok);
@@ -59,7 +59,7 @@ namespace Bee.Base.UnitTests
         public void TraceEnd_WithExplicitDetail_OverridesContextDetail()
         {
             var writer = new CapturingWriter();
-            ITraceListener listener = new TraceListener(writer);
+            TraceListener listener = new TraceListener(writer);
 
             var ctx = listener.TraceStart(TraceLayers.Data, "original-detail", name: "Op");
             listener.TraceEnd(ctx, TraceStatus.Error, "override-detail");
@@ -73,7 +73,7 @@ namespace Bee.Base.UnitTests
         public void TraceWrite_ViaInterface_EmitsPointEvent()
         {
             var writer = new CapturingWriter();
-            ITraceListener listener = new TraceListener(writer);
+            TraceListener listener = new TraceListener(writer);
 
             listener.TraceWrite(TraceLayers.ApiServer, "write-detail", TraceStatus.Cancelled, name: "WriteOp");
 
@@ -90,7 +90,7 @@ namespace Bee.Base.UnitTests
         public void TraceWrite_WithOnlyRequiredLayer_EmitsDefaultStatusEvent()
         {
             var writer = new CapturingWriter();
-            ITraceListener listener = new TraceListener(writer);
+            TraceListener listener = new TraceListener(writer);
 
             listener.TraceWrite(TraceLayers.None, name: "TestMethod");
 
