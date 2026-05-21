@@ -4,8 +4,10 @@ namespace Bee.Api.Client
     /// Executor for running asynchronous methods synchronously.
     /// </summary>
     /// <remarks>
-    /// Used to convert <c>async/await</c> methods into synchronous calls,
-    /// suitable for contexts where <c>await</c> cannot be used, such as constructors, WinForms initialization, or synchronous API wrappers.
+    /// Intended only for bridging synchronous interfaces (e.g., <c>IDefineAccess</c>) over
+    /// asynchronous connector calls. New code should use the connector's <c>*Async</c>
+    /// methods directly. Do not introduce new <c>SyncExecutor.Run</c> call sites without
+    /// architectural review.
     /// </remarks>
     public static class SyncExecutor
     {

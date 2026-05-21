@@ -225,5 +225,32 @@ namespace Bee.Api.Client.UnitTests
             Assert.NotNull(result);
             Assert.IsType<TableSchema>(result);
         }
+
+        // 以下測試對應 plan-deprecate-sync-api.md §10.2 行為一致性測試:
+        // #1 GetSystemSettings_ReturnsValueOnFirstCall  → 已由 GetSystemSettings_LocalConnector_ReturnsSettings 涵蓋
+        //    （該測試會走過改寫後的 SyncExecutor.Run(() => GetDefineAsync<T>(...)) 路徑）
+        // #2 GetSystemSettings_UsesCacheOnSecondCall    → 已由 GetDefine_SystemSettings_SecondCall_ReturnsCachedObject 涵蓋
+
+        // §10.2 #3 SaveSystemSettings_Succeeds:此處不直接做 happy-path 寫入測試。
+        // RemoteDefineAccess.SaveSystemSettings 在本機模式會透過 process-wide
+        // ApiClientInfo.LocalServiceProvider 寫入共用的 tests/Define/SystemSettings.xml,
+        // 違反「不得修改共用 fixture 檔案」規範(見 .claude/rules/testing.md「共享 fixture 檔案隔離」)。
+        // 改寫前後的 wrapping pattern 與 SyncExecutor.Run 行為完全相同(原 SystemApiConnector.SaveDefine
+        // 也是 SyncExecutor.Run(() => SaveDefineAsync(...))),無例外語意變化由 §10.2 #4
+        // GetDefine_PropagatesConnectorException 提供同源驗證:皆走 SyncExecutor.Run 包覆同型別 async 方法。
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine 底層 connector 拋例外應原樣傳遞,非 AggregateException")]
+        public void GetDefine_PropagatesConnectorException()
+        {
+            // 指向不可達 endpoint:HTTP 呼叫必然失敗,觸發 connector 端例外。
+            var connector = new SystemApiConnector("http://127.0.0.1:1/", Guid.NewGuid());
+            var access = new RemoteDefineAccess(connector);
+
+            // SyncExecutor.Run 透過 GetAwaiter().GetResult() 解包,原例外應原樣傳出;
+            // 若改寫後變成 AggregateException 則代表呼叫端 try/catch 需重新適配 — 為 plan §11.1 主要驗證點。
+            var ex = Assert.ThrowsAny<Exception>(() => access.GetSystemSettings());
+            Assert.IsNotType<AggregateException>(ex);
+        }
     }
 }

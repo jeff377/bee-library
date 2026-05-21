@@ -21,11 +21,11 @@ namespace Bee.Api.Client.UnitTests
         }
 
         /// <summary>
-        /// 測試 SystemApiConnector 的 CreateSession 方法。
+        /// 測試 SystemApiConnector 的 CreateSessionAsync 方法。
         /// </summary>
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("SystemApiConnector CreateSession 應回傳有效的 AccessToken")]
-        public void CreateSession_ValidArgs_ReturnsValidToken()
+        [DisplayName("SystemApiConnector CreateSessionAsync 應回傳有效的 AccessToken")]
+        public async Task CreateSessionAsync_ValidArgs_ReturnsValidToken()
         {
             // Arrange
             string userId = "001";
@@ -37,7 +37,7 @@ namespace Bee.Api.Client.UnitTests
             var connector = new SystemApiConnector(accessToken);
 
             // Act
-            Guid newToken = connector.CreateSession(userId, expiresIn, oneTime);
+            Guid newToken = await connector.CreateSessionAsync(userId, expiresIn, oneTime);
 
             // Assert
             Assert.NotEqual(Guid.Empty, newToken); // 應取得有效 accessToken
@@ -92,15 +92,6 @@ namespace Bee.Api.Client.UnitTests
         {
             var connector = new SystemApiConnector(Guid.NewGuid());
             var exception = await Record.ExceptionAsync(() => connector.PingAsync());
-            Assert.Null(exception);
-        }
-
-        [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("SystemApiConnector.Ping 同步本機連線應成功回應")]
-        public void Ping_LocalConnector_Succeeds()
-        {
-            var connector = new SystemApiConnector(Guid.NewGuid());
-            var exception = Record.Exception(() => connector.Ping());
             Assert.Null(exception);
         }
 

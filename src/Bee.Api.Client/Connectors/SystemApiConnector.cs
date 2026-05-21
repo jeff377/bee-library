@@ -54,17 +54,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Executes a custom method; requires authentication.
-        /// </summary>
-        /// <param name="args">The input arguments.</param>
-        public ExecFuncResponse ExecFunc(ExecFuncRequest args)
-        {
-            return SyncExecutor.Run(() =>
-                ExecFuncAsync(args)
-            );
-        }
-
-        /// <summary>
         /// Asynchronously executes a custom method; allows anonymous access.
         /// </summary>
         /// <param name="args">The input arguments.</param>
@@ -106,16 +95,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Executes the Ping method to test the server connection status.
-        /// </summary>
-        public void Ping()
-        {
-            SyncExecutor.Run(() =>
-                PingAsync()
-            );
-        }
-
-        /// <summary>
         /// Asynchronously retrieves common parameters and environment configuration, then initializes the system.
         /// </summary>
         public async Task InitializeAsync()
@@ -127,16 +106,6 @@ namespace Bee.Api.Client.Connectors
             SysInfo.Initialize(configuration);
             // Initialize API service options: configure serializer, compressor, and encryptor implementations
             ApiServiceOptions.Initialize(configuration.ApiPayloadOptions, configuration.IsDebugMode);
-        }
-
-        /// <summary>
-        /// Retrieves common parameters and environment configuration, then initializes the system.
-        /// </summary>
-        public void Initialize()
-        {
-            SyncExecutor.Run(() =>
-                InitializeAsync()
-            );
         }
 
         /// <summary>
@@ -155,19 +124,6 @@ namespace Bee.Api.Client.Connectors
             };
             var result = await ExecuteAsync<CreateSessionResponse>(SystemActions.CreateSession, request, PayloadFormat.Plain).ConfigureAwait(false);
             return result.AccessToken;
-        }
-
-        /// <summary>
-        /// Creates a new user session.
-        /// </summary>
-        /// <param name="userID">The user account identifier.</param>
-        /// <param name="expiresIn">The expiration time in seconds. Defaults to 3600.</param>
-        /// <param name="oneTime">Whether the session is valid for one-time use only.</param>
-        public Guid CreateSession(string userID, int expiresIn = 3600, bool oneTime = false)
-        {
-            return SyncExecutor.Run(() =>
-                CreateSessionAsync(userID, expiresIn, oneTime)
-            );
         }
 
         /// <summary>
@@ -197,18 +153,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Performs the login operation.
-        /// </summary>
-        /// <param name="userID">The user account identifier.</param>
-        /// <param name="password">The user password.</param>
-        public LoginResponse Login(string userID, string password)
-        {
-            return SyncExecutor.Run(() =>
-                LoginAsync(userID, password)
-            );
-        }
-
-        /// <summary>
         /// Asynchronously gets definition data.
         /// </summary>
         /// <typeparam name="T">The target type.</typeparam>
@@ -229,19 +173,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Gets definition data.
-        /// </summary>
-        /// <typeparam name="T">The target type.</typeparam>
-        /// <param name="defineType">The definition data type.</param>
-        /// <param name="keys">The keys used to locate the definition data.</param>
-        public T GetDefine<T>(DefineType defineType, string[]? keys = null)
-        {
-            return SyncExecutor.Run(() =>
-                GetDefineAsync<T>(defineType, keys)
-            );
-        }
-
-        /// <summary>
         /// Asynchronously saves definition data.
         /// </summary>
         /// <param name="defineType">The definition data type.</param>
@@ -259,19 +190,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Saves definition data.
-        /// </summary>
-        /// <param name="defineType">The definition data type.</param>
-        /// <param name="defineObject">The definition data object.</param>
-        /// <param name="keys">The keys used to locate where the definition data is saved.</param>
-        public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null)
-        {
-            SyncExecutor.Run(() =>
-                SaveDefineAsync(defineType, defineObject, keys)
-            );
-        }
-
-        /// <summary>
         /// Asynchronously enters the specified company for the current session.
         /// Also used to switch between companies — the previous company binding is overwritten.
         /// </summary>
@@ -286,17 +204,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Enters the specified company for the current session.
-        /// </summary>
-        /// <param name="companyId">The id of the company to enter.</param>
-        public EnterCompanyResponse EnterCompany(string companyId)
-        {
-            return SyncExecutor.Run(() =>
-                EnterCompanyAsync(companyId)
-            );
-        }
-
-        /// <summary>
         /// Asynchronously clears the company context from the current session.
         /// Idempotent — returns success even if the session has not entered a company.
         /// </summary>
@@ -307,14 +214,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Clears the company context from the current session.
-        /// </summary>
-        public LeaveCompanyResponse LeaveCompany()
-        {
-            return SyncExecutor.Run(() => LeaveCompanyAsync());
-        }
-
-        /// <summary>
         /// Asynchronously destroys the current session, clearing any company context first.
         /// Idempotent — succeeds even if the session is already expired or unknown.
         /// </summary>
@@ -322,14 +221,6 @@ namespace Bee.Api.Client.Connectors
         {
             var request = new LogoutRequest();
             return await ExecuteAsync<LogoutResponse>(SystemActions.Logout, request).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Destroys the current session, clearing any company context first.
-        /// </summary>
-        public LogoutResponse Logout()
-        {
-            return SyncExecutor.Run(() => LogoutAsync());
         }
 
     }

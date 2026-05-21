@@ -76,7 +76,7 @@ namespace Bee.Api.Client.DefineAccess
             if (!this.List.TryGetValue(cacheKey, out object? defineObject))
             {
                 // Download the definition data and add it to the cache
-                defineObject = this.Connector.GetDefine<T>(defineType, keys);
+                defineObject = SyncExecutor.Run(() => this.Connector.GetDefineAsync<T>(defineType, keys));
                 this.List.Add(cacheKey, defineObject!);
             }
             return (T)defineObject!;
@@ -133,7 +133,7 @@ namespace Bee.Api.Client.DefineAccess
         /// <param name="keys">The keys used to locate where the definition data is saved.</param>
         public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null)
         {
-            this.Connector.SaveDefine(defineType, defineObject, keys);
+            SyncExecutor.Run(() => this.Connector.SaveDefineAsync(defineType, defineObject, keys));
         }
 
         /// <summary>

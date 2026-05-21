@@ -63,17 +63,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Executes a custom method; requires authentication.
-        /// </summary>
-        /// <param name="args">The input arguments.</param>
-        public ExecFuncResponse ExecFunc(ExecFuncRequest args)
-        {
-            return SyncExecutor.Run(() =>
-                ExecFuncAsync(args)
-            );
-        }
-
-        /// <summary>
         /// Asynchronously executes a custom method; allows anonymous access.
         /// </summary>
         /// <param name="args">The input arguments.</param>
@@ -122,27 +111,6 @@ namespace Bee.Api.Client.Connectors
                 Paging = paging,
             };
             return await ExecuteAsync<GetListResponse>(FormActions.GetList, request).ConfigureAwait(false);
-        }
-
-        /// <summary>
-        /// Retrieves list-view rows from the master table of <see cref="ProgId"/>.
-        /// </summary>
-        /// <param name="selectFields">
-        /// The comma-separated field names to retrieve; an empty value falls back to
-        /// <c>FormSchema.ListFields</c>, then to all fields.
-        /// </param>
-        /// <param name="filter">The filter condition tree; <c>null</c> for an unfiltered query.</param>
-        /// <param name="sortFields">The sort field collection; <c>null</c> uses the default ordering.</param>
-        /// <param name="paging">The paging options; <c>null</c> returns every matching row.</param>
-        public GetListResponse GetList(
-            string selectFields = "",
-            FilterNode? filter = null,
-            SortFieldCollection? sortFields = null,
-            PagingOptions? paging = null)
-        {
-            return SyncExecutor.Run(() =>
-                GetListAsync(selectFields, filter, sortFields, paging)
-            );
         }
     }
 }

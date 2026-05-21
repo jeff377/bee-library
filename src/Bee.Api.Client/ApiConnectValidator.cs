@@ -125,7 +125,7 @@ namespace Bee.Api.Client
                 throw new InvalidOperationException($"Endpoint not reachable: {endpoint}");
             // Use remote connection to execute the Ping method
             var connector = new SystemApiConnector(endpoint, Guid.Empty);
-            connector.Ping();
+            SyncExecutor.Run(() => connector.PingAsync());
         }
     }
 }
