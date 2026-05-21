@@ -67,8 +67,9 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 
 ### Client 可見的例外類型
 
-`JsonRpcExecutor` 僅將以下例外類型原樣回傳給 Client：
+`JsonRpcExecutor` 僅將以下例外類型原樣回傳給 Client，並對映到 `JsonRpcErrorCode.UserMessage`（`-32099`）：
 
+- `UserMessageException`（**預設選項**）
 - `UnauthorizedAccessException`
 - `ArgumentException`（含 `ArgumentNullException`、`ArgumentOutOfRangeException`）
 - `InvalidOperationException`
@@ -76,12 +77,65 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 - `FormatException`
 - `JsonRpcException`
 
-其他所有例外在正式環境一律轉為 `"Internal server error"`，開發環境（`IsDevelopment`）會回傳完整錯誤訊息。
+其他所有例外在正式環境一律遮蔽為 `"Internal server error"`（對映到 `JsonRpcErrorCode.InternalError` `-32000`），避免洩漏內部細節。
+
+### 使用時機
+
+| 例外型別 | 使用情境 |
+|----------|----------|
+| `UserMessageException` | **預設選項**：任何要顯示給使用者看的訊息（業務規則違反、驗證失敗、流程中斷） |
+| `ArgumentException` | API contract 違反 —— 呼叫端傳錯參數（null、格式錯、超出範圍）。**注意**：白名單暫保留，新程式碼請優先用 `UserMessageException` |
+| `InvalidOperationException` | 物件狀態錯誤、操作時機不對。**注意**：白名單暫保留，新程式碼請優先用 `UserMessageException` |
+| `UnauthorizedAccessException` | 認證／授權失敗 |
+| `NotSupportedException` | 功能未實作或不支援當前情境 |
+| `FormatException` | 字串／資料格式無法解析 |
+| `JsonRpcException` | API 框架自身的協定錯誤（HTTP status / JSON-RPC error code） |
+
+### Client 端的對應行為
+
+`ApiConnector.FinalizeResponse` 依 `JsonRpcError.Code` 重建例外：
+
+- `code == UserMessage` → 拋出 `UserMessageException(message)`，訊息純淨無前綴，可直接顯示給使用者
+- 其他 code → 拋出 `InvalidOperationException($"API error: {code} - {message}")`，保留協定層除錯資訊
+
+Client 端建議的 catch 順序：
+
+```csharp
+try
+{
+    var result = await connector.SomeAction(args);
+}
+catch (UserMessageException ex)
+{
+    // 業務訊息：直接顯示給使用者
+    ShowMessage(ex.Message);
+}
+catch (Exception ex)
+{
+    // 系統錯誤：記錄 log、顯示通用錯誤頁
+    LogError(ex);
+}
+```
+
+### 演進方向
+
+長期目標是讓 `UserMessageException` 成為 user-facing 訊息的**唯一**通道，把 BCL 例外回歸 BCL 本意（呼叫錯誤、狀態錯誤、程式 bug）。白名單目前保留 BCL 例外是為了**漸進過渡**：
+
+- **新程式碼**：一律用 `UserMessageException` 拋送使用者訊息
+- **舊程式碼**：遇到時順手把 `InvalidOperationException("xxx")`／`ArgumentException("xxx")` 改成 `UserMessageException("xxx")`
+- **白名單縮減**：當某個 BCL 例外在 prod BO 已 0 處 user-facing 使用時，由獨立 plan 評估從白名單移除
+- **終態**：白名單只剩 `UserMessageException` 與 `JsonRpcException`
+
+### 擴充方式
+
+- 需要更多屬性（如 `Code`、`Details`、結構化資料）：直接在 `UserMessageException` 加 nullable 屬性（向後相容）
+- 需要分類錯誤（如 `NotFoundException` 對應 HTTP 404）：繼承 `UserMessageException` 拆子類別
+- i18n 載點：`JsonRpcError.Data` 欄位已預留，整體機制由獨立 plan 設計
 
 ### 設計意圖
 
 - 防止內部實作細節洩漏給 Client
-- 如需回傳特定錯誤訊息，使用上述類型或自訂 `JsonRpcException`
+- 為業務訊息建立獨立通道，與「真程式錯誤」在型別上明確區隔，方便未來 logging／監控分流
 
 ## FormSchema 設計限制
 

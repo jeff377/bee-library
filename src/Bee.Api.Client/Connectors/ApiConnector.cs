@@ -1,5 +1,6 @@
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
+using Bee.Base.Exceptions;
 using Bee.Base.Tracing;
 using Bee.Api.Client.Providers;
 using Bee.Api.Core.Conversion;
@@ -106,11 +107,24 @@ namespace Bee.Api.Client.Connectors
         /// <summary>
         /// Traces the response, checks for errors, restores the payload, and converts the result value.
         /// </summary>
+        /// <remarks>
+        /// Error mapping reverses the server-side mapping performed by
+        /// <c>JsonRpcExecutor.MapException</c>: a <see cref="JsonRpcErrorCode.UserMessage"/>
+        /// code is reconstructed as a <see cref="UserMessageException"/> with the original
+        /// message (no prefix), so callers can <c>catch (UserMessageException)</c> and
+        /// surface the message verbatim to the end user. All other codes wrap into
+        /// <see cref="InvalidOperationException"/> with the legacy
+        /// <c>"API error: {code} - {message}"</c> format to preserve existing catch logic.
+        /// </remarks>
         private static T FinalizeResponse<T>(JsonRpcResponse response, PayloadFormat actualFormat)
         {
             TraceResponse(response);
             if (response.Error != null)
+            {
+                if (response.Error.Code == (int)JsonRpcErrorCode.UserMessage)
+                    throw new UserMessageException(response.Error.Message);
                 throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
+            }
             RestoreResponsePayload(response, actualFormat);
             return ApiOutputConverter.ConvertResultValue<T>(response.Result!.Value!)!;
         }

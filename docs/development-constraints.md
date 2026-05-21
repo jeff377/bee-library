@@ -67,8 +67,9 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 
 ### Client-Visible Exception Types
 
-`JsonRpcExecutor` only forwards the following exception types to the client unchanged:
+`JsonRpcExecutor` forwards the following exception types to the client unchanged, mapping them to `JsonRpcErrorCode.UserMessage` (`-32099`):
 
+- `UserMessageException` (**preferred**)
 - `UnauthorizedAccessException`
 - `ArgumentException` (including `ArgumentNullException`, `ArgumentOutOfRangeException`)
 - `InvalidOperationException`
@@ -76,12 +77,65 @@ public void SecureMethod(ExecFuncArgs args, ExecFuncResult result) { }
 - `FormatException`
 - `JsonRpcException`
 
-All other exceptions are converted to `"Internal server error"` in production. In development (`IsDevelopment`), the full error message is returned.
+All other exceptions are masked as `"Internal server error"` in production (mapped to `JsonRpcErrorCode.InternalError` `-32000`) to prevent leakage of internal details.
+
+### When to Use Each Type
+
+| Exception type | Usage |
+|----------------|-------|
+| `UserMessageException` | **Preferred**: any message intended to be shown to the end user (business-rule violation, validation failure, workflow interruption). |
+| `ArgumentException` | API contract violation — the caller passed a bad parameter (null, malformed, out of range). **Note**: kept on the whitelist for now; new code should prefer `UserMessageException`. |
+| `InvalidOperationException` | Object state error or call ordering issue. **Note**: kept on the whitelist for now; new code should prefer `UserMessageException`. |
+| `UnauthorizedAccessException` | Authentication / authorization failure. |
+| `NotSupportedException` | Feature not implemented or not applicable in the current context. |
+| `FormatException` | String or data format cannot be parsed. |
+| `JsonRpcException` | Protocol-level errors of the API framework itself (HTTP status / JSON-RPC error code). |
+
+### Client-Side Behaviour
+
+`ApiConnector.FinalizeResponse` rebuilds exceptions based on `JsonRpcError.Code`:
+
+- `code == UserMessage` → throws `UserMessageException(message)` with the original message verbatim (no prefix), ready to be shown to the end user
+- Other codes → throws `InvalidOperationException($"API error: {code} - {message}")`, preserving the protocol-level debugging info
+
+Recommended client-side catch order:
+
+```csharp
+try
+{
+    var result = await connector.SomeAction(args);
+}
+catch (UserMessageException ex)
+{
+    // Business message: show directly to the user
+    ShowMessage(ex.Message);
+}
+catch (Exception ex)
+{
+    // System error: log and show a generic error page
+    LogError(ex);
+}
+```
+
+### Evolution Direction
+
+The long-term goal is to make `UserMessageException` the **only** channel for user-facing messages, returning BCL exceptions to their BCL semantics (call errors, state errors, program bugs). The whitelist currently keeps BCL exceptions as a **gradual transition**:
+
+- **New code**: always use `UserMessageException` for user-facing messages
+- **Old code**: when touching existing code, convert `InvalidOperationException("xxx")` / `ArgumentException("xxx")` to `UserMessageException("xxx")`
+- **Whitelist reduction**: once a given BCL exception has zero user-facing usages in production business objects, an independent plan evaluates removing it from the whitelist
+- **End state**: the whitelist contains only `UserMessageException` and `JsonRpcException`
+
+### Extension Paths
+
+- Need more properties (e.g. `Code`, `Details`, structured data): add nullable properties on `UserMessageException` (backward compatible)
+- Need to classify errors (e.g. `NotFoundException` for HTTP 404): subclass `UserMessageException`
+- i18n payload: `JsonRpcError.Data` is reserved as the slot; the overall mechanism is to be designed in an independent plan
 
 ### Design Intent
 
 - Prevent leakage of internal implementation details to the client
-- For specific error messages, use the types listed above or a custom `JsonRpcException`
+- Provide an independent channel for business messages, type-separated from "real program errors", to ease future logging / monitoring routing
 
 ## FormSchema Design Constraints
 

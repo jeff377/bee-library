@@ -191,7 +191,7 @@ namespace Bee.Api.Core.JsonRpc
         /// <remarks>
         /// <c>UserMessageException</c> is the preferred type for new code. BCL exceptions
         /// remain on the whitelist as a transition path; they are scheduled for gradual
-        /// removal once business code has migrated. See plan-user-message-exception.md §D7.
+        /// removal once business code has migrated.
         /// </remarks>
         private static bool IsUserFacingException(Exception ex)
         {

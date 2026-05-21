@@ -20,6 +20,9 @@
 - **`IBusinessObjectFactory` typed wrapper** — `Bee.Business` 新增 `CreateFormBO(token, progId)` / `CreateSystemBO(token)` 擴充方法，消除呼叫端手動 cast 的噪音。
 - **`st_company` / `st_user_company` 兩張系統表** — 落於 common 庫，搭配 `ICompanyRepository` / `IUserCompanyRepository`，讓 `EnterCompany` 對「公司不存在 / 公司停用 / 未授權」一律回 `CompanyAccessDenied`。`DbCategorySettings` 預設 common 分類已包含此兩表。
 - **JsonRpcErrorCode 新增兩碼** — `CompanyNotEntered` (-32002, HTTP 409)、`CompanyAccessDenied` (-32003, HTTP 403)。後者刻意合併「無權限」與「不存在」以防止 user enumeration。
+- **`UserMessageException`（`Bee.Base.Exceptions`）** — 業務流程中斷訊號的專屬型別，取代用 BCL 例外（`InvalidOperationException` / `ArgumentException` …）傳遞使用者訊息的習慣。新程式碼一律使用此型別表達「給使用者看的訊息」。
+- **`JsonRpcErrorCode.UserMessage = -32099`** — 通用業務訊息容器，位於 server-defined error 範圍末端與系統錯誤（`InternalError = -32000`）拉開距離；`JsonRpcExecutor` 抓 user-facing 例外時統一寫此 code，Client 端 `ApiConnector` 可依此精準重建例外型別。
+- **`Bee.Base.Exceptions` namespace** — 集中例外相關型別，同步把既有 `ExceptionExtensions` 搬入。
 
 ### 變更
 
@@ -27,6 +30,9 @@
 - **`IDataFormRepository.GetList`** — 回傳型別改為 `DataFormListResult`（含 `Table` + `Paging`），並加入 `PagingOptions? paging` default 參數。
 - **`CompanyInfo.LogDatabaseId` 移除** — `DbScope.Log` 改為固定路由 `databaseId = "log"`（pre-EnterCompany 方法可寫 audit log）。跨公司 log 隔離由後續的 `sys_company_rowid` 列級分區處理，不再需要每家公司獨立 log DB。
 - **`SelectCommandBuilder` 未知表名行為一致化** — 由 `KeyNotFoundException` 改為 `InvalidOperationException`，與 Insert / Update / Delete builder 對齊。
+- **`JsonRpcExecutor` error code 對齊**（行為變更） — 抓到例外時不再 hardcoded `code = -1`；改依例外型別寫對應 `JsonRpcErrorCode`：白名單例外 → `UserMessage`（`-32099`）、其他 → `InternalError`（`-32000`）。Client 端如依賴 `code == -1` 判斷錯誤型別需改用新 enum。
+- **`ApiConnector.FinalizeResponse` 依 code 重建例外**（行為變更） — `code == UserMessage` 拋出 `UserMessageException(message)`（訊息純淨無前綴），其他 code 維持 `InvalidOperationException($"API error: {code} - {message}")`。既有 `catch (Exception)` 仍能接住 `UserMessageException`；建議呼叫端改用 `catch (UserMessageException)` + `catch (Exception)` 分流。
+- **`ExceptionExtensions` namespace** — 由 `Bee.Base` 搬至 `Bee.Base.Exceptions`；呼叫端需補 `using Bee.Base.Exceptions;`。
 
 ### 升級指引
 
