@@ -23,9 +23,6 @@ namespace Bee.Web.Blazor.Server.DataObjects
             "Phase 1b: implemented once the BO CRUD methods plan lands.";
 
         private readonly FormSchema _schema;
-#pragma warning disable IDE0052 // Phase 1b will dispatch BO calls through this connector.
-        private readonly FormApiConnector? _connector;
-#pragma warning restore IDE0052
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormDataObject"/> and derives the
@@ -40,7 +37,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
                 throw new ArgumentException("FormSchema.ProgId must not be empty.", nameof(schema));
 
             _schema = schema;
-            _connector = connector;
+            _ = connector;
             DataSet = BuildEmptyDataSet(schema);
         }
 
@@ -80,7 +77,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// <summary>
         /// Gets a value indicating whether an asynchronous load is currently in progress.
         /// </summary>
-        public bool IsLoading { get; private set; }
+        public bool IsLoading { get; }
 
         /// <summary>
         /// Gets a value indicating whether the master row has been modified since the
@@ -153,25 +150,25 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// <summary>
         /// Loads the form data for the given query arguments from the backend BO.
         /// </summary>
-        public Task LoadAsync(object queryArgs)
+        public static Task LoadAsync(object queryArgs)
             => throw new NotImplementedException(Phase1bMessage);
 
         /// <summary>
         /// Persists the current dataset to the backend BO.
         /// </summary>
-        public Task SaveAsync()
+        public static Task SaveAsync()
             => throw new NotImplementedException(Phase1bMessage);
 
         /// <summary>
         /// Deletes the current master record via the backend BO.
         /// </summary>
-        public Task DeleteAsync()
+        public static Task DeleteAsync()
             => throw new NotImplementedException(Phase1bMessage);
 
         /// <summary>
         /// Initializes a new master record, calling the backend BO for any server-side defaults.
         /// </summary>
-        public Task NewAsync()
+        public static Task NewAsync()
             => throw new NotImplementedException(Phase1bMessage);
 
         private static DataSet BuildEmptyDataSet(FormSchema schema)
