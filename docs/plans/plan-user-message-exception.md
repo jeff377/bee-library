@@ -319,8 +319,8 @@ i18n 落地時，需同步改：
 | `src/Bee.Api.Client/Connectors/ApiConnector.cs` `FinalizeResponse` | 依 `JsonRpcError.Code` 判斷：`UserMessage` 拋 `UserMessageException(message)`、其他維持 `InvalidOperationException` 包裝（見 §D8） |
 | `docs/development-constraints.zh-TW.md` | 「例外處理規則」段：白名單清單加入 `UserMessageException`；新增「使用時機」表與「演進方向」說明（見下方文件草案） |
 | `docs/development-constraints.md` | 同步英文版 |
-| `CHANGELOG.zh-TW.md` | Unreleased 區記錄：新增 `UserMessageException`、`JsonRpcErrorCode.UserMessage`、納入白名單、`JsonRpcExecutor` 修正 error code 對齊、`ApiConnector` 依 code 重建例外、`ExceptionExtensions` 搬入 `Bee.Base.Exceptions` namespace |
-| `CHANGELOG.md` | 同步英文版 |
+
+**CHANGELOG 不在本次處理**：CHANGELOG 採發佈套件新版本時統整大綱的策略，不在每個 plan 完成時逐項追加，避免條目過於雜亂。本次的協定層異動會在下一次發佈前的 changelog 整理（`/changelog-draft` skill）中以大綱形式收錄。
 
 ### 不動
 
@@ -434,7 +434,7 @@ i18n 落地時，需同步改：
 - **修改**：
   - `JsonRpcExecutor.cs`：白名單條件 + 抽 `MapException` helper 取代 hardcoded `-1`
   - `ApiConnector.FinalizeResponse`：依 code 重建例外
-  - 4 個文件（development-constraints x 2、CHANGELOG x 2）
+  - 2 個文件（development-constraints x 2；CHANGELOG 留待發佈時統整）
 - **預估 commit 數**：2–3 個建議拆法：
   1. **C1**：搬遷 `ExceptionExtensions.cs` 至 `Bee.Base.Exceptions` namespace（4 個檔案補 using）
   2. **C2**：新增 `UserMessageException` + `JsonRpcErrorCode.UserMessage` + `JsonRpcExecutor.MapException`（含順手修 hardcoded -1）+ 白名單條件 + server 端測試

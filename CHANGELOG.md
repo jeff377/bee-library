@@ -21,9 +21,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Typed `IBusinessObjectFactory` wrappers** — `Bee.Business` adds `CreateFormBO(token, progId)` and `CreateSystemBO(token)` extension methods to remove manual casts at the call site.
 - **`st_company` / `st_user_company` system tables** — In the common database, backed by `ICompanyRepository` / `IUserCompanyRepository`, so `EnterCompany` returns `CompanyAccessDenied` for "company missing / company disabled / unauthorised" alike. Default `DbCategorySettings` for the common category now includes these two tables.
 - **Two new `JsonRpcErrorCode` values** — `CompanyNotEntered` (-32002, HTTP 409) and `CompanyAccessDenied` (-32003, HTTP 403). The latter deliberately merges "no permission" and "not found" to prevent user enumeration.
-- **`UserMessageException` (`Bee.Base.Exceptions`)** — Dedicated type for "business flow interruption signal", replacing the practice of using BCL exceptions (`InvalidOperationException` / `ArgumentException` …) to deliver user-facing messages. New code should use this type for any message intended for the end user.
-- **`JsonRpcErrorCode.UserMessage = -32099`** — Catch-all container for user-facing business messages, placed at the tail of the server-defined error range to separate it from system errors (`InternalError = -32000`). `JsonRpcExecutor` writes this code for all user-facing exceptions, enabling the client `ApiConnector` to reconstruct the exception type precisely.
-- **`Bee.Base.Exceptions` namespace** — Consolidates exception-related types; the existing `ExceptionExtensions` is moved into this namespace.
 
 ### Changed
 
@@ -31,9 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **`IDataFormRepository.GetList`** — Now returns `DataFormListResult` (carrying `Table` + `Paging`) and accepts an optional `PagingOptions? paging`.
 - **`CompanyInfo.LogDatabaseId` removed** — `DbScope.Log` now resolves to the fixed `databaseId = "log"` (pre-EnterCompany methods can write audit logs). Cross-company log isolation is handled by upcoming `sys_company_rowid` row-level partitioning, not separate physical log DBs per company.
 - **`SelectCommandBuilder` behaviour on unknown table name** — Throws `InvalidOperationException` (was `KeyNotFoundException`), aligning with the Insert / Update / Delete builders.
-- **`JsonRpcExecutor` error code alignment** (behaviour change) — No longer hardcodes `code = -1` when catching exceptions; instead writes the corresponding `JsonRpcErrorCode` based on exception type (whitelisted exceptions → `UserMessage` `-32099`, others → `InternalError` `-32000`). Clients that depended on `code == -1` to detect errors must migrate to the new enum.
-- **`ApiConnector.FinalizeResponse` reconstructs exceptions by code** (behaviour change) — `code == UserMessage` throws `UserMessageException(message)` (clean message, no prefix); other codes keep the previous `InvalidOperationException($"API error: {code} - {message}")` wrapping. Existing `catch (Exception)` still catches `UserMessageException`; callers are encouraged to migrate to `catch (UserMessageException)` + `catch (Exception)` for explicit routing.
-- **`ExceptionExtensions` namespace** — Moved from `Bee.Base` to `Bee.Base.Exceptions`; call sites need to add `using Bee.Base.Exceptions;`.
 
 ### Migration
 
