@@ -1,6 +1,12 @@
 # 計畫：samples/ 目錄結構與最小 Demo 清單
 
-**狀態：📝 擬定中**
+**狀態：🚧 進行中（2026-05-23）**
+
+| 階段 | 範圍 | 狀態 |
+|------|------|------|
+| P0 | `QuickStart.Server` + `QuickStart.Console` + 共用 `Define/` + 主 README Quick Start | ✅ 已完成（2026-05-23） |
+| P1 | `Blazor.Server.Demo` + `Blazor.Wasm.Demo` | 📝 待做 |
+| P2 | `Maui.Demo` | 📝 待做 |
 
 ## 背景
 

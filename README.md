@@ -65,9 +65,26 @@ For the full developer documentation index, see [docs/README.md](docs/README.md)
 | **Bee.Web.Blazor.Wasm.dll** | Razor Class Library (RCL) for Blazor WebAssembly hosts; forced to `RemoteApiProvider`. Must not depend on any backend project. |
 
 
-## 💡 Sample Project
+## 🚀 Quick Start
 
-Refer to [bee-jsonrpc-sample](https://github.com/jeff377/bee-jsonrpc-sample), which includes examples of JSON-RPC server and client implementations, and demonstrates how to use the Connector for both local and remote connections.
+Want to see Bee.NET running in 30 seconds?
+
+```bash
+# Terminal 1 — start the JSON-RPC API host
+cd samples/QuickStart.Server
+dotnet run
+
+# Terminal 2 — connect and call the Echo BO
+cd samples/QuickStart.Console
+dotnet run
+```
+
+The console will print `System.Ping` status and an echoed message returned from a custom BO. See [`samples/README.md`](samples/README.md) for the full demo list and what each one shows.
+
+## 💡 Sample Projects
+
+- In-repo demos under [`samples/`](samples/README.md) — minimal, focused, shipped alongside the framework. Built with `dotnet build samples/Bee.Samples.slnx` (independent of the main `Bee.Library.slnx`, so the main CI/build stays unaffected).
+- [bee-jsonrpc-sample](https://github.com/jeff377/bee-jsonrpc-sample) — earlier external sample that shows JSON-RPC server / client implementations and Local / Remote connector usage.
 
 
 ## 📬 Contact & Follow

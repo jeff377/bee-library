@@ -1,0 +1,53 @@
+# QuickStart.Server
+
+Minimal Bee.NET JSON-RPC API host. Exposes:
+
+- `System.Ping` — framework built-in, anonymous; verifies the host is reachable.
+- `Echo.Echo` — sample BO, anonymous; returns the request message decorated with a `"echo: "` prefix.
+
+## 跑法
+
+```bash
+cd samples/QuickStart.Server
+dotnet run
+```
+
+啟動後 listen 在 `http://localhost:5050`，JSON-RPC endpoint 為 `POST /api`。
+
+## 預期輸出
+
+第一次啟動會：
+
+1. 從 `samples/Define/` 載入 `SystemSettings.xml` / `DbCategorySettings.xml` / `DatabaseSettings.xml`
+2. 在 `samples/Define/Master.key` 自動產生 master key（已被 `.gitignore`）
+3. 在工作目錄產生 `quickstart.db`（已被 `.gitignore`）
+
+console 應顯示 `Now listening on: http://localhost:5050`。
+
+## 對應到哪些 library 功能
+
+| 程式段落 | library 功能 |
+|----------|--------------|
+| `DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance)` | `Bee.Db.Manager.DbProviderRegistry` — ADO.NET provider 切換 |
+| `DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory())` | `Bee.Db.Providers.Sqlite` — SQLite dialect (form CRUD / schema 反射 / DDL) |
+| `SystemSettingsLoader.Load(paths)` | `Bee.Definition.SystemSettingsLoader` — boot-time 載入 XML |
+| `services.AddBeeFramework(...)` | `Bee.Hosting.BeeFrameworkServiceCollectionExtensions` — backend composition root |
+| `IFormBoTypeResolver` override | `Bee.Business.IFormBoTypeResolver` — 自訂 progId → BO type 對應 |
+| `: ApiServiceController` 空殼 controller | `Bee.Api.AspNetCore.Controllers.ApiServiceController` — `[Route("api")]` JSON-RPC endpoint |
+| `[ApiAccessControl(Public, Anonymous)]` | `Bee.Definition.Attributes.ApiAccessControlAttribute` — API 存取控制 |
+
+## 試打看看（不啟動 console demo 的情況下）
+
+```bash
+curl -s -X POST http://localhost:5050/api \
+  -H 'Content-Type: application/json' \
+  -H 'X-Api-Key: quickstart-demo' \
+  -d '{
+        "jsonrpc": "2.0",
+        "id": "1",
+        "method": "Echo.Echo",
+        "params": { "Value": { "Message": "hello" } }
+      }'
+```
+
+預期回 JSON-RPC `result.value`，其中 `Response = "echo: hello"`。

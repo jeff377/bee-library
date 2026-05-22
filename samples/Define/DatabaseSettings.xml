@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DatabaseSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Items>
+    <DatabaseItem
+        Id="common"
+        CategoryId="common"
+        DisplayName="共用資料庫 (SQLite)"
+        DatabaseType="SQLite"
+        ConnectionString="Data Source=quickstart.db;Cache=Shared" />
+  </Items>
+</DatabaseSettings>

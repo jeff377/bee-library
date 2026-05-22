@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="ft_employee" DisplayName="員工">
+  <Fields>
+    <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+    <DbField FieldName="sys_id" Caption="員工編號" DbType="String" Length="20" />
+    <DbField FieldName="sys_name" Caption="員工姓名" DbType="String" Length="50" />
+    <DbField FieldName="hire_date" Caption="到職日" DbType="Date" />
+    <DbField FieldName="is_active" Caption="在職中" DbType="Boolean" />
+  </Fields>
+  <Indexes>
+    <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+      <IndexFields>
+        <IndexField FieldName="sys_no" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="rx_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="uk_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_id" />
+      </IndexFields>
+    </DbTableIndex>
+  </Indexes>
+</TableSchema>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DbCategorySettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Categories>
+    <DbCategory Id="common" DisplayName="共用資料庫">
+      <Tables>
+        <TableItem TableName="ft_employee" DisplayName="員工" />
+        <TableItem TableName="ft_employee_phone" DisplayName="員工電話" />
+      </Tables>
+    </DbCategory>
+  </Categories>
+</DbCategorySettings>

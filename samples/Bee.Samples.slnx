@@ -1,0 +1,17 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Define/">
+    <File Path="Define/SystemSettings.xml" />
+    <File Path="Define/DbCategorySettings.xml" />
+    <File Path="Define/DatabaseSettings.xml" />
+    <File Path="Define/FormSchema/Employee.FormSchema.xml" />
+    <File Path="Define/TableSchema/common/ft_employee.TableSchema.xml" />
+    <File Path="Define/TableSchema/common/ft_employee_phone.TableSchema.xml" />
+  </Folder>
+  <Folder Name="/QuickStart/">
+    <Project Path="QuickStart.Server/QuickStart.Server.csproj" />
+    <Project Path="QuickStart.Console/QuickStart.Console.csproj" />
+  </Folder>
+</Solution>

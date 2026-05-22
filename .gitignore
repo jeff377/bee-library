@@ -433,7 +433,12 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 Master.key
-/samples/Define/DatabaseSettings.xml
+
+# Samples runtime artifacts (generated when running demos; never committed)
+/samples/**/*.db
+/samples/**/*.db-journal
+/samples/**/*.db-shm
+/samples/**/*.db-wal
 
 # macOS
 .DS_Store
