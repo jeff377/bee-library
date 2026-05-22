@@ -12,10 +12,10 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("TraceStart 透過 ITraceListener 介面參考應建立正確 Context")]
-        public void TraceStart_ViaInterface_ReturnsContextWithCorrectProperties()
+        [DisplayName("TraceStart 應建立含正確屬性的 TraceContext")]
+        public void TraceStart_WithFullParameters_ReturnsContextWithCorrectProperties()
         {
-            ITraceListener listener = new TraceListener(new CapturingWriter());
+            var listener = new TraceListener(new CapturingWriter());
 
             var ctx = listener.TraceStart(TraceLayers.Business, "detail", name: "TestOp");
 
@@ -29,7 +29,7 @@ namespace Bee.Base.UnitTests
         [DisplayName("TraceStart 省略所有選用參數應建立含預設值的 Context")]
         public void TraceStart_WithOnlyRequiredLayer_CreatesContextWithDefaults()
         {
-            ITraceListener listener = new TraceListener(new CapturingWriter());
+            var listener = new TraceListener(new CapturingWriter());
 
             var ctx = listener.TraceStart(TraceLayers.Data, name: "TestMethod");
 
@@ -40,11 +40,11 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("TraceEnd 透過 ITraceListener 介面參考應停止計時器並發送 End 事件")]
-        public void TraceEnd_ViaInterface_StopsStopwatchAndEmitsEndEvent()
+        [DisplayName("TraceEnd 應停止計時器並發送 End 事件")]
+        public void TraceEnd_AfterStart_StopsStopwatchAndEmitsEndEvent()
         {
             var writer = new CapturingWriter();
-            ITraceListener listener = new TraceListener(writer);
+            var listener = new TraceListener(writer);
 
             var ctx = listener.TraceStart(TraceLayers.UI, name: "Op");
             listener.TraceEnd(ctx, TraceStatus.Ok);
@@ -59,7 +59,7 @@ namespace Bee.Base.UnitTests
         public void TraceEnd_WithExplicitDetail_OverridesContextDetail()
         {
             var writer = new CapturingWriter();
-            ITraceListener listener = new TraceListener(writer);
+            var listener = new TraceListener(writer);
 
             var ctx = listener.TraceStart(TraceLayers.Data, "original-detail", name: "Op");
             listener.TraceEnd(ctx, TraceStatus.Error, "override-detail");
@@ -69,11 +69,11 @@ namespace Bee.Base.UnitTests
         }
 
         [Fact]
-        [DisplayName("TraceWrite 透過 ITraceListener 介面參考應發送 Point 事件")]
-        public void TraceWrite_ViaInterface_EmitsPointEvent()
+        [DisplayName("TraceWrite 應發送 Point 事件")]
+        public void TraceWrite_WithDetailAndStatus_EmitsPointEvent()
         {
             var writer = new CapturingWriter();
-            ITraceListener listener = new TraceListener(writer);
+            var listener = new TraceListener(writer);
 
             listener.TraceWrite(TraceLayers.ApiServer, "write-detail", TraceStatus.Cancelled, name: "WriteOp");
 
@@ -90,7 +90,7 @@ namespace Bee.Base.UnitTests
         public void TraceWrite_WithOnlyRequiredLayer_EmitsDefaultStatusEvent()
         {
             var writer = new CapturingWriter();
-            ITraceListener listener = new TraceListener(writer);
+            var listener = new TraceListener(writer);
 
             listener.TraceWrite(TraceLayers.None, name: "TestMethod");
 
