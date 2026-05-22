@@ -1,0 +1,31 @@
+@using Bee.Web.Blazor.Server.DataObjects
+
+<div class="bee-form-page">
+    @if (_error is not null)
+    {
+        <div class="bee-form-page__error">@_error</div>
+    }
+    else if (_isInitializing || _dataObject is null)
+    {
+        <div class="bee-form-page__loading">Loading…</div>
+    }
+    else
+    {
+        <div class="bee-form-page__toolbar">
+            <button type="button" disabled="@_isBusy" @onclick="OnNewAsync">New</button>
+            <button type="button" disabled="@(_isBusy || _dataObject.MasterRow is null)" @onclick="OnSaveAsync">Save</button>
+            <button type="button" disabled="@(_isBusy || _dataObject.MasterRow is null)" @onclick="OnDeleteAsync">Delete</button>
+            @if (_dataObject.IsDirty)
+            {
+                <span class="bee-form-page__dirty">● unsaved</span>
+            }
+        </div>
+
+        <DynamicGrid Layout="_listLayout"
+                     Rows="_listRows"
+                     OnRowSelected="OnRowSelectedAsync" />
+
+        <DynamicForm Layout="_formLayout"
+                     DataObject="_dataObject" />
+    }
+</div>

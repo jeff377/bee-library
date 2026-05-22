@@ -158,7 +158,7 @@ namespace Bee.Api.Client.Connectors
         /// <typeparam name="T">The target type.</typeparam>
         /// <param name="defineType">The definition data type.</param>
         /// <param name="keys">The keys used to locate the definition data.</param>
-        public async Task<T> GetDefineAsync<T>(DefineType defineType, string[]? keys = null)
+        public virtual async Task<T> GetDefineAsync<T>(DefineType defineType, string[]? keys = null)
         {
             var request = new GetDefineRequest()
             {

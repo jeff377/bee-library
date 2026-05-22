@@ -98,7 +98,7 @@ namespace Bee.Api.Client.Connectors
         /// on both the server and the client. Pass a <see cref="PagingOptions"/> to
         /// page through large result sets.
         /// </remarks>
-        public async Task<GetListResponse> GetListAsync(
+        public virtual async Task<GetListResponse> GetListAsync(
             string selectFields = "",
             FilterNode? filter = null,
             SortFieldCollection? sortFields = null,
@@ -119,7 +119,7 @@ namespace Bee.Api.Client.Connectors
         /// FormSchema defaults and a server-issued <c>sys_rowid</c>; step 1 of
         /// the new-and-save flow.
         /// </summary>
-        public async Task<GetNewDataResponse> GetNewDataAsync()
+        public virtual async Task<GetNewDataResponse> GetNewDataAsync()
         {
             var request = new GetNewDataRequest();
             return await ExecuteAsync<GetNewDataResponse>(FormActions.GetNewData, request).ConfigureAwait(false);
@@ -130,7 +130,7 @@ namespace Bee.Api.Client.Connectors
         /// <paramref name="rowId"/>; step 1 of the load-and-save flow.
         /// </summary>
         /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
-        public async Task<GetDataResponse> GetDataAsync(Guid rowId)
+        public virtual async Task<GetDataResponse> GetDataAsync(Guid rowId)
         {
             var request = new GetDataRequest { RowId = rowId };
             return await ExecuteAsync<GetDataResponse>(FormActions.GetData, request).ConfigureAwait(false);
@@ -142,7 +142,7 @@ namespace Bee.Api.Client.Connectors
         /// of both the new-and-save and load-and-save flows.
         /// </summary>
         /// <param name="dataSet">The DataSet to persist.</param>
-        public async Task<SaveResponse> SaveAsync(DataSet dataSet)
+        public virtual async Task<SaveResponse> SaveAsync(DataSet dataSet)
         {
             ArgumentNullException.ThrowIfNull(dataSet);
             var request = new SaveRequest { DataSet = dataSet };
@@ -155,7 +155,7 @@ namespace Bee.Api.Client.Connectors
         /// <c>DataSet</c>.
         /// </summary>
         /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
-        public async Task<DeleteResponse> DeleteAsync(Guid rowId)
+        public virtual async Task<DeleteResponse> DeleteAsync(Guid rowId)
         {
             var request = new DeleteRequest { RowId = rowId };
             return await ExecuteAsync<DeleteResponse>(FormActions.Delete, request).ConfigureAwait(false);

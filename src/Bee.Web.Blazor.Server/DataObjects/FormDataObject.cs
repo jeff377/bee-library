@@ -2,6 +2,7 @@ using System.Data;
 using System.Globalization;
 using Bee.Api.Client.Connectors;
 using Bee.Base.Data;
+using Bee.Definition;
 using Bee.Definition.Forms;
 
 namespace Bee.Web.Blazor.Server.DataObjects
@@ -12,16 +13,14 @@ namespace Bee.Web.Blazor.Server.DataObjects
     /// access surface for two-way binding by <c>DynamicForm</c> / <c>DynamicGrid</c>.
     /// </summary>
     /// <remarks>
-    /// Phase 1a only owns the local <see cref="DataSet"/> shape derived from
-    /// <see cref="FormSchema"/> together with <see cref="GetField"/> / <see cref="SetField"/>
-    /// round-trip. Server round-trip (<c>LoadAsync</c> / <c>SaveAsync</c> / <c>DeleteAsync</c> /
-    /// <c>NewAsync</c>) is deferred to Phase 1b once the BO CRUD methods land.
+    /// The constructor seeds an empty <see cref="DataSet"/> derived from
+    /// <see cref="FormSchema"/>. The async methods (<see cref="LoadAsync"/>,
+    /// <see cref="NewAsync"/>, <see cref="SaveAsync"/>, <see cref="DeleteAsync"/>)
+    /// round-trip through the supplied <see cref="FormApiConnector"/> and replace
+    /// the local <see cref="DataSet"/> with the server response.
     /// </remarks>
     public class FormDataObject
     {
-        private const string Phase1bMessage =
-            "Phase 1b: implemented once the BO CRUD methods plan lands.";
-
         private readonly FormSchema _schema;
         private readonly FormApiConnector? _connector;
 
@@ -30,7 +29,11 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// empty <see cref="DataSet"/> shape from <paramref name="schema"/>.
         /// </summary>
         /// <param name="schema">The form schema that drives column derivation.</param>
-        /// <param name="connector">The connector used for Phase 1b server round-trips. Optional during Phase 1a.</param>
+        /// <param name="connector">
+        /// The connector used for server round-trips (<see cref="LoadAsync"/>,
+        /// <see cref="NewAsync"/>, <see cref="SaveAsync"/>, <see cref="DeleteAsync"/>).
+        /// Optional when only the in-memory <see cref="DataSet"/> surface is needed.
+        /// </param>
         public FormDataObject(FormSchema schema, FormApiConnector? connector = null)
         {
             ArgumentNullException.ThrowIfNull(schema);
@@ -45,7 +48,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// <summary>
         /// Gets the underlying dataset that holds the master row and detail tables.
         /// </summary>
-        public DataSet DataSet { get; }
+        public DataSet DataSet { get; private set; }
 
         /// <summary>
         /// Gets the master <see cref="DataTable"/> (the table whose name equals
@@ -76,9 +79,9 @@ namespace Bee.Web.Blazor.Server.DataObjects
         }
 
         /// <summary>
-        /// Gets a value indicating whether an asynchronous load is currently in progress.
+        /// Gets a value indicating whether an asynchronous round-trip is in progress.
         /// </summary>
-        public bool IsLoading { get; }
+        public bool IsLoading { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the master row has been modified since the
@@ -125,7 +128,10 @@ namespace Bee.Web.Blazor.Server.DataObjects
 
         /// <summary>
         /// Creates an empty master row populated with column defaults, replacing any
-        /// existing row. Used by Phase 1a tests and by <see cref="NewAsync"/> in Phase 1b.
+        /// existing row. Used when callers want a blank skeleton without going through
+        /// the backend (e.g. unit tests or offline previews); production flows should
+        /// prefer <see cref="NewAsync"/> so the server can seed defaults and
+        /// <c>sys_rowid</c>.
         /// </summary>
         public void InitializeNewMaster()
         {
@@ -149,40 +155,139 @@ namespace Bee.Web.Blazor.Server.DataObjects
         }
 
         /// <summary>
-        /// Loads the form data for the given query arguments from the backend BO.
+        /// Loads the master row (and its details) identified by <paramref name="rowId"/>
+        /// from the backend BO and replaces the local <see cref="DataSet"/>.
         /// </summary>
-        public Task LoadAsync(object queryArgs)
+        /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when no <see cref="FormApiConnector"/> was supplied to the constructor,
+        /// or when the server responds with a null <see cref="DataSet"/> (no row matched).
+        /// </exception>
+        public async Task LoadAsync(Guid rowId)
         {
-            _ = _connector;
-            _ = queryArgs;
-            throw new NotImplementedException($"{nameof(LoadAsync)}: {Phase1bMessage}");
+            var connector = RequireConnector(nameof(LoadAsync));
+
+            IsLoading = true;
+            try
+            {
+                var response = await connector.GetDataAsync(rowId).ConfigureAwait(false);
+                if (response.DataSet is null)
+                    throw new InvalidOperationException(
+                        $"No master row found for {SysFields.RowId} = {rowId}.");
+
+                DataSet = response.DataSet;
+                IsDirty = false;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         /// <summary>
-        /// Persists the current dataset to the backend BO.
+        /// Persists the current <see cref="DataSet"/> through the backend BO and replaces
+        /// the local <see cref="DataSet"/> with the refreshed copy returned by the server
+        /// (so that server-generated columns surface back to the caller).
         /// </summary>
-        public Task SaveAsync()
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when no <see cref="FormApiConnector"/> was supplied to the constructor.
+        /// </exception>
+        public async Task SaveAsync()
         {
-            _ = _connector;
-            throw new NotImplementedException($"{nameof(SaveAsync)}: {Phase1bMessage}");
+            var connector = RequireConnector(nameof(SaveAsync));
+
+            IsLoading = true;
+            try
+            {
+                var response = await connector.SaveAsync(DataSet).ConfigureAwait(false);
+                if (response.DataSet is not null)
+                    DataSet = response.DataSet;
+                IsDirty = false;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         /// <summary>
-        /// Deletes the current master record via the backend BO.
+        /// Deletes the current master row through the backend BO and resets the local
+        /// <see cref="DataSet"/> to the empty schema-derived skeleton.
         /// </summary>
-        public Task DeleteAsync()
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when no <see cref="FormApiConnector"/> was supplied to the constructor,
+        /// when there is no master row to delete, or when the master table does not carry
+        /// a <c>sys_rowid</c> column.
+        /// </exception>
+        public async Task DeleteAsync()
         {
-            _ = _connector;
-            throw new NotImplementedException($"{nameof(DeleteAsync)}: {Phase1bMessage}");
+            var connector = RequireConnector(nameof(DeleteAsync));
+            var rowId = RequireMasterRowId();
+
+            IsLoading = true;
+            try
+            {
+                await connector.DeleteAsync(rowId).ConfigureAwait(false);
+                DataSet = BuildEmptyDataSet(_schema);
+                IsDirty = false;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         /// <summary>
-        /// Initializes a new master record, calling the backend BO for any server-side defaults.
+        /// Requests a blank <see cref="DataSet"/> skeleton seeded with FormSchema defaults
+        /// and a server-issued <c>sys_rowid</c> from the backend BO, and replaces the
+        /// local <see cref="DataSet"/>.
         /// </summary>
-        public Task NewAsync()
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when no <see cref="FormApiConnector"/> was supplied to the constructor,
+        /// or when the server responds with a null <see cref="DataSet"/>.
+        /// </exception>
+        public async Task NewAsync()
         {
-            _ = _connector;
-            throw new NotImplementedException($"{nameof(NewAsync)}: {Phase1bMessage}");
+            var connector = RequireConnector(nameof(NewAsync));
+
+            IsLoading = true;
+            try
+            {
+                var response = await connector.GetNewDataAsync().ConfigureAwait(false);
+                if (response.DataSet is null)
+                    throw new InvalidOperationException(
+                        "GetNewData returned a null DataSet; cannot initialize a new master row.");
+
+                DataSet = response.DataSet;
+                IsDirty = false;
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private FormApiConnector RequireConnector(string operation)
+        {
+            return _connector
+                ?? throw new InvalidOperationException(
+                    $"{operation} requires a FormApiConnector; pass one to the FormDataObject constructor.");
+        }
+
+        private Guid RequireMasterRowId()
+        {
+            var row = MasterRow
+                ?? throw new InvalidOperationException("No master row is loaded; cannot delete.");
+            if (!row.Table.Columns.Contains(SysFields.RowId))
+                throw new InvalidOperationException(
+                    $"Master table is missing the '{SysFields.RowId}' column; cannot delete.");
+
+            var raw = row[SysFields.RowId];
+            if (raw is null || raw == DBNull.Value)
+                throw new InvalidOperationException(
+                    $"Master row has a null '{SysFields.RowId}'; cannot delete.");
+
+            return raw is Guid g ? g : Guid.Parse(raw.ToString()!);
         }
 
         private static DataSet BuildEmptyDataSet(FormSchema schema)

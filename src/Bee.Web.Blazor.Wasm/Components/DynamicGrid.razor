@@ -1,0 +1,33 @@
+@using System.Data
+@using Bee.Definition.Layouts
+
+@if (Layout is null || Rows is null || Rows.Rows.Count == 0)
+{
+    <div class="bee-dynamic-grid bee-dynamic-grid--empty">@EmptyText</div>
+}
+else
+{
+    <table class="bee-dynamic-grid">
+        <thead>
+            <tr>
+                @foreach (var column in VisibleColumns)
+                {
+                    <th class="bee-dynamic-grid__header" style="@BuildColumnStyle(column)">
+                        @column.Caption
+                    </th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (DataRow row in Rows.Rows)
+            {
+                <tr class="bee-dynamic-grid__row" @onclick="() => OnRowClickAsync(row)">
+                    @foreach (var column in VisibleColumns)
+                    {
+                        <td class="bee-dynamic-grid__cell">@FormatCell(row, column)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
