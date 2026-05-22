@@ -1,6 +1,5 @@
 using System.Data;
 using System.Globalization;
-using Bee.Api.Client.Connectors;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
 
@@ -23,24 +22,19 @@ namespace Bee.Web.Blazor.Server.DataObjects
             "Phase 1b: implemented once the BO CRUD methods plan lands.";
 
         private readonly FormSchema _schema;
-#pragma warning disable IDE0052 // Phase 1b will dispatch BO calls through this connector.
-        private readonly FormApiConnector? _connector;
-#pragma warning restore IDE0052
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormDataObject"/> and derives the
         /// empty <see cref="DataSet"/> shape from <paramref name="schema"/>.
         /// </summary>
         /// <param name="schema">The form schema that drives column derivation.</param>
-        /// <param name="connector">The connector used for Phase 1b server round-trips. Optional during Phase 1a.</param>
-        public FormDataObject(FormSchema schema, FormApiConnector? connector = null)
+        public FormDataObject(FormSchema schema)
         {
             ArgumentNullException.ThrowIfNull(schema);
             if (string.IsNullOrWhiteSpace(schema.ProgId))
                 throw new ArgumentException("FormSchema.ProgId must not be empty.", nameof(schema));
 
             _schema = schema;
-            _connector = connector;
             DataSet = BuildEmptyDataSet(schema);
         }
 
