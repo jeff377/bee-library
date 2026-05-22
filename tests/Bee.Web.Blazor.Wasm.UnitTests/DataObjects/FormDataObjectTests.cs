@@ -243,8 +243,7 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.DataObjects
         [DisplayName("NewAsync 在 Phase 1a 階段拋出 NotImplementedException")]
         public async Task NewAsync_Phase1a_Throws()
         {
-            var dataObject = new FormDataObject(BuildEmployeeSchema());
-            await Assert.ThrowsAsync<NotImplementedException>(() => dataObject.NewAsync());
+            await Assert.ThrowsAsync<NotImplementedException>(() => FormDataObject.NewAsync());
         }
     }
 }
