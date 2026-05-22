@@ -56,5 +56,32 @@ namespace Bee.Api.Client.UnitTests
             await Assert.ThrowsAsync<ArgumentException>(async () =>
                 await connector.ExecuteAsync<object>(action!, new object(), PayloadFormat.Plain));
         }
+
+        [Fact]
+        [DisplayName("FormApiConnector.SaveAsync 傳入 null DataSet 應拋 ArgumentNullException")]
+        public async Task SaveAsync_NullDataSet_ThrowsArgumentNullException()
+        {
+            var connector = new FormApiConnector(Guid.NewGuid(), TestProgId);
+            await Assert.ThrowsAsync<ArgumentNullException>(() => connector.SaveAsync(null!));
+        }
+
+        [Fact]
+        [DisplayName("FormApiConnector CRUD async 方法不應有同名同步版本(async-only 慣例)")]
+        public void CrudAsyncMethods_HaveNoSyncCounterpart()
+        {
+            var type = typeof(FormApiConnector);
+
+            // 計畫 §1.3 確立的新慣例:CRUD 4 個 action 僅以 async 方法暴露,
+            // 不再順手加同步 wrapper(避免 sync-over-async 在 Blazor Server
+            // 切半 thread pool 的反 pattern)。
+            string[] crudAsyncNames = { "GetNewDataAsync", "GetDataAsync", "SaveAsync", "DeleteAsync" };
+            foreach (var asyncName in crudAsyncNames)
+            {
+                Assert.NotNull(type.GetMethod(asyncName));
+
+                var syncName = asyncName.Replace("Async", string.Empty, StringComparison.Ordinal);
+                Assert.Null(type.GetMethod(syncName));
+            }
+        }
     }
 }

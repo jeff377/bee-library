@@ -1,3 +1,4 @@
+using System.Data;
 using Bee.Api.Core.Messages;
 using Bee.Api.Core.Messages.Form;
 using Bee.Definition;
@@ -111,6 +112,53 @@ namespace Bee.Api.Client.Connectors
                 Paging = paging,
             };
             return await ExecuteAsync<GetListResponse>(FormActions.GetList, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously requests a blank <c>DataSet</c> skeleton seeded with
+        /// FormSchema defaults and a server-issued <c>sys_rowid</c>; step 1 of
+        /// the new-and-save flow.
+        /// </summary>
+        public async Task<GetNewDataResponse> GetNewDataAsync()
+        {
+            var request = new GetNewDataRequest();
+            return await ExecuteAsync<GetNewDataResponse>(FormActions.GetNewData, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously loads the master row (and its details) by
+        /// <paramref name="rowId"/>; step 1 of the load-and-save flow.
+        /// </summary>
+        /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
+        public async Task<GetDataResponse> GetDataAsync(Guid rowId)
+        {
+            var request = new GetDataRequest { RowId = rowId };
+            return await ExecuteAsync<GetDataResponse>(FormActions.GetData, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously persists a <c>DataSet</c> by dispatching
+        /// INSERT / UPDATE / DELETE based on each row's <c>RowState</c>; step 2
+        /// of both the new-and-save and load-and-save flows.
+        /// </summary>
+        /// <param name="dataSet">The DataSet to persist.</param>
+        public async Task<SaveResponse> SaveAsync(DataSet dataSet)
+        {
+            ArgumentNullException.ThrowIfNull(dataSet);
+            var request = new SaveRequest { DataSet = dataSet };
+            return await ExecuteAsync<SaveResponse>(FormActions.Save, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
+        /// Asynchronously deletes a single master row directly by
+        /// <paramref name="rowId"/> without first loading the full
+        /// <c>DataSet</c>.
+        /// </summary>
+        /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
+        public async Task<DeleteResponse> DeleteAsync(Guid rowId)
+        {
+            var request = new DeleteRequest { RowId = rowId };
+            return await ExecuteAsync<DeleteResponse>(FormActions.Delete, request).ConfigureAwait(false);
         }
     }
 }

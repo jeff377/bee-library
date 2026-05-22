@@ -1,3 +1,4 @@
+using System.Data;
 using Bee.Definition.Filters;
 using Bee.Definition.Paging;
 using Bee.Definition.Sorting;
@@ -29,5 +30,54 @@ namespace Bee.Repository.Abstractions.Form
             FilterNode? filter,
             SortFieldCollection? sortFields,
             PagingOptions? paging = null);
+
+        /// <summary>
+        /// Produces a blank <c>DataSet</c> skeleton seeded with FormSchema
+        /// defaults. The master table carries exactly one row in the
+        /// <see cref="DataRowState.Added"/> state with a server-issued
+        /// <c>sys_rowid</c>; detail tables carry their full schema but no rows.
+        /// </summary>
+        DataSet GetNewData();
+
+        /// <summary>
+        /// Loads the master row (and its details) by <paramref name="rowId"/>.
+        /// All returned rows have <c>AcceptChanges</c> applied so their state
+        /// is <see cref="DataRowState.Unchanged"/>.
+        /// </summary>
+        /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
+        /// <returns>
+        /// The loaded <see cref="DataSet"/>; <c>null</c> when no master row
+        /// matches <paramref name="rowId"/>.
+        /// </returns>
+        DataSet? GetData(Guid rowId);
+
+        /// <summary>
+        /// Persists changes from a <see cref="DataSet"/> by dispatching
+        /// INSERT / UPDATE / DELETE based on each row's <see cref="DataRow.RowState"/>;
+        /// every command runs inside a single transaction.
+        /// </summary>
+        /// <param name="dataSet">The DataSet to persist.</param>
+        /// <returns>
+        /// A tuple containing the freshly re-loaded <c>DataSet</c> and the
+        /// per-table affected-row counts.
+        /// </returns>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when <paramref name="dataSet"/> contains no pending changes
+        /// (callers should not invoke <c>Save</c> in this case).
+        /// </exception>
+        (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet);
+
+        /// <summary>
+        /// Deletes a single master row directly by <paramref name="rowId"/>.
+        /// Detail rows that reference the master through
+        /// <c>sys_master_rowid</c> are removed first; the entire operation
+        /// runs inside a single transaction.
+        /// </summary>
+        /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
+        /// <returns>
+        /// The number of master rows actually deleted (zero indicates the row
+        /// no longer exists).
+        /// </returns>
+        int Delete(Guid rowId);
     }
 }

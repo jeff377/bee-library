@@ -214,6 +214,15 @@ namespace Bee.Api.Core.UnitTests.Form
                 LastPaging = paging;
                 return new DataFormListResult { Table = _table, Paging = _paging };
             }
+
+            public DataSet GetNewData() => throw new NotSupportedException();
+
+            public DataSet? GetData(Guid rowId) => throw new NotSupportedException();
+
+            public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet)
+                => throw new NotSupportedException();
+
+            public int Delete(Guid rowId) => throw new NotSupportedException();
         }
     }
 }

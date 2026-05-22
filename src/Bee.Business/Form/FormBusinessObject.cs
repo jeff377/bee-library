@@ -75,5 +75,73 @@ namespace Bee.Business.Form
                 Paging = listResult.Paging,
             };
         }
+
+        /// <summary>
+        /// Returns a blank <c>DataSet</c> skeleton seeded with FormSchema
+        /// defaults and a server-issued <c>sys_rowid</c>.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual GetNewDataResult GetNewData(GetNewDataArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            var repository = CreateDataFormRepository(ProgId);
+            var dataSet = repository.GetNewData();
+
+            return new GetNewDataResult { DataSet = dataSet };
+        }
+
+        /// <summary>
+        /// Loads a single master row (and its details) by <c>RowId</c>.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual GetDataResult GetData(GetDataArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            var repository = CreateDataFormRepository(ProgId);
+            var dataSet = repository.GetData(args.RowId);
+
+            return new GetDataResult { DataSet = dataSet };
+        }
+
+        /// <summary>
+        /// Persists a <c>DataSet</c> by dispatching INSERT / UPDATE / DELETE
+        /// based on each row's <c>RowState</c>.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual SaveResult Save(SaveArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            if (args.DataSet == null)
+                throw new ArgumentException("Save requires a non-null DataSet.", nameof(args));
+
+            var repository = CreateDataFormRepository(ProgId);
+            var (refreshed, affected) = repository.Save(args.DataSet);
+
+            return new SaveResult
+            {
+                DataSet = refreshed,
+                AffectedRows = affected,
+            };
+        }
+
+        /// <summary>
+        /// Deletes a single master row directly by <c>RowId</c>.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        public virtual DeleteResult Delete(DeleteArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            var repository = CreateDataFormRepository(ProgId);
+            var rowsAffected = repository.Delete(args.RowId);
+
+            return new DeleteResult { RowsAffected = rowsAffected };
+        }
     }
 }

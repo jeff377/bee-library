@@ -1,8 +1,11 @@
+using System.Data;
 using System.Globalization;
 using Bee.Base;
+using Bee.Base.Data;
 using Bee.Db;
 using Bee.Db.Manager;
 using Bee.Definition;
+using Bee.Definition.Database;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Paging;
@@ -166,6 +169,297 @@ namespace Bee.Repository.Form
             }
 
             return [new SortField(SysFields.No, SortDirection.Asc)];
+        }
+
+        /// <inheritdoc/>
+        public DataSet GetNewData()
+        {
+            var dataSet = new DataSet(ProgId);
+
+            var masterTable = _schema.MasterTable
+                ?? throw new InvalidOperationException(
+                    $"FormSchema '{ProgId}' has no master table; cannot build a new-data skeleton.");
+
+            // Master skeleton + one Added row seeded with FormSchema defaults
+            // and a server-issued sys_rowid.
+            var masterDataTable = BuildEmptyDataTable(masterTable);
+            dataSet.Tables.Add(masterDataTable);
+
+            var masterRow = masterDataTable.NewRow();
+            ApplyMasterDefaults(masterRow, masterTable);
+            masterRow[SysFields.RowId] = Guid.NewGuid();
+            masterDataTable.Rows.Add(masterRow);
+
+            foreach (var detail in EnumerateDetailTables())
+                dataSet.Tables.Add(BuildEmptyDataTable(detail));
+
+            return dataSet;
+        }
+
+        /// <inheritdoc/>
+        public DataSet? GetData(Guid rowId)
+        {
+            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
+                .CreateFormCommandBuilder(_schema, _defineAccess);
+            var dbAccess = _dbAccessFactory.Create(_databaseId);
+
+            // Master row by sys_rowid.
+            var masterFilter = FilterCondition.Equal(SysFields.RowId, rowId);
+            var masterSpec = builder.BuildSelect(ProgId, string.Empty, masterFilter);
+            var masterDataTable = dbAccess.Execute(masterSpec).Table;
+            if (masterDataTable == null || masterDataTable.Rows.Count == 0)
+                return null;
+
+            masterDataTable.TableName = ProgId;
+
+            var dataSet = new DataSet(ProgId);
+            dataSet.Tables.Add(masterDataTable);
+
+            var masterRowId = CoerceToGuid(masterDataTable.Rows[0][SysFields.RowId]);
+            var detailFilter = FilterCondition.Equal(SysFields.MasterRowId, masterRowId);
+
+            foreach (var detail in EnumerateDetailTables())
+            {
+                var detailSpec = builder.BuildSelect(detail.TableName, string.Empty, detailFilter);
+                var detailDataTable = dbAccess.Execute(detailSpec).Table ?? new DataTable(detail.TableName);
+                detailDataTable.TableName = detail.TableName;
+                dataSet.Tables.Add(detailDataTable);
+            }
+
+            dataSet.AcceptChanges();
+            return dataSet;
+        }
+
+        /// <inheritdoc/>
+        public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet)
+        {
+            ArgumentNullException.ThrowIfNull(dataSet);
+
+            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
+                .CreateFormCommandBuilder(_schema, _defineAccess);
+
+            var affected = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var batch = new DbBatchSpec { UseTransaction = true };
+
+            // Determine the order in which tables are processed. Detail
+            // deletions run before master deletion to avoid FK violations;
+            // inserts/updates use master-first order so detail rows can
+            // reference an already-persisted master.
+            var masterTable = _schema.MasterTable
+                ?? throw new InvalidOperationException(
+                    $"FormSchema '{ProgId}' has no master table; cannot Save.");
+            var detailTables = EnumerateDetailTables().ToList();
+
+            // First pass: per-table deletes (details before master).
+            foreach (var detail in detailTables)
+                CollectRowCommands(builder, dataSet, detail.TableName, batch, affected, includeDelete: true,
+                                   includeInsertUpdate: false);
+            CollectRowCommands(builder, dataSet, masterTable.TableName, batch, affected, includeDelete: true,
+                               includeInsertUpdate: false);
+
+            // Second pass: master insert/update first, then details.
+            CollectRowCommands(builder, dataSet, masterTable.TableName, batch, affected, includeDelete: false,
+                               includeInsertUpdate: true);
+            foreach (var detail in detailTables)
+                CollectRowCommands(builder, dataSet, detail.TableName, batch, affected, includeDelete: false,
+                                   includeInsertUpdate: true);
+
+            if (batch.Commands.Count == 0)
+                throw new InvalidOperationException(
+                    "DataSet has no pending changes; Save would be a no-op.");
+
+            var dbAccess = _dbAccessFactory.Create(_databaseId);
+            dbAccess.ExecuteBatch(batch);
+
+            // Re-fetch the saved master so server-generated columns surface
+            // back to the caller.
+            var masterRowId = ExtractMasterRowId(dataSet, masterTable.TableName);
+            DataSet? refreshed = masterRowId.HasValue ? GetData(masterRowId.Value) : null;
+
+            return (refreshed, affected);
+        }
+
+        /// <inheritdoc/>
+        public int Delete(Guid rowId)
+        {
+            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
+                .CreateFormCommandBuilder(_schema, _defineAccess);
+
+            var batch = new DbBatchSpec { UseTransaction = true };
+
+            // Cascade delete details first (FK on sys_master_rowid), then master.
+            var detailFilter = FilterCondition.Equal(SysFields.MasterRowId, rowId);
+            foreach (var detail in EnumerateDetailTables())
+                batch.Commands.Add(builder.BuildDelete(detail.TableName, detailFilter));
+
+            var masterFilter = FilterCondition.Equal(SysFields.RowId, rowId);
+            batch.Commands.Add(builder.BuildDelete(ProgId, masterFilter));
+
+            var dbAccess = _dbAccessFactory.Create(_databaseId);
+            var result = dbAccess.ExecuteBatch(batch);
+
+            // The master DELETE is the last command; its RowsAffected drives
+            // the caller-visible count.
+            var lastIndex = result.Results.Count - 1;
+            return lastIndex >= 0 ? result.Results[lastIndex].RowsAffected : 0;
+        }
+
+        private IEnumerable<FormTable> EnumerateDetailTables()
+        {
+            if (_schema.Tables == null)
+                yield break;
+
+            foreach (FormTable table in _schema.Tables)
+            {
+                if (string.Equals(table.TableName, ProgId, StringComparison.OrdinalIgnoreCase))
+                    continue;
+                yield return table;
+            }
+        }
+
+        private static DataTable BuildEmptyDataTable(FormTable formTable)
+        {
+            var dataTable = new DataTable(formTable.TableName);
+            if (formTable.Fields == null)
+                return dataTable;
+
+            foreach (FormField field in formTable.Fields)
+            {
+                // Skip virtual and relation fields — they are not part of the
+                // underlying table and have no persistent column.
+                if (field.Type != FieldType.DbField)
+                    continue;
+                dataTable.AddColumn(field.FieldName, field.DbType);
+            }
+
+            return dataTable;
+        }
+
+        private static void ApplyMasterDefaults(DataRow row, FormTable formTable)
+        {
+            if (formTable.Fields == null)
+                return;
+
+            foreach (FormField field in formTable.Fields)
+            {
+                if (field.Type != FieldType.DbField)
+                    continue;
+                if (!row.Table.Columns.Contains(field.FieldName))
+                    continue;
+                if (StringUtilities.IsEmpty(field.DefaultValue))
+                    continue;
+
+                var column = row.Table.Columns[field.FieldName]!;
+                row[field.FieldName] = ConvertDefaultValue(field.DefaultValue, column.DataType);
+            }
+        }
+
+        private static object ConvertDefaultValue(string raw, Type targetType)
+        {
+            if (targetType == typeof(string))
+                return raw;
+            if (targetType == typeof(Guid))
+                return Guid.TryParse(raw, out var g) ? g : Guid.Empty;
+            try
+            {
+                return Convert.ChangeType(raw, targetType, CultureInfo.InvariantCulture);
+            }
+            catch (FormatException)
+            {
+                return DBNull.Value;
+            }
+            catch (InvalidCastException)
+            {
+                return DBNull.Value;
+            }
+        }
+
+        private static void CollectRowCommands(
+            Bee.Db.Dml.IFormCommandBuilder builder,
+            DataSet dataSet,
+            string tableName,
+            DbBatchSpec batch,
+            Dictionary<string, int> affected,
+            bool includeDelete,
+            bool includeInsertUpdate)
+        {
+            if (!dataSet.Tables.Contains(tableName))
+                return;
+
+            var table = dataSet.Tables[tableName]!;
+            int tableCount = affected.TryGetValue(tableName, out var existing) ? existing : 0;
+
+            foreach (DataRow row in table.Rows)
+            {
+                switch (row.RowState)
+                {
+                    case DataRowState.Added when includeInsertUpdate:
+                        batch.Commands.Add(builder.BuildInsert(tableName, row));
+                        tableCount++;
+                        break;
+                    case DataRowState.Modified when includeInsertUpdate:
+                        batch.Commands.Add(builder.BuildUpdate(tableName, row));
+                        tableCount++;
+                        break;
+                    case DataRowState.Deleted when includeDelete:
+                        var rowId = CoerceToGuid(row[SysFields.RowId, DataRowVersion.Original]);
+                        batch.Commands.Add(builder.BuildDelete(tableName,
+                            FilterCondition.Equal(SysFields.RowId, rowId)));
+                        tableCount++;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            affected[tableName] = tableCount;
+        }
+
+        private static Guid? ExtractMasterRowId(DataSet dataSet, string masterTableName)
+        {
+            if (!dataSet.Tables.Contains(masterTableName))
+                return null;
+
+            var table = dataSet.Tables[masterTableName]!;
+            foreach (DataRow row in table.Rows)
+            {
+                if (row.RowState == DataRowState.Deleted)
+                    continue;
+                if (!row.Table.Columns.Contains(SysFields.RowId))
+                    continue;
+                var coerced = TryCoerceToGuid(row[SysFields.RowId]);
+                if (coerced.HasValue && coerced.Value != Guid.Empty)
+                    return coerced.Value;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Coerces a value loaded from a <see cref="DataRow"/> column into a
+        /// <see cref="Guid"/>. SQLite (and the legacy <c>System.Data.SQLite</c>)
+        /// stores GUID values as TEXT and surfaces them as strings; other
+        /// providers return native <see cref="Guid"/> instances. This helper
+        /// hides that distinction so repository callers never need to
+        /// branch on the underlying provider.
+        /// </summary>
+        private static Guid CoerceToGuid(object value)
+        {
+            return TryCoerceToGuid(value)
+                ?? throw new InvalidOperationException(
+                    $"Cannot coerce value of type '{value?.GetType().FullName ?? "null"}' into Guid.");
+        }
+
+        private static Guid? TryCoerceToGuid(object? value)
+        {
+            return value switch
+            {
+                Guid g => g,
+                string s when Guid.TryParse(s, out var parsed) => parsed,
+                _ => null,
+            };
         }
     }
 }
