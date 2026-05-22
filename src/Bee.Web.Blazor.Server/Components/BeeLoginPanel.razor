@@ -1,0 +1,29 @@
+<form class="bee-login-panel" @onsubmit="OnSubmitAsync" @onsubmit:preventDefault="true">
+    <div class="bee-login-panel__field">
+        <label class="bee-login-panel__label" for="@_userIdInputId">@UserIdLabel</label>
+        <input id="@_userIdInputId"
+               class="bee-login-panel__input"
+               type="text"
+               autocomplete="username"
+               disabled="@_isBusy"
+               @bind="_userId" />
+    </div>
+    <div class="bee-login-panel__field">
+        <label class="bee-login-panel__label" for="@_passwordInputId">@PasswordLabel</label>
+        <input id="@_passwordInputId"
+               class="bee-login-panel__input"
+               type="password"
+               autocomplete="current-password"
+               disabled="@_isBusy"
+               @bind="_password" />
+    </div>
+    <button type="submit"
+            class="bee-login-panel__submit"
+            disabled="@_isBusy">
+        @SubmitLabel
+    </button>
+    @if (!string.IsNullOrEmpty(_error))
+    {
+        <div class="bee-login-panel__error" role="alert">@_error</div>
+    }
+</form>

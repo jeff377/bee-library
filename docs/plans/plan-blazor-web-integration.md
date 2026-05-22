@@ -7,7 +7,7 @@
 | 1a | `DynamicForm` + 基底 `FormDataObject`（in-memory 雙向 binding） | ✅ 已完成 |
 | 1b | `FormDataObject` 接 BO：`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync` | ✅ 已完成（2026-05-23） |
 | 1c | `DynamicGrid` + `AddBeeBlazor` DI + `FormPage` 整合頁 | ✅ 已完成（2026-05-23） |
-| 1d | 宿主 Login + `CascadingValue<Guid>` AccessToken 範例 | 📝 待做 |
+| 1d | 宿主 Login + `CascadingValue<Guid>` AccessToken 範例 | ✅ 已完成（2026-05-23） |
 | 2 | `samples/Blazor.Server.Demo` + `Blazor.Wasm.Demo`（對應 plan-samples-structure P1） | 📝 待做 |
 
 ## 背景與需求
