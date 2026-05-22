@@ -1,6 +1,7 @@
 # 計畫:新增 Bee.UI.Maui 控制項專案骨架
 
-**狀態:📝 擬定中**
+**狀態:✅ Phase 0 已完成(2026-05-22)** — Phase 1(第一個實際控制項實作 +
+csproj 改寫為 MAUI multi-target + CI workflow 更新)待第一個控制項實作時觸發。
 
 ## 1. 背景
 
