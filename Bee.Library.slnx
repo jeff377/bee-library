@@ -36,6 +36,7 @@
     <Project Path="tests/Bee.Repository.UnitTests/Bee.Repository.UnitTests.csproj" Id="37be88f7-d67a-40a7-91a3-23583c6b85f1" />
     <Project Path="tests/Bee.Tests.Shared/Bee.Tests.Shared.csproj" />
     <Project Path="tests/Bee.UI.Core.UnitTests/Bee.UI.Core.UnitTests.csproj" />
+    <Project Path="tests/Bee.UI.Maui.UnitTests/Bee.UI.Maui.UnitTests.csproj" />
     <Project Path="tests/Bee.Web.Blazor.Server.UnitTests/Bee.Web.Blazor.Server.UnitTests.csproj" />
     <Project Path="tests/Bee.Web.Blazor.Wasm.UnitTests/Bee.Web.Blazor.Wasm.UnitTests.csproj" />
   </Folder>

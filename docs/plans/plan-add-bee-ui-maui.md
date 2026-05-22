@@ -1,7 +1,13 @@
 # 計畫:新增 Bee.UI.Maui 控制項專案骨架
 
-**狀態:✅ Phase 0 已完成(2026-05-22)** — Phase 1(第一個實際控制項實作 +
-csproj 改寫為 MAUI multi-target + CI workflow 更新)待第一個控制項實作時觸發。
+**狀態:✅ Phase 0 已完成(2026-05-22)** — Phase 1 已於 2026-05-22 觸發
+(`DynamicForm` + `FormDataObject` 首版實作)。詳見
+[plan-bee-ui-maui-dynamic-form.md](plan-bee-ui-maui-dynamic-form.md)。
+
+> **注意:Phase 1 實作後 CI 變動策略修正** — 原 §4.2 預期需加 `maui-android` workload
+> install + cache。實際 Phase 1 採「default TFM = `net10.0` 不含 platform」策略
+> (`Microsoft.Maui.Controls` NuGet 套件提供 net10.0 ref assembly),CI 不需任何 workload
+> 變動。platform TFM 透過 `BeeUiMauiFullPlatforms=true` opt-in,等需要時再觸發 CI 變動。
 
 ## 1. 背景
 

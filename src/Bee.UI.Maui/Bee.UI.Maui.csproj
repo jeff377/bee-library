@@ -1,29 +1,46 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!--
-    Phase 0 (placeholder): plain net10.0 class library.
-
-    Purpose: lock the project name / namespace / dependency direction in the
-    Bee.UI.* family graph. The first concrete MAUI control will trigger a
-    full rewrite of this csproj to MAUI multi-target form:
-
-      <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
-      <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
-      <UseMaui>true</UseMaui>
-      <PackageReference Include="Microsoft.Maui.Controls" Version="..." />
-      ...
-
-    Keeping it plain net10.0 today avoids forcing every developer / CI runner
-    to install the MAUI workload + JDK + Android SDK for a project that has
-    no real content yet. See docs/plans/plan-add-bee-ui-maui.md §3.
-  -->
-
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <!--
+      Phase 1 (active): MAUI shared-logic library.
+
+      Default TFM is net10.0 (no platform). The library compiles against the
+      Microsoft.Maui.Controls ref assemblies and can be consumed by MAUI host apps
+      targeting any platform TFM. Building net10.0 alone needs nothing more than
+      the standard .NET SDK + PackageReference — no MAUI workload, no Android SDK,
+      no Xcode.
+
+      Opt in to platform TFMs via -p:BeeUiMauiFullPlatforms=true when the local
+      environment has the matching workload + SDK installed:
+        Linux:   net10.0-android (needs maui-android workload + Android SDK)
+        macOS:   net10.0-android;net10.0-ios;net10.0-maccatalyst (needs full maui workloads + Xcode)
+        Windows: net10.0-android;net10.0-windows10.0.19041.0 (needs maui-android + Windows SDK)
+
+      Single-platform opt-ins (e.g. BeeUiMauiAndroid=true) can be added later as
+      use cases emerge.
+    -->
+    <TargetFrameworks>net10.0</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BeeUiMauiFullPlatforms)' == 'true'">$(TargetFrameworks);net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BeeUiMauiFullPlatforms)' == 'true' AND $([MSBuild]::IsOSPlatform('osx'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="'$(BeeUiMauiFullPlatforms)' == 'true' AND $([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
     <Nullable>enable</Nullable>
-    <Description>Cross-platform MAUI control library for Bee.NET (placeholder; will become multi-target MAUI when the first concrete control lands).</Description>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+
+    <Description>Cross-platform MAUI control library for Bee.NET (FormSchema-driven UI for iOS / Android / macOS / Windows).</Description>
     <PackageTags>bee.net;maui;ui;controls;mobile;desktop</PackageTags>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Bee.UI.Core\Bee.UI.Core.csproj" />
