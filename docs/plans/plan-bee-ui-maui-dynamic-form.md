@@ -107,10 +107,21 @@
 如此 ubuntu-latest CI 可順利 build `net10.0;net10.0-android`；macOS 本機開發者可 build/test 全部 Apple TFM；
 Windows 開發者可 build/test Android + Windows；test project 永遠能透過 `net10.0` ProjectReference。
 
-### 3.2 `Microsoft.Maui.Controls` PackageReference 是否需要顯式加？
+### 3.2 為何需顯式加 `Microsoft.Maui.Controls` PackageReference + 條件式 `UseMaui`
 
-`<UseMaui>true</UseMaui>` 會由 MAUI SDK 自動帶入 implicit `Microsoft.Maui.Controls` reference，
-無需顯式 `<PackageReference>`。**保持 implicit 即可**，避免版本固定衝突 SDK 預設值。
+**`<UseMaui>true</UseMaui>` 不能無條件設定**：MAUI SDK 看到 `UseMaui=true` 就會 unconditional
+驗證**所有 platform workload**（含 `maui-tizen`），即使 TFM list 只有 `net10.0`。
+CI ubuntu-latest 無任何 MAUI workload → 觸發 NETSDK1147 build fail。
+
+兩個對策疊用：
+- **顯式 `<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />`**：
+  net10.0 編譯時透過 NuGet ref assembly 取得 MAUI types，不依賴 SDK implicit 機制
+- **條件式 `<UseMaui Condition="'$(BeeUiMauiFullPlatforms)' == 'true'">true</UseMaui>`**：
+  default `net10.0` build 不啟用 UseMaui（避開 workload 驗證）；
+  opt-in `BeeUiMauiFullPlatforms=true` 時才啟用（這時 contributor 已裝對應 workload）
+
+副作用：default build 失去 MAUI XAML compilation / Single-Project resource pipeline；
+本計畫無 XAML 檔案（§4.1 已決定純 C# 視覺樹），無 resource 需求，正好不受影響。
 
 ### 3.3 `Bee.UI.Core` cross-TFM 相容性
 

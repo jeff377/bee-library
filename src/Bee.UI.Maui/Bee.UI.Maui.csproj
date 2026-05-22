@@ -24,8 +24,16 @@
     <TargetFrameworks Condition="'$(BeeUiMauiFullPlatforms)' == 'true' AND $([MSBuild]::IsOSPlatform('osx'))">$(TargetFrameworks);net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
     <TargetFrameworks Condition="'$(BeeUiMauiFullPlatforms)' == 'true' AND $([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 
-    <UseMaui>true</UseMaui>
-    <SingleProject>true</SingleProject>
+    <!--
+      UseMaui only when opting into platform TFMs. Setting UseMaui=true on a net10.0
+      shared-logic build pulls in maui-tizen workload validation unconditionally
+      (NETSDK1147), even when no platform TFM is present — that breaks CI runners
+      that have no MAUI workload at all. For the default net10.0 TFM we rely solely
+      on Microsoft.Maui.Controls PackageReference, which is enough to compile against
+      MAUI types without the SDK's platform pipeline.
+    -->
+    <UseMaui Condition="'$(BeeUiMauiFullPlatforms)' == 'true'">true</UseMaui>
+    <SingleProject Condition="'$(BeeUiMauiFullPlatforms)' == 'true'">true</SingleProject>
     <Nullable>enable</Nullable>
 
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
