@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Phase 0 (placeholder): plain net10.0 class library.
+
+    Purpose: lock the project name / namespace / dependency direction in the
+    Bee.UI.* family graph. The first concrete MAUI control will trigger a
+    full rewrite of this csproj to MAUI multi-target form:
+
+      <TargetFrameworks>net10.0-android;net10.0-ios;net10.0-maccatalyst</TargetFrameworks>
+      <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
+      <UseMaui>true</UseMaui>
+      <PackageReference Include="Microsoft.Maui.Controls" Version="..." />
+      ...
+
+    Keeping it plain net10.0 today avoids forcing every developer / CI runner
+    to install the MAUI workload + JDK + Android SDK for a project that has
+    no real content yet. See docs/plans/plan-add-bee-ui-maui.md §3.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <Description>Cross-platform MAUI control library for Bee.NET (placeholder; will become multi-target MAUI when the first concrete control lands).</Description>
+    <PackageTags>bee.net;maui;ui;controls;mobile;desktop</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.UI.Core\Bee.UI.Core.csproj" />
+  </ItemGroup>
+
+</Project>
