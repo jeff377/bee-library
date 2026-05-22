@@ -19,6 +19,7 @@ All packages target **`net10.0`**.
 - **Definition-Driven Architecture**: `FormSchema` serves as the single source of truth, automatically deriving UI layout (`FormLayout`), database schema (`TableSchema`), and validation rules — define once, sync everywhere.
 - **N-Tier + Clean Architecture + MVVM**: Clear separation of presentation, API, business logic (BO), and data access layers, borrowing the best concepts from each pattern for ERP scenarios.
 - **Cross-platform compatibility**: All packages target `net10.0` for modern .NET runtime support.
+- **Multi-database support**: Built-in dialects for SQL Server, PostgreSQL, SQLite, MySQL, and Oracle; host applications register only what they use.
 - **Modular components**: Decoupled libraries for core utilities, data, caching, business logic, and API hosting.
 - **Rapid development**: Reusable base classes and FormSchema-driven CRUD reduce repetitive boilerplate.
 
@@ -47,7 +48,7 @@ For the full developer documentation index, see [docs/README.md](docs/README.md)
 |---|---|
 | **Bee.Repository.Abstractions.dll** | Interface contracts for the business layer to access the data layer; boundary between Business Object and Repository. |
 | **Bee.ObjectCaching.dll** | Runtime caching of FormSchema definitions and derived system data to improve performance. |
-| **Bee.Db.dll** | Database abstraction with dynamic SQL command generation and connection binding. |
+| **Bee.Db.dll** | Database abstraction with dynamic SQL command generation and connection binding; ships dialects for SQL Server, PostgreSQL, SQLite, MySQL, and Oracle. |
 | **Bee.Repository.dll** | Common repository base classes and FormSchema-driven data access mechanisms. |
 | **Bee.Business.dll** | Core business logic (Business Object / BO) implementing use-case workflows. |
 | **Bee.Hosting.dll** | Composition root — `AddBeeFramework` extension registering all backend services into any `IServiceCollection` (no ASP.NET Core dependency). Used by ASP.NET Core, WinForms, Console, and Worker Service hosts. |
