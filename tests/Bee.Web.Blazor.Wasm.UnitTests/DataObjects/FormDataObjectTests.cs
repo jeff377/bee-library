@@ -236,8 +236,7 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.DataObjects
         [DisplayName("DeleteAsync 在 Phase 1a 階段拋出 NotImplementedException")]
         public async Task DeleteAsync_Phase1a_Throws()
         {
-            var dataObject = new FormDataObject(BuildEmployeeSchema());
-            await Assert.ThrowsAsync<NotImplementedException>(() => dataObject.DeleteAsync());
+            await Assert.ThrowsAsync<NotImplementedException>(() => FormDataObject.DeleteAsync());
         }
 
         [Fact]

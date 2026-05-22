@@ -165,7 +165,7 @@ namespace Bee.Web.Blazor.Wasm.DataObjects
         /// <summary>
         /// Deletes the current master record via the backend BO.
         /// </summary>
-        public Task DeleteAsync()
+        public static Task DeleteAsync()
             => throw new NotImplementedException(Phase1bMessage);
 
         /// <summary>
