@@ -80,7 +80,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// <summary>
         /// Gets a value indicating whether an asynchronous load is currently in progress.
         /// </summary>
-        public bool IsLoading { get; private set; }
+        public bool IsLoading { get; }
 
         /// <summary>
         /// Gets a value indicating whether the master row has been modified since the
