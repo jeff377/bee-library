@@ -171,7 +171,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// <summary>
         /// Initializes a new master record, calling the backend BO for any server-side defaults.
         /// </summary>
-        public Task NewAsync()
+        public static Task NewAsync()
             => throw new NotImplementedException(Phase1bMessage);
 
         private static DataSet BuildEmptyDataSet(FormSchema schema)
