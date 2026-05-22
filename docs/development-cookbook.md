@@ -478,11 +478,11 @@ await builder.Build().RunAsync();
 
 > ⚠️ **`Bee.Web.Blazor.Wasm` must not depend on any backend project** (`Bee.Repository` / `Bee.Business` / `Bee.Hosting`, etc.) — the browser runtime cannot load server-only assemblies. The constraint is enforced by the dependency chain (`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` are all pure data/protocol layers).
 
-### MAUI (Phase 1 pending)
+### MAUI (Bee.UI.Maui)
 
-`Bee.UI.Maui` is currently a [Phase 0 placeholder](plans/plan-add-bee-ui-maui.md) (plain `net10.0` class library) and belongs to the **`Bee.UI.*` family**, so its API-connection pattern is the same as the "Desktop" section above — through the `ClientInfo` static singleton.
+`Bee.UI.Maui` belongs to the **`Bee.UI.*` family**, so its API-connection pattern is the same as the "Desktop" section above — through the `ClientInfo` static singleton.
 
-Phase 1 (when the first concrete control is implemented) will expand the csproj to MAUI multi-target (iOS / Android / macOS / Windows). At that point MAUI-specific examples (`IUIViewService` implemented via MAUI `ContentPage`, app startup flow, etc.) will be added.
+Phase 1 has shipped the first FormSchema-driven controls (`DynamicForm` + `FormDataObject`); the csproj references `Microsoft.Maui.Controls` on a `net10.0` shared-logic TFM as the default. Platform TFMs (`net10.0-android` / `net10.0-ios` / `net10.0-maccatalyst` / `net10.0-windows`) are opt-in via `-p:BeeUiMauiFullPlatforms=true` and require the matching MAUI workloads. NuGet publishing remains deferred until a more complete control set is ready.
 
 ### Quick Reference
 

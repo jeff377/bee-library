@@ -20,6 +20,7 @@
 10. [列舉型別（Enumerations）](#10-列舉型別enumerations)
 11. [系統欄位（System Fields）](#11-系統欄位system-fields)
 12. [設定檔（Configuration Files）](#12-設定檔configuration-files)
+13. [前端層（Bee.UI.* / Bee.Web.Blazor.*）](#13-前端層beeui--beewebblazor)
 
 ---
 
@@ -267,3 +268,43 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 | `FormSchema.xml` | 表單結構定義檔 | 各功能程式的 FormSchema 序列化檔 |
 | `FormLayout.xml` | 表單版面配置檔 | 各功能程式的 FormLayout 序列化檔 |
 | `TableSchema.xml` | 資料表結構檔 | 各資料表的 TableSchema 序列化檔 |
+
+---
+
+## 13. 前端層（Bee.UI.* / Bee.Web.Blazor.*）
+
+### 跨平台 UI 共通層（`Bee.UI.Core`）
+
+| 英文名稱 | 中文名稱 | 說明 |
+|----------|----------|------|
+| `ClientInfo` | 用戶端資訊 | Static singleton，管理連線狀態（endpoint、AccessToken、UserInfo），提供 `SystemApiConnector` / `CreateFormApiConnector` / `DefineAccess`。設計給「一個 process = 一個使用者」模型（桌面 / MAUI）。**禁止用於 Blazor 環境**，後者一個 process 服務多個 user circuit |
+| `IEndpointStorage` | 端點儲存介面 | 抽象 API endpoint（URL / 設定）的用戶端持久化機制；預設實作存於 `{ExeName}.Settings.xml` |
+| `IUIViewService` | UI 視圖服務介面 | 由宿主提供的 dialog service，當 `ClientInfo.Initialize` 需要詢問使用者 endpoint 時呼叫（`ShowApiConnect`）；具體實作依 UI 框架而定（MAUI ContentPage / WinForms Form 等） |
+| `VersionInfo` | 版本資訊 | 用戶端在與後端建立連線時回報的版本 metadata |
+| `SupportedConnectTypes` | 支援連線類型 | 控制 `ClientInfo.Initialize` 允許哪些連線模式（`Local` / `Remote` / `Both`）的 Flags |
+
+### MAUI 控制項套件（`Bee.UI.Maui`）
+
+| 英文名稱 | 中文名稱 | 說明 |
+|----------|----------|------|
+| `DynamicForm` | 動態表單 | MAUI 控制項，依 FormSchema 在執行時動態渲染表單（master + detail） |
+| `FormDataObject` | 表單資料物件 | `DynamicForm` 綁定的資料物件，承載底層 `DataSet` 與表單層級狀態 |
+
+### Web 前端（`Bee.Web.Blazor.Server` / `Bee.Web.Blazor.Wasm`）
+
+兩個套件皆為 Razor Class Library（RCL），對外暴露相同的 Blazor 元件介面（`DynamicForm`、`FormDataObject`），但各自針對所屬宿主模型獨立實作（Blazor Server 以 DI scope 連接器搭配 SignalR circuit；Blazor WASM 強制使用 `RemoteApiProvider` 走 HTTP）。
+
+| 英文名稱 | 中文名稱 | 說明 |
+|----------|----------|------|
+| `DynamicForm`（Razor 元件） | 動態表單元件 | Blazor 元件，依 FormSchema 動態渲染表單；Server 與 Wasm 套件各自提供一份實作 |
+| `FormDataObject` | 表單資料物件 | Blazor `DynamicForm` 綁定的資料物件；各套件依宿主模型分別有獨立版本 |
+| `AddBeeWebBlazorServer` | Blazor Server 註冊擴充方法 | `IServiceCollection` 擴充方法，註冊 Blazor Server RCL 所需服務（DI scope 連接器） |
+| `AddBeeWebBlazorWasm` | Blazor WASM 註冊擴充方法 | `IServiceCollection` 擴充方法，註冊 Blazor WASM RCL 所需服務（強制 `RemoteApiProvider`） |
+
+### API 連線提供者（`Bee.Api.Client`）
+
+| 英文名稱 | 中文名稱 | 說明 |
+|----------|----------|------|
+| `IApiProvider` | API 提供者介面 | 抽象連接器如何抵達後端；由宿主在啟動時選擇實作 |
+| `LocalApiProvider` | 近端 API 提供者 | In-process 實作，前後端共用同一個 process，直接呼叫 BO 方法（無 HTTP 開銷） |
+| `RemoteApiProvider` | 遠端 API 提供者 | 基於 HTTP 的實作，前端透過 JSON-RPC 連到後端（Blazor WASM 必須使用此實作） |

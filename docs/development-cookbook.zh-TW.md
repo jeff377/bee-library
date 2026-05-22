@@ -478,13 +478,11 @@ await builder.Build().RunAsync();
 
 > ⚠️ **`Bee.Web.Blazor.Wasm` 嚴禁相依任何後端組件**（`Bee.Repository` / `Bee.Business` / `Bee.Hosting` 等）—— Browser 執行環境無法載入 server-only 組件。此約束由相依鏈強制（`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` 全為純資料 / 協定層）。
 
-### MAUI（待 Phase 1）
+### MAUI（Bee.UI.Maui）
 
-`Bee.UI.Maui` 目前為 [Phase 0 placeholder](plans/plan-add-bee-ui-maui.md) (plain `net10.0` class library)，
-歸 **`Bee.UI.*` family**，所以連 API 的方式與「桌面端」章節相同 —— 透過 `ClientInfo` static singleton。
+`Bee.UI.Maui` 歸 **`Bee.UI.*` family**，所以連 API 的方式與「桌面端」章節相同 —— 透過 `ClientInfo` static singleton。
 
-Phase 1（第一個實際控制項實作時）會擴 csproj 為 MAUI multi-target（iOS / Android / macOS / Windows），
-屆時補上 MAUI-specific 範例（`IUIViewService` 用 MAUI ContentPage 實作、App startup flow 等）。
+Phase 1 已交付首版 FormSchema 驅動控制項（`DynamicForm` + `FormDataObject`），csproj 以 `net10.0` 共通邏輯 TFM 為預設並引用 `Microsoft.Maui.Controls`。平台 TFM（`net10.0-android` / `net10.0-ios` / `net10.0-maccatalyst` / `net10.0-windows`）透過 `-p:BeeUiMauiFullPlatforms=true` opt-in（需安裝對應 MAUI workload）。NuGet 發版仍延後至控制項套件較完整時統一處理。
 
 ### 速查表
 

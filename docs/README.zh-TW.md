@@ -12,7 +12,7 @@
 |------|------|
 | [架構總覽](architecture-overview.zh-TW.md) | 定義導向架構（Definition-Driven Architecture）的設計理念與實踐模式 |
 | [術語對照表](terminology.zh-TW.md) | 框架中英文術語對照參考 |
-| [專案相依性全景圖](dependency-map.zh-TW.md) | 12 個 `src/` 專案的相依關係視覺化 |
+| [專案相依性全景圖](dependency-map.zh-TW.md) | 16 個 `src/` 專案的相依關係視覺化 |
 
 ## 開發指引
 

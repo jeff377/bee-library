@@ -57,7 +57,11 @@ For the full developer documentation index, see [docs/README.md](docs/README.md)
 
 | Assembly Name | Description |
 |---|---|
-| **Bee.Api.Client.dll** | Connector for local or remote invocation of backend Business Objects. |
+| **Bee.Api.Client.dll** | Connector for local or remote invocation of backend Business Objects (`LocalApiProvider` / `RemoteApiProvider`). |
+| **Bee.UI.Core.dll** | Cross-platform UI common layer (`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`); shared by native UI hosts for client-side connection state and endpoint persistence. |
+| **Bee.UI.Maui.dll** | MAUI cross-platform control library (iOS / Android / macOS / Windows); ships FormSchema-driven controls (`DynamicForm` + `FormDataObject`). Default TFM `net10.0`; platform TFMs opt-in via `-p:BeeUiMauiFullPlatforms=true`. |
+| **Bee.Web.Blazor.Server.dll** | Razor Class Library (RCL) for Blazor Server hosts; provides DI-scoped connectors and Blazor components (`DynamicForm`, `FormDataObject`). |
+| **Bee.Web.Blazor.Wasm.dll** | Razor Class Library (RCL) for Blazor WebAssembly hosts; forced to `RemoteApiProvider`. Must not depend on any backend project. |
 
 
 ## 💡 Sample Project
