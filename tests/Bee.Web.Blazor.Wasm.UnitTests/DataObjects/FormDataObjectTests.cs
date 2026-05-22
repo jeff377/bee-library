@@ -116,7 +116,7 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.DataObjects
 
             dataObject.SetField("is_active", "False");
             Assert.Equal("False", dataObject.GetField("is_active"));
-            Assert.Equal(false, dataObject.MasterRow["is_active"]);
+            Assert.False((bool)dataObject.MasterRow["is_active"]);
         }
 
         [Fact]
