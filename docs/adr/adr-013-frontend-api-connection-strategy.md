@@ -20,15 +20,24 @@ Bee.NET 在 v4.4 階段同時擁有三類前端 host:
 |------|--------|---------------|-------------|
 | 連線資訊存放 | 本機檔案(`{ExeName}.Settings.xml`) | Server 端 DI scope / circuit state | Browser 端記憶體 / localStorage |
 | Endpoint 設定流程 | 啟動時讀檔 → 不可達則彈 dialog 讓使用者輸入 | 由宿主 startup 注入或讀 appsettings | 由宿主 startup 注入或讀 JS interop |
-| Token 管理 | static singleton(`ClientInfo.AccessToken`) | DI-scoped(per circuit) | DI-scoped(per app instance) |
+| Token 管理 | **single-user** static singleton(`ClientInfo._accessToken` 為 `private static Guid`) | **multi-user per circuit**,每個 SignalR circuit 各自一份 token | **multi-user per app instance**,每個 Browser tab / WASM heap 各自一份 token |
+| Token 承載人數 | 1(一個 process = 一個使用者) | N(一個 server process 同時服務多個 SignalR 連線) | 1 per browser instance,但同 server 對應 N tabs |
 | UI 互動需求 | 需要對話框服務(`IUIViewService.ShowApiConnect()`) | 走 Razor component 流程,無 dialog 抽象 | 同 Server |
 | 連線方式 | Local 或 Remote(可雙模式) | Local(in-process)或 Remote(HTTP) | **只能 Remote(HTTP)** —— Browser 無法載入後端組件 |
 
 如果強要**單一連線抽象**涵蓋三類前端,會出現結構性矛盾:
 
 1. **桌面端需要的 `IUIViewService.ShowApiConnect()` dialog 抽象,在 Blazor 環境無對應**(Razor component 模型完全不同),抽象會變空殼或語意錯置
-2. **`ClientInfo` 用 static singleton 維持狀態 fits 桌面端**(一個 process = 一個使用者),但對 **Blazor Server 完全錯誤**(同 process 內多個 user circuit 共享 static 會 cross-user data leak)
-3. **桌面端的檔案 IO 持久化**(`{ExeName}.Settings.xml`)在 Browser WASM 沙箱內**根本不可用**
+2. **`ClientInfo` 用 static singleton 維持狀態 fits 桌面端,但對 Web 端是 cross-user security bug**:
+   - `Bee.UI.Core.ClientInfo._accessToken` 是 `private static Guid` —— 一個 process 內**只能存一個使用者的 AccessToken**
+   - 桌面端 OK(一個 App process = 一個登入使用者)
+   - Blazor Server **完全錯誤**:同一個 ASP.NET Core process 同時服務 N 個 SignalR circuit 連線,
+     N 個使用者並行操作。若都讀寫 `ClientInfo.AccessToken`,**後登入的使用者會覆蓋先前的 token**,
+     先前使用者所有後續 API 呼叫都會帶錯誤身分送出 —— 不只是「state 不對」,是嚴重 cross-user data leak
+   - WASM 雖然每個 Browser tab 有獨立 heap(N tabs = N WASM instances),
+     但靜態狀態仍與 Blazor 的 DI scope / component lifecycle 不對齊,難以維護
+3. **桌面端的檔案 IO 持久化**(`{ExeName}.Settings.xml`)在 Browser WASM 沙箱內**根本不可用**;
+   Blazor Server 若多 user 共享同一個檔案,寫入也會 race
 
 歷史上 v4.3 之前 `Bee.UI.Core` 設計時只想到桌面端,`ClientInfo` 自然走 static singleton。
 v4.4 加入 Blazor RCL 時若強行讓 Blazor 走 `Bee.UI.Core`,就會踩到上述問題。

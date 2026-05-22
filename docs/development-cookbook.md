@@ -486,8 +486,10 @@ Phase 1 (when the first concrete control is implemented) will expand the csproj 
 
 ### Quick Reference
 
-| Frontend | Connection abstraction | State storage | Mode | Registration |
-|---------|-----------------------|--------------|------|-------------|
-| Desktop (MAUI / WinForms) | `ClientInfo` static | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.Initialize` at startup |
-| Blazor Server | DI scope | Circuit-bound | Local or Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
-| Blazor WASM | DI scope | Browser memory | **Remote only** | `AddBeeWebBlazorWasm` + `HttpClient` |
+| Frontend | Connection abstraction | Token tenancy | Endpoint persistence | Mode | Registration |
+|---------|-----------------------|---------------|--------------------|------|-------------|
+| Desktop (MAUI / WinForms) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.Initialize` at startup |
+| Blazor Server | DI scope | **N users / process** (per SignalR circuit) | appsettings / startup injection | Local or Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
+| Blazor WASM | DI scope | 1 user / WASM heap | localStorage / JS interop | **Remote only** | `AddBeeWebBlazorWasm` + `HttpClient` |
+
+> ⚠️ **Do not use `Bee.UI.Core.ClientInfo` in Blazor environments.** Its `_accessToken` is a `private static Guid` — only **one** AccessToken per process. In Blazor Server, where one process serves N concurrent user circuits, a later login overwrites the prior user's token, causing cross-user data leakage. See [ADR-013](adr/adr-013-frontend-api-connection-strategy.md).

@@ -488,8 +488,10 @@ Phase 1（第一個實際控制項實作時）會擴 csproj 為 MAUI multi-targe
 
 ### 速查表
 
-| 前端 | 連線抽象 | 狀態存放 | 模式 | 註冊方式 |
-|------|---------|---------|------|---------|
-| 桌面端（MAUI / WinForms） | `ClientInfo` static | 本機檔案 + `IEndpointStorage` | Local 或 Remote | 啟動時 `ClientInfo.Initialize` |
-| Blazor Server | DI scope | Circuit-bound | Local 或 Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
-| Blazor WASM | DI scope | Browser memory | **強制 Remote** | `AddBeeWebBlazorWasm` + HttpClient |
+| 前端 | 連線抽象 | Token 承載 | Endpoint 持久化 | 模式 | 註冊方式 |
+|------|---------|-----------|---------------|------|---------|
+| 桌面端（MAUI / WinForms） | `ClientInfo` static | **1 個使用者 / process**（`ClientInfo._accessToken` static） | 本機檔案 + `IEndpointStorage` | Local 或 Remote | 啟動時 `ClientInfo.Initialize` |
+| Blazor Server | DI scope | **N 個使用者 / process**（per SignalR circuit） | appsettings / 啟動注入 | Local 或 Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
+| Blazor WASM | DI scope | 1 個使用者 / WASM heap | localStorage / JS interop | **強制 Remote** | `AddBeeWebBlazorWasm` + HttpClient |
+
+> ⚠️ **不要在 Blazor 環境使用 `Bee.UI.Core.ClientInfo`**：`_accessToken` 為 `private static Guid`，一個 process 內只能存 **1 個** AccessToken。Blazor Server 同 process 服務 N 個 user circuit 時，後登入者會覆蓋前者，造成 cross-user data leak。詳見 [ADR-013](adr/adr-013-frontend-api-connection-strategy.md)。
