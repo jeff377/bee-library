@@ -10,6 +10,60 @@
       "message": "Complete the task associated to this 'TODO' comment.",
       "reason": "TODO 明確指向已追蹤的 plan-company-access-permission（plan D8），實作權限模型屬該計畫範疇而非 sonar-fix。建議於 SonarCloud UI 標 Won't Fix，或等待對應 plan 落地後一併移除此 TODO。",
       "lastAttempt": "2026-05-15"
+    },
+    "AZ5JvmCvPqvnz3qoA6ME": {
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "component": "tests/Bee.Base.UnitTests/TraceListenerTests.cs",
+      "line": 18,
+      "message": "Use concrete types when possible for improved performance.",
+      "reason": "此測試以 [DisplayName] 明示『透過 ITraceListener 介面參考...』,刻意以介面型別驗證介面 dispatch 路徑;改為具體 TraceListener 型別會繞過介面 dispatch,破壞測試本意。建議於 SonarCloud UI 標 Won't Fix。",
+      "lastAttempt": "2026-05-22"
+    },
+    "AZ5JvmCvPqvnz3qoA6MI": {
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "component": "tests/Bee.Base.UnitTests/TraceListenerTests.cs",
+      "line": 32,
+      "message": "Use concrete types when possible for improved performance.",
+      "reason": "同上：測試以介面參考驗證介面 dispatch。",
+      "lastAttempt": "2026-05-22"
+    },
+    "AZ5JvmCvPqvnz3qoA6MH": {
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "component": "tests/Bee.Base.UnitTests/TraceListenerTests.cs",
+      "line": 47,
+      "message": "Use concrete types when possible for improved performance.",
+      "reason": "同上：測試以介面參考驗證介面 dispatch。",
+      "lastAttempt": "2026-05-22"
+    },
+    "AZ5JvmCvPqvnz3qoA6MG": {
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "component": "tests/Bee.Base.UnitTests/TraceListenerTests.cs",
+      "line": 62,
+      "message": "Use concrete types when possible for improved performance.",
+      "reason": "同上：測試以介面參考驗證介面 dispatch。",
+      "lastAttempt": "2026-05-22"
+    },
+    "AZ5JvmCvPqvnz3qoA6MD": {
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "component": "tests/Bee.Base.UnitTests/TraceListenerTests.cs",
+      "line": 76,
+      "message": "Use concrete types when possible for improved performance.",
+      "reason": "同上：測試以介面參考驗證介面 dispatch。",
+      "lastAttempt": "2026-05-22"
+    },
+    "AZ5JvmCvPqvnz3qoA6MF": {
+      "rule": "external_roslyn:CA1859",
+      "severity": "INFO",
+      "component": "tests/Bee.Base.UnitTests/TraceListenerTests.cs",
+      "line": 93,
+      "message": "Use concrete types when possible for improved performance.",
+      "reason": "同上：測試以介面參考驗證介面 dispatch。",
+      "lastAttempt": "2026-05-22"
     }
   }
 }

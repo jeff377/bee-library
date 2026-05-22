@@ -78,7 +78,7 @@ namespace Bee.UI.Maui.Controls
             Content = host;
         }
 
-        private View BuildSection(LayoutSection section)
+        private Border BuildSection(LayoutSection section)
         {
             var stack = new VerticalStackLayout { Spacing = 4 };
             if (section.ShowCaption && !string.IsNullOrEmpty(section.Caption))
@@ -137,7 +137,7 @@ namespace Bee.UI.Maui.Controls
             return grid;
         }
 
-        private View BuildFieldCell(LayoutField field)
+        private VerticalStackLayout BuildFieldCell(LayoutField field)
         {
             var rawValue = DataObject?.GetField(field.FieldName) ?? string.Empty;
             var stack = new VerticalStackLayout { Spacing = 2 };

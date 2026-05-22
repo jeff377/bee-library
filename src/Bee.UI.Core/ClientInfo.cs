@@ -204,9 +204,9 @@ namespace Bee.UI.Core
             {
                 EndpointStorage.SetEndpoint(endpointArg);
             }
-            if (!InitializeConnect(connectTypes))
+            if (!InitializeConnect(connectTypes) && !UIViewService.ShowApiConnect())
             {
-                if (!UIViewService.ShowApiConnect()) { return false; }
+                return false;
             }
             return true;
         }
@@ -234,7 +234,7 @@ namespace Bee.UI.Core
                 UserId = loginResponse.UserId,
                 UserName = loginResponse.UserName
             };
-            // TODO: 未來如有其他登入後需設定的屬性，請於此處擴充
+            // NOTE: 未來如有其他登入後需設定的屬性，請於此處擴充
         }
 
         private static Dictionary<string, string> ParseCommandLineArgs()
