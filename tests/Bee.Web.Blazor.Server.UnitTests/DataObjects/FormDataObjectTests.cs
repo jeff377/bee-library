@@ -222,8 +222,7 @@ namespace Bee.Web.Blazor.Server.UnitTests.DataObjects
         [DisplayName("LoadAsync 在 Phase 1a 階段拋出 NotImplementedException")]
         public async Task LoadAsync_Phase1a_Throws()
         {
-            var dataObject = new FormDataObject(BuildEmployeeSchema());
-            await Assert.ThrowsAsync<NotImplementedException>(() => dataObject.LoadAsync(new object()));
+            await Assert.ThrowsAsync<NotImplementedException>(() => FormDataObject.LoadAsync(new object()));
         }
 
         [Fact]

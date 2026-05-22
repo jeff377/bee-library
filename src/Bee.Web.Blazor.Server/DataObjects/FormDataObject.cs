@@ -153,7 +153,7 @@ namespace Bee.Web.Blazor.Server.DataObjects
         /// <summary>
         /// Loads the form data for the given query arguments from the backend BO.
         /// </summary>
-        public Task LoadAsync(object queryArgs)
+        public static Task LoadAsync(object queryArgs)
             => throw new NotImplementedException(Phase1bMessage);
 
         /// <summary>
