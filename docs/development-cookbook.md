@@ -298,3 +298,196 @@ var filter = new FilterGroup(LogicalOperator.And)
 ```
 
 Available comparison operators: `Equal`, `Like`, `Contains`, `StartsWith`, `Between`, `In`, `GreaterThan`, `LessThan`, etc.
+
+## Frontend API Connection Patterns
+
+Bee.NET supports three categories of frontend hosts, each consuming the API in a structurally different way. For the design rationale see [ADR-013](adr/adr-013-frontend-api-connection-strategy.md); this section covers the **practical usage** for each category.
+
+### Decision Tree
+
+> Which category does your frontend belong to?
+
+```
+What kind of frontend are you building?
+│
+├── Desktop / native UI (MAUI / WinForms / WPF / Avalonia)
+│   → Use the Bee.UI.* family via the ClientInfo static singleton
+│   → See "Desktop" section below
+│
+├── Blazor Server (ASP.NET Core server-rendered)
+│   → Use Bee.Web.Blazor.Server with DI-scoped connectors
+│   → See "Blazor Server" section below
+│
+└── Blazor WASM (Browser WebAssembly)
+    → Use Bee.Web.Blazor.Wasm with RemoteApiProvider (HTTP) — forced
+    → See "Blazor WASM" section below
+```
+
+### Desktop (Bee.UI.* family)
+
+Desktop frontends manage connection state through the `Bee.UI.Core.ClientInfo` static singleton, which fits the "one process = one user" model.
+
+**1. Call `Initialize` at app startup**:
+
+```csharp
+// MyApp/Program.cs (or App.xaml.cs / MainActivity, etc.)
+using Bee.UI.Core;
+
+// 1. Implement IUIViewService (provides the connection settings dialog)
+public class MyUIViewService : IUIViewService
+{
+    public bool ShowApiConnect()
+    {
+        // Show a dialog asking the user for the endpoint; return true if confirmed.
+        // Concrete implementation depends on the UI framework (MAUI ContentPage / WinForms Form, etc.).
+    }
+}
+
+// 2. Initialize at startup
+var supportedConnectTypes = SupportedConnectTypes.Both; // both Local and Remote allowed
+if (!ClientInfo.Initialize(new MyUIViewService(), supportedConnectTypes))
+{
+    // The user cancelled connection setup; exit the app.
+    return;
+}
+```
+
+Internally `Initialize` reads the `{ExeName}.Settings.xml` file, tries the endpoint, and falls back to `IUIViewService.ShowApiConnect()` if unreachable.
+
+**2. Apply login result**:
+
+```csharp
+var loginResponse = await ClientInfo.SystemApiConnector.LoginAsync(userId, password);
+ClientInfo.ApplyLoginResult(loginResponse);
+// ClientInfo.AccessToken / UserInfo are now populated
+```
+
+**3. Use connectors via `ClientInfo`**:
+
+```csharp
+// System-level API
+var pingResult = await ClientInfo.SystemApiConnector.PingAsync();
+
+// Form-level API (FormBO)
+var formConnector = ClientInfo.CreateFormApiConnector("Employee");
+var listResult = await formConnector.GetListAsync(selectFields: "EmpId,EmpName");
+
+// Definition data (FormSchema, TableSchema, etc.)
+var schema = ClientInfo.DefineAccess.GetFormSchema("Employee");
+```
+
+**4. Switch endpoint (user changes server)**:
+
+```csharp
+ClientInfo.SetEndpoint("https://new-server.example.com/api");
+// Internally resets AccessToken and re-triggers the ApplyLoginResult flow.
+```
+
+### Blazor Server (Bee.Web.Blazor.Server)
+
+Blazor Server uses ASP.NET Core DI to inject connectors. **Each SignalR circuit gets its own DI scope**, preventing cross-user data leakage.
+
+**1. Register in `Program.cs`**:
+
+```csharp
+using Bee.Hosting; // AddBeeFramework
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Backend services (DbConnectionManager / IDefineAccess / BO, etc.)
+builder.Services.AddBeeFramework(backendConfiguration, pathOptions);
+
+// Bee.Web.Blazor.Server RCL services
+builder.Services.AddBeeWebBlazorServer();
+
+// Standard Blazor Server setup
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+var app = builder.Build();
+app.UseBeeFramework(); // JSON-RPC middleware
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.Run();
+```
+
+**2. Inject connectors in a Razor component**:
+
+```razor
+@page "/employees"
+@inject SystemApiConnector SystemConnector
+
+<h3>Employees</h3>
+
+@code {
+    private GetListResponse? listResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var formConnector = new FormApiConnector(/* via DI or factory */);
+        listResult = await formConnector.GetListAsync(selectFields: "EmpId,EmpName");
+    }
+}
+```
+
+**3. Local vs Remote mode**:
+
+- **Local mode (in-process)**: `Bee.Web.Blazor.Server` and the backend share the same ASP.NET Core process, so `LocalApiProvider` can call directly without HTTP overhead.
+- **Remote mode (HTTP)**: Blazor Server and the backend run in different processes / servers and communicate via `RemoteApiProvider` over HTTP.
+
+The host application registers an `IApiProvider` implementation at startup to choose the mode (`LocalApiProvider` / `RemoteApiProvider`).
+
+### Blazor WASM (Bee.Web.Blazor.Wasm)
+
+Blazor WASM runs inside the browser sandbox and is **forced to use `RemoteApiProvider`** (it cannot load backend assemblies).
+
+**1. Register in `Program.cs`**:
+
+```csharp
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+
+// HttpClient pointing at the API server endpoint
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("https://api.example.com/")
+});
+
+// Bee.Web.Blazor.Wasm RCL services (registers RemoteApiProvider automatically)
+builder.Services.AddBeeWebBlazorWasm();
+
+await builder.Build().RunAsync();
+```
+
+**2. Razor component usage is identical to Blazor Server**:
+
+```razor
+@page "/employees"
+@inject SystemApiConnector SystemConnector
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var formConnector = new FormApiConnector(/* ... */);
+        var result = await formConnector.GetListAsync(selectFields: "EmpId,EmpName");
+    }
+}
+```
+
+**3. Strict constraint**:
+
+> ⚠️ **`Bee.Web.Blazor.Wasm` must not depend on any backend project** (`Bee.Repository` / `Bee.Business` / `Bee.Hosting`, etc.) — the browser runtime cannot load server-only assemblies. The constraint is enforced by the dependency chain (`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` are all pure data/protocol layers).
+
+### MAUI (Phase 1 pending)
+
+`Bee.UI.Maui` is currently a [Phase 0 placeholder](plans/plan-add-bee-ui-maui.md) (plain `net10.0` class library) and belongs to the **`Bee.UI.*` family**, so its API-connection pattern is the same as the "Desktop" section above — through the `ClientInfo` static singleton.
+
+Phase 1 (when the first concrete control is implemented) will expand the csproj to MAUI multi-target (iOS / Android / macOS / Windows). At that point MAUI-specific examples (`IUIViewService` implemented via MAUI `ContentPage`, app startup flow, etc.) will be added.
+
+### Quick Reference
+
+| Frontend | Connection abstraction | State storage | Mode | Registration |
+|---------|-----------------------|--------------|------|-------------|
+| Desktop (MAUI / WinForms) | `ClientInfo` static | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.Initialize` at startup |
+| Blazor Server | DI scope | Circuit-bound | Local or Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
+| Blazor WASM | DI scope | Browser memory | **Remote only** | `AddBeeWebBlazorWasm` + `HttpClient` |

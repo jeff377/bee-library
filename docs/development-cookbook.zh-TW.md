@@ -297,3 +297,199 @@ var filter = new FilterGroup(LogicalOperator.And)
 ```
 
 可用的比較運算子：`Equal`、`Like`、`Contains`、`StartsWith`、`Between`、`In`、`GreaterThan`、`LessThan` 等。
+
+## Frontend API 連線模式
+
+Bee.NET 支援三類前端 host，每類消費 API 的方式結構不同。設計理由見 [ADR-013](adr/adr-013-frontend-api-connection-strategy.md)，本節說明各自的**實際使用方式**。
+
+### 決策樹
+
+> 你的前端屬於哪類？
+
+```
+你的前端是什麼？
+│
+├── 桌面端 / native UI（MAUI / WinForms / WPF / Avalonia）
+│   → 使用 Bee.UI.* family，透過 ClientInfo static singleton
+│   → 參考下方「桌面端」章節
+│
+├── Blazor Server（ASP.NET Core server-rendered）
+│   → 使用 Bee.Web.Blazor.Server，DI scope 注入 connector
+│   → 參考下方「Blazor Server」章節
+│
+└── Blazor WASM（Browser WebAssembly）
+    → 使用 Bee.Web.Blazor.Wasm，強制 RemoteApiProvider（HTTP）
+    → 參考下方「Blazor WASM」章節
+```
+
+### 桌面端（Bee.UI.* family）
+
+桌面端透過 `Bee.UI.Core.ClientInfo` static singleton 管理連線狀態，
+適用於「一個 process = 一個使用者」的環境。
+
+**1. App 啟動時呼叫 `Initialize`**：
+
+```csharp
+// MyApp/Program.cs (或 App.xaml.cs / MainActivity 等 entry point)
+using Bee.UI.Core;
+
+// 1. 實作 IUIViewService（提供連線設定對話框）
+public class MyUIViewService : IUIViewService
+{
+    public bool ShowApiConnect()
+    {
+        // 彈出讓使用者輸入 endpoint 的 dialog；返回 true 表示輸入完成
+        // 實作細節依 UI framework（MAUI ContentPage / WinForms Form 等）
+    }
+}
+
+// 2. 啟動時 Initialize
+var supportedConnectTypes = SupportedConnectTypes.Both; // Local + Remote 都支援
+if (!ClientInfo.Initialize(new MyUIViewService(), supportedConnectTypes))
+{
+    // 使用者取消連線設定，App 結束
+    return;
+}
+```
+
+`Initialize` 內部：讀檔(`{ExeName}.Settings.xml`) → 嘗試 endpoint → 不可達則呼叫 `IUIViewService.ShowApiConnect()` 讓使用者重設。
+
+**2. 登入後 `ApplyLoginResult`**：
+
+```csharp
+var loginResponse = await ClientInfo.SystemApiConnector.LoginAsync(userId, password);
+ClientInfo.ApplyLoginResult(loginResponse);
+// 此時 ClientInfo.AccessToken / UserInfo 已就緒
+```
+
+**3. 透過 ClientInfo 取得 connector 呼叫 API**：
+
+```csharp
+// System-level API
+var pingResult = await ClientInfo.SystemApiConnector.PingAsync();
+
+// Form-level API（FormBO）
+var formConnector = ClientInfo.CreateFormApiConnector("Employee");
+var listResult = await formConnector.GetListAsync(selectFields: "EmpId,EmpName");
+
+// Definition data（如 FormSchema、TableSchema）
+var schema = ClientInfo.DefineAccess.GetFormSchema("Employee");
+```
+
+**4. 切換 endpoint（使用者更換 server）**：
+
+```csharp
+ClientInfo.SetEndpoint("https://new-server.example.com/api");
+// 內部會 reset AccessToken，重新觸發 ApplyLoginResult 流程
+```
+
+### Blazor Server（Bee.Web.Blazor.Server）
+
+Blazor Server 透過 ASP.NET Core DI 容器注入 connector，**每個 SignalR circuit 一個 scope**，避免 cross-user data leak。
+
+**1. `Program.cs` 註冊**：
+
+```csharp
+using Bee.Hosting; // AddBeeFramework
+
+var builder = WebApplication.CreateBuilder(args);
+
+// 後端服務（DbConnectionManager / IDefineAccess / BO 等）
+builder.Services.AddBeeFramework(backendConfiguration, pathOptions);
+
+// Bee.Web.Blazor.Server RCL 元件庫的 services
+builder.Services.AddBeeWebBlazorServer();
+
+// Blazor Server 標準設定
+builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+
+var app = builder.Build();
+app.UseBeeFramework(); // JSON-RPC middleware
+app.MapRazorComponents<App>().AddInteractiveServerRenderMode();
+app.Run();
+```
+
+**2. Razor component 中注入 connector**：
+
+```razor
+@page "/employees"
+@inject SystemApiConnector SystemConnector
+
+<h3>Employees</h3>
+
+@code {
+    private GetListResponse? listResult;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var formConnector = new FormApiConnector(/* 透過 DI 或 factory */);
+        listResult = await formConnector.GetListAsync(selectFields: "EmpId,EmpName");
+    }
+}
+```
+
+**3. Local vs Remote 模式**：
+
+- **Local mode（in-process）**：`Bee.Web.Blazor.Server` 與後端跑在同一個 ASP.NET Core process,可走 `LocalApiProvider` 直接呼叫,無 HTTP 開銷
+- **Remote mode（HTTP）**：Blazor Server 與後端分屬不同 process / server,走 `RemoteApiProvider` 經 HTTP
+
+宿主在 startup 註冊 `IApiProvider` 實作決定模式（`LocalApiProvider` / `RemoteApiProvider`）。
+
+### Blazor WASM（Bee.Web.Blazor.Wasm）
+
+Blazor WASM 跑在 Browser 沙箱內，**強制 RemoteApiProvider**(無法載入後端組件)。
+
+**1. `Program.cs` 註冊**：
+
+```csharp
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+builder.RootComponents.Add<App>("#app");
+
+// HttpClient 指向 API server endpoint
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("https://api.example.com/")
+});
+
+// Bee.Web.Blazor.Wasm RCL services（會自動註冊 RemoteApiProvider）
+builder.Services.AddBeeWebBlazorWasm();
+
+await builder.Build().RunAsync();
+```
+
+**2. Razor component 用法同 Blazor Server**：
+
+```razor
+@page "/employees"
+@inject SystemApiConnector SystemConnector
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var formConnector = new FormApiConnector(/* ... */);
+        var result = await formConnector.GetListAsync(selectFields: "EmpId,EmpName");
+    }
+}
+```
+
+**3. 嚴格限制**：
+
+> ⚠️ **`Bee.Web.Blazor.Wasm` 嚴禁相依任何後端組件**（`Bee.Repository` / `Bee.Business` / `Bee.Hosting` 等）—— Browser 執行環境無法載入 server-only 組件。此約束由相依鏈強制（`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` 全為純資料 / 協定層）。
+
+### MAUI（待 Phase 1）
+
+`Bee.UI.Maui` 目前為 [Phase 0 placeholder](plans/plan-add-bee-ui-maui.md) (plain `net10.0` class library)，
+歸 **`Bee.UI.*` family**，所以連 API 的方式與「桌面端」章節相同 —— 透過 `ClientInfo` static singleton。
+
+Phase 1（第一個實際控制項實作時）會擴 csproj 為 MAUI multi-target（iOS / Android / macOS / Windows），
+屆時補上 MAUI-specific 範例（`IUIViewService` 用 MAUI ContentPage 實作、App startup flow 等）。
+
+### 速查表
+
+| 前端 | 連線抽象 | 狀態存放 | 模式 | 註冊方式 |
+|------|---------|---------|------|---------|
+| 桌面端（MAUI / WinForms） | `ClientInfo` static | 本機檔案 + `IEndpointStorage` | Local 或 Remote | 啟動時 `ClientInfo.Initialize` |
+| Blazor Server | DI scope | Circuit-bound | Local 或 Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
+| Blazor WASM | DI scope | Browser memory | **強制 Remote** | `AddBeeWebBlazorWasm` + HttpClient |
