@@ -46,6 +46,8 @@ jobs:
         dotnet build src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj --configuration Release --no-restore /p:Version=$ver
 
     - name: Pack NuGet packages
       run: |
@@ -64,6 +66,8 @@ jobs:
         dotnet pack src/Bee.Api.AspNetCore/Bee.Api.AspNetCore.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
 
     - name: Push to NuGet
       env:
@@ -106,5 +110,7 @@ jobs:
           - Bee.Api.AspNetCore
           - Bee.Repository.Abstractions
           - Bee.Repository
+          - Bee.Web.Blazor.Server
+          - Bee.Web.Blazor.Wasm
 
           如需安裝請至 NuGet.org 查詢對應版本。
