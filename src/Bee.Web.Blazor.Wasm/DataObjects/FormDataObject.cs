@@ -159,7 +159,7 @@ namespace Bee.Web.Blazor.Wasm.DataObjects
         /// <summary>
         /// Persists the current dataset to the backend BO.
         /// </summary>
-        public Task SaveAsync()
+        public static Task SaveAsync()
             => throw new NotImplementedException(Phase1bMessage);
 
         /// <summary>
