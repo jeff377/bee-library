@@ -204,10 +204,8 @@ namespace Bee.UI.Core
             {
                 EndpointStorage.SetEndpoint(endpointArg);
             }
-            if (!InitializeConnect(connectTypes))
-            {
-                if (!UIViewService.ShowApiConnect()) { return false; }
-            }
+            if (!InitializeConnect(connectTypes) && !UIViewService.ShowApiConnect())
+                return false;
             return true;
         }
 
