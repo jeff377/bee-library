@@ -16,6 +16,14 @@ namespace Bee.UI.Maui.UnitTests.Controls
     /// so the unit-test environment never needs a real MAUI handler nor a live
     /// JSON-RPC backend.
     /// </summary>
+    /// <remarks>
+    /// Joins the <c>ClientInfo</c> xUnit collection because <see cref="FormPage.InitializeAsync"/>
+    /// reads <c>ClientInfo.AccessToken</c> when the page does not own one, and that
+    /// static is mutated by <see cref="FormPageClientInfoTests"/> running in
+    /// parallel. The shared collection serialises both classes against the same
+    /// process-wide state.
+    /// </remarks>
+    [Collection("ClientInfo")]
     public class FormPageTests
     {
         private const string TestProgId = "Employee";

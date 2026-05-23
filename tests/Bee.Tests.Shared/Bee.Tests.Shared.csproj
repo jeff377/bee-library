@@ -30,6 +30,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Bee.Api.Client\Bee.Api.Client.csproj" />
     <ProjectReference Include="..\..\src\Bee.Hosting\Bee.Hosting.csproj" />
+    <ProjectReference Include="..\..\src\Bee.UI.Core\Bee.UI.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

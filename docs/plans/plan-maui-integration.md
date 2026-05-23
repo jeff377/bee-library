@@ -7,7 +7,7 @@
 | 1a | `Bee.UI.Maui.Controls.DynamicForm`（code-based ContentView，BindableProperty 雙向 binding） | ✅ 已完成 |
 | 1b | `Bee.UI.Maui.DataObjects.FormDataObject` 接 BO：`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync` | ✅ 已完成（2026-05-23） |
 | 1c | `DynamicGrid`（master 列表）+ `FormPage`（整合頁，code-based） | ✅ 已完成（2026-05-23） |
-| 1d | `FormPage` 接 `Bee.UI.Core.ClientInfo`（取得 connector / accessToken），驗證 Local↔Remote 切換 | 📝 待做 |
+| 1d | `FormPage` 接 `Bee.UI.Core.ClientInfo`（取得 connector / accessToken），驗證 Local↔Remote 切換 | ✅ 已完成（2026-05-23） |
 | 2 | `samples/Maui.Demo`（對應 [plan-samples-structure.md](plan-samples-structure.md) P2） | 📝 待做 |
 
 ## 背景
@@ -55,10 +55,14 @@
 
 ### Phase 1d：對接 ClientInfo
 
-- `FormPage` 從 `ClientInfo.CreateFormApiConnector(ProgId)` 取 connector。
-- 從 `ClientInfo.SystemApiConnector.GetDefineAsync<FormSchema>(...)` 取 schema。
-- AccessToken 來自 `ClientInfo.AccessToken`（由宿主 app 在 Login 後設定）。
-- 驗證：在 `ApiClientInfo.ConnectType = ConnectType.Local` 與 `= ConnectType.Remote` 兩種模式下 FormPage 都能跑通。
+- `FormPage.InitializeAsync` 在 `Schema` / `FormConnector` 為 null 且 `ProgId` 已設定時，向 `Bee.UI.Core.ClientInfo` 取得 schema 與 connector：
+  - Schema：`ClientInfo.SystemApiConnector.GetDefineAsync<FormSchema>(DefineType.FormSchema, [ProgId])`
+  - Connector：`ClientInfo.CreateFormApiConnector(ProgId)`
+  - AccessToken：fallback 到 `ClientInfo.AccessToken`（host 若已設定則保留 host 值）
+- Resolution 透過 `protected virtual` hook（`ResolveSystemConnector` / `ResolveFormConnector` / `ResolveAccessToken`）對接，方便測試與 host 客製覆寫，**不引入 DI / Factory 介面**。
+- 內部加上 `_isInitializing` 重入鎖：fallback 寫回 `Schema` / `FormConnector` 會再觸發 `OnInputsChanged`，需要避免遞迴。
+- 共用測試 helper：[`tests/Bee.Tests.Shared/ClientInfoTestScope.cs`](../../tests/Bee.Tests.Shared/ClientInfoTestScope.cs) — try/finally 還原 `ApiClientInfo.{ConnectType, Endpoint, SupportedConnectTypes, ApiKey, ApiEncryptionKey, LocalServiceProvider}` + `ClientInfo.{AccessToken, SystemApiConnector cache, IDefineAccess cache, UserInfo, AllowGenerateSettings, EndpointStorage, UIViewService}`。所有觸及 `ClientInfo` 的 test class 統一 `[Collection("ClientInfo")]` 避免平行 race。
+- Local / Remote 驗證：`Default_Resolve_DelegatesToClientInfo` 用 `[Theory]` 跑兩種 `ConnectType`，斷言預設 hook 回傳的 connector 內部 `Provider` 是 `LocalApiProvider` / `RemoteApiProvider`。
 
 ### Phase 2：samples/Maui.Demo
 

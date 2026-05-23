@@ -1,6 +1,8 @@
 using Bee.Api.Client.Connectors;
+using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.UI.Core;
 using Bee.UI.Maui.DataObjects;
 
 namespace Bee.UI.Maui.Controls
@@ -14,10 +16,17 @@ namespace Bee.UI.Maui.Controls
     /// Mirrors the Blazor <c>FormPage</c> component structure for cross-family parity.
     /// </summary>
     /// <remarks>
-    /// Phase 1c expects the host to supply <see cref="Schema"/> and
-    /// <see cref="FormConnector"/> through the bindable properties. Phase 1d will
-    /// add a fallback that resolves both from <c>Bee.UI.Core.ClientInfo</c> when
-    /// the host leaves them unset.
+    /// The host typically supplies only <see cref="ProgId"/>. When <see cref="Schema"/>
+    /// and <see cref="FormConnector"/> are left unset, <see cref="InitializeAsync"/>
+    /// resolves them from <see cref="ClientInfo"/>:
+    /// <c>SystemApiConnector.GetDefineAsync&lt;FormSchema&gt;</c> for the schema and
+    /// <c>CreateFormApiConnector(ProgId)</c> for the connector. The same path applies
+    /// to <see cref="AccessToken"/>, which falls back to <see cref="ClientInfo.AccessToken"/>
+    /// when the host leaves it as <see cref="Guid.Empty"/>. Hosts that want to bypass
+    /// the static <see cref="ClientInfo"/> can either supply <see cref="Schema"/> /
+    /// <see cref="FormConnector"/> directly, or subclass and override the
+    /// <c>ResolveSystemConnector</c> / <c>ResolveFormConnector</c> / <c>ResolveAccessToken</c>
+    /// hooks below.
     /// </remarks>
     public class FormPage : ContentView
     {
@@ -71,6 +80,7 @@ namespace Bee.UI.Maui.Controls
         private LayoutGrid? _listLayout;
         private bool _isBusy;
         private bool _initialized;
+        private bool _isInitializing;
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormPage"/> with the toolbar +
@@ -120,10 +130,10 @@ namespace Bee.UI.Maui.Controls
         }
 
         /// <summary>
-        /// Gets or sets the program identifier (e.g. "Employee"). Drives the
-        /// FormSchema lookup and the connector creation in Phase 1d; in Phase 1c
-        /// it is informational only because the host supplies <see cref="Schema"/>
-        /// and <see cref="FormConnector"/> directly.
+        /// Gets or sets the program identifier (e.g. "Employee"). Drives both the
+        /// <see cref="ClientInfo"/>-backed FormSchema lookup and the
+        /// <see cref="FormApiConnector"/> creation when the host leaves
+        /// <see cref="Schema"/> / <see cref="FormConnector"/> unset.
         /// </summary>
         public string ProgId
         {
@@ -132,10 +142,12 @@ namespace Bee.UI.Maui.Controls
         }
 
         /// <summary>
-        /// Gets or sets the access token used when calling the backend BO. Defaults
-        /// to <see cref="Guid.Empty"/> (anonymous). Phase 1c does not redirect the
-        /// supplied <see cref="FormConnector"/> on change; the host should
-        /// recreate the connector for the new token if needed.
+        /// Gets or sets the access token surfaced on the page. Defaults to
+        /// <see cref="Guid.Empty"/> (anonymous); <see cref="InitializeAsync"/>
+        /// fills this in from <see cref="ClientInfo.AccessToken"/> when the host
+        /// did not supply one. Note that a host-supplied <see cref="FormConnector"/>
+        /// keeps the token it was constructed with — changing the page's
+        /// <see cref="AccessToken"/> does not redirect that connector.
         /// </summary>
         public Guid AccessToken
         {
@@ -181,30 +193,111 @@ namespace Bee.UI.Maui.Controls
 
         /// <summary>
         /// Builds <see cref="FormDataObject"/> from the current <see cref="Schema"/>
-        /// + <see cref="FormConnector"/> and runs the initial list reload. Idempotent
-        /// when prerequisites are missing — the call is a no-op until both inputs
-        /// are set, mirroring the lazy attach behaviour of the Blazor
-        /// <c>OnInitializedAsync</c> hook.
+        /// + <see cref="FormConnector"/> and runs the initial list reload. When
+        /// either is missing, the page resolves the gap from <see cref="ClientInfo"/>
+        /// via the <c>ResolveSystemConnector</c> / <c>ResolveFormConnector</c> /
+        /// <c>ResolveAccessToken</c> hooks. The call is a no-op while a previous
+        /// invocation is still running and after the first successful initialization,
+        /// mirroring the lazy attach behaviour of the Blazor <c>OnInitializedAsync</c>
+        /// hook.
         /// </summary>
         public async Task InitializeAsync()
         {
-            if (Schema is null || FormConnector is null) return;
+            if (_initialized || _isInitializing) return;
 
-            ClearError();
-            _loadingLabel.IsVisible = false;
+            // We can move forward when ProgId is set (so we can resolve via ClientInfo)
+            // or when the host has already supplied both Schema and FormConnector. Any
+            // other state leaves nothing to initialize.
+            var hasProgId = !string.IsNullOrEmpty(ProgId);
+            if (!hasProgId && (Schema is null || FormConnector is null)) return;
 
-            _formLayout = Schema.GetFormLayout();
-            _listLayout = Schema.GetListLayout();
-            _dataObject = new FormDataObject(Schema, FormConnector);
+            _isInitializing = true;
+            try
+            {
+                // AccessToken fallback: ClientInfo holds the session token issued at
+                // login; surface it on the page property so hosts can observe the
+                // resolved value (the connectors created below already capture it).
+                if (AccessToken == Guid.Empty)
+                {
+                    var fallbackToken = ResolveAccessToken();
+                    if (fallbackToken != Guid.Empty)
+                        AccessToken = fallbackToken;
+                }
 
-            _form.FormLayout = _formLayout;
-            _form.DataObject = _dataObject;
-            _grid.ListLayout = _listLayout;
+                if (Schema is null && hasProgId)
+                {
+                    var systemConnector = ResolveSystemConnector();
+                    if (systemConnector is not null)
+                    {
+                        ClearError();
+                        try
+                        {
+                            var loaded = await systemConnector
+                                .GetDefineAsync<FormSchema>(DefineType.FormSchema, new[] { ProgId })
+                                .ConfigureAwait(true);
+                            if (loaded is not null)
+                                Schema = loaded;
+                        }
+                        catch (Exception ex)
+                        {
+                            ReportError(ex);
+                            return;
+                        }
+                    }
+                }
 
-            _initialized = true;
-            await ReloadListAsync().ConfigureAwait(true);
-            UpdateToolbarState();
+                if (FormConnector is null && hasProgId)
+                {
+                    FormConnector = ResolveFormConnector(ProgId);
+                }
+
+                if (Schema is null || FormConnector is null) return;
+
+                ClearError();
+                _loadingLabel.IsVisible = false;
+
+                _formLayout = Schema.GetFormLayout();
+                _listLayout = Schema.GetListLayout();
+                _dataObject = new FormDataObject(Schema, FormConnector);
+
+                _form.FormLayout = _formLayout;
+                _form.DataObject = _dataObject;
+                _grid.ListLayout = _listLayout;
+
+                _initialized = true;
+                await ReloadListAsync().ConfigureAwait(true);
+                UpdateToolbarState();
+            }
+            finally
+            {
+                _isInitializing = false;
+            }
         }
+
+        /// <summary>
+        /// Resolves the <see cref="SystemApiConnector"/> used to load the
+        /// <see cref="FormSchema"/> when the host did not pre-set <see cref="Schema"/>.
+        /// Defaults to <see cref="ClientInfo.SystemApiConnector"/>; tests and hosts
+        /// that need to bypass the static <see cref="ClientInfo"/> can override.
+        /// </summary>
+        protected virtual SystemApiConnector? ResolveSystemConnector() => ClientInfo.SystemApiConnector;
+
+        /// <summary>
+        /// Resolves the <see cref="FormApiConnector"/> used for CRUD round-trips
+        /// when the host did not pre-set <see cref="FormConnector"/>. Defaults to
+        /// <see cref="ClientInfo.CreateFormApiConnector(string)"/>; tests and hosts
+        /// that need to bypass the static <see cref="ClientInfo"/> can override.
+        /// </summary>
+        /// <param name="progId">Program identifier the connector targets.</param>
+        protected virtual FormApiConnector ResolveFormConnector(string progId)
+            => ClientInfo.CreateFormApiConnector(progId);
+
+        /// <summary>
+        /// Resolves the access token surfaced through <see cref="AccessToken"/> when
+        /// the host did not provide one. Defaults to <see cref="ClientInfo.AccessToken"/>;
+        /// override to plug in a different session source.
+        /// </summary>
+        protected virtual Guid ResolveAccessToken() => ClientInfo.AccessToken;
 
         /// <inheritdoc/>
         protected override void OnHandlerChanged()
@@ -212,17 +305,19 @@ namespace Bee.UI.Maui.Controls
             base.OnHandlerChanged();
             // Fire-and-forget: the host attached us to a real visual tree, so trigger
             // the same async init the Blazor side runs from OnInitializedAsync. If
-            // either input is still missing, InitializeAsync no-ops and the next
-            // input change will retry through OnInputsChanged.
-            if (!_initialized)
+            // initialization can't complete yet (e.g. ProgId still empty), the call
+            // no-ops and the next input change will retry through OnInputsChanged.
+            if (!_initialized && !_isInitializing)
                 _ = InitializeAsync();
         }
 
         private void OnInputsChanged()
         {
-            if (_initialized) return;
-            // Same fire-and-forget contract as OnHandlerChanged — gated on both
-            // Schema + FormConnector being non-null.
+            // _isInitializing is checked because InitializeAsync writes back to
+            // Schema / FormConnector after resolving them from ClientInfo, which
+            // re-triggers this callback. The outer InitializeAsync is still on the
+            // stack, so re-entering would race against its own state.
+            if (_initialized || _isInitializing) return;
             _ = InitializeAsync();
         }
 
