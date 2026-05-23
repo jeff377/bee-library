@@ -1,7 +1,6 @@
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
-using Bee.Definition.Layouts;
 using Bee.UI.Core;
 using Bee.UI.Maui.DataObjects;
 
@@ -74,10 +73,7 @@ namespace Bee.UI.Maui.Controls
         private readonly Label _loadingLabel;
         private readonly DynamicGrid _grid;
         private readonly DynamicForm _form;
-        private readonly VerticalStackLayout _body;
         private FormDataObject? _dataObject;
-        private FormLayout? _formLayout;
-        private LayoutGrid? _listLayout;
         private bool _isBusy;
         private bool _initialized;
         private bool _isInitializing;
@@ -120,13 +116,11 @@ namespace Bee.UI.Maui.Controls
 
             _form = new DynamicForm();
 
-            _body = new VerticalStackLayout
+            Content = new VerticalStackLayout
             {
                 Spacing = 12,
                 Children = { _errorLabel, _loadingLabel, toolbar, _grid, _form },
             };
-
-            Content = _body;
         }
 
         /// <summary>
@@ -214,55 +208,13 @@ namespace Bee.UI.Maui.Controls
             _isInitializing = true;
             try
             {
-                // AccessToken fallback: ClientInfo holds the session token issued at
-                // login; surface it on the page property so hosts can observe the
-                // resolved value (the connectors created below already capture it).
-                if (AccessToken == Guid.Empty)
-                {
-                    var fallbackToken = ResolveAccessToken();
-                    if (fallbackToken != Guid.Empty)
-                        AccessToken = fallbackToken;
-                }
+                ApplyAccessTokenFallback();
 
-                if (Schema is null && hasProgId)
-                {
-                    var systemConnector = ResolveSystemConnector();
-                    if (systemConnector is not null)
-                    {
-                        ClearError();
-                        try
-                        {
-                            var loaded = await systemConnector
-                                .GetDefineAsync<FormSchema>(DefineType.FormSchema, new[] { ProgId })
-                                .ConfigureAwait(true);
-                            if (loaded is not null)
-                                Schema = loaded;
-                        }
-                        catch (Exception ex)
-                        {
-                            ReportError(ex);
-                            return;
-                        }
-                    }
-                }
-
-                if (FormConnector is null && hasProgId)
-                {
-                    FormConnector = ResolveFormConnector(ProgId);
-                }
+                if (!await TryResolveSchemaAsync(hasProgId).ConfigureAwait(true)) return;
+                ResolveFormConnectorFallback(hasProgId);
 
                 if (Schema is null || FormConnector is null) return;
-
-                ClearError();
-                _loadingLabel.IsVisible = false;
-
-                _formLayout = Schema.GetFormLayout();
-                _listLayout = Schema.GetListLayout();
-                _dataObject = new FormDataObject(Schema, FormConnector);
-
-                _form.FormLayout = _formLayout;
-                _form.DataObject = _dataObject;
-                _grid.ListLayout = _listLayout;
+                AttachDataObject();
 
                 _initialized = true;
                 await ReloadListAsync().ConfigureAwait(true);
@@ -272,6 +224,78 @@ namespace Bee.UI.Maui.Controls
             {
                 _isInitializing = false;
             }
+        }
+
+        /// <summary>
+        /// AccessToken fallback: <see cref="ClientInfo"/> holds the session token
+        /// issued at login; surface it on the page property so hosts can observe
+        /// the resolved value (the connectors created below already capture it).
+        /// </summary>
+        private void ApplyAccessTokenFallback()
+        {
+            if (AccessToken != Guid.Empty) return;
+            var fallbackToken = ResolveAccessToken();
+            if (fallbackToken != Guid.Empty)
+                AccessToken = fallbackToken;
+        }
+
+        /// <summary>
+        /// Loads the <see cref="FormSchema"/> via <see cref="ResolveSystemConnector"/>
+        /// when the host did not pre-set <see cref="Schema"/>. Returns
+        /// <see langword="false"/> when the call throws (the caller must short-circuit);
+        /// returns <see langword="true"/> otherwise (including the no-op cases where
+        /// either <see cref="Schema"/> is already set or there is no <see cref="ProgId"/>).
+        /// </summary>
+        private async Task<bool> TryResolveSchemaAsync(bool hasProgId)
+        {
+            if (Schema is not null || !hasProgId) return true;
+
+            var systemConnector = ResolveSystemConnector();
+            if (systemConnector is null) return true;
+
+            ClearError();
+            try
+            {
+                var loaded = await systemConnector
+                    .GetDefineAsync<FormSchema>(DefineType.FormSchema, new[] { ProgId })
+                    .ConfigureAwait(true);
+                if (loaded is not null)
+                    Schema = loaded;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                ReportError(ex);
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Builds a <see cref="FormApiConnector"/> via <see cref="ResolveFormConnector"/>
+        /// when the host did not pre-set <see cref="FormConnector"/>.
+        /// </summary>
+        private void ResolveFormConnectorFallback(bool hasProgId)
+        {
+            if (FormConnector is not null || !hasProgId) return;
+            FormConnector = ResolveFormConnector(ProgId);
+        }
+
+        /// <summary>
+        /// Wires <see cref="DynamicForm"/> and <see cref="DynamicGrid"/> against the
+        /// resolved <see cref="Schema"/> + <see cref="FormConnector"/>, builds the
+        /// shared <see cref="FormDataObject"/>, and hides the inline loading label.
+        /// Assumes both <see cref="Schema"/> and <see cref="FormConnector"/> are
+        /// non-null — callers must check before invoking.
+        /// </summary>
+        private void AttachDataObject()
+        {
+            ClearError();
+            _loadingLabel.IsVisible = false;
+
+            _dataObject = new FormDataObject(Schema!, FormConnector!);
+            _form.FormLayout = Schema!.GetFormLayout();
+            _form.DataObject = _dataObject;
+            _grid.ListLayout = Schema.GetListLayout();
         }
 
         /// <summary>
