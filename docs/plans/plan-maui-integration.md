@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1a | `Bee.UI.Maui.Controls.DynamicForm`（code-based ContentView，BindableProperty 雙向 binding） | ✅ 已完成 |
-| 1b | `Bee.UI.Maui.DataObjects.FormDataObject` 接 BO：`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync` | 📝 待做 |
+| 1b | `Bee.UI.Maui.DataObjects.FormDataObject` 接 BO：`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync` | ✅ 已完成（2026-05-23） |
 | 1c | `DynamicGrid`（master 列表）+ `FormPage`（整合頁，code-based） | 📝 待做 |
 | 1d | `FormPage` 接 `Bee.UI.Core.ClientInfo`（取得 connector / accessToken），驗證 Local↔Remote 切換 | 📝 待做 |
 | 2 | `samples/Maui.Demo`（對應 [plan-samples-structure.md](plan-samples-structure.md) P2） | 📝 待做 |
