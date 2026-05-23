@@ -7,6 +7,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [4.5.0]
+
+> Bee.NET remains in pre-stable evolution. This release introduces three frontend package layers (`Bee.UI.Core` cross-platform shared layer, `Bee.UI.Maui` MAUI mobile/desktop controls, `Bee.Web.Blazor.Server` / `Bee.Web.Blazor.Wasm` Blazor RCLs) and flips the API connector interfaces to async-only. Under strict SemVer the signature changes would be a major bump; under the pre-stable policy it ships as a minor.
+
+### Added
+
+- **New package `Bee.UI.Core`** — Cross-platform UI shared layer (Web / MAUI shared view models, `FormDataObject`, `SystemApiConnector`, `ClientInfo`). Previously lived in a separate repo `bee-ui-core`; merged into this monorepo for unified releases. See [ADR-013](docs/adr/adr-013-frontend-api-connection-strategy.md).
+- **New package `Bee.UI.Maui`** — .NET MAUI cross-platform control layer (iOS / Android / macOS / Windows). Ships `DynamicForm` / `DynamicGrid` / `FormPage` controls and the sandbox-friendly `MauiPreferenceEndpointStorage`, plus `samples/Maui.Demo` wired to `QuickStart.Server`. The library defaults to `net10.0` (no MAUI workload required for consumers); opt into platform TFMs with `-p:BeeUiMauiFullPlatforms=true`.
+- **New packages `Bee.Web.Blazor.Server` / `Bee.Web.Blazor.Wasm`** — Symmetric Blazor Razor Class Libraries for both render modes. Both ship `DynamicForm` / `DynamicGrid` / `FormPage` controls, `BeeAccessTokenProvider` for token injection, `BeeLoginPanel`, and the `AddBeeBlazor` service-registration extension.
+- **`UserMessageException` + `JsonRpcErrorCode.UserMessage`** — Unified channel for "messages intended for the end user". Server-side throws are rehydrated by `ApiConnector` into a client-side `UserMessageException`, so callers can display `.Message` directly.
+- **`FormBO` CRUD actions completed** — `FormBusinessObject` now declares `GetNewData` / `GetData` / `Save` / `Delete`, completing the single-row CRUD surface on `IFormBusinessObject` (`GetList` was added in v4.4.0).
+- **`samples/` project family** — Three demo sets: `QuickStart.Server` + `QuickStart.Console` (P0, local + JSON-RPC dual-mode); `Blazor.Server.Demo` + `Blazor.Wasm.Demo` (P1); `Maui.Demo` (P2). All share define seeds and credential constants via `Bee.Samples.Shared`, and each ships a `.smoke.yaml` for end-to-end smoke testing.
+
+### Changed
+
+- **API connector interfaces are now async-only** — `IApiConnector` / `IFormApiConnector` / `ISystemApiConnector` no longer expose synchronous methods; all calls must go through the `*Async` variants. Migrate `connector.GetData(...)` to `await connector.GetDataAsync(...)`.
+- **`ExceptionExtensions` namespace moved** — From `Bee.Base` to `Bee.Base.Exceptions`. Callers must add `using Bee.Base.Exceptions;`.
+- **`ClientInfo` is now a static class** — `ClientInfo.SystemApiConnector.Initialize()` is now async; this codifies the "single-user frontend" assumption (multi-user web hosts should inject the token per-request via DI — see [ADR-013](docs/adr/adr-013-frontend-api-connection-strategy.md) extension section).
+
+### Migration
+
+**API connector callers (sync → async):**
+
+```diff
+- var data = connector.GetData(progId, formData);
++ var data = await connector.GetDataAsync(progId, formData);
+```
+
+**`ExceptionExtensions` namespace:**
+
+```diff
+  using Bee.Base;
++ using Bee.Base.Exceptions;
+
+  ex.Unwrap();
+```
+
+**`UserMessageException` handling (recommended):**
+
+```csharp
+try
+{
+    await connector.SaveAsync(progId, dataSet);
+}
+catch (UserMessageException ex)
+{
+    // Already formatted as a user-facing message; show directly.
+    ShowToast(ex.Message);
+}
+```
+
 ## [4.4.0]
 
 > Bee.NET remains in pre-stable evolution; the public API surface has no external consumers yet, so minor releases are allowed to carry API moves and limited breaking changes. This release includes interface signature changes (`IFormRepositoryFactory.CreateDataFormRepository`, `IDataFormRepository.GetList`) and a property removal (`CompanyInfo.LogDatabaseId`). Under strict SemVer this would be a major bump; under the pre-stable policy it ships as a minor.
