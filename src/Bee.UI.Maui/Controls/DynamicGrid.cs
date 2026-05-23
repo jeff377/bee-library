@@ -156,17 +156,14 @@ namespace Bee.UI.Maui.Controls
 
         private static ColumnDefinitionCollection BuildColumnDefinitions(IList<LayoutColumn> columns)
         {
-            var defs = new ColumnDefinitionCollection();
-            foreach (var column in columns)
+            // LayoutColumn.Width is in CSS pixels on the Blazor side; treating it as
+            // device-independent units gives an equivalent column-width hint on MAUI.
+            return [.. columns.Select(c => new ColumnDefinition
             {
-                // LayoutColumn.Width is in CSS pixels on the Blazor side; treating it as
-                // device-independent units gives an equivalent column-width hint on MAUI.
-                var width = column.Width > 0
-                    ? new GridLength(column.Width, GridUnitType.Absolute)
-                    : GridLength.Star;
-                defs.Add(new ColumnDefinition { Width = width });
-            }
-            return defs;
+                Width = c.Width > 0
+                    ? new GridLength(c.Width, GridUnitType.Absolute)
+                    : GridLength.Star,
+            })];
         }
 
         private static Label BuildHeaderCell(string caption)
