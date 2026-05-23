@@ -74,7 +74,6 @@ namespace Bee.UI.Maui.Controls
         private readonly Label _loadingLabel;
         private readonly DynamicGrid _grid;
         private readonly DynamicForm _form;
-        private readonly VerticalStackLayout _body;
         private FormDataObject? _dataObject;
         private FormLayout? _formLayout;
         private LayoutGrid? _listLayout;
@@ -120,13 +119,11 @@ namespace Bee.UI.Maui.Controls
 
             _form = new DynamicForm();
 
-            _body = new VerticalStackLayout
+            Content = new VerticalStackLayout
             {
                 Spacing = 12,
                 Children = { _errorLabel, _loadingLabel, toolbar, _grid, _form },
             };
-
-            Content = _body;
         }
 
         /// <summary>
