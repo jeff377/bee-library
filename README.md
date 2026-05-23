@@ -83,8 +83,14 @@ The console will print `System.Ping` status and an echoed message returned from 
 
 ## 💡 Sample Projects
 
-- In-repo demos under [`samples/`](samples/README.md) — minimal, focused, shipped alongside the framework. Built with `dotnet build samples/Bee.Samples.slnx` (independent of the main `Bee.Library.slnx`, so the main CI/build stays unaffected).
-- [bee-jsonrpc-sample](https://github.com/jeff377/bee-jsonrpc-sample) — earlier external sample that shows JSON-RPC server / client implementations and Local / Remote connector usage.
+All demos live in-repo under [`samples/`](samples/README.md). They're minimal, focused, and evolve alongside the framework. Build them with `dotnet build samples/Bee.Samples.slnx` (kept separate from the main `Bee.Library.slnx`, so the main CI/build stays unaffected).
+
+| Category | Demo | Shows |
+|----------|------|-------|
+| QuickStart | [`QuickStart.Server`](samples/QuickStart.Server/README.md) + [`QuickStart.Console`](samples/QuickStart.Console/README.md) | Minimal JSON-RPC end-to-end with a custom anonymous BO |
+| Blazor Server | [`Blazor.Server.Demo`](samples/Blazor.Server.Demo/README.md) | `BeeLoginPanel` + `FormPage` + Employee CRUD, dispatched in-process via `LocalApiProvider` |
+| Blazor Wasm | [`Blazor.Wasm.Demo`](samples/Blazor.Wasm.Demo/README.md) + [`.Host`](samples/Blazor.Wasm.Demo.Host/README.md) | Same Blazor components running in the browser, dispatched over HTTP via `RemoteApiProvider` |
+| MAUI | [`Maui.Demo`](samples/Maui.Demo/README.md) | Native-app client (Mac Catalyst / iOS / Android / Windows) rendering the same `FormSchema` |
 
 
 ## 📬 Contact & Follow

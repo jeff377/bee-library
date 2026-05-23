@@ -1,22 +1,24 @@
 # QuickStart.Console
 
-Bee.Api.Client 最小消費端示範。連線到 [`QuickStart.Server`](../QuickStart.Server/README.md)，呼叫 `System.Ping` 與自訂的 `Echo.Echo` BO。
+**English** | [繁體中文](README.zh-TW.md)
 
-## 跑法
+The minimal consumer demo for `Bee.Api.Client`. Connects to [`QuickStart.Server`](../QuickStart.Server/README.md) and invokes both the built-in `System.Ping` and the custom `Echo.Echo` BO.
+
+## How to run
 
 ```bash
-# 先在另一個 terminal 啟動 QuickStart.Server
+# Start QuickStart.Server in another terminal first
 cd samples/QuickStart.Console
 dotnet run
 ```
 
-預設連 `http://localhost:5050/api`。要換 endpoint：
+The default endpoint is `http://localhost:5050/api`. To override:
 
 ```bash
 dotnet run -- --endpoint http://other-host:5050/api
 ```
 
-## 預期輸出
+## What to expect
 
 ```
 → endpoint: http://localhost:5050/api
@@ -29,27 +31,27 @@ dotnet run -- --endpoint http://other-host:5050/api
   serverTime: 2026-05-23T13:00:00.0000000Z
 ```
 
-## 對應到哪些 library 功能
+## What this maps to in the library
 
-| 程式段落 | library 功能 |
-|----------|--------------|
-| `ApiClientInfo.ApiKey = "quickstart-demo"` | `Bee.Api.Client.ApiClientInfo` — Remote 模式下每個 request 會帶 `X-Api-Key` |
-| `new SystemApiConnector(endpoint, Guid.Empty)` | `Bee.Api.Client.Connectors.SystemApiConnector` — 內部用 `RemoteApiProvider` 走 HTTP |
-| `await connector.PingAsync()` | 直接打 `System.Ping`，框架預設將其視為 anonymous，回傳 `status=ok` |
-| `new FormApiConnector(endpoint, Guid.Empty, "Echo")` | `Bee.Api.Client.Connectors.FormApiConnector` — 鎖定 progId="Echo"，呼叫 `Echo.<action>` |
-| `connector.ExecuteAsync<EchoResponse>("Echo", req, PayloadFormat.Plain)` | 走 `Echo.Echo`；Plain format 因為 BO 標 `[ApiAccessControl(Public, Anonymous)]` 不需要加密 |
+| Code | Library feature |
+|------|-----------------|
+| `ApiClientInfo.ApiKey = "quickstart-demo"` | `Bee.Api.Client.ApiClientInfo` — in Remote mode, every request carries this as `X-Api-Key` |
+| `new SystemApiConnector(endpoint, Guid.Empty)` | `Bee.Api.Client.Connectors.SystemApiConnector` — internally uses `RemoteApiProvider` over HTTP |
+| `await connector.PingAsync()` | Invokes `System.Ping`; treated as anonymous by the framework and returns `status=ok` |
+| `new FormApiConnector(endpoint, Guid.Empty, "Echo")` | `Bee.Api.Client.Connectors.FormApiConnector` — bound to progId "Echo", invokes `Echo.<action>` |
+| `connector.ExecuteAsync<EchoResponse>("Echo", req, PayloadFormat.Plain)` | Calls `Echo.Echo`; `PayloadFormat.Plain` is sufficient because the BO is annotated `[ApiAccessControl(Public, Anonymous)]` |
 
-## Local vs Remote 模式
+## Local vs Remote modes
 
-這個 console 用 **Remote 模式**（透過 HTTP 連到 Server）。底層 `Bee.Api.Client` 同樣支援 **Local 模式**（in-process 直接呼叫 backend），呼叫端 API 完全相同。差別只在建構連線時：
+This console uses **Remote mode** (HTTP to the server). `Bee.Api.Client` also supports **Local mode** (in-process dispatch to the backend) with an identical caller-side API — only the connector construction differs:
 
 ```csharp
-// Remote（本 demo）
+// Remote (this demo)
 var connector = new SystemApiConnector("http://localhost:5050/api", Guid.Empty);
 
-// Local（在同一個 process 內，需要先設定 ApiClientInfo.LocalServiceProvider）
+// Local (same process; requires ApiClientInfo.LocalServiceProvider to be set)
 ApiClientInfo.LocalServiceProvider = services.AddBeeFramework(...).BuildServiceProvider();
 var connector = new SystemApiConnector(Guid.Empty);
 ```
 
-Local 模式的完整 composition 由 [`QuickStart.Server/Program.cs`](../QuickStart.Server/Program.cs) 示範（它就是一個 in-process backend）。如果要在 console 內用 Local 模式，把 Server 的 bootstrap 程式碼複製過來、走 `BuildServiceProvider()` 即可。
+[`QuickStart.Server/Program.cs`](../QuickStart.Server/Program.cs) is itself a complete in-process backend wiring; to use Local mode from a console, copy its bootstrap code and call `BuildServiceProvider()`.

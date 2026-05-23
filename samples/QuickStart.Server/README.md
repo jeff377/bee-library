@@ -1,42 +1,44 @@
 # QuickStart.Server
 
-Minimal Bee.NET JSON-RPC API host. Exposes:
+**English** | [繁體中文](README.zh-TW.md)
 
-- `System.Ping` — framework built-in, anonymous; verifies the host is reachable.
-- `Echo.Echo` — sample BO, anonymous; returns the request message decorated with a `"echo: "` prefix.
+The minimal runnable Bee.NET JSON-RPC API host. It exposes:
 
-## 跑法
+- `System.Ping` — framework built-in, anonymous; confirms the host is reachable.
+- `Echo.Echo` — sample BO, anonymous; returns the request message decorated with an `"echo: "` prefix.
+
+## How to run
 
 ```bash
 cd samples/QuickStart.Server
 dotnet run
 ```
 
-啟動後 listen 在 `http://localhost:5050`，JSON-RPC endpoint 為 `POST /api`。
+The host listens on `http://localhost:5050`; the JSON-RPC endpoint is `POST /api`.
 
-## 預期輸出
+## What to expect
 
-第一次啟動會：
+On first startup it will:
 
-1. 從 `samples/Define/` 載入 `SystemSettings.xml` / `DbCategorySettings.xml` / `DatabaseSettings.xml`
-2. 在 `samples/Define/Master.key` 自動產生 master key（已被 `.gitignore`）
-3. 在工作目錄產生 `quickstart.db`（已被 `.gitignore`）
+1. Load `SystemSettings.xml` / `DbCategorySettings.xml` / `DatabaseSettings.xml` from `samples/Define/`
+2. Auto-generate a master key at `samples/Define/Master.key` (gitignored)
+3. Create `quickstart.db` in the working directory (gitignored)
 
-console 應顯示 `Now listening on: http://localhost:5050`。
+The console should print `Now listening on: http://localhost:5050`.
 
-## 對應到哪些 library 功能
+## What this maps to in the library
 
-| 程式段落 | library 功能 |
-|----------|--------------|
-| `DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance)` | `Bee.Db.Manager.DbProviderRegistry` — ADO.NET provider 切換 |
-| `DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory())` | `Bee.Db.Providers.Sqlite` — SQLite dialect (form CRUD / schema 反射 / DDL) |
-| `SystemSettingsLoader.Load(paths)` | `Bee.Definition.SystemSettingsLoader` — boot-time 載入 XML |
+| Code | Library feature |
+|------|-----------------|
+| `DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance)` | `Bee.Db.Manager.DbProviderRegistry` — pluggable ADO.NET providers |
+| `DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory())` | `Bee.Db.Providers.Sqlite` — SQLite dialect (form CRUD, schema reflection, DDL) |
+| `SystemSettingsLoader.Load(paths)` | `Bee.Definition.SystemSettingsLoader` — boot-time XML loading |
 | `services.AddBeeFramework(...)` | `Bee.Hosting.BeeFrameworkServiceCollectionExtensions` — backend composition root |
-| `IFormBoTypeResolver` override | `Bee.Business.IFormBoTypeResolver` — 自訂 progId → BO type 對應 |
-| `: ApiServiceController` 空殼 controller | `Bee.Api.AspNetCore.Controllers.ApiServiceController` — `[Route("api")]` JSON-RPC endpoint |
-| `[ApiAccessControl(Public, Anonymous)]` | `Bee.Definition.Attributes.ApiAccessControlAttribute` — API 存取控制 |
+| `IFormBoTypeResolver` override | `Bee.Business.IFormBoTypeResolver` — custom progId → BO type mapping |
+| Empty `: ApiServiceController` controller | `Bee.Api.AspNetCore.Controllers.ApiServiceController` — `[Route("api")]` JSON-RPC endpoint |
+| `[ApiAccessControl(Public, Anonymous)]` | `Bee.Definition.Attributes.ApiAccessControlAttribute` — API access control |
 
-## 試打看看（不啟動 console demo 的情況下）
+## Try it without the console demo
 
 ```bash
 curl -s -X POST http://localhost:5050/api \
@@ -50,4 +52,4 @@ curl -s -X POST http://localhost:5050/api \
       }'
 ```
 
-預期回 JSON-RPC `result.value`，其中 `Response = "echo: hello"`。
+The response should be a JSON-RPC envelope whose `result.value` contains `Response = "echo: hello"`.

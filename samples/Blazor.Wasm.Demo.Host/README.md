@@ -1,37 +1,39 @@
 # Blazor.Wasm.Demo.Host
 
-ASP.NET Core host：同一個程序內**同時**提供 (1) Bee 後端 JSON-RPC `/api` endpoint 與 (2) `Blazor.Wasm.Demo` 客戶端的靜態檔（`_framework/blazor.webassembly.js` + WASM dlls）。
+**English** | [繁體中文](README.zh-TW.md)
 
-瀏覽器一進 `/`：
+An ASP.NET Core host that serves **both** (1) the Bee backend JSON-RPC `/api` endpoint and (2) the `Blazor.Wasm.Demo` client's static files (`_framework/blazor.webassembly.js` + WASM dlls) — all from a single process.
 
-1. Host 回 `index.html`（內含 `<script src="_framework/blazor.webassembly.js">`）
-2. WASM runtime 下載完成後執行 `Blazor.Wasm.Demo` 的 `Program.cs`
-3. `AddBeeBlazor(UseRemoteProvider($"{BaseAddress}api"))` 把 endpoint 設為自己（同源）
-4. `BeeLoginPanel` → POST `/api` → Bee `JsonRpcExecutor` → 同程序的 `DemoAuthenticatingSystemBusinessObject`
-5. Login 成功後 `FormPage` → POST `/api` → `FormBusinessObject` → SQLite
+When the browser hits `/`:
 
-## 跑起來
+1. The host returns `index.html` (which contains `<script src="_framework/blazor.webassembly.js">`)
+2. The WASM runtime downloads, then executes `Blazor.Wasm.Demo`'s `Program.cs`
+3. `AddBeeBlazor(UseRemoteProvider($"{BaseAddress}api"))` points the endpoint at itself (same origin)
+4. `BeeLoginPanel` → POST `/api` → Bee `JsonRpcExecutor` → the in-process `DemoAuthenticatingSystemBusinessObject`
+5. After login, `FormPage` → POST `/api` → `FormBusinessObject` → SQLite
+
+## How to run
 
 ```bash
 cd samples/Blazor.Wasm.Demo.Host
 dotnet run
-# 瀏覽器自動開 http://localhost:5060
+# Browser opens http://localhost:5060 automatically
 ```
 
-第一次執行：
+On first run:
 
-1. 自動建立 `samples/Define/Master.key`（如果不存在）
-2. `samples/Blazor.Wasm.Demo.Host/quickstart.db`（SQLite）自動建立 `ft_employee` + `ft_employee_phone`
-3. 寫入 3 筆 demo 員工
+1. Auto-generates `samples/Define/Master.key` if missing
+2. Creates `samples/Blazor.Wasm.Demo.Host/quickstart.db` (SQLite) with `ft_employee` + `ft_employee_phone`
+3. Seeds 3 demo employees
 
-## 對應到 library
+## What this maps to in the library
 
-| Demo 行為 | Library 元件 |
-|----------|--------------|
-| Bee 後端 in-process 註冊 | `AddBeeFramework`（Bee.Hosting） |
-| JSON-RPC `/api` endpoint | `ApiServiceController`（Bee.Api.AspNetCore） |
-| 提供 Wasm 靜態檔 | ASP.NET Core `UseBlazorFrameworkFiles` |
-| Login 客製 | `DemoAuthenticatingSystemBusinessObject` + `DemoBusinessObjectFactory`（Bee.Samples.Shared） |
+| Demo behavior | Library component |
+|---------------|-------------------|
+| Bee backend in-process registration | `AddBeeFramework` (Bee.Hosting) |
+| JSON-RPC `/api` endpoint | `ApiServiceController` (Bee.Api.AspNetCore) |
+| Serving WASM static files | ASP.NET Core `UseBlazorFrameworkFiles` |
+| Login customization | `DemoAuthenticatingSystemBusinessObject` + `DemoBusinessObjectFactory` (Bee.Samples.Shared) |
 | Employee CRUD | `FormBusinessObject` + `FormSchema` + `FormRepositoryFactory` |
 
-> 與 `QuickStart.Server` 的差別：`QuickStart.Server` 只示範 Anonymous Echo BO；此 host 多了 Wasm 靜態檔提供 + 員工 schema seed。兩個 host 可分別在 5050 / 5060 同時跑，互不干擾。
+> Compared to `QuickStart.Server`: that one only ships an anonymous Echo BO. This host adds WASM static-file serving and the Employee schema seed on top. The two hosts can run side-by-side on ports 5050 and 5060 without interfering with each other.

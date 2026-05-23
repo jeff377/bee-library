@@ -78,12 +78,18 @@ cd samples/QuickStart.Console
 dotnet run
 ```
 
-Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo 清單與每個 demo 對應到哪些 library 功能，見 [`samples/README.md`](samples/README.md)。
+Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo 清單與每個 demo 對應到哪些 library 功能，見 [`samples/README.zh-TW.md`](samples/README.zh-TW.md)。
 
 ## 💡 範例程式
 
-- 本 repo 內 [`samples/`](samples/README.md) 下的 demo —— 最小、聚焦、跟著框架同步演進。以 `dotnet build samples/Bee.Samples.slnx` 建置（獨立於主 `Bee.Library.slnx`，不影響主 CI / build 時間）。
-- [bee-jsonrpc-sample](https://github.com/jeff377/bee-jsonrpc-sample) —— 早期外部範例，包含 JSON-RPC Server 與 Client 實作，並示範 Connector 的近端與遠端連線。
+所有 demo 都集中在 repo 內 [`samples/`](samples/README.zh-TW.md) 目錄底下，最小、聚焦、跟著框架同步演進。以 `dotnet build samples/Bee.Samples.slnx` 建置（獨立於主 `Bee.Library.slnx`，不影響主 CI / build 時間）。
+
+| 類別 | Demo | 重點 |
+|------|------|------|
+| QuickStart | [`QuickStart.Server`](samples/QuickStart.Server/README.zh-TW.md) + [`QuickStart.Console`](samples/QuickStart.Console/README.zh-TW.md) | 最小 JSON-RPC 端到端，含一個 anonymous 自訂 BO |
+| Blazor Server | [`Blazor.Server.Demo`](samples/Blazor.Server.Demo/README.zh-TW.md) | `BeeLoginPanel` + `FormPage` + Employee CRUD,走 `LocalApiProvider` in-process 派遣 |
+| Blazor Wasm | [`Blazor.Wasm.Demo`](samples/Blazor.Wasm.Demo/README.zh-TW.md) + [`.Host`](samples/Blazor.Wasm.Demo.Host/README.zh-TW.md) | 同元件改在瀏覽器內跑,走 `RemoteApiProvider` 經 HTTP 派遣 |
+| MAUI | [`Maui.Demo`](samples/Maui.Demo/README.zh-TW.md) | 原生 App 客戶端（Mac Catalyst / iOS / Android / Windows）渲染同一份 `FormSchema` |
 
 ## 📬 聯絡與關注
 歡迎追蹤我的技術筆記與實戰經驗分享

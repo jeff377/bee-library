@@ -1,33 +1,35 @@
 # Blazor.Wasm.Demo
 
-Blazor WebAssembly client，與 [`Blazor.Server.Demo`](../Blazor.Server.Demo/README.md) 共用同一份 `FormSchema` 與相同的 `BeeLoginPanel` / `FormPage` 元件，差別只在執行環境：
+**English** | [繁體中文](README.zh-TW.md)
 
-- 元件邏輯跑在**瀏覽器**（.NET WASM runtime）
-- 連 backend 改走 **`RemoteApiProvider`**（HTTP），endpoint 預設為 `${BaseAddress}api`
-- 必須搭配 [`Blazor.Wasm.Demo.Host`](../Blazor.Wasm.Demo.Host/README.md) 才能跑（host 同時提供 Wasm 靜態檔與 `/api` JSON-RPC endpoint）
+The Blazor WebAssembly client. It shares the same `FormSchema` and the same `BeeLoginPanel` / `FormPage` components as [`Blazor.Server.Demo`](../Blazor.Server.Demo/README.md); the only differences are where it runs:
 
-## 跑起來
+- Component logic runs in the **browser** (.NET WASM runtime)
+- The backend call goes through **`RemoteApiProvider`** (HTTP); the endpoint defaults to `${BaseAddress}api`
+- Must be served by [`Blazor.Wasm.Demo.Host`](../Blazor.Wasm.Demo.Host/README.md) — the host serves both the WASM static files and the `/api` JSON-RPC endpoint
+
+## How to run
 
 ```bash
 cd samples/Blazor.Wasm.Demo.Host
 dotnet run
-# 瀏覽器自動開 http://localhost:5060
+# Browser opens http://localhost:5060 automatically
 ```
 
-不要直接 `dotnet run` 這個 Wasm 專案——它沒有 server。
+Don't `dotnet run` this Wasm project directly — there's no server inside it.
 
-## 預期畫面
+## What you'll see
 
-跟 Blazor.Server.Demo 一模一樣：登入 `demo / demo` → `FormPage ProgId="Employee"`。
+Identical to Blazor.Server.Demo: sign in with `demo / demo`, then render `FormPage ProgId="Employee"`.
 
-## 與 Server 版本的差異
+## Differences from the Server version
 
-| 面向 | Blazor.Server.Demo | Blazor.Wasm.Demo |
-|------|--------------------|------------------|
-| 元件執行位置 | ASP.NET Core server | 使用者瀏覽器 |
-| BO 派遣方式 | `LocalApiProvider`（in-process） | `RemoteApiProvider`（HTTP /api） |
-| `AddBeeBlazor` 選項 | `UseLocalProvider()` | `UseRemoteProvider(endpoint)` |
-| 元件庫 | `Bee.Web.Blazor.Server` | `Bee.Web.Blazor.Wasm` |
-| 元件源碼差異 | 無（DynamicForm / FormPage 等簽名一致） | 無 |
+| Aspect | Blazor.Server.Demo | Blazor.Wasm.Demo |
+|--------|--------------------|------------------|
+| Component execution location | ASP.NET Core server | User's browser |
+| BO dispatch | `LocalApiProvider` (in-process) | `RemoteApiProvider` (HTTP /api) |
+| `AddBeeBlazor` option | `UseLocalProvider()` | `UseRemoteProvider(endpoint)` |
+| Component library | `Bee.Web.Blazor.Server` | `Bee.Web.Blazor.Wasm` |
+| Component source differences | None (DynamicForm / FormPage signatures match) | None |
 
-**element-for-element 一致**：Login 後在頁面上能做的所有操作，兩邊回應的 DataSet 與行為都相同——這即是「同一份 FormSchema 渲染多前端」的展示。
+**Element-for-element parity**: every interaction after login returns the same `DataSet` and behaves the same way on both sides — that's the whole point of "one FormSchema, many front-ends".

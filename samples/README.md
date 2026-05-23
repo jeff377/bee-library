@@ -1,79 +1,169 @@
 # Bee.NET — Samples
 
-最小可運行的 Bee.NET demo 集合。每個 demo 聚焦單一目的，採 `ProjectReference` 直接引用 `src/` 下的 library（不走 NuGet），改 library 即時反映。
+**English** | [繁體中文](README.zh-TW.md)
 
-> Solution：`samples/Bee.Samples.slnx`（獨立於主 `Bee.Library.slnx`，不會拖累主 CI / build 時間）。
+A collection of minimal, runnable Bee.NET demos. Each demo has a single focus and consumes the libraries via `ProjectReference` directly from `src/` (no NuGet round-trip) — changes to library code are immediately reflected.
 
-## Quick Start（30 秒看到 Bee.NET 跑起來）
+> Solution: [`samples/Bee.Samples.slnx`](Bee.Samples.slnx) (kept separate from the main `Bee.Library.slnx` so it never weighs down CI or main-solution build time).
+
+## See Bee running in 30 seconds
 
 ```bash
-# Terminal 1 — 啟動 JSON-RPC API host
+# Terminal 1 — start the JSON-RPC API host
 cd samples/QuickStart.Server
-dotnet run
+dotnet run                          # listens on http://localhost:5050
 
-# Terminal 2 — 連線並呼叫 Echo BO
+# Terminal 2 — connect and invoke the Echo BO
 cd samples/QuickStart.Console
 dotnet run
 ```
 
-> 第一次 `dotnet run` 會在 `samples/Define/Master.key` 自動產生 master key、並在 `QuickStart.Server` 的工作目錄產生 SQLite `quickstart.db`。
+You should see `response : echo: hello from QuickStart.Console` in Terminal 2.
 
-要看 Blazor 元件實際渲染 `FormSchema`、走 Login + Employee CRUD？
+To watch Blazor components render a `FormSchema` and drive a Login + Employee CRUD flow:
 
 ```bash
-# Blazor Server（in-process LocalApiProvider）
+# Option A — Blazor Server (in-process LocalApiProvider, no HTTP round-trip)
 cd samples/Blazor.Server.Demo
 dotnet run                          # → http://localhost:5055
 
-# Blazor Wasm（同元件、改走 HTTP /api）
+# Option B — Blazor Wasm (same components, but in-browser + HTTP /api)
 cd samples/Blazor.Wasm.Demo.Host
 dotnet run                          # → http://localhost:5060
 ```
 
-兩邊都用同一個 demo 帳號 **`demo / demo`** 登入，登入後渲染同一份 `Employee` FormSchema。
+Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
 
-## Demo 清單
+## Where should I start?
 
-| 順序 | 專案 | 對應 library | 目的 |
-|------|------|--------------|------|
-| **P0** | [`QuickStart.Server`](QuickStart.Server/README.md) | Bee.Api.AspNetCore + Bee.Hosting + Bee.Business + Bee.Db | 啟動 JSON-RPC API host，註冊一個自訂 Echo BO，串到 SQLite |
-| **P0** | [`QuickStart.Console`](QuickStart.Console/README.md) | Bee.Api.Client | 示範 Local（in-process）與 Remote（HTTP）兩種 ConnectType，做 Ping + Echo |
-| **P1** | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) | Bee.Web.Blazor.Server | Blazor Server 宿主：`BeeLoginPanel` + `FormPage`，in-process `LocalApiProvider` 派遣 |
-| **P1** | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.md) | Bee.Web.Blazor.Wasm + Bee.Api.AspNetCore | 同元件、改走瀏覽器端 + `RemoteApiProvider` HTTP；host 同時提供 Wasm 靜態檔與 `/api` |
-| Shared | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | Bee.Business + Bee.Db + Bee.Hosting | 共用 `DemoBackend` 啟動程式、`DemoAuthenticatingSystemBusinessObject`（hard-coded demo/demo）、schema 自動建立 |
-| P2 | `Maui.Demo` | Bee.UI.Maui + Bee.Api.Client | （未來）同一份 FormSchema 跨平台 |
+| I want to learn… | Look at |
+|------------------|---------|
+| How to spin up a Bee backend, register a custom BO, and expose the JSON-RPC API | [`QuickStart.Server`](QuickStart.Server/README.md) |
+| How to call Bee from a third-party client with `Bee.Api.Client` (Remote mode) | [`QuickStart.Console`](QuickStart.Console/README.md) |
+| How to use `Bee.Web.Blazor.Server` components (Local dispatch — best perf) | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) |
+| How to use `Bee.Web.Blazor.Wasm` components (.NET running in the browser, HTTP only) | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.md) |
+| How the same `FormSchema` renders inside a native app | [`Maui.Demo`](Maui.Demo/README.md) |
+| Login, AccessToken, and encrypted-payload fallback resolution on the client | `Blazor.Server.Demo` or `Maui.Demo` (either) |
 
-## 共用 Define
+## Demo catalog
 
-`samples/Define/` 是 demo 共用的定義檔目錄。多個 demo 都會走「從執行目錄向上找 `Define/SystemSettings.xml`」的解析策略指向這裡，確保「同一份定義驅動多個前端」。
+| Project | Role | Default port | Launch | Library focus |
+|---------|------|--------------|--------|---------------|
+| [`QuickStart.Server`](QuickStart.Server/README.md) | API host | `5050` | `dotnet run` | Bee.Api.AspNetCore + Bee.Hosting + Bee.Business + Bee.Db |
+| [`QuickStart.Console`](QuickStart.Console/README.md) | API client | — | `dotnet run` | Bee.Api.Client |
+| [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) | Full-stack Blazor Server | `5055` | `dotnet run` | Bee.Web.Blazor.Server + Bee.Samples.Shared |
+| [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) | In-browser Wasm components | — | (launched via `.Host`) | Bee.Web.Blazor.Wasm |
+| [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.md) | Wasm static files + API host | `5060` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
+| [`Maui.Demo`](Maui.Demo/README.md) | Native-app client | — (talks to 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
+| [`Bee.Samples.Shared`](Bee.Samples.Shared/) | Shared backend wiring | — | (consumed by other demos) | Bee.Business + Bee.Db + Bee.Hosting + Bee.Api.Client |
+
+### Inter-demo dependencies
+
+```
+QuickStart.Console ──HTTP──▶ QuickStart.Server
+                              (also Maui.Demo's default backend)
+
+Maui.Demo          ──HTTP──▶ QuickStart.Server  ← must be started first
+
+Blazor.Wasm.Demo   ◀──static files── Blazor.Wasm.Demo.Host
+                                  (host bundles the Bee backend and /api endpoint)
+
+Blazor.Server.Demo                ← no separate server; front-end and back-end share the process
+```
+
+## Shared credentials
+
+The Blazor / MAUI demos all sign in with `demo / demo`:
+
+| Field | Value |
+|-------|-------|
+| User ID | `demo` |
+| Password | `demo` |
+| Display name | `Demo User` |
+
+These are matched in [`DemoAuthenticatingSystemBusinessObject`](Bee.Samples.Shared/DemoAuthenticatingSystemBusinessObject.cs) with a hard-coded comparison — no `st_user` lookup, so **no system tables need to be seeded**.
+
+`QuickStart.Server`'s `Echo.Echo` BO is annotated `[ApiAccessControl(Public, Anonymous)]`, so `QuickStart.Console` **needs no login**.
+
+## Shared Define directory
+
+[`samples/Define/`](Define/) is the shared definition directory used by every demo. Each host locates it by walking up from `AppContext.BaseDirectory` looking for `Define/SystemSettings.xml` (see [`DemoBackend.ResolveDefinePath`](Bee.Samples.Shared/DemoBackend.cs)), guaranteeing that "one set of definitions drives multiple front-ends".
 
 ```
 Define/
-├── SystemSettings.xml                       # 最小可運作的系統設定（IsDebugMode=true）
-├── DbCategorySettings.xml                   # 一個 common category
-├── DatabaseSettings.xml                     # SQLite local DB（quickstart.db）
+├── SystemSettings.xml                       # System settings (IsDebugMode=true)
+├── DbCategorySettings.xml                   # One "common" category
+├── DatabaseSettings.xml                     # SQLite local DB (quickstart.db)
 ├── FormSchema/
-│   └── Employee.FormSchema.xml              # master-detail 示範（員工 + 員工電話）
-└── TableSchema/
-    └── common/
-        ├── ft_employee.TableSchema.xml
-        └── ft_employee_phone.TableSchema.xml
+│   └── Employee.FormSchema.xml              # Master-detail demo (employee + employee phones)
+├── TableSchema/
+│   └── common/
+│       ├── ft_employee.TableSchema.xml
+│       └── ft_employee_phone.TableSchema.xml
+└── Master.key                               # ⚠ Auto-generated on first run; gitignored
 ```
 
-## 不在這版的東西
+## Files generated on first run
 
-刻意排除：
+The files below are **not** in git — they are runtime artifacts. A fresh clone will create them on the first `dotnet run`:
 
-- 真實 ERP 業務情境（銷售單、進貨單等）— 留給未來獨立 demo repo
-- SQL Server / PostgreSQL / Oracle / MySQL — SQLite 已足夠示範
-- 認證 / 授權完整流程 — Echo 走 `[ApiAccessControl(Public, Anonymous)]`，不串 OAuth/JWT
-- 部署腳本（Docker / k8s）
-- Sample CI 驗證 — 手動驗證即可
+| File | Created by | Contents | gitignore rule |
+|------|------------|----------|----------------|
+| `samples/Define/Master.key` | `AddBeeFramework(autoCreateMasterKey: true)` | Machine-local master key used to encrypt every payload | `samples/Define/Master.key` |
+| `samples/<Host>/quickstart.db` | [`DemoSchemaSeeder`](Bee.Samples.Shared/DemoSchemaSeeder.cs) | SQLite with `ft_employee` + `ft_employee_phone` and 3 demo rows (Alice / Bob / Carol) | `/samples/**/*.db` |
 
-## 自動化建置
+> The three hosts (`QuickStart.Server` / `Blazor.Server.Demo` / `Blazor.Wasm.Demo.Host`) **each get their own `quickstart.db`** and don't interfere with each other. Re-running the same host reuses existing data (both schema creation and seeding are idempotent).
+
+To reset: delete `samples/<Host>/quickstart.db` and re-run. To rotate the master key: delete `samples/Define/Master.key` **and** every `quickstart.db` (existing rows are encrypted with the old key — keeping them around would yield decryption failures).
+
+## Local vs Remote dispatch
+
+`Bee.Api.Client` exposes a **uniform API surface** to callers; only the underlying provider differs:
+
+| Mode | Path | Used by | Sample demo |
+|------|------|---------|-------------|
+| **Local** | client → `LocalApiProvider` → `JsonRpcExecutor` → BO (same process) | Blazor Server, in-process tooling, BO-to-BO calls | `Blazor.Server.Demo` |
+| **Remote** | client → `RemoteApiProvider` → HTTP POST → `ApiServiceController` → `JsonRpcExecutor` → BO | Blazor Wasm, Console, MAUI, cross-machine | `QuickStart.Console`, `Blazor.Wasm.Demo`, `Maui.Demo` |
+
+Switching modes is a one-liner in `AddBeeBlazor` / `ApiClientInfo`:
+
+```csharp
+// Local
+builder.Services.AddBeeBlazor(o => o.UseLocalProvider());
+
+// Remote
+builder.Services.AddBeeBlazor(o => o.UseRemoteProvider("http://host:5060/api"));
+```
+
+## Build all samples
 
 ```bash
 dotnet build samples/Bee.Samples.slnx
 ```
 
-> `test.sh` 與主 `Bee.Library.slnx` 都不會跑到 samples；samples 永遠是「想試時手動跑」。
+> Neither `./test.sh` nor the main `Bee.Library.slnx` touch the samples directory; the samples are always "try-when-you-want" rather than CI-validated.
+
+## FAQ
+
+**Q: Port 5050 / 5055 / 5060 is already in use — what now?**
+Edit `samples/<Host>/Properties/launchSettings.json` and change `applicationUrl`. Don't forget to update anything that points at that host: the `--endpoint` flag for `QuickStart.Console`, the endpoint field in `Maui.Demo`, and `MauiProgram.DefaultEndpoint`.
+
+**Q: I'm getting `Could not locate 'Define/SystemSettings.xml' walking up from ...`**
+Run `dotnet run` from inside the bee-library checkout. Don't copy the built binaries outside the repo — `DemoBackend` walks upward from `AppContext.BaseDirectory` looking for `Define/`, and that walk fails outside the repo.
+
+**Q: Why does the MAUI demo have to run in Debug?**
+On Apple platforms the Release-mode Mono linker strips the `System.Xml.Serialization` reflection fallback, breaking `FormSchema` deserialization. See [`Maui.Demo/README.md`](Maui.Demo/README.md) for details.
+
+**Q: Can I run all three hosts at the same time without conflicts?**
+Yes. The three hosts listen on different ports (5050 / 5055 / 5060), each has its own `quickstart.db`, and they share `samples/Define/` read-only. Running all three plus the Console and MAUI demos in parallel is fully supported.
+
+**Q: I edited code under `src/` — how do I see it in the demos?**
+Just re-run. `ProjectReference` rebuilds automatically. No `dotnet pack` and no cache flushing required.
+
+## Deliberately out of scope
+
+- Realistic ERP scenarios (sales orders, purchase orders, etc.) — left for a future standalone demo repo
+- SQL Server / PostgreSQL / Oracle / MySQL — SQLite is enough for demonstration
+- Full auth/authz flows (OAuth, JWT, an actual `st_user` table) — short-circuited with hard-coded `demo/demo`
+- Deployment scripts (Docker / k8s / TestFlight / Microsoft Store)
+- CI validation for samples — manual runs only, except that `Maui.Demo/.smoke.yaml` can be smoke-tested by the `demo-smoke` skill
