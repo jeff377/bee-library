@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Blazor.Server.Demo</RootNamespace>
+    <AssemblyName>Blazor.Server.Demo</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bee.Web.Blazor.Server\Bee.Web.Blazor.Server.csproj" />
+    <ProjectReference Include="..\Bee.Samples.Shared\Bee.Samples.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

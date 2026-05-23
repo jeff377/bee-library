@@ -18,14 +18,29 @@ dotnet run
 
 > 第一次 `dotnet run` 會在 `samples/Define/Master.key` 自動產生 master key、並在 `QuickStart.Server` 的工作目錄產生 SQLite `quickstart.db`。
 
+要看 Blazor 元件實際渲染 `FormSchema`、走 Login + Employee CRUD？
+
+```bash
+# Blazor Server（in-process LocalApiProvider）
+cd samples/Blazor.Server.Demo
+dotnet run                          # → http://localhost:5055
+
+# Blazor Wasm（同元件、改走 HTTP /api）
+cd samples/Blazor.Wasm.Demo.Host
+dotnet run                          # → http://localhost:5060
+```
+
+兩邊都用同一個 demo 帳號 **`demo / demo`** 登入，登入後渲染同一份 `Employee` FormSchema。
+
 ## Demo 清單
 
 | 順序 | 專案 | 對應 library | 目的 |
 |------|------|--------------|------|
 | **P0** | [`QuickStart.Server`](QuickStart.Server/README.md) | Bee.Api.AspNetCore + Bee.Hosting + Bee.Business + Bee.Db | 啟動 JSON-RPC API host，註冊一個自訂 Echo BO，串到 SQLite |
 | **P0** | [`QuickStart.Console`](QuickStart.Console/README.md) | Bee.Api.Client | 示範 Local（in-process）與 Remote（HTTP）兩種 ConnectType，做 Ping + Echo |
-| P1 | `Blazor.Server.Demo` | Bee.Web.Blazor.Server | （未來）FormSchema 動態渲染（Server） |
-| P1 | `Blazor.Wasm.Demo` | Bee.Web.Blazor.Wasm + Bee.Api.Client | （未來）同上但走 remote API |
+| **P1** | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) | Bee.Web.Blazor.Server | Blazor Server 宿主：`BeeLoginPanel` + `FormPage`，in-process `LocalApiProvider` 派遣 |
+| **P1** | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.md) | Bee.Web.Blazor.Wasm + Bee.Api.AspNetCore | 同元件、改走瀏覽器端 + `RemoteApiProvider` HTTP；host 同時提供 Wasm 靜態檔與 `/api` |
+| Shared | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | Bee.Business + Bee.Db + Bee.Hosting | 共用 `DemoBackend` 啟動程式、`DemoAuthenticatingSystemBusinessObject`（hard-coded demo/demo）、schema 自動建立 |
 | P2 | `Maui.Demo` | Bee.UI.Maui + Bee.Api.Client | （未來）同一份 FormSchema 跨平台 |
 
 ## 共用 Define

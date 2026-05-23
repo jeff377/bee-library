@@ -14,4 +14,10 @@
     <Project Path="QuickStart.Server/QuickStart.Server.csproj" />
     <Project Path="QuickStart.Console/QuickStart.Console.csproj" />
   </Folder>
+  <Folder Name="/Blazor/">
+    <Project Path="Bee.Samples.Shared/Bee.Samples.Shared.csproj" />
+    <Project Path="Blazor.Server.Demo/Blazor.Server.Demo.csproj" />
+    <Project Path="Blazor.Wasm.Demo/Blazor.Wasm.Demo.csproj" />
+    <Project Path="Blazor.Wasm.Demo.Host/Blazor.Wasm.Demo.Host.csproj" />
+  </Folder>
 </Solution>

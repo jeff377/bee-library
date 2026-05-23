@@ -1,0 +1,25 @@
+@page "/"
+
+<BeeAccessTokenProvider Context="auth">
+    @if (!auth.IsAuthenticated)
+    {
+        <section class="bee-demo-section">
+            <h2>Sign in</h2>
+            <p>
+                Use the seeded demo account:
+                <code>@DemoCredentials.UserId</code> / <code>@DemoCredentials.Password</code>
+            </p>
+            <BeeLoginPanel OnLoggedIn="response => auth.SetToken(response.AccessToken)" />
+        </section>
+    }
+    else
+    {
+        <section class="bee-demo-section">
+            <div class="bee-demo-userbar">
+                <span>Signed in as <strong>@DemoCredentials.DisplayName</strong></span>
+                <button type="button" @onclick="auth.Clear">Sign out</button>
+            </div>
+            <FormPage ProgId="Employee" />
+        </section>
+    }
+</BeeAccessTokenProvider>

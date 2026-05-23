@@ -1,6 +1,6 @@
 # 網站前端整合 JSON-RPC 後端：Blazor Server 元件庫方案
 
-**狀態：🚧 進行中（2026-05-23）**
+**狀態：✅ 已完成（2026-05-23）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,7 @@
 | 1b | `FormDataObject` 接 BO：`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync` | ✅ 已完成（2026-05-23） |
 | 1c | `DynamicGrid` + `AddBeeBlazor` DI + `FormPage` 整合頁 | ✅ 已完成（2026-05-23） |
 | 1d | 宿主 Login + `CascadingValue<Guid>` AccessToken 範例 | ✅ 已完成（2026-05-23） |
-| 2 | `samples/Blazor.Server.Demo` + `Blazor.Wasm.Demo`（對應 plan-samples-structure P1） | 📝 待做 |
+| 2 | `samples/Blazor.Server.Demo` + `Blazor.Wasm.Demo` + `.Host`（對應 plan-samples-structure P1） | ✅ 已完成（2026-05-23） |
 
 ## 背景與需求
 

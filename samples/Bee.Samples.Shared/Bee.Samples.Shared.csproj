@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Bee.Samples.Shared</RootNamespace>
+    <AssemblyName>Bee.Samples.Shared</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bee.Api.Client\Bee.Api.Client.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Business\Bee.Business.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Db\Bee.Db.csproj" />
+    <ProjectReference Include="..\..\src\Bee.Hosting\Bee.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.4" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,47 @@
+:root { color-scheme: light dark; }
+
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #f6f7f9;
+    color: #1f2328;
+}
+
+.bee-demo-shell { max-width: 980px; margin: 0 auto; padding: 24px 16px 64px; }
+.bee-demo-header { border-bottom: 1px solid #d0d7de; padding-bottom: 12px; margin-bottom: 20px; }
+.bee-demo-header h1 { margin: 0 0 4px; font-size: 1.6rem; }
+.bee-demo-subtitle { margin: 0; color: #57606a; font-size: 0.95rem; }
+
+.bee-demo-section { background: white; border: 1px solid #d0d7de; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
+.bee-demo-userbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.bee-demo-userbar button { padding: 4px 12px; }
+
+.bee-login-panel { display: flex; flex-direction: column; gap: 12px; max-width: 320px; }
+.bee-login-panel__field { display: flex; flex-direction: column; gap: 4px; }
+.bee-login-panel__input { padding: 6px 8px; border: 1px solid #d0d7de; border-radius: 4px; }
+.bee-login-panel__submit { padding: 8px 14px; background: #0969da; color: white; border: 0; border-radius: 4px; cursor: pointer; }
+.bee-login-panel__error { color: #cf222e; font-size: 0.9rem; }
+
+.bee-form-page__toolbar { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+.bee-form-page__toolbar button { padding: 4px 12px; }
+.bee-form-page__dirty { color: #bf8700; font-size: 0.85rem; }
+.bee-form-page__error { color: #cf222e; padding: 10px; background: #ffebe9; border-radius: 4px; }
+.bee-form-page__loading { color: #57606a; }
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: 0.75rem;
+    top: 0.5rem;
+}
