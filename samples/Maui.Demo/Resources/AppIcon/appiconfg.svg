@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 456 456">
+    <g transform="translate(228 228)">
+        <circle r="100" fill="#212121" />
+        <text x="0" y="22" text-anchor="middle" font-family="Helvetica" font-size="92" font-weight="bold" fill="#FFB300">B</text>
+    </g>
+</svg>

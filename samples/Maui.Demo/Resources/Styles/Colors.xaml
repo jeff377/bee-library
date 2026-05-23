@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Color x:Key="Primary">#FFB300</Color>
+    <Color x:Key="PrimaryDark">#A57A00</Color>
+    <Color x:Key="Background">#FFFFFF</Color>
+    <Color x:Key="BackgroundDark">#121212</Color>
+    <Color x:Key="OnSurface">#212121</Color>
+    <Color x:Key="OnSurfaceDark">#EDEDED</Color>
+</ResourceDictionary>

@@ -1,12 +1,12 @@
 # 計畫：samples/ 目錄結構與最小 Demo 清單
 
-**狀態：🚧 進行中（2026-05-23）**
+**狀態：✅ 已完成（2026-05-23）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | P0 | `QuickStart.Server` + `QuickStart.Console` + 共用 `Define/` + 主 README Quick Start | ✅ 已完成（2026-05-23） |
 | P1 | `Blazor.Server.Demo` + `Blazor.Wasm.Demo` + `Blazor.Wasm.Demo.Host` + `Bee.Samples.Shared` | ✅ 已完成（2026-05-23） |
-| P2 | `Maui.Demo` | 📝 待做 |
+| P2 | `Maui.Demo` | ✅ 已完成（2026-05-23） |
 
 ## 背景
 

@@ -1,6 +1,6 @@
 # MAUI 端 FormSchema 驅動 UI 整合
 
-**狀態：🚧 進行中（2026-05-23）**
+**狀態：✅ 已完成（2026-05-23）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,7 @@
 | 1b | `Bee.UI.Maui.DataObjects.FormDataObject` 接 BO：`LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync` | ✅ 已完成（2026-05-23） |
 | 1c | `DynamicGrid`（master 列表）+ `FormPage`（整合頁，code-based） | ✅ 已完成（2026-05-23） |
 | 1d | `FormPage` 接 `Bee.UI.Core.ClientInfo`（取得 connector / accessToken），驗證 Local↔Remote 切換 | ✅ 已完成（2026-05-23） |
-| 2 | `samples/Maui.Demo`（對應 [plan-samples-structure.md](plan-samples-structure.md) P2） | 📝 待做 |
+| 2 | `samples/Maui.Demo`（對應 [plan-samples-structure.md](plan-samples-structure.md) P2） | ✅ 已完成（2026-05-23） |
 
 ## 背景
 
@@ -68,10 +68,12 @@
 
 對齊 [plan-samples-structure.md](plan-samples-structure.md) §P2：
 
-- `samples/Maui.Demo` 引用 `Bee.UI.Maui` + `Bee.Api.Client`。
-- 預設連 `samples/QuickStart.Server`（與 Console demo 共享後端）。
-- 至少示範一頁 `<bee:FormPage ProgId="Employee" />` 渲染共用 `Define/FormSchema/Employee.FormSchema.xml`。
-- 桌面平台優先（macOS / Windows）；行動平台 opt-in。
+- `samples/Maui.Demo` 引用 `Bee.UI.Maui` + `Microsoft.Maui.Controls`，Mac Catalyst / iOS / Android / Windows 條件 TFM，預設依宿主 OS 自動挑（macOS → `net10.0-maccatalyst`）。
+- `samples/QuickStart.Server` 改透過 `Bee.Samples.Shared.DemoBackend` 啟動，與 Blazor demo 共用同一份 `DemoAuthenticatingSystemBusinessObject` + `DemoSchemaSeeder`，提供 `demo`/`demo` 登入 + Employee SQLite 種子。Echo BO 仍透過 `QuickStartFormBoTypeResolver` 保留。
+- Demo 流程：`ConnectionPage`（`ClientInfo.Initialize(endpoint)`）→ `LoginPage`（`SystemApiConnector.LoginAsync`）→ `EmployeePage`（`<FormPage ProgId="Employee" />` 純靠 Phase 1d fallback 取 schema / connector / token）。
+- `Bee.UI.Maui.Storage.MauiPreferenceEndpointStorage`：給沙盒環境（Mac Catalyst / iOS / Android / packaged Windows）用的 `IEndpointStorage`，把 endpoint 存到 `Microsoft.Maui.Storage.Preferences.Default`，避免預設 `EndpointStorage` 寫 `ClientSettings.Save()` 落到 read-only `.app` bundle。
+- **跑法**：本機需安裝 `maui` workload + Xcode；`dotnet build -t:Run -c Debug -f net10.0-maccatalyst`。**Release 模式 trim 會把 `System.Xml.Serialization` Sgen fallback 砍掉**，導致 `Bee.Api.Client` 反序列化 `FormSchema` 時拋 `XmlSerializeErrorDetails, 2, 2`。Debug 不做 trim，可以直接跑通；Release 真要 ship 需要 `Microsoft.XmlSerializer.Generator` 預編 Sgen 或補 `DynamicallyAccessedMembers` 註記。README 已記下。
+- 端到端驗證：computer-use 起 Mac Catalyst app → Connect → Sign in → Employee FormPage 渲染（DynamicGrid 顯示 3 筆種子 Alice / Bob / Carol，DynamicForm 顯示 master 欄位）。
 
 ## 不在本 plan 範圍
 

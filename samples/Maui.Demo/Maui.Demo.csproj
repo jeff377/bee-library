@@ -1,0 +1,63 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      Default platforms are picked per host OS so a fresh checkout builds without
+      extra flags:
+        macOS   → net10.0-maccatalyst (needs maui-maccatalyst workload)
+        Windows → net10.0-windows10.0.19041.0 (needs Windows SDK)
+        Linux   → net10.0-android (needs maui-android workload)
+      Pass -p:MauiDemoFullPlatforms=true to additionally target every platform the
+      host's installed workloads can build (iOS + Android on macOS, etc.).
+    -->
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('osx'))">net10.0-maccatalyst</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">net10.0-windows10.0.19041.0</TargetFrameworks>
+    <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('linux'))">net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MauiDemoFullPlatforms)' == 'true' AND $([MSBuild]::IsOSPlatform('osx'))">$(TargetFrameworks);net10.0-ios;net10.0-android</TargetFrameworks>
+    <TargetFrameworks Condition="'$(MauiDemoFullPlatforms)' == 'true' AND $([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-android</TargetFrameworks>
+
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Maui.Demo</RootNamespace>
+    <AssemblyName>Maui.Demo</AssemblyName>
+    <IsPackable>false</IsPackable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <ApplicationTitle>Bee MAUI Demo</ApplicationTitle>
+    <ApplicationId>com.bee.samples.maui</ApplicationId>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
+    <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- App icon + splash use SVG sources processed by the MAUI build pipeline. -->
+    <MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#FFB300" />
+    <MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#FFB300" BaseSize="128,128" />
+    <MauiImage Include="Resources\Images\*" />
+    <MauiFont Include="Resources\Fonts\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Starting with .NET 8, UseMaui=true no longer auto-includes the MAUI runtime
+      packages (warning MA002). Pinning Microsoft.Maui.Controls here matches the
+      version that Bee.UI.Maui consumes, so the SDK reports the canonical workload
+      version against a known reference.
+    -->
+    <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Bee.UI.Maui\Bee.UI.Maui.csproj" />
+  </ItemGroup>
+
+</Project>
