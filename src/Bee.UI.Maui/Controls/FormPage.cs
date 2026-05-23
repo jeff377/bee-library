@@ -1,7 +1,6 @@
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
-using Bee.Definition.Layouts;
 using Bee.UI.Core;
 using Bee.UI.Maui.DataObjects;
 
@@ -75,8 +74,6 @@ namespace Bee.UI.Maui.Controls
         private readonly DynamicGrid _grid;
         private readonly DynamicForm _form;
         private FormDataObject? _dataObject;
-        private FormLayout? _formLayout;
-        private LayoutGrid? _listLayout;
         private bool _isBusy;
         private bool _initialized;
         private bool _isInitializing;
@@ -253,13 +250,13 @@ namespace Bee.UI.Maui.Controls
                 ClearError();
                 _loadingLabel.IsVisible = false;
 
-                _formLayout = Schema.GetFormLayout();
-                _listLayout = Schema.GetListLayout();
+                var formLayout = Schema.GetFormLayout();
+                var listLayout = Schema.GetListLayout();
                 _dataObject = new FormDataObject(Schema, FormConnector);
 
-                _form.FormLayout = _formLayout;
+                _form.FormLayout = formLayout;
                 _form.DataObject = _dataObject;
-                _grid.ListLayout = _listLayout;
+                _grid.ListLayout = listLayout;
 
                 _initialized = true;
                 await ReloadListAsync().ConfigureAwait(true);
