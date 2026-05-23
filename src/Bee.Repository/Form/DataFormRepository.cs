@@ -219,11 +219,11 @@ namespace Bee.Repository.Form
             var masterRowId = CoerceToGuid(masterDataTable.Rows[0][SysFields.RowId]);
             var detailFilter = FilterCondition.Equal(SysFields.MasterRowId, masterRowId);
 
-            foreach (var detail in EnumerateDetailTables())
+            foreach (var tableName in EnumerateDetailTables().Select(detail => detail.TableName))
             {
-                var detailSpec = builder.BuildSelect(detail.TableName, string.Empty, detailFilter);
-                var detailDataTable = dbAccess.Execute(detailSpec).Table ?? new DataTable(detail.TableName);
-                detailDataTable.TableName = detail.TableName;
+                var detailSpec = builder.BuildSelect(tableName, string.Empty, detailFilter);
+                var detailDataTable = dbAccess.Execute(detailSpec).Table ?? new DataTable(tableName);
+                detailDataTable.TableName = tableName;
                 dataSet.Tables.Add(detailDataTable);
             }
 
