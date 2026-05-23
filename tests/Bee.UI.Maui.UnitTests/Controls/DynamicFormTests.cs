@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Reflection;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.UI.Maui.Controls;
 using Bee.UI.Maui.DataObjects;
 
@@ -15,6 +16,8 @@ namespace Bee.UI.Maui.UnitTests.Controls
     /// </summary>
     public class DynamicFormTests
     {
+        private static readonly Type[] s_buildInputParams = [typeof(LayoutField), typeof(string)];
+
         private static FormSchema BuildSchema()
         {
             var schema = new FormSchema("Employee", "Employee");
@@ -87,6 +90,45 @@ namespace Bee.UI.Maui.UnitTests.Controls
                 Assert.NotNull(section.Fields);
                 Assert.NotEmpty(section.Fields!);
             });
+        }
+
+        [Fact]
+        [DisplayName("BuildInputControl DateEdit 欄位應建立 DatePicker 且不拋例外")]
+        public void BuildInputControl_DateEditField_DoesNotThrow()
+        {
+            var schema = BuildSchema();
+            var component = new DynamicForm();
+            // 只設 DataObject（FormLayout 仍為 null），令 Rebuild() 為 no-op，避免觸發完整 UI 建構。
+            component.DataObject = new FormDataObject(schema);
+
+            var method = typeof(DynamicForm).GetMethod(
+                "BuildInputControl",
+                BindingFlags.NonPublic | BindingFlags.Instance,
+                null, s_buildInputParams, null);
+            Assert.NotNull(method);
+
+            var field = new LayoutField { FieldName = "created_at", ControlType = ControlType.DateEdit };
+            var ex = Record.Exception(() => method!.Invoke(component, new object[] { field, "2023-01-15" }));
+            Assert.Null(ex);
+        }
+
+        [Fact]
+        [DisplayName("BuildInputControl MemoEdit 欄位應建立 Editor 且不拋例外")]
+        public void BuildInputControl_MemoEditField_DoesNotThrow()
+        {
+            var schema = BuildSchema();
+            var component = new DynamicForm();
+            component.DataObject = new FormDataObject(schema);
+
+            var method = typeof(DynamicForm).GetMethod(
+                "BuildInputControl",
+                BindingFlags.NonPublic | BindingFlags.Instance,
+                null, s_buildInputParams, null);
+            Assert.NotNull(method);
+
+            var field = new LayoutField { FieldName = "description", ControlType = ControlType.MemoEdit };
+            var ex = Record.Exception(() => method!.Invoke(component, new object[] { field, "some text" }));
+            Assert.Null(ex);
         }
     }
 }
