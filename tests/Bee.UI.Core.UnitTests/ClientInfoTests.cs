@@ -36,5 +36,40 @@ namespace Bee.UI.Core.UnitTests
             var settings = ClientInfo.ClientSettings;
             Assert.NotNull(settings);
         }
+
+        [Fact]
+        [DisplayName("ClientInfo.UserInfo 未登入時預設為 null")]
+        public void UserInfo_Default_IsNull()
+        {
+            Assert.Null(ClientInfo.UserInfo);
+        }
+
+        [Fact]
+        [DisplayName("ClientInfo.AllowGenerateSettings 預設為 false")]
+        public void AllowGenerateSettings_Default_IsFalse()
+        {
+            Assert.False(ClientInfo.AllowGenerateSettings);
+        }
+
+        [Fact]
+        [DisplayName("ClientInfo.UIViewService 預設為 null")]
+        public void UIViewService_Default_IsNull()
+        {
+            Assert.Null(ClientInfo.UIViewService);
+        }
+
+        [Fact]
+        [DisplayName("ClientInfo.Arguments 預設為 null")]
+        public void Arguments_Default_IsNull()
+        {
+            Assert.Null(ClientInfo.Arguments);
+        }
+
+        [Fact]
+        [DisplayName("ClientInfo.ApplyLoginResult 傳入 null 應拋 ArgumentNullException")]
+        public void ApplyLoginResult_NullInput_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => ClientInfo.ApplyLoginResult(null!));
+        }
     }
 }
