@@ -1,0 +1,54 @@
+# Smoke flow consumed by the `demo-smoke` skill.
+# See .claude/skills/demo-smoke/SKILL.md for the schema.
+
+name: Maui.Demo
+display_name: Bee MAUI Demo
+
+prerequisites:
+  - id: server
+    cwd: samples/QuickStart.Server
+    cmd: dotnet run --configuration Release --no-build
+    ready_when: "Now listening on"
+    timeout_seconds: 30
+
+launch:
+  app_name: Bee MAUI Demo
+  # Debug 構建路徑（Release-mode trim 砍 XmlSerializer 反射，目前 demo 強制走 Debug；
+  # 詳細見 .claude/rules/maui.md 與 samples/Maui.Demo/README.md）
+  bundle_path: samples/Maui.Demo/bin/Debug/net10.0-maccatalyst/maccatalyst-arm64/Bee MAUI Demo.app
+
+flow:
+  - step: take initial screenshot
+    action: screenshot
+    expect_text:
+      - "Bee MAUI demo"
+      - "Endpoint"
+      - "Connect"
+
+  - step: click Connect
+    action: click
+    target: { label: "Connect" }
+    wait_after_seconds: 4
+    expect_text:
+      - "Login"
+      - "Sign in"
+      - "User ID"
+      - "Password"
+
+  - step: click Sign in
+    action: click
+    target: { label: "Sign in" }
+    wait_after_seconds: 6
+    expect_text:
+      - "Employee"
+      - "Alice Chen"
+      - "Bob Liu"
+      - "Carol Wang"
+
+  - step: final screenshot
+    action: screenshot
+    save_as: maui-demo-employee-page.png
+
+teardown:
+  kill_app: true
+  kill_prerequisites: true
