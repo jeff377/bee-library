@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Data;
 using System.Data.Common;
 using System.Reflection;
 using Bee.Base.Data;
