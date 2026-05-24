@@ -27,7 +27,7 @@ namespace Bee.UI.Core.UnitTests
             Assert.NotNull(method);
 
             var result = method!.Invoke(null, null);
-            Assert.IsAssignableFrom<Dictionary<string, string>>(result);
+            Assert.IsType<Dictionary<string, string>>(result, exactMatch: false);
         }
 
         [Fact]
