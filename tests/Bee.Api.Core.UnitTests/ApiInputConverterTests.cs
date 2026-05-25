@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using System.Data;
 using System.Text.Json;
 using Bee.Api.Core.Conversion;
 
@@ -115,6 +116,58 @@ namespace Bee.Api.Core.UnitTests
             var target = Assert.IsType<TargetDto>(result);
             Assert.Equal("Bob", target.Name);
             Assert.Equal(42, target.Age);
+        }
+
+        public class DataSetCarrier
+        {
+            public DataSet? DataSet { get; set; }
+        }
+
+        [Fact]
+        [DisplayName("Convert 於 JsonElement 來源應透過 DataTable converter 還原 RowState 與欄位值")]
+        public void Convert_JsonElement_DeserializesDataSetWithRowState()
+        {
+            // Regression: ApiInputConverter must include DataSet/DataTable/StringEnum
+            // converters, otherwise Plain-format requests carrying a DataSet payload
+            // silently deserialize to empty rows (Save sees "no pending changes").
+            const string json = """
+                {
+                    "dataSet": {
+                        "dataSetName": "Test",
+                        "tables": [{
+                            "tableName": "T",
+                            "columns": [{
+                                "name": "X",
+                                "type": "String",
+                                "allowNull": false,
+                                "readOnly": false,
+                                "maxLength": -1,
+                                "caption": "X",
+                                "defaultValue": ""
+                            }],
+                            "primaryKeys": [],
+                            "rows": [{
+                                "state": "Added",
+                                "current": { "X": "v" }
+                            }]
+                        }],
+                        "relations": []
+                    }
+                }
+                """;
+            using var doc = JsonDocument.Parse(json);
+            var element = doc.RootElement.Clone();
+
+            var result = ApiInputConverter.Convert(element, typeof(DataSetCarrier));
+
+            var carrier = Assert.IsType<DataSetCarrier>(result);
+            Assert.NotNull(carrier.DataSet);
+            Assert.Single(carrier.DataSet.Tables);
+            var table = carrier.DataSet.Tables[0];
+            Assert.Equal("T", table.TableName);
+            Assert.Single(table.Rows);
+            Assert.Equal(DataRowState.Added, table.Rows[0].RowState);
+            Assert.Equal("v", table.Rows[0]["X"]);
         }
 
         [Fact]

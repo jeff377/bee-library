@@ -1,5 +1,7 @@
 using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using Bee.Base.Serialization;
 
 namespace Bee.Api.Core.Conversion
 {
@@ -10,7 +12,21 @@ namespace Bee.Api.Core.Conversion
     /// </summary>
     public static class ApiInputConverter
     {
-        private static readonly JsonSerializerOptions CaseInsensitiveOptions = new() { PropertyNameCaseInsensitive = true };
+        // Must include the same converters as JsonCodec on the write side, otherwise
+        // Plain-format requests carrying DataSet / DataTable / string-encoded enums
+        // (e.g. RowState) silently deserialize to defaults and the call appears to
+        // succeed with empty data. Keep this list in sync with
+        // Bee.Base.Serialization.JsonCodec.GetJsonSerializerOptions.
+        private static readonly JsonSerializerOptions CaseInsensitiveOptions = CreateReadOptions();
+
+        private static JsonSerializerOptions CreateReadOptions()
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            options.Converters.Add(new DataTableJsonConverter());
+            options.Converters.Add(new DataSetJsonConverter());
+            options.Converters.Add(new JsonStringEnumConverter());
+            return options;
+        }
 
         /// <summary>
         /// Converts the source object to the specified target type by copying public properties with matching names.
