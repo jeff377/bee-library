@@ -97,6 +97,21 @@ export const systemApi = {
   /** Destroy the current session (idempotent). */
   logout: () =>
     rpcCall('System.Logout', {}),
+
+  /**
+   * Fetch a form schema as a typed JSON object (field metadata, db types,
+   * relations) for the given progId. JSON-friendly alternative to GetDefine.
+   */
+  getFormSchema: (progId) =>
+    rpcCall('System.GetFormSchema', { progId }),
+
+  /**
+   * Fetch a form layout as a typed JSON object (sections, fields, control
+   * types, row/column spans) for the given progId. layoutId defaults to
+   * "default" server-side when omitted.
+   */
+  getFormLayout: (progId, layoutId = '') =>
+    rpcCall('System.GetFormLayout', { progId, layoutId }),
 };
 
 /**

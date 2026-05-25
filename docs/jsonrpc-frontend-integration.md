@@ -169,9 +169,26 @@ contains the authoritative method catalog. Summary:
 |----------|---------|
 | Anonymous | `System.Ping`, `System.GetCommonConfiguration`, `System.Login`, `System.CreateSession` |
 | Authenticated — Session | `System.EnterCompany`, `System.LeaveCompany`, `System.Logout` |
-| Authenticated — Definition | `System.GetDefine`, `System.SaveDefine` (SystemSettings / DatabaseSettings are local-call-only) |
+| Authenticated — Definition | `System.GetDefine`, `System.SaveDefine` (SystemSettings / DatabaseSettings are local-call-only); `System.GetFormSchema`, `System.GetFormLayout` (JSON-native, JS-preferred) |
 | Authenticated — Form CRUD | `<ProgId>.GetList`, `GetNewData`, `GetData`, `Save`, `Delete` |
 | **Not for JS** | `System.CheckPackageUpdate`, `System.GetPackage` (Encoded, .NET runtime use) |
+
+**JSON-native schema / layout retrieval**
+
+`System.GetDefine` wraps the requested definition object in an XML string
+(`result.Xml`) — convenient for .NET clients (`XmlCodec.Deserialize<T>`) but
+awkward from JS (two layers of parsing). Two JSON-native siblings are exposed
+for the JS path:
+
+| Method | Args | Returns |
+|--------|------|---------|
+| `System.GetFormSchema` | `{ progId }` | `{ schema: FormSchema }` — fields, db types, relations |
+| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections, fields, controlType, row/column spans |
+
+The `FormLayout` is generated on demand from `FormSchema`, so JS can request
+either independently. For schema-driven UI rendering, both are usually
+fetched together (`GetFormSchema` for validation rules, `GetFormLayout` for
+the UI shape).
 
 Method names are **case-sensitive** — `system.ping` will not dispatch.
 
@@ -290,6 +307,52 @@ export interface DataSet {
   relations: unknown[];
 }
 
+// FormSchema / FormLayout shapes are deep — these stubs cover the common path.
+// Extend or specialise per-app as you start consuming nested fields.
+export interface FormSchema {
+  progId: string;
+  displayName: string;
+  categoryId: string;
+  listFields: string;
+  tables: Array<{ tableName: string; displayName: string; fields: unknown[] }>;
+}
+
+export type ControlType =
+  | 'TextEdit' | 'DateEdit' | 'YearMonthEdit'
+  | 'CheckEdit' | 'MemoEdit' | 'DropDownEdit' | 'ButtonEdit';
+
+export interface LayoutField {
+  fieldName: string;
+  caption: string;
+  controlType: ControlType;
+  rowSpan: number;
+  columnSpan: number;
+  visible: boolean;
+}
+
+export interface LayoutSection {
+  name: string;
+  caption: string;
+  showCaption: boolean;
+  fields: LayoutField[];
+}
+
+export interface LayoutGrid {
+  tableName: string;
+  caption: string;
+  allowActions: string;
+  columns: Array<{ fieldName: string; caption: string; controlType: ControlType; visible: boolean }>;
+}
+
+export interface FormLayout {
+  layoutId: string;
+  progId: string;
+  caption: string;
+  columnCount: number;
+  sections: LayoutSection[];
+  details: LayoutGrid[];
+}
+
 // ---- API surface ----
 
 export const systemApi = {
@@ -299,6 +362,10 @@ export const systemApi = {
   enterCompany: (companyId: string) =>
     rpcCall<unknown>('System.EnterCompany', { companyId }),
   logout: () => rpcCall<unknown>('System.Logout', {}),
+  getFormSchema: (progId: string) =>
+    rpcCall<{ schema: FormSchema }>('System.GetFormSchema', { progId }),
+  getFormLayout: (progId: string, layoutId = '') =>
+    rpcCall<{ layout: FormLayout }>('System.GetFormLayout', { progId, layoutId }),
 };
 
 export const formApi = (progId: string) => ({

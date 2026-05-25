@@ -164,9 +164,24 @@ Token 是 `Guid` 字串。Token 有效期限預設 1 小時；過期後 backend 
 |------|------|
 | Anonymous | `System.Ping`、`System.GetCommonConfiguration`、`System.Login`、`System.CreateSession` |
 | Authenticated — Session | `System.EnterCompany`、`System.LeaveCompany`、`System.Logout` |
-| Authenticated — Definition | `System.GetDefine`、`System.SaveDefine`（SystemSettings / DatabaseSettings 限 local call） |
+| Authenticated — Definition | `System.GetDefine`、`System.SaveDefine`（SystemSettings / DatabaseSettings 限 local call）；`System.GetFormSchema`、`System.GetFormLayout`（JSON-native，JS 優先用） |
 | Authenticated — Form CRUD | `<ProgId>.GetList`、`GetNewData`、`GetData`、`Save`、`Delete` |
 | **JS 不會用到** | `System.CheckPackageUpdate`、`System.GetPackage`（Encoded，.NET runtime 用） |
+
+**JSON-native 取得 schema / layout**
+
+`System.GetDefine` 把要求的 definition 物件以 XML 字串包裝（`result.Xml`），
+對 .NET client 方便（`XmlCodec.Deserialize<T>`）但 JS 不友善（要解兩層）。
+JS 路徑有兩個 JSON-native 姊妹方法：
+
+| 方法 | Args | 回傳 |
+|------|------|------|
+| `System.GetFormSchema` | `{ progId }` | `{ schema: FormSchema }` — 欄位、DB 型別、relations |
+| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections、fields、controlType、行列 span |
+
+`FormLayout` 由 `FormSchema` 動態 generate，JS 可獨立呼叫任一個。
+schema-driven UI 渲染通常會兩者都拿（`GetFormSchema` 拿驗證規則、
+`GetFormLayout` 拿 UI 結構）。
 
 方法名稱**大小寫敏感** — `system.ping` 不會派遣到 `System.Ping`。
 
@@ -285,6 +300,52 @@ export interface DataSet {
   relations: unknown[];
 }
 
+// FormSchema / FormLayout 結構較深 —— 此處的 stub 涵蓋常見路徑。
+// 用到更深的欄位時，依 app 需要擴充或特化。
+export interface FormSchema {
+  progId: string;
+  displayName: string;
+  categoryId: string;
+  listFields: string;
+  tables: Array<{ tableName: string; displayName: string; fields: unknown[] }>;
+}
+
+export type ControlType =
+  | 'TextEdit' | 'DateEdit' | 'YearMonthEdit'
+  | 'CheckEdit' | 'MemoEdit' | 'DropDownEdit' | 'ButtonEdit';
+
+export interface LayoutField {
+  fieldName: string;
+  caption: string;
+  controlType: ControlType;
+  rowSpan: number;
+  columnSpan: number;
+  visible: boolean;
+}
+
+export interface LayoutSection {
+  name: string;
+  caption: string;
+  showCaption: boolean;
+  fields: LayoutField[];
+}
+
+export interface LayoutGrid {
+  tableName: string;
+  caption: string;
+  allowActions: string;
+  columns: Array<{ fieldName: string; caption: string; controlType: ControlType; visible: boolean }>;
+}
+
+export interface FormLayout {
+  layoutId: string;
+  progId: string;
+  caption: string;
+  columnCount: number;
+  sections: LayoutSection[];
+  details: LayoutGrid[];
+}
+
 // ---- API surface ----
 
 export const systemApi = {
@@ -294,6 +355,10 @@ export const systemApi = {
   enterCompany: (companyId: string) =>
     rpcCall<unknown>('System.EnterCompany', { companyId }),
   logout: () => rpcCall<unknown>('System.Logout', {}),
+  getFormSchema: (progId: string) =>
+    rpcCall<{ schema: FormSchema }>('System.GetFormSchema', { progId }),
+  getFormLayout: (progId: string, layoutId = '') =>
+    rpcCall<{ layout: FormLayout }>('System.GetFormLayout', { progId, layoutId }),
 };
 
 export const formApi = (progId: string) => ({
