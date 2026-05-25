@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bee.NET JSON-RPC JavaScript Demo</title>
+  <style>
+    :root { color-scheme: light; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      max-width: 880px;
+      margin: 2em auto;
+      padding: 0 1em;
+      color: #222;
+      line-height: 1.5;
+    }
+    h1 { font-size: 1.4em; border-bottom: 2px solid #333; padding-bottom: 0.3em; }
+    section {
+      background: #fafafa;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 1em 1.2em;
+      margin-bottom: 1em;
+    }
+    section h2 { margin: 0 0 0.6em; font-size: 1.05em; color: #2563eb; }
+    label { display: inline-block; min-width: 6em; }
+    input {
+      padding: 0.3em 0.5em;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+      font: inherit;
+    }
+    button {
+      padding: 0.4em 1em;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      margin-right: 0.5em;
+      font: inherit;
+    }
+    button:hover { background: #1d4ed8; }
+    button.secondary { background: #6b7280; }
+    button.secondary:hover { background: #4b5563; }
+    code {
+      background: #eef2ff;
+      color: #1e3a8a;
+      padding: 0.1em 0.4em;
+      border-radius: 2px;
+      font-size: 0.9em;
+    }
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1em;
+      border-radius: 4px;
+      max-height: 420px;
+      overflow: auto;
+      font-size: 0.85em;
+      margin: 0;
+      white-space: pre-wrap;
+    }
+    .hint { color: #555; font-size: 0.9em; margin: 0.3em 0; }
+  </style>
+</head>
+<body>
+  <h1>Bee.NET JSON-RPC JavaScript Demo</h1>
+
+  <p>
+    後端 endpoint：<code id="endpoint">...</code><br>
+    預設帳密：<code>demo</code> / <code>demo</code>
+  </p>
+
+  <section>
+    <h2>1. Login（取得 AccessToken）</h2>
+    <p class="hint">送 <code>System.Login</code> 並把回傳的 AccessToken 存進記憶體。</p>
+    <p><label>User ID：</label><input id="userId" value="demo"></p>
+    <p><label>Password：</label><input id="password" type="password" value="demo"></p>
+    <p><button id="btn-login">Login</button></p>
+    <p>當前 Token：<code id="token-display">(尚未登入)</code></p>
+  </section>
+
+  <section>
+    <h2>2. Ping（驗證 wire format）</h2>
+    <p class="hint">送 <code>System.Ping</code>，不需 AccessToken；驗證 server 回應結構與 timestamp。</p>
+    <p><button id="btn-ping">Ping</button></p>
+  </section>
+
+  <section>
+    <h2>結果輸出</h2>
+    <p><button id="btn-clear" class="secondary">清除</button></p>
+    <pre id="result">(等待操作...)</pre>
+  </section>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

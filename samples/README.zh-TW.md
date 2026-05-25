@@ -43,6 +43,7 @@ dotnet run                          # → http://localhost:5060
 | 如何在 Blazor 內用 `Bee.Web.Blazor.Server` 元件(Local 派遣,效能最佳) | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.zh-TW.md) |
 | 如何在 Blazor 內用 `Bee.Web.Blazor.Wasm` 元件(瀏覽器端跑 .NET,必走 HTTP) | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.zh-TW.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) |
 | 同一份 `FormSchema` 在原生 App 上如何渲染 | [`Maui.Demo`](Maui.Demo/README.zh-TW.md) |
+| 如何用純 JavaScript 從瀏覽器呼叫 Bee（前端無 .NET，走 Plain wire format） | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) |
 | Login、AccessToken、Encrypted payload 的客戶端 fallback 機制 | `Blazor.Server.Demo` 或 `Maui.Demo`(任一) |
 
 ## Demo 清單
@@ -55,6 +56,7 @@ dotnet run                          # → http://localhost:5060
 | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.zh-TW.md) | 瀏覽器端 Wasm 元件 | — | (由 `.Host` 一起跑) | Bee.Web.Blazor.Wasm |
 | [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) | Wasm 靜態檔 + API host | `5060` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
 | [`Maui.Demo`](Maui.Demo/README.zh-TW.md) | 原生 App 客戶端 | —(連 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
+| [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) | 純 JS 瀏覽器客戶端 | —(連 5050) | `open index.html` | (無 .NET — vanilla HTML/JS) |
 | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | 共用後端 wiring | — | (被引用) | Bee.Business + Bee.Db + Bee.Hosting + Bee.Api.Client |
 
 ### Demo 之間的依賴
@@ -64,6 +66,7 @@ QuickStart.Console ──HTTP──▶ QuickStart.Server
                               (亦為 Maui.Demo 預設後端)
 
 Maui.Demo          ──HTTP──▶ QuickStart.Server  ← 需先啟動
+Web.Js.Demo        ──HTTP──▶ QuickStart.Server  ← 需先啟動（已開 CORS）
 
 Blazor.Wasm.Demo   ◀────靜態檔──── Blazor.Wasm.Demo.Host
                                   (host 內含 Bee 後端與 /api endpoint,一起跑)
