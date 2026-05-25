@@ -22,10 +22,21 @@ internal static class Program
         // when the container resolves IFormBoTypeResolver.
         builder.Services.AddSingleton<IFormBoTypeResolver, QuickStartFormBoTypeResolver>();
 
+        // CORS for the Web.Js.Demo sample (cross-origin JS calling the JSON-RPC endpoint).
+        // Demo-only permissive policy — production hosts must restrict origins explicitly.
+        builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(policy => policy
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+        });
+
         builder.Services.AddControllers();
 
         var app = builder.Build();
         app.UseBeeBackend();
+        app.UseCors();
         app.MapControllers();
         app.Run();
     }
