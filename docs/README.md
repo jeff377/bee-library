@@ -20,6 +20,7 @@ This directory contains the public-facing developer documentation for the Bee.NE
 |----------|-------------|
 | [End-to-End Development Cookbook](development-cookbook.md) | Core development flow from definition to API, including initialization order, request pipeline, and ExecFunc pattern |
 | [Development Constraints and Anti-Patterns](development-constraints.md) | Framework constraints and forbidden practices, useful as a reference for AI coding tools |
+| [JSON-RPC Frontend Integration](jsonrpc-frontend-integration.md) | Calling the Bee.NET JSON-RPC API from JavaScript / TypeScript frontends (no .NET on the client) — wire format, auth flow, TS wrapper |
 
 ## Database
 
