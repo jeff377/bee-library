@@ -46,6 +46,7 @@ namespace Bee.UI.Core.UnitTests
     {
         private static readonly Type[] s_setConnectTypeParams = [typeof(ConnectType), typeof(string)];
         private static readonly object[] s_remoteConnectTypeArgs = [ConnectType.Remote, "http://remote.example.com"];
+        private static readonly object[] s_localConnectTypeArgs = [ConnectType.Local, string.Empty];
 
         private static MethodInfo GetSetConnectTypeMethod()
         {
@@ -68,8 +69,7 @@ namespace Bee.UI.Core.UnitTests
             var originalEndpoint = ApiClientInfo.Endpoint;
             try
             {
-                object[] args = [ConnectType.Local, string.Empty];
-                method.Invoke(null, args);
+                method.Invoke(null, s_localConnectTypeArgs);
                 Assert.Equal(ConnectType.Local, ApiClientInfo.ConnectType);
                 Assert.Equal(string.Empty, ApiClientInfo.Endpoint);
             }
