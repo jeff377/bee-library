@@ -136,8 +136,14 @@ namespace Bee.Definition.Forms
         /// <summary>
         /// Gets the master table.
         /// </summary>
+        /// <remarks>
+        /// Excluded from JSON serialization because the value is always equal to
+        /// <c>Tables[ProgId]</c>; emitting it would duplicate the master table
+        /// payload for JSON consumers (notably the JS Plain wire format).
+        /// </remarks>
         [Browsable(false)]
         [TreeNodeIgnore]
+        [JsonIgnore]
         public FormTable? MasterTable
         {
             get
