@@ -32,6 +32,8 @@ namespace Bee.UI.Maui.UnitTests.Controls
     public class FormPageClientInfoTests
     {
         private const string TestProgId = "Employee";
+        private static readonly string[] s_testProgIdKeys = [TestProgId];
+        private static readonly object[] s_testProgIdArgs = [TestProgId];
 
         private static FormSchema BuildEmployeeSchema()
         {
@@ -71,8 +73,7 @@ namespace Bee.UI.Maui.UnitTests.Controls
                 GetDefineHandler = (type, keys) =>
                 {
                     Assert.Equal(DefineType.FormSchema, type);
-                    string[] expectedKeys = [TestProgId];
-                    Assert.Equal(expectedKeys, keys);
+                    Assert.Equal(s_testProgIdKeys, keys);
                     return schema;
                 },
             };
@@ -237,8 +238,7 @@ namespace Bee.UI.Maui.UnitTests.Controls
 
             var system = (SystemApiConnector?)resolveSystem!.Invoke(page, Array.Empty<object>());
             Assert.NotNull(system);
-            object[] resolveFormArgs = [TestProgId];
-            var form = (FormApiConnector)resolveForm!.Invoke(page, resolveFormArgs)!;
+            var form = (FormApiConnector)resolveForm!.Invoke(page, s_testProgIdArgs)!;
             Assert.Equal(TestProgId, form.ProgId);
             var token = (Guid)resolveToken!.Invoke(page, Array.Empty<object>())!;
             Assert.Equal(ClientInfo.AccessToken, token);
