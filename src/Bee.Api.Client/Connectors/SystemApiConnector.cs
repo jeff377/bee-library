@@ -5,6 +5,7 @@ using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition;
+using Bee.Definition.Forms;
 using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.Connectors
@@ -170,6 +171,30 @@ namespace Bee.Api.Client.Connectors
                 return XmlCodec.Deserialize<T>(result.Xml)!;
             else
                 return default!;
+        }
+
+        /// <summary>
+        /// Asynchronously gets a form schema as a typed object. JSON-friendly
+        /// alternative to <see cref="GetDefineAsync{T}"/> for the FormSchema type,
+        /// primarily intended for JS / TypeScript frontends but usable from the
+        /// .NET client as well.
+        /// </summary>
+        /// <param name="progId">The program identifier.</param>
+        public virtual async Task<FormSchema?> GetFormSchemaAsync(string progId)
+        {
+            var request = new GetFormSchemaRequest() { ProgId = progId };
+            var result = await ExecuteAsync<GetFormSchemaResponse>(SystemActions.GetFormSchema, request)
+                .ConfigureAwait(false);
+            return result.Schema;
+        }
+
+        /// <summary>
+        /// Synchronously gets a form schema as a typed object.
+        /// </summary>
+        /// <param name="progId">The program identifier.</param>
+        public virtual FormSchema? GetFormSchema(string progId)
+        {
+            return SyncExecutor.Run(() => GetFormSchemaAsync(progId));
         }
 
         /// <summary>

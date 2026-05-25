@@ -39,6 +39,17 @@ namespace Bee.Definition
         /// </summary>
         public const string GetDefine = "GetDefine";
         /// <summary>
+        /// Gets a form schema as a typed JSON-friendly object (sibling to
+        /// <see cref="GetDefine"/>; intended for JS / TypeScript frontends that
+        /// prefer JSON over the XML envelope <see cref="GetDefine"/> returns).
+        /// </summary>
+        public const string GetFormSchema = "GetFormSchema";
+        /// <summary>
+        /// Gets a form layout as a typed JSON-friendly object (intended for
+        /// JS / TypeScript frontends that need to render schema-driven UI).
+        /// </summary>
+        public const string GetFormLayout = "GetFormLayout";
+        /// <summary>
         /// Gets definition data (local only).
         /// </summary>
         public const string GetLocalDefine = "GetLocalDefine";

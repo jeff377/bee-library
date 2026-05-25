@@ -24,6 +24,13 @@ namespace Bee.Business.System
         GetDefineResult GetDefine(GetDefineArgs args);
 
         /// <summary>
+        /// Gets a form schema as a typed object (JSON-friendly alternative to
+        /// <see cref="GetDefine"/> for JS frontends).
+        /// </summary>
+        /// <param name="args">The input arguments carrying the target <c>ProgId</c>.</param>
+        GetFormSchemaResult GetFormSchema(GetFormSchemaArgs args);
+
+        /// <summary>
         /// Saves definition data.
         /// </summary>
         /// <param name="args">The input arguments.</param>

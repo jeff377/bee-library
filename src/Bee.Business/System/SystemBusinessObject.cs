@@ -3,6 +3,7 @@ using Bee.Base.Security;
 using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Attributes;
+using Bee.Definition.Forms;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
@@ -287,6 +288,26 @@ namespace Bee.Business.System
             if ((args.DefineType == DefineType.SystemSettings || args.DefineType == DefineType.DatabaseSettings) && !IsLocalCall)
                 throw new NotSupportedException("The specified DefineType is not supported.");
             return GetDefineCore(args);
+        }
+
+        /// <summary>
+        /// Returns a <see cref="FormSchema"/> as a typed object, intended for JS /
+        /// TypeScript frontends that prefer JSON over the XML envelope returned by
+        /// <see cref="GetDefine"/>. The Plain wire format serialises the schema as
+        /// a JSON tree directly; the .NET client may keep using <see cref="GetDefine"/>.
+        /// </summary>
+        /// <param name="args">The input arguments carrying the target <c>ProgId</c>.</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        public virtual GetFormSchemaResult GetFormSchema(GetFormSchemaArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            if (string.IsNullOrWhiteSpace(args.ProgId))
+                throw new ArgumentException("ProgId is required.", nameof(args));
+
+            var schema = DefineAccess.GetDefine(DefineType.FormSchema, new[] { args.ProgId }) as FormSchema
+                ?? throw new InvalidOperationException($"FormSchema '{args.ProgId}' not found.");
+
+            return new GetFormSchemaResult { Schema = schema };
         }
 
         /// <summary>
