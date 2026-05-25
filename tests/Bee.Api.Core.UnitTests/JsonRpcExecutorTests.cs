@@ -98,6 +98,111 @@ namespace Bee.Api.Core.UnitTests
         }
 
         /// <summary>
+        /// 模擬 JS 前端送 Plain 格式但完全省略 params.type 欄位，
+        /// 驗證 server 仍能透過 BO 方法 reflection 拿到目標型別並正確反序列化。
+        /// </summary>
+        [Fact]
+        [DisplayName("Plain 格式不帶 type 欄位 server 應正常反序列化")]
+        public void Ping_PlainWithoutTypeField_DeserializesAndReturnsOk()
+        {
+            // params 內完全沒有 "type" 欄位 — 模擬 JS 原生送出的 JSON
+            const string json = """
+                {
+                    "jsonrpc": "2.0",
+                    "method": "System.Ping",
+                    "params": {
+                        "format": 0,
+                        "value": { "clientName": "JsClient", "traceId": "js-001" }
+                    },
+                    "id": "js-req-1"
+                }
+                """;
+
+            var request = JsonCodec.Deserialize<JsonRpcRequest>(json);
+            Assert.NotNull(request);
+            Assert.Equal(PayloadFormat.Plain, request.Params.Format);
+            Assert.Equal(string.Empty, request.Params.TypeName); // type 未送 → 預設空字串
+
+            var executor = NewExecutor(Guid.Empty);
+            var response = executor.Execute(request);
+
+            Assert.Null(response.Error);
+            var result = response.Result!.Value as PingResponse;
+            Assert.NotNull(result);
+            Assert.Equal("ok", result.Status);
+            Assert.Equal("js-001", result.TraceId);
+        }
+
+        /// <summary>
+        /// 模擬 JS 前端送 Plain 格式且 params.type 為空字串，
+        /// 驗證 server 行為與「完全省略 type」一致。
+        /// </summary>
+        [Fact]
+        [DisplayName("Plain 格式 type 為空字串 server 應正常反序列化")]
+        public void Ping_PlainWithEmptyTypeField_DeserializesAndReturnsOk()
+        {
+            const string json = """
+                {
+                    "jsonrpc": "2.0",
+                    "method": "System.Ping",
+                    "params": {
+                        "format": 0,
+                        "value": { "clientName": "JsClient", "traceId": "js-002" },
+                        "type": ""
+                    },
+                    "id": "js-req-2"
+                }
+                """;
+
+            var request = JsonCodec.Deserialize<JsonRpcRequest>(json);
+            Assert.NotNull(request);
+
+            var executor = NewExecutor(Guid.Empty);
+            var response = executor.Execute(request);
+
+            Assert.Null(response.Error);
+            var result = response.Result!.Value as PingResponse;
+            Assert.NotNull(result);
+            Assert.Equal("js-002", result.TraceId);
+        }
+
+        /// <summary>
+        /// 模擬 JS 前端送 Plain 格式且 params.type 帶錯誤型別字串，
+        /// 驗證 Plain 路徑完全不讀 type 欄位 (RestoreFrom 在 Plain 分支前 early-return)。
+        /// </summary>
+        [Fact]
+        [DisplayName("Plain 格式 type 帶錯誤型別字串 server 應忽略並正常反序列化")]
+        public void Ping_PlainWithBogusTypeField_IgnoresTypeAndReturnsOk()
+        {
+            const string json = """
+                {
+                    "jsonrpc": "2.0",
+                    "method": "System.Ping",
+                    "params": {
+                        "format": 0,
+                        "value": { "clientName": "JsClient", "traceId": "js-003" },
+                        "type": "NonExistent.Type.That.Should.Be.Ignored, FakeAssembly"
+                    },
+                    "id": "js-req-3"
+                }
+                """;
+
+            var request = JsonCodec.Deserialize<JsonRpcRequest>(json);
+            Assert.NotNull(request);
+            Assert.Equal("NonExistent.Type.That.Should.Be.Ignored, FakeAssembly", request.Params.TypeName);
+
+            var executor = NewExecutor(Guid.Empty);
+            var response = executor.Execute(request);
+
+            // 若 Plain 路徑讀了 type，這裡會炸 (whitelist 拒絕 / 無法載入型別)；
+            // 不炸代表框架完全忽略 type，靠 BO 方法 reflection 拿到 PingRequest。
+            Assert.Null(response.Error);
+            var result = response.Result!.Value as PingResponse;
+            Assert.NotNull(result);
+            Assert.Equal("js-003", result.TraceId);
+        }
+
+        /// <summary>
         /// 透過 API 執行 Hello 方法。
         /// </summary>
         [Fact]
