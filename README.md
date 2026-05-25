@@ -29,6 +29,8 @@ For an in-depth look at the layered architecture, data flow, and design decision
 
 For guidelines on API Contract and BO Parameter design (Request/Response vs Args/Result), see the [API/BO Contract Design Principles](docs/api-bo-contract-design.md).
 
+For calling the JSON-RPC API from a JavaScript / TypeScript frontend (React, Vue, Angular, vanilla — no .NET on the client), see the [JSON-RPC Frontend Integration Guide](docs/jsonrpc-frontend-integration.md).
+
 For the full developer documentation index, see [docs/README.md](docs/README.md).
 
 ## 📦 Assembly
@@ -91,6 +93,7 @@ All demos live in-repo under [`samples/`](samples/README.md). They're minimal, f
 | Blazor Server | [`Blazor.Server.Demo`](samples/Blazor.Server.Demo/README.md) | `BeeLoginPanel` + `FormPage` + Employee CRUD, dispatched in-process via `LocalApiProvider` |
 | Blazor Wasm | [`Blazor.Wasm.Demo`](samples/Blazor.Wasm.Demo/README.md) + [`.Host`](samples/Blazor.Wasm.Demo.Host/README.md) | Same Blazor components running in the browser, dispatched over HTTP via `RemoteApiProvider` |
 | MAUI | [`Maui.Demo`](samples/Maui.Demo/README.md) | Native-app client (Mac Catalyst / iOS / Android / Windows) rendering the same `FormSchema` |
+| Pure JS | [`Web.Js.Demo`](samples/Web.Js.Demo/README.md) | Calling the JSON-RPC API from vanilla JavaScript in a browser — no .NET on the client, no npm |
 
 
 ## 📬 Contact & Follow
