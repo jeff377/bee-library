@@ -7,8 +7,15 @@
 `PayloadFormat.Plain`（由 JSON-RPC 前端整合計畫開放的 wire format），
 所有請求都是純 JSON。
 
-> **狀態：skeleton** — 目前只接好 Login + Ping。完整 CRUD demo
-> （Enter Company / GetList / GetData / Save / Delete）會在後續 commit 補上。
+涵蓋本 plan 開放給 JS 的 7 個方法：
+
+| 區塊 | 對應方法 |
+|------|---------|
+| Login | `System.Login` |
+| Ping | `System.Ping`（不需 auth） |
+| Enter Company | `System.EnterCompany` / `System.LeaveCompany`（錯誤路徑示範 — 見 UI hint） |
+| Employee CRUD | `Employee.GetList` / `GetData` / `GetNewData` / `Save` / `Delete` |
+| Logout | `System.Logout` |
 
 ## 怎麼跑
 

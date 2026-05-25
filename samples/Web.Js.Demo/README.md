@@ -7,9 +7,15 @@ no `npm`, no build step, no framework. The JS frontend uses
 `PayloadFormat.Plain` (the wire format opened up by the JSON-RPC frontend
 integration plan), so all requests are plain JSON.
 
-> **Status: skeleton** — only Login + Ping are wired up. Full CRUD demo
-> (Enter Company / GetList / GetData / Save / Delete) will be added in a
-> follow-up commit.
+Covers all 7 methods downgraded for JS access in the plan:
+
+| Section | Methods |
+|---------|---------|
+| Login | `System.Login` |
+| Ping | `System.Ping` (no auth) |
+| Enter Company | `System.EnterCompany` / `System.LeaveCompany` (error path — see UI hint) |
+| Employee CRUD | `Employee.GetList` / `GetData` / `GetNewData` / `Save` / `Delete` |
+| Logout | `System.Logout` |
 
 ## How to run
 

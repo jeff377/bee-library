@@ -81,7 +81,52 @@ export const systemApi = {
    */
   login: (userId, password) =>
     rpcCall('System.Login', { userId, password, clientPublicKey: '' }),
+
+  /**
+   * Enter the specified company. The default demo backend has no seeded
+   * st_company / st_user_company rows, so this call returns an
+   * "Company access denied" RpcError — useful for demonstrating the error path.
+   */
+  enterCompany: (companyId) =>
+    rpcCall('System.EnterCompany', { companyId }),
+
+  /** Leave the current company context (idempotent). */
+  leaveCompany: () =>
+    rpcCall('System.LeaveCompany', {}),
+
+  /** Destroy the current session (idempotent). */
+  logout: () =>
+    rpcCall('System.Logout', {}),
 };
+
+/**
+ * Builds a thin form-API wrapper for the given progId. Mirrors
+ * FormApiConnector on the .NET side.
+ * @param {string} progId  The FormSchema ProgId (e.g. "Employee").
+ */
+export function formApi(progId) {
+  return {
+    getList: (
+      selectFields = 'sys_id,sys_name,hire_date,sys_rowid',
+      filter = null,
+      sortFields = null,
+      paging = null,
+    ) =>
+      rpcCall(`${progId}.GetList`, { selectFields, filter, sortFields, paging }),
+
+    getNewData: () =>
+      rpcCall(`${progId}.GetNewData`, {}),
+
+    getData: (rowId) =>
+      rpcCall(`${progId}.GetData`, { rowId }),
+
+    save: (dataSet) =>
+      rpcCall(`${progId}.Save`, { dataSet }),
+
+    delete: (rowId) =>
+      rpcCall(`${progId}.Delete`, { rowId }),
+  };
+}
 
 // Expose the endpoint constant for diagnostics / display.
 export const apiEndpoint = ENDPOINT;
