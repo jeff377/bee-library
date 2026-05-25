@@ -5,8 +5,11 @@ namespace Bee.UI.Core.UnitTests
 {
     /// <summary>
     /// 補強 <see cref="ClientInfo"/> 中尚未被覆蓋的非修改路徑。
-    /// 測試僅呼叫不改變可觀測公開靜態狀態的方法，無需 collection 序列化保護。
+    /// <c>ClientInfoCoverageTests</c> 中的 <c>ClientInfoConnectorTests</c> 會透過反射將
+    /// <c>_systemConnector</c> 靜態欄位設為 null，與此處的快取驗證測試存在競態風險，
+    /// 因此須納入同一 collection 串行執行。
     /// </summary>
+    [Collection("ClientInfoState")]
     public class ClientInfoReadOnlyTests
     {
         [Fact]
