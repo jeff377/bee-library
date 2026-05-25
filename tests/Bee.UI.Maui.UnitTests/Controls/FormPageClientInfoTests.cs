@@ -71,7 +71,8 @@ namespace Bee.UI.Maui.UnitTests.Controls
                 GetDefineHandler = (type, keys) =>
                 {
                     Assert.Equal(DefineType.FormSchema, type);
-                    Assert.Equal(new[] { TestProgId }, keys);
+                    string[] expectedKeys = [TestProgId];
+                    Assert.Equal(expectedKeys, keys);
                     return schema;
                 },
             };
@@ -236,7 +237,8 @@ namespace Bee.UI.Maui.UnitTests.Controls
 
             var system = (SystemApiConnector?)resolveSystem!.Invoke(page, Array.Empty<object>());
             Assert.NotNull(system);
-            var form = (FormApiConnector)resolveForm!.Invoke(page, new object[] { TestProgId })!;
+            object[] resolveFormArgs = [TestProgId];
+            var form = (FormApiConnector)resolveForm!.Invoke(page, resolveFormArgs)!;
             Assert.Equal(TestProgId, form.ProgId);
             var token = (Guid)resolveToken!.Invoke(page, Array.Empty<object>())!;
             Assert.Equal(ClientInfo.AccessToken, token);
