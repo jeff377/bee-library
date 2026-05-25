@@ -4,6 +4,7 @@ using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
@@ -308,6 +309,33 @@ namespace Bee.Business.System
                 ?? throw new InvalidOperationException($"FormSchema '{args.ProgId}' not found.");
 
             return new GetFormSchemaResult { Schema = schema };
+        }
+
+        /// <summary>
+        /// Returns a <see cref="FormLayout"/> for the specified <c>ProgId</c> and
+        /// optional <c>LayoutId</c>. The layout is generated on demand from the
+        /// underlying <see cref="FormSchema"/>; for JS / TypeScript frontends the
+        /// Plain wire format serialises it as a JSON tree ready for direct UI
+        /// rendering.
+        /// </summary>
+        /// <param name="args">
+        /// The input arguments. <c>ProgId</c> is required; <c>LayoutId</c> may be
+        /// empty (defaults to <c>"default"</c> server-side).
+        /// </param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        public virtual GetFormLayoutResult GetFormLayout(GetFormLayoutArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+            if (string.IsNullOrWhiteSpace(args.ProgId))
+                throw new ArgumentException("ProgId is required.", nameof(args));
+
+            var schema = DefineAccess.GetDefine(DefineType.FormSchema, new[] { args.ProgId }) as FormSchema
+                ?? throw new InvalidOperationException($"FormSchema '{args.ProgId}' not found.");
+
+            var layoutId = string.IsNullOrWhiteSpace(args.LayoutId) ? "default" : args.LayoutId;
+            var layout = schema.GetFormLayout(layoutId);
+
+            return new GetFormLayoutResult { Layout = layout };
         }
 
         /// <summary>

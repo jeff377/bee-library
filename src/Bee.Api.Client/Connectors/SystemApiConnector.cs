@@ -6,6 +6,7 @@ using Bee.Base.Serialization;
 using Bee.Api.Core.Messages.System;
 using Bee.Definition;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.Connectors
@@ -195,6 +196,35 @@ namespace Bee.Api.Client.Connectors
         public virtual FormSchema? GetFormSchema(string progId)
         {
             return SyncExecutor.Run(() => GetFormSchemaAsync(progId));
+        }
+
+        /// <summary>
+        /// Asynchronously gets a form layout as a typed object. JSON-friendly
+        /// alternative for rendering schema-driven UI from JS / TypeScript
+        /// frontends; usable from the .NET client as well.
+        /// </summary>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="layoutId">The layout identifier; empty string resolves to <c>"default"</c>.</param>
+        public virtual async Task<FormLayout?> GetFormLayoutAsync(string progId, string layoutId = "")
+        {
+            var request = new GetFormLayoutRequest()
+            {
+                ProgId = progId,
+                LayoutId = layoutId ?? string.Empty,
+            };
+            var result = await ExecuteAsync<GetFormLayoutResponse>(SystemActions.GetFormLayout, request)
+                .ConfigureAwait(false);
+            return result.Layout;
+        }
+
+        /// <summary>
+        /// Synchronously gets a form layout as a typed object.
+        /// </summary>
+        /// <param name="progId">The program identifier.</param>
+        /// <param name="layoutId">The layout identifier; empty string resolves to <c>"default"</c>.</param>
+        public virtual FormLayout? GetFormLayout(string progId, string layoutId = "")
+        {
+            return SyncExecutor.Run(() => GetFormLayoutAsync(progId, layoutId));
         }
 
         /// <summary>

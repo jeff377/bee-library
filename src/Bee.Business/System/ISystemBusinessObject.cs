@@ -31,6 +31,16 @@ namespace Bee.Business.System
         GetFormSchemaResult GetFormSchema(GetFormSchemaArgs args);
 
         /// <summary>
+        /// Gets a form layout as a typed object (intended for JS frontends that
+        /// need to render schema-driven UI).
+        /// </summary>
+        /// <param name="args">
+        /// The input arguments carrying the target <c>ProgId</c> and optional
+        /// <c>LayoutId</c>.
+        /// </param>
+        GetFormLayoutResult GetFormLayout(GetFormLayoutArgs args);
+
+        /// <summary>
         /// Saves definition data.
         /// </summary>
         /// <param name="args">The input arguments.</param>
