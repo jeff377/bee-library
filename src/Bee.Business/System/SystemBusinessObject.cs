@@ -134,7 +134,7 @@ namespace Bee.Business.System
         /// <c>"Company access denied."</c> so callers cannot enumerate companies by
         /// probing the error text.
         /// </remarks>
-        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual EnterCompanyResult EnterCompany(EnterCompanyArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
@@ -167,7 +167,7 @@ namespace Bee.Business.System
         /// without error. To completely sign out, use <c>Logout</c> instead, which
         /// performs the same clear-up internally before destroying the session.
         /// </remarks>
-        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual LeaveCompanyResult LeaveCompany(LeaveCompanyArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
@@ -194,7 +194,7 @@ namespace Bee.Business.System
         /// (no-op if already null), then remove the session entry from the cache. Callers
         /// do not need to call <c>LeaveCompany</c> before <c>Logout</c>.
         /// </remarks>
-        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual LogoutResult Logout(LogoutArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);

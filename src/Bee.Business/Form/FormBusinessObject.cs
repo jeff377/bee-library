@@ -81,7 +81,7 @@ namespace Bee.Business.Form
         /// defaults and a server-issued <c>sys_rowid</c>.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual GetNewDataResult GetNewData(GetNewDataArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
@@ -96,7 +96,7 @@ namespace Bee.Business.Form
         /// Loads a single master row (and its details) by <c>RowId</c>.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual GetDataResult GetData(GetDataArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
@@ -112,7 +112,7 @@ namespace Bee.Business.Form
         /// based on each row's <c>RowState</c>.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual SaveResult Save(SaveArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
@@ -133,7 +133,7 @@ namespace Bee.Business.Form
         /// Deletes a single master row directly by <c>RowId</c>.
         /// </summary>
         /// <param name="args">The input arguments.</param>
-        [ApiAccessControl(ApiProtectionLevel.Encrypted, ApiAccessRequirement.Authenticated)]
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
         public virtual DeleteResult Delete(DeleteArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
