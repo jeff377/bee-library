@@ -58,6 +58,7 @@ Covers all 7 methods downgraded for JS access in the plan:
 | `index.html` | Minimal UI — Login form, Ping button, result panel. Vanilla CSS, no external dependencies. |
 | `bee-api-client.js` | ES module: `rpcCall(method, value)` + `systemApi.login` / `systemApi.ping` + `RpcError` + token state. |
 | `app.js` | UI event wiring; depends only on `bee-api-client.js`. |
+| `.smoke.yaml` | Config for the `demo-smoke` skill — launches both prerequisite servers and verifies the page loads with the expected section text. See file header for the browser-tier limitation (clicks blocked → load-only smoke). |
 
 ## Headers used
 

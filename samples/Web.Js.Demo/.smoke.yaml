@@ -1,0 +1,57 @@
+# Smoke flow consumed by the `demo-smoke` skill.
+# See .claude/skills/demo-smoke/SKILL.md for the schema.
+#
+# Browser-app constraint:
+# computer-use grants browsers at tier "read" — screenshots work, but
+# left_click / type / keyboard are blocked. So this flow can only:
+#   - launch the page
+#   - take a screenshot
+#   - verify expected text via OCR
+# It cannot click Login / Ping / CRUD buttons to verify full interactive flow.
+# For full UI flow verification, drive the page through the claude-in-chrome
+# MCP (mcp__claude-in-chrome__*) instead — that path is out of demo-smoke's
+# current schema and would need a follow-up skill extension.
+#
+# What this flow actually proves:
+#   - QuickStart.Server starts and stays up
+#   - The static file server serves index.html
+#   - The page DOM renders with the expected section headings and demo creds
+#   - No JS load error blanks the page
+
+name: Web.Js.Demo
+display_name: Bee Web JS Demo
+
+prerequisites:
+  - id: backend
+    cwd: samples/QuickStart.Server
+    cmd: dotnet run --configuration Release --no-build
+    ready_when: "Now listening on"
+    timeout_seconds: 30
+
+  - id: static
+    cwd: samples/Web.Js.Demo
+    cmd: python3 -m http.server 8080
+    ready_when: "Serving HTTP"
+    timeout_seconds: 10
+
+launch:
+  app_name: Safari
+  launch_cmd: open http://localhost:8080/index.html
+
+flow:
+  - step: take initial screenshot
+    action: screenshot
+    wait_after_seconds: 3
+    expect_text:
+      - "Bee.NET JSON-RPC JavaScript Demo"
+      - "Login"
+      - "Ping"
+      - "Enter Company"
+      - "Employee CRUD"
+      - "Logout"
+      - "demo"
+    save_as: web-js-demo-loaded.png
+
+teardown:
+  kill_app: false                 # 不殺 Safari，避免關掉使用者其他分頁
+  kill_prerequisites: true

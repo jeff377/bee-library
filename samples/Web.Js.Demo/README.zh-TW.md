@@ -57,6 +57,7 @@
 | `index.html` | 最小 UI — Login 表單、Ping 按鈕、結果輸出區。Vanilla CSS，無外部依賴。 |
 | `bee-api-client.js` | ES module：`rpcCall(method, value)` + `systemApi.login` / `systemApi.ping` + `RpcError` + token 狀態管理。 |
 | `app.js` | UI 事件綁定；只依賴 `bee-api-client.js`。 |
+| `.smoke.yaml` | `demo-smoke` skill 的設定檔 — 啟動兩個 prerequisite server 並驗證頁面載入後出現預期的區塊文字。檔案開頭註解說明瀏覽器 tier 限制（無法點擊 → 只能 load-level smoke）。 |
 
 ## 使用的 Headers
 
