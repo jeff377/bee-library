@@ -47,7 +47,9 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
         [DisplayName("OnInitializedAsync ProgId 為空白字串時應設定錯誤訊息")]
         public async Task OnInitializedAsync_WhitespaceProgId_SetsErrorMessage()
         {
+#pragma warning disable BL0005
             var page = new FormPage { ProgId = "   " };
+#pragma warning restore BL0005
             var method = typeof(FormPage).GetMethod(
                 "OnInitializedAsync", BindingFlags.NonPublic | BindingFlags.Instance);
             Assert.NotNull(method);
