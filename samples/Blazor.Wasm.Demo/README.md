@@ -13,7 +13,7 @@ The Blazor WebAssembly client. It shares the same `FormSchema` and the same `Bee
 ```bash
 cd samples/Blazor.Wasm.Demo.Host
 dotnet run
-# Browser opens http://localhost:5060 automatically
+# Browser opens http://localhost:5070 automatically
 ```
 
 Don't `dotnet run` this Wasm project directly — there's no server inside it.

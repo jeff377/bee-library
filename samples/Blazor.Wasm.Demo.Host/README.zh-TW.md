@@ -17,12 +17,12 @@ ASP.NET Core host：同一個程序內**同時**提供 (1) Bee 後端 JSON-RPC `
 ```bash
 cd samples/Blazor.Wasm.Demo.Host
 dotnet run
-# 瀏覽器自動開 http://localhost:5060
+# 瀏覽器自動開 http://localhost:5070
 ```
 
 第一次執行：
 
-1. 自動建立 `samples/Define/Master.key`（如果不存在）
+1. 從 `BEE_MASTER_KEY` 環境變數讀 master key；`DemoBackend.AddBeeBackend` 在變數未設時自動注入硬編碼的 demo 值(production host 必須覆寫,見 [`samples/README.zh-TW.md`](../README.zh-TW.md#master-key))
 2. `samples/Blazor.Wasm.Demo.Host/quickstart.db`（SQLite）自動建立 `ft_employee` + `ft_employee_phone`
 3. 寫入 3 筆 demo 員工
 
@@ -36,4 +36,4 @@ dotnet run
 | Login 客製 | `DemoAuthenticatingSystemBusinessObject` + `DemoBusinessObjectFactory`（Bee.Samples.Shared） |
 | Employee CRUD | `FormBusinessObject` + `FormSchema` + `FormRepositoryFactory` |
 
-> 與 `QuickStart.Server` 的差別：`QuickStart.Server` 只示範 Anonymous Echo BO；此 host 多了 Wasm 靜態檔提供 + 員工 schema seed。兩個 host 可分別在 5050 / 5060 同時跑，互不干擾。
+> 與 `QuickStart.Server` 的差別：`QuickStart.Server` 只示範 Anonymous Echo BO；此 host 多了 Wasm 靜態檔提供 + 員工 schema seed。兩個 host 可分別在 5050 / 5070 同時跑，互不干擾。

@@ -14,7 +14,7 @@ dotnet run
 
 On first run:
 
-1. Auto-generates `samples/Define/Master.key` if missing
+1. Reads the master key from `BEE_MASTER_KEY`; `DemoBackend.AddBeeBackend` auto-injects a hard-coded demo value when the variable is unset (production hosts must override — see [`samples/README.md`](../README.md#master-key))
 2. Creates `samples/Blazor.Server.Demo/quickstart.db` (SQLite) with `ft_employee` + `ft_employee_phone`
 3. Seeds 3 demo employees (Alice / Bob / Carol)
 

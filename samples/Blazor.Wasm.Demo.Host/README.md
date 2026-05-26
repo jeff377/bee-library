@@ -17,12 +17,12 @@ When the browser hits `/`:
 ```bash
 cd samples/Blazor.Wasm.Demo.Host
 dotnet run
-# Browser opens http://localhost:5060 automatically
+# Browser opens http://localhost:5070 automatically
 ```
 
 On first run:
 
-1. Auto-generates `samples/Define/Master.key` if missing
+1. Reads the master key from `BEE_MASTER_KEY`; `DemoBackend.AddBeeBackend` auto-injects a hard-coded demo value when the variable is unset (production hosts must override — see [`samples/README.md`](../README.md#master-key))
 2. Creates `samples/Blazor.Wasm.Demo.Host/quickstart.db` (SQLite) with `ft_employee` + `ft_employee_phone`
 3. Seeds 3 demo employees
 
@@ -36,4 +36,4 @@ On first run:
 | Login customization | `DemoAuthenticatingSystemBusinessObject` + `DemoBusinessObjectFactory` (Bee.Samples.Shared) |
 | Employee CRUD | `FormBusinessObject` + `FormSchema` + `FormRepositoryFactory` |
 
-> Compared to `QuickStart.Server`: that one only ships an anonymous Echo BO. This host adds WASM static-file serving and the Employee schema seed on top. The two hosts can run side-by-side on ports 5050 and 5060 without interfering with each other.
+> Compared to `QuickStart.Server`: that one only ships an anonymous Echo BO. This host adds WASM static-file serving and the Employee schema seed on top. The two hosts can run side-by-side on ports 5050 and 5070 without interfering with each other.

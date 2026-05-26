@@ -14,7 +14,7 @@ dotnet run
 
 第一次執行時：
 
-1. 自動建立 `samples/Define/Master.key`（如果不存在）
+1. 從 `BEE_MASTER_KEY` 環境變數讀 master key；`DemoBackend.AddBeeBackend` 在變數未設時自動注入硬編碼的 demo 值(production host 必須覆寫,見 [`samples/README.zh-TW.md`](../README.zh-TW.md#master-key))
 2. `samples/Blazor.Server.Demo/quickstart.db`（SQLite）自動建立 `ft_employee` + `ft_employee_phone`
 3. 寫入 3 筆 demo 員工（Alice / Bob / Carol）
 

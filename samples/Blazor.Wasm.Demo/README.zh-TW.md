@@ -13,7 +13,7 @@ Blazor WebAssembly client，與 [`Blazor.Server.Demo`](../Blazor.Server.Demo/REA
 ```bash
 cd samples/Blazor.Wasm.Demo.Host
 dotnet run
-# 瀏覽器自動開 http://localhost:5060
+# 瀏覽器自動開 http://localhost:5070
 ```
 
 不要直接 `dotnet run` 這個 Wasm 專案——它沒有 server。

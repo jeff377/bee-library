@@ -29,7 +29,7 @@ dotnet run                          # → http://localhost:5055
 
 # 方案 B — Blazor Wasm(同元件、改走瀏覽器端 + HTTP /api)
 cd samples/Blazor.Wasm.Demo.Host
-dotnet run                          # → http://localhost:5060
+dotnet run                          # → http://localhost:5070
 ```
 
 兩邊都用 **`demo / demo`** 登入,登入後渲染同一份 `Employee` FormSchema。
@@ -54,7 +54,7 @@ dotnet run                          # → http://localhost:5060
 | [`QuickStart.Console`](QuickStart.Console/README.zh-TW.md) | API client | — | `dotnet run` | Bee.Api.Client |
 | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.zh-TW.md) | 全端 Blazor Server | `5055` | `dotnet run` | Bee.Web.Blazor.Server + Bee.Samples.Shared |
 | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.zh-TW.md) | 瀏覽器端 Wasm 元件 | — | (由 `.Host` 一起跑) | Bee.Web.Blazor.Wasm |
-| [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) | Wasm 靜態檔 + API host | `5060` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
+| [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) | Wasm 靜態檔 + API host | `5070` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
 | [`Maui.Demo`](Maui.Demo/README.zh-TW.md) | 原生 App 客戶端 | —(連 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
 | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) | 純 JS 瀏覽器客戶端 | —(連 5050) | `open index.html` | (無 .NET — vanilla HTML/JS) |
 | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | 共用後端 wiring | — | (被引用) | Bee.Business + Bee.Db + Bee.Hosting + Bee.Api.Client |
@@ -139,7 +139,7 @@ Bee 的 `Bee.Api.Client` 對呼叫端有**一致的 API 表面**,差異只在底
 builder.Services.AddBeeBlazor(o => o.UseLocalProvider());
 
 // Remote
-builder.Services.AddBeeBlazor(o => o.UseRemoteProvider("http://host:5060/api"));
+builder.Services.AddBeeBlazor(o => o.UseRemoteProvider("http://host:5070/api"));
 ```
 
 ## 建置全部 samples
@@ -152,7 +152,7 @@ dotnet build samples/Bee.Samples.slnx
 
 ## 常見問題
 
-**Q: Port 5050/5055/5060 被佔用怎麼辦?**
+**Q: Port 5050/5055/5070 被佔用怎麼辦?**
 改 `samples/<Host>/Properties/launchSettings.json` 的 `applicationUrl`。記得連帶調整:依賴它的 client(`QuickStart.Console` 的 `--endpoint` 旗標、`Maui.Demo` 的 endpoint 輸入欄位、`MauiProgram.DefaultEndpoint`)。
 
 **Q: 出現 `Could not locate 'Define/SystemSettings.xml' walking up from ...`?**
@@ -162,7 +162,7 @@ dotnet build samples/Bee.Samples.slnx
 Apple 平台 Release-mode Mono linker 會砍 `System.Xml.Serialization` 反射 fallback,導致 `FormSchema` 反序列化失敗。詳見 [`Maui.Demo/README.zh-TW.md`](Maui.Demo/README.zh-TW.md#啟動-demo)。
 
 **Q: 三個 host 同時跑會不會打架?**
-不會。三個 host port 不同(5050 / 5055 / 5060),各自有獨立的 `quickstart.db`,共用 `samples/Define/` 但只讀不寫。三個都跑 + Console + Maui 一起測試完全可行。
+不會。三個 host port 不同(5050 / 5055 / 5070),各自有獨立的 `quickstart.db`,共用 `samples/Define/` 但只讀不寫。三個都跑 + Console + Maui 一起測試完全可行。
 
 **Q: 改了 `src/` 下的 library,要怎麼反映到 demo?**
 重跑即可,`ProjectReference` 會自動 rebuild。不需要 `dotnet pack` / 也不需要清快取。

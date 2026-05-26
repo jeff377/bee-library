@@ -29,7 +29,7 @@ dotnet run                          # → http://localhost:5055
 
 # Option B — Blazor Wasm (same components, but in-browser + HTTP /api)
 cd samples/Blazor.Wasm.Demo.Host
-dotnet run                          # → http://localhost:5060
+dotnet run                          # → http://localhost:5070
 ```
 
 Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
@@ -54,7 +54,7 @@ Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
 | [`QuickStart.Console`](QuickStart.Console/README.md) | API client | — | `dotnet run` | Bee.Api.Client |
 | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) | Full-stack Blazor Server | `5055` | `dotnet run` | Bee.Web.Blazor.Server + Bee.Samples.Shared |
 | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) | In-browser Wasm components | — | (launched via `.Host`) | Bee.Web.Blazor.Wasm |
-| [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.md) | Wasm static files + API host | `5060` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
+| [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.md) | Wasm static files + API host | `5070` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
 | [`Maui.Demo`](Maui.Demo/README.md) | Native-app client | — (talks to 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
 | [`Web.Js.Demo`](Web.Js.Demo/README.md) | Pure-JS browser client | — (talks to 5050) | `open index.html` | (no .NET — vanilla HTML/JS) |
 | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | Shared backend wiring | — | (consumed by other demos) | Bee.Business + Bee.Db + Bee.Hosting + Bee.Api.Client |
@@ -139,7 +139,7 @@ Switching modes is a one-liner in `AddBeeBlazor` / `ApiClientInfo`:
 builder.Services.AddBeeBlazor(o => o.UseLocalProvider());
 
 // Remote
-builder.Services.AddBeeBlazor(o => o.UseRemoteProvider("http://host:5060/api"));
+builder.Services.AddBeeBlazor(o => o.UseRemoteProvider("http://host:5070/api"));
 ```
 
 ## Build all samples
@@ -152,7 +152,7 @@ dotnet build samples/Bee.Samples.slnx
 
 ## FAQ
 
-**Q: Port 5050 / 5055 / 5060 is already in use — what now?**
+**Q: Port 5050 / 5055 / 5070 is already in use — what now?**
 Edit `samples/<Host>/Properties/launchSettings.json` and change `applicationUrl`. Don't forget to update anything that points at that host: the `--endpoint` flag for `QuickStart.Console`, the endpoint field in `Maui.Demo`, and `MauiProgram.DefaultEndpoint`.
 
 **Q: I'm getting `Could not locate 'Define/SystemSettings.xml' walking up from ...`**
@@ -162,7 +162,7 @@ Run `dotnet run` from inside the bee-library checkout. Don't copy the built bina
 On Apple platforms the Release-mode Mono linker strips the `System.Xml.Serialization` reflection fallback, breaking `FormSchema` deserialization. See [`Maui.Demo/README.md`](Maui.Demo/README.md) for details.
 
 **Q: Can I run all three hosts at the same time without conflicts?**
-Yes. The three hosts listen on different ports (5050 / 5055 / 5060), each has its own `quickstart.db`, and they share `samples/Define/` read-only. Running all three plus the Console and MAUI demos in parallel is fully supported.
+Yes. The three hosts listen on different ports (5050 / 5055 / 5070), each has its own `quickstart.db`, and they share `samples/Define/` read-only. Running all three plus the Console and MAUI demos in parallel is fully supported.
 
 **Q: I edited code under `src/` — how do I see it in the demos?**
 Just re-run. `ProjectReference` rebuilds automatically. No `dotnet pack` and no cache flushing required.
