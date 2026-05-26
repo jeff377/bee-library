@@ -67,6 +67,16 @@ namespace Bee.UI.Maui.Controls
             set => SetValue(DataObjectProperty, value);
         }
 
+        /// <summary>
+        /// Rebuilds the form against the current <see cref="DataObject"/> and
+        /// <see cref="FormLayout"/>. Call this after mutating the
+        /// <see cref="FormDataObject"/>'s internal <c>DataSet</c> in place —
+        /// MAUI's <see cref="BindableProperty"/> only fires on reference
+        /// changes, so an in-place mutation does not trigger the propertyChanged
+        /// callback that would otherwise rebuild automatically.
+        /// </summary>
+        public void Refresh() => Rebuild();
+
         private void Rebuild()
         {
             var host = new VerticalStackLayout { Spacing = 8 };

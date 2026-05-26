@@ -416,9 +416,11 @@ namespace Bee.UI.Maui.Controls
 
         private void RefreshFormView()
         {
-            // Reassign DataObject so the DynamicForm rebuilds its inputs against
-            // the (possibly replaced) DataSet returned by the connector.
-            _form.DataObject = _dataObject;
+            // FormDataObject mutates its DataSet in place across New/Load/Save/Delete,
+            // so reassigning the same reference into DataObjectProperty would be a
+            // no-op (BindableProperty only fires propertyChanged on reference changes).
+            // Drive Rebuild explicitly instead.
+            _form.Refresh();
         }
 
         private void UpdateToolbarState()
