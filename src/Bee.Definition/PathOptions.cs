@@ -46,5 +46,11 @@ namespace Bee.Definition
         /// <param name="layoutId">The form layout ID.</param>
         public string GetFormLayoutFilePath(string layoutId)
             => System.IO.Path.Combine(DefinePath, "FormLayout", $"{layoutId}.FormLayout.xml");
+
+        /// <summary>Gets the absolute path of the Language XML for the given language code and namespace.</summary>
+        /// <param name="lang">The BCP-47 language code (e.g. <c>"zh-TW"</c>).</param>
+        /// <param name="ns">The resource namespace (matches file name stem; e.g. <c>"Common"</c>, <c>"Customer"</c>).</param>
+        public string GetLanguageFilePath(string lang, string ns)
+            => System.IO.Path.Combine(DefinePath, "Language", lang, $"{ns}.Language.xml");
     }
 }

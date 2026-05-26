@@ -74,5 +74,14 @@ namespace Bee.Definition.UnitTests
             var expected = Path.Combine(TestRoot, "FormLayout", "EmployeeDefault.FormLayout.xml");
             Assert.Equal(expected, paths.GetFormLayoutFilePath("EmployeeDefault"));
         }
+
+        [Fact]
+        [DisplayName("GetLanguageFilePath 應組合 Language/<lang>/<namespace>.Language.xml")]
+        public void GetLanguageFilePath_ValidInput_ReturnsExpectedPath()
+        {
+            var paths = new PathOptions { DefinePath = TestRoot };
+            var expected = Path.Combine(TestRoot, "Language", "zh-TW", "Customer.Language.xml");
+            Assert.Equal(expected, paths.GetLanguageFilePath("zh-TW", "Customer"));
+        }
     }
 }

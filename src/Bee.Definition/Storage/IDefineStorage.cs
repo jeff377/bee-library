@@ -1,5 +1,6 @@
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 namespace Bee.Definition.Storage
@@ -57,5 +58,18 @@ namespace Bee.Definition.Storage
         /// </summary>
         /// <param name="formLayout">The form layout.</param>
         void SaveFormLayout(FormLayout formLayout);
+
+        /// <summary>
+        /// Gets the language resource for the specified language and namespace.
+        /// </summary>
+        /// <param name="lang">The BCP-47 language code.</param>
+        /// <param name="ns">The resource namespace.</param>
+        LanguageResource? GetLanguage(string lang, string ns);
+
+        /// <summary>
+        /// Saves the language resource.
+        /// </summary>
+        /// <param name="resource">The language resource.</param>
+        void SaveLanguage(LanguageResource resource);
     }
 }

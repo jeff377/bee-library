@@ -5,6 +5,7 @@ using Bee.Db.Schema;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -124,6 +125,8 @@ namespace Bee.Db.UnitTests
             public void SaveFormSchema(FormSchema formSchema) => _inner.SaveFormSchema(formSchema);
             public FormLayout GetFormLayout(string layoutId) => _inner.GetFormLayout(layoutId);
             public void SaveFormLayout(FormLayout formLayout) => _inner.SaveFormLayout(formLayout);
+            public LanguageResource GetLanguage(string lang, string ns) => _inner.GetLanguage(lang, ns);
+            public void SaveLanguage(LanguageResource resource) => _inner.SaveLanguage(resource);
         }
     }
 }

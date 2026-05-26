@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching
 {
     /// <summary>
     /// Default <see cref="ICacheContainer"/> implementation: holds singleton instances of
-    /// the nine framework caches. Constructed once per host (registered as a Singleton in
+    /// the ten framework caches. Constructed once per host (registered as a Singleton in
     /// <c>AddBeeFramework</c>).
     /// </summary>
     /// <remarks>
@@ -48,6 +48,7 @@ namespace Bee.ObjectCaching
             TableSchema = new TableSchemaCache(storage, paths, CachePrefix);
             FormSchema = new FormSchemaCache(storage, paths, CachePrefix);
             FormLayout = new FormLayoutCache(storage, paths, CachePrefix);
+            LanguageResource = new LanguageResourceCache(storage, paths, CachePrefix);
             SessionInfo = new SessionInfoCache(CachePrefix);
             CompanyInfo = new CompanyInfoCache(CachePrefix);
         }
@@ -79,6 +80,9 @@ namespace Bee.ObjectCaching
 
         /// <inheritdoc/>
         public FormLayoutCache FormLayout { get; }
+
+        /// <inheritdoc/>
+        public LanguageResourceCache LanguageResource { get; }
 
         /// <inheritdoc/>
         public SessionInfoCache SessionInfo { get; }

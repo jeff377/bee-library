@@ -1,6 +1,7 @@
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -32,5 +33,7 @@ namespace Bee.Business.UnitTests.Fakes
         public void SaveFormSchema(FormSchema formSchema) => throw new NotImplementedException();
         public FormLayout GetFormLayout(string layoutId) => throw new NotImplementedException();
         public void SaveFormLayout(FormLayout formLayout) => throw new NotImplementedException();
+        public LanguageResource GetLanguage(string lang, string ns) => throw new NotImplementedException();
+        public void SaveLanguage(LanguageResource resource) => throw new NotImplementedException();
     }
 }

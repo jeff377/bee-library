@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -25,6 +26,8 @@ namespace Bee.ObjectCaching.UnitTests
             public FormSchema? GetFormSchema(string progId) => throw new NotImplementedException();
             public void SaveFormSchema(FormSchema formSchema) => throw new NotImplementedException();
             public void SaveFormLayout(FormLayout formLayout) => throw new NotImplementedException();
+            public LanguageResource? GetLanguage(string lang, string ns) => throw new NotImplementedException();
+            public void SaveLanguage(LanguageResource resource) => throw new NotImplementedException();
         }
 
         private static readonly PathOptions s_emptyPaths = new();

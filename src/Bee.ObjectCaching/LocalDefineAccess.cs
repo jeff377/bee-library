@@ -2,6 +2,7 @@ using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -78,6 +79,9 @@ namespace Bee.ObjectCaching
                 case DefineType.FormLayout:
                     ValidateKeys(defineType, keys, 1);
                     return this.GetFormLayout(keys![0]);
+                case DefineType.Language:
+                    ValidateKeys(defineType, keys, 2);
+                    return this.GetLanguage(keys![0], keys[1]);
                 default:
                     throw new NotSupportedException($"DefineType '{defineType}' is not supported.");
             }
@@ -124,6 +128,9 @@ namespace Bee.ObjectCaching
                     break;
                 case DefineType.FormLayout:
                     this.SaveFormLayout((defineObject as FormLayout)!);
+                    break;
+                case DefineType.Language:
+                    this.SaveLanguage((defineObject as LanguageResource)!);
                     break;
                 default:
                     throw new NotSupportedException();
@@ -283,6 +290,29 @@ namespace Bee.ObjectCaching
             // Save the form layout, then invalidate the cache
             _storage.SaveFormLayout(formLayout);
             _cache.FormLayout.Remove(formLayout.LayoutId);
+        }
+
+        /// <summary>
+        /// Gets the language resource for the specified language and namespace.
+        /// </summary>
+        /// <param name="lang">The BCP-47 language code.</param>
+        /// <param name="ns">The resource namespace.</param>
+        public LanguageResource GetLanguage(string lang, string ns)
+        {
+            return _cache.LanguageResource.Get(lang, ns)!;
+        }
+
+        /// <summary>
+        /// Saves the language resource.
+        /// </summary>
+        /// <param name="resource">The language resource.</param>
+        public void SaveLanguage(LanguageResource resource)
+        {
+            ArgumentNullException.ThrowIfNull(resource);
+
+            // Save the language resource, then invalidate the cache
+            _storage.SaveLanguage(resource);
+            _cache.LanguageResource.Remove(resource.Lang, resource.Namespace);
         }
     }
 }

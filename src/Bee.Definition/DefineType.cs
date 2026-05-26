@@ -32,6 +32,10 @@ namespace Bee.Definition
         /// <summary>
         /// Form layout configuration.
         /// </summary>
-        FormLayout
+        FormLayout,
+        /// <summary>
+        /// Language resource (localized text and enum entries for one namespace × one language).
+        /// </summary>
+        Language
     }
 }

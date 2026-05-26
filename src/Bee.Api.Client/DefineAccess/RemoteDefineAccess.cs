@@ -1,5 +1,6 @@
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using System.Text;
@@ -108,6 +109,9 @@ namespace Bee.Api.Client.DefineAccess
                 case DefineType.FormLayout:
                     ValidateKeys(defineType, keys, 1);
                     return this.GetFormLayout(keys![0]);
+                case DefineType.Language:
+                    ValidateKeys(defineType, keys, 2);
+                    return this.GetLanguage(keys![0], keys[1]);
                 default:
                     throw new NotSupportedException($"DefineType '{defineType}' is not supported.");
             }
@@ -258,6 +262,25 @@ namespace Bee.Api.Client.DefineAccess
         public void SaveFormLayout(FormLayout formLayout)
         {
             SaveDefine(DefineType.FormLayout, formLayout);
+        }
+
+        /// <summary>
+        /// Gets the language resource for the specified language and namespace.
+        /// </summary>
+        /// <param name="lang">The BCP-47 language code.</param>
+        /// <param name="ns">The resource namespace.</param>
+        public LanguageResource GetLanguage(string lang, string ns)
+        {
+            return GetDefine<LanguageResource>(DefineType.Language, new string[] { lang, ns });
+        }
+
+        /// <summary>
+        /// Saves the language resource.
+        /// </summary>
+        /// <param name="resource">The language resource.</param>
+        public void SaveLanguage(LanguageResource resource)
+        {
+            SaveDefine(DefineType.Language, resource, new string[] { resource.Lang, resource.Namespace });
         }
     }
 }
