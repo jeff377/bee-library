@@ -69,15 +69,16 @@ $('btn-leave-company').addEventListener('click', () =>
 
 function renderRowList(table) {
   const container = $('rowlist-container');
-  if (!table || !table.rows || table.rows.length === 0) {
+  if (!table?.rows?.length) {
     container.innerHTML = '<p class="hint">(no rows)</p>';
     return;
   }
 
   const cols = table.columns.map((c) => c.name);
-  const head = `<tr>${cols.map((n) => `<th>${n}</th>`).join('')}<th>Action</th></tr>`;
+  const headCells = cols.map((n) => `<th>${n}</th>`).join('');
+  const head = `<tr>${headCells}<th>Action</th></tr>`;
   const body = table.rows
-    .map((r, i) => {
+    .map((r) => {
       const cells = cols
         .map((n) => {
           const v = r.current[n];
@@ -87,7 +88,8 @@ function renderRowList(table) {
         })
         .join('');
       const rowId = r.current.SYS_ROWID ?? '';
-      return `<tr>${cells}<td><button data-rowid="${rowId}" class="fill-rowid">Fill Row ID</button></td></tr>`;
+      const actionCell = `<td><button data-rowid="${rowId}" class="fill-rowid">Fill Row ID</button></td>`;
+      return `<tr>${cells}${actionCell}</tr>`;
     })
     .join('');
 

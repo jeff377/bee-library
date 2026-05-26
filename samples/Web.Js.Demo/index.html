@@ -101,8 +101,8 @@
       Calls <code>System.Login</code>. The returned token is held in memory and
       automatically attached as <code>Authorization: Bearer</code> for subsequent calls.
     </p>
-    <p><label>User ID:</label><input id="userId" value="demo"></p>
-    <p><label>Password:</label><input id="password" type="password" value="demo"></p>
+    <p><label for="userId">User ID:</label><input id="userId" value="demo"></p>
+    <p><label for="password">Password:</label><input id="password" type="password" value="demo"></p>
     <p><button id="btn-login">Login</button></p>
     <p>Current token: <code id="token-display">(not logged in)</code></p>
   </section>
@@ -126,7 +126,7 @@
       <strong>does not require EnterCompany</strong>.
     </p>
     <p>
-      <label>Company ID:</label><input id="companyId" value="C001">
+      <label for="companyId">Company ID:</label><input id="companyId" value="C001">
       <button id="btn-enter-company">EnterCompany</button>
       <button id="btn-leave-company" class="secondary">LeaveCompany</button>
     </p>
@@ -146,7 +146,7 @@
     </p>
 
     <p>
-      <label>Row ID:</label><input id="rowId" class="rowid" placeholder="Click GetList, then use the table's Fill button">
+      <label for="rowId">Row ID:</label><input id="rowId" class="rowid" placeholder="Click GetList, then use the table's Fill button">
       <button id="btn-getdata">GetData</button>
       <button id="btn-delete" class="danger">Delete</button>
     </p>

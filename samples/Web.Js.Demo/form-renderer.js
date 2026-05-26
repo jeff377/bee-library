@@ -85,7 +85,11 @@ function getInputFromControl(el) {
 
 function setInputValue(input, value) {
   if (value === null || value === undefined) {
-    input.type === 'checkbox' ? (input.checked = false) : (input.value = '');
+    if (input.type === 'checkbox') {
+      input.checked = false;
+    } else {
+      input.value = '';
+    }
     return;
   }
   if (input.type === 'checkbox') {
@@ -207,6 +211,34 @@ function renderDetailGrid(detail) {
   return { wrap, table, tbody, columns: detail.columns || [] };
 }
 
+// ---- DataSet binding helpers ----------------------------------------------
+
+function bindMasterRow(row, controlsBySection) {
+  for (const { controlsByFieldName } of controlsBySection) {
+    for (const [fieldName, control] of Object.entries(controlsByFieldName)) {
+      const input = getInputFromControl(control);
+      const value = row.current[fieldName.toUpperCase()];
+      setInputValue(input, value);
+    }
+  }
+}
+
+function populateDetailGrid(grid, dataSet) {
+  grid.tbody.innerHTML = '';
+  const detailTable = dataSet.tables.find((t) => t.tableName === grid.tableName);
+  if (!detailTable?.rows) return;
+  for (const r of detailTable.rows) {
+    const tr = document.createElement('tr');
+    for (const col of grid.columns) {
+      const td = document.createElement('td');
+      const v = r.current[col.fieldName.toUpperCase()];
+      td.textContent = v === null || v === undefined ? '' : String(v);
+      tr.appendChild(td);
+    }
+    grid.tbody.appendChild(tr);
+  }
+}
+
 // ---- Public API -----------------------------------------------------------
 
 /**
@@ -238,33 +270,15 @@ export function renderFormLayout(layout, container) {
     _currentDataSet = dataSet;
     if (!dataSet?.tables) return;
 
-    const masterTable = dataSet.tables[0]; // master is always tables[0] per FormSchema convention
+    // master is always tables[0] per FormSchema convention
+    const masterTable = dataSet.tables[0];
     if (masterTable?.rows?.length > 0) {
-      const row = masterTable.rows[0];
-      for (const { controlsByFieldName } of masterControlsBySection) {
-        for (const [fieldName, control] of Object.entries(controlsByFieldName)) {
-          const input = getInputFromControl(control);
-          const value = row.current[fieldName.toUpperCase()];
-          setInputValue(input, value);
-        }
-      }
+      bindMasterRow(masterTable.rows[0], masterControlsBySection);
     }
 
     // Detail tables: clear + repopulate (read-only).
     for (const grid of detailGrids) {
-      grid.tbody.innerHTML = '';
-      const detailTable = dataSet.tables.find((t) => t.tableName === grid.tableName);
-      if (!detailTable?.rows) continue;
-      for (const r of detailTable.rows) {
-        const tr = document.createElement('tr');
-        for (const col of grid.columns) {
-          const td = document.createElement('td');
-          const v = r.current[col.fieldName.toUpperCase()];
-          td.textContent = v === null || v === undefined ? '' : String(v);
-          tr.appendChild(td);
-        }
-        grid.tbody.appendChild(tr);
-      }
+      populateDetailGrid(grid, dataSet);
     }
   }
 
@@ -274,7 +288,7 @@ export function renderFormLayout(layout, container) {
     }
     // Deep-clone the most recent DataSet so we do not mutate the in-memory copy
     // the caller might still inspect.
-    const ds = JSON.parse(JSON.stringify(_currentDataSet));
+    const ds = structuredClone(_currentDataSet);
     const masterTable = ds.tables[0];
     if (!masterTable?.rows?.length) {
       throw new Error('DataSet has no master row to save.');
