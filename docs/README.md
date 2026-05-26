@@ -43,6 +43,6 @@ This directory contains the public-facing developer documentation for the Bee.NE
 
 These folders are excluded from this README's main listing; consult them directly when needed:
 
-- **`adr/`** — Architecture Decision Records (ADR-001 through ADR-010+); design decisions with their rationale
+- **`adr/`** — Architecture Decision Records (ADR-001 through ADR-015+); design decisions with their rationale
 - **`plans/`** — Design / planning documents for in-progress or completed initiatives
 - **`repo-ops/`** — Operational documentation for this repository (CI / branch protection); not relevant to framework users
