@@ -94,17 +94,22 @@ Blazor / MAUI demo 的 Login 一律走 `demo / demo`:
 
 ```
 Define/
-├── SystemSettings.xml                       # 系統設定(IsDebugMode=true)
+├── SystemSettings.xml                       # 系統設定(IsDebugMode=true、MasterKeySource=Environment)
 ├── DbCategorySettings.xml                   # 一個 common category
 ├── DatabaseSettings.xml                     # SQLite local DB(quickstart.db)
 ├── FormSchema/
 │   └── Employee.FormSchema.xml              # master-detail 示範(員工 + 員工電話)
-├── TableSchema/
-│   └── common/
-│       ├── ft_employee.TableSchema.xml
-│       └── ft_employee_phone.TableSchema.xml
-└── Master.key                               # ⚠ 首次執行自動生成、被 .gitignore
+└── TableSchema/
+    └── common/
+        ├── ft_employee.TableSchema.xml
+        └── ft_employee_phone.TableSchema.xml
 ```
+
+## Master key
+
+`SystemSettings.xml` 預設 `MasterKeySource.Type = Environment`、`Value = BEE_MASTER_KEY`,所以每個 demo host 都從環境變數讀加密 master key。[`DemoBackend.AddBeeBackend`](Bee.Samples.Shared/DemoBackend.cs) 在 `BEE_MASTER_KEY` 未設時會自動注入一個固定 demo 值(`DemoCredentials.DemoMasterKey`),fresh clone 可零設定直接跑,且 `quickstart.db` 跨 run 的加密內容仍能正常解密。
+
+> **Production host 必須覆寫 demo master key。** demo 常數會進 git 公開,僅供 demo 使用。真實部署必須在 process 啟動「之前」由部署機制(K8s Secret、env file、Vault、AWS Secrets Manager…)把 `BEE_MASTER_KEY` 設為真實 secret;bootstrap 僅在變數未設時才填值,外部已注入的值會被保留。
 
 ## 首次執行自動生成的檔案
 
@@ -112,12 +117,11 @@ Define/
 
 | 檔案 | 由誰建立 | 內容 | gitignore 規則 |
 |------|----------|------|----------------|
-| `samples/Define/Master.key` | `AddBeeFramework(autoCreateMasterKey: true)` | 機器專屬主金鑰,加密所有 payload 用 | `samples/Define/Master.key` |
 | `samples/<Host>/quickstart.db` | [`DemoSchemaSeeder`](Bee.Samples.Shared/DemoSchemaSeeder.cs) | SQLite,含 `ft_employee` + `ft_employee_phone` 兩張表與 3 筆 demo 資料(Alice / Bob / Carol) | `/samples/**/*.db` |
 
 > 三個 host(`QuickStart.Server` / `Blazor.Server.Demo` / `Blazor.Wasm.Demo.Host`)**各有自己的 `quickstart.db`**,不會互相干擾。同一個 host 重跑會沿用既有資料(schema 建立與 seed 都是 idempotent)。
 
-要重置:直接刪 `samples/<Host>/quickstart.db` 重跑即可。要重置 master key:刪 `samples/Define/Master.key` 並一併刪所有 `quickstart.db`(舊資料是用舊 key 加密的;保留舊 db 會解不開)。
+要重置 demo 資料:直接刪 `samples/<Host>/quickstart.db` 重跑即可。要輪換 demo master key:改 `DemoCredentials.DemoMasterKey`(或在外部把 `BEE_MASTER_KEY` 設成新值)並一併刪所有 `quickstart.db`(舊資料用舊 key 加密,留著會解不開)。
 
 ## Local vs Remote 派遣模式
 

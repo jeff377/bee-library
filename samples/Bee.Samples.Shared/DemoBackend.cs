@@ -33,6 +33,14 @@ public static class DemoBackend
     {
         ArgumentNullException.ThrowIfNull(builder);
 
+        // Demo-only: ensure a master key is available so the bundled demos can run
+        // with zero setup. Production hosts MUST set BEE_MASTER_KEY via the real
+        // deployment mechanism (K8s Secret, env file, Vault, etc.) — see README.
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BEE_MASTER_KEY")))
+        {
+            Environment.SetEnvironmentVariable("BEE_MASTER_KEY", DemoCredentials.DemoMasterKey);
+        }
+
         var paths = new PathOptions { DefinePath = ResolveDefinePath() };
 
         // SQLite providers — keep dialect registration explicit so the framework does

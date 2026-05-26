@@ -1,7 +1,5 @@
 using Bee.Base;
 using Bee.Definition;
-using Bee.Definition.Security;
-using Bee.Definition.Settings;
 using Bee.Definition.Storage;
 using Bee.Hosting;
 using Bee.ObjectCaching;
@@ -24,6 +22,15 @@ namespace Bee.Tests.Shared
         private static bool _initialized;
 
         /// <summary>
+        /// Hard-coded Base64 AES-CBC-HMAC combined key (64 bytes) used by the test
+        /// process when <c>BEE_MASTER_KEY</c> is not set in the environment. Kept
+        /// independent from <c>DemoCredentials.DemoMasterKey</c> so test runs and
+        /// sample runs cannot leak encrypted state into one another.
+        /// </summary>
+        private const string TestMasterKey =
+            "oQGvs51A0u5Rn8RPJPkQ9xqXevf451mDHpsaJR7nN8WCM0X0zskVqTqDQBtSpSq8MdvmfKUPKAulOJShd9KDXg==";
+
+        /// <summary>
         /// 首次呼叫時觸發 process-wide 靜態 wire-up；後續呼叫直接 return。
         /// </summary>
         public static void EnsureInitialized()
@@ -39,6 +46,15 @@ namespace Bee.Tests.Shared
 
         private static void InitializeOnce()
         {
+            // 確保 BEE_MASTER_KEY 在任何測試 class 構造前完成設定：bootstrap 一開頭就 set，
+            // 避免 SystemSettings 預設 MasterKeySource.Type=Environment 但 env var 未設時
+            // MasterKeyProvider 拋例外。Production-like 環境會在外部 inject；此 fallback 只
+            // 在 test process 內生效。
+            if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("BEE_MASTER_KEY")))
+            {
+                Environment.SetEnvironmentVariable("BEE_MASTER_KEY", TestMasterKey);
+            }
+
             var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
             var pathOptions = new PathOptions
             {
@@ -56,19 +72,10 @@ namespace Bee.Tests.Shared
             SharedDatabaseState.EnsureRegistered(bootstrapAccess);
 
             // 系統初始化：boot-time 讀檔走 SystemSettingsLoader（不依賴 IDefineAccess）。
+            // tests/Define/SystemSettings.xml 已將 MasterKeySource.Type 設為 Environment、
+            // Value 設為 BEE_MASTER_KEY，配合本方法開頭的 env var 注入即可解密 payload。
             var settings = SystemSettingsLoader.Load(pathOptions);
             settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
-            // CI 環境改用環境變數作為 MasterKey 來源，避免在 tests/Define/ 下建立 Master.key
-            // 汙染 MasterKeyProviderTests.GetMasterKey_EmptyFilePath_UsesDefaultFileName 等
-            // 預期「DefinePath 下無 Master.key」的測試。
-            if (string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                settings.BackendConfiguration.SecurityKeySettings.MasterKeySource = new MasterKeySource
-                {
-                    Type = MasterKeySourceType.Environment,
-                    Value = "BEE_TEST_FIXTURE_MASTER_KEY"
-                };
-            }
             SysInfo.Initialize(settings.CommonConfiguration);
 
             // 用 AddBeeFramework 建 DI 容器。Phase 7 後框架不再有 process-wide 靜態 facade，

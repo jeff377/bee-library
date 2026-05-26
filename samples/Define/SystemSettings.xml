@@ -21,8 +21,8 @@
     </LogOptions>
     <SecurityKeySettings>
       <MasterKeySource>
-        <Type>File</Type>
-        <Value>Master.key</Value>
+        <Type>Environment</Type>
+        <Value>BEE_MASTER_KEY</Value>
       </MasterKeySource>
     </SecurityKeySettings>
     <Components>

@@ -10,12 +10,12 @@ namespace Bee.Definition.UnitTests.Settings
     public class MasterKeySourceTests
     {
         [Fact]
-        [DisplayName("預設建構子應以 Type=File、Value=空字串 初始化")]
+        [DisplayName("預設建構子應以 Type=Environment、Value=空字串 初始化")]
         public void DefaultConstructor_InitializesDefaults()
         {
             var source = new MasterKeySource();
 
-            Assert.Equal(MasterKeySourceType.File, source.Type);
+            Assert.Equal(MasterKeySourceType.Environment, source.Type);
             Assert.Equal(string.Empty, source.Value);
         }
 

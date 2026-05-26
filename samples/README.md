@@ -94,17 +94,22 @@ These are matched in [`DemoAuthenticatingSystemBusinessObject`](Bee.Samples.Shar
 
 ```
 Define/
-├── SystemSettings.xml                       # System settings (IsDebugMode=true)
+├── SystemSettings.xml                       # System settings (IsDebugMode=true; MasterKeySource=Environment)
 ├── DbCategorySettings.xml                   # One "common" category
 ├── DatabaseSettings.xml                     # SQLite local DB (quickstart.db)
 ├── FormSchema/
 │   └── Employee.FormSchema.xml              # Master-detail demo (employee + employee phones)
-├── TableSchema/
-│   └── common/
-│       ├── ft_employee.TableSchema.xml
-│       └── ft_employee_phone.TableSchema.xml
-└── Master.key                               # ⚠ Auto-generated on first run; gitignored
+└── TableSchema/
+    └── common/
+        ├── ft_employee.TableSchema.xml
+        └── ft_employee_phone.TableSchema.xml
 ```
+
+## Master key
+
+`SystemSettings.xml` ships with `MasterKeySource.Type = Environment` and `Value = BEE_MASTER_KEY`, so each demo host reads the encryption master key from the environment. [`DemoBackend.AddBeeBackend`](Bee.Samples.Shared/DemoBackend.cs) injects a fixed demo value (`DemoCredentials.DemoMasterKey`) when `BEE_MASTER_KEY` is unset, so a fresh clone runs with zero setup and `quickstart.db` rows encrypted on one run keep decrypting on the next.
+
+> **Production hosts must override the demo master key.** The demo constant is committed to source and intended only for demos. Set `BEE_MASTER_KEY` from a deployment-managed secret (K8s Secret, env file, Vault, AWS Secrets Manager, …) **before** the process starts — the bootstrap only fills the variable when it is unset, so any externally injected value is preserved.
 
 ## Files generated on first run
 
@@ -112,12 +117,11 @@ The files below are **not** in git — they are runtime artifacts. A fresh clone
 
 | File | Created by | Contents | gitignore rule |
 |------|------------|----------|----------------|
-| `samples/Define/Master.key` | `AddBeeFramework(autoCreateMasterKey: true)` | Machine-local master key used to encrypt every payload | `samples/Define/Master.key` |
 | `samples/<Host>/quickstart.db` | [`DemoSchemaSeeder`](Bee.Samples.Shared/DemoSchemaSeeder.cs) | SQLite with `ft_employee` + `ft_employee_phone` and 3 demo rows (Alice / Bob / Carol) | `/samples/**/*.db` |
 
 > The three hosts (`QuickStart.Server` / `Blazor.Server.Demo` / `Blazor.Wasm.Demo.Host`) **each get their own `quickstart.db`** and don't interfere with each other. Re-running the same host reuses existing data (both schema creation and seeding are idempotent).
 
-To reset: delete `samples/<Host>/quickstart.db` and re-run. To rotate the master key: delete `samples/Define/Master.key` **and** every `quickstart.db` (existing rows are encrypted with the old key — keeping them around would yield decryption failures).
+To reset demo data: delete `samples/<Host>/quickstart.db` and re-run. To rotate the demo master key: change `DemoCredentials.DemoMasterKey` (or set `BEE_MASTER_KEY` to a different value externally) **and** delete every `quickstart.db` — existing rows are encrypted with the old key and would yield decryption failures otherwise.
 
 ## Local vs Remote dispatch
 

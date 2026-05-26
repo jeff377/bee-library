@@ -1,6 +1,5 @@
 using Bee.Db.Manager;
 using Bee.Definition;
-using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -78,16 +77,10 @@ namespace Bee.Tests.Shared
             var settings = SystemSettingsLoader.Load(paths);
             settings.BackendConfiguration.Components.BusinessObjectFactory = BackendDefaultTypes.BusinessObjectFactory;
 
-            // CI uses an environment variable instead of a file-backed master key so that
-            // MasterKeyProviderTests assertions about "DefinePath has no Master.key" hold.
-            if (string.Equals(Environment.GetEnvironmentVariable("CI"), "true", StringComparison.OrdinalIgnoreCase))
-            {
-                settings.BackendConfiguration.SecurityKeySettings.MasterKeySource = new MasterKeySource
-                {
-                    Type = MasterKeySourceType.Environment,
-                    Value = "BEE_TEST_FIXTURE_MASTER_KEY"
-                };
-            }
+            // tests/Define/SystemSettings.xml 預設 MasterKeySource.Type=Environment、
+            // Value=BEE_MASTER_KEY。TestProcessBootstrap 已於 process 啟動時為缺值的
+            // BEE_MASTER_KEY 注入 hardcoded TestMasterKey,所以 fixture 不需要再額外
+            // 覆寫 MasterKeySource。
 
             _configureBackend?.Invoke(settings.BackendConfiguration);
 

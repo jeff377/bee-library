@@ -13,8 +13,16 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Master key source type.
         /// </summary>
+        /// <remarks>
+        /// Defaults to <see cref="MasterKeySourceType.Environment"/> so production hosts
+        /// follow the 12-factor "config in env" principle out of the box. Container /
+        /// Kubernetes / cloud-function deployments only need to inject
+        /// <c>BEE_MASTER_KEY</c>; no extra volume mount or build step is required.
+        /// Existing deployments with an explicit <c>&lt;Type&gt;File&lt;/Type&gt;</c>
+        /// in <c>SystemSettings.xml</c> are unaffected.
+        /// </remarks>
         [Description("Master key source type.")]
-        public MasterKeySourceType Type { get; set; } = MasterKeySourceType.File;
+        public MasterKeySourceType Type { get; set; } = MasterKeySourceType.Environment;
 
         /// <summary>
         /// Source parameter value: file path or environment variable name.

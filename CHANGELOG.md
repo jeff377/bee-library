@@ -7,6 +7,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **`MasterKeySource` default changed to `Environment`** — new installations now default to reading the master key from `$BEE_MASTER_KEY` instead of a `Master.key` file under `DefinePath`. Aligns with the 12-factor "config in env" principle so container / Kubernetes / cloud-function hosts can inject the key directly without mounting a secret volume. Existing deployments with an explicit `<Type>File</Type>` in `SystemSettings.xml` are unaffected. To migrate an existing host: set `BEE_MASTER_KEY` to the Base64 content of the current `Master.key`, then update `SystemSettings.xml` to `<Type>Environment</Type><Value>BEE_MASTER_KEY</Value>`.
+
 ## [4.5.0]
 
 > Bee.NET remains in pre-stable evolution. This release introduces three frontend package layers (`Bee.UI.Core` cross-platform shared layer, `Bee.UI.Maui` MAUI mobile/desktop controls, `Bee.Web.Blazor.Server` / `Bee.Web.Blazor.Wasm` Blazor RCLs) and flips the API connector interfaces to async-only. Under strict SemVer the signature changes would be a major bump; under the pre-stable policy it ships as a minor.

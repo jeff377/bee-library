@@ -52,6 +52,14 @@ namespace Bee.Hosting.UnitTests
                 string encryptedApiKey = EncryptionKeyProtector.GenerateEncryptedKey(masterKey);
 
                 var configuration = new BackendConfiguration();
+                // 此測試自己準備 Master.key 檔案,需要明確指定 File 來源覆寫
+                // MasterKeySource 預設值(Environment)——否則框架會讀環境變數 BEE_MASTER_KEY,
+                // 與本測試剛產生的 masterKey 對不上而 HMAC 驗證失敗。
+                configuration.SecurityKeySettings.MasterKeySource = new MasterKeySource
+                {
+                    Type = MasterKeySourceType.File,
+                    Value = "Master.key"
+                };
                 configuration.SecurityKeySettings.ApiEncryptionKey = encryptedApiKey;
                 configuration.Components.ApiEncryptionKeyProvider =
                     "Bee.Business.Providers.StaticApiEncryptionKeyProvider, Bee.Business";

@@ -6,6 +6,12 @@
 
 格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-TW/1.1.0/)，版本號採用 [語意化版本](https://semver.org/lang/zh-TW/)。
 
+## [Unreleased]
+
+### 變更
+
+- **`MasterKeySource` 預設改為 `Environment`** — 新部署一律從環境變數 `$BEE_MASTER_KEY` 讀取 master key,不再於 `DefinePath` 下產生 `Master.key` 檔案。對齊 12-factor 「config in env」原則,使 container / Kubernetes / cloud function 等 host 可直接注入金鑰,不需額外 mount secret volume。既有部署若 `SystemSettings.xml` 已明確設定 `<Type>File</Type>` 不受影響;要遷移既有 host:把現有 `Master.key` 的 Base64 內容 set 給 `BEE_MASTER_KEY`,並把 `SystemSettings.xml` 改為 `<Type>Environment</Type><Value>BEE_MASTER_KEY</Value>`。
+
 ## [4.5.0]
 
 > Bee.NET 仍處於 pre-stable 演進階段。本次新增三層前端套件（`Bee.UI.Core` 跨平台共通層、`Bee.UI.Maui` MAUI 行動／桌面控制項、`Bee.Web.Blazor.Server` / `Bee.Web.Blazor.Wasm` 兩個 Blazor RCL），並把 API connector 介面整批轉為 async-only。介面簽名變動由嚴格 SemVer 觀點屬 major，pre-stable 政策下以 minor 發佈。

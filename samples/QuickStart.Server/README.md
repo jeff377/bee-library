@@ -21,10 +21,18 @@ The host listens on `http://localhost:5050`; the JSON-RPC endpoint is `POST /api
 On first startup it will:
 
 1. Load `SystemSettings.xml` / `DbCategorySettings.xml` / `DatabaseSettings.xml` from `samples/Define/`
-2. Auto-generate a master key at `samples/Define/Master.key` (gitignored)
+2. Use the master key from the `BEE_MASTER_KEY` environment variable. The demo bootstrap (`DemoBackend.AddBeeBackend`) auto-injects a hard-coded demo value when the variable is unset, so a fresh clone runs with zero setup.
 3. Create `quickstart.db` in the working directory (gitignored)
 
 The console should print `Now listening on: http://localhost:5050`.
+
+> **Production hosts must override the demo master key.** The hard-coded demo
+> value lives in `Bee.Samples.Shared.DemoCredentials.DemoMasterKey` and is
+> committed to source — it is intended only for demos. Real deployments must
+> set `BEE_MASTER_KEY` to a deployment-managed secret (K8s Secret, env file,
+> Vault, AWS Secrets Manager, …) **before** the process starts; the bootstrap
+> only fills the variable when it is unset, so an externally injected value is
+> always preserved.
 
 ## What this maps to in the library
 
