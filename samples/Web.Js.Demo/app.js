@@ -70,12 +70,12 @@ $('btn-leave-company').addEventListener('click', () =>
 function renderRowList(table) {
   const container = $('rowlist-container');
   if (!table || !table.rows || table.rows.length === 0) {
-    container.innerHTML = '<p class="hint">(無資料)</p>';
+    container.innerHTML = '<p class="hint">(no rows)</p>';
     return;
   }
 
   const cols = table.columns.map((c) => c.name);
-  const head = `<tr>${cols.map((n) => `<th>${n}</th>`).join('')}<th>動作</th></tr>`;
+  const head = `<tr>${cols.map((n) => `<th>${n}</th>`).join('')}<th>Action</th></tr>`;
   const body = table.rows
     .map((r, i) => {
       const cells = cols
@@ -87,7 +87,7 @@ function renderRowList(table) {
         })
         .join('');
       const rowId = r.current.SYS_ROWID ?? '';
-      return `<tr>${cells}<td><button data-rowid="${rowId}" class="fill-rowid">填入 RowId</button></td></tr>`;
+      return `<tr>${cells}<td><button data-rowid="${rowId}" class="fill-rowid">Fill Row ID</button></td></tr>`;
     })
     .join('');
 
@@ -112,7 +112,7 @@ $('btn-getnewdata').addEventListener('click', () =>
 $('btn-getdata').addEventListener('click', () => {
   const rowId = $('rowId').value.trim();
   if (!rowId) {
-    log('GetData', '(請先輸入 Row ID)');
+    log('GetData', '(enter a Row ID first)');
     return;
   }
   run('Employee.GetData', () => employee.getData(rowId));
@@ -131,7 +131,7 @@ $('btn-insert-sample').addEventListener('click', async () => {
   const dataSet = newResult.dataSet;
   const masterTable = dataSet.tables.find((t) => t.tableName === 'Employee');
   if (!masterTable || masterTable.rows.length === 0) {
-    log('Insert Sample', '(GetNewData 沒回 Employee table，跳過 Save)');
+    log('Insert Sample', '(GetNewData returned no Employee table, skipping Save)');
     return;
   }
 
@@ -148,13 +148,13 @@ $('btn-insert-sample').addEventListener('click', async () => {
 $('btn-delete').addEventListener('click', () => {
   const rowId = $('rowId').value.trim();
   if (!rowId) {
-    log('Delete', '(請先輸入 Row ID)');
+    log('Delete', '(enter a Row ID first)');
     return;
   }
   run('Employee.Delete', () => employee.delete(rowId));
 });
 
-// ---------- Section 6: FormDefinition-driven rendering ----------
+// ---------- Section 5: FormDefinition-driven rendering ----------
 
 let _formController = null;
 
@@ -179,7 +179,7 @@ $('btn-load-formdef').addEventListener('click', async () => {
 
 $('btn-form-new').addEventListener('click', async () => {
   if (!_formController) {
-    log('Form New', '(請先點「Load Form Definition」)');
+    log('Form New', '(click "Load Form Definition" first)');
     return;
   }
   try {
@@ -193,12 +193,12 @@ $('btn-form-new').addEventListener('click', async () => {
 
 $('btn-form-load').addEventListener('click', async () => {
   if (!_formController) {
-    log('Form Load', '(請先點「Load Form Definition」)');
+    log('Form Load', '(click "Load Form Definition" first)');
     return;
   }
   const rowId = $('rowId').value.trim();
   if (!rowId) {
-    log('Form Load', '(請先輸入 Row ID — 區塊 4 內)');
+    log('Form Load', '(enter a Row ID in section 4 first)');
     return;
   }
   try {
@@ -212,7 +212,7 @@ $('btn-form-load').addEventListener('click', async () => {
 
 $('btn-form-save').addEventListener('click', async () => {
   if (!_formController) {
-    log('Form Save', '(請先點「Load Form Definition」)');
+    log('Form Save', '(click "Load Form Definition" first)');
     return;
   }
   try {
@@ -227,16 +227,16 @@ $('btn-form-save').addEventListener('click', async () => {
   }
 });
 
-// ---------- Section 7: Logout ----------
+// ---------- Section 6: Logout ----------
 
 $('btn-logout').addEventListener('click', async () => {
   await run('Logout', () => systemApi.logout());
   clearAccessToken();
-  $('token-display').textContent = '(已登出)';
+  $('token-display').textContent = '(logged out)';
 });
 
 // ---------- Clear output ----------
 
 $('btn-clear').addEventListener('click', () => {
-  $('result').textContent = '(已清除)';
+  $('result').textContent = '(cleared)';
 });

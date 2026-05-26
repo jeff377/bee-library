@@ -4,7 +4,7 @@
     <DatabaseItem
         Id="common"
         CategoryId="common"
-        DisplayName="共用資料庫 (SQLite)"
+        DisplayName="Common Database (SQLite)"
         DatabaseType="SQLite"
         ConnectionString="Data Source=quickstart.db;Cache=Shared" />
   </Items>

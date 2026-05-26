@@ -51,7 +51,7 @@ const CONTROL_FACTORIES = {
     sel.dataset.fieldName = field.fieldName;
     const opt = document.createElement('option');
     opt.value = '';
-    opt.textContent = '(無資料源)';
+    opt.textContent = '(no data source)';
     sel.appendChild(opt);
     return sel;
   },
@@ -179,7 +179,7 @@ function renderDetailGrid(detail) {
   wrap.style.marginBottom = '1em';
 
   const h = document.createElement('h3');
-  h.textContent = `${detail.caption || detail.tableName}（明細，唯讀）`;
+  h.textContent = `${detail.caption || detail.tableName} (detail, read-only)`;
   h.style.margin = '0.5em 0 0.4em';
   h.style.fontSize = '1em';
   h.style.color = '#1e3a8a';

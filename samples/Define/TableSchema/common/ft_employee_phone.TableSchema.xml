@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="ft_employee_phone" DisplayName="員工電話">
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="ft_employee_phone" DisplayName="Employee Phones">
   <Fields>
-    <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
-    <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
-    <DbField FieldName="sys_master_rowid" Caption="主檔唯一識別" DbType="Guid" />
-    <DbField FieldName="phone_type" Caption="電話類型" DbType="String" Length="20" />
-    <DbField FieldName="phone_no" Caption="電話號碼" DbType="String" Length="30" />
+    <DbField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+    <DbField FieldName="sys_master_rowid" Caption="Master Row ID" DbType="Guid" />
+    <DbField FieldName="phone_type" Caption="Phone Type" DbType="String" Length="20" />
+    <DbField FieldName="phone_no" Caption="Phone Number" DbType="String" Length="30" />
   </Fields>
   <Indexes>
     <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">

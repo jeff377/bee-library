@@ -48,12 +48,12 @@ flow:
       - "Ping"
       - "Enter Company"
       - "Employee CRUD"
-      - "FormDefinition"            # 區塊 6 標題
-      - "Load Form Definition"      # 區塊 6 主要按鈕
+      - "FormDefinition"            # section 5 heading
+      - "Load Form Definition"      # section 5 primary button
       - "Logout"
       - "demo"
     save_as: web-js-demo-loaded.png
 
 teardown:
-  kill_app: false                 # 不殺 Safari，避免關掉使用者其他分頁
+  kill_app: false                 # don't kill Safari — would close the user's other tabs
   kill_prerequisites: true

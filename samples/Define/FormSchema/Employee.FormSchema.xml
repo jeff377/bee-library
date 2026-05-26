@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Employee" DisplayName="員工" CategoryId="common" ListFields="sys_id,sys_name,hire_date">
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Employee" DisplayName="Employee" CategoryId="common" ListFields="sys_id,sys_name,hire_date">
   <Tables>
-    <FormTable TableName="Employee" DbTableName="ft_employee" DisplayName="員工">
+    <FormTable TableName="Employee" DbTableName="ft_employee" DisplayName="Employee">
       <Fields>
-        <FormField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
-        <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
-        <FormField FieldName="sys_id" Caption="員工編號" DbType="String" />
-        <FormField FieldName="sys_name" Caption="員工姓名" DbType="String" />
-        <FormField FieldName="hire_date" Caption="到職日" DbType="Date" />
-        <FormField FieldName="is_active" Caption="在職中" DbType="Boolean" />
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+        <FormField FieldName="sys_id" Caption="Employee ID" DbType="String" />
+        <FormField FieldName="sys_name" Caption="Employee Name" DbType="String" />
+        <FormField FieldName="hire_date" Caption="Hire Date" DbType="Date" />
+        <FormField FieldName="is_active" Caption="Active" DbType="Boolean" />
       </Fields>
     </FormTable>
-    <FormTable TableName="EmployeePhone" DbTableName="ft_employee_phone" DisplayName="員工電話">
+    <FormTable TableName="EmployeePhone" DbTableName="ft_employee_phone" DisplayName="Employee Phones">
       <Fields>
-        <FormField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
-        <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
-        <FormField FieldName="sys_master_rowid" Caption="主檔唯一識別" DbType="Guid" />
-        <FormField FieldName="phone_type" Caption="電話類型" DbType="String" />
-        <FormField FieldName="phone_no" Caption="電話號碼" DbType="String" />
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+        <FormField FieldName="sys_master_rowid" Caption="Master Row ID" DbType="Guid" />
+        <FormField FieldName="phone_type" Caption="Phone Type" DbType="String" />
+        <FormField FieldName="phone_no" Caption="Phone Number" DbType="String" />
       </Fields>
     </FormTable>
   </Tables>

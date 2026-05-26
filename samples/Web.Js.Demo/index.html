@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -91,55 +91,62 @@
   <h1>Bee.NET JSON-RPC JavaScript Demo</h1>
 
   <p>
-    後端 endpoint：<code id="endpoint">...</code><br>
-    預設帳密：<code>demo</code> / <code>demo</code>
+    Backend endpoint: <code id="endpoint">...</code><br>
+    Default credentials: <code>demo</code> / <code>demo</code>
   </p>
 
   <section>
-    <h2>1. Login（取得 AccessToken）</h2>
-    <p class="hint">送 <code>System.Login</code>；token 存進記憶體後自動帶入後續呼叫的 <code>Authorization: Bearer</code>。</p>
-    <p><label>User ID：</label><input id="userId" value="demo"></p>
-    <p><label>Password：</label><input id="password" type="password" value="demo"></p>
+    <h2>1. Login (get AccessToken)</h2>
+    <p class="hint">
+      Calls <code>System.Login</code>. The returned token is held in memory and
+      automatically attached as <code>Authorization: Bearer</code> for subsequent calls.
+    </p>
+    <p><label>User ID:</label><input id="userId" value="demo"></p>
+    <p><label>Password:</label><input id="password" type="password" value="demo"></p>
     <p><button id="btn-login">Login</button></p>
-    <p>當前 Token：<code id="token-display">(尚未登入)</code></p>
+    <p>Current token: <code id="token-display">(not logged in)</code></p>
   </section>
 
   <section>
-    <h2>2. Ping（驗證 wire format）</h2>
-    <p class="hint">送 <code>System.Ping</code>；不需 AccessToken，任何時候都可呼叫。</p>
+    <h2>2. Ping (verify wire format)</h2>
+    <p class="hint">
+      Calls <code>System.Ping</code>. No AccessToken required &mdash; safe to call
+      at any time to verify the server is reachable.
+    </p>
     <p><button id="btn-ping">Ping</button></p>
   </section>
 
   <section>
-    <h2>3. Enter Company（示範錯誤路徑）</h2>
+    <h2>3. Enter Company (error-path demo)</h2>
     <p class="hint">
-      送 <code>System.EnterCompany</code>。預設 demo 後端沒有 seed
-      <code>st_company</code> / <code>st_user_company</code>，這個呼叫
-      <strong>預期會回錯誤</strong>（用來驗證錯誤處理流程）。
-      Employee CRUD 走 Common scope，<strong>不需要先 EnterCompany 也能跑</strong>。
+      Calls <code>System.EnterCompany</code>. The default demo backend does not
+      seed <code>st_company</code> / <code>st_user_company</code>, so this call
+      <strong>is expected to return an error</strong> &mdash; useful for exercising
+      the error-handling path. Employee CRUD lives in the Common scope and
+      <strong>does not require EnterCompany</strong>.
     </p>
     <p>
-      <label>Company ID：</label><input id="companyId" value="C001">
+      <label>Company ID:</label><input id="companyId" value="C001">
       <button id="btn-enter-company">EnterCompany</button>
       <button id="btn-leave-company" class="secondary">LeaveCompany</button>
     </p>
   </section>
 
   <section>
-    <h2>4. Employee CRUD（FormBO 5 個方法）</h2>
+    <h2>4. Employee CRUD (5 FormBO methods)</h2>
     <p class="hint">
-      progId = <code>Employee</code>，schema 見
-      <code>samples/Define/FormSchema/Employee.FormSchema.xml</code>。
+      progId = <code>Employee</code>. Schema at
+      <code>samples/Define/FormSchema/Employee.FormSchema.xml</code>.
     </p>
 
     <p>
       <button id="btn-getlist">GetList</button>
-      <button id="btn-getnewdata">GetNewData（空白 DataSet）</button>
-      <button id="btn-insert-sample">Insert Sample（GetNewData → Save）</button>
+      <button id="btn-getnewdata">GetNewData (blank DataSet)</button>
+      <button id="btn-insert-sample">Insert Sample (GetNewData &rarr; Save)</button>
     </p>
 
     <p>
-      <label>Row ID：</label><input id="rowId" class="rowid" placeholder="點 GetList 後從表格的「填入」按鈕貼回">
+      <label>Row ID:</label><input id="rowId" class="rowid" placeholder="Click GetList, then use the table's Fill button">
       <button id="btn-getdata">GetData</button>
       <button id="btn-delete" class="danger">Delete</button>
     </p>
@@ -148,38 +155,39 @@
   </section>
 
   <section>
-    <h2>6. FormDefinition-driven 渲染（端到端 demo）</h2>
+    <h2>5. FormDefinition-driven rendering (end-to-end demo)</h2>
     <p class="hint">
-      用 <code>System.GetFormSchema</code> + <code>System.GetFormLayout</code>
-      拿到 schema-driven 渲染所需的 JSON，動態產生 Employee 表單，並串通
-      GetData / GetNewData / Save 三個 CRUD 操作。
+      Fetches <code>System.GetFormSchema</code> + <code>System.GetFormLayout</code>
+      to get the JSON needed for schema-driven rendering, builds an Employee
+      form dynamically, and wires up GetData / GetNewData / Save end-to-end.
     </p>
     <p class="hint">
-      <strong>不做客戶端驗證</strong>：依賴 server Save 失敗時的 <code>RpcError</code>，
-      要顯示驗證錯誤就看下方輸出區的 message。
-      Detail 表（如員工電話）只唯讀渲染。
+      <strong>No client-side validation</strong>: the demo relies on
+      <code>RpcError</code> from a failed Save and surfaces the message in the
+      output panel below. Detail tables (e.g. employee phones) render
+      read-only.
     </p>
     <p>
       <button id="btn-load-formdef">Load Form Definition (Employee)</button>
-      <button id="btn-form-new">New (Empty)</button>
-      <button id="btn-form-load">Load by RowId（用上方輸入）</button>
+      <button id="btn-form-new">New (empty)</button>
+      <button id="btn-form-load">Load by Row ID (uses input above)</button>
       <button id="btn-form-save">Save Form</button>
     </p>
     <div id="rendered-form" style="margin-top: 0.6em; padding: 0.8em; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; min-height: 4em;">
-      <p class="hint" style="margin: 0;">(尚未載入 — 先點「Load Form Definition」)</p>
+      <p class="hint" style="margin: 0;">(not loaded &mdash; click "Load Form Definition" first)</p>
     </div>
   </section>
 
   <section>
-    <h2>7. Logout</h2>
-    <p class="hint">送 <code>System.Logout</code>，並清除 client 端 AccessToken。</p>
+    <h2>6. Logout</h2>
+    <p class="hint">Calls <code>System.Logout</code> and clears the client-side AccessToken.</p>
     <p><button id="btn-logout" class="secondary">Logout</button></p>
   </section>
 
   <section>
-    <h2>結果輸出</h2>
-    <p><button id="btn-clear" class="secondary">清除</button></p>
-    <pre id="result">(等待操作...)</pre>
+    <h2>Output</h2>
+    <p><button id="btn-clear" class="secondary">Clear</button></p>
+    <pre id="result">(waiting for actions...)</pre>
   </section>
 
   <script type="module" src="./app.js"></script>
