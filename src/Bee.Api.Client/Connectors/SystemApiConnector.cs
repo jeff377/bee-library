@@ -131,25 +131,39 @@ namespace Bee.Api.Client.Connectors
         /// <summary>
         /// Asynchronously performs the login operation.
         /// </summary>
+        /// <remarks>
+        /// On Blazor WebAssembly (<see cref="OperatingSystem.IsBrowser"/> returns true), the RSA
+        /// handshake is skipped because .NET's RSA key generation is not implemented on the
+        /// browser-wasm runtime. <see cref="LoginRequest.ClientPublicKey"/> is sent empty, the
+        /// server returns an empty <see cref="LoginResponse.ApiEncryptionKey"/>, and subsequent
+        /// <see cref="PayloadFormat.Encrypted"/> requests are auto-downgraded to
+        /// <see cref="PayloadFormat.Encoded"/> by <see cref="ApiConnector"/>.
+        /// </remarks>
         /// <param name="userID">The user account identifier.</param>
         /// <param name="password">The user password.</param>
         public async Task<LoginResponse> LoginAsync(string userID, string password)
         {
-            // Generate an RSA key pair
-            RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
+            string publicKey = string.Empty;
+            string privateKey = string.Empty;
+            bool useRsaHandshake = !OperatingSystem.IsBrowser();
+            if (useRsaHandshake)
+            {
+                RsaCryptor.GenerateRsaKeyPair(out publicKey, out privateKey);
+            }
 
-            // Perform the login operation
             var request = new LoginRequest()
             {
                 UserId = userID,
                 Password = password,
-                ClientPublicKey = publicKeyXml  // Pass the RSA public key
+                ClientPublicKey = publicKey
             };
             var result = await ExecuteAsync<LoginResponse>(SystemActions.Login, request, PayloadFormat.Encoded).ConfigureAwait(false);
 
-            // Decrypt with the RSA private key to obtain the API encryption key
-            string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
-            ApiClientInfo.ApiEncryptionKey = Convert.FromBase64String(sessionKey);
+            if (useRsaHandshake && !string.IsNullOrEmpty(result.ApiEncryptionKey))
+            {
+                string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKey);
+                ApiClientInfo.ApiEncryptionKey = Convert.FromBase64String(sessionKey);
+            }
 
             return result;
         }

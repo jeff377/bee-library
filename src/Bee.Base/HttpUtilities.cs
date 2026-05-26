@@ -27,6 +27,18 @@ namespace Bee.Base
 
             return _clientMap.GetOrAdd(cacheKey, _ =>
             {
+                if (OperatingSystem.IsBrowser())
+                {
+                    // Browser hosts route HttpClient through BrowserHttpHandler (fetch API).
+                    // SocketsHttpHandler is not implemented on browser-wasm; connection pooling
+                    // and DNS refresh are owned by the browser itself.
+                    return new HttpClient
+                    {
+                        BaseAddress = new Uri($"{baseUri.Scheme}://{baseUri.Host}:{baseUri.Port}/"),
+                        Timeout = TimeSpan.FromSeconds(30)
+                    };
+                }
+
                 var handler = new SocketsHttpHandler
                 {
                     PooledConnectionLifetime = TimeSpan.FromMinutes(5)

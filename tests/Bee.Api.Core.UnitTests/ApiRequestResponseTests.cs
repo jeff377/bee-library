@@ -52,7 +52,7 @@ namespace Bee.Api.Core.UnitTests
             {
                 UserId = "testUser",
                 Password = "testPass",
-                ClientPublicKey = "publicKeyXml"
+                ClientPublicKey = "publicKeyPem"
             };
 
             var bytes = MessagePackCodec.Serialize(original);

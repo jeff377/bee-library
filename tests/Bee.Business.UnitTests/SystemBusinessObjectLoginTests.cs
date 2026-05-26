@@ -67,7 +67,7 @@ namespace Bee.Business.UnitTests
         public void Login_WithClientPublicKey_EncryptsApiKey()
         {
             var sessionService = _fx.GetRequiredService<ISessionInfoService>();
-            RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
+            RsaCryptor.GenerateRsaKeyPair(out var publicKey, out var privateKey);
             var bo = new TestableSystemBusinessObject(
                 TestBeeContext.Create(_fx),
                 Guid.Empty,
@@ -76,7 +76,7 @@ namespace Bee.Business.UnitTests
             {
                 UserId = "rsa_user",
                 Password = "x",
-                ClientPublicKey = publicKeyXml
+                ClientPublicKey = publicKey
             };
 
             var result = bo.Login(args);
@@ -84,7 +84,7 @@ namespace Bee.Business.UnitTests
             try
             {
                 Assert.False(string.IsNullOrWhiteSpace(result.ApiEncryptionKey));
-                var sessionKeyBase64 = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
+                var sessionKeyBase64 = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKey);
                 Assert.False(string.IsNullOrWhiteSpace(sessionKeyBase64));
 
                 var session = sessionService.Get(result.AccessToken);

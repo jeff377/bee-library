@@ -49,14 +49,14 @@ namespace Bee.Business.UnitTests
         {
             // Arrange
             // 產生 RSA 金鑰對
-            RsaCryptor.GenerateRsaKeyPair(out var publicKeyXml, out var privateKeyXml);
+            RsaCryptor.GenerateRsaKeyPair(out var publicKey, out var privateKey);
 
             var sbo = new SystemBusinessObject(TestBeeContext.Create(_fx), Guid.Empty);
             var args = new LoginArgs
             {
                 UserId = "testuser",
                 Password = "testpassword",
-                ClientPublicKey = publicKeyXml
+                ClientPublicKey = publicKey
             };
 
             // Act
@@ -67,7 +67,7 @@ namespace Bee.Business.UnitTests
             Assert.NotEmpty(result.ApiEncryptionKey);
 
             // 用私鑰解密 EncryptedSessionKey
-            string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKeyXml);
+            string sessionKey = RsaCryptor.DecryptWithPrivateKey(result.ApiEncryptionKey, privateKey);
             Assert.False(string.IsNullOrWhiteSpace(sessionKey));
         }
     }
