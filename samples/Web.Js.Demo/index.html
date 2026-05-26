@@ -148,7 +148,30 @@
   </section>
 
   <section>
-    <h2>5. Logout</h2>
+    <h2>6. FormDefinition-driven 渲染（端到端 demo）</h2>
+    <p class="hint">
+      用 <code>System.GetFormSchema</code> + <code>System.GetFormLayout</code>
+      拿到 schema-driven 渲染所需的 JSON，動態產生 Employee 表單，並串通
+      GetData / GetNewData / Save 三個 CRUD 操作。
+    </p>
+    <p class="hint">
+      <strong>不做客戶端驗證</strong>：依賴 server Save 失敗時的 <code>RpcError</code>，
+      要顯示驗證錯誤就看下方輸出區的 message。
+      Detail 表（如員工電話）只唯讀渲染。
+    </p>
+    <p>
+      <button id="btn-load-formdef">Load Form Definition (Employee)</button>
+      <button id="btn-form-new">New (Empty)</button>
+      <button id="btn-form-load">Load by RowId（用上方輸入）</button>
+      <button id="btn-form-save">Save Form</button>
+    </p>
+    <div id="rendered-form" style="margin-top: 0.6em; padding: 0.8em; background: #fff; border: 1px solid #e5e7eb; border-radius: 4px; min-height: 4em;">
+      <p class="hint" style="margin: 0;">(尚未載入 — 先點「Load Form Definition」)</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>7. Logout</h2>
     <p class="hint">送 <code>System.Logout</code>，並清除 client 端 AccessToken。</p>
     <p><button id="btn-logout" class="secondary">Logout</button></p>
   </section>

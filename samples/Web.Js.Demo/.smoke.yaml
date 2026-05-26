@@ -48,6 +48,8 @@ flow:
       - "Ping"
       - "Enter Company"
       - "Employee CRUD"
+      - "FormDefinition"            # 區塊 6 標題
+      - "Load Form Definition"      # 區塊 6 主要按鈕
       - "Logout"
       - "demo"
     save_as: web-js-demo-loaded.png

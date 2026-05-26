@@ -6,6 +6,7 @@ import {
   apiEndpoint,
   RpcError,
 } from './bee-api-client.js';
+import { renderFormLayout } from './form-renderer.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -153,7 +154,80 @@ $('btn-delete').addEventListener('click', () => {
   run('Employee.Delete', () => employee.delete(rowId));
 });
 
-// ---------- Section 5: Logout ----------
+// ---------- Section 6: FormDefinition-driven rendering ----------
+
+let _formController = null;
+
+$('btn-load-formdef').addEventListener('click', async () => {
+  try {
+    // Fetch schema + layout in parallel — schema is currently unused by the
+    // renderer (no client validation) but is included to demonstrate the
+    // typical Promise.all pattern that React/Vue apps would use.
+    const [schemaResp, layoutResp] = await Promise.all([
+      systemApi.getFormSchema('Employee'),
+      systemApi.getFormLayout('Employee'),
+    ]);
+    log('GetFormSchema + GetFormLayout', {
+      schemaProgId: schemaResp.schema?.progId,
+      layoutId: schemaResp.schema ? layoutResp.layout?.layoutId : null,
+    });
+    _formController = renderFormLayout(layoutResp.layout, $('rendered-form'));
+  } catch (err) {
+    logError('Load Form Definition', err);
+  }
+});
+
+$('btn-form-new').addEventListener('click', async () => {
+  if (!_formController) {
+    log('Form New', '(請先點「Load Form Definition」)');
+    return;
+  }
+  try {
+    const result = await employee.getNewData();
+    log('GetNewData (for form)', { rowId: result.dataSet?.tables?.[0]?.rows?.[0]?.current?.SYS_ROWID });
+    _formController.bindDataSet(result.dataSet);
+  } catch (err) {
+    logError('Form New', err);
+  }
+});
+
+$('btn-form-load').addEventListener('click', async () => {
+  if (!_formController) {
+    log('Form Load', '(請先點「Load Form Definition」)');
+    return;
+  }
+  const rowId = $('rowId').value.trim();
+  if (!rowId) {
+    log('Form Load', '(請先輸入 Row ID — 區塊 4 內)');
+    return;
+  }
+  try {
+    const result = await employee.getData(rowId);
+    log('GetData (for form)', { rowId });
+    _formController.bindDataSet(result.dataSet);
+  } catch (err) {
+    logError('Form Load', err);
+  }
+});
+
+$('btn-form-save').addEventListener('click', async () => {
+  if (!_formController) {
+    log('Form Save', '(請先點「Load Form Definition」)');
+    return;
+  }
+  try {
+    const dataSet = _formController.collectDataSet();
+    const result = await employee.save(dataSet);
+    log('Form Save', { affectedRows: result.affectedRows });
+    // Re-bind the refreshed DataSet so server-side derived values (e.g. sys_no)
+    // surface back into the form.
+    if (result.dataSet) _formController.bindDataSet(result.dataSet);
+  } catch (err) {
+    logError('Form Save', err);
+  }
+});
+
+// ---------- Section 7: Logout ----------
 
 $('btn-logout').addEventListener('click', async () => {
   await run('Logout', () => systemApi.logout());
