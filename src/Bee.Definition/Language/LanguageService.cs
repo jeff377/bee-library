@@ -75,6 +75,48 @@ namespace Bee.Definition.Language
             return true;
         }
 
+        /// <inheritdoc/>
+        public LanguageEnum? GetLangEnum(string lang, string fullName)
+        {
+            SplitFullKey(fullName, out string @namespace, out string enumName);
+            return GetLangEnum(lang, @namespace, enumName);
+        }
+
+        /// <inheritdoc/>
+        public LanguageEnum? GetLangEnum(string lang, string @namespace, string enumName)
+        {
+            if (string.IsNullOrWhiteSpace(@namespace) || string.IsNullOrWhiteSpace(enumName))
+                return null;
+
+            // 1. Primary lookup in the requested language.
+            var hit = LookupEnum(lang, @namespace, enumName);
+            if (hit != null)
+                return hit;
+
+            // 2. Fall back to the system default language (when different).
+            string defaultLang = GetDefaultLang();
+            if (!string.IsNullOrEmpty(defaultLang)
+                && !string.Equals(lang, defaultLang, StringComparison.OrdinalIgnoreCase))
+            {
+                return LookupEnum(defaultLang, @namespace, enumName);
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
+        public string? GetLangEnumText(string lang, string fullName, string code)
+        {
+            var langEnum = GetLangEnum(lang, fullName);
+            return langEnum?.GetText(code);
+        }
+
+        private LanguageEnum? LookupEnum(string lang, string @namespace, string enumName)
+        {
+            var resource = _defineAccess.GetLanguage(lang, @namespace);
+            return resource?.GetEnum(enumName);
+        }
+
         /// <summary>
         /// Reads the system default language from <see cref="Settings.CommonConfiguration.DefaultLang"/>.
         /// </summary>

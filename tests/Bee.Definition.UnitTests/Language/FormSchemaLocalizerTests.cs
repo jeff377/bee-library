@@ -119,6 +119,93 @@ namespace Bee.Definition.UnitTests.Language
             Assert.Equal("Customer (raw)", schema.DisplayName);
         }
 
+        [Fact]
+        [DisplayName("LangEnumName 命中時應以語系 enum 替換 ListItems")]
+        public void Localize_LangEnumName_HitsLocalEnum_ReplacesListItems()
+        {
+            var defineAccess = new StubDefineAccess(defaultLang: "en-US");
+            defineAccess.AddEnum("zh-TW", "Customer", "Status", ("0", "啟用"), ("1", "停用"));
+            var schema = BuildSchemaWithLangEnumField(progId: "Customer", langEnumName: "Status");
+            var localizer = new FormSchemaLocalizer(new LanguageService(defineAccess));
+
+            localizer.Localize(schema, "zh-TW");
+
+            var statusField = schema.Tables![0].Fields!["status"];
+            Assert.Equal(2, statusField.ListItems!.Count);
+            Assert.Equal("啟用", statusField.ListItems!["0"].Text);
+            Assert.Equal("停用", statusField.ListItems!["1"].Text);
+        }
+
+        [Fact]
+        [DisplayName("LangEnumName 帶 namespace (Common.X) 跨 namespace 取共用 enum")]
+        public void Localize_LangEnumName_FullyQualified_FetchesAcrossNamespaces()
+        {
+            var defineAccess = new StubDefineAccess(defaultLang: "en-US");
+            defineAccess.AddEnum("zh-TW", "Common", "Gender", ("M", "男"), ("F", "女"));
+            var schema = BuildSchemaWithLangEnumField(progId: "Customer", langEnumName: "Common.Gender");
+            var localizer = new FormSchemaLocalizer(new LanguageService(defineAccess));
+
+            localizer.Localize(schema, "zh-TW");
+
+            var genderField = schema.Tables![0].Fields!["status"];
+            Assert.Equal(2, genderField.ListItems!.Count);
+            Assert.Equal("男", genderField.ListItems!["M"].Text);
+        }
+
+        [Fact]
+        [DisplayName("LangEnumName 缺譯時保留原 ListItems (向下相容)")]
+        public void Localize_LangEnumName_Miss_PreservesOriginalListItems()
+        {
+            var defineAccess = new StubDefineAccess(defaultLang: "en-US"); // 沒任何 enum
+            var schema = BuildSchemaWithLangEnumField(progId: "Customer", langEnumName: "Status");
+            // 預先寫入 fallback ListItems（XML 中可能有靜態定義）
+            var statusField = schema.Tables![0].Fields!["status"];
+            statusField.ListItems!.Add("0", "Active (fallback)");
+            statusField.ListItems!.Add("1", "Inactive (fallback)");
+            var localizer = new FormSchemaLocalizer(new LanguageService(defineAccess));
+
+            localizer.Localize(schema, "zh-TW");
+
+            // 缺譯時不應清掉既有 ListItems
+            Assert.Equal(2, statusField.ListItems!.Count);
+            Assert.Equal("Active (fallback)", statusField.ListItems!["0"].Text);
+        }
+
+        [Fact]
+        [DisplayName("LangEnumName 為空時 ListItems 保持原樣（靜態定義無變動）")]
+        public void Localize_NoLangEnumName_PreservesListItems()
+        {
+            var defineAccess = new StubDefineAccess(defaultLang: "en-US");
+            var schema = BuildSchema("Customer", "Customer");
+            // 添加靜態 ListItems 而不設 LangEnumName
+            var nameField = schema.Tables![0].Fields!["sys_name"];
+            nameField.ListItems!.Add("a", "A");
+            nameField.ListItems!.Add("b", "B");
+            var localizer = new FormSchemaLocalizer(new LanguageService(defineAccess));
+
+            localizer.Localize(schema, "zh-TW");
+
+            Assert.Equal(2, nameField.ListItems!.Count);
+            Assert.Equal("A", nameField.ListItems!["a"].Text);
+        }
+
+        [Fact]
+        [DisplayName("LangEnumName 命中時走預設語系 fallback")]
+        public void Localize_LangEnumName_DefaultLangFallback()
+        {
+            var defineAccess = new StubDefineAccess(defaultLang: "en-US");
+            // 只有 en-US 有 enum，zh-TW 沒
+            defineAccess.AddEnum("en-US", "Customer", "Status", ("0", "Active"), ("1", "Inactive"));
+            var schema = BuildSchemaWithLangEnumField(progId: "Customer", langEnumName: "Status");
+            var localizer = new FormSchemaLocalizer(new LanguageService(defineAccess));
+
+            localizer.Localize(schema, "zh-TW");
+
+            var statusField = schema.Tables![0].Fields!["status"];
+            Assert.Equal(2, statusField.ListItems!.Count);
+            Assert.Equal("Active", statusField.ListItems!["0"].Text);
+        }
+
         private static FormSchema BuildSchema(string progId, string displayName)
         {
             var schema = new FormSchema(progId, displayName) { CategoryId = "common" };
@@ -126,6 +213,18 @@ namespace Bee.Definition.UnitTests.Language
             table.DbTableName = "ft_customer";
             table.Fields!.Add("sys_id", "Customer ID (raw)", FieldDbType.String);
             table.Fields!.Add("sys_name", "Customer Name (raw)", FieldDbType.String);
+            return schema;
+        }
+
+        private static FormSchema BuildSchemaWithLangEnumField(string progId, string langEnumName)
+        {
+            var schema = new FormSchema(progId, "Customer") { CategoryId = "common" };
+            var table = schema.Tables!.Add("Customer", "Customer");
+            var statusField = new FormField("status", "Status", FieldDbType.String)
+            {
+                LangEnumName = langEnumName,
+            };
+            table.Fields!.Add(statusField);
             return schema;
         }
 
@@ -156,6 +255,20 @@ namespace Bee.Definition.UnitTests.Language
                 foreach (var (key, value) in items)
                     resource.Items.Add(key, value);
                 _resources[$"{lang}.{ns}"] = resource;
+            }
+
+            public void AddEnum(string lang, string ns, string enumName, params (string Code, string Text)[] entries)
+            {
+                string key = $"{lang}.{ns}";
+                if (!_resources.TryGetValue(key, out var resource))
+                {
+                    resource = new LanguageResource { Namespace = ns, Lang = lang };
+                    _resources[key] = resource;
+                }
+                var langEnum = new LanguageEnum { Name = enumName };
+                foreach (var (code, text) in entries)
+                    langEnum.Entries.Add(code, text);
+                resource.Enums.Add(langEnum);
             }
 
             public LanguageResource GetLanguage(string lang, string ns)

@@ -1,3 +1,4 @@
+using Bee.Definition.Collections;
 using Bee.Definition.Forms;
 
 namespace Bee.Definition.Language
@@ -99,7 +100,47 @@ namespace Bee.Definition.Language
                 string fieldKey = string.Format(System.Globalization.CultureInfo.InvariantCulture, FieldCaptionKeyFormat, field.FieldName);
                 if (_languageService.TryGetLangText(lang, @namespace, fieldKey, out string caption))
                     field.Caption = caption;
+
+                // Populate ListItems from the referenced LanguageEnum when LangEnumName is set.
+                if (!string.IsNullOrWhiteSpace(field.LangEnumName))
+                    ApplyLangEnum(field, lang, @namespace);
             }
+        }
+
+        /// <summary>
+        /// Resolves the field's <see cref="FormField.LangEnumName"/> against the language
+        /// resource (with default-lang fall-back) and replaces <see cref="FormField.ListItems"/>
+        /// with the localized enum entries. Bare names (no dot) are resolved against
+        /// the owning schema's <paramref name="schemaNamespace"/>; fully-qualified names
+        /// (<c>"Common.Gender"</c>) target their own namespace.
+        /// </summary>
+        private void ApplyLangEnum(FormField field, string lang, string schemaNamespace)
+        {
+            string langEnumName = field.LangEnumName;
+            string @namespace;
+            string enumName;
+
+            int dot = langEnumName.IndexOf('.');
+            if (dot < 0)
+            {
+                // Bare name → use the owning schema's namespace.
+                @namespace = schemaNamespace;
+                enumName = langEnumName;
+            }
+            else
+            {
+                @namespace = langEnumName.Substring(0, dot);
+                enumName = langEnumName.Substring(dot + 1);
+            }
+
+            var langEnum = _languageService.GetLangEnum(lang, @namespace, enumName);
+            if (langEnum is null)
+                return; // missing translation → leave any existing ListItems untouched
+
+            // Replace the field's ListItems with the resolved enum entries.
+            field.ListItems!.Clear();
+            foreach (var entry in langEnum.Entries)
+                field.ListItems.Add(new ListItem(entry.Code, entry.Text));
         }
     }
 }

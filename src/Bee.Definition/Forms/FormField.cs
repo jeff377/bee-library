@@ -225,6 +225,23 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
+        /// Gets or sets the name of a localized <see cref="Language.LanguageEnum"/> used as
+        /// this field's dropdown option source. Either a bare name (resolved against the
+        /// owning schema's <see cref="FormSchema.ProgId"/> namespace, e.g. <c>"OrderStatus"</c>)
+        /// or a fully-qualified <c>"{namespace}.{enumName}"</c> (e.g. <c>"Common.Gender"</c>).
+        /// </summary>
+        /// <remarks>
+        /// When non-empty, <c>FormSchemaLocalizer</c> replaces <see cref="ListItems"/> with
+        /// the resolved <see cref="Language.LanguageEnum"/> entries at API delivery time.
+        /// Leave empty to keep statically-defined <see cref="ListItems"/> as the option source.
+        /// </remarks>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Localized enum name for dropdown options (e.g. 'Common.Gender'); overrides ListItems when set.")]
+        [DefaultValue("")]
+        public string LangEnumName { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the column width. A value greater than 0 is required to take effect.
         /// </summary>
         [Category(PropertyCategories.Layout)]
@@ -282,6 +299,7 @@ namespace Bee.Definition.Forms
                 LookupProgId = LookupProgId,
                 Visible = Visible,
                 Width = Width,
+                LangEnumName = LangEnumName,
             };
             if (_relationFieldMappings != null)
                 foreach (var mapping in _relationFieldMappings)

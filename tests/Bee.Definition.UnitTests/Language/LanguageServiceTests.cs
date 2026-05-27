@@ -127,6 +127,85 @@ namespace Bee.Definition.UnitTests.Language
             Assert.Equal(1, defineAccess.GetLanguageCallCount);
         }
 
+        [Fact]
+        [DisplayName("GetLangEnum 命中時回傳對應 LanguageEnum")]
+        public void GetLangEnum_Hit_ReturnsEnum()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            defineAccess.AddEnum("zh-TW", "Common", "Gender", ("M", "男"), ("F", "女"));
+            var svc = new LanguageService(defineAccess);
+
+            var langEnum = svc.GetLangEnum("zh-TW", "Common.Gender");
+
+            Assert.NotNull(langEnum);
+            Assert.Equal("Gender", langEnum!.Name);
+            Assert.Equal(2, langEnum.Entries.Count);
+            Assert.Equal("男", langEnum.GetText("M"));
+        }
+
+        [Fact]
+        [DisplayName("GetLangEnum miss 時應回退預設語系")]
+        public void GetLangEnum_FallsBackToDefaultLang()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            // zh-TW 沒、en-US 有
+            defineAccess.AddEnum("en-US", "Common", "Gender", ("M", "Male"), ("F", "Female"));
+            var svc = new LanguageService(defineAccess);
+
+            var langEnum = svc.GetLangEnum("zh-TW", "Common.Gender");
+
+            Assert.NotNull(langEnum);
+            Assert.Equal("Male", langEnum!.GetText("M"));
+        }
+
+        [Fact]
+        [DisplayName("GetLangEnum 兩種語系都缺時回傳 null")]
+        public void GetLangEnum_AllMiss_ReturnsNull()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            var svc = new LanguageService(defineAccess);
+
+            Assert.Null(svc.GetLangEnum("zh-TW", "Common.Gender"));
+        }
+
+        [Fact]
+        [DisplayName("GetLangEnum 顯式 namespace / enumName 與 fullName 結果一致")]
+        public void GetLangEnum_ExplicitNamespace_MatchesFullName()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            defineAccess.AddEnum("zh-TW", "Common", "Gender", ("M", "男"), ("F", "女"));
+            var svc = new LanguageService(defineAccess);
+
+            var viaFullName = svc.GetLangEnum("zh-TW", "Common.Gender");
+            var viaExplicit = svc.GetLangEnum("zh-TW", "Common", "Gender");
+
+            Assert.NotNull(viaExplicit);
+            Assert.Equal(viaFullName!.Name, viaExplicit!.Name);
+            Assert.Equal(viaFullName.Entries.Count, viaExplicit.Entries.Count);
+        }
+
+        [Fact]
+        [DisplayName("GetLangEnumText 命中時回傳對應 entry 的 text")]
+        public void GetLangEnumText_Hit_ReturnsText()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            defineAccess.AddEnum("zh-TW", "Common", "Gender", ("M", "男"), ("F", "女"));
+            var svc = new LanguageService(defineAccess);
+
+            Assert.Equal("男", svc.GetLangEnumText("zh-TW", "Common.Gender", "M"));
+        }
+
+        [Fact]
+        [DisplayName("GetLangEnumText miss 時回傳 null")]
+        public void GetLangEnumText_Miss_ReturnsNull()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            defineAccess.AddEnum("zh-TW", "Common", "Gender", ("M", "男"));
+            var svc = new LanguageService(defineAccess);
+
+            Assert.Null(svc.GetLangEnumText("zh-TW", "Common.Gender", "X"));
+        }
+
         private sealed class StubDefineAccess : IDefineAccess
         {
             private readonly Dictionary<string, LanguageResource> _resources = [];
@@ -146,6 +225,20 @@ namespace Bee.Definition.UnitTests.Language
                 foreach (var (key, value) in items)
                     resource.Items.Add(key, value);
                 _resources[$"{lang}.{ns}"] = resource;
+            }
+
+            public void AddEnum(string lang, string ns, string enumName, params (string Code, string Text)[] entries)
+            {
+                string key = $"{lang}.{ns}";
+                if (!_resources.TryGetValue(key, out var resource))
+                {
+                    resource = new LanguageResource { Namespace = ns, Lang = lang };
+                    _resources[key] = resource;
+                }
+                var langEnum = new LanguageEnum { Name = enumName };
+                foreach (var (code, text) in entries)
+                    langEnum.Entries.Add(code, text);
+                resource.Enums.Add(langEnum);
             }
 
             public LanguageResource GetLanguage(string lang, string ns)

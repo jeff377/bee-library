@@ -7,7 +7,7 @@
 | 1 | `LanguageResource` 類別（XML + JSON 雙序列化）+ `DefineType.Language` + 檔案讀寫 + `PathOptions` 路徑 | ✅ 已完成（2026-05-27） |
 | 2 | `GetLangText` API + cache 走既有 Define cache + 用 `SessionInfo.Culture`（既有欄位，未新增）+ `IStringLocalizer<T>` adapter | ✅ 已完成（2026-05-27） |
 | 3 | FormSchema DisplayName + Table.DisplayName + Field.Caption 自動本地化（約定 key 自動包裝） | ✅ 已完成（2026-05-27） |
-| 4 | 下拉清單（`LanguageEnum`）支援、`GetLangEnum` API、ComboBox 整合 | 📝 待做 |
+| 4 | 下拉清單（`LanguageEnum`）支援、`GetLangEnum` API、ComboBox 整合 | ✅ 已完成（2026-05-27） |
 | 5 | JSON-RPC `SystemBO.GetLanguage` 方法給 JS 端（對標 `GetFormSchema` / `GetFormLayout`） | 📝 待做 |
 
 ## 背景

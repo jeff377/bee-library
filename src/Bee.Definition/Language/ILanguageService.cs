@@ -66,5 +66,36 @@ namespace Bee.Definition.Language
         /// <param name="text">The resolved text on hit; empty string on miss.</param>
         /// <returns><c>true</c> on hit; <c>false</c> on miss.</returns>
         bool TryGetLangText(string lang, string @namespace, string subKey, out string text);
+
+        /// <summary>
+        /// Resolves a localized <see cref="LanguageEnum"/> (ordered code/text set) for the
+        /// given full name (<c>"{namespace}.{enumName}"</c>). Applies the default-lang
+        /// fall-back when the requested language has no matching enum.
+        /// </summary>
+        /// <param name="lang">The BCP-47 language code.</param>
+        /// <param name="fullName">The full enum name, e.g. <c>"Common.Gender"</c>, <c>"Order.OrderStatus"</c>.</param>
+        /// <returns>The matching <see cref="LanguageEnum"/>, or <c>null</c> if not found after fall-back.</returns>
+        LanguageEnum? GetLangEnum(string lang, string fullName);
+
+        /// <summary>
+        /// Resolves a localized <see cref="LanguageEnum"/> using an explicit namespace
+        /// and enum name. Applies the default-lang fall-back when the requested language
+        /// has no matching enum.
+        /// </summary>
+        /// <param name="lang">The BCP-47 language code.</param>
+        /// <param name="namespace">The resource namespace.</param>
+        /// <param name="enumName">The enum name within that namespace.</param>
+        /// <returns>The matching <see cref="LanguageEnum"/>, or <c>null</c> if not found after fall-back.</returns>
+        LanguageEnum? GetLangEnum(string lang, string @namespace, string enumName);
+
+        /// <summary>
+        /// Convenience: resolves a single localized text for a code within a
+        /// <see cref="LanguageEnum"/>. Applies the default-lang fall-back.
+        /// </summary>
+        /// <param name="lang">The BCP-47 language code.</param>
+        /// <param name="fullName">The full enum name, e.g. <c>"Common.Gender"</c>.</param>
+        /// <param name="code">The code to look up within the enum.</param>
+        /// <returns>The localized text on hit; <c>null</c> when the enum or code is missing after fall-back.</returns>
+        string? GetLangEnumText(string lang, string fullName, string code);
     }
 }
