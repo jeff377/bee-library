@@ -1,4 +1,6 @@
 {
   "dotnet.defaultSolution": "Bee.Library.slnx",
-  "dotnet.unitTests.runSettingsPath": ".runsettings"
+  "dotnet.unitTests.runSettingsPath": ".runsettings",
+  "files.encoding": "utf8",
+  "files.autoGuessEncoding": true
 }
