@@ -2,6 +2,7 @@ using Bee.Business.Form;
 using Bee.Business.System;
 using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Definition.Language;
 using Bee.Definition.Storage;
 
 namespace Bee.Business
@@ -21,6 +22,7 @@ namespace Bee.Business
         private readonly IServiceProvider _services;
         private readonly IDefineAccess _defineAccess;
         private readonly ISessionInfoService _sessionInfoService;
+        private readonly ILanguageService _languageService;
         private readonly IFormBoTypeResolver _resolver;
 
         /// <summary>
@@ -29,16 +31,19 @@ namespace Bee.Business
         /// <param name="services">The host service provider used as the BO escape hatch.</param>
         /// <param name="defineAccess">The define access service.</param>
         /// <param name="sessionInfoService">The session info access service.</param>
+        /// <param name="languageService">The language resource service.</param>
         /// <param name="resolver">The progId → BO type resolver.</param>
         public BusinessObjectFactory(
             IServiceProvider services,
             IDefineAccess defineAccess,
             ISessionInfoService sessionInfoService,
+            ILanguageService languageService,
             IFormBoTypeResolver resolver)
         {
             _services = services ?? throw new ArgumentNullException(nameof(services));
             _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
             _sessionInfoService = sessionInfoService ?? throw new ArgumentNullException(nameof(sessionInfoService));
+            _languageService = languageService ?? throw new ArgumentNullException(nameof(languageService));
             _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
         }
 
@@ -70,6 +75,7 @@ namespace Bee.Business
         {
             DefineAccess = _defineAccess,
             SessionInfoService = _sessionInfoService,
+            LanguageService = _languageService,
             BoFactory = this,
             Services = _services,
         };

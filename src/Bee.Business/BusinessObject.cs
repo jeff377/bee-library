@@ -1,6 +1,7 @@
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Identity;
+using Bee.Definition.Language;
 using Bee.Definition.Security;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions;
@@ -54,6 +55,9 @@ namespace Bee.Business
         /// <summary>Gets the session-info access service from the per-call context.</summary>
         protected ISessionInfoService SessionInfoService => _ctx.SessionInfoService;
 
+        /// <summary>Gets the language resource service from the per-call context.</summary>
+        protected ILanguageService LanguageService => _ctx.LanguageService;
+
         /// <summary>Gets the business-object factory for BO-to-BO calls.</summary>
         protected IBusinessObjectFactory BoFactory => _ctx.BoFactory;
 
@@ -81,6 +85,37 @@ namespace Bee.Business
         protected IDataFormRepository CreateDataFormRepository(string progId)
             => Services.GetRequiredService<IFormRepositoryFactory>()
                        .CreateDataFormRepository(progId, AccessToken);
+
+        /// <summary>
+        /// Resolves localized text for the given full key using the current session's
+        /// language (<c>SessionInfo.Culture</c>), falling back to the system
+        /// default language and then to the key itself if both miss.
+        /// </summary>
+        /// <param name="fullKey">The full key (<c>"{namespace}.{subKey}"</c>); split on the first <c>.</c>.</param>
+        protected string GetLangText(string fullKey)
+            => LanguageService.GetLangText(GetCurrentLang(), fullKey);
+
+        /// <summary>
+        /// Resolves localized text using an explicit namespace and sub-key, applying the
+        /// same fall-back chain as <see cref="GetLangText(string)"/>.
+        /// </summary>
+        /// <param name="namespace">The resource namespace.</param>
+        /// <param name="subKey">The sub-key within that namespace.</param>
+        protected string GetLangText(string @namespace, string subKey)
+            => LanguageService.GetLangText(GetCurrentLang(), @namespace, subKey);
+
+        /// <summary>
+        /// Reads the current session's BCP-47 language code from
+        /// <c>SessionInfo.Culture</c>. Returns an empty string when no
+        /// session is established yet (anonymous calls); <see cref="ILanguageService"/>
+        /// then falls back through to the system default language.
+        /// </summary>
+        private string GetCurrentLang()
+        {
+            if (AccessToken == Guid.Empty)
+                return string.Empty;
+            return SessionInfoService.Get(AccessToken)?.Culture ?? string.Empty;
+        }
 
         /// <summary>
         /// Executes a custom method; requires authentication.

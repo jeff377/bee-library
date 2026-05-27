@@ -1,4 +1,5 @@
 using Bee.Definition.Identity;
+using Bee.Definition.Language;
 using Bee.Definition.Storage;
 
 namespace Bee.Definition
@@ -16,6 +17,9 @@ namespace Bee.Definition
 
         /// <summary>The session-info access service.</summary>
         ISessionInfoService SessionInfoService { get; }
+
+        /// <summary>The language resource service (localized text + enum lookup).</summary>
+        ILanguageService LanguageService { get; }
 
         /// <summary>Factory for building business objects (used for BO-to-BO calls).</summary>
         IBusinessObjectFactory BoFactory { get; }
@@ -40,6 +44,9 @@ namespace Bee.Definition
 
         /// <inheritdoc/>
         public required ISessionInfoService SessionInfoService { get; init; }
+
+        /// <inheritdoc/>
+        public required ILanguageService LanguageService { get; init; }
 
         /// <inheritdoc/>
         public required IBusinessObjectFactory BoFactory { get; init; }

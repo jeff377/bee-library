@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | `LanguageResource` 類別（XML + JSON 雙序列化）+ `DefineType.Language` + 檔案讀寫 + `PathOptions` 路徑 | ✅ 已完成（2026-05-27） |
-| 2 | `GetLangText` API + 以 `(lang, namespace)` 為單位的 cache + `SessionInfo.Lang` + `IStringLocalizer<T>` adapter | 📝 待做 |
+| 2 | `GetLangText` API + cache 走既有 Define cache + 用 `SessionInfo.Culture`（既有欄位，未新增）+ `IStringLocalizer<T>` adapter | ✅ 已完成（2026-05-27） |
 | 3 | FormSchema Caption / Tip / ColumnHeader 自動本地化（約定 key 自動包裝） | 📝 待做 |
 | 4 | 下拉清單（`LanguageEnum`）支援、`GetLangEnum` API、ComboBox 整合 | 📝 待做 |
 | 5 | JSON-RPC `SystemBO.GetLanguage` 方法給 JS 端（對標 `GetFormSchema` / `GetFormLayout`） | 📝 待做 |

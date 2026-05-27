@@ -5,6 +5,7 @@ using Bee.Api.Core.Messages.Form;
 using Bee.Business;
 using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Definition.Language;
 using Bee.Definition.Security;
 using Bee.Definition.Storage;
 using Bee.Repository.Abstractions.Factories;
@@ -48,6 +49,7 @@ namespace Bee.Api.Core.UnitTests.Form
                 overrideServices,
                 _fx.GetRequiredService<IDefineAccess>(),
                 _fx.GetRequiredService<ISessionInfoService>(),
+                _fx.GetRequiredService<ILanguageService>(),
                 _fx.GetRequiredService<IFormBoTypeResolver>());
 
             var executor = new JsonRpcExecutor(

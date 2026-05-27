@@ -6,6 +6,7 @@ using Bee.Business;
 using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Identity;
+using Bee.Definition.Language;
 using Bee.Definition.Paging;
 using Bee.Definition.Security;
 using Bee.Definition.Sorting;
@@ -57,6 +58,7 @@ namespace Bee.Api.Core.UnitTests.Form
                 overrideServices,
                 _fx.GetRequiredService<IDefineAccess>(),
                 _fx.GetRequiredService<ISessionInfoService>(),
+                _fx.GetRequiredService<ILanguageService>(),
                 _fx.GetRequiredService<IFormBoTypeResolver>());
 
             var executor = new JsonRpcExecutor(
@@ -134,6 +136,7 @@ namespace Bee.Api.Core.UnitTests.Form
                 overrideServices,
                 _fx.GetRequiredService<IDefineAccess>(),
                 _fx.GetRequiredService<ISessionInfoService>(),
+                _fx.GetRequiredService<ILanguageService>(),
                 _fx.GetRequiredService<IFormBoTypeResolver>());
 
             var executor = new JsonRpcExecutor(

@@ -113,13 +113,18 @@ namespace Bee.Definition.Storage
 
         /// <summary>
         /// Gets the language resource for the specified language and namespace.
+        /// Returns <c>null</c> when the file does not exist — missing translation
+        /// files are a normal scenario (unlike <see cref="GetFormSchema"/>, where a
+        /// missing file indicates a bug), so this path is non-throwing and
+        /// negative-cacheable.
         /// </summary>
         /// <param name="lang">The BCP-47 language code.</param>
         /// <param name="ns">The resource namespace.</param>
         public LanguageResource? GetLanguage(string lang, string ns)
         {
             string filePath = _paths.GetLanguageFilePath(lang, ns);
-            ValidateFilePath(filePath);
+            if (!File.Exists(filePath))
+                return null;
             return XmlCodec.DeserializeFromFile<LanguageResource>(filePath);
         }
 

@@ -7,6 +7,7 @@ using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.ObjectCaching;
 using Bee.Definition.Identity;
+using Bee.Definition.Language;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -99,6 +100,8 @@ namespace Bee.Hosting
             services.AddSingleton<ISessionInfoService>(sp =>
                 CreateConfigurableService<ISessionInfoService>(sp,
                     components.SessionInfoService, BackendDefaultTypes.SessionInfoService));
+            services.AddSingleton<ILanguageService>(sp =>
+                new LanguageService(sp.GetRequiredService<IDefineAccess>()));
             services.AddSingleton<ICompanyInfoService>(sp =>
                 CreateConfigurableService<ICompanyInfoService>(sp,
                     components.CompanyInfoService, BackendDefaultTypes.CompanyInfoService));

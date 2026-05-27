@@ -1,5 +1,6 @@
 using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Definition.Language;
 using Bee.Definition.Storage;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -36,6 +37,7 @@ namespace Bee.Tests.Shared
             {
                 DefineAccess = sp.GetRequiredService<IDefineAccess>(),
                 SessionInfoService = sp.GetRequiredService<ISessionInfoService>(),
+                LanguageService = sp.GetRequiredService<ILanguageService>(),
                 BoFactory = sp.GetRequiredService<IBusinessObjectFactory>(),
                 Services = new TestOverrideServiceProvider(sp, overrides),
             };
@@ -55,6 +57,9 @@ namespace Bee.Tests.Shared
             {
                 DefineAccess = defineAccess,
                 SessionInfoService = sp.GetRequiredService<ISessionInfoService>(),
+                // Bind a per-call LanguageService to the swapped IDefineAccess so language
+                // lookups in the test see the same temp-redirected store.
+                LanguageService = new LanguageService(defineAccess),
                 BoFactory = sp.GetRequiredService<IBusinessObjectFactory>(),
                 Services = sp,
             };
@@ -66,6 +71,7 @@ namespace Bee.Tests.Shared
             {
                 DefineAccess = sp.GetRequiredService<IDefineAccess>(),
                 SessionInfoService = sp.GetRequiredService<ISessionInfoService>(),
+                LanguageService = sp.GetRequiredService<ILanguageService>(),
                 BoFactory = sp.GetRequiredService<IBusinessObjectFactory>(),
                 Services = sp,
             };

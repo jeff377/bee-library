@@ -81,8 +81,8 @@ namespace Bee.Definition.UnitTests.Language
         }
 
         [Fact]
-        [DisplayName("FileDefineStorage GetLanguage 對不存在檔案應丟 FileNotFoundException")]
-        public void GetLanguage_MissingFile_ThrowsFileNotFound()
+        [DisplayName("FileDefineStorage GetLanguage 對不存在檔案應回傳 null（缺譯為正常情境，可 negative-cache）")]
+        public void GetLanguage_MissingFile_ReturnsNull()
         {
             var tempDir = Path.Combine(Path.GetTempPath(), $"bee-lang-{Guid.NewGuid():N}");
             Directory.CreateDirectory(tempDir);
@@ -91,7 +91,9 @@ namespace Bee.Definition.UnitTests.Language
                 var paths = new PathOptions { DefinePath = tempDir };
                 var storage = new FileDefineStorage(paths);
 
-                Assert.Throws<FileNotFoundException>(() => storage.GetLanguage("zh-TW", "Nonexistent"));
+                var result = storage.GetLanguage("zh-TW", "Nonexistent");
+
+                Assert.Null(result);
             }
             finally
             {
