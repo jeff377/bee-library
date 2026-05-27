@@ -41,6 +41,14 @@ namespace Bee.Business.System
         GetFormLayoutResult GetFormLayout(GetFormLayoutArgs args);
 
         /// <summary>
+        /// Gets a language resource (localized text + enums for one namespace ×
+        /// one language) as a typed object; intended for JS / TypeScript
+        /// frontends consuming localized UI text.
+        /// </summary>
+        /// <param name="args">The input arguments carrying <c>Lang</c> and <c>Namespace</c>.</param>
+        GetLanguageResult GetLanguage(GetLanguageArgs args);
+
+        /// <summary>
         /// Saves definition data.
         /// </summary>
         /// <param name="args">The input arguments.</param>

@@ -241,6 +241,11 @@ namespace Bee.Api.Client.Connectors
             return SyncExecutor.Run(() => GetFormLayoutAsync(progId, layoutId));
         }
 
+        // Note: GetLanguage has no .NET client method. The BO method
+        // SystemBO.GetLanguage is JS-only (Plain JSON wire format) — see SystemBO
+        // XML doc for the rationale. .NET clients should use GetDefineAsync with
+        // DefineType.Language (XML-based path through GetDefine).
+
         /// <summary>
         /// Asynchronously saves definition data.
         /// </summary>

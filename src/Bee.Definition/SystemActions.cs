@@ -50,6 +50,12 @@ namespace Bee.Definition
         /// </summary>
         public const string GetFormLayout = "GetFormLayout";
         /// <summary>
+        /// Gets a language resource (localized text and enum entries for one
+        /// namespace × one language) as a typed JSON-friendly object; intended
+        /// for JS / TypeScript frontends consuming localized UI text.
+        /// </summary>
+        public const string GetLanguage = "GetLanguage";
+        /// <summary>
         /// Gets definition data (local only).
         /// </summary>
         public const string GetLocalDefine = "GetLocalDefine";
