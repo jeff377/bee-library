@@ -16,42 +16,52 @@ This is the single-page reference of every public BO method exposed through
 
 | Column | Meaning |
 |--------|---------|
-| **Method** | The JSON-RPC `method` field — `progId.action`. <c>SystemActions</c> / <c>FormActions</c> constants. |
-| **Contract** | The `Bee.Api.Contracts.I<Action>Request` / `I<Action>Response` pair (the "single source of truth"); blank if none. |
-| **Args / Result** | The BO POCO types (`Bee.Business.<Axis>.<Action>Args` / `<Action>Result`). |
+| **Method** | The JSON-RPC `method` field — `progId.action`. Listed action constants live in `SystemActions` / `FormActions`. |
 | **Protection** | `[ApiAccessControl]` first arg: `Public` / `Encoded` / `Encrypted`. See [security rules](../.claude/rules/security.md). |
 | **Auth** | `[ApiAccessControl]` second arg: `Anonymous` / `Authenticated`. |
 | **Purpose** | One-line summary; see XML doc on the BO method for full detail. |
+
+### Naming convention (Contract / Args / Result derivable from action)
+
+For any `<Action>` listed below, the contract / BO types follow a fixed pattern:
+
+- **Wire contract**: `Bee.Api.Contracts.I<Action>Request` / `I<Action>Response`
+- **Wire DTO**: `Bee.Api.Core.Messages.<Axis>.<Action>Request` / `<Action>Response`
+- **BO Args / Result**: `Bee.Business.<Axis>.<Action>Args` / `<Action>Result`
+
+E.g. `GetLanguage` → `IGetLanguageRequest` / `IGetLanguageResponse` /
+`GetLanguageArgs` / `GetLanguageResult`. Use IDE "Go to symbol" to jump to
+any of these from the action name; no need to list them in the tables.
 
 ## Axis: Base (`BusinessObject`)
 
 Methods defined on the base class — every BO axis inherits them.
 
-| Method | Contract | Args / Result | Protection | Auth | Purpose |
-|--------|----------|---------------|------------|------|---------|
-| `ExecFunc` | `IExecFuncRequest` / `IExecFuncResponse` | `ExecFuncArgs` / `ExecFuncResult` | Public | Authenticated | Generic dispatch to a host-defined custom method, by name. |
-| `ExecFuncAnonymous` | `IExecFuncRequest` / `IExecFuncResponse` | `ExecFuncArgs` / `ExecFuncResult` | Public | Anonymous | Same as `ExecFunc` but pre-login (e.g. registration flows). |
+| Method | Protection | Auth | Purpose |
+|--------|------------|------|---------|
+| `ExecFunc` | Public | Authenticated | Generic dispatch to a host-defined custom method, by name. |
+| `ExecFuncAnonymous` | Public | Anonymous | Same as `ExecFunc` but pre-login (e.g. registration flows). |
 
 ## Axis: System (`SystemBusinessObject`)
 
 Singleton system-level BO, accessed as `System.<action>` over the wire.
 
-| Method | Contract | Args / Result | Protection | Auth | Purpose |
-|--------|----------|---------------|------------|------|---------|
-| `Ping` | `IPingRequest` / `IPingResponse` | `PingArgs` / `PingResult` | Public | Anonymous | Liveness probe; round-trips a server timestamp. |
-| `GetCommonConfiguration` | `IGetCommonConfigurationRequest` / `IGetCommonConfigurationResponse` | `GetCommonConfigurationArgs` / `GetCommonConfigurationResult` | Public | Anonymous | Returns `CommonConfiguration` (payload options, debug flag, default lang …). |
-| `Login` | `ILoginRequest` / `ILoginResponse` | `LoginArgs` / `LoginResult` | Public | Anonymous | Authenticates user; returns access token + dynamic API encryption key. |
-| `CreateSession` | `ICreateSessionRequest` / `ICreateSessionResponse` | `CreateSessionArgs` / `CreateSessionResult` | Public | Anonymous | Issues an anonymous session token (no user identity). |
-| `EnterCompany` | `IEnterCompanyRequest` / `IEnterCompanyResponse` | `EnterCompanyArgs` / `EnterCompanyResult` | Public | Authenticated | Switches the session to the specified company (multi-tenant scope). |
-| `LeaveCompany` | `ILeaveCompanyRequest` / `ILeaveCompanyResponse` | `LeaveCompanyArgs` / `LeaveCompanyResult` | Public | Authenticated | Clears the company context, keeping the session alive. |
-| `Logout` | `ILogoutRequest` / `ILogoutResponse` | `LogoutArgs` / `LogoutResult` | Public | Authenticated | Destroys the current session (also clears company context). |
-| `GetDefine` | `IGetDefineRequest` / `IGetDefineResponse` | `GetDefineArgs` / `GetDefineResult` | Public | Authenticated | Returns definition data as an XML envelope (universal — .NET clients use this for FormSchema / FormLayout / LanguageResource). |
-| `SaveDefine` | `ISaveDefineRequest` / `ISaveDefineResponse` | `SaveDefineArgs` / `SaveDefineResult` | Public | Authenticated | Persists definition data via XML envelope; invalidates the matching cache slot. |
-| `GetFormSchema` | `IGetFormSchemaRequest` / `IGetFormSchemaResponse` | `GetFormSchemaArgs` / `GetFormSchemaResult` | Public | Authenticated | **JS-only.** Returns a `FormSchema` as a typed JSON tree (auto-localized using session's `Culture`). |
-| `GetFormLayout` | `IGetFormLayoutRequest` / `IGetFormLayoutResponse` | `GetFormLayoutArgs` / `GetFormLayoutResult` | Public | Authenticated | **JS-only.** Returns a `FormLayout` (generated from auto-localized FormSchema). |
-| `GetLanguage` | `IGetLanguageRequest` / `IGetLanguageResponse` | `GetLanguageArgs` / `GetLanguageResult` | Public | Authenticated | **JS-only.** Returns a `LanguageResource` for one `(Lang, Namespace)` pair. |
-| `CheckPackageUpdate` | `ICheckPackageUpdateRequest` / `ICheckPackageUpdateResponse` | `CheckPackageUpdateArgs` / `CheckPackageUpdateResult` | Encoded | Anonymous | Reports whether a client package upgrade is available. |
-| `GetPackage` | `IGetPackageRequest` / `IGetPackageResponse` | `GetPackageArgs` / `GetPackageResult` | Encoded | Anonymous | Streams a client upgrade package binary. |
+| Method | Protection | Auth | Purpose |
+|--------|------------|------|---------|
+| `Ping` | Public | Anonymous | Liveness probe; round-trips a server timestamp. |
+| `GetCommonConfiguration` | Public | Anonymous | Returns `CommonConfiguration` (payload options, debug flag, default lang …). |
+| `Login` | Public | Anonymous | Authenticates user; returns access token + dynamic API encryption key. |
+| `CreateSession` | Public | Anonymous | Issues an anonymous session token (no user identity). |
+| `EnterCompany` | Public | Authenticated | Switches the session to the specified company (multi-tenant scope). |
+| `LeaveCompany` | Public | Authenticated | Clears the company context, keeping the session alive. |
+| `Logout` | Public | Authenticated | Destroys the current session (also clears company context). |
+| `GetDefine` | Public | Authenticated | Returns definition data as an XML envelope (universal — .NET clients use this for FormSchema / FormLayout / LanguageResource). |
+| `SaveDefine` | Public | Authenticated | Persists definition data via XML envelope; invalidates the matching cache slot. |
+| `GetFormSchema` | Public | Authenticated | **JS-only.** Returns a `FormSchema` as a typed JSON tree (auto-localized using session's `Culture`). |
+| `GetFormLayout` | Public | Authenticated | **JS-only.** Returns a `FormLayout` (generated from auto-localized FormSchema). |
+| `GetLanguage` | Public | Authenticated | **JS-only.** Returns a `LanguageResource` for one `(Lang, Namespace)` pair. |
+| `CheckPackageUpdate` | Encoded | Anonymous | Reports whether a client package upgrade is available. |
+| `GetPackage` | Encoded | Anonymous | Streams a client upgrade package binary. |
 
 > **JS-only methods.** `GetFormSchema` / `GetFormLayout` / `GetLanguage` use
 > `KeyCollectionBase` internals that don't round-trip through MessagePack
@@ -64,13 +74,13 @@ Singleton system-level BO, accessed as `System.<action>` over the wire.
 Per-program BO instance, accessed as `<progId>.<action>` over the wire
 (e.g. `Employee.GetList`, `Order.Save`).
 
-| Method | Contract | Args / Result | Protection | Auth | Purpose |
-|--------|----------|---------------|------------|------|---------|
-| `GetList` | `IGetListRequest` / `IGetListResponse` | `GetListArgs` / `GetListResult` | Public | Authenticated | Master-table list query; supports `Filter` / `Sort` / `Paging` (callers should always paginate). |
-| `GetNewData` | `IGetNewDataRequest` / `IGetNewDataResponse` | `GetNewDataArgs` / `GetNewDataResult` | Public | Authenticated | Returns a blank `DataSet` skeleton with FormSchema defaults + server-issued `sys_rowid`. |
-| `GetData` | `IGetDataRequest` / `IGetDataResponse` | `GetDataArgs` / `GetDataResult` | Public | Authenticated | Loads one master row (and its details) by `RowId`. |
-| `Save` | `ISaveRequest` / `ISaveResponse` | `SaveArgs` / `SaveResult` | Public | Authenticated | Persists a `DataSet` by dispatching INSERT / UPDATE / DELETE per row's `RowState`. |
-| `Delete` | `IDeleteRequest` / `IDeleteResponse` | `DeleteArgs` / `DeleteResult` | Public | Authenticated | Deletes one master row directly by `RowId`. |
+| Method | Protection | Auth | Purpose |
+|--------|------------|------|---------|
+| `GetList` | Public | Authenticated | Master-table list query; supports `Filter` / `Sort` / `Paging` (callers should always paginate). |
+| `GetNewData` | Public | Authenticated | Returns a blank `DataSet` skeleton with FormSchema defaults + server-issued `sys_rowid`. |
+| `GetData` | Public | Authenticated | Loads one master row (and its details) by `RowId`. |
+| `Save` | Public | Authenticated | Persists a `DataSet` by dispatching INSERT / UPDATE / DELETE per row's `RowState`. |
+| `Delete` | Public | Authenticated | Deletes one master row directly by `RowId`. |
 
 ## See also
 
