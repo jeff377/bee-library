@@ -27,6 +27,56 @@
 
 `tests/Bee.Tests.Shared/TestProcessBootstrap.cs` 展示測試 process 的正確初始化順序。
 
+## 定義資料初始化後不可異動
+
+框架初始化完成後，**所有伺服端 cache 內的定義資料一律為唯讀，執行期間不可
+被異動**。每個 session 透過 `IDefineAccess` / `ICacheContainer` 共用同一份
+in-memory 實例，cache 為 process-wide；對單一 session 做的調整會洩漏到其他
+所有 session，並行的 mutation 會競態。
+
+### 適用範圍
+
+任何透過 `IDefineAccess.GetX(...)` 取得的物件（由同名 `ICacheContainer` slot
+back-up）：
+
+- `FormSchema`、`FormLayout`、`TableSchema`
+- `SystemSettings`、`DatabaseSettings`、`ProgramSettings`、`DbCategorySettings`
+- `LanguageResource`
+- `SessionInfo` 是刻意保留的例外 —— 它本來就是 per-session 實體、非共用
+  定義資料，cache key 即 access token
+
+### 禁止樣式
+
+| 樣式 | 為何不可 |
+|------|---------|
+| `cachedSchema.Caption = "..."` | mutate 共用實例 → 跨 session 洩漏 / race |
+| `XmlCodec.Serialize(cachedInstance)` 當作免費的 deep-clone | `IObjectSerialize` 生命週期會在來源物件上翻動 `SerializeState` → thread race + 在高並行下 `IsSerializeEmpty` 行為錯亂 |
+| 把 per-session 狀態塞進 cached 物件的 `Tag` / 擴充屬性 | `Tag` 也是 process-shared |
+| 用 `MasterTable` / collection setter 在 cached 實例上 swap 子節點 | 同樣 race 面 |
+
+### 正確作法
+
+- **需要 per-session 視圖（如本地化 schema）？** 先 clone、再 mutate 副本：
+  ```csharp
+  var customised = cachedSchema.Clone();
+  FormSchemaLocalizer.Localize(customised, sessionLang);
+  return customised;
+  ```
+- **持久化變更**走 `IDefineAccess.SaveX(...)`：
+  1. 寫入後端 storage
+  2. invalidate cache slot，下一次 `GetX` 從 storage rebuild
+- **需要 deep copy？** 用該類型的 `Clone()` 方法（已提供於 `FormSchema` /
+  `FormTable` / `FormField` / `TableSchema` / `DatabaseSettings` 等）。
+  **不可**用 `XmlCodec` round-trip 替代 —— 它會在來源 mutate state。
+
+### 為什麼這條重要
+
+Bee.NET 設計用於多租戶 ASP.NET Core / Blazor Server host：單一 process 同時
+服務眾多 session，每個 session 可能有不同語系與租戶 context。Cache 是
+singleton；序列化生命週期 hook 讓即使是「讀取性質」的 `XmlCodec.Serialize`
+對共用狀態也非冪等。**「定義資料 init 後不可異動」**這條 invariant 是讓
+所有 session 能安全共用 cache 實例、無需協調的單一基礎規則。
+
 ## 跨層禁止事項
 
 | 禁止行為 | 原因 | 正確做法 |

@@ -27,6 +27,60 @@ See [development-cookbook.md § Framework Initialization Order](development-cook
 
 `tests/Bee.Tests.Shared/TestProcessBootstrap.cs` demonstrates the correct initialization order for the test process.
 
+## Definition Data Immutability After Init
+
+After framework initialization, **all server-side cached definition data is
+read-only and must not be mutated at runtime**. Every session shares the same
+in-memory instance through `IDefineAccess` / `ICacheContainer`, and the cache
+is process-wide; per-session adjustments leak to every other session, and
+concurrent mutations race.
+
+### Scope
+
+Anything reached through `IDefineAccess.GetX(...)` (which is backed by the
+`ICacheContainer` slot of the same name):
+
+- `FormSchema`, `FormLayout`, `TableSchema`
+- `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, `DbCategorySettings`
+- `LanguageResource`
+- `SessionInfo` is the deliberate exception — it is a per-session entity, not
+  shared definition data, and the cache key is the access token
+
+### Forbidden Patterns
+
+| Pattern | Why bad |
+|---------|---------|
+| `cachedSchema.Caption = "..."` | Mutates shared instance → cross-session leak / race |
+| `XmlCodec.Serialize(cachedInstance)` as a "free" deep-clone | `IObjectSerialize` lifecycle flips `SerializeState` on the source → thread race + `IsSerializeEmpty` mis-behaves under load |
+| Storing per-session state in `Tag` / extension properties on a cached object | `Tag` is also process-shared |
+| Using `MasterTable` / collection setters to swap children on a cached instance | Same race surface |
+
+### Correct Approach
+
+- **Need a per-session view (e.g. localized schema)?** Clone first, mutate the clone:
+  ```csharp
+  var customised = cachedSchema.Clone();
+  FormSchemaLocalizer.Localize(customised, sessionLang);
+  return customised;
+  ```
+- **Persistent changes** go through `IDefineAccess.SaveX(...)` which:
+  1. Writes to backing storage
+  2. Invalidates the cache slot so the next `GetX` rebuilds from storage
+- **Need a deep copy?** Use the type's `Clone()` method (provided on
+  `FormSchema` / `FormTable` / `FormField` / `TableSchema` /
+  `DatabaseSettings` etc.). Never substitute `XmlCodec` round-trip — it
+  mutates state on the source.
+
+### Why This Matters
+
+Bee.NET is designed for multi-tenant ASP.NET Core / Blazor Server hosts where a
+single process serves many concurrent sessions, each potentially in a different
+language and tenant context. The cache is a singleton; lifecycle-aware
+serialization hooks make even read-only operations like `XmlCodec.Serialize`
+non-idempotent against shared state. The invariant **"definition data is
+immutable after init"** is the single rule that lets every session safely
+share the same cached instances without coordination.
+
 ## Cross-Layer Forbidden Practices
 
 | Forbidden | Reason | Correct Approach |

@@ -156,5 +156,27 @@ namespace Bee.Definition.Forms
         {
             return TableSchemaGenerator.Generate(this);
         }
+
+        /// <summary>
+        /// Creates a deep copy of this instance. The result is unparented (no
+        /// owning collection / schema) — typically added to a
+        /// <see cref="FormTableCollection"/> via <c>Add(table.Clone())</c>.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="RelationFieldReferences"/> is derived state and is not
+        /// copied; the clone will rebuild it lazily on first access from the
+        /// cloned <see cref="Fields"/>.
+        /// </remarks>
+        public FormTable Clone()
+        {
+            var copy = new FormTable(TableName, DisplayName)
+            {
+                DbTableName = DbTableName,
+            };
+            if (_fields != null)
+                foreach (var field in _fields)
+                    copy.Fields!.Add(field.Clone());
+            return copy;
+        }
     }
 }

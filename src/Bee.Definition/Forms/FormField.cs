@@ -261,6 +261,41 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
+        /// Creates a deep copy of this instance. The result is unparented (no
+        /// owning collection / table) — call sites typically add it to a
+        /// <see cref="FormFieldCollection"/> via <c>Add(field.Clone())</c>.
+        /// </summary>
+        public FormField Clone()
+        {
+            var copy = new FormField
+            {
+                FieldName = FieldName,
+                Caption = Caption,
+                DbType = DbType,
+                Type = Type,
+                ControlType = ControlType,
+                MaxLength = MaxLength,
+                DefaultValue = DefaultValue,
+                DisplayFormat = DisplayFormat,
+                NumberFormat = NumberFormat,
+                RelationProgId = RelationProgId,
+                LookupProgId = LookupProgId,
+                Visible = Visible,
+                Width = Width,
+            };
+            if (_relationFieldMappings != null)
+                foreach (var mapping in _relationFieldMappings)
+                    copy.RelationFieldMappings!.Add(mapping.Clone());
+            if (_lookupFieldMappings != null)
+                foreach (var mapping in _lookupFieldMappings)
+                    copy.LookupFieldMappings!.Add(mapping.Clone());
+            if (_listItems != null)
+                foreach (var item in _listItems)
+                    copy.ListItems!.Add(item.Clone());
+            return copy;
+        }
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

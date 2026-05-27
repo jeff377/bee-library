@@ -169,6 +169,31 @@ namespace Bee.Definition.Forms
             => ListLayoutGenerator.Generate(this);
 
         /// <summary>
+        /// Creates a deep copy of this instance. Use this whenever a per-session
+        /// view of a cached <see cref="FormSchema"/> must be mutated (e.g. before
+        /// applying language-specific localization).
+        /// </summary>
+        /// <remarks>
+        /// Cached <see cref="FormSchema"/> instances returned by
+        /// <see cref="Storage.IDefineAccess.GetFormSchema"/> are shared across
+        /// every session in the process — see <c>docs/development-constraints.md</c>
+        /// § <i>Definition Data Immutability After Init</i>. Mutating without
+        /// cloning first leaks state across sessions and races under concurrency.
+        /// </remarks>
+        public FormSchema Clone()
+        {
+            var copy = new FormSchema(ProgId, DisplayName)
+            {
+                CategoryId = CategoryId,
+                ListFields = ListFields,
+            };
+            if (_tables != null)
+                foreach (var table in _tables)
+                    copy.Tables!.Add(table.Clone());
+            return copy;
+        }
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

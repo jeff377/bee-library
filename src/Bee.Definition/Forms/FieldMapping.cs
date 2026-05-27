@@ -48,6 +48,11 @@ namespace Bee.Definition.Forms
         public string DestinationField { get; set; } = string.Empty;
 
         /// <summary>
+        /// Creates a deep copy of this instance. Result is unparented (no owning collection).
+        /// </summary>
+        public FieldMapping Clone() => new(SourceField, DestinationField);
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

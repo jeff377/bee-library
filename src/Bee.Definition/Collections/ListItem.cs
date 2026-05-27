@@ -49,6 +49,11 @@ namespace Bee.Definition.Collections
         public string Text { get; set; } = string.Empty;
 
         /// <summary>
+        /// Creates a deep copy of this instance. Result is unparented (no owning collection).
+        /// </summary>
+        public ListItem Clone() => new(Value, Text);
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

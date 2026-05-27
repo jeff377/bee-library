@@ -340,16 +340,24 @@ namespace Bee.Business.System
 
         /// <summary>
         /// Loads the <see cref="FormSchema"/> from the Define cache, deep-clones it via
-        /// XML round-trip, and applies localized text using the current session's
-        /// <c>Culture</c>. The cloned instance is safe to mutate without affecting other
-        /// callers that share the cached schema.
+        /// <see cref="FormSchema.Clone"/>, and applies localized text using the current
+        /// session's <c>Culture</c>. The cloned instance is safe to mutate without
+        /// affecting the shared cached schema.
         /// </summary>
         /// <remarks>
-        /// Deep-cloning via <see cref="XmlCodec"/> avoids per-class <c>Clone</c> methods
-        /// on <see cref="FormSchema"/> / <see cref="FormTable"/> / <see cref="FormField"/>;
-        /// the XML round-trip path is already covered by existing serialization tests.
-        /// Per-call cost is bounded (schemas are usually small) and avoided altogether
-        /// when no localization is needed (when <c>SessionInfo.Culture</c> is empty).
+        /// <para>
+        /// The cached <see cref="FormSchema"/> is process-shared (every session reads
+        /// the same in-memory instance) — see <c>docs/development-constraints.md</c>
+        /// § <i>Definition Data Immutability After Init</i>. We must <b>not</b> mutate
+        /// it, and we must <b>not</b> use <see cref="XmlCodec.Serialize(object)"/> as
+        /// a deep-clone shortcut either: the serialization lifecycle flips
+        /// <c>SerializeState</c> on the source, which races under concurrent load.
+        /// </para>
+        /// <para>
+        /// <see cref="FormSchema.Clone"/> is a pure read of the source and produces a
+        /// fully independent copy with no shared mutable state — safe under any number
+        /// of concurrent callers in any combination of languages.
+        /// </para>
         /// </remarks>
         /// <param name="progId">The program identifier.</param>
         private FormSchema LoadAndLocalizeSchema(string progId)
@@ -363,10 +371,7 @@ namespace Bee.Business.System
             if (string.IsNullOrWhiteSpace(lang))
                 return raw;
 
-            var xml = XmlCodec.Serialize(raw);
-            var clone = XmlCodec.Deserialize<FormSchema>(xml)
-                ?? throw new InvalidOperationException($"Failed to clone FormSchema '{progId}' for localization.");
-
+            var clone = raw.Clone();
             new FormSchemaLocalizer(LanguageService).Localize(clone, lang);
             return clone;
         }
