@@ -4,6 +4,7 @@ using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
@@ -305,9 +306,7 @@ namespace Bee.Business.System
             if (string.IsNullOrWhiteSpace(args.ProgId))
                 throw new ArgumentException("ProgId is required.", nameof(args));
 
-            var schema = DefineAccess.GetDefine(DefineType.FormSchema, new[] { args.ProgId }) as FormSchema
-                ?? throw new InvalidOperationException($"FormSchema '{args.ProgId}' not found.");
-
+            var schema = LoadAndLocalizeSchema(args.ProgId);
             return new GetFormSchemaResult { Schema = schema };
         }
 
@@ -329,13 +328,47 @@ namespace Bee.Business.System
             if (string.IsNullOrWhiteSpace(args.ProgId))
                 throw new ArgumentException("ProgId is required.", nameof(args));
 
-            var schema = DefineAccess.GetDefine(DefineType.FormSchema, new[] { args.ProgId }) as FormSchema
-                ?? throw new InvalidOperationException($"FormSchema '{args.ProgId}' not found.");
+            // Localize the schema first so the generated layout inherits localized
+            // DisplayName / Caption values rather than the raw fixture text.
+            var schema = LoadAndLocalizeSchema(args.ProgId);
 
             var layoutId = string.IsNullOrWhiteSpace(args.LayoutId) ? "default" : args.LayoutId;
             var layout = schema.GetFormLayout(layoutId);
 
             return new GetFormLayoutResult { Layout = layout };
+        }
+
+        /// <summary>
+        /// Loads the <see cref="FormSchema"/> from the Define cache, deep-clones it via
+        /// XML round-trip, and applies localized text using the current session's
+        /// <c>Culture</c>. The cloned instance is safe to mutate without affecting other
+        /// callers that share the cached schema.
+        /// </summary>
+        /// <remarks>
+        /// Deep-cloning via <see cref="XmlCodec"/> avoids per-class <c>Clone</c> methods
+        /// on <see cref="FormSchema"/> / <see cref="FormTable"/> / <see cref="FormField"/>;
+        /// the XML round-trip path is already covered by existing serialization tests.
+        /// Per-call cost is bounded (schemas are usually small) and avoided altogether
+        /// when no localization is needed (when <c>SessionInfo.Culture</c> is empty).
+        /// </remarks>
+        /// <param name="progId">The program identifier.</param>
+        private FormSchema LoadAndLocalizeSchema(string progId)
+        {
+            var raw = DefineAccess.GetDefine(DefineType.FormSchema, new[] { progId }) as FormSchema
+                ?? throw new InvalidOperationException($"FormSchema '{progId}' not found.");
+
+            // Skip the clone + localize round-trip when the caller has no session lang
+            // (anonymous flows shouldn't be paying for a deep clone).
+            string lang = GetCurrentLang();
+            if (string.IsNullOrWhiteSpace(lang))
+                return raw;
+
+            var xml = XmlCodec.Serialize(raw);
+            var clone = XmlCodec.Deserialize<FormSchema>(xml)
+                ?? throw new InvalidOperationException($"Failed to clone FormSchema '{progId}' for localization.");
+
+            new FormSchemaLocalizer(LanguageService).Localize(clone, lang);
+            return clone;
         }
 
         /// <summary>

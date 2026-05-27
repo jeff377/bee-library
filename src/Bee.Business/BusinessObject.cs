@@ -110,7 +110,7 @@ namespace Bee.Business
         /// session is established yet (anonymous calls); <see cref="ILanguageService"/>
         /// then falls back through to the system default language.
         /// </summary>
-        private string GetCurrentLang()
+        protected string GetCurrentLang()
         {
             if (AccessToken == Guid.Empty)
                 return string.Empty;
