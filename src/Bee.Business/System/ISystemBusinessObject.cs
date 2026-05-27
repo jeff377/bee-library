@@ -1,8 +1,22 @@
 namespace Bee.Business.System
 {
     /// <summary>
-    /// Interface for system-level business logic objects.
+    /// Cross-BO interface for the system-level business logic object.
     /// </summary>
+    /// <remarks>
+    /// <see cref="IBusinessObject"/> / <see cref="ISystemBusinessObject"/> exist as
+    /// the decoupling layer for <b>BO-to-BO calls</b>: the caller resolves a BO by
+    /// <c>progId</c> through <c>IBusinessObjectFactory</c>, casts to the axis
+    /// interface, and invokes a method without binding to a concrete class (so
+    /// host-side BO customisation does not break callers).
+    ///
+    /// **Pure-API methods do not belong here.** Methods that exist only to be
+    /// dispatched through <c>JsonRpcExecutor.Execute</c> from a client — and
+    /// have no internal BO consumers — are declared as <c>public</c> on the
+    /// concrete <see cref="SystemBusinessObject"/> class with
+    /// <c>[ApiAccessControl]</c>, but stay out of this interface (e.g.
+    /// <c>Ping</c>, <c>GetFormSchema</c>, <c>GetFormLayout</c>, <c>GetLanguage</c>).
+    /// </remarks>
     public interface ISystemBusinessObject : IBusinessObject
     {
         /// <summary>
@@ -22,31 +36,6 @@ namespace Bee.Business.System
         /// </summary>
         /// <param name="args">The input arguments.</param>
         GetDefineResult GetDefine(GetDefineArgs args);
-
-        /// <summary>
-        /// Gets a form schema as a typed object (JSON-friendly alternative to
-        /// <see cref="GetDefine"/> for JS frontends).
-        /// </summary>
-        /// <param name="args">The input arguments carrying the target <c>ProgId</c>.</param>
-        GetFormSchemaResult GetFormSchema(GetFormSchemaArgs args);
-
-        /// <summary>
-        /// Gets a form layout as a typed object (intended for JS frontends that
-        /// need to render schema-driven UI).
-        /// </summary>
-        /// <param name="args">
-        /// The input arguments carrying the target <c>ProgId</c> and optional
-        /// <c>LayoutId</c>.
-        /// </param>
-        GetFormLayoutResult GetFormLayout(GetFormLayoutArgs args);
-
-        /// <summary>
-        /// Gets a language resource (localized text + enums for one namespace ×
-        /// one language) as a typed object; intended for JS / TypeScript
-        /// frontends consuming localized UI text.
-        /// </summary>
-        /// <param name="args">The input arguments carrying <c>Lang</c> and <c>Namespace</c>.</param>
-        GetLanguageResult GetLanguage(GetLanguageArgs args);
 
         /// <summary>
         /// Saves definition data.
