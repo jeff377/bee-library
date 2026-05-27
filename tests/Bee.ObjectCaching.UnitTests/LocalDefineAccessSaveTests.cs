@@ -1,7 +1,9 @@
 using System.ComponentModel;
+using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -21,6 +23,8 @@ namespace Bee.ObjectCaching.UnitTests
     public class LocalDefineAccessSaveTests
     {
         private static readonly string[] DbViaDefineKeys = { "db_via_define" };
+        private static readonly string[] s_formLayoutKey = { "L_GetTest" };
+        private static readonly string[] s_languageKeys = { "zh-TW", "Common" };
 
         private static LocalDefineAccess CreateAccess(PathOptions paths)
             => new LocalDefineAccess(new FileDefineStorage(paths), paths);
@@ -197,6 +201,120 @@ namespace Bee.ObjectCaching.UnitTests
             var layout = new FormLayout { LayoutId = "L_via_define" };
             access.SaveDefine(DefineType.FormLayout, layout);
             Assert.True(File.Exists(temp.Options.GetFormLayoutFilePath("L_via_define")));
+        }
+
+        [Fact]
+        [DisplayName("SaveLanguage 應寫入以 Namespace 命名的 Language xml")]
+        public void SaveLanguage_WritesFile()
+        {
+            using var temp = TempDir.Create();
+            var access = CreateAccess(temp.Options);
+            var resource = new LanguageResource { Lang = "zh-TW", Namespace = "Common" };
+
+            access.SaveLanguage(resource);
+
+            Assert.True(File.Exists(temp.Options.GetLanguageFilePath("zh-TW", "Common")));
+        }
+
+        [Fact]
+        [DisplayName("SaveLanguage 傳入 null 應拋 ArgumentNullException")]
+        public void SaveLanguage_NullResource_ThrowsArgumentNullException()
+        {
+            using var temp = TempDir.Create();
+            var access = CreateAccess(temp.Options);
+
+            Assert.Throws<ArgumentNullException>(() => access.SaveLanguage(null!));
+        }
+
+        [Fact]
+        [DisplayName("SaveDefine(Language) 應委派至 SaveLanguage 寫入 Language xml")]
+        public void SaveDefine_Language_DelegatesToSaveLanguage()
+        {
+            using var temp = TempDir.Create();
+            var access = CreateAccess(temp.Options);
+            var resource = new LanguageResource { Lang = "en-US", Namespace = "Messages" };
+
+            access.SaveDefine(DefineType.Language, resource);
+
+            Assert.True(File.Exists(temp.Options.GetLanguageFilePath("en-US", "Messages")));
+        }
+
+        [Fact]
+        [DisplayName("GetDefine(ProgramSettings) 應回傳 ProgramSettings 實例")]
+        public void GetDefine_ProgramSettings_ReturnsProgramSettings()
+        {
+            using var temp = TempDir.Create();
+            XmlCodec.SerializeToFile(new ProgramSettings(), temp.Options.GetProgramSettingsFilePath());
+            var access = CreateAccess(temp.Options);
+
+            var result = access.GetDefine(DefineType.ProgramSettings);
+
+            Assert.IsType<ProgramSettings>(result);
+        }
+
+        [Fact]
+        [DisplayName("GetDefine(FormLayout) 帶正確 key 應回傳 FormLayout 實例")]
+        public void GetDefine_FormLayout_WithCorrectKey_ReturnsFormLayout()
+        {
+            using var temp = TempDir.Create();
+            var access = CreateAccess(temp.Options);
+            access.SaveFormLayout(new FormLayout { LayoutId = "L_GetTest" });
+
+            var result = access.GetDefine(DefineType.FormLayout, s_formLayoutKey);
+
+            Assert.IsType<FormLayout>(result);
+        }
+
+        [Fact]
+        [DisplayName("GetDefine(Language) 帶兩個正確 keys 應回傳 LanguageResource 實例")]
+        public void GetDefine_Language_WithCorrectKeys_ReturnsLanguageResource()
+        {
+            using var temp = TempDir.Create();
+            var access = CreateAccess(temp.Options);
+            access.SaveLanguage(new LanguageResource { Lang = "zh-TW", Namespace = "Common" });
+
+            var result = access.GetDefine(DefineType.Language, s_languageKeys);
+
+            Assert.IsType<LanguageResource>(result);
+        }
+
+        [Fact]
+        [DisplayName("GetProgramSettings 於檔案存在時應回傳 ProgramSettings 實例")]
+        public void GetProgramSettings_FileExists_ReturnsInstance()
+        {
+            using var temp = TempDir.Create();
+            XmlCodec.SerializeToFile(new ProgramSettings(), temp.Options.GetProgramSettingsFilePath());
+            var access = CreateAccess(temp.Options);
+
+            var result = access.GetProgramSettings();
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        [DisplayName("GetFormLayout 於 FormLayout 檔案存在時應回傳 FormLayout 實例")]
+        public void GetFormLayout_FileExists_ReturnsFormLayout()
+        {
+            using var temp = TempDir.Create();
+            var access = CreateAccess(temp.Options);
+            access.SaveFormLayout(new FormLayout { LayoutId = "L_Exist" });
+
+            var result = access.GetFormLayout("L_Exist");
+
+            Assert.NotNull(result);
+        }
+
+        [Fact]
+        [DisplayName("GetLanguage 於 Language 檔案存在時應回傳 LanguageResource 實例")]
+        public void GetLanguage_FileExists_ReturnsLanguageResource()
+        {
+            using var temp = TempDir.Create();
+            var access = CreateAccess(temp.Options);
+            access.SaveLanguage(new LanguageResource { Lang = "zh-TW", Namespace = "System" });
+
+            var result = access.GetLanguage("zh-TW", "System");
+
+            Assert.NotNull(result);
         }
 
         private sealed class TempDir : IDisposable
