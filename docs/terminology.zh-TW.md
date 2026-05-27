@@ -50,7 +50,7 @@
 |----------|----------|------|
 | `FormSchema` | 表單結構定義 | 定義中樞，同時驅動 UI、資料庫結構與驗證規則 |
 | `FormTable` | 表單資料表 | FormSchema 內的主檔或明細資料表定義 |
-| `FormField` | 表單欄位 | 表單資料表內的單一欄位，含型別、驗證、控制項資訊 |
+| `FormField` | 表單欄位 | 表單資料表內的單一欄位，含型別、驗證、控制項資訊（透過 `LangEnumName` 指向語系化下拉選項） |
 | `FormLayout` | 表單版面配置 | FormSchema 的 UI 投影，描述欄位排列方式 |
 | `FormTableCollection` | 表單資料表集合 | FormSchema 內所有 FormTable 的集合 |
 | `FormLayoutGenerator` | 表單版面配置產生器 | 依據 FormSchema 自動產生 FormLayout |
@@ -91,6 +91,19 @@
 | `IDefineAccess` | 定義存取介面 | 讀取與儲存各類定義資料的抽象介面 |
 | `IDefineStorage` | 定義儲存介面 | 定義資料持久化的抽象介面 |
 | `FileDefineStorage` | 檔案定義儲存 | 以 XML 檔案實作定義資料的讀寫 |
+
+### 語系本地化
+
+| 英文名稱 | 中文名稱 | 說明 |
+|----------|----------|------|
+| `LanguageResource` | 語系資源 | 單一語系資源：一個 namespace × 一個 lang；含本地化文字 `Items` 與下拉列舉 `Enums` |
+| `LanguageItem` | 語系項目 | `LanguageResource` 內的單一本地化文字（`Key` + `Value`） |
+| `LanguageEnum` | 語系列舉 | `LanguageResource` 內的有序 code/text 集合（下拉、查詢用） |
+| `LanguageEnumEntry` | 語系列舉項目 | `LanguageEnum` 內的單一 `Code` + `Text` 配對 |
+| `ILanguageService` | 語系服務介面 | 依 `(lang, namespace, key)` 解析本地化文字與列舉，含預設語系 fallback |
+| `LanguageService` | 語系服務 | 預設 `ILanguageService` 實作，透過 `IDefineAccess.GetLanguage` 與框架 cache 提供查詢 |
+| `BeeStringLocalizer<T>` | Bee 字串本地化 | `Microsoft.Extensions.Localization.IStringLocalizer<T>` adapter — 讓 Blazor / ASP.NET Core 元件透過 .NET 標準介面取用語系資源 |
+| `FormSchemaLocalizer` | 表單結構本地化 | 對複製過的 `FormSchema` 套用 `LanguageResource`：Caption / DisplayName 與 `LangEnumName` 對應的 ComboBox 選項 |
 
 ### 其他介面
 
@@ -228,7 +241,7 @@
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `DefineType` | 定義資料類別 | `SystemSettings`、`DatabaseSettings`、`DbCategorySettings`、`ProgramSettings`、`TableSchema`、`FormSchema`、`FormLayout` 共 7 個值 |
+| `DefineType` | 定義資料類別 | `SystemSettings`、`DatabaseSettings`、`DbCategorySettings`、`ProgramSettings`、`TableSchema`、`FormSchema`、`FormLayout`、`Language` 共 8 個值 |
 
 ### 資料庫
 
@@ -268,6 +281,7 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 | `FormSchema.xml` | 表單結構定義檔 | 各功能程式的 FormSchema 序列化檔 |
 | `FormLayout.xml` | 表單版面配置檔 | 各功能程式的 FormLayout 序列化檔 |
 | `TableSchema.xml` | 資料表結構檔 | 各資料表的 TableSchema 序列化檔 |
+| `Language.xml` | 語系資源檔 | `LanguageResource` 序列化檔，依 `(lang, namespace)` 分檔（如 `Language/zh-TW/Common.Language.xml`） |
 
 ---
 

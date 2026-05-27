@@ -50,7 +50,7 @@ This document provides a standard term reference for technical writing, ensuring
 |---------|------|-------------|
 | `FormSchema` | 表單結構定義 | The definition hub, simultaneously driving UI, database structure, and validation rules |
 | `FormTable` | 表單資料表 | Master or detail table definition inside a FormSchema |
-| `FormField` | 表單欄位 | A single field inside a form table, with type, validation, and control information |
+| `FormField` | 表單欄位 | A single field inside a form table, with type, validation, and control information (carries `LangEnumName` for localized dropdown options) |
 | `FormLayout` | 表單版面配置 | The UI projection of a FormSchema, describing field arrangement |
 | `FormTableCollection` | 表單資料表集合 | A collection of all FormTables in a FormSchema |
 | `FormLayoutGenerator` | 表單版面配置產生器 | Automatically generates a FormLayout from a FormSchema |
@@ -91,6 +91,19 @@ This document provides a standard term reference for technical writing, ensuring
 | `IDefineAccess` | 定義存取介面 | Abstract interface for reading and storing all kinds of definition data |
 | `IDefineStorage` | 定義儲存介面 | Abstract interface for definition data persistence |
 | `FileDefineStorage` | 檔案定義儲存 | XML-file-based implementation of definition data read / write |
+
+### Localization
+
+| English | 中文 | Description |
+|---------|------|-------------|
+| `LanguageResource` | 語系資源 | A single language resource — one namespace × one language; holds localized text `Items` plus enum entries (`Enums`) |
+| `LanguageItem` | 語系項目 | A single localized text entry (`Key` + `Value`) within a `LanguageResource` |
+| `LanguageEnum` | 語系列舉 | An ordered set of code/text entries (for dropdowns, lookups) within a `LanguageResource` |
+| `LanguageEnumEntry` | 語系列舉項目 | A single `Code` + `Text` pair inside a `LanguageEnum` |
+| `ILanguageService` | 語系服務介面 | API for resolving localized text and enum entries by `(lang, namespace, key)`, with default-language fall-back |
+| `LanguageService` | 語系服務 | Default `ILanguageService` implementation backed by `IDefineAccess.GetLanguage` and the framework cache |
+| `BeeStringLocalizer<T>` | Bee 字串本地化 | `Microsoft.Extensions.Localization.IStringLocalizer<T>` adapter — lets Blazor / ASP.NET Core consume language resources through the standard .NET surface |
+| `FormSchemaLocalizer` | 表單結構本地化 | Applies a `LanguageResource` to a cloned `FormSchema`, populating Caption / DisplayName and ComboBox options driven by `LangEnumName` |
 
 ### Other Interfaces
 
@@ -228,7 +241,7 @@ This document provides a standard term reference for technical writing, ensuring
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `DefineType` | 定義資料類別 | `SystemSettings`, `DatabaseSettings`, `DbCategorySettings`, `ProgramSettings`, `TableSchema`, `FormSchema`, `FormLayout` — 7 values total |
+| `DefineType` | 定義資料類別 | `SystemSettings`, `DatabaseSettings`, `DbCategorySettings`, `ProgramSettings`, `TableSchema`, `FormSchema`, `FormLayout`, `Language` — 8 values total |
 
 ### Database
 
@@ -268,6 +281,7 @@ The BeeNET framework automatically maintains the following system fields in all 
 | `FormSchema.xml` | 表單結構定義檔 | Serialized FormSchema files for each functional program |
 | `FormLayout.xml` | 表單版面配置檔 | Serialized FormLayout files for each functional program |
 | `TableSchema.xml` | 資料表結構檔 | Serialized TableSchema files for each table |
+| `Language.xml` | 語系資源檔 | Serialized `LanguageResource` files, one per `(lang, namespace)` pair (e.g. `Language/zh-TW/Common.Language.xml`) |
 
 ---
 

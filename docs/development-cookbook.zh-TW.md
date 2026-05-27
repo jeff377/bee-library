@@ -24,8 +24,8 @@ ctor 注入解析，無靜態入口點（service locator）。
 │    → 來自 Bee.Hosting（composition root）            │
 │    → 註冊 IDefineStorage / IDefineAccess /           │
 │      ICacheContainer / IDbConnectionManager /        │
-│      ISessionInfoService / IBusinessObjectFactory /  │
-│      JsonRpcExecutor                                 │
+│      ISessionInfoService / ILanguageService /        │
+│      IBusinessObjectFactory / JsonRpcExecutor        │
 ├─────────────────────────────────────────────────────┤
 │ 5. provider = services.BuildServiceProvider()        │
 │ 6. app.UseBeeFramework()（僅 ASP.NET — 目前為 no-op，│

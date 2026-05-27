@@ -161,34 +161,37 @@ require `EnterCompany`; methods bound to company-scoped tables will throw
 
 ## Available methods
 
-The plan
-[`docs/plans/plan-jsonrpc-frontend-integration.md`](plans/plan-jsonrpc-frontend-integration.md)
-contains the authoritative method catalog. Summary:
+The complete catalog (with `[ApiAccessControl]` per method) lives at
+[`docs/api-method-reference.md`](api-method-reference.md). Summary:
 
 | Category | Methods |
 |----------|---------|
 | Anonymous | `System.Ping`, `System.GetCommonConfiguration`, `System.Login`, `System.CreateSession` |
 | Authenticated — Session | `System.EnterCompany`, `System.LeaveCompany`, `System.Logout` |
-| Authenticated — Definition | `System.GetDefine`, `System.SaveDefine` (SystemSettings / DatabaseSettings are local-call-only); `System.GetFormSchema`, `System.GetFormLayout` (JSON-native, JS-preferred) |
+| Authenticated — Definition | `System.GetDefine`, `System.SaveDefine` (SystemSettings / DatabaseSettings are local-call-only); `System.GetFormSchema`, `System.GetFormLayout`, `System.GetLanguage` (JSON-native, JS-preferred) |
 | Authenticated — Form CRUD | `<ProgId>.GetList`, `GetNewData`, `GetData`, `Save`, `Delete` |
 | **Not for JS** | `System.CheckPackageUpdate`, `System.GetPackage` (Encoded, .NET runtime use) |
 
-**JSON-native schema / layout retrieval**
+**JSON-native schema / layout / language retrieval**
 
 `System.GetDefine` wraps the requested definition object in an XML string
 (`result.Xml`) — convenient for .NET clients (`XmlCodec.Deserialize<T>`) but
-awkward from JS (two layers of parsing). Two JSON-native siblings are exposed
+awkward from JS (two layers of parsing). Three JSON-native siblings are exposed
 for the JS path:
 
 | Method | Args | Returns |
 |--------|------|---------|
-| `System.GetFormSchema` | `{ progId }` | `{ schema: FormSchema }` — fields, db types, relations |
-| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections, fields, controlType, row/column spans |
+| `System.GetFormSchema` | `{ progId }` | `{ schema: FormSchema }` — fields, db types, relations (auto-localized using session's `Culture`) |
+| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections, fields, controlType, row/column spans (auto-localized) |
+| `System.GetLanguage` | `{ lang, namespace }` | `{ resource: LanguageResource }` — localized text `Items` + `Enums` for one namespace × one language |
 
 The `FormLayout` is generated on demand from `FormSchema`, so JS can request
 either independently. For schema-driven UI rendering, both are usually
 fetched together (`GetFormSchema` for validation rules, `GetFormLayout` for
-the UI shape).
+the UI shape). `GetLanguage` is used when the JS app needs to look up
+localized text directly (e.g. button labels stored in a `Common` namespace,
+or enum dropdown options when the FormSchema's automatic localization isn't
+enough).
 
 Method names are **case-sensitive** — `system.ping` will not dispatch.
 
@@ -366,6 +369,8 @@ export const systemApi = {
     rpcCall<{ schema: FormSchema }>('System.GetFormSchema', { progId }),
   getFormLayout: (progId: string, layoutId = '') =>
     rpcCall<{ layout: FormLayout }>('System.GetFormLayout', { progId, layoutId }),
+  getLanguage: (lang: string, namespace: string) =>
+    rpcCall<{ resource: LanguageResource }>('System.GetLanguage', { lang, namespace }),
 };
 
 export const formApi = (progId: string) => ({
@@ -393,7 +398,7 @@ them by hand.
 ## See also
 
 - [`samples/Web.Js.Demo/README.md`](../samples/Web.Js.Demo/README.md) — runnable demo of every method above
-- [`docs/plans/plan-jsonrpc-frontend-integration.md`](plans/plan-jsonrpc-frontend-integration.md) — design plan + method-by-method scope decisions
+- [`docs/api-method-reference.md`](api-method-reference.md) — full method catalog with `[ApiAccessControl]` per method
 - [`docs/adr/adr-013-frontend-api-connection-strategy.md`](adr/adr-013-frontend-api-connection-strategy.md) — broader frontend connection policy
 - [`src/Bee.Api.Core/README.md`](../src/Bee.Api.Core/README.md) — server-side dispatch internals
 - [`src/Bee.Api.Client/README.md`](../src/Bee.Api.Client/README.md) — the .NET client this guide is the JS counterpart to

@@ -156,32 +156,34 @@ Token 是 `Guid` 字串。Token 有效期限預設 1 小時；過期後 backend 
 
 ## 可呼叫的方法
 
-權威方法清單見
-[`docs/plans/plan-jsonrpc-frontend-integration.md`](plans/plan-jsonrpc-frontend-integration.md)。
+完整方法清單（含每方法 `[ApiAccessControl]` 設定）見
+[`docs/api-method-reference.zh-TW.md`](api-method-reference.zh-TW.md)。
 摘要：
 
 | 類別 | 方法 |
 |------|------|
 | Anonymous | `System.Ping`、`System.GetCommonConfiguration`、`System.Login`、`System.CreateSession` |
 | Authenticated — Session | `System.EnterCompany`、`System.LeaveCompany`、`System.Logout` |
-| Authenticated — Definition | `System.GetDefine`、`System.SaveDefine`（SystemSettings / DatabaseSettings 限 local call）；`System.GetFormSchema`、`System.GetFormLayout`（JSON-native，JS 優先用） |
+| Authenticated — Definition | `System.GetDefine`、`System.SaveDefine`（SystemSettings / DatabaseSettings 限 local call）；`System.GetFormSchema`、`System.GetFormLayout`、`System.GetLanguage`（JSON-native，JS 優先用） |
 | Authenticated — Form CRUD | `<ProgId>.GetList`、`GetNewData`、`GetData`、`Save`、`Delete` |
 | **JS 不會用到** | `System.CheckPackageUpdate`、`System.GetPackage`（Encoded，.NET runtime 用） |
 
-**JSON-native 取得 schema / layout**
+**JSON-native 取得 schema / layout / language**
 
 `System.GetDefine` 把要求的 definition 物件以 XML 字串包裝（`result.Xml`），
 對 .NET client 方便（`XmlCodec.Deserialize<T>`）但 JS 不友善（要解兩層）。
-JS 路徑有兩個 JSON-native 姊妹方法：
+JS 路徑有三個 JSON-native 姊妹方法：
 
 | 方法 | Args | 回傳 |
 |------|------|------|
-| `System.GetFormSchema` | `{ progId }` | `{ schema: FormSchema }` — 欄位、DB 型別、relations |
-| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections、fields、controlType、行列 span |
+| `System.GetFormSchema` | `{ progId }` | `{ schema: FormSchema }` — 欄位、DB 型別、relations（依 session `Culture` 自動本地化） |
+| `System.GetFormLayout` | `{ progId, layoutId? }` | `{ layout: FormLayout }` — sections、fields、controlType、行列 span（自動本地化） |
+| `System.GetLanguage` | `{ lang, namespace }` | `{ resource: LanguageResource }` — 單一 namespace × 單一 lang 的 `Items` + `Enums` |
 
 `FormLayout` 由 `FormSchema` 動態 generate，JS 可獨立呼叫任一個。
 schema-driven UI 渲染通常會兩者都拿（`GetFormSchema` 拿驗證規則、
-`GetFormLayout` 拿 UI 結構）。
+`GetFormLayout` 拿 UI 結構）。需要直接查語系文字（按鈕標籤、共用詞典、
+或 FormSchema 自動本地化覆蓋不到的下拉選項）時呼叫 `GetLanguage`。
 
 方法名稱**大小寫敏感** — `system.ping` 不會派遣到 `System.Ping`。
 
@@ -359,6 +361,8 @@ export const systemApi = {
     rpcCall<{ schema: FormSchema }>('System.GetFormSchema', { progId }),
   getFormLayout: (progId: string, layoutId = '') =>
     rpcCall<{ layout: FormLayout }>('System.GetFormLayout', { progId, layoutId }),
+  getLanguage: (lang: string, namespace: string) =>
+    rpcCall<{ resource: LanguageResource }>('System.GetLanguage', { lang, namespace }),
 };
 
 export const formApi = (progId: string) => ({
@@ -385,7 +389,7 @@ export const formApi = (progId: string) => ({
 ## 相關連結
 
 - [`samples/Web.Js.Demo/README.zh-TW.md`](../samples/Web.Js.Demo/README.zh-TW.md) — 上述所有方法的可跑 demo
-- [`docs/plans/plan-jsonrpc-frontend-integration.md`](plans/plan-jsonrpc-frontend-integration.md) — 設計計畫 + 逐方法範圍決策
+- [`docs/api-method-reference.zh-TW.md`](api-method-reference.zh-TW.md) — 完整方法清單含每方法 `[ApiAccessControl]` 設定
 - [`docs/adr/adr-013-frontend-api-connection-strategy.md`](adr/adr-013-frontend-api-connection-strategy.md) — 前端連線策略全景
 - [`src/Bee.Api.Core/README.md`](../src/Bee.Api.Core/README.md) — server 端派遣內部細節
 - [`src/Bee.Api.Client/README.md`](../src/Bee.Api.Client/README.md) — 本指引對應的 .NET client

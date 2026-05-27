@@ -25,8 +25,8 @@ entry point (service locator).
 │    → from Bee.Hosting (composition root)            │
 │    → Registers IDefineStorage / IDefineAccess /     │
 │      ICacheContainer / IDbConnectionManager /       │
-│      ISessionInfoService / IBusinessObjectFactory / │
-│      JsonRpcExecutor                                │
+│      ISessionInfoService / ILanguageService /       │
+│      IBusinessObjectFactory / JsonRpcExecutor       │
 ├─────────────────────────────────────────────────────┤
 │ 5. provider = services.BuildServiceProvider()       │
 │ 6. app.UseBeeFramework() (ASP.NET only — currently  │

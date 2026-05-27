@@ -27,7 +27,7 @@ All packages target **`net10.0`**.
 
 For an in-depth look at the layered architecture, data flow, and design decisions behind Bee.NET, see the [Architecture Overview](docs/architecture-overview.md).
 
-For guidelines on API Contract and BO Parameter design (Request/Response vs Args/Result), see the [API/BO Contract Design Principles](docs/api-bo-contract-design.md).
+For guidelines on API Contract and BO Parameter design (Request/Response vs Args/Result), see the [API/BO Contract Design Principles](docs/api-bo-contract-design.md). The full catalog of public API methods, with each method's `[ApiAccessControl]` settings, lives in the [API Method Reference](docs/api-method-reference.md).
 
 For calling the JSON-RPC API from a JavaScript / TypeScript frontend (React, Vue, Angular, vanilla — no .NET on the client), see the [JSON-RPC Frontend Integration Guide](docs/jsonrpc-frontend-integration.md).
 

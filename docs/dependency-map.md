@@ -76,7 +76,7 @@ graph BT
 | Project | External Packages |
 |---------|-------------------|
 | Bee.Base | *(none)* |
-| Bee.Definition | MessagePack 3.x |
+| Bee.Definition | MessagePack 3.x, Microsoft.Extensions.Localization.Abstractions 10.x |
 | Bee.Db | *(none)* |
 | Bee.ObjectCaching | Microsoft.Extensions.Caching.Memory 10.x, Microsoft.Extensions.FileProviders.Physical 10.x |
 | Bee.Hosting | Microsoft.Extensions.DependencyInjection 10.x |
@@ -97,7 +97,7 @@ All projects target `net10.0`. `Bee.Web.Blazor.Wasm` additionally requires the `
 - **Bee.Api.AspNetCore** is the ASP.NET Core integration layer (`UseBeeFramework` middleware + `ApiServiceController`); it pulls in `Bee.Hosting` transitively, so web hosts get DI registration plus middleware in one package reference.
 - Both the client (Bee.Api.Client) and the server (Bee.Api.AspNetCore) share protocol logic via **Bee.Api.Core**, ensuring consistent serialization and encryption behavior.
 - **Bee.UI.Core** is the cross-platform UI common layer (`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`), shared by desktop hosts (WinForms / WPF / Avalonia) and future MAUI for client-side connection state and endpoint persistence. It contains no platform-specific UI code and depends only on `Bee.Api.Client`.
-- **Bee.UI.Maui** is the MAUI cross-platform control library (iOS / Android / macOS / Windows). Phase 1 shipped the first FormSchema-driven controls (`DynamicForm` + `FormDataObject`) on a `net10.0` shared-logic TFM that references `Microsoft.Maui.Controls`; platform TFMs (`net10.0-android` / `net10.0-ios` / `net10.0-maccatalyst` / `net10.0-windows`) are opt-in via `-p:BeeUiMauiFullPlatforms=true` for hosts that have the matching workloads installed. NuGet publishing remains deferred until a complete control set is ready. See `docs/plans/plan-add-bee-ui-maui.md` and `docs/plans/plan-bee-ui-maui-dynamic-form.md`.
+- **Bee.UI.Maui** is the MAUI cross-platform control library (iOS / Android / macOS / Windows). Phase 1 shipped the first FormSchema-driven controls (`DynamicForm` + `FormDataObject`) on a `net10.0` shared-logic TFM that references `Microsoft.Maui.Controls`; platform TFMs (`net10.0-android` / `net10.0-ios` / `net10.0-maccatalyst` / `net10.0-windows`) are opt-in via `-p:BeeUiMauiFullPlatforms=true` for hosts that have the matching workloads installed. NuGet publishing remains deferred until a complete control set is ready. See `src/Bee.UI.Maui/README.md`.
 - **`Bee.UI.*` family criterion**: whether the package consumes the `Bee.UI.Core` abstractions (`ClientInfo` / `IEndpointStorage` / `IUIViewService`, etc.).
   - Consumes → `Bee.UI.*` (current: `Bee.UI.Core`, `Bee.UI.Maui`; future: `Bee.UI.WinForms`, `Bee.UI.Wpf`, etc.)
   - Does not consume, has its own state management → independent family prefix (e.g. `Bee.Web.Blazor.*`: Blazor circuit / WASM environments have no file IO or dialog service concept, so an independent path is appropriate).
