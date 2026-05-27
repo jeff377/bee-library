@@ -35,6 +35,7 @@
 | 文件 | 說明 |
 |------|------|
 | [API ↔ BO 契約設計](api-bo-contract-design.zh-TW.md) | API 契約三層分離（Contracts / API Type / BO Type） |
+| [API 方法參考](api-method-reference.zh-TW.md) | 透過 JSON-RPC 對外公開的所有 BO 方法單頁總覽，含 `[ApiAccessControl]` 設定與用途 |
 | [FormMap](formmap.zh-TW.md) | Bee.Db 採用的資料庫存取模式，以 FormSchema 為單位動態產生 SQL |
 
 ---

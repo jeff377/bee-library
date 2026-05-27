@@ -35,6 +35,7 @@ This directory contains the public-facing developer documentation for the Bee.NE
 | Document | Description |
 |----------|-------------|
 | [API ↔ BO Contract Design](api-bo-contract-design.md) | Three-tier API contract separation (Contracts / API Type / BO Type) |
+| [API Method Reference](api-method-reference.md) | Single-page table of every BO method exposed through JSON-RPC, with `[ApiAccessControl]` settings + purpose |
 | [FormMap](formmap.md) | Bee.Db's data access pattern, dynamically generating SQL from FormSchema |
 
 ---
