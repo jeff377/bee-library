@@ -308,5 +308,92 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
             Assert.NotNull(property);
             Assert.NotNull(property!.GetCustomAttribute<ParameterAttribute>());
         }
+
+        // ──────────────────────────────────────────────────────────────
+        // OnRowClickAsync
+        // ──────────────────────────────────────────────────────────────
+
+        private static Task InvokeOnRowClickAsync(DynamicGrid component, DataRow row)
+        {
+            var method = typeof(DynamicGrid).GetMethod(
+                "OnRowClickAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            return (Task)method!.Invoke(component, new object[] { row })!;
+        }
+
+        [Fact]
+        [DisplayName("OnRowClickAsync OnRowSelected 無委派時應直接返回，不拋例外")]
+        public async Task OnRowClickAsync_NoDelegate_ReturnsWithoutError()
+        {
+            var component = new DynamicGrid();
+            var table = new DataTable();
+            table.Columns.Add("col", typeof(string));
+            var row = table.NewRow();
+            row["col"] = "value";
+            table.Rows.Add(row);
+            var exception = await Record.ExceptionAsync(() => InvokeOnRowClickAsync(component, row));
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        [DisplayName("OnRowClickAsync row 無 sys_rowid 欄位時有委派也不呼叫 callback")]
+        public async Task OnRowClickAsync_HasDelegateButNoRowId_DoesNotInvokeCallback()
+        {
+            var invoked = false;
+            var component = new DynamicGrid();
+            component.OnRowSelected = EventCallback.Factory.Create<Guid>(
+                new SyncEventHandler(),
+                (Guid _) => { invoked = true; });
+            var table = new DataTable();
+            table.Columns.Add("name", typeof(string));
+            var row = table.NewRow();
+            row["name"] = "test";
+            table.Rows.Add(row);
+            await InvokeOnRowClickAsync(component, row);
+            Assert.False(invoked);
+        }
+
+        [Fact]
+        [DisplayName("OnRowClickAsync row 含有效 sys_rowid 且有委派時應呼叫 callback 並傳入正確 Guid")]
+        public async Task OnRowClickAsync_ValidRowWithDelegate_InvokesCallbackWithRowId()
+        {
+            var expectedGuid = Guid.NewGuid();
+            var capturedGuid = Guid.Empty;
+            var component = new DynamicGrid();
+            component.OnRowSelected = EventCallback.Factory.Create<Guid>(
+                new SyncEventHandler(),
+                (Guid g) => { capturedGuid = g; });
+            var table = new DataTable();
+            table.Columns.Add(SysFields.RowId, typeof(Guid));
+            var row = table.NewRow();
+            row[SysFields.RowId] = expectedGuid;
+            table.Rows.Add(row);
+            await InvokeOnRowClickAsync(component, row);
+            Assert.Equal(expectedGuid, capturedGuid);
+        }
+
+        // ──────────────────────────────────────────────────────────────
+        // FormatCell — IFormattable switch arm
+        // ──────────────────────────────────────────────────────────────
+
+        [Fact]
+        [DisplayName("FormatCell 整數值無格式設定時應使用 IFormattable 以 InvariantCulture 格式化")]
+        public void FormatCell_IntegerWithNoFormat_UsesIFormattableToString()
+        {
+            var table = new DataTable();
+            table.Columns.Add("count", typeof(int));
+            var row = table.NewRow();
+            row["count"] = 42;
+            table.Rows.Add(row);
+            var column = new LayoutColumn { FieldName = "count" };
+            var result = InvokeFormatCell(row, column);
+            Assert.Equal("42", result);
+        }
+
+        private sealed class SyncEventHandler : IHandleEvent
+        {
+            public Task HandleEventAsync(EventCallbackWorkItem callback, object? arg)
+                => callback.InvokeAsync(arg);
+        }
     }
 }
