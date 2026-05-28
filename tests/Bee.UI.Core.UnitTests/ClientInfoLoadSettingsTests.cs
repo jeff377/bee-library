@@ -47,6 +47,31 @@ namespace Bee.UI.Core.UnitTests
         }
 
         [Fact]
+        [DisplayName("LoadClientSettings 設定檔為空檔案時（反序列化回傳 null）應拋 InvalidOperationException")]
+        public void ClientSettings_EmptyFile_ThrowsInvalidOperationException()
+        {
+            string exeName = Assembly.GetEntryAssembly()?.GetName().Name ?? "Client";
+            string fileName = $"{exeName}.Settings.xml";
+            string filePath = Path.Combine(FileUtilities.GetAssemblyPath(), fileName);
+            var originalCached = s_clientSettingsField.GetValue(null);
+
+            // 空白檔案內容 → XmlCodec.Deserialize<T>("") 回傳 null → ?? throw InvalidOperationException
+            File.WriteAllText(filePath, string.Empty);
+            try
+            {
+                s_clientSettingsField.SetValue(null, null);
+                var exception = Record.Exception(() => _ = ClientInfo.ClientSettings);
+                Assert.NotNull(exception);
+                Assert.IsType<InvalidOperationException>(exception);
+            }
+            finally
+            {
+                s_clientSettingsField.SetValue(null, originalCached);
+                try { File.Delete(filePath); } catch (IOException) { }
+            }
+        }
+
+        [Fact]
         [DisplayName("AccessToken setter 設定相同 Token 時不應重設 _systemConnector 快取")]
         public void AccessToken_SameTokenSetTwice_ConnectorCachePreserved()
         {

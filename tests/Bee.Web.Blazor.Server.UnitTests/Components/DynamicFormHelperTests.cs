@@ -1,8 +1,11 @@
 using System.ComponentModel;
 using System.Reflection;
+using Bee.Base.Data;
 using Bee.Definition.Collections;
+using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.Web.Blazor.Server.Components;
+using Bee.Web.Blazor.Server.DataObjects;
 
 namespace Bee.Web.Blazor.Server.UnitTests.Components
 {
@@ -140,6 +143,69 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
             var result = method!.Invoke(component, new object[] { field }) as IEnumerable<ListItem>;
             Assert.NotNull(result);
             Assert.Empty(result!);
+        }
+
+        [Fact]
+        [DisplayName("BuildGridStyle ColumnCount 為 0 時應修正為 1 欄並回傳對應 CSS grid 樣式")]
+        public void BuildGridStyle_ZeroColumnCount_DefaultsToOneColumn()
+        {
+            var component = new DynamicForm();
+            typeof(DynamicForm)
+                .GetProperty("Layout", BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(component, new FormLayout { ColumnCount = 0 });
+            var method = typeof(DynamicForm).GetMethod("BuildGridStyle",
+                BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            var result = method!.Invoke(component, null) as string;
+            Assert.Equal("display:grid;grid-template-columns:repeat(1,minmax(0,1fr));gap:8px", result);
+        }
+
+        [Fact]
+        [DisplayName("EnumerateOptions DataObject 有欄位但欄位名稱不存在時應回傳空集合")]
+        public void EnumerateOptions_DataObjectFieldNotFound_ReturnsEmpty()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            schema.Tables!.Add("Employee", "Employee");
+            var dataObject = new FormDataObject(schema);
+
+            var component = new DynamicForm();
+            typeof(DynamicForm)
+                .GetProperty("DataObject", BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(component, dataObject);
+
+            var field = new LayoutField { FieldName = "nonexistent_field" };
+            var method = typeof(DynamicForm).GetMethod("EnumerateOptions",
+                BindingFlags.NonPublic | BindingFlags.Instance, null, s_layoutFieldParam, null);
+            Assert.NotNull(method);
+            var result = method!.Invoke(component, new object[] { field }) as IEnumerable<ListItem>;
+            Assert.NotNull(result);
+            Assert.Empty(result!);
+        }
+
+        [Fact]
+        [DisplayName("EnumerateOptions DataObject 有欄位且欄位含 ListItems 時應回傳對應選項清單")]
+        public void EnumerateOptions_DataObjectFieldWithListItems_ReturnsItems()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            var schemaField = master.Fields!.Add("status", "Status", FieldDbType.String);
+            schemaField.ListItems!.Add("A", "Active");
+            schemaField.ListItems.Add("I", "Inactive");
+
+            var dataObject = new FormDataObject(schema);
+
+            var component = new DynamicForm();
+            typeof(DynamicForm)
+                .GetProperty("DataObject", BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(component, dataObject);
+
+            var layoutField = new LayoutField { FieldName = "status" };
+            var method = typeof(DynamicForm).GetMethod("EnumerateOptions",
+                BindingFlags.NonPublic | BindingFlags.Instance, null, s_layoutFieldParam, null);
+            Assert.NotNull(method);
+            var result = method!.Invoke(component, new object[] { layoutField }) as IEnumerable<ListItem>;
+            Assert.NotNull(result);
+            Assert.Equal(2, result!.Count());
         }
     }
 }
