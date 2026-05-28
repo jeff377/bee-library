@@ -341,9 +341,11 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.Components
         {
             var invoked = false;
             var component = new DynamicGrid();
-            component.OnRowSelected = EventCallback.Factory.Create<Guid>(
-                new SyncEventHandler(),
-                (Guid _) => { invoked = true; });
+            typeof(DynamicGrid)
+                .GetProperty("OnRowSelected", BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(component, EventCallback.Factory.Create<Guid>(
+                    new SyncEventHandler(),
+                    (Guid _) => { invoked = true; }));
             var table = new DataTable();
             table.Columns.Add("name", typeof(string));
             var row = table.NewRow();
@@ -360,9 +362,11 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.Components
             var expectedGuid = Guid.NewGuid();
             var capturedGuid = Guid.Empty;
             var component = new DynamicGrid();
-            component.OnRowSelected = EventCallback.Factory.Create<Guid>(
-                new SyncEventHandler(),
-                (Guid g) => { capturedGuid = g; });
+            typeof(DynamicGrid)
+                .GetProperty("OnRowSelected", BindingFlags.Public | BindingFlags.Instance)!
+                .SetValue(component, EventCallback.Factory.Create<Guid>(
+                    new SyncEventHandler(),
+                    (Guid g) => { capturedGuid = g; }));
             var table = new DataTable();
             table.Columns.Add(SysFields.RowId, typeof(Guid));
             var row = table.NewRow();
