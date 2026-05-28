@@ -80,5 +80,21 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.Components
             Assert.Null(exception);
             Assert.Equal(token, provider.AccessToken);
         }
+
+        [Fact]
+        [DisplayName("OnInitialized 呼叫後 _isAttached 應設為 true")]
+        public void OnInitialized_SetsIsAttachedToTrue()
+        {
+            var provider = new BeeAccessTokenProvider();
+            var isAttachedField = typeof(BeeAccessTokenProvider).GetField(
+                "_isAttached", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(isAttachedField);
+            Assert.False((bool)isAttachedField!.GetValue(provider)!);
+            var method = typeof(BeeAccessTokenProvider).GetMethod(
+                "OnInitialized", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            method!.Invoke(provider, null);
+            Assert.True((bool)isAttachedField.GetValue(provider)!);
+        }
     }
 }
