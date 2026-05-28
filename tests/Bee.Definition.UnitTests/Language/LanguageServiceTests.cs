@@ -206,6 +206,45 @@ namespace Bee.Definition.UnitTests.Language
             Assert.Null(svc.GetLangEnumText("zh-TW", "Common.Gender", "X"));
         }
 
+        [Fact]
+        [DisplayName("GetLangText fullKey 無點號時整個字串視為 namespace，未命中時回傳 namespace. 格式")]
+        public void GetLangText_FullKeyWithNoDot_ReturnsFallbackKey()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            var svc = new LanguageService(defineAccess);
+            var result = svc.GetLangText("zh-TW", "NoDotKey");
+            Assert.Equal("NoDotKey.", result);
+        }
+
+        [Fact]
+        [DisplayName("GetLangEnum namespace 為空白字串時應回傳 null，不做任何查詢")]
+        public void GetLangEnum_BlankNamespace_ReturnsNull()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            var svc = new LanguageService(defineAccess);
+            Assert.Null(svc.GetLangEnum("zh-TW", "  ", "Gender"));
+        }
+
+        [Fact]
+        [DisplayName("GetLangEnum enumName 為空白字串時應回傳 null，不做任何查詢")]
+        public void GetLangEnum_BlankEnumName_ReturnsNull()
+        {
+            var defineAccess = new StubDefineAccess("en-US");
+            var svc = new LanguageService(defineAccess);
+            Assert.Null(svc.GetLangEnum("zh-TW", "Common", " "));
+        }
+
+        [Fact]
+        [DisplayName("GetLangText 系統預設語系為空字串時應跳過 fallback 查詢，直接回傳 fullKey")]
+        public void GetLangText_EmptyDefaultLang_ReturnsFallbackKeyWithoutFallbackLookup()
+        {
+            var defineAccess = new StubDefineAccess("");
+            var svc = new LanguageService(defineAccess);
+            var result = svc.GetLangText("zh-TW", "Common.OK");
+            Assert.Equal("Common.OK", result);
+            Assert.Equal(1, defineAccess.GetLanguageCallCount);
+        }
+
         private sealed class StubDefineAccess : IDefineAccess
         {
             private readonly Dictionary<string, LanguageResource> _resources = [];
