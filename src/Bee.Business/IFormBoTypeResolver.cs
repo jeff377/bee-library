@@ -6,10 +6,11 @@ namespace Bee.Business
     /// Resolves the concrete <see cref="FormBusinessObject"/>-derived type for a given progId.
     /// </summary>
     /// <remarks>
-    /// ERP applications can install a custom resolver (e.g. one backed by an XML mapping
-    /// file) to dispatch progId to a specific BO subclass. The framework default
-    /// (<see cref="DefaultFormBoTypeResolver"/>) always returns the base
-    /// <see cref="FormBusinessObject"/>.
+    /// The framework registers <see cref="ProgramSettingsFormBoTypeResolver"/> by default
+    /// via <c>AddBeeFramework</c>, which looks up <c>ProgramItem.BusinessObject</c> from
+    /// <c>ProgramSettings.xml</c>. Hosts that need to bypass <c>ProgramSettings</c>
+    /// entirely can replace the registration with <see cref="DefaultFormBoTypeResolver"/>
+    /// or a custom implementation.
     /// </remarks>
     public interface IFormBoTypeResolver
     {
@@ -21,9 +22,10 @@ namespace Bee.Business
     }
 
     /// <summary>
-    /// Default resolver — always returns <see cref="FormBusinessObject"/>.
-    /// Reserved for the framework's out-of-the-box behaviour; ERP applications
-    /// typically supply a custom resolver.
+    /// Minimal resolver — always returns <see cref="FormBusinessObject"/>.
+    /// Reserved for tests and hosts that intentionally bypass
+    /// <see cref="ProgramSettingsFormBoTypeResolver"/>; the framework default is
+    /// <see cref="ProgramSettingsFormBoTypeResolver"/>, wired up by <c>AddBeeFramework</c>.
     /// </summary>
     public sealed class DefaultFormBoTypeResolver : IFormBoTypeResolver
     {

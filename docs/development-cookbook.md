@@ -269,6 +269,41 @@ var repo = new MonthlySalesReportRepo(Services.GetRequiredService<IDbAccessFacto
 
 See [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md) for the routing design and [ADR-012](adr/adr-012-session-company-context.md) for the session lifecycle that drives `DbScope.Company`.
 
+### Customising the BO for a ProgId
+
+The framework instantiates `FormBusinessObject` by default for every `ProgId`. When a form needs behaviour that goes beyond the FormSchema-driven CRUD pipeline (custom validation, domain events, AnyCode SQL, etc.), subclass `FormBusinessObject` and bind the subclass through `ProgramSettings.xml`.
+
+#### 1. Subclass `FormBusinessObject`
+
+```csharp
+namespace MyErp.Business;
+
+public class CustomerBo : FormBusinessObject
+{
+    public CustomerBo(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+        : base(ctx, accessToken, progId, isLocalCall) { }
+
+    // Override hooks or add custom methods exposed via [ApiAccessControl].
+    public override SaveResult SaveData(SaveArgs args) { /* custom logic */ }
+}
+```
+
+#### 2. Bind the subclass in `ProgramSettings.xml`
+
+```xml
+<ProgramItem ProgId="Customer"
+             DisplayName="Customer Management"
+             BusinessObject="MyErp.Business.CustomerBo, MyErp.Business" />
+```
+
+`BusinessObject` uses the assembly-qualified format (`"Namespace.Type, AssemblyName"`). When empty, the resolver falls back to `FormBusinessObject` — so you only need to declare `BusinessObject` for the ProgIds that actually need customisation.
+
+#### 3. Resolution behaviour
+
+`ProgramSettingsFormBoTypeResolver` (registered by `AddBeeFramework`) looks up `ProgramItem.BusinessObject`, loads the type via `AssemblyLoader`, and verifies it derives from `FormBusinessObject`. Any failure (missing file, unresolved type, wrong base class) falls back to `FormBusinessObject` rather than failing the request — incremental adoption is safe.
+
+Resolved types are cached for the lifetime of the in-memory `ProgramSettings` instance; when `ProgramSettingsCache` reloads the file (via its file watcher), the cache resets automatically.
+
 ### FormSchema → SQL Generation
 
 ```text

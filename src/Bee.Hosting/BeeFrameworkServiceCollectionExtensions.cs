@@ -122,7 +122,9 @@ namespace Bee.Hosting
             //    Tests inject per-call via TestOverrideServiceProvider; see plan-backendinfo-di-phase4.md.
 
             // 8. Business-object factory + form-bo type resolver.
-            services.AddSingleton<IFormBoTypeResolver, DefaultFormBoTypeResolver>();
+            //    ProgramSettingsFormBoTypeResolver looks up ProgramItem.TypeName from
+            //    ProgramSettings.xml; ProgIds without TypeName fall back to FormBusinessObject.
+            services.AddSingleton<IFormBoTypeResolver, ProgramSettingsFormBoTypeResolver>();
             services.AddSingleton<IBusinessObjectFactory>(sp =>
                 CreateBusinessObjectFactory(sp, components.BusinessObjectFactory));
 

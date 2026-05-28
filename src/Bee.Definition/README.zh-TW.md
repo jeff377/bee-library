@@ -29,7 +29,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 - **DI 注入的執行時期服務** — `IDefineAccess`、`ISessionInfoService`、`IDatabaseSettingsProvider`、`IApiEncryptionKeyProvider`、`IAccessTokenValidator` 等介面在此宣告，於 host 啟動時由 `AddBeeFramework` 註冊到 DI 容器，使 Definition 層與具體實作解耦。
 - **安全合約** — `IAccessTokenValidationProvider`、`IApiEncryptionKeyProvider` 等介面定義安全邊界，不強制綁定實作細節。
 - **DefineType 驅動的 CRUD** — `DefineType` 列舉與 `DefineFunc` 工具類別將定義類別對應至 CLR 型別，透過 `IDefineAccess` 與 `IDefineStorage` 實現泛型載入/儲存。
-- **集中式設定模型** — `SystemSettings`、`DatabaseSettings`、`ProgramSettings` 與 `MenuSettings` 提供具型別的組態介面，取代零散的鍵值查詢。
+- **集中式設定模型** — `SystemSettings`、`DatabaseSettings`、`ProgramSettings` 與 `MenuSettings` 提供具型別的組態介面，取代零散的鍵值查詢。`ProgramSettings` 同時兼任 ProgId 註冊表,透過 `ProgramItem.BusinessObject` 將每個 ProgId 綁定到對應的 BO 實作(未填則 fallback 回 `FormBusinessObject`)。
 
 ## 主要公開 API
 

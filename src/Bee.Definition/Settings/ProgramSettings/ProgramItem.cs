@@ -52,6 +52,23 @@ namespace Bee.Definition.Settings
         public string DisplayName { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the assembly-qualified type name of the business object
+        /// bound to this program. When empty, the framework falls back to the
+        /// base form business object.
+        /// </summary>
+        /// <remarks>
+        /// Expected format: <c>"Namespace.Type, AssemblyName"</c>
+        /// (e.g. <c>"MyErp.Business.WorkOrderBo, MyErp.Business"</c>).
+        /// Named after the role (the BO that handles this program) — matches the
+        /// <c>BackendComponents</c> convention of using role names for type-name
+        /// configuration properties.
+        /// </remarks>
+        [XmlAttribute]
+        [Description("Business object bound to this program (assembly-qualified type name).")]
+        [DefaultValue("")]
+        public string BusinessObject { get; set; } = string.Empty;
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         /// <returns></returns>

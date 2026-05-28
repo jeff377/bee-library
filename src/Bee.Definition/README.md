@@ -29,7 +29,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 - **DI-injected runtime services** — interfaces such as `IDefineAccess`, `ISessionInfoService`, `IDatabaseSettingsProvider`, `IApiEncryptionKeyProvider`, and `IAccessTokenValidator` are defined here and registered through `AddBeeFramework` at host startup, decoupling Definition from concrete implementations.
 - **Security contracts** — interfaces like `IAccessTokenValidationProvider` and `IApiEncryptionKeyProvider` define security boundaries without imposing implementation details.
 - **DefineType-driven CRUD** — the `DefineType` enum and `DefineFunc` utility map definition categories to CLR types, enabling generic load/save through `IDefineAccess` and `IDefineStorage`.
-- **Centralized settings model** — `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, and `MenuSettings` provide a typed configuration surface that replaces ad-hoc key-value lookups.
+- **Centralized settings model** — `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, and `MenuSettings` provide a typed configuration surface that replaces ad-hoc key-value lookups. `ProgramSettings` doubles as the ProgId registry and binds each ProgId to its concrete BO via `ProgramItem.BusinessObject` (empty falls back to the base `FormBusinessObject`).
 
 ## Key Public APIs
 

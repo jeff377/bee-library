@@ -276,7 +276,7 @@ The BeeNET framework automatically maintains the following system fields in all 
 | `SystemSettings.xml` | 系統設定檔 | Global system parameters |
 | `DatabaseSettings.xml` | 資料庫連線設定檔 | Database connection strings and types |
 | `DbCategorySettings.xml` | 資料庫類別設定檔 | All logical database categories and the tables they contain |
-| `ProgramSettings.xml` | 程式設定檔 | Parameters for functional programs |
+| `ProgramSettings.xml` | 程式設定檔 | Parameters for functional programs. Each `ProgramItem` optionally declares `BusinessObject` to bind a specific `FormBusinessObject` subclass; empty falls back to the framework default |
 | `ClientSettings.xml` | 用戶端設定檔 | Front-end / client behavior settings |
 | `FormSchema.xml` | 表單結構定義檔 | Serialized FormSchema files for each functional program |
 | `FormLayout.xml` | 表單版面配置檔 | Serialized FormLayout files for each functional program |

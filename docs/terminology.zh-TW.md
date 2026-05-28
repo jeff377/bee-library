@@ -276,7 +276,7 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 | `SystemSettings.xml` | 系統設定檔 | 全域系統參數 |
 | `DatabaseSettings.xml` | 資料庫連線設定檔 | 資料庫連線字串與類型 |
 | `DbCategorySettings.xml` | 資料庫類別設定檔 | 所有邏輯資料庫類別與其包含的資料表清單 |
-| `ProgramSettings.xml` | 程式設定檔 | 功能程式的參數設定 |
+| `ProgramSettings.xml` | 程式設定檔 | 功能程式的參數設定；每個 `ProgramItem` 可選擇性宣告 `BusinessObject` 綁定特定 `FormBusinessObject` 子類別，未填則 fallback 回框架預設 |
 | `ClientSettings.xml` | 用戶端設定檔 | 前端 / 用戶端的行為設定 |
 | `FormSchema.xml` | 表單結構定義檔 | 各功能程式的 FormSchema 序列化檔 |
 | `FormLayout.xml` | 表單版面配置檔 | 各功能程式的 FormLayout 序列化檔 |

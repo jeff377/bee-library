@@ -4,6 +4,7 @@ using Bee.Definition.Settings;
 
 namespace Bee.Definition.UnitTests.Settings
 {
+
     /// <summary>
     /// ProgramSettings、ProgramCategory、ProgramItem 等設定類別的測試。
     /// </summary>
@@ -17,6 +18,47 @@ namespace Bee.Definition.UnitTests.Settings
 
             Assert.Equal(string.Empty, item.ProgId);
             Assert.Equal(string.Empty, item.DisplayName);
+            Assert.Equal(string.Empty, item.BusinessObject);
+        }
+
+        [Fact]
+        [DisplayName("ProgramItem.BusinessObject 預設應為空字串")]
+        public void ProgramItem_BusinessObject_DefaultsToEmpty()
+        {
+            var item = new ProgramItem("P001", "客戶維護");
+
+            Assert.Equal(string.Empty, item.BusinessObject);
+        }
+
+        [Fact]
+        [DisplayName("ProgramItem.BusinessObject 為空時 XML 不應輸出該屬性")]
+        public void ProgramItem_BusinessObject_EmptyOmittedFromXml()
+        {
+            var settings = new ProgramSettings();
+            var category = settings.Categories!.Add("C01", "主檔");
+            category.Items!.Add("P001", "客戶維護");
+
+            var xml = XmlCodec.Serialize(settings);
+
+            Assert.DoesNotContain("BusinessObject=", xml);
+        }
+
+        [Fact]
+        [DisplayName("ProgramItem.BusinessObject 有值時應透過 XmlAttribute 序列化往返")]
+        public void ProgramItem_BusinessObject_RoundTripsThroughXml()
+        {
+            var settings = new ProgramSettings();
+            var category = settings.Categories!.Add("C01", "主檔");
+            var item = category.Items!.Add("P001", "客戶維護");
+            item.BusinessObject = "MyErp.Business.CustomerBo, MyErp.Business";
+
+            var xml = XmlCodec.Serialize(settings);
+            var restored = XmlCodec.Deserialize<ProgramSettings>(xml);
+
+            Assert.Contains("BusinessObject=\"MyErp.Business.CustomerBo, MyErp.Business\"", xml);
+            Assert.NotNull(restored);
+            var restoredItem = restored!.Categories!["C01"].Items!["P001"];
+            Assert.Equal("MyErp.Business.CustomerBo, MyErp.Business", restoredItem.BusinessObject);
         }
 
         [Fact]

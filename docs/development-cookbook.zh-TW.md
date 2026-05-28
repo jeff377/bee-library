@@ -268,6 +268,41 @@ var repo = new MonthlySalesReportRepo(Services.GetRequiredService<IDbAccessFacto
 
 詳見 [ADR-010 §「後續延伸：執行時路由」](adr/adr-010-logical-database-category.md) 與 [ADR-012](adr/adr-012-session-company-context.md)。
 
+### 客製化 ProgId 對應的 BO
+
+框架預設每個 ProgId 都以 `FormBusinessObject` 具現化。當特定表單需要超出 FormSchema 驅動 CRUD 的行為(客製驗證、領域事件、AnyCode SQL 等),繼承 `FormBusinessObject` 並透過 `ProgramSettings.xml` 綁定子類別。
+
+#### 1. 繼承 `FormBusinessObject`
+
+```csharp
+namespace MyErp.Business;
+
+public class CustomerBo : FormBusinessObject
+{
+    public CustomerBo(IBeeContext ctx, Guid accessToken, string progId, bool isLocalCall = true)
+        : base(ctx, accessToken, progId, isLocalCall) { }
+
+    // 覆寫鉤子或新增以 [ApiAccessControl] 公開的客製方法。
+    public override SaveResult SaveData(SaveArgs args) { /* 客製邏輯 */ }
+}
+```
+
+#### 2. 在 `ProgramSettings.xml` 綁定子類別
+
+```xml
+<ProgramItem ProgId="Customer"
+             DisplayName="客戶維護"
+             BusinessObject="MyErp.Business.CustomerBo, MyErp.Business" />
+```
+
+`BusinessObject` 使用 assembly-qualified 格式(`"Namespace.Type, AssemblyName"`)。未填時 resolver fallback 回 `FormBusinessObject`——只需要為「真的要客製」的 ProgId 填 `BusinessObject`。
+
+#### 3. 解析行為
+
+`ProgramSettingsFormBoTypeResolver`(由 `AddBeeFramework` 註冊)讀取 `ProgramItem.BusinessObject`、透過 `AssemblyLoader` 載入型別、驗證繼承自 `FormBusinessObject`。任何失敗(檔案不存在、型別解析失敗、繼承不對)皆 fallback 回 `FormBusinessObject` 而非中斷請求——支援漸進採用。
+
+解析結果在記憶體內的 `ProgramSettings` 實例存活期間快取;當 `ProgramSettingsCache` 透過 file watcher 重載檔案時,快取自動 reset。
+
 ### FormSchema → SQL 產生
 
 ```text
