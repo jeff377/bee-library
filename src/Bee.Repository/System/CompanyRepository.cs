@@ -41,9 +41,10 @@ namespace Bee.Repository.System
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");
             string colDbId = dbType.QuoteIdentifier("company_database_id");
+            string colCustId = dbType.QuoteIdentifier("customize_id");
             string colEnabled = dbType.QuoteIdentifier("enabled");
 
-            string sql = $"SELECT {colId}, {colName}, {colDbId} \n" +
+            string sql = $"SELECT {colId}, {colName}, {colDbId}, {colCustId} \n" +
                          $"FROM {tbl} \n" +
                          $"WHERE {colId} = {{0}} AND {colEnabled} = {{1}}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, companyId, true);
@@ -57,7 +58,8 @@ namespace Bee.Repository.System
             {
                 CompanyId = ValueUtilities.CStr(row["sys_id"]),
                 CompanyName = ValueUtilities.CStr(row["sys_name"]),
-                CompanyDatabaseId = ValueUtilities.CStr(row["company_database_id"])
+                CompanyDatabaseId = ValueUtilities.CStr(row["company_database_id"]),
+                CustomizeId = ValueUtilities.CStr(row["customize_id"])
             };
         }
     }

@@ -156,6 +156,9 @@ namespace Bee.Business.System
                 throw new InvalidOperationException("Company access denied.");
 
             sessionInfo.CompanyId = args.CompanyId;
+            // Derive the session's customization code from the company (empty when the company
+            // ships no customization). The session-level overlay reads this value downstream.
+            sessionInfo.CustomizeId = companyInfo.CustomizeId;
             SessionInfoService.Set(sessionInfo);
 
             return new EnterCompanyResult { Company = companyInfo };
@@ -181,6 +184,7 @@ namespace Bee.Business.System
             if (sessionInfo.CompanyId != null)
             {
                 sessionInfo.CompanyId = null;
+                sessionInfo.CustomizeId = string.Empty;
                 SessionInfoService.Set(sessionInfo);
             }
 
@@ -208,6 +212,7 @@ namespace Bee.Business.System
             if (sessionInfo != null && sessionInfo.CompanyId != null)
             {
                 sessionInfo.CompanyId = null;
+                sessionInfo.CustomizeId = string.Empty;
                 SessionInfoService.Set(sessionInfo);
             }
 

@@ -35,6 +35,17 @@ namespace Bee.Business.UnitTests
             return rowId;
         }
 
+        private Guid InsertCompanyWithCustomize(string companyId, string customizeId)
+        {
+            var rowId = Guid.NewGuid();
+            var insert = new DbCommandSpec(DbCommandKind.NonQuery,
+                "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, customize_id, enabled, sys_insert_time) " +
+                "VALUES ({0}, {1}, {2}, {3}, {4}, 1, GETDATE())",
+                rowId, companyId, "BO 客製測試公司", "common", customizeId);
+            Common().Execute(insert);
+            return rowId;
+        }
+
         private Guid InsertGrant(Guid userRowId, Guid companyRowId)
         {
             var rowId = Guid.NewGuid();
@@ -92,10 +103,48 @@ namespace Bee.Business.UnitTests
                 var session = sessionService.Get(accessToken);
                 Assert.NotNull(session);
                 Assert.Equal(SeedCompanyId, session.CompanyId);
+                // Seed company 'C001' ships no customization → standard (empty) code.
+                Assert.Equal(string.Empty, session.CustomizeId);
             }
             finally
             {
                 sessionService.Remove(accessToken);
+            }
+        }
+
+        [Fact]
+        [DisplayName("EnterCompany 公司有 customize_id 時應寫入 SessionInfo.CustomizeId；LeaveCompany 應清空")]
+        public void EnterCompany_CustomizedCompany_SetsThenClearsSessionCustomizeId()
+        {
+            const string customizeId = "ACME";
+            var companyId = "CUST_" + Guid.NewGuid().ToString("N")[..6];
+            var companyRowId = InsertCompanyWithCustomize(companyId, customizeId);
+            var userRowId = LookupUserRowId(SeedUserId);
+            var grantRowId = InsertGrant(userRowId, companyRowId);
+            try
+            {
+                var sessionService = _fx.GetRequiredService<ISessionInfoService>();
+                var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
+                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+
+                try
+                {
+                    var result = bo.EnterCompany(new EnterCompanyArgs { CompanyId = companyId });
+                    Assert.Equal(customizeId, result.Company.CustomizeId);
+                    Assert.Equal(customizeId, sessionService.Get(accessToken)!.CustomizeId);
+
+                    bo.LeaveCompany(new LeaveCompanyArgs());
+                    Assert.Equal(string.Empty, sessionService.Get(accessToken)!.CustomizeId);
+                }
+                finally
+                {
+                    sessionService.Remove(accessToken);
+                }
+            }
+            finally
+            {
+                DeleteGrant(grantRowId);
+                DeleteCompany(companyRowId);
             }
         }
 

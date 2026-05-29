@@ -50,6 +50,18 @@ namespace Bee.Definition.Identity
         public string CompanyDatabaseId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the tenant customization code for this company.
+        /// </summary>
+        /// <remarks>
+        /// Empty means the standard (non-customized) deployment. Companies map many-to-one onto a
+        /// customization code (a group can share one customization set). Loaded from the
+        /// <c>customize_id</c> column by <c>CompanyRepository</c>; <c>EnterCompany</c> copies it
+        /// into <c>SessionInfo.CustomizeId</c> for the session's customization overlay.
+        /// </remarks>
+        [Key(3)]
+        public string CustomizeId { get; set; } = string.Empty;
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
