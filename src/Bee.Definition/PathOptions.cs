@@ -15,6 +15,14 @@ namespace Bee.Definition
         /// </summary>
         public string DefinePath { get; init; } = string.Empty;
 
+        /// <summary>
+        /// Root directory for tenant customization overrides
+        /// (<c>{CustomizePath}/{custCode}/Language/</c>, <c>FormLayout/</c>, <c>ProgramSettings.xml</c>).
+        /// Empty means the standard (non-customized) deployment — the customization layer is
+        /// skipped entirely and every consumer behaves bit-for-bit like the base layer.
+        /// </summary>
+        public string CustomizePath { get; init; } = string.Empty;
+
         /// <summary>Gets the absolute path of <c>SystemSettings.xml</c>.</summary>
         public string GetSystemSettingsFilePath()
             => System.IO.Path.Combine(DefinePath, "SystemSettings.xml");
@@ -24,7 +32,7 @@ namespace Bee.Definition
             => System.IO.Path.Combine(DefinePath, "DatabaseSettings.xml");
 
         /// <summary>Gets the absolute path of <c>ProgramSettings.xml</c>.</summary>
-        public string GetProgramSettingsFilePath()
+        public virtual string GetProgramSettingsFilePath()
             => System.IO.Path.Combine(DefinePath, "ProgramSettings.xml");
 
         /// <summary>Gets the absolute path of <c>DbCategorySettings.xml</c>.</summary>
@@ -44,13 +52,13 @@ namespace Bee.Definition
 
         /// <summary>Gets the absolute path of the FormLayout XML for the given layout id.</summary>
         /// <param name="layoutId">The form layout ID.</param>
-        public string GetFormLayoutFilePath(string layoutId)
+        public virtual string GetFormLayoutFilePath(string layoutId)
             => System.IO.Path.Combine(DefinePath, "FormLayout", $"{layoutId}.FormLayout.xml");
 
         /// <summary>Gets the absolute path of the Language XML for the given language code and namespace.</summary>
         /// <param name="lang">The BCP-47 language code (e.g. <c>"zh-TW"</c>).</param>
         /// <param name="ns">The resource namespace (matches file name stem; e.g. <c>"Common"</c>, <c>"Customer"</c>).</param>
-        public string GetLanguageFilePath(string lang, string ns)
+        public virtual string GetLanguageFilePath(string lang, string ns)
             => System.IO.Path.Combine(DefinePath, "Language", lang, $"{ns}.Language.xml");
     }
 }
