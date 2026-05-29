@@ -52,6 +52,17 @@ namespace Bee.Definition.Identity
         public string? CompanyId { get; set; }
 
         /// <summary>
+        /// Gets or sets the tenant customization code currently in effect for this session.
+        /// </summary>
+        /// <remarks>
+        /// Empty means the standard (non-customized) deployment — every customization overlay
+        /// short-circuits to the base layer. The value is derived from
+        /// <c>CompanyInfo.CustomizeId</c> by <c>EnterCompany</c> and cleared by
+        /// <c>LeaveCompany</c> / <c>Logout</c> (in step with <see cref="CompanyId"/>).
+        /// </remarks>
+        public string CustomizeId { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the user culture (e.g., zh-TW, en-US).
         /// </summary>
         public string Culture { get; set; } = "zh-TW";

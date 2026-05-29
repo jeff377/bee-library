@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | Override 層：`CustomizeOnlyStorage`（嚴格只讀、無檔回 null）+ per-custCode `ICacheContainer` provider + `ICustomizeDefineReader` | ✅ 已完成（2026-05-29） |
-| 2 | 消費端疊加：`LanguageService`（key）、`ProgramSettingsFormBoTypeResolver`（progId）、`LocalDefineAccess.GetFormLayout`（整檔擇一） | 📝 待做 |
+| 2 | 消費端疊加：`LanguageService`（key）、`ProgramSettingsFormBoTypeResolver`（progId）、`LocalDefineAccess.GetFormLayout`（整檔擇一） | ✅ 已完成（2026-05-29） |
 | 3 | 身分傳遞：`CompanyInfo.CustomizeId` + `SessionInfo.CustomizeId` + EnterCompany 解析 | 📝 待做 |
 | 4 | 接線：DI 註冊 `ICustomizeDefineReader` / provider；`PathOptions.CustomizePath`；向後相容預設 | 📝 待做 |
 | 5 | 客戶端 / 測試：`RemoteDefineAccess` 切換清快取、各層 round-trip + 疊加 / 隔離測試 | 📝 待做 |
@@ -80,7 +80,7 @@ FormSchema / TableSchema / SystemSettings / DatabaseSettings / DbCategorySetting
 - **Customize-override 層**＝per-custCode 的獨立快取，**嚴格只讀** `{CustomizePath}/{custCode}/...`、無對應檔即回 `null`（不 fallback、不混入 base）。只服務 Language / ProgramSettings / FormLayout 三類。
 - **疊加**在消費端、以查找粒度進行，**永不產生合併物件、永不 mutate base**。
 
-custCode 由 `ISessionInfoService.Current.CustomizeId` 取得。
+custCode 的傳遞機制：**Option A — 顯式傳參（已定案，2026-05-29）**。框架無 ambient 當前 session 機制，且 overlay 服務（`LanguageService` / `ProgramSettingsFormBoTypeResolver` / `LocalDefineAccess`）為 stateless 單例。改採**持有 `AccessToken` 的呼叫端**（BO 層等）自 `ISessionInfoService.Get(AccessToken).CustomizeId` 解析 custCode 後，透過 additive overload 顯式傳入。否決 ambient AsyncLocal：其最壞失效模式是「沿用上一 request 的 custCode」＝跨租戶外溢（本計畫第一鐵則禁止）；顯式傳參的最壞失效僅「客製沒套到」＝ fail-safe 降級。新 overload 以 default interface method 加在 `ILanguageService` / `IFormBoTypeResolver` / `IDefineAccess`，預設委派 base、零漣漪到既有實作。base 呼叫端逐一改傳真實 custCode 留待後續階段。
 
 ### 短路規則（無客製代碼直接略過客製層）
 

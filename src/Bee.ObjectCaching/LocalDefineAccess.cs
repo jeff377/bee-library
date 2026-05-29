@@ -18,6 +18,7 @@ namespace Bee.ObjectCaching
         private readonly PathOptions _paths;
         private readonly ICacheContainer _cache;
         private readonly byte[] _configEncryptionKey;
+        private readonly ICustomizeDefineReader? _customizeReader;
 
         /// <summary>
         /// Initializes a new instance of <see cref="LocalDefineAccess"/> with the supplied
@@ -46,11 +47,27 @@ namespace Bee.ObjectCaching
         /// <see cref="DatabaseItem.Password"/> in <c>DatabaseSettings.xml</c>. Empty disables the crypto path.
         /// </param>
         public LocalDefineAccess(IDefineStorage storage, PathOptions paths, ICacheContainer cache, byte[] configEncryptionKey)
+            : this(storage, paths, cache, configEncryptionKey, null)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="LocalDefineAccess"/> with an optional tenant
+        /// customization reader for the FormLayout overlay. Production DI uses this overload when
+        /// customization is enabled; passing <c>null</c> disables the overlay (pure base layer).
+        /// </summary>
+        /// <param name="storage">The define storage used for read fallback and writes.</param>
+        /// <param name="paths">The path options for SaveSystemSettings / SaveDatabaseSettings / SaveProgramSettings file targets.</param>
+        /// <param name="cache">The cache container used for read/write invalidation.</param>
+        /// <param name="configEncryptionKey">The 64-byte combined AES + HMAC key used to encrypt config passwords. Empty disables the crypto path.</param>
+        /// <param name="customizeReader">The customization-override reader; <c>null</c> disables the FormLayout overlay.</param>
+        public LocalDefineAccess(IDefineStorage storage, PathOptions paths, ICacheContainer cache, byte[] configEncryptionKey, ICustomizeDefineReader? customizeReader)
         {
             _storage = storage ?? throw new ArgumentNullException(nameof(storage));
             _paths = paths ?? throw new ArgumentNullException(nameof(paths));
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
             _configEncryptionKey = configEncryptionKey ?? Array.Empty<byte>();
+            _customizeReader = customizeReader;
         }
 
         /// <summary>
@@ -279,6 +296,26 @@ namespace Bee.ObjectCaching
         public FormLayout GetFormLayout(string layoutId)
         {
             return _cache.FormLayout.Get(layoutId)!;
+        }
+
+        /// <summary>
+        /// Gets the form layout for the specified layout identifier, applying the tenant
+        /// customization overlay (whole-file selection) for the supplied customization code.
+        /// </summary>
+        /// <param name="custCode">The tenant customization code; empty resolves against the base layer only.</param>
+        /// <param name="layoutId">The layout identifier.</param>
+        public FormLayout GetFormLayout(string custCode, string layoutId)
+        {
+            // Short-circuit: no customization code (or no reader) → base layout, untouched.
+            if (!string.IsNullOrEmpty(custCode) && _customizeReader is not null)
+            {
+                // Whole-file selection: a customization layout wins outright; this does not merge
+                // base and cust, and the base cache is never mutated.
+                var custom = _customizeReader.GetCustomizeFormLayout(custCode, layoutId);
+                if (custom is not null)
+                    return custom;
+            }
+            return GetFormLayout(layoutId);
         }
 
         /// <summary>

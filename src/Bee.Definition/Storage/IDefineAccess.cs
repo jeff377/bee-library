@@ -102,6 +102,20 @@ namespace Bee.Definition.Storage
         FormLayout GetFormLayout(string layoutId);
 
         /// <summary>
+        /// Gets the form layout for the specified layout ID, applying the tenant customization
+        /// overlay for the supplied customization code (whole-file selection: a customization
+        /// layout file wins outright, otherwise the base layout is returned).
+        /// </summary>
+        /// <param name="custCode">The tenant customization code; empty resolves against the base layer only.</param>
+        /// <param name="layoutId">The form layout ID.</param>
+        /// <remarks>
+        /// Default implementation ignores <paramref name="custCode"/> and delegates to
+        /// <see cref="GetFormLayout(string)"/>. <c>LocalDefineAccess</c> overrides this to overlay;
+        /// remote access already receives the server-side-overlaid result.
+        /// </remarks>
+        FormLayout GetFormLayout(string custCode, string layoutId) => GetFormLayout(layoutId);
+
+        /// <summary>
         /// Saves the form layout.
         /// </summary>
         /// <param name="formLayout">The form layout.</param>
