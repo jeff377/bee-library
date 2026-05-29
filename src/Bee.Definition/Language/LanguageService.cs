@@ -44,7 +44,7 @@ namespace Bee.Definition.Language
         }
 
         // ----- Base (non-customization) surface — splits full keys, then delegates to the
-        //       custCode-aware core with an empty customization code (which short-circuits). -----
+        //       customizeId-aware core with an empty customization code (which short-circuits). -----
 
         /// <inheritdoc/>
         public string GetLangText(string lang, string fullKey)
@@ -86,17 +86,17 @@ namespace Bee.Definition.Language
         // ----- Customization-aware overlay surface (overrides the interface defaults) -----
 
         /// <inheritdoc/>
-        public string GetLangText(string custCode, string lang, string @namespace, string subKey)
+        public string GetLangText(string customizeId, string lang, string @namespace, string subKey)
         {
             // 1. Primary lookup in the requested language (customization-overlaid).
-            if (TryGetLangText(custCode, lang, @namespace, subKey, out string text))
+            if (TryGetLangText(customizeId, lang, @namespace, subKey, out string text))
                 return text;
 
             // 2. Fall back to the system default language (when different).
             string defaultLang = GetDefaultLang();
             if (!string.IsNullOrEmpty(defaultLang)
                 && !string.Equals(lang, defaultLang, StringComparison.OrdinalIgnoreCase)
-                && TryGetLangText(custCode, defaultLang, @namespace, subKey, out text))
+                && TryGetLangText(customizeId, defaultLang, @namespace, subKey, out text))
             {
                 return text;
             }
@@ -107,11 +107,11 @@ namespace Bee.Definition.Language
         }
 
         /// <inheritdoc/>
-        public bool TryGetLangText(string custCode, string lang, string @namespace, string subKey, out string text)
+        public bool TryGetLangText(string customizeId, string lang, string @namespace, string subKey, out string text)
         {
             // Customization overlay: a cust resource that contains the key wins. base and cust are
             // looked up independently and never merged — the base cache stays untouched.
-            if (TryGetCustomizeResource(custCode, lang, @namespace, out var custResource)
+            if (TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource)
                 && custResource!.Items.Contains(subKey))
             {
                 text = custResource.Items[subKey].Value;
@@ -132,13 +132,13 @@ namespace Bee.Definition.Language
         }
 
         /// <inheritdoc/>
-        public LanguageEnum? GetLangEnum(string custCode, string lang, string @namespace, string enumName)
+        public LanguageEnum? GetLangEnum(string customizeId, string lang, string @namespace, string enumName)
         {
             if (string.IsNullOrWhiteSpace(@namespace) || string.IsNullOrWhiteSpace(enumName))
                 return null;
 
             // 1. Primary lookup in the requested language (customization-overlaid).
-            var hit = LookupEnum(custCode, lang, @namespace, enumName);
+            var hit = LookupEnum(customizeId, lang, @namespace, enumName);
             if (hit != null)
                 return hit;
 
@@ -147,23 +147,23 @@ namespace Bee.Definition.Language
             if (!string.IsNullOrEmpty(defaultLang)
                 && !string.Equals(lang, defaultLang, StringComparison.OrdinalIgnoreCase))
             {
-                return LookupEnum(custCode, defaultLang, @namespace, enumName);
+                return LookupEnum(customizeId, defaultLang, @namespace, enumName);
             }
 
             return null;
         }
 
         /// <inheritdoc/>
-        public string? GetLangEnumText(string custCode, string lang, string fullName, string code)
+        public string? GetLangEnumText(string customizeId, string lang, string fullName, string code)
         {
             SplitFullKey(fullName, out string @namespace, out string enumName);
-            return GetLangEnum(custCode, lang, @namespace, enumName)?.GetText(code);
+            return GetLangEnum(customizeId, lang, @namespace, enumName)?.GetText(code);
         }
 
-        private LanguageEnum? LookupEnum(string custCode, string lang, string @namespace, string enumName)
+        private LanguageEnum? LookupEnum(string customizeId, string lang, string @namespace, string enumName)
         {
             // Customization overlay: a cust enum wins over the base enum of the same name.
-            if (TryGetCustomizeResource(custCode, lang, @namespace, out var custResource))
+            if (TryGetCustomizeResource(customizeId, lang, @namespace, out var custResource))
             {
                 var custEnum = custResource!.GetEnum(enumName);
                 if (custEnum != null)
@@ -179,12 +179,12 @@ namespace Bee.Definition.Language
         /// (returns <c>false</c>) when there is no customization code or no reader — the common,
         /// non-customized path never touches the override layer.
         /// </summary>
-        private bool TryGetCustomizeResource(string custCode, string lang, string @namespace, out LanguageResource? resource)
+        private bool TryGetCustomizeResource(string customizeId, string lang, string @namespace, out LanguageResource? resource)
         {
             resource = null;
-            if (string.IsNullOrEmpty(custCode) || _customizeReader is null)
+            if (string.IsNullOrEmpty(customizeId) || _customizeReader is null)
                 return false;
-            resource = _customizeReader.GetCustomizeLanguage(custCode, lang, @namespace);
+            resource = _customizeReader.GetCustomizeLanguage(customizeId, lang, @namespace);
             return resource is not null;
         }
 

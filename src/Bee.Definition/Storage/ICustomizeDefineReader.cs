@@ -22,24 +22,24 @@ namespace Bee.Definition.Storage
         /// Gets the customization override of the language resource for the given customization
         /// code, language and namespace; <c>null</c> when no override exists.
         /// </summary>
-        /// <param name="custCode">The tenant customization code.</param>
+        /// <param name="customizeId">The tenant customization code.</param>
         /// <param name="lang">The BCP-47 language code.</param>
         /// <param name="ns">The resource namespace.</param>
-        LanguageResource? GetCustomizeLanguage(string custCode, string lang, string ns);
+        LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns);
 
         /// <summary>
         /// Gets the customization override of the program settings for the given customization
         /// code; <c>null</c> when no override exists.
         /// </summary>
-        /// <param name="custCode">The tenant customization code.</param>
-        ProgramSettings? GetCustomizeProgramSettings(string custCode);
+        /// <param name="customizeId">The tenant customization code.</param>
+        ProgramSettings? GetCustomizeProgramSettings(string customizeId);
 
         /// <summary>
         /// Gets the customization override of the form layout for the given customization code
         /// and layout id; <c>null</c> when no override exists.
         /// </summary>
-        /// <param name="custCode">The tenant customization code.</param>
+        /// <param name="customizeId">The tenant customization code.</param>
         /// <param name="layoutId">The form layout ID.</param>
-        FormLayout? GetCustomizeFormLayout(string custCode, string layoutId);
+        FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId);
     }
 }

@@ -17,7 +17,7 @@ namespace Bee.Definition
 
         /// <summary>
         /// Root directory for tenant customization overrides
-        /// (<c>{CustomizePath}/{custCode}/Language/</c>, <c>FormLayout/</c>, <c>ProgramSettings.xml</c>).
+        /// (<c>{CustomizePath}/{customizeId}/Language/</c>, <c>FormLayout/</c>, <c>ProgramSettings.xml</c>).
         /// Empty means the standard (non-customized) deployment — the customization layer is
         /// skipped entirely and every consumer behaves bit-for-bit like the base layer.
         /// </summary>

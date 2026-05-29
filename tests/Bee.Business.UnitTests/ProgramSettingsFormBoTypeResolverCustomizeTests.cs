@@ -12,7 +12,7 @@ namespace Bee.Business.UnitTests
 {
     /// <summary>
     /// <see cref="ProgramSettingsFormBoTypeResolver"/> 租戶客製化疊加測試：cust 有 progId→客製 BO；
-    /// cust 無→base BO；type cache 以 (custCode, progId) 隔離；custCode 空 / 無 reader→短路純 base。
+    /// cust 無→base BO；type cache 以 (customizeId, progId) 隔離；customizeId 空 / 無 reader→短路純 base。
     /// </summary>
     public class ProgramSettingsFormBoTypeResolverCustomizeTests
     {
@@ -71,8 +71,8 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("type cache 以 (custCode, progId) 隔離：不同租戶同一 progId 解析互不干擾")]
-        public void Resolve_DifferentCustCodes_IsolatedCache()
+        [DisplayName("type cache 以 (customizeId, progId) 隔離：不同租戶同一 progId 解析互不干擾")]
+        public void Resolve_DifferentCustomizeIds_IsolatedCache()
         {
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("P001", BaseFormBoFqn)));
             var reader = new SpyCustomizeReader();
@@ -90,8 +90,8 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("custCode 空時短路純 base，reader 零呼叫")]
-        public void Resolve_EmptyCustCode_ShortCircuits_ReaderNotCalled()
+        [DisplayName("customizeId 空時短路純 base，reader 零呼叫")]
+        public void Resolve_EmptyCustomizeId_ShortCircuits_ReaderNotCalled()
         {
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("P001", BaseFormBoFqn)));
             var reader = new SpyCustomizeReader();
@@ -105,7 +105,7 @@ namespace Bee.Business.UnitTests
         }
 
         [Fact]
-        [DisplayName("無 reader 注入時即使帶 custCode 也走純 base（向後相容）")]
+        [DisplayName("無 reader 注入時即使帶 customizeId 也走純 base（向後相容）")]
         public void Resolve_NoReader_BehavesAsBase()
         {
             var defineAccess = new ProgramSettingsDefineAccess(BuildSettings(("P001", BaseFormBoFqn)));
@@ -138,16 +138,16 @@ namespace Bee.Business.UnitTests
 
             public int GetCustomizeProgramSettingsCallCount { get; private set; }
 
-            public void SetProgramSettings(string custCode, ProgramSettings settings) => _settings[custCode] = settings;
+            public void SetProgramSettings(string customizeId, ProgramSettings settings) => _settings[customizeId] = settings;
 
-            public ProgramSettings? GetCustomizeProgramSettings(string custCode)
+            public ProgramSettings? GetCustomizeProgramSettings(string customizeId)
             {
                 GetCustomizeProgramSettingsCallCount++;
-                return _settings.TryGetValue(custCode, out var s) ? s : null;
+                return _settings.TryGetValue(customizeId, out var s) ? s : null;
             }
 
-            public LanguageResource? GetCustomizeLanguage(string custCode, string lang, string ns) => null;
-            public FormLayout? GetCustomizeFormLayout(string custCode, string layoutId) => null;
+            public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns) => null;
+            public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId) => null;
         }
 
         private sealed class ProgramSettingsDefineAccess : IDefineAccess

@@ -10,7 +10,7 @@ namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
     /// <see cref="LocalDefineAccess.GetFormLayout(string, string)"/> 整檔擇一疊加測試：
-    /// cust 檔存在→回 cust；否則回 base；custCode 空 / 無 reader→短路純 base（reader 零呼叫）。
+    /// cust 檔存在→回 cust；否則回 base；customizeId 空 / 無 reader→短路純 base（reader 零呼叫）。
     /// </summary>
     public sealed class LocalDefineAccessFormLayoutCustomizeTests : IDisposable
     {
@@ -66,8 +66,8 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("custCode 空時短路純 base，reader 零呼叫")]
-        public void GetFormLayout_EmptyCustCode_ShortCircuits_ReaderNotCalled()
+        [DisplayName("customizeId 空時短路純 base，reader 零呼叫")]
+        public void GetFormLayout_EmptyCustomizeId_ShortCircuits_ReaderNotCalled()
         {
             var reader = new SpyCustomizeReader { FormLayout = new FormLayout { LayoutId = LayoutId } };
             var access = CreateAccess(reader);
@@ -79,7 +79,7 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("無 reader 注入時即使帶 custCode 也走純 base（向後相容）")]
+        [DisplayName("無 reader 注入時即使帶 customizeId 也走純 base（向後相容）")]
         public void GetFormLayout_NoReader_BehavesAsBase()
         {
             var access = CreateAccess(reader: null);
@@ -94,14 +94,14 @@ namespace Bee.ObjectCaching.UnitTests
             public FormLayout? FormLayout { get; init; }
             public int GetCustomizeFormLayoutCallCount { get; private set; }
 
-            public FormLayout? GetCustomizeFormLayout(string custCode, string layoutId)
+            public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId)
             {
                 GetCustomizeFormLayoutCallCount++;
                 return FormLayout;
             }
 
-            public LanguageResource? GetCustomizeLanguage(string custCode, string lang, string ns) => null;
-            public ProgramSettings? GetCustomizeProgramSettings(string custCode) => null;
+            public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns) => null;
+            public ProgramSettings? GetCustomizeProgramSettings(string customizeId) => null;
         }
     }
 }

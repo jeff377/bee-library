@@ -4,8 +4,8 @@ using Bee.Definition;
 namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
-    /// <see cref="CacheContainerProvider"/> per-custCode override container 行為測試：
-    /// 同 custCode 回同一 container、不同 custCode 隔離。
+    /// <see cref="CacheContainerProvider"/> per-customizeId override container 行為測試：
+    /// 同 customizeId 回同一 container、不同 customizeId 隔離。
     /// </summary>
     public class CacheContainerProviderTests
     {
@@ -13,8 +13,8 @@ namespace Bee.ObjectCaching.UnitTests
             => new(new PathOptions { DefinePath = "/tmp/base", CustomizePath = "/tmp/customize" });
 
         [Fact]
-        [DisplayName("For 同一 custCode 多次呼叫應回傳同一 container 實例")]
-        public void For_SameCustCode_ReturnsSameContainer()
+        [DisplayName("For 同一 customizeId 多次呼叫應回傳同一 container 實例")]
+        public void For_SameCustomizeId_ReturnsSameContainer()
         {
             var provider = CreateProvider();
 
@@ -25,8 +25,8 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("For 不同 custCode 應回傳不同 container 實例（租戶隔離）")]
-        public void For_DifferentCustCode_ReturnsDifferentContainers()
+        [DisplayName("For 不同 customizeId 應回傳不同 container 實例（租戶隔離）")]
+        public void For_DifferentCustomizeId_ReturnsDifferentContainers()
         {
             var provider = CreateProvider();
 
@@ -37,8 +37,8 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
-        [DisplayName("override container 的 CachePrefix 應為 custCode（物理隔離）")]
-        public void For_ContainerUsesCustCodeAsCachePrefix()
+        [DisplayName("override container 的 CachePrefix 應為 customizeId（物理隔離）")]
+        public void For_ContainerUsesCustomizeIdAsCachePrefix()
         {
             var provider = CreateProvider();
 
@@ -50,10 +50,10 @@ namespace Bee.ObjectCaching.UnitTests
         [Theory]
         [InlineData("")]
         [InlineData("   ")]
-        [DisplayName("For 傳入空 custCode 應拋出 ArgumentException")]
-        public void For_EmptyCustCode_ThrowsArgumentException(string custCode)
+        [DisplayName("For 傳入空 customizeId 應拋出 ArgumentException")]
+        public void For_EmptyCustomizeId_ThrowsArgumentException(string customizeId)
         {
-            Assert.Throws<ArgumentException>(() => CreateProvider().For(custCode));
+            Assert.Throws<ArgumentException>(() => CreateProvider().For(customizeId));
         }
 
         [Fact]

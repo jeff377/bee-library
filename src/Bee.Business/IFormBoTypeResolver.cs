@@ -25,14 +25,14 @@ namespace Bee.Business
         /// overlay for the supplied customization code (ProgramSettings overlay is per-progId:
         /// a customization entry wins over the base entry, otherwise the base resolution applies).
         /// </summary>
-        /// <param name="custCode">The tenant customization code; empty resolves against the base layer only.</param>
+        /// <param name="customizeId">The tenant customization code; empty resolves against the base layer only.</param>
         /// <param name="progId">The program identifier.</param>
         /// <remarks>
-        /// Default implementation ignores <paramref name="custCode"/> and delegates to
+        /// Default implementation ignores <paramref name="customizeId"/> and delegates to
         /// <see cref="Resolve(string)"/> — resolvers without customization support behave exactly
         /// as before. <see cref="ProgramSettingsFormBoTypeResolver"/> overrides this to overlay.
         /// </remarks>
-        Type Resolve(string custCode, string progId) => Resolve(progId);
+        Type Resolve(string customizeId, string progId) => Resolve(progId);
     }
 
     /// <summary>

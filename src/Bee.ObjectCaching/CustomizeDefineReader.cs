@@ -29,17 +29,17 @@ namespace Bee.ObjectCaching
         }
 
         /// <inheritdoc/>
-        public LanguageResource? GetCustomizeLanguage(string custCode, string lang, string ns)
+        public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns)
         {
-            if (!IsCustomizeEnabled(custCode))
+            if (!IsCustomizeEnabled(customizeId))
                 return null;
-            return _provider.For(custCode).LanguageResource.Get(lang, ns);
+            return _provider.For(customizeId).LanguageResource.Get(lang, ns);
         }
 
         /// <inheritdoc/>
-        public ProgramSettings? GetCustomizeProgramSettings(string custCode)
+        public ProgramSettings? GetCustomizeProgramSettings(string customizeId)
         {
-            if (!IsCustomizeEnabled(custCode))
+            if (!IsCustomizeEnabled(customizeId))
                 return null;
 
             // ProgramSettingsCache reads the file directly and throws when it is absent (a missing
@@ -47,18 +47,18 @@ namespace Bee.ObjectCaching
             // missing file is normal, so probe existence first and skip the cache entirely when the
             // tenant supplies no override — this avoids both exception-driven control flow and any
             // change to the shared cache class.
-            var custPaths = new CustomizeOnlyPathOptions(_paths.CustomizePath, custCode);
+            var custPaths = new CustomizeOnlyPathOptions(_paths.CustomizePath, customizeId);
             if (!File.Exists(custPaths.GetProgramSettingsFilePath()))
                 return null;
-            return _provider.For(custCode).ProgramSettings.Get();
+            return _provider.For(customizeId).ProgramSettings.Get();
         }
 
         /// <inheritdoc/>
-        public FormLayout? GetCustomizeFormLayout(string custCode, string layoutId)
+        public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId)
         {
-            if (!IsCustomizeEnabled(custCode))
+            if (!IsCustomizeEnabled(customizeId))
                 return null;
-            return _provider.For(custCode).FormLayout.Get(layoutId);
+            return _provider.For(customizeId).FormLayout.Get(layoutId);
         }
 
         /// <summary>
@@ -66,7 +66,7 @@ namespace Bee.ObjectCaching
         /// code is present and a customization root is configured. Consumers short-circuit on an
         /// empty code before ever calling this reader, so in normal operation this guard is a no-op.
         /// </summary>
-        private bool IsCustomizeEnabled(string custCode)
-            => !string.IsNullOrEmpty(custCode) && !string.IsNullOrEmpty(_paths.CustomizePath);
+        private bool IsCustomizeEnabled(string customizeId)
+            => !string.IsNullOrEmpty(customizeId) && !string.IsNullOrEmpty(_paths.CustomizePath);
     }
 }

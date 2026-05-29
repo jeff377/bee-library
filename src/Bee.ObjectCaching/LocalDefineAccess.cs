@@ -302,16 +302,16 @@ namespace Bee.ObjectCaching
         /// Gets the form layout for the specified layout identifier, applying the tenant
         /// customization overlay (whole-file selection) for the supplied customization code.
         /// </summary>
-        /// <param name="custCode">The tenant customization code; empty resolves against the base layer only.</param>
+        /// <param name="customizeId">The tenant customization code; empty resolves against the base layer only.</param>
         /// <param name="layoutId">The layout identifier.</param>
-        public FormLayout GetFormLayout(string custCode, string layoutId)
+        public FormLayout GetFormLayout(string customizeId, string layoutId)
         {
             // Short-circuit: no customization code (or no reader) → base layout, untouched.
-            if (!string.IsNullOrEmpty(custCode) && _customizeReader is not null)
+            if (!string.IsNullOrEmpty(customizeId) && _customizeReader is not null)
             {
                 // Whole-file selection: a customization layout wins outright; this does not merge
                 // base and cust, and the base cache is never mutated.
-                var custom = _customizeReader.GetCustomizeFormLayout(custCode, layoutId);
+                var custom = _customizeReader.GetCustomizeFormLayout(customizeId, layoutId);
                 if (custom is not null)
                     return custom;
             }

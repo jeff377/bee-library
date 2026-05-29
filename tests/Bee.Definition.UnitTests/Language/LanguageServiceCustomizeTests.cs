@@ -10,7 +10,7 @@ namespace Bee.Definition.UnitTests.Language
 {
     /// <summary>
     /// <see cref="LanguageService"/> 租戶客製化疊加測試：cust 有 key→cust 值；cust 無 key→base 值；
-    /// cust resource 不存在→全 base；custCode 空 / 無 reader→短路純 base（reader 零呼叫）。
+    /// cust resource 不存在→全 base；customizeId 空 / 無 reader→短路純 base（reader 零呼叫）。
     /// </summary>
     public class LanguageServiceCustomizeTests
     {
@@ -54,8 +54,8 @@ namespace Bee.Definition.UnitTests.Language
         }
 
         [Fact]
-        [DisplayName("custCode 空時短路純 base，reader 零呼叫")]
-        public void EmptyCustCode_ShortCircuits_ReaderNotCalled()
+        [DisplayName("customizeId 空時短路純 base，reader 零呼叫")]
+        public void EmptyCustomizeId_ShortCircuits_ReaderNotCalled()
         {
             var defineAccess = new StubDefineAccess("zh-TW");
             defineAccess.AddResource("zh-TW", "Common", ("OK", "確定"));
@@ -63,7 +63,7 @@ namespace Bee.Definition.UnitTests.Language
             reader.AddLanguage("acme", "zh-TW", "Common", ("OK", "客製確定"));
             var svc = new LanguageService(defineAccess, reader);
 
-            // 經由不帶 custCode 的 base 多載
+            // 經由不帶 customizeId 的 base 多載
             Assert.Equal("確定", svc.GetLangText("zh-TW", "Common.OK"));
             Assert.Equal(0, reader.GetCustomizeLanguageCallCount);
         }
@@ -76,7 +76,7 @@ namespace Bee.Definition.UnitTests.Language
             defineAccess.AddResource("zh-TW", "Common", ("OK", "確定"));
             var svc = new LanguageService(defineAccess); // 無 reader
 
-            // 即使帶 custCode，無 reader 即退化為 base
+            // 即使帶 customizeId，無 reader 即退化為 base
             Assert.Equal("確定", svc.GetLangText("acme", "zh-TW", "Common", "OK"));
         }
 
@@ -121,25 +121,25 @@ namespace Bee.Definition.UnitTests.Language
 
             public int GetCustomizeLanguageCallCount { get; private set; }
 
-            public void AddLanguage(string custCode, string lang, string ns, params (string Key, string Value)[] items)
+            public void AddLanguage(string customizeId, string lang, string ns, params (string Key, string Value)[] items)
             {
-                var resource = GetOrCreate(custCode, lang, ns);
+                var resource = GetOrCreate(customizeId, lang, ns);
                 foreach (var (key, value) in items)
                     resource.Items.Add(key, value);
             }
 
-            public void AddEnum(string custCode, string lang, string ns, string enumName, params (string Code, string Text)[] entries)
+            public void AddEnum(string customizeId, string lang, string ns, string enumName, params (string Code, string Text)[] entries)
             {
-                var resource = GetOrCreate(custCode, lang, ns);
+                var resource = GetOrCreate(customizeId, lang, ns);
                 var langEnum = new LanguageEnum { Name = enumName };
                 foreach (var (code, text) in entries)
                     langEnum.Entries.Add(code, text);
                 resource.Enums.Add(langEnum);
             }
 
-            private LanguageResource GetOrCreate(string custCode, string lang, string ns)
+            private LanguageResource GetOrCreate(string customizeId, string lang, string ns)
             {
-                string key = $"{custCode}.{lang}.{ns}";
+                string key = $"{customizeId}.{lang}.{ns}";
                 if (!_languages.TryGetValue(key, out var resource))
                 {
                     resource = new LanguageResource { Namespace = ns, Lang = lang };
@@ -148,14 +148,14 @@ namespace Bee.Definition.UnitTests.Language
                 return resource;
             }
 
-            public LanguageResource? GetCustomizeLanguage(string custCode, string lang, string ns)
+            public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns)
             {
                 GetCustomizeLanguageCallCount++;
-                return _languages.TryGetValue($"{custCode}.{lang}.{ns}", out var r) ? r : null;
+                return _languages.TryGetValue($"{customizeId}.{lang}.{ns}", out var r) ? r : null;
             }
 
-            public ProgramSettings? GetCustomizeProgramSettings(string custCode) => null;
-            public FormLayout? GetCustomizeFormLayout(string custCode, string layoutId) => null;
+            public ProgramSettings? GetCustomizeProgramSettings(string customizeId) => null;
+            public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId) => null;
         }
 
         private sealed class StubDefineAccess : IDefineAccess

@@ -14,7 +14,7 @@ namespace Bee.Definition.UnitTests.Storage
     public sealed class CustomizeOnlyStorageTests : IDisposable
     {
         private readonly string _root;
-        private const string CustCode = "acme";
+        private const string CustomizeId = "acme";
 
         public CustomizeOnlyStorageTests()
         {
@@ -28,13 +28,13 @@ namespace Bee.Definition.UnitTests.Storage
         }
 
         private CustomizeOnlyStorage CreateStorage()
-            => new(new CustomizeOnlyPathOptions(_root, CustCode));
+            => new(new CustomizeOnlyPathOptions(_root, CustomizeId));
 
         [Fact]
         [DisplayName("GetFormLayout 客製檔存在時應回傳該檔內容")]
         public void GetFormLayout_FileExists_ReturnsLayout()
         {
-            var paths = new CustomizeOnlyPathOptions(_root, CustCode);
+            var paths = new CustomizeOnlyPathOptions(_root, CustomizeId);
             var layout = new FormLayout { LayoutId = "EmployeeDefault" };
             XmlCodec.SerializeToFile(layout, paths.GetFormLayoutFilePath("EmployeeDefault"));
 
@@ -55,7 +55,7 @@ namespace Bee.Definition.UnitTests.Storage
         [DisplayName("GetLanguage 客製檔存在時應回傳該檔內容")]
         public void GetLanguage_FileExists_ReturnsResource()
         {
-            var paths = new CustomizeOnlyPathOptions(_root, CustCode);
+            var paths = new CustomizeOnlyPathOptions(_root, CustomizeId);
             var resource = new LanguageResource { Lang = "zh-TW", Namespace = "Customer" };
             XmlCodec.SerializeToFile(resource, paths.GetLanguageFilePath("zh-TW", "Customer"));
 

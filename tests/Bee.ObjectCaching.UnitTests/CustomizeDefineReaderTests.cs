@@ -9,14 +9,14 @@ namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
     /// <see cref="CustomizeDefineReader"/> 行為測試：客製檔存在→回該檔；不存在→null；
-    /// CustomizePath 未設 / custCode 空→全回 null（第二道防線）；跨租戶隔離。
+    /// CustomizePath 未設 / customizeId 空→全回 null（第二道防線）；跨租戶隔離。
     /// </summary>
     public sealed class CustomizeDefineReaderTests : IDisposable
     {
         private readonly string _root;
         // Unique per-test customization codes keep the prefixed cache entries isolated across
         // the shared process-wide cache provider, so this class runs in parallel with others.
-        private readonly string _custCode = "cust" + Guid.NewGuid().ToString("N");
+        private readonly string _customizeId = "cust" + Guid.NewGuid().ToString("N");
 
         public CustomizeDefineReaderTests()
         {
@@ -35,21 +35,21 @@ namespace Bee.ObjectCaching.UnitTests
             return new CustomizeDefineReader(new CacheContainerProvider(paths), paths);
         }
 
-        private void WriteCustomizeFormLayout(string custCode, string layoutId)
+        private void WriteCustomizeFormLayout(string customizeId, string layoutId)
         {
-            var paths = new CustomizeOnlyPathOptions(_root, custCode);
+            var paths = new CustomizeOnlyPathOptions(_root, customizeId);
             XmlCodec.SerializeToFile(new FormLayout { LayoutId = layoutId }, paths.GetFormLayoutFilePath(layoutId));
         }
 
-        private void WriteCustomizeLanguage(string custCode, string lang, string ns)
+        private void WriteCustomizeLanguage(string customizeId, string lang, string ns)
         {
-            var paths = new CustomizeOnlyPathOptions(_root, custCode);
+            var paths = new CustomizeOnlyPathOptions(_root, customizeId);
             XmlCodec.SerializeToFile(new LanguageResource { Lang = lang, Namespace = ns }, paths.GetLanguageFilePath(lang, ns));
         }
 
-        private void WriteCustomizeProgramSettings(string custCode)
+        private void WriteCustomizeProgramSettings(string customizeId)
         {
-            var paths = new CustomizeOnlyPathOptions(_root, custCode);
+            var paths = new CustomizeOnlyPathOptions(_root, customizeId);
             XmlCodec.SerializeToFile(new ProgramSettings(), paths.GetProgramSettingsFilePath());
         }
 
@@ -57,10 +57,10 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("GetCustomizeFormLayout 客製檔存在時應回傳客製物件")]
         public void GetCustomizeFormLayout_FileExists_ReturnsCustomize()
         {
-            WriteCustomizeFormLayout(_custCode, "EmployeeDefault");
+            WriteCustomizeFormLayout(_customizeId, "EmployeeDefault");
             var reader = CreateReader();
 
-            var result = reader.GetCustomizeFormLayout(_custCode, "EmployeeDefault");
+            var result = reader.GetCustomizeFormLayout(_customizeId, "EmployeeDefault");
 
             Assert.NotNull(result);
             Assert.Equal("EmployeeDefault", result!.LayoutId);
@@ -70,17 +70,17 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("GetCustomizeFormLayout 客製檔不存在時應回傳 null")]
         public void GetCustomizeFormLayout_FileMissing_ReturnsNull()
         {
-            Assert.Null(CreateReader().GetCustomizeFormLayout(_custCode, "NonExistent"));
+            Assert.Null(CreateReader().GetCustomizeFormLayout(_customizeId, "NonExistent"));
         }
 
         [Fact]
         [DisplayName("GetCustomizeLanguage 客製檔存在時應回傳客製物件")]
         public void GetCustomizeLanguage_FileExists_ReturnsCustomize()
         {
-            WriteCustomizeLanguage(_custCode, "zh-TW", "Customer");
+            WriteCustomizeLanguage(_customizeId, "zh-TW", "Customer");
             var reader = CreateReader();
 
-            var result = reader.GetCustomizeLanguage(_custCode, "zh-TW", "Customer");
+            var result = reader.GetCustomizeLanguage(_customizeId, "zh-TW", "Customer");
 
             Assert.NotNull(result);
             Assert.Equal("Customer", result!.Namespace);
@@ -90,50 +90,50 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("GetCustomizeLanguage 客製檔不存在時應回傳 null")]
         public void GetCustomizeLanguage_FileMissing_ReturnsNull()
         {
-            Assert.Null(CreateReader().GetCustomizeLanguage(_custCode, "zh-TW", "NonExistent"));
+            Assert.Null(CreateReader().GetCustomizeLanguage(_customizeId, "zh-TW", "NonExistent"));
         }
 
         [Fact]
         [DisplayName("GetCustomizeProgramSettings 客製檔存在時應回傳客製物件")]
         public void GetCustomizeProgramSettings_FileExists_ReturnsCustomize()
         {
-            WriteCustomizeProgramSettings(_custCode);
+            WriteCustomizeProgramSettings(_customizeId);
             var reader = CreateReader();
 
-            Assert.NotNull(reader.GetCustomizeProgramSettings(_custCode));
+            Assert.NotNull(reader.GetCustomizeProgramSettings(_customizeId));
         }
 
         [Fact]
         [DisplayName("GetCustomizeProgramSettings 客製檔不存在時應回傳 null（不丟例外）")]
         public void GetCustomizeProgramSettings_FileMissing_ReturnsNull()
         {
-            Assert.Null(CreateReader().GetCustomizeProgramSettings(_custCode));
+            Assert.Null(CreateReader().GetCustomizeProgramSettings(_customizeId));
         }
 
         [Theory]
         [InlineData("")]
         [InlineData(null)]
-        [DisplayName("custCode 為空時三類皆回 null（短路第二道防線）")]
-        public void EmptyCustCode_AllReturnNull(string? custCode)
+        [DisplayName("customizeId 為空時三類皆回 null（短路第二道防線）")]
+        public void EmptyCustomizeId_AllReturnNull(string? customizeId)
         {
-            WriteCustomizeFormLayout(_custCode, "EmployeeDefault");
+            WriteCustomizeFormLayout(_customizeId, "EmployeeDefault");
             var reader = CreateReader();
 
-            Assert.Null(reader.GetCustomizeFormLayout(custCode!, "EmployeeDefault"));
-            Assert.Null(reader.GetCustomizeLanguage(custCode!, "zh-TW", "Customer"));
-            Assert.Null(reader.GetCustomizeProgramSettings(custCode!));
+            Assert.Null(reader.GetCustomizeFormLayout(customizeId!, "EmployeeDefault"));
+            Assert.Null(reader.GetCustomizeLanguage(customizeId!, "zh-TW", "Customer"));
+            Assert.Null(reader.GetCustomizeProgramSettings(customizeId!));
         }
 
         [Fact]
         [DisplayName("CustomizePath 未設時三類皆回 null（關閉客製、向後相容）")]
         public void EmptyCustomizePath_AllReturnNull()
         {
-            WriteCustomizeFormLayout(_custCode, "EmployeeDefault");
+            WriteCustomizeFormLayout(_customizeId, "EmployeeDefault");
             var reader = CreateReader(customizePath: "");
 
-            Assert.Null(reader.GetCustomizeFormLayout(_custCode, "EmployeeDefault"));
-            Assert.Null(reader.GetCustomizeLanguage(_custCode, "zh-TW", "Customer"));
-            Assert.Null(reader.GetCustomizeProgramSettings(_custCode));
+            Assert.Null(reader.GetCustomizeFormLayout(_customizeId, "EmployeeDefault"));
+            Assert.Null(reader.GetCustomizeLanguage(_customizeId, "zh-TW", "Customer"));
+            Assert.Null(reader.GetCustomizeProgramSettings(_customizeId));
         }
 
         [Fact]
@@ -154,11 +154,11 @@ namespace Bee.ObjectCaching.UnitTests
         [DisplayName("連續查找回傳穩定的快取實例 reference（證明未每次重建）")]
         public void RepeatedLookup_ReturnsStableCachedInstance()
         {
-            WriteCustomizeFormLayout(_custCode, "EmployeeDefault");
+            WriteCustomizeFormLayout(_customizeId, "EmployeeDefault");
             var reader = CreateReader();
 
-            var first = reader.GetCustomizeFormLayout(_custCode, "EmployeeDefault");
-            var second = reader.GetCustomizeFormLayout(_custCode, "EmployeeDefault");
+            var first = reader.GetCustomizeFormLayout(_customizeId, "EmployeeDefault");
+            var second = reader.GetCustomizeFormLayout(_customizeId, "EmployeeDefault");
 
             Assert.Same(first, second);
         }

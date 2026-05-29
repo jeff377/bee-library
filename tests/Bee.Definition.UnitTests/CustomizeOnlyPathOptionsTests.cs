@@ -8,33 +8,33 @@ namespace Bee.Definition.UnitTests
     public class CustomizeOnlyPathOptionsTests
     {
         private const string CustomizeRoot = "/tmp/bee-customize-tests";
-        private const string CustCode = "acme";
+        private const string CustomizeId = "acme";
 
         [Fact]
-        [DisplayName("GetProgramSettingsFilePath 應落在 {CustomizePath}/{custCode}/ProgramSettings.xml")]
+        [DisplayName("GetProgramSettingsFilePath 應落在 {CustomizePath}/{customizeId}/ProgramSettings.xml")]
         public void GetProgramSettingsFilePath_ReturnsCustomizeRootedPath()
         {
-            var paths = new CustomizeOnlyPathOptions(CustomizeRoot, CustCode);
-            var expected = Path.Combine(Path.GetFullPath(Path.Combine(CustomizeRoot, CustCode)), "ProgramSettings.xml");
+            var paths = new CustomizeOnlyPathOptions(CustomizeRoot, CustomizeId);
+            var expected = Path.Combine(Path.GetFullPath(Path.Combine(CustomizeRoot, CustomizeId)), "ProgramSettings.xml");
             Assert.Equal(expected, paths.GetProgramSettingsFilePath());
         }
 
         [Fact]
-        [DisplayName("GetFormLayoutFilePath 應落在 {CustomizePath}/{custCode}/FormLayout/<layoutId>.FormLayout.xml")]
+        [DisplayName("GetFormLayoutFilePath 應落在 {CustomizePath}/{customizeId}/FormLayout/<layoutId>.FormLayout.xml")]
         public void GetFormLayoutFilePath_ReturnsCustomizeRootedPath()
         {
-            var paths = new CustomizeOnlyPathOptions(CustomizeRoot, CustCode);
-            var root = Path.GetFullPath(Path.Combine(CustomizeRoot, CustCode));
+            var paths = new CustomizeOnlyPathOptions(CustomizeRoot, CustomizeId);
+            var root = Path.GetFullPath(Path.Combine(CustomizeRoot, CustomizeId));
             var expected = Path.Combine(root, "FormLayout", "EmployeeDefault.FormLayout.xml");
             Assert.Equal(expected, paths.GetFormLayoutFilePath("EmployeeDefault"));
         }
 
         [Fact]
-        [DisplayName("GetLanguageFilePath 應落在 {CustomizePath}/{custCode}/Language/<lang>/<ns>.Language.xml")]
+        [DisplayName("GetLanguageFilePath 應落在 {CustomizePath}/{customizeId}/Language/<lang>/<ns>.Language.xml")]
         public void GetLanguageFilePath_ReturnsCustomizeRootedPath()
         {
-            var paths = new CustomizeOnlyPathOptions(CustomizeRoot, CustCode);
-            var root = Path.GetFullPath(Path.Combine(CustomizeRoot, CustCode));
+            var paths = new CustomizeOnlyPathOptions(CustomizeRoot, CustomizeId);
+            var root = Path.GetFullPath(Path.Combine(CustomizeRoot, CustomizeId));
             var expected = Path.Combine(root, "Language", "zh-TW", "Customer.Language.xml");
             Assert.Equal(expected, paths.GetLanguageFilePath("zh-TW", "Customer"));
         }
@@ -44,26 +44,26 @@ namespace Bee.Definition.UnitTests
         [InlineData("../escape")]
         [InlineData("foo/bar")]
         [InlineData("foo\\bar")]
-        [DisplayName("custCode 含路徑跳脫字元應拋出 ArgumentException")]
-        public void Constructor_CustCodeWithPathTraversal_ThrowsArgumentException(string custCode)
+        [DisplayName("customizeId 含路徑跳脫字元應拋出 ArgumentException")]
+        public void Constructor_CustomizeIdWithPathTraversal_ThrowsArgumentException(string customizeId)
         {
-            Assert.Throws<ArgumentException>(() => new CustomizeOnlyPathOptions(CustomizeRoot, custCode));
+            Assert.Throws<ArgumentException>(() => new CustomizeOnlyPathOptions(CustomizeRoot, customizeId));
         }
 
         [Theory]
         [InlineData("")]
         [InlineData("   ")]
-        [DisplayName("custCode 為空或空白應拋出 ArgumentException")]
-        public void Constructor_EmptyCustCode_ThrowsArgumentException(string custCode)
+        [DisplayName("customizeId 為空或空白應拋出 ArgumentException")]
+        public void Constructor_EmptyCustomizeId_ThrowsArgumentException(string customizeId)
         {
-            Assert.Throws<ArgumentException>(() => new CustomizeOnlyPathOptions(CustomizeRoot, custCode));
+            Assert.Throws<ArgumentException>(() => new CustomizeOnlyPathOptions(CustomizeRoot, customizeId));
         }
 
         [Fact]
         [DisplayName("customizePath 為空應拋出 ArgumentException")]
         public void Constructor_EmptyCustomizePath_ThrowsArgumentException()
         {
-            Assert.Throws<ArgumentException>(() => new CustomizeOnlyPathOptions("", CustCode));
+            Assert.Throws<ArgumentException>(() => new CustomizeOnlyPathOptions("", CustomizeId));
         }
     }
 }

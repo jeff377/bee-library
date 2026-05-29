@@ -9,7 +9,7 @@ namespace Bee.Definition.Storage
 {
     /// <summary>
     /// Read-only define storage for the tenant customization-override layer. Resolves files
-    /// strictly under <c>{CustomizePath}/{custCode}/</c> (via <see cref="CustomizeOnlyPathOptions"/>)
+    /// strictly under <c>{CustomizePath}/{customizeId}/</c> (via <see cref="CustomizeOnlyPathOptions"/>)
     /// and serves only the three customizable types: Language, FormLayout, ProgramSettings.
     /// </summary>
     /// <remarks>

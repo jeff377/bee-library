@@ -6,8 +6,8 @@ namespace Bee.ObjectCaching
 {
     /// <summary>
     /// Supplies per-customization-code override cache containers. Each container is backed by a
-    /// <see cref="CustomizeOnlyStorage"/> rooted at <c>{CustomizePath}/{custCode}/</c> and uses
-    /// <c>CachePrefix = custCode</c> so tenant data is physically isolated over the shared
+    /// <see cref="CustomizeOnlyStorage"/> rooted at <c>{CustomizePath}/{customizeId}/</c> and uses
+    /// <c>CachePrefix = customizeId</c> so tenant data is physically isolated over the shared
     /// process-wide cache provider.
     /// </summary>
     public interface ICacheContainerProvider
@@ -16,8 +16,8 @@ namespace Bee.ObjectCaching
         /// Gets (lazily creating on first use) the override cache container for the given
         /// customization code. Repeated calls with the same code return the same container.
         /// </summary>
-        /// <param name="custCode">The non-empty tenant customization code.</param>
-        ICacheContainer For(string custCode);
+        /// <param name="customizeId">The non-empty tenant customization code.</param>
+        ICacheContainer For(string customizeId);
     }
 
     /// <summary>
@@ -45,17 +45,17 @@ namespace Bee.ObjectCaching
         }
 
         /// <inheritdoc/>
-        public ICacheContainer For(string custCode)
+        public ICacheContainer For(string customizeId)
         {
-            ArgumentException.ThrowIfNullOrWhiteSpace(custCode);
-            return _containers.GetOrAdd(custCode, CreateContainer);
+            ArgumentException.ThrowIfNullOrWhiteSpace(customizeId);
+            return _containers.GetOrAdd(customizeId, CreateContainer);
         }
 
-        private ICacheContainer CreateContainer(string custCode)
+        private ICacheContainer CreateContainer(string customizeId)
         {
-            var custPaths = new CustomizeOnlyPathOptions(_paths.CustomizePath, custCode);
+            var custPaths = new CustomizeOnlyPathOptions(_paths.CustomizePath, customizeId);
             var storage = new CustomizeOnlyStorage(custPaths);
-            return new CacheContainerService(storage, custPaths, custCode);
+            return new CacheContainerService(storage, custPaths, customizeId);
         }
     }
 }
