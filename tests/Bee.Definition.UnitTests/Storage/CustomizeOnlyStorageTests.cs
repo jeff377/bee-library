@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using Bee.Base.Serialization;
+using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
@@ -98,6 +99,8 @@ namespace Bee.Definition.UnitTests.Storage
         public void SaveMethods_ThrowNotSupported()
         {
             var storage = CreateStorage();
+            Assert.Throws<NotSupportedException>(() => storage.SaveDbCategorySettings(new DbCategorySettings()));
+            Assert.Throws<NotSupportedException>(() => storage.SaveTableSchema("common", new TableSchema()));
             Assert.Throws<NotSupportedException>(() => storage.SaveFormLayout(new FormLayout()));
             Assert.Throws<NotSupportedException>(() => storage.SaveLanguage(new LanguageResource()));
             Assert.Throws<NotSupportedException>(() => storage.SaveFormSchema(new FormSchema()));
