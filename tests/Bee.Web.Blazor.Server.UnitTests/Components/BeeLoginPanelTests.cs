@@ -77,5 +77,13 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
             Assert.Equal("Password", panel.PasswordLabel);
             Assert.Equal("Sign in", panel.SubmitLabel);
         }
+
+        [Fact]
+        [DisplayName("OnLoggedIn 預設狀態應無委派（HasDelegate 為 false）")]
+        public void OnLoggedIn_Default_HasNoDelegate()
+        {
+            var panel = new BeeLoginPanel();
+            Assert.False(panel.OnLoggedIn.HasDelegate);
+        }
     }
 }
