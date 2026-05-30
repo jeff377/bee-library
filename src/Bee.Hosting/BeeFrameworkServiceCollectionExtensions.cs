@@ -70,13 +70,27 @@ namespace Bee.Hosting
                 new CacheContainerService(
                     sp.GetRequiredService<IDefineStorage>(),
                     sp.GetRequiredService<PathOptions>()));
+
+            // 4b. Tenant customization-override layer: per-customizeId cache provider + reader.
+            //     Both honour PathOptions.CustomizePath — when it is empty (the standard,
+            //     non-customized deployment) the reader short-circuits every lookup to null, so
+            //     all consumers degrade to pure base, bit-for-bit identical to before. Always
+            //     registered; behaviour is gated entirely by CustomizePath, not by presence.
+            services.AddSingleton<ICacheContainerProvider>(sp =>
+                new CacheContainerProvider(sp.GetRequiredService<PathOptions>()));
+            services.AddSingleton<ICustomizeDefineReader>(sp =>
+                new CustomizeDefineReader(
+                    sp.GetRequiredService<ICacheContainerProvider>(),
+                    sp.GetRequiredService<PathOptions>()));
+
             services.AddSingleton<IDefineAccess>(sp =>
                 ResolveDefineAccess(
                     components.DefineAccess,
                     sp.GetRequiredService<IDefineStorage>(),
                     sp.GetRequiredService<PathOptions>(),
                     sp.GetRequiredService<ICacheContainer>(),
-                    keys.ConfigEncryptionKey));
+                    keys.ConfigEncryptionKey,
+                    sp.GetRequiredService<ICustomizeDefineReader>()));
 
             // 5. Database settings provider (used by DbConnectionManager bootstrap).
             services.AddSingleton<IDatabaseSettingsProvider>(sp =>
@@ -101,7 +115,9 @@ namespace Bee.Hosting
                 CreateConfigurableService<ISessionInfoService>(sp,
                     components.SessionInfoService, BackendDefaultTypes.SessionInfoService));
             services.AddSingleton<ILanguageService>(sp =>
-                new LanguageService(sp.GetRequiredService<IDefineAccess>()));
+                new LanguageService(
+                    sp.GetRequiredService<IDefineAccess>(),
+                    sp.GetRequiredService<ICustomizeDefineReader>()));
             services.AddSingleton<ICompanyInfoService>(sp =>
                 CreateConfigurableService<ICompanyInfoService>(sp,
                     components.CompanyInfoService, BackendDefaultTypes.CompanyInfoService));
@@ -124,7 +140,10 @@ namespace Bee.Hosting
             // 8. Business-object factory + form-bo type resolver.
             //    ProgramSettingsFormBoTypeResolver looks up ProgramItem.TypeName from
             //    ProgramSettings.xml; ProgIds without TypeName fall back to FormBusinessObject.
-            services.AddSingleton<IFormBoTypeResolver, ProgramSettingsFormBoTypeResolver>();
+            services.AddSingleton<IFormBoTypeResolver>(sp =>
+                new ProgramSettingsFormBoTypeResolver(
+                    sp.GetRequiredService<IDefineAccess>(),
+                    sp.GetRequiredService<ICustomizeDefineReader>()));
             services.AddSingleton<IBusinessObjectFactory>(sp =>
                 CreateBusinessObjectFactory(sp, components.BusinessObjectFactory));
 
@@ -155,16 +174,21 @@ namespace Bee.Hosting
 
         /// <summary>
         /// Resolves the configured <see cref="IDefineAccess"/> implementation. Supports
-        /// <c>(IDefineStorage, PathOptions, ICacheContainer, byte[])</c> ctor (used by
-        /// <c>LocalDefineAccess</c> with the cache + config encryption key),
+        /// <c>(IDefineStorage, PathOptions, ICacheContainer, byte[], ICustomizeDefineReader)</c>
+        /// (used by <c>LocalDefineAccess</c> with the customization overlay),
+        /// <c>(IDefineStorage, PathOptions, ICacheContainer, byte[])</c>,
         /// <c>(IDefineStorage, PathOptions)</c>, <c>(IDefineStorage)</c> (legacy), and
         /// parameterless ctors.
         /// </summary>
-        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage, PathOptions paths, ICacheContainer cache, byte[] configEncryptionKey)
+        private static IDefineAccess ResolveDefineAccess(string? typeName, IDefineStorage storage, PathOptions paths, ICacheContainer cache, byte[] configEncryptionKey, ICustomizeDefineReader customizeReader)
         {
             var resolvedName = string.IsNullOrWhiteSpace(typeName) ? BackendDefaultTypes.DefineAccess : typeName;
             var type = AssemblyLoader.GetType(resolvedName)
                 ?? throw new InvalidOperationException($"IDefineAccess type '{resolvedName}' not found.");
+
+            var ctorWithReader = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(PathOptions), typeof(ICacheContainer), typeof(byte[]), typeof(ICustomizeDefineReader) });
+            if (ctorWithReader != null)
+                return (IDefineAccess)ctorWithReader.Invoke(new object[] { storage, paths, cache, configEncryptionKey, customizeReader });
 
             var ctorFull = type.GetConstructor(new[] { typeof(IDefineStorage), typeof(PathOptions), typeof(ICacheContainer), typeof(byte[]) });
             if (ctorFull != null)

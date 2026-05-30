@@ -7,7 +7,7 @@
 | 1 | Override 層：`CustomizeOnlyStorage`（嚴格只讀、無檔回 null）+ per-customizeId `ICacheContainer` provider + `ICustomizeDefineReader` | ✅ 已完成（2026-05-29） |
 | 2 | 消費端疊加：`LanguageService`（key）、`ProgramSettingsFormBoTypeResolver`（progId）、`LocalDefineAccess.GetFormLayout`（整檔擇一） | ✅ 已完成（2026-05-29） |
 | 3 | 身分傳遞：`CompanyInfo.CustomizeId` + `SessionInfo.CustomizeId` + EnterCompany 解析 | ✅ 已完成（2026-05-29） |
-| 4 | 接線：DI 註冊 `ICustomizeDefineReader` / provider；`PathOptions.CustomizePath`；向後相容預設 | 📝 待做 |
+| 4 | 接線：DI 註冊 `ICustomizeDefineReader` / provider；`PathOptions.CustomizePath`；向後相容預設 | ✅ 已完成（2026-05-30） |
 | 5 | 客戶端 / 測試：`RemoteDefineAccess` 切換清快取、各層 round-trip + 疊加 / 隔離測試 | 📝 待做 |
 
 ## 背景
