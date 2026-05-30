@@ -20,7 +20,7 @@ namespace Bee.Definition.Storage
     /// </remarks>
     public sealed class CustomizeOnlyStorage : IDefineStorage
     {
-        private const string ReadOnlyMessage = ReadOnlyMessage;
+        private const string ReadOnlyMessage = "The customization-override layer is read-only.";
         private readonly CustomizeOnlyPathOptions _paths;
 
         /// <summary>
