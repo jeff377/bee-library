@@ -14,8 +14,8 @@ namespace Bee.Definition.UnitTests.Language
 
         private sealed class StubLanguageService : ILanguageService
         {
-            private readonly Dictionary<string, string> _texts = new();
-            private readonly Dictionary<string, LanguageEnum?> _enums = new();
+            private readonly Dictionary<string, string> _texts = [];
+            private readonly Dictionary<string, LanguageEnum?> _enums = [];
 
             public void AddText(string lang, string ns, string subKey, string value)
                 => _texts[$"{lang}.{ns}.{subKey}"] = value;
