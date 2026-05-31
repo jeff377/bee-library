@@ -84,6 +84,22 @@ namespace Bee.Api.Client.DefineAccess
         }
 
         /// <summary>
+        /// Clears the local definition cache.
+        /// </summary>
+        /// <remarks>
+        /// Must be called after switching tenant context (<c>EnterCompany</c> / <c>LeaveCompany</c>
+        /// changes the session's customization code). The server overlays FormLayout / Language /
+        /// ProgramSettings per the session's customization code, but this cache keys them only by
+        /// progId / layoutId / namespace — without a flush, a tenant switch would keep serving the
+        /// previous tenant's overlaid result. FormSchema / TableSchema / settings are tenant-agnostic,
+        /// so clearing them too is merely a harmless re-fetch on next access.
+        /// </remarks>
+        public void ClearCache()
+        {
+            this.List.Clear();
+        }
+
+        /// <summary>
         /// Gets definition data.
         /// </summary>
         /// <param name="defineType">The definition data type.</param>

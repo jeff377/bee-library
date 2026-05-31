@@ -1,6 +1,8 @@
 # 計畫：多租戶客製化（客製化代碼驅動定義檔 fallback）
 
-**狀態：🚧 進行中（2026-05-29）**
+**狀態：✅ 已完成（2026-05-30）**
+
+> 後續 follow-up：`st_company.customize_id` 目前為 interim `AllowNull="true"`（CI 綠）。待 `docs/plans/plan-oracle-string-nullability.md` 落地後改回 `AllowNull=false`（功能不受影響，僅 DB 內部 nullability）。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +10,7 @@
 | 2 | 消費端疊加：`LanguageService`（key）、`ProgramSettingsFormBoTypeResolver`（progId）、`LocalDefineAccess.GetFormLayout`（整檔擇一） | ✅ 已完成（2026-05-29） |
 | 3 | 身分傳遞：`CompanyInfo.CustomizeId` + `SessionInfo.CustomizeId` + EnterCompany 解析 | ✅ 已完成（2026-05-29） |
 | 4 | 接線：DI 註冊 `ICustomizeDefineReader` / provider；`PathOptions.CustomizePath`；向後相容預設 | ✅ 已完成（2026-05-30） |
-| 5 | 客戶端 / 測試：`RemoteDefineAccess` 切換清快取、各層 round-trip + 疊加 / 隔離測試 | 📝 待做 |
+| 5 | 客戶端 / 測試：`RemoteDefineAccess` 切換清快取、各層 round-trip + 疊加 / 隔離測試 | ✅ 已完成（2026-05-30） |
 
 ## 背景
 

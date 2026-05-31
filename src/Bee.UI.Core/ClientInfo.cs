@@ -122,6 +122,20 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
+        /// Discards the locally cached definition data.
+        /// </summary>
+        /// <remarks>
+        /// Must be called after switching tenant context (<c>EnterCompany</c> / <c>LeaveCompany</c>),
+        /// because <see cref="RemoteDefineAccess"/> caches the server-overlaid FormLayout / Language /
+        /// ProgramSettings keyed only by progId / layoutId / namespace — stale entries would otherwise
+        /// leak the previous tenant's customization. No-op when the accessor has not been created yet.
+        /// </remarks>
+        public static void ResetDefineCache()
+        {
+            (_defineAccess as RemoteDefineAccess)?.ClearCache();
+        }
+
+        /// <summary>
         /// UI view service supplied by the host application.
         /// </summary>
         public static IUIViewService? UIViewService { get; private set; }

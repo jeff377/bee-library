@@ -252,5 +252,55 @@ namespace Bee.Api.Client.UnitTests
             var ex = Assert.ThrowsAny<Exception>(() => access.GetSystemSettings());
             Assert.IsNotType<AggregateException>(ex);
         }
+
+        [Fact]
+        [DisplayName("ClearCache 後同一鍵應重新向 connector 抓取（切換租戶不回舊疊加結果）")]
+        public void ClearCache_AfterClear_RefetchesFromConnector()
+        {
+            var connector = new CountingConnector();
+            var access = new RemoteDefineAccess(connector);
+
+            access.GetFormLayout("L1");
+            access.GetFormLayout("L1"); // 第二次命中本地快取，不打 connector
+            Assert.Equal(1, connector.GetDefineCallCount);
+
+            // 模擬 EnterCompany 切換公司導致 customizeId 變動後的清快取。
+            access.ClearCache();
+
+            access.GetFormLayout("L1"); // 快取已清，必須重新抓取
+            Assert.Equal(2, connector.GetDefineCallCount);
+        }
+
+        [Fact]
+        [DisplayName("ClearCache 不影響後續正常快取行為")]
+        public void ClearCache_DoesNotBreakSubsequentCaching()
+        {
+            var connector = new CountingConnector();
+            var access = new RemoteDefineAccess(connector);
+
+            access.GetFormLayout("L1");
+            access.ClearCache();
+            access.GetFormLayout("L1");
+            access.GetFormLayout("L1"); // 清快取後重新抓一次，之後仍走快取
+            Assert.Equal(2, connector.GetDefineCallCount);
+        }
+
+        /// <summary>
+        /// Spy connector that counts <see cref="SystemApiConnector.GetDefineAsync{T}"/> calls and
+        /// returns a fresh instance, so cache hits (no call) vs misses (call) are observable without
+        /// touching a real server.
+        /// </summary>
+        private sealed class CountingConnector : SystemApiConnector
+        {
+            public CountingConnector() : base(Guid.NewGuid()) { }
+
+            public int GetDefineCallCount { get; private set; }
+
+            public override Task<T> GetDefineAsync<T>(DefineType defineType, string[]? keys = null)
+            {
+                GetDefineCallCount++;
+                return Task.FromResult(Activator.CreateInstance<T>());
+            }
+        }
     }
 }
