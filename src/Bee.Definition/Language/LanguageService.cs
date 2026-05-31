@@ -43,9 +43,6 @@ namespace Bee.Definition.Language
             _customizeReader = customizeReader;
         }
 
-        // ----- Base (non-customization) surface — splits full keys, then delegates to the
-        //       customizeId-aware core with an empty customization code (which short-circuits). -----
-
         /// <inheritdoc/>
         public string GetLangText(string lang, string fullKey)
         {
@@ -56,34 +53,6 @@ namespace Bee.Definition.Language
         /// <inheritdoc/>
         public string GetLangText(string lang, string @namespace, string subKey)
             => GetLangText("", lang, @namespace, subKey);
-
-        /// <inheritdoc/>
-        public bool TryGetLangText(string lang, string fullKey, out string text)
-        {
-            SplitFullKey(fullKey, out string @namespace, out string subKey);
-            return TryGetLangText("", lang, @namespace, subKey, out text);
-        }
-
-        /// <inheritdoc/>
-        public bool TryGetLangText(string lang, string @namespace, string subKey, out string text)
-            => TryGetLangText("", lang, @namespace, subKey, out text);
-
-        /// <inheritdoc/>
-        public LanguageEnum? GetLangEnum(string lang, string fullName)
-        {
-            SplitFullKey(fullName, out string @namespace, out string enumName);
-            return GetLangEnum("", lang, @namespace, enumName);
-        }
-
-        /// <inheritdoc/>
-        public LanguageEnum? GetLangEnum(string lang, string @namespace, string enumName)
-            => GetLangEnum("", lang, @namespace, enumName);
-
-        /// <inheritdoc/>
-        public string? GetLangEnumText(string lang, string fullName, string code)
-            => GetLangEnumText("", lang, fullName, code);
-
-        // ----- Customization-aware overlay surface (overrides the interface defaults) -----
 
         /// <inheritdoc/>
         public string GetLangText(string customizeId, string lang, string @namespace, string subKey)
@@ -105,6 +74,17 @@ namespace Bee.Definition.Language
             //    translation is visible in the UI (developers can spot it).
             return $"{@namespace}.{subKey}";
         }
+
+        /// <inheritdoc/>
+        public bool TryGetLangText(string lang, string fullKey, out string text)
+        {
+            SplitFullKey(fullKey, out string @namespace, out string subKey);
+            return TryGetLangText("", lang, @namespace, subKey, out text);
+        }
+
+        /// <inheritdoc/>
+        public bool TryGetLangText(string lang, string @namespace, string subKey, out string text)
+            => TryGetLangText("", lang, @namespace, subKey, out text);
 
         /// <inheritdoc/>
         public bool TryGetLangText(string customizeId, string lang, string @namespace, string subKey, out string text)
@@ -132,6 +112,17 @@ namespace Bee.Definition.Language
         }
 
         /// <inheritdoc/>
+        public LanguageEnum? GetLangEnum(string lang, string fullName)
+        {
+            SplitFullKey(fullName, out string @namespace, out string enumName);
+            return GetLangEnum("", lang, @namespace, enumName);
+        }
+
+        /// <inheritdoc/>
+        public LanguageEnum? GetLangEnum(string lang, string @namespace, string enumName)
+            => GetLangEnum("", lang, @namespace, enumName);
+
+        /// <inheritdoc/>
         public LanguageEnum? GetLangEnum(string customizeId, string lang, string @namespace, string enumName)
         {
             if (string.IsNullOrWhiteSpace(@namespace) || string.IsNullOrWhiteSpace(enumName))
@@ -152,6 +143,10 @@ namespace Bee.Definition.Language
 
             return null;
         }
+
+        /// <inheritdoc/>
+        public string? GetLangEnumText(string lang, string fullName, string code)
+            => GetLangEnumText("", lang, fullName, code);
 
         /// <inheritdoc/>
         public string? GetLangEnumText(string customizeId, string lang, string fullName, string code)
