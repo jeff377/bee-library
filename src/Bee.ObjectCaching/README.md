@@ -45,6 +45,11 @@
 - `SessionInfoService` -- session lifecycle operations backed by the cache layer
 - `EnterpriseObjectService` -- coordinates enterprise-scoped cached objects
 
+### Tenant Customization Overlay
+
+- `ICacheContainerProvider` / `CacheContainerProvider` -- lazily builds a per-`CustomizeId` read-only override cache container (`CachePrefix=customizeId`, backed by `CustomizeOnlyStorage`), reusing the existing cache classes unchanged
+- `CustomizeDefineReader` -- `ICustomizeDefineReader` implementation that reads Language / FormLayout / ProgramSettings from the per-tenant override containers; a missing override returns `null` (see [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md))
+
 ## Key Public APIs
 
 | Class / Interface | Purpose |
@@ -54,7 +59,9 @@
 | `ObjectCache<T>` | Single-object cache base class |
 | `KeyObjectCache<T>` | Keyed cache base class |
 | `ICacheProvider` | Cache storage provider interface |
-| `LocalDefineAccess` | `IDefineAccess` implementation that reads definitions from local cache |
+| `LocalDefineAccess` | `IDefineAccess` implementation that reads definitions from local cache (with optional customization overlay) |
+| `ICacheContainerProvider` / `CacheContainerProvider` | Per-`CustomizeId` override cache container provider |
+| `CustomizeDefineReader` | Tenant customization-override reader (`ICustomizeDefineReader`) |
 | `CacheItemPolicy` | Expiration and eviction configuration |
 | `CacheInfo` | Metadata descriptor for a cached entry |
 
@@ -81,5 +88,6 @@ Bee.ObjectCaching/
   Services/    # SessionInfoService, EnterpriseObjectService
   *.cs (root)  # CacheFunc, CacheContainer, ObjectCache, KeyObjectCache,
                # CacheItemPolicy, CacheTimeKind, CacheInfo,
-               # LocalDefineAccess
+               # LocalDefineAccess,
+               # CacheContainerProvider, CustomizeDefineReader
 ```

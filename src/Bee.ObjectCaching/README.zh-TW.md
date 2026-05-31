@@ -45,6 +45,11 @@
 - `SessionInfoService` -- 由快取層支援的 Session 生命週期操作
 - `EnterpriseObjectService` -- 協調企業範圍的快取物件
 
+### 多租戶客製化覆蓋層
+
+- `ICacheContainerProvider` / `CacheContainerProvider` -- 延遲建立 per-`CustomizeId` 唯讀覆蓋快取容器（`CachePrefix=customizeId`，backing 為 `CustomizeOnlyStorage`），重用既有快取類別、一行不改
+- `CustomizeDefineReader` -- `ICustomizeDefineReader` 實作，從 per-租戶覆蓋容器讀取 Language / FormLayout / ProgramSettings；無客製檔回 `null`（見 [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)）
+
 ## 主要公開 API
 
 | 類別 / 介面 | 用途 |
@@ -54,7 +59,9 @@
 | `ObjectCache<T>` | 單一物件快取基底類別 |
 | `KeyObjectCache<T>` | 鍵值快取基底類別 |
 | `ICacheProvider` | 快取儲存提供者介面 |
-| `LocalDefineAccess` | `IDefineAccess` 實作，從本機快取讀取定義 |
+| `LocalDefineAccess` | `IDefineAccess` 實作，從本機快取讀取定義（可選客製化疊加） |
+| `ICacheContainerProvider` / `CacheContainerProvider` | per-`CustomizeId` 覆蓋快取容器提供者 |
+| `CustomizeDefineReader` | 租戶客製化覆蓋讀取器（`ICustomizeDefineReader`） |
 | `CacheItemPolicy` | 到期與清除組態 |
 | `CacheInfo` | 快取項目的中繼資料描述 |
 
@@ -81,5 +88,6 @@ Bee.ObjectCaching/
   Services/    # SessionInfoService、EnterpriseObjectService
   *.cs（根目錄）# CacheFunc、CacheContainer、ObjectCache、KeyObjectCache、
                # CacheItemPolicy、CacheTimeKind、CacheInfo、
-               # LocalDefineAccess
+               # LocalDefineAccess、
+               # CacheContainerProvider、CustomizeDefineReader
 ```

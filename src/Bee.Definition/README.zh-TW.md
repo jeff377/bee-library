@@ -30,6 +30,7 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 - **安全合約** — `IAccessTokenValidationProvider`、`IApiEncryptionKeyProvider` 等介面定義安全邊界，不強制綁定實作細節。
 - **DefineType 驅動的 CRUD** — `DefineType` 列舉與 `DefineFunc` 工具類別將定義類別對應至 CLR 型別，透過 `IDefineAccess` 與 `IDefineStorage` 實現泛型載入/儲存。
 - **集中式設定模型** — `SystemSettings`、`DatabaseSettings`、`ProgramSettings` 與 `MenuSettings` 提供具型別的組態介面，取代零散的鍵值查詢。`ProgramSettings` 同時兼任 ProgId 註冊表,透過 `ProgramItem.BusinessObject` 將每個 ProgId 綁定到對應的 BO 實作(未填則 fallback 回 `FormBusinessObject`)。
+- **多租戶客製化覆蓋層** — `ICustomizeDefineReader` + `CustomizeOnlyStorage` 在 base 定義之上提供 per-租戶唯讀覆蓋層，僅服務 Language / FormLayout / ProgramSettings 三類，由 `SessionInfo.CustomizeId` 驅動。base 快取永不異動；疊加以 key / progId / 整檔粒度擇一、不合併（見 [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)）。
 
 ## 主要公開 API
 
@@ -44,6 +45,8 @@ Bee.Definition 位於 BeeNET 框架的最底層，提供所有上層共用的型
 | `IDatabaseSettingsProvider` | DI 服務，提供當前 `DatabaseSettings` 快照與查找輔助 |
 | `SessionInfo` / `SessionUser` | Session 與使用者上下文 |
 | `IDefineAccess` / `IDefineStorage` | 定義載入/儲存合約 |
+| `ICustomizeDefineReader` | 租戶客製化覆蓋讀取器（Language / FormLayout / ProgramSettings） |
+| `CustomizeOnlyStorage` / `CustomizeOnlyPathOptions` | 客製化層的嚴格只讀儲存（`{CustomizePath}/{customizeId}/...`，無檔回 null） |
 | `IBusinessObjectProvider` | 商業物件建立的工廠合約 |
 | `DefineFunc` | DefineType 至 CLR 型別的解析工具 |
 | `BackendDefaultTypes` | 預設 Provider 型別名稱的字串常數 |
@@ -81,12 +84,12 @@ Bee.Definition/
   Serialization/    自訂 MessagePack 格式化器
   Settings/         SystemSettings、DatabaseSettings、ProgramSettings、MenuSettings、DbCategorySettings
   Sorting/          SortField、SortFieldCollection、SortDirection
-  Storage/          IDefineAccess 等
+  Storage/          IDefineAccess、ICustomizeDefineReader、CustomizeOnlyStorage 等
   （根目錄）         跨切面基礎設施：
                     BackendDefaultTypes、DefineFunc、DefineType、
                     GlobalEvents、PropertyCategories、
                     SysFields、SysFuncIDs、SysProgIds、SystemActions、
-                    ApplicationType、InitializeOptions、PathOptions、
+                    ApplicationType、InitializeOptions、PathOptions、CustomizeOnlyPathOptions、
                     IDatabaseSettingsProvider、IBusinessObjectProvider、
                     ICacheDataSourceProvider、IEnterpriseObjectService
 ```

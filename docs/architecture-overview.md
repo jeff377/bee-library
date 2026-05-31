@@ -125,6 +125,12 @@ Diff against existing FormLayout / TableSchema
 
 This ensures that when FormSchema evolves, manually adjusted custom settings are not overwritten.
 
+### Tenant Customization Overlay
+
+For deployments serving multiple tenants, BeeNET adds a **per-tenant read-only customization overlay** on top of the base definitions. A `CustomizeId` (resolved from `SessionInfo.CustomizeId`, loaded from the company record at `EnterCompany`) drives an override layer for **Language / FormLayout / ProgramSettings only** — `FormSchema` / `TableSchema` / settings stay tenant-agnostic so the database schema never diverges per tenant.
+
+The overlay is **two independent read-only layers, never merged**: the base package cache is never mutated, and lookups overlay per key / progId / whole-file at the consumer. An empty `CustomizeId` short-circuits to pure base, bit-for-bit identical to a single-tenant deployment. See [ADR-016](adr/adr-016-multitenant-customization-overlay.md).
+
 ---
 
 ## 4. FormLayout: UI Layer Definition

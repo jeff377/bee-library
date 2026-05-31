@@ -30,6 +30,7 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 - **Security contracts** — interfaces like `IAccessTokenValidationProvider` and `IApiEncryptionKeyProvider` define security boundaries without imposing implementation details.
 - **DefineType-driven CRUD** — the `DefineType` enum and `DefineFunc` utility map definition categories to CLR types, enabling generic load/save through `IDefineAccess` and `IDefineStorage`.
 - **Centralized settings model** — `SystemSettings`, `DatabaseSettings`, `ProgramSettings`, and `MenuSettings` provide a typed configuration surface that replaces ad-hoc key-value lookups. `ProgramSettings` doubles as the ProgId registry and binds each ProgId to its concrete BO via `ProgramItem.BusinessObject` (empty falls back to the base `FormBusinessObject`).
+- **Tenant customization overlay** — `ICustomizeDefineReader` + `CustomizeOnlyStorage` provide a per-tenant read-only override layer over base definitions, for Language / FormLayout / ProgramSettings only, driven by `SessionInfo.CustomizeId`. The base cache is never mutated; lookups overlay per key / progId / whole-file without merging (see [ADR-016](../../docs/adr/adr-016-multitenant-customization-overlay.md)).
 
 ## Key Public APIs
 
@@ -44,6 +45,8 @@ In the BeeNET dependency graph, this package contains **no business logic and no
 | `IDatabaseSettingsProvider` | DI service exposing the current `DatabaseSettings` snapshot and lookup helpers |
 | `SessionInfo` / `SessionUser` | Session and user context |
 | `IDefineAccess` / `IDefineStorage` | Definition load/save contracts |
+| `ICustomizeDefineReader` | Tenant customization-override reader (Language / FormLayout / ProgramSettings) |
+| `CustomizeOnlyStorage` / `CustomizeOnlyPathOptions` | Strict read-only storage for the customization layer (`{CustomizePath}/{customizeId}/...`, missing file → null) |
 | `IBusinessObjectProvider` | Factory contract for business object creation |
 | `DefineFunc` | Utility for DefineType-to-CLR-type resolution |
 | `BackendDefaultTypes` | String constants for default provider type names |
@@ -81,12 +84,12 @@ Bee.Definition/
   Serialization/    Custom MessagePack formatters
   Settings/         SystemSettings, DatabaseSettings, ProgramSettings, MenuSettings, DbCategorySettings
   Sorting/          SortField, SortFieldCollection, SortDirection
-  Storage/          IDefineAccess (and friends)
+  Storage/          IDefineAccess, ICustomizeDefineReader, CustomizeOnlyStorage (and friends)
   (root)            Cross-cutting infrastructure:
                     BackendDefaultTypes, DefineFunc, DefineType,
                     GlobalEvents, PropertyCategories,
                     SysFields, SysFuncIDs, SysProgIds, SystemActions,
-                    ApplicationType, InitializeOptions, PathOptions,
+                    ApplicationType, InitializeOptions, PathOptions, CustomizeOnlyPathOptions,
                     IDatabaseSettingsProvider, IBusinessObjectProvider,
                     ICacheDataSourceProvider, IEnterpriseObjectService
 ```
