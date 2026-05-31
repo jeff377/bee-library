@@ -57,9 +57,10 @@ dotnet pack src/<Project>/<Project>.csproj --configuration Release --output ./nu
 任何需要事先規劃的任務（重構、新功能、架構調整等），必須：
 
 1. 將計畫寫成 md 文件，存至 `docs/plans/` 目錄，檔名格式：`plan-<主題>.md`
-2. 等待使用者確認後，才開始執行
-3. **Plan 執行完畢時，立刻在文件頂部標記完成狀態**（見下方格式），讓後續不需回查程式碼或 commits 即可判斷狀態
-4. 由使用者要求時才將計畫文件移至 `docs/archive/` 封存（此目錄已 gitignored，不上 GitHub；亦可放置任何需封存的舊文件，不限 plan）
+2. **每次建立或修改 plan 文件後，回覆中必須附上該 plan 的連結**（markdown 相對連結，如 `[plan-xxx.md](docs/plans/plan-xxx.md)`），讓使用者可在對話中直接點開 plan 內容、不需自行翻找
+3. 等待使用者確認後，才開始執行
+4. **Plan 執行完畢時，立刻在文件頂部標記完成狀態**（見下方格式），讓後續不需回查程式碼或 commits 即可判斷狀態
+5. 由使用者要求時才將計畫文件移至 `docs/archive/` 封存（此目錄已 gitignored，不上 GitHub；亦可放置任何需封存的舊文件，不限 plan）
 
 #### Plan 狀態標記格式
 
