@@ -26,5 +26,16 @@ namespace Bee.Business.UnitTests
 
             Assert.Equal(typeof(FormBusinessObject), resolver.Resolve(string.Empty));
         }
+
+        [Fact]
+        [DisplayName("IFormBoTypeResolver 預設 Resolve(customizeId, progId) 委派 Resolve(progId) 應回傳 FormBusinessObject 型別")]
+        public void Resolve_WithCustomizeId_DefaultMethodDelegatesToBaseResolve()
+        {
+            IFormBoTypeResolver resolver = new DefaultFormBoTypeResolver();
+
+            Type result = resolver.Resolve("acme", "AnyProgId");
+
+            Assert.Equal(typeof(FormBusinessObject), result);
+        }
     }
 }
