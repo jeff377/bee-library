@@ -121,8 +121,9 @@ namespace Bee.Db.UnitTests
 
             var sql = Assert.Single(statements);
             Assert.Contains("ALTER TABLE \"ST_DEMO\" MODIFY (", sql);
-            Assert.Contains("\"NAME\" VARCHAR2(100 CHAR)", sql);
-            Assert.Contains("NOT NULL", sql);
+            // String 欄一律建為 nullable（Oracle '' == NULL），即使 definition AllowNull=false。
+            Assert.Contains("\"NAME\" VARCHAR2(100 CHAR) NULL", sql);
+            Assert.DoesNotContain("NOT NULL", sql);
             Assert.EndsWith(");", sql);
         }
 

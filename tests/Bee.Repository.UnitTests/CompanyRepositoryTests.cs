@@ -29,8 +29,9 @@ namespace Bee.Repository.UnitTests
             Assert.Equal("C001", result.CompanyId);
             Assert.Equal("測試公司", result.CompanyName);
             Assert.False(string.IsNullOrEmpty(result.CompanyDatabaseId));
-            // Seed company 'C001' ships no customization → the nullable customize_id column
-            // reads back as an empty string across all dialects.
+            // Seed company 'C001' ships no customization. customize_id is AllowNull=false, so the
+            // 4 standard dialects default it to '' and Oracle stores it nullable (Oracle equates
+            // '' with NULL); either way it reads back as an empty string across all dialects.
             Assert.Equal(string.Empty, result.CustomizeId);
         }
 

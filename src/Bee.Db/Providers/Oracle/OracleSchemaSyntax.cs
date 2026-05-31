@@ -73,17 +73,29 @@ namespace Bee.Db.Providers.Oracle
             if (field.AllowNull)
                 return string.Empty;
 
-            // Oracle: CLOB / BLOB columns reject inline literal DEFAULT for NOT NULL declarations
-            // in the framework's CREATE TABLE shape; suppress DEFAULT for Text/Binary so the column
-            // is NOT NULL but the caller is required to supply a value on INSERT.
+            // Oracle treats '' as NULL, so a String column cannot hold a non-null empty string:
+            // `DEFAULT ''` would silently mean `DEFAULT NULL` and contradict NOT NULL. String
+            // columns are therefore emitted nullable (see GetColumnDefinition) and the empty-string
+            // default is dropped; the framework's "text columns are never null" guarantee is upheld
+            // at the C# layer via `ValueUtilities.CStr(null)` returning an empty string. An explicit
+            // non-empty default is still a valid non-null literal on a nullable column, so it is
+            // preserved to keep the read-back schema diff stable.
+            // See docs/plans/plan-oracle-string-nullability.md.
+            if (field.DbType == FieldDbType.String)
+            {
+                return StringUtilities.IsEmpty(field.DefaultValue)
+                    ? string.Empty
+                    : StringUtilities.Format("'{0}'", EscapeSqlString(field.DefaultValue));
+            }
+
+            // CLOB / BLOB reject an inline literal DEFAULT in the framework's CREATE TABLE shape;
+            // Text is additionally emitted nullable for the same '' == NULL reason as String.
             if (field.DbType == FieldDbType.Text || field.DbType == FieldDbType.Binary)
                 return string.Empty;
 
             string originalDefaultValue = GetDefaultValueExpression(field.DbType);
             switch (field.DbType)
             {
-                case FieldDbType.String:
-                    return StringUtilities.Format("'{0}'", StringUtilities.IsEmpty(field.DefaultValue) ? originalDefaultValue : EscapeSqlString(field.DefaultValue));
                 case FieldDbType.AutoIncrement:
                     return string.Empty;
                 default:
@@ -107,7 +119,11 @@ namespace Bee.Db.Providers.Oracle
         public static string GetColumnDefinition(DbField field)
         {
             string dbType = OracleTypeMapping.GetOracleType(field);
-            string nullability = field.AllowNull ? "NULL" : "NOT NULL";
+            // String/Text columns are always emitted nullable regardless of the definition's
+            // AllowNull: Oracle equates '' with NULL, so "non-null empty string" is inexpressible.
+            // See docs/plans/plan-oracle-string-nullability.md.
+            bool isNullableText = field.DbType == FieldDbType.String || field.DbType == FieldDbType.Text;
+            string nullability = (field.AllowNull || isNullableText) ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
             string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
             return $"{QuoteName(field.FieldName)} {dbType}{defaultClause} {nullability}";

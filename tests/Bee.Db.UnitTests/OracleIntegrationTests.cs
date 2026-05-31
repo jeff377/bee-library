@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Data;
 using System.Globalization;
+using Bee.Base;
 using Bee.Base.Data;
 using Bee.Db.Dml;
 using Bee.Db.Providers.Oracle;
@@ -305,6 +306,51 @@ namespace Bee.Db.UnitTests
                 var preserved = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
                     "SELECT \"NAME\" FROM \"TB_IT_ALTER\" WHERE \"SYS_ROWID\" = {0}", rowId));
                 Assert.Equal("before", preserved.Scalar);
+            }
+            finally
+            {
+                DropQuotedTable(dbAccess, tableName);
+            }
+        }
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("AllowNull=false 的 String 欄在 Oracle 建為 nullable：省略該欄 INSERT 成功、讀回空字串、且二次 diff 為空")]
+        public void NonNullString_OracleNullable_OmittedInsertSucceedsAndDiffIsEmpty()
+        {
+            const string tableName = "tb_it_strnull";
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            DropQuotedTable(dbAccess, tableName);
+
+            try
+            {
+                // definition 仍標 AllowNull=false（語意上「不該是 null」）；customize_id 場景的縮影。
+                var define = new TableSchema { TableName = tableName };
+                define.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+                define.Fields!.Add("customize_id", "Customize", FieldDbType.String, 50);
+                define.Indexes!.AddPrimaryKey(SysFields.RowId);
+                CreateTable(dbAccess, define);
+
+                // 省略 customize_id 的 INSERT 不應拋 ORA-01400（欄位已建為 nullable）。
+                var rowId = Guid.NewGuid();
+                var insert = Record.Exception(() => dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
+                    "INSERT INTO \"TB_IT_STRNULL\" (\"SYS_ROWID\") VALUES ({0})", rowId)));
+                Assert.Null(insert);
+
+                // 讀回的 customize_id 是 Oracle NULL，經 ValueUtilities.CStr 正規化為空字串。
+                var read = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
+                    "SELECT \"CUSTOMIZE_ID\" FROM \"TB_IT_STRNULL\" WHERE \"SYS_ROWID\" = {0}", rowId));
+                Assert.Equal(string.Empty, ValueUtilities.CStr(read.Scalar!));
+
+                // 升級冪等性：讀回 schema 與 definition 比對，customize_id 欄不應產生差異
+                // （provider 對 String/Text 一律回報 AllowNull=false 以對齊 definition）。
+                var provider = new OracleTableSchemaProvider(
+                    TestDbConventions.GetDatabaseId(DatabaseType.Oracle), _fx.GetRequiredService<IDbConnectionManager>());
+                var real = provider.GetTableSchema(tableName);
+                Assert.NotNull(real);
+                var defineField = define.Fields["customize_id"];
+                var realField = real!.Fields![defineField.FieldName];
+                Assert.False(realField.AllowNull);
+                Assert.True(defineField.Compare(realField));
             }
             finally
             {

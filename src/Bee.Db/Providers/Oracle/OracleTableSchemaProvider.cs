@@ -268,6 +268,14 @@ namespace Bee.Db.Providers.Oracle
             else
                 dbField.DbType = GetFieldDbType(dataType, precision, scale, length);
 
+            // Oracle stores String/Text columns as nullable (the DDL builder never emits NOT NULL
+            // for them, since '' == NULL makes a non-null empty string inexpressible). The framework
+            // definition still marks these AllowNull=false; report false here so TableSchemaComparer
+            // sees the read-back schema as equal and does not emit a spurious ALTER ... NOT NULL on
+            // every upgrade. See docs/plans/plan-oracle-string-nullability.md.
+            if (dbField.DbType == FieldDbType.String || dbField.DbType == FieldDbType.Text)
+                dbField.AllowNull = false;
+
             if (dbField.DbType == FieldDbType.String)
                 dbField.Length = length;
 

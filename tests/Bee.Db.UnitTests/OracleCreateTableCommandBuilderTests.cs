@@ -186,17 +186,20 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("非 AllowNull String 欄位應產生空字串 DEFAULT（PL/SQL escape 後為 DEFAULT '''')")]
-        public void GetCommandText_NonNullString_GeneratesEmptyStringDefault()
+        [DisplayName("非 AllowNull String 欄位（無顯式預設值）應建為 nullable 且不帶 DEFAULT")]
+        public void GetCommandText_NonNullString_EmitsNullableWithoutDefault()
         {
             var schema = BuildSchema(FieldDbType.String, length: 50, allowNull: false);
             var builder = new OracleCreateTableCommandBuilder();
 
             string sql = builder.GetCommandText(schema);
 
-            // 包進 PL/SQL EXECUTE IMMEDIATE 字串字面後，DEFAULT '' 內的兩個單引號各被 escape 為 ''；
-            // 結果是連續四個單引號（''''）後跟一個空格與 NOT NULL。
-            Assert.Contains("DEFAULT '''' NOT NULL", sql);
+            // Oracle 把 '' 視為 NULL，DEFAULT '' 即 DEFAULT NULL，與 NOT NULL 自相矛盾。
+            // 故 definition AllowNull=false 的 String 欄一律建為 nullable、不帶 DEFAULT，
+            // 由 C# 層 ValueUtilities.CStr(null)→"" 維持「永不為 null」語意。
+            Assert.Contains("\"COL\" VARCHAR2(50 CHAR) NULL", sql);
+            Assert.DoesNotContain("\"COL\" VARCHAR2(50 CHAR) DEFAULT", sql);
+            Assert.DoesNotContain("\"COL\" VARCHAR2(50 CHAR) NOT NULL", sql);
         }
 
         [Fact]
@@ -237,8 +240,8 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("Text/Binary 欄位即使 NOT NULL 也不應產生 DEFAULT（CLOB/BLOB 限制）")]
-        public void GetCommandText_TextBinary_OmitsDefault()
+        [DisplayName("Text 欄位（CLOB）應建為 nullable 且不帶 DEFAULT（同 String 的 '' == NULL 規則）")]
+        public void GetCommandText_Text_EmitsNullableWithoutDefault()
         {
             var textSchema = new TableSchema { TableName = "st_demo" };
             textSchema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
@@ -248,8 +251,25 @@ namespace Bee.Db.UnitTests
             var builder = new OracleCreateTableCommandBuilder();
             string sql = builder.GetCommandText(textSchema);
 
-            Assert.Contains("\"NOTE\" CLOB NOT NULL", sql);
+            Assert.Contains("\"NOTE\" CLOB NULL", sql);
             Assert.DoesNotContain("\"NOTE\" CLOB DEFAULT", sql);
+            Assert.DoesNotContain("\"NOTE\" CLOB NOT NULL", sql);
+        }
+
+        [Fact]
+        [DisplayName("Binary 欄位（BLOB）即使 NOT NULL 也不應產生 DEFAULT（BLOB 限制）")]
+        public void GetCommandText_Binary_OmitsDefault()
+        {
+            var binarySchema = new TableSchema { TableName = "st_demo" };
+            binarySchema.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+            binarySchema.Fields.Add("blob", "Blob", FieldDbType.Binary);
+            binarySchema.Indexes!.AddPrimaryKey(SysFields.RowId);
+
+            var builder = new OracleCreateTableCommandBuilder();
+            string sql = builder.GetCommandText(binarySchema);
+
+            Assert.Contains("\"BLOB\" BLOB NOT NULL", sql);
+            Assert.DoesNotContain("\"BLOB\" BLOB DEFAULT", sql);
         }
 
         [Fact]

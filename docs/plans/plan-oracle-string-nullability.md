@@ -1,12 +1,12 @@
 # 計畫：Oracle VARCHAR2 對 string `AllowNull=false` 的 nullability 修正
 
-**狀態：📝 擬定中（2026-05-30）**
+**狀態：✅ 已完成（2026-05-31）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | DDL 生成：`OracleSchemaSyntax` 對 String/Text 欄一律建 nullable、移除 `DEFAULT ''` | 📝 待做 |
-| 2 | nullability 比對：Oracle diff 視「definition NOT NULL ≡ 實際 nullable」為相等，避免反覆 ALTER | 📝 待做 |
-| 3 | 測試更新 + `customize_id` 改回 `AllowNull=false`（~10+ Oracle DDL 單元測試 + 5 DB 整合） | 📝 待做 |
+| 1 | DDL 生成：`OracleSchemaSyntax` 對 String/Text 欄一律建 nullable、移除 `DEFAULT ''` | ✅ 已完成（2026-05-31） |
+| 2 | nullability 比對：Oracle diff 視「definition NOT NULL ≡ 實際 nullable」為相等，避免反覆 ALTER | ✅ 已完成（2026-05-31） |
+| 3 | 測試更新 + `customize_id` 改回 `AllowNull=false`（Oracle DDL 單元測試 + 5 DB 整合） | ✅ 已完成（2026-05-31） |
 
 ## 背景
 
@@ -45,6 +45,9 @@ Oracle 因 `''=NULL` 無法表達「非 null 的空字串」，故對 String/VAR
 **解法選項（plan 內定案）**：
 - **(A) provider 讀回對齊（建議，集中、風險低）**：`OracleTableSchemaProvider` 讀回 String/Text 欄時，一律回報 `AllowNull=false` 以對齊 definition，使 `Compare` 視為相等。代價：反向讀出的 schema 不反映「DB 實際 nullable」，但對 diff 目的足夠。
 - **(B) dialect-aware 比對**：在 `TableSchemaComparer` / `DbField.Compare` 注入方言旗標，對 Oracle String/Text 欄忽略 nullability 差異。較通用但動到共用比對路徑，影響面廣。
+
+> **實作結論（採方案 A）**：`OracleTableSchemaProvider.ParseDbField` 對 String/Text 欄一律 `AllowNull=false`，與 definition 對齊，`Compare` 視為相等、不再反覆 ALTER。
+> 另：String 欄若帶**非空**顯式 `DefaultValue`（valid non-null literal），DDL 仍保留 `DEFAULT '<literal>'`（只丟棄空字串預設），避免讀回端 `DefaultValue` 與 definition 不符而觸發 diff loop。
 
 ## 影響面
 
