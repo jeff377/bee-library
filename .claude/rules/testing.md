@@ -39,7 +39,8 @@ src/Bee.Api.Core/       → tests/Bee.Api.Core.UnitTests/
 ### 啟動前檢查（兩步，僅在 docker 可用時）
 
 1. **Docker daemon**：執行 `docker info` 或 `docker ps`。
-   - 失敗（daemon 未啟動） → **告知使用者**「請啟動 Docker Desktop」，**不要**嘗試自行 `open -a Docker` 等指令（macOS / Windows 桌面工具需 GUI 互動，啟動時間長且結果不確定）。使用者決定不啟動 docker → 比照「本機無 docker」直接跑測試
+   - 失敗（daemon 未啟動） → 本條指「agent 直接以 Bash 操作 docker（**不經** `./test.sh`）」的情境：**告知使用者**「請啟動 Docker Desktop」，**不要**嘗試自行 `open -a Docker` 等指令（agent 直接拉起桌面 GUI 工具，啟動時間長且結果不確定）。使用者決定不啟動 docker → 比照「本機無 docker」直接跑測試
+     - **例外**：`./test.sh` 已內建 `ensure_docker_daemon` 前置 —— macOS 上 daemon 未啟動時腳本會自動 `open -a Docker` 並輪詢等待就緒（timeout 120s，失敗只警告不中止）。故**走 `./test.sh` 跑測試時 daemon 由腳本自動處理**，agent 不需先手動檢查或提示使用者。
    - 成功 → 進下一步
 2. **約定容器存在性**：執行 `docker ps -a --format '{{.Names}}\t{{.Status}}'` 比對下列容器名單：
 
