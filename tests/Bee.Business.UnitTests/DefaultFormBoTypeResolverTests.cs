@@ -13,7 +13,7 @@ namespace Bee.Business.UnitTests
         [DisplayName("DefaultFormBoTypeResolver.Resolve 任何 progId 皆應回傳 FormBusinessObject 型別")]
         public void Resolve_AnyProgId_ReturnsFormBusinessObjectType()
         {
-            IFormBoTypeResolver resolver = new DefaultFormBoTypeResolver();
+            var resolver = new DefaultFormBoTypeResolver();
 
             Assert.Equal(typeof(FormBusinessObject), resolver.Resolve("AnyProgId"));
         }

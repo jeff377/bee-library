@@ -20,6 +20,7 @@ namespace Bee.Definition.Storage
     /// </remarks>
     public sealed class CustomizeOnlyStorage : IDefineStorage
     {
+        private const string ReadOnlyMessage = "The customization-override layer is read-only.";
         private readonly CustomizeOnlyPathOptions _paths;
 
         /// <summary>
@@ -73,22 +74,22 @@ namespace Bee.Definition.Storage
 
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveDbCategorySettings(DbCategorySettings settings)
-            => throw new NotSupportedException("The customization-override layer is read-only.");
+            => throw new NotSupportedException(ReadOnlyMessage);
 
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveTableSchema(string categoryId, TableSchema tableSchema)
-            => throw new NotSupportedException("The customization-override layer is read-only.");
+            => throw new NotSupportedException(ReadOnlyMessage);
 
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveFormSchema(FormSchema formSchema)
-            => throw new NotSupportedException("The customization-override layer is read-only.");
+            => throw new NotSupportedException(ReadOnlyMessage);
 
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveFormLayout(FormLayout formLayout)
-            => throw new NotSupportedException("The customization-override layer is read-only.");
+            => throw new NotSupportedException(ReadOnlyMessage);
 
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveLanguage(LanguageResource resource)
-            => throw new NotSupportedException("The customization-override layer is read-only.");
+            => throw new NotSupportedException(ReadOnlyMessage);
     }
 }
