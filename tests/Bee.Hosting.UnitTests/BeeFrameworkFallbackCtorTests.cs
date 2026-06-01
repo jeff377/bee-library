@@ -41,6 +41,8 @@ namespace Bee.Hosting.UnitTests
     {
         public DbCategorySettings? GetDbCategorySettings() => null;
         public void SaveDbCategorySettings(DbCategorySettings settings) { }
+        public ProgramSettings? GetProgramSettings() => null;
+        public void SaveProgramSettings(ProgramSettings settings) { }
         public TableSchema? GetTableSchema(string categoryId, string tableName) => null;
         public void SaveTableSchema(string categoryId, TableSchema tableSchema) { }
         public FormSchema? GetFormSchema(string progId) => null;

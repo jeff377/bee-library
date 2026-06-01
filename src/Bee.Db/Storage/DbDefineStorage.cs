@@ -82,6 +82,17 @@ namespace Bee.Db.Storage
         }
 
         /// <inheritdoc/>
+        public ProgramSettings? GetProgramSettings()
+            => ReadRequired<ProgramSettings>(BaseCustomizeId, SingletonKey);
+
+        /// <inheritdoc/>
+        public void SaveProgramSettings(ProgramSettings settings)
+        {
+            ArgumentNullException.ThrowIfNull(settings);
+            Write(settings, SingletonKey);
+        }
+
+        /// <inheritdoc/>
         public TableSchema? GetTableSchema(string categoryId, string tableName)
             => ReadRequired<TableSchema>(BaseCustomizeId, TableSchemaKey(categoryId, tableName));
 

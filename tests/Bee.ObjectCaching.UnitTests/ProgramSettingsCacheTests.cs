@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Serialization;
 using Bee.Definition;
 using Bee.Definition.Settings;
+using Bee.Definition.Storage;
 using Bee.ObjectCaching.Define;
 
 namespace Bee.ObjectCaching.UnitTests
@@ -19,11 +20,12 @@ namespace Bee.ObjectCaching.UnitTests
                 var pathOptions = new PathOptions { DefinePath = tempDir };
                 XmlCodec.SerializeToFile(new ProgramSettings(), pathOptions.GetProgramSettingsFilePath());
 
-                // 使用唯一 prefix 避免與其他測試共用快取鍵
+                // 經 FileDefineStorage 走檔案後端;唯一 prefix 避免與其他測試共用快取鍵。
+                var storage = new FileDefineStorage(pathOptions);
                 string cachePrefix = Guid.NewGuid().ToString("N");
-                var cache = new ProgramSettingsCache(pathOptions, cachePrefix);
+                var cache = new ProgramSettingsCache(storage, pathOptions, cachePrefix);
 
-                // Get() → CreateInstance()（讀檔反序列化） → GetPolicy()（設定快取原則）
+                // Get() → CreateInstance()（storage.GetProgramSettings 讀檔） → GetPolicy()（設定快取原則）
                 var result = cache.Get();
 
                 Assert.NotNull(result);
@@ -36,10 +38,18 @@ namespace Bee.ObjectCaching.UnitTests
         }
 
         [Fact]
+        [DisplayName("建構子傳入 null storage 應拋出 ArgumentNullException")]
+        public void Constructor_NullStorage_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new ProgramSettingsCache(null!, new PathOptions()));
+        }
+
+        [Fact]
         [DisplayName("建構子傳入 null PathOptions 應拋出 ArgumentNullException")]
         public void Constructor_NullPathOptions_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => new ProgramSettingsCache(null!));
+            var storage = new FileDefineStorage(new PathOptions());
+            Assert.Throws<ArgumentNullException>(() => new ProgramSettingsCache(storage, null!));
         }
     }
 }

@@ -21,6 +21,8 @@ namespace Bee.ObjectCaching.UnitTests
             public FormLayout? GetFormLayout(string layoutId) => _layout;
             public DbCategorySettings? GetDbCategorySettings() => throw new NotImplementedException();
             public void SaveDbCategorySettings(DbCategorySettings settings) => throw new NotImplementedException();
+            public ProgramSettings? GetProgramSettings() => throw new NotImplementedException();
+            public void SaveProgramSettings(ProgramSettings settings) => throw new NotImplementedException();
             public TableSchema? GetTableSchema(string categoryId, string tableName) => throw new NotImplementedException();
             public void SaveTableSchema(string categoryId, TableSchema tableSchema) => throw new NotImplementedException();
             public FormSchema? GetFormSchema(string progId) => throw new NotImplementedException();

@@ -72,6 +72,22 @@ namespace Bee.Definition.Storage
         public FormSchema? GetFormSchema(string progId)
             => throw new NotSupportedException("The customization-override layer does not serve FormSchema.");
 
+        /// <summary>
+        /// Gets the customization override of the program settings, or <c>null</c> when the tenant
+        /// provides no override.
+        /// </summary>
+        public ProgramSettings? GetProgramSettings()
+        {
+            string filePath = _paths.GetProgramSettingsFilePath();
+            if (!File.Exists(filePath))
+                return null;
+            return XmlCodec.DeserializeFromFile<ProgramSettings>(filePath);
+        }
+
+        /// <summary>Not supported — the override layer is strictly read-only.</summary>
+        public void SaveProgramSettings(ProgramSettings settings)
+            => throw new NotSupportedException(ReadOnlyMessage);
+
         /// <summary>Not supported — the override layer is strictly read-only.</summary>
         public void SaveDbCategorySettings(DbCategorySettings settings)
             => throw new NotSupportedException(ReadOnlyMessage);

@@ -94,6 +94,11 @@ namespace Bee.Db.UnitTests
             Assert.Equal(lang, resource!.Lang);
             // LanguageResource cache keys on "{lang}.{ns}", so the bump key matches.
             Assert.True(CacheVersion(databaseType, $"LanguageResource:{lang}.{ns}") >= 1);
+
+            // --- ProgramSettings (singleton key "*") round-trip + bump ---
+            storage.SaveProgramSettings(new ProgramSettings());
+            Assert.NotNull(storage.GetProgramSettings());
+            Assert.True(CacheVersion(databaseType, "ProgramSettings:*") >= 1);
         }
 
         [DbFact(DatabaseType.SQLServer)]

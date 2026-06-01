@@ -43,7 +43,7 @@ namespace Bee.ObjectCaching
 
             SystemSettings = new SystemSettingsCache(paths, CachePrefix);
             DatabaseSettings = new DatabaseSettingsCache(paths, CachePrefix);
-            ProgramSettings = new ProgramSettingsCache(paths, CachePrefix);
+            ProgramSettings = new ProgramSettingsCache(storage, paths, CachePrefix);
             DbCategorySettings = new DbCategorySettingsCache(storage, paths, CachePrefix);
             TableSchema = new TableSchemaCache(storage, paths, CachePrefix);
             FormSchema = new FormSchemaCache(storage, paths, CachePrefix);

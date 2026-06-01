@@ -216,9 +216,8 @@ namespace Bee.ObjectCaching
         /// <param name="settings">The program settings.</param>
         public void SaveProgramSettings(ProgramSettings settings)
         {
-            // Save program settings to file, then invalidate the cache
-            string filePath = _paths.GetProgramSettingsFilePath();
-            XmlCodec.SerializeToFile(settings, filePath);
+            // Save program settings through the active storage, then invalidate the cache.
+            _storage.SaveProgramSettings(settings);
             _cache.ProgramSettings.Remove();
         }
 

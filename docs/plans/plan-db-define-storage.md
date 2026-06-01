@@ -1,13 +1,13 @@
 # 計畫：定義儲存改存資料庫（DbDefineStorage，單表 XML blob）
 
-**狀態：📝 擬定中（2026-06-01）**
+**狀態：✅ 已完成（2026-06-01）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | `st_define` 儲存表 `TableSchema.xml` 定義 + 註冊進 `common` 類別 | ✅ 已完成（2026-06-01） |
 | 2 | `DbDefineStorage : IDefineStorage`（base 層,XML blob,內部 tx + 同 tx bump） | ✅ 已完成（2026-06-01） |
 | 3 | 客製化 overlay（DB 版 `ICustomizeDefineReader`,讀 `customize_id` 列） | ✅ 已完成（2026-06-01） |
-| 4 | `ProgramSettings` 納入 DB（擴充 `IDefineStorage` + `ProgramSettingsCache` 改走 storage） | 📝 待做 |
+| 4 | `ProgramSettings` 納入 DB（擴充 `IDefineStorage` + `ProgramSettingsCache` 改走 storage） | ✅ 已完成（2026-06-01） |
 
 > 本計畫**解 block** [plan-define-cache-db-invalidation.md](plan-define-cache-db-invalidation.md)。失效路由因主計畫階段 3 的慣例式分派（`IEvictableCache` + `ICacheContainer.TryEvict`)已自動成立 —— 定義快取皆為 `KeyObjectCache<T>`,群組 = 型別名,`DbDefineStorage.SaveX` bump `"<Type>:<key>"` 後 poller 自動 evict,**無需註冊路由**。子計畫剩餘工作僅「快取 `GetPolicy()` 改 storage-aware（DB 模式不設 file-watch）」。
 
@@ -104,9 +104,11 @@ DB 版 `ICustomizeDefineReader`:`GetCustomizeFormLayout(customizeId, layoutId)` 
 
 ## 落地後對子計畫的影響
 
-[plan-define-cache-db-invalidation.md](plan-define-cache-db-invalidation.md) 解 block 後僅剩:
-1. 各定義快取 `GetPolicy()` 改 **storage-aware**:`FileDefineStorage` 設 `ChangeMonitorFilePaths`(現狀);`DbDefineStorage` 不設(改靠通知表)。
-2. 回歸:維持 `FileDefineStorage` 時 file-watch 行為不變。
+[plan-define-cache-db-invalidation.md](plan-define-cache-db-invalidation.md) 解 block 後,其設計幾乎已自動滿足:
+1. ✅ **各定義快取 `GetPolicy()` 已是 storage-aware**:`DbCategorySettingsCache` / `TableSchemaCache` / `FormSchemaCache` / `FormLayoutCache` / `LanguageResourceCache` 早已 `if (_storage is FileDefineStorage)` 才設 `ChangeMonitorFilePaths`;`ProgramSettingsCache` 於本計畫階段 4 一併改成同模式。`DbDefineStorage` 模式下自然不設 file-watch、改靠通知表。
+2. ✅ **路由**:主計畫階段 3 慣例分派自動成立,無需註冊。
+3. ⏳ **僅剩 DI 啟用**:把 `components.DefineStorage` 切成 `DbDefineStorage`(需以延遲解析打破建構循環,見 §`DbDefineStorage`)+ 端到端驗證。此為部署/wiring 步驟,屬子計畫收尾。
+4. 回歸:維持 `FileDefineStorage` 時 file-watch 行為不變。
 
 > 失效分派為**慣例式**(群組 = 被快取型別名,`IEvictableCache` 自動成立),**沒有 cache_group 對映表/registry 要維護**。哪些定義會觸發失效,完全取決於 `DbDefineStorage` 實際寫入並 bump 哪些型別;`SystemSettings`/`DatabaseSettings` 留檔案故不 bump。子計畫文件內那段 cache_group markdown 表格僅為早期示意,已被慣例分派取代。
 

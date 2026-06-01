@@ -22,6 +22,17 @@ namespace Bee.Definition.Storage
         void SaveDbCategorySettings(DbCategorySettings settings);
 
         /// <summary>
+        /// Gets the program settings.
+        /// </summary>
+        ProgramSettings? GetProgramSettings();
+
+        /// <summary>
+        /// Saves the program settings.
+        /// </summary>
+        /// <param name="settings">The program settings.</param>
+        void SaveProgramSettings(ProgramSettings settings);
+
+        /// <summary>
         /// Gets the table schema for the specified category and table.
         /// </summary>
         /// <param name="categoryId">The database category id.</param>

@@ -47,6 +47,26 @@ namespace Bee.Definition.Storage
         }
 
         /// <summary>
+        /// Gets the program settings.
+        /// </summary>
+        public ProgramSettings? GetProgramSettings()
+        {
+            string filePath = _paths.GetProgramSettingsFilePath();
+            ValidateFilePath(filePath);
+            return XmlCodec.DeserializeFromFile<ProgramSettings>(filePath);
+        }
+
+        /// <summary>
+        /// Saves the program settings.
+        /// </summary>
+        /// <param name="settings">The program settings.</param>
+        public void SaveProgramSettings(ProgramSettings settings)
+        {
+            string filePath = _paths.GetProgramSettingsFilePath();
+            XmlCodec.SerializeToFile(settings, filePath);
+        }
+
+        /// <summary>
         /// Gets the table schema for the specified category and table.
         /// </summary>
         /// <param name="categoryId">The database category id.</param>
