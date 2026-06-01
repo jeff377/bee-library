@@ -4,7 +4,6 @@ using Bee.Definition;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
-using Bee.Hosting;
 using Bee.ObjectCaching;
 using Microsoft.Extensions.DependencyInjection;
 
