@@ -49,7 +49,7 @@ namespace Bee.Hosting.CacheNotify
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var session = new CacheNotifyPollSession(
-                _options.DatabaseId, _dbAccessFactory, _container, _router);
+                _options.DatabaseId, _dbAccessFactory, _container, _router, _options.MarginSeconds);
 
             int intervalSeconds = _options.IntervalSeconds > 0 ? _options.IntervalSeconds : 5;
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(intervalSeconds));

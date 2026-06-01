@@ -11,5 +11,10 @@
 				<IndexField FieldName="sys_cache_key" />
 			</IndexFields>
 		</DbTableIndex>
+		<DbTableIndex Name="ix_{0}_update_time">
+			<IndexFields>
+				<IndexField FieldName="sys_update_time" />
+			</IndexFields>
+		</DbTableIndex>
 	</Indexes>
 </TableSchema>

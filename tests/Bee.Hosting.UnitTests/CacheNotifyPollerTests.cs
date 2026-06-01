@@ -42,13 +42,13 @@ namespace Bee.Hosting.UnitTests
             var databaseId = TestDbConventions.GetDatabaseId(databaseType);
             var factory = _fx.GetRequiredService<IDbAccessFactory>();
             var container = _fx.GetRequiredService<ICacheContainer>();
-            return new CacheNotifyPollSession(databaseId, factory, container, router);
+            return new CacheNotifyPollSession(databaseId, factory, container, router, marginSeconds: 5);
         }
 
         // Baseline poll evicts nothing; a post-baseline bump is observed and routed exactly once;
-        // a repeat poll without a new bump is idempotent (version comparison). The group is unique
-        // per invocation because the poller scans the whole table and would otherwise see other
-        // tests' bumps of a shared group on the shared database.
+        // a repeat poll without a new bump is idempotent (version comparison over the margin overlap).
+        // The group is unique per invocation so the incremental window cannot catch another test's
+        // bump of the same group on the shared database.
         private void RunPollerLifecycle(DatabaseType databaseType)
         {
             string group = $"PollLifecycle_{Guid.NewGuid():N}";

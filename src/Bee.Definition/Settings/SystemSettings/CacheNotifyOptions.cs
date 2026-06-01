@@ -32,6 +32,17 @@ namespace Bee.Definition.Settings
         public int IntervalSeconds { get; set; } = 5;
 
         /// <summary>
+        /// Gets or sets the safety margin in seconds. Each poll re-reads rows whose update time is
+        /// within <c>highWater - margin</c>, so a long transaction whose <c>sys_update_time</c>
+        /// precedes its commit visibility is not missed at the boundary. Version comparison keeps the
+        /// overlap idempotent.
+        /// </summary>
+        [Category("CacheNotify")]
+        [Description("Safety margin in seconds for the incremental read overlap window.")]
+        [DefaultValue(5)]
+        public int MarginSeconds { get; set; } = 5;
+
+        /// <summary>
         /// Gets or sets the database identifier whose <c>st_cache_notify</c> table is polled.
         /// Defaults to the conventional <c>common</c> database.
         /// </summary>
