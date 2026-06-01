@@ -1,6 +1,8 @@
 # 計畫：定義快取在 DB 儲存模式的失效整合（storage-aware）
 
-**狀態：📝 待做（blocked，等 `DbDefineStorage` 立項）**
+**狀態：✅ 已完成（2026-06-01）**
+
+> 機制與程式碼已就緒並通過端到端驗證(跨節點 `DbDefineStorage` 存定義 → poller evict → 重載新版,見 `tests/Bee.Hosting.UnitTests/DbDefineCacheInvalidationTests.cs`)。實際切換成 DB 儲存(把 `BackendComponents.DefineStorage` 設為 `Bee.Db.Storage.DbDefineStorage`)為**部署步驟**,且需先將既有定義資料**遷移進 `st_define`**(否則 `GetDbCategorySettings` 等讀空表會丟例外)——此資料遷移屬部署作業,不在程式範圍。
 
 > **相依關係**：
 > - 機制面相依 [plan-db-cache-dependency.md](plan-db-cache-dependency.md) 的階段 1–3（`st_cache_notify` + `ICacheNotifyService` + `CacheNotifyPoller` + 靜態路由）必須先就緒。
@@ -38,12 +40,14 @@
 
 ## 落地條件
 
-1. 主計畫階段 1–3 完成。
-2. `DbDefineStorage` 立項並實作（含 `SaveX` 的 tx 邊界，供 bump 掛載）。
-3. 各定義快取 `GetPolicy()` 改 storage-aware；route registry 補定義群組。
+1. ✅ 主計畫階段 1–3 完成。
+2. ✅ `DbDefineStorage` 實作完成（含 `SaveX` 同 tx bump）——見 [plan-db-define-storage.md](plan-db-define-storage.md)。
+3. ✅ 各定義快取 `GetPolicy()` 已 storage-aware；路由改為慣例分派(主計畫階段 3),**不需** route registry。
+4. ✅ DI 啟用機制:`DbDefineStorage` 提供 `(IServiceProvider)` 延遲解析建構子打破建構循環;`AddBeeFramework` 的 `CreateDefineStorage` 支援之。
+5. ⏳ 部署:把 `BackendComponents.DefineStorage` 設為 `DbDefineStorage` + 將定義資料遷入 `st_define`(部署作業)。
 
 ## 驗證
 
-- 切到 `DbDefineStorage` 後：A process `SaveFormSchema` → B process（模擬第二節點）poller 抓到 `"FormSchema:X"` 版本變化 → evict → 下次 `GetFormSchema` 重載。
-- 維持 `FileDefineStorage` 時：file-watch 行為不變（回歸測試）。
-- storage 切換時 `GetPolicy()` 正確選擇失效來源（DB 模式不設 file path）。
+- ✅ 切到 `DbDefineStorage` 後:A 節點 `SaveFormSchema` → B 節點(模擬第二節點)poller 抓到 `"FormSchema:X"` 版本變化 → evict → 下次 `GetFormSchema` 從 DB 重載新版。(`DbDefineCacheInvalidationTests`,SQL Server + PostgreSQL)
+- ✅ DI 建構循環:`(IServiceProvider)` 建構子不於建構時解析相依(`DbDefineStorageTests.Constructor_ServiceProvider_DefersDependencyResolution`)。
+- ✅ 維持 `FileDefineStorage` 時 file-watch 行為不變(既有定義快取測試全綠)。

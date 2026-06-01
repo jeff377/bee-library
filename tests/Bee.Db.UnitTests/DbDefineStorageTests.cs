@@ -126,6 +126,22 @@ namespace Bee.Db.UnitTests
                 () => storage.GetFormSchema("RT_missing_" + Guid.NewGuid().ToString("N")));
         }
 
+        // IServiceProvider that fails if asked to resolve anything — proves the DI ctor defers
+        // resolution (otherwise the DB-storage activation would dead-lock the construction cycle).
+        private sealed class ThrowingServiceProvider : IServiceProvider
+        {
+            public object GetService(Type serviceType)
+                => throw new InvalidOperationException("Dependencies must not be resolved at construction.");
+        }
+
+        [Fact]
+        [DisplayName("以 IServiceProvider 建構不應於建構時解析相依(打破 DI 建構循環)")]
+        public void Constructor_ServiceProvider_DefersDependencyResolution()
+        {
+            var exception = Record.Exception(() => new DbDefineStorage(new ThrowingServiceProvider()));
+            Assert.Null(exception);
+        }
+
         // Inserts a customization-override row (customize_id != base) directly, so the reader can be
         // exercised without a customize-write API (writing tenant overrides is out of this phase).
         private void SeedCustomizeRow(DatabaseType databaseType, string defineType, string customizeId, string defineKey, string contentXml)

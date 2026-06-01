@@ -67,7 +67,7 @@ namespace Bee.Hosting
 
             // 4. IDefineStorage / IDefineAccess / ICacheContainer — singletons.
             services.AddSingleton<IDefineStorage>(sp => CreateDefineStorage(
-                components.DefineStorage, BackendDefaultTypes.DefineStorage, sp.GetRequiredService<PathOptions>()));
+                components.DefineStorage, BackendDefaultTypes.DefineStorage, sp, sp.GetRequiredService<PathOptions>()));
             services.AddSingleton<ICacheContainer>(sp =>
                 new CacheContainerService(
                     sp.GetRequiredService<IDefineStorage>(),
@@ -228,11 +228,18 @@ namespace Bee.Hosting
         /// the <c>(PathOptions)</c> ctor (used by <see cref="FileDefineStorage"/> after
         /// Phase 5 PR 5.2); falls back to a parameterless ctor for legacy implementations.
         /// </summary>
-        private static IDefineStorage CreateDefineStorage(string? configured, string fallback, PathOptions paths)
+        private static IDefineStorage CreateDefineStorage(string? configured, string fallback, IServiceProvider sp, PathOptions paths)
         {
             var typeName = string.IsNullOrWhiteSpace(configured) ? fallback : configured;
             var type = AssemblyLoader.GetType(typeName)
                 ?? throw new InvalidOperationException($"IDefineStorage type '{typeName}' not found.");
+
+            // Prefer an (IServiceProvider) ctor — used by DB-backed storage (e.g. DbDefineStorage),
+            // which resolves its dependencies lazily to avoid a construction cycle through
+            // IDbConnectionManager → IDatabaseSettingsProvider → IDefineAccess → IDefineStorage.
+            var ctorWithServiceProvider = type.GetConstructor(new[] { typeof(IServiceProvider) });
+            if (ctorWithServiceProvider != null)
+                return (IDefineStorage)ctorWithServiceProvider.Invoke(new object[] { sp });
 
             var ctorWithPaths = type.GetConstructor(new[] { typeof(PathOptions) });
             if (ctorWithPaths != null)

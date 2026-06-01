@@ -47,12 +47,14 @@ namespace Bee.Db.Storage
         private const string ContentColumn = "content";
         private const string UpdateTimeColumn = "sys_update_time";
 
-        private readonly IDbConnectionManager _connectionManager;
-        private readonly ICacheNotifyService _cacheNotify;
+        private readonly IServiceProvider? _serviceProvider;
+        private IDbConnectionManager? _connectionManager;
+        private ICacheNotifyService? _cacheNotify;
         private readonly string _databaseId;
 
         /// <summary>
-        /// Initializes a new <see cref="DbDefineStorage"/>.
+        /// Initializes a new <see cref="DbDefineStorage"/> with explicit dependencies (used by tests
+        /// and direct construction).
         /// </summary>
         /// <param name="connectionManager">Supplies connections and the dialect for the define database.</param>
         /// <param name="cacheNotify">Bumps the notification row in the same transaction as each save.</param>
@@ -67,6 +69,29 @@ namespace Bee.Db.Storage
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             _databaseId = databaseId;
         }
+
+        /// <summary>
+        /// Initializes a new <see cref="DbDefineStorage"/> that resolves its dependencies lazily from
+        /// <paramref name="serviceProvider"/> on first use. This is the constructor used when the
+        /// framework activates DB storage via DI: resolving <see cref="IDbConnectionManager"/> at
+        /// construction would form a cycle (connection manager → database settings → define access →
+        /// define storage), so resolution is deferred until the first read/write, by which time the
+        /// object graph is fully built.
+        /// </summary>
+        /// <param name="serviceProvider">The application service provider.</param>
+        public DbDefineStorage(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
+            _databaseId = DefineDatabaseId;
+        }
+
+        private IDbConnectionManager ConnectionManager => _connectionManager ??= Resolve<IDbConnectionManager>();
+
+        private ICacheNotifyService CacheNotify => _cacheNotify ??= Resolve<ICacheNotifyService>();
+
+        private T Resolve<T>()
+            => (T)(_serviceProvider!.GetService(typeof(T))
+                ?? throw new InvalidOperationException($"Required service is not available: {typeof(T).Name}."));
 
         #region IDefineStorage
 
@@ -188,7 +213,7 @@ namespace Bee.Db.Storage
 
         private string? ReadContent(string defineType, string customizeId, string defineKey)
         {
-            var dbAccess = new DbAccess(_databaseId, _connectionManager);
+            var dbAccess = new DbAccess(_databaseId, ConnectionManager);
             var databaseType = dbAccess.DatabaseType;
 
             string tbl = databaseType.QuoteIdentifier(TableName);
@@ -214,17 +239,17 @@ namespace Bee.Db.Storage
             string defineType = typeof(T).Name;
             string xml = XmlCodec.Serialize(value);
 
-            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var connInfo = ConnectionManager.GetConnectionInfo(_databaseId);
             var databaseType = connInfo.DatabaseType;
 
-            using var connection = _connectionManager.CreateConnection(_databaseId);
+            using var connection = ConnectionManager.CreateConnection(_databaseId);
             connection.Open();
             using var transaction = connection.BeginTransaction();
 
             var dbAccess = new DbAccess(connection, databaseType);
             dbAccess.Execute(BuildUpsertSpec(databaseType, defineType, defineKey, xml), transaction);
 
-            _cacheNotify.Touch($"{defineType}:{defineKey}", transaction, databaseType);
+            CacheNotify.Touch($"{defineType}:{defineKey}", transaction, databaseType);
 
             transaction.Commit();
         }
