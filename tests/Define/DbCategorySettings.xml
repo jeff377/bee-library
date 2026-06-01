@@ -7,6 +7,7 @@
 				<TableItem TableName="st_session" DisplayName="連線資料" />
 				<TableItem TableName="st_company" DisplayName="公司" />
 				<TableItem TableName="st_user_company" DisplayName="用戶可進入公司" />
+				<TableItem TableName="st_cache_notify" DisplayName="快取通知" />
 			</Tables>
 		</DbCategory>
 		<DbCategory Id="company" DisplayName="公司資料庫">

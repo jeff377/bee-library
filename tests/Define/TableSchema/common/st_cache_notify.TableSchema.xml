@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" DbName="common" TableName="st_cache_notify" DisplayName="快取通知">
+	<Fields>
+		<DbField FieldName="sys_cache_key" Caption="快取鍵" DbType="String" Length="200" />
+		<DbField FieldName="sys_cache_version" Caption="快取版本" DbType="Long" />
+		<DbField FieldName="sys_update_time" Caption="更新時間" DbType="DateTime" />
+	</Fields>
+	<Indexes>
+		<DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+			<IndexFields>
+				<IndexField FieldName="sys_cache_key" />
+			</IndexFields>
+		</DbTableIndex>
+	</Indexes>
+</TableSchema>

@@ -3,6 +3,7 @@ using Bee.Base;
 using Bee.Business;
 using Bee.Business.Providers;
 using Bee.Db;
+using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Definition;
 using Bee.ObjectCaching;
@@ -103,6 +104,11 @@ namespace Bee.Hosting
                 new DbConnectionManagerService(sp.GetRequiredService<IDatabaseSettingsProvider>()));
             services.AddSingleton<IDbAccessFactory>(sp =>
                 new DbAccessFactory(sp.GetRequiredService<IDbConnectionManager>()));
+
+            // 6b. Cache-notify bump primitive — stateless; builds dialect SQL per call and runs
+            //     it on the caller's transaction. No consumer wired yet (poller / business
+            //     repositories arrive in later stages); registered now so it is injectable.
+            services.AddSingleton<ICacheNotifyService, CacheNotifyService>();
 
             // 5. Replaceable core services. Lifetimes default to Singleton in Phase 4 —
             //    no consumer requires per-request scope today, and registering as Scoped
