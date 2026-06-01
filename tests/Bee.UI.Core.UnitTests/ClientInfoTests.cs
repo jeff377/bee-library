@@ -5,11 +5,15 @@ namespace Bee.UI.Core.UnitTests
     /// <summary>
     /// <see cref="ClientInfo"/> 預設狀態的 smoke 測試。
     /// <para>
-    /// 本測試僅讀取 <see cref="ClientInfo"/> 的 default getter,**不修改** static state,
-    /// 避免與其他測試 process-wide race。深度行為測試(Initialize / SetEndpoint 等
-    /// 會 mutate static state 的路徑)留待後續獨立任務,需以 collection 序列化保護。
+    /// 多數測試僅讀取 default getter,但 <c>ClientSettings_NoFile_ReturnsNonNull</c> 觸發
+    /// <see cref="ClientInfo.ClientSettings"/> 的 lazy getter,在無檔案時會建立並**快取**一個
+    /// 空白 <c>ClientSettings</c> 至 static 欄位——這是對 process-wide static state 的寫入。
+    /// 因此本類別與其他會碰 <see cref="ClientInfo.ClientSettings"/> 的測試同列
+    /// <c>[Collection("ClientInfoState")]</c> 序列化,避免 2-core CI 下與
+    /// <c>EndpointStorageTests</c> 並行時 race(空白 instance 蓋掉剛寫入的 Endpoint)。
     /// </para>
     /// </summary>
+    [Collection("ClientInfoState")]
     public class ClientInfoTests
     {
         [Fact]
