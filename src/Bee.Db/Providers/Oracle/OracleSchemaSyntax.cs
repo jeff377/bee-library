@@ -88,8 +88,8 @@ namespace Bee.Db.Providers.Oracle
                     : StringUtilities.Format("'{0}'", EscapeSqlString(field.DefaultValue));
             }
 
-            // CLOB / BLOB reject an inline literal DEFAULT in the framework's CREATE TABLE shape;
-            // Text is additionally emitted nullable for the same '' == NULL reason as String.
+            // CLOB / BLOB reject an inline literal `DEFAULT` in the framework's `CREATE TABLE` shape.
+            // Text is additionally emitted nullable for the same `''`-is-`NULL` reason as String.
             if (field.DbType == FieldDbType.Text || field.DbType == FieldDbType.Binary)
                 return string.Empty;
 

@@ -58,7 +58,7 @@ ensure_docker_daemon() {
   fi
   # daemon 未啟動：僅在 macOS 自動拉起 Docker Desktop（GUI app）。Linux daemon 為 systemd
   # 服務、CI Linux 不走本腳本，故不自動拉起。
-  if [ "$(uname)" != "Darwin" ]; then
+  if [[ "$(uname)" != "Darwin" ]]; then
     echo "Docker daemon 未啟動（非 macOS，不自動拉起）；DbFact 測試可能失敗或 skip。"
     return
   fi

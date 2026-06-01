@@ -47,9 +47,9 @@ namespace Bee.Definition.Language
 
         // ----- Tenant customization overlay (per-key) ---------------------------------------
         // These overloads thread an explicit customization code through the lookup. The overlay
-        // is per key / per enum: a customization resource that contains the requested key wins;
-        // otherwise the base resource value is used. base and cust are never merged into one
-        // object. An empty customizeId short-circuits straight to the base lookup.
+        // is per key / per enum: a customization resource that contains the requested key wins.
+        // Otherwise the base resource value is used. The base and customization values are never
+        // merged into one object. An empty `customizeId` short-circuits straight to the base lookup.
         //
         // Customization-aware overloads use the explicit (namespace, subKey/enumName) shape; the
         // full-key convenience forms have no customization overload because their signature would
