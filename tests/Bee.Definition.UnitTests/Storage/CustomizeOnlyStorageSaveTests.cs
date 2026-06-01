@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Definition.Database;
 using Bee.Definition.Settings;
+using Bee.Definition.Storage;
 
 namespace Bee.Definition.UnitTests.Storage
 {
