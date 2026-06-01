@@ -84,7 +84,7 @@ namespace Bee.Db.UnitTests
             Assert.Equal(layoutId, storage.GetFormLayout(layoutId)!.LayoutId);
 
             // --- Language (optional: missing returns null; then round-trips) ---
-            string lang = "rt-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            string lang = string.Concat("rt-", Guid.NewGuid().ToString("N").AsSpan(0, 8));
             const string ns = "common";
             Assert.Null(storage.GetLanguage(lang, ns));
 
