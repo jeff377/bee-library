@@ -5,7 +5,6 @@ using Bee.Db;
 using Bee.Definition.Settings;
 using Bee.Hosting.CacheNotify;
 using Bee.ObjectCaching;
-using Bee.ObjectCaching.CacheNotify;
 using Bee.ObjectCaching.Database;
 using Bee.ObjectCaching.Define;
 using Microsoft.Extensions.Logging;
@@ -46,12 +45,7 @@ namespace Bee.Hosting.UnitTests
             public LanguageResourceCache LanguageResource => null!;
             public SessionInfoCache SessionInfo => null!;
             public CompanyInfoCache CompanyInfo => null!;
-        }
-
-        private sealed class StubRouter : ICacheNotifyRouter
-        {
-            public void Register(string cacheGroup, Action<ICacheContainer, string> evict) { }
-            public bool TryInvoke(ICacheContainer container, string cacheKey) => false;
+            public bool TryEvict(string cacheKey) => false;
         }
 
         private sealed class TestDbException : DbException
@@ -64,7 +58,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullDbAccessFactory_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(null!, new StubContainer(), new StubRouter(), s_options, s_logger));
+                new CacheNotifyPoller(null!, new StubContainer(), s_options, s_logger));
         }
 
         [Fact]
@@ -72,15 +66,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullContainer_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(new StubDbFactory(), null!, new StubRouter(), s_options, s_logger));
-        }
-
-        [Fact]
-        [DisplayName("CacheNotifyPoller 建構子傳入 null router 應拋 ArgumentNullException")]
-        public void Constructor_NullRouter_ThrowsArgumentNullException()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(new StubDbFactory(), new StubContainer(), null!, s_options, s_logger));
+                new CacheNotifyPoller(new StubDbFactory(), null!, s_options, s_logger));
         }
 
         [Fact]
@@ -88,7 +74,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullOptions_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(new StubDbFactory(), new StubContainer(), new StubRouter(), null!, s_logger));
+                new CacheNotifyPoller(new StubDbFactory(), new StubContainer(), null!, s_logger));
         }
 
         [Fact]
@@ -96,7 +82,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NullLogger_ThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(() =>
-                new CacheNotifyPoller(new StubDbFactory(), new StubContainer(), new StubRouter(), s_options, null!));
+                new CacheNotifyPoller(new StubDbFactory(), new StubContainer(), s_options, null!));
         }
 
         private static Task RunExecuteAsync(CacheNotifyPoller poller, CancellationToken cancellationToken)
@@ -111,7 +97,7 @@ namespace Bee.Hosting.UnitTests
         public async Task ExecuteAsync_SafePollThrowsDbException_ExceptionSwallowed()
         {
             var factory = new ThrowingDbFactory(new TestDbException("db error"));
-            var poller = new CacheNotifyPoller(factory, new StubContainer(), new StubRouter(), s_options, s_logger);
+            var poller = new CacheNotifyPoller(factory, new StubContainer(), s_options, s_logger);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
             var exception = await Record.ExceptionAsync(() => RunExecuteAsync(poller, cts.Token));
@@ -123,7 +109,7 @@ namespace Bee.Hosting.UnitTests
         public async Task ExecuteAsync_SafePollThrowsInvalidOperationException_ExceptionSwallowed()
         {
             var factory = new ThrowingDbFactory(new InvalidOperationException("invalid op"));
-            var poller = new CacheNotifyPoller(factory, new StubContainer(), new StubRouter(), s_options, s_logger);
+            var poller = new CacheNotifyPoller(factory, new StubContainer(), s_options, s_logger);
             using var cts = new CancellationTokenSource();
             cts.Cancel();
             var exception = await Record.ExceptionAsync(() => RunExecuteAsync(poller, cts.Token));

@@ -4,7 +4,6 @@ using Bee.Db;
 using Bee.Definition.Database;
 using Bee.Hosting.CacheNotify;
 using Bee.ObjectCaching;
-using Bee.ObjectCaching.CacheNotify;
 using Bee.ObjectCaching.Database;
 using Bee.ObjectCaching.Define;
 
@@ -36,6 +35,7 @@ namespace Bee.Hosting.UnitTests
             public LanguageResourceCache LanguageResource => null!;
             public SessionInfoCache SessionInfo => null!;
             public CompanyInfoCache CompanyInfo => null!;
+            public bool TryEvict(string cacheKey) => false;
         }
 
         private static string InvokeNaiveNowCommandText(DatabaseType databaseType)
@@ -92,7 +92,7 @@ namespace Bee.Hosting.UnitTests
         public void Constructor_NegativeMarginSeconds_MarginClampedToZero()
         {
             var session = new CacheNotifyPollSession(
-                "test_db", new StubDbFactory(), new StubContainer(), new CacheNotifyRouter(), marginSeconds: -5);
+                "test_db", new StubDbFactory(), new StubContainer(), marginSeconds: -5);
             var marginField = typeof(CacheNotifyPollSession).GetField(
                 "_margin", BindingFlags.NonPublic | BindingFlags.Instance);
             var margin = (TimeSpan)marginField!.GetValue(session)!;
