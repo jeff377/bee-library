@@ -3,7 +3,7 @@ namespace Bee.ObjectCaching
     /// <summary>
     /// Base class for single-object caches.
     /// </summary>
-    public abstract class ObjectCache<T> where T : class
+    public abstract class ObjectCache<T> : IEvictableCache where T : class
     {
         private readonly string _cachePrefix;
 
@@ -91,5 +91,17 @@ namespace Bee.ObjectCaching
             string key = GetKey();
             CacheInfo.Provider.Remove(key);
         }
+
+        /// <summary>
+        /// Gets the cache group used by convention-based eviction routing; defaults to the cached
+        /// type's name. Override only when the notification group differs.
+        /// </summary>
+        public virtual string CacheGroup => typeof(T).Name;
+
+        /// <summary>
+        /// Evicts this single-object cache. The <paramref name="entity"/> portion is ignored —
+        /// there is one entry — so any bump for this group (conventionally <c>"group:*"</c>) clears it.
+        /// </summary>
+        void IEvictableCache.Evict(string entity) => Remove();
     }
 }

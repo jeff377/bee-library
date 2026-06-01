@@ -2,7 +2,6 @@ using System.Data.Common;
 using Bee.Db;
 using Bee.Definition.Settings;
 using Bee.ObjectCaching;
-using Bee.ObjectCaching.CacheNotify;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +23,6 @@ namespace Bee.Hosting.CacheNotify
     {
         private readonly IDbAccessFactory _dbAccessFactory;
         private readonly ICacheContainer _container;
-        private readonly ICacheNotifyRouter _router;
         private readonly CacheNotifyOptions _options;
         private readonly ILogger<CacheNotifyPoller> _logger;
 
@@ -34,13 +32,11 @@ namespace Bee.Hosting.CacheNotify
         public CacheNotifyPoller(
             IDbAccessFactory dbAccessFactory,
             ICacheContainer container,
-            ICacheNotifyRouter router,
             CacheNotifyOptions options,
             ILogger<CacheNotifyPoller> logger)
         {
             _dbAccessFactory = dbAccessFactory ?? throw new ArgumentNullException(nameof(dbAccessFactory));
             _container = container ?? throw new ArgumentNullException(nameof(container));
-            _router = router ?? throw new ArgumentNullException(nameof(router));
             _options = options ?? throw new ArgumentNullException(nameof(options));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
@@ -49,7 +45,7 @@ namespace Bee.Hosting.CacheNotify
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             var session = new CacheNotifyPollSession(
-                _options.DatabaseId, _dbAccessFactory, _container, _router, _options.MarginSeconds);
+                _options.DatabaseId, _dbAccessFactory, _container, _options.MarginSeconds);
 
             int intervalSeconds = _options.IntervalSeconds > 0 ? _options.IntervalSeconds : 5;
             using var timer = new PeriodicTimer(TimeSpan.FromSeconds(intervalSeconds));

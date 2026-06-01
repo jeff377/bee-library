@@ -1,12 +1,12 @@
 # 計畫：資料庫快取相依/失效機制（DB 通知表 + 輪詢）
 
-**狀態：🚧 進行中（2026-06-01）**
+**狀態：✅ 已完成（2026-06-01）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 通知表 `st_cache_notify` 的 `TableSchema.xml` 定義 + `ICacheNotifyService.Touch`（同 tx UPSERT 自增，置於 `Bee.Db`） | ✅ 已完成（2026-06-01） |
-| 2 | 輪詢器 `CacheNotifyPoller`（IHostedService）+ 靜態路由 registry | ✅ 已完成（2026-06-01） |
-| 3 | 補完業務資料 DB 載入路徑（`CompanyInfoCache` / 組織快取 `CreateInstance`） | 📝 待做 |
+| 2 | 輪詢器 `CacheNotifyPoller`（IHostedService）+ 路由分派 | ✅ 已完成（2026-06-01） |
+| 3 | 接通業務快取消費端（`CompanyInfo` 經慣例分派自動失效） | ✅ 已完成（2026-06-01） |
 
 > 「定義快取在 DB 儲存模式的失效整合」原階段 4 已抽出為獨立子計畫 [plan-define-cache-db-invalidation.md](plan-define-cache-db-invalidation.md)（blocked，等 `DbDefineStorage` 立項）。本計畫只交付通用機制（階段 1–2）+ 業務快取消費端（階段 3）。
 
@@ -142,9 +142,15 @@ repo 目前無 `IHostedService` 接線（僅有 `Bee.Base/BackgroundServices/Bac
 - 多節點：每個節點獨立持有鏡像，獨立輪詢，天然 fan-out。
 - `Remove` 對未快取 key 為 no-op。
 
-### 5. 靜態路由 registry
+### 5. 路由分派
 
-`cache_group → 一或多個失效動作`（many-to-one 或 one-to-many：一個 group 異動可同時 evict 多個衍生快取）。**以程式碼註冊**，與 `ICacheContainer` 的快取註冊放在一起維護（編譯期型別檢查、refactor 友善）。
+> ✅ **實作定案（階段 2→3，取代原「靜態路由 registry」）**：使用者指出 ERP 有大量 DB 相依快取，逐一手動註冊路由不可擴展，且 `Bee.ObjectCaching` 不應引用 DB 層。故改為**慣例式自動分派**：
+> - 每個 cache 實作 `IEvictableCache`（`CacheGroup` 預設 = 被快取型別名、`Evict(entity)`）；`CacheContainerService` 在 ctor 自動建 `群組→cache` 表並提供 `ICacheContainer.TryEvict(cacheKey)`。**新增快取物件零額外註冊**——加進容器即自動可失效。
+> - `CacheNotifyPoller` 讀通知表後只丟 `container.TryEvict(cacheKey)`；DB 與 cache 兩層互不知道對方，`Bee.ObjectCaching` 無 DB 依賴。
+> - 階段 2 暫建的 `ICacheNotifyRouter`（手動註冊）已移除。
+> - 限制：目前一個 group 對一個 cache（one-to-one）。若未來需 one-to-many（一次異動連動多個衍生快取），再加可選的補充路由與慣例分派並用。
+
+（以下為原始設計，保留作脈絡）`cache_group → 一或多個失效動作`（many-to-one 或 one-to-many：一個 group 異動可同時 evict 多個衍生快取）。**以程式碼註冊**，與 `ICacheContainer` 的快取註冊放在一起維護（編譯期型別檢查、refactor 友善）。
 
 路由器以 `cache_key` 的**前綴（群組）**比對，涵蓋**兩個來源域**、一視同仁：
 
@@ -155,12 +161,14 @@ repo 目前無 `IHostedService` 接線（僅有 `Bee.Base/BackgroundServices/Bac
 
 ※ 定義快取列為設計預留；其實際接線在子計畫 [plan-define-cache-db-invalidation.md](plan-define-cache-db-invalidation.md)，本計畫不交付。
 
-### 6. 補完 DB 載入路徑
+### 6. 業務快取消費端
 
-`CompanyInfoCache.CreateInstance` / 組織快取目前 `return null`。本機制落地時一併接通：
+> ✅ **實作定案（階段 3）**：本計畫撰寫後，`CompanyInfo` 的 DB 載入路徑**已由 `ObjectCaching/Services/CompanyInfoService` 完成**（`Get` cache miss → `ICompanyRepository.GetById` 讀 `st_company` → `cache.Set` 回填）。架構為「cache 笨儲存（`CreateInstance` 一律 null）／service 層 load-on-miss」，`SessionInfoCache` 亦同。故**不**再把 `CreateInstance` 接 `ICacheDataSourceProvider`（會與 service 層重工、且把 DB 依賴塞進 `Bee.ObjectCaching`）。
+> - 階段 3 的實際缺口僅為「失效後誰把它踢掉」——已由 §5 慣例分派解決：bump `"CompanyInfo:{id}"` → poller `container.TryEvict` → `CompanyInfoCache.Remove(id)` → 下次 `CompanyInfoService.Get` 自動從 `st_company` 重載。`CompanyInfo` 因群組名 = 型別名而**自動失效，無需任何專屬程式碼**。
+> - **producer 端 bump**：框架內無 `st_company` 寫入路徑（`CompanyRepository` 只讀），公司資料由外部/管理工具維護。約定：**寫入端需在同 tx 呼叫 `ICacheNotifyService.Touch("CompanyInfo:{id}", tx)`**。測試以模擬寫入端的 `Touch` 驗證端到端 evict。
+> - `OrgInfo`／組織快取在 `ICacheContainer` 尚無對應 cache，屬未來項，不在本階段。落地時加進容器即自動納入慣例分派。
 
-- 經 `ICacheDataSourceProvider`（現有 `Business/Providers/CacheDataSourceProvider`，目前僅 `GetSessionUser`）擴充對應載入方法。
-- 載入可跨多表聚合（組織快取場景）。
+（以下為原始設計，已被上述取代）`CompanyInfoCache.CreateInstance` / 組織快取目前 `return null`。本機制落地時一併接通：經 `ICacheDataSourceProvider` 擴充對應載入方法；載入可跨多表聚合。
 
 ### 7. 定義快取 storage-aware 失效 → 見子計畫
 

@@ -2,7 +2,6 @@ using System.Globalization;
 using Bee.Db;
 using Bee.Definition.Database;
 using Bee.ObjectCaching;
-using Bee.ObjectCaching.CacheNotify;
 
 namespace Bee.Hosting.CacheNotify
 {
@@ -43,7 +42,6 @@ namespace Bee.Hosting.CacheNotify
         private readonly IDbAccessFactory _dbAccessFactory;
         private readonly string _databaseId;
         private readonly ICacheContainer _container;
-        private readonly ICacheNotifyRouter _router;
         private readonly TimeSpan _margin;
 
         private readonly Dictionary<string, long> _mirror = new(StringComparer.Ordinal);
@@ -55,25 +53,21 @@ namespace Bee.Hosting.CacheNotify
         /// </summary>
         /// <param name="databaseId">The database whose <c>st_cache_notify</c> table is polled.</param>
         /// <param name="dbAccessFactory">Factory for the database access object.</param>
-        /// <param name="container">The cache container eviction actions operate on.</param>
-        /// <param name="router">The route table mapping cache groups to eviction actions.</param>
+        /// <param name="container">The cache container that dispatches evictions by cache group.</param>
         /// <param name="marginSeconds">The overlap safety margin in seconds.</param>
         public CacheNotifyPollSession(
             string databaseId,
             IDbAccessFactory dbAccessFactory,
             ICacheContainer container,
-            ICacheNotifyRouter router,
             int marginSeconds)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
             ArgumentNullException.ThrowIfNull(dbAccessFactory);
             ArgumentNullException.ThrowIfNull(container);
-            ArgumentNullException.ThrowIfNull(router);
 
             _databaseId = databaseId;
             _dbAccessFactory = dbAccessFactory;
             _container = container;
-            _router = router;
             _margin = TimeSpan.FromSeconds(marginSeconds < 0 ? 0 : marginSeconds);
         }
 
@@ -139,7 +133,7 @@ namespace Bee.Hosting.CacheNotify
                 _mirror.TryGetValue(cacheKey, out long mirrored);
                 if (version > mirrored)
                 {
-                    _router.TryInvoke(_container, cacheKey);
+                    _container.TryEvict(cacheKey);
                     _mirror[cacheKey] = version;
                 }
 

@@ -3,22 +3,25 @@ using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Definition.Database;
+using Bee.Definition.Identity;
 using Bee.Hosting.CacheNotify;
 using Bee.ObjectCaching;
-using Bee.ObjectCaching.CacheNotify;
 using Bee.Tests.Shared;
 
 namespace Bee.Hosting.UnitTests
 {
     /// <summary>
     /// Integration tests for <see cref="CacheNotifyPollSession"/> against a live database per
-    /// dialect. Drives the polling core directly (no timer) with a real
-    /// <see cref="CacheNotifyRouter"/> whose eviction action records the evicted entity, then bumps
-    /// the notification row via <see cref="ICacheNotifyService"/> and asserts the poller observes it.
-    /// Tests skip automatically when the dialect's <c>BEE_TEST_CONNSTR_*</c> env var is unset.
+    /// dialect. Drives the polling core directly (no timer) and observes the real
+    /// <see cref="ICacheContainer.CompanyInfo"/> cache: a bump of <c>"CompanyInfo:{id}"</c> via
+    /// <see cref="ICacheNotifyService"/> must, after a poll, evict that company entry through the
+    /// container's convention-based dispatch. Tests skip when the dialect's
+    /// <c>BEE_TEST_CONNSTR_*</c> env var is unset.
     /// </summary>
     public class CacheNotifyPollerTests : IClassFixture<SharedDbFixture>
     {
+        private const string CompanyGroup = nameof(CompanyInfo);
+
         private readonly SharedDbFixture _fx;
 
         public CacheNotifyPollerTests(SharedDbFixture fx) { _fx = fx; }
@@ -37,90 +40,94 @@ namespace Bee.Hosting.UnitTests
             transaction.Commit();
         }
 
-        private CacheNotifyPollSession NewSession(DatabaseType databaseType, ICacheNotifyRouter router)
+        private CacheNotifyPollSession NewSession(DatabaseType databaseType)
         {
             var databaseId = TestDbConventions.GetDatabaseId(databaseType);
             var factory = _fx.GetRequiredService<IDbAccessFactory>();
             var container = _fx.GetRequiredService<ICacheContainer>();
-            return new CacheNotifyPollSession(databaseId, factory, container, router, marginSeconds: 5);
+            return new CacheNotifyPollSession(databaseId, factory, container, marginSeconds: 5);
         }
 
-        // Baseline poll evicts nothing; a post-baseline bump is observed and routed exactly once;
-        // a repeat poll without a new bump is idempotent (version comparison over the margin overlap).
-        // The group is unique per invocation so the incremental window cannot catch another test's
-        // bump of the same group on the shared database.
+        private CompanyInfo SeedCompany(string companyId)
+        {
+            var container = _fx.GetRequiredService<ICacheContainer>();
+            var info = new CompanyInfo { CompanyId = companyId, CompanyName = "RT " + companyId };
+            container.CompanyInfo.Set(info);
+            return info;
+        }
+
+        // Baseline poll evicts nothing; a post-baseline bump of "CompanyInfo:{id}" is observed and
+        // routes through the container to evict that company once; a repeat poll without a new bump
+        // is idempotent (version comparison). The id is unique per invocation so the incremental
+        // window cannot catch another test's bump on the shared database.
         private void RunPollerLifecycle(DatabaseType databaseType)
         {
-            string group = $"PollLifecycle_{Guid.NewGuid():N}";
-            var router = new CacheNotifyRouter();
-            var evicted = new List<string>();
-            router.Register(group, (_, entity) => evicted.Add(entity));
+            var container = _fx.GetRequiredService<ICacheContainer>();
+            string companyId = "RT_" + Guid.NewGuid().ToString("N");
+            SeedCompany(companyId);
 
-            var session = NewSession(databaseType, router);
+            var session = NewSession(databaseType);
 
-            session.Poll(); // baseline only
-            Assert.Empty(evicted);
+            session.Poll(); // baseline only — does not evict
+            Assert.NotNull(container.CompanyInfo.Get(companyId));
 
-            var entity = Guid.NewGuid().ToString("N");
-            Touch(databaseType, $"{group}:{entity}");
+            Touch(databaseType, $"{CompanyGroup}:{companyId}");
 
-            session.Poll(); // delta → evict once
-            Assert.Equal(new[] { entity }, evicted);
+            session.Poll(); // delta → convention dispatch evicts the company
+            Assert.Null(container.CompanyInfo.Get(companyId));
 
-            session.Poll(); // no new bump → no further evict
-            Assert.Single(evicted);
+            // No new bump: re-seed then poll again; the unchanged version must not evict again.
+            SeedCompany(companyId);
+            session.Poll();
+            Assert.NotNull(container.CompanyInfo.Get(companyId));
         }
 
-        // A bump whose group has no registered route is ignored by the poller. Both the routed and
-        // bumped groups are unique per invocation to avoid cross-test interference on the shared database.
+        // A bump whose group maps to no cache is ignored: an unrelated seeded company survives.
         private void RunUnroutedGroupIgnored(DatabaseType databaseType)
         {
-            string routedGroup = $"PollRouted_{Guid.NewGuid():N}";
-            string unroutedGroup = $"PollUnrouted_{Guid.NewGuid():N}";
-            var router = new CacheNotifyRouter();
-            var evicted = new List<string>();
-            router.Register(routedGroup, (_, entity) => evicted.Add(entity));
+            var container = _fx.GetRequiredService<ICacheContainer>();
+            string companyId = "RT_" + Guid.NewGuid().ToString("N");
+            SeedCompany(companyId);
 
-            var session = NewSession(databaseType, router);
-
+            var session = NewSession(databaseType);
             session.Poll(); // baseline
 
-            Touch(databaseType, $"{unroutedGroup}:{Guid.NewGuid():N}");
+            Touch(databaseType, $"NoSuchCacheGroup_{Guid.NewGuid():N}:{Guid.NewGuid():N}");
 
-            session.Poll(); // delta sees the row but no route matches its group
-            Assert.Empty(evicted);
+            session.Poll(); // delta sees the row but no cache owns its group
+            Assert.NotNull(container.CompanyInfo.Get(companyId));
         }
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("SQL Server：poller 首輪不 evict、bump 後 evict 一次、再輪冪等")]
+        [DisplayName("SQL Server：poller bump 後經慣例分派 evict CompanyInfo、再輪冪等")]
         public void Poller_SqlServer_Lifecycle() => RunPollerLifecycle(DatabaseType.SQLServer);
 
         [DbFact(DatabaseType.PostgreSQL)]
-        [DisplayName("PostgreSQL：poller 首輪不 evict、bump 後 evict 一次、再輪冪等")]
+        [DisplayName("PostgreSQL：poller bump 後經慣例分派 evict CompanyInfo、再輪冪等")]
         public void Poller_PostgreSQL_Lifecycle() => RunPollerLifecycle(DatabaseType.PostgreSQL);
 
         [DbFact(DatabaseType.MySQL)]
-        [DisplayName("MySQL：poller 首輪不 evict、bump 後 evict 一次、再輪冪等")]
+        [DisplayName("MySQL：poller bump 後經慣例分派 evict CompanyInfo、再輪冪等")]
         public void Poller_MySQL_Lifecycle() => RunPollerLifecycle(DatabaseType.MySQL);
 
         [DbFact(DatabaseType.Oracle)]
-        [DisplayName("Oracle：poller 首輪不 evict、bump 後 evict 一次、再輪冪等")]
+        [DisplayName("Oracle：poller bump 後經慣例分派 evict CompanyInfo、再輪冪等")]
         public void Poller_Oracle_Lifecycle() => RunPollerLifecycle(DatabaseType.Oracle);
 
         [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("SQL Server：未註冊路由的 group 不被 evict")]
+        [DisplayName("SQL Server：無對應快取的 group 不被 evict")]
         public void Poller_SqlServer_UnroutedIgnored() => RunUnroutedGroupIgnored(DatabaseType.SQLServer);
 
         [DbFact(DatabaseType.PostgreSQL)]
-        [DisplayName("PostgreSQL：未註冊路由的 group 不被 evict")]
+        [DisplayName("PostgreSQL：無對應快取的 group 不被 evict")]
         public void Poller_PostgreSQL_UnroutedIgnored() => RunUnroutedGroupIgnored(DatabaseType.PostgreSQL);
 
         [DbFact(DatabaseType.MySQL)]
-        [DisplayName("MySQL：未註冊路由的 group 不被 evict")]
+        [DisplayName("MySQL：無對應快取的 group 不被 evict")]
         public void Poller_MySQL_UnroutedIgnored() => RunUnroutedGroupIgnored(DatabaseType.MySQL);
 
         [DbFact(DatabaseType.Oracle)]
-        [DisplayName("Oracle：未註冊路由的 group 不被 evict")]
+        [DisplayName("Oracle：無對應快取的 group 不被 evict")]
         public void Poller_Oracle_UnroutedIgnored() => RunUnroutedGroupIgnored(DatabaseType.Oracle);
     }
 }

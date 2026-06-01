@@ -20,7 +20,7 @@ namespace Bee.ObjectCaching
     /// <summary>
     /// Base class for caching same-type objects accessed by key.
     /// </summary>
-    public abstract class KeyObjectCache<T> where T : class
+    public abstract class KeyObjectCache<T> : IEvictableCache where T : class
     {
         private readonly string _cachePrefix;
 
@@ -151,5 +151,14 @@ namespace Bee.ObjectCaching
             string cacheKey = GetCacheKey(key);
             CacheInfo.Provider.Remove(cacheKey);
         }
+
+        /// <summary>
+        /// Gets the cache group used by convention-based eviction routing; defaults to the cached
+        /// type's name (e.g. <c>"CompanyInfo"</c>). Override only when the notification group differs.
+        /// </summary>
+        public virtual string CacheGroup => typeof(T).Name;
+
+        /// <inheritdoc/>
+        void IEvictableCache.Evict(string entity) => Remove(entity);
     }
 }

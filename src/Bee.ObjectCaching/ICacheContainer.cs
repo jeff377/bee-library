@@ -40,5 +40,15 @@ namespace Bee.ObjectCaching
 
         /// <summary>The company information cache, keyed by company id.</summary>
         CompanyInfoCache CompanyInfo { get; }
+
+        /// <summary>
+        /// Evicts the cache entry named by a <c>"group:entity"</c> cache key, dispatching to the
+        /// owned cache whose <see cref="IEvictableCache.CacheGroup"/> matches the key's group
+        /// (case-insensitive). Used by the cache-notify poller; returns <c>false</c> when no cache
+        /// owns the group (the bump is ignored).
+        /// </summary>
+        /// <param name="cacheKey">The full <c>"group:entity"</c> cache key from the notification table.</param>
+        /// <returns><c>true</c> when a cache matched the group and was evicted; otherwise <c>false</c>.</returns>
+        bool TryEvict(string cacheKey);
     }
 }

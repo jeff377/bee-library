@@ -6,7 +6,6 @@ using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Hosting.CacheNotify;
-using Bee.ObjectCaching.CacheNotify;
 using Bee.Definition;
 using Bee.ObjectCaching;
 using Bee.Definition.Identity;
@@ -112,12 +111,10 @@ namespace Bee.Hosting
             //     repositories arrive in later stages); registered now so it is injectable.
             services.AddSingleton<ICacheNotifyService, CacheNotifyService>();
 
-            // 6c. Cache-notify routing table + polling hosted service. The router maps cache
-            //     groups to eviction actions (declared in code alongside cache registrations;
-            //     concrete routes arrive with their consumers). The poller is only registered
-            //     when enabled; hosts without an IHost (e.g. unit-test service providers) simply
-            //     never start the hosted service.
-            services.AddSingleton<ICacheNotifyRouter, CacheNotifyRouter>();
+            // 6c. Cache-notify polling hosted service. Evictions dispatch by convention through
+            //     ICacheContainer.TryEvict (cache group → owned cache), so no route table is
+            //     registered here. The poller is only registered when enabled; hosts without an
+            //     IHost (e.g. unit-test service providers) simply never start the hosted service.
             services.AddSingleton(configuration.CacheNotifyOptions);
             if (configuration.CacheNotifyOptions.Enabled)
             {
