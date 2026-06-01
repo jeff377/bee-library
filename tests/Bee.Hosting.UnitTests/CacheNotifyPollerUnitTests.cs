@@ -36,6 +36,15 @@ namespace Bee.Hosting.UnitTests
             public bool TryEvict(string cacheKey) => false;
         }
 
+        private sealed class FakeLogger : ILogger<CacheNotifyPoller>
+        {
+            public static readonly FakeLogger Instance = new();
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+            public bool IsEnabled(LogLevel logLevel) => false;
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
+                Exception? exception, Func<TState, Exception?, string> formatter) { }
+        }
+
         [Fact]
         [DisplayName("建構子 dbAccessFactory 為 null 應拋 ArgumentNullException")]
         public void Ctor_NullDbAccessFactory_ThrowsArgumentNullException()
@@ -44,7 +53,7 @@ namespace Bee.Hosting.UnitTests
                 null!,
                 new StubCacheContainer(),
                 new CacheNotifyOptions(),
-                NullLogger<CacheNotifyPoller>.Instance));
+                FakeLogger.Instance));
         }
 
         [Fact]
@@ -55,7 +64,7 @@ namespace Bee.Hosting.UnitTests
                 new StubDbAccessFactory(),
                 null!,
                 new CacheNotifyOptions(),
-                NullLogger<CacheNotifyPoller>.Instance));
+                FakeLogger.Instance));
         }
 
         [Fact]
@@ -66,7 +75,7 @@ namespace Bee.Hosting.UnitTests
                 new StubDbAccessFactory(),
                 new StubCacheContainer(),
                 null!,
-                NullLogger<CacheNotifyPoller>.Instance));
+                FakeLogger.Instance));
         }
 
         [Fact]
@@ -88,7 +97,7 @@ namespace Bee.Hosting.UnitTests
                 new StubDbAccessFactory(),
                 new StubCacheContainer(),
                 new CacheNotifyOptions { DatabaseId = "test", IntervalSeconds = 60 },
-                NullLogger<CacheNotifyPoller>.Instance);
+                FakeLogger.Instance);
 
             using var cts = new CancellationTokenSource();
             await poller.StartAsync(cts.Token);
