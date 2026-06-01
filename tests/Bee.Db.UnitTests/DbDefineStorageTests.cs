@@ -181,7 +181,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(storage.GetCustomizeFormLayout(customizeId, layoutId));
 
             // Language override (composite "lang.ns" key).
-            string lang = "rt-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            string lang = string.Concat("rt-", Guid.NewGuid().ToString("N").AsSpan(0, 8));
             const string ns = "common";
             SeedCustomizeRow(databaseType, "LanguageResource", customizeId, $"{lang}.{ns}",
                 XmlCodec.Serialize(new LanguageResource { Lang = lang, Namespace = ns }));
