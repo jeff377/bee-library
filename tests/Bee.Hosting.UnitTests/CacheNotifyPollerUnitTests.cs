@@ -9,6 +9,7 @@ using Bee.ObjectCaching.CacheNotify;
 using Bee.ObjectCaching.Database;
 using Bee.ObjectCaching.Define;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Bee.Hosting.UnitTests
 {
