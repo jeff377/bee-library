@@ -1,0 +1,121 @@
+using System.ComponentModel;
+using System.Globalization;
+using Bee.Db.CacheNotify;
+using Bee.Db.Manager;
+using Bee.Db.Storage;
+using Bee.Definition.Database;
+using Bee.Definition.Forms;
+using Bee.Definition.Language;
+using Bee.Definition.Layouts;
+using Bee.Tests.Shared;
+
+namespace Bee.Db.UnitTests
+{
+    /// <summary>
+    /// Integration tests for <see cref="DbDefineStorage"/> against a live database per dialect.
+    /// Constructs the storage directly with the fixture's connection manager + cache-notify service
+    /// (avoiding the DI activation cycle), and exercises round-trip Save/Get plus the same-transaction
+    /// notification bump for single-key, composite-key, and optional definition types. Tests skip when
+    /// the dialect's <c>BEE_TEST_CONNSTR_*</c> env var is unset.
+    /// </summary>
+    public class DbDefineStorageTests : IClassFixture<SharedDbFixture>
+    {
+        private readonly SharedDbFixture _fx;
+
+        public DbDefineStorageTests(SharedDbFixture fx) { _fx = fx; }
+
+        private DbDefineStorage NewStorage(DatabaseType databaseType)
+        {
+            var connectionManager = _fx.GetRequiredService<IDbConnectionManager>();
+            var cacheNotify = _fx.GetRequiredService<ICacheNotifyService>();
+            var databaseId = TestDbConventions.GetDatabaseId(databaseType);
+            return new DbDefineStorage(connectionManager, cacheNotify, databaseId);
+        }
+
+        // Reads the notification version for a cache key; -1 when no row exists yet.
+        private long CacheVersion(DatabaseType databaseType, string cacheKey)
+        {
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(databaseType));
+            string tbl = databaseType.QuoteIdentifier("st_cache_notify");
+            string keyCol = databaseType.QuoteIdentifier("sys_cache_key");
+            string verCol = databaseType.QuoteIdentifier("sys_cache_version");
+            var scalar = dbAccess.ExecuteScalar($"SELECT {verCol} FROM {tbl} WHERE {keyCol} = {{0}}", cacheKey);
+            if (scalar is null || scalar is DBNull) return -1;
+            return Convert.ToInt64(scalar, CultureInfo.InvariantCulture);
+        }
+
+        private void RunRoundTrip(DatabaseType databaseType)
+        {
+            var storage = NewStorage(databaseType);
+
+            // --- FormSchema (single key) round-trip + overwrite bumps the same key ---
+            string progId = "RT_" + Guid.NewGuid().ToString("N");
+            storage.SaveFormSchema(new FormSchema(progId, "RT Form"));
+
+            var form = storage.GetFormSchema(progId);
+            Assert.NotNull(form);
+            Assert.Equal(progId, form!.ProgId);
+            Assert.Equal("RT Form", form.DisplayName);
+
+            long v1 = CacheVersion(databaseType, $"FormSchema:{progId}");
+            Assert.True(v1 >= 1, $"expected bump version >= 1, got {v1}");
+
+            // Overwrite: content updates and the notification version advances.
+            storage.SaveFormSchema(new FormSchema(progId, "RT Form v2"));
+            Assert.Equal("RT Form v2", storage.GetFormSchema(progId)!.DisplayName);
+            Assert.True(CacheVersion(databaseType, $"FormSchema:{progId}") > v1);
+
+            // --- TableSchema (composite key "category.table") ---
+            string tableName = "rt_" + Guid.NewGuid().ToString("N");
+            storage.SaveTableSchema("common", new TableSchema { TableName = tableName, DisplayName = "RT Table" });
+
+            var table = storage.GetTableSchema("common", tableName);
+            Assert.NotNull(table);
+            Assert.Equal(tableName, table!.TableName);
+            // define_key uses the dot separator the cache keys on, so the bump key aligns.
+            Assert.True(CacheVersion(databaseType, $"TableSchema:common.{tableName}") >= 1);
+
+            // --- FormLayout (single key) ---
+            string layoutId = "RTL_" + Guid.NewGuid().ToString("N");
+            storage.SaveFormLayout(new FormLayout { LayoutId = layoutId });
+            Assert.Equal(layoutId, storage.GetFormLayout(layoutId)!.LayoutId);
+
+            // --- Language (optional: missing returns null; then round-trips) ---
+            string lang = "rt-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            const string ns = "common";
+            Assert.Null(storage.GetLanguage(lang, ns));
+
+            storage.SaveLanguage(new LanguageResource { Lang = lang, Namespace = ns });
+            var resource = storage.GetLanguage(lang, ns);
+            Assert.NotNull(resource);
+            Assert.Equal(lang, resource!.Lang);
+            // LanguageResource cache keys on "{lang}.{ns}", so the bump key matches.
+            Assert.True(CacheVersion(databaseType, $"LanguageResource:{lang}.{ns}") >= 1);
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：DbDefineStorage 各型別 round-trip + 同 tx bump")]
+        public void RoundTrip_SqlServer() => RunRoundTrip(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("PostgreSQL：DbDefineStorage 各型別 round-trip + 同 tx bump")]
+        public void RoundTrip_PostgreSQL() => RunRoundTrip(DatabaseType.PostgreSQL);
+
+        [DbFact(DatabaseType.MySQL)]
+        [DisplayName("MySQL：DbDefineStorage 各型別 round-trip + 同 tx bump")]
+        public void RoundTrip_MySQL() => RunRoundTrip(DatabaseType.MySQL);
+
+        [DbFact(DatabaseType.Oracle)]
+        [DisplayName("Oracle：DbDefineStorage 各型別 round-trip + 同 tx bump")]
+        public void RoundTrip_Oracle() => RunRoundTrip(DatabaseType.Oracle);
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：缺漏的必要定義 Get 應拋例外")]
+        public void GetRequired_Missing_Throws()
+        {
+            var storage = NewStorage(DatabaseType.SQLServer);
+            Assert.Throws<InvalidOperationException>(
+                () => storage.GetFormSchema("RT_missing_" + Guid.NewGuid().ToString("N")));
+        }
+    }
+}

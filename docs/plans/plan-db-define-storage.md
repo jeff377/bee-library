@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | `st_define` 儲存表 `TableSchema.xml` 定義 + 註冊進 `common` 類別 | ✅ 已完成（2026-06-01） |
-| 2 | `DbDefineStorage : IDefineStorage`（base 層,XML blob,內部 tx + 同 tx bump） | 📝 待做 |
+| 2 | `DbDefineStorage : IDefineStorage`（base 層,XML blob,內部 tx + 同 tx bump） | ✅ 已完成（2026-06-01） |
 | 3 | 客製化 overlay（DB 版 `ICustomizeDefineReader`,讀 `customize_id` 列） | 📝 待做 |
 | 4 | `ProgramSettings` 納入 DB（擴充 `IDefineStorage` + `ProgramSettingsCache` 改走 storage） | 📝 待做 |
 
@@ -47,7 +47,7 @@
 
 | 實體欄名 | 型別 | 說明 |
 |---------|------|------|
-| `define_type` | varchar | 列舉名:`FormSchema` / `TableSchema` / `Language` / `FormLayout` / `DbCategorySettings` / `ProgramSettings` |
+| `define_type` | varchar | 鑑別字 = **被快取型別名**(`typeof(T).Name`),使 `define_type` = 快取群組 = bump 群組三者一致:`FormSchema` / `TableSchema` / `FormLayout` / `DbCategorySettings` / **`LanguageResource`**(注意 Language 的快取型別為 `LanguageResource`) / `ProgramSettings` |
 | `customize_id` | varchar | `"*"` = base 層;其他 = 租戶客製覆寫代碼 |
 | `define_key` | varchar | 型別內識別（見下方編碼表）;單例型別用 `"*"` |
 | `content` | Text（CLOB） | 定義的 XML 序列化內容（`FieldDbType.Text` → SQL Server `nvarchar(max)` / PG `text` / MySQL `LONGTEXT` / Oracle `CLOB`） |
@@ -66,10 +66,10 @@
 | `ProgramSettings` | `"*"` | `"ProgramSettings:*"` |
 | `FormSchema` | progId | `"FormSchema:Employee"` |
 | `FormLayout` | layoutId | `"FormLayout:EmployeeList"` |
-| `TableSchema` | `categoryId/tableName` | `"TableSchema:common/st_user"` |
-| `Language` | `lang/ns` | `"Language:zh-TW/common"` |
+| `TableSchema` | `categoryId.tableName` | `"TableSchema:common.st_user"` |
+| `Language` | `lang.ns` | `"Language:zh-TW.common"` |
 
-> ⚠️ **正確性約束**:`define_key`（= cache-notify 的 entity 部分）必須**等於對應快取 `Remove(key)` 所用的 key**,否則 `TryEvict(group, entity)` 會踢錯/踢不到。複合鍵型別（`TableSchema`/`Language`）實作時須先確認 `TableSchemaCache`/`LanguageResourceCache` 的 key 編碼,使 `define_key` 與之一致。
+> ⚠️ **正確性約束（已驗證）**:`define_key`（= cache-notify 的 entity 部分）必須**等於對應快取 `Remove(key)` 所用的 key**,否則 `TryEvict(group, entity)` 會踢錯/踢不到。實查確認複合鍵快取用 **`.`（點）** 分隔:`TableSchemaCache` key = `"{categoryId}.{tableName}"`、`LanguageResourceCache` key = `"{lang}.{namespace}"`。故 `define_key` 複合鍵一律用 `.`(非 `/`)。
 
 ## `DbDefineStorage`（`Bee.Db`）
 
@@ -82,6 +82,8 @@
   3. commit。
 - bump 後跨 process 失效由 poller + 慣例分派自動完成（定義快取群組 = 型別名,已是 `IEvictableCache`）。
 - `IDefineStorage.SaveX` 簽章不帶 transaction;tx 由 `DbDefineStorage` 內部自管（與 `FileDefineStorage` 介面相容,呼叫端無感）。
+
+> ⚠️ **DI 啟用循環(wiring 時處理,非階段 2)**:`DbDefineStorage`(需 `IDbConnectionManager`)→ `IDbConnectionManager` → `IDatabaseSettingsProvider` → `IDefineAccess` → `IDefineStorage`(=`DbDefineStorage`)構成建構期循環。**bootstrap 切分已打破語意循環**(`DatabaseSettingsCache` 直讀檔、不經 `IDefineStorage`),但 DI 物件圖建構仍會遞迴。啟用時(把 `components.DefineStorage` 設為 `DbDefineStorage`)需以**延遲解析**(注入 `IServiceProvider` / `Func<IDbConnectionManager>`,首次 `GetX/SaveX` 才取)打破。**階段 2 只交付類別 + 直接建構的 `[DbFact]` 測試,不動 `AddBeeFramework` 的 storage 選擇**,故無循環;DI 啟用留待後續 wiring 步驟。
 
 ## 客製化 overlay（階段 3）
 
