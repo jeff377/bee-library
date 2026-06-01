@@ -37,6 +37,14 @@ namespace Bee.Definition.Settings
         public BackendComponents Components { get; set; } = new BackendComponents();
 
         /// <summary>
+        /// Cache-notify poller options (database-backed cache invalidation).
+        /// </summary>
+        [Category("CacheNotify")]
+        [Description("Cache-notify poller options for database-backed cache invalidation.")]
+        [Browsable(false)]
+        public CacheNotifyOptions CacheNotifyOptions { get; set; } = new CacheNotifyOptions();
+
+        /// <summary>
         /// Object description.
         /// </summary>
         public override string ToString()

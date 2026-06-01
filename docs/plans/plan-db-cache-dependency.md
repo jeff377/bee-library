@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 通知表 `st_cache_notify` 的 `TableSchema.xml` 定義 + `ICacheNotifyService.Touch`（同 tx UPSERT 自增，置於 `Bee.Db`） | ✅ 已完成（2026-06-01） |
-| 2 | 輪詢器 `CacheNotifyPoller`（IHostedService）+ 靜態路由 registry | 📝 待做 |
+| 2 | 輪詢器 `CacheNotifyPoller`（IHostedService）+ 靜態路由 registry | ✅ 已完成（2026-06-01） |
 | 3 | 補完業務資料 DB 載入路徑（`CompanyInfoCache` / 組織快取 `CreateInstance`） | 📝 待做 |
 
 > 「定義快取在 DB 儲存模式的失效整合」原階段 4 已抽出為獨立子計畫 [plan-define-cache-db-invalidation.md](plan-define-cache-db-invalidation.md)（blocked，等 `DbDefineStorage` 立項）。本計畫只交付通用機制（階段 1–2）+ 業務快取消費端（階段 3）。
@@ -196,6 +196,9 @@ repo 目前無 `IHostedService` 接線（僅有 `Bee.Base/BackgroundServices/Bac
 
    階段 1 兩項實作決策（已與使用者確認）：UPSERT 採**各方言原生**（PG/MySQL/SQLite `ON CONFLICT`/`ON DUPLICATE KEY`、SQL Server/Oracle `MERGE WITH (HOLDLOCK)`/`MERGE`）；`Touch` 簽章採 **3 參數**（加 `DatabaseType`，因 `DbTransaction` 不帶方言資訊）。
 2. `BackendConfiguration` 暴露輪詢間隔的設定鍵名與是否可停用 poller（純單節點 + 全框架寫入時可關）。
+   - ✅ **階段 2 已落地**：`BackendConfiguration.CacheNotifyOptions`（`Enabled` 預設 true、`IntervalSeconds` 預設 5、`DatabaseId` 預設 `common`）。`AddBeeFramework` 在 `Enabled` 時 `AddHostedService<CacheNotifyPoller>`；無 `IHost` 的消費端（測試 ServiceProvider）只是不啟動。
+   - ⚠️ **§2a/§2b 實作偏離（已決策）**：原設計用 `sys_update_time` 增量抓取 + `margin` 餘量 + highWater 游標。實作改為**每輪全表掃描 + `version` 比對**：跨 5 方言傳 `DateTime` 參數做時間比較有嚴重相容性雷（Npgsql 把 `DbType.DateTime` 解析為 `timestamptz` 並要求 `Kind=Utc`，與 naive `timestamp` 欄衝突；Oracle `SYSTIMESTAMP`/PG `CURRENT_TIMESTAMP` 帶 tz 又汙染讀回值的 `Kind`）。通知表 UPSERT 單列/key、大小有界，全表掃描成本可忽略，且**消除了 margin/邊界缺口**（晚提交交易下輪自然以更大 version 觸發 evict）。`MarginSeconds` 設定已移除。首輪改為「seed 鏡像不 evict」，語意與原 §2b 一致。未來若通知表異常龐大需增量，可改走「字串參數 + 各方言 `CAST`」避開 `DateTime` 綁定雷。
+   - 路由 registry（`ICacheNotifyRouter`，置於 `Bee.ObjectCaching`，與快取註冊同層）採 groupPrefix→evict（依使用者裁示「階段 2 先只輪詢 common」，路由不帶 databaseId）；poller 置於 `Bee.Hosting`（加 `Microsoft.Extensions.Hosting.Abstractions`）。
 3. 定義快取 storage-aware 失效已抽出 [plan-define-cache-db-invalidation.md](plan-define-cache-db-invalidation.md)（blocked 於 `DbDefineStorage`），不在本計畫範圍。
 
 ## 驗證

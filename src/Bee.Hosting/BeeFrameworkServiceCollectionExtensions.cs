@@ -5,6 +5,8 @@ using Bee.Business.Providers;
 using Bee.Db;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
+using Bee.Hosting.CacheNotify;
+using Bee.ObjectCaching.CacheNotify;
 using Bee.Definition;
 using Bee.ObjectCaching;
 using Bee.Definition.Identity;
@@ -109,6 +111,18 @@ namespace Bee.Hosting
             //     it on the caller's transaction. No consumer wired yet (poller / business
             //     repositories arrive in later stages); registered now so it is injectable.
             services.AddSingleton<ICacheNotifyService, CacheNotifyService>();
+
+            // 6c. Cache-notify routing table + polling hosted service. The router maps cache
+            //     groups to eviction actions (declared in code alongside cache registrations;
+            //     concrete routes arrive with their consumers). The poller is only registered
+            //     when enabled; hosts without an IHost (e.g. unit-test service providers) simply
+            //     never start the hosted service.
+            services.AddSingleton<ICacheNotifyRouter, CacheNotifyRouter>();
+            services.AddSingleton(configuration.CacheNotifyOptions);
+            if (configuration.CacheNotifyOptions.Enabled)
+            {
+                services.AddHostedService<CacheNotifyPoller>();
+            }
 
             // 5. Replaceable core services. Lifetimes default to Singleton in Phase 4 —
             //    no consumer requires per-request scope today, and registering as Scoped
