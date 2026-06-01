@@ -32,7 +32,7 @@ namespace Bee.Db.Storage
     /// because Oracle treats <c>''</c> as <c>NULL</c> and primary-key columns cannot be NULL).
     /// </para>
     /// </remarks>
-    public sealed class DbDefineStorage : IDefineStorage
+    public sealed class DbDefineStorage : IDefineStorage, ICustomizeDefineReader
     {
         /// <summary>The database identifier hosting <c>st_define</c> (and <c>st_cache_notify</c>).</summary>
         public const string DefineDatabaseId = "common";
@@ -72,7 +72,7 @@ namespace Bee.Db.Storage
 
         /// <inheritdoc/>
         public DbCategorySettings? GetDbCategorySettings()
-            => ReadRequired<DbCategorySettings>(SingletonKey);
+            => ReadRequired<DbCategorySettings>(BaseCustomizeId, SingletonKey);
 
         /// <inheritdoc/>
         public void SaveDbCategorySettings(DbCategorySettings settings)
@@ -83,7 +83,7 @@ namespace Bee.Db.Storage
 
         /// <inheritdoc/>
         public TableSchema? GetTableSchema(string categoryId, string tableName)
-            => ReadRequired<TableSchema>(TableSchemaKey(categoryId, tableName));
+            => ReadRequired<TableSchema>(BaseCustomizeId, TableSchemaKey(categoryId, tableName));
 
         /// <inheritdoc/>
         public void SaveTableSchema(string categoryId, TableSchema tableSchema)
@@ -94,7 +94,7 @@ namespace Bee.Db.Storage
 
         /// <inheritdoc/>
         public FormSchema? GetFormSchema(string progId)
-            => ReadRequired<FormSchema>(progId);
+            => ReadRequired<FormSchema>(BaseCustomizeId, progId);
 
         /// <inheritdoc/>
         public void SaveFormSchema(FormSchema formSchema)
@@ -105,7 +105,7 @@ namespace Bee.Db.Storage
 
         /// <inheritdoc/>
         public FormLayout? GetFormLayout(string layoutId)
-            => ReadRequired<FormLayout>(layoutId);
+            => ReadRequired<FormLayout>(BaseCustomizeId, layoutId);
 
         /// <inheritdoc/>
         public void SaveFormLayout(FormLayout formLayout)
@@ -120,7 +120,7 @@ namespace Bee.Db.Storage
         /// untranslated namespaces are a normal scenario.
         /// </remarks>
         public LanguageResource? GetLanguage(string lang, string ns)
-            => ReadOptional<LanguageResource>(LanguageKey(lang, ns));
+            => ReadOptional<LanguageResource>(BaseCustomizeId, LanguageKey(lang, ns));
 
         /// <inheritdoc/>
         public void SaveLanguage(LanguageResource resource)
@@ -128,6 +128,22 @@ namespace Bee.Db.Storage
             ArgumentNullException.ThrowIfNull(resource);
             Write(resource, LanguageKey(resource.Lang, resource.Namespace));
         }
+
+        #endregion
+
+        #region ICustomizeDefineReader
+
+        /// <inheritdoc/>
+        public LanguageResource? GetCustomizeLanguage(string customizeId, string lang, string ns)
+            => ReadOptional<LanguageResource>(customizeId, LanguageKey(lang, ns));
+
+        /// <inheritdoc/>
+        public ProgramSettings? GetCustomizeProgramSettings(string customizeId)
+            => ReadOptional<ProgramSettings>(customizeId, SingletonKey);
+
+        /// <inheritdoc/>
+        public FormLayout? GetCustomizeFormLayout(string customizeId, string layoutId)
+            => ReadOptional<FormLayout>(customizeId, layoutId);
 
         #endregion
 
@@ -141,25 +157,25 @@ namespace Bee.Db.Storage
         /// Reads a definition that must exist; throws when the row is absent (mirrors the file
         /// storage, where a missing definition file signals a bug).
         /// </summary>
-        private T ReadRequired<T>(string defineKey) where T : class
+        private T ReadRequired<T>(string customizeId, string defineKey) where T : class
         {
-            var xml = ReadContent(typeof(T).Name, defineKey);
+            var xml = ReadContent(typeof(T).Name, customizeId, defineKey);
             if (xml == null)
-                throw new InvalidOperationException($"Definition not found: {typeof(T).Name} / {defineKey}.");
+                throw new InvalidOperationException($"Definition not found: {typeof(T).Name} / {customizeId} / {defineKey}.");
             return XmlCodec.Deserialize<T>(xml)
-                ?? throw new InvalidOperationException($"Failed to deserialize definition: {typeof(T).Name} / {defineKey}.");
+                ?? throw new InvalidOperationException($"Failed to deserialize definition: {typeof(T).Name} / {customizeId} / {defineKey}.");
         }
 
         /// <summary>
         /// Reads a definition that may be absent; returns <c>null</c> when the row does not exist.
         /// </summary>
-        private T? ReadOptional<T>(string defineKey) where T : class
+        private T? ReadOptional<T>(string customizeId, string defineKey) where T : class
         {
-            var xml = ReadContent(typeof(T).Name, defineKey);
+            var xml = ReadContent(typeof(T).Name, customizeId, defineKey);
             return xml == null ? null : XmlCodec.Deserialize<T>(xml);
         }
 
-        private string? ReadContent(string defineType, string defineKey)
+        private string? ReadContent(string defineType, string customizeId, string defineKey)
         {
             var dbAccess = new DbAccess(_databaseId, _connectionManager);
             var databaseType = dbAccess.DatabaseType;
@@ -172,7 +188,7 @@ namespace Bee.Db.Storage
 
             var result = dbAccess.ExecuteScalar(
                 $"SELECT {content} FROM {tbl} WHERE {type} = {{0}} AND {cust} = {{1}} AND {key} = {{2}}",
-                defineType, BaseCustomizeId, defineKey);
+                defineType, customizeId, defineKey);
 
             if (result is null || result is DBNull) return null;
             return Convert.ToString(result, CultureInfo.InvariantCulture);

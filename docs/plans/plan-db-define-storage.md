@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | `st_define` 儲存表 `TableSchema.xml` 定義 + 註冊進 `common` 類別 | ✅ 已完成（2026-06-01） |
 | 2 | `DbDefineStorage : IDefineStorage`（base 層,XML blob,內部 tx + 同 tx bump） | ✅ 已完成（2026-06-01） |
-| 3 | 客製化 overlay（DB 版 `ICustomizeDefineReader`,讀 `customize_id` 列） | 📝 待做 |
+| 3 | 客製化 overlay（DB 版 `ICustomizeDefineReader`,讀 `customize_id` 列） | ✅ 已完成（2026-06-01） |
 | 4 | `ProgramSettings` 納入 DB（擴充 `IDefineStorage` + `ProgramSettingsCache` 改走 storage） | 📝 待做 |
 
 > 本計畫**解 block** [plan-define-cache-db-invalidation.md](plan-define-cache-db-invalidation.md)。失效路由因主計畫階段 3 的慣例式分派（`IEvictableCache` + `ICacheContainer.TryEvict`)已自動成立 —— 定義快取皆為 `KeyObjectCache<T>`,群組 = 型別名,`DbDefineStorage.SaveX` bump `"<Type>:<key>"` 後 poller 自動 evict,**無需註冊路由**。子計畫剩餘工作僅「快取 `GetPolicy()` 改 storage-aware（DB 模式不設 file-watch）」。

@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Globalization;
+using Bee.Base.Data;
+using Bee.Base.Serialization;
 using Bee.Db.CacheNotify;
 using Bee.Db.Manager;
 using Bee.Db.Storage;
@@ -7,6 +9,7 @@ using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
+using Bee.Definition.Settings;
 using Bee.Tests.Shared;
 
 namespace Bee.Db.UnitTests
@@ -117,5 +120,65 @@ namespace Bee.Db.UnitTests
             Assert.Throws<InvalidOperationException>(
                 () => storage.GetFormSchema("RT_missing_" + Guid.NewGuid().ToString("N")));
         }
+
+        // Inserts a customization-override row (customize_id != base) directly, so the reader can be
+        // exercised without a customize-write API (writing tenant overrides is out of this phase).
+        private void SeedCustomizeRow(DatabaseType databaseType, string defineType, string customizeId, string defineKey, string contentXml)
+        {
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(databaseType));
+            string now = DbDialectRegistry.Get(databaseType).GetDefaultValueExpression(FieldDbType.DateTime);
+            string tbl = databaseType.QuoteIdentifier("st_define");
+            string type = databaseType.QuoteIdentifier("define_type");
+            string cust = databaseType.QuoteIdentifier("customize_id");
+            string key = databaseType.QuoteIdentifier("define_key");
+            string content = databaseType.QuoteIdentifier("content");
+            string upd = databaseType.QuoteIdentifier("sys_update_time");
+            dbAccess.ExecuteNonQuery(
+                $"INSERT INTO {tbl} ({type}, {cust}, {key}, {content}, {upd}) VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {now})",
+                defineType, customizeId, defineKey, contentXml);
+        }
+
+        // The customize reader returns the per-customizeId override row; a different customizeId or the
+        // base layer are isolated (distinct PK rows in the same table).
+        private void RunCustomizeOverlay(DatabaseType databaseType)
+        {
+            var storage = NewStorage(databaseType);
+            string customizeId = "cust_" + Guid.NewGuid().ToString("N");
+
+            // FormLayout override: missing → null, then resolves after seeding.
+            string layoutId = "RTL_" + Guid.NewGuid().ToString("N");
+            Assert.Null(storage.GetCustomizeFormLayout(customizeId, layoutId));
+            SeedCustomizeRow(databaseType, "FormLayout", customizeId, layoutId,
+                XmlCodec.Serialize(new FormLayout { LayoutId = layoutId }));
+            Assert.Equal(layoutId, storage.GetCustomizeFormLayout(customizeId, layoutId)!.LayoutId);
+            // A different tenant has no override.
+            Assert.Null(storage.GetCustomizeFormLayout("other_" + Guid.NewGuid().ToString("N"), layoutId));
+
+            // Base layer is isolated from the customize layer (same define_key, different customize_id).
+            storage.SaveFormLayout(new FormLayout { LayoutId = layoutId });
+            Assert.NotNull(storage.GetFormLayout(layoutId));
+            Assert.NotNull(storage.GetCustomizeFormLayout(customizeId, layoutId));
+
+            // Language override (composite "lang.ns" key).
+            string lang = "rt-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            const string ns = "common";
+            SeedCustomizeRow(databaseType, "LanguageResource", customizeId, $"{lang}.{ns}",
+                XmlCodec.Serialize(new LanguageResource { Lang = lang, Namespace = ns }));
+            Assert.Equal(lang, storage.GetCustomizeLanguage(customizeId, lang, ns)!.Lang);
+
+            // ProgramSettings override (singleton key "*").
+            Assert.Null(storage.GetCustomizeProgramSettings(customizeId));
+            SeedCustomizeRow(databaseType, "ProgramSettings", customizeId, "*",
+                XmlCodec.Serialize(new ProgramSettings()));
+            Assert.NotNull(storage.GetCustomizeProgramSettings(customizeId));
+        }
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：客製化 overlay 讀取 + base/租戶隔離")]
+        public void CustomizeOverlay_SqlServer() => RunCustomizeOverlay(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.PostgreSQL)]
+        [DisplayName("PostgreSQL：客製化 overlay 讀取 + base/租戶隔離")]
+        public void CustomizeOverlay_PostgreSQL() => RunCustomizeOverlay(DatabaseType.PostgreSQL);
     }
 }
