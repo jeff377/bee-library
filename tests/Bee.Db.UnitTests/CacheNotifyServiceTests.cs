@@ -46,8 +46,8 @@ namespace Bee.Db.UnitTests
             var dbAccess = _fx.NewDbAccess(databaseId);
 
             string tbl = databaseType.QuoteIdentifier("st_cache_notify");
-            string key = databaseType.QuoteIdentifier("sys_cache_key");
-            string ver = databaseType.QuoteIdentifier("sys_cache_version");
+            string key = databaseType.QuoteIdentifier("cache_key");
+            string ver = databaseType.QuoteIdentifier("cache_version");
             string upd = databaseType.QuoteIdentifier("sys_update_time");
 
             var table = dbAccess.ExecuteDataTable(

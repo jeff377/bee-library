@@ -40,8 +40,8 @@ namespace Bee.Db.UnitTests
         {
             var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(databaseType));
             string tbl = databaseType.QuoteIdentifier("st_cache_notify");
-            string keyCol = databaseType.QuoteIdentifier("sys_cache_key");
-            string verCol = databaseType.QuoteIdentifier("sys_cache_version");
+            string keyCol = databaseType.QuoteIdentifier("cache_key");
+            string verCol = databaseType.QuoteIdentifier("cache_version");
             var scalar = dbAccess.ExecuteScalar($"SELECT {verCol} FROM {tbl} WHERE {keyCol} = {{0}}", cacheKey);
             if (scalar is null || scalar is DBNull) return -1;
             return Convert.ToInt64(scalar, CultureInfo.InvariantCulture);

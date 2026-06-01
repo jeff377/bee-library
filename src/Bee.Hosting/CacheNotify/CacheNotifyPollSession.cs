@@ -35,8 +35,8 @@ namespace Bee.Hosting.CacheNotify
     public sealed class CacheNotifyPollSession
     {
         private const string TableName = "st_cache_notify";
-        private const string KeyColumn = "sys_cache_key";
-        private const string VersionColumn = "sys_cache_version";
+        private const string KeyColumn = "cache_key";
+        private const string VersionColumn = "cache_version";
         private const string UpdateTimeColumn = "sys_update_time";
 
         private readonly IDbAccessFactory _dbAccessFactory;

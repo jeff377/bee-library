@@ -38,7 +38,7 @@
 | 註冊模型 | **靜態路由（cache_group → 失效動作）**，不做 per-instance 動態註冊 | 快取本身即 registry；`Remove` 對未快取 key 為 no-op，免維護反註冊狀態 |
 | 部署假設 | 目前單節點，**為多節點預留** | DB 通知表天然支援多節點（各節點獨立輪詢同一表）；同時解決單節點下「跨 process 寫入」失效問題 |
 | `ICacheNotifyService` 歸屬 | **`Bee.Db`** | 「定義儲存層（未來 `DbDefineStorage`）」與「業務 `Bee.Repository`」共同的最低交會點。`Bee.Definition` 不相依 `Bee.Db`，故 `DbDefineStorage` 必落在 `Bee.Db`；`DbAccess` 已支援 `Execute(cmd, transaction)`，bump 同 tx 提交天然成立 |
-| 通知表 / 欄名 | 表 `st_cache_notify`、**單一表三欄**：`sys_cache_key`(PK) / `sys_cache_version` / `sys_update_time` | 表用 `st_` 前綴、欄用 `sys_` 前綴（對齊框架慣例）。不拆 group/key 兩欄、不另立計數表或 registry 表（路由是程式碼） |
+| 通知表 / 欄名 | 表 `st_cache_notify`、**單一表三欄**：`cache_key`(PK) / `cache_version` / `sys_update_time` | 表用 `st_` 前綴。**欄名只有 `SysFields` 定義的系統欄(底層機制有特定作用)才加 `sys_`**：`sys_update_time` = `SysFields.UpdateTime`(故保留前綴);`cache_key` / `cache_version` 非系統欄、不加前綴。不拆 group/key 兩欄、不另立計數表或 registry 表（路由是程式碼） |
 | 版本號產生 | **每-key 自增**（`version = version + 1`），runtime-session-scoped | 無全域 sequence/計數表、無寫入熱點、4 dialect 一致。首輪只取基準游標 → 版本只需 runtime session 內單調 |
 | 輪詢模型 | **poller 持 in-memory 鏡像 + `sys_update_time` 增量抓取** | 首輪只取 `max(update_time)` 基準（不抓全表）；之後抓 `update_time >= highWater - margin` 覆蓋鏡像 |
 | evict 判定 | **比鏡像中該 key 的 `version` 是否變大** | delta 用 `>=` 邊界重疊不漏；用 `version` 冪等判定真異動，避免同時間刻度漏 evict / 重複 evict |
@@ -57,19 +57,19 @@
 
 | 實體欄名 | 型別 | 說明 |
 |---------|------|------|
-| `sys_cache_key` | varchar (**PK**) | `"群組:實體"` 慣例字串，如 `"OrgInfo:0001"`、`"FormSchema:Employee"`；單物件快取用 `"SystemSettings:*"` |
-| `sys_cache_version` | bigint | 每-key 自增版本號（真異動判定） |
+| `cache_key` | varchar (**PK**) | `"群組:實體"` 慣例字串，如 `"OrgInfo:0001"`、`"FormSchema:Employee"`；單物件快取用 `"SystemSettings:*"` |
+| `cache_version` | bigint | 每-key 自增版本號（真異動判定） |
 | `sys_update_time` | datetime | DB 伺服器時間（`CURRENT_TIMESTAMP`），增量抓取游標；沿用框架標準欄名 |
 
-- 欄名對齊框架慣例（系統欄 `sys_` 前綴）；**下文虛擬碼為求精簡以短名 `cache_key` / `version` / `update_time` 代稱**。
-- `sys_cache_key` 把原本的 group/key 折成單欄字串；路由器以**前綴（群組）**比對對應失效動作。
-- 兩欄分工：`sys_update_time` 負責「便宜地抓增量」，`sys_cache_version` 負責「冪等地判定真異動」（見 §2a）。
+- 欄名慣例：只有 `SysFields` 定義的系統欄才加 `sys_` 前綴（`sys_update_time` = `SysFields.UpdateTime`）；`cache_key` / `cache_version` 非系統欄不加前綴。**下文虛擬碼為求精簡以短名 `cache_key` / `version` / `update_time` 代稱**。
+- `cache_key` 把原本的 group/key 折成單欄字串；路由器以**前綴（群組）**比對對應失效動作。
+- 兩欄分工：`sys_update_time` 負責「便宜地抓增量」，`cache_version` 負責「冪等地判定真異動」（見 §2a）。
 
 **定義方式（定案）**：與其他系統表（`st_user` / `st_session` 等）一致，提供一份 `st_cache_notify.TableSchema.xml` 定義，放系統表 define 目錄（對照 `tests/Define/TableSchema/common/st_*.TableSchema.xml`）。
 
 **實際建表路徑（未定）**：拿到 TableSchema 後**如何產生實體表**（走既有 schema generation 自動產四 dialect DDL、或其他方式）尚未定案，留待後續決定。本計畫先確保有 TableSchema 定義即可。
 
-> ⚠️ **實作期待確認（階段 1）**：本表 PK 是 `sys_cache_key`（字串），與框架標準表「`sys_no` 自增 PK + `sys_rowid` GUID」慣例不同。需確認 `TableSchema` 是否支援此精簡形狀（自訂字串 PK、不帶 `sys_no`/`sys_rowid`），或須折衷補上標準欄並把 `sys_cache_key` 設為 unique key。先讀現有 `st_*.TableSchema.xml` 確認框架假設。
+> ⚠️ **實作期待確認（階段 1）**：本表 PK 是 `cache_key`（字串），與框架標準表「`sys_no` 自增 PK + `sys_rowid` GUID」慣例不同。需確認 `TableSchema` 是否支援此精簡形狀（自訂字串 PK、不帶 `sys_no`/`sys_rowid`），或須折衷補上標準欄並把 `cache_key` 設為 unique key。先讀現有 `st_*.TableSchema.xml` 確認框架假設。
 
 ### 2. 版本號產生（每-key 自增）
 
@@ -198,7 +198,7 @@ repo 目前無 `IHostedService` 接線（僅有 `Bee.Base/BackgroundServices/Bac
 
 剩餘為實作期細節，不阻擋動工：
 
-1. 通知表：**定案提供 `st_cache_notify.TableSchema.xml` 定義**；但**實際建表路徑未定**（既有 schema generation 自動產 DDL vs 其他）—— 留待後續。實作子問題：本表 PK 為字串 `sys_cache_key`、不帶 `sys_no`/`sys_rowid`，須確認 `TableSchema` 支援此精簡形狀或折衷補標準欄。
+1. 通知表：**定案提供 `st_cache_notify.TableSchema.xml` 定義**；但**實際建表路徑未定**（既有 schema generation 自動產 DDL vs 其他）—— 留待後續。實作子問題：本表 PK 為字串 `cache_key`、不帶 `sys_no`/`sys_rowid`，須確認 `TableSchema` 支援此精簡形狀或折衷補標準欄。
    - ✅ **階段 1 已驗證**：`CREATE TABLE` builder 直接從 `Indexes` 讀 PK 欄組（不假設 `AutoIncrement`/`sys_no`），字串 PK 完全支援，**無需補標準欄**。`st_cache_notify.TableSchema.xml` + `tests/Define/DbCategorySettings.xml` 已落地，四方言 schema build + `[DbFact]` 通過。
    - ⚠️ **本機 Oracle stale-container 注意**：既有 Oracle 容器若殘留舊 `st_*` 表，`SharedDatabaseState` 重跑 schema upgrade 會在 `st_company` 撞**既有** ORA-01442（已 NOT NULL 欄再 MODIFY NOT NULL），整個 Oracle setup abort → 新表 `st_cache_notify` 來不及建。fresh 容器（CI）走全新 CREATE 無此問題。此 ORA-01442 為既有 Oracle alter-path 議題（見 plan-oracle-string-nullability.md），非本階段引入。
 

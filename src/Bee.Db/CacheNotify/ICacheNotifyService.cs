@@ -20,7 +20,7 @@ namespace Bee.Db.CacheNotify
     {
         /// <summary>
         /// Touches the notification row for <paramref name="cacheKey"/> within the given
-        /// transaction: increments <c>sys_cache_version</c> by one (or sets it to 1 on first
+        /// transaction: increments <c>cache_version</c> by one (or sets it to 1 on first
         /// touch) and refreshes <c>sys_update_time</c> to the database server's current time.
         /// The version increment is computed atomically by the database under a row lock, so
         /// concurrent touches of the same key serialize without lost updates.
