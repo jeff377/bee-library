@@ -41,10 +41,10 @@ namespace Bee.Hosting.UnitTests
         private static ICacheContainer NewContainer() => new StubCacheContainer();
 
         [Fact]
-        [DisplayName("CacheNotifyPollSession 傳入 null databaseId 應拋 ArgumentException")]
-        public void Ctor_NullDatabaseId_ThrowsArgumentException()
+        [DisplayName("CacheNotifyPollSession 傳入 null databaseId 應拋 ArgumentNullException")]
+        public void Ctor_NullDatabaseId_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentException>(() =>
+            Assert.Throws<ArgumentNullException>(() =>
                 new CacheNotifyPollSession(null!, NewFactory(), NewContainer(), 5));
         }
 
