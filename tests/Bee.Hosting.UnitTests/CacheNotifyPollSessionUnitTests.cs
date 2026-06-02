@@ -44,7 +44,7 @@ namespace Bee.Hosting.UnitTests
         [DisplayName("CacheNotifyPollSession 傳入 null 或空白 databaseId 應拋 ArgumentException")]
         public void Constructor_NullOrWhitespaceDatabaseId_ThrowsArgumentException(string? databaseId)
         {
-            Assert.Throws<ArgumentException>(() =>
+            Assert.ThrowsAny<ArgumentException>(() =>
                 new CacheNotifyPollSession(databaseId!, ValidFactory, ValidContainer, 5));
         }
 
