@@ -80,8 +80,8 @@ namespace Bee.Db.CacheNotify
                     $"INSERT INTO {tbl} ({key}, {ver}, {upd}) VALUES ({{0}}, 1, {now}) " +
                     $"ON DUPLICATE KEY UPDATE {ver} = {ver} + 1, {upd} = {now}",
 
-                // HOLDLOCK closes the MERGE upsert race (a concurrent insert of the same new key);
-                // the statement must terminate with a semicolon.
+                // HOLDLOCK closes the MERGE upsert race — a concurrent insert of the same new key.
+                // The statement must terminate with a semicolon.
                 DatabaseType.SQLServer =>
                     $"MERGE {tbl} WITH (HOLDLOCK) AS t USING (VALUES ({{0}})) AS s ({key}) ON t.{key} = s.{key} " +
                     $"WHEN MATCHED THEN UPDATE SET t.{ver} = t.{ver} + 1, t.{upd} = {now} " +

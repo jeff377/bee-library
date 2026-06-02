@@ -84,7 +84,7 @@ namespace Bee.Db.UnitTests
             Assert.Equal(layoutId, storage.GetFormLayout(layoutId)!.LayoutId);
 
             // --- Language (optional: missing returns null; then round-trips) ---
-            string lang = "rt-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            string lang = $"rt-{Guid.NewGuid().ToString("N")[..8]}";
             const string ns = "common";
             Assert.Null(storage.GetLanguage(lang, ns));
 
@@ -181,7 +181,7 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(storage.GetCustomizeFormLayout(customizeId, layoutId));
 
             // Language override (composite "lang.ns" key).
-            string lang = "rt-" + Guid.NewGuid().ToString("N").Substring(0, 8);
+            string lang = $"rt-{Guid.NewGuid().ToString("N")[..8]}";
             const string ns = "common";
             SeedCustomizeRow(databaseType, "LanguageResource", customizeId, $"{lang}.{ns}",
                 XmlCodec.Serialize(new LanguageResource { Lang = lang, Namespace = ns }));
