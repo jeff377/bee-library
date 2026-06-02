@@ -333,6 +333,45 @@ var filter = new FilterGroup(LogicalOperator.And)
 
 可用的比較運算子：`Equal`、`Like`、`Contains`、`StartsWith`、`Between`、`In`、`GreaterThan`、`LessThan` 等。
 
+## 跨 process 快取失效
+
+in-process 快取（`Bee.ObjectCaching`）在發生寫入的那個 process 會即時失效（`SaveX → Remove()`）。要把失效傳播到**其他 process / 節點** —— 多節點部署、以及由資料庫載入的快取（如 `CompanyInfo`，或 `DbDefineStorage` 下的定義）需要此能力 —— 使用資料庫通知機制。設計理由見 [ADR-017](adr/adr-017-db-cache-invalidation.md)；本節講實務用法。
+
+### 讓快取可被失效 —— 不用做任何事
+
+任何由 `ICacheContainer` 持有、繼承自 `KeyObjectCache<T>` / `ObjectCache<T>` 的快取都**自動**可被失效：它實作 `IEvictableCache`，`CacheGroup` 預設 = 被快取型別名（`CompanyInfoCache` → `"CompanyInfo"`、`FormSchemaCache` → `"FormSchema"`）。容器在建構時建好「群組 → 快取」分派表。**新增快取加進容器即自動納入 —— 零註冊。**
+
+### 觸發失效 —— 在同一 transaction 內 bump
+
+當寫入端改動了「對某快取有意義」的來源資料,就在**改資料的同一 transaction** 內 bump 通知列：
+
+```csharp
+// "群組:實體" key,群組須等於目標快取的型別名
+_cacheNotify.Touch($"CompanyInfo:{companyId}", transaction, databaseType);
+```
+
+`"群組:實體"` key 的慣例：
+
+- **群組** = 被快取型別名（`CompanyInfo`、`FormSchema`、`LanguageResource`…）。
+- **實體** = 與該快取 `Remove` 所用的 key 完全一致。單鍵快取直接傳該 key（`progId`、`layoutId`）；複合鍵快取用**點**形式（`TableSchema` → `"common.st_user"`、`LanguageResource` → `"zh-TW.common"`）；單物件快取用 `"*"`（`"DbCategorySettings:*"`）。
+
+> ⚠️ bump **必須**與資料變更在同一 transaction 提交。分開提交會讓 poller 在資料可見前就看到新版本 → reload 讀到舊值並標記新鮮 → 永久 stale。`DbDefineStorage.SaveX` 已如此處理；自訂 repository 必須把自己的寫入 `DbTransaction` 傳給 `Touch`。
+
+### 失效如何傳到其他節點
+
+各節點的 `CacheNotifyPoller`（hosted service）每 `IntervalSeconds` 輪詢 `st_cache_notify`,找出 `cache_version` 變大的 key（以 `sys_update_time` 增量抓取、以 version 冪等判定）,呼叫 `ICacheContainer.TryEvict(cacheKey)` → 對應快取項被移除 → 下次讀取從來源 lazy 重載。無 push、無訊息匯流排：每個節點各自輪詢同一張表。
+
+### 設定（`BackendConfiguration.CacheNotifyOptions`）
+
+| 鍵 | 預設 | 說明 |
+|----|------|------|
+| `Enabled` | `true` | 註冊 poller。純**單一 process** 單節點可停用（本地寫入即時失效）。同機多 process 仍需要。 |
+| `IntervalSeconds` | `5` | 輪詢間隔；實質是跨節點失效延遲。每輪只是一筆走索引、多回 0 列的查詢,負載可忽略 —— 依延遲容忍度調,而非成本。 |
+| `MarginSeconds` | `5` | 增量重疊回看,cover 長交易邊界情況。 |
+| `DatabaseId` | `common` | 被輪詢的 `st_cache_notify` 所在資料庫。 |
+
+> 本機制**只用資料庫伺服器時鐘**（從不用 app 端時鐘）且全程不轉時區,故不受主機時區影響。將資料庫伺服器設為 **UTC**,存入的 `sys_update_time` 即為 UTC（見 [ADR-017](adr/adr-017-db-cache-invalidation.md)）。
+
 ## Frontend API 連線模式
 
 Bee.NET 支援三類前端 host，每類消費 API 的方式結構不同。設計理由見 [ADR-013](adr/adr-013-frontend-api-connection-strategy.md)，本節說明各自的**實際使用方式**。

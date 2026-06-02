@@ -334,6 +334,45 @@ var filter = new FilterGroup(LogicalOperator.And)
 
 Available comparison operators: `Equal`, `Like`, `Contains`, `StartsWith`, `Between`, `In`, `GreaterThan`, `LessThan`, etc.
 
+## Cross-Process Cache Invalidation
+
+In-process caches (`Bee.ObjectCaching`) are evicted immediately on the writing process (`SaveX → Remove()`). To propagate an invalidation to **other processes / nodes** — required for multi-node deployments and for caches backed by the database (e.g. `CompanyInfo`, or definitions under `DbDefineStorage`) — use the database-backed notification mechanism. Design rationale is in [ADR-017](adr/adr-017-db-cache-invalidation.md); this section covers practical usage.
+
+### Making a cache invalidatable — nothing to do
+
+Any cache held by `ICacheContainer` that derives from `KeyObjectCache<T>` / `ObjectCache<T>` is **automatically** invalidatable: it implements `IEvictableCache` with `CacheGroup` defaulting to the cached type's name (`CompanyInfoCache` → `"CompanyInfo"`, `FormSchemaCache` → `"FormSchema"`). The container builds a `group → cache` dispatch map at construction. **Add a new cache to the container and it participates — no registration.**
+
+### Triggering an invalidation — bump in the same transaction
+
+When a writer changes source data in a way that matters to a cache, it bumps the notification row **in the same transaction as the data change**:
+
+```csharp
+// "group:entity" key whose group equals the target cache's type name
+_cacheNotify.Touch($"CompanyInfo:{companyId}", transaction, databaseType);
+```
+
+Conventions for the `"group:entity"` key:
+
+- **group** = the cached type's name (`CompanyInfo`, `FormSchema`, `LanguageResource`, …).
+- **entity** = exactly the key the cache's `Remove` uses. Single-key caches pass the key as-is (`progId`, `layoutId`); composite-key caches use the **dot** form (`TableSchema` → `"common.st_user"`, `LanguageResource` → `"zh-TW.common"`); single-object caches use `"*"` (`"DbCategorySettings:*"`).
+
+> ⚠️ The bump **must** commit in the same transaction as the data change. Committing it separately lets the poller observe the new version before the data is visible, which reloads a stale value and marks it fresh — permanently stale. `DbDefineStorage.SaveX` already does this; custom repositories must pass their write `DbTransaction` to `Touch`.
+
+### How eviction reaches other nodes
+
+`CacheNotifyPoller` (a hosted service) on each node polls `st_cache_notify` every `IntervalSeconds`, detects keys whose `cache_version` advanced (incremental fetch by `sys_update_time`, idempotent by version), and calls `ICacheContainer.TryEvict(cacheKey)` → the matching cache's entry is removed → the next read reloads from source (lazy). No push, no message bus: every node independently polls the same table.
+
+### Configuration (`BackendConfiguration.CacheNotifyOptions`)
+
+| Key | Default | Notes |
+|-----|---------|-------|
+| `Enabled` | `true` | Registers the poller. A pure **single-process** single-node deployment may disable it (local writes evict immediately). Multiple processes on one machine still need it. |
+| `IntervalSeconds` | `5` | Polling interval; effectively the cross-node staleness bound. Each poll is one indexed query that usually returns zero rows, so the load cost is negligible — tune by latency tolerance, not cost. |
+| `MarginSeconds` | `5` | Overlap look-back covering long-transaction boundary cases. |
+| `DatabaseId` | `common` | Database whose `st_cache_notify` is polled. |
+
+> The mechanism uses the **database server clock only** (never the app clock) and never converts time zones, so it is correct regardless of host time zone. Set the database server to **UTC** so stored `sys_update_time` values are UTC (see [ADR-017](adr/adr-017-db-cache-invalidation.md)).
+
 ## Frontend API Connection Patterns
 
 Bee.NET supports three categories of frontend hosts, each consuming the API in a structurally different way. For the design rationale see [ADR-013](adr/adr-013-frontend-api-connection-strategy.md); this section covers the **practical usage** for each category.
