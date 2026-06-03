@@ -33,6 +33,14 @@ namespace Bee.Hosting.UnitTests
             public FakeDbException(string message) : base(message) { }
         }
 
+        private sealed class StubLogger : ILogger<CacheNotifyPoller>
+        {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+            public bool IsEnabled(LogLevel logLevel) => false;
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+                Func<TState, Exception?, string> formatter) { }
+        }
+
         private sealed class StubCacheContainer : ICacheContainer
         {
             public SystemSettingsCache SystemSettings => throw new NotImplementedException();
@@ -51,7 +59,7 @@ namespace Bee.Hosting.UnitTests
         private static readonly IDbAccessFactory s_factory = new StubDbFactory();
         private static readonly ICacheContainer s_container = new StubCacheContainer();
         private static readonly CacheNotifyOptions s_options = new();
-        private static readonly ILogger<CacheNotifyPoller> s_logger = NullLogger<CacheNotifyPoller>.Instance;
+        private static readonly ILogger<CacheNotifyPoller> s_logger = new StubLogger();
 
         [Fact]
         [DisplayName("CacheNotifyPoller 建構子所有參數有效時應成功建立實例，不拋例外")]
