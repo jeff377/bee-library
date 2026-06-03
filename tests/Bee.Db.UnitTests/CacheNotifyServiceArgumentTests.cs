@@ -17,25 +17,28 @@ namespace Bee.Db.UnitTests
 
         [Fact]
         [DisplayName("TouchAsync: null cacheKey 應丟 ArgumentNullException")]
-        public void TouchAsync_NullCacheKey_ThrowsArgumentNullException()
+        public async Task TouchAsync_NullCacheKey_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => s_service.TouchAsync(null!, null!, DatabaseType.SQLServer));
+            await Assert.ThrowsAsync<ArgumentNullException>(
+                () => s_service.TouchAsync(null!, null!, DatabaseType.SQLServer));
         }
 
         [Theory]
         [InlineData("")]
         [InlineData("   ")]
         [DisplayName("TouchAsync: 空白 cacheKey 應丟 ArgumentException")]
-        public void TouchAsync_WhitespaceCacheKey_ThrowsArgumentException(string cacheKey)
+        public async Task TouchAsync_WhitespaceCacheKey_ThrowsArgumentException(string cacheKey)
         {
-            Assert.Throws<ArgumentException>(() => s_service.TouchAsync(cacheKey, null!, DatabaseType.SQLServer));
+            await Assert.ThrowsAsync<ArgumentException>(
+                () => s_service.TouchAsync(cacheKey, null!, DatabaseType.SQLServer));
         }
 
         [Fact]
         [DisplayName("TouchAsync: null transaction 應丟 ArgumentNullException")]
-        public void TouchAsync_NullTransaction_ThrowsArgumentNullException()
+        public async Task TouchAsync_NullTransaction_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => s_service.TouchAsync("key", null!, DatabaseType.SQLServer));
+            await Assert.ThrowsAsync<ArgumentNullException>(
+                () => s_service.TouchAsync("key", null!, DatabaseType.SQLServer));
         }
 
         #endregion
