@@ -43,10 +43,10 @@ namespace Bee.Hosting.UnitTests
         // --- 建構子防衛式斷言 ---
 
         [Fact]
-        [DisplayName("CacheNotifyPollSession 建構子 databaseId 為 null 應拋 ArgumentException")]
-        public void Constructor_NullDatabaseId_ThrowsArgumentException()
+        [DisplayName("CacheNotifyPollSession 建構子 databaseId 為 null 應拋 ArgumentNullException")]
+        public void Constructor_NullDatabaseId_ThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentException>(() =>
+            Assert.Throws<ArgumentNullException>(() =>
                 new CacheNotifyPollSession(null!, s_factory, s_container, marginSeconds: 0));
         }
 
