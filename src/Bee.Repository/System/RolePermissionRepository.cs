@@ -42,9 +42,9 @@ namespace Bee.Repository.System
             string colActions = dbType.QuoteIdentifier("allowed_actions");
 
             string sql =
-                $"SELECT r.{colSysId}, g.{colModelId}, g.{colActions} \n" +
-                $"FROM {tblGrant} g \n" +
-                $"INNER JOIN {tblRole} r ON r.{colRowId} = g.{colRoleRowId}";
+                $"SELECT r.{colSysId}, g.{colModelId}, g.{colActions}" +
+                $" FROM {tblGrant} g" +
+                $" INNER JOIN {tblRole} r ON r.{colRowId} = g.{colRoleRowId}";
             var dbAccess = new DbAccess(databaseId, _connectionManager);
             var table = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql)).Table!;
 
@@ -73,9 +73,9 @@ namespace Bee.Repository.System
             string colRoleRowId = dbType.QuoteIdentifier("role_rowid");
 
             string sql =
-                $"SELECT ur.{colUserRowId}, r.{colSysId} \n" +
-                $"FROM {tblUserRole} ur \n" +
-                $"INNER JOIN {tblRole} r ON r.{colRowId} = ur.{colRoleRowId}";
+                $"SELECT ur.{colUserRowId}, r.{colSysId}" +
+                $" FROM {tblUserRole} ur" +
+                $" INNER JOIN {tblRole} r ON r.{colRowId} = ur.{colRoleRowId}";
             var dbAccess = new DbAccess(databaseId, _connectionManager);
             var table = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql)).Table!;
 
