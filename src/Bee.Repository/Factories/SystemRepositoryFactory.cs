@@ -57,5 +57,13 @@ namespace Bee.Repository.Factories
         {
             return new UserCompanyRepository(_connectionManager);
         }
+
+        /// <summary>
+        /// Creates an <see cref="IRolePermissionRepository"/> (per-company permission tables).
+        /// </summary>
+        public IRolePermissionRepository CreateRolePermissionRepository()
+        {
+            return new RolePermissionRepository(_connectionManager);
+        }
     }
 }

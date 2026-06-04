@@ -33,5 +33,10 @@ namespace Bee.Repository.Abstractions.Factories
         /// Creates an <see cref="IUserCompanyRepository"/>.
         /// </summary>
         IUserCompanyRepository CreateUserCompanyRepository();
+
+        /// <summary>
+        /// Creates an <see cref="IRolePermissionRepository"/> (per-company permission tables).
+        /// </summary>
+        IRolePermissionRepository CreateRolePermissionRepository();
     }
 }

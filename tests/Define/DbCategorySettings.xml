@@ -16,6 +16,9 @@
 				<TableItem TableName="ft_department" DisplayName="部門" />
 				<TableItem TableName="ft_employee" DisplayName="員工" />
 				<TableItem TableName="ft_project" DisplayName="專案" />
+				<TableItem TableName="st_role" DisplayName="角色" />
+				<TableItem TableName="st_role_grant" DisplayName="角色授權" />
+				<TableItem TableName="st_user_role" DisplayName="使用者角色" />
 			</Tables>
 		</DbCategory>
 		<DbCategory Id="log" DisplayName="日誌資料庫">
