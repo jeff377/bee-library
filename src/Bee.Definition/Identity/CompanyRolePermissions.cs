@@ -35,7 +35,7 @@ namespace Bee.Definition.Identity
         /// <summary>Gets the role grants (role business id → model → allowed action mask).</summary>
         public IReadOnlyList<RoleGrantRow> Grants { get; }
 
-        /// <summary>Gets the user-role assignments (user row id → role business id).</summary>
+        /// <summary>Gets the user-role assignments (user business id → role business id).</summary>
         public IReadOnlyList<UserRoleRow> UserRoles { get; }
 
         /// <summary>
@@ -62,16 +62,16 @@ namespace Bee.Definition.Identity
         }
 
         /// <summary>
-        /// Gets the role business ids assigned to the given user row id — used by <c>EnterCompany</c>
-        /// to populate <c>SessionInfo.Roles</c> without touching the database.
+        /// Gets the role business ids assigned to the given user — used by <c>EnterCompany</c> to
+        /// populate <c>SessionInfo.Roles</c> from <c>SessionInfo.UserId</c> without touching the database.
         /// </summary>
-        /// <param name="userRowId">The user row id (<c>st_user.sys_rowid</c> as a GUID string).</param>
-        public IReadOnlyList<string> GetUserRoleIds(string userRowId)
+        /// <param name="userId">The user business id (<c>SessionInfo.UserId</c> = <c>st_user.sys_id</c>).</param>
+        public IReadOnlyList<string> GetUserRoleIds(string userId)
         {
             var list = new List<string>();
             foreach (var assignment in UserRoles)
             {
-                if (assignment.UserRowId == userRowId)
+                if (assignment.UserId == userId)
                 {
                     list.Add(assignment.RoleId);
                 }

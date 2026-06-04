@@ -9,9 +9,9 @@ using Bee.Tests.Shared;
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
-    /// RolePermissionRepository 的 5 DB round-trip 測試：在 company DB insert
-    /// st_role / st_role_grant / st_user_role，驗證 GetRoleGrants / GetUserRoles 查回正確
-    /// （role 以 sys_id 識別、grant 的 allowed_actions 還原為 PermissionAction mask）。
+    /// RolePermissionRepository 的 5 DB round-trip 測試：在 company DB insert st_role_grant /
+    /// st_user_role（關聯欄一律 sys_id 業務鍵），驗證 GetRoleGrants / GetUserRoles 查回正確
+    /// （allowed_actions 還原為 PermissionAction mask、user→role 以 sys_id 配對）。
     /// </summary>
     public class RolePermissionRepositoryTests : IClassFixture<SharedDbFixture>
     {
@@ -27,20 +27,16 @@ namespace Bee.Repository.UnitTests
             var dbAccess = _fx.NewDbAccess(databaseId);
 
             var roleId = string.Concat("ROLE_", Guid.NewGuid().ToString("N").AsSpan(0, 6));
-            var roleRowId = Guid.NewGuid();
+            var userId = string.Concat("USER_", Guid.NewGuid().ToString("N").AsSpan(0, 6));
             var grantRowId = Guid.NewGuid();
             var userRoleRowId = Guid.NewGuid();
-            var userRowId = Guid.NewGuid();
             var allowed = (int)(PermissionAction.Read | PermissionAction.Update);
 
-            string tblRole = dbType.QuoteIdentifier("st_role");
             string tblGrant = dbType.QuoteIdentifier("st_role_grant");
             string tblUserRole = dbType.QuoteIdentifier("st_user_role");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
-            string colSysId = dbType.QuoteIdentifier("sys_id");
-            string colName = dbType.QuoteIdentifier("sys_name");
-            string colRoleRowId = dbType.QuoteIdentifier("role_rowid");
-            string colUserRowId = dbType.QuoteIdentifier("user_rowid");
+            string colRoleId = dbType.QuoteIdentifier("role_id");
+            string colUserId = dbType.QuoteIdentifier("user_id");
             string colModelId = dbType.QuoteIdentifier("model_id");
             string colActions = dbType.QuoteIdentifier("allowed_actions");
             string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
@@ -51,17 +47,13 @@ namespace Bee.Repository.UnitTests
                            : "SYSTIMESTAMP";
 
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tblRole} ({colRowId}, {colSysId}, {colName}, {colInsTime}) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, {nowExpr})",
-                roleRowId, roleId, "測試角色"));
-            dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tblGrant} ({colRowId}, {colRoleRowId}, {colModelId}, {colActions}, {colInsTime}) " +
+                $"INSERT INTO {tblGrant} ({colRowId}, {colRoleId}, {colModelId}, {colActions}, {colInsTime}) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {nowExpr})",
-                grantRowId, roleRowId, "PurchaseOrder", allowed));
+                grantRowId, roleId, "PurchaseOrder", allowed));
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tblUserRole} ({colRowId}, {colUserRowId}, {colRoleRowId}, {colInsTime}) " +
+                $"INSERT INTO {tblUserRole} ({colRowId}, {colUserId}, {colRoleId}, {colInsTime}) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {nowExpr})",
-                userRoleRowId, userRowId, roleRowId));
+                userRoleRowId, userId, roleId));
 
             try
             {
@@ -72,7 +64,7 @@ namespace Bee.Repository.UnitTests
                 Assert.Equal(PermissionAction.Read | PermissionAction.Update, grant.AllowedActions);
 
                 var userRole = repo.GetUserRoles(databaseId).Single(u => u.RoleId == roleId);
-                Assert.Equal(userRowId.ToString(), userRole.UserRowId);
+                Assert.Equal(userId, userRole.UserId);
             }
             finally
             {
@@ -80,8 +72,6 @@ namespace Bee.Repository.UnitTests
                     $"DELETE FROM {tblUserRole} WHERE {colRowId} = {{0}}", userRoleRowId));
                 dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                     $"DELETE FROM {tblGrant} WHERE {colRowId} = {{0}}", grantRowId));
-                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                    $"DELETE FROM {tblRole} WHERE {colRowId} = {{0}}", roleRowId));
             }
         }
 

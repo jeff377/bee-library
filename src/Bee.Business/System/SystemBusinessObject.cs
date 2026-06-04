@@ -159,6 +159,11 @@ namespace Bee.Business.System
             // Derive the session's customization code from the company (empty when the company
             // ships no customization). The session-level overlay reads this value downstream.
             sessionInfo.CustomizeId = companyInfo.CustomizeId;
+            // Snapshot the user's roles for this company so the layer-1 Can check runs from
+            // SessionInfo.Roles (sys_id) without re-hitting the database on every request.
+            var rolePermissionService = Services.GetRequiredService<IRolePermissionService>();
+            var snapshot = rolePermissionService.Get(args.CompanyId);
+            sessionInfo.Roles = snapshot?.GetUserRoleIds(sessionInfo.UserId).ToList() ?? [];
             SessionInfoService.Set(sessionInfo);
 
             return new EnterCompanyResult { Company = companyInfo };
@@ -185,6 +190,7 @@ namespace Bee.Business.System
             {
                 sessionInfo.CompanyId = null;
                 sessionInfo.CustomizeId = string.Empty;
+                sessionInfo.Roles = [];
                 SessionInfoService.Set(sessionInfo);
             }
 
@@ -213,6 +219,7 @@ namespace Bee.Business.System
             {
                 sessionInfo.CompanyId = null;
                 sessionInfo.CustomizeId = string.Empty;
+                sessionInfo.Roles = [];
                 SessionInfoService.Set(sessionInfo);
             }
 

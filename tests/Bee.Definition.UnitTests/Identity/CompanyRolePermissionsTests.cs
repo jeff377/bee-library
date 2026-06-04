@@ -9,7 +9,7 @@ namespace Bee.Definition.UnitTests.Identity
     /// </summary>
     public class CompanyRolePermissionsTests
     {
-        private static readonly string s_user = Guid.NewGuid().ToString();
+        private static readonly string s_user = "U001";
         private static readonly string[] s_buyer = { "Buyer" };
         private static readonly string[] s_buyerManager = { "Buyer", "Manager" };
 
@@ -96,7 +96,7 @@ namespace Bee.Definition.UnitTests.Identity
         {
             var perms = Build();
 
-            var roles = perms.GetUserRoleIds(Guid.NewGuid().ToString());
+            var roles = perms.GetUserRoleIds("UNKNOWN");
 
             Assert.Empty(roles);
         }

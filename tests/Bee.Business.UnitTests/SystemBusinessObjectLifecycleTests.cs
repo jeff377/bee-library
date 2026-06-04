@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;
 using Bee.Db;
+using Bee.Definition.Database;
 using Bee.Definition.Identity;
 using Bee.Tests.Shared;
 
@@ -15,6 +16,9 @@ namespace Bee.Business.UnitTests
     /// </summary>
     public class SystemBusinessObjectLifecycleTests : IClassFixture<SharedDbFixture>
     {
+        // company 的 permission 表位於 company-category DB；company_database_id 須指向該庫，
+        // EnterCompany 才載得到角色快照。BO 測試綁 SQL Server。
+        private static readonly string CompanyDbId = TestDbConventions.GetDatabaseId(DatabaseType.SQLServer, "company");
         private readonly SharedDbFixture _fx;
 
         public SystemBusinessObjectLifecycleTests(SharedDbFixture fx) { _fx = fx; }
@@ -87,7 +91,7 @@ namespace Bee.Business.UnitTests
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                 "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, enabled, sys_insert_time) " +
                 "VALUES ({0}, {1}, {2}, {3}, 1, GETDATE())",
-                companyRowId, companyId, "Lifecycle B", "common"));
+                companyRowId, companyId, "Lifecycle B", CompanyDbId));
 
             var userLookup = dbAccess.Execute(new DbCommandSpec(DbCommandKind.Scalar,
                 "SELECT sys_rowid FROM st_user WHERE sys_id = {0}", "001"));

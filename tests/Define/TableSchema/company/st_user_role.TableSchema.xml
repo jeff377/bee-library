@@ -3,8 +3,8 @@
   <Fields>
     <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
     <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
-    <DbField FieldName="user_rowid" Caption="使用者唯一識別" DbType="Guid" />
-    <DbField FieldName="role_rowid" Caption="角色唯一識別" DbType="Guid" />
+    <DbField FieldName="user_id" Caption="使用者代碼" DbType="String" Length="20" />
+    <DbField FieldName="role_id" Caption="角色代碼" DbType="String" Length="20" />
     <DbField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" />
   </Fields>
   <Indexes>
@@ -20,8 +20,8 @@
     </DbTableIndex>
     <DbTableIndex Name="uk_{0}" Unique="true">
       <IndexFields>
-        <IndexField FieldName="user_rowid" />
-        <IndexField FieldName="role_rowid" />
+        <IndexField FieldName="user_id" />
+        <IndexField FieldName="role_id" />
       </IndexFields>
     </DbTableIndex>
   </Indexes>

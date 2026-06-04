@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Business.System;
 using Bee.Db;
+using Bee.Definition.Database;
 using Bee.Definition.Identity;
 using Bee.Tests.Shared;
 
@@ -15,6 +16,9 @@ namespace Bee.Business.UnitTests
     {
         private const string SeedUserId = "001";
         private const string SeedCompanyId = "C001";
+        // BO 測試綁 SQL Server；company 的 permission 表（st_role_grant / st_user_role）位於
+        // company-category DB，故 company_database_id 須指向該庫，EnterCompany 才載得到角色快照。
+        private static readonly string CompanyDbId = TestDbConventions.GetDatabaseId(DatabaseType.SQLServer, "company");
         private readonly SharedDbFixture _fx;
 
         public SystemBusinessObjectEnterCompanyTests(SharedDbFixture fx) { _fx = fx; }
@@ -30,7 +34,7 @@ namespace Bee.Business.UnitTests
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
                 "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, enabled, sys_insert_time) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {enabledLiteral}, GETDATE())",
-                rowId, companyId, "BO 測試公司", "common");
+                rowId, companyId, "BO 測試公司", CompanyDbId);
             Common().Execute(insert);
             return rowId;
         }
@@ -41,7 +45,7 @@ namespace Bee.Business.UnitTests
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
                 "INSERT INTO st_company (sys_rowid, sys_id, sys_name, company_database_id, customize_id, enabled, sys_insert_time) " +
                 "VALUES ({0}, {1}, {2}, {3}, {4}, 1, GETDATE())",
-                rowId, companyId, "BO 客製測試公司", "common", customizeId);
+                rowId, companyId, "BO 客製測試公司", CompanyDbId, customizeId);
             Common().Execute(insert);
             return rowId;
         }

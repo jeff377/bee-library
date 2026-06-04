@@ -456,14 +456,16 @@ namespace Bee.Tests.Shared
 
             var (_, now) = GetSeedExpressions(dbType);
             var newRowId = Guid.NewGuid();
-            // company_database_id 指向 common-category 對應的 DatabaseItem.Id；測試環境下
-            // 使用 commonDatabaseId（即 common_sqlserver / common_postgresql / ...）即可。
+            // company_database_id 指向該 company 的資料庫（company-category DatabaseItem.Id），
+            // 也就是 permission 表（st_role_grant / st_user_role）實際所在的庫 —— EnterCompany 會用
+            // 此值載入角色權限快照。測試環境下即 company_sqlserver / company_postgresql / ...。
+            var companyDbId = TestDbConventions.GetDatabaseId(dbType, "company");
             // 各方言 boolean literal：SQL Server/SQLite/MySQL/Oracle 用 1，PG 用 TRUE。
             string enabledLiteral = dbType == DatabaseType.PostgreSQL ? "TRUE" : "1";
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
                 $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colEnabled}, {colInsTime}) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {enabledLiteral}, {now})",
-                newRowId, "C001", "測試公司", databaseId);
+                newRowId, "C001", "測試公司", companyDbId);
             dbAccess.Execute(insert);
             Console.WriteLine($"SharedDatabaseState: {databaseId} seed company 'C001' inserted (rowid={newRowId})");
             return newRowId;
