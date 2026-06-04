@@ -46,6 +46,7 @@ namespace Bee.Hosting.UnitTests
             public SystemSettingsCache SystemSettings => throw new NotImplementedException();
             public DatabaseSettingsCache DatabaseSettings => throw new NotImplementedException();
             public ProgramSettingsCache ProgramSettings => throw new NotImplementedException();
+            public PermissionModelsCache PermissionModels => throw new NotImplementedException();
             public DbCategorySettingsCache DbCategorySettings => throw new NotImplementedException();
             public TableSchemaCache TableSchema => throw new NotImplementedException();
             public FormSchemaCache FormSchema => throw new NotImplementedException();
