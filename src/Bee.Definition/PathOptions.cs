@@ -39,6 +39,10 @@ namespace Bee.Definition
         public string GetDbCategorySettingsFilePath()
             => System.IO.Path.Combine(DefinePath, "DbCategorySettings.xml");
 
+        /// <summary>Gets the absolute path of <c>PermissionModels.xml</c>.</summary>
+        public string GetPermissionModelsFilePath()
+            => System.IO.Path.Combine(DefinePath, "PermissionModels.xml");
+
         /// <summary>Gets the absolute path of the TableSchema XML for the given category + table.</summary>
         /// <param name="categoryId">The database category id.</param>
         /// <param name="tableName">The table name.</param>

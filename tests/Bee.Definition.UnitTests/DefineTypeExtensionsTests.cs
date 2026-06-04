@@ -16,6 +16,7 @@ namespace Bee.Definition.UnitTests
         [InlineData(DefineType.TableSchema, typeof(TableSchema))]
         [InlineData(DefineType.FormSchema, typeof(FormSchema))]
         [InlineData(DefineType.FormLayout, typeof(FormLayout))]
+        [InlineData(DefineType.PermissionModels, typeof(PermissionModels))]
         [DisplayName("ToClrType 傳入有效定義類型應回傳正確的型別")]
         public void ToClrType_ValidType_ReturnsExpectedType(DefineType defineType, Type expectedType)
         {

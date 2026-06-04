@@ -59,6 +59,21 @@ namespace Bee.Definition.Storage
         void SaveProgramSettings(ProgramSettings settings);
 
         /// <summary>
+        /// Gets the permission model registry.
+        /// </summary>
+        /// <remarks>
+        /// Default implementation delegates to <see cref="GetDefine"/>; <c>LocalDefineAccess</c>
+        /// and <c>RemoteDefineAccess</c> override it with their cache / remote path.
+        /// </remarks>
+        PermissionModels GetPermissionModels() => (PermissionModels)GetDefine(DefineType.PermissionModels);
+
+        /// <summary>
+        /// Saves the permission model registry.
+        /// </summary>
+        /// <param name="models">The permission model registry.</param>
+        void SavePermissionModels(PermissionModels models) => SaveDefine(DefineType.PermissionModels, models);
+
+        /// <summary>
         /// Gets the database category settings.
         /// </summary>
         DbCategorySettings GetDbCategorySettings();

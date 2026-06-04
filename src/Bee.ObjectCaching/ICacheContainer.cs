@@ -4,7 +4,7 @@ using Bee.ObjectCaching.Define;
 namespace Bee.ObjectCaching
 {
     /// <summary>
-    /// Exposes the ten cache instances managed by the framework. Consumers ctor-inject
+    /// Exposes the cache instances managed by the framework. Consumers ctor-inject
     /// <see cref="ICacheContainer"/>; the implementation is supplied by
     /// <see cref="CacheContainerService"/> registered as a Singleton by
     /// <c>AddBeeFramework</c>.
@@ -19,6 +19,9 @@ namespace Bee.ObjectCaching
 
         /// <summary>The program settings cache.</summary>
         ProgramSettingsCache ProgramSettings { get; }
+
+        /// <summary>The permission model registry cache.</summary>
+        PermissionModelsCache PermissionModels { get; }
 
         /// <summary>The database category settings cache.</summary>
         DbCategorySettingsCache DbCategorySettings { get; }

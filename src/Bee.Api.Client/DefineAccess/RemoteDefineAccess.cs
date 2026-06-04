@@ -114,6 +114,8 @@ namespace Bee.Api.Client.DefineAccess
                     return this.GetDatabaseSettings();
                 case DefineType.ProgramSettings:
                     return this.GetProgramSettings();
+                case DefineType.PermissionModels:
+                    return this.GetPermissionModels();
                 case DefineType.DbCategorySettings:
                     return this.GetDbCategorySettings();
                 case DefineType.TableSchema:
@@ -205,6 +207,23 @@ namespace Bee.Api.Client.DefineAccess
         public void SaveProgramSettings(ProgramSettings settings)
         {
             SaveDefine(DefineType.ProgramSettings, settings);
+        }
+
+        /// <summary>
+        /// Gets the permission model registry.
+        /// </summary>
+        public PermissionModels GetPermissionModels()
+        {
+            return GetDefine<PermissionModels>(DefineType.PermissionModels);
+        }
+
+        /// <summary>
+        /// Saves the permission model registry.
+        /// </summary>
+        /// <param name="models">The permission model registry.</param>
+        public void SavePermissionModels(PermissionModels models)
+        {
+            SaveDefine(DefineType.PermissionModels, models);
         }
 
         /// <summary>

@@ -7,7 +7,7 @@ namespace Bee.ObjectCaching
 {
     /// <summary>
     /// Default <see cref="ICacheContainer"/> implementation: holds singleton instances of
-    /// the ten framework caches. Constructed once per host (registered as a Singleton in
+    /// the framework caches. Constructed once per host (registered as a Singleton in
     /// <c>AddBeeFramework</c>).
     /// </summary>
     /// <remarks>
@@ -44,6 +44,7 @@ namespace Bee.ObjectCaching
             SystemSettings = new SystemSettingsCache(paths, CachePrefix);
             DatabaseSettings = new DatabaseSettingsCache(paths, CachePrefix);
             ProgramSettings = new ProgramSettingsCache(storage, paths, CachePrefix);
+            PermissionModels = new PermissionModelsCache(paths, CachePrefix);
             DbCategorySettings = new DbCategorySettingsCache(storage, paths, CachePrefix);
             TableSchema = new TableSchemaCache(storage, paths, CachePrefix);
             FormSchema = new FormSchemaCache(storage, paths, CachePrefix);
@@ -58,7 +59,8 @@ namespace Bee.ObjectCaching
             IEvictableCache[] caches =
             [
                 SystemSettings, DatabaseSettings, ProgramSettings, DbCategorySettings,
-                TableSchema, FormSchema, FormLayout, LanguageResource, SessionInfo, CompanyInfo
+                TableSchema, FormSchema, FormLayout, LanguageResource, SessionInfo, CompanyInfo,
+                PermissionModels
             ];
             _evictableByGroup = new Dictionary<string, IEvictableCache>(StringComparer.OrdinalIgnoreCase);
             foreach (var cache in caches)
@@ -82,6 +84,9 @@ namespace Bee.ObjectCaching
 
         /// <inheritdoc/>
         public ProgramSettingsCache ProgramSettings { get; }
+
+        /// <inheritdoc/>
+        public PermissionModelsCache PermissionModels { get; }
 
         /// <inheritdoc/>
         public DbCategorySettingsCache DbCategorySettings { get; }

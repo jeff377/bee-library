@@ -14,6 +14,7 @@ namespace Bee.Definition
             { DefineType.TableSchema,      "Bee.Definition.Database.TableSchema" },
             { DefineType.FormSchema,       "Bee.Definition.Forms.FormSchema" },
             { DefineType.FormLayout,       "Bee.Definition.Layouts.FormLayout" },
+            { DefineType.PermissionModels, "Bee.Definition.Settings.PermissionModels" },
         };
 
         /// <summary>

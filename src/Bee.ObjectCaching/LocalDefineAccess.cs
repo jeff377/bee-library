@@ -85,6 +85,8 @@ namespace Bee.ObjectCaching
                     return this.GetDatabaseSettings();
                 case DefineType.ProgramSettings:
                     return  this.GetProgramSettings();
+                case DefineType.PermissionModels:
+                    return this.GetPermissionModels();
                 case DefineType.DbCategorySettings:
                     return this.GetDbCategorySettings();
                 case DefineType.TableSchema:
@@ -134,6 +136,9 @@ namespace Bee.ObjectCaching
                     break;
                 case DefineType.ProgramSettings:
                     this.SaveProgramSettings((defineObject as ProgramSettings)!);
+                    break;
+                case DefineType.PermissionModels:
+                    this.SavePermissionModels((defineObject as PermissionModels)!);
                     break;
                 case DefineType.DbCategorySettings:
                     this.SaveDbCategorySettings((defineObject as DbCategorySettings)!);
@@ -219,6 +224,26 @@ namespace Bee.ObjectCaching
             // Save program settings through the active storage, then invalidate the cache.
             _storage.SaveProgramSettings(settings);
             _cache.ProgramSettings.Remove();
+        }
+
+        /// <summary>
+        /// Gets the permission model registry.
+        /// </summary>
+        public PermissionModels GetPermissionModels()
+        {
+            return _cache.PermissionModels.Get()!;
+        }
+
+        /// <summary>
+        /// Saves the permission model registry.
+        /// </summary>
+        /// <param name="models">The permission model registry.</param>
+        public void SavePermissionModels(PermissionModels models)
+        {
+            // Save the permission model registry to file, then invalidate the cache.
+            string filePath = _paths.GetPermissionModelsFilePath();
+            XmlCodec.SerializeToFile(models, filePath);
+            _cache.PermissionModels.Remove();
         }
 
         /// <summary>

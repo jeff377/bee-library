@@ -36,6 +36,10 @@ namespace Bee.Definition
         /// <summary>
         /// Language resource (localized text and enum entries for one namespace × one language).
         /// </summary>
-        Language
+        Language,
+        /// <summary>
+        /// Permission model registry (model + actions + record-scope strategies).
+        /// </summary>
+        PermissionModels
     }
 }
