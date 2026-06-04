@@ -55,7 +55,7 @@ namespace Bee.Repository.System
                 list.Add(new RoleGrantRow(
                     ValueUtilities.CStr(row[ColumnSysId]),
                     ValueUtilities.CStr(row["model_id"]),
-                    (PermissionAction)ValueUtilities.CInt(row["allowed_actions"])));
+                    (PermissionActions)ValueUtilities.CInt(row["allowed_actions"])));
             }
             return list;
         }

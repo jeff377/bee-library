@@ -11,7 +11,7 @@ namespace Bee.Repository.UnitTests
     /// <summary>
     /// RolePermissionRepository 的 5 DB round-trip 測試：在 company DB insert
     /// st_role / st_role_grant / st_user_role，驗證 GetRoleGrants / GetUserRoles 查回正確
-    /// （role 以 sys_id 識別、grant 的 allowed_actions 還原為 PermissionAction mask）。
+    /// （role 以 sys_id 識別、grant 的 allowed_actions 還原為 PermissionActions mask）。
     /// </summary>
     public class RolePermissionRepositoryTests : IClassFixture<SharedDbFixture>
     {
@@ -31,7 +31,7 @@ namespace Bee.Repository.UnitTests
             var grantRowId = Guid.NewGuid();
             var userRoleRowId = Guid.NewGuid();
             var userRowId = Guid.NewGuid();
-            var allowed = (int)(PermissionAction.Read | PermissionAction.Update);
+            var allowed = (int)(PermissionActions.Read | PermissionActions.Update);
 
             string tblRole = dbType.QuoteIdentifier("st_role");
             string tblGrant = dbType.QuoteIdentifier("st_role_grant");
@@ -69,7 +69,7 @@ namespace Bee.Repository.UnitTests
 
                 var grant = repo.GetRoleGrants(databaseId).Single(g => g.RoleId == roleId);
                 Assert.Equal("PurchaseOrder", grant.ModelId);
-                Assert.Equal(PermissionAction.Read | PermissionAction.Update, grant.AllowedActions);
+                Assert.Equal(PermissionActions.Read | PermissionActions.Update, grant.AllowedActions);
 
                 var userRole = repo.GetUserRoles(databaseId).Single(u => u.RoleId == roleId);
                 Assert.Equal(userRowId.ToString(), userRole.UserRowId);
