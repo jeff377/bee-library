@@ -36,6 +36,7 @@ namespace Bee.Hosting.UnitTests
             public LanguageResourceCache LanguageResource => throw new NotImplementedException();
             public SessionInfoCache SessionInfo => throw new NotImplementedException();
             public CompanyInfoCache CompanyInfo => throw new NotImplementedException();
+            public CompanyRolePermissionsCache CompanyRolePermissions => throw new NotImplementedException();
             public bool TryEvict(string cacheKey) => false;
         }
 
