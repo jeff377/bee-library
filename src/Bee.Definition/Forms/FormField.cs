@@ -251,6 +251,19 @@ namespace Bee.Definition.Forms
         public int Width { get; set; } = 0;
 
         /// <summary>
+        /// Gets or sets the record-scope role this field plays in permission filtering.
+        /// <see cref="Forms.ScopeRole.Owner"/> marks the owner column (resolved by the
+        /// <c>Own</c> scope strategy); <see cref="Forms.ScopeRole.Dept"/> marks the department
+        /// column (resolved by <c>Dept</c> / <c>DeptAndSub</c>). The default <see cref="Forms.ScopeRole.None"/>
+        /// means the field plays no scope role.
+        /// </summary>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Record-scope role for permission filtering (Owner / Dept column).")]
+        [DefaultValue(ScopeRole.None)]
+        public ScopeRole ScopeRole { get; set; } = ScopeRole.None;
+
+        /// <summary>
         /// Gets the form table that owns this field.
         /// </summary>
         [Browsable(false)]
@@ -300,6 +313,7 @@ namespace Bee.Definition.Forms
                 Visible = Visible,
                 Width = Width,
                 LangEnumName = LangEnumName,
+                ScopeRole = ScopeRole,
             };
             if (_relationFieldMappings != null)
                 foreach (var mapping in _relationFieldMappings)

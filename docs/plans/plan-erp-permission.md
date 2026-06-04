@@ -1,11 +1,11 @@
 # 計畫：ERP 權限機制（線 A — 權限定義/設定層）
 
-**狀態：🚧 進行中（2026-06-04）**
+**狀態：✅ 已完成（2026-06-04）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 動作軸 + PermissionModels 單檔（registry + 具名 scope 設定）+ DefineType + 驗證 | ✅ 已完成（2026-06-04） |
-| 2 | FormSchema 擴充：`PermissionModelId`（progId→主 model）+ `FormField.ScopeRole`（標 Owner/Dept 欄）+ 驗證 | 📝 待做 |
+| 2 | FormSchema 擴充：`PermissionModelId`（progId→主 model）+ `FormField.ScopeRole`（標 Owner/Dept 欄）+ 驗證 | ✅ 已完成（2026-06-04） |
 
 ## 本計畫範圍（重要）
 

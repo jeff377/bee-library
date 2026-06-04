@@ -118,6 +118,17 @@ namespace Bee.Definition.Forms
         public string ListFields { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the permission model id that this form's main aggregate maps to.
+        /// References a <c>PermissionModel.ModelId</c> in the permission registry; the
+        /// backend method-level enforcement uses it to resolve the (model, action) to check.
+        /// Empty means the form declares no permission model (enforcement is skipped).
+        /// </summary>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Permission model id mapped to this form's main aggregate.")]
+        public string PermissionModelId { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets the table collection.
         /// </summary>
         [Description("Table collection.")]
@@ -186,6 +197,7 @@ namespace Bee.Definition.Forms
             {
                 CategoryId = CategoryId,
                 ListFields = ListFields,
+                PermissionModelId = PermissionModelId,
             };
             if (_tables != null)
                 foreach (var table in _tables)
