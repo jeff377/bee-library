@@ -16,6 +16,7 @@ namespace Bee.Repository.System
     /// </summary>
     public class RolePermissionRepository : IRolePermissionRepository
     {
+        private const string ColumnSysId = "sys_id";
         private readonly IDbConnectionManager _connectionManager;
 
         /// <summary>
@@ -36,7 +37,7 @@ namespace Bee.Repository.System
             string tblGrant = dbType.QuoteIdentifier("st_role_grant");
             string tblRole = dbType.QuoteIdentifier("st_role");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
-            string colSysId = dbType.QuoteIdentifier("sys_id");
+            string colSysId = dbType.QuoteIdentifier(ColumnSysId);
             string colRoleRowId = dbType.QuoteIdentifier("role_rowid");
             string colModelId = dbType.QuoteIdentifier("model_id");
             string colActions = dbType.QuoteIdentifier("allowed_actions");
@@ -52,7 +53,7 @@ namespace Bee.Repository.System
             foreach (DataRow row in table.Rows)
             {
                 list.Add(new RoleGrantRow(
-                    ValueUtilities.CStr(row["sys_id"]),
+                    ValueUtilities.CStr(row[ColumnSysId]),
                     ValueUtilities.CStr(row["model_id"]),
                     (PermissionAction)ValueUtilities.CInt(row["allowed_actions"])));
             }
@@ -68,7 +69,7 @@ namespace Bee.Repository.System
             string tblUserRole = dbType.QuoteIdentifier("st_user_role");
             string tblRole = dbType.QuoteIdentifier("st_role");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
-            string colSysId = dbType.QuoteIdentifier("sys_id");
+            string colSysId = dbType.QuoteIdentifier(ColumnSysId);
             string colUserRowId = dbType.QuoteIdentifier("user_rowid");
             string colRoleRowId = dbType.QuoteIdentifier("role_rowid");
 
@@ -84,7 +85,7 @@ namespace Bee.Repository.System
             {
                 list.Add(new UserRoleRow(
                     ToGuid(row["user_rowid"]).ToString(),
-                    ValueUtilities.CStr(row["sys_id"])));
+                    ValueUtilities.CStr(row[ColumnSysId])));
             }
             return list;
         }
