@@ -79,6 +79,16 @@ namespace Bee.Definition.Identity
         public byte[] ApiEncryptionKey { get; set; } = Array.Empty<byte>();
 
         /// <summary>
+        /// Gets or sets the role ids assigned to the user within the current company.
+        /// </summary>
+        /// <remarks>
+        /// Populated by <c>EnterCompany</c> after the user enters a company (each id is an
+        /// <c>st_role.sys_id</c>); the layer-1 permission check OR-merges these roles' grants.
+        /// Cleared by <c>LeaveCompany</c> / <c>Logout</c> in step with <see cref="CompanyId"/>.
+        /// </remarks>
+        public ICollection<string> Roles { get; set; } = [];
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()
