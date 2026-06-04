@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="PermGateForm" DisplayName="權限 Gate 測試" CategoryId="company" PermissionModelId="PermGateModel" ListFields="">
+  <Tables>
+    <FormTable TableName="PermGateForm" DbTableName="ft_permgate" DisplayName="權限 Gate 測試">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
+        <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
+        <FormField FieldName="sys_id" Caption="編號" DbType="String" />
+        <FormField FieldName="sys_name" Caption="名稱" DbType="String" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>

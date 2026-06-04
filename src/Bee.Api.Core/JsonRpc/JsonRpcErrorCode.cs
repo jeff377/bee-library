@@ -53,6 +53,15 @@ namespace Bee.Api.Core.JsonRpc
         CompanyAccessDenied = -32003,
 
         /// <summary>
+        /// An authenticated caller lacks permission for a specific action on a permission
+        /// model (-32004) — the layer-1 model+action authorization check. Maps to HTTP 403
+        /// Forbidden. Distinct from <see cref="CompanyAccessDenied"/> (company-level) and
+        /// <see cref="Unauthorized"/> (missing/invalid credential); raised via
+        /// <c>ForbiddenException</c>.
+        /// </summary>
+        PermissionDenied = -32004,
+
+        /// <summary>
         /// A user-facing business message produced by business logic, intended to be
         /// shown to the end user (-32099). Acts as a catch-all container for messages
         /// raised via <c>UserMessageException</c> or the legacy BCL-exception whitelist.

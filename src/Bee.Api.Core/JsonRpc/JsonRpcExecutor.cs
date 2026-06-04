@@ -218,6 +218,8 @@ namespace Bee.Api.Core.JsonRpc
         /// </remarks>
         internal static (JsonRpcErrorCode code, string message) MapException(Exception ex)
         {
+            if (ex is ForbiddenException)
+                return (JsonRpcErrorCode.PermissionDenied, ex.Message);
             if (IsUserFacingException(ex))
                 return (JsonRpcErrorCode.UserMessage, ex.Message);
             return (JsonRpcErrorCode.InternalError, "Internal server error");

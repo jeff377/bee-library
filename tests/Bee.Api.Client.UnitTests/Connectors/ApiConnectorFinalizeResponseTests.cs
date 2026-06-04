@@ -65,6 +65,26 @@ namespace Bee.Api.Client.UnitTests.Connectors
         }
 
         [Fact]
+        [DisplayName("FinalizeResponse 於 PermissionDenied code 應拋出 ForbiddenException 且訊息純淨無前綴")]
+        public async Task FinalizeResponse_PermissionDeniedCode_ThrowsForbiddenException()
+        {
+            var provider = new FakeJsonRpcProvider
+            {
+                ResponseFactory = req => new JsonRpcResponse(req)
+                {
+                    Error = new JsonRpcError((int)JsonRpcErrorCode.PermissionDenied, "Permission denied: 'Delete' on model 'PurchaseOrder'.")
+                }
+            };
+            var connector = CreateConnector(provider);
+
+            var ex = await Assert.ThrowsAsync<ForbiddenException>(async () =>
+                await connector.ExecuteAsync<string>(TestProgId, TestAction, new object(), PayloadFormat.Plain));
+
+            Assert.Equal("Permission denied: 'Delete' on model 'PurchaseOrder'.", ex.Message);
+            Assert.DoesNotContain("API error", ex.Message);
+        }
+
+        [Fact]
         [DisplayName("FinalizeResponse 於 InternalError code 應拋出 InvalidOperationException 並保留前綴格式")]
         public async Task FinalizeResponse_InternalErrorCode_ThrowsInvalidOperationException()
         {

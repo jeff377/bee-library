@@ -123,6 +123,8 @@ namespace Bee.Api.Client.Connectors
             {
                 if (response.Error.Code == (int)JsonRpcErrorCode.UserMessage)
                     throw new UserMessageException(response.Error.Message);
+                if (response.Error.Code == (int)JsonRpcErrorCode.PermissionDenied)
+                    throw new ForbiddenException(response.Error.Message);
                 throw new InvalidOperationException($"API error: {response.Error.Code} - {response.Error.Message}");
             }
             RestoreResponsePayload(response, actualFormat);

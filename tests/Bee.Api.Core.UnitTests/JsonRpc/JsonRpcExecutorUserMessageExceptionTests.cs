@@ -24,6 +24,18 @@ namespace Bee.Api.Core.UnitTests.JsonRpc
         }
 
         [Fact]
+        [DisplayName("MapException 於 ForbiddenException 應回傳 PermissionDenied code 與原訊息")]
+        public void MapException_ForbiddenException_ReturnsPermissionDeniedCode()
+        {
+            var ex = new ForbiddenException("Permission denied: 'Delete' on model 'PurchaseOrder'.");
+
+            var (code, message) = JsonRpcExecutor.MapException(ex);
+
+            Assert.Equal(JsonRpcErrorCode.PermissionDenied, code);
+            Assert.Equal("Permission denied: 'Delete' on model 'PurchaseOrder'.", message);
+        }
+
+        [Fact]
         [DisplayName("MapException 於白名單 BCL 例外應回傳 UserMessage code(過渡期相容)")]
         public void MapException_BclWhitelistException_ReturnsUserMessageCode()
         {

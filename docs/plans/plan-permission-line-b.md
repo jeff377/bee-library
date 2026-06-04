@@ -1,12 +1,12 @@
 # 計畫：ERP 權限機制（線 B — 角色指派 + 層一 enforcement）
 
-**狀態：🚧 進行中（2026-06-04）**
+**狀態：✅ 已完成（2026-06-04）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | grant 資料模型（`st_role` / `st_role_grant` / `st_user_role`）+ TableSchema + Repository | ✅ 已完成（2026-06-04） |
 | 2 | `SessionInfo.Roles` + per-company 權限快取（三表,判權限零 DB）+ `AuthorizationService.Can` | ✅ 已完成（2026-06-04） |
-| 3 | 方法層 enforcement（`FormBusinessObject` gate + FormActions↔PermissionAction 映射 + Save 逐列） | 📝 待做 |
+| 3 | 方法層 enforcement（`FormBusinessObject` gate + FormActions↔PermissionAction 映射 + Save 逐列） | ✅ 已完成（2026-06-04） |
 
 ## 承接與範圍
 
