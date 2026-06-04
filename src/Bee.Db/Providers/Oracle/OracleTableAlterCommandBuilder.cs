@@ -58,7 +58,7 @@ namespace Bee.Db.Providers.Oracle
                 case AddFieldChange add:
                     return new[] { BuildAddFieldStatement(tableName, add.Field) };
                 case AlterFieldChange alter:
-                    return new[] { BuildAlterFieldStatement(tableName, alter.NewField) };
+                    return new[] { BuildAlterFieldStatement(tableName, alter.OldField, alter.NewField) };
                 case RenameFieldChange rename:
                     return new[] { BuildRenameFieldStatement(tableName, rename) };
                 case AddIndexChange addIndex:
@@ -82,19 +82,23 @@ namespace Bee.Db.Providers.Oracle
         }
 
         /// <summary>
-        /// Builds the Oracle <c>ALTER TABLE ... MODIFY (column-definition)</c> statement.
-        /// The full column definition (type + default + nullability) is re-emitted in one go.
+        /// Builds the Oracle <c>ALTER TABLE ... MODIFY (column-definition)</c> statement. Type and
+        /// default are always re-emitted; the nullability clause is appended only when the effective
+        /// nullability actually changes between <paramref name="oldField"/> and <paramref name="newField"/>.
         /// </summary>
         /// <remarks>
-        /// Oracle differs from MySQL in that MODIFY rejects redundant nullability hints
-        /// (e.g. specifying <c>NOT NULL</c> on an already-NOT-NULL column raises ORA-01442);
-        /// the full re-definition output here may need diff-based trimming when integration
-        /// tests cover the upgrade path. See docs/plans/plan-oracle-support.md.
+        /// Oracle rejects a redundant nullability hint — specifying <c>NOT NULL</c> on an
+        /// already-NOT-NULL column raises <c>ORA-01442</c> — so MODIFY omits the clause when the
+        /// nullability is unchanged (the common upgrade case where only type/length/default differ).
+        /// See docs/plans/plan-oracle-alter-nullability.md.
         /// </remarks>
-        private static string BuildAlterFieldStatement(string tableName, DbField newField)
+        private static string BuildAlterFieldStatement(string tableName, DbField oldField, DbField newField)
         {
-            string newDef = OracleSchemaSyntax.GetColumnDefinition(newField);
-            return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} MODIFY ({newDef});";
+            string typeDef = OracleSchemaSyntax.GetColumnTypeAndDefault(newField);
+            string oldNull = OracleSchemaSyntax.GetNullabilityClause(oldField);
+            string newNull = OracleSchemaSyntax.GetNullabilityClause(newField);
+            string nullClause = oldNull != newNull ? $" {newNull}" : string.Empty;
+            return $"ALTER TABLE {OracleSchemaSyntax.QuoteName(tableName)} MODIFY ({typeDef}{nullClause});";
         }
 
         /// <summary>

@@ -314,6 +314,45 @@ namespace Bee.Db.UnitTests
         }
 
         [DbFact(DatabaseType.Oracle)]
+        [DisplayName("OracleTableAlterCommandBuilder.MODIFY 對既有 NOT NULL 欄（nullability 未變）不應拋 ORA-01442")]
+        public void AlterModify_RedundantNotNull_QuotedLowercaseTable_DoesNotRaiseOra01442()
+        {
+            const string tableName = "tb_it_modnull";
+            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(DatabaseType.Oracle));
+            DropQuotedTable(dbAccess, tableName);
+
+            try
+            {
+                // 建一張帶非字串 NOT NULL 欄的表（qty 預設 AllowNull=false → NUMBER(10) DEFAULT 0 NOT NULL）。
+                var initial = new TableSchema { TableName = tableName };
+                initial.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
+                initial.Fields!.Add("qty", "Qty", FieldDbType.Integer);
+                initial.Indexes!.AddPrimaryKey(SysFields.RowId);
+                CreateTable(dbAccess, initial);
+
+                // 對既有 NOT NULL 的 qty 做 ALTER：nullability 不變、僅 default 0 → 1。
+                // 修正前 builder 會重發 MODIFY (... NOT NULL) → 對已 NOT NULL 欄拋 ORA-01442；
+                // 修正後省略冗餘 nullability hint，MODIFY 應成功執行。
+                var oldField = new DbField("qty", "Qty", FieldDbType.Integer) { AllowNull = false, DefaultValue = "0" };
+                var newField = new DbField("qty", "Qty", FieldDbType.Integer) { AllowNull = false, DefaultValue = "1" };
+                var statements = new OracleTableAlterCommandBuilder()
+                    .GetStatements(tableName, new Bee.Db.Schema.Changes.AlterFieldChange(oldField, newField));
+
+                var ex = Record.Exception(() =>
+                {
+                    foreach (var stmt in statements)
+                        dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, stmt));
+                });
+
+                Assert.Null(ex);
+            }
+            finally
+            {
+                DropQuotedTable(dbAccess, tableName);
+            }
+        }
+
+        [DbFact(DatabaseType.Oracle)]
         [DisplayName("AllowNull=false 的 String 欄在 Oracle 建為 nullable：省略該欄 INSERT 成功、讀回空字串、且二次 diff 為空")]
         public void NonNullString_OracleNullable_OmittedInsertSucceedsAndDiffIsEmpty()
         {

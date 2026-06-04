@@ -118,15 +118,39 @@ namespace Bee.Db.Providers.Oracle
         /// <param name="field">The field definition.</param>
         public static string GetColumnDefinition(DbField field)
         {
+            return $"{GetColumnTypeAndDefault(field)} {GetNullabilityClause(field)}";
+        }
+
+        /// <summary>
+        /// Generates the column fragment without the trailing nullability clause: name + type +
+        /// optional inline DEFAULT. Used by <c>ALTER TABLE ... MODIFY</c> so the nullability hint
+        /// can be appended only when it actually changes.
+        /// </summary>
+        /// <remarks>
+        /// Oracle rejects a redundant <c>NOT NULL</c> on an already-NOT-NULL column with
+        /// <c>ORA-01442</c>, so the MODIFY builder re-emits type + default but omits the
+        /// nullability clause when it is unchanged. See docs/plans/plan-oracle-alter-nullability.md.
+        /// </remarks>
+        /// <param name="field">The field definition.</param>
+        public static string GetColumnTypeAndDefault(DbField field)
+        {
             string dbType = OracleTypeMapping.GetOracleType(field);
-            // String/Text columns are always emitted nullable regardless of the definition's
-            // AllowNull: Oracle equates '' with NULL, so "non-null empty string" is inexpressible.
-            // See docs/plans/plan-oracle-string-nullability.md.
-            bool isNullableText = field.DbType == FieldDbType.String || field.DbType == FieldDbType.Text;
-            string nullability = (field.AllowNull || isNullableText) ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
             string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
-            return $"{QuoteName(field.FieldName)} {dbType}{defaultClause} {nullability}";
+            return $"{QuoteName(field.FieldName)} {dbType}{defaultClause}";
+        }
+
+        /// <summary>
+        /// Returns the effective Oracle nullability clause (<c>NULL</c> / <c>NOT NULL</c>) for a field.
+        /// String/Text columns are always nullable regardless of the definition's <see cref="DbField.AllowNull"/>,
+        /// since Oracle equates '' with NULL so a non-null empty string is inexpressible.
+        /// See docs/plans/plan-oracle-string-nullability.md.
+        /// </summary>
+        /// <param name="field">The field definition.</param>
+        public static string GetNullabilityClause(DbField field)
+        {
+            bool isNullableText = field.DbType == FieldDbType.String || field.DbType == FieldDbType.Text;
+            return (field.AllowNull || isNullableText) ? "NULL" : "NOT NULL";
         }
 
         /// <summary>

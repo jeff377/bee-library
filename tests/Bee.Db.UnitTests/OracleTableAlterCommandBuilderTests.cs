@@ -112,8 +112,8 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("Oracle GetStatements：AlterField 產生 MODIFY (...) 並包含完整 column 定義")]
-        public void GetStatements_AlterField_EmitsModify()
+        [DisplayName("Oracle GetStatements：AlterField 僅 type 變動時 MODIFY 不重發 nullability（避免 ORA-01442）")]
+        public void GetStatements_AlterField_TypeOnlyChange_OmitsNullability()
         {
             var oldField = new DbField("name", "Name", FieldDbType.String) { Length = 50, AllowNull = false };
             var newField = new DbField("name", "Name", FieldDbType.String) { Length = 100, AllowNull = false };
@@ -121,10 +121,51 @@ namespace Bee.Db.UnitTests
 
             var sql = Assert.Single(statements);
             Assert.Contains("ALTER TABLE \"ST_DEMO\" MODIFY (", sql);
-            // String 欄一律建為 nullable（Oracle '' == NULL），即使 definition AllowNull=false。
-            Assert.Contains("\"NAME\" VARCHAR2(100 CHAR) NULL", sql);
-            Assert.DoesNotContain("NOT NULL", sql);
+            Assert.Contains("\"NAME\" VARCHAR2(100 CHAR)", sql);
+            // nullability 未改變（String 一律 nullable，old/new 同為 NULL）→ 不重發任何 NULL/NOT NULL hint。
+            Assert.DoesNotContain("NULL", sql);
             Assert.EndsWith(");", sql);
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetStatements：AlterField nullability NULL→NOT NULL 應帶 NOT NULL")]
+        public void GetStatements_AlterField_NullToNotNull_EmitsNotNull()
+        {
+            var oldField = new DbField("age", "Age", FieldDbType.Integer) { AllowNull = true };
+            var newField = new DbField("age", "Age", FieldDbType.Integer) { AllowNull = false };
+            var statements = _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField));
+
+            var sql = Assert.Single(statements);
+            Assert.Contains("ALTER TABLE \"ST_DEMO\" MODIFY (", sql);
+            Assert.Contains("NOT NULL", sql);
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetStatements：AlterField nullability NOT NULL→NULL 應帶 NULL")]
+        public void GetStatements_AlterField_NotNullToNull_EmitsNull()
+        {
+            var oldField = new DbField("age", "Age", FieldDbType.Integer) { AllowNull = false };
+            var newField = new DbField("age", "Age", FieldDbType.Integer) { AllowNull = true };
+            var statements = _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField));
+
+            var sql = Assert.Single(statements);
+            Assert.Contains("ALTER TABLE \"ST_DEMO\" MODIFY (", sql);
+            Assert.Contains(" NULL", sql);
+            Assert.DoesNotContain("NOT NULL", sql);
+        }
+
+        [Fact]
+        [DisplayName("Oracle GetStatements：AlterField nullability 未變（NOT NULL→NOT NULL）不重發 nullability（迴歸 ORA-01442）")]
+        public void GetStatements_AlterField_RedundantNotNull_OmitsNullability()
+        {
+            // 僅 default 變、nullability 不變：MODIFY 不得帶 NOT NULL，否則 Oracle 對已 NOT NULL 欄拋 ORA-01442。
+            var oldField = new DbField("age", "Age", FieldDbType.Integer) { AllowNull = false, DefaultValue = "0" };
+            var newField = new DbField("age", "Age", FieldDbType.Integer) { AllowNull = false, DefaultValue = "1" };
+            var statements = _builder.GetStatements("st_demo", new AlterFieldChange(oldField, newField));
+
+            var sql = Assert.Single(statements);
+            Assert.Contains("ALTER TABLE \"ST_DEMO\" MODIFY (", sql);
+            Assert.DoesNotContain("NOT NULL", sql);
         }
 
         [Fact]
