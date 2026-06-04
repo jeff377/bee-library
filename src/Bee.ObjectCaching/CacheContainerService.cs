@@ -53,6 +53,7 @@ namespace Bee.ObjectCaching
             SessionInfo = new SessionInfoCache(CachePrefix);
             CompanyInfo = new CompanyInfoCache(CachePrefix);
             CompanyRolePermissions = new CompanyRolePermissionsCache(CachePrefix);
+            DepartmentTree = new DepartmentTreeCache(CachePrefix);
 
             // Convention-based eviction dispatch: index every owned cache by its CacheGroup so the
             // poller can invalidate "group:entity" keys without a hand-maintained route table.
@@ -61,7 +62,7 @@ namespace Bee.ObjectCaching
             [
                 SystemSettings, DatabaseSettings, ProgramSettings, DbCategorySettings,
                 TableSchema, FormSchema, FormLayout, LanguageResource, SessionInfo, CompanyInfo,
-                PermissionModels, CompanyRolePermissions
+                PermissionModels, CompanyRolePermissions, DepartmentTree
             ];
             _evictableByGroup = new Dictionary<string, IEvictableCache>(StringComparer.OrdinalIgnoreCase);
             foreach (var cache in caches)
@@ -112,6 +113,9 @@ namespace Bee.ObjectCaching
 
         /// <inheritdoc/>
         public CompanyRolePermissionsCache CompanyRolePermissions { get; }
+
+        /// <inheritdoc/>
+        public DepartmentTreeCache DepartmentTree { get; }
 
         /// <inheritdoc/>
         public bool TryEvict(string cacheKey)

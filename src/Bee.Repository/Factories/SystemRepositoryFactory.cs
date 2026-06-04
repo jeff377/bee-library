@@ -65,5 +65,13 @@ namespace Bee.Repository.Factories
         {
             return new RolePermissionRepository(_connectionManager);
         }
+
+        /// <summary>
+        /// Creates an <see cref="IDepartmentRepository"/> (per-company <c>ft_department</c> reader).
+        /// </summary>
+        public IDepartmentRepository CreateDepartmentRepository()
+        {
+            return new DepartmentRepository(_connectionManager);
+        }
     }
 }

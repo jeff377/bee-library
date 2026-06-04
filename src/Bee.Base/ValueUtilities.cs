@@ -488,6 +488,10 @@ namespace Bee.Base
                 return g;
             else if (value is string s)
                 return CGuid(s);
+            // Oracle stores Guid columns as RAW(16); the provider reads them back as a 16-byte
+            // array (round-trips with `Guid.ToByteArray()`), so coerce that form here too.
+            else if (value is byte[] b && b.Length == 16)
+                return new Guid(b);
             else
                 return Guid.Empty;
         }

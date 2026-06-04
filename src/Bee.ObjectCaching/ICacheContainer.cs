@@ -47,6 +47,9 @@ namespace Bee.ObjectCaching
         /// <summary>The per-company role-permission snapshot cache, keyed by company id.</summary>
         CompanyRolePermissionsCache CompanyRolePermissions { get; }
 
+        /// <summary>The per-company department-tree snapshot cache, keyed by company id.</summary>
+        DepartmentTreeCache DepartmentTree { get; }
+
         /// <summary>
         /// Evicts the cache entry named by a <c>"group:entity"</c> cache key, dispatching to the
         /// owned cache whose <see cref="IEvictableCache.CacheGroup"/> matches the key's group

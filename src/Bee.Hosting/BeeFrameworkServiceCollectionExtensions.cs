@@ -10,6 +10,7 @@ using Bee.Definition;
 using Bee.ObjectCaching;
 using Bee.ObjectCaching.Services;
 using Bee.Definition.Identity;
+using Bee.Definition.Organization;
 using Bee.Definition.Language;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
@@ -184,6 +185,8 @@ namespace Bee.Hosting
                 sp.GetRequiredService<ISystemRepositoryFactory>().CreateUserCompanyRepository());
             services.AddSingleton<IRolePermissionRepository>(sp =>
                 sp.GetRequiredService<ISystemRepositoryFactory>().CreateRolePermissionRepository());
+            services.AddSingleton<IDepartmentRepository>(sp =>
+                sp.GetRequiredService<ISystemRepositoryFactory>().CreateDepartmentRepository());
 
             // Permission services: per-company role-permission snapshot cache + layer-1 Can check.
             services.AddSingleton<IRolePermissionService>(sp =>
@@ -195,6 +198,13 @@ namespace Bee.Hosting
                 new AuthorizationService(
                     sp.GetRequiredService<ISessionInfoService>(),
                     sp.GetRequiredService<IRolePermissionService>()));
+
+            // Organization: per-company department-tree snapshot cache (record-scope source).
+            services.AddSingleton<IDepartmentTreeService>(sp =>
+                new DepartmentTreeService(
+                    sp.GetRequiredService<ICacheContainer>(),
+                    sp.GetRequiredService<ICompanyInfoService>(),
+                    sp.GetRequiredService<IDepartmentRepository>()));
 
             // 10. JsonRpcExecutor — transient (per request); its dependencies (factories,
             //     validators, key providers) are resolved from the container at construction.
