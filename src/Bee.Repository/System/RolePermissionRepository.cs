@@ -17,6 +17,7 @@ namespace Bee.Repository.System
     /// </summary>
     public class RolePermissionRepository : IRolePermissionRepository
     {
+        private const string ColumnRoleId = "role_id";
         private readonly IDbConnectionManager _connectionManager;
 
         /// <summary>
@@ -35,7 +36,7 @@ namespace Bee.Repository.System
 
             var dbType = _connectionManager.GetConnectionInfo(databaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier("st_role_grant");
-            string colRoleId = dbType.QuoteIdentifier("role_id");
+            string colRoleId = dbType.QuoteIdentifier(ColumnRoleId);
             string colModelId = dbType.QuoteIdentifier("model_id");
             string colActions = dbType.QuoteIdentifier("allowed_actions");
 
@@ -47,7 +48,7 @@ namespace Bee.Repository.System
             foreach (DataRow row in table.Rows)
             {
                 list.Add(new RoleGrantRow(
-                    ValueUtilities.CStr(row["role_id"]),
+                    ValueUtilities.CStr(row[ColumnRoleId]),
                     ValueUtilities.CStr(row["model_id"]),
                     (PermissionAction)ValueUtilities.CInt(row["allowed_actions"])));
             }
@@ -62,7 +63,7 @@ namespace Bee.Repository.System
             var dbType = _connectionManager.GetConnectionInfo(databaseId).DatabaseType;
             string tbl = dbType.QuoteIdentifier("st_user_role");
             string colUserId = dbType.QuoteIdentifier("user_id");
-            string colRoleId = dbType.QuoteIdentifier("role_id");
+            string colRoleId = dbType.QuoteIdentifier(ColumnRoleId);
 
             string sql = $"SELECT {colUserId}, {colRoleId} FROM {tbl}";
             var dbAccess = new DbAccess(databaseId, _connectionManager);
@@ -73,7 +74,7 @@ namespace Bee.Repository.System
             {
                 list.Add(new UserRoleRow(
                     ValueUtilities.CStr(row["user_id"]),
-                    ValueUtilities.CStr(row["role_id"])));
+                    ValueUtilities.CStr(row[ColumnRoleId])));
             }
             return list;
         }
