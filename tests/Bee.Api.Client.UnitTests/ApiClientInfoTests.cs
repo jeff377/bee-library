@@ -3,8 +3,11 @@ using System.ComponentModel;
 namespace Bee.Api.Client.UnitTests
 {
     /// <summary>
-    /// 針對 <see cref="ApiClientInfo"/> 靜態屬性的純邏輯測試。
+    /// 針對 <see cref="ApiClientInfo"/> 靜態屬性的純邏輯測試。與 <c>ApiConnectValidatorTests</c>
+    /// 同 mutate process-wide static <c>ApiClientInfo.SupportedConnectTypes</c>，故同列入
+    /// <c>[Collection("ApiClientInfoState")]</c> 串行，避免平行 class race。
     /// </summary>
+    [Collection("ApiClientInfoState")]
     public class ApiClientInfoTests
     {
         /// <summary>
