@@ -25,7 +25,7 @@ namespace Bee.ObjectCaching.Services
         }
 
         /// <inheritdoc/>
-        public bool Can(Guid accessToken, string modelId, PermissionAction action)
+        public bool Can(Guid accessToken, string modelId, PermissionActions action)
         {
             var session = _sessionInfoService.Get(accessToken);
             if (session == null || string.IsNullOrEmpty(session.CompanyId) || session.Roles.Count == 0)

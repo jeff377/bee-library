@@ -40,17 +40,17 @@ namespace Bee.Definition.Identity
 
         /// <summary>
         /// Returns the OR-merged allowed action mask for the given roles on the model — the layer-1
-        /// multi-role union (capability accrues across roles). Returns <see cref="PermissionAction.None"/>
+        /// multi-role union (capability accrues across roles). Returns <see cref="PermissionActions.None"/>
         /// when none of the roles grants anything on the model.
         /// </summary>
         /// <param name="roleIds">The role business ids the user holds (e.g. <c>SessionInfo.Roles</c>).</param>
         /// <param name="modelId">The permission model id to check.</param>
-        public PermissionAction GetAllowed(IEnumerable<string> roleIds, string modelId)
+        public PermissionActions GetAllowed(IEnumerable<string> roleIds, string modelId)
         {
             ArgumentNullException.ThrowIfNull(roleIds);
             var roleSet = roleIds as ISet<string> ?? new HashSet<string>(roleIds);
 
-            var allowed = PermissionAction.None;
+            var allowed = PermissionActions.None;
             foreach (var grant in Grants)
             {
                 if (grant.ModelId == modelId && roleSet.Contains(grant.RoleId))

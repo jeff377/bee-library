@@ -69,7 +69,7 @@ namespace Bee.Business.Form
         public virtual GetListResult GetList(GetListArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
-            Authorize(PermissionAction.Read);
+            Authorize(PermissionActions.Read);
 
             var repository = CreateDataFormRepository(ProgId);
             var listResult = repository.GetList(args.SelectFields, args.Filter, args.SortFields, args.Paging);
@@ -90,7 +90,7 @@ namespace Bee.Business.Form
         public virtual GetNewDataResult GetNewData(GetNewDataArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
-            Authorize(PermissionAction.Read);
+            Authorize(PermissionActions.Read);
 
             var repository = CreateDataFormRepository(ProgId);
             var dataSet = repository.GetNewData();
@@ -106,7 +106,7 @@ namespace Bee.Business.Form
         public virtual GetDataResult GetData(GetDataArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
-            Authorize(PermissionAction.Read);
+            Authorize(PermissionActions.Read);
 
             var repository = CreateDataFormRepository(ProgId);
             var dataSet = repository.GetData(args.RowId);
@@ -145,7 +145,7 @@ namespace Bee.Business.Form
         public virtual DeleteResult Delete(DeleteArgs args)
         {
             ArgumentNullException.ThrowIfNull(args);
-            Authorize(PermissionAction.Delete);
+            Authorize(PermissionActions.Delete);
 
             var repository = CreateDataFormRepository(ProgId);
             var rowsAffected = repository.Delete(args.RowId);
@@ -156,17 +156,17 @@ namespace Bee.Business.Form
         #region 權限驗證（層一 model+action gate）
 
         // 寫入動作的判定順序；層一不涉 record scope，故每個 action 只需判一次（逐列等價）。
-        private static readonly PermissionAction[] s_writeActions =
-            { PermissionAction.Create, PermissionAction.Update, PermissionAction.Delete };
+        private static readonly PermissionActions[] s_writeActions =
+            { PermissionActions.Create, PermissionActions.Update, PermissionActions.Delete };
 
         /// <summary>
         /// Enforces the layer-1 permission check for <paramref name="action"/> on this form's
         /// permission model. A no-op when the FormSchema declares no <c>PermissionModelId</c>
         /// (gradual adoption — unmarked forms stay open). Throws when the caller lacks the grant.
         /// </summary>
-        /// <param name="action">The single <see cref="PermissionAction"/> flag to require.</param>
+        /// <param name="action">The single <see cref="PermissionActions"/> flag to require.</param>
         /// <exception cref="ForbiddenException">The caller is not granted the action.</exception>
-        private void Authorize(PermissionAction action)
+        private void Authorize(PermissionActions action)
         {
             var modelId = DefineAccess.GetFormSchema(ProgId).PermissionModelId;
             if (string.IsNullOrEmpty(modelId)) { return; }
@@ -189,7 +189,7 @@ namespace Bee.Business.Form
             if (string.IsNullOrEmpty(modelId)) { return; }
 
             var required = CollectRowStateActions(dataSet);
-            if (required == PermissionAction.None) { return; }
+            if (required == PermissionActions.None) { return; }
 
             var authorization = Services.GetRequiredService<IAuthorizationService>();
             foreach (var action in s_writeActions.Where(a => required.HasFlag(a) && !authorization.Can(AccessToken, modelId, a)))
@@ -197,22 +197,22 @@ namespace Bee.Business.Form
         }
 
         /// <summary>
-        /// OR-merges the <see cref="PermissionAction"/> implied by every row's <c>RowState</c>
+        /// OR-merges the <see cref="PermissionActions"/> implied by every row's <c>RowState</c>
         /// across all tables in the DataSet.
         /// </summary>
-        private static PermissionAction CollectRowStateActions(DataSet dataSet)
+        private static PermissionActions CollectRowStateActions(DataSet dataSet)
         {
-            var actions = PermissionAction.None;
+            var actions = PermissionActions.None;
             foreach (DataTable table in dataSet.Tables)
             {
                 foreach (DataRow row in table.Rows)
                 {
                     actions |= row.RowState switch
                     {
-                        DataRowState.Added => PermissionAction.Create,
-                        DataRowState.Modified => PermissionAction.Update,
-                        DataRowState.Deleted => PermissionAction.Delete,
-                        _ => PermissionAction.None,
+                        DataRowState.Added => PermissionActions.Create,
+                        DataRowState.Modified => PermissionActions.Update,
+                        DataRowState.Deleted => PermissionActions.Delete,
+                        _ => PermissionActions.None,
                     };
                 }
             }
