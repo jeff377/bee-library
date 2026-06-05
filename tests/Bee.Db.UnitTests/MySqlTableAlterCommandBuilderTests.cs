@@ -101,6 +101,34 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("MySQL GetStatements：AddField Guid NOT NULL 拆兩段（常數預設 + SET DEFAULT (UUID())）避免 replication-unsafe")]
+        public void GetStatements_AddGuidNotNull_SplitsIntoSafeTwoStep()
+        {
+            var field = new DbField("user_rowid", "User", FieldDbType.Guid) { AllowNull = false };
+            var statements = _builder.GetStatements("ft_employee", new AddFieldChange(field));
+
+            Assert.Equal(2, statements.Count);
+            // 第 1 段：常數空 Guid 預設 ADD —— replication-safe，不得含 (UUID())
+            Assert.Contains("ALTER TABLE `ft_employee` ADD COLUMN `user_rowid`", statements[0]);
+            Assert.Contains("NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'", statements[0]);
+            Assert.DoesNotContain("UUID()", statements[0]);
+            // 第 2 段：metadata-only 還原真正預設（新列才拿 UUID()）
+            Assert.Contains("ALTER TABLE `ft_employee` ALTER COLUMN `user_rowid` SET DEFAULT (UUID())", statements[1]);
+        }
+
+        [Fact]
+        [DisplayName("MySQL GetStatements：AddField 可為 NULL 的 Guid 仍單條（無 UUID() 預設、不拆）")]
+        public void GetStatements_AddGuidNullable_SingleStatement()
+        {
+            var field = new DbField("ref_rowid", "Ref", FieldDbType.Guid) { AllowNull = true };
+            var statements = _builder.GetStatements("st_demo", new AddFieldChange(field));
+
+            var sql = Assert.Single(statements);
+            Assert.Contains("ADD COLUMN `ref_rowid`", sql);
+            Assert.DoesNotContain("UUID()", sql);
+        }
+
+        [Fact]
         [DisplayName("MySQL GetStatements：AlterField 產生 MODIFY COLUMN 並包含完整 column 定義")]
         public void GetStatements_AlterField_EmitsModifyColumn()
         {

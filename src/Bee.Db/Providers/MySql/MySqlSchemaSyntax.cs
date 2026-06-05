@@ -110,11 +110,16 @@ namespace Bee.Db.Providers.MySql
         /// columns inherit the table collation by default).
         /// </remarks>
         /// <param name="field">The field definition.</param>
-        public static string GetColumnDefinition(DbField field)
+        /// <param name="defaultOverride">
+        /// When supplied, replaces the field's resolved DEFAULT clause (already formatted, e.g. a
+        /// quoted literal). Used by the ALTER ADD path to seed a non-deterministic default (UUID())
+        /// with a replication-safe constant before restoring the real default separately.
+        /// </param>
+        public static string GetColumnDefinition(DbField field, string? defaultOverride = null)
         {
             string dbType = MySqlTypeMapping.GetMySqlType(field);
             string nullability = field.AllowNull ? "NULL" : "NOT NULL";
-            string defaultExpression = GetDefaultExpression(field);
+            string defaultExpression = defaultOverride ?? GetDefaultExpression(field);
             string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
             string commentClause = GetCommentClause(field.Caption);
             return $"{QuoteName(field.FieldName)} {dbType} {nullability}{defaultClause}{commentClause}";

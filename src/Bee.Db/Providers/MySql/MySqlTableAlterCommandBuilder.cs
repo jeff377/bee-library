@@ -56,7 +56,7 @@ namespace Bee.Db.Providers.MySql
             switch (change)
             {
                 case AddFieldChange add:
-                    return new[] { BuildAddFieldStatement(tableName, add.Field) };
+                    return BuildAddFieldStatements(tableName, add.Field);
                 case AlterFieldChange alter:
                     return new[] { BuildAlterFieldStatement(tableName, alter.NewField) };
                 case RenameFieldChange rename:
@@ -70,9 +70,31 @@ namespace Bee.Db.Providers.MySql
             }
         }
 
-        private static string BuildAddFieldStatement(string tableName, DbField field)
+        /// <summary>
+        /// Builds the <c>ADD COLUMN</c> statement(s). A NOT NULL column whose default is a
+        /// non-deterministic function (<c>UUID()</c> for Guid) is split into two: MySQL rejects
+        /// <c>ADD COLUMN ... NOT NULL DEFAULT (UUID())</c> on an existing table under statement-based
+        /// binlog (it evaluates the function per existing row → replication-unsafe). The column is
+        /// first added with a constant empty-Guid default (safe; existing rows become "no link"),
+        /// then the real default is restored as a metadata-only change so new rows still get a UUID
+        /// and the column definition matches the fresh-CREATE schema (no comparer drift).
+        /// </summary>
+        private static IReadOnlyList<string> BuildAddFieldStatements(string tableName, DbField field)
         {
-            return $"ALTER TABLE {MySqlSchemaSyntax.QuoteName(tableName)} ADD COLUMN {MySqlSchemaSyntax.GetColumnDefinition(field)};";
+            string tbl = MySqlSchemaSyntax.QuoteName(tableName);
+            string realDefault = MySqlSchemaSyntax.GetDefaultExpression(field);
+
+            if (realDefault.Contains("UUID()", StringComparison.OrdinalIgnoreCase))
+            {
+                string col = MySqlSchemaSyntax.QuoteName(field.FieldName);
+                string seeded = MySqlSchemaSyntax.GetColumnDefinition(field, $"'{Guid.Empty}'");
+                return new[]
+                {
+                    $"ALTER TABLE {tbl} ADD COLUMN {seeded};",
+                    $"ALTER TABLE {tbl} ALTER COLUMN {col} SET DEFAULT {realDefault};",
+                };
+            }
+            return new[] { $"ALTER TABLE {tbl} ADD COLUMN {MySqlSchemaSyntax.GetColumnDefinition(field)};" };
         }
 
         /// <summary>
