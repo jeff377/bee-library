@@ -12,7 +12,7 @@
 >
 > **讀取端**：`GetList` 把 `ResolveFilter` 結果與呼叫端 filter 經 `FilterGroup.All` AND 併（`CombineWithScope`）；`GetData` 把 scope filter 傳 `repository.GetData(rowId, scopeFilter)`（越範圍→`null`，與「查無」不可區分）。
 >
-> **寫入端（Update / Delete）—— 權威 re-query（後端控管安全邊界）**：經 review 定案，寫入端對「既存記錄的異動」套 scope，且用**權威 re-query** 而非評估 client 送來的列值（避免偽造 payload relabel 繞過）。`IDataFormRepository` 加 `ExistsInScope(rowId, scopeFilter)`（對 DB 下 `sys_rowid = id AND scope` 的存在性查詢）。`FormBusinessObject.EnforceWriteScope`：Save 對每個 master 列 `Modified→Update`/`Deleted→Delete`，以 target rowId 經 `ExistsInScope` 確認在範圍內，否則 `ForbiddenException`。`Delete(rowId)` → `repository.Delete(rowId, scopeFilter)`：先 `ExistsInScope`，越範圍 → 刪 0、不 cascade（與「查無」不可區分）。
+> **寫入端（Update / Delete）—— 權威 re-query（後端控管安全邊界）**：經 review 定案，寫入端對「既存記錄的異動」套 scope，且用**權威 re-query** 而非評估 client 送來的列值（避免偽造 payload relabel 繞過）。`IDataFormRepository` 加 `ExistsInScope(rowId, scopeFilter)`（對 DB 下 `sys_rowid = id AND scope` 的存在性查詢）。`FormBusinessObject.Save`：**先判斷主表列是否為「既存記錄存檔」（`HasExistingMasterWrite` —— 主表列非 `Added`）才呼叫 `EnforceWriteScope`**；後者對 master 列 `Deleted→Delete`、`Modified`/**`Unchanged→Update`**（只改表身、主表 `Unchanged` 也算修改該筆），以 target rowId 經 `ExistsInScope` 確認在範圍內，否則 `ForbiddenException`。`Delete(rowId)` → `repository.Delete(rowId, scopeFilter)`：先 `ExistsInScope`，越範圍 → 刪 0、不 cascade（與「查無」不可區分）。
 >
 > **Create 不套**：`Added` 列由 Create 動作授權把關（新列無「既存範圍」可違反；檢查新列 owner/dept 會造成摩擦）。
 >

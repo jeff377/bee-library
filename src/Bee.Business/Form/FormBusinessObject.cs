@@ -132,7 +132,13 @@ namespace Bee.Business.Form
             AuthorizeSave(args.DataSet);
 
             var repository = CreateDataFormRepository(ProgId);
-            EnforceWriteScope(args.DataSet, repository);
+            // Layer-2 record scope is re-checked only when an existing master record is saved — any
+            // master row state other than Added. (A save that only changes details leaves the master
+            // Unchanged but still modifies the record, so it counts as an Update; Added is a Create,
+            // governed by the action grant. Scope is master-only, so once the master passes the whole
+            // record persists with it.)
+            if (HasExistingMasterWrite(args.DataSet))
+                EnforceWriteScope(args.DataSet, repository);
             var (refreshed, affected) = repository.Save(args.DataSet);
 
             return new SaveResult
@@ -207,9 +213,28 @@ namespace Bee.Business.Form
         }
 
         /// <summary>
-        /// Enforces layer-2 record scope on writes by authoritatively re-querying each mutated master
-        /// row. For every <c>Modified</c> (Update) / <c>Deleted</c> (Delete) master row, confirms the
-        /// target row is in the caller's scope against the database — not the supplied payload, so a
+        /// Whether the DataSet saves an existing master record — i.e. the master table has a row whose
+        /// state is anything other than <c>Added</c> (Modified / Unchanged / Deleted). These are the
+        /// saves layer-2 record scope re-checks; a pure insert (only <c>Added</c> master rows) is not.
+        /// </summary>
+        /// <param name="dataSet">The DataSet about to be persisted.</param>
+        private bool HasExistingMasterWrite(DataSet dataSet)
+        {
+            var masterTableName = DefineAccess.GetFormSchema(ProgId).MasterTable?.TableName;
+            if (string.IsNullOrEmpty(masterTableName) || !dataSet.Tables.Contains(masterTableName)) { return false; }
+
+            foreach (DataRow row in dataSet.Tables[masterTableName]!.Rows)
+            {
+                if (row.RowState != DataRowState.Added) { return true; }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Enforces layer-2 record scope on writes by authoritatively re-querying each saved master
+        /// row. <c>Deleted</c> → Delete scope; <c>Modified</c> / <c>Unchanged</c> → Update scope (a
+        /// details-only edit leaves the master Unchanged but still updates the record). Each is
+        /// confirmed in the caller's scope against the database — not the supplied payload, so a
         /// forged DataSet cannot relabel its way past the boundary. <c>Added</c> (Create) rows are not
         /// scope-checked (a new row has no existing scope to violate; creation is governed by the
         /// action grant). A no-op when the form declares no <c>PermissionModelId</c> or the action's
@@ -235,9 +260,9 @@ namespace Bee.Business.Form
             {
                 var action = row.RowState switch
                 {
-                    DataRowState.Modified => PermissionAction.Update,
+                    DataRowState.Added => PermissionAction.None,    // Create — action-gated, not scope-checked
                     DataRowState.Deleted => PermissionAction.Delete,
-                    _ => PermissionAction.None,  // Added (Create) / Unchanged — not write-scoped
+                    _ => PermissionAction.Update,                   // Modified / Unchanged — saving an existing record
                 };
                 if (action == PermissionAction.None) { continue; }
 

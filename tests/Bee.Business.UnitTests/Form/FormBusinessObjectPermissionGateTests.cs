@@ -62,6 +62,31 @@ namespace Bee.Business.UnitTests.Form
             return ds;
         }
 
+        // 主表 Unchanged、只有表身（明細）被改 → 仍是對既存記錄的修改存檔（視為 Update）。
+        private static DataSet DetailOnlyEditDataSet()
+        {
+            var ds = new DataSet();
+            var master = ds.Tables.Add(GatedProgId);
+            master.Columns.Add("sys_rowid", typeof(Guid));
+            master.Columns.Add("sys_id");
+            var mrow = master.NewRow();
+            mrow["sys_rowid"] = Guid.NewGuid();
+            mrow["sys_id"] = "m";
+            master.Rows.Add(mrow);
+
+            var detail = ds.Tables.Add(GatedProgId + "_Item");
+            detail.Columns.Add("sys_rowid", typeof(Guid));
+            detail.Columns.Add("qty");
+            var drow = detail.NewRow();
+            drow["sys_rowid"] = Guid.NewGuid();
+            drow["qty"] = "1";
+            detail.Rows.Add(drow);
+
+            ds.AcceptChanges();   // 全部 Unchanged
+            drow["qty"] = "2";    // 明細 → Modified；主表維持 Unchanged
+            return ds;
+        }
+
         [Fact]
         [DisplayName("GetList 無 Read 授權應擋 ForbiddenException")]
         public void GetList_NoReadGrant_ThrowsForbidden()
@@ -126,6 +151,16 @@ namespace Bee.Business.UnitTests.Form
             var bo = Bo(PermissionAction.Update, repo);
             var ex = Record.Exception(() => bo.Save(new SaveArgs { DataSet = ModifiedRowDataSet() }));
             Assert.Null(ex);
+        }
+
+        [Fact]
+        [DisplayName("Save 只改表身（主表 Unchanged）視為 Update，越範圍應擋 ForbiddenException")]
+        public void Save_DetailOnlyEdit_OutOfScope_ThrowsForbidden()
+        {
+            // 主表 Unchanged、明細 Modified → 仍是修改該既存記錄 → 走 Update 層二檢查
+            var repo = new StubRepo { InScope = false };
+            var bo = Bo(PermissionAction.Update, repo);
+            Assert.Throws<ForbiddenException>(() => bo.Save(new SaveArgs { DataSet = DetailOnlyEditDataSet() }));
         }
 
         [Fact]
