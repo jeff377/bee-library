@@ -192,11 +192,12 @@ namespace Bee.Business.Form
             if (required == PermissionAction.None) { return; }
 
             var authorization = Services.GetRequiredService<IAuthorizationService>();
-            foreach (var action in s_writeActions.Where(action => required.HasFlag(action)))
-            {
-                if (!authorization.Can(AccessToken, modelId, action))
-                    throw new ForbiddenException($"Permission denied: '{action}' on model '{modelId}'.");
-            }
+
+            // s_writeActions holds only non-zero flags, so None is a safe "no denial" sentinel.
+            var denied = s_writeActions.FirstOrDefault(
+                action => required.HasFlag(action) && !authorization.Can(AccessToken, modelId, action));
+            if (denied != PermissionAction.None)
+                throw new ForbiddenException($"Permission denied: '{denied}' on model '{modelId}'.");
         }
 
         /// <summary>
