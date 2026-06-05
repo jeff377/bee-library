@@ -37,13 +37,8 @@ namespace Bee.Definition.Settings
                 var master = schema.MasterTable;
                 if (master?.Fields == null) { continue; }
 
-                int owners = 0;
-                int depts = 0;
-                foreach (var field in master.Fields)
-                {
-                    if (field.ScopeRole == ScopeRole.Owner) { owners++; }
-                    else if (field.ScopeRole == ScopeRole.Dept) { depts++; }
-                }
+                int owners = master.Fields.Count(f => f.ScopeRole == ScopeRole.Owner);
+                int depts = master.Fields.Count(f => f.ScopeRole == ScopeRole.Dept);
                 if (owners > 1)
                     errors.Add($"Form '{schema.ProgId}': master table marks {owners} Owner columns; at most one is allowed.");
                 if (depts > 1)
