@@ -4,7 +4,6 @@ using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
-using Bee.ObjectCaching;
 
 namespace Bee.ObjectCaching.UnitTests
 {
