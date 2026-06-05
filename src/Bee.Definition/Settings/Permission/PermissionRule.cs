@@ -13,7 +13,7 @@ namespace Bee.Definition.Settings
     [TreeNode]
     public class PermissionRule : KeyCollectionItem
     {
-        private PermissionActions _action = PermissionActions.None;
+        private PermissionAction _action = PermissionAction.None;
 
         #region Constructors
 
@@ -28,7 +28,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         /// <param name="action">The permission action.</param>
         /// <param name="scope">The record-scope strategy.</param>
-        public PermissionRule(PermissionActions action, ScopeStrategy scope = ScopeStrategy.Inherit)
+        public PermissionRule(PermissionAction action, ScopeStrategy scope = ScopeStrategy.Inherit)
         {
             Action = action;
             Scope = scope;
@@ -41,7 +41,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         [XmlAttribute]
         [Description("Permission action.")]
-        public PermissionActions Action
+        public PermissionAction Action
         {
             get { return _action; }
             set

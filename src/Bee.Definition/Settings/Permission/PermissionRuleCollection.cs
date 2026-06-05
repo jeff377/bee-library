@@ -23,7 +23,7 @@ namespace Bee.Definition.Settings
         /// </summary>
         /// <param name="action">The permission action.</param>
         /// <param name="scope">The record-scope strategy.</param>
-        public PermissionRule Add(PermissionActions action, ScopeStrategy scope = ScopeStrategy.Inherit)
+        public PermissionRule Add(PermissionAction action, ScopeStrategy scope = ScopeStrategy.Inherit)
         {
             var rule = new PermissionRule(action, scope);
             base.Add(rule);

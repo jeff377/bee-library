@@ -10,7 +10,7 @@ namespace Bee.Definition.Settings
     /// to a separate workflow-permission layer, not the action axis.
     /// </remarks>
     [Flags]
-    public enum PermissionActions
+    public enum PermissionAction
     {
         /// <summary>No action.</summary>
         None = 0,

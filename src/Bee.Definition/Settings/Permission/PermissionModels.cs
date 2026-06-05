@@ -91,7 +91,7 @@ namespace Bee.Definition.Settings
                 if (rules == null) { continue; }
                 foreach (var rule in rules)
                 {
-                    bool isEgress = rule.Action is PermissionActions.Print or PermissionActions.Export;
+                    bool isEgress = rule.Action is PermissionAction.Print or PermissionAction.Export;
                     if (isEgress && rule.Scope != ScopeStrategy.Inherit)
                     {
                         errors.Add($"Model '{model.ModelId}': egress action '{rule.Action}' must not define a scope; it inherits Read.");

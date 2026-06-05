@@ -28,7 +28,7 @@ namespace Bee.Business.UnitTests.Form
         private readonly SharedDbFixture _fx;
         public FormBusinessObjectPermissionGateTests(SharedDbFixture fx) { _fx = fx; }
 
-        private FormBusinessObject Bo(PermissionActions allowed, IDataFormRepository? repo = null, string progId = GatedProgId)
+        private FormBusinessObject Bo(PermissionAction allowed, IDataFormRepository? repo = null, string progId = GatedProgId)
         {
             var overrides = new List<(Type, object?)> { (typeof(IAuthorizationService), new FakeAuth(allowed)) };
             if (repo != null) { overrides.Add((typeof(IFormRepositoryFactory), new FakeFactory(repo))); }
@@ -50,24 +50,24 @@ namespace Bee.Business.UnitTests.Form
         [Fact]
         [DisplayName("GetList 無 Read 授權應擋 ForbiddenException")]
         public void GetList_NoReadGrant_ThrowsForbidden()
-            => Assert.Throws<ForbiddenException>(() => Bo(PermissionActions.None).GetList(new GetListArgs()));
+            => Assert.Throws<ForbiddenException>(() => Bo(PermissionAction.None).GetList(new GetListArgs()));
 
         [Fact]
         [DisplayName("GetData 無 Read 授權應擋 ForbiddenException")]
         public void GetData_NoReadGrant_ThrowsForbidden()
-            => Assert.Throws<ForbiddenException>(() => Bo(PermissionActions.None).GetData(new GetDataArgs { RowId = Guid.NewGuid() }));
+            => Assert.Throws<ForbiddenException>(() => Bo(PermissionAction.None).GetData(new GetDataArgs { RowId = Guid.NewGuid() }));
 
         [Fact]
         [DisplayName("Delete 無 Delete 授權應擋 ForbiddenException")]
         public void Delete_NoDeleteGrant_ThrowsForbidden()
-            => Assert.Throws<ForbiddenException>(() => Bo(PermissionActions.None).Delete(new DeleteArgs { RowId = Guid.NewGuid() }));
+            => Assert.Throws<ForbiddenException>(() => Bo(PermissionAction.None).Delete(new DeleteArgs { RowId = Guid.NewGuid() }));
 
         [Fact]
         [DisplayName("Save 含 Added 列但無 Create 授權應擋（逐列 RowState→Create）")]
         public void Save_AddedRow_NoCreateGrant_ThrowsForbidden()
         {
             // 持有 Update|Delete 但缺 Create → Added 列觸發的 Create 被擋
-            var bo = Bo(PermissionActions.Update | PermissionActions.Delete);
+            var bo = Bo(PermissionAction.Update | PermissionAction.Delete);
             Assert.Throws<ForbiddenException>(() => bo.Save(new SaveArgs { DataSet = AddedRowDataSet() }));
         }
 
@@ -75,7 +75,7 @@ namespace Bee.Business.UnitTests.Form
         [DisplayName("GetList 有 Read 授權應放行進 repository")]
         public void GetList_WithReadGrant_PassesGate()
         {
-            var bo = Bo(PermissionActions.Read, new StubRepo());
+            var bo = Bo(PermissionAction.Read, new StubRepo());
 
             var ex = Record.Exception(() => bo.GetList(new GetListArgs()));
 
@@ -86,7 +86,7 @@ namespace Bee.Business.UnitTests.Form
         [DisplayName("Save 含 Added 列且有 Create 授權應放行")]
         public void Save_AddedRow_WithCreateGrant_PassesGate()
         {
-            var bo = Bo(PermissionActions.Create, new StubRepo());
+            var bo = Bo(PermissionAction.Create, new StubRepo());
 
             var ex = Record.Exception(() => bo.Save(new SaveArgs { DataSet = AddedRowDataSet() }));
 
@@ -98,7 +98,7 @@ namespace Bee.Business.UnitTests.Form
         public void EmptyPermissionModelId_SkipsGate()
         {
             // Employee 無 PermissionModelId → 即使 Can 全否,gate 也不查、直接放行
-            var bo = Bo(PermissionActions.None, new StubRepo(), UngatedProgId);
+            var bo = Bo(PermissionAction.None, new StubRepo(), UngatedProgId);
 
             var ex = Record.Exception(() => bo.GetList(new GetListArgs()));
 
@@ -107,9 +107,9 @@ namespace Bee.Business.UnitTests.Form
 
         private sealed class FakeAuth : IAuthorizationService
         {
-            private readonly PermissionActions _allowed;
-            public FakeAuth(PermissionActions allowed) { _allowed = allowed; }
-            public bool Can(Guid accessToken, string modelId, PermissionActions action) => _allowed.HasFlag(action);
+            private readonly PermissionAction _allowed;
+            public FakeAuth(PermissionAction allowed) { _allowed = allowed; }
+            public bool Can(Guid accessToken, string modelId, PermissionAction action) => _allowed.HasFlag(action);
         }
 
         private sealed class FakeFactory : IFormRepositoryFactory

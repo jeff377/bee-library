@@ -17,20 +17,20 @@ namespace Bee.Definition.UnitTests.Settings
             var models = new PermissionModels();
 
             var po = models.Models!.Add("PurchaseOrder", "採購單");
-            po.Rules!.Add(PermissionActions.Read, ScopeStrategy.DeptAndSub);
-            po.Rules!.Add(PermissionActions.Create, ScopeStrategy.All);
-            po.Rules!.Add(PermissionActions.Update, ScopeStrategy.Own);
-            po.Rules!.Add(PermissionActions.Delete, ScopeStrategy.Own);
-            po.Rules!.Add(PermissionActions.Print);
-            po.Rules!.Add(PermissionActions.Export);
+            po.Rules!.Add(PermissionAction.Read, ScopeStrategy.DeptAndSub);
+            po.Rules!.Add(PermissionAction.Create, ScopeStrategy.All);
+            po.Rules!.Add(PermissionAction.Update, ScopeStrategy.Own);
+            po.Rules!.Add(PermissionAction.Delete, ScopeStrategy.Own);
+            po.Rules!.Add(PermissionAction.Print);
+            po.Rules!.Add(PermissionAction.Export);
 
             var vendor = models.Models!.Add("Vendor", "廠商");
-            vendor.Rules!.Add(PermissionActions.Read, ScopeStrategy.All);
-            vendor.Rules!.Add(PermissionActions.Update, ScopeStrategy.Own);
+            vendor.Rules!.Add(PermissionAction.Read, ScopeStrategy.All);
+            vendor.Rules!.Add(PermissionAction.Update, ScopeStrategy.Own);
 
             var req = models.Models!.Add("Requisition", "請購單");
-            req.Rules!.Add(PermissionActions.Read, ScopeStrategy.DeptAndSub);
-            req.Rules!.Add(PermissionActions.Create, ScopeStrategy.All);
+            req.Rules!.Add(PermissionAction.Read, ScopeStrategy.DeptAndSub);
+            req.Rules!.Add(PermissionAction.Create, ScopeStrategy.All);
 
             return models;
         }
@@ -59,9 +59,9 @@ namespace Bee.Definition.UnitTests.Settings
         [DisplayName("PermissionRule Action 應同時設定為集合 Key")]
         public void PermissionRule_Action_SetsAsKey()
         {
-            var rule = new PermissionRule(PermissionActions.Update, ScopeStrategy.Own);
+            var rule = new PermissionRule(PermissionAction.Update, ScopeStrategy.Own);
 
-            Assert.Equal(PermissionActions.Update, rule.Action);
+            Assert.Equal(PermissionAction.Update, rule.Action);
             Assert.Equal(ScopeStrategy.Own, rule.Scope);
             Assert.Equal("Update", rule.Key);
         }
@@ -70,7 +70,7 @@ namespace Bee.Definition.UnitTests.Settings
         [DisplayName("PermissionRule 預設 Scope 應為 Inherit")]
         public void PermissionRule_DefaultScope_IsInherit()
         {
-            var rule = new PermissionRule(PermissionActions.Print);
+            var rule = new PermissionRule(PermissionAction.Print);
 
             Assert.Equal(ScopeStrategy.Inherit, rule.Scope);
         }
@@ -80,7 +80,7 @@ namespace Bee.Definition.UnitTests.Settings
         public void PermissionRuleCollection_IndexedByAction()
         {
             var model = new PermissionModel("PurchaseOrder", "採購單");
-            model.Rules!.Add(PermissionActions.Read, ScopeStrategy.DeptAndSub);
+            model.Rules!.Add(PermissionAction.Read, ScopeStrategy.DeptAndSub);
 
             Assert.Equal(ScopeStrategy.DeptAndSub, model.Rules!["Read"].Scope);
         }
@@ -91,7 +91,7 @@ namespace Bee.Definition.UnitTests.Settings
         {
             var models = new PermissionModels();
             var po = models.Models!.Add("PurchaseOrder", "採購單");
-            po.Rules!.Add(PermissionActions.Print);
+            po.Rules!.Add(PermissionAction.Print);
 
             var xml = XmlCodec.Serialize(models);
 
@@ -105,7 +105,7 @@ namespace Bee.Definition.UnitTests.Settings
         {
             var models = new PermissionModels();
             var po = models.Models!.Add("PurchaseOrder", "採購單");
-            po.Rules!.Add(PermissionActions.Update, ScopeStrategy.Own);
+            po.Rules!.Add(PermissionAction.Update, ScopeStrategy.Own);
 
             var xml = XmlCodec.Serialize(models);
 
@@ -130,7 +130,7 @@ namespace Bee.Definition.UnitTests.Settings
             Assert.Equal(ScopeStrategy.All, po.Rules!["Create"].Scope);
             Assert.Equal(ScopeStrategy.Own, po.Rules!["Update"].Scope);
             Assert.Equal(ScopeStrategy.Inherit, po.Rules!["Print"].Scope);
-            Assert.Equal(PermissionActions.Export, po.Rules!["Export"].Action);
+            Assert.Equal(PermissionAction.Export, po.Rules!["Export"].Action);
 
             Assert.Equal(ScopeStrategy.All, restored.Models!["Vendor"].Rules!["Read"].Scope);
         }
@@ -152,7 +152,7 @@ namespace Bee.Definition.UnitTests.Settings
         {
             var models = new PermissionModels();
             var po = models.Models!.Add("PurchaseOrder", "採購單");
-            po.Rules!.Add(PermissionActions.Print, ScopeStrategy.Own);
+            po.Rules!.Add(PermissionAction.Print, ScopeStrategy.Own);
 
             var errors = models.Validate();
 

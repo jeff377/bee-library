@@ -16,7 +16,7 @@ namespace Bee.Definition.Identity
         /// </summary>
         /// <param name="accessToken">The session's access token.</param>
         /// <param name="modelId">The permission model id.</param>
-        /// <param name="action">The action to check (a single <see cref="PermissionActions"/> flag).</param>
-        bool Can(Guid accessToken, string modelId, PermissionActions action);
+        /// <param name="action">The action to check (a single <see cref="PermissionAction"/> flag).</param>
+        bool Can(Guid accessToken, string modelId, PermissionAction action);
     }
 }
