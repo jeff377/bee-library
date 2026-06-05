@@ -7,6 +7,11 @@
 | 1 | 部門樹三棲物件（XML+JSON+MessagePack）+ `ft_department.parent_rowid` + per-company 快取鏈（cache / service / repository） | ✅ 已完成（2026-06-05） |
 | 2 | `GetDepartmentTree` API（SystemBO 跨 contract / wire / client）+ wire round-trip 測試 | ✅ 已完成（2026-06-05） |
 
+> **修訂（2026-06-05，commit `cec3cccf`）：`DepartmentTree` 序列化結構由「扁平 `Nodes` + `DepartmentNode.ParentRowId`」改為「巢狀 `Roots` 森林 + `DepartmentNode.Children`」。**
+> 動機：序列化結果本身即多階，前端可直接渲染樹、XML 縮排即組織層級、人工查看直覺（階層難三棲序列化的原顧慮以 `FilterGroup` 既有遞迴巢狀為反例排除）。
+> 結構調整：新增 `DepartmentRow` 扁平載體承載「DB 讀列→組樹」的 parent 資訊；`DepartmentNode` 去 `ParentRowId`、改持序列化 `Children`；`DepartmentTree` ctor 從 `DepartmentRow[]` 組樹並防環，lazy index 改 `_byRowId` + `_parentOf`；`IDepartmentRepository.GetDepartments` 回 `DepartmentRow`（DB 仍扁平）。
+> **查詢 API（`GetSelfAndDescendants` / `GetSelfAndAncestors` / `Contains` / `GetNode`）簽名不變**，record scope 取用不受影響。下方「設計」段落仍記錄原始扁平方案，巢狀為現行實作。
+
 ## 背景
 
 record scope（層二，`ScopeStrategy.Dept` / `DeptAndSub`）需要「當前 user 的部門 + 子部門」才能過濾資料範圍。前置是**組織階層**——目前 `ft_department` 平坦（只有 `manager_rowid`，無 parent），沒有任何部門樹 / 階層查詢。
@@ -32,6 +37,8 @@ record scope（層二，`ScopeStrategy.Dept` / `DeptAndSub`）需要「當前 us
 純樹（單一上級），比照既有 `manager_rowid`：Guid NOT NULL、`Guid.Empty` 表「無上級」。company-category 表（per-company 各自的部門樹）。
 
 ### 2. `DepartmentTree` 三棲可序列化物件（`Bee.Definition/Organization/`）
+
+> ⚠️ **本節為原始扁平方案，已被巢狀改版取代（見頂部修訂註記，commit `cec3cccf`）。** 現行：序列化狀態為巢狀 `Roots` 森林、`DepartmentNode` 持 `Children`、扁平 `DepartmentRow` 僅作 DB 載體。以下保留原設計脈絡。
 
 **序列化狀態**（扁平節點清單）與**查詢索引**（parent→children + 後代集合）分離：前者三棲序列化、後者 lazy 建立不序列化。集合照 `MessagePackCollectionBase<T>` 樣板（三棲最乾淨：`Owner`/`SerializeState`/`Tag` 三標籤全跳過、無 `ItemsForSerialization` 代理；MessagePack 由 `FormatterResolver` 動態掛 `CollectionBaseFormatter`，**不需改 `MessagePackCodec`**）。
 
