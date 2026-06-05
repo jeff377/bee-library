@@ -88,6 +88,6 @@
 
 - [ADR-009](adr-009-cache-implementation.md)：`Bee.ObjectCaching` 快取實作
 - [ADR-018](adr-018-db-define-storage.md)：定義儲存於資料庫（本機制的主要消費端之一）
-- 計畫：[`plan-db-cache-dependency.md`](../plans/plan-db-cache-dependency.md)、[`plan-define-cache-db-invalidation.md`](../plans/plan-define-cache-db-invalidation.md)
+- 計畫：[`plan-db-cache-dependency.md`](../archive/plan-db-cache-dependency.md)、[`plan-define-cache-db-invalidation.md`](../archive/plan-define-cache-db-invalidation.md)（已封存）
 - 使用指引：[`development-cookbook.md`](../development-cookbook.md) §跨 process 快取失效
 - 命名慣例：[`database-naming-conventions.md`](../database-naming-conventions.md)

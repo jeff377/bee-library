@@ -78,5 +78,5 @@
 - [ADR-017](adr-017-db-cache-invalidation.md)：資料庫快取失效機制（本儲存的失效通道）
 - [ADR-016](adr-016-multitenant-customization-overlay.md)：多租戶客製化覆蓋層（`customize_id` 語意來源）
 - [ADR-009](adr-009-cache-implementation.md)：快取實作（cache 笨儲存 / service 載入分層）
-- 計畫：[`plan-db-define-storage.md`](../plans/plan-db-define-storage.md)
+- 計畫：[`plan-db-define-storage.md`](../archive/plan-db-define-storage.md)（已封存）
 - 命名慣例：[`database-naming-conventions.md`](../database-naming-conventions.md)

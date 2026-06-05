@@ -70,9 +70,9 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
 
 ## 參考
 
-- 定義層：[plan-erp-permission.md](../plans/plan-erp-permission.md)
-- 層一：[plan-permission-line-b.md](../plans/plan-permission-line-b.md)
-- 組織部門樹：[plan-org-department-tree.md](../plans/plan-org-department-tree.md)
-- 層二 record scope：[plan-record-scope-enforcement.md](../plans/plan-record-scope-enforcement.md)
+- 定義層：[plan-erp-permission.md](../archive/plan-erp-permission.md)（已封存）
+- 層一：[plan-permission-line-b.md](../archive/plan-permission-line-b.md)（已封存）
+- 組織部門樹：[plan-org-department-tree.md](../archive/plan-org-department-tree.md)（已封存）
+- 層二 record scope：[plan-record-scope-enforcement.md](../archive/plan-record-scope-enforcement.md)（已封存）
 - 相關 ADR：[ADR-005（FormSchema 驅動）](adr-005-formschema-driven.md)、[ADR-010（邏輯 DB 分類）](adr-010-logical-database-category.md)、[ADR-012（Session 公司情境）](adr-012-session-company-context.md)、[ADR-017（DB 快取失效）](adr-017-db-cache-invalidation.md)
 - 使用者指南：[permission-authorization.zh-TW.md](../permission-authorization.zh-TW.md)
