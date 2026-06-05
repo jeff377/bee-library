@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Bee.Definition.Organization;
 
 namespace Bee.Definition.UnitTests.Organization

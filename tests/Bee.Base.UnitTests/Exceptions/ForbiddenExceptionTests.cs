@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Bee.Base.Exceptions;
 
 namespace Bee.Base.UnitTests.Exceptions

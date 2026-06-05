@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Bee.Definition.Settings;
 
 namespace Bee.Definition.UnitTests.Settings
