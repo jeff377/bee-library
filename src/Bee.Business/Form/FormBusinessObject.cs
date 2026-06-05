@@ -245,6 +245,11 @@ namespace Bee.Business.Form
         /// <exception cref="ForbiddenException">A mutated master row is outside the caller's scope.</exception>
         private void EnforceWriteScope(DataSet dataSet, IDataFormRepository repository)
         {
+            // NOTE: Kept as one method despite SonarCloud `S3776` (cognitive complexity 16 vs 15).
+            // The per-row loop, its `RowState`-to-action mapping, and the resolve-the-filter-at-most-
+            // once-per-action caching read as one coherent sequence. Extracting a fragment to shave a
+            // single point would scatter the boundary logic without making any part clearer. Tracked
+            // for human review in `docs/.sonar-fix-state/skip.json`.
             var schema = DefineAccess.GetFormSchema(ProgId);
             if (string.IsNullOrEmpty(schema.PermissionModelId)) { return; }
 

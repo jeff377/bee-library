@@ -26,7 +26,7 @@
       "component": "src/Bee.Business/Form/FormBusinessObject.cs",
       "line": 246,
       "message": "Refactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.",
-      "reason": "S3776（Cognitive Complexity）依 .claude/rules/sonarcloud.md 列為「不納入」硬性規則——屬重構判斷題，需依情境評估。此處僅超標 1（16→15），位於業務邏輯主流程，貿然拆方法反而降低可讀性。交由人工判斷是否重構，或於 SonarCloud UI 標 Won't Fix。",
+      "reason": "S3776（Cognitive Complexity）依 .claude/rules/sonarcloud.md 列為「不納入」硬性規則——屬重構判斷題，需依情境評估。此處僅超標 1（16→15），逐列掃描 + RowState 對應動作 + 每動作只解析一次 filter 為一段連貫流程，拆方法反而打散界線邏輯。已於 EnforceWriteScope 方法內加 NOTE 註解記錄決定。交由人工判斷是否重構，或於 SonarCloud UI 標 Won't Fix。",
       "lastAttempt": "2026-06-05"
     },
     "AZ6YUVi4THdL5EWBT9qH": {
@@ -35,7 +35,7 @@
       "component": "src/Bee.Definition/Settings/Permission/PermissionBindingValidator.cs",
       "line": 21,
       "message": "Refactor this method to reduce its Cognitive Complexity from 25 to the 15 allowed.",
-      "reason": "S3776（Cognitive Complexity）依 .claude/rules/sonarcloud.md 列為「不納入」硬性規則——屬重構判斷題，需依情境評估。此驗證方法逐項檢查綁定條件，複雜度來自必要的分支驗證；拆解需人工設計子方法邊界以保持語意清晰。交由人工判斷重構，或於 SonarCloud UI 標 Won't Fix。",
+      "reason": "S3776（Cognitive Complexity）依 .claude/rules/sonarcloud.md 列為「不納入」硬性規則——屬重構判斷題，需依情境評估。此驗證方法為一串各自獨立、由上而下的綁定驗證規則，複雜度來自規則數量累加而非單一規則複雜；拆成 per-rule helper 只增加間接層、不會讓任一檢查更清楚。已於 Validate 方法內加 NOTE 註解記錄決定。交由人工判斷重構，或於 SonarCloud UI 標 Won't Fix。",
       "lastAttempt": "2026-06-05"
     }
   }

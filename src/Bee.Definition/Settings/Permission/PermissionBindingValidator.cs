@@ -23,6 +23,11 @@ namespace Bee.Definition.Settings
             ArgumentNullException.ThrowIfNull(schemas);
             ArgumentNullException.ThrowIfNull(models);
 
+            // NOTE: Kept as one method despite SonarCloud `S3776` (cognitive complexity 25 vs 15).
+            // The body is a flat list of independent validation rules applied per schema, each simple
+            // and read top to bottom. Splitting into per-rule helpers would add indirection without
+            // making any single check clearer. Tracked for human review in
+            // `docs/.sonar-fix-state/skip.json`.
             var errors = new List<string>();
             foreach (var schema in schemas)
             {
