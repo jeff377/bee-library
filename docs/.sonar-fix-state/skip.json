@@ -19,24 +19,6 @@
       "message": "Rename the enumeration 'PermissionAction' to match the regular expression: '^([A-Z]{1,3}[a-z0-9]+)*([A-Z]{2})?s$'.",
       "reason": "False Positive。PermissionAction 雖為 [Flags]，但每個成員是單一動作；全部公開 API（IAuthorizationService.Can、FormBusinessObject.Authorize、PermissionRule.Add/ctor）皆傳單一 action，PermissionAction.Read 在每個呼叫端讀起來自然。集合語意由成員名（AllowedActions 等）承載而非型別名。BCL 有單數 [Flags] 前例（FileAccess、FileShare）。曾於 25146aad 改複數後評估呼叫端可讀性，於本次 revert 回單數。請於 SonarCloud UI 標 False Positive。",
       "lastAttempt": "2026-06-05"
-    },
-    "AZ6YUVzgTHdL5EWBT9qI": {
-      "rule": "csharpsquid:S3776",
-      "severity": "CRITICAL",
-      "component": "src/Bee.Business/Form/FormBusinessObject.cs",
-      "line": 246,
-      "message": "Refactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.",
-      "reason": "S3776（Cognitive Complexity）依 .claude/rules/sonarcloud.md 列為「不納入」硬性規則——屬重構判斷題，需依情境評估。此處僅超標 1（16→15），逐列掃描 + RowState 對應動作 + 每動作只解析一次 filter 為一段連貫流程，拆方法反而打散界線邏輯。已於 EnforceWriteScope 方法內加 NOTE 註解記錄決定。交由人工判斷是否重構，或於 SonarCloud UI 標 Won't Fix。",
-      "lastAttempt": "2026-06-05"
-    },
-    "AZ6YUVi4THdL5EWBT9qH": {
-      "rule": "csharpsquid:S3776",
-      "severity": "CRITICAL",
-      "component": "src/Bee.Definition/Settings/Permission/PermissionBindingValidator.cs",
-      "line": 21,
-      "message": "Refactor this method to reduce its Cognitive Complexity from 25 to the 15 allowed.",
-      "reason": "S3776（Cognitive Complexity）依 .claude/rules/sonarcloud.md 列為「不納入」硬性規則——屬重構判斷題，需依情境評估。此驗證方法為一串各自獨立、由上而下的綁定驗證規則，複雜度來自規則數量累加而非單一規則複雜；拆成 per-rule helper 只增加間接層、不會讓任一檢查更清楚。已於 Validate 方法內加 NOTE 註解記錄決定。交由人工判斷重構，或於 SonarCloud UI 標 Won't Fix。",
-      "lastAttempt": "2026-06-05"
     }
   }
 }

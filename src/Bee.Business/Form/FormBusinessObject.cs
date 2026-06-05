@@ -245,11 +245,6 @@ namespace Bee.Business.Form
         /// <exception cref="ForbiddenException">A mutated master row is outside the caller's scope.</exception>
         private void EnforceWriteScope(DataSet dataSet, IDataFormRepository repository)
         {
-            // NOTE: Kept as one method despite SonarCloud `S3776` (cognitive complexity 16 vs 15).
-            // The per-row loop, its `RowState`-to-action mapping, and the resolve-the-filter-at-most-
-            // once-per-action caching read as one coherent sequence. Extracting a fragment to shave a
-            // single point would scatter the boundary logic without making any part clearer. Tracked
-            // for human review in `docs/.sonar-fix-state/skip.json`.
             var schema = DefineAccess.GetFormSchema(ProgId);
             if (string.IsNullOrEmpty(schema.PermissionModelId)) { return; }
 
@@ -263,12 +258,7 @@ namespace Bee.Business.Form
 
             foreach (DataRow row in dataSet.Tables[masterTableName]!.Rows)
             {
-                var action = row.RowState switch
-                {
-                    DataRowState.Added => PermissionAction.None,    // Create — action-gated, not scope-checked
-                    DataRowState.Deleted => PermissionAction.Delete,
-                    _ => PermissionAction.Update,                   // Modified / Unchanged — saving an existing record
-                };
+                var action = WriteScopeActionForRowState(row.RowState);
                 if (action == PermissionAction.None) { continue; }
 
                 if (!scopeByAction.TryGetValue(action, out var scopeFilter))
@@ -309,6 +299,20 @@ namespace Bee.Business.Form
             if (denied != PermissionAction.None)
                 throw new ForbiddenException($"Permission denied: '{denied}' on model '{modelId}'.");
         }
+
+        /// <summary>
+        /// Maps a master row's <c>RowState</c> to the <see cref="PermissionAction"/> whose record
+        /// scope must be enforced on write. <c>Added</c> (Create) returns <see cref="PermissionAction.None"/>
+        /// because a new row has no existing scope to violate; <c>Modified</c> and <c>Unchanged</c>
+        /// both map to <see cref="PermissionAction.Update"/> (a details-only edit leaves the master
+        /// Unchanged but still persists the record).
+        /// </summary>
+        private static PermissionAction WriteScopeActionForRowState(DataRowState state) => state switch
+        {
+            DataRowState.Added => PermissionAction.None,
+            DataRowState.Deleted => PermissionAction.Delete,
+            _ => PermissionAction.Update,
+        };
 
         /// <summary>
         /// OR-merges the <see cref="PermissionAction"/> implied by every row's <c>RowState</c>
