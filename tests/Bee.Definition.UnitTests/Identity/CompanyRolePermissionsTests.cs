@@ -17,9 +17,9 @@ namespace Bee.Definition.UnitTests.Identity
         {
             var grants = new List<RoleGrantRow>
             {
-                new("Buyer", "PurchaseOrder", PermissionAction.Read | PermissionAction.Update),
-                new("Buyer", "Vendor", PermissionAction.Read),
-                new("Manager", "PurchaseOrder", PermissionAction.Delete),
+                new("Buyer", "PurchaseOrder", PermissionActions.Read | PermissionActions.Update),
+                new("Buyer", "Vendor", PermissionActions.Read),
+                new("Manager", "PurchaseOrder", PermissionActions.Delete),
             };
             var userRoles = new List<UserRoleRow>
             {
@@ -37,7 +37,7 @@ namespace Bee.Definition.UnitTests.Identity
 
             var allowed = perms.GetAllowed(s_buyer, "PurchaseOrder");
 
-            Assert.Equal(PermissionAction.Read | PermissionAction.Update, allowed);
+            Assert.Equal(PermissionActions.Read | PermissionActions.Update, allowed);
         }
 
         [Fact]
@@ -49,8 +49,8 @@ namespace Bee.Definition.UnitTests.Identity
             // Buyer(Read|Update) ∪ Manager(Delete) on PurchaseOrder
             var allowed = perms.GetAllowed(s_buyerManager, "PurchaseOrder");
 
-            Assert.Equal(PermissionAction.Read | PermissionAction.Update | PermissionAction.Delete, allowed);
-            Assert.True(allowed.HasFlag(PermissionAction.Delete));
+            Assert.Equal(PermissionActions.Read | PermissionActions.Update | PermissionActions.Delete, allowed);
+            Assert.True(allowed.HasFlag(PermissionActions.Delete));
         }
 
         [Fact]
@@ -61,8 +61,8 @@ namespace Bee.Definition.UnitTests.Identity
 
             var allowed = perms.GetAllowed(s_buyerManager, "Requisition");
 
-            Assert.Equal(PermissionAction.None, allowed);
-            Assert.False(allowed.HasFlag(PermissionAction.Read));
+            Assert.Equal(PermissionActions.None, allowed);
+            Assert.False(allowed.HasFlag(PermissionActions.Read));
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Bee.Definition.UnitTests.Identity
             // 只持有 Buyer → 不含 Manager 的 Delete
             var allowed = perms.GetAllowed(s_buyer, "PurchaseOrder");
 
-            Assert.False(allowed.HasFlag(PermissionAction.Delete));
+            Assert.False(allowed.HasFlag(PermissionActions.Delete));
         }
 
         [Fact]

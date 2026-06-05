@@ -17,8 +17,8 @@ namespace Bee.ObjectCaching.UnitTests.Services
         {
             var grants = new List<RoleGrantRow>
             {
-                new("Buyer", "PurchaseOrder", PermissionAction.Read | PermissionAction.Update),
-                new("Manager", "PurchaseOrder", PermissionAction.Delete),
+                new("Buyer", "PurchaseOrder", PermissionActions.Read | PermissionActions.Update),
+                new("Manager", "PurchaseOrder", PermissionActions.Delete),
             };
             return new CompanyRolePermissions("C001", grants, []);
         }
@@ -35,7 +35,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
         {
             var auth = Create(Session("C001", "Buyer"), BuildPerms());
 
-            Assert.True(auth.Can(s_token, "PurchaseOrder", PermissionAction.Read));
+            Assert.True(auth.Can(s_token, "PurchaseOrder", PermissionActions.Read));
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
             var auth = Create(Session("C001", "Buyer"), BuildPerms());
 
             // Buyer 沒有 Delete（只有 Manager 有）
-            Assert.False(auth.Can(s_token, "PurchaseOrder", PermissionAction.Delete));
+            Assert.False(auth.Can(s_token, "PurchaseOrder", PermissionActions.Delete));
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
             var auth = Create(Session("C001", "Buyer", "Manager"), BuildPerms());
 
             // Buyer(Read|Update) ∪ Manager(Delete) → Delete 通過
-            Assert.True(auth.Can(s_token, "PurchaseOrder", PermissionAction.Delete));
+            Assert.True(auth.Can(s_token, "PurchaseOrder", PermissionActions.Delete));
         }
 
         [Fact]
@@ -64,7 +64,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
         {
             var auth = Create(Session(null, "Buyer"), BuildPerms());
 
-            Assert.False(auth.Can(s_token, "PurchaseOrder", PermissionAction.Read));
+            Assert.False(auth.Can(s_token, "PurchaseOrder", PermissionActions.Read));
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
         {
             var auth = Create(Session("C001"), BuildPerms());
 
-            Assert.False(auth.Can(s_token, "PurchaseOrder", PermissionAction.Read));
+            Assert.False(auth.Can(s_token, "PurchaseOrder", PermissionActions.Read));
         }
 
         [Fact]
@@ -82,7 +82,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
         {
             var auth = Create(null, BuildPerms());
 
-            Assert.False(auth.Can(s_token, "PurchaseOrder", PermissionAction.Read));
+            Assert.False(auth.Can(s_token, "PurchaseOrder", PermissionActions.Read));
         }
 
         private sealed class FakeSessionInfoService : ISessionInfoService

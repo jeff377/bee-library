@@ -33,7 +33,7 @@ namespace Bee.Definition.UnitTests.Settings
         {
             var models = new PermissionModels();
             var po = models.Models!.Add("PurchaseOrder", "採購單");
-            po.Rules!.Add(PermissionAction.Read, ScopeStrategy.DeptAndSub);
+            po.Rules!.Add(PermissionActions.Read, ScopeStrategy.DeptAndSub);
             return models;
         }
 
