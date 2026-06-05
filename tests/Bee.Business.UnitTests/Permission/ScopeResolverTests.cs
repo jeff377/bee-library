@@ -225,7 +225,7 @@ namespace Bee.Business.UnitTests.Permission
 
         // ---- helpers ----
 
-        private static FilterNode FindByField(FilterGroup group, string field)
+        private static FilterCondition FindByField(FilterGroup group, string field)
         {
             foreach (var node in group.Nodes)
             {

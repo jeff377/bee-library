@@ -67,18 +67,18 @@ namespace Bee.Definition.Organization
             }
 
             var forest = new DepartmentNodeCollection();
-            foreach (var row in rowList)
+            foreach (var rowId in rowList.Select(row => row.RowId))
             {
-                var parentRowId = parentOf[row.RowId];
+                var parentRowId = parentOf[rowId];
                 if (parentRowId != Guid.Empty
                     && nodes.TryGetValue(parentRowId, out var parent)
-                    && IsSafeEdge(row.RowId, parentRowId, parentOf))
+                    && IsSafeEdge(rowId, parentRowId, parentOf))
                 {
-                    (parent.Children ??= []).Add(nodes[row.RowId]);
+                    (parent.Children ??= []).Add(nodes[rowId]);
                 }
                 else
                 {
-                    forest.Add(nodes[row.RowId]);
+                    forest.Add(nodes[rowId]);
                 }
             }
             return forest;

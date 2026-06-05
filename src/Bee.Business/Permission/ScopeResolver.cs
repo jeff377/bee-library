@@ -120,19 +120,19 @@ namespace Bee.Business.Permission
         }
 
         // ownerField IN (UserRowId, EmployeeRowId). An empty id set renders as "1 = 0" (deny).
-        private static FilterNode? OwnPredicate(string? ownerField, IReadOnlyList<object> ownerIds)
+        private static FilterCondition? OwnPredicate(string? ownerField, IReadOnlyList<object> ownerIds)
         {
             if (string.IsNullOrEmpty(ownerField)) { return null; }
             return new FilterCondition { FieldName = ownerField, Operator = ComparisonOperator.In, Value = ownerIds };
         }
 
-        private static FilterNode? DeptEqualPredicate(string? deptField, Guid deptRowId)
+        private static FilterCondition? DeptEqualPredicate(string? deptField, Guid deptRowId)
         {
             if (string.IsNullOrEmpty(deptField) || deptRowId == Guid.Empty) { return null; }
             return FilterCondition.Equal(deptField, deptRowId);
         }
 
-        private FilterNode? DeptSubtreePredicate(string? deptField, SessionInfo session)
+        private FilterCondition? DeptSubtreePredicate(string? deptField, SessionInfo session)
         {
             if (string.IsNullOrEmpty(deptField) || session.DeptRowId == Guid.Empty) { return null; }
             var tree = _departmentTreeService.Get(session.CompanyId!);
@@ -154,7 +154,7 @@ namespace Bee.Business.Permission
 
         // Always-false node ("<field> IN ()" → "1 = 0"). Uses a field guaranteed to be in the master
         // table's select context so field remapping does not choke.
-        private static FilterNode DenyAll(FormSchema? formSchema)
+        private static FilterCondition DenyAll(FormSchema? formSchema)
         {
             return new FilterCondition { FieldName = AnyMasterFieldName(formSchema), Operator = ComparisonOperator.In, Value = new List<object>() };
         }
@@ -166,14 +166,14 @@ namespace Bee.Business.Permission
             if (!string.IsNullOrEmpty(owner)) { return owner; }
             var dept = master?.GetDeptField()?.FieldName;
             if (!string.IsNullOrEmpty(dept)) { return dept; }
-            if (master?.Fields != null)
+            if (master?.Fields != null && master.Fields.Count > 0)
             {
-                foreach (var field in master.Fields) { return field.FieldName; }
+                return master.Fields[0].FieldName;
             }
             return "sys_rowid";
         }
 
-        private static IReadOnlyList<object> OwnerIdentities(SessionInfo session)
+        private static List<object> OwnerIdentities(SessionInfo session)
         {
             var ids = new List<object>(2);
             if (session.UserRowId != Guid.Empty) { ids.Add(session.UserRowId); }

@@ -30,7 +30,7 @@ namespace Bee.ObjectCaching.UnitTests.Services
             public IReadOnlyList<DepartmentRow> GetDepartments(string databaseId) => _resolver(databaseId);
         }
 
-        private static ICacheContainer NewCache()
+        private static CacheContainerService NewCache()
         {
             var paths = new PathOptions { DefinePath = Path.GetTempPath() };
             var storage = new FileDefineStorage(paths);

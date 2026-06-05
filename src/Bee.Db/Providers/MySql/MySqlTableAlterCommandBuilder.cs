@@ -79,7 +79,7 @@ namespace Bee.Db.Providers.MySql
         /// then the real default is restored as a metadata-only change so new rows still get a UUID
         /// and the column definition matches the fresh-CREATE schema (no comparer drift).
         /// </summary>
-        private static IReadOnlyList<string> BuildAddFieldStatements(string tableName, DbField field)
+        private static string[] BuildAddFieldStatements(string tableName, DbField field)
         {
             string tbl = MySqlSchemaSyntax.QuoteName(tableName);
             string realDefault = MySqlSchemaSyntax.GetDefaultExpression(field);
