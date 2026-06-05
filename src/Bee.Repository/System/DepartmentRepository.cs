@@ -27,7 +27,7 @@ namespace Bee.Repository.System
         }
 
         /// <inheritdoc/>
-        public IReadOnlyList<DepartmentNode> GetDepartments(string databaseId)
+        public IReadOnlyList<DepartmentRow> GetDepartments(string databaseId)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
 
@@ -43,10 +43,10 @@ namespace Bee.Repository.System
             var dbAccess = new DbAccess(databaseId, _connectionManager);
             var table = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql)).Table!;
 
-            var list = new List<DepartmentNode>(table.Rows.Count);
+            var list = new List<DepartmentRow>(table.Rows.Count);
             foreach (DataRow row in table.Rows)
             {
-                list.Add(new DepartmentNode(
+                list.Add(new DepartmentRow(
                     ValueUtilities.CGuid(row["sys_rowid"]),
                     ValueUtilities.CStr(row["sys_id"]),
                     ValueUtilities.CStr(row["sys_name"]),

@@ -10,9 +10,11 @@ namespace Bee.Repository.Abstractions.System
     public interface IDepartmentRepository
     {
         /// <summary>
-        /// Reads every department node from the company database's <c>ft_department</c> table.
+        /// Reads every department row from the company database's <c>ft_department</c> table as flat
+        /// <see cref="DepartmentRow"/> carriers (with the parent pointer); the in-memory
+        /// <see cref="DepartmentTree"/> assembles them into the nested hierarchy.
         /// </summary>
         /// <param name="databaseId">The company database id.</param>
-        IReadOnlyList<DepartmentNode> GetDepartments(string databaseId);
+        IReadOnlyList<DepartmentRow> GetDepartments(string databaseId);
     }
 }

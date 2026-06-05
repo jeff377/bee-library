@@ -19,20 +19,20 @@ namespace Bee.Api.Core.UnitTests.Organization
             var sales1 = Guid.NewGuid();
             var tree = new DepartmentTree("C001",
             [
-                new DepartmentNode(hq, "HQ", "總公司", Guid.Empty, Guid.Empty),
-                new DepartmentNode(sales, "SALES", "業務部", hq, Guid.Empty),
-                new DepartmentNode(sales1, "SALES1", "業務一課", sales, Guid.Empty),
+                new DepartmentRow(hq, "HQ", "總公司", Guid.Empty, Guid.Empty),
+                new DepartmentRow(sales, "SALES", "業務部", hq, Guid.Empty),
+                new DepartmentRow(sales1, "SALES1", "業務一課", sales, Guid.Empty),
             ]);
 
             var bytes = MessagePackCodec.Serialize(tree);
             var restored = MessagePackCodec.Deserialize<DepartmentTree>(bytes)!;
 
             Assert.Equal("C001", restored.CompanyId);
-            Assert.Equal(3, restored.Nodes!.Count);
+            Assert.Single(restored.Roots!);                                   // 巢狀：單一 root（總公司）
             // index 在反序列化後 lazy 重建
             Assert.Equal(3, restored.GetSelfAndDescendants(hq).Count);
             Assert.Equal(2, restored.GetSelfAndDescendants(sales).Count);
-            Assert.Equal(sales, restored.GetNode(sales1)!.ParentRowId);
+            Assert.Equal(new[] { sales1, sales, hq }, restored.GetSelfAndAncestors(sales1)); // 巢狀父子鏈還原
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Bee.Api.Core.UnitTests.Organization
             var restored = MessagePackCodec.Deserialize<DepartmentTree>(bytes)!;
 
             Assert.Equal("C001", restored.CompanyId);
-            Assert.Empty(restored.Roots);
+            Assert.Empty(restored.Roots!);
         }
     }
 }

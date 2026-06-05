@@ -21,8 +21,8 @@ namespace Bee.Api.Core.UnitTests.System
             {
                 Tree = new DepartmentTree("C001",
                 [
-                    new DepartmentNode(hq, "HQ", "總公司", Guid.Empty, Guid.Empty),
-                    new DepartmentNode(sales, "SALES", "業務部", hq, Guid.Empty),
+                    new DepartmentRow(hq, "HQ", "總公司", Guid.Empty, Guid.Empty),
+                    new DepartmentRow(sales, "SALES", "業務部", hq, Guid.Empty),
                 ]),
             };
 
@@ -31,7 +31,7 @@ namespace Bee.Api.Core.UnitTests.System
 
             Assert.NotNull(restored.Tree);
             Assert.Equal("C001", restored.Tree!.CompanyId);
-            Assert.Equal(2, restored.Tree.Nodes!.Count);
+            Assert.Single(restored.Tree.Roots!);                              // 巢狀：單一 root（總公司）
             Assert.Equal(2, restored.Tree.GetSelfAndDescendants(hq).Count);
         }
 

@@ -43,8 +43,8 @@ namespace Bee.ObjectCaching.Services
             var company = _companyInfoService.Get(companyId);
             if (company == null) { return null; }
 
-            var nodes = _repository.GetDepartments(company.CompanyDatabaseId);
-            var tree = new DepartmentTree(companyId, nodes);
+            var rows = _repository.GetDepartments(company.CompanyDatabaseId);
+            var tree = new DepartmentTree(companyId, rows);
             _cache.DepartmentTree.Set(tree);
             return tree;
         }

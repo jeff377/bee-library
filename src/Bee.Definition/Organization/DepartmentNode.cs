@@ -5,9 +5,10 @@ using MessagePack;
 namespace Bee.Definition.Organization
 {
     /// <summary>
-    /// A single department node in a company's department tree. A flat, serialisable record
-    /// (XML attribute / JSON / MessagePack); the tree structure is derived from
-    /// <see cref="ParentRowId"/> by <see cref="DepartmentTree"/>.
+    /// A single node in a company's department tree, holding its own <see cref="Children"/> so the
+    /// hierarchy is expressed by nesting (tri-modal: XML / JSON / MessagePack). The flat database
+    /// rows are assembled into this nested shape by <see cref="DepartmentTree"/>; the load-time
+    /// parent pointer lives on <see cref="DepartmentRow"/>, not here.
     /// </summary>
     [MessagePackObject]
     public sealed class DepartmentNode : MessagePackCollectionItem
@@ -23,14 +24,12 @@ namespace Bee.Definition.Organization
         /// <param name="rowId">The department row id (<c>ft_department.sys_rowid</c>).</param>
         /// <param name="deptId">The department business id (<c>sys_id</c>).</param>
         /// <param name="deptName">The department name (<c>sys_name</c>).</param>
-        /// <param name="parentRowId">The parent department row id; <see cref="System.Guid.Empty"/> for a root.</param>
         /// <param name="managerRowId">The manager (employee) row id.</param>
-        public DepartmentNode(Guid rowId, string deptId, string deptName, Guid parentRowId, Guid managerRowId)
+        public DepartmentNode(Guid rowId, string deptId, string deptName, Guid managerRowId)
         {
             RowId = rowId;
             DeptId = deptId;
             DeptName = deptName;
-            ParentRowId = parentRowId;
             ManagerRowId = managerRowId;
         }
 
@@ -49,14 +48,20 @@ namespace Bee.Definition.Organization
         [XmlAttribute]
         public string DeptName { get; set; } = string.Empty;
 
-        /// <summary>Gets or sets the parent department row id; <see cref="System.Guid.Empty"/> for a root node.</summary>
+        /// <summary>Gets or sets the manager (employee) row id.</summary>
         [Key(103)]
         [XmlAttribute]
-        public Guid ParentRowId { get; set; }
-
-        /// <summary>Gets or sets the manager (employee) row id.</summary>
-        [Key(104)]
-        [XmlAttribute]
         public Guid ManagerRowId { get; set; }
+
+        /// <summary>Gets or sets the child department nodes; <c>null</c> for a leaf.</summary>
+        [Key(104)]
+        [XmlArrayItem(typeof(DepartmentNode))]
+        public DepartmentNodeCollection? Children { get; set; }
+
+        /// <summary>
+        /// Determines whether the <see cref="Children"/> property should be serialized — XmlSerializer
+        /// honours <c>ShouldSerialize{PropertyName}()</c>, so a leaf omits an empty <c>Children</c> element.
+        /// </summary>
+        public bool ShouldSerializeChildren() => Children != null && Children.Count > 0;
     }
 }

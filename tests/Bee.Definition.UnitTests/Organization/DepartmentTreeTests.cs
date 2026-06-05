@@ -18,14 +18,14 @@ namespace Bee.Definition.UnitTests.Organization
             sales = Guid.NewGuid();
             sales1 = Guid.NewGuid();
             admin = Guid.NewGuid();
-            var nodes = new List<DepartmentNode>
+            var rows = new List<DepartmentRow>
             {
                 new(hq, "HQ", "總公司", Guid.Empty, Guid.Empty),
                 new(sales, "SALES", "業務部", hq, Guid.Empty),
                 new(sales1, "SALES1", "業務一課", sales, Guid.Empty),
                 new(admin, "ADMIN", "管理部", Guid.Empty, Guid.Empty),
             };
-            return new DepartmentTree("C001", nodes);
+            return new DepartmentTree("C001", rows);
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace Bee.Definition.UnitTests.Organization
             Assert.Equal("業務一課", tree.GetNode(sales1)!.DeptName);
             Assert.Null(tree.GetNode(Guid.NewGuid()));
             // 兩個 root：總公司、管理部
-            Assert.Equal(2, tree.Roots.Count);
+            Assert.Equal(2, tree.Roots!.Count);
             Assert.Contains(tree.Roots, n => n.RowId == hq);
             Assert.Contains(tree.Roots, n => n.RowId == admin);
         }
@@ -115,8 +115,8 @@ namespace Bee.Definition.UnitTests.Organization
             var b = Guid.NewGuid();
             var tree = new DepartmentTree("C001",
             [
-                new DepartmentNode(a, "A", "A", b, Guid.Empty),  // A 的上級是 B
-                new DepartmentNode(b, "B", "B", a, Guid.Empty),  // B 的上級是 A（環）
+                new DepartmentRow(a, "A", "A", b, Guid.Empty),  // A 的上級是 B
+                new DepartmentRow(b, "B", "B", a, Guid.Empty),  // B 的上級是 A（環）
             ]);
 
             var ex = Record.Exception(() =>
@@ -129,32 +129,33 @@ namespace Bee.Definition.UnitTests.Organization
         }
 
         [Fact]
-        [DisplayName("XML round-trip 還原後查詢一致（index 重建）")]
-        public void XmlRoundTrip_PreservesNodesAndQueries()
+        [DisplayName("XML round-trip 還原後巢狀結構與查詢一致（index 重建）")]
+        public void XmlRoundTrip_PreservesNestingAndQueries()
         {
-            var tree = Build(out var hq, out _, out _, out _);
+            var tree = Build(out var hq, out var sales, out var sales1, out _);
 
             var xml = XmlCodec.Serialize(tree);
             var restored = XmlCodec.Deserialize<DepartmentTree>(xml)!;
 
             Assert.Equal("C001", restored.CompanyId);
-            Assert.Equal(4, restored.Nodes!.Count);
-            Assert.Equal(3, restored.GetSelfAndDescendants(hq).Count);
-            Assert.Equal(2, restored.Roots.Count);
+            Assert.Equal(2, restored.Roots!.Count);                              // 兩個 root
+            Assert.Equal(3, restored.GetSelfAndDescendants(hq).Count);           // 巢狀子樹還原
+            Assert.Equal(new[] { sales1, sales, hq }, restored.GetSelfAndAncestors(sales1)); // 祖先鏈還原
         }
 
         [Fact]
-        [DisplayName("JSON round-trip 還原後查詢一致（index 重建）")]
-        public void JsonRoundTrip_PreservesNodesAndQueries()
+        [DisplayName("JSON round-trip 還原後巢狀結構與查詢一致（index 重建）")]
+        public void JsonRoundTrip_PreservesNestingAndQueries()
         {
-            var tree = Build(out var hq, out _, out _, out _);
+            var tree = Build(out var hq, out var sales, out var sales1, out _);
 
             var json = JsonSerializer.Serialize(tree);
             var restored = JsonSerializer.Deserialize<DepartmentTree>(json)!;
 
             Assert.Equal("C001", restored.CompanyId);
-            Assert.Equal(4, restored.Nodes!.Count);
+            Assert.Equal(2, restored.Roots!.Count);
             Assert.Equal(3, restored.GetSelfAndDescendants(hq).Count);
+            Assert.Equal(new[] { sales1, sales, hq }, restored.GetSelfAndAncestors(sales1));
         }
     }
 }

@@ -1,5 +1,4 @@
 using System.Xml.Serialization;
-using System.Text.Json.Serialization;
 using Bee.Base;
 using MessagePack;
 
@@ -7,14 +6,16 @@ namespace Bee.Definition.Organization
 {
     /// <summary>
     /// A per-company department tree snapshot, keyed by company id. The serialisable state is the
-    /// flat <see cref="Nodes"/> list (tri-modal: XML / JSON / MessagePack); the tree query index
-    /// (parent→children, self-and-descendant sets) is built lazily and never serialised.
+    /// nested <see cref="Roots"/> forest — each <see cref="DepartmentNode"/> carries its children —
+    /// so XML / JSON / MessagePack all round-trip the hierarchy directly (a front end renders it as
+    /// a tree without re-assembly). The query index (row-id lookup, parent map) is built lazily and
+    /// never serialised.
     /// </summary>
     /// <remarks>
-    /// Loaded by <c>DepartmentTreeService</c> from the company database and cached per company so
-    /// scope queries (<c>Dept</c> / <c>DeptAndSub</c>) run from memory. The flat node list is
-    /// immutable after construction; the index is a read-only derivation (built once under a lock),
-    /// so a cached instance is never mutated by queries.
+    /// Loaded by <c>DepartmentTreeService</c> from the company database (flat <see cref="DepartmentRow"/>
+    /// rows) and cached per company so scope queries (<c>Dept</c> / <c>DeptAndSub</c>) run from memory.
+    /// The nested forest is immutable after construction; the index is a read-only derivation (built
+    /// once under a lock), so a cached instance is never mutated by queries.
     /// </remarks>
     [MessagePackObject]
     public class DepartmentTree : IKeyObject
@@ -25,14 +26,16 @@ namespace Bee.Definition.Organization
         public DepartmentTree() { }
 
         /// <summary>
-        /// Initializes a new <see cref="DepartmentTree"/> from a flat node list.
+        /// Initializes a new <see cref="DepartmentTree"/> by assembling flat department rows into a
+        /// nested forest. Rows whose parent is empty or absent become roots; a cyclic parent chain in
+        /// dirty data is broken (the closing edge is dropped) so the forest stays acyclic.
         /// </summary>
         /// <param name="companyId">The company id (cache key).</param>
-        /// <param name="nodes">The flat department nodes.</param>
-        public DepartmentTree(string companyId, IEnumerable<DepartmentNode> nodes)
+        /// <param name="rows">The flat department rows.</param>
+        public DepartmentTree(string companyId, IEnumerable<DepartmentRow> rows)
         {
             CompanyId = companyId ?? throw new ArgumentNullException(nameof(companyId));
-            Nodes = [.. nodes ?? []];
+            Roots = BuildForest(rows ?? []);
         }
 
         /// <summary>Gets or sets the company id (cache key).</summary>
@@ -40,20 +43,66 @@ namespace Bee.Definition.Organization
         [XmlAttribute]
         public string CompanyId { get; set; } = string.Empty;
 
-        /// <summary>Gets or sets the flat department nodes (the only serialised state).</summary>
+        /// <summary>Gets or sets the root department nodes (each nests its children); the serialised state.</summary>
         [Key(101)]
         [XmlArrayItem(typeof(DepartmentNode))]
-        public DepartmentNodeCollection? Nodes { get; set; }
+        public DepartmentNodeCollection? Roots { get; set; }
 
         /// <summary>
         /// Gets the item key value (the company id).
         /// </summary>
         public string GetKey() => CompanyId;
 
+        // ---- forest assembly (flat rows -> nested nodes) ----
+
+        private static DepartmentNodeCollection BuildForest(IEnumerable<DepartmentRow> rows)
+        {
+            var rowList = rows as IReadOnlyList<DepartmentRow> ?? [.. rows];
+            var nodes = new Dictionary<Guid, DepartmentNode>(rowList.Count);
+            var parentOf = new Dictionary<Guid, Guid>(rowList.Count);
+            foreach (var row in rowList)
+            {
+                nodes[row.RowId] = new DepartmentNode(row.RowId, row.DeptId, row.DeptName, row.ManagerRowId);
+                parentOf[row.RowId] = row.ParentRowId;
+            }
+
+            var forest = new DepartmentNodeCollection();
+            foreach (var row in rowList)
+            {
+                var parentRowId = parentOf[row.RowId];
+                if (parentRowId != Guid.Empty
+                    && nodes.TryGetValue(parentRowId, out var parent)
+                    && IsSafeEdge(row.RowId, parentRowId, parentOf))
+                {
+                    (parent.Children ??= []).Add(nodes[row.RowId]);
+                }
+                else
+                {
+                    forest.Add(nodes[row.RowId]);
+                }
+            }
+            return forest;
+        }
+
+        // Returns false when attaching child under parent would close a cycle — i.e. walking up from
+        // parent (via the flat parent map) reaches child again. Dropping such an edge makes the child
+        // a root, so a cyclic input degrades to a flat forest instead of an infinite object graph.
+        private static bool IsSafeEdge(Guid child, Guid parent, Dictionary<Guid, Guid> parentOf)
+        {
+            var visited = new HashSet<Guid> { child };
+            var current = parent;
+            while (current != Guid.Empty && parentOf.TryGetValue(current, out var next))
+            {
+                if (current == child) { return false; }
+                if (!visited.Add(current)) { return false; }
+                current = next;
+            }
+            return true;
+        }
+
         // ---- lazy query index (not serialised) ----
         private Dictionary<Guid, DepartmentNode>? _byRowId;
-        private Dictionary<Guid, List<Guid>>? _selfAndDescendants;
-        private List<DepartmentNode>? _roots;
+        private Dictionary<Guid, Guid>? _parentOf;
         private readonly object _indexLock = new();
         private volatile bool _indexBuilt;
 
@@ -64,76 +113,23 @@ namespace Bee.Definition.Organization
             {
                 if (_indexBuilt) { return; }
 
-                var byRowId = BuildByRowId(Nodes);
-                var (children, roots) = BuildChildrenAndRoots(byRowId);
-
-                _byRowId = byRowId;
-                _selfAndDescendants = BuildSelfAndDescendants(byRowId, children);
-                _roots = roots;
-                _indexBuilt = true;
-            }
-        }
-
-        private static Dictionary<Guid, DepartmentNode> BuildByRowId(DepartmentNodeCollection? nodes)
-        {
-            var byRowId = new Dictionary<Guid, DepartmentNode>();
-            foreach (var node in nodes ?? [])
-            {
-                byRowId[node.RowId] = node;
-            }
-            return byRowId;
-        }
-
-        private static (Dictionary<Guid, List<Guid>> children, List<DepartmentNode> roots) BuildChildrenAndRoots(
-            Dictionary<Guid, DepartmentNode> byRowId)
-        {
-            var children = new Dictionary<Guid, List<Guid>>();
-            var roots = new List<DepartmentNode>();
-            foreach (var node in byRowId.Values)
-            {
-                // A node whose parent is empty or missing is treated as a root.
-                if (node.ParentRowId == Guid.Empty || !byRowId.ContainsKey(node.ParentRowId))
-                {
-                    roots.Add(node);
-                }
-                else
-                {
-                    if (!children.TryGetValue(node.ParentRowId, out var list))
-                    {
-                        children[node.ParentRowId] = list = [];
-                    }
-                    list.Add(node.RowId);
-                }
-            }
-            return (children, roots);
-        }
-
-        // Pre-compute the self-and-descendant set per node (iterative DFS with a visited guard
-        // so a cyclic parent reference in dirty data cannot loop forever).
-        private static Dictionary<Guid, List<Guid>> BuildSelfAndDescendants(
-            Dictionary<Guid, DepartmentNode> byRowId,
-            Dictionary<Guid, List<Guid>> children)
-        {
-            var selfAndDescendants = new Dictionary<Guid, List<Guid>>();
-            foreach (var rowId in byRowId.Keys)
-            {
-                var result = new List<Guid>();
-                var visited = new HashSet<Guid>();
-                var stack = new Stack<Guid>();
-                stack.Push(rowId);
+                var byRowId = new Dictionary<Guid, DepartmentNode>();
+                var parentOf = new Dictionary<Guid, Guid>();
+                var stack = new Stack<(DepartmentNode node, Guid parentRowId)>();
+                foreach (var root in Roots ?? []) { stack.Push((root, Guid.Empty)); }
                 while (stack.Count > 0)
                 {
-                    var current = stack.Pop();
-                    if (!visited.Add(current)) { continue; }
-                    result.Add(current);
-                    if (children.TryGetValue(current, out var kids))
-                    {
-                        foreach (var kid in kids) { stack.Push(kid); }
-                    }
+                    var (node, parentRowId) = stack.Pop();
+                    // TryAdd guards against a shared/duplicate node reference looping the walk.
+                    if (!byRowId.TryAdd(node.RowId, node)) { continue; }
+                    parentOf[node.RowId] = parentRowId;
+                    foreach (var child in node.Children ?? []) { stack.Push((child, node.RowId)); }
                 }
-                selfAndDescendants[rowId] = result;
+
+                _byRowId = byRowId;
+                _parentOf = parentOf;
+                _indexBuilt = true;
             }
-            return selfAndDescendants;
         }
 
         /// <summary>
@@ -144,7 +140,20 @@ namespace Bee.Definition.Organization
         public IReadOnlyList<Guid> GetSelfAndDescendants(Guid deptRowId)
         {
             EnsureIndex();
-            return _selfAndDescendants!.TryGetValue(deptRowId, out var set) ? set : [];
+            if (!_byRowId!.TryGetValue(deptRowId, out var start)) { return []; }
+
+            var result = new List<Guid>();
+            var visited = new HashSet<Guid>();
+            var stack = new Stack<DepartmentNode>();
+            stack.Push(start);
+            while (stack.Count > 0)
+            {
+                var node = stack.Pop();
+                if (!visited.Add(node.RowId)) { continue; }
+                result.Add(node.RowId);
+                foreach (var child in node.Children ?? []) { stack.Push(child); }
+            }
+            return result;
         }
 
         /// <summary>
@@ -160,11 +169,11 @@ namespace Bee.Definition.Organization
             var result = new List<Guid>();
             var visited = new HashSet<Guid>();
             var current = deptRowId;
-            while (visited.Add(current) && _byRowId.TryGetValue(current, out var node))
+            while (visited.Add(current) && _byRowId.ContainsKey(current))
             {
                 result.Add(current);
-                if (node.ParentRowId == Guid.Empty) { break; }
-                current = node.ParentRowId;
+                if (!_parentOf!.TryGetValue(current, out var parent) || parent == Guid.Empty) { break; }
+                current = parent;
             }
             return result;
         }
@@ -183,19 +192,6 @@ namespace Bee.Definition.Organization
         {
             EnsureIndex();
             return _byRowId!.TryGetValue(deptRowId, out var node) ? node : null;
-        }
-
-        /// <summary>Gets the root department nodes (no parent, or parent outside the tree).</summary>
-        [IgnoreMember]
-        [XmlIgnore]
-        [JsonIgnore]
-        public IReadOnlyList<DepartmentNode> Roots
-        {
-            get
-            {
-                EnsureIndex();
-                return _roots!;
-            }
         }
     }
 }
