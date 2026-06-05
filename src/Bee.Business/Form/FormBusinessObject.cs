@@ -192,9 +192,9 @@ namespace Bee.Business.Form
             if (required == PermissionAction.None) { return; }
 
             var authorization = Services.GetRequiredService<IAuthorizationService>();
-            foreach (var action in s_writeActions)
+            foreach (var action in s_writeActions.Where(action => required.HasFlag(action)))
             {
-                if (required.HasFlag(action) && !authorization.Can(AccessToken, modelId, action))
+                if (!authorization.Can(AccessToken, modelId, action))
                     throw new ForbiddenException($"Permission denied: '{action}' on model '{modelId}'.");
             }
         }

@@ -64,58 +64,76 @@ namespace Bee.Definition.Organization
             {
                 if (_indexBuilt) { return; }
 
-                var byRowId = new Dictionary<Guid, DepartmentNode>();
-                foreach (var node in Nodes ?? [])
-                {
-                    byRowId[node.RowId] = node;
-                }
-
-                var children = new Dictionary<Guid, List<Guid>>();
-                var roots = new List<DepartmentNode>();
-                foreach (var node in byRowId.Values)
-                {
-                    // A node whose parent is empty or missing is treated as a root.
-                    if (node.ParentRowId == Guid.Empty || !byRowId.ContainsKey(node.ParentRowId))
-                    {
-                        roots.Add(node);
-                    }
-                    else
-                    {
-                        if (!children.TryGetValue(node.ParentRowId, out var list))
-                        {
-                            children[node.ParentRowId] = list = [];
-                        }
-                        list.Add(node.RowId);
-                    }
-                }
-
-                // Pre-compute self-and-descendant set per node (iterative DFS with a visited guard
-                // so a cyclic parent reference in dirty data cannot loop forever).
-                var selfAndDescendants = new Dictionary<Guid, List<Guid>>();
-                foreach (var rowId in byRowId.Keys)
-                {
-                    var result = new List<Guid>();
-                    var visited = new HashSet<Guid>();
-                    var stack = new Stack<Guid>();
-                    stack.Push(rowId);
-                    while (stack.Count > 0)
-                    {
-                        var current = stack.Pop();
-                        if (!visited.Add(current)) { continue; }
-                        result.Add(current);
-                        if (children.TryGetValue(current, out var kids))
-                        {
-                            foreach (var kid in kids) { stack.Push(kid); }
-                        }
-                    }
-                    selfAndDescendants[rowId] = result;
-                }
+                var byRowId = BuildByRowId(Nodes);
+                var (children, roots) = BuildChildrenAndRoots(byRowId);
 
                 _byRowId = byRowId;
-                _selfAndDescendants = selfAndDescendants;
+                _selfAndDescendants = BuildSelfAndDescendants(byRowId, children);
                 _roots = roots;
                 _indexBuilt = true;
             }
+        }
+
+        private static Dictionary<Guid, DepartmentNode> BuildByRowId(DepartmentNodeCollection? nodes)
+        {
+            var byRowId = new Dictionary<Guid, DepartmentNode>();
+            foreach (var node in nodes ?? [])
+            {
+                byRowId[node.RowId] = node;
+            }
+            return byRowId;
+        }
+
+        private static (Dictionary<Guid, List<Guid>> children, List<DepartmentNode> roots) BuildChildrenAndRoots(
+            Dictionary<Guid, DepartmentNode> byRowId)
+        {
+            var children = new Dictionary<Guid, List<Guid>>();
+            var roots = new List<DepartmentNode>();
+            foreach (var node in byRowId.Values)
+            {
+                // A node whose parent is empty or missing is treated as a root.
+                if (node.ParentRowId == Guid.Empty || !byRowId.ContainsKey(node.ParentRowId))
+                {
+                    roots.Add(node);
+                }
+                else
+                {
+                    if (!children.TryGetValue(node.ParentRowId, out var list))
+                    {
+                        children[node.ParentRowId] = list = [];
+                    }
+                    list.Add(node.RowId);
+                }
+            }
+            return (children, roots);
+        }
+
+        // Pre-compute the self-and-descendant set per node (iterative DFS with a visited guard
+        // so a cyclic parent reference in dirty data cannot loop forever).
+        private static Dictionary<Guid, List<Guid>> BuildSelfAndDescendants(
+            Dictionary<Guid, DepartmentNode> byRowId,
+            Dictionary<Guid, List<Guid>> children)
+        {
+            var selfAndDescendants = new Dictionary<Guid, List<Guid>>();
+            foreach (var rowId in byRowId.Keys)
+            {
+                var result = new List<Guid>();
+                var visited = new HashSet<Guid>();
+                var stack = new Stack<Guid>();
+                stack.Push(rowId);
+                while (stack.Count > 0)
+                {
+                    var current = stack.Pop();
+                    if (!visited.Add(current)) { continue; }
+                    result.Add(current);
+                    if (children.TryGetValue(current, out var kids))
+                    {
+                        foreach (var kid in kids) { stack.Push(kid); }
+                    }
+                }
+                selfAndDescendants[rowId] = result;
+            }
+            return selfAndDescendants;
         }
 
         /// <summary>
