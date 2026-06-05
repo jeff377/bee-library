@@ -72,6 +72,14 @@ namespace Bee.Business.UnitTests.Form
         [DisplayName("SQLite：GetData 帶 scope filter — 範圍內回資料、越範圍回 null")]
         public void GetData_Sqlite_ScopeFilter() => RunGetDataScope(DatabaseType.SQLite);
 
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：Delete/ExistsInScope 權威 re-query — 越範圍刪 0 不刪、範圍內刪 1")]
+        public void Delete_Sqlite_ScopeFilter() => RunDeleteScope(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：Delete/ExistsInScope 權威 re-query — 越範圍刪 0 不刪、範圍內刪 1")]
+        public void Delete_SqlServer_ScopeFilter() => RunDeleteScope(DatabaseType.SQLServer);
+
         private void RunInFilterOnDeptField(DatabaseType dbType)
         {
             var ctx = new TestContext(_fx, dbType);
@@ -129,6 +137,35 @@ namespace Bee.Business.UnitTests.Form
                 Assert.NotNull(ctx.Repository.GetData(empA, inScope));   // 範圍內
                 Assert.Null(ctx.Repository.GetData(empA, outScope));     // 越範圍 → null
                 Assert.NotNull(ctx.Repository.GetData(empA));            // 無 scope → 正常回
+            }
+            finally
+            {
+                TryDelete(ctx, "Employee", empA);
+                TryDelete(ctx, "Department", deptA);
+            }
+        }
+
+        private void RunDeleteScope(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var deptA = Guid.NewGuid();
+            var empA = Guid.NewGuid();
+            try
+            {
+                InsertDepartment(ctx, deptA, $"DA{runId}", "A部", Guid.Empty);
+                InsertEmployee(ctx, empA, $"EA{runId}", "員工A", deptA);
+
+                var inScope = new FilterCondition { FieldName = "dept_rowid", Operator = ComparisonOperator.In, Value = new List<object> { deptA } };
+                var outScope = new FilterCondition { FieldName = "dept_rowid", Operator = ComparisonOperator.In, Value = new List<object> { Guid.NewGuid() } };
+
+                Assert.True(ctx.Repository.ExistsInScope(empA, inScope));   // 範圍內存在
+                Assert.False(ctx.Repository.ExistsInScope(empA, outScope)); // 越範圍視為不存在
+
+                Assert.Equal(0, ctx.Repository.Delete(empA, outScope));     // 越範圍 → 刪 0、不刪
+                Assert.NotNull(ctx.Repository.GetData(empA));               // 仍在
+                Assert.Equal(1, ctx.Repository.Delete(empA, inScope));      // 範圍內 → 刪 1
+                Assert.Null(ctx.Repository.GetData(empA));                  // 已刪
             }
             finally
             {

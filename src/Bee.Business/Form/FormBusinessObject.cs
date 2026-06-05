@@ -1,4 +1,5 @@
 using System.Data;
+using Bee.Base;
 using Bee.Base.Exceptions;
 using Bee.Definition;
 using Bee.Definition.Attributes;
@@ -6,6 +7,7 @@ using Bee.Definition.Filters;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
+using Bee.Repository.Abstractions.Form;
 
 namespace Bee.Business.Form
 {
@@ -130,6 +132,7 @@ namespace Bee.Business.Form
             AuthorizeSave(args.DataSet);
 
             var repository = CreateDataFormRepository(ProgId);
+            EnforceWriteScope(args.DataSet, repository);
             var (refreshed, affected) = repository.Save(args.DataSet);
 
             return new SaveResult
@@ -150,7 +153,7 @@ namespace Bee.Business.Form
             Authorize(PermissionAction.Delete);
 
             var repository = CreateDataFormRepository(ProgId);
-            var rowsAffected = repository.Delete(args.RowId);
+            var rowsAffected = repository.Delete(args.RowId, ResolveScopeFilter(PermissionAction.Delete));
 
             return new DeleteResult { RowsAffected = rowsAffected };
         }
@@ -201,6 +204,46 @@ namespace Bee.Business.Form
             if (scopeFilter == null) { return clientFilter; }
             if (clientFilter == null) { return scopeFilter; }
             return FilterGroup.All(scopeFilter, clientFilter);
+        }
+
+        /// <summary>
+        /// Enforces layer-2 record scope on writes by authoritatively re-querying each mutated master
+        /// row. For every <c>Modified</c> (Update) / <c>Deleted</c> (Delete) master row, confirms the
+        /// target row is in the caller's scope against the database — not the supplied payload, so a
+        /// forged DataSet cannot relabel its way past the boundary. <c>Added</c> (Create) rows are not
+        /// scope-checked (a new row has no existing scope to violate; creation is governed by the
+        /// action grant). A no-op when the form declares no <c>PermissionModelId</c> or the action's
+        /// scope is unrestricted.
+        /// </summary>
+        /// <param name="dataSet">The DataSet about to be persisted.</param>
+        /// <param name="repository">The repository used for the authoritative in-scope check.</param>
+        /// <exception cref="ForbiddenException">A mutated master row is outside the caller's scope.</exception>
+        private void EnforceWriteScope(DataSet dataSet, IDataFormRepository repository)
+        {
+            var schema = DefineAccess.GetFormSchema(ProgId);
+            if (string.IsNullOrEmpty(schema.PermissionModelId)) { return; }
+
+            var masterTableName = schema.MasterTable?.TableName;
+            if (string.IsNullOrEmpty(masterTableName) || !dataSet.Tables.Contains(masterTableName)) { return; }
+
+            foreach (DataRow row in dataSet.Tables[masterTableName]!.Rows)
+            {
+                var action = row.RowState switch
+                {
+                    DataRowState.Modified => PermissionAction.Update,
+                    DataRowState.Deleted => PermissionAction.Delete,
+                    _ => PermissionAction.None,
+                };
+                if (action == PermissionAction.None) { continue; }
+
+                var scopeFilter = ResolveScopeFilter(action);
+                if (scopeFilter == null) { continue; }
+
+                var version = row.RowState == DataRowState.Deleted ? DataRowVersion.Original : DataRowVersion.Default;
+                var rowId = ValueUtilities.CGuid(row[SysFields.RowId, version]);
+                if (!repository.ExistsInScope(rowId, scopeFilter))
+                    throw new ForbiddenException($"Record out of scope for '{action}' on model '{schema.PermissionModelId}'.");
+            }
         }
 
         /// <summary>

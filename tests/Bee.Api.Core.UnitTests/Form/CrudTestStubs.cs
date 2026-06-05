@@ -50,11 +50,13 @@ namespace Bee.Api.Core.UnitTests.Form
             return SaveResult;
         }
 
-        public int Delete(Guid rowId)
+        public int Delete(Guid rowId, FilterNode? scopeFilter = null)
         {
             LastRowId = rowId;
             return DeleteResult;
         }
+
+        public bool ExistsInScope(Guid rowId, FilterNode? scopeFilter) => true;
     }
 
     /// <summary>

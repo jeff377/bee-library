@@ -223,75 +223,7 @@ namespace Bee.Business.UnitTests.Permission
             AssertDenyAll(node!);
         }
 
-        // ---- write-side: IsRowInScope ----
-
-        [Fact]
-        [DisplayName("IsRowInScope Own：owner 欄 = EmployeeRowId 命中")]
-        public void IsRowInScope_Own_MatchesEmployee()
-        {
-            var session = Session(s_user, s_employee, Guid.Empty, "Buyer");
-            var resolver = Build(session, [new("Buyer", Model, PermissionAction.Update, ScopeStrategy.Own)]);
-
-            var inRow = Row(("buyer_rowid", s_employee), ("dept_rowid", Guid.Empty));
-            var outRow = Row(("buyer_rowid", Guid.NewGuid()), ("dept_rowid", Guid.Empty));
-
-            Assert.True(resolver.IsRowInScope(session.AccessToken, Model, PermissionAction.Update, Schema(), inRow));
-            Assert.False(resolver.IsRowInScope(session.AccessToken, Model, PermissionAction.Update, Schema(), outRow));
-        }
-
-        [Fact]
-        [DisplayName("IsRowInScope Dept：dept 欄 = DeptRowId 命中；隱含 Own 亦命中")]
-        public void IsRowInScope_Dept_MatchesDeptOrOwn()
-        {
-            var session = Session(s_user, s_employee, s_dept, "Buyer");
-            var resolver = Build(session, [new("Buyer", Model, PermissionAction.Update, ScopeStrategy.Dept)]);
-
-            var deptRow = Row(("buyer_rowid", Guid.NewGuid()), ("dept_rowid", s_dept));
-            var ownRow = Row(("buyer_rowid", s_user), ("dept_rowid", Guid.NewGuid()));
-            var outRow = Row(("buyer_rowid", Guid.NewGuid()), ("dept_rowid", Guid.NewGuid()));
-
-            Assert.True(resolver.IsRowInScope(session.AccessToken, Model, PermissionAction.Update, Schema(), deptRow));
-            Assert.True(resolver.IsRowInScope(session.AccessToken, Model, PermissionAction.Update, Schema(), ownRow));
-            Assert.False(resolver.IsRowInScope(session.AccessToken, Model, PermissionAction.Update, Schema(), outRow));
-        }
-
-        [Fact]
-        [DisplayName("IsRowInScope DeptAndSub：子部門列命中")]
-        public void IsRowInScope_DeptAndSub_MatchesSubtree()
-        {
-            var session = Session(s_user, s_employee, s_dept, "Buyer");
-            var resolver = Build(session, [new("Buyer", Model, PermissionAction.Update, ScopeStrategy.DeptAndSub)], DeptTree());
-
-            var subRow = Row(("buyer_rowid", Guid.NewGuid()), ("dept_rowid", s_subDept));
-            var outRow = Row(("buyer_rowid", Guid.NewGuid()), ("dept_rowid", Guid.NewGuid()));
-
-            Assert.True(resolver.IsRowInScope(session.AccessToken, Model, PermissionAction.Update, Schema(), subRow));
-            Assert.False(resolver.IsRowInScope(session.AccessToken, Model, PermissionAction.Update, Schema(), outRow));
-        }
-
-        [Fact]
-        [DisplayName("IsRowInScope All → 任何列皆 true")]
-        public void IsRowInScope_All_AlwaysTrue()
-        {
-            var session = Session(s_user, s_employee, s_dept, "Manager");
-            var resolver = Build(session, [new("Manager", Model, PermissionAction.Delete, ScopeStrategy.All)]);
-
-            var row = Row(("buyer_rowid", Guid.NewGuid()), ("dept_rowid", Guid.NewGuid()));
-
-            Assert.True(resolver.IsRowInScope(session.AccessToken, Model, PermissionAction.Delete, Schema(), row));
-        }
-
         // ---- helpers ----
-
-        private static DataRow Row(params (string col, Guid value)[] cells)
-        {
-            var table = new DataTable("PO001");
-            foreach (var (col, _) in cells) { table.Columns.Add(col, typeof(Guid)); }
-            var row = table.NewRow();
-            foreach (var (col, value) in cells) { row[col] = value; }
-            table.Rows.Add(row);
-            return row;
-        }
 
         private static FilterNode FindByField(FilterGroup group, string field)
         {

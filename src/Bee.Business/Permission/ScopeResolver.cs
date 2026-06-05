@@ -1,5 +1,3 @@
-using System.Data;
-using Bee.Base;
 using Bee.Definition.Filters;
 using Bee.Definition.Forms;
 using Bee.Definition.Identity;
@@ -58,28 +56,6 @@ namespace Bee.Business.Permission
             }
             if (nodes.Count == 0) { return DenyAll(formSchema); }
             return nodes.Count == 1 ? nodes[0] : FilterGroup.Any(nodes.ToArray());
-        }
-
-        /// <inheritdoc/>
-        public bool IsRowInScope(Guid accessToken, string modelId, PermissionAction action, FormSchema formSchema, DataRow row)
-        {
-            ArgumentNullException.ThrowIfNull(row);
-
-            var session = _sessionInfoService.Get(accessToken);
-            var scopes = ResolveScopes(session, modelId, action);
-            if (scopes == null) { return true; }                                  // unrestricted (All)
-            if (scopes.Count == 0 || session == null) { return false; }
-
-            var master = formSchema?.MasterTable;
-            var ownerField = master?.GetOwnerField()?.FieldName;
-            var deptField = master?.GetDeptField()?.FieldName;
-            var ownerIds = OwnerIdentities(session);
-
-            foreach (var scope in scopes)
-            {
-                if (RowMatchesScope(scope, session, row, ownerField, deptField, ownerIds)) { return true; }
-            }
-            return false;
         }
 
         // ---- scope resolution + multi-role merge ----
@@ -195,50 +171,6 @@ namespace Bee.Business.Permission
                 foreach (var field in master.Fields) { return field.FieldName; }
             }
             return "sys_rowid";
-        }
-
-        // ---- write-side per-row checks ----
-
-        private bool RowMatchesScope(ScopeStrategy scope, SessionInfo session, DataRow row, string? ownerField, string? deptField, IReadOnlyList<object> ownerIds)
-        {
-            return scope switch
-            {
-                ScopeStrategy.Own => OwnMatches(row, ownerField, ownerIds),
-                ScopeStrategy.Dept => DeptEqualMatches(row, deptField, session.DeptRowId) || OwnMatches(row, ownerField, ownerIds),
-                ScopeStrategy.DeptAndSub => DeptSubtreeMatches(row, deptField, session) || OwnMatches(row, ownerField, ownerIds),
-                _ => false,
-            };
-        }
-
-        private static bool OwnMatches(DataRow row, string? ownerField, IReadOnlyList<object> ownerIds)
-        {
-            if (string.IsNullOrEmpty(ownerField) || ownerIds.Count == 0) { return false; }
-            var value = GetRowGuid(row, ownerField);
-            return value != Guid.Empty && ownerIds.Any(id => (Guid)id == value);
-        }
-
-        private static bool DeptEqualMatches(DataRow row, string? deptField, Guid deptRowId)
-        {
-            if (string.IsNullOrEmpty(deptField) || deptRowId == Guid.Empty) { return false; }
-            return GetRowGuid(row, deptField) == deptRowId;
-        }
-
-        private bool DeptSubtreeMatches(DataRow row, string? deptField, SessionInfo session)
-        {
-            if (string.IsNullOrEmpty(deptField) || session.DeptRowId == Guid.Empty) { return false; }
-            var value = GetRowGuid(row, deptField);
-            if (value == Guid.Empty) { return false; }
-            var tree = _departmentTreeService.Get(session.CompanyId!);
-            var subtree = tree?.GetSelfAndDescendants(session.DeptRowId) ?? [];
-            return subtree.Contains(value);
-        }
-
-        private static Guid GetRowGuid(DataRow row, string fieldName)
-        {
-            if (!row.Table.Columns.Contains(fieldName)) { return Guid.Empty; }
-            var version = row.RowState == DataRowState.Deleted ? DataRowVersion.Original : DataRowVersion.Default;
-            var value = row[fieldName, version];
-            return value == null || value == DBNull.Value ? Guid.Empty : ValueUtilities.CGuid(value);
         }
 
         private static IReadOnlyList<object> OwnerIdentities(SessionInfo session)

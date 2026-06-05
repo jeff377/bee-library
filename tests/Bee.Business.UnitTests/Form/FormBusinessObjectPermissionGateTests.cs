@@ -47,6 +47,21 @@ namespace Bee.Business.UnitTests.Form
             return ds;
         }
 
+        private static DataSet ModifiedRowDataSet()
+        {
+            var ds = new DataSet();
+            var table = ds.Tables.Add(GatedProgId);
+            table.Columns.Add("sys_rowid", typeof(Guid));
+            table.Columns.Add("sys_id");
+            var row = table.NewRow();
+            row["sys_rowid"] = Guid.NewGuid();
+            row["sys_id"] = "x";
+            table.Rows.Add(row);
+            table.AcceptChanges();   // → Unchanged
+            row["sys_id"] = "y";     // → Modified（觸發 Update 層二檢查）
+            return ds;
+        }
+
         [Fact]
         [DisplayName("GetList 無 Read 授權應擋 ForbiddenException")]
         public void GetList_NoReadGrant_ThrowsForbidden()
@@ -94,6 +109,26 @@ namespace Bee.Business.UnitTests.Form
         }
 
         [Fact]
+        [DisplayName("Save 含 Modified 列但記錄越範圍（ExistsInScope=false）應擋 ForbiddenException（層二寫入）")]
+        public void Save_ModifiedRow_OutOfScope_ThrowsForbidden()
+        {
+            // 有 Update 授權（層一過）但目標記錄不在範圍（權威 re-query=false）→ 層二擋
+            var repo = new StubRepo { InScope = false };
+            var bo = Bo(PermissionAction.Update, repo);
+            Assert.Throws<ForbiddenException>(() => bo.Save(new SaveArgs { DataSet = ModifiedRowDataSet() }));
+        }
+
+        [Fact]
+        [DisplayName("Save 含 Modified 列且記錄在範圍（ExistsInScope=true）應放行")]
+        public void Save_ModifiedRow_InScope_PassesGate()
+        {
+            var repo = new StubRepo { InScope = true };
+            var bo = Bo(PermissionAction.Update, repo);
+            var ex = Record.Exception(() => bo.Save(new SaveArgs { DataSet = ModifiedRowDataSet() }));
+            Assert.Null(ex);
+        }
+
+        [Fact]
         [DisplayName("FormSchema 未宣告 PermissionModelId 時 gate 應跳過（向後相容）")]
         public void EmptyPermissionModelId_SkipsGate()
         {
@@ -122,12 +157,16 @@ namespace Bee.Business.UnitTests.Form
 
         private sealed class StubRepo : IDataFormRepository
         {
+            // Configurable authoritative in-scope verdict for write-scope tests; defaults to in-scope.
+            public bool InScope { get; set; } = true;
+
             public DataFormListResult GetList(string selectFields, FilterNode? filter, SortFieldCollection? sortFields, PagingOptions? paging = null)
                 => new() { Table = new DataTable() };
             public DataSet GetNewData() => new();
             public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null) => new();
             public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet) => (dataSet, new Dictionary<string, int>());
-            public int Delete(Guid rowId) => 1;
+            public int Delete(Guid rowId, FilterNode? scopeFilter = null) => 1;
+            public bool ExistsInScope(Guid rowId, FilterNode? scopeFilter) => InScope;
         }
     }
 }

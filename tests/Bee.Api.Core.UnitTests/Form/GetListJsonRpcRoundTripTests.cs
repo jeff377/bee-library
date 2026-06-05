@@ -225,7 +225,9 @@ namespace Bee.Api.Core.UnitTests.Form
             public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet)
                 => throw new NotSupportedException();
 
-            public int Delete(Guid rowId) => throw new NotSupportedException();
+            public int Delete(Guid rowId, FilterNode? scopeFilter = null) => throw new NotSupportedException();
+
+            public bool ExistsInScope(Guid rowId, FilterNode? scopeFilter) => true;
         }
     }
 }

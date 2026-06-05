@@ -79,10 +79,27 @@ namespace Bee.Repository.Abstractions.Form
         /// runs inside a single transaction.
         /// </summary>
         /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
+        /// <param name="scopeFilter">
+        /// An optional record-scope filter. When supplied and the master row falls outside the scope,
+        /// nothing is deleted (neither master nor details) and the method returns zero — the same
+        /// result as a missing row, so callers cannot probe records they may not see.
+        /// </param>
         /// <returns>
         /// The number of master rows actually deleted (zero indicates the row
-        /// no longer exists).
+        /// no longer exists or is out of scope).
         /// </returns>
-        int Delete(Guid rowId);
+        int Delete(Guid rowId, FilterNode? scopeFilter = null);
+
+        /// <summary>
+        /// Determines whether the master row identified by <paramref name="rowId"/> exists and
+        /// satisfies <paramref name="scopeFilter"/> — an authoritative, server-side record-scope check
+        /// against the database (not the caller-supplied payload), used to gate write operations.
+        /// </summary>
+        /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
+        /// <param name="scopeFilter">
+        /// The record-scope filter the row must satisfy; <c>null</c> means no scope (existence only).
+        /// </param>
+        /// <returns><c>true</c> when a matching in-scope master row exists; otherwise <c>false</c>.</returns>
+        bool ExistsInScope(Guid rowId, FilterNode? scopeFilter);
     }
 }

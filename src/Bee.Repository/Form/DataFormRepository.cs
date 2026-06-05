@@ -283,11 +283,30 @@ namespace Bee.Repository.Form
         }
 
         /// <inheritdoc/>
-        public int Delete(Guid rowId)
+        public bool ExistsInScope(Guid rowId, FilterNode? scopeFilter)
         {
             var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
             var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
                 .CreateFormCommandBuilder(_schema, _defineAccess);
+            var dbAccess = _dbAccessFactory.Create(_databaseId);
+
+            var filter = CombineWithScope(FilterCondition.Equal(SysFields.RowId, rowId), scopeFilter);
+            var spec = builder.BuildSelect(ProgId, SysFields.RowId, filter);
+            var table = dbAccess.Execute(spec).Table;
+            return table != null && table.Rows.Count > 0;
+        }
+
+        /// <inheritdoc/>
+        public int Delete(Guid rowId, FilterNode? scopeFilter = null)
+        {
+            var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
+            var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
+                .CreateFormCommandBuilder(_schema, _defineAccess);
+
+            // Record-scope gate: when a scope filter is supplied, confirm the master row is in scope
+            // before touching anything. Out of scope → delete nothing (no cascade), report zero.
+            if (scopeFilter != null && !ExistsInScope(rowId, scopeFilter))
+                return 0;
 
             var batch = new DbBatchSpec { UseTransaction = true };
 
