@@ -89,6 +89,38 @@ namespace Bee.Definition.Identity
         public ICollection<string> Roles { get; set; } = [];
 
         /// <summary>
+        /// Gets or sets the current user's row id (<c>st_user.sys_rowid</c>) within the entered company.
+        /// </summary>
+        /// <remarks>
+        /// Resolved and snapshotted by <c>EnterCompany</c> for record-scope <c>Own</c> filtering;
+        /// <see cref="System.Guid.Empty"/> until a company is entered. Cleared by
+        /// <c>LeaveCompany</c> / <c>Logout</c> in step with <see cref="CompanyId"/>.
+        /// </remarks>
+        public Guid UserRowId { get; set; } = Guid.Empty;
+
+        /// <summary>
+        /// Gets or sets the current user's linked employee row id (<c>ft_employee.sys_rowid</c>) in
+        /// the entered company.
+        /// </summary>
+        /// <remarks>
+        /// Resolved and snapshotted by <c>EnterCompany</c> for record-scope <c>Own</c> filtering;
+        /// <see cref="System.Guid.Empty"/> when the user has no employee in this company (or no
+        /// company entered). Cleared by <c>LeaveCompany</c> / <c>Logout</c>.
+        /// </remarks>
+        public Guid EmployeeRowId { get; set; } = Guid.Empty;
+
+        /// <summary>
+        /// Gets or sets the current user's department row id (<c>ft_employee.dept_rowid</c>) in the
+        /// entered company.
+        /// </summary>
+        /// <remarks>
+        /// Resolved and snapshotted by <c>EnterCompany</c> for record-scope <c>Dept</c> /
+        /// <c>DeptAndSub</c> filtering; <see cref="System.Guid.Empty"/> when the user has no employee
+        /// or no department (or no company entered). Cleared by <c>LeaveCompany</c> / <c>Logout</c>.
+        /// </remarks>
+        public Guid DeptRowId { get; set; } = Guid.Empty;
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

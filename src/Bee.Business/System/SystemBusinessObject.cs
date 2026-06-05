@@ -165,6 +165,13 @@ namespace Bee.Business.System
             var rolePermissionService = Services.GetRequiredService<IRolePermissionService>();
             var snapshot = rolePermissionService.Get(args.CompanyId);
             sessionInfo.Roles = snapshot?.GetUserRoleIds(sessionInfo.UserId).ToList() ?? [];
+            // Snapshot the user's record-scope identity (user/employee/department row ids) so
+            // layer-2 scope filtering runs from the session without re-hitting the database.
+            var employeeResolver = Services.GetRequiredService<IEmployeeContextResolver>();
+            var employeeContext = employeeResolver.Resolve(sessionInfo.UserId, companyInfo.CompanyDatabaseId);
+            sessionInfo.UserRowId = employeeContext.UserRowId;
+            sessionInfo.EmployeeRowId = employeeContext.EmployeeRowId;
+            sessionInfo.DeptRowId = employeeContext.DeptRowId;
             SessionInfoService.Set(sessionInfo);
 
             return new EnterCompanyResult { Company = companyInfo };
@@ -189,9 +196,7 @@ namespace Bee.Business.System
 
             if (sessionInfo.CompanyId != null)
             {
-                sessionInfo.CompanyId = null;
-                sessionInfo.CustomizeId = string.Empty;
-                sessionInfo.Roles = [];
+                ClearCompanyContext(sessionInfo);
                 SessionInfoService.Set(sessionInfo);
             }
 
@@ -218,14 +223,29 @@ namespace Bee.Business.System
             var sessionInfo = SessionInfoService.Get(AccessToken);
             if (sessionInfo != null && sessionInfo.CompanyId != null)
             {
-                sessionInfo.CompanyId = null;
-                sessionInfo.CustomizeId = string.Empty;
-                sessionInfo.Roles = [];
+                ClearCompanyContext(sessionInfo);
                 SessionInfoService.Set(sessionInfo);
             }
 
             SessionInfoService.Remove(AccessToken);
             return new LogoutResult();
+        }
+
+        /// <summary>
+        /// Clears every company-scoped value snapshotted onto the session by <c>EnterCompany</c>
+        /// (company id, customization code, roles, and the record-scope identity row ids), leaving
+        /// the session alive but company-less. Caller persists the change via
+        /// <c>SessionInfoService.Set</c>.
+        /// </summary>
+        /// <param name="sessionInfo">The session to reset.</param>
+        private static void ClearCompanyContext(SessionInfo sessionInfo)
+        {
+            sessionInfo.CompanyId = null;
+            sessionInfo.CustomizeId = string.Empty;
+            sessionInfo.Roles = [];
+            sessionInfo.UserRowId = Guid.Empty;
+            sessionInfo.EmployeeRowId = Guid.Empty;
+            sessionInfo.DeptRowId = Guid.Empty;
         }
 
         /// <summary>

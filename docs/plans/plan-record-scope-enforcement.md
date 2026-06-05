@@ -1,12 +1,16 @@
 # 計畫：ERP 權限機制（層二 — record-scope enforcement）
 
-**狀態：📝 擬定中（2026-06-05）**
+**狀態：🚧 進行中（2026-06-05）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | user↔employee 連結（`ft_employee.user_rowid`）+ 「user→部門」解析 + EnterCompany 快照進 SessionInfo | 📝 待做 |
+| 1 | user↔employee 連結（`ft_employee.user_rowid`）+ 「user→部門」解析 + EnterCompany 快照進 SessionInfo | ✅ 已完成（2026-06-05） |
 | 2 | grant per-action scope（重構 `st_role_grant`）+ `ScopeResolver`（具名策略→FilterNode + 逐列判定）+ 多角色合併 | 📝 待做 |
 | 3 | 接入 `FormBusinessObject`：GetList/GetData/GetNewData 套讀取 filter、Save 逐列擋寫入、Delete 併 WHERE | 📝 待做 |
+
+> **Phase 1 完成註記（2026-06-05）**：新增 `DepartmentRow` 同類的 `EmployeeRow`（flat 載體）、`EmployeeContext` + `IEmployeeContextResolver`（user→employee→dept 解析）、`IUserRepository`（common 取 rowid）/`IEmployeeRepository`（company 取 employee）+ 工廠/DI；`SessionInfo` 加 `UserRowId`/`EmployeeRowId`/`DeptRowId`（記憶體快照，比照 `Roles`，不持久化）；`EnterCompany` 解析快照、`LeaveCompany`/`Logout` 經 `ClearCompanyContext` 清除；`ft_employee` 加 `user_rowid`。
+>
+> ⚠️ **發現的既有框架缺陷（與本 plan 正交，待決）**：MySQL 對**既有表** `ALTER TABLE ADD COLUMN <guid> NOT NULL DEFAULT (UUID())` 在 statement-binlog 下被視為 replication-unsafe → 報錯，導致 schema 升級整段跳過。只影響「既有 MySQL 表新增 Guid NOT NULL 欄」；**fresh CREATE 安全**（故 CI 全新容器、本機 drop 重建均正常）。任何未來在既有 MySQL 表加 Guid 欄都會中。修法另議（MySQL dialect：ALTER ADD 改用常數預設或 nullable→backfill→NOT NULL 三段）。
 
 ## 承接與範圍
 

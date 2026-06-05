@@ -43,5 +43,15 @@ namespace Bee.Repository.Abstractions.Factories
         /// Creates an <see cref="IDepartmentRepository"/> (per-company <c>ft_department</c> reader).
         /// </summary>
         IDepartmentRepository CreateDepartmentRepository();
+
+        /// <summary>
+        /// Creates an <see cref="IUserRepository"/> (common <c>st_user</c> reader).
+        /// </summary>
+        IUserRepository CreateUserRepository();
+
+        /// <summary>
+        /// Creates an <see cref="IEmployeeRepository"/> (per-company <c>ft_employee</c> reader).
+        /// </summary>
+        IEmployeeRepository CreateEmployeeRepository();
     }
 }

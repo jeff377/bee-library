@@ -6,6 +6,7 @@
     <DbField FieldName="sys_id" Caption="員工編號" DbType="String" Length="20" />
     <DbField FieldName="sys_name" Caption="員工姓名" DbType="String" Length="50" />
     <DbField FieldName="dept_rowid" Caption="部門唯一識別" DbType="Guid" />
+    <DbField FieldName="user_rowid" Caption="使用者唯一識別" DbType="Guid" />
   </Fields>
   <Indexes>
     <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
@@ -26,6 +27,11 @@
     <DbTableIndex Name="fk_{0}_dept_rowid">
       <IndexFields>
         <IndexField FieldName="dept_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="ix_{0}_user_rowid">
+      <IndexFields>
+        <IndexField FieldName="user_rowid" />
       </IndexFields>
     </DbTableIndex>
   </Indexes>

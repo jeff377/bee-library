@@ -73,5 +73,21 @@ namespace Bee.Repository.Factories
         {
             return new DepartmentRepository(_connectionManager);
         }
+
+        /// <summary>
+        /// Creates an <see cref="IUserRepository"/> (common <c>st_user</c> reader).
+        /// </summary>
+        public IUserRepository CreateUserRepository()
+        {
+            return new UserRepository(_connectionManager);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="IEmployeeRepository"/> (per-company <c>ft_employee</c> reader).
+        /// </summary>
+        public IEmployeeRepository CreateEmployeeRepository()
+        {
+            return new EmployeeRepository(_connectionManager);
+        }
     }
 }

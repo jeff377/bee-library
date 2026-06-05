@@ -187,6 +187,10 @@ namespace Bee.Hosting
                 sp.GetRequiredService<ISystemRepositoryFactory>().CreateRolePermissionRepository());
             services.AddSingleton<IDepartmentRepository>(sp =>
                 sp.GetRequiredService<ISystemRepositoryFactory>().CreateDepartmentRepository());
+            services.AddSingleton<IUserRepository>(sp =>
+                sp.GetRequiredService<ISystemRepositoryFactory>().CreateUserRepository());
+            services.AddSingleton<IEmployeeRepository>(sp =>
+                sp.GetRequiredService<ISystemRepositoryFactory>().CreateEmployeeRepository());
 
             // Permission services: per-company role-permission snapshot cache + layer-1 Can check.
             services.AddSingleton<IRolePermissionService>(sp =>
@@ -205,6 +209,12 @@ namespace Bee.Hosting
                     sp.GetRequiredService<ICacheContainer>(),
                     sp.GetRequiredService<ICompanyInfoService>(),
                     sp.GetRequiredService<IDepartmentRepository>()));
+            // Record-scope identity: resolves the current user's employee/department (EnterCompany
+            // snapshots the result onto SessionInfo for zero-DB scope filtering).
+            services.AddSingleton<IEmployeeContextResolver>(sp =>
+                new EmployeeContextResolver(
+                    sp.GetRequiredService<IUserRepository>(),
+                    sp.GetRequiredService<IEmployeeRepository>()));
 
             // 10. JsonRpcExecutor — transient (per request); its dependencies (factories,
             //     validators, key providers) are resolved from the container at construction.

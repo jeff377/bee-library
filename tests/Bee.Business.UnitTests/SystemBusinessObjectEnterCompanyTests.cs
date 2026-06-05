@@ -87,6 +87,25 @@ namespace Bee.Business.UnitTests
             throw new InvalidOperationException($"Cannot resolve user rowid for '{userId}'.");
         }
 
+        // ft_employee lives in the company database (CompanyDbId), not common.
+        private DbAccess CompanyDb() => _fx.NewDbAccess(CompanyDbId);
+
+        private void InsertEmployee(Guid empRowId, string empId, Guid deptRowId, Guid userRowId)
+        {
+            var insert = new DbCommandSpec(DbCommandKind.NonQuery,
+                "INSERT INTO ft_employee (sys_rowid, sys_id, sys_name, dept_rowid, user_rowid) " +
+                "VALUES ({0}, {1}, {2}, {3}, {4})",
+                empRowId, empId, "BO 測試員工", deptRowId, userRowId);
+            CompanyDb().Execute(insert);
+        }
+
+        private void DeleteEmployee(Guid empRowId)
+        {
+            var delete = new DbCommandSpec(DbCommandKind.NonQuery,
+                "DELETE FROM ft_employee WHERE sys_rowid = {0}", empRowId);
+            CompanyDb().Execute(delete);
+        }
+
         #endregion
 
         [Fact]
@@ -149,6 +168,72 @@ namespace Bee.Business.UnitTests
             {
                 DeleteGrant(grantRowId);
                 DeleteCompany(companyRowId);
+            }
+        }
+
+        [Fact]
+        [DisplayName("EnterCompany 應解析並快照 user/employee/dept rowid；LeaveCompany 應清空")]
+        public void EnterCompany_SnapshotsEmployeeContext_ThenClears()
+        {
+            var userRowId = LookupUserRowId(SeedUserId);
+            var empRowId = Guid.NewGuid();
+            var deptRowId = Guid.NewGuid();
+            var empId = "EMP_" + Guid.NewGuid().ToString("N")[..6];
+            InsertEmployee(empRowId, empId, deptRowId, userRowId);
+            try
+            {
+                var sessionService = _fx.GetRequiredService<ISessionInfoService>();
+                var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
+                var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+
+                try
+                {
+                    bo.EnterCompany(new EnterCompanyArgs { CompanyId = SeedCompanyId });
+
+                    var session = sessionService.Get(accessToken)!;
+                    Assert.Equal(userRowId, session.UserRowId);
+                    Assert.Equal(empRowId, session.EmployeeRowId);
+                    Assert.Equal(deptRowId, session.DeptRowId);
+
+                    bo.LeaveCompany(new LeaveCompanyArgs());
+                    var cleared = sessionService.Get(accessToken)!;
+                    Assert.Equal(Guid.Empty, cleared.UserRowId);
+                    Assert.Equal(Guid.Empty, cleared.EmployeeRowId);
+                    Assert.Equal(Guid.Empty, cleared.DeptRowId);
+                }
+                finally
+                {
+                    sessionService.Remove(accessToken);
+                }
+            }
+            finally
+            {
+                DeleteEmployee(empRowId);
+            }
+        }
+
+        [Fact]
+        [DisplayName("EnterCompany 無對應員工時 user rowid 仍快照、employee/dept 為空")]
+        public void EnterCompany_NoEmployee_SnapshotsUserRowIdOnly()
+        {
+            var userRowId = LookupUserRowId(SeedUserId);
+            var sessionService = _fx.GetRequiredService<ISessionInfoService>();
+            var accessToken = TestSessionFactory.CreateAccessToken(_fx, userId: SeedUserId);
+            var bo = new SystemBusinessObject(TestBeeContext.Create(_fx), accessToken);
+
+            try
+            {
+                bo.EnterCompany(new EnterCompanyArgs { CompanyId = SeedCompanyId });
+
+                // Seed user '001' has no ft_employee row → user rowid resolves, employee/dept empty.
+                var session = sessionService.Get(accessToken)!;
+                Assert.Equal(userRowId, session.UserRowId);
+                Assert.Equal(Guid.Empty, session.EmployeeRowId);
+                Assert.Equal(Guid.Empty, session.DeptRowId);
+            }
+            finally
+            {
+                sessionService.Remove(accessToken);
             }
         }
 
