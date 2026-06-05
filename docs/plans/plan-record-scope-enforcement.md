@@ -1,12 +1,20 @@
 # 計畫：ERP 權限機制（層二 — record-scope enforcement）
 
-**狀態：🚧 進行中（2026-06-05）**
+**狀態：✅ 已完成（2026-06-05）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | user↔employee 連結（`ft_employee.user_rowid`）+ 「user→部門」解析 + EnterCompany 快照進 SessionInfo | ✅ 已完成（2026-06-05） |
 | 2 | grant per-action scope（重構 `st_role_grant`）+ `ScopeResolver`（具名策略→FilterNode + 逐列判定）+ 多角色合併 | ✅ 已完成（2026-06-05） |
-| 3 | 接入 `FormBusinessObject`：GetList/GetData/GetNewData 套讀取 filter、Save 逐列擋寫入、Delete 併 WHERE | 📝 待做 |
+| 3 | 接入 `FormBusinessObject`：GetList/GetData 套讀取 filter（寫入端不套，見修訂） | ✅ 已完成（2026-06-05） |
+
+> **Phase 3 完成註記（2026-06-05）+ 範圍修訂**：原規劃寫入端（Save 逐列、Delete 併 WHERE）亦套 scope；**經 review 決定寫入端不套 scope** —— record scope 定位為「可見性」（讀取端），寫入由層一動作授權把關。意涵：具 Update/Delete 授權者若直接帶別部門 rowId（非經受 scope 的 GetData/GetList 取得）呼叫 Save/Delete 可繞過部門範圍寫入（信任模型接受）。
+>
+> 實作：`FormBusinessObject.GetList` 把 `ResolveFilter` 結果與呼叫端 filter 經 `FilterGroup.All` AND 併（`CombineWithScope`）；`GetData` 把 scope filter 傳 `repository.GetData(rowId, scopeFilter)`（越範圍→`null`，與「查無」不可區分）。`IDataFormRepository.GetData` 加 optional `scopeFilter`（`Delete` 簽名不變）。空 `PermissionModelId` / 無限制 scope → `ResolveFilter` 回 `null` → 不套 filter（向後相容）。`GetNewData` 不過濾。
+>
+> `ScopeResolver.IsRowInScope`（寫入端逐列）保留為 framework API（AnyCode / 報表 BO 可選用），但**未接進 FormBusinessObject**。
+>
+> 測試：`FormBusinessObjectGetListTests` 加 In-filter（scope 形狀）GetList（SQLite + SQL Server，驗 WhereBuilder remap）+ GetData scope（範圍內回 / 越範圍 null）整合測試；既有 55 個 Form BO 測試（含 gate）全綠。
 
 > **Phase 2 完成註記（2026-06-05）**：`st_role_grant` 由 `(role_id, model_id, allowed_actions[mask])` 重構為 **per-(role, model, action) 一列帶 `scope`**（UK 改 `role_id+model_id+action`）；`RoleGrantRow` → `(RoleId, ModelId, Action, Scope)`；`CompanyRolePermissions.GetAllowed` 改以 action presence OR 出 mask（layer-1 不變）+ 新增 `GetEffectiveScopes`；`RolePermissionRepository` SQL 對應。`FormTable.GetOwnerField()/GetDeptField()` helper。`IScopeResolver` + `ScopeResolver`（Bee.Business.Permission）：多角色 effective scope（Inherit→model 預設）→ 任一 All 不過濾 / 否則 OR 聯集；`Own` = owner 欄 `IN {UserRowId, EmployeeRowId}`、`Dept`/`DeptAndSub` 隱含 Own；空 In 清單天然 `1=0`（deny / 空身分 / 空子樹）；fail-closed 邊界。讀取端 `ResolveFilter→FilterNode?`、寫入端逐列 `IsRowInScope`。DI 註冊於 Bee.Hosting。
 >

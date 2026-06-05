@@ -45,11 +45,16 @@ namespace Bee.Repository.Abstractions.Form
         /// is <see cref="DataRowState.Unchanged"/>.
         /// </summary>
         /// <param name="rowId">The master row identifier (<c>sys_rowid</c>).</param>
+        /// <param name="scopeFilter">
+        /// An optional record-scope filter AND-combined with the row-id predicate. When supplied and
+        /// the master row falls outside the scope, the method returns <c>null</c> (indistinguishable
+        /// from a missing row, so callers cannot probe records they may not see).
+        /// </param>
         /// <returns>
         /// The loaded <see cref="DataSet"/>; <c>null</c> when no master row
-        /// matches <paramref name="rowId"/>.
+        /// matches <paramref name="rowId"/> (or it is out of scope).
         /// </returns>
-        DataSet? GetData(Guid rowId);
+        DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null);
 
         /// <summary>
         /// Persists changes from a <see cref="DataSet"/> by dispatching

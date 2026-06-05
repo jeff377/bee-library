@@ -197,15 +197,16 @@ namespace Bee.Repository.Form
         }
 
         /// <inheritdoc/>
-        public DataSet? GetData(Guid rowId)
+        public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null)
         {
             var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
             var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
                 .CreateFormCommandBuilder(_schema, _defineAccess);
             var dbAccess = _dbAccessFactory.Create(_databaseId);
 
-            // Master row by sys_rowid.
-            var masterFilter = FilterCondition.Equal(SysFields.RowId, rowId);
+            // Master row by sys_rowid, AND-combined with the record-scope filter when supplied so
+            // an out-of-scope row reads as "not found" (null).
+            var masterFilter = CombineWithScope(FilterCondition.Equal(SysFields.RowId, rowId), scopeFilter);
             var masterSpec = builder.BuildSelect(ProgId, string.Empty, masterFilter);
             var masterDataTable = dbAccess.Execute(masterSpec).Table;
             if (masterDataTable == null || masterDataTable.Rows.Count == 0)
@@ -461,5 +462,9 @@ namespace Bee.Repository.Form
                 _ => null,
             };
         }
+
+        // AND-combines the row-id predicate with an optional record-scope filter.
+        private static FilterNode CombineWithScope(FilterNode baseFilter, FilterNode? scopeFilter)
+            => scopeFilter == null ? baseFilter : FilterGroup.All(baseFilter, scopeFilter);
     }
 }

@@ -38,7 +38,7 @@ namespace Bee.Api.Core.UnitTests.Form
             return GetNewDataResult ?? new DataSet();
         }
 
-        public DataSet? GetData(Guid rowId)
+        public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null)
         {
             LastRowId = rowId;
             return GetDataResult;

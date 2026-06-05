@@ -58,6 +58,85 @@ namespace Bee.Business.UnitTests.Form
         public void GetList_SqlServer_FilterAndSort()
             => RunFilterAndSort(DatabaseType.SQLServer);
 
+        // -------- Record-scope shaped filters (Phase 3) --------
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：GetList 套用 dept_rowid IN（scope 形狀）應只回該部門列且不報 remap 錯")]
+        public void GetList_Sqlite_InFilterOnDeptField() => RunInFilterOnDeptField(DatabaseType.SQLite);
+
+        [DbFact(DatabaseType.SQLServer)]
+        [DisplayName("SQL Server：GetList 套用 dept_rowid IN（scope 形狀）應只回該部門列且不報 remap 錯")]
+        public void GetList_SqlServer_InFilterOnDeptField() => RunInFilterOnDeptField(DatabaseType.SQLServer);
+
+        [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite：GetData 帶 scope filter — 範圍內回資料、越範圍回 null")]
+        public void GetData_Sqlite_ScopeFilter() => RunGetDataScope(DatabaseType.SQLite);
+
+        private void RunInFilterOnDeptField(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var deptA = Guid.NewGuid();
+            var deptB = Guid.NewGuid();
+            var empA = Guid.NewGuid();
+            var empB = Guid.NewGuid();
+            try
+            {
+                InsertDepartment(ctx, deptA, $"DA{runId}", "A部", Guid.Empty);
+                InsertDepartment(ctx, deptB, $"DB{runId}", "B部", Guid.Empty);
+                InsertEmployee(ctx, empA, $"EA{runId}", "員工A", deptA);
+                InsertEmployee(ctx, empB, $"EB{runId}", "員工B", deptB);
+
+                // scope 形狀：dept_rowid IN (deptA)。WhereBuilder 須把主表欄 dept_rowid 正確 remap。
+                var result = ctx.CreateBo().GetList(new GetListArgs
+                {
+                    SelectFields = "sys_id,dept_rowid",
+                    Filter = new FilterCondition
+                    {
+                        FieldName = "dept_rowid",
+                        Operator = ComparisonOperator.In,
+                        Value = new List<object> { deptA },
+                    },
+                });
+
+                Assert.NotNull(result.Table);
+                Assert.Single(result.Table!.Rows);  // 只有 A 部的 empA
+                Assert.Equal($"EA{runId}", result.Table.Rows[0]["sys_id"]);
+            }
+            finally
+            {
+                TryDelete(ctx, "Employee", empA);
+                TryDelete(ctx, "Employee", empB);
+                TryDelete(ctx, "Department", deptA);
+                TryDelete(ctx, "Department", deptB);
+            }
+        }
+
+        private void RunGetDataScope(DatabaseType dbType)
+        {
+            var ctx = new TestContext(_fx, dbType);
+            string runId = Guid.NewGuid().ToString("N")[..8];
+            var deptA = Guid.NewGuid();
+            var empA = Guid.NewGuid();
+            try
+            {
+                InsertDepartment(ctx, deptA, $"DA{runId}", "A部", Guid.Empty);
+                InsertEmployee(ctx, empA, $"EA{runId}", "員工A", deptA);
+
+                var inScope = new FilterCondition { FieldName = "dept_rowid", Operator = ComparisonOperator.In, Value = new List<object> { deptA } };
+                var outScope = new FilterCondition { FieldName = "dept_rowid", Operator = ComparisonOperator.In, Value = new List<object> { Guid.NewGuid() } };
+
+                Assert.NotNull(ctx.Repository.GetData(empA, inScope));   // 範圍內
+                Assert.Null(ctx.Repository.GetData(empA, outScope));     // 越範圍 → null
+                Assert.NotNull(ctx.Repository.GetData(empA));            // 無 scope → 正常回
+            }
+            finally
+            {
+                TryDelete(ctx, "Employee", empA);
+                TryDelete(ctx, "Department", deptA);
+            }
+        }
+
         // -------- Paging --------
 
         [DbFact(DatabaseType.SQLite)]
@@ -454,6 +533,7 @@ namespace Bee.Business.UnitTests.Form
             public DbAccess DbAccess { get; }
             public FormSchema EmployeeSchema { get; }
             public FormSchema DepartmentSchema { get; }
+            public IDataFormRepository Repository => _repository;
 
             public FormBusinessObject CreateBo()
             {

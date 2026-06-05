@@ -2,6 +2,7 @@ using System.Data;
 using Bee.Base.Exceptions;
 using Bee.Definition;
 using Bee.Definition.Attributes;
+using Bee.Definition.Filters;
 using Bee.Definition.Identity;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
@@ -71,8 +72,9 @@ namespace Bee.Business.Form
             ArgumentNullException.ThrowIfNull(args);
             Authorize(PermissionAction.Read);
 
+            var filter = CombineWithScope(args.Filter, ResolveScopeFilter(PermissionAction.Read));
             var repository = CreateDataFormRepository(ProgId);
-            var listResult = repository.GetList(args.SelectFields, args.Filter, args.SortFields, args.Paging);
+            var listResult = repository.GetList(args.SelectFields, filter, args.SortFields, args.Paging);
 
             return new GetListResult
             {
@@ -109,7 +111,7 @@ namespace Bee.Business.Form
             Authorize(PermissionAction.Read);
 
             var repository = CreateDataFormRepository(ProgId);
-            var dataSet = repository.GetData(args.RowId);
+            var dataSet = repository.GetData(args.RowId, ResolveScopeFilter(PermissionAction.Read));
 
             return new GetDataResult { DataSet = dataSet };
         }
@@ -174,6 +176,31 @@ namespace Bee.Business.Form
             var authorization = Services.GetRequiredService<IAuthorizationService>();
             if (!authorization.Can(AccessToken, modelId, action))
                 throw new ForbiddenException($"Permission denied: '{action}' on model '{modelId}'.");
+        }
+
+        /// <summary>
+        /// Resolves the layer-2 record-scope read filter for <paramref name="action"/> on this form's
+        /// permission model. Returns <c>null</c> when the FormSchema declares no <c>PermissionModelId</c>
+        /// (unscoped form) or the effective scope is unrestricted — in both cases no filter is applied.
+        /// </summary>
+        /// <param name="action">The action whose read scope is resolved (typically <c>Read</c>).</param>
+        private FilterNode? ResolveScopeFilter(PermissionAction action)
+        {
+            var schema = DefineAccess.GetFormSchema(ProgId);
+            if (string.IsNullOrEmpty(schema.PermissionModelId)) { return null; }
+
+            var resolver = Services.GetRequiredService<IScopeResolver>();
+            return resolver.ResolveFilter(AccessToken, schema.PermissionModelId, action, schema);
+        }
+
+        /// <summary>
+        /// AND-combines the caller-supplied list filter with the record-scope filter (either may be <c>null</c>).
+        /// </summary>
+        private static FilterNode? CombineWithScope(FilterNode? clientFilter, FilterNode? scopeFilter)
+        {
+            if (scopeFilter == null) { return clientFilter; }
+            if (clientFilter == null) { return scopeFilter; }
+            return FilterGroup.All(scopeFilter, clientFilter);
         }
 
         /// <summary>

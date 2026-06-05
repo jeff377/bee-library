@@ -220,7 +220,7 @@ namespace Bee.Api.Core.UnitTests.Form
 
             public DataSet GetNewData() => throw new NotSupportedException();
 
-            public DataSet? GetData(Guid rowId) => throw new NotSupportedException();
+            public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null) => throw new NotSupportedException();
 
             public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet)
                 => throw new NotSupportedException();

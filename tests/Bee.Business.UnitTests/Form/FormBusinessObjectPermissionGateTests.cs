@@ -125,7 +125,7 @@ namespace Bee.Business.UnitTests.Form
             public DataFormListResult GetList(string selectFields, FilterNode? filter, SortFieldCollection? sortFields, PagingOptions? paging = null)
                 => new() { Table = new DataTable() };
             public DataSet GetNewData() => new();
-            public DataSet? GetData(Guid rowId) => new();
+            public DataSet? GetData(Guid rowId, FilterNode? scopeFilter = null) => new();
             public (DataSet? Refreshed, Dictionary<string, int> AffectedRows) Save(DataSet dataSet) => (dataSet, new Dictionary<string, int>());
             public int Delete(Guid rowId) => 1;
         }
