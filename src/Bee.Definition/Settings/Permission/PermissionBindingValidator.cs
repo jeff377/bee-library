@@ -33,6 +33,19 @@ namespace Bee.Definition.Settings
                     errors.Add($"Form '{schema.ProgId}': PermissionModelId '{schema.PermissionModelId}' does not exist in the permission registry.");
                 }
 
+                // Record scope is master-only: a detail (non-master) table must not mark any scope
+                // role. Such a column would be silently ignored by the resolver, so flag it as a
+                // configuration error at load time rather than letting it mislead.
+                if (schema.Tables != null)
+                {
+                    foreach (FormTable table in schema.Tables)
+                    {
+                        if (string.Equals(table.TableName, schema.ProgId, StringComparison.OrdinalIgnoreCase)) { continue; }
+                        if (table.Fields != null && table.Fields.Any(field => field.ScopeRole != ScopeRole.None))
+                            errors.Add($"Form '{schema.ProgId}': detail table '{table.TableName}' marks a ScopeRole column; record scope is master-only.");
+                    }
+                }
+
                 // The master table may mark at most one Owner column and one Dept column.
                 var master = schema.MasterTable;
                 if (master?.Fields == null) { continue; }

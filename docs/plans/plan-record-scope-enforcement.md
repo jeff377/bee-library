@@ -16,6 +16,8 @@
 >
 > **Create 不套**：`Added` 列由 Create 動作授權把關（新列無「既存範圍」可違反；檢查新列 owner/dept 會造成摩擦）。
 >
+> **scope 僅限主表（單筆完整性）**：`ScopeRole`（Owner/Dept）欄只在**主表**；`EnforceWriteScope` 只判主表列、`ExistsInScope` 只查主表 → **主檔過了，明細隨整筆一併放行**，不會出現「主檔過、某明細被擋」的半套狀態。明細表標 `ScopeRole` 由 `PermissionBindingValidator` 於載入期報錯（resolver 本就只讀主表）。
+>
 > **`IsRowInScope` 已移除**：原規劃的記憶體逐列檢查可被偽造的 payload 繞過，改用權威 re-query 後不需要、且移除以免成為「看似可用卻不安全」的陷阱。
 >
 > 空 `PermissionModelId` / 無限制 scope → 不套（向後相容）；`GetNewData` 不過濾。

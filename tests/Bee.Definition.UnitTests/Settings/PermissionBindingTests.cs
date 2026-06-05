@@ -137,5 +137,21 @@ namespace Bee.Definition.UnitTests.Settings
 
             Assert.Contains(errors, e => e.Contains("Owner"));
         }
+
+        [Fact]
+        [DisplayName("Validator 明細表標 ScopeRole 應回報錯誤（record scope 僅限主表）")]
+        public void Validate_DetailScopeRole_ReturnsError()
+        {
+            var schema = BuildForm();
+            // 明細表（非主表）標 ScopeRole → 違規：scope 僅主表
+            var detail = schema.Tables!.Add("PO001_Item", "採購單明細");
+            var item = detail.Fields!.Add("owner_rowid", "擁有者", FieldDbType.Guid);
+            item.ScopeRole = ScopeRole.Owner;
+            var schemas = new FormSchema[] { schema };
+
+            var errors = PermissionBindingValidator.Validate(schemas, BuildRegistry());
+
+            Assert.Contains(errors, e => e.Contains("detail table") && e.Contains("PO001_Item"));
+        }
     }
 }

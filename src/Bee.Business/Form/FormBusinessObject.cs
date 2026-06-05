@@ -226,17 +226,27 @@ namespace Bee.Business.Form
             var masterTableName = schema.MasterTable?.TableName;
             if (string.IsNullOrEmpty(masterTableName) || !dataSet.Tables.Contains(masterTableName)) { return; }
 
+            // Resolve the scope filter only once an Update/Delete row is found, and at most once per
+            // action — an insert-only save resolves nothing; N same-action rows reuse one filter.
+            IScopeResolver? resolver = null;
+            var scopeByAction = new Dictionary<PermissionAction, FilterNode?>();
+
             foreach (DataRow row in dataSet.Tables[masterTableName]!.Rows)
             {
                 var action = row.RowState switch
                 {
                     DataRowState.Modified => PermissionAction.Update,
                     DataRowState.Deleted => PermissionAction.Delete,
-                    _ => PermissionAction.None,
+                    _ => PermissionAction.None,  // Added (Create) / Unchanged — not write-scoped
                 };
                 if (action == PermissionAction.None) { continue; }
 
-                var scopeFilter = ResolveScopeFilter(action);
+                if (!scopeByAction.TryGetValue(action, out var scopeFilter))
+                {
+                    resolver ??= Services.GetRequiredService<IScopeResolver>();
+                    scopeFilter = resolver.ResolveFilter(AccessToken, schema.PermissionModelId, action, schema);
+                    scopeByAction[action] = scopeFilter;
+                }
                 if (scopeFilter == null) { continue; }
 
                 var version = row.RowState == DataRowState.Deleted ? DataRowVersion.Original : DataRowVersion.Default;
