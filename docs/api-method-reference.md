@@ -59,6 +59,7 @@ Singleton system-level BO, accessed as `System.<action>` over the wire.
 | `SaveDefine` | Public | Authenticated | Persists definition data via XML envelope; invalidates the matching cache slot. |
 | `GetFormSchema` | Public | Authenticated | **JS-only.** Returns a `FormSchema` as a typed JSON tree (auto-localized using session's `Culture`). |
 | `GetFormLayout` | Public | Authenticated | **JS-only.** Returns a `FormLayout` (generated from auto-localized FormSchema). |
+| `GetDepartmentTree` | Public | Authenticated | Returns the current company's department tree (per-company org hierarchy) as a typed object (JSON / MessagePack); `null` when no company is entered. |
 | `GetLanguage` | Public | Authenticated | **JS-only.** Returns a `LanguageResource` for one `(Lang, Namespace)` pair. |
 | `CheckPackageUpdate` | Encoded | Anonymous | Reports whether a client package upgrade is available. |
 | `GetPackage` | Encoded | Anonymous | Streams a client upgrade package binary. |

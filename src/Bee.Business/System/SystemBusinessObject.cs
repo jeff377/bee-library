@@ -6,6 +6,7 @@ using Bee.Definition.Attributes;
 using Bee.Definition.Forms;
 using Bee.Definition.Language;
 using Bee.Definition.Layouts;
+using Bee.Definition.Organization;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Repository.Abstractions.System;
 using Bee.Definition.Identity;
@@ -320,6 +321,28 @@ namespace Bee.Business.System
 
             var schema = LoadAndLocalizeSchema(args.ProgId);
             return new GetFormSchemaResult { Schema = schema };
+        }
+
+        /// <summary>
+        /// Returns the current company's department tree (per-company organisation hierarchy),
+        /// scoped to the session's company. JSON-friendly for JS frontends; the tree is
+        /// <c>null</c> when no company has been entered.
+        /// </summary>
+        /// <param name="args">The input arguments (carries no fields).</param>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        public virtual GetDepartmentTreeResult GetDepartmentTree(GetDepartmentTreeArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            var sessionInfo = SessionInfoService.Get(AccessToken)
+                ?? throw new UnauthorizedAccessException("Session not found or has expired.");
+
+            DepartmentTree? tree = null;
+            if (!string.IsNullOrEmpty(sessionInfo.CompanyId))
+            {
+                tree = Services.GetRequiredService<IDepartmentTreeService>().Get(sessionInfo.CompanyId);
+            }
+            return new GetDepartmentTreeResult { Tree = tree };
         }
 
         /// <summary>

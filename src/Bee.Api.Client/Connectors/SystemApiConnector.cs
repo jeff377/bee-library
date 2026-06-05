@@ -7,6 +7,7 @@ using Bee.Api.Core.Messages.System;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.Definition.Organization;
 using Bee.Api.Core.Messages;
 
 namespace Bee.Api.Client.Connectors
@@ -210,6 +211,26 @@ namespace Bee.Api.Client.Connectors
         public virtual FormSchema? GetFormSchema(string progId)
         {
             return SyncExecutor.Run(() => GetFormSchemaAsync(progId));
+        }
+
+        /// <summary>
+        /// Asynchronously gets the current company's department tree (per-company organisation
+        /// hierarchy). JSON-friendly for frontends; returns <c>null</c> when no company is entered.
+        /// </summary>
+        public virtual async Task<DepartmentTree?> GetDepartmentTreeAsync()
+        {
+            var request = new GetDepartmentTreeRequest();
+            var result = await ExecuteAsync<GetDepartmentTreeResponse>(SystemActions.GetDepartmentTree, request)
+                .ConfigureAwait(false);
+            return result.Tree;
+        }
+
+        /// <summary>
+        /// Synchronously gets the current company's department tree.
+        /// </summary>
+        public virtual DepartmentTree? GetDepartmentTree()
+        {
+            return SyncExecutor.Run(GetDepartmentTreeAsync);
         }
 
         /// <summary>

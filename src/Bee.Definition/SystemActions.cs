@@ -49,6 +49,12 @@ namespace Bee.Definition
         /// JS / TypeScript frontends that need to render schema-driven UI).
         /// </summary>
         public const string GetFormLayout = "GetFormLayout";
+
+        /// <summary>
+        /// Gets the current company's department tree (per-company organisation hierarchy,
+        /// JSON-friendly for frontends).
+        /// </summary>
+        public const string GetDepartmentTree = "GetDepartmentTree";
         /// <summary>
         /// Gets a language resource (localized text and enum entries for one
         /// namespace × one language) as a typed JSON-friendly object; intended

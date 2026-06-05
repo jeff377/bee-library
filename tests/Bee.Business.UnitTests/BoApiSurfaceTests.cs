@@ -57,6 +57,7 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("SystemBusinessObject", "EnterCompany",           ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetCommonConfiguration", ApiProtectionLevel.Public,  ApiAccessRequirement.Anonymous),
             new ApiSurfaceEntry("SystemBusinessObject", "GetDefine",              ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("SystemBusinessObject", "GetDepartmentTree",      ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetFormLayout",          ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetFormSchema",          ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("SystemBusinessObject", "GetLanguage",            ApiProtectionLevel.Public,  ApiAccessRequirement.Authenticated),

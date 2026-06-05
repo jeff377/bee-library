@@ -1,11 +1,11 @@
 # 計畫：組織部門樹 + per-company 快取 + GetDepartmentTree API（record scope 前置）
 
-**狀態：🚧 進行中（2026-06-05）**
+**狀態：✅ 已完成（2026-06-05）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 部門樹三棲物件（XML+JSON+MessagePack）+ `ft_department.parent_rowid` + per-company 快取鏈（cache / service / repository） | ✅ 已完成（2026-06-05） |
-| 2 | `GetDepartmentTree` API（SystemBO 跨 contract / wire / client）+ wire round-trip 測試 | 📝 待做 |
+| 2 | `GetDepartmentTree` API（SystemBO 跨 contract / wire / client）+ wire round-trip 測試 | ✅ 已完成（2026-06-05） |
 
 ## 背景
 
