@@ -55,10 +55,35 @@ namespace Bee.Definition.Identity
             {
                 if (grant.ModelId == modelId && roleSet.Contains(grant.RoleId))
                 {
-                    allowed |= grant.AllowedActions;
+                    allowed |= grant.Action;
                 }
             }
             return allowed;
+        }
+
+        /// <summary>
+        /// Returns the record-scope strategies the given roles grant for the (model, action) — one per
+        /// role that grants the action (layer-2 input). The strategies are raw grant values (may be
+        /// <see cref="ScopeStrategy.Inherit"/>); the resolver resolves <c>Inherit</c> against the
+        /// permission model's default and merges across roles. Empty when no held role grants the action.
+        /// </summary>
+        /// <param name="roleIds">The role business ids the user holds (e.g. <c>SessionInfo.Roles</c>).</param>
+        /// <param name="modelId">The permission model id to check.</param>
+        /// <param name="action">The single action to check.</param>
+        public IReadOnlyList<ScopeStrategy> GetEffectiveScopes(IEnumerable<string> roleIds, string modelId, PermissionAction action)
+        {
+            ArgumentNullException.ThrowIfNull(roleIds);
+            var roleSet = roleIds as ISet<string> ?? new HashSet<string>(roleIds);
+
+            var scopes = new List<ScopeStrategy>();
+            foreach (var grant in Grants)
+            {
+                if (grant.ModelId == modelId && grant.Action == action && roleSet.Contains(grant.RoleId))
+                {
+                    scopes.Add(grant.Scope);
+                }
+            }
+            return scopes;
         }
 
         /// <summary>

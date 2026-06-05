@@ -17,8 +17,9 @@ namespace Bee.ObjectCaching.UnitTests.Services
         {
             var grants = new List<RoleGrantRow>
             {
-                new("Buyer", "PurchaseOrder", PermissionAction.Read | PermissionAction.Update),
-                new("Manager", "PurchaseOrder", PermissionAction.Delete),
+                new("Buyer", "PurchaseOrder", PermissionAction.Read, ScopeStrategy.All),
+                new("Buyer", "PurchaseOrder", PermissionAction.Update, ScopeStrategy.All),
+                new("Manager", "PurchaseOrder", PermissionAction.Delete, ScopeStrategy.All),
             };
             return new CompanyRolePermissions("C001", grants, []);
         }

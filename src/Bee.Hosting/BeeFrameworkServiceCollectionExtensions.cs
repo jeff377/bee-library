@@ -1,6 +1,7 @@
 using Bee.Api.Core.JsonRpc;
 using Bee.Base;
 using Bee.Business;
+using Bee.Business.Permission;
 using Bee.Business.Providers;
 using Bee.Db;
 using Bee.Db.CacheNotify;
@@ -215,6 +216,14 @@ namespace Bee.Hosting
                 new EmployeeContextResolver(
                     sp.GetRequiredService<IUserRepository>(),
                     sp.GetRequiredService<IEmployeeRepository>()));
+            // Record-scope (layer-2): resolves (model, action) + session identity + grants + model
+            // default + department tree into a read filter / per-row verdict.
+            services.AddSingleton<IScopeResolver>(sp =>
+                new ScopeResolver(
+                    sp.GetRequiredService<ISessionInfoService>(),
+                    sp.GetRequiredService<IRolePermissionService>(),
+                    sp.GetRequiredService<IDepartmentTreeService>(),
+                    sp.GetRequiredService<IDefineAccess>()));
 
             // 10. JsonRpcExecutor — transient (per request); its dependencies (factories,
             //     validators, key providers) are resolved from the container at construction.

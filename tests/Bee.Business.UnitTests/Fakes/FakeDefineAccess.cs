@@ -16,9 +16,15 @@ namespace Bee.Business.UnitTests.Fakes
     {
         public DatabaseSettings Settings { get; } = new DatabaseSettings();
 
+        /// <summary>Optional permission-model registry returned by <see cref="GetPermissionModels"/>.</summary>
+        public PermissionModels? PermissionModels { get; set; }
+
         public DatabaseSettings GetDatabaseSettings() => Settings;
 
-        public object GetDefine(DefineType defineType, string[]? keys = null) => throw new NotImplementedException();
+        public object GetDefine(DefineType defineType, string[]? keys = null) =>
+            defineType == DefineType.PermissionModels && PermissionModels != null
+                ? PermissionModels
+                : throw new NotImplementedException();
         public void SaveDefine(DefineType defineType, object defineObject, string[]? keys = null) => throw new NotImplementedException();
         public SystemSettings GetSystemSettings() => throw new NotImplementedException();
         public void SaveSystemSettings(SystemSettings settings) => throw new NotImplementedException();

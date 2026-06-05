@@ -5,7 +5,8 @@
     <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
     <DbField FieldName="role_id" Caption="角色代碼" DbType="String" Length="20" />
     <DbField FieldName="model_id" Caption="權限模型代碼" DbType="String" Length="50" />
-    <DbField FieldName="allowed_actions" Caption="允許動作" DbType="Integer" />
+    <DbField FieldName="action" Caption="動作" DbType="Integer" />
+    <DbField FieldName="scope" Caption="資料範圍策略" DbType="Integer" />
     <DbField FieldName="sys_insert_time" Caption="寫入時間" DbType="DateTime" />
   </Fields>
   <Indexes>
@@ -23,6 +24,7 @@
       <IndexFields>
         <IndexField FieldName="role_id" />
         <IndexField FieldName="model_id" />
+        <IndexField FieldName="action" />
       </IndexFields>
     </DbTableIndex>
   </Indexes>

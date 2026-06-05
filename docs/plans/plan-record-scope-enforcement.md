@@ -5,8 +5,12 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | user↔employee 連結（`ft_employee.user_rowid`）+ 「user→部門」解析 + EnterCompany 快照進 SessionInfo | ✅ 已完成（2026-06-05） |
-| 2 | grant per-action scope（重構 `st_role_grant`）+ `ScopeResolver`（具名策略→FilterNode + 逐列判定）+ 多角色合併 | 📝 待做 |
+| 2 | grant per-action scope（重構 `st_role_grant`）+ `ScopeResolver`（具名策略→FilterNode + 逐列判定）+ 多角色合併 | ✅ 已完成（2026-06-05） |
 | 3 | 接入 `FormBusinessObject`：GetList/GetData/GetNewData 套讀取 filter、Save 逐列擋寫入、Delete 併 WHERE | 📝 待做 |
+
+> **Phase 2 完成註記（2026-06-05）**：`st_role_grant` 由 `(role_id, model_id, allowed_actions[mask])` 重構為 **per-(role, model, action) 一列帶 `scope`**（UK 改 `role_id+model_id+action`）；`RoleGrantRow` → `(RoleId, ModelId, Action, Scope)`；`CompanyRolePermissions.GetAllowed` 改以 action presence OR 出 mask（layer-1 不變）+ 新增 `GetEffectiveScopes`；`RolePermissionRepository` SQL 對應。`FormTable.GetOwnerField()/GetDeptField()` helper。`IScopeResolver` + `ScopeResolver`（Bee.Business.Permission）：多角色 effective scope（Inherit→model 預設）→ 任一 All 不過濾 / 否則 OR 聯集；`Own` = owner 欄 `IN {UserRowId, EmployeeRowId}`、`Dept`/`DeptAndSub` 隱含 Own；空 In 清單天然 `1=0`（deny / 空身分 / 空子樹）；fail-closed 邊界。讀取端 `ResolveFilter→FilterNode?`、寫入端逐列 `IsRowInScope`。DI 註冊於 Bee.Hosting。
+>
+> 測試：`ScopeResolver` 14（各策略、多角色合併、Inherit、Owner 二身分、隱含 Own、fail-closed、逐列）、`CompanyRolePermissions` +4（GetEffectiveScopes）、`RolePermissionRepository` 5 DB（action+scope round-trip）。line-b 既有測試（Authorization/CompanyRolePermissions）全數對齊綠。
 
 > **Phase 1 完成註記（2026-06-05）**：新增 `DepartmentRow` 同類的 `EmployeeRow`（flat 載體）、`EmployeeContext` + `IEmployeeContextResolver`（user→employee→dept 解析）、`IUserRepository`（common 取 rowid）/`IEmployeeRepository`（company 取 employee）+ 工廠/DI；`SessionInfo` 加 `UserRowId`/`EmployeeRowId`/`DeptRowId`（記憶體快照，比照 `Roles`，不持久化）；`EnterCompany` 解析快照、`LeaveCompany`/`Logout` 經 `ClearCompanyContext` 清除；`ft_employee` 加 `user_rowid`。
 >

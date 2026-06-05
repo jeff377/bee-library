@@ -30,7 +30,8 @@ namespace Bee.Repository.UnitTests
             var userId = string.Concat("USER_", Guid.NewGuid().ToString("N").AsSpan(0, 6));
             var grantRowId = Guid.NewGuid();
             var userRoleRowId = Guid.NewGuid();
-            var allowed = (int)(PermissionAction.Read | PermissionAction.Update);
+            var action = (int)PermissionAction.Read;
+            var scope = (int)ScopeStrategy.Dept;
 
             string tblGrant = dbType.QuoteIdentifier("st_role_grant");
             string tblUserRole = dbType.QuoteIdentifier("st_user_role");
@@ -38,7 +39,8 @@ namespace Bee.Repository.UnitTests
             string colRoleId = dbType.QuoteIdentifier("role_id");
             string colUserId = dbType.QuoteIdentifier("user_id");
             string colModelId = dbType.QuoteIdentifier("model_id");
-            string colActions = dbType.QuoteIdentifier("allowed_actions");
+            string colAction = dbType.QuoteIdentifier("action");
+            string colScope = dbType.QuoteIdentifier("scope");
             string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
 
             string nowExpr = dbType == DatabaseType.PostgreSQL || dbType == DatabaseType.SQLite ? "CURRENT_TIMESTAMP"
@@ -47,9 +49,9 @@ namespace Bee.Repository.UnitTests
                            : "SYSTIMESTAMP";
 
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tblGrant} ({colRowId}, {colRoleId}, {colModelId}, {colActions}, {colInsTime}) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {nowExpr})",
-                grantRowId, roleId, "PurchaseOrder", allowed));
+                $"INSERT INTO {tblGrant} ({colRowId}, {colRoleId}, {colModelId}, {colAction}, {colScope}, {colInsTime}) " +
+                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {nowExpr})",
+                grantRowId, roleId, "PurchaseOrder", action, scope));
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery,
                 $"INSERT INTO {tblUserRole} ({colRowId}, {colUserId}, {colRoleId}, {colInsTime}) " +
                 $"VALUES ({{0}}, {{1}}, {{2}}, {nowExpr})",
@@ -61,7 +63,8 @@ namespace Bee.Repository.UnitTests
 
                 var grant = repo.GetRoleGrants(databaseId).Single(g => g.RoleId == roleId);
                 Assert.Equal("PurchaseOrder", grant.ModelId);
-                Assert.Equal(PermissionAction.Read | PermissionAction.Update, grant.AllowedActions);
+                Assert.Equal(PermissionAction.Read, grant.Action);
+                Assert.Equal(ScopeStrategy.Dept, grant.Scope);
 
                 var userRole = repo.GetUserRoles(databaseId).Single(u => u.RoleId == roleId);
                 Assert.Equal(userId, userRole.UserId);

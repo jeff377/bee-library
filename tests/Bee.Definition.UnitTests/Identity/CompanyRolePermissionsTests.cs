@@ -17,9 +17,11 @@ namespace Bee.Definition.UnitTests.Identity
         {
             var grants = new List<RoleGrantRow>
             {
-                new("Buyer", "PurchaseOrder", PermissionAction.Read | PermissionAction.Update),
-                new("Buyer", "Vendor", PermissionAction.Read),
-                new("Manager", "PurchaseOrder", PermissionAction.Delete),
+                new("Buyer", "PurchaseOrder", PermissionAction.Read, ScopeStrategy.Dept),
+                new("Buyer", "PurchaseOrder", PermissionAction.Update, ScopeStrategy.Own),
+                new("Buyer", "Vendor", PermissionAction.Read, ScopeStrategy.All),
+                new("Manager", "PurchaseOrder", PermissionAction.Read, ScopeStrategy.All),
+                new("Manager", "PurchaseOrder", PermissionAction.Delete, ScopeStrategy.Inherit),
             };
             var userRoles = new List<UserRoleRow>
             {
@@ -75,6 +77,52 @@ namespace Bee.Definition.UnitTests.Identity
             var allowed = perms.GetAllowed(s_buyer, "PurchaseOrder");
 
             Assert.False(allowed.HasFlag(PermissionAction.Delete));
+        }
+
+        [Fact]
+        [DisplayName("GetEffectiveScopes 單一角色回傳該 (model, action) 的 scope")]
+        public void GetEffectiveScopes_SingleRole_ReturnsScope()
+        {
+            var perms = Build();
+
+            var scopes = perms.GetEffectiveScopes(s_buyer, "PurchaseOrder", PermissionAction.Read);
+
+            Assert.Equal(new[] { ScopeStrategy.Dept }, scopes);
+        }
+
+        [Fact]
+        [DisplayName("GetEffectiveScopes 多角色對同 (model, action) 各回一個 scope（供合併）")]
+        public void GetEffectiveScopes_MultiRole_ReturnsEach()
+        {
+            var perms = Build();
+
+            // Buyer.Read=Dept、Manager.Read=All → 兩個 scope 待合併（resolver 端「任一 All 不過濾」）
+            var scopes = perms.GetEffectiveScopes(s_buyerManager, "PurchaseOrder", PermissionAction.Read);
+
+            Assert.Equal(2, scopes.Count);
+            Assert.Contains(ScopeStrategy.Dept, scopes);
+            Assert.Contains(ScopeStrategy.All, scopes);
+        }
+
+        [Fact]
+        [DisplayName("GetEffectiveScopes 同角色不同 action 可有不同 scope（看 vs 改範圍不同）")]
+        public void GetEffectiveScopes_PerAction_Differs()
+        {
+            var perms = Build();
+
+            // Buyer 對 PurchaseOrder：Read=Dept（可看部門）、Update=Own（只改自己的）
+            Assert.Equal(new[] { ScopeStrategy.Dept }, perms.GetEffectiveScopes(s_buyer, "PurchaseOrder", PermissionAction.Read));
+            Assert.Equal(new[] { ScopeStrategy.Own }, perms.GetEffectiveScopes(s_buyer, "PurchaseOrder", PermissionAction.Update));
+        }
+
+        [Fact]
+        [DisplayName("GetEffectiveScopes 未授予該 action 回傳空")]
+        public void GetEffectiveScopes_Ungranted_ReturnsEmpty()
+        {
+            var perms = Build();
+
+            // Buyer 沒有 PurchaseOrder.Delete
+            Assert.Empty(perms.GetEffectiveScopes(s_buyer, "PurchaseOrder", PermissionAction.Delete));
         }
 
         [Fact]

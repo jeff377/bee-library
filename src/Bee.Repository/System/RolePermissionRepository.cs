@@ -39,9 +39,10 @@ namespace Bee.Repository.System
             string tbl = dbType.QuoteIdentifier("st_role_grant");
             string colRoleId = dbType.QuoteIdentifier(ColRoleId);
             string colModelId = dbType.QuoteIdentifier("model_id");
-            string colActions = dbType.QuoteIdentifier("allowed_actions");
+            string colAction = dbType.QuoteIdentifier("action");
+            string colScope = dbType.QuoteIdentifier("scope");
 
-            string sql = $"SELECT {colRoleId}, {colModelId}, {colActions} FROM {tbl}";
+            string sql = $"SELECT {colRoleId}, {colModelId}, {colAction}, {colScope} FROM {tbl}";
             var dbAccess = new DbAccess(databaseId, _connectionManager);
             var table = dbAccess.Execute(new DbCommandSpec(DbCommandKind.DataTable, sql)).Table!;
 
@@ -51,7 +52,8 @@ namespace Bee.Repository.System
                 list.Add(new RoleGrantRow(
                     ValueUtilities.CStr(row[ColRoleId]),
                     ValueUtilities.CStr(row["model_id"]),
-                    (PermissionAction)ValueUtilities.CInt(row["allowed_actions"])));
+                    (PermissionAction)ValueUtilities.CInt(row["action"]),
+                    (ScopeStrategy)ValueUtilities.CInt(row["scope"])));
             }
             return list;
         }

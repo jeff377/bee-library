@@ -86,6 +86,28 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
+        /// Gets the field marked <see cref="ScopeRole.Owner"/> (resolved by the <c>Own</c> record-scope
+        /// strategy), or <c>null</c> when no field carries that role.
+        /// </summary>
+        public FormField? GetOwnerField() => FindScopeField(ScopeRole.Owner);
+
+        /// <summary>
+        /// Gets the field marked <see cref="ScopeRole.Dept"/> (resolved by the <c>Dept</c> /
+        /// <c>DeptAndSub</c> record-scope strategies), or <c>null</c> when no field carries that role.
+        /// </summary>
+        public FormField? GetDeptField() => FindScopeField(ScopeRole.Dept);
+
+        private FormField? FindScopeField(ScopeRole role)
+        {
+            if (Fields == null) { return null; }
+            foreach (var field in Fields)
+            {
+                if (field.ScopeRole == role) { return field; }
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Gets the relation field reference collection.
         /// </summary>
         [Browsable(false)]
