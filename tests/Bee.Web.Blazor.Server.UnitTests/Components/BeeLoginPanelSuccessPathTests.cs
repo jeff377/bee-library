@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Reflection;
 using Bee.Api.Client.Connectors;
 using Bee.Api.Client.Providers;
-using Bee.Api.Core;
 using Bee.Api.Core.JsonRpc;
 using Bee.Api.Core.Messages.System;
 using Bee.Web.Blazor.Server.Components;
@@ -31,23 +30,14 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
         private static readonly PropertyInfo s_factoryProp =
             typeof(BeeLoginPanel).GetProperty("Factory", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-        private sealed class FakeLoginProvider : IJsonRpcProvider
+        private sealed class FakeLoginProvider : LocalApiProvider
         {
             private readonly LoginResponse _response;
 
-            public FakeLoginProvider(LoginResponse response) => _response = response;
+            public FakeLoginProvider(LoginResponse response) : base(Guid.Empty) => _response = response;
 
-            public Task<JsonRpcResponse> ExecuteAsync(JsonRpcRequest request)
-            {
-                var type = typeof(LoginResponse);
-                var bytes = ApiServiceOptions.PayloadTransformer.Encode(_response, type);
-                var result = new JsonRpcResult
-                {
-                    TypeName = $"{type.FullName}, {type.Assembly.GetName().Name}",
-                    Value = bytes
-                };
-                return Task.FromResult(new JsonRpcResponse { Result = result });
-            }
+            Task<JsonRpcResponse> IJsonRpcProvider.ExecuteAsync(JsonRpcRequest request)
+                => Task.FromResult(new JsonRpcResponse { Result = new JsonRpcResult { Value = _response } });
         }
 
         private sealed class FakeConnectorFactory : BeeApiConnectorFactory
@@ -60,10 +50,9 @@ namespace Bee.Web.Blazor.Server.UnitTests.Components
             public override SystemApiConnector CreateSystemConnector(Guid accessToken)
             {
                 var connector = new SystemApiConnector(accessToken);
-                connector.GetType()
-                    .GetProperty("Provider", BindingFlags.Public | BindingFlags.Instance)!
-                    .GetSetMethod(nonPublic: true)!
-                    .Invoke(connector, new object[] { _provider });
+                typeof(ApiConnector)
+                    .GetProperty(nameof(ApiConnector.Provider), BindingFlags.Public | BindingFlags.Instance)!
+                    .SetValue(connector, _provider);
                 return connector;
             }
         }
