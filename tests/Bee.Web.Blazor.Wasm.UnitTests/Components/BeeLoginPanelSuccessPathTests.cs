@@ -30,7 +30,7 @@ namespace Bee.Web.Blazor.Wasm.UnitTests.Components
         private static readonly PropertyInfo s_factoryProp =
             typeof(BeeLoginPanel).GetProperty("Factory", BindingFlags.NonPublic | BindingFlags.Instance)!;
 
-        private sealed class FakeLoginProvider : LocalApiProvider
+        private sealed class FakeLoginProvider : LocalApiProvider, IJsonRpcProvider
         {
             private readonly LoginResponse _response;
 
