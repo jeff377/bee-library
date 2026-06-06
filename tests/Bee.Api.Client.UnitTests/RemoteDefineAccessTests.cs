@@ -4,6 +4,8 @@ using Bee.Api.Client.DefineAccess;
 using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
+using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 
 namespace Bee.Api.Client.UnitTests
@@ -18,7 +20,9 @@ namespace Bee.Api.Client.UnitTests
     {
         private static readonly string[] s_singleKey = { "onlyOne" };
         private static readonly string[] s_twoKeys = { "a", "b" };
+        private static readonly string[] s_threeKeys = { "a", "b", "c" };
         private static readonly string[] s_employeeKey = { "Employee" };
+        private static readonly string[] s_languageKeys = { "en", "core" };
         private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };
 
         public RemoteDefineAccessTests(Bee.Tests.Shared.BeeTestFixture _)
@@ -81,6 +85,24 @@ namespace Bee.Api.Client.UnitTests
             var access = CreateAccess();
             Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.FormLayout, Array.Empty<string>()));
             Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.FormLayout, s_twoKeys));
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine Language keys 為 null 應拋 ArgumentException")]
+        public void GetDefine_Language_NullKeys_ThrowsArgumentException()
+        {
+            var access = CreateAccess();
+            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.Language, null));
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine Language keys 長度不為 2 應拋 ArgumentException")]
+        public void GetDefine_Language_InvalidKeysLength_ThrowsArgumentException()
+        {
+            var access = CreateAccess();
+            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.Language, Array.Empty<string>()));
+            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.Language, s_singleKey));
+            Assert.Throws<ArgumentException>(() => access.GetDefine(DefineType.Language, s_threeKeys));
         }
 
         [Fact]
@@ -224,6 +246,71 @@ namespace Bee.Api.Client.UnitTests
 
             Assert.NotNull(result);
             Assert.IsType<TableSchema>(result);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine FormLayout 含有效 key 使用 GetDefine 公開方法應回傳表單排版")]
+        public void GetDefine_FormLayout_ViaPublicMethod_ReturnsFormLayout()
+        {
+            var connector = new CountingConnector();
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.FormLayout, s_employeeKey);
+
+            Assert.NotNull(result);
+            Assert.IsType<FormLayout>(result);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine Language 含有效 keys 使用 GetDefine 公開方法應回傳語言資源")]
+        public void GetDefine_Language_ViaPublicMethod_ReturnsLanguageResource()
+        {
+            var connector = new CountingConnector();
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.Language, s_languageKeys);
+
+            Assert.NotNull(result);
+            Assert.IsType<LanguageResource>(result);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine DbCategorySettings 使用 GetDefine 公開方法應回傳資料庫類別設定")]
+        public void GetDefine_DbCategorySettings_ViaPublicMethod_ReturnsDbCategorySettings()
+        {
+            var connector = new CountingConnector();
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.DbCategorySettings);
+
+            Assert.NotNull(result);
+            Assert.IsType<DbCategorySettings>(result);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine ProgramSettings 使用 GetDefine 公開方法應回傳程式設定")]
+        public void GetDefine_ProgramSettings_ViaPublicMethod_ReturnsProgramSettings()
+        {
+            var connector = new CountingConnector();
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.ProgramSettings);
+
+            Assert.NotNull(result);
+            Assert.IsType<ProgramSettings>(result);
+        }
+
+        [Fact]
+        [DisplayName("RemoteDefineAccess.GetDefine PermissionModels 使用 GetDefine 公開方法應回傳權限模型")]
+        public void GetDefine_PermissionModels_ViaPublicMethod_ReturnsPermissionModels()
+        {
+            var connector = new CountingConnector();
+            var access = new RemoteDefineAccess(connector);
+
+            var result = access.GetDefine(DefineType.PermissionModels);
+
+            Assert.NotNull(result);
+            Assert.IsType<PermissionModels>(result);
         }
 
         // 以下測試對應 plan-deprecate-sync-api.md §10.2 行為一致性測試:
