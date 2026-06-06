@@ -2,6 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
+using Bee.Definition.Language;
 using Bee.Definition.Layouts;
 using Bee.Definition.Settings;
 using Bee.Definition.Storage;
@@ -152,6 +153,63 @@ namespace Bee.Definition.UnitTests.Storage
 
                 // Act & Assert
                 Assert.Throws<FileNotFoundException>(() => storage.GetDbCategorySettings());
+            });
+        }
+
+        [Fact]
+        [DisplayName("SaveProgramSettings / GetProgramSettings 應可寫入後讀回")]
+        public void SaveAndGetProgramSettings_RoundTrips()
+        {
+            WithTempDefinePath(paths =>
+            {
+                var storage = new FileDefineStorage(paths);
+                var settings = new ProgramSettings();
+
+                storage.SaveProgramSettings(settings);
+                var restored = storage.GetProgramSettings();
+
+                Assert.NotNull(restored);
+            });
+        }
+
+        [Fact]
+        [DisplayName("GetProgramSettings 檔案不存在應拋出 FileNotFoundException")]
+        public void GetProgramSettings_FileNotFound_Throws()
+        {
+            WithTempDefinePath(paths =>
+            {
+                var storage = new FileDefineStorage(paths);
+                Assert.Throws<FileNotFoundException>(() => storage.GetProgramSettings());
+            });
+        }
+
+        [Fact]
+        [DisplayName("SaveLanguage / GetLanguage 應可寫入後讀回相同語言資源")]
+        public void SaveAndGetLanguage_RoundTrips()
+        {
+            WithTempDefinePath(paths =>
+            {
+                var storage = new FileDefineStorage(paths);
+                var resource = new LanguageResource { Lang = "en", Namespace = "Core" };
+
+                storage.SaveLanguage(resource);
+                var restored = storage.GetLanguage("en", "Core");
+
+                Assert.NotNull(restored);
+                Assert.Equal("en", restored!.Lang);
+                Assert.Equal("Core", restored.Namespace);
+            });
+        }
+
+        [Fact]
+        [DisplayName("GetLanguage 檔案不存在應回傳 null（非拋例外）")]
+        public void GetLanguage_FileNotFound_ReturnsNull()
+        {
+            WithTempDefinePath(paths =>
+            {
+                var storage = new FileDefineStorage(paths);
+                var result = storage.GetLanguage("zh-TW", "Missing");
+                Assert.Null(result);
             });
         }
 
