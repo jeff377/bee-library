@@ -14,186 +14,158 @@
     <UserControl.DataTemplates>
         <DataTemplate DataType="settings:SystemSettings">
             <StackPanel Spacing="6">
-                <TextBlock Text="SystemSettings（系統設定根節點）" FontWeight="Bold" FontSize="13"/>
-                <TextBlock Text="選取下方 Configuration 子節點編輯個別區塊；ExtendedProperties 提供自由 key/value 欄位（可新增/刪除）。"
-                           Foreground="#A0A0A0" TextWrapping="Wrap"/>
+                <TextBlock Classes="h2" Text="SystemSettings（系統設定根節點）"/>
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="選取下方 Configuration 子節點編輯個別區塊；ExtendedProperties 提供自由 key/value 欄位（可新增/刪除）。"/>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="settings:CommonConfiguration">
-            <StackPanel x:DataType="settings:CommonConfiguration" Spacing="6">
-                <TextBlock Text="CommonConfiguration 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel x:DataType="settings:CommonConfiguration" Spacing="2">
+                <TextBlock Classes="h2" Text="CommonConfiguration 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Version"/>
-                    <TextBox Text="{Binding Version, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding Version, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="IsDebugMode"/>
                     <CheckBox IsChecked="{Binding IsDebugMode, Mode=TwoWay}"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DefaultLang"/>
-                    <TextBox Text="{Binding DefaultLang, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding DefaultLang, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="AllowedTypeNamespaces"/>
-                    <TextBox Text="{Binding AllowedTypeNamespaces, Mode=TwoWay}" Width="360"/>
-                </StackPanel>
+                    <TextBox Text="{Binding AllowedTypeNamespaces, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="settings:SecurityKeySettings">
-            <StackPanel x:DataType="settings:SecurityKeySettings" Spacing="6">
-                <TextBlock Text="SecurityKeySettings 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <TextBlock Text="（金鑰直接顯示為純文字 — 編輯器本機檔案僅供 dev 操作；於 production 應透過 KMS 管理。）"
-                           Foreground="#E0A33A" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel x:DataType="settings:SecurityKeySettings" Spacing="2">
+                <TextBlock Classes="h2" Text="SecurityKeySettings 屬性" Margin="0,0,0,4"/>
+                <TextBlock Classes="muted" Foreground="{DynamicResource WarningForeground}" Margin="0,0,0,8" TextWrapping="Wrap"
+                           Text="（金鑰直接顯示為純文字 — 編輯器本機檔案僅供 dev 操作；於 production 應透過 KMS 管理）"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ApiEncryptionKey"/>
-                    <TextBox Text="{Binding ApiEncryptionKey, Mode=TwoWay}" Width="360"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding ApiEncryptionKey, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="CookieEncryptionKey"/>
-                    <TextBox Text="{Binding CookieEncryptionKey, Mode=TwoWay}" Width="360"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding CookieEncryptionKey, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ConfigEncryptionKey"/>
-                    <TextBox Text="{Binding ConfigEncryptionKey, Mode=TwoWay}" Width="360"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding ConfigEncryptionKey, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DatabaseEncryptionKey"/>
-                    <TextBox Text="{Binding DatabaseEncryptionKey, Mode=TwoWay}" Width="360"/>
-                </StackPanel>
+                    <TextBox Text="{Binding DatabaseEncryptionKey, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="settings:CacheNotifyOptions">
-            <StackPanel x:DataType="settings:CacheNotifyOptions" Spacing="6">
-                <TextBlock Text="CacheNotifyOptions 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel x:DataType="settings:CacheNotifyOptions" Spacing="2">
+                <TextBlock Classes="h2" Text="CacheNotifyOptions 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Enabled"/>
                     <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                </DockPanel>
+                <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="IntervalSeconds"/>
-                    <TextBox Text="{Binding IntervalSeconds, Mode=TwoWay}" Width="120"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding IntervalSeconds, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="MarginSeconds"/>
-                    <TextBox Text="{Binding MarginSeconds, Mode=TwoWay}" Width="120"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding MarginSeconds, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DatabaseId"/>
-                    <TextBox Text="{Binding DatabaseId, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
+                    <TextBox Text="{Binding DatabaseId, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="settings:BackendComponents">
-            <StackPanel x:DataType="settings:BackendComponents" Spacing="6">
-                <TextBlock Text="BackendComponents 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <TextBlock Text="後端各 component 的型別 AssemblyQualifiedName（預設值來自 BackendDefaultTypes）。"
-                           Foreground="#A0A0A0" FontSize="11" TextWrapping="Wrap" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="ApiEncryptionKeyProvider"/>
-                    <TextBox Text="{Binding ApiEncryptionKeyProvider, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="AccessTokenValidator"/>
-                    <TextBox Text="{Binding AccessTokenValidator, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="BusinessObjectFactory"/>
-                    <TextBox Text="{Binding BusinessObjectFactory, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="CacheProvider"/>
-                    <TextBox Text="{Binding CacheProvider, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="CacheDataSourceProvider"/>
-                    <TextBox Text="{Binding CacheDataSourceProvider, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="DefineStorage"/>
-                    <TextBox Text="{Binding DefineStorage, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="DefineAccess"/>
-                    <TextBox Text="{Binding DefineAccess, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="SessionInfoService"/>
-                    <TextBox Text="{Binding SessionInfoService, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="CompanyInfoService"/>
-                    <TextBox Text="{Binding CompanyInfoService, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="EnterpriseObjectService"/>
-                    <TextBox Text="{Binding EnterpriseObjectService, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="SystemRepositoryFactory"/>
-                    <TextBox Text="{Binding SystemRepositoryFactory, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="FormRepositoryFactory"/>
-                    <TextBox Text="{Binding FormRepositoryFactory, Mode=TwoWay}" Width="420"/>
-                </StackPanel>
+            <StackPanel x:DataType="settings:BackendComponents" Spacing="2">
+                <TextBlock Classes="h2" Text="BackendComponents 屬性" Margin="0,0,0,4"/>
+                <TextBlock Classes="muted" Margin="0,0,0,8" TextWrapping="Wrap"
+                           Text="後端各 component 的型別 AssemblyQualifiedName（預設值來自 BackendDefaultTypes）。"/>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="ApiEncryptionKeyProvider"/><TextBox Text="{Binding ApiEncryptionKeyProvider, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="AccessTokenValidator"/><TextBox Text="{Binding AccessTokenValidator, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="BusinessObjectFactory"/><TextBox Text="{Binding BusinessObjectFactory, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="CacheProvider"/><TextBox Text="{Binding CacheProvider, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="CacheDataSourceProvider"/><TextBox Text="{Binding CacheDataSourceProvider, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="DefineStorage"/><TextBox Text="{Binding DefineStorage, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="DefineAccess"/><TextBox Text="{Binding DefineAccess, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="SessionInfoService"/><TextBox Text="{Binding SessionInfoService, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="CompanyInfoService"/><TextBox Text="{Binding CompanyInfoService, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="EnterpriseObjectService"/><TextBox Text="{Binding EnterpriseObjectService, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="SystemRepositoryFactory"/><TextBox Text="{Binding SystemRepositoryFactory, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="FormRepositoryFactory"/><TextBox Text="{Binding FormRepositoryFactory, Mode=TwoWay}"/></DockPanel>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="collections:Property">
-            <StackPanel x:DataType="collections:Property" Spacing="6">
-                <TextBlock Text="ExtendedProperty 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel x:DataType="collections:Property" Spacing="2">
+                <TextBlock Classes="h2" Text="ExtendedProperty 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Name"/>
-                    <TextBox Text="{Binding Name, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding Name, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Value"/>
-                    <TextBox Text="{Binding Value, Mode=TwoWay}" Width="360"/>
-                </StackPanel>
+                    <TextBox Text="{Binding Value, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
     </UserControl.DataTemplates>
 
     <DockPanel>
-        <Border DockPanel.Dock="Top" Padding="12,8" Background="#1F1F22">
+        <Border DockPanel.Dock="Top" Classes="titlebar" Padding="12,8">
             <Grid ColumnDefinitions="*,Auto">
-                <StackPanel Grid.Column="0" Spacing="2">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" Foreground="#FFFFFF"/>
-                        <TextBlock Text="●" Foreground="#E0A33A" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
+                <StackPanel Grid.Column="0" Spacing="1">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Classes="h1" Text="{Binding Title}"/>
+                        <Ellipse Width="8" Height="8" Fill="{DynamicResource DirtyIndicator}"
+                                 VerticalAlignment="Center"
+                                 IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="#A0A0A0"/>
+                    <TextBlock Classes="path" Text="{Binding FilePath}"/>
                 </StackPanel>
                 <WrapPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Classes="doc" Content="儲存" Command="{Binding SaveCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增 ExtendedProperty" Command="{Binding AddPropertyCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="驗證" Command="{Binding ValidateCommand}" Margin="3"/>
-                    <Button Classes="doc danger" Content="刪除" Command="{Binding DeleteCommand}" Margin="3"/>
+                    <Button Classes="tool primary" Command="{Binding SaveCommand}" Margin="2" ToolTip.Tip="儲存（寫回 XML）">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconSave}"/><TextBlock Text="儲存" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddPropertyCommand}" Margin="2" ToolTip.Tip="新增 ExtendedProperty">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconAdd}"/><TextBlock Text="Property" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding ValidateCommand}" Margin="2" ToolTip.Tip="跑靜態驗證">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconCheck}"/><TextBlock Text="驗證" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool danger" Command="{Binding DeleteCommand}" Margin="2" ToolTip.Tip="刪除目前選取的節點">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconDelete}"/><TextBlock Text="刪除" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
                 </WrapPanel>
             </Grid>
         </Border>
 
-        <Border DockPanel.Dock="Bottom" Padding="12,4" Background="#1F1F22">
-            <TextBlock Text="{Binding StatusText}" Foreground="#A0A0A0" FontSize="11"/>
+        <Border DockPanel.Dock="Bottom" Classes="statusbar" Padding="12,5">
+            <TextBlock Classes="muted" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis"/>
         </Border>
 
-        <Border DockPanel.Dock="Bottom" Padding="10,6" Background="#252528"
-                IsVisible="{Binding Issues.Count}">
+        <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8" IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Foreground="#E0E0E0" Text="驗證結果"/>
-                <ListBox ItemsSource="{Binding Issues}" MaxHeight="150" Background="Transparent" BorderThickness="0">
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0" Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ValidationIssue">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="{Binding Icon}"/>
-                                <TextBlock Text="{Binding Path}" Foreground="#A0A0A0" Width="220"/>
-                                <TextBlock Text="{Binding Message}" Foreground="#E0E0E0" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Icon}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Path}" Classes="muted" Width="240"/>
+                                <TextBlock Text="{Binding Message}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -202,9 +174,7 @@
         </Border>
 
         <Grid ColumnDefinitions="*,4,1.2*">
-            <TreeView Grid.Column="0"
-                      ItemsSource="{Binding Roots}"
-                      SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}">
+            <TreeView Grid.Column="0" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}" Padding="6,4">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:SettingsTreeNode">
                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -219,11 +189,9 @@
                     </Style>
                 </TreeView.Styles>
             </TreeView>
-
-            <GridSplitter Grid.Column="1" Background="#3E3E42" ResizeDirection="Columns"/>
-
-            <Border Grid.Column="2" Padding="14">
-                <ScrollViewer>
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
+            <Border Grid.Column="2" Padding="18,14">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                     <ContentControl Content="{Binding SelectedEditorContext}"/>
                 </ScrollViewer>
             </Border>

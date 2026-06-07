@@ -8,18 +8,15 @@
              x:DataType="vm:UnsupportedDocumentViewModel">
 
     <DockPanel>
-        <Border DockPanel.Dock="Top" Padding="12,8" Background="#1F1F22">
-            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" Foreground="#FFFFFF"/>
+        <Border DockPanel.Dock="Top" Classes="titlebar" Padding="12,8">
+            <TextBlock Classes="h1" Text="{Binding Title}"/>
         </Border>
 
-        <Border Padding="14">
+        <Border Padding="18,14">
             <StackPanel Spacing="10">
-                <TextBlock Text="選取項目" FontWeight="Bold" FontSize="13"/>
-                <TextBlock Text="{Binding Summary}"
-                           TextWrapping="Wrap"
-                           FontFamily="monospace"/>
+                <TextBlock Classes="h2" Text="選取項目"/>
+                <TextBlock Text="{Binding Summary}" TextWrapping="Wrap" FontFamily="ui-monospace, Menlo, Consolas, monospace"/>
             </StackPanel>
         </Border>
     </DockPanel>
-
 </UserControl>

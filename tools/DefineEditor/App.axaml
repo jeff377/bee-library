@@ -2,13 +2,99 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Bee.DefineEditor.App"
              xmlns:local="using:Bee.DefineEditor"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+             RequestedThemeVariant="Dark">
 
     <Application.DataTemplates>
         <local:ViewLocator/>
     </Application.DataTemplates>
-  
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <!-- ===================== VS Code Dark+ 風 ===================== -->
+                <ResourceDictionary x:Key="Dark">
+                    <!-- 主背景：VS Code editor.background -->
+                    <Color x:Key="SurfaceColor">#1E1E1E</Color>
+                    <SolidColorBrush x:Key="SurfaceBackground" Color="{StaticResource SurfaceColor}"/>
+                    <SolidColorBrush x:Key="SunkenBackground" Color="#252526"/>
+                    <SolidColorBrush x:Key="TitleBarBackground" Color="#2D2D30"/>
+                    <SolidColorBrush x:Key="TitleBarBorder" Color="#1A1A1A"/>
+                    <SolidColorBrush x:Key="StatusBarBackground" Color="#252526"/>
+                    <SolidColorBrush x:Key="TreeBackground" Color="#252526"/>
+
+                    <SolidColorBrush x:Key="Foreground" Color="#CCCCCC"/>
+                    <SolidColorBrush x:Key="HeadingForeground" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="MutedForeground" Color="#9A9A9A"/>
+                    <SolidColorBrush x:Key="PropertyLabelForeground" Color="#A0A0A0"/>
+
+                    <!-- 一般工具列按鈕 -->
+                    <SolidColorBrush x:Key="ToolButtonBackground" Color="#3A3D41"/>
+                    <SolidColorBrush x:Key="ToolButtonBackgroundHover" Color="#4A4D51"/>
+                    <SolidColorBrush x:Key="ToolButtonBackgroundPressed" Color="#2F3134"/>
+                    <SolidColorBrush x:Key="ToolButtonBackgroundDisabled" Color="#2A2A2D"/>
+                    <SolidColorBrush x:Key="ToolButtonForeground" Color="#E0E0E0"/>
+                    <SolidColorBrush x:Key="ToolButtonForegroundHover" Color="#FFFFFF"/>
+                    <SolidColorBrush x:Key="ToolButtonForegroundDisabled" Color="#707070"/>
+                    <SolidColorBrush x:Key="ToolButtonBorder" Color="#474747"/>
+                    <SolidColorBrush x:Key="ToolButtonBorderHover" Color="#5A5A5A"/>
+
+                    <!-- 主行為按鈕（VS Code 藍） -->
+                    <SolidColorBrush x:Key="PrimaryButtonBackground" Color="#0E639C"/>
+                    <SolidColorBrush x:Key="PrimaryButtonBackgroundHover" Color="#1177BB"/>
+                    <SolidColorBrush x:Key="PrimaryButtonBackgroundPressed" Color="#094771"/>
+
+                    <!-- 危險按鈕 -->
+                    <SolidColorBrush x:Key="DangerButtonBackground" Color="#A11C1C"/>
+                    <SolidColorBrush x:Key="DangerButtonBackgroundHover" Color="#C42929"/>
+
+                    <!-- 狀態色 -->
+                    <SolidColorBrush x:Key="DirtyIndicator" Color="#E0A33A"/>
+                    <SolidColorBrush x:Key="ErrorForeground" Color="#F48771"/>
+                    <SolidColorBrush x:Key="WarningForeground" Color="#E0A33A"/>
+                    <SolidColorBrush x:Key="SplitterBrush" Color="#3E3E42"/>
+                </ResourceDictionary>
+
+                <!-- ===================== VS Code Light+ 風 ===================== -->
+                <ResourceDictionary x:Key="Light">
+                    <Color x:Key="SurfaceColor">#FFFFFF</Color>
+                    <SolidColorBrush x:Key="SurfaceBackground" Color="{StaticResource SurfaceColor}"/>
+                    <SolidColorBrush x:Key="SunkenBackground" Color="#F3F3F3"/>
+                    <SolidColorBrush x:Key="TitleBarBackground" Color="#DDDDDD"/>
+                    <SolidColorBrush x:Key="TitleBarBorder" Color="#C8C8C8"/>
+                    <SolidColorBrush x:Key="StatusBarBackground" Color="#F3F3F3"/>
+                    <SolidColorBrush x:Key="TreeBackground" Color="#F3F3F3"/>
+
+                    <SolidColorBrush x:Key="Foreground" Color="#333333"/>
+                    <SolidColorBrush x:Key="HeadingForeground" Color="#1A1A1A"/>
+                    <SolidColorBrush x:Key="MutedForeground" Color="#6B6B6B"/>
+                    <SolidColorBrush x:Key="PropertyLabelForeground" Color="#555555"/>
+
+                    <SolidColorBrush x:Key="ToolButtonBackground" Color="#E1E1E1"/>
+                    <SolidColorBrush x:Key="ToolButtonBackgroundHover" Color="#CFCFCF"/>
+                    <SolidColorBrush x:Key="ToolButtonBackgroundPressed" Color="#B5B5B5"/>
+                    <SolidColorBrush x:Key="ToolButtonBackgroundDisabled" Color="#EBEBEB"/>
+                    <SolidColorBrush x:Key="ToolButtonForeground" Color="#333333"/>
+                    <SolidColorBrush x:Key="ToolButtonForegroundHover" Color="#000000"/>
+                    <SolidColorBrush x:Key="ToolButtonForegroundDisabled" Color="#A0A0A0"/>
+                    <SolidColorBrush x:Key="ToolButtonBorder" Color="#C0C0C0"/>
+                    <SolidColorBrush x:Key="ToolButtonBorderHover" Color="#909090"/>
+
+                    <SolidColorBrush x:Key="PrimaryButtonBackground" Color="#007ACC"/>
+                    <SolidColorBrush x:Key="PrimaryButtonBackgroundHover" Color="#1B8FE0"/>
+                    <SolidColorBrush x:Key="PrimaryButtonBackgroundPressed" Color="#005A9E"/>
+
+                    <SolidColorBrush x:Key="DangerButtonBackground" Color="#C82E2E"/>
+                    <SolidColorBrush x:Key="DangerButtonBackgroundHover" Color="#E04444"/>
+
+                    <SolidColorBrush x:Key="DirtyIndicator" Color="#C28818"/>
+                    <SolidColorBrush x:Key="ErrorForeground" Color="#C41E1E"/>
+                    <SolidColorBrush x:Key="WarningForeground" Color="#C28818"/>
+                    <SolidColorBrush x:Key="SplitterBrush" Color="#C8C8C8"/>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="/Styles/DocumentStyles.axaml"/>

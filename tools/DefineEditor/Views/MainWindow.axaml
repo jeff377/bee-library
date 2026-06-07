@@ -4,10 +4,11 @@
         xmlns:models="using:Bee.DefineEditor.Models"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="640"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="720"
         x:Class="Bee.DefineEditor.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
+        Width="1200" Height="720"
         Title="Bee.DefineEditor — 定義檔方案維護">
 
     <Design.DataContext>
@@ -15,55 +16,57 @@
     </Design.DataContext>
 
     <DockPanel>
-        <!-- 工具列 -->
-        <Border DockPanel.Dock="Top" Padding="8" Background="#2D2D30">
-            <Border.Styles>
-                <Style Selector="Button.toolbar">
-                    <Setter Property="Background" Value="#0E639C"/>
-                    <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="Padding" Value="14,6"/>
-                    <Setter Property="CornerRadius" Value="3"/>
-                    <Setter Property="FontWeight" Value="SemiBold"/>
-                </Style>
-                <Style Selector="Button.toolbar:pointerover /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#1177BB"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Style>
-                <Style Selector="Button.toolbar:pressed /template/ ContentPresenter">
-                    <Setter Property="Background" Value="#094771"/>
-                    <Setter Property="Foreground" Value="White"/>
-                </Style>
-            </Border.Styles>
-            <StackPanel Orientation="Horizontal" Spacing="12">
-                <Button Classes="toolbar" Content="開啟方案…" Click="OnOpenSolutionClick"/>
-                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Foreground="#DDDDDD"/>
-            </StackPanel>
+        <!-- 上方工具列 -->
+        <Border DockPanel.Dock="Top" Classes="titlebar" Padding="10,6">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
+                    <Button Classes="tool primary" Click="OnOpenSolutionClick"
+                            ToolTip.Tip="開啟 DefinePath 方案資料夾">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconFolder}"/>
+                            <TextBlock Text="開啟方案" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </StackPanel>
+
+                <TextBlock Grid.Column="1" Text="{Binding StatusText}"
+                           Classes="muted" VerticalAlignment="Center"
+                           Margin="14,0" TextTrimming="CharacterEllipsis"/>
+
+                <Button Grid.Column="2" Classes="tool icon"
+                        Command="{Binding ToggleThemeCommand}"
+                        ToolTip.Tip="切換淺色 / 深色主題">
+                    <PathIcon Data="{StaticResource IconSun}"/>
+                </Button>
+            </Grid>
         </Border>
 
         <!-- 主體：左方案樹 + 右文件編輯區 -->
-        <Grid ColumnDefinitions="340,4,*">
+        <Grid ColumnDefinitions="320,4,*">
             <TreeView Grid.Column="0"
                       ItemsSource="{Binding Nodes}"
-                      SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+                      SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
+                      Padding="6,4">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:DefineNode">
-                        <TextBlock Text="{Binding Name}"/>
+                        <TextBlock Text="{Binding Name}" Padding="2,3"/>
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
 
-            <GridSplitter Grid.Column="1" Background="#3E3E42" ResizeDirection="Columns"/>
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
 
             <Grid Grid.Column="2">
-                <!-- 文件編輯區：ViewLocator 依 CurrentDocument 型別解析出對應 View -->
                 <ContentControl Content="{Binding CurrentDocument}"
                                 IsVisible="{Binding HasDocument}"/>
 
-                <!-- 沒有選取檔案時的提示 -->
-                <Border Padding="14" IsVisible="{Binding !HasDocument}">
-                    <TextBlock Text="（請於左側方案樹選取定義檔開啟編輯器）"
-                               TextWrapping="Wrap"
-                               Opacity="0.7"/>
+                <Border Padding="40" IsVisible="{Binding !HasDocument}">
+                    <StackPanel Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <PathIcon Data="{StaticResource IconFolder}" Width="48" Height="48"
+                                  Foreground="{DynamicResource MutedForeground}"/>
+                        <TextBlock Text="（請於左側方案樹選取定義檔開啟編輯器）"
+                                   Classes="muted" HorizontalAlignment="Center"/>
+                    </StackPanel>
                 </Border>
             </Grid>
         </Grid>

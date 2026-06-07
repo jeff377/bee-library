@@ -13,168 +13,128 @@
     <UserControl.DataTemplates>
         <DataTemplate DataType="settings:DatabaseSettings">
             <StackPanel Spacing="6">
-                <TextBlock Text="DatabaseSettings 根節點" FontWeight="Bold" FontSize="13"/>
-                <TextBlock Text="於工具列「新增 Server」加入 DatabaseServer，「新增 Item」加入 DatabaseItem；Server 提供共用連線字串樣板（用 {@UserId}/{@Password} 佔位符），Item 綁定 Server 或自行提供連線字串（用 {@DbName} 指定資料庫名）。"
-                           Foreground="#A0A0A0" TextWrapping="Wrap"/>
+                <TextBlock Classes="h2" Text="DatabaseSettings 根節點"/>
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="於工具列「+ Server」加入 DatabaseServer，「+ Item」加入 DatabaseItem；Server 提供共用連線字串樣板（用 {@UserId}/{@Password} 佔位符），Item 綁定 Server 或自行提供連線字串（用 {@DbName} 指定資料庫名）。"/>
             </StackPanel>
         </DataTemplate>
 
-        <!-- DatabaseServer wrapper editor panel -->
         <DataTemplate DataType="vm:DatabaseServerEditor">
-            <StackPanel x:DataType="vm:DatabaseServerEditor" Spacing="6">
-                <TextBlock Text="DatabaseServer 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="Id"/>
-                    <TextBox Text="{Binding Id, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="DisplayName"/>
-                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+            <StackPanel x:DataType="vm:DatabaseServerEditor" Spacing="2">
+                <TextBlock Classes="h2" Text="DatabaseServer 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="Id"/><TextBox Text="{Binding Id, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="DisplayName"/><TextBox Text="{Binding DisplayName, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="DatabaseType"/>
                     <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.DatabaseTypes}"
-                              SelectedItem="{Binding DatabaseType, Mode=TwoWay}" Width="200"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="UserId"/>
-                    <TextBox Text="{Binding UserId, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="Password"/>
-                    <TextBox Text="{Binding Password, Mode=TwoWay}" Width="280" PasswordChar="●"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="ConnectionString"/>
-                    <TextBox Text="{Binding ConnectionString, Mode=TwoWay}" Width="500"
-                             AcceptsReturn="False" TextWrapping="Wrap"/>
-                </StackPanel>
+                              SelectedItem="{Binding DatabaseType, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="UserId"/><TextBox Text="{Binding UserId, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="Password"/><TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="●"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="ConnectionString"/><TextBox Text="{Binding ConnectionString, Mode=TwoWay}" TextWrapping="Wrap"/></DockPanel>
 
-                <Separator Margin="0,12"/>
-                <TextBlock Text="貼上連線字串拆解" FontWeight="SemiBold" Foreground="#E0E0E0"/>
-                <TextBlock Text="貼上完整連線字串後按「拆解」，工具會依目前選定的 DatabaseType 把帳密拆出來、改寫成佔位符。"
-                           Foreground="#A0A0A0" FontSize="11" TextWrapping="Wrap"/>
+                <Separator Margin="0,12,0,4"/>
+                <TextBlock Text="貼上連線字串拆解" Classes="muted" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                <TextBlock Classes="muted" TextWrapping="Wrap" Margin="0,0,0,6"
+                           Text="貼上完整連線字串後按「拆解」，工具會依目前選定的 DatabaseType 把帳密拆出來、改寫成佔位符。"/>
                 <TextBox Text="{Binding PasteInput, Mode=TwoWay}" Height="80" AcceptsReturn="True"
                          TextWrapping="Wrap"
                          PlaceholderText="例：Data Source=localhost;Initial Catalog=master;User ID=sa;Password=…"/>
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Button Classes="doc" Content="拆解" Command="{Binding ParseCommand}"/>
-                    <Button Classes="doc" Content="清除" Command="{Binding ClearCommand}"/>
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
+                    <Button Classes="tool" Command="{Binding ParseCommand}" ToolTip.Tip="依 DatabaseType 別名表拆出帳密 / DbName">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconParse}"/><TextBlock Text="拆解" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding ClearCommand}" ToolTip.Tip="清空貼上區與預覽">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconClear}"/><TextBlock Text="清除" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
                 </StackPanel>
 
-                <Border IsVisible="{Binding HasParseResult}" Padding="10" Margin="0,8,0,0"
-                        Background="#252528" CornerRadius="3">
+                <Border IsVisible="{Binding HasParseResult}" Padding="10" Margin="0,10,0,0"
+                        Classes="surface-sunken" CornerRadius="3">
                     <StackPanel Spacing="4" x:DataType="vm:DatabaseServerEditor">
-                        <TextBlock Text="拆解預覽" FontWeight="SemiBold" Foreground="#E0E0E0"/>
-                        <TextBlock Text="{Binding ParseResult.UserId, StringFormat='UserId：{0}'}" Foreground="#D0D0D0"/>
-                        <TextBlock Text="{Binding ParseResult.Password, StringFormat='Password：{0}'}" Foreground="#D0D0D0"/>
-                        <TextBlock Text="{Binding ParseResult.RewrittenConnectionString, StringFormat='ConnectionString：{0}'}"
-                                   Foreground="#D0D0D0" TextWrapping="Wrap"/>
+                        <TextBlock Text="拆解預覽" Classes="muted" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding ParseResult.UserId, StringFormat='UserId：{0}'}"/>
+                        <TextBlock Text="{Binding ParseResult.Password, StringFormat='Password：{0}'}"/>
+                        <TextBlock Text="{Binding ParseResult.RewrittenConnectionString, StringFormat='ConnectionString：{0}'}" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding ParseResult.Errors}" Margin="0,4,0,0">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" Foreground="#E55" FontSize="11" TextWrapping="Wrap"/>
-                                </DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource ErrorForeground}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <ItemsControl ItemsSource="{Binding ParseResult.Warnings}" Margin="0,4,0,0">
+                        <ItemsControl ItemsSource="{Binding ParseResult.Warnings}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" Foreground="#E0A33A" FontSize="11" TextWrapping="Wrap"/>
-                                </DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource WarningForeground}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
-                            <Button Classes="doc" Content="套用至此 Server" Command="{Binding ApplyCommand}"/>
-                        </StackPanel>
+                        <Button Classes="tool primary" Command="{Binding ApplyCommand}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                ToolTip.Tip="把預覽結果寫入此 Server 的欄位">
+                            <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconApply}"/><TextBlock Text="套用至此 Server" VerticalAlignment="Center"/></StackPanel>
+                        </Button>
                     </StackPanel>
                 </Border>
             </StackPanel>
         </DataTemplate>
 
-        <!-- DatabaseItem wrapper editor panel -->
         <DataTemplate DataType="vm:DatabaseItemEditor">
-            <StackPanel x:DataType="vm:DatabaseItemEditor" Spacing="6">
-                <TextBlock Text="DatabaseItem 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="Id"/>
-                    <TextBox Text="{Binding Id, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="CategoryId"/>
-                    <TextBox Text="{Binding CategoryId, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="DisplayName"/>
-                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+            <StackPanel x:DataType="vm:DatabaseItemEditor" Spacing="2">
+                <TextBlock Classes="h2" Text="DatabaseItem 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="Id"/><TextBox Text="{Binding Id, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="CategoryId"/><TextBox Text="{Binding CategoryId, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="DisplayName"/><TextBox Text="{Binding DisplayName, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="DatabaseType"/>
                     <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.DatabaseTypes}"
-                              SelectedItem="{Binding DatabaseType, Mode=TwoWay}" Width="200"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                              SelectedItem="{Binding DatabaseType, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ServerId"/>
                     <ComboBox ItemsSource="{Binding AvailableServerIds}"
                               SelectedItem="{Binding ServerId, Mode=TwoWay}"
-                              Text="{Binding ServerId, Mode=TwoWay}"
-                              IsEditable="True" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="DbName"/>
-                    <TextBox Text="{Binding DbName, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="UserId"/>
-                    <TextBox Text="{Binding UserId, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="Password"/>
-                    <TextBox Text="{Binding Password, Mode=TwoWay}" Width="280" PasswordChar="●"/>
-                </StackPanel>
-                <StackPanel Classes="row">
-                    <TextBlock Classes="label" Text="ConnectionString"/>
-                    <TextBox Text="{Binding ConnectionString, Mode=TwoWay}" Width="500" TextWrapping="Wrap"/>
-                </StackPanel>
+                              Text="{Binding ServerId, Mode=TwoWay}" IsEditable="True"/>
+                </DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="DbName"/><TextBox Text="{Binding DbName, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="UserId"/><TextBox Text="{Binding UserId, Mode=TwoWay}"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="Password"/><TextBox Text="{Binding Password, Mode=TwoWay}" PasswordChar="●"/></DockPanel>
+                <DockPanel Classes="row"><TextBlock Classes="label" Text="ConnectionString"/><TextBox Text="{Binding ConnectionString, Mode=TwoWay}" TextWrapping="Wrap"/></DockPanel>
 
-                <Separator Margin="0,12"/>
-                <TextBlock Text="貼上連線字串拆解" FontWeight="SemiBold" Foreground="#E0E0E0"/>
-                <TextBlock Text="貼上完整連線字串後按「拆解」，工具會依目前 DatabaseType 把帳密 / 資料庫名拆出來、改寫成佔位符。"
-                           Foreground="#A0A0A0" FontSize="11" TextWrapping="Wrap"/>
+                <Separator Margin="0,12,0,4"/>
+                <TextBlock Text="貼上連線字串拆解" Classes="muted" FontWeight="SemiBold" Margin="0,0,0,2"/>
+                <TextBlock Classes="muted" TextWrapping="Wrap" Margin="0,0,0,6"
+                           Text="貼上完整連線字串後按「拆解」，工具會依目前 DatabaseType 把帳密 / 資料庫名拆出來、改寫成佔位符。"/>
                 <TextBox Text="{Binding PasteInput, Mode=TwoWay}" Height="80" AcceptsReturn="True"
                          TextWrapping="Wrap"
                          PlaceholderText="例：Host=localhost;Port=5432;Database=mydb;Username=app;Password=…"/>
-                <StackPanel Orientation="Horizontal" Spacing="6">
-                    <Button Classes="doc" Content="拆解" Command="{Binding ParseCommand}"/>
-                    <Button Classes="doc" Content="清除" Command="{Binding ClearCommand}"/>
+                <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,6,0,0">
+                    <Button Classes="tool" Command="{Binding ParseCommand}" ToolTip.Tip="依 DatabaseType 別名表拆出帳密 / DbName">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconParse}"/><TextBlock Text="拆解" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding ClearCommand}" ToolTip.Tip="清空貼上區與預覽">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconClear}"/><TextBlock Text="清除" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
                 </StackPanel>
 
-                <Border IsVisible="{Binding HasParseResult}" Padding="10" Margin="0,8,0,0"
-                        Background="#252528" CornerRadius="3">
+                <Border IsVisible="{Binding HasParseResult}" Padding="10" Margin="0,10,0,0"
+                        Classes="surface-sunken" CornerRadius="3">
                     <StackPanel Spacing="4" x:DataType="vm:DatabaseItemEditor">
-                        <TextBlock Text="拆解預覽" FontWeight="SemiBold" Foreground="#E0E0E0"/>
-                        <TextBlock Text="{Binding ParseResult.UserId, StringFormat='UserId：{0}'}" Foreground="#D0D0D0"/>
-                        <TextBlock Text="{Binding ParseResult.Password, StringFormat='Password：{0}'}" Foreground="#D0D0D0"/>
-                        <TextBlock Text="{Binding ParseResult.DbName, StringFormat='DbName：{0}'}" Foreground="#D0D0D0"/>
-                        <TextBlock Text="{Binding ParseResult.RewrittenConnectionString, StringFormat='ConnectionString：{0}'}"
-                                   Foreground="#D0D0D0" TextWrapping="Wrap"/>
+                        <TextBlock Text="拆解預覽" Classes="muted" FontWeight="SemiBold"/>
+                        <TextBlock Text="{Binding ParseResult.UserId, StringFormat='UserId：{0}'}"/>
+                        <TextBlock Text="{Binding ParseResult.Password, StringFormat='Password：{0}'}"/>
+                        <TextBlock Text="{Binding ParseResult.DbName, StringFormat='DbName：{0}'}"/>
+                        <TextBlock Text="{Binding ParseResult.RewrittenConnectionString, StringFormat='ConnectionString：{0}'}" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding ParseResult.Errors}" Margin="0,4,0,0">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" Foreground="#E55" FontSize="11" TextWrapping="Wrap"/>
-                                </DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource ErrorForeground}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <ItemsControl ItemsSource="{Binding ParseResult.Warnings}" Margin="0,4,0,0">
+                        <ItemsControl ItemsSource="{Binding ParseResult.Warnings}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding}" Foreground="#E0A33A" FontSize="11" TextWrapping="Wrap"/>
-                                </DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource WarningForeground}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0,8,0,0">
-                            <Button Classes="doc" Content="套用至此 Item" Command="{Binding ApplyCommand}"/>
-                        </StackPanel>
+                        <Button Classes="tool primary" Command="{Binding ApplyCommand}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                                ToolTip.Tip="把預覽結果寫入此 Item 的欄位">
+                            <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconApply}"/><TextBlock Text="套用至此 Item" VerticalAlignment="Center"/></StackPanel>
+                        </Button>
                     </StackPanel>
                 </Border>
             </StackPanel>
@@ -182,41 +142,51 @@
     </UserControl.DataTemplates>
 
     <DockPanel>
-        <Border DockPanel.Dock="Top" Padding="12,8" Background="#1F1F22">
+        <Border DockPanel.Dock="Top" Classes="titlebar" Padding="12,8">
             <Grid ColumnDefinitions="*,Auto">
-                <StackPanel Grid.Column="0" Spacing="2">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" Foreground="#FFFFFF"/>
-                        <TextBlock Text="●" Foreground="#E0A33A" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
+                <StackPanel Grid.Column="0" Spacing="1">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Classes="h1" Text="{Binding Title}"/>
+                        <Ellipse Width="8" Height="8" Fill="{DynamicResource DirtyIndicator}"
+                                 VerticalAlignment="Center"
+                                 IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="#A0A0A0"/>
+                    <TextBlock Classes="path" Text="{Binding FilePath}"/>
                 </StackPanel>
                 <WrapPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Classes="doc" Content="儲存" Command="{Binding SaveCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增 Server" Command="{Binding AddServerCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增 Item" Command="{Binding AddItemCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="驗證" Command="{Binding ValidateCommand}" Margin="3"/>
-                    <Button Classes="doc danger" Content="刪除" Command="{Binding DeleteCommand}" Margin="3"/>
+                    <Button Classes="tool primary" Command="{Binding SaveCommand}" Margin="2" ToolTip.Tip="儲存（寫回 XML）">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconSave}"/><TextBlock Text="儲存" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddServerCommand}" Margin="2" ToolTip.Tip="新增 DatabaseServer">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconDatabase}"/><TextBlock Text="Server" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddItemCommand}" Margin="2" ToolTip.Tip="新增 DatabaseItem">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconBox}"/><TextBlock Text="Item" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding ValidateCommand}" Margin="2" ToolTip.Tip="跑靜態驗證">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconCheck}"/><TextBlock Text="驗證" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
+                    <Button Classes="tool danger" Command="{Binding DeleteCommand}" Margin="2" ToolTip.Tip="刪除目前選取的節點">
+                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconDelete}"/><TextBlock Text="刪除" VerticalAlignment="Center"/></StackPanel>
+                    </Button>
                 </WrapPanel>
             </Grid>
         </Border>
 
-        <Border DockPanel.Dock="Bottom" Padding="12,4" Background="#1F1F22">
-            <TextBlock Text="{Binding StatusText}" Foreground="#A0A0A0" FontSize="11"/>
+        <Border DockPanel.Dock="Bottom" Classes="statusbar" Padding="12,5">
+            <TextBlock Classes="muted" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis"/>
         </Border>
 
-        <Border DockPanel.Dock="Bottom" Padding="10,6" Background="#252528"
-                IsVisible="{Binding Issues.Count}">
+        <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8" IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Foreground="#E0E0E0" Text="驗證結果"/>
-                <ListBox ItemsSource="{Binding Issues}" MaxHeight="150" Background="Transparent" BorderThickness="0">
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0" Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ValidationIssue">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="{Binding Icon}"/>
-                                <TextBlock Text="{Binding Path}" Foreground="#A0A0A0" Width="220"/>
-                                <TextBlock Text="{Binding Message}" Foreground="#E0E0E0" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Icon}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Path}" Classes="muted" Width="240"/>
+                                <TextBlock Text="{Binding Message}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -225,9 +195,7 @@
         </Border>
 
         <Grid ColumnDefinitions="*,4,1.4*">
-            <TreeView Grid.Column="0"
-                      ItemsSource="{Binding Roots}"
-                      SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}">
+            <TreeView Grid.Column="0" ItemsSource="{Binding Roots}" SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}" Padding="6,4">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:SettingsTreeNode">
                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -242,11 +210,9 @@
                     </Style>
                 </TreeView.Styles>
             </TreeView>
-
-            <GridSplitter Grid.Column="1" Background="#3E3E42" ResizeDirection="Columns"/>
-
-            <Border Grid.Column="2" Padding="14">
-                <ScrollViewer>
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
+            <Border Grid.Column="2" Padding="18,14">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                     <ContentControl Content="{Binding SelectedEditorContext}"/>
                 </ScrollViewer>
             </Border>

@@ -12,82 +12,114 @@
 
     <UserControl.DataTemplates>
         <DataTemplate DataType="settings:PermissionModel">
-            <StackPanel x:DataType="settings:PermissionModel" Spacing="6">
-                <TextBlock Text="PermissionModel 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel x:DataType="settings:PermissionModel" Spacing="2">
+                <TextBlock Classes="h2" Text="PermissionModel 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ModelId"/>
-                    <TextBox Text="{Binding ModelId, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding ModelId, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DisplayName"/>
-                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}" Width="280"/>
-                </StackPanel>
+                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="settings:PermissionRule">
-            <StackPanel x:DataType="settings:PermissionRule" Spacing="6">
-                <TextBlock Text="PermissionRule 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel x:DataType="settings:PermissionRule" Spacing="2">
+                <TextBlock Classes="h2" Text="PermissionRule 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Action"/>
                     <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.PermissionActions}"
-                              SelectedItem="{Binding Action, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                              SelectedItem="{Binding Action, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Scope"/>
                     <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.ScopeStrategies}"
-                              SelectedItem="{Binding Scope, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <TextBlock Text="（Print / Export 為輸出動作，Scope 應留在 Inherit；其他 action 可自由指定。）"
-                           Foreground="#A0A0A0" FontSize="11" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                              SelectedItem="{Binding Scope, Mode=TwoWay}"/>
+                </DockPanel>
+                <TextBlock Classes="muted" Margin="0,10,0,0" TextWrapping="Wrap"
+                           Text="（Print / Export 為輸出動作，Scope 應留 Inherit；其他 action 可自由指定。）"/>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="settings:PermissionModels">
             <StackPanel Spacing="6">
-                <TextBlock Text="PermissionModels（registry 根節點）" FontWeight="Bold" FontSize="13"/>
-                <TextBlock Text="於工具列「新增 Model」加入 PermissionModel；選取 Model 後可「新增 Rule」加入該 Model 的 PermissionRule。"
-                           Foreground="#A0A0A0" TextWrapping="Wrap"/>
+                <TextBlock Classes="h2" Text="PermissionModels（registry 根節點）"/>
+                <TextBlock Classes="muted" TextWrapping="Wrap"
+                           Text="於工具列「+ Model」加入 PermissionModel；選取 Model 後可「+ Rule」加入該 Model 的 PermissionRule。"/>
             </StackPanel>
         </DataTemplate>
     </UserControl.DataTemplates>
 
     <DockPanel>
-        <Border DockPanel.Dock="Top" Padding="12,8" Background="#1F1F22">
+        <Border DockPanel.Dock="Top" Classes="titlebar" Padding="12,8">
             <Grid ColumnDefinitions="*,Auto">
-                <StackPanel Grid.Column="0" Spacing="2">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" Foreground="#FFFFFF"/>
-                        <TextBlock Text="●" Foreground="#E0A33A" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
+                <StackPanel Grid.Column="0" Spacing="1">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Classes="h1" Text="{Binding Title}"/>
+                        <Ellipse Width="8" Height="8" Fill="{DynamicResource DirtyIndicator}"
+                                 VerticalAlignment="Center"
+                                 IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="#A0A0A0"/>
+                    <TextBlock Classes="path" Text="{Binding FilePath}"/>
                 </StackPanel>
                 <WrapPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Classes="doc" Content="儲存" Command="{Binding SaveCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增 Model" Command="{Binding AddModelCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增 Rule" Command="{Binding AddRuleCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="驗證" Command="{Binding ValidateCommand}" Margin="3"/>
-                    <Button Classes="doc danger" Content="刪除" Command="{Binding DeleteCommand}" Margin="3"/>
+                    <Button Classes="tool primary" Command="{Binding SaveCommand}" Margin="2"
+                            ToolTip.Tip="儲存（寫回 XML）">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconSave}"/>
+                            <TextBlock Text="儲存" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddModelCommand}" Margin="2"
+                            ToolTip.Tip="新增 PermissionModel">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconBox}"/>
+                            <TextBlock Text="Model" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddRuleCommand}" Margin="2"
+                            ToolTip.Tip="新增 PermissionRule（需先選取 Model）">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconKey}"/>
+                            <TextBlock Text="Rule" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding ValidateCommand}" Margin="2"
+                            ToolTip.Tip="跑靜態驗證（含 PermissionModels.Validate）">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconCheck}"/>
+                            <TextBlock Text="驗證" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool danger" Command="{Binding DeleteCommand}" Margin="2"
+                            ToolTip.Tip="刪除目前選取的節點">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconDelete}"/>
+                            <TextBlock Text="刪除" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </WrapPanel>
             </Grid>
         </Border>
 
-        <Border DockPanel.Dock="Bottom" Padding="12,4" Background="#1F1F22">
-            <TextBlock Text="{Binding StatusText}" Foreground="#A0A0A0" FontSize="11"/>
+        <Border DockPanel.Dock="Bottom" Classes="statusbar" Padding="12,5">
+            <TextBlock Classes="muted" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis"/>
         </Border>
 
-        <Border DockPanel.Dock="Bottom" Padding="10,6" Background="#252528"
+        <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8"
                 IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Foreground="#E0E0E0" Text="驗證結果"/>
-                <ListBox ItemsSource="{Binding Issues}" MaxHeight="150" Background="Transparent" BorderThickness="0">
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0"
+                         Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ValidationIssue">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="{Binding Icon}"/>
-                                <TextBlock Text="{Binding Path}" Foreground="#A0A0A0" Width="220"/>
-                                <TextBlock Text="{Binding Message}" Foreground="#E0E0E0" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Icon}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Path}" Classes="muted" Width="240"/>
+                                <TextBlock Text="{Binding Message}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -98,7 +130,8 @@
         <Grid ColumnDefinitions="*,4,1.2*">
             <TreeView Grid.Column="0"
                       ItemsSource="{Binding Roots}"
-                      SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}">
+                      SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}"
+                      Padding="6,4">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:SettingsTreeNode">
                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -114,10 +147,10 @@
                 </TreeView.Styles>
             </TreeView>
 
-            <GridSplitter Grid.Column="1" Background="#3E3E42" ResizeDirection="Columns"/>
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
 
-            <Border Grid.Column="2" Padding="14">
-                <ScrollViewer>
+            <Border Grid.Column="2" Padding="18,14">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                     <ContentControl Content="{Binding SelectedEditorContext}"/>
                 </ScrollViewer>
             </Border>

@@ -4,6 +4,7 @@ using System.IO;
 using Bee.DefineEditor.Models;
 using Bee.DefineEditor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace Bee.DefineEditor.ViewModels;
 
@@ -17,7 +18,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private DocumentViewModelBase? _currentDocument;
 
     [ObservableProperty]
-    private string _statusText = "尚未開啟方案 — 請開啟 DefinePath 資料夾";
+    private string _statusText = "尚未開啟方案 — 點上方資料夾圖示選擇 DefinePath 目錄";
 
     [ObservableProperty]
     private DefineNode? _selectedNode;
@@ -60,4 +61,9 @@ public partial class MainWindowViewModel : ViewModelBase
             StatusText = $"開啟失敗：{ex.Message}";
         }
     }
+
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1822",
+        Justification = "RelayCommand handler bound from XAML must remain instance.")]
+    [RelayCommand]
+    private void ToggleTheme() => App.ToggleTheme();
 }

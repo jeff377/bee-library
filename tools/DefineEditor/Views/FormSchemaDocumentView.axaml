@@ -11,279 +11,284 @@
              x:DataType="vm:FormSchemaDocumentViewModel"
              x:CompileBindings="True">
 
-    <UserControl.Styles>
-        <!-- 文件工具列按鈕 -->
-        <Style Selector="Button.doc">
-            <Setter Property="Background" Value="#0E639C"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Padding" Value="10,4"/>
-            <Setter Property="CornerRadius" Value="3"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-        <Style Selector="Button.doc:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#1177BB"/>
-            <Setter Property="Foreground" Value="White"/>
-        </Style>
-        <Style Selector="Button.doc:pressed /template/ ContentPresenter">
-            <Setter Property="Background" Value="#094771"/>
-            <Setter Property="Foreground" Value="White"/>
-        </Style>
-        <Style Selector="Button.doc:disabled /template/ ContentPresenter">
-            <Setter Property="Background" Value="#2A2A2D"/>
-            <Setter Property="Foreground" Value="#707070"/>
-        </Style>
-        <Style Selector="Button.danger">
-            <Setter Property="Background" Value="#AA3333"/>
-        </Style>
-        <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
-            <Setter Property="Background" Value="#C04444"/>
-        </Style>
-
-        <!-- 屬性面板共用排版 -->
-        <Style Selector="TextBlock.label">
-            <Setter Property="Width" Value="130"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
-            <Setter Property="Foreground" Value="#A0A0A0"/>
-        </Style>
-        <Style Selector="StackPanel.row">
-            <Setter Property="Orientation" Value="Horizontal"/>
-            <Setter Property="Spacing" Value="8"/>
-            <Setter Property="Margin" Value="0,2"/>
-        </Style>
-    </UserControl.Styles>
-
     <UserControl.DataTemplates>
         <!-- FormSchema 屬性面板 -->
         <DataTemplate DataType="forms:FormSchema">
-            <StackPanel Spacing="6" x:DataType="forms:FormSchema">
-                <TextBlock Text="FormSchema 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel Spacing="2" x:DataType="forms:FormSchema">
+                <TextBlock Classes="h2" Text="FormSchema 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ProgId"/>
-                    <TextBox Text="{Binding ProgId, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding ProgId, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DisplayName"/>
-                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="CategoryId"/>
-                    <TextBox Text="{Binding CategoryId, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding CategoryId, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ListFields"/>
-                    <TextBox Text="{Binding ListFields, Mode=TwoWay}" Width="320"
-                             AcceptsReturn="False"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding ListFields, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="PermissionModelId"/>
-                    <TextBox Text="{Binding PermissionModelId, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
+                    <TextBox Text="{Binding PermissionModelId, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
 
         <!-- FormTable 屬性面板 -->
         <DataTemplate DataType="forms:FormTable">
-            <StackPanel Spacing="6" x:DataType="forms:FormTable">
-                <TextBlock Text="FormTable 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel Spacing="2" x:DataType="forms:FormTable">
+                <TextBlock Classes="h2" Text="FormTable 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="TableName"/>
-                    <TextBox Text="{Binding TableName, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding TableName, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DbTableName"/>
-                    <TextBox Text="{Binding DbTableName, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding DbTableName, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DisplayName"/>
-                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
+                    <TextBox Text="{Binding DisplayName, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
 
         <!-- FormField 屬性面板 -->
         <DataTemplate DataType="forms:FormField">
-            <StackPanel Spacing="6" x:DataType="forms:FormField">
-                <TextBlock Text="FormField 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel Spacing="2" x:DataType="forms:FormField">
+                <TextBlock Classes="h2" Text="FormField 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="FieldName"/>
-                    <TextBox Text="{Binding FieldName, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding FieldName, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Caption"/>
-                    <TextBox Text="{Binding Caption, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding Caption, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DbType"/>
                     <ComboBox ItemsSource="{x:Static vm:FormSchemaEditorOptions.DbTypes}"
-                              SelectedItem="{Binding DbType, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                              SelectedItem="{Binding DbType, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Type"/>
                     <ComboBox ItemsSource="{x:Static vm:FormSchemaEditorOptions.FieldTypes}"
-                              SelectedItem="{Binding Type, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                              SelectedItem="{Binding Type, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ControlType"/>
                     <ComboBox ItemsSource="{x:Static vm:FormSchemaEditorOptions.ControlTypes}"
-                              SelectedItem="{Binding ControlType, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                              SelectedItem="{Binding ControlType, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="MaxLength"/>
-                    <TextBox Text="{Binding MaxLength, Mode=TwoWay}" Width="120"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding MaxLength, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="Width"/>
-                    <TextBox Text="{Binding Width, Mode=TwoWay}" Width="120"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding Width, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DefaultValue"/>
-                    <TextBox Text="{Binding DefaultValue, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding DefaultValue, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DisplayFormat"/>
-                    <TextBox Text="{Binding DisplayFormat, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding DisplayFormat, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="NumberFormat"/>
-                    <TextBox Text="{Binding NumberFormat, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding NumberFormat, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Visible"/>
                     <CheckBox IsChecked="{Binding Visible, Mode=TwoWay}"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ScopeRole"/>
                     <ComboBox ItemsSource="{x:Static vm:FormSchemaEditorOptions.ScopeRoles}"
-                              SelectedItem="{Binding ScopeRole, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <Separator Margin="0,8"/>
-                <TextBlock Text="關聯欄位" FontWeight="SemiBold" Foreground="#A0A0A0"/>
-                <StackPanel Classes="row">
+                              SelectedItem="{Binding ScopeRole, Mode=TwoWay}"/>
+                </DockPanel>
+                <Separator Margin="0,10,0,4"/>
+                <TextBlock Text="關聯欄位" Classes="muted" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="RelationProgId"/>
-                    <TextBox Text="{Binding RelationProgId, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding RelationProgId, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="LookupProgId"/>
-                    <TextBox Text="{Binding LookupProgId, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding LookupProgId, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="LangEnumName"/>
-                    <TextBox Text="{Binding LangEnumName, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
+                    <TextBox Text="{Binding LangEnumName, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
 
         <!-- FieldMapping 屬性面板 -->
         <DataTemplate DataType="forms:FieldMapping">
-            <StackPanel Spacing="6" x:DataType="forms:FieldMapping">
-                <TextBlock Text="FieldMapping 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel Spacing="2" x:DataType="forms:FieldMapping">
+                <TextBlock Classes="h2" Text="FieldMapping 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="SourceField"/>
-                    <TextBox Text="{Binding SourceField, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding SourceField, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DestinationField"/>
-                    <TextBox Text="{Binding DestinationField, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
+                    <TextBox Text="{Binding DestinationField, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
 
-        <!-- MappingGroupEditor 屬性面板（RelationGroup / LookupGroup 專屬編輯區） -->
+        <!-- MappingGroupEditor（RelationGroup / LookupGroup 專屬編輯區） -->
         <DataTemplate DataType="vm:MappingGroupEditor">
-            <StackPanel Spacing="6" x:DataType="vm:MappingGroupEditor" Name="MappingEditorRoot">
-                <TextBlock Text="{Binding PanelTitle}" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel Spacing="2" x:DataType="vm:MappingGroupEditor" Name="MappingEditorRoot">
+                <TextBlock Classes="h2" Text="{Binding PanelTitle}" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="{Binding ProgIdLabel}"/>
                     <ComboBox ItemsSource="{Binding AvailableProgIds}"
                               SelectedItem="{Binding ProgIdValue, Mode=TwoWay}"
                               IsEditable="True"
-                              Text="{Binding ProgIdValue, Mode=TwoWay}"
-                              Width="260"/>
-                </StackPanel>
-                <Separator Margin="0,8"/>
-                <TextBlock Text="欄位對應（Source → Destination）"
-                           FontWeight="SemiBold" Foreground="#A0A0A0"/>
+                              Text="{Binding ProgIdValue, Mode=TwoWay}"/>
+                </DockPanel>
+                <Separator Margin="0,10,0,4"/>
+                <TextBlock Text="欄位對應（Source → Destination）" Classes="muted" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <ItemsControl ItemsSource="{Binding Mappings}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="forms:FieldMapping">
-                            <StackPanel Classes="row">
-                                <TextBox Text="{Binding SourceField, Mode=TwoWay}" Width="200"
-                                         PlaceholderText="來源欄位（對方 schema）"/>
-                                <TextBlock Text="→" VerticalAlignment="Center" Margin="6,0"/>
-                                <ComboBox ItemsSource="{Binding #MappingEditorRoot.((vm:MappingGroupEditor)DataContext).DestinationFieldCandidates}"
+                            <Grid ColumnDefinitions="*,Auto,*" Margin="0,2">
+                                <TextBox Grid.Column="0" Text="{Binding SourceField, Mode=TwoWay}"
+                                         PlaceholderText="來源欄位"/>
+                                <TextBlock Grid.Column="1" Text=" → " VerticalAlignment="Center" Margin="6,0"/>
+                                <ComboBox Grid.Column="2"
+                                          ItemsSource="{Binding #MappingEditorRoot.((vm:MappingGroupEditor)DataContext).DestinationFieldCandidates}"
                                           SelectedItem="{Binding DestinationField, Mode=TwoWay}"
                                           IsEditable="True"
                                           Text="{Binding DestinationField, Mode=TwoWay}"
-                                          Width="200"/>
-                            </StackPanel>
+                                          HorizontalAlignment="Stretch"/>
+                            </Grid>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <TextBlock Text="（提示：用工具列「新增關聯對應 / 新增 Lookup 對應 / 刪除」管理對應列；DestinationField 候選來自當前 FormTable 的欄位。）"
-                           Foreground="#A0A0A0" FontSize="11" TextWrapping="Wrap"/>
+                <TextBlock Classes="muted" Margin="0,8,0,0" TextWrapping="Wrap"
+                           Text="（用工具列「+ 關聯 / + Lookup / 刪除」管理對應列；Destination 候選來自目前 FormTable 的欄位）"/>
             </StackPanel>
         </DataTemplate>
 
         <!-- ListItem 屬性面板 -->
         <DataTemplate DataType="collections:ListItem">
-            <StackPanel Spacing="6" x:DataType="collections:ListItem">
-                <TextBlock Text="ListItem 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
-                <StackPanel Classes="row">
+            <StackPanel Spacing="2" x:DataType="collections:ListItem">
+                <TextBlock Classes="h2" Text="ListItem 屬性" Margin="0,0,0,8"/>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Value"/>
-                    <TextBox Text="{Binding Value, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
-                <StackPanel Classes="row">
+                    <TextBox Text="{Binding Value, Mode=TwoWay}"/>
+                </DockPanel>
+                <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Text"/>
-                    <TextBox Text="{Binding Text, Mode=TwoWay}" Width="240"/>
-                </StackPanel>
+                    <TextBox Text="{Binding Text, Mode=TwoWay}"/>
+                </DockPanel>
             </StackPanel>
         </DataTemplate>
     </UserControl.DataTemplates>
 
     <DockPanel>
-        <!-- 文件標題 + 工具列 -->
-        <Border DockPanel.Dock="Top" Padding="12,8" Background="#1F1F22">
+        <!-- 標題列 + 工具列 -->
+        <Border DockPanel.Dock="Top" Classes="titlebar" Padding="12,8">
             <Grid ColumnDefinitions="*,Auto">
-                <StackPanel Grid.Column="0" Spacing="2">
-                    <StackPanel Orientation="Horizontal" Spacing="6">
-                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" Foreground="#FFFFFF"/>
-                        <TextBlock Text="●" Foreground="#E0A33A" VerticalAlignment="Center"
-                                   IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
+                <StackPanel Grid.Column="0" Spacing="1">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <TextBlock Classes="h1" Text="{Binding Title}"/>
+                        <Ellipse Width="8" Height="8" Fill="{DynamicResource DirtyIndicator}"
+                                 VerticalAlignment="Center"
+                                 IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
                     </StackPanel>
-                    <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="#A0A0A0"/>
+                    <TextBlock Classes="path" Text="{Binding FilePath}"/>
                 </StackPanel>
                 <WrapPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Classes="doc" Content="儲存" Command="{Binding SaveCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增表格" Command="{Binding AddTableCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增欄位" Command="{Binding AddFieldCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增關聯對應" Command="{Binding AddRelationMappingCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增 Lookup 對應" Command="{Binding AddLookupMappingCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="新增選項" Command="{Binding AddListItemCommand}" Margin="3"/>
-                    <Button Classes="doc" Content="驗證" Command="{Binding ValidateCommand}" Margin="3"/>
-                    <Button Classes="doc danger" Content="刪除" Command="{Binding DeleteCommand}" Margin="3"/>
+                    <Button Classes="tool primary" Command="{Binding SaveCommand}" Margin="2"
+                            ToolTip.Tip="儲存（寫回 XML）">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconSave}"/>
+                            <TextBlock Text="儲存" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddTableCommand}" Margin="2"
+                            ToolTip.Tip="新增 FormTable（需先選取根節點）">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconTable}"/>
+                            <TextBlock Text="表格" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddFieldCommand}" Margin="2"
+                            ToolTip.Tip="新增 FormField（需先選取 FormTable）">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconAdd}"/>
+                            <TextBlock Text="欄位" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddRelationMappingCommand}" Margin="2"
+                            ToolTip.Tip="新增關聯欄位對應 FieldMapping">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconLink}"/>
+                            <TextBlock Text="關聯" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddLookupMappingCommand}" Margin="2"
+                            ToolTip.Tip="新增 Lookup 欄位對應 FieldMapping">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconLink}"/>
+                            <TextBlock Text="Lookup" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding AddListItemCommand}" Margin="2"
+                            ToolTip.Tip="新增下拉選項 ListItem">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconList}"/>
+                            <TextBlock Text="選項" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool" Command="{Binding ValidateCommand}" Margin="2"
+                            ToolTip.Tip="跑靜態驗證並列出問題">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconCheck}"/>
+                            <TextBlock Text="驗證" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <Button Classes="tool danger" Command="{Binding DeleteCommand}" Margin="2"
+                            ToolTip.Tip="刪除目前選取的節點">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <PathIcon Data="{StaticResource IconDelete}"/>
+                            <TextBlock Text="刪除" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
                 </WrapPanel>
             </Grid>
         </Border>
 
         <!-- 狀態列 -->
-        <Border DockPanel.Dock="Bottom" Padding="12,4" Background="#1F1F22">
-            <TextBlock Text="{Binding StatusText}" Foreground="#A0A0A0" FontSize="11"/>
+        <Border DockPanel.Dock="Bottom" Classes="statusbar" Padding="12,5">
+            <TextBlock Classes="muted" Text="{Binding StatusText}" TextTrimming="CharacterEllipsis"/>
         </Border>
 
-        <!-- 驗證結果面板（位於主編輯區下方） -->
-        <Border DockPanel.Dock="Bottom" Padding="10,6" Background="#252528"
+        <!-- 驗證結果面板 -->
+        <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8"
                 IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Foreground="#E0E0E0"
-                           Text="驗證結果"/>
-                <ListBox ItemsSource="{Binding Issues}" MaxHeight="150" Background="Transparent"
-                         BorderThickness="0">
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0"
+                         Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ValidationIssue">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                                <TextBlock Text="{Binding Icon}"/>
-                                <TextBlock Text="{Binding Path}" Foreground="#A0A0A0" Width="220"/>
-                                <TextBlock Text="{Binding Message}" Foreground="#E0E0E0" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Icon}" VerticalAlignment="Center"/>
+                                <TextBlock Text="{Binding Path}" Classes="muted" Width="240"/>
+                                <TextBlock Text="{Binding Message}" TextWrapping="Wrap"/>
                             </StackPanel>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
@@ -295,7 +300,8 @@
         <Grid ColumnDefinitions="*,4,1.2*">
             <TreeView Grid.Column="0"
                       ItemsSource="{Binding Roots}"
-                      SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}">
+                      SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}"
+                      Padding="6,4">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:FormSchemaTreeNode">
                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -311,10 +317,10 @@
                 </TreeView.Styles>
             </TreeView>
 
-            <GridSplitter Grid.Column="1" Background="#3E3E42" ResizeDirection="Columns"/>
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
 
-            <Border Grid.Column="2" Padding="14">
-                <ScrollViewer>
+            <Border Grid.Column="2" Padding="18,14">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
                     <ContentControl Content="{Binding SelectedEditorContext}"/>
                 </ScrollViewer>
             </Border>
