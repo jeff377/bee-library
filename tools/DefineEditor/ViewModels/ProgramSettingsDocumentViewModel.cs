@@ -24,6 +24,8 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
 
     protected override object RootObject => Root;
 
+    public override string TabIcon => "📚";
+
     private ProgramSettingsDocumentViewModel(string filePath, ProgramSettings root)
         : base(filePath, "ProgramSettings", keyText: string.Empty)
     {

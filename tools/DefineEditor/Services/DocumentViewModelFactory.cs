@@ -53,6 +53,6 @@ public static class DocumentViewModelFactory
             $"路徑：{node.FilePath}",
             string.Empty,
             note);
-        return new UnsupportedDocumentViewModel(node.Name, summary);
+        return new UnsupportedDocumentViewModel(node.Name, node.FilePath ?? node.Name, summary);
     }
 }

@@ -24,6 +24,8 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
 
     protected override object RootObject => Root;
 
+    public override string TabIcon => "🗄️";
+
     private DbCategorySettingsDocumentViewModel(string filePath, DbCategorySettings root)
         : base(filePath, "DbCategorySettings", keyText: string.Empty)
     {

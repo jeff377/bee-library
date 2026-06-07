@@ -24,6 +24,10 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
 {
     public override string Title { get; }
 
+    public override string DocumentKey => FilePath;
+
+    public override string TabIcon => "📋";
+
     public string FilePath { get; }
 
     public FormSchema Schema { get; }
@@ -44,7 +48,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
     private FormSchemaTreeNode? _selectedTreeNode;
 
-    [ObservableProperty] private bool _isDirty;
+    // IsDirty is inherited from DocumentViewModelBase.
 
     [ObservableProperty] private string _statusText =
         "（屬性編輯於離開欄位時寫入記憶體；按「儲存」會刷新樹節點顯示並寫回 XML）";

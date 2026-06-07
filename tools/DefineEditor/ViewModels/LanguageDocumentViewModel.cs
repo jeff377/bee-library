@@ -26,6 +26,8 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
     public LanguageResource Root { get; }
     protected override object RootObject => Root;
 
+    public override string TabIcon => "🌐";
+
     private LanguageDocumentViewModel(string filePath, LanguageResource root)
         : base(filePath, "Language", keyText: string.IsNullOrEmpty(root.Lang) ? root.Namespace : $"{root.Lang}/{root.Namespace}")
     {

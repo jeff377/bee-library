@@ -27,6 +27,8 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
     public FormLayout Root { get; }
     protected override object RootObject => Root;
 
+    public override string TabIcon => "🎨";
+
     private FormLayoutDocumentViewModel(string filePath, FormLayout root)
         : base(filePath, "FormLayout", keyText: root.LayoutId)
     {

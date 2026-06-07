@@ -6,7 +6,9 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="720"
         x:Class="Bee.DefineEditor.Views.MainWindow"
+        x:Name="WindowRoot"
         x:DataType="vm:MainWindowViewModel"
+        x:CompileBindings="True"
         Icon="/Assets/avalonia-logo.ico"
         Width="1200" Height="720"
         Title="Bee.DefineEditor — 定義檔方案維護">
@@ -41,7 +43,7 @@
             </Grid>
         </Border>
 
-        <!-- 主體：左方案樹 + 右文件編輯區 -->
+        <!-- 主體：左方案樹 + 右文件 tab 區 -->
         <Grid ColumnDefinitions="320,4,*">
             <TreeView Grid.Column="0"
                       ItemsSource="{Binding Nodes}"
@@ -57,15 +59,48 @@
             <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
 
             <Grid Grid.Column="2">
-                <ContentControl Content="{Binding CurrentDocument}"
-                                IsVisible="{Binding HasDocument}"/>
+                <!-- 多文件 tab 區（IDE 風） -->
+                <TabControl ItemsSource="{Binding OpenDocuments}"
+                            SelectedItem="{Binding ActiveDocument, Mode=TwoWay}"
+                            IsVisible="{Binding HasOpenDocuments}"
+                            Padding="0">
+                    <TabControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:DocumentViewModelBase">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto" MinWidth="120">
+                                <TextBlock Grid.Column="0" Text="{Binding TabIcon}"
+                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Title}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis" MaxWidth="260"
+                                           ToolTip.Tip="{Binding DocumentKey}"/>
+                                <Ellipse Grid.Column="2" Width="6" Height="6"
+                                         Fill="{DynamicResource DirtyIndicator}"
+                                         VerticalAlignment="Center" Margin="6,0,0,0"
+                                         IsVisible="{Binding IsDirty}"
+                                         ToolTip.Tip="尚未存檔"/>
+                                <Button Grid.Column="3" Classes="tabclose"
+                                        Command="{Binding #WindowRoot.((vm:MainWindowViewModel)DataContext).CloseDocumentCommand}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="關閉分頁">
+                                    <PathIcon Data="{StaticResource IconClear}" Width="10" Height="10"/>
+                                </Button>
+                            </Grid>
+                        </DataTemplate>
+                    </TabControl.ItemTemplate>
+                    <TabControl.ContentTemplate>
+                        <DataTemplate x:DataType="vm:DocumentViewModelBase">
+                            <ContentControl Content="{Binding}"/>
+                        </DataTemplate>
+                    </TabControl.ContentTemplate>
+                </TabControl>
 
-                <Border Padding="40" IsVisible="{Binding !HasDocument}">
+                <!-- 歡迎畫面（無已開分頁） -->
+                <Border Padding="40" IsVisible="{Binding !HasOpenDocuments}">
                     <StackPanel Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <PathIcon Data="{StaticResource IconFolder}" Width="48" Height="48"
                                   Foreground="{DynamicResource MutedForeground}"/>
-                        <TextBlock Text="（請於左側方案樹選取定義檔開啟編輯器）"
-                                   Classes="muted" HorizontalAlignment="Center"/>
+                        <TextBlock Classes="muted" HorizontalAlignment="Center"
+                                   Text="（於左側方案樹選取定義檔開啟分頁；點已開過的檔會切換到既有分頁）"/>
                     </StackPanel>
                 </Border>
             </Grid>

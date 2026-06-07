@@ -37,6 +37,8 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
 
     protected override object RootObject => Root;
 
+    public override string TabIcon => "⚙️";
+
     private SystemSettingsDocumentViewModel(string filePath, SystemSettings root)
         : base(filePath, "SystemSettings", keyText: string.Empty)
     {

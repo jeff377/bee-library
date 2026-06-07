@@ -21,6 +21,8 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
 {
     public override string Title { get; }
 
+    public override string DocumentKey => FilePath;
+
     public string FilePath { get; }
 
     public ObservableCollection<SettingsTreeNode> Roots { get; } = new();
@@ -32,7 +34,7 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
     private SettingsTreeNode? _selectedTreeNode;
 
-    [ObservableProperty] private bool _isDirty;
+    // IsDirty is inherited from DocumentViewModelBase.
 
     [ObservableProperty]
     private string _statusText = "（屬性編輯於離開欄位時寫入記憶體；按「儲存」會刷新樹節點顯示並寫回 XML）";

@@ -25,6 +25,8 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
 
     protected override object RootObject => Root;
 
+    public override string TabIcon => "🛡️";
+
     private PermissionModelsDocumentViewModel(string filePath, PermissionModels root)
         : base(filePath, "PermissionModels", keyText: string.Empty)
     {

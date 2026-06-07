@@ -29,6 +29,8 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
 
     protected override object RootObject => Root;
 
+    public override string TabIcon => "💽";
+
     public override object? SelectedEditorContext => SelectedTreeNode switch
     {
         { Kind: KindServer, Payload: DatabaseServer server } =>

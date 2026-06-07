@@ -27,6 +27,8 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     public TableSchema Root { get; }
     protected override object RootObject => Root;
 
+    public override string TabIcon => "🧮";
+
     private TableSchemaDocumentViewModel(string filePath, TableSchema root)
         : base(filePath, "TableSchema", keyText: root.TableName)
     {
