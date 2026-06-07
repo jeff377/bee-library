@@ -1,0 +1,14 @@
+<Project>
+
+  <!--
+    tools/ 為開發期工具，獨立於核心套件的建置基調。
+    本檔案刻意「不」import repo 根的 Directory.Build.props，
+    讓 tools/ 完全自主：不上 NuGet、不套用 src/ 的嚴格分析設定。
+  -->
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+</Project>

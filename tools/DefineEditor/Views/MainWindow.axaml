@@ -1,0 +1,49 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Bee.DefineEditor.ViewModels"
+        xmlns:models="using:Bee.DefineEditor.Models"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="560"
+        x:Class="Bee.DefineEditor.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="Bee.DefineEditor — 定義檔方案維護">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <DockPanel>
+        <!-- 工具列 -->
+        <Border DockPanel.Dock="Top" Padding="8" Background="#2D2D30">
+            <StackPanel Orientation="Horizontal" Spacing="12">
+                <Button Content="開啟方案…" Click="OnOpenSolutionClick"/>
+                <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Foreground="#DDDDDD"/>
+            </StackPanel>
+        </Border>
+
+        <!-- 主體：左方案樹 + 右摘要 -->
+        <Grid ColumnDefinitions="340,4,*">
+            <TreeView Grid.Column="0"
+                      ItemsSource="{Binding Nodes}"
+                      SelectedItem="{Binding SelectedNode, Mode=TwoWay}">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:DefineNode">
+                        <TextBlock Text="{Binding Name}"/>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <GridSplitter Grid.Column="1" Background="#3E3E42" ResizeDirection="Columns"/>
+
+            <Border Grid.Column="2" Padding="14">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="選取項目" FontWeight="Bold" FontSize="15"/>
+                    <TextBlock Text="{Binding SelectionSummary}" TextWrapping="Wrap" FontFamily="monospace"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </DockPanel>
+
+</Window>
