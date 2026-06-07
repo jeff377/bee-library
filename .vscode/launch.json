@@ -1,0 +1,64 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run DefineEditor",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-defineeditor",
+            "program": "${workspaceFolder}/tools/DefineEditor/bin/Debug/net10.0/Bee.DefineEditor.dll",
+            "cwd": "${workspaceFolder}/tools/DefineEditor",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Run QuickStart.Console",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-quickstart-console",
+            "program": "${workspaceFolder}/samples/QuickStart.Console/bin/Debug/net10.0/QuickStart.Console.dll",
+            "cwd": "${workspaceFolder}/samples/QuickStart.Console",
+            "console": "integratedTerminal",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Run QuickStart.Server",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-quickstart-server",
+            "program": "${workspaceFolder}/samples/QuickStart.Server/bin/Debug/net10.0/QuickStart.Server.dll",
+            "cwd": "${workspaceFolder}/samples/QuickStart.Server",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": { "ASPNETCORE_ENVIRONMENT": "Development" }
+        },
+        {
+            "name": "Run Blazor.Server.Demo",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-blazor-server-demo",
+            "program": "${workspaceFolder}/samples/Blazor.Server.Demo/bin/Debug/net10.0/Blazor.Server.Demo.dll",
+            "cwd": "${workspaceFolder}/samples/Blazor.Server.Demo",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": { "ASPNETCORE_ENVIRONMENT": "Development" }
+        },
+        {
+            "name": "Run Blazor.Wasm.Demo.Host (serve Wasm)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-blazor-wasm-host",
+            "program": "${workspaceFolder}/samples/Blazor.Wasm.Demo.Host/bin/Debug/net10.0/Blazor.Wasm.Demo.Host.dll",
+            "cwd": "${workspaceFolder}/samples/Blazor.Wasm.Demo.Host",
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": { "ASPNETCORE_ENVIRONMENT": "Development" }
+        }
+    ]
+}

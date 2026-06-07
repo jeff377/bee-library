@@ -75,6 +75,81 @@
                 "panel": "shared",
                 "clear": true
             }
+        },
+        {
+            "label": "build-defineeditor",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/tools/DefineEditor/Bee.DefineEditor.csproj",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared",
+                "clear": true
+            }
+        },
+        {
+            "label": "build-quickstart-console",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/samples/QuickStart.Console/QuickStart.Console.csproj",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
+        },
+        {
+            "label": "build-quickstart-server",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/samples/QuickStart.Server/QuickStart.Server.csproj",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
+        },
+        {
+            "label": "build-blazor-server-demo",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/samples/Blazor.Server.Demo/Blazor.Server.Demo.csproj",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
+        },
+        {
+            "label": "build-blazor-wasm-host",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/samples/Blazor.Wasm.Demo.Host/Blazor.Wasm.Demo.Host.csproj",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
         }
     ]
 }
