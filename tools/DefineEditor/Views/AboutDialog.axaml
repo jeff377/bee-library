@@ -1,0 +1,51 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="440" d:DesignHeight="360"
+        x:Class="Bee.DefineEditor.Views.AboutDialog"
+        Width="440" SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        ShowInTaskbar="False"
+        Title="About Bee.DefineEditor">
+
+    <Border Padding="28,24">
+        <DockPanel>
+            <!-- 確認列 -->
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                        HorizontalAlignment="Right" Margin="0,18,0,0">
+                <Button Classes="tool primary" Content="OK" Click="OnOk" MinWidth="100"/>
+            </StackPanel>
+
+            <!-- 主體 -->
+            <StackPanel Spacing="10" HorizontalAlignment="Center">
+                <PathIcon Data="{StaticResource DefRoot}" Width="56" Height="56"
+                          HorizontalAlignment="Center"
+                          Foreground="{DynamicResource PrimaryButtonBackground}"/>
+                <TextBlock Classes="h1" Text="Bee.DefineEditor"
+                           HorizontalAlignment="Center"/>
+                <TextBlock Classes="muted" HorizontalAlignment="Center"
+                           Text="Bee.NET 定義檔方案維護工具"/>
+                <TextBlock Classes="muted" HorizontalAlignment="Center"
+                           x:Name="VersionText"/>
+
+                <Separator Margin="0,12,0,6"/>
+
+                <StackPanel Spacing="3" HorizontalAlignment="Center">
+                    <TextBlock TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360"
+                               Text="Avalonia 12 + .NET 10 跨平台桌面工具（Win / Mac / Linux）。"/>
+                    <TextBlock TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360"
+                               Text="開啟 DefinePath 資料夾，分頁式維護 9 種定義型別 XML。"/>
+                </StackPanel>
+
+                <Separator Margin="0,10,0,4"/>
+
+                <TextBlock Classes="path" HorizontalAlignment="Center"
+                           Text="https://github.com/jeff377/bee-library"/>
+                <TextBlock Classes="muted" FontSize="11" HorizontalAlignment="Center"
+                           Text="MIT License · Material Design Icons (Apache-2.0)"/>
+            </StackPanel>
+        </DockPanel>
+    </Border>
+</Window>
