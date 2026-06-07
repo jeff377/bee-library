@@ -4,7 +4,7 @@
         xmlns:models="using:Bee.DefineEditor.Models"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="560"
+        mc:Ignorable="d" d:DesignWidth="1100" d:DesignHeight="640"
         x:Class="Bee.DefineEditor.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/avalonia-logo.ico"
@@ -17,13 +17,30 @@
     <DockPanel>
         <!-- 工具列 -->
         <Border DockPanel.Dock="Top" Padding="8" Background="#2D2D30">
+            <Border.Styles>
+                <Style Selector="Button.toolbar">
+                    <Setter Property="Background" Value="#0E639C"/>
+                    <Setter Property="Foreground" Value="White"/>
+                    <Setter Property="Padding" Value="14,6"/>
+                    <Setter Property="CornerRadius" Value="3"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                </Style>
+                <Style Selector="Button.toolbar:pointerover /template/ ContentPresenter">
+                    <Setter Property="Background" Value="#1177BB"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Style>
+                <Style Selector="Button.toolbar:pressed /template/ ContentPresenter">
+                    <Setter Property="Background" Value="#094771"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Style>
+            </Border.Styles>
             <StackPanel Orientation="Horizontal" Spacing="12">
-                <Button Content="開啟方案…" Click="OnOpenSolutionClick"/>
+                <Button Classes="toolbar" Content="開啟方案…" Click="OnOpenSolutionClick"/>
                 <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" Foreground="#DDDDDD"/>
             </StackPanel>
         </Border>
 
-        <!-- 主體：左方案樹 + 右摘要 -->
+        <!-- 主體：左方案樹 + 右文件編輯區 -->
         <Grid ColumnDefinitions="340,4,*">
             <TreeView Grid.Column="0"
                       ItemsSource="{Binding Nodes}"
@@ -37,12 +54,18 @@
 
             <GridSplitter Grid.Column="1" Background="#3E3E42" ResizeDirection="Columns"/>
 
-            <Border Grid.Column="2" Padding="14">
-                <StackPanel Spacing="10">
-                    <TextBlock Text="選取項目" FontWeight="Bold" FontSize="15"/>
-                    <TextBlock Text="{Binding SelectionSummary}" TextWrapping="Wrap" FontFamily="monospace"/>
-                </StackPanel>
-            </Border>
+            <Grid Grid.Column="2">
+                <!-- 文件編輯區：ViewLocator 依 CurrentDocument 型別解析出對應 View -->
+                <ContentControl Content="{Binding CurrentDocument}"
+                                IsVisible="{Binding HasDocument}"/>
+
+                <!-- 沒有選取檔案時的提示 -->
+                <Border Padding="14" IsVisible="{Binding !HasDocument}">
+                    <TextBlock Text="（請於左側方案樹選取定義檔開啟編輯器）"
+                               TextWrapping="Wrap"
+                               Opacity="0.7"/>
+                </Border>
+            </Grid>
         </Grid>
     </DockPanel>
 

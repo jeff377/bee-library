@@ -1,0 +1,42 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="using:Bee.DefineEditor.Models">
+    <!-- 文件工具列按鈕 -->
+    <Style Selector="Button.doc">
+        <Setter Property="Background" Value="#0E639C"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="10,4"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style Selector="Button.doc:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#1177BB"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.doc:pressed /template/ ContentPresenter">
+        <Setter Property="Background" Value="#094771"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+    <Style Selector="Button.doc:disabled /template/ ContentPresenter">
+        <Setter Property="Background" Value="#2A2A2D"/>
+        <Setter Property="Foreground" Value="#707070"/>
+    </Style>
+    <Style Selector="Button.danger">
+        <Setter Property="Background" Value="#AA3333"/>
+    </Style>
+    <Style Selector="Button.danger:pointerover /template/ ContentPresenter">
+        <Setter Property="Background" Value="#C04444"/>
+    </Style>
+
+    <!-- 屬性面板共用排版 -->
+    <Style Selector="TextBlock.label">
+        <Setter Property="Width" Value="170"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Foreground" Value="#A0A0A0"/>
+    </Style>
+    <Style Selector="StackPanel.row">
+        <Setter Property="Orientation" Value="Horizontal"/>
+        <Setter Property="Spacing" Value="8"/>
+        <Setter Property="Margin" Value="0,2"/>
+    </Style>
+</Styles>

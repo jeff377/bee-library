@@ -11,5 +11,6 @@
   
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="/Styles/DocumentStyles.axaml"/>
     </Application.Styles>
 </Application>

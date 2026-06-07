@@ -1,17 +1,17 @@
 # 計畫：定義檔方案維護工具（Avalonia 桌面程式）
 
-**狀態：🚧 進行中（2026-06-07）**
+**狀態：✅ 已完成（2026-06-07）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | 主介面外殼：開啟 DefinePath → 掃目錄 → 左側方案樹（型別分組）列出所有定義檔，可展開、點選；右側暫顯示唯讀摘要 | ✅ 已完成（2026-06-07） |
-| 1 | 文件宿主框架 + FormSchema 唯讀結構樹（內層樹） | 📝 待做 |
-| 2 | FormSchema 屬性編輯 + 節點增刪 + 存回 XML | 📝 待做 |
-| 3 | FormSchema 關聯欄位對應 + 基本驗證（首個完整可用里程碑） | 📝 待做 |
-| 4 | 單例設定編輯器（SystemSettings / DbCategorySettings / ProgramSettings / PermissionModels） | 📝 待做 |
-| 5 | DatabaseSettings 專屬：連線字串貼上拆解 + 靜態驗證 | 📝 待做 |
-| 6 | 其餘多份型別（TableSchema / FormLayout / Language） | 📝 待做 |
-| 7 | 打包（各平台） | 📝 待做 |
+| 1 | 文件宿主框架 + FormSchema 唯讀結構樹（內層樹） | ✅ 已完成（2026-06-07） |
+| 2 | FormSchema 屬性編輯 + 節點增刪 + 存回 XML | ✅ 已完成（2026-06-07） |
+| 3 | FormSchema 關聯欄位對應 + 基本驗證（首個完整可用里程碑） | ✅ 已完成（2026-06-07） |
+| 4 | 單例設定編輯器（SystemSettings / DbCategorySettings / ProgramSettings / PermissionModels） | ✅ 已完成（2026-06-07） |
+| 5 | DatabaseSettings 專屬：連線字串貼上拆解 + 靜態驗證 | ✅ 已完成（2026-06-07） |
+| 6 | 其餘多份型別（TableSchema / FormLayout / Language） | ✅ 已完成（2026-06-07） |
+| 7 | 打包（各平台） | ✅ 已完成（2026-06-07） |
 
 ## 背景
 
@@ -130,8 +130,9 @@ bee-library 的「定義檔」是放在 **DefinePath** 下的一組 XML（9 種 
 
 ### Phase 4 — 單例設定編輯器
 
-- SystemSettings / DbCategorySettings / ProgramSettings / PermissionModels —— 結構多為扁平，PropertyGrid 直接吃。
-- **驗收**：每種單例設定可載入、編輯、存回。
+- SystemSettings / DbCategorySettings / ProgramSettings / PermissionModels。
+- **實作筆記（2026-06-07）**：原預期「結構多為扁平 → PropertyGrid 直接吃」，實際清查後發現 4 個 singleton 都是 collection-based 或含巢狀 Configuration（DbCategorySettings → Categories → Tables；ProgramSettings → Categories → Programs；PermissionModels → Models → Rules；SystemSettings → 5 個 Configuration 物件 + ExtendedProperties），故改採與 FormSchema 編輯器一致的樹狀模式：抽 `SettingsTreeNode`（INPC + Payload + Refresher）+ `SingletonDocumentViewModelBase`（共用 Save / Validate / IsDirty / Delete 樣板），4 個 subclass 各自定義樹結構、Add 命令與 nested 屬性面板 DataTemplate。
+- **驗收**：每種單例設定可載入、編輯、存回；smoke 4 個 sub-mode（permission / db / program / system）全綠。
 
 ### Phase 5 — DatabaseSettings 專屬
 

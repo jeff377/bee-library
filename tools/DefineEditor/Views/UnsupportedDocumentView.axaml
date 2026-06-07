@@ -1,0 +1,25 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="700" d:DesignHeight="500"
+             x:Class="Bee.DefineEditor.Views.UnsupportedDocumentView"
+             x:DataType="vm:UnsupportedDocumentViewModel">
+
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Padding="12,8" Background="#1F1F22">
+            <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" Foreground="#FFFFFF"/>
+        </Border>
+
+        <Border Padding="14">
+            <StackPanel Spacing="10">
+                <TextBlock Text="選取項目" FontWeight="Bold" FontSize="13"/>
+                <TextBlock Text="{Binding Summary}"
+                           TextWrapping="Wrap"
+                           FontFamily="monospace"/>
+            </StackPanel>
+        </Border>
+    </DockPanel>
+
+</UserControl>

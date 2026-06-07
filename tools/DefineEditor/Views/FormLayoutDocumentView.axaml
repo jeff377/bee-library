@@ -1,0 +1,221 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:models="using:Bee.DefineEditor.Models"
+             xmlns:layouts="using:Bee.Definition.Layouts"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="Bee.DefineEditor.Views.FormLayoutDocumentView"
+             x:DataType="vm:FormLayoutDocumentViewModel"
+             x:CompileBindings="True">
+
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="layouts:FormLayout">
+            <StackPanel x:DataType="layouts:FormLayout" Spacing="6">
+                <TextBlock Text="FormLayout 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="LayoutId"/>
+                    <TextBox Text="{Binding LayoutId, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="ProgId"/>
+                    <TextBox Text="{Binding ProgId, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Caption"/>
+                    <TextBox Text="{Binding Caption, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="ColumnCount"/>
+                    <TextBox Text="{Binding ColumnCount, Mode=TwoWay}" Width="120"/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="layouts:LayoutSection">
+            <StackPanel x:DataType="layouts:LayoutSection" Spacing="6">
+                <TextBlock Text="LayoutSection 屬性" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Name"/>
+                    <TextBox Text="{Binding Name, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Caption"/>
+                    <TextBox Text="{Binding Caption, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="ShowCaption"/>
+                    <CheckBox IsChecked="{Binding ShowCaption, Mode=TwoWay}"/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="layouts:LayoutField">
+            <StackPanel x:DataType="layouts:LayoutField" Spacing="6">
+                <TextBlock Text="LayoutField 屬性（主表單欄位）" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="FieldName"/>
+                    <TextBox Text="{Binding FieldName, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Caption"/>
+                    <TextBox Text="{Binding Caption, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="ControlType"/>
+                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.ControlTypes}"
+                              SelectedItem="{Binding ControlType, Mode=TwoWay}" Width="200"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="RowSpan"/>
+                    <TextBox Text="{Binding RowSpan, Mode=TwoWay}" Width="100"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="ColumnSpan"/>
+                    <TextBox Text="{Binding ColumnSpan, Mode=TwoWay}" Width="100"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="DisplayFormat"/>
+                    <TextBox Text="{Binding DisplayFormat, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="NumberFormat"/>
+                    <TextBox Text="{Binding NumberFormat, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Visible"/>
+                    <CheckBox IsChecked="{Binding Visible, Mode=TwoWay}"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="ReadOnly"/>
+                    <CheckBox IsChecked="{Binding ReadOnly, Mode=TwoWay}"/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="layouts:LayoutGrid">
+            <StackPanel x:DataType="layouts:LayoutGrid" Spacing="6">
+                <TextBlock Text="LayoutGrid 屬性（明細表格）" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="TableName"/>
+                    <TextBox Text="{Binding TableName, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Caption"/>
+                    <TextBox Text="{Binding Caption, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="AllowActions"/>
+                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.GridAllowActions}"
+                              SelectedItem="{Binding AllowActions, Mode=TwoWay}" Width="200"/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="layouts:LayoutColumn">
+            <StackPanel x:DataType="layouts:LayoutColumn" Spacing="6">
+                <TextBlock Text="LayoutColumn 屬性（grid 欄）" FontWeight="Bold" FontSize="13" Margin="0,0,0,6"/>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="FieldName"/>
+                    <TextBox Text="{Binding FieldName, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Caption"/>
+                    <TextBox Text="{Binding Caption, Mode=TwoWay}" Width="280"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="ControlType"/>
+                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.ControlTypes}"
+                              SelectedItem="{Binding ControlType, Mode=TwoWay}" Width="200"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Width"/>
+                    <TextBox Text="{Binding Width, Mode=TwoWay}" Width="120"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="Visible"/>
+                    <CheckBox IsChecked="{Binding Visible, Mode=TwoWay}"/>
+                </StackPanel>
+                <StackPanel Classes="row">
+                    <TextBlock Classes="label" Text="ReadOnly"/>
+                    <CheckBox IsChecked="{Binding ReadOnly, Mode=TwoWay}"/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <DockPanel>
+        <Border DockPanel.Dock="Top" Padding="12,8" Background="#1F1F22">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0" Spacing="2">
+                    <StackPanel Orientation="Horizontal" Spacing="6">
+                        <TextBlock Text="{Binding Title}" FontWeight="Bold" FontSize="15" Foreground="#FFFFFF"/>
+                        <TextBlock Text="●" Foreground="#E0A33A" VerticalAlignment="Center"
+                                   IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
+                    </StackPanel>
+                    <TextBlock Text="{Binding FilePath}" FontSize="11" Foreground="#A0A0A0"/>
+                </StackPanel>
+                <WrapPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Classes="doc" Content="儲存" Command="{Binding SaveCommand}" Margin="3"/>
+                    <Button Classes="doc" Content="新增 Section" Command="{Binding AddSectionCommand}" Margin="3"/>
+                    <Button Classes="doc" Content="新增 Field" Command="{Binding AddLayoutFieldCommand}" Margin="3"/>
+                    <Button Classes="doc" Content="新增 Grid" Command="{Binding AddGridCommand}" Margin="3"/>
+                    <Button Classes="doc" Content="新增 Column" Command="{Binding AddLayoutColumnCommand}" Margin="3"/>
+                    <Button Classes="doc" Content="驗證" Command="{Binding ValidateCommand}" Margin="3"/>
+                    <Button Classes="doc danger" Content="刪除" Command="{Binding DeleteCommand}" Margin="3"/>
+                </WrapPanel>
+            </Grid>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" Padding="12,4" Background="#1F1F22">
+            <TextBlock Text="{Binding StatusText}" Foreground="#A0A0A0" FontSize="11"/>
+        </Border>
+
+        <Border DockPanel.Dock="Bottom" Padding="10,6" Background="#252528"
+                IsVisible="{Binding Issues.Count}">
+            <DockPanel>
+                <TextBlock DockPanel.Dock="Top" FontWeight="SemiBold" Foreground="#E0E0E0" Text="驗證結果"/>
+                <ListBox ItemsSource="{Binding Issues}" MaxHeight="150" Background="Transparent" BorderThickness="0">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate x:DataType="models:ValidationIssue">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding Icon}"/>
+                                <TextBlock Text="{Binding Path}" Foreground="#A0A0A0" Width="220"/>
+                                <TextBlock Text="{Binding Message}" Foreground="#E0E0E0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <Grid ColumnDefinitions="*,4,1.2*">
+            <TreeView Grid.Column="0"
+                      ItemsSource="{Binding Roots}"
+                      SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}">
+                <TreeView.ItemTemplate>
+                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:SettingsTreeNode">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding Icon}"/>
+                            <TextBlock Text="{Binding Header}"/>
+                        </StackPanel>
+                    </TreeDataTemplate>
+                </TreeView.ItemTemplate>
+                <TreeView.Styles>
+                    <Style Selector="TreeViewItem" x:DataType="models:SettingsTreeNode">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
+                    </Style>
+                </TreeView.Styles>
+            </TreeView>
+
+            <GridSplitter Grid.Column="1" Background="#3E3E42" ResizeDirection="Columns"/>
+
+            <Border Grid.Column="2" Padding="14">
+                <ScrollViewer>
+                    <ContentControl Content="{Binding SelectedEditorContext}"/>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</UserControl>
