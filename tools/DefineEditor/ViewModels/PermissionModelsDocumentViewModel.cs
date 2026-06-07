@@ -25,7 +25,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
 
     protected override object RootObject => Root;
 
-    public override string TabIcon => "🛡️";
+    public override string TabIcon => "DefPermissionModels";
 
     private PermissionModelsDocumentViewModel(string filePath, PermissionModels root)
         : base(filePath, "PermissionModels", keyText: string.Empty)
@@ -47,7 +47,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
 
     private static SettingsTreeNode BuildRootNode(PermissionModels root)
     {
-        var node = MakeNode("🛡️", KindRoot, root, RefreshRoot, isExpanded: true);
+        var node = MakeNode("DefPermissionModels", KindRoot, root, RefreshRoot, isExpanded: true);
         if (root.Models is { } models)
             foreach (var model in models)
                 node.AddChild(BuildModelNode(model));
@@ -56,7 +56,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
 
     private static SettingsTreeNode BuildModelNode(PermissionModel model)
     {
-        var node = MakeNode("📦", KindModel, model, RefreshModel, isExpanded: false);
+        var node = MakeNode("IconBox", KindModel, model, RefreshModel, isExpanded: false);
         if (model.Rules is { } rules)
             foreach (var rule in rules)
                 node.AddChild(BuildRuleNode(rule));
@@ -64,7 +64,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
     }
 
     private static SettingsTreeNode BuildRuleNode(PermissionRule rule) =>
-        MakeNode("🔑", KindRule, rule, RefreshRule, isExpanded: false);
+        MakeNode("IconKey", KindRule, rule, RefreshRule, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {

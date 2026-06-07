@@ -37,7 +37,7 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
 
     protected override object RootObject => Root;
 
-    public override string TabIcon => "⚙️";
+    public override string TabIcon => "DefSystemSettings";
 
     private SystemSettingsDocumentViewModel(string filePath, SystemSettings root)
         : base(filePath, "SystemSettings", keyText: string.Empty)
@@ -59,25 +59,25 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
 
     private static SettingsTreeNode BuildRootNode(SystemSettings root)
     {
-        var node = MakeNode("⚙️", KindRoot, root, RefreshRoot, isExpanded: true);
+        var node = MakeNode("DefSystemSettings", KindRoot, root, RefreshRoot, isExpanded: true);
 
-        node.AddChild(MakeNode("🧩", KindCommon, root.CommonConfiguration, RefreshCommon, isExpanded: false));
+        node.AddChild(MakeNode("IconSettings", KindCommon, root.CommonConfiguration, RefreshCommon, isExpanded: false));
 
-        var backendNode = MakeNode("🛠️", KindBackend, root.BackendConfiguration, RefreshBackend, isExpanded: false);
-        backendNode.AddChild(MakeNode("📝", KindLogOptions, root.BackendConfiguration.LogOptions, RefreshLogOptions, isExpanded: false));
-        backendNode.AddChild(MakeNode("🔐", KindSecurityKeys, root.BackendConfiguration.SecurityKeySettings, RefreshSecurityKeys, isExpanded: false));
-        backendNode.AddChild(MakeNode("🧬", KindBackendComponents, root.BackendConfiguration.Components, RefreshBackendComponents, isExpanded: false));
-        backendNode.AddChild(MakeNode("📡", KindCacheNotify, root.BackendConfiguration.CacheNotifyOptions, RefreshCacheNotify, isExpanded: false));
+        var backendNode = MakeNode("IconWrench", KindBackend, root.BackendConfiguration, RefreshBackend, isExpanded: false);
+        backendNode.AddChild(MakeNode("IconText", KindLogOptions, root.BackendConfiguration.LogOptions, RefreshLogOptions, isExpanded: false));
+        backendNode.AddChild(MakeNode("IconLock", KindSecurityKeys, root.BackendConfiguration.SecurityKeySettings, RefreshSecurityKeys, isExpanded: false));
+        backendNode.AddChild(MakeNode("IconLayers", KindBackendComponents, root.BackendConfiguration.Components, RefreshBackendComponents, isExpanded: false));
+        backendNode.AddChild(MakeNode("IconBell", KindCacheNotify, root.BackendConfiguration.CacheNotifyOptions, RefreshCacheNotify, isExpanded: false));
         node.AddChild(backendNode);
 
-        node.AddChild(MakeNode("🖥️", KindFrontend, root.FrontendConfiguration, RefreshFrontend, isExpanded: false));
-        node.AddChild(MakeNode("🌐", KindWebsite, root.WebsiteConfiguration, RefreshWebsite, isExpanded: false));
-        node.AddChild(MakeNode("⏰", KindBackgroundService, root.BackgroundServiceConfiguration, RefreshBackgroundService, isExpanded: false));
+        node.AddChild(MakeNode("IconMonitor", KindFrontend, root.FrontendConfiguration, RefreshFrontend, isExpanded: false));
+        node.AddChild(MakeNode("IconGlobe", KindWebsite, root.WebsiteConfiguration, RefreshWebsite, isExpanded: false));
+        node.AddChild(MakeNode("IconClock", KindBackgroundService, root.BackgroundServiceConfiguration, RefreshBackgroundService, isExpanded: false));
 
-        var extGroup = MakeNode("🧷", KindExtendedGroup, root, RefreshExtendedGroup, isExpanded: false);
+        var extGroup = MakeNode("IconList", KindExtendedGroup, root, RefreshExtendedGroup, isExpanded: false);
         if (root.ExtendedProperties is { } props)
             foreach (var p in props)
-                extGroup.AddChild(MakeNode("•", KindProperty, p, RefreshProperty, isExpanded: false));
+                extGroup.AddChild(MakeNode("IconDot", KindProperty, p, RefreshProperty, isExpanded: false));
         node.AddChild(extGroup);
 
         return node;
@@ -207,7 +207,7 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
             "NewProperty");
         var prop = new Property { Name = name, Value = string.Empty };
         Root.ExtendedProperties!.Add(prop);
-        var node = MakeNode("•", KindProperty, prop, RefreshProperty, isExpanded: false);
+        var node = MakeNode("IconDot", KindProperty, prop, RefreshProperty, isExpanded: false);
         groupNode.AddChild(node);
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;

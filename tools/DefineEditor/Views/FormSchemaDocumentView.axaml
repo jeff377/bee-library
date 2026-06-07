@@ -305,8 +305,8 @@
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:FormSchemaTreeNode">
                         <StackPanel Orientation="Horizontal" Spacing="6">
-                            <TextBlock Text="{Binding Icon}"/>
-                            <TextBlock Text="{Binding Header}"/>
+                            <PathIcon Classes="inner-icon" Data="{Binding Icon, Converter={StaticResource IconKeyToGeometry}}"/>
+                            <TextBlock Text="{Binding Header}" VerticalAlignment="Center"/>
                         </StackPanel>
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
@@ -320,7 +320,7 @@
             <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
 
             <Border Grid.Column="2" Padding="18,14">
-                <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer Classes="props-pane" HorizontalScrollBarVisibility="Disabled">
                     <ContentControl Content="{Binding SelectedEditorContext}"/>
                 </ScrollViewer>
             </Border>

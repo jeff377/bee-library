@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Bee.DefineEditor.App"
              xmlns:local="using:Bee.DefineEditor"
+             xmlns:conv="using:Bee.DefineEditor.Converters"
              RequestedThemeVariant="Dark">
 
     <Application.DataTemplates>
@@ -10,6 +11,7 @@
 
     <Application.Resources>
         <ResourceDictionary>
+            <conv:IconKeyToGeometryConverter x:Key="IconKeyToGeometry"/>
             <ResourceDictionary.ThemeDictionaries>
                 <!-- ===================== VS Code Dark+ 風 ===================== -->
                 <ResourceDictionary x:Key="Dark">

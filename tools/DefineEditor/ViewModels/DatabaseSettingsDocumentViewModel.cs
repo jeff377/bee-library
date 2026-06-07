@@ -29,7 +29,7 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
 
     protected override object RootObject => Root;
 
-    public override string TabIcon => "💽";
+    public override string TabIcon => "DefDatabaseSettings";
 
     public override object? SelectedEditorContext => SelectedTreeNode switch
     {
@@ -60,15 +60,15 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
 
     private static SettingsTreeNode BuildRootNode(DatabaseSettings root)
     {
-        var rootNode = MakeNode("💽", KindRoot, root, RefreshRoot, isExpanded: true);
+        var rootNode = MakeNode("DefDatabaseSettings", KindRoot, root, RefreshRoot, isExpanded: true);
 
-        var serversGroup = MakeNode("🖥️", KindServersGroup, root, RefreshServersGroup, isExpanded: true);
+        var serversGroup = MakeNode("IconServer", KindServersGroup, root, RefreshServersGroup, isExpanded: true);
         if (root.Servers is { } servers)
             foreach (var server in servers)
                 serversGroup.AddChild(BuildServerNode(server));
         rootNode.AddChild(serversGroup);
 
-        var itemsGroup = MakeNode("📑", KindItemsGroup, root, RefreshItemsGroup, isExpanded: true);
+        var itemsGroup = MakeNode("IconDatabase", KindItemsGroup, root, RefreshItemsGroup, isExpanded: true);
         if (root.Items is { } items)
             foreach (var item in items)
                 itemsGroup.AddChild(BuildItemNode(item));
@@ -78,10 +78,10 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
     }
 
     private static SettingsTreeNode BuildServerNode(DatabaseServer server) =>
-        MakeNode("🖥️", KindServer, server, RefreshServer, isExpanded: false);
+        MakeNode("IconServer", KindServer, server, RefreshServer, isExpanded: false);
 
     private static SettingsTreeNode BuildItemNode(DatabaseItem item) =>
-        MakeNode("📦", KindItem, item, RefreshItem, isExpanded: false);
+        MakeNode("IconDatabase", KindItem, item, RefreshItem, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {

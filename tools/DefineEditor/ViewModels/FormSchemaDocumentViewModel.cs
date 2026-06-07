@@ -26,7 +26,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
 
     public override string DocumentKey => FilePath;
 
-    public override string TabIcon => "📋";
+    public override string TabIcon => "DefFormSchema";
 
     public string FilePath { get; }
 
@@ -93,10 +93,18 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     }
 
     [RelayCommand]
-    private void Save()
+    private async System.Threading.Tasks.Task Save()
     {
         try
         {
+            var issues = Bee.DefineEditor.Services.FormSchemaValidator.Validate(Schema, Solution);
+            if (!await ConfirmSaveAfterValidationAsync(issues, Issues))
+            {
+                var errs = issues.Count(i => i.Severity == ValidationSeverity.Error);
+                StatusText = $"已取消儲存（{errs} 個 error 未處理）。";
+                return;
+            }
+
             foreach (var root in Roots)
                 root.RefreshRecursive();
             XmlCodec.SerializeToFile(Schema, FilePath);

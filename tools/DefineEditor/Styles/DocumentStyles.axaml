@@ -28,6 +28,52 @@
         <StreamGeometry x:Key="IconParse">M21,11.5V12.5L20,12V20H4V12L3,12.5V11.5L4,11V4H20V11L21,11.5M18,6H6V11.5L12,9L18,11.5V6M18,12.62L12,15.12L6,12.62V18H18V12.62Z</StreamGeometry>
         <StreamGeometry x:Key="IconClear">M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z</StreamGeometry>
         <StreamGeometry x:Key="IconApply">M9,16.17L4.83,12L3.41,13.41L9,19L21,7L19.59,5.59L9,16.17Z</StreamGeometry>
+
+        <!-- =================================================================
+             Define-type 圖示（MDI 24×24）— 樹節點 / 分頁 head 共用
+             ================================================================= -->
+        <!-- DefinePath 根（folder-multiple-outline） -->
+        <StreamGeometry x:Key="DefRoot">M3,7V17A2,2 0 0,0 5,19H21V17H5V7H3M19,15H7A2,2 0 0,1 5,13V5A2,2 0 0,1 7,3H10L12,5H19A2,2 0 0,1 21,7V13A2,2 0 0,1 19,15M7,5V13H19V7H11.17L9.17,5H7Z</StreamGeometry>
+        <!-- 「系統設定」分組（tune-vertical） -->
+        <StreamGeometry x:Key="DefSystemGroup">M10,4V8H14V6H20V4H14V2H10V4M10,12V10H4V12H10V14H14V12H20V10H14V8H10M10,18V16H4V18H10V20H14V18H20V16H14V14H10V16Z</StreamGeometry>
+        <!-- 子分類資料夾（folder-outline） -->
+        <StreamGeometry x:Key="DefCategory">M10,4H4C2.89,4 2,4.89 2,6V18A2,2 0 0,0 4,20H20A2,2 0 0,0 22,18V8C22,6.89 21.1,6 20,6H12L10,4M20,18H4V6H9.17L11.17,8H20V18Z</StreamGeometry>
+
+        <!-- 9 種定義型別 -->
+        <!-- SystemSettings（cog） -->
+        <StreamGeometry x:Key="DefSystemSettings">M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.68 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z</StreamGeometry>
+        <!-- DatabaseSettings（database） -->
+        <StreamGeometry x:Key="DefDatabaseSettings">M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z</StreamGeometry>
+        <!-- DbCategorySettings（folder-multiple-outline，多個 DB 分類） -->
+        <StreamGeometry x:Key="DefDbCategorySettings">M3,7V17A2,2 0 0,0 5,19H21V17H5V7H3M19,15H7A2,2 0 0,1 5,13V5A2,2 0 0,1 7,3H10L12,5H19A2,2 0 0,1 21,7V13A2,2 0 0,1 19,15M7,5V13H19V7H11.17L9.17,5H7Z</StreamGeometry>
+        <!-- ProgramSettings（view-list） -->
+        <StreamGeometry x:Key="DefProgramSettings">M9,5V9H21V5M9,19H21V15H9M9,14H21V10H9M4,9H8V5H4M4,19H8V15H4M4,14H8V10H4V14Z</StreamGeometry>
+        <!-- PermissionModels（shield-lock-outline） -->
+        <StreamGeometry x:Key="DefPermissionModels">M12,12H19C18.47,16.11 15.72,19.78 12,20.92V12H5V6.3L12,3.18M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M11,11H13V13H11V11M11,7H13V9H11V7Z</StreamGeometry>
+        <!-- FormSchema（text-box-outline，表單欄位） -->
+        <StreamGeometry x:Key="DefFormSchema">M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5A2,2 0 0,1 5,3H19M19,5H5V19H19V5M17,15V17H7V15H17M17,11V13H7V11H17M17,7V9H7V7H17Z</StreamGeometry>
+        <!-- TableSchema（table，DB 表） -->
+        <StreamGeometry x:Key="DefTableSchema">M5,4H19A2,2 0 0,1 21,6V18A2,2 0 0,1 19,20H5A2,2 0 0,1 3,18V6A2,2 0 0,1 5,4M5,8V12H11V8H5M13,8V12H19V8H13M5,14V18H11V14H5M13,14V18H19V14H13Z</StreamGeometry>
+        <!-- FormLayout（view-dashboard，UI 排版） -->
+        <StreamGeometry x:Key="DefFormLayout">M13,3V9H21V3M13,21H21V11H13M3,21H11V15H3M3,13H11V3H3V13Z</StreamGeometry>
+        <!-- Language（translate） -->
+        <StreamGeometry x:Key="DefLanguage">M12.87,15.07L10.33,12.56L10.36,12.53C12.1,10.59 13.34,8.36 14.07,6H17V4H10V2H8V4H1V6H12.17C11.5,7.92 10.44,9.75 9,11.35C8.07,10.32 7.3,9.19 6.69,8H4.69C5.42,9.63 6.42,11.17 7.67,12.56L2.58,17.58L4,19L9,14L12.11,17.11L12.87,15.07M18.5,10H16.5L12,22H14L15.12,19H19.87L21,22H23L18.5,10M15.88,17L17.5,12.67L19.12,17H15.88Z</StreamGeometry>
+        <!-- 後備（file-outline） -->
+        <StreamGeometry x:Key="DefUnknown">M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z</StreamGeometry>
+
+        <!-- =================================================================
+             內層樹節點圖示（每編輯器內部展開的小節點）
+             ================================================================= -->
+        <StreamGeometry x:Key="IconLookup">M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z</StreamGeometry>
+        <StreamGeometry x:Key="IconArrowRight">M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z</StreamGeometry>
+        <StreamGeometry x:Key="IconDot">M12,8A4,4 0 0,1 16,12A4,4 0 0,1 12,16A4,4 0 0,1 8,12A4,4 0 0,1 12,8Z</StreamGeometry>
+        <StreamGeometry x:Key="IconWrench">M22.7,19L13.6,9.9C14.5,7.6 14,4.9 12.1,3C10.1,1 7.1,0.6 4.7,1.7L9,6L6,9L1.6,4.7C0.4,7.1 0.9,10.1 2.9,12.1C4.8,14 7.5,14.5 9.8,13.6L18.9,22.7C19.3,23.1 19.9,23.1 20.3,22.7L22.6,20.4C23.1,20 23.1,19.3 22.7,19Z</StreamGeometry>
+        <StreamGeometry x:Key="IconLock">M12,17C10.89,17 10,16.1 10,15C10,13.89 10.89,13 12,13A2,2 0 0,1 14,15A2,2 0 0,1 12,17M18,20V10H6V20H18M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z</StreamGeometry>
+        <StreamGeometry x:Key="IconBell">M14,20A2,2 0 0,1 12,22A2,2 0 0,1 10,20H14M12,2A1,1 0 0,1 13,3V4.08C15.84,4.56 18,7.03 18,10V16L21,19V20H3V19L6,16V10C6,7.03 8.16,4.56 11,4.08V3A1,1 0 0,1 12,2M12,6A4,4 0 0,0 8,10V17H16V10A4,4 0 0,0 12,6Z</StreamGeometry>
+        <StreamGeometry x:Key="IconLayers">M12,15.39L8.24,12.46L3,16.54L4.62,17.81L12,12L19.38,17.81L21,16.54L15.76,12.46L12,15.39M19.37,10.84L21,9.57L12,2L3,9.57L4.62,10.84L12,4.69L19.37,10.84M19.37,14.16L21,12.89L12,5.32L3,12.89L4.62,14.16L12,8L19.37,14.16Z</StreamGeometry>
+        <StreamGeometry x:Key="IconMonitor">M21,16H3V4H21M21,2H3C1.89,2 1,2.89 1,4V16A2,2 0 0,0 3,18H10V20H8V22H16V20H14V18H21A2,2 0 0,0 23,16V4C23,2.89 22.1,2 21,2Z</StreamGeometry>
+        <StreamGeometry x:Key="IconClock">M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z</StreamGeometry>
+        <StreamGeometry x:Key="IconServer">M4,1H20A1,1 0 0,1 21,2V6A1,1 0 0,1 20,7H4A1,1 0 0,1 3,6V2A1,1 0 0,1 4,1M4,9H20A1,1 0 0,1 21,10V14A1,1 0 0,1 20,15H4A1,1 0 0,1 3,14V10A1,1 0 0,1 4,9M4,17H20A1,1 0 0,1 21,18V22A1,1 0 0,1 20,23H4A1,1 0 0,1 3,22V18A1,1 0 0,1 4,17M9,5H10V3H9V5M9,13H10V11H9V13M9,21H10V19H9V21M5,3V5H7V3H5M5,11V13H7V11H5M5,19V21H7V19H5Z</StreamGeometry>
     </Styles.Resources>
 
     <!-- =================================================================
@@ -38,10 +84,10 @@
         <Setter Property="Foreground" Value="{DynamicResource ToolButtonForeground}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource ToolButtonBorder}"/>
         <Setter Property="BorderThickness" Value="1"/>
-        <Setter Property="Padding" Value="9,5"/>
+        <Setter Property="Padding" Value="11,6"/>
         <Setter Property="CornerRadius" Value="3"/>
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="32"/>
     </Style>
     <Style Selector="Button.tool:pointerover /template/ ContentPresenter">
         <Setter Property="Background" Value="{DynamicResource ToolButtonBackgroundHover}"/>
@@ -85,8 +131,8 @@
 
     <!-- 圖示按鈕內部 PathIcon -->
     <Style Selector="Button.tool PathIcon">
-        <Setter Property="Width" Value="14"/>
-        <Setter Property="Height" Value="14"/>
+        <Setter Property="Width" Value="16"/>
+        <Setter Property="Height" Value="16"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
@@ -95,24 +141,24 @@
          ================================================================= -->
     <Style Selector="DockPanel.row">
         <Setter Property="LastChildFill" Value="True"/>
-        <Setter Property="Margin" Value="0,3"/>
+        <Setter Property="Margin" Value="0,4"/>
     </Style>
     <Style Selector="DockPanel.row > TextBlock.label">
         <Setter Property="DockPanel.Dock" Value="Left"/>
-        <Setter Property="Width" Value="160"/>
+        <Setter Property="Width" Value="180"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="Foreground" Value="{DynamicResource PropertyLabelForeground}"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="13"/>
     </Style>
     <Style Selector="DockPanel.row > TextBox">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="MaxWidth" Value="600"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MaxWidth" Value="640"/>
+        <Setter Property="FontSize" Value="13"/>
     </Style>
     <Style Selector="DockPanel.row > ComboBox">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="MaxWidth" Value="600"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MaxWidth" Value="640"/>
+        <Setter Property="FontSize" Value="13"/>
     </Style>
     <Style Selector="DockPanel.row > CheckBox">
         <Setter Property="HorizontalAlignment" Value="Left"/>
@@ -121,11 +167,11 @@
     <!-- 短欄位（數字、Lang code）用 .row.short 縮限到固定寬 -->
     <Style Selector="DockPanel.row.short > TextBox">
         <Setter Property="HorizontalAlignment" Value="Left"/>
-        <Setter Property="Width" Value="120"/>
+        <Setter Property="Width" Value="140"/>
     </Style>
     <Style Selector="DockPanel.row.short > ComboBox">
         <Setter Property="HorizontalAlignment" Value="Left"/>
-        <Setter Property="Width" Value="200"/>
+        <Setter Property="Width" Value="220"/>
     </Style>
 
     <!-- =================================================================
@@ -149,22 +195,22 @@
     </Style>
 
     <Style Selector="TextBlock.h1">
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource HeadingForeground}"/>
     </Style>
     <Style Selector="TextBlock.h2">
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource HeadingForeground}"/>
     </Style>
     <Style Selector="TextBlock.muted">
         <Setter Property="Foreground" Value="{DynamicResource MutedForeground}"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="12"/>
     </Style>
     <Style Selector="TextBlock.path">
         <Setter Property="Foreground" Value="{DynamicResource MutedForeground}"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontFamily" Value="ui-monospace, Menlo, Consolas, monospace"/>
     </Style>
 
@@ -174,19 +220,43 @@
         <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
     </Style>
     <Style Selector="TreeViewItem">
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="Padding" Value="2,4"/>
+    </Style>
+    <!-- 樹節點 / 分頁 head 用的 PathIcon -->
+    <Style Selector="PathIcon.tree-icon">
+        <Setter Property="Width" Value="18"/>
+        <Setter Property="Height" Value="18"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <Style Selector="PathIcon.tab-icon">
+        <Setter Property="Width" Value="16"/>
+        <Setter Property="Height" Value="16"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+    <!-- 屬性面板捲動區：捲軸不蓋輸入框，獨佔右側欄位 -->
+    <Style Selector="ScrollViewer.props-pane">
+        <Setter Property="AllowAutoHide" Value="False"/>
+        <Setter Property="Padding" Value="0,0,4,0"/>
+    </Style>
+
+    <!-- 編輯器內層樹節點圖示 -->
+    <Style Selector="PathIcon.inner-icon">
+        <Setter Property="Width" Value="14"/>
+        <Setter Property="Height" Value="14"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <!-- 字型：統一走 Inter（已透過 Program.cs WithInterFont 註冊） -->
     <Style Selector="Window">
         <Setter Property="FontFamily" Value="fonts:Inter#Inter, $Default"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="14"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
     </Style>
     <Style Selector="UserControl">
         <Setter Property="FontFamily" Value="fonts:Inter#Inter, $Default"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="14"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
         <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
     </Style>
@@ -198,9 +268,9 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
     </Style>
     <Style Selector="TabItem">
-        <Setter Property="FontSize" Value="12"/>
-        <Setter Property="MinHeight" Value="32"/>
-        <Setter Property="Padding" Value="12,4"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Padding" Value="14,6"/>
         <Setter Property="Foreground" Value="{DynamicResource MutedForeground}"/>
         <Setter Property="Background" Value="Transparent"/>
     </Style>
@@ -231,7 +301,7 @@
     <Style Selector="Button.icon">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Padding" Value="6"/>
+        <Setter Property="Padding" Value="7"/>
         <Setter Property="CornerRadius" Value="3"/>
         <Setter Property="Foreground" Value="{DynamicResource ToolButtonForeground}"/>
     </Style>
@@ -240,8 +310,8 @@
         <Setter Property="Foreground" Value="{DynamicResource ToolButtonForegroundHover}"/>
     </Style>
     <Style Selector="Button.icon PathIcon">
-        <Setter Property="Width" Value="16"/>
-        <Setter Property="Height" Value="16"/>
+        <Setter Property="Width" Value="18"/>
+        <Setter Property="Height" Value="18"/>
     </Style>
 
 </Styles>

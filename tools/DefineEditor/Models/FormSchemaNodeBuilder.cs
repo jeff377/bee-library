@@ -12,7 +12,7 @@ internal static class FormSchemaNodeBuilder
 {
     public static FormSchemaTreeNode BuildSchema(FormSchema schema)
     {
-        var node = Make(FormSchemaNodeKind.Schema, "📋", schema, isExpanded: true);
+        var node = Make(FormSchemaNodeKind.Schema, "DefFormSchema", schema, isExpanded: true);
         if (schema.Tables is { } tables)
             foreach (var table in tables)
                 node.AddChild(BuildTable(table));
@@ -21,7 +21,7 @@ internal static class FormSchemaNodeBuilder
 
     public static FormSchemaTreeNode BuildTable(FormTable table)
     {
-        var node = Make(FormSchemaNodeKind.Table, "🗂️", table, isExpanded: true);
+        var node = Make(FormSchemaNodeKind.Table, "IconTable", table, isExpanded: true);
         if (table.Fields is { } fields)
             foreach (var field in fields)
                 node.AddChild(BuildField(field));
@@ -46,7 +46,7 @@ internal static class FormSchemaNodeBuilder
 
     public static FormSchemaTreeNode BuildRelationGroup(FormField field)
     {
-        var group = Make(FormSchemaNodeKind.RelationGroup, "🔗", field, isExpanded: false);
+        var group = Make(FormSchemaNodeKind.RelationGroup, "IconLink", field, isExpanded: false);
         if (field.RelationFieldMappings is { } mappings)
             foreach (var mapping in mappings)
                 group.AddChild(BuildMapping(mapping));
@@ -55,7 +55,7 @@ internal static class FormSchemaNodeBuilder
 
     public static FormSchemaTreeNode BuildLookupGroup(FormField field)
     {
-        var group = Make(FormSchemaNodeKind.LookupGroup, "🔍", field, isExpanded: false);
+        var group = Make(FormSchemaNodeKind.LookupGroup, "IconLookup", field, isExpanded: false);
         if (field.LookupFieldMappings is { } mappings)
             foreach (var mapping in mappings)
                 group.AddChild(BuildMapping(mapping));
@@ -64,7 +64,7 @@ internal static class FormSchemaNodeBuilder
 
     public static FormSchemaTreeNode BuildListItemsGroup(FormField field)
     {
-        var group = Make(FormSchemaNodeKind.ListItemsGroup, "📑", field, isExpanded: false);
+        var group = Make(FormSchemaNodeKind.ListItemsGroup, "IconList", field, isExpanded: false);
         if (field.ListItems is { } items)
             foreach (var item in items)
                 group.AddChild(BuildListItem(item));
@@ -72,10 +72,10 @@ internal static class FormSchemaNodeBuilder
     }
 
     public static FormSchemaTreeNode BuildMapping(FieldMapping mapping) =>
-        Make(FormSchemaNodeKind.Mapping, "↔", mapping, isExpanded: false);
+        Make(FormSchemaNodeKind.Mapping, "IconArrowRight", mapping, isExpanded: false);
 
     public static FormSchemaTreeNode BuildListItem(Bee.Definition.Collections.ListItem item) =>
-        Make(FormSchemaNodeKind.ListItem, "•", item, isExpanded: false);
+        Make(FormSchemaNodeKind.ListItem, "IconDot", item, isExpanded: false);
 
     private static FormSchemaTreeNode Make(FormSchemaNodeKind kind, string icon, object payload, bool isExpanded)
     {
@@ -92,8 +92,8 @@ internal static class FormSchemaNodeBuilder
 
     private static string FieldIcon(FormField field) => field.Type switch
     {
-        FieldType.DbField => "🟦",
-        FieldType.RelationField => "🟪",
-        _ => "🟨",
+        FieldType.DbField => "IconColumn",
+        FieldType.RelationField => "IconLink",
+        _ => "IconText",
     };
 }

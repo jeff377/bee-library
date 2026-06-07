@@ -55,10 +55,18 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
     }
 
     [RelayCommand]
-    private void Save()
+    private async System.Threading.Tasks.Task Save()
     {
         try
         {
+            var issues = PerformValidation();
+            if (!await ConfirmSaveAfterValidationAsync(issues, Issues))
+            {
+                var errs = issues.Count(i => i.Severity == ValidationSeverity.Error);
+                StatusText = $"已取消儲存（{errs} 個 error 未處理）。";
+                return;
+            }
+
             foreach (var root in Roots)
                 root.RefreshRecursive();
             XmlCodec.SerializeToFile(RootObject, FilePath);

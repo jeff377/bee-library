@@ -27,7 +27,7 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     public TableSchema Root { get; }
     protected override object RootObject => Root;
 
-    public override string TabIcon => "🧮";
+    public override string TabIcon => "DefTableSchema";
 
     private TableSchemaDocumentViewModel(string filePath, TableSchema root)
         : base(filePath, "TableSchema", keyText: root.TableName)
@@ -49,15 +49,15 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
 
     private static SettingsTreeNode BuildRootNode(TableSchema root)
     {
-        var rootNode = MakeNode("🧮", KindRoot, root, RefreshRoot, isExpanded: true);
+        var rootNode = MakeNode("DefTableSchema", KindRoot, root, RefreshRoot, isExpanded: true);
 
-        var fieldsGroup = MakeNode("🟦", KindFieldsGroup, root, RefreshFieldsGroup, isExpanded: true);
+        var fieldsGroup = MakeNode("IconColumn", KindFieldsGroup, root, RefreshFieldsGroup, isExpanded: true);
         if (root.Fields is { } fields)
             foreach (var f in fields)
                 fieldsGroup.AddChild(BuildFieldNode(f));
         rootNode.AddChild(fieldsGroup);
 
-        var indexesGroup = MakeNode("🔑", KindIndexesGroup, root, RefreshIndexesGroup, isExpanded: true);
+        var indexesGroup = MakeNode("IconKey", KindIndexesGroup, root, RefreshIndexesGroup, isExpanded: true);
         if (root.Indexes is { } indexes)
             foreach (var ix in indexes)
                 indexesGroup.AddChild(BuildIndexNode(ix));
@@ -67,11 +67,11 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     }
 
     private static SettingsTreeNode BuildFieldNode(DbField field) =>
-        MakeNode("🟦", KindField, field, RefreshField, isExpanded: false);
+        MakeNode("IconColumn", KindField, field, RefreshField, isExpanded: false);
 
     private static SettingsTreeNode BuildIndexNode(DbTableIndex index)
     {
-        var node = MakeNode(index.PrimaryKey ? "🔐" : "🔑", KindIndex, index, RefreshIndex, isExpanded: false);
+        var node = MakeNode(index.PrimaryKey ? "IconLock" : "IconKey", KindIndex, index, RefreshIndex, isExpanded: false);
         if (index.IndexFields is { } ifs)
             foreach (var ifld in ifs)
                 node.AddChild(BuildIndexFieldNode(ifld));
@@ -79,7 +79,7 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     }
 
     private static SettingsTreeNode BuildIndexFieldNode(IndexField indexField) =>
-        MakeNode("•", KindIndexField, indexField, RefreshIndexField, isExpanded: false);
+        MakeNode("IconDot", KindIndexField, indexField, RefreshIndexField, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {

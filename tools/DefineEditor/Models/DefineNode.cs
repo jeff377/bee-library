@@ -34,6 +34,12 @@ public sealed class DefineNode
     /// <summary>A human-readable primary-key summary (e.g. progId or categoryId/tableName).</summary>
     public string? KeyText { get; init; }
 
+    /// <summary>
+    /// Resource key of the geometry shown left of the node name in the solution
+    /// tree. Looked up in <c>App.axaml</c> via <see cref="Converters.IconKeyToGeometryConverter"/>.
+    /// </summary>
+    public string Icon { get; init; } = "DefUnknown";
+
     public bool IsExpanded { get; set; } = true;
 
     public ObservableCollection<DefineNode> Children { get; } = new();

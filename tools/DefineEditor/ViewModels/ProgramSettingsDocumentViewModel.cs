@@ -24,7 +24,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
 
     protected override object RootObject => Root;
 
-    public override string TabIcon => "📚";
+    public override string TabIcon => "DefProgramSettings";
 
     private ProgramSettingsDocumentViewModel(string filePath, ProgramSettings root)
         : base(filePath, "ProgramSettings", keyText: string.Empty)
@@ -46,7 +46,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
 
     private static SettingsTreeNode BuildRootNode(ProgramSettings root)
     {
-        var node = MakeNode("📚", KindRoot, root, RefreshRoot, isExpanded: true);
+        var node = MakeNode("DefProgramSettings", KindRoot, root, RefreshRoot, isExpanded: true);
         if (root.Categories is { } categories)
             foreach (var category in categories)
                 node.AddChild(BuildCategoryNode(category));
@@ -55,7 +55,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
 
     private static SettingsTreeNode BuildCategoryNode(ProgramCategory category)
     {
-        var node = MakeNode("📂", KindCategory, category, RefreshCategory, isExpanded: false);
+        var node = MakeNode("DefCategory", KindCategory, category, RefreshCategory, isExpanded: false);
         if (category.Items is { } items)
             foreach (var program in items)
                 node.AddChild(BuildProgramNode(program));
@@ -63,7 +63,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
     }
 
     private static SettingsTreeNode BuildProgramNode(ProgramItem program) =>
-        MakeNode("📄", KindProgram, program, RefreshProgram, isExpanded: false);
+        MakeNode("IconBox", KindProgram, program, RefreshProgram, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {

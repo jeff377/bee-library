@@ -51,7 +51,11 @@
                       Padding="6,4">
                 <TreeView.ItemTemplate>
                     <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:DefineNode">
-                        <TextBlock Text="{Binding Name}" Padding="2,3"/>
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
+                            <PathIcon Classes="tree-icon"
+                                      Data="{Binding Icon, Converter={StaticResource IconKeyToGeometry}}"/>
+                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                        </StackPanel>
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
             </TreeView>
@@ -67,8 +71,8 @@
                     <TabControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:DocumentViewModelBase">
                             <Grid ColumnDefinitions="Auto,*,Auto,Auto" MinWidth="120">
-                                <TextBlock Grid.Column="0" Text="{Binding TabIcon}"
-                                           VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                <PathIcon Grid.Column="0" Classes="tab-icon" Margin="0,0,8,0"
+                                          Data="{Binding TabIcon, Converter={StaticResource IconKeyToGeometry}}"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Title}"
                                            VerticalAlignment="Center"
                                            TextTrimming="CharacterEllipsis" MaxWidth="260"

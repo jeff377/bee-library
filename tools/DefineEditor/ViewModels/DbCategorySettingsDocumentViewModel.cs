@@ -24,7 +24,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
 
     protected override object RootObject => Root;
 
-    public override string TabIcon => "🗄️";
+    public override string TabIcon => "DefDbCategorySettings";
 
     private DbCategorySettingsDocumentViewModel(string filePath, DbCategorySettings root)
         : base(filePath, "DbCategorySettings", keyText: string.Empty)
@@ -46,7 +46,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
 
     private static SettingsTreeNode BuildRootNode(DbCategorySettings root)
     {
-        var node = MakeNode("🗄️", KindRoot, root, RefreshRoot, isExpanded: true);
+        var node = MakeNode("DefDbCategorySettings", KindRoot, root, RefreshRoot, isExpanded: true);
         if (root.Categories is { } categories)
             foreach (var category in categories)
                 node.AddChild(BuildCategoryNode(category));
@@ -55,7 +55,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
 
     private static SettingsTreeNode BuildCategoryNode(DbCategory category)
     {
-        var node = MakeNode("📁", KindCategory, category, RefreshCategory, isExpanded: false);
+        var node = MakeNode("DefCategory", KindCategory, category, RefreshCategory, isExpanded: false);
         if (category.Tables is { } tables)
             foreach (var table in tables)
                 node.AddChild(BuildTableNode(table));
@@ -63,7 +63,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
     }
 
     private static SettingsTreeNode BuildTableNode(TableItem table) =>
-        MakeNode("🧮", KindTable, table, RefreshTable, isExpanded: false);
+        MakeNode("IconTable", KindTable, table, RefreshTable, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {

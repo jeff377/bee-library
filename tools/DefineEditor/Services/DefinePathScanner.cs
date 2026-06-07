@@ -13,16 +13,24 @@ namespace Bee.DefineEditor.Services;
 /// </summary>
 public static class DefinePathScanner
 {
-    private sealed record SingletonSpec(string FileName, DefineType Type, string Display);
+    private sealed record SingletonSpec(string FileName, DefineType Type, string Display, string Icon);
 
     private static readonly SingletonSpec[] s_singletons =
     {
-        new("SystemSettings.xml", DefineType.SystemSettings, "SystemSettings"),
-        new("DatabaseSettings.xml", DefineType.DatabaseSettings, "DatabaseSettings"),
-        new("DbCategorySettings.xml", DefineType.DbCategorySettings, "DbCategorySettings"),
-        new("ProgramSettings.xml", DefineType.ProgramSettings, "ProgramSettings"),
-        new("PermissionModels.xml", DefineType.PermissionModels, "PermissionModels"),
+        new("SystemSettings.xml", DefineType.SystemSettings, "SystemSettings", "DefSystemSettings"),
+        new("DatabaseSettings.xml", DefineType.DatabaseSettings, "DatabaseSettings", "DefDatabaseSettings"),
+        new("DbCategorySettings.xml", DefineType.DbCategorySettings, "DbCategorySettings", "DefDbCategorySettings"),
+        new("ProgramSettings.xml", DefineType.ProgramSettings, "ProgramSettings", "DefProgramSettings"),
+        new("PermissionModels.xml", DefineType.PermissionModels, "PermissionModels", "DefPermissionModels"),
     };
+
+    private const string IconRoot = "DefRoot";
+    private const string IconSingletonGroup = "DefSystemGroup";
+    private const string IconCategory = "DefCategory";
+    private const string IconFormSchema = "DefFormSchema";
+    private const string IconTableSchema = "DefTableSchema";
+    private const string IconFormLayout = "DefFormLayout";
+    private const string IconLanguage = "DefLanguage";
 
     /// <summary>
     /// Scans <paramref name="definePath"/> and returns the root solution node.
@@ -38,20 +46,26 @@ public static class DefinePathScanner
             Name = Path.GetFileName(definePath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)),
             Kind = DefineNodeKind.Root,
             FilePath = definePath,
+            Icon = IconRoot,
         };
 
         AddSingletonGroup(root, definePath);
-        AddFlatGroup(root, definePath, "FormSchema", "*.FormSchema.xml", ".FormSchema.xml", DefineType.FormSchema);
-        AddTwoLevelGroup(root, definePath, "TableSchema", "*.TableSchema.xml", ".TableSchema.xml", DefineType.TableSchema);
-        AddFlatGroup(root, definePath, "FormLayout", "*.FormLayout.xml", ".FormLayout.xml", DefineType.FormLayout);
-        AddTwoLevelGroup(root, definePath, "Language", "*.Language.xml", ".Language.xml", DefineType.Language);
+        AddFlatGroup(root, definePath, "FormSchema", "*.FormSchema.xml", ".FormSchema.xml", DefineType.FormSchema, IconFormSchema);
+        AddTwoLevelGroup(root, definePath, "TableSchema", "*.TableSchema.xml", ".TableSchema.xml", DefineType.TableSchema, IconTableSchema);
+        AddFlatGroup(root, definePath, "FormLayout", "*.FormLayout.xml", ".FormLayout.xml", DefineType.FormLayout, IconFormLayout);
+        AddTwoLevelGroup(root, definePath, "Language", "*.Language.xml", ".Language.xml", DefineType.Language, IconLanguage);
 
         return root;
     }
 
     private static void AddSingletonGroup(DefineNode root, string definePath)
     {
-        var group = new DefineNode { Name = "系統設定", Kind = DefineNodeKind.Group };
+        var group = new DefineNode
+        {
+            Name = "System",
+            Kind = DefineNodeKind.Group,
+            Icon = IconSingletonGroup,
+        };
         foreach (var spec in s_singletons)
         {
             var path = Path.Combine(definePath, spec.FileName);
@@ -63,6 +77,7 @@ public static class DefinePathScanner
                     Kind = DefineNodeKind.DefineFile,
                     DefineType = spec.Type,
                     FilePath = path,
+                    Icon = spec.Icon,
                 });
             }
         }
@@ -71,13 +86,19 @@ public static class DefinePathScanner
     }
 
     private static void AddFlatGroup(
-        DefineNode root, string definePath, string subDir, string pattern, string suffix, DefineType type)
+        DefineNode root, string definePath, string subDir, string pattern, string suffix, DefineType type, string icon)
     {
         var dir = Path.Combine(definePath, subDir);
         if (!Directory.Exists(dir))
             return;
 
-        var group = new DefineNode { Name = subDir, Kind = DefineNodeKind.Group, DefineType = type };
+        var group = new DefineNode
+        {
+            Name = subDir,
+            Kind = DefineNodeKind.Group,
+            DefineType = type,
+            Icon = icon,
+        };
         foreach (var file in EnumerateOrdered(dir, pattern))
         {
             var key = TrimSuffix(Path.GetFileName(file), suffix);
@@ -88,6 +109,7 @@ public static class DefinePathScanner
                 DefineType = type,
                 FilePath = file,
                 KeyText = key,
+                Icon = icon,
             });
         }
         if (group.Children.Count > 0)
@@ -95,17 +117,29 @@ public static class DefinePathScanner
     }
 
     private static void AddTwoLevelGroup(
-        DefineNode root, string definePath, string subDir, string pattern, string suffix, DefineType type)
+        DefineNode root, string definePath, string subDir, string pattern, string suffix, DefineType type, string icon)
     {
         var dir = Path.Combine(definePath, subDir);
         if (!Directory.Exists(dir))
             return;
 
-        var group = new DefineNode { Name = subDir, Kind = DefineNodeKind.Group, DefineType = type };
+        var group = new DefineNode
+        {
+            Name = subDir,
+            Kind = DefineNodeKind.Group,
+            DefineType = type,
+            Icon = icon,
+        };
         foreach (var categoryDir in Directory.EnumerateDirectories(dir).OrderBy(d => d, StringComparer.OrdinalIgnoreCase))
         {
             var category = Path.GetFileName(categoryDir);
-            var categoryNode = new DefineNode { Name = category, Kind = DefineNodeKind.Group, DefineType = type };
+            var categoryNode = new DefineNode
+            {
+                Name = category,
+                Kind = DefineNodeKind.Group,
+                DefineType = type,
+                Icon = IconCategory,
+            };
             foreach (var file in EnumerateOrdered(categoryDir, pattern))
             {
                 var leaf = TrimSuffix(Path.GetFileName(file), suffix);
@@ -116,6 +150,7 @@ public static class DefinePathScanner
                     DefineType = type,
                     FilePath = file,
                     KeyText = $"{category}/{leaf}",
+                    Icon = icon,
                 });
             }
             if (categoryNode.Children.Count > 0)
