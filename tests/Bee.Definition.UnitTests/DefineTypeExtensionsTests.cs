@@ -33,5 +33,12 @@ namespace Bee.Definition.UnitTests
 
             Assert.Throws<NotSupportedException>(() => invalid.ToClrType());
         }
+
+        [Fact]
+        [DisplayName("ToClrType Language 未在映射字典中應拋出 NotSupportedException")]
+        public void ToClrType_Language_ThrowsNotSupportedException()
+        {
+            Assert.Throws<NotSupportedException>(() => DefineType.Language.ToClrType());
+        }
     }
 }
