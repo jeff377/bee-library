@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Primitives;
 
 namespace Bee.ObjectCaching.Providers
 {
@@ -9,8 +9,6 @@ namespace Bee.ObjectCaching.Providers
     public class MemoryCacheProvider : ICacheProvider, IDisposable
     {
         private readonly MemoryCache _memoryCache;
-        private readonly List<PhysicalFileProvider> _fileProviders = [];
-        private readonly object _fileProvidersLock = new();
         private bool _disposed;
 
         /// <summary>
@@ -104,24 +102,9 @@ namespace Bee.ObjectCaching.Providers
             {
                 foreach (var path in policy.ChangeMonitorFilePaths)
                 {
-                    var directory = Path.GetDirectoryName(path);
-                    var fileName = Path.GetFileName(path);
-                    if (string.IsNullOrEmpty(directory) || string.IsNullOrEmpty(fileName))
+                    if (string.IsNullOrEmpty(path))
                         continue;
-
-                    // Use polling rather than inotify/FileSystemWatcher: kernel-level
-                    // file events are unreliable inside Linux CI containers (e.g. /tmp on
-                    // GitHub Actions emits spurious events that evict entries immediately).
-                    var fileProvider = new PhysicalFileProvider(directory)
-                    {
-                        UsePollingFileWatcher = true,
-                        UseActivePolling = true
-                    };
-                    lock (_fileProvidersLock)
-                    {
-                        _fileProviders.Add(fileProvider);
-                    }
-                    options.AddExpirationToken(fileProvider.Watch(fileName));
+                    options.AddExpirationToken(new FileModificationToken(path));
                 }
             }
 
@@ -129,7 +112,7 @@ namespace Bee.ObjectCaching.Providers
         }
 
         /// <summary>
-        /// Releases the underlying <see cref="MemoryCache"/> and any file providers created for change monitoring.
+        /// Releases the underlying <see cref="MemoryCache"/>.
         /// </summary>
         public void Dispose()
         {
@@ -145,16 +128,48 @@ namespace Bee.ObjectCaching.Providers
         {
             if (_disposed) return;
             if (disposing)
-            {
                 _memoryCache.Dispose();
-                lock (_fileProvidersLock)
+            _disposed = true;
+        }
+
+        /// <summary>
+        /// Lazy file-modification change token: compares current LastWriteTimeUtc against the
+        /// snapshot taken at construction time. No background timer avoids the race condition
+        /// where an immediately-firing polling timer evicts entries before they can be read.
+        /// MemoryCache checks HasChanged on every TryGetValue call, so lazy detection is sufficient.
+        /// </summary>
+        private sealed class FileModificationToken : IChangeToken
+        {
+            private readonly string _filePath;
+            private readonly DateTime _initialWriteTime;
+            private volatile bool _hasChanged;
+
+            public FileModificationToken(string filePath)
+            {
+                _filePath = filePath;
+                _initialWriteTime = GetWriteTime(filePath);
+            }
+
+            private static DateTime GetWriteTime(string path)
+            {
+                try { return File.GetLastWriteTimeUtc(path); }
+                catch { return DateTime.MinValue; }
+            }
+
+            public bool HasChanged
+            {
+                get
                 {
-                    foreach (var fp in _fileProviders)
-                        fp.Dispose();
-                    _fileProviders.Clear();
+                    if (_hasChanged) return true;
+                    _hasChanged = GetWriteTime(_filePath) != _initialWriteTime;
+                    return _hasChanged;
                 }
             }
-            _disposed = true;
+
+            public bool ActiveChangeCallbacks => false;
+
+            public IDisposable RegisterChangeCallback(Action<object?> callback, object? state)
+                => NullChangeToken.Singleton.RegisterChangeCallback(callback, state);
         }
     }
 }
