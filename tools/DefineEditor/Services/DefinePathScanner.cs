@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using Bee.Definition;
 using Bee.DefineEditor.Models;
 

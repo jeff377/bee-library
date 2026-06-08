@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using Bee.Definition.Database;
 
 namespace Bee.DefineEditor.Services;
@@ -130,26 +127,6 @@ public static class ConnectionStringParser
             .Replace("{@UserId}", userId ?? string.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace("{@Password}", password ?? string.Empty, StringComparison.OrdinalIgnoreCase)
             .Replace("{@DbName}", dbName ?? string.Empty, StringComparison.OrdinalIgnoreCase);
-    }
-
-    /// <summary>
-    /// Returns every <c>{@Placeholder}</c> token referenced in <paramref name="connectionString"/>.
-    /// Used by the validator to check that referenced placeholders have non-empty values.
-    /// </summary>
-    public static IReadOnlyList<string> ExtractPlaceholders(string connectionString)
-    {
-        var list = new List<string>();
-        if (string.IsNullOrEmpty(connectionString)) return list;
-        ScanPlaceholder(connectionString, "{@UserId}", list);
-        ScanPlaceholder(connectionString, "{@Password}", list);
-        ScanPlaceholder(connectionString, "{@DbName}", list);
-        return list;
-    }
-
-    private static void ScanPlaceholder(string s, string token, List<string> sink)
-    {
-        if (s.Contains(token, StringComparison.OrdinalIgnoreCase))
-            sink.Add(token);
     }
 
     private static AliasTable GetAliasTable(DatabaseType type) => type switch

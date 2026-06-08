@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Bee.Definition.Settings;
 using Bee.DefineEditor.Models;
 
@@ -68,24 +65,15 @@ public static class DatabaseSettingsValidator
         string userId, string password, string? dbName)
     {
         if (string.IsNullOrEmpty(connectionString)) return;
-        foreach (var token in ConnectionStringParser.ExtractPlaceholders(connectionString))
-        {
-            switch (token)
-            {
-                case "{@UserId}" when string.IsNullOrEmpty(userId):
-                    issues.Add(new(ValidationSeverity.Warning, path,
-                        "ConnectionString contains a {@UserId} placeholder but the UserId field is empty (unless Integrated Security)."));
-                    break;
-                case "{@Password}" when string.IsNullOrEmpty(password):
-                    issues.Add(new(ValidationSeverity.Warning, path,
-                        "ConnectionString contains a {@Password} placeholder but the Password field is empty."));
-                    break;
-                case "{@DbName}" when string.IsNullOrEmpty(dbName):
-                    issues.Add(new(ValidationSeverity.Warning, path,
-                        "ConnectionString contains a {@DbName} placeholder but the DbName field is empty."));
-                    break;
-            }
-        }
+        if (connectionString.Contains("{@UserId}", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(userId))
+            issues.Add(new(ValidationSeverity.Warning, path,
+                "ConnectionString contains a {@UserId} placeholder but the UserId field is empty (unless Integrated Security)."));
+        if (connectionString.Contains("{@Password}", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(password))
+            issues.Add(new(ValidationSeverity.Warning, path,
+                "ConnectionString contains a {@Password} placeholder but the Password field is empty."));
+        if (connectionString.Contains("{@DbName}", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(dbName))
+            issues.Add(new(ValidationSeverity.Warning, path,
+                "ConnectionString contains a {@DbName} placeholder but the DbName field is empty."));
     }
 
     private static void CheckDialect(

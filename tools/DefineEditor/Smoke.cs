@@ -1,6 +1,3 @@
-using System;
-using System.IO;
-using System.Linq;
 using Bee.Base.Data;
 using Bee.Definition.Collections;
 using Bee.Definition.Database;
@@ -102,15 +99,28 @@ internal static class Smoke
 
     private static int RunSingletonSmoke()
     {
-        return RunPermissionModelsSmoke()
-            + RunDbCategorySettingsSmoke()
-            + RunProgramSettingsSmoke()
-            + RunSystemSettingsSmoke()
-            + RunDatabaseSettingsSmoke()
-            + RunConnectionStringParserSmoke()
-            + RunTableSchemaSmoke()
-            + RunFormLayoutSmoke()
-            + RunLanguageSmoke();
+        // Short-circuit on first failure: returning the failing code preserves
+        // its identity for the exit status. Summing as before would let two
+        // small fail codes (e.g. 31 + 52) overlap with a single legitimate
+        // one (e.g. 83), confusing the post-mortem.
+        var phases = new Func<int>[]
+        {
+            RunPermissionModelsSmoke,
+            RunDbCategorySettingsSmoke,
+            RunProgramSettingsSmoke,
+            RunSystemSettingsSmoke,
+            RunDatabaseSettingsSmoke,
+            RunConnectionStringParserSmoke,
+            RunTableSchemaSmoke,
+            RunFormLayoutSmoke,
+            RunLanguageSmoke,
+        };
+        foreach (var phase in phases)
+        {
+            var code = phase();
+            if (code != 0) return code;
+        }
+        return 0;
     }
 
     private static int RunPermissionModelsSmoke()
