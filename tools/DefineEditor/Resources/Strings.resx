@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Neutral (English) translations for DefineEditor UI strings.
+    English is the default; .NET ResourceManager falls back here when no
+    localized entry exists for the active culture.
+
+    Naming convention:
+      Menu_*           — top-level menu headers
+      MenuItem_*       — items inside menus or context menus
+      Window_*         — window titles / app shell labels
+      Welcome_*        — left-pane "Open Folder" welcome panel
+      Status_*         — bottom status bar messages
+      Confirm_*        — modal confirmation dialogs (title + body)
+      Action_*         — action labels reused across views
+  -->
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+
+  <data name="Window_Title" xml:space="preserve"><value>Bee.DefineEditor — DefinePath solution editor</value></data>
+
+  <data name="Menu_File" xml:space="preserve"><value>File</value></data>
+  <data name="Menu_View" xml:space="preserve"><value>View</value></data>
+  <data name="Menu_Language" xml:space="preserve"><value>Language</value></data>
+
+  <data name="MenuItem_OpenFolder" xml:space="preserve"><value>Open Folder...</value></data>
+  <data name="MenuItem_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="MenuItem_Validate" xml:space="preserve"><value>Validate</value></data>
+  <data name="MenuItem_ToggleTheme" xml:space="preserve"><value>Toggle Theme</value></data>
+  <data name="MenuItem_English" xml:space="preserve"><value>English</value></data>
+  <data name="MenuItem_ChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
+
+  <data name="Welcome_NoSolution" xml:space="preserve"><value>No solution open</value></data>
+  <data name="Welcome_OpenFolderButton" xml:space="preserve"><value>Open Folder</value></data>
+  <data name="Welcome_OpenFolderTip" xml:space="preserve"><value>Select a DefinePath solution folder</value></data>
+  <data name="Welcome_MenuAlternative" xml:space="preserve"><value>Or use File → Open Folder...</value></data>
+
+  <data name="Status_NoSolution" xml:space="preserve"><value>No solution open</value></data>
+</root>

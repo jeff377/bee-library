@@ -2,6 +2,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Bee.DefineEditor.ViewModels"
         xmlns:models="using:Bee.DefineEditor.Models"
+        xmlns:loc="using:Bee.DefineEditor.Markup"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="720"
@@ -12,7 +13,7 @@
         Icon="/Assets/avalonia-logo.ico"
         Width="1200" Height="720"
         WindowState="Maximized"
-        Title="Bee.DefineEditor — 定義檔方案維護">
+        Title="{loc:Loc Window_Title}">
 
     <Design.DataContext>
         <vm:MainWindowViewModel/>
@@ -46,7 +47,7 @@
                                ToolTip.Tip="{Binding ActiveDocumentRelativePath}"
                                IsVisible="{Binding HasActiveDocument}"/>
                 </StackPanel>
-                <TextBlock Grid.Column="0" Text="尚未開啟方案"
+                <TextBlock Grid.Column="0" Text="{loc:Loc Status_NoSolution}"
                            Classes="muted" VerticalAlignment="Center"
                            IsVisible="{Binding !IsSolutionOpened}"/>
 
@@ -78,21 +79,21 @@
                 <!-- VS Code 風 welcome：尚未開啟方案時顯示 -->
                 <Border IsVisible="{Binding !IsSolutionOpened}" Padding="20">
                     <StackPanel Spacing="14" VerticalAlignment="Center" HorizontalAlignment="Center">
-                        <TextBlock Text="尚未開啟方案" Classes="muted"
+                        <TextBlock Text="{loc:Loc Welcome_NoSolution}" Classes="muted"
                                    HorizontalAlignment="Center"/>
                         <Button Click="OnOpenSolutionClick" Classes="welcome"
                                 HorizontalAlignment="Stretch"
                                 HorizontalContentAlignment="Center"
-                                ToolTip.Tip="選擇 DefinePath 方案資料夾">
+                                ToolTip.Tip="{loc:Loc Welcome_OpenFolderTip}">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                                 <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14"/>
-                                <TextBlock Text="Open Folder" VerticalAlignment="Center"/>
+                                <TextBlock Text="{loc:Loc Welcome_OpenFolderButton}" VerticalAlignment="Center"/>
                             </StackPanel>
                         </Button>
                         <TextBlock Classes="muted" HorizontalAlignment="Center"
                                    TextWrapping="Wrap" MaxWidth="240"
                                    TextAlignment="Center"
-                                   Text="從上方「檔案 → 開啟方案...」亦可。"/>
+                                   Text="{loc:Loc Welcome_MenuAlternative}"/>
                     </StackPanel>
                 </Border>
             </Grid>

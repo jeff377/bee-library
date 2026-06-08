@@ -1,9 +1,11 @@
+using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Bee.DefineEditor.Services;
 using Bee.DefineEditor.ViewModels;
 using Bee.DefineEditor.Views;
 using CommunityToolkit.Mvvm.Input;
@@ -42,6 +44,14 @@ public partial class App : Application
         // macOS 主選單列的應用程式名（NSApplication.AppName）。
         Name = "Bee.DefineEditor";
         AvaloniaXamlLoader.Load(this);
+
+        // Load the persisted UI language (defaults to English) before any
+        // window/menu builds — XAML's {loc:Loc ...} bindings read through
+        // LocalizationService.Current immediately, so the very first paint
+        // already shows the right language.
+        var settings = UserSettings.Load();
+        LocalizationService.Current.Culture = CultureInfo.GetCultureInfo(settings.Language);
+
         // App-level NativeMenu = the macOS application menu (the bold first
         // entry on the menu bar named after the app). Items added directly
         // here fold into that menu. Set before framework init so Avalonia's
@@ -154,9 +164,32 @@ public partial class App : Application
         {
             Command = ToggleThemeCommand,
         });
+        viewMenu.Menu.Add(new NativeMenuItemSeparator());
+
+        // Language sub-menu. Each item flips LocalizationService.Culture and
+        // persists the choice; XAML bindings via {loc:Loc} pick it up live.
+        var langMenu = new NativeMenuItem("Language") { Menu = new NativeMenu() };
+        langMenu.Menu.Add(new NativeMenuItem("English")
+        {
+            Command = new RelayCommand(() => SetLanguage("en")),
+        });
+        langMenu.Menu.Add(new NativeMenuItem("繁體中文")
+        {
+            Command = new RelayCommand(() => SetLanguage("zh-TW")),
+        });
+        viewMenu.Menu.Add(langMenu);
+
         menu.Add(viewMenu);
 
         NativeMenu.SetMenu(owner, menu);
+    }
+
+    private static void SetLanguage(string cultureName)
+    {
+        LocalizationService.Current.Culture = CultureInfo.GetCultureInfo(cultureName);
+        var settings = UserSettings.Load();
+        settings.Language = cultureName;
+        settings.Save();
     }
 
     private static void ShowAbout()
