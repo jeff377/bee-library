@@ -104,4 +104,20 @@ public abstract partial class DocumentViewModelBase : ViewModelBase
             return lifetime.MainWindow;
         return null;
     }
+
+    /// <summary>
+    /// Prompts the user to confirm deletion of a tree node and returns the
+    /// answer. <paramref name="label"/> is the node's display text and goes
+    /// into the message body. In headless / smoke contexts the dialog is
+    /// skipped and the call resolves to <c>true</c>.
+    /// </summary>
+    protected static async Task<bool> ConfirmDeleteAsync(string label)
+    {
+        var owner = GetOwnerWindow();
+        if (owner is null) return true;
+        var displayLabel = string.IsNullOrEmpty(label) ? "此節點" : label;
+        var message =
+            $"確定要刪除「{displayLabel}」？\n從記憶體移除後仍需按儲存（⌘S）才會寫回檔案。";
+        return await ConfirmationDialog.ShowAsync(owner, "確認刪除", message);
+    }
 }

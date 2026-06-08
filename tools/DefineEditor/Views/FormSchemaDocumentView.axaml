@@ -199,62 +199,6 @@
 
     <DockPanel>
         <!-- 標題列 + 工具列 -->
-        <Border DockPanel.Dock="Top" Classes="titlebar" Padding="12,8">
-            <Grid ColumnDefinitions="*,Auto">
-                <StackPanel Grid.Column="0" Spacing="1">
-                    <StackPanel Orientation="Horizontal" Spacing="8">
-                        <TextBlock Classes="h1" Text="{Binding Title}"/>
-                        <Ellipse Width="8" Height="8" Fill="{DynamicResource DirtyIndicator}"
-                                 VerticalAlignment="Center"
-                                 IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
-                    </StackPanel>
-                </StackPanel>
-                <WrapPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Classes="tool" Command="{Binding AddTableCommand}" Margin="2"
-                            ToolTip.Tip="新增 FormTable（需先選取根節點）">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconTable}"/>
-                            <TextBlock Text="表格" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="tool" Command="{Binding AddFieldCommand}" Margin="2"
-                            ToolTip.Tip="新增 FormField（需先選取 FormTable）">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconAdd}"/>
-                            <TextBlock Text="欄位" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="tool" Command="{Binding AddRelationMappingCommand}" Margin="2"
-                            ToolTip.Tip="新增關聯欄位對應 FieldMapping">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconLink}"/>
-                            <TextBlock Text="關聯" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="tool" Command="{Binding AddLookupMappingCommand}" Margin="2"
-                            ToolTip.Tip="新增 Lookup 欄位對應 FieldMapping">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconLink}"/>
-                            <TextBlock Text="Lookup" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="tool" Command="{Binding AddListItemCommand}" Margin="2"
-                            ToolTip.Tip="新增下拉選項 ListItem">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconList}"/>
-                            <TextBlock Text="選項" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="tool danger" Command="{Binding DeleteCommand}" Margin="2"
-                            ToolTip.Tip="刪除目前選取的節點">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconDelete}"/>
-                            <TextBlock Text="刪除" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                </WrapPanel>
-            </Grid>
-        </Border>
 
         <!-- 狀態列 -->
         <Border DockPanel.Dock="Bottom" Classes="statusbar" Padding="12,5">
@@ -300,6 +244,57 @@
                         <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                     </Style>
                 </TreeView.Styles>
+                <!-- Right-click menu. The TreeView's DataContext is the VM, so
+                     Command bindings resolve there; IsVisible filters items by
+                     the currently selected node's kind (right-click on an item
+                     auto-selects it in Avalonia's TreeView). -->
+                <TreeView.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="新增 FormTable"
+                                  Command="{Binding AddTableCommand}"
+                                  IsVisible="{Binding SelectedKindIsSchema}">
+                            <MenuItem.Icon>
+                                <PathIcon Data="{StaticResource IconTable}" Width="14" Height="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="新增 FormField"
+                                  Command="{Binding AddFieldCommand}"
+                                  IsVisible="{Binding SelectedKindIsTable}">
+                            <MenuItem.Icon>
+                                <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="新增 Relation Mapping"
+                                  Command="{Binding AddRelationMappingCommand}"
+                                  IsVisible="{Binding SelectedKindIsRelationGroup}">
+                            <MenuItem.Icon>
+                                <PathIcon Data="{StaticResource IconLink}" Width="14" Height="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="新增 Lookup Mapping"
+                                  Command="{Binding AddLookupMappingCommand}"
+                                  IsVisible="{Binding SelectedKindIsLookupGroup}">
+                            <MenuItem.Icon>
+                                <PathIcon Data="{StaticResource IconLink}" Width="14" Height="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <MenuItem Header="新增 ListItem"
+                                  Command="{Binding AddListItemCommand}"
+                                  IsVisible="{Binding SelectedKindIsListItemsGroup}">
+                            <MenuItem.Icon>
+                                <PathIcon Data="{StaticResource IconList}" Width="14" Height="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                        <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
+                        <MenuItem Header="刪除"
+                                  Command="{Binding DeleteCommand}"
+                                  IsVisible="{Binding SelectedKindCanDelete}">
+                            <MenuItem.Icon>
+                                <PathIcon Data="{StaticResource IconDelete}" Width="14" Height="14"/>
+                            </MenuItem.Icon>
+                        </MenuItem>
+                    </ContextMenu>
+                </TreeView.ContextMenu>
             </TreeView>
 
             <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>

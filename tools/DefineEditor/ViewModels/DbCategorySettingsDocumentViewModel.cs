@@ -26,6 +26,17 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
 
     public override string TabIcon => "DefDbCategorySettings";
 
+    // Visibility flags for the tree-view context menu. Each MenuItem binds
+    // IsVisible to the flag matching the kind it applies to.
+    public bool SelectedKindIsRoot => SelectedTreeNode?.Kind == KindRoot;
+    public bool SelectedKindIsCategory => SelectedTreeNode?.Kind == KindCategory;
+
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
+    {
+        OnPropertyChanged(nameof(SelectedKindIsRoot));
+        OnPropertyChanged(nameof(SelectedKindIsCategory));
+    }
+
     private DbCategorySettingsDocumentViewModel(string filePath, DbCategorySettings root)
         : base(filePath, "DbCategorySettings", keyText: string.Empty)
     {

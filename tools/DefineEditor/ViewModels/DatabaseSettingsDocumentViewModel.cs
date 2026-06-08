@@ -31,6 +31,15 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
 
     public override string TabIcon => "DefDatabaseSettings";
 
+    public bool SelectedKindIsServersGroup => SelectedTreeNode?.Kind == KindServersGroup;
+    public bool SelectedKindIsItemsGroup => SelectedTreeNode?.Kind == KindItemsGroup;
+
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
+    {
+        OnPropertyChanged(nameof(SelectedKindIsServersGroup));
+        OnPropertyChanged(nameof(SelectedKindIsItemsGroup));
+    }
+
     public override object? SelectedEditorContext => SelectedTreeNode switch
     {
         { Kind: KindServer, Payload: DatabaseServer server } =>

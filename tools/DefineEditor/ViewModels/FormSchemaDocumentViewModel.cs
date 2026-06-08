@@ -47,6 +47,13 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SelectedEditorContext))]
+    [NotifyPropertyChangedFor(nameof(SelectedKindIsSchema))]
+    [NotifyPropertyChangedFor(nameof(SelectedKindIsTable))]
+    [NotifyPropertyChangedFor(nameof(SelectedKindIsField))]
+    [NotifyPropertyChangedFor(nameof(SelectedKindIsRelationGroup))]
+    [NotifyPropertyChangedFor(nameof(SelectedKindIsLookupGroup))]
+    [NotifyPropertyChangedFor(nameof(SelectedKindIsListItemsGroup))]
+    [NotifyPropertyChangedFor(nameof(SelectedKindCanDelete))]
     [NotifyCanExecuteChangedFor(nameof(AddTableCommand))]
     [NotifyCanExecuteChangedFor(nameof(AddFieldCommand))]
     [NotifyCanExecuteChangedFor(nameof(AddRelationMappingCommand))]
@@ -54,6 +61,22 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     [NotifyCanExecuteChangedFor(nameof(AddListItemCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
     private FormSchemaTreeNode? _selectedTreeNode;
+
+    // Visibility hints for the tree-view context menu. Each MenuItem binds
+    // IsVisible to the flag matching the kind it applies to. Kept here rather
+    // than on the node model so the VM owns "what can be done from this kind"
+    // — the node stays a passive data holder.
+    public bool SelectedKindIsSchema => SelectedTreeNode?.Kind == FormSchemaNodeKind.Schema;
+    public bool SelectedKindIsTable => SelectedTreeNode?.Kind == FormSchemaNodeKind.Table;
+    public bool SelectedKindIsField => SelectedTreeNode?.Kind == FormSchemaNodeKind.Field;
+    public bool SelectedKindIsRelationGroup => SelectedTreeNode?.Kind == FormSchemaNodeKind.RelationGroup;
+    public bool SelectedKindIsLookupGroup => SelectedTreeNode?.Kind == FormSchemaNodeKind.LookupGroup;
+    public bool SelectedKindIsListItemsGroup => SelectedTreeNode?.Kind == FormSchemaNodeKind.ListItemsGroup;
+    public bool SelectedKindCanDelete => SelectedTreeNode?.Kind is
+        FormSchemaNodeKind.Table or
+        FormSchemaNodeKind.Field or
+        FormSchemaNodeKind.Mapping or
+        FormSchemaNodeKind.ListItem;
 
     // IsDirty is inherited from DocumentViewModelBase.
 
@@ -257,10 +280,16 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Field) is not null;
 
     [RelayCommand(CanExecute = nameof(CanDelete))]
-    private void Delete()
+    private async System.Threading.Tasks.Task Delete()
     {
         var node = SelectedTreeNode;
         if (node is null) return;
+
+        if (!await ConfirmDeleteAsync(node.Header))
+        {
+            StatusText = "已取消刪除。";
+            return;
+        }
 
         switch (node.Kind)
         {

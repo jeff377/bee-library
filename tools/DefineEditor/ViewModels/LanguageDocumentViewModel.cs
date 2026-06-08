@@ -28,6 +28,17 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
 
     public override string TabIcon => "DefLanguage";
 
+    public bool SelectedKindIsItemsGroup => SelectedTreeNode?.Kind == KindItemsGroup;
+    public bool SelectedKindIsEnumsGroup => SelectedTreeNode?.Kind == KindEnumsGroup;
+    public bool SelectedKindIsEnum => SelectedTreeNode?.Kind == KindEnum;
+
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
+    {
+        OnPropertyChanged(nameof(SelectedKindIsItemsGroup));
+        OnPropertyChanged(nameof(SelectedKindIsEnumsGroup));
+        OnPropertyChanged(nameof(SelectedKindIsEnum));
+    }
+
     private LanguageDocumentViewModel(string filePath, LanguageResource root)
         : base(filePath, "Language", keyText: string.IsNullOrEmpty(root.Lang) ? root.Namespace : $"{root.Lang}/{root.Namespace}")
     {

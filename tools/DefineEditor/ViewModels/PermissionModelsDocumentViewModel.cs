@@ -27,6 +27,15 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
 
     public override string TabIcon => "DefPermissionModels";
 
+    public bool SelectedKindIsRoot => SelectedTreeNode?.Kind == KindRoot;
+    public bool SelectedKindIsModel => SelectedTreeNode?.Kind == KindModel;
+
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
+    {
+        OnPropertyChanged(nameof(SelectedKindIsRoot));
+        OnPropertyChanged(nameof(SelectedKindIsModel));
+    }
+
     private PermissionModelsDocumentViewModel(string filePath, PermissionModels root)
         : base(filePath, "PermissionModels", keyText: string.Empty)
     {

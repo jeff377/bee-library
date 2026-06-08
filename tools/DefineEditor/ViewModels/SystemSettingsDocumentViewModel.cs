@@ -39,6 +39,13 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
 
     public override string TabIcon => "DefSystemSettings";
 
+    public bool SelectedKindIsExtendedGroup => SelectedTreeNode?.Kind == KindExtendedGroup;
+
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
+    {
+        OnPropertyChanged(nameof(SelectedKindIsExtendedGroup));
+    }
+
     private SystemSettingsDocumentViewModel(string filePath, SystemSettings root)
         : base(filePath, "SystemSettings", keyText: string.Empty)
     {

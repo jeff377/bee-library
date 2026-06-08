@@ -29,6 +29,17 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
 
     public override string TabIcon => "DefTableSchema";
 
+    public bool SelectedKindIsFieldsGroup => SelectedTreeNode?.Kind == KindFieldsGroup;
+    public bool SelectedKindIsIndexesGroup => SelectedTreeNode?.Kind == KindIndexesGroup;
+    public bool SelectedKindIsIndex => SelectedTreeNode?.Kind == KindIndex;
+
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
+    {
+        OnPropertyChanged(nameof(SelectedKindIsFieldsGroup));
+        OnPropertyChanged(nameof(SelectedKindIsIndexesGroup));
+        OnPropertyChanged(nameof(SelectedKindIsIndex));
+    }
+
     private TableSchemaDocumentViewModel(string filePath, TableSchema root)
         : base(filePath, "TableSchema", keyText: root.TableName)
     {

@@ -31,8 +31,34 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SelectedEditorContext))]
+    [NotifyPropertyChangedFor(nameof(SelectedKindCanDelete))]
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
     private SettingsTreeNode? _selectedTreeNode;
+
+    partial void OnSelectedTreeNodeChanged(SettingsTreeNode? value)
+    {
+        // Generator already notifies the [NotifyPropertyChangedFor] targets above;
+        // this hook lets subclasses fire their own derived properties (the
+        // SelectedKindIsXxx flags powering the tree-view context menu, kind-
+        // specific to each settings document).
+        OnSelectedTreeNodeRefreshDerivedProperties(value);
+    }
+
+    /// <summary>
+    /// Override to raise <c>OnPropertyChanged</c> for the subclass's per-kind
+    /// derived flags (e.g. <c>SelectedKindIsCategory</c>) so the context-menu
+    /// bindings update when the right-clicked tree node changes. Base does
+    /// nothing.
+    /// </summary>
+    protected virtual void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value) { }
+
+    /// <summary>
+    /// Whether the currently selected node can be deleted — visibility hint
+    /// for the context-menu "刪除" item. Mirrors <c>CanDelete()</c> so the
+    /// menu item appears exactly when the command would execute.
+    /// </summary>
+    public bool SelectedKindCanDelete =>
+        SelectedTreeNode is not null && GetDeleteAction(SelectedTreeNode) is not null;
 
     // IsDirty is inherited from DocumentViewModelBase.
 
@@ -104,11 +130,17 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
         Array.Empty<ValidationIssue>();
 
     [RelayCommand(CanExecute = nameof(CanDelete))]
-    private void Delete()
+    private async System.Threading.Tasks.Task Delete()
     {
         var node = SelectedTreeNode;
         if (node is null) return;
         if (GetDeleteAction(node) is not { } action) return;
+
+        if (!await ConfirmDeleteAsync(node.Header))
+        {
+            StatusText = "已取消刪除。";
+            return;
+        }
 
         action();
         var parent = node.Parent;

@@ -26,6 +26,15 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
 
     public override string TabIcon => "DefProgramSettings";
 
+    public bool SelectedKindIsRoot => SelectedTreeNode?.Kind == KindRoot;
+    public bool SelectedKindIsCategory => SelectedTreeNode?.Kind == KindCategory;
+
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
+    {
+        OnPropertyChanged(nameof(SelectedKindIsRoot));
+        OnPropertyChanged(nameof(SelectedKindIsCategory));
+    }
+
     private ProgramSettingsDocumentViewModel(string filePath, ProgramSettings root)
         : base(filePath, "ProgramSettings", keyText: string.Empty)
     {

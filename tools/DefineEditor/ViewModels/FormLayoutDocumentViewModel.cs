@@ -29,6 +29,19 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
 
     public override string TabIcon => "DefFormLayout";
 
+    public bool SelectedKindIsSectionsGroup => SelectedTreeNode?.Kind == KindSectionsGroup;
+    public bool SelectedKindIsSection => SelectedTreeNode?.Kind == KindSection;
+    public bool SelectedKindIsDetailsGroup => SelectedTreeNode?.Kind == KindDetailsGroup;
+    public bool SelectedKindIsGrid => SelectedTreeNode?.Kind == KindGrid;
+
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
+    {
+        OnPropertyChanged(nameof(SelectedKindIsSectionsGroup));
+        OnPropertyChanged(nameof(SelectedKindIsSection));
+        OnPropertyChanged(nameof(SelectedKindIsDetailsGroup));
+        OnPropertyChanged(nameof(SelectedKindIsGrid));
+    }
+
     private FormLayoutDocumentViewModel(string filePath, FormLayout root)
         : base(filePath, "FormLayout", keyText: root.LayoutId)
     {
