@@ -27,7 +27,7 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="DisplayName"/><TextBox Text="{Binding DisplayName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="DatabaseType"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.DatabaseTypes}"
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.DatabaseTypes}"
                               SelectedItem="{Binding DatabaseType, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="UserId"/><TextBox Text="{Binding UserId, Mode=TwoWay}"/></DockPanel>
@@ -84,7 +84,7 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="DisplayName"/><TextBox Text="{Binding DisplayName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="DatabaseType"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.DatabaseTypes}"
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.DatabaseTypes}"
                               SelectedItem="{Binding DatabaseType, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row">

@@ -108,8 +108,6 @@ public sealed partial class DatabaseServerEditor : ObservableObject
 
     public bool HasParseResult => ParseResult is not null;
 
-    public string PreviewComposed => Compose(ConnectionString, MaskPassword: true);
-
     [RelayCommand]
     private void Parse()
     {
@@ -134,11 +132,5 @@ public sealed partial class DatabaseServerEditor : ObservableObject
     {
         PasteInput = string.Empty;
         ParseResult = null;
-    }
-
-    private string Compose(string template, bool MaskPassword)
-    {
-        var pwd = MaskPassword && !string.IsNullOrEmpty(Password) ? "******" : Password;
-        return ConnectionStringParser.Compose(template, UserId, pwd, null);
     }
 }

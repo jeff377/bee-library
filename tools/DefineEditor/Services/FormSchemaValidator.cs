@@ -96,7 +96,7 @@ public static class FormSchemaValidator
 
         if (hasProgId && !progIdSet.Contains(field.RelationProgId))
             issues.Add(new(ValidationSeverity.Warning, $"{fieldPath}.Relation",
-                $"RelationProgId ' was not found in the current solution."));
+                $"RelationProgId '{field.RelationProgId}' was not found in the current solution."));
 
         if (!hasMappings) return;
         var localFieldNames = (owningTable.Fields ?? Enumerable.Empty<FormField>())
@@ -115,7 +115,7 @@ public static class FormSchemaValidator
             {
                 if (!localFieldNames.Contains(mapping.DestinationField))
                     issues.Add(new(ValidationSeverity.Error, path,
-                        $"DestinationField ' does not exist on '{owningTable.TableName}'."));
+                        $"DestinationField '{mapping.DestinationField}' does not exist on '{owningTable.TableName}'."));
                 if (!seenDest.Add(mapping.DestinationField))
                     issues.Add(new(ValidationSeverity.Error, path,
                         $"DestinationField '{mapping.DestinationField}' is a duplicate within the same RelationFieldMappings group."));
@@ -139,7 +139,7 @@ public static class FormSchemaValidator
 
         if (hasProgId && !progIdSet.Contains(field.LookupProgId))
             issues.Add(new(ValidationSeverity.Warning, $"{fieldPath}.Lookup",
-                $"LookupProgId ' was not found in the current solution."));
+                $"LookupProgId '{field.LookupProgId}' was not found in the current solution."));
 
         if (!hasMappings) return;
         var localFieldNames = (owningTable.Fields ?? Enumerable.Empty<FormField>())
@@ -155,7 +155,7 @@ public static class FormSchemaValidator
                 issues.Add(new(ValidationSeverity.Error, path, "DestinationField cannot be empty."));
             else if (!localFieldNames.Contains(mapping.DestinationField))
                 issues.Add(new(ValidationSeverity.Error, path,
-                    $"DestinationField ' does not exist on '{owningTable.TableName}'."));
+                    $"DestinationField '{mapping.DestinationField}' does not exist on '{owningTable.TableName}'."));
         }
     }
 

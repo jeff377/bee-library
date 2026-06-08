@@ -3,7 +3,6 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml;
-using Avalonia.Reactive;
 using Bee.DefineEditor.Services;
 
 namespace Bee.DefineEditor.Markup;

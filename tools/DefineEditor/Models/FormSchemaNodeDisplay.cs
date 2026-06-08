@@ -69,6 +69,6 @@ internal static class FormSchemaNodeDisplay
     private static (string, string) ListItemsGroup(FormField f) => (
         $"ListItems ({f.ListItems?.Count ?? 0})",
         string.IsNullOrEmpty(f.LangEnumName)
-            ? "（靜態 ListItems）"
-            : $"LangEnumName：{f.LangEnumName}（覆蓋靜態項目）");
+            ? "(Static ListItems)"
+            : $"LangEnumName：{f.LangEnumName} (overrides static items)");
 }

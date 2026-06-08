@@ -60,10 +60,8 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
     public bool SelectedKindCanDelete =>
         SelectedTreeNode is not null && GetDeleteAction(SelectedTreeNode) is not null;
 
-    // IsDirty is inherited from DocumentViewModelBase.
-
-    [ObservableProperty]
-    private string _statusText = L("Status_SingletonHint");
+    // IsDirty / StatusText / culture-change refresh are inherited from
+    // DocumentViewModelBase.
 
     /// <summary>
     /// Right-pane content. Defaults to the selected node's payload; subclasses
@@ -81,26 +79,10 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
     public override IRelayCommand FileSaveCommand => SaveCommand;
     public override IRelayCommand FileValidateCommand => ValidateCommand;
 
-    private string _lastDefaultHint = L("Status_SingletonHint");
-
     protected SingletonDocumentViewModelBase(string filePath, string titlePrefix, string keyText)
     {
         FilePath = filePath;
         Title = string.IsNullOrEmpty(keyText) ? titlePrefix : $"{titlePrefix} — {keyText}";
-
-        // StatusText is a stored snapshot (not a live binding), so a language
-        // switch won't rewrite it automatically. Re-apply the default hint
-        // when the culture changes — but only if the user hasn't replaced it
-        // with an action message (Save / Validate / Add ...), so we don't
-        // wipe their feedback. _lastDefaultHint tracks the most recent hint
-        // we wrote so we can recognise it.
-        Services.LocalizationService.Current.CultureChanged += (_, _) =>
-        {
-            var newHint = L("Status_SingletonHint");
-            if (StatusText == _lastDefaultHint)
-                StatusText = newHint;
-            _lastDefaultHint = newHint;
-        };
     }
 
     [RelayCommand]
@@ -192,15 +174,4 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
         return null;
     }
 
-    /// <summary>Picks a candidate key not already present in <paramref name="existing"/>.</summary>
-    protected static string UniqueKey(IEnumerable<string> existing, string baseName)
-    {
-        var set = new HashSet<string>(existing, StringComparer.OrdinalIgnoreCase);
-        if (!set.Contains(baseName)) return baseName;
-        for (int i = 2; ; i++)
-        {
-            var candidate = $"{baseName}{i}";
-            if (!set.Contains(candidate)) return candidate;
-        }
-    }
 }

@@ -31,12 +31,12 @@
                 <TextBlock Classes="h2" Text="{loc:Loc Permission_RuleProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Action"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.PermissionActions}"
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.PermissionActions}"
                               SelectedItem="{Binding Action, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Scope"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.ScopeStrategies}"
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.ScopeStrategies}"
                               SelectedItem="{Binding Scope, Mode=TwoWay}"/>
                 </DockPanel>
                 <TextBlock Classes="muted" Margin="0,10,0,0" TextWrapping="Wrap"

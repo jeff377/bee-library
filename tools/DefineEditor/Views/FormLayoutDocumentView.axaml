@@ -38,7 +38,7 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="ControlType"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.ControlTypes}" SelectedItem="{Binding ControlType, Mode=TwoWay}"/>
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.ControlTypes}" SelectedItem="{Binding ControlType, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row short"><TextBlock Classes="label" Text="RowSpan"/><TextBox Text="{Binding RowSpan, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short"><TextBlock Classes="label" Text="ColumnSpan"/><TextBox Text="{Binding ColumnSpan, Mode=TwoWay}"/></DockPanel>
@@ -56,7 +56,7 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="AllowActions"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.GridAllowActions}" SelectedItem="{Binding AllowActions, Mode=TwoWay}"/>
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.GridAllowActions}" SelectedItem="{Binding AllowActions, Mode=TwoWay}"/>
                 </DockPanel>
             </StackPanel>
         </DataTemplate>
@@ -68,7 +68,7 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="ControlType"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.ControlTypes}" SelectedItem="{Binding ControlType, Mode=TwoWay}"/>
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.ControlTypes}" SelectedItem="{Binding ControlType, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row short"><TextBlock Classes="label" Text="Width"/><TextBox Text="{Binding Width, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Visible"/><CheckBox IsChecked="{Binding Visible, Mode=TwoWay}"/></DockPanel>

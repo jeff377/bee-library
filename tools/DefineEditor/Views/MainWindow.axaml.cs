@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
+using Bee.DefineEditor.Services;
 using Bee.DefineEditor.ViewModels;
 
 namespace Bee.DefineEditor.Views;
@@ -15,7 +16,7 @@ public partial class MainWindow : Window
     /// <summary>
     /// Pops the OS folder-picker and opens the chosen folder as a DefinePath
     /// solution. Public so the macOS NativeMenu (set up in
-    /// <see cref="App.ConfigureNativeAppMenu"/>) can invoke it through a
+    /// <see cref="App.ConfigureWindowMenu"/>) can invoke it through a
     /// command — the picker needs this window's <see cref="StorageProvider"/>,
     /// which only Window-derived types expose.
     /// </summary>
@@ -23,7 +24,7 @@ public partial class MainWindow : Window
     {
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
-            Title = "選擇 DefinePath 方案資料夾",
+            Title = LocalizationService.Current["Welcome_OpenFolderTip"],
             AllowMultiple = false,
         });
 

@@ -137,6 +137,7 @@ public partial class MainWindowViewModel : ViewModelBase
         if (idx < 0) return;
 
         OpenDocuments.RemoveAt(idx);
+        doc.Dispose();
 
         if (ActiveDocument == doc)
         {
@@ -144,6 +145,17 @@ public partial class MainWindowViewModel : ViewModelBase
                 ? null
                 : OpenDocuments[Math.Min(idx, OpenDocuments.Count - 1)];
         }
+    }
+
+    /// <summary>
+    /// Drops every open document tab and disposes the view-models so their
+    /// <see cref="LocalizationService.CultureChanged"/> subscriptions release.
+    /// Used by <see cref="OpenSolution"/> when switching solutions.
+    /// </summary>
+    private void DisposeAndClearOpenDocuments()
+    {
+        foreach (var doc in OpenDocuments) doc.Dispose();
+        OpenDocuments.Clear();
     }
 
     /// <summary>
@@ -157,7 +169,7 @@ public partial class MainWindowViewModel : ViewModelBase
             var root = DefinePathScanner.Scan(definePath);
             Nodes = new ObservableCollection<DefineNode> { root };
             Solution = SolutionContext.FromTree(root);
-            OpenDocuments.Clear();
+            DisposeAndClearOpenDocuments();
             ActiveDocument = null;
             SelectedNode = null;
             SolutionPath = definePath;
@@ -167,7 +179,7 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             Nodes = new ObservableCollection<DefineNode>();
             Solution = SolutionContext.Empty;
-            OpenDocuments.Clear();
+            DisposeAndClearOpenDocuments();
             ActiveDocument = null;
             SelectedNode = null;
             SolutionPath = string.Empty;

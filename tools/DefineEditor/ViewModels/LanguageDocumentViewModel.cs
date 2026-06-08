@@ -59,14 +59,14 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
 
     private static SettingsTreeNode BuildRootNode(LanguageResource root)
     {
-        var rootNode = MakeNode("DefLanguage", KindRoot, root, RefreshRoot, isExpanded: true);
+        var rootNode = SettingsTreeNode.Create("DefLanguage", KindRoot, root, RefreshRoot, isExpanded: true);
 
-        var itemsGroup = MakeNode("IconText", KindItemsGroup, root, RefreshItemsGroup, isExpanded: true);
+        var itemsGroup = SettingsTreeNode.Create("IconText", KindItemsGroup, root, RefreshItemsGroup, isExpanded: true);
         foreach (var item in root.Items)
             itemsGroup.AddChild(BuildItemNode(item));
         rootNode.AddChild(itemsGroup);
 
-        var enumsGroup = MakeNode("IconList", KindEnumsGroup, root, RefreshEnumsGroup, isExpanded: true);
+        var enumsGroup = SettingsTreeNode.Create("IconList", KindEnumsGroup, root, RefreshEnumsGroup, isExpanded: true);
         foreach (var enumDef in root.Enums)
             enumsGroup.AddChild(BuildEnumNode(enumDef));
         rootNode.AddChild(enumsGroup);
@@ -75,18 +75,18 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
     }
 
     private static SettingsTreeNode BuildItemNode(LanguageItem item) =>
-        MakeNode("IconDot", KindItem, item, RefreshItem, isExpanded: false);
+        SettingsTreeNode.Create("IconDot", KindItem, item, RefreshItem, isExpanded: false);
 
     private static SettingsTreeNode BuildEnumNode(LanguageEnum enumDef)
     {
-        var node = MakeNode("IconList", KindEnum, enumDef, RefreshEnum, isExpanded: false);
+        var node = SettingsTreeNode.Create("IconList", KindEnum, enumDef, RefreshEnum, isExpanded: false);
         foreach (var entry in enumDef.Entries)
             node.AddChild(BuildEnumEntryNode(entry));
         return node;
     }
 
     private static SettingsTreeNode BuildEnumEntryNode(LanguageEnumEntry entry) =>
-        MakeNode("IconDot", KindEnumEntry, entry, RefreshEnumEntry, isExpanded: false);
+        SettingsTreeNode.Create("IconDot", KindEnumEntry, entry, RefreshEnumEntry, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {
@@ -131,19 +131,6 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
         var e = (LanguageEnumEntry)node.Payload!;
         node.Header = $"{e.Code}  =  {e.Text}";
         node.Detail = $"Code：{e.Code}\nText：{e.Text}";
-    }
-
-    private static SettingsTreeNode MakeNode(
-        string icon, string kind, object payload,
-        Action<SettingsTreeNode> refresher, bool isExpanded)
-    {
-        var node = new SettingsTreeNode
-        {
-            Icon = icon, Kind = kind, Payload = payload,
-            IsExpanded = isExpanded, Refresher = refresher,
-        };
-        node.RefreshDisplay();
-        return node;
     }
 
     [RelayCommand(CanExecute = nameof(CanAddItem))]

@@ -27,7 +27,7 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="DbType"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.FieldDbTypes}" SelectedItem="{Binding DbType, Mode=TwoWay}"/>
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.FieldDbTypes}" SelectedItem="{Binding DbType, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row short"><TextBlock Classes="label" Text="Length (String)"/><TextBox Text="{Binding Length, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short"><TextBlock Classes="label" Text="Precision (Decimal)"/><TextBox Text="{Binding Precision, Mode=TwoWay}"/></DockPanel>
@@ -56,7 +56,7 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="FieldName"/><TextBox Text="{Binding FieldName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="SortDirection"/>
-                    <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.SortDirections}" SelectedItem="{Binding SortDirection, Mode=TwoWay}"/>
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.SortDirections}" SelectedItem="{Binding SortDirection, Mode=TwoWay}"/>
                 </DockPanel>
             </StackPanel>
         </DataTemplate>

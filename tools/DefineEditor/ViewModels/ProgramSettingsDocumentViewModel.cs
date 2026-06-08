@@ -55,7 +55,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
 
     private static SettingsTreeNode BuildRootNode(ProgramSettings root)
     {
-        var node = MakeNode("DefProgramSettings", KindRoot, root, RefreshRoot, isExpanded: true);
+        var node = SettingsTreeNode.Create("DefProgramSettings", KindRoot, root, RefreshRoot, isExpanded: true);
         if (root.Categories is { } categories)
             foreach (var category in categories)
                 node.AddChild(BuildCategoryNode(category));
@@ -64,7 +64,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
 
     private static SettingsTreeNode BuildCategoryNode(ProgramCategory category)
     {
-        var node = MakeNode("DefCategory", KindCategory, category, RefreshCategory, isExpanded: false);
+        var node = SettingsTreeNode.Create("DefCategory", KindCategory, category, RefreshCategory, isExpanded: false);
         if (category.Items is { } items)
             foreach (var program in items)
                 node.AddChild(BuildProgramNode(program));
@@ -72,7 +72,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
     }
 
     private static SettingsTreeNode BuildProgramNode(ProgramItem program) =>
-        MakeNode("IconBox", KindProgram, program, RefreshProgram, isExpanded: false);
+        SettingsTreeNode.Create("IconBox", KindProgram, program, RefreshProgram, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {
@@ -99,22 +99,6 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
             $"ProgId：{p.ProgId}",
             $"DisplayName：{p.DisplayName}",
             $"BusinessObject：{p.BusinessObject}");
-    }
-
-    private static SettingsTreeNode MakeNode(
-        string icon, string kind, object payload,
-        Action<SettingsTreeNode> refresher, bool isExpanded)
-    {
-        var node = new SettingsTreeNode
-        {
-            Icon = icon,
-            Kind = kind,
-            Payload = payload,
-            IsExpanded = isExpanded,
-            Refresher = refresher,
-        };
-        node.RefreshDisplay();
-        return node;
     }
 
     [RelayCommand(CanExecute = nameof(CanAddCategory))]

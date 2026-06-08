@@ -46,7 +46,7 @@ public static class DatabaseSettingsValidator
 
             if (!string.IsNullOrWhiteSpace(item.ServerId) && !serverIds.Contains(item.ServerId))
                 issues.Add(new(ValidationSeverity.Error, path,
-                    $"Item.ServerId ' was not found in Servers."));
+                    $"Item.ServerId '{item.ServerId}' was not found in Servers."));
 
             if (string.IsNullOrWhiteSpace(item.ServerId)
                 && string.IsNullOrWhiteSpace(item.ConnectionString))

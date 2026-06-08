@@ -66,25 +66,25 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
 
     private static SettingsTreeNode BuildRootNode(SystemSettings root)
     {
-        var node = MakeNode("DefSystemSettings", KindRoot, root, RefreshRoot, isExpanded: true);
+        var node = SettingsTreeNode.Create("DefSystemSettings", KindRoot, root, RefreshRoot, isExpanded: true);
 
-        node.AddChild(MakeNode("IconSettings", KindCommon, root.CommonConfiguration, RefreshCommon, isExpanded: false));
+        node.AddChild(SettingsTreeNode.Create("IconSettings", KindCommon, root.CommonConfiguration, RefreshCommon, isExpanded: false));
 
-        var backendNode = MakeNode("IconWrench", KindBackend, root.BackendConfiguration, RefreshBackend, isExpanded: false);
-        backendNode.AddChild(MakeNode("IconText", KindLogOptions, root.BackendConfiguration.LogOptions, RefreshLogOptions, isExpanded: false));
-        backendNode.AddChild(MakeNode("IconLock", KindSecurityKeys, root.BackendConfiguration.SecurityKeySettings, RefreshSecurityKeys, isExpanded: false));
-        backendNode.AddChild(MakeNode("IconLayers", KindBackendComponents, root.BackendConfiguration.Components, RefreshBackendComponents, isExpanded: false));
-        backendNode.AddChild(MakeNode("IconBell", KindCacheNotify, root.BackendConfiguration.CacheNotifyOptions, RefreshCacheNotify, isExpanded: false));
+        var backendNode = SettingsTreeNode.Create("IconWrench", KindBackend, root.BackendConfiguration, RefreshBackend, isExpanded: false);
+        backendNode.AddChild(SettingsTreeNode.Create("IconText", KindLogOptions, root.BackendConfiguration.LogOptions, RefreshLogOptions, isExpanded: false));
+        backendNode.AddChild(SettingsTreeNode.Create("IconLock", KindSecurityKeys, root.BackendConfiguration.SecurityKeySettings, RefreshSecurityKeys, isExpanded: false));
+        backendNode.AddChild(SettingsTreeNode.Create("IconLayers", KindBackendComponents, root.BackendConfiguration.Components, RefreshBackendComponents, isExpanded: false));
+        backendNode.AddChild(SettingsTreeNode.Create("IconBell", KindCacheNotify, root.BackendConfiguration.CacheNotifyOptions, RefreshCacheNotify, isExpanded: false));
         node.AddChild(backendNode);
 
-        node.AddChild(MakeNode("IconMonitor", KindFrontend, root.FrontendConfiguration, RefreshFrontend, isExpanded: false));
-        node.AddChild(MakeNode("IconGlobe", KindWebsite, root.WebsiteConfiguration, RefreshWebsite, isExpanded: false));
-        node.AddChild(MakeNode("IconClock", KindBackgroundService, root.BackgroundServiceConfiguration, RefreshBackgroundService, isExpanded: false));
+        node.AddChild(SettingsTreeNode.Create("IconMonitor", KindFrontend, root.FrontendConfiguration, RefreshFrontend, isExpanded: false));
+        node.AddChild(SettingsTreeNode.Create("IconGlobe", KindWebsite, root.WebsiteConfiguration, RefreshWebsite, isExpanded: false));
+        node.AddChild(SettingsTreeNode.Create("IconClock", KindBackgroundService, root.BackgroundServiceConfiguration, RefreshBackgroundService, isExpanded: false));
 
-        var extGroup = MakeNode("IconList", KindExtendedGroup, root, RefreshExtendedGroup, isExpanded: false);
+        var extGroup = SettingsTreeNode.Create("IconList", KindExtendedGroup, root, RefreshExtendedGroup, isExpanded: false);
         if (root.ExtendedProperties is { } props)
             foreach (var p in props)
-                extGroup.AddChild(MakeNode("IconDot", KindProperty, p, RefreshProperty, isExpanded: false));
+                extGroup.AddChild(SettingsTreeNode.Create("IconDot", KindProperty, p, RefreshProperty, isExpanded: false));
         node.AddChild(extGroup);
 
         return node;
@@ -132,10 +132,8 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
 
     private static void RefreshBackendComponents(SettingsTreeNode node)
     {
-        var c = (BackendComponents)node.Payload!;
         node.Header = "BackendComponents";
         node.Detail = $"12 component types; defaults come from BackendDefaultTypes (CacheProvider etc.)";
-        _ = c;
     }
 
     private static void RefreshCacheNotify(SettingsTreeNode node)
@@ -186,22 +184,6 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
     private static string Mask(string s) =>
         string.IsNullOrEmpty(s) ? "(empty)" : (s.Length > 30 ? s[..30] + "…" : s);
 
-    private static SettingsTreeNode MakeNode(
-        string icon, string kind, object payload,
-        Action<SettingsTreeNode> refresher, bool isExpanded)
-    {
-        var node = new SettingsTreeNode
-        {
-            Icon = icon,
-            Kind = kind,
-            Payload = payload,
-            IsExpanded = isExpanded,
-            Refresher = refresher,
-        };
-        node.RefreshDisplay();
-        return node;
-    }
-
     [RelayCommand(CanExecute = nameof(CanAddProperty))]
     private void AddProperty()
     {
@@ -214,7 +196,7 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
             "NewProperty");
         var prop = new Property { Name = name, Value = string.Empty };
         Root.ExtendedProperties!.Add(prop);
-        var node = MakeNode("IconDot", KindProperty, prop, RefreshProperty, isExpanded: false);
+        var node = SettingsTreeNode.Create("IconDot", KindProperty, prop, RefreshProperty, isExpanded: false);
         groupNode.AddChild(node);
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;

@@ -35,8 +35,7 @@ public static class ConnectionStringParser
     private sealed record AliasTable(
         IReadOnlySet<string> UserIdKeys,
         IReadOnlySet<string> PasswordKeys,
-        IReadOnlySet<string> DbNameKeys,
-        IReadOnlySet<string> KnownOtherKeys);
+        IReadOnlySet<string> DbNameKeys);
 
     public static ConnectionStringParseResult Parse(string raw, DatabaseType databaseType)
     {
@@ -158,26 +157,20 @@ public static class ConnectionStringParser
         DatabaseType.SQLServer => new AliasTable(
             UserIdKeys: Set("user id", "uid"),
             PasswordKeys: Set("password", "pwd"),
-            DbNameKeys: Set("initial catalog", "database"),
-            KnownOtherKeys: Set("data source", "server", "address", "integrated security", "trusted_connection",
-                "encrypt", "trustservercertificate", "application name", "connection timeout", "multipleactiveresultsets")),
+            DbNameKeys: Set("initial catalog", "database")),
         DatabaseType.PostgreSQL => new AliasTable(
             UserIdKeys: Set("username", "user id"),
             PasswordKeys: Set("password"),
-            DbNameKeys: Set("database"),
-            KnownOtherKeys: Set("host", "server", "port", "ssl mode", "sslmode", "application name",
-                "connection idle lifetime", "search path")),
+            DbNameKeys: Set("database")),
         DatabaseType.MySQL => new AliasTable(
             UserIdKeys: Set("user id", "uid", "username"),
             PasswordKeys: Set("password", "pwd"),
-            DbNameKeys: Set("database"),
-            KnownOtherKeys: Set("server", "host", "port", "ssl mode", "sslmode", "charset", "default command timeout")),
+            DbNameKeys: Set("database")),
         DatabaseType.Oracle => new AliasTable(
             UserIdKeys: Set("user id"),
             PasswordKeys: Set("password"),
-            DbNameKeys: Set(), // Oracle EZConnect embeds service in Data Source
-            KnownOtherKeys: Set("data source", "connection timeout", "pooling")),
-        _ => new AliasTable(Set(), Set(), Set(), Set()),
+            DbNameKeys: Set()), // Oracle EZConnect embeds service in Data Source
+        _ => new AliasTable(Set(), Set(), Set()),
     };
 
     /// <summary>

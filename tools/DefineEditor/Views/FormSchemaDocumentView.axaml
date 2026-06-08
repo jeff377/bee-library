@@ -73,17 +73,17 @@
                 </DockPanel>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="DbType"/>
-                    <ComboBox ItemsSource="{x:Static vm:FormSchemaEditorOptions.DbTypes}"
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.FieldDbTypes}"
                               SelectedItem="{Binding DbType, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Type"/>
-                    <ComboBox ItemsSource="{x:Static vm:FormSchemaEditorOptions.FieldTypes}"
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.FieldTypes}"
                               SelectedItem="{Binding Type, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ControlType"/>
-                    <ComboBox ItemsSource="{x:Static vm:FormSchemaEditorOptions.ControlTypes}"
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.ControlTypes}"
                               SelectedItem="{Binding ControlType, Mode=TwoWay}"/>
                 </DockPanel>
                 <DockPanel Classes="row short">
@@ -112,7 +112,7 @@
                 </DockPanel>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ScopeRole"/>
-                    <ComboBox ItemsSource="{x:Static vm:FormSchemaEditorOptions.ScopeRoles}"
+                    <ComboBox ItemsSource="{x:Static vm:EditorOptions.ScopeRoles}"
                               SelectedItem="{Binding ScopeRole, Mode=TwoWay}"/>
                 </DockPanel>
                 <Separator Margin="0,10,0,4"/>

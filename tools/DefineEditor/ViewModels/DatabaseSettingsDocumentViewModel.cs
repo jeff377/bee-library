@@ -69,15 +69,15 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
 
     private static SettingsTreeNode BuildRootNode(DatabaseSettings root)
     {
-        var rootNode = MakeNode("DefDatabaseSettings", KindRoot, root, RefreshRoot, isExpanded: true);
+        var rootNode = SettingsTreeNode.Create("DefDatabaseSettings", KindRoot, root, RefreshRoot, isExpanded: true);
 
-        var serversGroup = MakeNode("IconServer", KindServersGroup, root, RefreshServersGroup, isExpanded: true);
+        var serversGroup = SettingsTreeNode.Create("IconServer", KindServersGroup, root, RefreshServersGroup, isExpanded: true);
         if (root.Servers is { } servers)
             foreach (var server in servers)
                 serversGroup.AddChild(BuildServerNode(server));
         rootNode.AddChild(serversGroup);
 
-        var itemsGroup = MakeNode("IconDatabase", KindItemsGroup, root, RefreshItemsGroup, isExpanded: true);
+        var itemsGroup = SettingsTreeNode.Create("IconDatabase", KindItemsGroup, root, RefreshItemsGroup, isExpanded: true);
         if (root.Items is { } items)
             foreach (var item in items)
                 itemsGroup.AddChild(BuildItemNode(item));
@@ -87,10 +87,10 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
     }
 
     private static SettingsTreeNode BuildServerNode(DatabaseServer server) =>
-        MakeNode("IconServer", KindServer, server, RefreshServer, isExpanded: false);
+        SettingsTreeNode.Create("IconServer", KindServer, server, RefreshServer, isExpanded: false);
 
     private static SettingsTreeNode BuildItemNode(DatabaseItem item) =>
-        MakeNode("IconDatabase", KindItem, item, RefreshItem, isExpanded: false);
+        SettingsTreeNode.Create("IconDatabase", KindItem, item, RefreshItem, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {
@@ -139,22 +139,6 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
             $"UserId：{i.UserId}",
             $"Password：{(string.IsNullOrEmpty(i.Password) ? "(empty)" : "******")}",
             $"ConnectionString：{i.ConnectionString}");
-    }
-
-    private static SettingsTreeNode MakeNode(
-        string icon, string kind, object payload,
-        Action<SettingsTreeNode> refresher, bool isExpanded)
-    {
-        var node = new SettingsTreeNode
-        {
-            Icon = icon,
-            Kind = kind,
-            Payload = payload,
-            IsExpanded = isExpanded,
-            Refresher = refresher,
-        };
-        node.RefreshDisplay();
-        return node;
     }
 
     [RelayCommand(CanExecute = nameof(CanAddServer))]

@@ -11,8 +11,6 @@ public sealed class UnsupportedDocumentViewModel : DocumentViewModelBase
 
     public override string DocumentKey { get; }
 
-    public override string TabIcon => "📄";
-
     public string Summary { get; }
 
     public UnsupportedDocumentViewModel(string title, string documentKey, string summary)

@@ -58,4 +58,26 @@ public sealed partial class SettingsTreeNode : ObservableObject
         Parent?.Children.Remove(this);
         Parent = null;
     }
+
+    /// <summary>
+    /// Convenience factory used by the singleton-settings editors. Builds a node
+    /// with the supplied payload + <paramref name="refresher"/>, then immediately
+    /// calls <see cref="RefreshDisplay"/> so <c>Header</c> / <c>Detail</c> are
+    /// populated before the caller hands it to the tree.
+    /// </summary>
+    public static SettingsTreeNode Create(
+        string icon, string kind, object payload,
+        Action<SettingsTreeNode> refresher, bool isExpanded)
+    {
+        var node = new SettingsTreeNode
+        {
+            Icon = icon,
+            Kind = kind,
+            Payload = payload,
+            IsExpanded = isExpanded,
+            Refresher = refresher,
+        };
+        node.RefreshDisplay();
+        return node;
+    }
 }

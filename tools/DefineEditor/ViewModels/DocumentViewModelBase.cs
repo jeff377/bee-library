@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
@@ -20,8 +21,32 @@ namespace Bee.DefineEditor.ViewModels;
 /// <see cref="Avalonia.Controls.TabControl"/> in MainWindow with views resolved via
 /// <see cref="ViewLocator"/>.
 /// </summary>
-public abstract partial class DocumentViewModelBase : ViewModelBase
+public abstract partial class DocumentViewModelBase : ViewModelBase, IDisposable
 {
+    /// <summary>
+    /// Unsubscribe callbacks queued by <see cref="RegisterCultureHandler"/>.
+    /// Flushed by <see cref="Dispose"/> so handlers held by the
+    /// <see cref="LocalizationService"/> singleton don't pin the closed
+    /// document forever.
+    /// </summary>
+    private readonly List<Action> _disposeActions = new();
+
+    protected DocumentViewModelBase()
+    {
+        // StatusText is a stored snapshot (not a live binding), so a language
+        // switch doesn't rewrite it automatically. Re-apply the default hint
+        // when the culture changes — but only if the user hasn't replaced it
+        // with an action message (Save / Validate / Add ...), so we don't
+        // wipe their feedback.
+        RegisterCultureHandler((_, _) =>
+        {
+            var newHint = L("Status_SingletonHint");
+            if (StatusText == _lastDefaultHint)
+                StatusText = newHint;
+            _lastDefaultHint = newHint;
+        });
+    }
+
     /// <summary>Header shown in the tab and inside the document.</summary>
     public abstract string Title { get; }
 
@@ -39,6 +64,23 @@ public abstract partial class DocumentViewModelBase : ViewModelBase
     /// </summary>
     [ObservableProperty]
     private bool _isDirty;
+
+    /// <summary>
+    /// Bottom-status hint shown for this document tab. Concrete editors
+    /// overwrite it with action feedback ("Saved", "Validation passed", ...);
+    /// the base ctor seeds it with the singleton-edit hint and refreshes it
+    /// across culture switches via <see cref="RegisterCultureHandler"/> below.
+    /// </summary>
+    [ObservableProperty]
+    private string _statusText = L("Status_SingletonHint");
+
+    /// <summary>
+    /// Most recent default hint value written to <see cref="StatusText"/>.
+    /// Used by the culture-change handler to detect whether the user has
+    /// replaced the hint with an action message; if so, we leave their
+    /// feedback alone instead of stamping the new-locale hint on top.
+    /// </summary>
+    private string _lastDefaultHint = L("Status_SingletonHint");
 
     /// <summary>
     /// Resource key of the geometry shown left of the title in the tab. Looked
@@ -132,5 +174,25 @@ public abstract partial class DocumentViewModelBase : ViewModelBase
             L("Confirm_DeleteMessage", displayLabel),
             confirmLabel: L("Action_Delete"),
             cancelLabel: L("Action_Cancel"));
+    }
+
+    /// <summary>
+    /// Subscribes <paramref name="handler"/> to <see cref="LocalizationService.CultureChanged"/>
+    /// and queues a matching unsubscribe to run on <see cref="Dispose"/>.
+    /// Use this in place of touching the event directly — the service is a
+    /// process-wide singleton, so a leaked handler keeps the entire document
+    /// view-model rooted past tab close.
+    /// </summary>
+    protected void RegisterCultureHandler(EventHandler<CultureInfo> handler)
+    {
+        LocalizationService.Current.CultureChanged += handler;
+        _disposeActions.Add(() => LocalizationService.Current.CultureChanged -= handler);
+    }
+
+    public virtual void Dispose()
+    {
+        foreach (var action in _disposeActions) action();
+        _disposeActions.Clear();
+        GC.SuppressFinalize(this);
     }
 }

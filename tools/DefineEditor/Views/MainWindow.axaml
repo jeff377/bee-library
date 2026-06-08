@@ -20,7 +20,7 @@
     </Design.DataContext>
 
     <DockPanel>
-        <!-- 選單放在 macOS 系統頂端的 menu bar（由 App.ConfigureNativeAppMenu 設定），
+        <!-- 選單放在 macOS 系統頂端的 menu bar（由 App.ConfigureApplicationMenu / ConfigureWindowMenu 設定），
              不在視窗內。VS Code 風格的 macOS 操作慣例：File / View 等都統一在頂端。 -->
 
         <!-- 底部狀態列：VS Code 風。

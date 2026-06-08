@@ -363,7 +363,7 @@ internal static class Smoke
 
         // Dialect mismatch warning — paste a PG string but tell parser it's SQL Server
         var mismatch = ConnectionStringParser.Parse(pg, DatabaseType.SQLServer);
-        if (!mismatch.Warnings.Any(w => w.Contains("典型鍵", StringComparison.Ordinal)))
+        if (!mismatch.Warnings.Any(w => w.Contains("not typical of", StringComparison.Ordinal)))
             return Fail(99, "Dialect mismatch warning not raised");
 
         Console.WriteLine("[smoke:parser] OK (SQL Server + PostgreSQL + dialect-mismatch warning)");

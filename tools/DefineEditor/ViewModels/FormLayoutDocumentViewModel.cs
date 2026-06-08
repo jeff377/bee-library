@@ -62,15 +62,15 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
 
     private static SettingsTreeNode BuildRootNode(FormLayout root)
     {
-        var rootNode = MakeNode("DefFormLayout", KindRoot, root, RefreshRoot, isExpanded: true);
+        var rootNode = SettingsTreeNode.Create("DefFormLayout", KindRoot, root, RefreshRoot, isExpanded: true);
 
-        var sectionsGroup = MakeNode("IconSection", KindSectionsGroup, root, RefreshSectionsGroup, isExpanded: true);
+        var sectionsGroup = SettingsTreeNode.Create("IconSection", KindSectionsGroup, root, RefreshSectionsGroup, isExpanded: true);
         if (root.Sections is { } sections)
             foreach (var s in sections)
                 sectionsGroup.AddChild(BuildSectionNode(s));
         rootNode.AddChild(sectionsGroup);
 
-        var detailsGroup = MakeNode("IconGrid", KindDetailsGroup, root, RefreshDetailsGroup, isExpanded: true);
+        var detailsGroup = SettingsTreeNode.Create("IconGrid", KindDetailsGroup, root, RefreshDetailsGroup, isExpanded: true);
         if (root.Details is { } details)
             foreach (var g in details)
                 detailsGroup.AddChild(BuildGridNode(g));
@@ -81,7 +81,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
 
     private static SettingsTreeNode BuildSectionNode(LayoutSection section)
     {
-        var node = MakeNode("IconSection", KindSection, section, RefreshSection, isExpanded: false);
+        var node = SettingsTreeNode.Create("IconSection", KindSection, section, RefreshSection, isExpanded: false);
         if (section.Fields is { } fields)
             foreach (var f in fields)
                 node.AddChild(BuildLayoutFieldNode(f));
@@ -89,11 +89,11 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
     }
 
     private static SettingsTreeNode BuildLayoutFieldNode(LayoutField field) =>
-        MakeNode("IconText", KindLayoutField, field, RefreshLayoutField, isExpanded: false);
+        SettingsTreeNode.Create("IconText", KindLayoutField, field, RefreshLayoutField, isExpanded: false);
 
     private static SettingsTreeNode BuildGridNode(LayoutGrid grid)
     {
-        var node = MakeNode("IconGrid", KindGrid, grid, RefreshGrid, isExpanded: false);
+        var node = SettingsTreeNode.Create("IconGrid", KindGrid, grid, RefreshGrid, isExpanded: false);
         if (grid.Columns is { } columns)
             foreach (var c in columns)
                 node.AddChild(BuildLayoutColumnNode(c));
@@ -101,7 +101,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
     }
 
     private static SettingsTreeNode BuildLayoutColumnNode(LayoutColumn column) =>
-        MakeNode("IconColumn", KindLayoutColumn, column, RefreshLayoutColumn, isExpanded: false);
+        SettingsTreeNode.Create("IconColumn", KindLayoutColumn, column, RefreshLayoutColumn, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {
@@ -174,19 +174,6 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
             $"Width：{c.Width}",
             $"Visible：{c.Visible}",
             $"ReadOnly：{c.ReadOnly}");
-    }
-
-    private static SettingsTreeNode MakeNode(
-        string icon, string kind, object payload,
-        Action<SettingsTreeNode> refresher, bool isExpanded)
-    {
-        var node = new SettingsTreeNode
-        {
-            Icon = icon, Kind = kind, Payload = payload,
-            IsExpanded = isExpanded, Refresher = refresher,
-        };
-        node.RefreshDisplay();
-        return node;
     }
 
     [RelayCommand(CanExecute = nameof(CanAddSection))]

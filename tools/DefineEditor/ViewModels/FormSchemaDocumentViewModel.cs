@@ -78,9 +78,8 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         FormSchemaNodeKind.Mapping or
         FormSchemaNodeKind.ListItem;
 
-    // IsDirty is inherited from DocumentViewModelBase.
-
-    [ObservableProperty] private string _statusText = L("Status_SingletonHint");
+    // IsDirty / StatusText / culture-change refresh are inherited from
+    // DocumentViewModelBase.
 
     /// <summary>
     /// Content shown in the right-pane <see cref="Avalonia.Controls.ContentControl"/>.
@@ -99,8 +98,6 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
             _ => SelectedTreeNode.Payload,
         };
 
-    private string _lastDefaultHint = L("Status_SingletonHint");
-
     private FormSchemaDocumentViewModel(string filePath, FormSchema schema, SolutionContext solution)
     {
         FilePath = filePath;
@@ -110,17 +107,6 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         var root = FormSchemaNodeBuilder.BuildSchema(schema);
         Roots.Add(root);
         SelectedTreeNode = root;
-
-        // Re-apply the default hint on culture change while StatusText is
-        // still the previous default — see SingletonDocumentViewModelBase
-        // for the same rationale.
-        Services.LocalizationService.Current.CultureChanged += (_, _) =>
-        {
-            var newHint = L("Status_SingletonHint");
-            if (StatusText == _lastDefaultHint)
-                StatusText = newHint;
-            _lastDefaultHint = newHint;
-        };
     }
 
     public static FormSchemaDocumentViewModel Load(string filePath, SolutionContext solution)
@@ -376,14 +362,4 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         return group;
     }
 
-    private static string UniqueKey(IEnumerable<string> existing, string baseName)
-    {
-        var set = new HashSet<string>(existing, StringComparer.OrdinalIgnoreCase);
-        if (!set.Contains(baseName)) return baseName;
-        for (int i = 2; ; i++)
-        {
-            var candidate = $"{baseName}{i}";
-            if (!set.Contains(candidate)) return candidate;
-        }
-    }
 }

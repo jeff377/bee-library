@@ -56,7 +56,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
 
     private static SettingsTreeNode BuildRootNode(PermissionModels root)
     {
-        var node = MakeNode("DefPermissionModels", KindRoot, root, RefreshRoot, isExpanded: true);
+        var node = SettingsTreeNode.Create("DefPermissionModels", KindRoot, root, RefreshRoot, isExpanded: true);
         if (root.Models is { } models)
             foreach (var model in models)
                 node.AddChild(BuildModelNode(model));
@@ -65,7 +65,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
 
     private static SettingsTreeNode BuildModelNode(PermissionModel model)
     {
-        var node = MakeNode("IconBox", KindModel, model, RefreshModel, isExpanded: false);
+        var node = SettingsTreeNode.Create("IconBox", KindModel, model, RefreshModel, isExpanded: false);
         if (model.Rules is { } rules)
             foreach (var rule in rules)
                 node.AddChild(BuildRuleNode(rule));
@@ -73,7 +73,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
     }
 
     private static SettingsTreeNode BuildRuleNode(PermissionRule rule) =>
-        MakeNode("IconKey", KindRule, rule, RefreshRule, isExpanded: false);
+        SettingsTreeNode.Create("IconKey", KindRule, rule, RefreshRule, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {
@@ -99,22 +99,6 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
         node.Detail = string.Join(Environment.NewLine,
             $"Action：{r.Action}",
             $"Scope：{r.Scope}");
-    }
-
-    private static SettingsTreeNode MakeNode(
-        string icon, string kind, object payload,
-        Action<SettingsTreeNode> refresher, bool isExpanded)
-    {
-        var node = new SettingsTreeNode
-        {
-            Icon = icon,
-            Kind = kind,
-            Payload = payload,
-            IsExpanded = isExpanded,
-            Refresher = refresher,
-        };
-        node.RefreshDisplay();
-        return node;
     }
 
     [RelayCommand(CanExecute = nameof(CanAddModel))]
@@ -161,7 +145,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
     {
         var taken = new HashSet<PermissionAction>(
             (model.Rules ?? Enumerable.Empty<PermissionRule>()).Select(r => r.Action));
-        foreach (var candidate in SingletonEditorOptions.PermissionActions)
+        foreach (var candidate in EditorOptions.PermissionActions)
             if (!taken.Contains(candidate)) return candidate;
         return null;
     }

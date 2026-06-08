@@ -60,15 +60,15 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
 
     private static SettingsTreeNode BuildRootNode(TableSchema root)
     {
-        var rootNode = MakeNode("DefTableSchema", KindRoot, root, RefreshRoot, isExpanded: true);
+        var rootNode = SettingsTreeNode.Create("DefTableSchema", KindRoot, root, RefreshRoot, isExpanded: true);
 
-        var fieldsGroup = MakeNode("IconColumn", KindFieldsGroup, root, RefreshFieldsGroup, isExpanded: true);
+        var fieldsGroup = SettingsTreeNode.Create("IconColumn", KindFieldsGroup, root, RefreshFieldsGroup, isExpanded: true);
         if (root.Fields is { } fields)
             foreach (var f in fields)
                 fieldsGroup.AddChild(BuildFieldNode(f));
         rootNode.AddChild(fieldsGroup);
 
-        var indexesGroup = MakeNode("IconKey", KindIndexesGroup, root, RefreshIndexesGroup, isExpanded: true);
+        var indexesGroup = SettingsTreeNode.Create("IconKey", KindIndexesGroup, root, RefreshIndexesGroup, isExpanded: true);
         if (root.Indexes is { } indexes)
             foreach (var ix in indexes)
                 indexesGroup.AddChild(BuildIndexNode(ix));
@@ -78,11 +78,11 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     }
 
     private static SettingsTreeNode BuildFieldNode(DbField field) =>
-        MakeNode("IconColumn", KindField, field, RefreshField, isExpanded: false);
+        SettingsTreeNode.Create("IconColumn", KindField, field, RefreshField, isExpanded: false);
 
     private static SettingsTreeNode BuildIndexNode(DbTableIndex index)
     {
-        var node = MakeNode(index.PrimaryKey ? "IconLock" : "IconKey", KindIndex, index, RefreshIndex, isExpanded: false);
+        var node = SettingsTreeNode.Create(index.PrimaryKey ? "IconLock" : "IconKey", KindIndex, index, RefreshIndex, isExpanded: false);
         if (index.IndexFields is { } ifs)
             foreach (var ifld in ifs)
                 node.AddChild(BuildIndexFieldNode(ifld));
@@ -90,7 +90,7 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     }
 
     private static SettingsTreeNode BuildIndexFieldNode(IndexField indexField) =>
-        MakeNode("IconDot", KindIndexField, indexField, RefreshIndexField, isExpanded: false);
+        SettingsTreeNode.Create("IconDot", KindIndexField, indexField, RefreshIndexField, isExpanded: false);
 
     private static void RefreshRoot(SettingsTreeNode node)
     {
@@ -146,19 +146,6 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
         var i = (IndexField)node.Payload!;
         node.Header = $"{i.FieldName}  {i.SortDirection}";
         node.Detail = $"FieldName：{i.FieldName}\nSortDirection：{i.SortDirection}";
-    }
-
-    private static SettingsTreeNode MakeNode(
-        string icon, string kind, object payload,
-        Action<SettingsTreeNode> refresher, bool isExpanded)
-    {
-        var node = new SettingsTreeNode
-        {
-            Icon = icon, Kind = kind, Payload = payload,
-            IsExpanded = isExpanded, Refresher = refresher,
-        };
-        node.RefreshDisplay();
-        return node;
     }
 
     [RelayCommand(CanExecute = nameof(CanAddField))]
