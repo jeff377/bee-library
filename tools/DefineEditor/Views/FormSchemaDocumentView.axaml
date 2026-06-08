@@ -233,7 +233,7 @@
                       SelectedItem="{Binding SelectedTreeNode, Mode=TwoWay}"
                       Padding="6,4">
                 <TreeView.ItemTemplate>
-                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:FormSchemaTreeNode">
+                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:SettingsTreeNode">
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <PathIcon Classes="inner-icon" Data="{Binding Icon, Converter={StaticResource IconKeyToGeometry}}"/>
                             <TextBlock Text="{Binding Header}" VerticalAlignment="Center"/>
@@ -241,7 +241,7 @@
                     </TreeDataTemplate>
                 </TreeView.ItemTemplate>
                 <TreeView.Styles>
-                    <Style Selector="TreeViewItem" x:DataType="models:FormSchemaTreeNode">
+                    <Style Selector="TreeViewItem" x:DataType="models:SettingsTreeNode">
                         <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}"/>
                     </Style>
                 </TreeView.Styles>

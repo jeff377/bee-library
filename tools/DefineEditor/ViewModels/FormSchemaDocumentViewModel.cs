@@ -41,7 +41,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
 
     public SolutionContext Solution { get; }
 
-    public ObservableCollection<FormSchemaTreeNode> Roots { get; } = new();
+    public ObservableCollection<SettingsTreeNode> Roots { get; } = new();
 
     public ObservableCollection<ValidationIssue> Issues { get; } = new();
 
@@ -60,23 +60,23 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     [NotifyCanExecuteChangedFor(nameof(AddLookupMappingCommand))]
     [NotifyCanExecuteChangedFor(nameof(AddListItemCommand))]
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
-    private FormSchemaTreeNode? _selectedTreeNode;
+    private SettingsTreeNode? _selectedTreeNode;
 
     // Visibility hints for the tree-view context menu. Each MenuItem binds
     // IsVisible to the flag matching the kind it applies to. Kept here rather
     // than on the node model so the VM owns "what can be done from this kind"
     // — the node stays a passive data holder.
-    public bool SelectedKindIsSchema => SelectedTreeNode?.Kind == FormSchemaNodeKind.Schema;
-    public bool SelectedKindIsTable => SelectedTreeNode?.Kind == FormSchemaNodeKind.Table;
-    public bool SelectedKindIsField => SelectedTreeNode?.Kind == FormSchemaNodeKind.Field;
-    public bool SelectedKindIsRelationGroup => SelectedTreeNode?.Kind == FormSchemaNodeKind.RelationGroup;
-    public bool SelectedKindIsLookupGroup => SelectedTreeNode?.Kind == FormSchemaNodeKind.LookupGroup;
-    public bool SelectedKindIsListItemsGroup => SelectedTreeNode?.Kind == FormSchemaNodeKind.ListItemsGroup;
+    public bool SelectedKindIsSchema => SelectedTreeNode?.Kind == FormSchemaKinds.Schema;
+    public bool SelectedKindIsTable => SelectedTreeNode?.Kind == FormSchemaKinds.Table;
+    public bool SelectedKindIsField => SelectedTreeNode?.Kind == FormSchemaKinds.Field;
+    public bool SelectedKindIsRelationGroup => SelectedTreeNode?.Kind == FormSchemaKinds.RelationGroup;
+    public bool SelectedKindIsLookupGroup => SelectedTreeNode?.Kind == FormSchemaKinds.LookupGroup;
+    public bool SelectedKindIsListItemsGroup => SelectedTreeNode?.Kind == FormSchemaKinds.ListItemsGroup;
     public bool SelectedKindCanDelete => SelectedTreeNode?.Kind is
-        FormSchemaNodeKind.Table or
-        FormSchemaNodeKind.Field or
-        FormSchemaNodeKind.Mapping or
-        FormSchemaNodeKind.ListItem;
+        FormSchemaKinds.Table or
+        FormSchemaKinds.Field or
+        FormSchemaKinds.Mapping or
+        FormSchemaKinds.ListItem;
 
     // IsDirty / StatusText / culture-change refresh are inherited from
     // DocumentViewModelBase.
@@ -91,9 +91,9 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         ? null
         : SelectedTreeNode.Kind switch
         {
-            FormSchemaNodeKind.RelationGroup when SelectedTreeNode.Payload is FormField rf =>
+            FormSchemaKinds.RelationGroup when SelectedTreeNode.Payload is FormField rf =>
                 new MappingGroupEditor(rf, isRelation: true, Solution.AvailableProgIds),
-            FormSchemaNodeKind.LookupGroup when SelectedTreeNode.Payload is FormField lf =>
+            FormSchemaKinds.LookupGroup when SelectedTreeNode.Payload is FormField lf =>
                 new MappingGroupEditor(lf, isRelation: false, Solution.AvailableProgIds),
             _ => SelectedTreeNode.Payload,
         };
@@ -167,7 +167,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     [RelayCommand(CanExecute = nameof(CanAddTable))]
     private void AddTable()
     {
-        if (SelectedTreeNode is not { Kind: FormSchemaNodeKind.Schema, Payload: FormSchema schema } schemaNode)
+        if (SelectedTreeNode is not { Kind: FormSchemaKinds.Schema, Payload: FormSchema schema } schemaNode)
             return;
 
         var name = UniqueKey(schema.Tables!.Select(t => t.TableName), "NewTable");
@@ -181,12 +181,12 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         StatusText = L("Status_AddedNamed", "FormTable", name);
     }
 
-    private bool CanAddTable() => SelectedTreeNode?.Kind == FormSchemaNodeKind.Schema;
+    private bool CanAddTable() => SelectedTreeNode?.Kind == FormSchemaKinds.Schema;
 
     [RelayCommand(CanExecute = nameof(CanAddField))]
     private void AddField()
     {
-        var tableNode = FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Table);
+        var tableNode = FindAncestor(SelectedTreeNode, FormSchemaKinds.Table);
         if (tableNode?.Payload is not FormTable table) return;
 
         var name = UniqueKey(table.Fields!.Select(f => f.FieldName), "new_field");
@@ -201,18 +201,18 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     }
 
     private bool CanAddField() =>
-        FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Table) is not null;
+        FindAncestor(SelectedTreeNode, FormSchemaKinds.Table) is not null;
 
     [RelayCommand(CanExecute = nameof(CanAddRelationMapping))]
     private void AddRelationMapping()
     {
-        var fieldNode = FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Field);
+        var fieldNode = FindAncestor(SelectedTreeNode, FormSchemaKinds.Field);
         if (fieldNode?.Payload is not FormField field) return;
 
         var mapping = new FieldMapping(string.Empty, string.Empty);
         field.RelationFieldMappings!.Add(mapping);
 
-        var group = EnsureGroup(fieldNode, FormSchemaNodeKind.RelationGroup,
+        var group = EnsureGroup(fieldNode, FormSchemaKinds.RelationGroup,
             f => FormSchemaNodeBuilder.BuildRelationGroup(f));
         var node = FormSchemaNodeBuilder.BuildMapping(mapping);
         group.AddChild(node);
@@ -231,18 +231,18 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     }
 
     private bool CanAddRelationMapping() =>
-        FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Field) is not null;
+        FindAncestor(SelectedTreeNode, FormSchemaKinds.Field) is not null;
 
     [RelayCommand(CanExecute = nameof(CanAddLookupMapping))]
     private void AddLookupMapping()
     {
-        var fieldNode = FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Field);
+        var fieldNode = FindAncestor(SelectedTreeNode, FormSchemaKinds.Field);
         if (fieldNode?.Payload is not FormField field) return;
 
         var mapping = new FieldMapping(string.Empty, string.Empty);
         field.LookupFieldMappings!.Add(mapping);
 
-        var group = EnsureGroup(fieldNode, FormSchemaNodeKind.LookupGroup,
+        var group = EnsureGroup(fieldNode, FormSchemaKinds.LookupGroup,
             f => FormSchemaNodeBuilder.BuildLookupGroup(f));
         var node = FormSchemaNodeBuilder.BuildMapping(mapping);
         group.AddChild(node);
@@ -258,19 +258,19 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     }
 
     private bool CanAddLookupMapping() =>
-        FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Field) is not null;
+        FindAncestor(SelectedTreeNode, FormSchemaKinds.Field) is not null;
 
     [RelayCommand(CanExecute = nameof(CanAddListItem))]
     private void AddListItem()
     {
-        var fieldNode = FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Field);
+        var fieldNode = FindAncestor(SelectedTreeNode, FormSchemaKinds.Field);
         if (fieldNode?.Payload is not FormField field) return;
 
         var key = UniqueKey((field.ListItems ?? new ListItemCollection()).Select(i => i.Value), "value");
         var item = new ListItem(key, "New option");
         field.ListItems!.Add(item);
 
-        var group = EnsureGroup(fieldNode, FormSchemaNodeKind.ListItemsGroup,
+        var group = EnsureGroup(fieldNode, FormSchemaKinds.ListItemsGroup,
             f => FormSchemaNodeBuilder.BuildListItemsGroup(f));
         var node = FormSchemaNodeBuilder.BuildListItem(item);
         group.AddChild(node);
@@ -282,7 +282,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     }
 
     private bool CanAddListItem() =>
-        FindAncestor(SelectedTreeNode, FormSchemaNodeKind.Field) is not null;
+        FindAncestor(SelectedTreeNode, FormSchemaKinds.Field) is not null;
 
     [RelayCommand(CanExecute = nameof(CanDelete))]
     private async System.Threading.Tasks.Task Delete()
@@ -298,31 +298,31 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
 
         switch (node.Kind)
         {
-            case FormSchemaNodeKind.Table
+            case FormSchemaKinds.Table
                 when node.Payload is FormTable t && node.Parent?.Payload is FormSchema s:
                 s.Tables!.Remove(t);
                 break;
 
-            case FormSchemaNodeKind.Field
+            case FormSchemaKinds.Field
                 when node.Payload is FormField f && node.Parent?.Payload is FormTable t:
                 t.Fields!.Remove(f);
                 break;
 
-            case FormSchemaNodeKind.Mapping
+            case FormSchemaKinds.Mapping
                 when node.Payload is FieldMapping m &&
-                     node.Parent is { Kind: FormSchemaNodeKind.RelationGroup, Payload: FormField rf }:
+                     node.Parent is { Kind: FormSchemaKinds.RelationGroup, Payload: FormField rf }:
                 rf.RelationFieldMappings!.Remove(m);
                 break;
 
-            case FormSchemaNodeKind.Mapping
+            case FormSchemaKinds.Mapping
                 when node.Payload is FieldMapping m &&
-                     node.Parent is { Kind: FormSchemaNodeKind.LookupGroup, Payload: FormField lf }:
+                     node.Parent is { Kind: FormSchemaKinds.LookupGroup, Payload: FormField lf }:
                 lf.LookupFieldMappings!.Remove(m);
                 break;
 
-            case FormSchemaNodeKind.ListItem
+            case FormSchemaKinds.ListItem
                 when node.Payload is ListItem i &&
-                     node.Parent is { Kind: FormSchemaNodeKind.ListItemsGroup, Payload: FormField pf }:
+                     node.Parent is { Kind: FormSchemaKinds.ListItemsGroup, Payload: FormField pf }:
                 pf.ListItems!.Remove(i);
                 break;
 
@@ -338,22 +338,22 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     }
 
     private bool CanDelete() => SelectedTreeNode?.Kind is
-        FormSchemaNodeKind.Table or
-        FormSchemaNodeKind.Field or
-        FormSchemaNodeKind.Mapping or
-        FormSchemaNodeKind.ListItem;
+        FormSchemaKinds.Table or
+        FormSchemaKinds.Field or
+        FormSchemaKinds.Mapping or
+        FormSchemaKinds.ListItem;
 
-    private static FormSchemaTreeNode? FindAncestor(FormSchemaTreeNode? node, FormSchemaNodeKind kind)
+    private static SettingsTreeNode? FindAncestor(SettingsTreeNode? node, string kind)
     {
         for (var cur = node; cur != null; cur = cur.Parent)
             if (cur.Kind == kind) return cur;
         return null;
     }
 
-    private static FormSchemaTreeNode EnsureGroup(
-        FormSchemaTreeNode fieldNode,
-        FormSchemaNodeKind groupKind,
-        Func<FormField, FormSchemaTreeNode> builder)
+    private static SettingsTreeNode EnsureGroup(
+        SettingsTreeNode fieldNode,
+        string groupKind,
+        Func<FormField, SettingsTreeNode> builder)
     {
         var existing = fieldNode.Children.FirstOrDefault(c => c.Kind == groupKind);
         if (existing is not null) return existing;

@@ -5,23 +5,23 @@ using Bee.Definition.Forms;
 namespace Bee.DefineEditor.Models;
 
 /// <summary>
-/// Computes the (Header, Detail) display tuple a <see cref="FormSchemaTreeNode"/>
-/// shows for its payload. Centralised so node refresh and initial build share the
-/// same formatting.
+/// Computes the (Header, Detail) display tuple a <see cref="SettingsTreeNode"/>
+/// in the FormSchema tree shows for its payload. Centralised so node refresh
+/// and initial build share the same formatting.
 /// </summary>
 internal static class FormSchemaNodeDisplay
 {
-    public static (string Header, string? Detail) For(FormSchemaNodeKind kind, object? payload) =>
+    public static (string Header, string? Detail) For(string kind, object? payload) =>
         (kind, payload) switch
         {
-            (FormSchemaNodeKind.Schema, FormSchema s) => Schema(s),
-            (FormSchemaNodeKind.Table, FormTable t) => Table(t),
-            (FormSchemaNodeKind.Field, FormField f) => Field(f),
-            (FormSchemaNodeKind.Mapping, FieldMapping m) => Mapping(m),
-            (FormSchemaNodeKind.ListItem, ListItem i) => ListItem(i),
-            (FormSchemaNodeKind.RelationGroup, FormField f) => ("Relation", $"RelationProgId：{f.RelationProgId}"),
-            (FormSchemaNodeKind.LookupGroup, FormField f) => ("Lookup", $"LookupProgId：{f.LookupProgId}"),
-            (FormSchemaNodeKind.ListItemsGroup, FormField f) => ListItemsGroup(f),
+            (FormSchemaKinds.Schema, FormSchema s) => Schema(s),
+            (FormSchemaKinds.Table, FormTable t) => Table(t),
+            (FormSchemaKinds.Field, FormField f) => Field(f),
+            (FormSchemaKinds.Mapping, FieldMapping m) => Mapping(m),
+            (FormSchemaKinds.ListItem, ListItem i) => ListItem(i),
+            (FormSchemaKinds.RelationGroup, FormField f) => ("Relation", $"RelationProgId：{f.RelationProgId}"),
+            (FormSchemaKinds.LookupGroup, FormField f) => ("Lookup", $"LookupProgId：{f.LookupProgId}"),
+            (FormSchemaKinds.ListItemsGroup, FormField f) => ListItemsGroup(f),
             _ => (string.Empty, null),
         };
 
