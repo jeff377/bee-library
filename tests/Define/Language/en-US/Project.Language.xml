@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Project" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Project" />
+    <LanguageItem Key="Table.Project.DisplayName" Value="Project" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence No." />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row Id" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Project No." />
+    <LanguageItem Key="Field.sys_name.Caption" Value="Project Name" />
+    <LanguageItem Key="Field.owner_dept_rowid.Caption" Value="Owner Department" />
+    <LanguageItem Key="Field.ref_owner_dept_id.Caption" Value="Owner Department No." />
+    <LanguageItem Key="Field.ref_owner_dept_name.Caption" Value="Owner Department Name" />
+    <LanguageItem Key="Field.pm_rowid.Caption" Value="Project Manager" />
+    <LanguageItem Key="Field.ref_pm_id.Caption" Value="PM Employee No." />
+    <LanguageItem Key="Field.ref_pm_name.Caption" Value="PM Name" />
+    <LanguageItem Key="Field.ref_pm_dept_id.Caption" Value="PM Department No." />
+    <LanguageItem Key="Field.ref_pm_dept_name.Caption" Value="PM Department Name" />
+    <LanguageItem Key="Field.start_date.Caption" Value="Start Date" />
+    <LanguageItem Key="Field.end_date.Caption" Value="End Date" />
+  </Items>
+  <Enums />
+</LanguageResource>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Project" ProgId="Project" Caption="專案">
+  <Sections>
+    <LayoutSection Name="Main" Caption="專案">
+      <Fields>
+        <LayoutField FieldName="sys_no" Caption="流水號" />
+        <LayoutField FieldName="sys_rowid" Caption="唯一識別" />
+        <LayoutField FieldName="sys_id" Caption="專案代碼" />
+        <LayoutField FieldName="sys_name" Caption="專案名稱" />
+        <LayoutField FieldName="owner_dept_rowid" Caption="負責部門" />
+        <LayoutField FieldName="ref_owner_dept_id" Caption="負責部門代碼" />
+        <LayoutField FieldName="ref_owner_dept_name" Caption="負責部門名稱" />
+        <LayoutField FieldName="pm_rowid" Caption="專案經理" />
+        <LayoutField FieldName="ref_pm_id" Caption="PM 員工代碼" />
+        <LayoutField FieldName="ref_pm_name" Caption="PM 姓名" />
+        <LayoutField FieldName="ref_pm_dept_id" Caption="PM 部門代碼" />
+        <LayoutField FieldName="ref_pm_dept_name" Caption="PM 部門名稱" />
+        <LayoutField FieldName="start_date" Caption="開始日" />
+        <LayoutField FieldName="end_date" Caption="結束日" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Department" ProgId="Department" Caption="部門">
+  <Sections>
+    <LayoutSection Name="Main" Caption="部門">
+      <Fields>
+        <LayoutField FieldName="sys_no" Caption="流水號" />
+        <LayoutField FieldName="sys_rowid" Caption="唯一識別" />
+        <LayoutField FieldName="sys_id" Caption="部門編號" />
+        <LayoutField FieldName="sys_name" Caption="部門名稱" />
+        <LayoutField FieldName="manager_rowid" Caption="部門主管唯一識別" />
+        <LayoutField FieldName="ref_manager_id" Caption="部門主管編號" />
+        <LayoutField FieldName="ref_manager_name" Caption="部門主管名稱" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>
