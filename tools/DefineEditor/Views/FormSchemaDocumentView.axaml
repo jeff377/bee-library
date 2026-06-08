@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:loc="using:Bee.DefineEditor.Markup"
              xmlns:models="using:Bee.DefineEditor.Models"
              xmlns:forms="using:Bee.Definition.Forms"
              xmlns:collections="using:Bee.Definition.Collections"
@@ -15,7 +16,7 @@
         <!-- FormSchema 屬性面板 -->
         <DataTemplate DataType="forms:FormSchema">
             <StackPanel Spacing="2" x:DataType="forms:FormSchema">
-                <TextBlock Classes="h2" Text="FormSchema 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormSchema_Props}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ProgId"/>
                     <TextBox Text="{Binding ProgId, Mode=TwoWay}"/>
@@ -42,7 +43,7 @@
         <!-- FormTable 屬性面板 -->
         <DataTemplate DataType="forms:FormTable">
             <StackPanel Spacing="2" x:DataType="forms:FormTable">
-                <TextBlock Classes="h2" Text="FormTable 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormSchema_TableProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="TableName"/>
                     <TextBox Text="{Binding TableName, Mode=TwoWay}"/>
@@ -61,7 +62,7 @@
         <!-- FormField 屬性面板 -->
         <DataTemplate DataType="forms:FormField">
             <StackPanel Spacing="2" x:DataType="forms:FormField">
-                <TextBlock Classes="h2" Text="FormField 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormSchema_FieldProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="FieldName"/>
                     <TextBox Text="{Binding FieldName, Mode=TwoWay}"/>
@@ -115,7 +116,7 @@
                               SelectedItem="{Binding ScopeRole, Mode=TwoWay}"/>
                 </DockPanel>
                 <Separator Margin="0,10,0,4"/>
-                <TextBlock Text="關聯欄位" Classes="muted" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <TextBlock Text="{loc:Loc FormSchema_MappingRelation}" Classes="muted" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="RelationProgId"/>
                     <TextBox Text="{Binding RelationProgId, Mode=TwoWay}"/>
@@ -134,7 +135,7 @@
         <!-- FieldMapping 屬性面板 -->
         <DataTemplate DataType="forms:FieldMapping">
             <StackPanel Spacing="2" x:DataType="forms:FieldMapping">
-                <TextBlock Classes="h2" Text="FieldMapping 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormSchema_FieldMappingProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="SourceField"/>
                     <TextBox Text="{Binding SourceField, Mode=TwoWay}"/>
@@ -158,13 +159,13 @@
                               Text="{Binding ProgIdValue, Mode=TwoWay}"/>
                 </DockPanel>
                 <Separator Margin="0,10,0,4"/>
-                <TextBlock Text="欄位對應（Source → Destination）" Classes="muted" FontWeight="SemiBold" Margin="0,0,0,4"/>
+                <TextBlock Text="{loc:Loc FormSchema_MappingHeader}" Classes="muted" FontWeight="SemiBold" Margin="0,0,0,4"/>
                 <ItemsControl ItemsSource="{Binding Mappings}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="forms:FieldMapping">
                             <Grid ColumnDefinitions="*,Auto,*" Margin="0,2">
                                 <TextBox Grid.Column="0" Text="{Binding SourceField, Mode=TwoWay}"
-                                         PlaceholderText="來源欄位"/>
+                                         PlaceholderText="{loc:Loc FormSchema_MappingSource}"/>
                                 <TextBlock Grid.Column="1" Text=" → " VerticalAlignment="Center" Margin="6,0"/>
                                 <ComboBox Grid.Column="2"
                                           ItemsSource="{Binding #MappingEditorRoot.((vm:MappingGroupEditor)DataContext).DestinationFieldCandidates}"
@@ -177,14 +178,14 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
                 <TextBlock Classes="muted" Margin="0,8,0,0" TextWrapping="Wrap"
-                           Text="（用工具列「+ 關聯 / + Lookup / 刪除」管理對應列；Destination 候選來自目前 FormTable 的欄位）"/>
+                           Text="{loc:Loc FormSchema_MappingNote}"/>
             </StackPanel>
         </DataTemplate>
 
         <!-- ListItem 屬性面板 -->
         <DataTemplate DataType="collections:ListItem">
             <StackPanel Spacing="2" x:DataType="collections:ListItem">
-                <TextBlock Classes="h2" Text="ListItem 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormSchema_ListItemProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Value"/>
                     <TextBox Text="{Binding Value, Mode=TwoWay}"/>
@@ -209,7 +210,7 @@
         <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8"
                 IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="{loc:Loc Section_ValidationResults}"/>
                 <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0"
                          Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
@@ -250,35 +251,35 @@
                      auto-selects it in Avalonia's TreeView). -->
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="新增 FormTable"
+                        <MenuItem Header="{loc:Loc FormSchema_AddTable}"
                                   Command="{Binding AddTableCommand}"
                                   IsVisible="{Binding SelectedKindIsSchema}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconTable}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 FormField"
+                        <MenuItem Header="{loc:Loc FormSchema_AddField}"
                                   Command="{Binding AddFieldCommand}"
                                   IsVisible="{Binding SelectedKindIsTable}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 Relation Mapping"
+                        <MenuItem Header="{loc:Loc FormSchema_AddRelationMapping}"
                                   Command="{Binding AddRelationMappingCommand}"
                                   IsVisible="{Binding SelectedKindIsRelationGroup}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconLink}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 Lookup Mapping"
+                        <MenuItem Header="{loc:Loc FormSchema_AddLookupMapping}"
                                   Command="{Binding AddLookupMappingCommand}"
                                   IsVisible="{Binding SelectedKindIsLookupGroup}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconLink}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 ListItem"
+                        <MenuItem Header="{loc:Loc FormSchema_AddListItem}"
                                   Command="{Binding AddListItemCommand}"
                                   IsVisible="{Binding SelectedKindIsListItemsGroup}">
                             <MenuItem.Icon>
@@ -286,7 +287,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
-                        <MenuItem Header="刪除"
+                        <MenuItem Header="{loc:Loc Action_Delete}"
                                   Command="{Binding DeleteCommand}"
                                   IsVisible="{Binding SelectedKindCanDelete}">
                             <MenuItem.Icon>

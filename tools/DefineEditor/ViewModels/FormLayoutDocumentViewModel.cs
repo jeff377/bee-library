@@ -205,7 +205,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 LayoutSection：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "LayoutSection", name);
     }
     private bool CanAddSection() => SelectedTreeNode is not null;
 
@@ -224,7 +224,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         sectionNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 LayoutField：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "LayoutField", name);
     }
     private bool CanAddLayoutField() => FindAncestor(SelectedTreeNode, KindSection) is not null;
 
@@ -244,7 +244,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 LayoutGrid：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "LayoutGrid", name);
     }
     private bool CanAddGrid() => SelectedTreeNode is not null;
 
@@ -263,7 +263,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         gridNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 LayoutColumn：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "LayoutColumn", name);
     }
     private bool CanAddLayoutColumn() => FindAncestor(SelectedTreeNode, KindGrid) is not null;
 

@@ -130,7 +130,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
         rootNode.AddChild(node);
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 DbCategory：{id}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "DbCategory", id);
     }
 
     private bool CanAddCategory() => SelectedTreeNode?.Kind == KindRoot;
@@ -148,7 +148,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
         categoryNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 TableItem：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "TableItem", name);
     }
 
     private bool CanAddTable() => FindAncestor(SelectedTreeNode, KindCategory) is not null;

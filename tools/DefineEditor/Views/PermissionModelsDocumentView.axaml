@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:loc="using:Bee.DefineEditor.Markup"
              xmlns:models="using:Bee.DefineEditor.Models"
              xmlns:settings="using:Bee.Definition.Settings"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,7 +14,7 @@
     <UserControl.DataTemplates>
         <DataTemplate DataType="settings:PermissionModel">
             <StackPanel x:DataType="settings:PermissionModel" Spacing="2">
-                <TextBlock Classes="h2" Text="PermissionModel 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc Permission_ModelProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ModelId"/>
                     <TextBox Text="{Binding ModelId, Mode=TwoWay}"/>
@@ -27,7 +28,7 @@
 
         <DataTemplate DataType="settings:PermissionRule">
             <StackPanel x:DataType="settings:PermissionRule" Spacing="2">
-                <TextBlock Classes="h2" Text="PermissionRule 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc Permission_RuleProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Action"/>
                     <ComboBox ItemsSource="{x:Static vm:SingletonEditorOptions.PermissionActions}"
@@ -39,15 +40,15 @@
                               SelectedItem="{Binding Scope, Mode=TwoWay}"/>
                 </DockPanel>
                 <TextBlock Classes="muted" Margin="0,10,0,0" TextWrapping="Wrap"
-                           Text="（Print / Export 為輸出動作，Scope 應留 Inherit；其他 action 可自由指定。）"/>
+                           Text="{loc:Loc Permission_RuleNote}"/>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="settings:PermissionModels">
             <StackPanel Spacing="6">
-                <TextBlock Classes="h2" Text="PermissionModels（registry 根節點）"/>
+                <TextBlock Classes="h2" Text="{loc:Loc Permission_RootSubtitle}"/>
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="於工具列「+ Model」加入 PermissionModel；選取 Model 後可「+ Rule」加入該 Model 的 PermissionRule。"/>
+                           Text="{loc:Loc Permission_RootHint}"/>
             </StackPanel>
         </DataTemplate>
     </UserControl.DataTemplates>
@@ -61,7 +62,7 @@
         <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8"
                 IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="{loc:Loc Section_ValidationResults}"/>
                 <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0"
                          Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
@@ -97,14 +98,14 @@
                 </TreeView.Styles>
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="新增 PermissionModel"
+                        <MenuItem Header="{loc:Loc Permission_AddModel}"
                                   Command="{Binding AddModelCommand}"
                                   IsVisible="{Binding SelectedKindIsRoot}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconKey}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 PermissionRule"
+                        <MenuItem Header="{loc:Loc Permission_AddRule}"
                                   Command="{Binding AddRuleCommand}"
                                   IsVisible="{Binding SelectedKindIsModel}">
                             <MenuItem.Icon>
@@ -112,7 +113,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
-                        <MenuItem Header="刪除"
+                        <MenuItem Header="{loc:Loc Action_Delete}"
                                   Command="{Binding DeleteCommand}"
                                   IsVisible="{Binding SelectedKindCanDelete}">
                             <MenuItem.Icon>

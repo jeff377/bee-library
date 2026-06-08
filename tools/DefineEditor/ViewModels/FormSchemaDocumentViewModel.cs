@@ -80,8 +80,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
 
     // IsDirty is inherited from DocumentViewModelBase.
 
-    [ObservableProperty] private string _statusText =
-        "（屬性編輯於離開欄位時寫入記憶體；按「儲存」會刷新樹節點顯示並寫回 XML）";
+    [ObservableProperty] private string _statusText = L("Status_SingletonHint");
 
     /// <summary>
     /// Content shown in the right-pane <see cref="Avalonia.Controls.ContentControl"/>.
@@ -131,7 +130,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
             if (!await ConfirmSaveAfterValidationAsync(issues, Issues))
             {
                 var errs = issues.Count(i => i.Severity == ValidationSeverity.Error);
-                StatusText = $"已取消儲存（{errs} 個 error 未處理）。";
+                StatusText = L("Status_SaveCancelled", errs);
                 return;
             }
 
@@ -139,11 +138,11 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
                 root.RefreshRecursive();
             XmlCodec.SerializeToFile(Schema, FilePath);
             IsDirty = false;
-            StatusText = $"已儲存：{Path.GetFileName(FilePath)}";
+            StatusText = L("Status_Saved", Path.GetFileName(FilePath));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            StatusText = $"儲存失敗：{ex.Message}";
+            StatusText = L("Status_SaveFailed", ex.Message);
         }
     }
 
@@ -154,9 +153,16 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         var found = FormSchemaValidator.Validate(Schema, Solution);
         foreach (var issue in found)
             Issues.Add(issue);
-        StatusText = Issues.Count == 0
-            ? "驗證通過：未發現任何問題。"
-            : $"驗證完成：{Issues.Count} 個問題（{found.Count(i => i.Severity == ValidationSeverity.Error)} Error / {found.Count(i => i.Severity == ValidationSeverity.Warning)} Warning）。";
+        if (Issues.Count == 0)
+        {
+            StatusText = L("Status_ValidationPassed");
+        }
+        else
+        {
+            var errors = found.Count(i => i.Severity == ValidationSeverity.Error);
+            var warnings = found.Count(i => i.Severity == ValidationSeverity.Warning);
+            StatusText = L("Status_ValidationCompleted", Issues.Count, errors, warnings);
+        }
     }
 
     [RelayCommand(CanExecute = nameof(CanAddTable))]
@@ -173,7 +179,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         schemaNode.AddChild(node);
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增表格：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "FormTable", name);
     }
 
     private bool CanAddTable() => SelectedTreeNode?.Kind == FormSchemaNodeKind.Schema;
@@ -192,7 +198,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         tableNode.AddChild(node);
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增欄位：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "FormField", name);
     }
 
     private bool CanAddField() =>
@@ -222,7 +228,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         else
             SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = "已新增關聯欄位對應（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "Relation FieldMapping", "");
     }
 
     private bool CanAddRelationMapping() =>
@@ -249,7 +255,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         else
             SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = "已新增 Lookup 欄位對應（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "Lookup FieldMapping", "");
     }
 
     private bool CanAddLookupMapping() =>
@@ -273,7 +279,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         fieldNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增選項：{key}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "ListItem", key);
     }
 
     private bool CanAddListItem() =>
@@ -287,7 +293,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
 
         if (!await ConfirmDeleteAsync(node.Header))
         {
-            StatusText = "已取消刪除。";
+            StatusText = L("Status_DeleteCancelled");
             return;
         }
 
@@ -329,7 +335,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         node.RemoveSelf();
         SelectedTreeNode = parent;
         IsDirty = true;
-        StatusText = "已刪除節點（尚未存檔）";
+        StatusText = L("Status_Deleted");
     }
 
     private bool CanDelete() => SelectedTreeNode?.Kind is

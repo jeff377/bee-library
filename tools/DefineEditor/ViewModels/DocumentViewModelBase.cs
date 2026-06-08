@@ -1,11 +1,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Bee.DefineEditor.Models;
+using Bee.DefineEditor.Services;
 using Bee.DefineEditor.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -93,9 +95,14 @@ public abstract partial class DocumentViewModelBase : ViewModelBase
 
         var warns = issues.Count(i => i.Severity == ValidationSeverity.Warning);
         var message = warns > 0
-            ? $"驗證發現 {errors} 個 error、{warns} 個 warning。\n仍要繼續存檔嗎？"
-            : $"驗證發現 {errors} 個 error。\n仍要繼續存檔嗎？";
-        return await ConfirmationDialog.ShowAsync(owner, "存檔前驗證未通過", message);
+            ? L("Confirm_SaveAfterValidationErrorsAndWarnings", errors, warns)
+            : L("Confirm_SaveAfterValidationErrors", errors);
+        return await ConfirmationDialog.ShowAsync(
+            owner,
+            L("Confirm_SaveAfterValidationTitle"),
+            message,
+            confirmLabel: L("Action_SaveAnyway"),
+            cancelLabel: L("Action_Cancel"));
     }
 
     private static Window? GetOwnerWindow()
@@ -104,6 +111,9 @@ public abstract partial class DocumentViewModelBase : ViewModelBase
             return lifetime.MainWindow;
         return null;
     }
+
+    // L() helpers live on ViewModelBase so MainWindowViewModel (and any other
+    // VM that doesn't derive from DocumentViewModelBase) can use them too.
 
     /// <summary>
     /// Prompts the user to confirm deletion of a tree node and returns the
@@ -115,9 +125,12 @@ public abstract partial class DocumentViewModelBase : ViewModelBase
     {
         var owner = GetOwnerWindow();
         if (owner is null) return true;
-        var displayLabel = string.IsNullOrEmpty(label) ? "此節點" : label;
-        var message =
-            $"確定要刪除「{displayLabel}」？\n從記憶體移除後仍需按儲存（⌘S）才會寫回檔案。";
-        return await ConfirmationDialog.ShowAsync(owner, "確認刪除", message);
+        var displayLabel = string.IsNullOrEmpty(label) ? "—" : label;
+        return await ConfirmationDialog.ShowAsync(
+            owner,
+            L("Confirm_DeleteTitle"),
+            L("Confirm_DeleteMessage", displayLabel),
+            confirmLabel: L("Action_Delete"),
+            cancelLabel: L("Action_Cancel"));
     }
 }

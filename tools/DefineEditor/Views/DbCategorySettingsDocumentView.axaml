@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:loc="using:Bee.DefineEditor.Markup"
              xmlns:models="using:Bee.DefineEditor.Models"
              xmlns:settings="using:Bee.Definition.Settings"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,7 +14,7 @@
     <UserControl.DataTemplates>
         <DataTemplate DataType="settings:DbCategory">
             <StackPanel x:DataType="settings:DbCategory" Spacing="2">
-                <TextBlock Classes="h2" Text="DbCategory 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc DbCategory_CategoryProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Id"/>
                     <TextBox Text="{Binding Id, Mode=TwoWay}"/>
@@ -27,7 +28,7 @@
 
         <DataTemplate DataType="settings:TableItem">
             <StackPanel x:DataType="settings:TableItem" Spacing="2">
-                <TextBlock Classes="h2" Text="TableItem 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc DbCategory_TableProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="TableName"/>
                     <TextBox Text="{Binding TableName, Mode=TwoWay}"/>
@@ -41,9 +42,9 @@
 
         <DataTemplate DataType="settings:DbCategorySettings">
             <StackPanel Spacing="6">
-                <TextBlock Classes="h2" Text="DbCategorySettings（DB 分類根節點）"/>
+                <TextBlock Classes="h2" Text="{loc:Loc DbCategory_RootSubtitle}"/>
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="於工具列「+ Category」加入 DbCategory；選取 Category 後可「+ Table」加入該分類下的 TableItem。"/>
+                           Text="{loc:Loc DbCategory_RootHint}"/>
             </StackPanel>
         </DataTemplate>
     </UserControl.DataTemplates>
@@ -57,7 +58,7 @@
         <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8"
                 IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="{loc:Loc Section_ValidationResults}"/>
                 <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0"
                          Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
@@ -93,14 +94,14 @@
                 </TreeView.Styles>
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="新增 Category"
+                        <MenuItem Header="{loc:Loc DbCategory_AddCategory}"
                                   Command="{Binding AddCategoryCommand}"
                                   IsVisible="{Binding SelectedKindIsRoot}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconAdd}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 Table"
+                        <MenuItem Header="{loc:Loc DbCategory_AddTable}"
                                   Command="{Binding AddTableCommand}"
                                   IsVisible="{Binding SelectedKindIsCategory}">
                             <MenuItem.Icon>
@@ -108,7 +109,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
-                        <MenuItem Header="刪除"
+                        <MenuItem Header="{loc:Loc Action_Delete}"
                                   Command="{Binding DeleteCommand}"
                                   IsVisible="{Binding SelectedKindCanDelete}">
                             <MenuItem.Icon>

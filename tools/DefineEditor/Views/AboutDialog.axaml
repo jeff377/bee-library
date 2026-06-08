@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Bee.DefineEditor.Markup"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="440" d:DesignHeight="360"
@@ -15,7 +16,7 @@
             <!-- 確認列 -->
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                         HorizontalAlignment="Right" Margin="0,18,0,0">
-                <Button Classes="tool primary" Content="OK" Click="OnOk" MinWidth="100"/>
+                <Button Classes="tool primary" Content="{loc:Loc Action_OK}" Click="OnOk" MinWidth="100"/>
             </StackPanel>
 
             <!-- 主體 -->
@@ -26,7 +27,7 @@
                 <TextBlock Classes="h1" Text="Bee.DefineEditor"
                            HorizontalAlignment="Center"/>
                 <TextBlock Classes="muted" HorizontalAlignment="Center"
-                           Text="Bee.NET 定義檔方案維護工具"/>
+                           Text="{loc:Loc About_Subtitle}"/>
                 <TextBlock Classes="muted" HorizontalAlignment="Center"
                            x:Name="VersionText"/>
 
@@ -34,9 +35,9 @@
 
                 <StackPanel Spacing="3" HorizontalAlignment="Center">
                     <TextBlock TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360"
-                               Text="Avalonia 12 + .NET 10 跨平台桌面工具（Win / Mac / Linux）。"/>
+                               Text="{loc:Loc About_Description1}"/>
                     <TextBlock TextAlignment="Center" TextWrapping="Wrap" MaxWidth="360"
-                               Text="開啟 DefinePath 資料夾，分頁式維護 9 種定義型別 XML。"/>
+                               Text="{loc:Loc About_Description2}"/>
                 </StackPanel>
 
                 <Separator Margin="0,10,0,4"/>

@@ -38,4 +38,158 @@
   <data name="Welcome_MenuAlternative" xml:space="preserve"><value>Or use File → Open Folder...</value></data>
 
   <data name="Status_NoSolution" xml:space="preserve"><value>No solution open</value></data>
+
+  <data name="Action_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Action_SaveAnyway" xml:space="preserve"><value>Save anyway</value></data>
+  <data name="Action_Delete" xml:space="preserve"><value>Delete</value></data>
+  <data name="Action_OK" xml:space="preserve"><value>OK</value></data>
+
+  <data name="Tab_DirtyTooltip" xml:space="preserve"><value>Unsaved changes</value></data>
+  <data name="Tab_CloseTooltip" xml:space="preserve"><value>Close tab</value></data>
+
+  <data name="DocumentWelcome_Tip" xml:space="preserve"><value>(Pick a file from the solution tree to open it as a tab. Clicking an already-open file switches to that tab.)</value></data>
+
+  <data name="About_Subtitle" xml:space="preserve"><value>Bee.NET DefinePath solution maintenance tool</value></data>
+  <data name="About_Description1" xml:space="preserve"><value>Avalonia 12 + .NET 10 cross-platform desktop tool (Win / Mac / Linux).</value></data>
+  <data name="About_Description2" xml:space="preserve"><value>Open a DefinePath folder and edit nine define types across tabs.</value></data>
+
+  <data name="ConfirmDialog_DefaultTitle" xml:space="preserve"><value>Confirm</value></data>
+
+  <data name="Section_ValidationResults" xml:space="preserve"><value>Validation results</value></data>
+  <data name="Action_Apply" xml:space="preserve"><value>Apply</value></data>
+
+  <!-- DbCategorySettings -->
+  <data name="DbCategory_AddCategory" xml:space="preserve"><value>Add DbCategory</value></data>
+  <data name="DbCategory_AddTable" xml:space="preserve"><value>Add TableItem</value></data>
+  <data name="DbCategory_RootSubtitle" xml:space="preserve"><value>DbCategorySettings (DB category root)</value></data>
+  <data name="DbCategory_RootHint" xml:space="preserve"><value>Right-click the root to add a DbCategory; right-click a category to add a TableItem under it.</value></data>
+  <data name="DbCategory_CategoryProps" xml:space="preserve"><value>DbCategory properties</value></data>
+  <data name="DbCategory_TableProps" xml:space="preserve"><value>TableItem properties</value></data>
+
+  <!-- ProgramSettings -->
+  <data name="Program_AddCategory" xml:space="preserve"><value>Add ProgramCategory</value></data>
+  <data name="Program_AddProgram" xml:space="preserve"><value>Add ProgramItem</value></data>
+  <data name="Program_RootSubtitle" xml:space="preserve"><value>ProgramSettings (program list root)</value></data>
+  <data name="Program_RootHint" xml:space="preserve"><value>Right-click the root to add a ProgramCategory; right-click a category to add a ProgramItem under it.</value></data>
+  <data name="Program_CategoryProps" xml:space="preserve"><value>ProgramCategory properties</value></data>
+  <data name="Program_ProgramProps" xml:space="preserve"><value>ProgramItem properties</value></data>
+
+  <!-- PermissionModels -->
+  <data name="Permission_AddModel" xml:space="preserve"><value>Add PermissionModel</value></data>
+  <data name="Permission_AddRule" xml:space="preserve"><value>Add PermissionRule</value></data>
+  <data name="Permission_RootSubtitle" xml:space="preserve"><value>PermissionModels (registry root)</value></data>
+  <data name="Permission_RootHint" xml:space="preserve"><value>Right-click the root to add a PermissionModel; right-click a model to add a PermissionRule.</value></data>
+  <data name="Permission_ModelProps" xml:space="preserve"><value>PermissionModel properties</value></data>
+  <data name="Permission_RuleProps" xml:space="preserve"><value>PermissionRule properties</value></data>
+  <data name="Permission_RuleNote" xml:space="preserve"><value>(Print / Export are output-style actions, leave Scope = Inherit; other actions are unrestricted.)</value></data>
+
+  <!-- Language -->
+  <data name="Language_AddItem" xml:space="preserve"><value>Add LanguageItem</value></data>
+  <data name="Language_AddEnum" xml:space="preserve"><value>Add LanguageEnum</value></data>
+  <data name="Language_AddEntry" xml:space="preserve"><value>Add LanguageEnumEntry</value></data>
+  <data name="Language_ResourceProps" xml:space="preserve"><value>LanguageResource properties</value></data>
+  <data name="Language_ItemProps" xml:space="preserve"><value>LanguageItem properties</value></data>
+  <data name="Language_EnumProps" xml:space="preserve"><value>LanguageEnum properties</value></data>
+  <data name="Language_EnumEntryProps" xml:space="preserve"><value>LanguageEnumEntry properties</value></data>
+  <data name="Language_ItemNote" xml:space="preserve"><value>(Namespace typically maps to ProgId / module name; Lang examples: zh-TW, en-US.)</value></data>
+  <data name="Language_EnumNote" xml:space="preserve"><value>(Right-click to add code/text entries.)</value></data>
+
+  <!-- TableSchema -->
+  <data name="TableSchema_AddField" xml:space="preserve"><value>Add DbField</value></data>
+  <data name="TableSchema_AddIndex" xml:space="preserve"><value>Add DbTableIndex</value></data>
+  <data name="TableSchema_AddIndexField" xml:space="preserve"><value>Add IndexField</value></data>
+  <data name="TableSchema_Props" xml:space="preserve"><value>TableSchema properties</value></data>
+  <data name="TableSchema_FieldProps" xml:space="preserve"><value>DbField properties</value></data>
+  <data name="TableSchema_IndexProps" xml:space="preserve"><value>DbTableIndex properties</value></data>
+  <data name="TableSchema_IndexFieldProps" xml:space="preserve"><value>IndexField properties</value></data>
+  <data name="TableSchema_FieldNote" xml:space="preserve"><value>(OriginalFieldName is a one-off rename hint for schema upgrade; leave it empty in normal use.)</value></data>
+  <data name="TableSchema_IndexNote" xml:space="preserve"><value>(Right-click to add index fields.)</value></data>
+
+  <!-- FormLayout -->
+  <data name="FormLayout_AddSection" xml:space="preserve"><value>Add LayoutSection</value></data>
+  <data name="FormLayout_AddField" xml:space="preserve"><value>Add LayoutField</value></data>
+  <data name="FormLayout_AddGrid" xml:space="preserve"><value>Add LayoutGrid</value></data>
+  <data name="FormLayout_AddColumn" xml:space="preserve"><value>Add LayoutColumn</value></data>
+  <data name="FormLayout_Props" xml:space="preserve"><value>FormLayout properties</value></data>
+  <data name="FormLayout_SectionProps" xml:space="preserve"><value>LayoutSection properties</value></data>
+  <data name="FormLayout_FieldProps" xml:space="preserve"><value>LayoutField properties (master form field)</value></data>
+  <data name="FormLayout_GridProps" xml:space="preserve"><value>LayoutGrid properties (detail grid)</value></data>
+  <data name="FormLayout_ColumnProps" xml:space="preserve"><value>LayoutColumn properties (grid column)</value></data>
+
+  <!-- SystemSettings -->
+  <data name="SystemSettings_AddProperty" xml:space="preserve"><value>Add Property</value></data>
+  <data name="SystemSettings_RootSubtitle" xml:space="preserve"><value>SystemSettings (system configuration root)</value></data>
+  <data name="SystemSettings_RootHint" xml:space="preserve"><value>Select a Configuration child to edit it; ExtendedProperties provides free key/value entries (right-click to add / delete).</value></data>
+  <data name="SystemSettings_CommonProps" xml:space="preserve"><value>CommonConfiguration properties</value></data>
+  <data name="SystemSettings_SecurityProps" xml:space="preserve"><value>SecurityKeySettings properties</value></data>
+  <data name="SystemSettings_SecurityWarning" xml:space="preserve"><value>(Keys are shown as plain text — this editor is for local dev only; manage production keys via KMS.)</value></data>
+  <data name="SystemSettings_CacheNotifyProps" xml:space="preserve"><value>CacheNotifyOptions properties</value></data>
+  <data name="SystemSettings_BackendComponentsProps" xml:space="preserve"><value>BackendComponents properties</value></data>
+  <data name="SystemSettings_BackendComponentsHint" xml:space="preserve"><value>Each backend component's AssemblyQualifiedName (defaults come from BackendDefaultTypes).</value></data>
+  <data name="SystemSettings_ExtendedPropertyProps" xml:space="preserve"><value>ExtendedProperty</value></data>
+
+  <!-- FormSchema -->
+  <data name="FormSchema_AddTable" xml:space="preserve"><value>Add FormTable</value></data>
+  <data name="FormSchema_AddField" xml:space="preserve"><value>Add FormField</value></data>
+  <data name="FormSchema_AddListItem" xml:space="preserve"><value>Add ListItem</value></data>
+  <data name="FormSchema_AddLookupMapping" xml:space="preserve"><value>Add Lookup Mapping</value></data>
+  <data name="FormSchema_AddRelationMapping" xml:space="preserve"><value>Add Relation Mapping</value></data>
+  <data name="FormSchema_Props" xml:space="preserve"><value>FormSchema properties</value></data>
+  <data name="FormSchema_TableProps" xml:space="preserve"><value>FormTable properties</value></data>
+  <data name="FormSchema_FieldProps" xml:space="preserve"><value>FormField properties</value></data>
+  <data name="FormSchema_FieldMappingProps" xml:space="preserve"><value>FieldMapping properties</value></data>
+  <data name="FormSchema_ListItemProps" xml:space="preserve"><value>ListItem properties</value></data>
+  <data name="FormSchema_MappingHeader" xml:space="preserve"><value>Field mapping (Source → Destination)</value></data>
+  <data name="FormSchema_MappingRelation" xml:space="preserve"><value>Related field</value></data>
+  <data name="FormSchema_MappingSource" xml:space="preserve"><value>Source field</value></data>
+  <data name="FormSchema_MappingNote" xml:space="preserve"><value>(Right-click a mapping group to add / remove rows; Destination suggestions come from the current FormTable's fields.)</value></data>
+
+  <!-- DatabaseSettings -->
+  <data name="DatabaseSettings_AddServer" xml:space="preserve"><value>Add DatabaseServer</value></data>
+  <data name="DatabaseSettings_AddItem" xml:space="preserve"><value>Add DatabaseItem</value></data>
+  <data name="DatabaseSettings_RootSubtitle" xml:space="preserve"><value>DatabaseSettings root</value></data>
+  <data name="DatabaseSettings_RootHint" xml:space="preserve"><value>Right-click the Servers group to add a DatabaseServer, the Items group to add a DatabaseItem; Server provides a shared connection-string template ({@UserId}/{@Password} placeholders), Item binds a Server or supplies its own connection string (use {@DbName} to specify the database name).</value></data>
+  <data name="DatabaseSettings_ServerProps" xml:space="preserve"><value>DatabaseServer properties</value></data>
+  <data name="DatabaseSettings_ItemProps" xml:space="preserve"><value>DatabaseItem properties</value></data>
+  <data name="DatabaseSettings_ParseSection" xml:space="preserve"><value>Parse a pasted connection string</value></data>
+  <data name="DatabaseSettings_ParseHint" xml:space="preserve"><value>Paste a complete connection string then click "Parse" — the tool splits user/password using the alias table for the chosen DatabaseType and rewrites them as placeholders.</value></data>
+  <data name="DatabaseSettings_ParseHintItem" xml:space="preserve"><value>Paste a complete connection string then click "Parse" — the tool splits user / password / database name using the alias table for the chosen DatabaseType and rewrites them as placeholders.</value></data>
+  <data name="DatabaseSettings_PastePlaceholderServer" xml:space="preserve"><value>e.g. Data Source=localhost;Initial Catalog=master;User ID=sa;Password=…</value></data>
+  <data name="DatabaseSettings_PastePlaceholderItem" xml:space="preserve"><value>e.g. Host=localhost;Port=5432;Database=mydb;Username=app;Password=…</value></data>
+  <data name="DatabaseSettings_Parse" xml:space="preserve"><value>Parse</value></data>
+  <data name="DatabaseSettings_ParseTooltip" xml:space="preserve"><value>Split user / password / database name using the DatabaseType alias table</value></data>
+  <data name="DatabaseSettings_Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="DatabaseSettings_ClearTooltip" xml:space="preserve"><value>Clear the paste area and preview</value></data>
+  <data name="DatabaseSettings_ParsePreview" xml:space="preserve"><value>Parse preview</value></data>
+  <data name="DatabaseSettings_ApplyServer" xml:space="preserve"><value>Apply to this Server</value></data>
+  <data name="DatabaseSettings_ApplyServerTooltip" xml:space="preserve"><value>Write the preview into this Server's fields</value></data>
+  <data name="DatabaseSettings_ApplyItem" xml:space="preserve"><value>Apply to this Item</value></data>
+  <data name="DatabaseSettings_ApplyItemTooltip" xml:space="preserve"><value>Write the preview into this Item's fields</value></data>
+
+  <!-- Unsupported -->
+  <data name="Unsupported_SelectedItem" xml:space="preserve"><value>Selected item</value></data>
+
+  <!-- Status bar messages -->
+  <data name="Status_AddedNamed" xml:space="preserve"><value>Added {0}: {1} (unsaved)</value></data>
+  <data name="Status_Deleted" xml:space="preserve"><value>Node deleted (unsaved)</value></data>
+  <data name="Status_DeleteCancelled" xml:space="preserve"><value>Deletion cancelled.</value></data>
+  <data name="Status_Saved" xml:space="preserve"><value>Saved: {0}</value></data>
+  <data name="Status_SaveFailed" xml:space="preserve"><value>Save failed: {0}</value></data>
+  <data name="Status_SaveCancelled" xml:space="preserve"><value>Save cancelled ({0} errors unresolved).</value></data>
+  <data name="Status_ValidationPassed" xml:space="preserve"><value>Validation passed: no issues found.</value></data>
+  <data name="Status_ValidationCompleted" xml:space="preserve"><value>Validation completed: {0} issues ({1} errors / {2} warnings).</value></data>
+  <data name="Status_SolutionLoaded" xml:space="preserve"><value>Loaded {0} FormSchemas</value></data>
+  <data name="Status_OpenSolutionFailed" xml:space="preserve"><value>Open failed: {0}</value></data>
+  <data name="Status_PermissionRuleCovered" xml:space="preserve"><value>This model already covers every PermissionAction — no more rules to add.</value></data>
+  <data name="Status_SingletonHint" xml:space="preserve"><value>(Property edits commit to memory on focus loss; Save (⌘S) refreshes the tree headers and writes back to XML.)</value></data>
+
+  <!-- Confirmation dialogs -->
+  <data name="Confirm_DeleteTitle" xml:space="preserve"><value>Confirm deletion</value></data>
+  <data name="Confirm_DeleteMessage" xml:space="preserve"><value>Delete "{0}"?
+Removed from memory; press Save (⌘S) to persist.</value></data>
+  <data name="Confirm_SaveAfterValidationTitle" xml:space="preserve"><value>Validation failed before save</value></data>
+  <data name="Confirm_SaveAfterValidationErrors" xml:space="preserve"><value>Validation found {0} errors.
+Save anyway?</value></data>
+  <data name="Confirm_SaveAfterValidationErrorsAndWarnings" xml:space="preserve"><value>Validation found {0} errors and {1} warnings.
+Save anyway?</value></data>
 </root>

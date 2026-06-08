@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:loc="using:Bee.DefineEditor.Markup"
              xmlns:models="using:Bee.DefineEditor.Models"
              xmlns:lang="using:Bee.Definition.Language"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,17 +14,17 @@
     <UserControl.DataTemplates>
         <DataTemplate DataType="lang:LanguageResource">
             <StackPanel x:DataType="lang:LanguageResource" Spacing="2">
-                <TextBlock Classes="h2" Text="LanguageResource 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc Language_ResourceProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Namespace"/><TextBox Text="{Binding Namespace, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short"><TextBlock Classes="label" Text="Lang (BCP-47)"/><TextBox Text="{Binding Lang, Mode=TwoWay}"/></DockPanel>
                 <TextBlock Classes="muted" Margin="0,8,0,0" TextWrapping="Wrap"
-                           Text="（Namespace 通常對應 ProgId / 模組名稱；Lang 例：zh-TW、en-US。）"/>
+                           Text="{loc:Loc Language_ItemNote}"/>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="lang:LanguageItem">
             <StackPanel x:DataType="lang:LanguageItem" Spacing="2">
-                <TextBlock Classes="h2" Text="LanguageItem 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc Language_ItemProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Key (sub-key)"/><TextBox Text="{Binding Key, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Value"/><TextBox Text="{Binding Value, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap"/></DockPanel>
             </StackPanel>
@@ -31,15 +32,15 @@
 
         <DataTemplate DataType="lang:LanguageEnum">
             <StackPanel x:DataType="lang:LanguageEnum" Spacing="2">
-                <TextBlock Classes="h2" Text="LanguageEnum 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc Language_EnumProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Name"/><TextBox Text="{Binding Name, Mode=TwoWay}"/></DockPanel>
-                <TextBlock Classes="muted" Margin="0,8,0,0" TextWrapping="Wrap" Text="（用工具列「+ Entry」加入 code/text 對。）"/>
+                <TextBlock Classes="muted" Margin="0,8,0,0" TextWrapping="Wrap" Text="{loc:Loc Language_EnumNote}"/>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="lang:LanguageEnumEntry">
             <StackPanel x:DataType="lang:LanguageEnumEntry" Spacing="2">
-                <TextBlock Classes="h2" Text="LanguageEnumEntry 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc Language_EnumEntryProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row short"><TextBlock Classes="label" Text="Code"/><TextBox Text="{Binding Code, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Text"/><TextBox Text="{Binding Text, Mode=TwoWay}"/></DockPanel>
             </StackPanel>
@@ -54,7 +55,7 @@
 
         <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8" IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="{loc:Loc Section_ValidationResults}"/>
                 <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0" Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ValidationIssue">
@@ -86,21 +87,21 @@
                 </TreeView.Styles>
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="新增 LanguageItem"
+                        <MenuItem Header="{loc:Loc Language_AddItem}"
                                   Command="{Binding AddItemCommand}"
                                   IsVisible="{Binding SelectedKindIsItemsGroup}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconText}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 LanguageEnum"
+                        <MenuItem Header="{loc:Loc Language_AddEnum}"
                                   Command="{Binding AddEnumCommand}"
                                   IsVisible="{Binding SelectedKindIsEnumsGroup}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconList}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 LanguageEnumEntry"
+                        <MenuItem Header="{loc:Loc Language_AddEntry}"
                                   Command="{Binding AddEntryCommand}"
                                   IsVisible="{Binding SelectedKindIsEnum}">
                             <MenuItem.Icon>
@@ -108,7 +109,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
-                        <MenuItem Header="刪除"
+                        <MenuItem Header="{loc:Loc Action_Delete}"
                                   Command="{Binding DeleteCommand}"
                                   IsVisible="{Binding SelectedKindCanDelete}">
                             <MenuItem.Icon>

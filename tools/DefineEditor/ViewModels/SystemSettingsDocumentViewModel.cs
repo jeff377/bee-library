@@ -219,7 +219,7 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 ExtendedProperty：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "ExtendedProperty", name);
     }
 
     private bool CanAddProperty() =>

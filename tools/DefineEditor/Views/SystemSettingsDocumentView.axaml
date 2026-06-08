@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:loc="using:Bee.DefineEditor.Markup"
              xmlns:models="using:Bee.DefineEditor.Models"
              xmlns:settings="using:Bee.Definition.Settings"
              xmlns:collections="using:Bee.Definition.Collections"
@@ -14,15 +15,15 @@
     <UserControl.DataTemplates>
         <DataTemplate DataType="settings:SystemSettings">
             <StackPanel Spacing="6">
-                <TextBlock Classes="h2" Text="SystemSettings（系統設定根節點）"/>
+                <TextBlock Classes="h2" Text="{loc:Loc SystemSettings_RootSubtitle}"/>
                 <TextBlock Classes="muted" TextWrapping="Wrap"
-                           Text="選取下方 Configuration 子節點編輯個別區塊；ExtendedProperties 提供自由 key/value 欄位（可新增/刪除）。"/>
+                           Text="{loc:Loc SystemSettings_RootHint}"/>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="settings:CommonConfiguration">
             <StackPanel x:DataType="settings:CommonConfiguration" Spacing="2">
-                <TextBlock Classes="h2" Text="CommonConfiguration 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc SystemSettings_CommonProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Version"/>
                     <TextBox Text="{Binding Version, Mode=TwoWay}"/>
@@ -44,9 +45,9 @@
 
         <DataTemplate DataType="settings:SecurityKeySettings">
             <StackPanel x:DataType="settings:SecurityKeySettings" Spacing="2">
-                <TextBlock Classes="h2" Text="SecurityKeySettings 屬性" Margin="0,0,0,4"/>
+                <TextBlock Classes="h2" Text="{loc:Loc SystemSettings_SecurityProps}" Margin="0,0,0,4"/>
                 <TextBlock Classes="muted" Foreground="{DynamicResource WarningForeground}" Margin="0,0,0,8" TextWrapping="Wrap"
-                           Text="（金鑰直接顯示為純文字 — 編輯器本機檔案僅供 dev 操作；於 production 應透過 KMS 管理）"/>
+                           Text="{loc:Loc SystemSettings_SecurityWarning}"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ApiEncryptionKey"/>
                     <TextBox Text="{Binding ApiEncryptionKey, Mode=TwoWay}"/>
@@ -68,7 +69,7 @@
 
         <DataTemplate DataType="settings:CacheNotifyOptions">
             <StackPanel x:DataType="settings:CacheNotifyOptions" Spacing="2">
-                <TextBlock Classes="h2" Text="CacheNotifyOptions 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc SystemSettings_CacheNotifyProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Enabled"/>
                     <CheckBox IsChecked="{Binding Enabled, Mode=TwoWay}"/>
@@ -90,9 +91,9 @@
 
         <DataTemplate DataType="settings:BackendComponents">
             <StackPanel x:DataType="settings:BackendComponents" Spacing="2">
-                <TextBlock Classes="h2" Text="BackendComponents 屬性" Margin="0,0,0,4"/>
+                <TextBlock Classes="h2" Text="{loc:Loc SystemSettings_BackendComponentsProps}" Margin="0,0,0,4"/>
                 <TextBlock Classes="muted" Margin="0,0,0,8" TextWrapping="Wrap"
-                           Text="後端各 component 的型別 AssemblyQualifiedName（預設值來自 BackendDefaultTypes）。"/>
+                           Text="{loc:Loc SystemSettings_BackendComponentsHint}"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="ApiEncryptionKeyProvider"/><TextBox Text="{Binding ApiEncryptionKeyProvider, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="AccessTokenValidator"/><TextBox Text="{Binding AccessTokenValidator, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="BusinessObjectFactory"/><TextBox Text="{Binding BusinessObjectFactory, Mode=TwoWay}"/></DockPanel>
@@ -110,7 +111,7 @@
 
         <DataTemplate DataType="collections:Property">
             <StackPanel x:DataType="collections:Property" Spacing="2">
-                <TextBlock Classes="h2" Text="ExtendedProperty 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc SystemSettings_ExtendedPropertyProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="Name"/>
                     <TextBox Text="{Binding Name, Mode=TwoWay}"/>
@@ -131,7 +132,7 @@
 
         <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8" IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="{loc:Loc Section_ValidationResults}"/>
                 <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0" Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ValidationIssue">
@@ -163,7 +164,7 @@
                 </TreeView.Styles>
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="新增 Property"
+                        <MenuItem Header="{loc:Loc SystemSettings_AddProperty}"
                                   Command="{Binding AddPropertyCommand}"
                                   IsVisible="{Binding SelectedKindIsExtendedGroup}">
                             <MenuItem.Icon>
@@ -171,7 +172,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
-                        <MenuItem Header="刪除"
+                        <MenuItem Header="{loc:Loc Action_Delete}"
                                   Command="{Binding DeleteCommand}"
                                   IsVisible="{Binding SelectedKindCanDelete}">
                             <MenuItem.Icon>

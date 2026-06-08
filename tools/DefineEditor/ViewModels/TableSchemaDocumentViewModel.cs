@@ -175,7 +175,7 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 DbField：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "DbField", name);
     }
     private bool CanAddField() => SelectedTreeNode is not null;
 
@@ -193,7 +193,7 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 DbTableIndex：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "DbTableIndex", name);
     }
     private bool CanAddIndex() => SelectedTreeNode is not null;
 
@@ -213,7 +213,7 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
         indexNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 IndexField：{key}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "IndexField", key);
     }
     private bool CanAddIndexField() => FindAncestor(SelectedTreeNode, KindIndex) is not null;
 

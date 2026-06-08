@@ -129,7 +129,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
         rootNode.AddChild(node);
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 PermissionModel：{modelId}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "PermissionModel", modelId);
     }
 
     private bool CanAddModel() => SelectedTreeNode?.Kind == KindRoot;
@@ -142,7 +142,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
         var action = PickAvailableAction(model);
         if (action is null)
         {
-            StatusText = "此模型已涵蓋所有 PermissionAction，無法再新增 Rule。";
+            StatusText = L("Status_PermissionRuleCovered");
             return;
         }
         var rule = new PermissionRule(action.Value);
@@ -152,7 +152,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
         modelNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 Rule：{action.Value}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "PermissionRule", action.Value);
     }
 
     private bool CanAddRule() => FindAncestor(SelectedTreeNode, KindModel) is not null;

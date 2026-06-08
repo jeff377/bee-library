@@ -171,7 +171,7 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 DatabaseServer：{id}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "DatabaseServer", id);
     }
 
     private bool CanAddServer() => SelectedTreeNode is not null;
@@ -195,7 +195,7 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 DatabaseItem：{id}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "DatabaseItem", id);
     }
 
     private bool CanAddItem() => SelectedTreeNode is not null;

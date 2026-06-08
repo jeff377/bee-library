@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:loc="using:Bee.DefineEditor.Markup"
              xmlns:models="using:Bee.DefineEditor.Models"
              xmlns:db="using:Bee.Definition.Database"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,7 +14,7 @@
     <UserControl.DataTemplates>
         <DataTemplate DataType="db:TableSchema">
             <StackPanel x:DataType="db:TableSchema" Spacing="2">
-                <TextBlock Classes="h2" Text="TableSchema 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc TableSchema_Props}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="TableName"/><TextBox Text="{Binding TableName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="DisplayName"/><TextBox Text="{Binding DisplayName, Mode=TwoWay}"/></DockPanel>
             </StackPanel>
@@ -21,7 +22,7 @@
 
         <DataTemplate DataType="db:DbField">
             <StackPanel x:DataType="db:DbField" Spacing="2">
-                <TextBlock Classes="h2" Text="DbField 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc TableSchema_FieldProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="FieldName"/><TextBox Text="{Binding FieldName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
@@ -35,23 +36,23 @@
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="DefaultValue"/><TextBox Text="{Binding DefaultValue, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="OriginalFieldName"/><TextBox Text="{Binding OriginalFieldName, Mode=TwoWay}"/></DockPanel>
                 <TextBlock Classes="muted" Margin="0,8,0,0" TextWrapping="Wrap"
-                           Text="（OriginalFieldName 是 schema upgrade 階段一次性 rename hint，平常留空。）"/>
+                           Text="{loc:Loc TableSchema_FieldNote}"/>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="db:DbTableIndex">
             <StackPanel x:DataType="db:DbTableIndex" Spacing="2">
-                <TextBlock Classes="h2" Text="DbTableIndex 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc TableSchema_IndexProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Name"/><TextBox Text="{Binding Name, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="PrimaryKey"/><CheckBox IsChecked="{Binding PrimaryKey, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Unique"/><CheckBox IsChecked="{Binding Unique, Mode=TwoWay}"/></DockPanel>
-                <TextBlock Classes="muted" Margin="0,8,0,0" TextWrapping="Wrap" Text="（用工具列「+ IndexField」加入索引欄位。）"/>
+                <TextBlock Classes="muted" Margin="0,8,0,0" TextWrapping="Wrap" Text="{loc:Loc TableSchema_IndexNote}"/>
             </StackPanel>
         </DataTemplate>
 
         <DataTemplate DataType="db:IndexField">
             <StackPanel x:DataType="db:IndexField" Spacing="2">
-                <TextBlock Classes="h2" Text="IndexField 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc TableSchema_IndexFieldProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="FieldName"/><TextBox Text="{Binding FieldName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
                     <TextBlock Classes="label" Text="SortDirection"/>
@@ -69,7 +70,7 @@
 
         <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8" IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="{loc:Loc Section_ValidationResults}"/>
                 <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0" Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ValidationIssue">
@@ -101,21 +102,21 @@
                 </TreeView.Styles>
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="新增 DbField"
+                        <MenuItem Header="{loc:Loc TableSchema_AddField}"
                                   Command="{Binding AddFieldCommand}"
                                   IsVisible="{Binding SelectedKindIsFieldsGroup}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconColumn}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 DbTableIndex"
+                        <MenuItem Header="{loc:Loc TableSchema_AddIndex}"
                                   Command="{Binding AddIndexCommand}"
                                   IsVisible="{Binding SelectedKindIsIndexesGroup}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconKey}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 IndexField"
+                        <MenuItem Header="{loc:Loc TableSchema_AddIndexField}"
                                   Command="{Binding AddIndexFieldCommand}"
                                   IsVisible="{Binding SelectedKindIsIndex}">
                             <MenuItem.Icon>
@@ -123,7 +124,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
-                        <MenuItem Header="刪除"
+                        <MenuItem Header="{loc:Loc Action_Delete}"
                                   Command="{Binding DeleteCommand}"
                                   IsVisible="{Binding SelectedKindCanDelete}">
                             <MenuItem.Icon>

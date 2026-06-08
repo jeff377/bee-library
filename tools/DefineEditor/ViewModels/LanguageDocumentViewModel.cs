@@ -160,7 +160,7 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 LanguageItem：{key}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "LanguageItem", key);
     }
     private bool CanAddItem() => SelectedTreeNode is not null;
 
@@ -178,7 +178,7 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
         groupNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 LanguageEnum：{name}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "LanguageEnum", name);
     }
     private bool CanAddEnum() => SelectedTreeNode is not null;
 
@@ -195,7 +195,7 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
         enumNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 LanguageEnumEntry：{code}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "LanguageEnumEntry", code);
     }
     private bool CanAddEntry() => FindAncestor(SelectedTreeNode, KindEnum) is not null;
 

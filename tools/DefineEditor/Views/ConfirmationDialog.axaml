@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="using:Bee.DefineEditor.Markup"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="460" d:DesignHeight="220"
@@ -8,7 +9,7 @@
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         ShowInTaskbar="False"
-        Title="確認">
+        Title="{loc:Loc ConfirmDialog_DefaultTitle}">
 
     <Border Padding="22,20">
         <DockPanel>
@@ -26,8 +27,8 @@
             <!-- 按鈕列 -->
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                         HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
-                <Button Classes="tool" Content="取消" Click="OnCancel" MinWidth="90"/>
-                <Button Classes="tool primary" Content="仍要存檔" Click="OnConfirm" MinWidth="100"/>
+                <Button x:Name="CancelButton" Classes="tool" Content="{loc:Loc Action_Cancel}" Click="OnCancel" MinWidth="90"/>
+                <Button x:Name="ConfirmButton" Classes="tool primary" Content="{loc:Loc Action_OK}" Click="OnConfirm" MinWidth="100"/>
             </StackPanel>
 
             <!-- 訊息本文 -->

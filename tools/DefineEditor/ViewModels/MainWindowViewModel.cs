@@ -161,7 +161,7 @@ public partial class MainWindowViewModel : ViewModelBase
             ActiveDocument = null;
             SelectedNode = null;
             SolutionPath = definePath;
-            StatusText = $"已載入 {Solution.AvailableProgIds.Count} 個 FormSchema";
+            StatusText = L("Status_SolutionLoaded", Solution.AvailableProgIds.Count);
         }
         catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
         {
@@ -171,7 +171,7 @@ public partial class MainWindowViewModel : ViewModelBase
             ActiveDocument = null;
             SelectedNode = null;
             SolutionPath = string.Empty;
-            StatusText = $"開啟失敗：{ex.Message}";
+            StatusText = L("Status_OpenSolutionFailed", ex.Message);
         }
     }
 

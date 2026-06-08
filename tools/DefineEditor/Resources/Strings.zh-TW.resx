@@ -25,4 +25,158 @@
   <data name="Welcome_MenuAlternative" xml:space="preserve"><value>亦可從上方「檔案 → 開啟方案...」</value></data>
 
   <data name="Status_NoSolution" xml:space="preserve"><value>尚未開啟方案</value></data>
+
+  <data name="Action_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Action_SaveAnyway" xml:space="preserve"><value>仍要存檔</value></data>
+  <data name="Action_Delete" xml:space="preserve"><value>刪除</value></data>
+  <data name="Action_OK" xml:space="preserve"><value>確定</value></data>
+
+  <data name="Tab_DirtyTooltip" xml:space="preserve"><value>尚未存檔</value></data>
+  <data name="Tab_CloseTooltip" xml:space="preserve"><value>關閉分頁</value></data>
+
+  <data name="DocumentWelcome_Tip" xml:space="preserve"><value>（於左側方案樹選取定義檔開啟分頁；點已開過的檔會切換到既有分頁）</value></data>
+
+  <data name="About_Subtitle" xml:space="preserve"><value>Bee.NET 定義檔方案維護工具</value></data>
+  <data name="About_Description1" xml:space="preserve"><value>Avalonia 12 + .NET 10 跨平台桌面工具（Win / Mac / Linux）。</value></data>
+  <data name="About_Description2" xml:space="preserve"><value>開啟 DefinePath 資料夾，分頁式維護 9 種定義型別 XML。</value></data>
+
+  <data name="ConfirmDialog_DefaultTitle" xml:space="preserve"><value>確認</value></data>
+
+  <data name="Section_ValidationResults" xml:space="preserve"><value>驗證結果</value></data>
+  <data name="Action_Apply" xml:space="preserve"><value>套用</value></data>
+
+  <!-- DbCategorySettings -->
+  <data name="DbCategory_AddCategory" xml:space="preserve"><value>新增 DbCategory</value></data>
+  <data name="DbCategory_AddTable" xml:space="preserve"><value>新增 TableItem</value></data>
+  <data name="DbCategory_RootSubtitle" xml:space="preserve"><value>DbCategorySettings（DB 分類根節點）</value></data>
+  <data name="DbCategory_RootHint" xml:space="preserve"><value>於根節點右鍵新增 DbCategory；於 Category 節點右鍵新增 TableItem。</value></data>
+  <data name="DbCategory_CategoryProps" xml:space="preserve"><value>DbCategory 屬性</value></data>
+  <data name="DbCategory_TableProps" xml:space="preserve"><value>TableItem 屬性</value></data>
+
+  <!-- ProgramSettings -->
+  <data name="Program_AddCategory" xml:space="preserve"><value>新增 ProgramCategory</value></data>
+  <data name="Program_AddProgram" xml:space="preserve"><value>新增 ProgramItem</value></data>
+  <data name="Program_RootSubtitle" xml:space="preserve"><value>ProgramSettings（程式清單根節點）</value></data>
+  <data name="Program_RootHint" xml:space="preserve"><value>於根節點右鍵新增 ProgramCategory；於 Category 節點右鍵新增 ProgramItem。</value></data>
+  <data name="Program_CategoryProps" xml:space="preserve"><value>ProgramCategory 屬性</value></data>
+  <data name="Program_ProgramProps" xml:space="preserve"><value>ProgramItem 屬性</value></data>
+
+  <!-- PermissionModels -->
+  <data name="Permission_AddModel" xml:space="preserve"><value>新增 PermissionModel</value></data>
+  <data name="Permission_AddRule" xml:space="preserve"><value>新增 PermissionRule</value></data>
+  <data name="Permission_RootSubtitle" xml:space="preserve"><value>PermissionModels（registry 根節點）</value></data>
+  <data name="Permission_RootHint" xml:space="preserve"><value>於根節點右鍵新增 PermissionModel；於 Model 節點右鍵新增 PermissionRule。</value></data>
+  <data name="Permission_ModelProps" xml:space="preserve"><value>PermissionModel 屬性</value></data>
+  <data name="Permission_RuleProps" xml:space="preserve"><value>PermissionRule 屬性</value></data>
+  <data name="Permission_RuleNote" xml:space="preserve"><value>（Print / Export 為輸出動作，Scope 應留 Inherit；其他 action 可自由指定。）</value></data>
+
+  <!-- Language -->
+  <data name="Language_AddItem" xml:space="preserve"><value>新增 LanguageItem</value></data>
+  <data name="Language_AddEnum" xml:space="preserve"><value>新增 LanguageEnum</value></data>
+  <data name="Language_AddEntry" xml:space="preserve"><value>新增 LanguageEnumEntry</value></data>
+  <data name="Language_ResourceProps" xml:space="preserve"><value>LanguageResource 屬性</value></data>
+  <data name="Language_ItemProps" xml:space="preserve"><value>LanguageItem 屬性</value></data>
+  <data name="Language_EnumProps" xml:space="preserve"><value>LanguageEnum 屬性</value></data>
+  <data name="Language_EnumEntryProps" xml:space="preserve"><value>LanguageEnumEntry 屬性</value></data>
+  <data name="Language_ItemNote" xml:space="preserve"><value>（Namespace 通常對應 ProgId / 模組名稱；Lang 例：zh-TW、en-US。）</value></data>
+  <data name="Language_EnumNote" xml:space="preserve"><value>（右鍵新增 code/text 對。）</value></data>
+
+  <!-- TableSchema -->
+  <data name="TableSchema_AddField" xml:space="preserve"><value>新增 DbField</value></data>
+  <data name="TableSchema_AddIndex" xml:space="preserve"><value>新增 DbTableIndex</value></data>
+  <data name="TableSchema_AddIndexField" xml:space="preserve"><value>新增 IndexField</value></data>
+  <data name="TableSchema_Props" xml:space="preserve"><value>TableSchema 屬性</value></data>
+  <data name="TableSchema_FieldProps" xml:space="preserve"><value>DbField 屬性</value></data>
+  <data name="TableSchema_IndexProps" xml:space="preserve"><value>DbTableIndex 屬性</value></data>
+  <data name="TableSchema_IndexFieldProps" xml:space="preserve"><value>IndexField 屬性</value></data>
+  <data name="TableSchema_FieldNote" xml:space="preserve"><value>（OriginalFieldName 是 schema upgrade 階段一次性 rename hint，平常留空。）</value></data>
+  <data name="TableSchema_IndexNote" xml:space="preserve"><value>（右鍵新增索引欄位。）</value></data>
+
+  <!-- FormLayout -->
+  <data name="FormLayout_AddSection" xml:space="preserve"><value>新增 LayoutSection</value></data>
+  <data name="FormLayout_AddField" xml:space="preserve"><value>新增 LayoutField</value></data>
+  <data name="FormLayout_AddGrid" xml:space="preserve"><value>新增 LayoutGrid</value></data>
+  <data name="FormLayout_AddColumn" xml:space="preserve"><value>新增 LayoutColumn</value></data>
+  <data name="FormLayout_Props" xml:space="preserve"><value>FormLayout 屬性</value></data>
+  <data name="FormLayout_SectionProps" xml:space="preserve"><value>LayoutSection 屬性</value></data>
+  <data name="FormLayout_FieldProps" xml:space="preserve"><value>LayoutField 屬性（主表單欄位）</value></data>
+  <data name="FormLayout_GridProps" xml:space="preserve"><value>LayoutGrid 屬性（明細表格）</value></data>
+  <data name="FormLayout_ColumnProps" xml:space="preserve"><value>LayoutColumn 屬性（grid 欄）</value></data>
+
+  <!-- SystemSettings -->
+  <data name="SystemSettings_AddProperty" xml:space="preserve"><value>新增 Property</value></data>
+  <data name="SystemSettings_RootSubtitle" xml:space="preserve"><value>SystemSettings（系統設定根節點）</value></data>
+  <data name="SystemSettings_RootHint" xml:space="preserve"><value>選取下方 Configuration 子節點編輯個別區塊；ExtendedProperties 提供自由 key/value 欄位（右鍵可新增 / 刪除）。</value></data>
+  <data name="SystemSettings_CommonProps" xml:space="preserve"><value>CommonConfiguration 屬性</value></data>
+  <data name="SystemSettings_SecurityProps" xml:space="preserve"><value>SecurityKeySettings 屬性</value></data>
+  <data name="SystemSettings_SecurityWarning" xml:space="preserve"><value>（金鑰直接顯示為純文字 — 編輯器本機檔案僅供 dev 操作；於 production 應透過 KMS 管理）</value></data>
+  <data name="SystemSettings_CacheNotifyProps" xml:space="preserve"><value>CacheNotifyOptions 屬性</value></data>
+  <data name="SystemSettings_BackendComponentsProps" xml:space="preserve"><value>BackendComponents 屬性</value></data>
+  <data name="SystemSettings_BackendComponentsHint" xml:space="preserve"><value>後端各 component 的型別 AssemblyQualifiedName（預設值來自 BackendDefaultTypes）。</value></data>
+  <data name="SystemSettings_ExtendedPropertyProps" xml:space="preserve"><value>ExtendedProperty 屬性</value></data>
+
+  <!-- FormSchema -->
+  <data name="FormSchema_AddTable" xml:space="preserve"><value>新增 FormTable</value></data>
+  <data name="FormSchema_AddField" xml:space="preserve"><value>新增 FormField</value></data>
+  <data name="FormSchema_AddListItem" xml:space="preserve"><value>新增 ListItem</value></data>
+  <data name="FormSchema_AddLookupMapping" xml:space="preserve"><value>新增 Lookup Mapping</value></data>
+  <data name="FormSchema_AddRelationMapping" xml:space="preserve"><value>新增 Relation Mapping</value></data>
+  <data name="FormSchema_Props" xml:space="preserve"><value>FormSchema 屬性</value></data>
+  <data name="FormSchema_TableProps" xml:space="preserve"><value>FormTable 屬性</value></data>
+  <data name="FormSchema_FieldProps" xml:space="preserve"><value>FormField 屬性</value></data>
+  <data name="FormSchema_FieldMappingProps" xml:space="preserve"><value>FieldMapping 屬性</value></data>
+  <data name="FormSchema_ListItemProps" xml:space="preserve"><value>ListItem 屬性</value></data>
+  <data name="FormSchema_MappingHeader" xml:space="preserve"><value>欄位對應（Source → Destination）</value></data>
+  <data name="FormSchema_MappingRelation" xml:space="preserve"><value>關聯欄位</value></data>
+  <data name="FormSchema_MappingSource" xml:space="preserve"><value>來源欄位</value></data>
+  <data name="FormSchema_MappingNote" xml:space="preserve"><value>（於對應群組節點右鍵新增 / 刪除對應列；Destination 候選來自目前 FormTable 的欄位）</value></data>
+
+  <!-- DatabaseSettings -->
+  <data name="DatabaseSettings_AddServer" xml:space="preserve"><value>新增 DatabaseServer</value></data>
+  <data name="DatabaseSettings_AddItem" xml:space="preserve"><value>新增 DatabaseItem</value></data>
+  <data name="DatabaseSettings_RootSubtitle" xml:space="preserve"><value>DatabaseSettings 根節點</value></data>
+  <data name="DatabaseSettings_RootHint" xml:space="preserve"><value>於 Servers 群組右鍵新增 DatabaseServer，於 Items 群組右鍵新增 DatabaseItem；Server 提供共用連線字串樣板（用 {@UserId}/{@Password} 佔位符），Item 綁定 Server 或自行提供連線字串（用 {@DbName} 指定資料庫名）。</value></data>
+  <data name="DatabaseSettings_ServerProps" xml:space="preserve"><value>DatabaseServer 屬性</value></data>
+  <data name="DatabaseSettings_ItemProps" xml:space="preserve"><value>DatabaseItem 屬性</value></data>
+  <data name="DatabaseSettings_ParseSection" xml:space="preserve"><value>貼上連線字串拆解</value></data>
+  <data name="DatabaseSettings_ParseHint" xml:space="preserve"><value>貼上完整連線字串後按「拆解」，工具會依目前選定的 DatabaseType 把帳密拆出來、改寫成佔位符。</value></data>
+  <data name="DatabaseSettings_ParseHintItem" xml:space="preserve"><value>貼上完整連線字串後按「拆解」，工具會依目前 DatabaseType 把帳密 / 資料庫名拆出來、改寫成佔位符。</value></data>
+  <data name="DatabaseSettings_PastePlaceholderServer" xml:space="preserve"><value>例：Data Source=localhost;Initial Catalog=master;User ID=sa;Password=…</value></data>
+  <data name="DatabaseSettings_PastePlaceholderItem" xml:space="preserve"><value>例：Host=localhost;Port=5432;Database=mydb;Username=app;Password=…</value></data>
+  <data name="DatabaseSettings_Parse" xml:space="preserve"><value>拆解</value></data>
+  <data name="DatabaseSettings_ParseTooltip" xml:space="preserve"><value>依 DatabaseType 別名表拆出帳密 / DbName</value></data>
+  <data name="DatabaseSettings_Clear" xml:space="preserve"><value>清除</value></data>
+  <data name="DatabaseSettings_ClearTooltip" xml:space="preserve"><value>清空貼上區與預覽</value></data>
+  <data name="DatabaseSettings_ParsePreview" xml:space="preserve"><value>拆解預覽</value></data>
+  <data name="DatabaseSettings_ApplyServer" xml:space="preserve"><value>套用至此 Server</value></data>
+  <data name="DatabaseSettings_ApplyServerTooltip" xml:space="preserve"><value>把預覽結果寫入此 Server 的欄位</value></data>
+  <data name="DatabaseSettings_ApplyItem" xml:space="preserve"><value>套用至此 Item</value></data>
+  <data name="DatabaseSettings_ApplyItemTooltip" xml:space="preserve"><value>把預覽結果寫入此 Item 的欄位</value></data>
+
+  <!-- Unsupported -->
+  <data name="Unsupported_SelectedItem" xml:space="preserve"><value>選取項目</value></data>
+
+  <!-- Status bar messages -->
+  <data name="Status_AddedNamed" xml:space="preserve"><value>已新增 {0}：{1}（尚未存檔）</value></data>
+  <data name="Status_Deleted" xml:space="preserve"><value>已刪除節點（尚未存檔）</value></data>
+  <data name="Status_DeleteCancelled" xml:space="preserve"><value>已取消刪除。</value></data>
+  <data name="Status_Saved" xml:space="preserve"><value>已儲存：{0}</value></data>
+  <data name="Status_SaveFailed" xml:space="preserve"><value>儲存失敗：{0}</value></data>
+  <data name="Status_SaveCancelled" xml:space="preserve"><value>已取消儲存（{0} 個 error 未處理）。</value></data>
+  <data name="Status_ValidationPassed" xml:space="preserve"><value>驗證通過：未發現任何問題。</value></data>
+  <data name="Status_ValidationCompleted" xml:space="preserve"><value>驗證完成：{0} 個問題（{1} Error / {2} Warning）。</value></data>
+  <data name="Status_SolutionLoaded" xml:space="preserve"><value>已載入 {0} 個 FormSchema</value></data>
+  <data name="Status_OpenSolutionFailed" xml:space="preserve"><value>開啟失敗：{0}</value></data>
+  <data name="Status_PermissionRuleCovered" xml:space="preserve"><value>此模型已涵蓋所有 PermissionAction，無法再新增 Rule。</value></data>
+  <data name="Status_SingletonHint" xml:space="preserve"><value>（屬性編輯於離開欄位時寫入記憶體；按儲存（⌘S）會刷新樹節點顯示並寫回 XML）</value></data>
+
+  <!-- Confirmation dialogs -->
+  <data name="Confirm_DeleteTitle" xml:space="preserve"><value>確認刪除</value></data>
+  <data name="Confirm_DeleteMessage" xml:space="preserve"><value>確定要刪除「{0}」？
+從記憶體移除後仍需按儲存（⌘S）才會寫回檔案。</value></data>
+  <data name="Confirm_SaveAfterValidationTitle" xml:space="preserve"><value>存檔前驗證未通過</value></data>
+  <data name="Confirm_SaveAfterValidationErrors" xml:space="preserve"><value>驗證發現 {0} 個 error。
+仍要繼續存檔嗎？</value></data>
+  <data name="Confirm_SaveAfterValidationErrorsAndWarnings" xml:space="preserve"><value>驗證發現 {0} 個 error、{1} 個 warning。
+仍要繼續存檔嗎？</value></data>
 </root>

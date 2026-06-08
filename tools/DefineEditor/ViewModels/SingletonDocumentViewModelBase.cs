@@ -63,7 +63,7 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
     // IsDirty is inherited from DocumentViewModelBase.
 
     [ObservableProperty]
-    private string _statusText = "（屬性編輯於離開欄位時寫入記憶體；按「儲存」會刷新樹節點顯示並寫回 XML）";
+    private string _statusText = L("Status_SingletonHint");
 
     /// <summary>
     /// Right-pane content. Defaults to the selected node's payload; subclasses
@@ -96,7 +96,7 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
             if (!await ConfirmSaveAfterValidationAsync(issues, Issues))
             {
                 var errs = issues.Count(i => i.Severity == ValidationSeverity.Error);
-                StatusText = $"已取消儲存（{errs} 個 error 未處理）。";
+                StatusText = L("Status_SaveCancelled", errs);
                 return;
             }
 
@@ -104,11 +104,11 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
                 root.RefreshRecursive();
             XmlCodec.SerializeToFile(RootObject, FilePath);
             IsDirty = false;
-            StatusText = $"已儲存：{Path.GetFileName(FilePath)}";
+            StatusText = L("Status_Saved", Path.GetFileName(FilePath));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            StatusText = $"儲存失敗：{ex.Message}";
+            StatusText = L("Status_SaveFailed", ex.Message);
         }
     }
 
@@ -120,9 +120,16 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
         foreach (var issue in found)
             Issues.Add(issue);
 
-        StatusText = Issues.Count == 0
-            ? "驗證通過：未發現任何問題。"
-            : $"驗證完成：{Issues.Count} 個問題（{Issues.Count(i => i.Severity == ValidationSeverity.Error)} Error / {Issues.Count(i => i.Severity == ValidationSeverity.Warning)} Warning）。";
+        if (Issues.Count == 0)
+        {
+            StatusText = L("Status_ValidationPassed");
+        }
+        else
+        {
+            var errors = Issues.Count(i => i.Severity == ValidationSeverity.Error);
+            var warnings = Issues.Count(i => i.Severity == ValidationSeverity.Warning);
+            StatusText = L("Status_ValidationCompleted", Issues.Count, errors, warnings);
+        }
     }
 
     /// <summary>Subclasses produce validation findings here. Default: none.</summary>
@@ -138,7 +145,7 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
 
         if (!await ConfirmDeleteAsync(node.Header))
         {
-            StatusText = "已取消刪除。";
+            StatusText = L("Status_DeleteCancelled");
             return;
         }
 
@@ -147,7 +154,7 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
         node.RemoveSelf();
         SelectedTreeNode = parent;
         IsDirty = true;
-        StatusText = "已刪除節點（尚未存檔）";
+        StatusText = L("Status_Deleted");
     }
 
     private bool CanDelete() => SelectedTreeNode is not null && GetDeleteAction(SelectedTreeNode) is not null;

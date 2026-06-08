@@ -1,6 +1,7 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:loc="using:Bee.DefineEditor.Markup"
              xmlns:models="using:Bee.DefineEditor.Models"
              xmlns:layouts="using:Bee.Definition.Layouts"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -13,7 +14,7 @@
     <UserControl.DataTemplates>
         <DataTemplate DataType="layouts:FormLayout">
             <StackPanel x:DataType="layouts:FormLayout" Spacing="2">
-                <TextBlock Classes="h2" Text="FormLayout 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormLayout_Props}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="LayoutId"/><TextBox Text="{Binding LayoutId, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="ProgId"/><TextBox Text="{Binding ProgId, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
@@ -23,7 +24,7 @@
 
         <DataTemplate DataType="layouts:LayoutSection">
             <StackPanel x:DataType="layouts:LayoutSection" Spacing="2">
-                <TextBlock Classes="h2" Text="LayoutSection 屬性" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormLayout_SectionProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Name"/><TextBox Text="{Binding Name, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="ShowCaption"/><CheckBox IsChecked="{Binding ShowCaption, Mode=TwoWay}"/></DockPanel>
@@ -32,7 +33,7 @@
 
         <DataTemplate DataType="layouts:LayoutField">
             <StackPanel x:DataType="layouts:LayoutField" Spacing="2">
-                <TextBlock Classes="h2" Text="LayoutField 屬性（主表單欄位）" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormLayout_FieldProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="FieldName"/><TextBox Text="{Binding FieldName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
@@ -50,7 +51,7 @@
 
         <DataTemplate DataType="layouts:LayoutGrid">
             <StackPanel x:DataType="layouts:LayoutGrid" Spacing="2">
-                <TextBlock Classes="h2" Text="LayoutGrid 屬性（明細表格）" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormLayout_GridProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="TableName"/><TextBox Text="{Binding TableName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
@@ -62,7 +63,7 @@
 
         <DataTemplate DataType="layouts:LayoutColumn">
             <StackPanel x:DataType="layouts:LayoutColumn" Spacing="2">
-                <TextBlock Classes="h2" Text="LayoutColumn 屬性（grid 欄）" Margin="0,0,0,8"/>
+                <TextBlock Classes="h2" Text="{loc:Loc FormLayout_ColumnProps}" Margin="0,0,0,8"/>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="FieldName"/><TextBox Text="{Binding FieldName, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row"><TextBlock Classes="label" Text="Caption"/><TextBox Text="{Binding Caption, Mode=TwoWay}"/></DockPanel>
                 <DockPanel Classes="row short">
@@ -84,7 +85,7 @@
 
         <Border DockPanel.Dock="Bottom" Classes="surface-sunken" Padding="12,8" IsVisible="{Binding Issues.Count}">
             <DockPanel>
-                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="驗證結果"/>
+                <TextBlock DockPanel.Dock="Top" Classes="h2" Text="{loc:Loc Section_ValidationResults}"/>
                 <ListBox ItemsSource="{Binding Issues}" MaxHeight="160" Background="Transparent" BorderThickness="0" Margin="0,6,0,0">
                     <ListBox.ItemTemplate>
                         <DataTemplate x:DataType="models:ValidationIssue">
@@ -116,28 +117,28 @@
                 </TreeView.Styles>
                 <TreeView.ContextMenu>
                     <ContextMenu>
-                        <MenuItem Header="新增 LayoutSection"
+                        <MenuItem Header="{loc:Loc FormLayout_AddSection}"
                                   Command="{Binding AddSectionCommand}"
                                   IsVisible="{Binding SelectedKindIsSectionsGroup}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconSection}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 LayoutField"
+                        <MenuItem Header="{loc:Loc FormLayout_AddField}"
                                   Command="{Binding AddLayoutFieldCommand}"
                                   IsVisible="{Binding SelectedKindIsSection}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconColumn}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 LayoutGrid"
+                        <MenuItem Header="{loc:Loc FormLayout_AddGrid}"
                                   Command="{Binding AddGridCommand}"
                                   IsVisible="{Binding SelectedKindIsDetailsGroup}">
                             <MenuItem.Icon>
                                 <PathIcon Data="{StaticResource IconGrid}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <MenuItem Header="新增 LayoutColumn"
+                        <MenuItem Header="{loc:Loc FormLayout_AddColumn}"
                                   Command="{Binding AddLayoutColumnCommand}"
                                   IsVisible="{Binding SelectedKindIsGrid}">
                             <MenuItem.Icon>
@@ -145,7 +146,7 @@
                             </MenuItem.Icon>
                         </MenuItem>
                         <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
-                        <MenuItem Header="刪除"
+                        <MenuItem Header="{loc:Loc Action_Delete}"
                                   Command="{Binding DeleteCommand}"
                                   IsVisible="{Binding SelectedKindCanDelete}">
                             <MenuItem.Icon>

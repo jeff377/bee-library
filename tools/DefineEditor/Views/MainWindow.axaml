@@ -120,11 +120,11 @@
                                          Fill="{DynamicResource DirtyIndicator}"
                                          VerticalAlignment="Center" Margin="6,0,0,0"
                                          IsVisible="{Binding IsDirty}"
-                                         ToolTip.Tip="尚未存檔"/>
+                                         ToolTip.Tip="{loc:Loc Tab_DirtyTooltip}"/>
                                 <Button Grid.Column="3" Classes="tabclose"
                                         Command="{Binding #WindowRoot.((vm:MainWindowViewModel)DataContext).CloseDocumentCommand}"
                                         CommandParameter="{Binding}"
-                                        ToolTip.Tip="關閉分頁">
+                                        ToolTip.Tip="{loc:Loc Tab_CloseTooltip}">
                                     <PathIcon Data="{StaticResource IconClear}" Width="10" Height="10"/>
                                 </Button>
                             </Grid>
@@ -143,7 +143,7 @@
                         <PathIcon Data="{StaticResource IconFolder}" Width="48" Height="48"
                                   Foreground="{DynamicResource MutedForeground}"/>
                         <TextBlock Classes="muted" HorizontalAlignment="Center"
-                                   Text="（於左側方案樹選取定義檔開啟分頁；點已開過的檔會切換到既有分頁）"/>
+                                   Text="{loc:Loc DocumentWelcome_Tip}"/>
                     </StackPanel>
                 </Border>
             </Grid>

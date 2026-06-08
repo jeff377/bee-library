@@ -129,7 +129,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
         rootNode.AddChild(node);
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 ProgramCategory：{id}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "ProgramCategory", id);
     }
 
     private bool CanAddCategory() => SelectedTreeNode?.Kind == KindRoot;
@@ -147,7 +147,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
         categoryNode.IsExpanded = true;
         SelectedTreeNode = node;
         IsDirty = true;
-        StatusText = $"已新增 ProgramItem：{id}（尚未存檔）";
+        StatusText = L("Status_AddedNamed", "ProgramItem", id);
     }
 
     private bool CanAddProgram() => FindAncestor(SelectedTreeNode, KindCategory) is not null;
