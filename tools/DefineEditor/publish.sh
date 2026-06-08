@@ -5,12 +5,12 @@
 #   tools/DefineEditor/bin/Release/net10.0/<rid>/publish/
 #
 # Usage:
-#   ./publish.sh                # all 4 RIDs
-#   ./publish.sh osx-arm64      # one RID
+#   ./publish.sh                   # all 4 RIDs
+#   ./publish.sh osx-arm64         # one RID
 #   ./publish.sh --self-contained  # bundle the runtime (much larger, no .NET dep)
+#   ./publish.sh --single-file     # produce a single executable + a few native libs
 #
-# Skips PublishSingleFile (Bee.Base.AssemblyLoader IL3002) and PublishTrimmed
-# (XmlSerializer reflection); see README for context.
+# Skips PublishTrimmed (XmlSerializer reflection); see README for context.
 
 set -euo pipefail
 
@@ -23,10 +23,12 @@ if [[ ! -f "${PROJECT}" ]]; then
 fi
 
 SELF_CONTAINED="false"
+SINGLE_FILE="false"
 RIDS=()
 for arg in "$@"; do
     case "${arg}" in
         --self-contained) SELF_CONTAINED="true" ;;
+        --single-file) SINGLE_FILE="true" ;;
         *) RIDS+=("${arg}") ;;
     esac
 done
@@ -35,13 +37,15 @@ if [[ ${#RIDS[@]} -eq 0 ]]; then
     RIDS=(osx-arm64 osx-x64 win-x64 linux-x64)
 fi
 
-echo "Mode: $([[ "${SELF_CONTAINED}" == "true" ]] && echo "self-contained (includes .NET runtime)" || echo "framework-dependent (target machine needs .NET 10)")"
+echo "Mode: $([[ "${SELF_CONTAINED}" == "true" ]] && echo "self-contained (includes .NET runtime)" || echo "framework-dependent (target machine needs .NET 10)")$([[ "${SINGLE_FILE}" == "true" ]] && echo " + single-file" || echo "")"
 echo
 
 for rid in "${RIDS[@]}"; do
     echo "=== publishing ${rid} ==="
     dotnet publish "${PROJECT}" -c Release -r "${rid}" \
-        --self-contained "${SELF_CONTAINED}" -p:PublishTrimmed=false
+        --self-contained "${SELF_CONTAINED}" \
+        -p:PublishTrimmed=false \
+        -p:PublishSingleFile="${SINGLE_FILE}"
 done
 
 echo

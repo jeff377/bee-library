@@ -24,9 +24,13 @@ namespace Bee.Base
             if (_loadedAssemblies.TryGetValue(assemblyName, out var cached))
                 return cached;
 
-            // Search in the current AppDomain
+            // Search in the current AppDomain. Compare against `GetName().Name` (the simple
+            // assembly identity, e.g. `Bee.Base`) rather than `ManifestModule.Name` (the on-disk
+            // file name). The former is single-file safe; the latter triggers IL3002 because
+            // module file names do not exist when the assembly is embedded in a single-file bundle.
+            var simpleName = Path.GetFileNameWithoutExtension(assemblyName);
             var match = AppDomain.CurrentDomain.GetAssemblies()
-                .FirstOrDefault(a => StringUtilities.IsEquals(a.ManifestModule.Name, assemblyName));
+                .FirstOrDefault(a => StringUtilities.IsEquals(a.GetName().Name, simpleName));
             if (match != null)
             {
                 _loadedAssemblies[assemblyName] = match;

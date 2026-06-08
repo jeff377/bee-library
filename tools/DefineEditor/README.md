@@ -96,6 +96,19 @@ dotnet publish tools/DefineEditor/Bee.DefineEditor.csproj -c Release \
     -r osx-arm64 --self-contained true -p:PublishTrimmed=false
 ```
 
+### 也可以 single-file
+
+把所有 managed dll 嵌進主執行檔，輸出剩主 exe + 3 個 Avalonia 原生 `.dylib` / `.so` / `.dll`（native 受 .NET single-file 規格限制不可 bundle）：
+
+```bash
+./publish.sh --single-file
+# 或單一 RID
+dotnet publish tools/DefineEditor/Bee.DefineEditor.csproj -c Release \
+    -r osx-arm64 --self-contained false -p:PublishTrimmed=false -p:PublishSingleFile=true
+```
+
+osx-arm64 實測：12 MB 主執行檔 + 約 18 MB 三個 native dylib（HarfBuzz、Skia、Avalonia.Native）。可與 `--self-contained` 組合（產一個含 runtime 的單一 exe，但 native 仍分離）。
+
 ### RID 為何不可省略
 
 省略 `-r` 改打 portable 雖然也是 framework-dependent，但 Avalonia 的原生依賴（Skia / Avalonia.Native 等）會把所有平台的 `runtimes/<rid>/native/*` 全帶上，結果反而比 self-contained 還大（實測 564 MB）。所以即使是 framework-dependent，仍指定 RID。
@@ -104,7 +117,6 @@ dotnet publish tools/DefineEditor/Bee.DefineEditor.csproj -c Release \
 
 | 選項 | 不開的原因 |
 |------|-----------|
-| `PublishSingleFile=true` | `Bee.Base.AssemblyLoader` 用 `Module.Name`（含 `RequiresAssemblyFilesAttribute`），strict 模式下 IL3002 build 失敗 |
 | `PublishTrimmed=true` | 框架重度依賴 XmlSerializer 的反射展開；trim 容易把 nested define type 的 metadata 砍掉導致 runtime 解序列化失敗 |
 
 ## 不在工具範圍
