@@ -11,6 +11,7 @@
         x:CompileBindings="True"
         Icon="/Assets/avalonia-logo.ico"
         Width="1200" Height="720"
+        WindowState="Maximized"
         Title="Bee.DefineEditor — 定義檔方案維護">
 
     <Design.DataContext>
@@ -18,49 +19,86 @@
     </Design.DataContext>
 
     <DockPanel>
-        <!-- 上方工具列 -->
-        <Border DockPanel.Dock="Top" Classes="titlebar" Padding="10,6">
+        <!-- 選單放在 macOS 系統頂端的 menu bar（由 App.ConfigureNativeAppMenu 設定），
+             不在視窗內。VS Code 風格的 macOS 操作慣例：File / View 等都統一在頂端。 -->
+
+        <!-- 底部狀態列：VS Code 風。
+             左區：[方案路徑] › [當前定義檔的相對路徑]
+             右區：StatusText（操作回饋訊息） -->
+        <Border DockPanel.Dock="Bottom" Classes="statusbar" Padding="10,3">
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6">
-                    <Button Classes="tool primary" Click="OnOpenSolutionClick"
-                            ToolTip.Tip="開啟 DefinePath 方案資料夾">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconFolder}"/>
-                            <TextBlock Text="開啟方案" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6"
+                            IsVisible="{Binding IsSolutionOpened}">
+                    <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12"
+                              Foreground="{DynamicResource MutedForeground}"/>
+                    <TextBlock Text="{Binding SolutionPath}" Classes="muted"
+                               VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding SolutionPath}"/>
+
+                    <!-- separator + 當前 active document 的相對路徑 -->
+                    <TextBlock Text="›" Classes="muted" VerticalAlignment="Center"
+                               Margin="4,0,0,0"
+                               IsVisible="{Binding HasActiveDocument}"/>
+                    <TextBlock Text="{Binding ActiveDocumentRelativePath}"
+                               Classes="muted" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis"
+                               ToolTip.Tip="{Binding ActiveDocumentRelativePath}"
+                               IsVisible="{Binding HasActiveDocument}"/>
                 </StackPanel>
-
-                <TextBlock Grid.Column="1" Text="{Binding StatusText}"
+                <TextBlock Grid.Column="0" Text="尚未開啟方案"
                            Classes="muted" VerticalAlignment="Center"
-                           Margin="14,0" TextTrimming="CharacterEllipsis"/>
+                           IsVisible="{Binding !IsSolutionOpened}"/>
 
-                <Button Grid.Column="2" Classes="tool icon"
-                        Command="{Binding ToggleThemeCommand}"
-                        ToolTip.Tip="切換淺色 / 深色主題">
-                    <PathIcon Data="{StaticResource IconSun}"/>
-                </Button>
+                <TextBlock Grid.Column="2" Text="{Binding StatusText}"
+                           Classes="muted" VerticalAlignment="Center"
+                           Margin="14,0,0,0" TextTrimming="CharacterEllipsis"/>
             </Grid>
         </Border>
 
         <!-- 主體：左方案樹 + 右文件 tab 區 -->
         <Grid ColumnDefinitions="320,4,*">
-            <TreeView Grid.Column="0"
-                      ItemsSource="{Binding Nodes}"
-                      SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
-                      Padding="6,4">
-                <TreeView.ItemTemplate>
-                    <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:DefineNode">
-                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
-                            <PathIcon Classes="tree-icon"
-                                      Data="{Binding Icon, Converter={StaticResource IconKeyToGeometry}}"/>
-                            <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </TreeDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
+            <!-- 左側：有方案時顯示 TreeView，否則顯示 VS Code 風 welcome / Open Folder -->
+            <Grid Grid.Column="0">
+                <TreeView IsVisible="{Binding IsSolutionOpened}"
+                          ItemsSource="{Binding Nodes}"
+                          SelectedItem="{Binding SelectedNode, Mode=TwoWay}"
+                          Padding="6,4">
+                    <TreeView.ItemTemplate>
+                        <TreeDataTemplate ItemsSource="{Binding Children}" x:DataType="models:DefineNode">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
+                                <PathIcon Classes="tree-icon"
+                                          Data="{Binding Icon, Converter={StaticResource IconKeyToGeometry}}"/>
+                                <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </TreeDataTemplate>
+                    </TreeView.ItemTemplate>
+                </TreeView>
 
-            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
+                <!-- VS Code 風 welcome：尚未開啟方案時顯示 -->
+                <Border IsVisible="{Binding !IsSolutionOpened}" Padding="20">
+                    <StackPanel Spacing="14" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock Text="尚未開啟方案" Classes="muted"
+                                   HorizontalAlignment="Center"/>
+                        <Button Click="OnOpenSolutionClick" Classes="welcome"
+                                HorizontalAlignment="Stretch"
+                                HorizontalContentAlignment="Center"
+                                ToolTip.Tip="選擇 DefinePath 方案資料夾">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14"/>
+                                <TextBlock Text="Open Folder" VerticalAlignment="Center"/>
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Classes="muted" HorizontalAlignment="Center"
+                                   TextWrapping="Wrap" MaxWidth="240"
+                                   TextAlignment="Center"
+                                   Text="從上方「檔案 → 開啟方案...」亦可。"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"
+                          IsVisible="{Binding IsSolutionOpened}"/>
 
             <Grid Grid.Column="2">
                 <!-- 多文件 tab 區（IDE 風） -->
@@ -98,8 +136,8 @@
                     </TabControl.ContentTemplate>
                 </TabControl>
 
-                <!-- 歡迎畫面（無已開分頁） -->
-                <Border Padding="40" IsVisible="{Binding !HasOpenDocuments}">
+                <!-- 歡迎畫面（已開方案但無已開分頁時顯示；無方案時左側 welcome 已包辦） -->
+                <Border Padding="40" IsVisible="{Binding ShowDocumentWelcome}">
                     <StackPanel Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <PathIcon Data="{StaticResource IconFolder}" Width="48" Height="48"
                                   Foreground="{DynamicResource MutedForeground}"/>

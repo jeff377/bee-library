@@ -12,7 +12,14 @@ public partial class MainWindow : Window
         InitializeComponent();
     }
 
-    private async void OnOpenSolutionClick(object? sender, RoutedEventArgs e)
+    /// <summary>
+    /// Pops the OS folder-picker and opens the chosen folder as a DefinePath
+    /// solution. Public so the macOS NativeMenu (set up in
+    /// <see cref="App.ConfigureNativeAppMenu"/>) can invoke it through a
+    /// command — the picker needs this window's <see cref="StorageProvider"/>,
+    /// which only Window-derived types expose.
+    /// </summary>
+    public async void PromptOpenSolution()
     {
         var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
         {
@@ -25,4 +32,7 @@ public partial class MainWindow : Window
             vm.OpenSolution(folders[0].Path.LocalPath);
         }
     }
+
+    // Welcome-panel "Open Folder" button click handler.
+    private void OnOpenSolutionClick(object? sender, RoutedEventArgs e) => PromptOpenSolution();
 }

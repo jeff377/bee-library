@@ -58,7 +58,6 @@
                                  VerticalAlignment="Center"
                                  IsVisible="{Binding IsDirty}" ToolTip.Tip="尚未存檔"/>
                     </StackPanel>
-                    <TextBlock Classes="path" Text="{Binding FilePath}"/>
                 </StackPanel>
                 <WrapPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Classes="tool primary" Command="{Binding SaveCommand}" Margin="2"
