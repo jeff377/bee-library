@@ -109,6 +109,39 @@ dotnet publish tools/DefineEditor/Bee.DefineEditor.csproj -c Release \
 
 osx-arm64 實測：12 MB 主執行檔 + 約 18 MB 三個 native dylib（HarfBuzz、Skia、Avalonia.Native）。可與 `--self-contained` 組合（產一個含 runtime 的單一 exe，但 native 仍分離）。
 
+### macOS `.app` bundle（推薦對外發佈）
+
+對 macOS 使用者，加 `--app-bundle` 會把 osx-* RID 的 publish 內容包成 `Bee.DefineEditor.app` 目錄，雙擊就開、可拖進 `/Applications`、Dock 顯示正確名稱：
+
+```bash
+./publish.sh --single-file --app-bundle           # 4 個 RID（osx-* 包 .app，win/linux 維持原樣）
+./publish.sh --single-file --app-bundle osx-arm64 # 只 osx-arm64
+```
+
+產出位置 `bin/Release/net10.0/<osx-rid>/publish/Bee.DefineEditor.app`，內部結構：
+
+```
+Bee.DefineEditor.app/
+└── Contents/
+    ├── Info.plist          ← bundle 描述（版號從 src/Directory.Build.props 抓）
+    └── MacOS/
+        ├── Bee.DefineEditor   ← 主執行檔
+        └── lib*.dylib × 3     ← Avalonia 原生
+```
+
+### 第一次跑：解 Gatekeeper 隔離旗標
+
+未做 Apple Developer ID 簽章與公證的 `.app`，從網路下載或 AirDrop 傳給其他人後，macOS Gatekeeper 會擋第一次執行（提示「無法打開，因為它來自身分不明的開發者」）。解法二擇一：
+
+1. **Finder 右鍵 → 打開**（GUI 操作）：右鍵點 `.app` → 選「打開」→ 對話框點「打開」→ 之後雙擊就行
+2. **Terminal 解隔離旗標**（一行指令）：
+
+   ```bash
+   xattr -d com.apple.quarantine /path/to/Bee.DefineEditor.app
+   ```
+
+從本機自己 build 的 `.app` 沒有 quarantine 旗標，不會遇到這問題；只有「跨機器傳輸」（下載、AirDrop、USB 拷貝後解壓）才會被加旗標。
+
 ### RID 為何不可省略
 
 省略 `-r` 改打 portable 雖然也是 framework-dependent，但 Avalonia 的原生依賴（Skia / Avalonia.Native 等）會把所有平台的 `runtimes/<rid>/native/*` 全帶上，結果反而比 self-contained 還大（實測 564 MB）。所以即使是 framework-dependent，仍指定 RID。
