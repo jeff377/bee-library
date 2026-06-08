@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Employee" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Employee" />
+    <LanguageItem Key="Table.Employee.DisplayName" Value="Employee" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence No." />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row Id" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Employee No." />
+    <LanguageItem Key="Field.sys_name.Caption" Value="Employee Name" />
+    <LanguageItem Key="Field.dept_rowid.Caption" Value="Department Row Id" />
+    <LanguageItem Key="Field.ref_dept_id.Caption" Value="Department No." />
+    <LanguageItem Key="Field.ref_dept_name.Caption" Value="Department Name" />
+    <LanguageItem Key="Field.ref_supervisor_id.Caption" Value="Supervisor No." />
+    <LanguageItem Key="Field.ref_supervisor_name.Caption" Value="Supervisor Name" />
+  </Items>
+  <Enums />
+</LanguageResource>
