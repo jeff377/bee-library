@@ -1,11 +1,11 @@
 # 計畫：DefineEditor tree node 統一 + FormSchemaDocumentViewModel 繼承 base
 
-**狀態：🚧 進行中（2026-06-08）**
+**狀態：✅ 已完成（2026-06-08）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | C14：合併 `FormSchemaTreeNode` → `SettingsTreeNode`；`FormSchemaNodeKind` enum 改字串常數 | ✅ 已完成（2026-06-08） |
-| 2 | C15：`FormSchemaDocumentViewModel` 改繼承 `SingletonDocumentViewModelBase` | 🚧 進行中 |
+| 2 | C15：`FormSchemaDocumentViewModel` 改繼承 `SingletonDocumentViewModelBase` | ✅ 已完成（2026-06-08） |
 
 ## 背景
 

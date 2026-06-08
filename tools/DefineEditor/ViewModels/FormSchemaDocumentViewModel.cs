@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Bee.Base.Data;
@@ -9,7 +8,6 @@ using Bee.Definition.Collections;
 using Bee.Definition.Forms;
 using Bee.DefineEditor.Models;
 using Bee.DefineEditor.Services;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace Bee.DefineEditor.ViewModels;
@@ -17,50 +15,20 @@ namespace Bee.DefineEditor.ViewModels;
 /// <summary>
 /// FormSchema editor. Loads the schema via <see cref="XmlCodec"/>, exposes an
 /// inner tree, lets the right-pane DataTemplates two-way bind to the underlying
-/// Bee.Definition payload, and offers Save / Add / Delete / Validate commands
-/// that mutate the in-memory schema and its persisted XML.
+/// Bee.Definition payload, and offers Add commands for tables / fields /
+/// mappings / list items. Save / Validate / Delete and tree-node plumbing
+/// inherit from <see cref="SingletonDocumentViewModelBase"/>.
 /// </summary>
-public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
+public sealed partial class FormSchemaDocumentViewModel : SingletonDocumentViewModelBase
 {
-    public override string Title { get; }
-
-    public override string DocumentKey => FilePath;
-
     public override string TabIcon => "DefFormSchema";
-
-    // Forwarders for the base type's uniform file-level command surface — see
-    // DocumentViewModelBase.FileSaveCommand. The generated SaveCommand /
-    // ValidateCommand below carry the actual logic; this just exposes them
-    // under a name the source generator hasn't taken.
-    public override IRelayCommand FileSaveCommand => SaveCommand;
-    public override IRelayCommand FileValidateCommand => ValidateCommand;
-
-    public string FilePath { get; }
 
     public FormSchema Schema { get; }
 
     public SolutionContext Solution { get; }
 
-    public ObservableCollection<SettingsTreeNode> Roots { get; } = new();
-
-    public ObservableCollection<ValidationIssue> Issues { get; } = new();
-
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(SelectedEditorContext))]
-    [NotifyPropertyChangedFor(nameof(SelectedKindIsSchema))]
-    [NotifyPropertyChangedFor(nameof(SelectedKindIsTable))]
-    [NotifyPropertyChangedFor(nameof(SelectedKindIsField))]
-    [NotifyPropertyChangedFor(nameof(SelectedKindIsRelationGroup))]
-    [NotifyPropertyChangedFor(nameof(SelectedKindIsLookupGroup))]
-    [NotifyPropertyChangedFor(nameof(SelectedKindIsListItemsGroup))]
-    [NotifyPropertyChangedFor(nameof(SelectedKindCanDelete))]
-    [NotifyCanExecuteChangedFor(nameof(AddTableCommand))]
-    [NotifyCanExecuteChangedFor(nameof(AddFieldCommand))]
-    [NotifyCanExecuteChangedFor(nameof(AddRelationMappingCommand))]
-    [NotifyCanExecuteChangedFor(nameof(AddLookupMappingCommand))]
-    [NotifyCanExecuteChangedFor(nameof(AddListItemCommand))]
-    [NotifyCanExecuteChangedFor(nameof(DeleteCommand))]
-    private SettingsTreeNode? _selectedTreeNode;
+    /// <summary>Backing object handed to <see cref="XmlCodec.SerializeToFile"/> by base's Save.</summary>
+    protected override object RootObject => Schema;
 
     // Visibility hints for the tree-view context menu. Each MenuItem binds
     // IsVisible to the flag matching the kind it applies to. Kept here rather
@@ -72,14 +40,6 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     public bool SelectedKindIsRelationGroup => SelectedTreeNode?.Kind == FormSchemaKinds.RelationGroup;
     public bool SelectedKindIsLookupGroup => SelectedTreeNode?.Kind == FormSchemaKinds.LookupGroup;
     public bool SelectedKindIsListItemsGroup => SelectedTreeNode?.Kind == FormSchemaKinds.ListItemsGroup;
-    public bool SelectedKindCanDelete => SelectedTreeNode?.Kind is
-        FormSchemaKinds.Table or
-        FormSchemaKinds.Field or
-        FormSchemaKinds.Mapping or
-        FormSchemaKinds.ListItem;
-
-    // IsDirty / StatusText / culture-change refresh are inherited from
-    // DocumentViewModelBase.
 
     /// <summary>
     /// Content shown in the right-pane <see cref="Avalonia.Controls.ContentControl"/>.
@@ -87,7 +47,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     /// wrapper; everything else yields the raw payload so the existing
     /// FormSchema / FormTable / FormField / FieldMapping / ListItem templates apply.
     /// </summary>
-    public object? SelectedEditorContext => SelectedTreeNode is null
+    public override object? SelectedEditorContext => SelectedTreeNode is null
         ? null
         : SelectedTreeNode.Kind switch
         {
@@ -99,11 +59,10 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         };
 
     private FormSchemaDocumentViewModel(string filePath, FormSchema schema, SolutionContext solution)
+        : base(filePath, "FormSchema", schema.ProgId)
     {
-        FilePath = filePath;
         Schema = schema;
         Solution = solution;
-        Title = $"FormSchema — {schema.ProgId}";
         var root = FormSchemaNodeBuilder.BuildSchema(schema);
         Roots.Add(root);
         SelectedTreeNode = root;
@@ -120,48 +79,30 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         return new FormSchemaDocumentViewModel(filePath, schema, solution);
     }
 
-    [RelayCommand]
-    private async System.Threading.Tasks.Task Save()
-    {
-        try
-        {
-            var issues = Bee.DefineEditor.Services.FormSchemaValidator.Validate(Schema, Solution);
-            if (!await ConfirmSaveAfterValidationAsync(issues, Issues))
-            {
-                var errs = issues.Count(i => i.Severity == ValidationSeverity.Error);
-                StatusText = L("Status_SaveCancelled", errs);
-                return;
-            }
+    protected override IReadOnlyList<ValidationIssue> PerformValidation()
+        => FormSchemaValidator.Validate(Schema, Solution);
 
-            foreach (var root in Roots)
-                root.RefreshRecursive();
-            XmlCodec.SerializeToFile(Schema, FilePath);
-            IsDirty = false;
-            StatusText = L("Status_Saved", Path.GetFileName(FilePath));
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
-        {
-            StatusText = L("Status_SaveFailed", ex.Message);
-        }
-    }
-
-    [RelayCommand]
-    private void Validate()
+    /// <summary>
+    /// Base fires the SelectedEditorContext / SelectedKindCanDelete / DeleteCommand
+    /// notifications itself via the <c>[NotifyXxx]</c> attributes on its
+    /// <c>_selectedTreeNode</c>. This override adds FormSchema-specific fan-out:
+    /// the six <c>SelectedKindIsX</c> context-menu visibility flags and the five
+    /// AddXxxCommand can-execute states (which can't be wired through
+    /// <c>[NotifyCanExecuteChangedFor]</c> from base's field).
+    /// </summary>
+    protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
-        Issues.Clear();
-        var found = FormSchemaValidator.Validate(Schema, Solution);
-        foreach (var issue in found)
-            Issues.Add(issue);
-        if (Issues.Count == 0)
-        {
-            StatusText = L("Status_ValidationPassed");
-        }
-        else
-        {
-            var errors = found.Count(i => i.Severity == ValidationSeverity.Error);
-            var warnings = found.Count(i => i.Severity == ValidationSeverity.Warning);
-            StatusText = L("Status_ValidationCompleted", Issues.Count, errors, warnings);
-        }
+        OnPropertyChanged(nameof(SelectedKindIsSchema));
+        OnPropertyChanged(nameof(SelectedKindIsTable));
+        OnPropertyChanged(nameof(SelectedKindIsField));
+        OnPropertyChanged(nameof(SelectedKindIsRelationGroup));
+        OnPropertyChanged(nameof(SelectedKindIsLookupGroup));
+        OnPropertyChanged(nameof(SelectedKindIsListItemsGroup));
+        AddTableCommand.NotifyCanExecuteChanged();
+        AddFieldCommand.NotifyCanExecuteChanged();
+        AddRelationMappingCommand.NotifyCanExecuteChanged();
+        AddLookupMappingCommand.NotifyCanExecuteChanged();
+        AddListItemCommand.NotifyCanExecuteChanged();
     }
 
     [RelayCommand(CanExecute = nameof(CanAddTable))]
@@ -284,71 +225,25 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
     private bool CanAddListItem() =>
         FindAncestor(SelectedTreeNode, FormSchemaKinds.Field) is not null;
 
-    [RelayCommand(CanExecute = nameof(CanDelete))]
-    private async System.Threading.Tasks.Task Delete()
+    protected override Action? GetDeleteAction(SettingsTreeNode node) => node.Kind switch
     {
-        var node = SelectedTreeNode;
-        if (node is null) return;
-
-        if (!await ConfirmDeleteAsync(node.Header))
-        {
-            StatusText = L("Status_DeleteCancelled");
-            return;
-        }
-
-        switch (node.Kind)
-        {
-            case FormSchemaKinds.Table
-                when node.Payload is FormTable t && node.Parent?.Payload is FormSchema s:
-                s.Tables!.Remove(t);
-                break;
-
-            case FormSchemaKinds.Field
-                when node.Payload is FormField f && node.Parent?.Payload is FormTable t:
-                t.Fields!.Remove(f);
-                break;
-
-            case FormSchemaKinds.Mapping
-                when node.Payload is FieldMapping m &&
-                     node.Parent is { Kind: FormSchemaKinds.RelationGroup, Payload: FormField rf }:
-                rf.RelationFieldMappings!.Remove(m);
-                break;
-
-            case FormSchemaKinds.Mapping
-                when node.Payload is FieldMapping m &&
-                     node.Parent is { Kind: FormSchemaKinds.LookupGroup, Payload: FormField lf }:
-                lf.LookupFieldMappings!.Remove(m);
-                break;
-
-            case FormSchemaKinds.ListItem
-                when node.Payload is ListItem i &&
-                     node.Parent is { Kind: FormSchemaKinds.ListItemsGroup, Payload: FormField pf }:
-                pf.ListItems!.Remove(i);
-                break;
-
-            default:
-                return;
-        }
-
-        var parent = node.Parent;
-        node.RemoveSelf();
-        SelectedTreeNode = parent;
-        IsDirty = true;
-        StatusText = L("Status_Deleted");
-    }
-
-    private bool CanDelete() => SelectedTreeNode?.Kind is
-        FormSchemaKinds.Table or
-        FormSchemaKinds.Field or
-        FormSchemaKinds.Mapping or
-        FormSchemaKinds.ListItem;
-
-    private static SettingsTreeNode? FindAncestor(SettingsTreeNode? node, string kind)
-    {
-        for (var cur = node; cur != null; cur = cur.Parent)
-            if (cur.Kind == kind) return cur;
-        return null;
-    }
+        FormSchemaKinds.Table when node.Payload is FormTable t
+            && node.Parent?.Payload is FormSchema s
+            => () => s.Tables!.Remove(t),
+        FormSchemaKinds.Field when node.Payload is FormField f
+            && node.Parent?.Payload is FormTable t
+            => () => t.Fields!.Remove(f),
+        FormSchemaKinds.Mapping when node.Payload is FieldMapping m
+            && node.Parent is { Kind: FormSchemaKinds.RelationGroup, Payload: FormField rf }
+            => () => rf.RelationFieldMappings!.Remove(m),
+        FormSchemaKinds.Mapping when node.Payload is FieldMapping m
+            && node.Parent is { Kind: FormSchemaKinds.LookupGroup, Payload: FormField lf }
+            => () => lf.LookupFieldMappings!.Remove(m),
+        FormSchemaKinds.ListItem when node.Payload is ListItem i
+            && node.Parent is { Kind: FormSchemaKinds.ListItemsGroup, Payload: FormField pf }
+            => () => pf.ListItems!.Remove(i),
+        _ => null,
+    };
 
     private static SettingsTreeNode EnsureGroup(
         SettingsTreeNode fieldNode,
@@ -361,5 +256,4 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         fieldNode.AddChild(group);
         return group;
     }
-
 }
