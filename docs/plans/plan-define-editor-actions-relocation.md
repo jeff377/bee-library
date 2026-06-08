@@ -1,13 +1,13 @@
 # 計畫：DefineEditor 操作動作重新配置 — 按鈕列 → menu + context menu
 
-**狀態：🚧 進行中（2026-06-08）**
+**狀態：✅ 已完成（2026-06-08）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 檔案層 commands（Save / Validate）搬到 macOS 頂端 File menu，動態綁定到 active document | 🚧 進行中 |
-| 2 | 拿掉 9 個 DocumentView 的 Save / Validate 按鈕 | 📝 待做 |
-| 3 | 每個 DocumentView 的 TreeView 加右鍵 context menu，依節點型別顯示適合的「新增 / 刪除」 | 📝 待做 |
-| 4 | 拿掉 9 個 DocumentView 的 Add / Delete 按鈕列、整個 titlebar 工具列簡化或移除 | 📝 待做 |
+| 1 | 檔案層 commands（Save / Validate）搬到 macOS 頂端 File menu，動態綁定到 active document | ✅ 已完成（63eebaf4） |
+| 2 | 拿掉 9 個 DocumentView 的 Save / Validate 按鈕 | ✅ 已完成（63eebaf4） |
+| 3 | 每個 DocumentView 的 TreeView 加右鍵 context menu，依節點型別顯示適合的「新增 / 刪除」 | ✅ 已完成（02d56d7c） |
+| 4 | 拿掉 9 個 DocumentView 的 Add / Delete 按鈕列、整個 titlebar 工具列簡化或移除 | ✅ 已完成（02d56d7c） |
 
 ## 背景
 
