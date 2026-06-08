@@ -81,10 +81,26 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
     public override IRelayCommand FileSaveCommand => SaveCommand;
     public override IRelayCommand FileValidateCommand => ValidateCommand;
 
+    private string _lastDefaultHint = L("Status_SingletonHint");
+
     protected SingletonDocumentViewModelBase(string filePath, string titlePrefix, string keyText)
     {
         FilePath = filePath;
         Title = string.IsNullOrEmpty(keyText) ? titlePrefix : $"{titlePrefix} — {keyText}";
+
+        // StatusText is a stored snapshot (not a live binding), so a language
+        // switch won't rewrite it automatically. Re-apply the default hint
+        // when the culture changes — but only if the user hasn't replaced it
+        // with an action message (Save / Validate / Add ...), so we don't
+        // wipe their feedback. _lastDefaultHint tracks the most recent hint
+        // we wrote so we can recognise it.
+        Services.LocalizationService.Current.CultureChanged += (_, _) =>
+        {
+            var newHint = L("Status_SingletonHint");
+            if (StatusText == _lastDefaultHint)
+                StatusText = newHint;
+            _lastDefaultHint = newHint;
+        };
     }
 
     [RelayCommand]

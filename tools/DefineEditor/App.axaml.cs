@@ -190,6 +190,10 @@ public partial class App : Application
         var settings = UserSettings.Load();
         settings.Language = cultureName;
         settings.Save();
+        // No window re-creation needed — Markup.LocExtension now returns an
+        // IObservable<string>.ToBinding(), which Avalonia genuinely re-pushes
+        // to every bound target whenever the producer emits, including for
+        // bindings inside DataTemplate-instantiated tab content.
     }
 
     private static void ShowAbout()

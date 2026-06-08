@@ -1,6 +1,9 @@
 using System;
+using System.Globalization;
+using Avalonia;
 using Avalonia.Data;
 using Avalonia.Markup.Xaml;
+using Avalonia.Reactive;
 using Bee.DefineEditor.Services;
 
 namespace Bee.DefineEditor.Markup;
@@ -10,9 +13,17 @@ namespace Bee.DefineEditor.Markup;
 /// <code>
 /// &lt;TextBlock Text="{loc:Loc Menu_File}"/&gt;
 /// </code>
-/// The binding tracks <see cref="LocalizationService.Current"/>'s indexer so
-/// the bound property refreshes automatically when the user switches language.
 /// </summary>
+/// <remarks>
+/// Returns an <see cref="IObservable{T}"/> wrapped via Avalonia's
+/// <c>.ToBinding()</c> extension. This is the pattern community Avalonia
+/// localization libraries (e.g. Jeek.Avalonia.Localization) use — it's the
+/// binding shape whose value Avalonia genuinely re-pushes to the bound target
+/// whenever the producer emits a new value, including for bindings nested
+/// inside DataTemplate-instantiated content that earlier
+/// <see cref="System.ComponentModel.INotifyPropertyChanged"/>-based
+/// approaches couldn't refresh.
+/// </remarks>
 public sealed class LocExtension : MarkupExtension
 {
     public string Key { get; set; } = string.Empty;
@@ -26,13 +37,44 @@ public sealed class LocExtension : MarkupExtension
 
     public override object ProvideValue(IServiceProvider serviceProvider)
     {
-        // Avalonia's CompiledBinding only handles plain property paths, so we
-        // use ReflectionBinding (the classic source-string binding) to hit the
-        // indexer. Performance is irrelevant for a few hundred UI strings.
-        return new Binding($"[{Key}]")
+        return new LocalizedStringObservable(LocalizationService.Current, Key).ToBinding();
+    }
+
+    private sealed class LocalizedStringObservable : IObservable<string>
+    {
+        private readonly LocalizationService _service;
+        private readonly string _key;
+
+        public LocalizedStringObservable(LocalizationService service, string key)
         {
-            Source = LocalizationService.Current,
-            Mode = BindingMode.OneWay,
-        };
+            _service = service;
+            _key = key;
+        }
+
+        public IDisposable Subscribe(IObserver<string> observer)
+        {
+            void Publish() => observer.OnNext(_service[_key]);
+
+            EventHandler<CultureInfo> handler = (_, _) => Publish();
+
+            Publish();
+            _service.CultureChanged += handler;
+
+            return new Subscription(_service, handler);
+        }
+
+        private sealed class Subscription : IDisposable
+        {
+            private readonly LocalizationService _service;
+            private readonly EventHandler<CultureInfo> _handler;
+
+            public Subscription(LocalizationService service, EventHandler<CultureInfo> handler)
+            {
+                _service = service;
+                _handler = handler;
+            }
+
+            public void Dispose() => _service.CultureChanged -= _handler;
+        }
     }
 }

@@ -9,18 +9,14 @@ namespace Bee.DefineEditor.Services;
 /// changes propagate without rebuilding views.
 /// </summary>
 /// <remarks>
-/// <para>
 /// Backed by a <see cref="ResourceManager"/> over <c>Bee.DefineEditor.Resources.Strings</c>
 /// (the neutral <c>Strings.resx</c> and per-culture <c>Strings.zh-TW.resx</c>).
 /// English is the default — when <see cref="Culture"/> is set to any culture
 /// whose entry is missing, ResourceManager falls back to the neutral value.
-/// </para>
-/// <para>
-/// The indexer <c>this[string key]</c> is bound from XAML through
-/// <see cref="Markup.LocExtension"/>. When <see cref="Culture"/> changes we
-/// raise <c>PropertyChanged</c> with the special <c>"Item[]"</c> name so every
-/// indexer binding re-fetches and the UI live-updates without app restart.
-/// </para>
+/// <see cref="Markup.LocExtension"/> subscribes to <see cref="CultureChanged"/>
+/// (via an IObservable wrapper that Avalonia's <c>ToBinding()</c> turns into
+/// a live binding) so language switches propagate to the UI without app or
+/// view restart.
 /// </remarks>
 public sealed class LocalizationService : INotifyPropertyChanged
 {
@@ -51,10 +47,11 @@ public sealed class LocalizationService : INotifyPropertyChanged
             if (string.Equals(_culture.Name, value.Name, System.StringComparison.OrdinalIgnoreCase))
                 return;
             _culture = value;
-            // Avalonia / WPF / WinUI all listen for "Item[]" to refresh every
-            // indexer binding (equivalent to PropertyChangedEventArgs.IndexerName).
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
+            // CultureChanged is the refresh signal Markup.LocExtension's
+            // IObservable subscribes to. PropertyChanged is kept for any
+            // caller that just wants a generic "something changed" hint.
             CultureChanged?.Invoke(this, value);
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Item[]"));
         }
     }
 
