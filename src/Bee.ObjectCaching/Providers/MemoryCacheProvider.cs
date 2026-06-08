@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Primitives;
 
 namespace Bee.ObjectCaching.Providers
 {
@@ -169,7 +168,7 @@ namespace Bee.ObjectCaching.Providers
             public bool ActiveChangeCallbacks => false;
 
             public IDisposable RegisterChangeCallback(Action<object?> callback, object? state)
-                => NullChangeToken.Singleton.RegisterChangeCallback(callback, state);
+                => CancellationToken.None.Register(callback!, state);
         }
     }
 }
