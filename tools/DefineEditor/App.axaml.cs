@@ -18,6 +18,14 @@ public partial class App : Application
     public IRelayCommand OpenSolutionCommand { get; }
     public IRelayCommand ToggleThemeCommand { get; }
 
+    // Proxies that forward File menu Save / Validate to whichever document is
+    // currently active. CanExecute is re-evaluated each time ActiveDocument
+    // changes (see OnFrameworkInitializationCompleted) so the menu items grey
+    // out when no document is open or when the active one doesn't support
+    // saving (e.g. UnsupportedDocumentViewModel).
+    public IRelayCommand SaveActiveCommand { get; }
+    public IRelayCommand ValidateActiveCommand { get; }
+
     public App()
     {
         AboutCommand = new RelayCommand(ShowAbout);
@@ -25,6 +33,8 @@ public partial class App : Application
         QuitCommand = new RelayCommand(Quit);
         OpenSolutionCommand = new RelayCommand(PromptOpenSolution);
         ToggleThemeCommand = new RelayCommand(ToggleTheme);
+        SaveActiveCommand = new RelayCommand(ExecuteActiveSave, CanExecuteActiveSave);
+        ValidateActiveCommand = new RelayCommand(ExecuteActiveValidate, CanExecuteActiveValidate);
     }
 
     public override void Initialize()
@@ -43,11 +53,25 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var vm = new MainWindowViewModel();
             var mainWindow = new MainWindow
             {
-                DataContext = new MainWindowViewModel(),
+                DataContext = vm,
             };
             desktop.MainWindow = mainWindow;
+
+            // Re-evaluate the File menu's Save / Validate availability when
+            // the active tab changes. Without this the menu items stay
+            // disabled (or stale-enabled) after switching documents because
+            // RelayCommand only re-checks CanExecute when we tell it to.
+            vm.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MainWindowViewModel.ActiveDocument))
+                {
+                    ((RelayCommand)SaveActiveCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)ValidateActiveCommand).NotifyCanExecuteChanged();
+                }
+            };
 
             // Window-level NativeMenu = the additional top-level menus that
             // sit to the right of the App menu (File / View / ...). Setting
@@ -110,6 +134,18 @@ public partial class App : Application
             // matching it lets users move between the two with no muscle re-learn.
             Gesture = new KeyGesture(Key.O, KeyModifiers.Meta | KeyModifiers.Shift),
         });
+        fileMenu.Menu.Add(new NativeMenuItemSeparator());
+        fileMenu.Menu.Add(new NativeMenuItem("Save")
+        {
+            Command = SaveActiveCommand,
+            Gesture = new KeyGesture(Key.S, KeyModifiers.Meta),
+        });
+        fileMenu.Menu.Add(new NativeMenuItem("Validate")
+        {
+            Command = ValidateActiveCommand,
+            // VS Code uses Cmd+Shift+B for build / validate-style commands; reused.
+            Gesture = new KeyGesture(Key.B, KeyModifiers.Meta | KeyModifiers.Shift),
+        });
         menu.Add(fileMenu);
 
         // ── View menu ───────────────────────────────────────────────
@@ -145,6 +181,34 @@ public partial class App : Application
         if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
             lifetime.Shutdown();
     }
+
+    /// <summary>
+    /// Currently active document, if any. Resolved lazily because the
+    /// MainWindow / its DataContext may not exist yet when the App ctor builds
+    /// the command list, and to avoid holding stale references when the
+    /// lifetime swaps windows.
+    /// </summary>
+    private static DocumentViewModelBase? GetActiveDocument()
+    {
+        if ((Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
+            is { DataContext: MainWindowViewModel vm })
+        {
+            return vm.ActiveDocument;
+        }
+        return null;
+    }
+
+    private static bool CanExecuteActiveSave() =>
+        GetActiveDocument()?.FileSaveCommand?.CanExecute(null) ?? false;
+
+    private static void ExecuteActiveSave() =>
+        GetActiveDocument()?.FileSaveCommand?.Execute(null);
+
+    private static bool CanExecuteActiveValidate() =>
+        GetActiveDocument()?.FileValidateCommand?.CanExecute(null) ?? false;
+
+    private static void ExecuteActiveValidate() =>
+        GetActiveDocument()?.FileValidateCommand?.Execute(null);
 
     /// <summary>
     /// Forwards "Open Folder..." from the macOS menu to <see cref="MainWindow"/>

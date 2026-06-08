@@ -28,6 +28,13 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
 
     public override string TabIcon => "DefFormSchema";
 
+    // Forwarders for the base type's uniform file-level command surface — see
+    // DocumentViewModelBase.FileSaveCommand. The generated SaveCommand /
+    // ValidateCommand below carry the actual logic; this just exposes them
+    // under a name the source generator hasn't taken.
+    public override IRelayCommand FileSaveCommand => SaveCommand;
+    public override IRelayCommand FileValidateCommand => ValidateCommand;
+
     public string FilePath { get; }
 
     public FormSchema Schema { get; }

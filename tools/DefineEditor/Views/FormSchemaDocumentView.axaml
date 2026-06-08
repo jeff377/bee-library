@@ -210,13 +210,6 @@
                     </StackPanel>
                 </StackPanel>
                 <WrapPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Classes="tool primary" Command="{Binding SaveCommand}" Margin="2"
-                            ToolTip.Tip="儲存（寫回 XML）">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconSave}"/>
-                            <TextBlock Text="儲存" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
                     <Button Classes="tool" Command="{Binding AddTableCommand}" Margin="2"
                             ToolTip.Tip="新增 FormTable（需先選取根節點）">
                         <StackPanel Orientation="Horizontal" Spacing="6">
@@ -250,13 +243,6 @@
                         <StackPanel Orientation="Horizontal" Spacing="6">
                             <PathIcon Data="{StaticResource IconList}"/>
                             <TextBlock Text="選項" VerticalAlignment="Center"/>
-                        </StackPanel>
-                    </Button>
-                    <Button Classes="tool" Command="{Binding ValidateCommand}" Margin="2"
-                            ToolTip.Tip="跑靜態驗證並列出問題">
-                        <StackPanel Orientation="Horizontal" Spacing="6">
-                            <PathIcon Data="{StaticResource IconCheck}"/>
-                            <TextBlock Text="驗證" VerticalAlignment="Center"/>
                         </StackPanel>
                     </Button>
                     <Button Classes="tool danger" Command="{Binding DeleteCommand}" Margin="2"

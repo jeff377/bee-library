@@ -64,17 +64,11 @@
                     </StackPanel>
                 </StackPanel>
                 <WrapPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Classes="tool primary" Command="{Binding SaveCommand}" Margin="2" ToolTip.Tip="儲存（寫回 XML）">
-                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconSave}"/><TextBlock Text="儲存" VerticalAlignment="Center"/></StackPanel>
-                    </Button>
                     <Button Classes="tool" Command="{Binding AddCategoryCommand}" Margin="2" ToolTip.Tip="新增 ProgramCategory">
                         <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconFolder}"/><TextBlock Text="Category" VerticalAlignment="Center"/></StackPanel>
                     </Button>
                     <Button Classes="tool" Command="{Binding AddProgramCommand}" Margin="2" ToolTip.Tip="新增 ProgramItem（需先選取 Category）">
                         <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconBox}"/><TextBlock Text="Program" VerticalAlignment="Center"/></StackPanel>
-                    </Button>
-                    <Button Classes="tool" Command="{Binding ValidateCommand}" Margin="2" ToolTip.Tip="跑靜態驗證">
-                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconCheck}"/><TextBlock Text="驗證" VerticalAlignment="Center"/></StackPanel>
                     </Button>
                     <Button Classes="tool danger" Command="{Binding DeleteCommand}" Margin="2" ToolTip.Tip="刪除目前選取的節點">
                         <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconDelete}"/><TextBlock Text="刪除" VerticalAlignment="Center"/></StackPanel>

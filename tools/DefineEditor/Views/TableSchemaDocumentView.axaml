@@ -71,9 +71,6 @@
                     </StackPanel>
                 </StackPanel>
                 <WrapPanel Grid.Column="1" Orientation="Horizontal">
-                    <Button Classes="tool primary" Command="{Binding SaveCommand}" Margin="2" ToolTip.Tip="儲存（寫回 XML）">
-                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconSave}"/><TextBlock Text="儲存" VerticalAlignment="Center"/></StackPanel>
-                    </Button>
                     <Button Classes="tool" Command="{Binding AddFieldCommand}" Margin="2" ToolTip.Tip="新增 DbField">
                         <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconColumn}"/><TextBlock Text="Field" VerticalAlignment="Center"/></StackPanel>
                     </Button>
@@ -82,9 +79,6 @@
                     </Button>
                     <Button Classes="tool" Command="{Binding AddIndexFieldCommand}" Margin="2" ToolTip.Tip="新增 IndexField（需先選取 Index）">
                         <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconAdd}"/><TextBlock Text="IndexField" VerticalAlignment="Center"/></StackPanel>
-                    </Button>
-                    <Button Classes="tool" Command="{Binding ValidateCommand}" Margin="2" ToolTip.Tip="跑靜態驗證（含 PrimaryKey 唯一性）">
-                        <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconCheck}"/><TextBlock Text="驗證" VerticalAlignment="Center"/></StackPanel>
                     </Button>
                     <Button Classes="tool danger" Command="{Binding DeleteCommand}" Margin="2" ToolTip.Tip="刪除目前選取的節點">
                         <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconDelete}"/><TextBlock Text="刪除" VerticalAlignment="Center"/></StackPanel>
