@@ -90,7 +90,7 @@ namespace Bee.ObjectCaching.Providers
         /// Maps a Bee.NET <see cref="CacheItemPolicy"/> to a <see cref="MemoryCacheEntryOptions"/>,
         /// translating absolute / sliding expirations and file watch tokens.
         /// </summary>
-        private MemoryCacheEntryOptions CreateEntryOptions(CacheItemPolicy policy)
+        private static MemoryCacheEntryOptions CreateEntryOptions(CacheItemPolicy policy)
         {
             var options = new MemoryCacheEntryOptions();
             if (policy.AbsoluteExpiration != DateTimeOffset.MaxValue)
