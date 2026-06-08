@@ -26,9 +26,9 @@ public static class DatabaseSettingsValidator
         {
             var path = string.IsNullOrEmpty(server.Id) ? "Servers[?]" : $"Servers.{server.Id}";
             if (string.IsNullOrWhiteSpace(server.Id))
-                issues.Add(new(ValidationSeverity.Error, path, "Server.Id 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "Server.Id cannot be empty."));
             else if (!serverIds.Add(server.Id))
-                issues.Add(new(ValidationSeverity.Error, path, $"Server.Id '{server.Id}' 重複。"));
+                issues.Add(new(ValidationSeverity.Error, path, $"Server.Id '{server.Id}' is a duplicate."));
 
             ValidatePlaceholders(issues, path, server.ConnectionString, server.UserId, server.Password, dbName: null);
             CheckDialect(issues, path, server.ConnectionString, server.DatabaseType);
@@ -40,19 +40,19 @@ public static class DatabaseSettingsValidator
         {
             var path = string.IsNullOrEmpty(item.Id) ? "Items[?]" : $"Items.{item.Id}";
             if (string.IsNullOrWhiteSpace(item.Id))
-                issues.Add(new(ValidationSeverity.Error, path, "Item.Id 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "Item.Id cannot be empty."));
             else if (!itemIds.Add(item.Id))
-                issues.Add(new(ValidationSeverity.Error, path, $"Item.Id '{item.Id}' 重複。"));
+                issues.Add(new(ValidationSeverity.Error, path, $"Item.Id '{item.Id}' is a duplicate."));
 
             if (!string.IsNullOrWhiteSpace(item.ServerId) && !serverIds.Contains(item.ServerId))
                 issues.Add(new(ValidationSeverity.Error, path,
-                    $"Item.ServerId '{item.ServerId}' 在 Servers 內找不到。"));
+                    $"Item.ServerId ' was not found in Servers."));
 
             if (string.IsNullOrWhiteSpace(item.ServerId)
                 && string.IsNullOrWhiteSpace(item.ConnectionString))
             {
                 issues.Add(new(ValidationSeverity.Error, path,
-                    "Item 必須指定 ServerId 或自行提供 ConnectionString。"));
+                    "Item must specify a ServerId or supply its own ConnectionString."));
             }
 
             ValidatePlaceholders(issues, path, item.ConnectionString, item.UserId, item.Password, item.DbName);
@@ -74,15 +74,15 @@ public static class DatabaseSettingsValidator
             {
                 case "{@UserId}" when string.IsNullOrEmpty(userId):
                     issues.Add(new(ValidationSeverity.Warning, path,
-                        "ConnectionString 含 {@UserId} 佔位符，但 UserId 欄位為空（除非 Integrated Security）。"));
+                        "ConnectionString contains a {@UserId} placeholder but the UserId field is empty (unless Integrated Security)."));
                     break;
                 case "{@Password}" when string.IsNullOrEmpty(password):
                     issues.Add(new(ValidationSeverity.Warning, path,
-                        "ConnectionString 含 {@Password} 佔位符，但 Password 欄位為空。"));
+                        "ConnectionString contains a {@Password} placeholder but the Password field is empty."));
                     break;
                 case "{@DbName}" when string.IsNullOrEmpty(dbName):
                     issues.Add(new(ValidationSeverity.Warning, path,
-                        "ConnectionString 含 {@DbName} 佔位符，但 DbName 欄位為空。"));
+                        "ConnectionString contains a {@DbName} placeholder but the DbName field is empty."));
                     break;
             }
         }
@@ -101,7 +101,7 @@ public static class DatabaseSettingsValidator
         var probe = ConnectionStringParser.Compose(connectionString, "x", "x", "x");
         var parsed = ConnectionStringParser.Parse(probe, databaseType);
         foreach (var warning in parsed.Warnings)
-            if (warning.Contains("非", StringComparison.Ordinal) && warning.Contains("典型鍵", StringComparison.Ordinal))
+            if (warning.Contains("not typical of", StringComparison.Ordinal) && warning.Contains("connection string type may not match", StringComparison.Ordinal))
                 issues.Add(new(ValidationSeverity.Warning, path, warning));
     }
 }

@@ -20,11 +20,11 @@ public static class FormSchemaValidator
         var progIdSet = new HashSet<string>(context.AvailableProgIds, StringComparer.OrdinalIgnoreCase);
 
         if (string.IsNullOrWhiteSpace(schema.ProgId))
-            issues.Add(new(ValidationSeverity.Error, "Schema", "ProgId 不可為空。"));
+            issues.Add(new(ValidationSeverity.Error, "Schema", "ProgId cannot be empty."));
 
         if (schema.Tables is null || schema.Tables.Count == 0)
         {
-            issues.Add(new(ValidationSeverity.Warning, "Schema", "Schema 尚未定義任何 FormTable。"));
+            issues.Add(new(ValidationSeverity.Warning, "Schema", "Schema does not declare any FormTable."));
             return issues;
         }
 
@@ -37,10 +37,10 @@ public static class FormSchemaValidator
                 : $"Tables[{ti}]";
 
             if (string.IsNullOrWhiteSpace(table.TableName))
-                issues.Add(new(ValidationSeverity.Error, tablePath, "TableName 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, tablePath, "TableName cannot be empty."));
             else if (!seenTableNames.Add(table.TableName))
                 issues.Add(new(ValidationSeverity.Error, tablePath,
-                    $"TableName '{table.TableName}' 在 schema 內重複。"));
+                    $"TableName '{table.TableName}' is a duplicate within the schema."));
 
             ValidateFields(issues, table, tablePath, progIdSet);
         }
@@ -56,7 +56,7 @@ public static class FormSchemaValidator
     {
         if (table.Fields is null || table.Fields.Count == 0)
         {
-            issues.Add(new(ValidationSeverity.Warning, tablePath, "FormTable 尚未定義任何 FormField。"));
+            issues.Add(new(ValidationSeverity.Warning, tablePath, "FormTable does not declare any FormField."));
             return;
         }
 
@@ -69,10 +69,10 @@ public static class FormSchemaValidator
                 : $"{tablePath}.Fields[{fi}]";
 
             if (string.IsNullOrWhiteSpace(field.FieldName))
-                issues.Add(new(ValidationSeverity.Error, fieldPath, "FieldName 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, fieldPath, "FieldName cannot be empty."));
             else if (!seenFieldNames.Add(field.FieldName))
                 issues.Add(new(ValidationSeverity.Error, fieldPath,
-                    $"FieldName '{field.FieldName}' 在 '{table.TableName}' 內重複。"));
+                    $"FieldName '{field.FieldName}' is a duplicate within '{table.TableName}'."));
 
             ValidateRelation(issues, field, fieldPath, progIdSet, table);
             ValidateLookup(issues, field, fieldPath, progIdSet, table);
@@ -92,11 +92,11 @@ public static class FormSchemaValidator
 
         if (hasMappings && !hasProgId)
             issues.Add(new(ValidationSeverity.Error, $"{fieldPath}.Relation",
-                "存在 RelationFieldMappings 但 RelationProgId 為空。"));
+                "RelationFieldMappings is present but RelationProgId is empty."));
 
         if (hasProgId && !progIdSet.Contains(field.RelationProgId))
             issues.Add(new(ValidationSeverity.Warning, $"{fieldPath}.Relation",
-                $"RelationProgId '{field.RelationProgId}' 在目前方案內找不到。"));
+                $"RelationProgId ' was not found in the current solution."));
 
         if (!hasMappings) return;
         var localFieldNames = (owningTable.Fields ?? Enumerable.Empty<FormField>())
@@ -108,17 +108,17 @@ public static class FormSchemaValidator
             var mapping = field.RelationFieldMappings[mi];
             var path = $"{fieldPath}.Relation[{mi}]";
             if (string.IsNullOrWhiteSpace(mapping.SourceField))
-                issues.Add(new(ValidationSeverity.Error, path, "SourceField 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "SourceField cannot be empty."));
             if (string.IsNullOrWhiteSpace(mapping.DestinationField))
-                issues.Add(new(ValidationSeverity.Error, path, "DestinationField 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "DestinationField cannot be empty."));
             else
             {
                 if (!localFieldNames.Contains(mapping.DestinationField))
                     issues.Add(new(ValidationSeverity.Error, path,
-                        $"DestinationField '{mapping.DestinationField}' 不存在於 '{owningTable.TableName}'。"));
+                        $"DestinationField ' does not exist on '{owningTable.TableName}'."));
                 if (!seenDest.Add(mapping.DestinationField))
                     issues.Add(new(ValidationSeverity.Error, path,
-                        $"DestinationField '{mapping.DestinationField}' 在同一組 RelationFieldMappings 內重複。"));
+                        $"DestinationField '{mapping.DestinationField}' is a duplicate within the same RelationFieldMappings group."));
             }
         }
     }
@@ -135,11 +135,11 @@ public static class FormSchemaValidator
 
         if (hasMappings && !hasProgId)
             issues.Add(new(ValidationSeverity.Error, $"{fieldPath}.Lookup",
-                "存在 LookupFieldMappings 但 LookupProgId 為空。"));
+                "LookupFieldMappings is present but LookupProgId is empty."));
 
         if (hasProgId && !progIdSet.Contains(field.LookupProgId))
             issues.Add(new(ValidationSeverity.Warning, $"{fieldPath}.Lookup",
-                $"LookupProgId '{field.LookupProgId}' 在目前方案內找不到。"));
+                $"LookupProgId ' was not found in the current solution."));
 
         if (!hasMappings) return;
         var localFieldNames = (owningTable.Fields ?? Enumerable.Empty<FormField>())
@@ -150,12 +150,12 @@ public static class FormSchemaValidator
             var mapping = field.LookupFieldMappings[mi];
             var path = $"{fieldPath}.Lookup[{mi}]";
             if (string.IsNullOrWhiteSpace(mapping.SourceField))
-                issues.Add(new(ValidationSeverity.Error, path, "SourceField 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "SourceField cannot be empty."));
             if (string.IsNullOrWhiteSpace(mapping.DestinationField))
-                issues.Add(new(ValidationSeverity.Error, path, "DestinationField 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "DestinationField cannot be empty."));
             else if (!localFieldNames.Contains(mapping.DestinationField))
                 issues.Add(new(ValidationSeverity.Error, path,
-                    $"DestinationField '{mapping.DestinationField}' 不存在於 '{owningTable.TableName}'。"));
+                    $"DestinationField ' does not exist on '{owningTable.TableName}'."));
         }
     }
 
@@ -169,10 +169,10 @@ public static class FormSchemaValidator
             var item = field.ListItems[i];
             var path = $"{fieldPath}.ListItems[{i}]";
             if (string.IsNullOrWhiteSpace(item.Value))
-                issues.Add(new(ValidationSeverity.Error, path, "ListItem.Value 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "ListItem.Value cannot be empty."));
             else if (!seen.Add(item.Value))
                 issues.Add(new(ValidationSeverity.Error, path,
-                    $"ListItem.Value '{item.Value}' 在同一欄位內重複。"));
+                    $"ListItem.Value '{item.Value}' is a duplicate within the same field."));
         }
     }
 }

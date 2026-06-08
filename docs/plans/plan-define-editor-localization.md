@@ -1,13 +1,14 @@
 # 計畫：DefineEditor 多語系（zh-TW / en）支援
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-06-08）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | i18n infrastructure：`LocalizationService` + 自訂 markup extension + resx 雙語資源 | 📝 待做 |
-| 2 | View menu 加 Language 切換、寫入 user-config 並 binding 動態更新 | 📝 待做 |
-| 3 | axaml UI 字串遷移至 resx key（9 DocumentView + MainWindow + Dialogs） | 📝 待做 |
-| 4 | ViewModel UI 字串（StatusText / Dialog 訊息 / Validator messages）遷移 | 📝 待做 |
+| 1 | i18n infrastructure：`LocalizationService` + 自訂 markup extension + resx 雙語資源 | ✅ 已完成（c5ba472d） |
+| 2 | View menu 加 Language 切換、寫入 user-config 並 binding 動態更新 | ✅ 已完成（c5ba472d） |
+| 3 | axaml UI 字串遷移至 resx key（9 DocumentView + MainWindow + Dialogs） | ✅ 已完成（5ebcae4f） |
+| 4 | ViewModel UI 字串（StatusText / Dialog 訊息）遷移 | ✅ 已完成（5ebcae4f） |
+| 5 | Validator messages、tree node detail、placeholder defaults | ✅ 已完成（本 commit；不放 resx，採英文 inline——dev-tool 慣例） |
 
 ## 背景
 

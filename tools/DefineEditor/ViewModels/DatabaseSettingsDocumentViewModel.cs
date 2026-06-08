@@ -96,21 +96,21 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
     {
         var r = (DatabaseSettings)node.Payload!;
         node.Header = "DatabaseSettings";
-        node.Detail = $"{r.Servers?.Count ?? 0} 個 Server / {r.Items?.Count ?? 0} 個 Item";
+        node.Detail = $"{r.Servers?.Count ?? 0} Server(s) / {r.Items?.Count ?? 0} Item(s)";
     }
 
     private static void RefreshServersGroup(SettingsTreeNode node)
     {
         var r = (DatabaseSettings)node.Payload!;
         node.Header = $"Servers ({r.Servers?.Count ?? 0})";
-        node.Detail = "資料庫伺服器（提供共用連線字串樣板）。";
+        node.Detail = "Database servers (provide shared connection-string templates).";
     }
 
     private static void RefreshItemsGroup(SettingsTreeNode node)
     {
         var r = (DatabaseSettings)node.Payload!;
         node.Header = $"Items ({r.Items?.Count ?? 0})";
-        node.Detail = "資料庫實例（綁定 Server 或自行提供連線字串，並指定 CategoryId / DbName）。";
+        node.Detail = "Database items (bind a Server or supply their own connection string; pin CategoryId / DbName).";
     }
 
     private static void RefreshServer(SettingsTreeNode node)
@@ -122,7 +122,7 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
             $"DisplayName：{s.DisplayName}",
             $"DatabaseType：{s.DatabaseType}",
             $"UserId：{s.UserId}",
-            $"Password：{(string.IsNullOrEmpty(s.Password) ? "（空）" : "******")}",
+            $"Password：{(string.IsNullOrEmpty(s.Password) ? "(empty)" : "******")}",
             $"ConnectionString：{s.ConnectionString}");
     }
 
@@ -134,10 +134,10 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
             $"Id：{i.Id}",
             $"CategoryId：{i.CategoryId}",
             $"DatabaseType：{i.DatabaseType}",
-            $"ServerId：{(string.IsNullOrEmpty(i.ServerId) ? "（無，自帶連線字串）" : i.ServerId)}",
+            $"ServerId：{(string.IsNullOrEmpty(i.ServerId) ? "(none, supplies own connection string)" : i.ServerId)}",
             $"DbName：{i.DbName}",
             $"UserId：{i.UserId}",
-            $"Password：{(string.IsNullOrEmpty(i.Password) ? "（空）" : "******")}",
+            $"Password：{(string.IsNullOrEmpty(i.Password) ? "(empty)" : "******")}",
             $"ConnectionString：{i.ConnectionString}");
     }
 
@@ -164,7 +164,7 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
                         ?? Roots[0].Children.FirstOrDefault(c => c.Kind == KindServersGroup);
         if (groupNode is null) return;
         var id = UniqueKey(Root.Servers!.Select(s => s.Id), "new_server");
-        var server = new DatabaseServer { Id = id, DisplayName = "新伺服器", DatabaseType = DatabaseType.SQLServer };
+        var server = new DatabaseServer { Id = id, DisplayName = "New server", DatabaseType = DatabaseType.SQLServer };
         Root.Servers!.Add(server);
         var node = BuildServerNode(server);
         groupNode.AddChild(node);
@@ -186,7 +186,7 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
         var item = new DatabaseItem
         {
             Id = id,
-            DisplayName = "新資料庫",
+            DisplayName = "New database",
             DatabaseType = DatabaseType.SQLServer,
         };
         Root.Items!.Add(item);

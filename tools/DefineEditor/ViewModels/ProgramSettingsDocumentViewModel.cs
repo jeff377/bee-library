@@ -78,7 +78,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
     {
         var root = (ProgramSettings)node.Payload!;
         node.Header = "ProgramSettings";
-        node.Detail = $"共 {root.Categories?.Count ?? 0} 個 ProgramCategory";
+        node.Detail = $"{root.Categories?.Count ?? 0} ProgramCategory item(s)";
     }
 
     private static void RefreshCategory(SettingsTreeNode node)
@@ -123,7 +123,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
         if (SelectedTreeNode is not { Kind: KindRoot, Payload: ProgramSettings root } rootNode)
             return;
         var id = UniqueKey(root.Categories!.Select(c => c.Id), "new_category");
-        var category = new ProgramCategory(id, "新分類");
+        var category = new ProgramCategory(id, "New category");
         root.Categories!.Add(category);
         var node = BuildCategoryNode(category);
         rootNode.AddChild(node);
@@ -140,7 +140,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
         var categoryNode = FindAncestor(SelectedTreeNode, KindCategory);
         if (categoryNode?.Payload is not ProgramCategory category) return;
         var id = UniqueKey(category.Items!.Select(p => p.ProgId), "NewProgram");
-        var program = new ProgramItem { ProgId = id, DisplayName = "新程式" };
+        var program = new ProgramItem { ProgId = id, DisplayName = "New program" };
         category.Items!.Add(program);
         var node = BuildProgramNode(program);
         categoryNode.AddChild(node);
@@ -167,7 +167,7 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
         var categories = Root.Categories;
         if (categories is null || categories.Count == 0)
         {
-            issues.Add(new(ValidationSeverity.Warning, "ProgramSettings", "尚未定義任何 ProgramCategory。"));
+            issues.Add(new(ValidationSeverity.Warning, "ProgramSettings", "No ProgramCategory has been defined."));
             return issues;
         }
         var seenCategoryIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -175,20 +175,20 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
         {
             var catPath = !string.IsNullOrWhiteSpace(category.Id) ? category.Id : "(unnamed)";
             if (string.IsNullOrWhiteSpace(category.Id))
-                issues.Add(new(ValidationSeverity.Error, catPath, "ProgramCategory.Id 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, catPath, "ProgramCategory.Id cannot be empty."));
             else if (!seenCategoryIds.Add(category.Id))
                 issues.Add(new(ValidationSeverity.Error, catPath,
-                    $"ProgramCategory.Id '{category.Id}' 重複。"));
+                    $"ProgramCategory.Id '{category.Id}' is a duplicate."));
 
             var seenProgIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var program in category.Items ?? Enumerable.Empty<ProgramItem>())
             {
                 var path = $"{catPath}.{(string.IsNullOrEmpty(program.ProgId) ? "(unnamed)" : program.ProgId)}";
                 if (string.IsNullOrWhiteSpace(program.ProgId))
-                    issues.Add(new(ValidationSeverity.Error, path, "ProgramItem.ProgId 不可為空。"));
+                    issues.Add(new(ValidationSeverity.Error, path, "ProgramItem.ProgId cannot be empty."));
                 else if (!seenProgIds.Add(program.ProgId))
                     issues.Add(new(ValidationSeverity.Error, path,
-                        $"ProgramItem.ProgId '{program.ProgId}' 在 '{catPath}' 內重複。"));
+                        $"ProgramItem.ProgId '{program.ProgId}' is a duplicate within '{catPath}'."));
             }
         }
         return issues;

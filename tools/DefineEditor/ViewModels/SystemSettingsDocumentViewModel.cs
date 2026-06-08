@@ -93,7 +93,7 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
     private static void RefreshRoot(SettingsTreeNode node)
     {
         node.Header = "SystemSettings";
-        node.Detail = "系統參數與環境設定";
+        node.Detail = "System parameters and environment settings";
     }
 
     private static void RefreshCommon(SettingsTreeNode node)
@@ -110,13 +110,13 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
     private static void RefreshBackend(SettingsTreeNode node)
     {
         node.Header = "BackendConfiguration";
-        node.Detail = "後端參數（請於下方子節點編輯各區塊）";
+        node.Detail = "Backend parameters (edit each block via the child nodes below)";
     }
 
     private static void RefreshLogOptions(SettingsTreeNode node)
     {
         node.Header = "LogOptions";
-        node.Detail = "（目前無可編輯欄位）";
+        node.Detail = "(no editable fields)";
     }
 
     private static void RefreshSecurityKeys(SettingsTreeNode node)
@@ -134,7 +134,7 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
     {
         var c = (BackendComponents)node.Payload!;
         node.Header = "BackendComponents";
-        node.Detail = $"12 個 component type，預設值來自 BackendDefaultTypes（CacheProvider 等）";
+        node.Detail = $"12 component types; defaults come from BackendDefaultTypes (CacheProvider etc.)";
         _ = c;
     }
 
@@ -152,26 +152,26 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
     private static void RefreshFrontend(SettingsTreeNode node)
     {
         node.Header = "FrontendConfiguration";
-        node.Detail = "（目前無可編輯欄位）";
+        node.Detail = "(no editable fields)";
     }
 
     private static void RefreshWebsite(SettingsTreeNode node)
     {
         node.Header = "WebsiteConfiguration";
-        node.Detail = "（目前無可編輯欄位）";
+        node.Detail = "(no editable fields)";
     }
 
     private static void RefreshBackgroundService(SettingsTreeNode node)
     {
         node.Header = "BackgroundServiceConfiguration";
-        node.Detail = "（目前無可編輯欄位）";
+        node.Detail = "(no editable fields)";
     }
 
     private static void RefreshExtendedGroup(SettingsTreeNode node)
     {
         var root = (SystemSettings)node.Payload!;
         node.Header = "ExtendedProperties";
-        node.Detail = $"共 {root.ExtendedProperties?.Count ?? 0} 個自訂屬性";
+        node.Detail = $"{root.ExtendedProperties?.Count ?? 0} extended property entries";
     }
 
     private static void RefreshProperty(SettingsTreeNode node)
@@ -184,7 +184,7 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
     }
 
     private static string Mask(string s) =>
-        string.IsNullOrEmpty(s) ? "（空）" : (s.Length > 30 ? s[..30] + "…" : s);
+        string.IsNullOrEmpty(s) ? "(empty)" : (s.Length > 30 ? s[..30] + "…" : s);
 
     private static SettingsTreeNode MakeNode(
         string icon, string kind, object payload,

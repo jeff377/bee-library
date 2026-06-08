@@ -106,14 +106,14 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     {
         var s = (TableSchema)node.Payload!;
         node.Header = $"Fields ({s.Fields?.Count ?? 0})";
-        node.Detail = "資料表欄位定義。";
+        node.Detail = "Table column definitions.";
     }
 
     private static void RefreshIndexesGroup(SettingsTreeNode node)
     {
         var s = (TableSchema)node.Payload!;
         node.Header = $"Indexes ({s.Indexes?.Count ?? 0})";
-        node.Detail = "資料表索引定義（含 PrimaryKey）。";
+        node.Detail = "Table index definitions (including PrimaryKey).";
     }
 
     private static void RefreshField(SettingsTreeNode node)
@@ -168,7 +168,7 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
                         ?? Roots[0].Children.FirstOrDefault(c => c.Kind == KindFieldsGroup);
         if (groupNode is null) return;
         var name = UniqueKey(Root.Fields!.Select(f => f.FieldName), "new_field");
-        var field = new DbField(name, "新欄位", FieldDbType.String);
+        var field = new DbField(name, "New field", FieldDbType.String);
         Root.Fields!.Add(field);
         var node = BuildFieldNode(field);
         groupNode.AddChild(node);
@@ -231,16 +231,16 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     {
         var issues = new List<ValidationIssue>();
         if (string.IsNullOrWhiteSpace(Root.TableName))
-            issues.Add(new(ValidationSeverity.Error, "TableSchema", "TableName 不可為空。"));
+            issues.Add(new(ValidationSeverity.Error, "TableSchema", "TableName cannot be empty."));
 
         var fieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var field in Root.Fields ?? Enumerable.Empty<DbField>())
         {
             var path = string.IsNullOrEmpty(field.FieldName) ? "Fields[?]" : $"Fields.{field.FieldName}";
             if (string.IsNullOrWhiteSpace(field.FieldName))
-                issues.Add(new(ValidationSeverity.Error, path, "DbField.FieldName 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "DbField.FieldName cannot be empty."));
             else if (!fieldNames.Add(field.FieldName))
-                issues.Add(new(ValidationSeverity.Error, path, $"FieldName '{field.FieldName}' 重複。"));
+                issues.Add(new(ValidationSeverity.Error, path, $"FieldName '{field.FieldName}' is a duplicate."));
         }
 
         var indexNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -249,24 +249,24 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
         {
             var ixPath = string.IsNullOrEmpty(index.Name) ? "Indexes[?]" : $"Indexes.{index.Name}";
             if (string.IsNullOrWhiteSpace(index.Name))
-                issues.Add(new(ValidationSeverity.Error, ixPath, "DbTableIndex.Name 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, ixPath, "DbTableIndex.Name cannot be empty."));
             else if (!indexNames.Add(index.Name))
-                issues.Add(new(ValidationSeverity.Error, ixPath, $"Index name '{index.Name}' 重複。"));
+                issues.Add(new(ValidationSeverity.Error, ixPath, $"Index name '{index.Name}' is a duplicate."));
             if (index.PrimaryKey) pkCount++;
 
             foreach (var ifld in index.IndexFields ?? Enumerable.Empty<IndexField>())
             {
                 var ifPath = $"{ixPath}.{ifld.FieldName}";
                 if (string.IsNullOrWhiteSpace(ifld.FieldName))
-                    issues.Add(new(ValidationSeverity.Error, ifPath, "IndexField.FieldName 不可為空。"));
+                    issues.Add(new(ValidationSeverity.Error, ifPath, "IndexField.FieldName cannot be empty."));
                 else if (!fieldNames.Contains(ifld.FieldName))
                     issues.Add(new(ValidationSeverity.Error, ifPath,
-                        $"IndexField '{ifld.FieldName}' 在 Fields 內不存在。"));
+                        $"IndexField '{ifld.FieldName}' is not declared in the Fields list."));
             }
         }
         if (pkCount > 1)
             issues.Add(new(ValidationSeverity.Error, "Indexes",
-                $"PrimaryKey 索引數量為 {pkCount}，僅允許 0 或 1 個。"));
+                $"PrimaryKey index count is {pkCount}; only 0 or 1 is allowed."));
         return issues;
     }
 }

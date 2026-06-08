@@ -80,7 +80,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
     {
         var root = (DbCategorySettings)node.Payload!;
         node.Header = "DbCategorySettings";
-        node.Detail = $"共 {root.Categories?.Count ?? 0} 個 DbCategory";
+        node.Detail = $"{root.Categories?.Count ?? 0} DbCategory item(s)";
     }
 
     private static void RefreshCategory(SettingsTreeNode node)
@@ -124,7 +124,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
         if (SelectedTreeNode is not { Kind: KindRoot, Payload: DbCategorySettings root } rootNode)
             return;
         var id = UniqueKey(root.Categories!.Select(c => c.Id), "new_category");
-        var category = new DbCategory { Id = id, DisplayName = "新分類" };
+        var category = new DbCategory { Id = id, DisplayName = "New category" };
         root.Categories!.Add(category);
         var node = BuildCategoryNode(category);
         rootNode.AddChild(node);
@@ -141,7 +141,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
         var categoryNode = FindAncestor(SelectedTreeNode, KindCategory);
         if (categoryNode?.Payload is not DbCategory category) return;
         var name = UniqueKey(category.Tables!.Select(t => t.TableName), "new_table");
-        var table = new TableItem { TableName = name, DisplayName = "新資料表" };
+        var table = new TableItem { TableName = name, DisplayName = "New table" };
         category.Tables!.Add(table);
         var node = BuildTableNode(table);
         categoryNode.AddChild(node);
@@ -168,7 +168,7 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
         var categories = Root.Categories;
         if (categories is null || categories.Count == 0)
         {
-            issues.Add(new(ValidationSeverity.Warning, "DbCategorySettings", "尚未定義任何 DbCategory。"));
+            issues.Add(new(ValidationSeverity.Warning, "DbCategorySettings", "No DbCategory has been defined."));
             return issues;
         }
         var seenCategoryIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -176,20 +176,20 @@ public sealed partial class DbCategorySettingsDocumentViewModel : SingletonDocum
         {
             var catPath = !string.IsNullOrWhiteSpace(category.Id) ? category.Id : "(unnamed)";
             if (string.IsNullOrWhiteSpace(category.Id))
-                issues.Add(new(ValidationSeverity.Error, catPath, "DbCategory.Id 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, catPath, "DbCategory.Id cannot be empty."));
             else if (!seenCategoryIds.Add(category.Id))
                 issues.Add(new(ValidationSeverity.Error, catPath,
-                    $"DbCategory.Id '{category.Id}' 重複。"));
+                    $"DbCategory.Id '{category.Id}' is a duplicate."));
 
             var seenTableNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var table in category.Tables ?? Enumerable.Empty<TableItem>())
             {
                 var path = $"{catPath}.{(string.IsNullOrEmpty(table.TableName) ? "(unnamed)" : table.TableName)}";
                 if (string.IsNullOrWhiteSpace(table.TableName))
-                    issues.Add(new(ValidationSeverity.Error, path, "TableItem.TableName 不可為空。"));
+                    issues.Add(new(ValidationSeverity.Error, path, "TableItem.TableName cannot be empty."));
                 else if (!seenTableNames.Add(table.TableName))
                     issues.Add(new(ValidationSeverity.Error, path,
-                        $"TableItem.TableName '{table.TableName}' 在 '{catPath}' 內重複。"));
+                        $"TableItem.TableName '{table.TableName}' is a duplicate within '{catPath}'."));
             }
         }
         return issues;

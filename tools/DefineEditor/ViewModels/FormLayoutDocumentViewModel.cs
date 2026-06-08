@@ -118,14 +118,14 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
     {
         var l = (FormLayout)node.Payload!;
         node.Header = $"Sections ({l.Sections?.Count ?? 0})";
-        node.Detail = "主表單區段（共享 ColumnCount 欄分配）。";
+        node.Detail = "Master form section (shares the ColumnCount column allocation).";
     }
 
     private static void RefreshDetailsGroup(SettingsTreeNode node)
     {
         var l = (FormLayout)node.Payload!;
         node.Header = $"Details ({l.Details?.Count ?? 0})";
-        node.Detail = "明細表格 grid（全寬呈現於主表單之下）。";
+        node.Detail = "Detail grid (full-width below the master form).";
     }
 
     private static void RefreshSection(SettingsTreeNode node)
@@ -198,7 +198,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         var name = UniqueKey(
             (Root.Sections ?? new LayoutSectionCollection()).Select(s => s.Name),
             "Section");
-        var section = new LayoutSection { Name = name, Caption = "新區段" };
+        var section = new LayoutSection { Name = name, Caption = "New section" };
         Root.Sections!.Add(section);
         var node = BuildSectionNode(section);
         groupNode.AddChild(node);
@@ -217,7 +217,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         var name = UniqueKey(
             (section.Fields ?? new LayoutFieldCollection()).Select(f => f.FieldName),
             "new_field");
-        var field = new LayoutField { FieldName = name, Caption = "新欄位" };
+        var field = new LayoutField { FieldName = name, Caption = "New field" };
         section.Fields!.Add(field);
         var node = BuildLayoutFieldNode(field);
         sectionNode.AddChild(node);
@@ -237,7 +237,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         var name = UniqueKey(
             (Root.Details ?? new LayoutGridCollection()).Select(g => g.TableName),
             "DetailTable");
-        var grid = new LayoutGrid(name, "新明細表格");
+        var grid = new LayoutGrid(name, "New detail grid");
         Root.Details!.Add(grid);
         var node = BuildGridNode(grid);
         groupNode.AddChild(node);
@@ -256,7 +256,7 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         var name = UniqueKey(
             (grid.Columns ?? new LayoutColumnCollection()).Select(c => c.FieldName),
             "new_column");
-        var column = new LayoutColumn { FieldName = name, Caption = "新欄位" };
+        var column = new LayoutColumn { FieldName = name, Caption = "New field" };
         grid.Columns!.Add(column);
         var node = BuildLayoutColumnNode(column);
         gridNode.AddChild(node);
@@ -284,32 +284,32 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
     {
         var issues = new List<ValidationIssue>();
         if (string.IsNullOrWhiteSpace(Root.LayoutId))
-            issues.Add(new(ValidationSeverity.Error, "FormLayout", "LayoutId 不可為空。"));
+            issues.Add(new(ValidationSeverity.Error, "FormLayout", "LayoutId cannot be empty."));
         if (string.IsNullOrWhiteSpace(Root.ProgId))
-            issues.Add(new(ValidationSeverity.Error, "FormLayout", "ProgId 不可為空。"));
+            issues.Add(new(ValidationSeverity.Error, "FormLayout", "ProgId cannot be empty."));
         if (Root.ColumnCount <= 0)
             issues.Add(new(ValidationSeverity.Error, "FormLayout",
-                $"ColumnCount 必須大於 0（目前 {Root.ColumnCount}）。"));
+                $"ColumnCount must be greater than 0 (current value: {Root.ColumnCount})."));
 
         var sectionNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var section in Root.Sections ?? Enumerable.Empty<LayoutSection>())
         {
             var sPath = string.IsNullOrEmpty(section.Name) ? "Sections[?]" : $"Sections.{section.Name}";
             if (string.IsNullOrWhiteSpace(section.Name))
-                issues.Add(new(ValidationSeverity.Error, sPath, "LayoutSection.Name 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, sPath, "LayoutSection.Name cannot be empty."));
             else if (!sectionNames.Add(section.Name))
                 issues.Add(new(ValidationSeverity.Error, sPath,
-                    $"Section.Name '{section.Name}' 重複。"));
+                    $"Section.Name '{section.Name}' is a duplicate."));
 
             var fieldNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var f in section.Fields ?? Enumerable.Empty<LayoutField>())
             {
                 var fPath = $"{sPath}.{(string.IsNullOrEmpty(f.FieldName) ? "(unnamed)" : f.FieldName)}";
                 if (string.IsNullOrWhiteSpace(f.FieldName))
-                    issues.Add(new(ValidationSeverity.Error, fPath, "LayoutField.FieldName 不可為空。"));
+                    issues.Add(new(ValidationSeverity.Error, fPath, "LayoutField.FieldName cannot be empty."));
                 else if (!fieldNames.Add(f.FieldName))
                     issues.Add(new(ValidationSeverity.Error, fPath,
-                        $"LayoutField.FieldName '{f.FieldName}' 在 '{section.Name}' 內重複。"));
+                        $"LayoutField.FieldName '{f.FieldName}' is a duplicate within '{section.Name}'."));
             }
         }
 
@@ -318,20 +318,20 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
         {
             var gPath = string.IsNullOrEmpty(grid.TableName) ? "Details[?]" : $"Details.{grid.TableName}";
             if (string.IsNullOrWhiteSpace(grid.TableName))
-                issues.Add(new(ValidationSeverity.Error, gPath, "LayoutGrid.TableName 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, gPath, "LayoutGrid.TableName cannot be empty."));
             else if (!gridNames.Add(grid.TableName))
                 issues.Add(new(ValidationSeverity.Error, gPath,
-                    $"LayoutGrid.TableName '{grid.TableName}' 重複。"));
+                    $"LayoutGrid.TableName '{grid.TableName}' is a duplicate."));
 
             var colNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var c in grid.Columns ?? Enumerable.Empty<LayoutColumn>())
             {
                 var cPath = $"{gPath}.{(string.IsNullOrEmpty(c.FieldName) ? "(unnamed)" : c.FieldName)}";
                 if (string.IsNullOrWhiteSpace(c.FieldName))
-                    issues.Add(new(ValidationSeverity.Error, cPath, "LayoutColumn.FieldName 不可為空。"));
+                    issues.Add(new(ValidationSeverity.Error, cPath, "LayoutColumn.FieldName cannot be empty."));
                 else if (!colNames.Add(c.FieldName))
                     issues.Add(new(ValidationSeverity.Error, cPath,
-                        $"LayoutColumn.FieldName '{c.FieldName}' 在 '{grid.TableName}' 內重複。"));
+                        $"LayoutColumn.FieldName '{c.FieldName}' is a duplicate within '{grid.TableName}'."));
             }
         }
         return issues;

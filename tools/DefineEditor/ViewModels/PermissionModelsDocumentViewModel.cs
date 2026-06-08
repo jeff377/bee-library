@@ -79,7 +79,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
     {
         var root = (PermissionModels)node.Payload!;
         node.Header = "PermissionModels";
-        node.Detail = $"共 {root.Models?.Count ?? 0} 個 PermissionModel";
+        node.Detail = $"{root.Models?.Count ?? 0} PermissionModel item(s)";
     }
 
     private static void RefreshModel(SettingsTreeNode node)
@@ -123,7 +123,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
         if (SelectedTreeNode is not { Kind: KindRoot, Payload: PermissionModels root } rootNode)
             return;
         var modelId = UniqueKey(root.Models!.Select(m => m.ModelId), "NewModel");
-        var model = new PermissionModel(modelId, "新模型");
+        var model = new PermissionModel(modelId, "New model");
         root.Models!.Add(model);
         var node = BuildModelNode(model);
         rootNode.AddChild(node);
@@ -181,7 +181,7 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
         var models = Root.Models;
         if (models is null || models.Count == 0)
         {
-            issues.Add(new(ValidationSeverity.Warning, "PermissionModels", "尚未定義任何 PermissionModel。"));
+            issues.Add(new(ValidationSeverity.Warning, "PermissionModels", "No PermissionModel has been defined."));
         }
         else
         {
@@ -190,10 +190,10 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
             {
                 var path = !string.IsNullOrWhiteSpace(model.ModelId) ? model.ModelId : "(unnamed)";
                 if (string.IsNullOrWhiteSpace(model.ModelId))
-                    issues.Add(new(ValidationSeverity.Error, path, "ModelId 不可為空。"));
+                    issues.Add(new(ValidationSeverity.Error, path, "ModelId cannot be empty."));
                 else if (!seen.Add(model.ModelId))
                     issues.Add(new(ValidationSeverity.Error, path,
-                        $"ModelId '{model.ModelId}' 在 registry 內重複。"));
+                        $"ModelId '{model.ModelId}' is a duplicate within the registry."));
             }
         }
 

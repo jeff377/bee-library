@@ -172,7 +172,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
             return;
 
         var name = UniqueKey(schema.Tables!.Select(t => t.TableName), "NewTable");
-        var table = new FormTable(name, "新增表格");
+        var table = new FormTable(name, "New table");
         schema.Tables!.Add(table);
 
         var node = FormSchemaNodeBuilder.BuildTable(table);
@@ -191,7 +191,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         if (tableNode?.Payload is not FormTable table) return;
 
         var name = UniqueKey(table.Fields!.Select(f => f.FieldName), "new_field");
-        var field = new FormField(name, "新欄位", FieldDbType.String);
+        var field = new FormField(name, "New field", FieldDbType.String);
         table.Fields!.Add(field);
 
         var node = FormSchemaNodeBuilder.BuildField(field);
@@ -268,7 +268,7 @@ public sealed partial class FormSchemaDocumentViewModel : DocumentViewModelBase
         if (fieldNode?.Payload is not FormField field) return;
 
         var key = UniqueKey((field.ListItems ?? new ListItemCollection()).Select(i => i.Value), "value");
-        var item = new ListItem(key, "新選項");
+        var item = new ListItem(key, "New option");
         field.ListItems!.Add(item);
 
         var group = EnsureGroup(fieldNode, FormSchemaNodeKind.ListItemsGroup,

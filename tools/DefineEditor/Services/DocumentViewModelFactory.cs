@@ -29,7 +29,7 @@ public static class DocumentViewModelFactory
             DefineType.TableSchema => LoadOrFallback(node, () => TableSchemaDocumentViewModel.Load(node.FilePath!)),
             DefineType.FormLayout => LoadOrFallback(node, () => FormLayoutDocumentViewModel.Load(node.FilePath!)),
             DefineType.Language => LoadOrFallback(node, () => LanguageDocumentViewModel.Load(node.FilePath!)),
-            _ => Unsupported(node, "此型別的編輯器尚未實作。"),
+            _ => Unsupported(node, "An editor for this define type is not implemented yet."),
         };
     }
 
@@ -41,16 +41,16 @@ public static class DocumentViewModelFactory
                                  or UnauthorizedAccessException
                                  or FileNotFoundException)
         {
-            return Unsupported(node, $"載入失敗：{ex.Message}");
+            return Unsupported(node, $"Load failed: {ex.Message}");
         }
     }
 
     private static UnsupportedDocumentViewModel Unsupported(DefineNode node, string note)
     {
         var summary = string.Join(Environment.NewLine,
-            $"型別：{node.DefineType}",
-            $"主鍵：{node.KeyText ?? "（單例）"}",
-            $"路徑：{node.FilePath}",
+            $"Type: {node.DefineType}",
+            $"Key: {node.KeyText ?? "(singleton)"}",
+            $"Path: {node.FilePath}",
             string.Empty,
             note);
         return new UnsupportedDocumentViewModel(node.Name, node.FilePath ?? node.Name, summary);

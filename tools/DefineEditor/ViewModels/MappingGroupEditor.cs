@@ -21,7 +21,7 @@ public sealed partial class MappingGroupEditor : ObservableObject
     public IReadOnlyList<string> DestinationFieldCandidates { get; }
     public ObservableCollection<FieldMapping> Mappings { get; }
 
-    public string PanelTitle => IsRelation ? "Relation 欄位對應" : "Lookup 欄位對應";
+    public string PanelTitle => IsRelation ? "Relation field mapping" : "Lookup field mapping";
     public string ProgIdLabel => IsRelation ? "RelationProgId" : "LookupProgId";
 
     public string ProgIdValue

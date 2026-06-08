@@ -45,7 +45,7 @@ public static class ConnectionStringParser
 
         if (string.IsNullOrWhiteSpace(raw))
         {
-            errors.Add("連線字串為空，無法拆解。");
+            errors.Add("Connection string is empty; nothing to parse.");
             return new(null, null, null, string.Empty, warnings, errors);
         }
 
@@ -56,7 +56,7 @@ public static class ConnectionStringParser
         }
         catch (ArgumentException ex)
         {
-            errors.Add($"連線字串格式無法解析：{ex.Message}");
+            errors.Add($"Failed to parse connection string: {ex.Message}");
             return new(null, null, null, string.Empty, warnings, errors);
         }
 
@@ -100,18 +100,18 @@ public static class ConnectionStringParser
 
         if (IsIntegratedSecurity(builder))
         {
-            warnings.Add("偵測到 Integrated Security / Trusted_Connection 設定 — 不會拆出帳號密碼。");
+            warnings.Add("Integrated Security / Trusted_Connection detected — credentials will not be extracted.");
         }
         else
         {
-            if (userId is null) warnings.Add("找不到 UserId 鍵 — 請手動填入或檢查連線字串。");
-            if (password is null) warnings.Add("找不到 Password 鍵 — 請手動填入或檢查連線字串。");
+            if (userId is null) warnings.Add("UserId key not found — fill it in manually or check the connection string.");
+            if (password is null) warnings.Add("Password key not found — fill it in manually or check the connection string.");
         }
         if (dbName is null && aliases.DbNameKeys.Count > 0)
-            warnings.Add($"找不到資料庫名稱鍵（{string.Join(" / ", aliases.DbNameKeys)}）— 請手動填入。");
+            warnings.Add($"Database-name key not found ({string.Join(" / ", aliases.DbNameKeys)}) — please fill in manually.");
 
         if (seenForeign.Count > 0)
-            warnings.Add($"偵測到非 {databaseType} 典型鍵：{string.Join(", ", seenForeign)} — 連線字串型別可能不符。");
+            warnings.Add($"Detected keys not typical of {databaseType}: {string.Join(", ", seenForeign)} — connection string type may not match.");
 
         return new ConnectionStringParseResult(
             userId, password, dbName,

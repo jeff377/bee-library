@@ -102,14 +102,14 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
     {
         var r = (LanguageResource)node.Payload!;
         node.Header = $"Items ({r.Items.Count})";
-        node.Detail = "Key/Value 對的本地化文字項。";
+        node.Detail = "Localized key/value text entry.";
     }
 
     private static void RefreshEnumsGroup(SettingsTreeNode node)
     {
         var r = (LanguageResource)node.Payload!;
         node.Header = $"Enums ({r.Enums.Count})";
-        node.Detail = "code/text 集合（提供下拉、查表）。";
+        node.Detail = "code/text set (used for dropdowns / lookups).";
     }
 
     private static void RefreshItem(SettingsTreeNode node)
@@ -153,7 +153,7 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
                         ?? Roots[0].Children.FirstOrDefault(c => c.Kind == KindItemsGroup);
         if (groupNode is null) return;
         var key = UniqueKey(Root.Items.Select(i => i.Key), "NewKey");
-        var item = new LanguageItem { Key = key, Value = "新文字" };
+        var item = new LanguageItem { Key = key, Value = "New text" };
         Root.Items.Add(item);
         var node = BuildItemNode(item);
         groupNode.AddChild(node);
@@ -188,7 +188,7 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
         var enumNode = FindAncestor(SelectedTreeNode, KindEnum);
         if (enumNode?.Payload is not LanguageEnum enumDef) return;
         var code = UniqueKey(enumDef.Entries.Select(e => e.Code), "code");
-        var entry = new LanguageEnumEntry { Code = code, Text = "新項目" };
+        var entry = new LanguageEnumEntry { Code = code, Text = "New entry" };
         enumDef.Entries.Add(entry);
         var node = BuildEnumEntryNode(entry);
         enumNode.AddChild(node);
@@ -213,18 +213,18 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
     {
         var issues = new List<ValidationIssue>();
         if (string.IsNullOrWhiteSpace(Root.Namespace))
-            issues.Add(new(ValidationSeverity.Error, "LanguageResource", "Namespace 不可為空。"));
+            issues.Add(new(ValidationSeverity.Error, "LanguageResource", "Namespace cannot be empty."));
         if (string.IsNullOrWhiteSpace(Root.Lang))
-            issues.Add(new(ValidationSeverity.Error, "LanguageResource", "Lang 不可為空（建議使用 BCP-47，如 zh-TW / en-US）。"));
+            issues.Add(new(ValidationSeverity.Error, "LanguageResource", "Lang cannot be empty (recommended: BCP-47 codes such as zh-TW / en-US)."));
 
         var itemKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var item in Root.Items)
         {
             var path = string.IsNullOrEmpty(item.Key) ? "Items[?]" : $"Items.{item.Key}";
             if (string.IsNullOrWhiteSpace(item.Key))
-                issues.Add(new(ValidationSeverity.Error, path, "LanguageItem.Key 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, path, "LanguageItem.Key cannot be empty."));
             else if (!itemKeys.Add(item.Key))
-                issues.Add(new(ValidationSeverity.Error, path, $"Item.Key '{item.Key}' 重複。"));
+                issues.Add(new(ValidationSeverity.Error, path, $"Item.Key '{item.Key}' is a duplicate."));
         }
 
         var enumNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -232,19 +232,19 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
         {
             var ePath = string.IsNullOrEmpty(enumDef.Name) ? "Enums[?]" : $"Enums.{enumDef.Name}";
             if (string.IsNullOrWhiteSpace(enumDef.Name))
-                issues.Add(new(ValidationSeverity.Error, ePath, "LanguageEnum.Name 不可為空。"));
+                issues.Add(new(ValidationSeverity.Error, ePath, "LanguageEnum.Name cannot be empty."));
             else if (!enumNames.Add(enumDef.Name))
-                issues.Add(new(ValidationSeverity.Error, ePath, $"Enum.Name '{enumDef.Name}' 重複。"));
+                issues.Add(new(ValidationSeverity.Error, ePath, $"Enum.Name '{enumDef.Name}' is a duplicate."));
 
             var codes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             foreach (var entry in enumDef.Entries)
             {
                 var entryPath = $"{ePath}.{(string.IsNullOrEmpty(entry.Code) ? "(unnamed)" : entry.Code)}";
                 if (string.IsNullOrWhiteSpace(entry.Code))
-                    issues.Add(new(ValidationSeverity.Error, entryPath, "Entry.Code 不可為空。"));
+                    issues.Add(new(ValidationSeverity.Error, entryPath, "Entry.Code cannot be empty."));
                 else if (!codes.Add(entry.Code))
                     issues.Add(new(ValidationSeverity.Error, entryPath,
-                        $"Entry.Code '{entry.Code}' 在 '{enumDef.Name}' 內重複。"));
+                        $"Entry.Code '{entry.Code}' is a duplicate within '{enumDef.Name}'."));
             }
         }
         return issues;
