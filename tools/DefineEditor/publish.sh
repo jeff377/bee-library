@@ -65,6 +65,14 @@ build_app_bundle() {
     mv "${publish_dir}"/*.pdb "${app_dir}/Contents/MacOS/" 2>/dev/null || true
     mv "${publish_dir}"/*.xml "${app_dir}/Contents/MacOS/" 2>/dev/null || true
 
+    # App icon — committed as Assets/AppIcon.icns; rebuilt from
+    # scripts/build-icon.swift when the design changes. CFBundleIconFile in
+    # Info.plist below points at "AppIcon" (extension implied by macOS).
+    local icon_src="${SCRIPT_DIR}/Assets/AppIcon.icns"
+    if [[ -f "${icon_src}" ]]; then
+        cp "${icon_src}" "${app_dir}/Contents/Resources/AppIcon.icns"
+    fi
+
     cat > "${app_dir}/Contents/Info.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -78,6 +86,7 @@ build_app_bundle() {
   <key>CFBundleShortVersionString</key>  <string>${VERSION}</string>
   <key>CFBundlePackageType</key>         <string>APPL</string>
   <key>CFBundleSignature</key>           <string>????</string>
+  <key>CFBundleIconFile</key>            <string>AppIcon</string>
   <key>LSMinimumSystemVersion</key>      <string>11.0</string>
   <key>NSHighResolutionCapable</key>     <true/>
   <key>LSApplicationCategoryType</key>   <string>public.app-category.developer-tools</string>
