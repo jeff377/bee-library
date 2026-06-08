@@ -108,22 +108,11 @@ public partial class App : Application
         // the app. Program.cs disables Avalonia's default app menu items so
         // these are the only contents.
         var menu = new NativeMenu();
-        menu.Add(new NativeMenuItem("About Bee.DefineEditor")
-        {
-            Command = AboutCommand,
-        });
+        menu.Add(LocItem("MenuItem_AboutApp", AboutCommand, gesture: null, "Bee.DefineEditor"));
         menu.Add(new NativeMenuItemSeparator());
-        menu.Add(new NativeMenuItem("Hide Bee.DefineEditor")
-        {
-            Command = HideCommand,
-            Gesture = new KeyGesture(Key.H, KeyModifiers.Meta),
-        });
+        menu.Add(LocItem("MenuItem_HideApp", HideCommand, new KeyGesture(Key.H, KeyModifiers.Meta), "Bee.DefineEditor"));
         menu.Add(new NativeMenuItemSeparator());
-        menu.Add(new NativeMenuItem("Quit Bee.DefineEditor")
-        {
-            Command = QuitCommand,
-            Gesture = new KeyGesture(Key.Q, KeyModifiers.Meta),
-        });
+        menu.Add(LocItem("MenuItem_QuitApp", QuitCommand, new KeyGesture(Key.Q, KeyModifiers.Meta), "Bee.DefineEditor"));
         NativeMenu.SetMenu(this, menu);
     }
 
@@ -136,39 +125,31 @@ public partial class App : Application
         var menu = new NativeMenu();
 
         // ── File menu ───────────────────────────────────────────────
-        var fileMenu = new NativeMenuItem("File") { Menu = new NativeMenu() };
-        fileMenu.Menu.Add(new NativeMenuItem("Open Folder...")
-        {
-            Command = OpenSolutionCommand,
-            // VS Code's macOS shortcut for "Open Folder..." is Cmd+Shift+O;
-            // matching it lets users move between the two with no muscle re-learn.
-            Gesture = new KeyGesture(Key.O, KeyModifiers.Meta | KeyModifiers.Shift),
-        });
+        var fileMenu = LocItem("Menu_File", command: null, gesture: null);
+        fileMenu.Menu = new NativeMenu();
+        // VS Code's macOS shortcut for "Open Folder..." is Cmd+Shift+O; reused.
+        fileMenu.Menu.Add(LocItem("MenuItem_OpenFolder", OpenSolutionCommand,
+            new KeyGesture(Key.O, KeyModifiers.Meta | KeyModifiers.Shift)));
         fileMenu.Menu.Add(new NativeMenuItemSeparator());
-        fileMenu.Menu.Add(new NativeMenuItem("Save")
-        {
-            Command = SaveActiveCommand,
-            Gesture = new KeyGesture(Key.S, KeyModifiers.Meta),
-        });
-        fileMenu.Menu.Add(new NativeMenuItem("Validate")
-        {
-            Command = ValidateActiveCommand,
-            // VS Code uses Cmd+Shift+B for build / validate-style commands; reused.
-            Gesture = new KeyGesture(Key.B, KeyModifiers.Meta | KeyModifiers.Shift),
-        });
+        fileMenu.Menu.Add(LocItem("MenuItem_Save", SaveActiveCommand,
+            new KeyGesture(Key.S, KeyModifiers.Meta)));
+        // VS Code uses Cmd+Shift+B for build / validate-style commands; reused.
+        fileMenu.Menu.Add(LocItem("MenuItem_Validate", ValidateActiveCommand,
+            new KeyGesture(Key.B, KeyModifiers.Meta | KeyModifiers.Shift)));
         menu.Add(fileMenu);
 
         // ── View menu ───────────────────────────────────────────────
-        var viewMenu = new NativeMenuItem("View") { Menu = new NativeMenu() };
-        viewMenu.Menu.Add(new NativeMenuItem("Toggle Theme")
-        {
-            Command = ToggleThemeCommand,
-        });
+        var viewMenu = LocItem("Menu_View", command: null, gesture: null);
+        viewMenu.Menu = new NativeMenu();
+        viewMenu.Menu.Add(LocItem("MenuItem_ToggleTheme", ToggleThemeCommand, gesture: null));
         viewMenu.Menu.Add(new NativeMenuItemSeparator());
 
         // Language sub-menu. Each item flips LocalizationService.Culture and
         // persists the choice; XAML bindings via {loc:Loc} pick it up live.
-        var langMenu = new NativeMenuItem("Language") { Menu = new NativeMenu() };
+        // The two language item labels stay in their own languages by design
+        // (English / 繁體中文) — they identify themselves, not the current UI.
+        var langMenu = LocItem("Menu_Language", command: null, gesture: null);
+        langMenu.Menu = new NativeMenu();
         langMenu.Menu.Add(new NativeMenuItem("English")
         {
             Command = new RelayCommand(() => SetLanguage("en")),
@@ -182,6 +163,47 @@ public partial class App : Application
         menu.Add(viewMenu);
 
         NativeMenu.SetMenu(owner, menu);
+    }
+
+    /// <summary>
+    /// Creates a <see cref="NativeMenuItem"/> whose <c>Header</c> tracks the
+    /// localized value for <paramref name="key"/>. Each item subscribes to
+    /// <see cref="LocalizationService.CultureChanged"/> directly and re-writes
+    /// its Header in place.
+    /// </summary>
+    /// <remarks>
+    /// Note: macOS does <b>not</b> reflect Header updates on top-level
+    /// (sub-menu-bearing) <see cref="NativeMenuItem"/> instances after the
+    /// menu bar is measured — those titles stay frozen until app restart.
+    /// We tried rebuilding the whole menu on culture switch, but
+    /// <c>NativeMenu.SetMenu</c> over an already-mounted target crashes the
+    /// process. So leaf items (Save / Validate / About / Hide / Quit / ...)
+    /// update live; the three top-level headers (File / View / Language)
+    /// stay in English. Acceptable trade-off for a dev tool — macOS apps
+    /// commonly ship English-only menu headers anyway.
+    /// </remarks>
+    private static NativeMenuItem LocItem(
+        string key,
+        System.Windows.Input.ICommand? command,
+        KeyGesture? gesture,
+        params object[] formatArgs)
+    {
+        var item = new NativeMenuItem();
+
+        void Refresh()
+        {
+            var raw = LocalizationService.Current[key];
+            item.Header = formatArgs.Length == 0
+                ? raw
+                : string.Format(CultureInfo.InvariantCulture, raw, formatArgs);
+        }
+
+        Refresh();
+        LocalizationService.Current.CultureChanged += (_, _) => Refresh();
+
+        if (command is not null) item.Command = command;
+        if (gesture is not null) item.Gesture = gesture;
+        return item;
     }
 
     private static void SetLanguage(string cultureName)

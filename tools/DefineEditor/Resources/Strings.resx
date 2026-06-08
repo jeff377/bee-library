@@ -31,6 +31,9 @@
   <data name="MenuItem_ToggleTheme" xml:space="preserve"><value>Toggle Theme</value></data>
   <data name="MenuItem_English" xml:space="preserve"><value>English</value></data>
   <data name="MenuItem_ChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
+  <data name="MenuItem_AboutApp" xml:space="preserve"><value>About {0}</value></data>
+  <data name="MenuItem_HideApp" xml:space="preserve"><value>Hide {0}</value></data>
+  <data name="MenuItem_QuitApp" xml:space="preserve"><value>Quit {0}</value></data>
 
   <data name="Welcome_NoSolution" xml:space="preserve"><value>No solution open</value></data>
   <data name="Welcome_OpenFolderButton" xml:space="preserve"><value>Open Folder</value></data>

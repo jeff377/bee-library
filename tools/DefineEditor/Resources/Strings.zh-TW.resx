@@ -18,6 +18,9 @@
   <data name="MenuItem_ToggleTheme" xml:space="preserve"><value>切換深淺主題</value></data>
   <data name="MenuItem_English" xml:space="preserve"><value>English</value></data>
   <data name="MenuItem_ChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
+  <data name="MenuItem_AboutApp" xml:space="preserve"><value>關於 {0}</value></data>
+  <data name="MenuItem_HideApp" xml:space="preserve"><value>隱藏 {0}</value></data>
+  <data name="MenuItem_QuitApp" xml:space="preserve"><value>結束 {0}</value></data>
 
   <data name="Welcome_NoSolution" xml:space="preserve"><value>尚未開啟方案</value></data>
   <data name="Welcome_OpenFolderButton" xml:space="preserve"><value>開啟方案</value></data>
