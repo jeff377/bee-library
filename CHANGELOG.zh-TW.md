@@ -13,6 +13,9 @@
 ### 新增
 
 - **`docs/framework-reserved-names.md`**（雙語）— 框架保留命名 registry：列出 `st_*` 系統表與保留 `progId`。命名**規則**仍位於 [database-naming-conventions.md](docs/database-naming-conventions.zh-TW.md)；API 方法參考仍位於 [api-method-reference.md](docs/api-method-reference.zh-TW.md)。新檔為「哪些具體名稱被保留」的唯一來源。
+- **框架預設定義檔已以 embedded resource 形式 ship 在 `Bee.Definition.dll` 內**——所有 `st_*` `TableSchema` XML（11 檔）、框架預設 `Department` / `Employee` 的 `FormSchema` / `FormLayout` / `Language` 資源，以及精簡版 `DbCategorySettings.xml`（只宣告 11 張系統表）一律住在 `src/Bee.Definition/Defaults/` 並以 `Bee.Definition.Defaults/{相對路徑}` manifest naming 嵌入 assembly。Master 副本從 `tests/Define/` 搬出——後者只保留測試專屬 fixture（`ft_project`、`PermGateForm`、`Project`、`SystemSettings`、`DatabaseSettings`、擴展版 `DbCategorySettings`）。
+- **`Bee.Definition.Defaults` API**——存取 embedded 框架預設的公開方法：`Defaults.MaterializeTo(path, options)` 把所有 embedded 檔寫入指定目錄（預設 skip-existing，消費者客製不會被覆蓋）、`Defaults.ListEmbedded()` 列出相對路徑、`Defaults.OpenEmbedded(relativePath)` 取單一檔的 stream。Runtime `IDefineStorage` 不變——仍只讀 `DefinePath` 內的檔；embedded 預設只透過此 API 一次性匯出使用（通常由 CLI / 開發工具在 setup 階段呼叫）。
+- **`TestProcessBootstrap.SharedDefinePath`**——process-wide 合併後的 define 目錄（test-specific fixture + 首次呼叫時物化的框架預設）。`BeeTestFixture` 預設的 `DefinePath` 改指向這個目錄而非 `tests/Define/`，讓測試能透明地解析兩層內容。
 
 ## [4.7.0]
 

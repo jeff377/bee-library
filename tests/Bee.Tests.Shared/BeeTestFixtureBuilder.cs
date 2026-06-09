@@ -57,8 +57,10 @@ namespace Bee.Tests.Shared
 
         internal PathOptions BuildPathOptions(out string? tempDir)
         {
-            var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
-            var sharedDefine = Path.Combine(repoRoot, "tests", "Define");
+            // SharedDefinePath: process-wide merged dir (tests/Define + framework
+            // defaults materialised from Bee.Definition.Defaults). Built once by
+            // TestProcessBootstrap.EnsureInitialized() before any fixture ctor runs.
+            var sharedDefine = TestProcessBootstrap.SharedDefinePath;
 
             if (!_useTempDefinePath)
             {
@@ -106,18 +108,6 @@ namespace Bee.Tests.Shared
             }
 
             return provider;
-        }
-
-        private static string FindRepoRoot(string startDir)
-        {
-            var dir = new DirectoryInfo(startDir);
-            while (dir != null)
-            {
-                if (dir.GetDirectories(".git").Length > 0)
-                    return dir.FullName;
-                dir = dir.Parent;
-            }
-            throw new InvalidOperationException($"Cannot find repo root from: {startDir}");
         }
 
         private static void CopyDirectory(string source, string dest)

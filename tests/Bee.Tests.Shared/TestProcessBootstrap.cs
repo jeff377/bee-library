@@ -16,10 +16,11 @@ namespace Bee.Tests.Shared
     /// PR 5.7 後 ICacheContainer / IDefineAccess 全面由 DI 容器接管，bootstrap 流程不再需要
     /// 預先初始化 <c>CacheContainer</c> 靜態 facade（已移除）。
     /// </remarks>
-    internal static class TestProcessBootstrap
+    public static class TestProcessBootstrap
     {
         private static readonly object _initLock = new();
         private static bool _initialized;
+        private static string? _sharedDefinePath;
 
         /// <summary>
         /// Hard-coded Base64 AES-CBC-HMAC combined key (64 bytes) used by the test
@@ -29,6 +30,26 @@ namespace Bee.Tests.Shared
         /// </summary>
         private const string TestMasterKey =
             "oQGvs51A0u5Rn8RPJPkQ9xqXevf451mDHpsaJR7nN8WCM0X0zskVqTqDQBtSpSq8MdvmfKUPKAulOJShd9KDXg==";
+
+        /// <summary>
+        /// Process-wide shared define directory: <c>tests/Define</c> (test-specific
+        /// fixtures) merged with <see cref="Bee.Definition.Defaults"/> (framework
+        /// defaults embedded in <c>Bee.Definition.dll</c>). Created once on first
+        /// <see cref="EnsureInitialized"/>; cleaned up on process exit.
+        /// </summary>
+        /// <remarks>
+        /// Read-only by convention. Tests that need writable define storage opt in
+        /// via <see cref="BeeTestFixtureBuilder.UseTempDefinePath"/>, which copies
+        /// this directory into a per-class temp directory.
+        /// </remarks>
+        public static string SharedDefinePath
+        {
+            get
+            {
+                EnsureInitialized();
+                return _sharedDefinePath!;
+            }
+        }
 
         /// <summary>
         /// 首次呼叫時觸發 process-wide 靜態 wire-up；後續呼叫直接 return。
@@ -55,10 +76,10 @@ namespace Bee.Tests.Shared
                 Environment.SetEnvironmentVariable("BEE_MASTER_KEY", TestMasterKey);
             }
 
-            var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
+            _sharedDefinePath = CreateSharedDefinePath();
             var pathOptions = new PathOptions
             {
-                DefinePath = Path.Combine(repoRoot, "tests", "Define")
+                DefinePath = _sharedDefinePath
             };
 
             // Bootstrap 暫時用一個 DefineAccess 讓 SharedDatabaseState.EnsureRegistered
@@ -100,6 +121,60 @@ namespace Bee.Tests.Shared
                 dir = dir.Parent;
             }
             throw new InvalidOperationException($"Cannot find repo root from: {startDir}");
+        }
+
+        /// <summary>
+        /// Creates the process-wide shared define directory: a temp dir populated
+        /// first with the contents of <c>tests/Define</c> (test-specific fixtures
+        /// win on conflict), then with the framework defaults from
+        /// <see cref="Defaults.MaterializeTo"/> (skip-existing). Registers a
+        /// process-exit cleanup hook.
+        /// </summary>
+        private static string CreateSharedDefinePath()
+        {
+            var repoRoot = FindRepoRoot(AppContext.BaseDirectory);
+            var testsDefine = Path.Combine(repoRoot, "tests", "Define");
+
+            var sharedDir = Path.Combine(
+                Path.GetTempPath(),
+                $"bee-tests-define-{Environment.ProcessId}-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(sharedDir);
+
+            // Step 1: copy tests/Define first. Test-specific fixtures (DbCategorySettings
+            // with ft_project, Project FormSchema/Layout/Language, PermGateForm,
+            // SystemSettings, DatabaseSettings) win on conflict so they shadow any
+            // framework default with the same relative path.
+            CopyDirectory(testsDefine, sharedDir);
+
+            // Step 2: materialise framework defaults from Bee.Definition.dll's embedded
+            // resources. Overwrite=false so step 1's test-specific files (e.g. the
+            // extended DbCategorySettings.xml) are preserved.
+            Defaults.MaterializeTo(sharedDir, MaterializeOptions.Default);
+
+            // Best-effort cleanup on process exit. xunit's parallel runners do not
+            // share processes, so each runner cleans its own dir.
+            AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+            {
+                try { Directory.Delete(sharedDir, recursive: true); }
+                catch (IOException) { /* best effort */ }
+                catch (UnauthorizedAccessException) { /* best effort */ }
+            };
+
+            return sharedDir;
+        }
+
+        private static void CopyDirectory(string source, string dest)
+        {
+            foreach (var subdir in Directory.GetDirectories(source, "*", SearchOption.AllDirectories))
+            {
+                var rel = Path.GetRelativePath(source, subdir);
+                Directory.CreateDirectory(Path.Combine(dest, rel));
+            }
+            foreach (var file in Directory.GetFiles(source, "*", SearchOption.AllDirectories))
+            {
+                var rel = Path.GetRelativePath(source, file);
+                File.Copy(file, Path.Combine(dest, rel), overwrite: true);
+            }
         }
     }
 }

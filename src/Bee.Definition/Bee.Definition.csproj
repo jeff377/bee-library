@@ -21,4 +21,21 @@
     <InternalsVisibleTo Include="Bee.Definition.UnitTests" />
   </ItemGroup>
 
+  <!--
+    Framework default definitions (TableSchema / FormSchema / FormLayout / Language / DbCategorySettings)
+    embedded as manifest resources. Consumed by Bee.Definition.Defaults.Defaults APIs.
+
+    LogicalName pattern uses '/' as separator (not '.') so the relative path round-trips
+    unambiguously - filenames contain '.' (e.g. st_user.TableSchema.xml) which would
+    otherwise collide with directory separators.
+
+    e.g. Defaults/TableSchema/common/st_user.TableSchema.xml
+         -> Bee.Definition.Defaults/TableSchema/common/st_user.TableSchema.xml
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="Defaults\**\*.xml">
+      <LogicalName>Bee.Definition.Defaults/$([System.String]::Copy('%(RecursiveDir)').Replace('\','/'))%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>

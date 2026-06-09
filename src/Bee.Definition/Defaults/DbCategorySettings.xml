@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DbCategorySettings xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Categories>
+		<DbCategory Id="common" DisplayName="Common database">
+			<Tables>
+				<TableItem TableName="st_user" DisplayName="User" />
+				<TableItem TableName="st_session" DisplayName="Session" />
+				<TableItem TableName="st_company" DisplayName="Company" />
+				<TableItem TableName="st_user_company" DisplayName="User accessible companies" />
+				<TableItem TableName="st_cache_notify" DisplayName="Cache notification" />
+				<TableItem TableName="st_define" DisplayName="Define storage" />
+			</Tables>
+		</DbCategory>
+		<DbCategory Id="company" DisplayName="Company database">
+			<Tables>
+				<TableItem TableName="st_department" DisplayName="Department" />
+				<TableItem TableName="st_employee" DisplayName="Employee" />
+				<TableItem TableName="st_role" DisplayName="Role" />
+				<TableItem TableName="st_role_grant" DisplayName="Role grant" />
+				<TableItem TableName="st_user_role" DisplayName="User role" />
+			</Tables>
+		</DbCategory>
+		<DbCategory Id="log" DisplayName="Log database">
+			<Tables />
+		</DbCategory>
+	</Categories>
+</DbCategorySettings>

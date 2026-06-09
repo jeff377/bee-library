@@ -21,13 +21,20 @@ namespace Bee.Definition.UnitTests
         }
 
         [Fact]
-        [DisplayName("BeeTestFixture 預設應指向共享 tests/Define 路徑")]
+        [DisplayName("BeeTestFixture 預設應指向 TestProcessBootstrap 的 process-wide shared define path")]
         public void DefaultFixture_PointsToSharedDefine()
         {
             Assert.NotNull(_fx.PathOptions);
             Assert.False(string.IsNullOrEmpty(_fx.DefinePath));
-            Assert.Contains(Path.Combine("tests", "Define"), _fx.DefinePath);
+            // Post-migration（framework defaults 搬到 src/Bee.Definition/Defaults/ 後）：
+            // 預設 fixture 指向 TestProcessBootstrap.SharedDefinePath（process-wide temp
+            // 目錄，內容為 tests/Define + 從 Bee.Definition.dll embedded 物化的框架預設）。
+            Assert.Equal(TestProcessBootstrap.SharedDefinePath, _fx.DefinePath);
             Assert.True(File.Exists(_fx.PathOptions.GetSystemSettingsFilePath()));
+            // 合併後該路徑同時可以解析 framework 自有檔（如 st_user.TableSchema.xml）
+            // 與 tests 自有檔（如 ft_project.TableSchema.xml）。
+            Assert.True(File.Exists(Path.Combine(_fx.DefinePath, "TableSchema", "common", "st_user.TableSchema.xml")));
+            Assert.True(File.Exists(Path.Combine(_fx.DefinePath, "TableSchema", "company", "ft_project.TableSchema.xml")));
         }
 
         [Fact]
