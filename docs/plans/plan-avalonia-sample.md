@@ -1,14 +1,62 @@
 # 計畫：新增 Avalonia UI sample（鏡像 Maui.Demo）
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-06-09，端到端冒煙通過）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | `src/Bee.UI.Avalonia` library 骨架（csproj + EndpointStorage + FormDataObject 重用方案） | 📝 待做 |
-| 2 | `DynamicForm`（master section renderer，鏡像 MAUI 端 5 種 ControlType） | 📝 待做 |
-| 3 | `DynamicGrid` + `FormView`（明細/列表 DataGrid + 含 New/Save/Delete toolbar 的容器） | 📝 待做 |
-| 4 | `samples/Avalonia.Demo` 骨架（Program / App / MainWindow + Connection / Login / Employee 三 View） | 📝 待做 |
-| 5 | README + `.smoke.yaml` + `Bee.Samples.slnx` 整合 + 端到端冒煙 | 📝 待做 |
+| 1 | `src/Bee.UI.Avalonia` library 骨架（csproj + EndpointStorage + FormDataObject 重用方案） | ✅ 已完成（2026-06-08） |
+| 2 | `DynamicForm`（master section renderer，鏡像 MAUI 端 5 種 ControlType） | ✅ 已完成（2026-06-08） |
+| 3 | `DynamicGrid` + `FormView`（明細/列表 DataGrid + 含 New/Save/Delete toolbar 的容器） | ✅ 已完成（2026-06-08） |
+| 4 | `samples/Avalonia.Demo` 骨架（Program / App / MainWindow + Connection / Login / Employee 三 View） | ✅ 已完成（2026-06-08） |
+| 5 | README + `.smoke.yaml` + `Bee.Samples.slnx` 整合 + 端到端冒煙 | ✅ 已完成（2026-06-08，端到端冒煙待後置） |
+
+## 端到端冒煙過程中追修的問題（2026-06-09）
+
+執行端到端 smoke 時連續挖到 5 個原來沒被覆蓋到的問題，全部在這次內聯處理掉。前 1 個是 framework 殘留漏 wiring，後 4 個是 demo / 框架在「真的點滑鼠跑完整 CRUD」時才浮現的盲區。
+
+### 1. `Bee.Samples.Shared/DemoBusinessObjectFactory.cs` 漏 `LanguageService`（**framework demo 殘留**）
+
+Phase 2 `e11ece1a` 把 `IBeeContext.LanguageService` 改為 `required`，但 demo factory 的 `BuildContext()` 沒同步補 → `dotnet build samples/Bee.Samples.slnx` 因 CS9035 失敗 → 所有 server-side sample（QuickStart.Server / Blazor.Wasm.Demo.Host / Blazor.Server.Demo）起不來。
+
+**修法**：照 framework 自家 `BusinessObjectFactory` 的 pattern，ctor 加 `ILanguageService` 參數、`BuildContext()` 加 `LanguageService = _languageService,`。
+
+### 2. Avalonia `DynamicGrid` 用 `new Binding("[FieldName]")` 接 `DataRowView` cells 不會 resolve（**Avalonia binding 差異**）
+
+WPF 那套 `{Binding [FieldName]}` 經 `DataRowView` 的 string indexer 拿值的招式，在 Avalonia 12 的 binding engine 完全不認 — engine 只查 CLR 屬性與 typed indexer，不會走 `DataRowView.this[string]` 那個 PropertyDescriptor-based path。結果是：`ItemsSource` 正確 iterate（rows 數對），但每個 cell 都空字串。
+
+**修法**：改用 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>`，在 cell template 裡用 code 顯式呼叫 `row.Row[fieldName]` 抓值，繞過 binding engine。順手把 MAUI 端 `FormatCell` 的 DisplayFormat / NumberFormat / DateTime 格式化邏輯一併補上。
+
+### 3. `FormView.ReloadListAsync` 沒傳 `SelectFields` → server 不回 `sys_rowid` → row click 無效（**Avalonia + MAUI 共通漏接**）
+
+`FormSchema.ListFields="sys_id,sys_name,hire_date"` 沒列 sys_rowid，server SELECT 也就不會帶；client 端 `ListLayoutGenerator` 雖會自動補一個 `Visible=false` 的 sys_rowid LayoutColumn，但**那只在 layout，data 沒有那欄** → `TryGetRowId` 永遠 false → SelectionChanged 雖然有 fire 但 `RowSelected` event 從不發射 → 看起來像沒反應。
+
+**修法**：`FormView.ReloadListAsync` / `FormPage.ReloadListAsync` 都改成顯式組 `SelectFields = "sys_rowid," + ListFields` 再傳進 `GetListAsync`。
+
+**附帶發現**：`Maui.Demo` 的 row tap 其實也是壞的（同一個漏），只是 `.smoke.yaml` 只驗 list 顯示沒驗 click，沒被發現。已同步把 MAUI 端 `FormPage.ReloadListAsync` 鏡像修好。
+
+### 4. `FormDataObject.SetField` 對初始 render echo 不 idempotent（**Avalonia + MAUI 共通**）
+
+Avalonia 的 `TextBox.Text = rawValue` 在控件 attach 後會 dispatcher-async 觸發一次 `TextChanged`，回送一樣的值。MAUI Entry 也有類似但較少觸發。`SetField` 直接寫 + `IsDirty = true`，遇到 row 是新建狀態時會把 server-supplied default 改寫成 echo 值。
+
+**修法**：`SetField` 加 idempotent 短路 — `Equals(newValue, row[fieldName])` 為 true 就 return，不寫不 dirty。
+
+### 5. `FormDataObject.ConvertToColumnValue` 對 NOT NULL 但 `DefaultValue=DBNull` 的 server column 仍會回 DBNull（**Avalonia + MAUI 共通**）
+
+當 server 回的 DataTable 是 raw ADO.NET（沒過 `DataTableExtensions.AddColumn`），它的 `AllowDBNull=false` 但 `DefaultValue` 還是預設的 `DBNull.Value`。原本 `ConvertToColumnValue` 對 NOT NULL column 一律 fallback 到 `column.DefaultValue` → 等於回 DBNull → `EndEdit` `CheckNullable` 拒絕 → `NoNullAllowedException` 拋飛整個 process。
+
+**修法**：在 NOT NULL 分支裡，先檢查 `column.DefaultValue` 是不是合法非 DBNull，若不是就依 `column.DataType` 合成空值（`string→""`, `Guid→Guid.Empty`, `DateTime→DateTime.MinValue`, `byte[]→[]`, 其餘 value type → `default(T)`）。
+
+### 結果
+
+- `dotnet build samples/Avalonia.Demo -c Debug` ✅
+- `dotnet build src/Bee.UI.Maui -c Release` ✅
+- `dotnet test tests/Bee.UI.Maui.UnitTests -c Release` → **74/74 通過**
+- 使用者實機跑 Connect → Sign in → Employee → 列出 6 筆（Alice / Bob / Carol + 之前 SetField bug 留下的 1 筆空字串 row + 後續測試新增的 2 筆「張三」「李四」）→ 點任一筆都正確帶出明細，包含那筆空 row 不再 crash ✅
+
+### 留下的後續
+
+- `.smoke.yaml`（Maui.Demo 與 Avalonia.Demo）只覆蓋到「看到列表」，未覆蓋「row click 帶出明細」。建議下一個 plan 把 row-tap step 加進兩份 smoke yaml，這次的 3-5 號 bug 才會在 CI / 手動冒煙時被觀察到。
+- `samples/QuickStart.Server/quickstart.db` 裡那筆空字串 row（rowid `271883C9-…`，sys_id+sys_name 皆空字串）是早先 SetField bug 寫進去的殘骸；不影響功能但長相不美。要清掉就刪 `samples/QuickStart.Server/quickstart.db`，下次啟動會重 seed。
 
 ---
 
@@ -55,7 +103,7 @@
 | D2 | sample 命名 | **`Avalonia.Demo`**（資料夾、csproj、namespace 一致） | 對齊 `Maui.Demo` |
 | D3 | `FormDataObject` 是否共用 | **先複製到 `Bee.UI.Avalonia.DataObjects`，不動 `Bee.UI.Maui` 端**；後續再評估抽到 `Bee.UI.Core` | 移到 Core 會牽動 MAUI / Blazor，先以「鏡像」最小化爆炸半徑 |
 | D4 | EndpointStorage 實作 | **`FileEndpointStorage`** — 寫 `Environment.SpecialFolder.LocalApplicationData/Bee.Avalonia.Demo/endpoint.xml`，跨平台一致；放 `src/Bee.UI.Avalonia/Storage/` | MAUI 端用 `Preferences`，Avalonia 沒對等 API；用檔案最直白 |
-| D5 | Avalonia 版本 | **與 `tools/DefineEditor` 一致**（目前 `Avalonia 12.0.4`） | 避免兩個 Avalonia 專案撞版本 |
+| D5 | Avalonia 版本 | **library 端鎖 12.0.0**（`Avalonia.Controls.DataGrid` 目前 stable 最高只到 12.0.0；主套件雖有 12.0.4 但 patch 版內 ABI 相容，sample/host 端可自行帶 12.0.x transitively） | 原本計畫 12.0.4，但 DataGrid 未跟上；改鎖 12.0.0 作為 lower bound |
 | D6 | MVVM pattern | **走 axaml + ViewModel + ReactiveUI / CommunityToolkit.Mvvm**（與 `tools/DefineEditor` 同套） | MAUI 端是純 code-behind；Avalonia 端 axaml 是慣例，跟既有專案對齊比較自然 |
 | D7 | `Bee.UI.Avalonia` 目標框架 | **`net10.0`**，無條件式 TFM | MAUI 端有條件式是因為 platform TFM；Avalonia 是純桌面，單一 TFM 即可 |
 | D8 | `Avalonia.Demo` 目標框架 | **`net10.0`**，`OutputType=WinExe`，加 `app.manifest`（Windows DPI awareness） | 跨平台桌面，不需 platform TFM |

@@ -23,4 +23,7 @@
   <Folder Name="/Maui/">
     <Project Path="Maui.Demo/Maui.Demo.csproj" />
   </Folder>
+  <Folder Name="/Avalonia/">
+    <Project Path="Avalonia.Demo/Avalonia.Demo.csproj" />
+  </Folder>
 </Solution>

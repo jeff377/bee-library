@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <Description>Avalonia desktop control library for Bee.NET (FormSchema-driven UI for Windows / macOS / Linux).</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Bound to 12.0.0 (the latest stable Avalonia.Controls.DataGrid release).
+      The main Avalonia package itself ships 12.0.x patch releases; consumers
+      (sample / host) are free to bring a newer 12.0.x transitively — NuGet
+      treats this version as the lower bound for the library.
+    -->
+    <PackageReference Include="Avalonia" Version="12.0.0" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="12.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.UI.Core\Bee.UI.Core.csproj" />
+    <ProjectReference Include="..\Bee.Api.Client\Bee.Api.Client.csproj" />
+    <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
+  </ItemGroup>
+
+</Project>

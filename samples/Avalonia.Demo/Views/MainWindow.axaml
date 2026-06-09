@@ -1,0 +1,21 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Avalonia.Demo.ViewModels"
+        mc:Ignorable="d"
+        x:Class="Avalonia.Demo.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Bee Avalonia Demo"
+        Width="960" Height="640"
+        MinWidth="640" MinHeight="480">
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel />
+  </Design.DataContext>
+
+  <!-- ContentControl + DataTemplates wired in App.axaml resolves CurrentView
+       to the paired View by convention (FooViewModel -> FooView). -->
+  <ContentControl Content="{Binding CurrentView}" />
+
+</Window>

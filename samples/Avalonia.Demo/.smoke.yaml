@@ -1,0 +1,53 @@
+# Smoke flow consumed by the `demo-smoke` skill.
+# See .claude/skills/demo-smoke/SKILL.md for the schema.
+
+name: Avalonia.Demo
+display_name: Bee Avalonia Demo
+
+prerequisites:
+  - id: server
+    cwd: samples/QuickStart.Server
+    cmd: dotnet run --configuration Release --no-build
+    ready_when: "Now listening on"
+    timeout_seconds: 30
+
+launch:
+  app_name: Bee Avalonia Demo
+  # Avalonia desktop ships a plain .NET executable (no .app bundle on macOS,
+  # no MSIX on Windows). Launch via `dotnet` and the published host DLL so we
+  # don't depend on `dotnet run`'s built-in file-watch loop while smoke testing.
+  launch_cmd: dotnet samples/Avalonia.Demo/bin/Debug/net10.0/Avalonia.Demo.dll
+
+flow:
+  - step: take initial screenshot
+    action: screenshot
+    expect_text:
+      - "Bee Avalonia demo"
+      - "Endpoint"
+      - "Connect"
+
+  - step: click Connect
+    action: click
+    target: { label: "Connect" }
+    wait_after_seconds: 4
+    expect_text:
+      - "Sign in"
+      - "User ID"
+      - "Password"
+
+  - step: click Sign in
+    action: click
+    target: { label: "Sign in" }
+    wait_after_seconds: 6
+    expect_text:
+      - "Alice Chen"
+      - "Bob Liu"
+      - "Carol Wang"
+
+  - step: final screenshot
+    action: screenshot
+    save_as: avalonia-demo-employee-page.png
+
+teardown:
+  kill_app: true
+  kill_prerequisites: true

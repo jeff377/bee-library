@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Avalonia.Demo.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Avalonia.Demo.Views.ConnectionView"
+             x:DataType="vm:ConnectionViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.status">
+      <Setter Property="Foreground" Value="DarkSlateGray" />
+    </Style>
+    <Style Selector="TextBlock.status.error">
+      <Setter Property="Foreground" Value="Firebrick" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Margin="24" Spacing="12">
+
+      <TextBlock Text="Bee Avalonia demo" FontSize="24" FontWeight="Bold" />
+
+      <TextBlock TextWrapping="Wrap" Foreground="Gray"
+                 Text="Point this app at a Bee JSON-RPC endpoint, log in with the demo credentials, then render the Employee FormSchema. The Avalonia controls call the same backend the MAUI / Blazor demos use." />
+
+      <TextBlock Text="Endpoint" />
+      <TextBox Text="{Binding Endpoint, Mode=TwoWay}"
+               PlaceholderText="http://host:port/api"
+               IsEnabled="{Binding IsNotBusy}" />
+
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Connect"
+                Command="{Binding ConnectCommand}"
+                IsEnabled="{Binding IsNotBusy}" />
+        <ProgressBar IsIndeterminate="True"
+                     Width="120"
+                     IsVisible="{Binding IsBusy}" />
+      </StackPanel>
+
+      <TextBlock Classes="status"
+                 Classes.error="{Binding IsError}"
+                 Text="{Binding Status}"
+                 TextWrapping="Wrap" />
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>

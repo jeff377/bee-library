@@ -42,7 +42,8 @@ Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
 | How to call Bee from a third-party client with `Bee.Api.Client` (Remote mode) | [`QuickStart.Console`](QuickStart.Console/README.md) |
 | How to use `Bee.Web.Blazor.Server` components (Local dispatch — best perf) | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) |
 | How to use `Bee.Web.Blazor.Wasm` components (.NET running in the browser, HTTP only) | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.md) |
-| How the same `FormSchema` renders inside a native app | [`Maui.Demo`](Maui.Demo/README.md) |
+| How the same `FormSchema` renders inside a native mobile app (Mac Catalyst / iOS / Android) | [`Maui.Demo`](Maui.Demo/README.md) |
+| How the same `FormSchema` renders inside a desktop Avalonia app (Windows / macOS / Linux) | [`Avalonia.Demo`](Avalonia.Demo/README.md) |
 | How to call Bee from pure JavaScript (no .NET on the client, Plain wire format) | [`Web.Js.Demo`](Web.Js.Demo/README.md) |
 | Login, AccessToken, and encrypted-payload fallback resolution on the client | `Blazor.Server.Demo` or `Maui.Demo` (either) |
 
@@ -55,7 +56,8 @@ Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
 | [`Blazor.Server.Demo`](Blazor.Server.Demo/README.md) | Full-stack Blazor Server | `5055` | `dotnet run` | Bee.Web.Blazor.Server + Bee.Samples.Shared |
 | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) | In-browser Wasm components | — | (launched via `.Host`) | Bee.Web.Blazor.Wasm |
 | [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.md) | Wasm static files + API host | `5070` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
-| [`Maui.Demo`](Maui.Demo/README.md) | Native-app client | — (talks to 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
+| [`Maui.Demo`](Maui.Demo/README.md) | Native mobile-app client | — (talks to 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
+| [`Avalonia.Demo`](Avalonia.Demo/README.md) | Desktop Avalonia client | — (talks to 5050) | `dotnet run -c Debug` | Bee.UI.Avalonia + Bee.Api.Client |
 | [`Web.Js.Demo`](Web.Js.Demo/README.md) | Pure-JS browser client | — (talks to 5050) | `open index.html` | (no .NET — vanilla HTML/JS) |
 | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | Shared backend wiring | — | (consumed by other demos) | Bee.Business + Bee.Db + Bee.Hosting + Bee.Api.Client |
 
@@ -66,6 +68,7 @@ QuickStart.Console ──HTTP──▶ QuickStart.Server
                               (also Maui.Demo's default backend)
 
 Maui.Demo          ──HTTP──▶ QuickStart.Server  ← must be started first
+Avalonia.Demo      ──HTTP──▶ QuickStart.Server  ← must be started first
 Web.Js.Demo        ──HTTP──▶ QuickStart.Server  ← must be started first (CORS enabled)
 
 Blazor.Wasm.Demo   ◀──static files── Blazor.Wasm.Demo.Host

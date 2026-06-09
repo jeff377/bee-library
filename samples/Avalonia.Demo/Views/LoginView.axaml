@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Avalonia.Demo.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Avalonia.Demo.Views.LoginView"
+             x:DataType="vm:LoginViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.status">
+      <Setter Property="Foreground" Value="DarkSlateGray" />
+    </Style>
+    <Style Selector="TextBlock.status.error">
+      <Setter Property="Foreground" Value="Firebrick" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer>
+    <StackPanel Margin="24" Spacing="12">
+
+      <TextBlock Text="Sign in" FontSize="22" FontWeight="Bold" />
+
+      <TextBlock Text="User ID" />
+      <TextBox Text="{Binding UserId, Mode=TwoWay}"
+               PlaceholderText="User ID"
+               IsEnabled="{Binding IsNotBusy}" />
+
+      <TextBlock Text="Password" />
+      <TextBox Text="{Binding Password, Mode=TwoWay}"
+               PlaceholderText="Password"
+               PasswordChar="●"
+               IsEnabled="{Binding IsNotBusy}" />
+
+      <StackPanel Orientation="Horizontal" Spacing="12">
+        <Button Content="Sign in"
+                Command="{Binding LoginCommand}"
+                IsEnabled="{Binding IsNotBusy}" />
+        <ProgressBar IsIndeterminate="True"
+                     Width="120"
+                     IsVisible="{Binding IsBusy}" />
+      </StackPanel>
+
+      <TextBlock Classes="status"
+                 Classes.error="{Binding IsError}"
+                 Text="{Binding Status}"
+                 TextWrapping="Wrap" />
+
+    </StackPanel>
+  </ScrollViewer>
+
+</UserControl>
