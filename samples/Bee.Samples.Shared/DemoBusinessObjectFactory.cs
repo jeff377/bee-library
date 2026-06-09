@@ -2,6 +2,7 @@ using Bee.Business;
 using Bee.Business.Form;
 using Bee.Definition;
 using Bee.Definition.Identity;
+using Bee.Definition.Language;
 using Bee.Definition.Storage;
 
 namespace Bee.Samples.Shared;
@@ -17,17 +18,20 @@ public sealed class DemoBusinessObjectFactory : IBusinessObjectFactory
     private readonly IServiceProvider _services;
     private readonly IDefineAccess _defineAccess;
     private readonly ISessionInfoService _sessionInfoService;
+    private readonly ILanguageService _languageService;
     private readonly IFormBoTypeResolver _resolver;
 
     public DemoBusinessObjectFactory(
         IServiceProvider services,
         IDefineAccess defineAccess,
         ISessionInfoService sessionInfoService,
+        ILanguageService languageService,
         IFormBoTypeResolver resolver)
     {
         _services = services ?? throw new ArgumentNullException(nameof(services));
         _defineAccess = defineAccess ?? throw new ArgumentNullException(nameof(defineAccess));
         _sessionInfoService = sessionInfoService ?? throw new ArgumentNullException(nameof(sessionInfoService));
+        _languageService = languageService ?? throw new ArgumentNullException(nameof(languageService));
         _resolver = resolver ?? throw new ArgumentNullException(nameof(resolver));
     }
 
@@ -50,6 +54,7 @@ public sealed class DemoBusinessObjectFactory : IBusinessObjectFactory
     {
         DefineAccess = _defineAccess,
         SessionInfoService = _sessionInfoService,
+        LanguageService = _languageService,
         BoFactory = this,
         Services = _services,
     };
