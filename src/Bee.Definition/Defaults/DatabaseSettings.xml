@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Framework-shipped DatabaseSettings template — intentionally empty.
+
+  Connection strings are 100% deployment-specific so the framework provides no
+  default values. Add one DatabaseItem per logical database (matched to the
+  CategoryId entries declared in DbCategorySettings.xml). At minimum a deployment
+  needs an entry for the `common` category (framework-mandated contract).
+
+  Example:
+
+      <DatabaseSettings>
+        <Items>
+          <DatabaseItem Id="common"
+                        CategoryId="common"
+                        Provider="SQLServer"
+                        ConnectionString="Data Source=...;Initial Catalog=common;..." />
+          <DatabaseItem Id="company001"
+                        CategoryId="company"
+                        Provider="PostgreSQL"
+                        ConnectionString="Host=...;Database=company001;..." />
+        </Items>
+      </DatabaseSettings>
+
+  See `docs/database-settings-guide.md` for the full schema, multi-tenant
+  patterns, and CategoryId wiring.
+-->
+<DatabaseSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+</DatabaseSettings>

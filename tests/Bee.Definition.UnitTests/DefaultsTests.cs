@@ -18,11 +18,13 @@ namespace Bee.Definition.UnitTests
         // - 2 FormLayouts (Department, Employee)
         // - 4 Language resources (Department/Employee × en-US/zh-TW)
         // - 1 DbCategorySettings.xml (minimal — st_* only, no ft_project)
-        // Total: 20
-        private const int ExpectedEmbeddedCount = 20;
+        // - 1 SystemSettings.xml (template with sensible defaults)
+        // - 1 DatabaseSettings.xml (empty stub — connection strings are deployment-specific)
+        // Total: 22
+        private const int ExpectedEmbeddedCount = 22;
 
         [Fact]
-        [DisplayName("ListEmbedded 應回傳 20 個框架預設檔（11 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings）")]
+        [DisplayName("ListEmbedded 應回傳 22 個框架預設檔（11 st_* + 2 FormSchema + 2 FormLayout + 4 Language + 1 DbCategorySettings + 1 SystemSettings + 1 DatabaseSettings）")]
         public void ListEmbedded_ReturnsExpectedCount()
         {
             var files = Defaults.ListEmbedded();
@@ -42,6 +44,8 @@ namespace Bee.Definition.UnitTests
 
         [Theory]
         [InlineData("DbCategorySettings.xml")]
+        [InlineData("SystemSettings.xml")]
+        [InlineData("DatabaseSettings.xml")]
         [InlineData("TableSchema/common/st_user.TableSchema.xml")]
         [InlineData("TableSchema/company/st_employee.TableSchema.xml")]
         [InlineData("FormSchema/Department.FormSchema.xml")]
@@ -86,6 +90,36 @@ namespace Bee.Definition.UnitTests
             var company = settings!.Categories!.First(c => c.Id == "company");
             Assert.All(company.Tables!, t => Assert.StartsWith("st_", t.TableName));
             Assert.DoesNotContain(company.Tables!, t => t.TableName == "ft_project");
+        }
+
+        [Fact]
+        [DisplayName("OpenEmbedded 對 SystemSettings.xml 可成功 deserialize 並具備合理 production 預設（IsDebugMode=false、MasterKeySource=Environment）")]
+        public void OpenEmbedded_SystemSettings_HasConservativeDefaults()
+        {
+            var settings = XmlCodec.Deserialize<SystemSettings>(ReadEmbedded("SystemSettings.xml"));
+
+            Assert.NotNull(settings);
+            // 保守預設：debug off、MasterKey 指向 env var（消費者部署時再決定具體值或改 source）
+            Assert.False(settings!.CommonConfiguration.IsDebugMode);
+            var masterKey = settings.BackendConfiguration.SecurityKeySettings.MasterKeySource;
+            Assert.Equal(Bee.Definition.Security.MasterKeySourceType.Environment, masterKey.Type);
+            Assert.Equal("BEE_MASTER_KEY", masterKey.Value);
+            // ApiPayloadOptions 預設值
+            Assert.Equal("messagepack", settings.CommonConfiguration.ApiPayloadOptions.Serializer);
+            Assert.Equal("aes-cbc-hmac", settings.CommonConfiguration.ApiPayloadOptions.Encryptor);
+        }
+
+        [Fact]
+        [DisplayName("OpenEmbedded 對 DatabaseSettings.xml 為空殼（Items 為 null 或空集合）— 連線字串是部署選擇")]
+        public void OpenEmbedded_DatabaseSettings_IsEmptyStub()
+        {
+            var settings = XmlCodec.Deserialize<DatabaseSettings>(ReadEmbedded("DatabaseSettings.xml"));
+
+            Assert.NotNull(settings);
+            // Items 與 Servers 在序列化為空時會被 IsSerializeEmpty 短路成 null，
+            // deserialize 回來可能是 null 或空集合——兩者都代表「沒有任何 DatabaseItem 預設」。
+            Assert.True(settings!.Items == null || settings.Items.Count == 0);
+            Assert.True(settings.Servers == null || settings.Servers.Count == 0);
         }
 
         [Fact]
@@ -178,6 +212,24 @@ namespace Bee.Definition.UnitTests
                 Assert.Equal(ExpectedEmbeddedCount, secondRun.WrittenCount);
                 Assert.Equal(0, secondRun.SkippedCount);
                 Assert.True(new FileInfo(sentinelFile).Length > 0);
+            }
+            finally
+            {
+                Cleanup(tempDir);
+            }
+        }
+
+        [Fact]
+        [DisplayName("MaterializeTo 寫出後 SystemSettings.xml / DatabaseSettings.xml 也應存在")]
+        public void MaterializeTo_WritesSystemAndDatabaseSettings()
+        {
+            var tempDir = CreateTempDir();
+            try
+            {
+                Defaults.MaterializeTo(tempDir);
+
+                Assert.True(File.Exists(Path.Combine(tempDir, "SystemSettings.xml")));
+                Assert.True(File.Exists(Path.Combine(tempDir, "DatabaseSettings.xml")));
             }
             finally
             {
