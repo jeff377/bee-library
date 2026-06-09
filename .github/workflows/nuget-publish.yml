@@ -27,7 +27,11 @@ jobs:
         Write-Host "Publishing version: $version"
 
     - name: Restore dependencies
-      run: dotnet restore Bee.Library.slnx
+      run: |
+        dotnet restore Bee.Library.slnx
+        # tools/Bee.Cli is not part of Bee.Library.slnx (tools live in Bee.Tools.slnx);
+        # restore it explicitly so the subsequent build --no-restore step works.
+        dotnet restore tools/Bee.Cli/Bee.Cli.csproj
 
     - name: Build all projects
       run: |
