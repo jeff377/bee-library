@@ -159,4 +159,4 @@ Bee.DefineEditor.app/
 - 多人協作 / 鎖定機制
 - Customize 層覆蓋編輯（Phase 6 後若需要另議；目前在方案樹上不標示覆蓋）
 
-詳見 [docs/plans/plan-define-editor.md](../../docs/plans/plan-define-editor.md)。
+詳見 [docs/archive/plan-define-editor.md](../../docs/archive/plan-define-editor.md)。
