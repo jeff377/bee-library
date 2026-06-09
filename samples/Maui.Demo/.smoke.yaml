@@ -45,9 +45,26 @@ flow:
       - "Bob Liu"
       - "Carol Wang"
 
+  - step: list-only screenshot
+    action: screenshot
+    save_as: maui-demo-employee-list.png
+
+  # Tap Alice's row to verify the master form populates from GetData round-trip.
+  # 端到端跑 Avalonia.Demo 時挖到 ReloadListAsync 沒帶 sys_rowid → TryGetRowId
+  # 永遠失敗 → row tap 等於沒動作。MAUI 端有同樣的洞，本來 smoke 沒覆蓋這步
+  # 所以一直沒被發現；補進來避免回歸。
+  - step: tap Alice row
+    action: click
+    target: { label: "Alice Chen" }
+    wait_after_seconds: 3
+    expect_text:
+      - "Alice Chen"
+      - "Employee ID"
+      - "Hire Date"
+
   - step: final screenshot
     action: screenshot
-    save_as: maui-demo-employee-page.png
+    save_as: maui-demo-employee-detail.png
 
 teardown:
   kill_app: true

@@ -44,9 +44,27 @@ flow:
       - "Bob Liu"
       - "Carol Wang"
 
+  - step: list-only screenshot
+    action: screenshot
+    save_as: avalonia-demo-employee-list.png
+
+  # Click Alice's row to verify the master form populates from GetData round-trip.
+  # Before this was added, the row-tap path was silently broken: server didn't
+  # return sys_rowid because FormSchema.ListFields didn't include it, so the
+  # grid's TryGetRowId always failed. Saw it only when exercising the click
+  # manually — adding it here so future regressions get caught.
+  - step: tap Alice row
+    action: click
+    target: { label: "Alice Chen" }
+    wait_after_seconds: 3
+    expect_text:
+      - "Alice Chen"
+      - "Employee ID"
+      - "Hire Date"
+
   - step: final screenshot
     action: screenshot
-    save_as: avalonia-demo-employee-page.png
+    save_as: avalonia-demo-employee-detail.png
 
 teardown:
   kill_app: true
