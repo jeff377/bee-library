@@ -105,15 +105,15 @@ namespace Bee.Db.UnitTests
         public void GetStatements_AddGuidNotNull_SplitsIntoSafeTwoStep()
         {
             var field = new DbField("user_rowid", "User", FieldDbType.Guid) { AllowNull = false };
-            var statements = _builder.GetStatements("ft_employee", new AddFieldChange(field));
+            var statements = _builder.GetStatements("st_employee", new AddFieldChange(field));
 
             Assert.Equal(2, statements.Count);
             // 第 1 段：常數空 Guid 預設 ADD —— replication-safe，不得含 (UUID())
-            Assert.Contains("ALTER TABLE `ft_employee` ADD COLUMN `user_rowid`", statements[0]);
+            Assert.Contains("ALTER TABLE `st_employee` ADD COLUMN `user_rowid`", statements[0]);
             Assert.Contains("NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000'", statements[0]);
             Assert.DoesNotContain("UUID()", statements[0]);
             // 第 2 段：metadata-only 還原真正預設（新列才拿 UUID()）
-            Assert.Contains("ALTER TABLE `ft_employee` ALTER COLUMN `user_rowid` SET DEFAULT (UUID())", statements[1]);
+            Assert.Contains("ALTER TABLE `st_employee` ALTER COLUMN `user_rowid` SET DEFAULT (UUID())", statements[1]);
         }
 
         [Fact]

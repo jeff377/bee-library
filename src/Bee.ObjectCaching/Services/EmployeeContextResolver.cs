@@ -5,7 +5,7 @@ namespace Bee.ObjectCaching.Services
 {
     /// <summary>
     /// Default <see cref="IEmployeeContextResolver"/>: resolves the user's <c>st_user.sys_rowid</c>
-    /// from the common database, then the linked <c>ft_employee</c> (and its department) from the
+    /// from the common database, then the linked <c>st_employee</c> (and its department) from the
     /// company database. No caching — invoked once per <c>EnterCompany</c>; the result is snapshotted
     /// onto the session so per-request scope filtering stays zero-DB.
     /// </summary>
@@ -18,7 +18,7 @@ namespace Bee.ObjectCaching.Services
         /// Initializes a new <see cref="EmployeeContextResolver"/>.
         /// </summary>
         /// <param name="userRepository">The common <c>st_user</c> reader.</param>
-        /// <param name="employeeRepository">The company <c>ft_employee</c> reader.</param>
+        /// <param name="employeeRepository">The company <c>st_employee</c> reader.</param>
         public EmployeeContextResolver(IUserRepository userRepository, IEmployeeRepository employeeRepository)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));

@@ -4,6 +4,16 @@
 
 本檔記錄專案的所有重要變更。
 
+## [Unreleased]
+
+### 破壞性變更
+
+- **框架組織表 `ft_department` / `ft_employee` 改名為 `st_department` / `st_employee`** — 與其他框架自有系統表（`st_role` / `st_role_grant` / `st_user_role`）前綴對齊：這兩張表為框架組織／record-scope 機制所需，非業務資料。`st_` 前綴語意為「框架所有」，與資料表所在資料庫位置正交（這兩張表仍住在 company database）。已落地的部署需自行 `RENAME TABLE` 至新名稱——4 種 dialect 範例見 [資料表結構升級指南 §框架表改名](docs/database-schema-upgrade.zh-TW.md)。FormSchema progId（`Department` / `Employee`）、C# 型別名、欄位名皆未變動。
+
+### 新增
+
+- **`docs/framework-reserved-names.md`**（雙語）— 框架保留命名 registry：列出 `st_*` 系統表與保留 `progId`。命名**規則**仍位於 [database-naming-conventions.md](docs/database-naming-conventions.zh-TW.md)；API 方法參考仍位於 [api-method-reference.md](docs/api-method-reference.zh-TW.md)。新檔為「哪些具體名稱被保留」的唯一來源。
+
 ## [4.7.0]
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「ERP 權限機制、i18n 與多租戶客製化全面落地」：新增權限線 A/B/record-scope 三段式機制、多國語系基礎建設、多租戶客製化覆蓋層、跨節點 DB 快取失效機制與「定義存 DB」儲存後端，並加開第三個桌面平台支援 — 新增 `Bee.UI.Avalonia` 套件。本版無 breaking change(既有公開 API 簽章未動);但首次啟動會自動建立多張新系統表(`st_role` / `st_role_grant` / `st_user_role` / `st_cache_notify` / `st_define` / `st_user_company` 等),如以 framework 自動 schema 升級之外另自管 DDL 的部署需手動補建。

@@ -4,6 +4,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Breaking Changes
+
+- **Framework organisation tables `ft_department` / `ft_employee` renamed to `st_department` / `st_employee`** — Aligns the prefix with other framework-owned tables (`st_role` / `st_role_grant` / `st_user_role`) since these tables are required by the framework's organisation / record-scope layer rather than being business data. The `st_` prefix means "framework-owned", orthogonal to which database the table lives in (these two tables still live in the company database). Deployments that already created `ft_department` / `ft_employee` need to `RENAME TABLE` to the new names — see [Table Schema Upgrade Guide §Renaming framework tables](docs/database-schema-upgrade.md) for 4-dialect examples. FormSchema progIds (`Department` / `Employee`), C# type names, and field names are unchanged.
+
+### Added
+
+- **`docs/framework-reserved-names.md`** (bilingual) — Registry of names the framework owns: `st_*` system tables and reserved `progId`s. Naming **rules** still live in [database-naming-conventions.md](docs/database-naming-conventions.md); API method reference still lives in [api-method-reference.md](docs/api-method-reference.md). The new file is the single source of truth for which specific names are reserved.
+
 ## [4.7.0]
 
 > Bee.NET remains in pre-stable evolution. The theme of this release is "ERP permissions, i18n, and multi-tenant customisation land in full": three-phase permission model (line-A / line-B / record-scope), localisation infrastructure, multi-tenant customisation overlay, cross-node DB cache invalidation, a DB-backed define storage backend, and a third desktop platform — the new `Bee.UI.Avalonia` package. This release contains **no breaking changes** (existing public API signatures are unchanged). However, the first start-up creates several new system tables (`st_role` / `st_role_grant` / `st_user_role` / `st_cache_notify` / `st_define` / `st_user_company`); deployments that manage DDL out-of-band (instead of letting the framework auto-upgrade the schema) need to add them manually.

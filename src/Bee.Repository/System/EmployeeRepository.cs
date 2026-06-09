@@ -8,7 +8,7 @@ using Bee.Repository.Abstractions.System;
 namespace Bee.Repository.System
 {
     /// <summary>
-    /// Reads a company's employee table (<c>ft_employee</c>, a company-database table). Resolves the
+    /// Reads a company's employee table (<c>st_employee</c>, a company-database table). Resolves the
     /// employee linked to a user (<c>user_rowid</c>) so the user's department can be derived for
     /// record-scope filtering.
     /// </summary>
@@ -32,7 +32,7 @@ namespace Bee.Repository.System
             if (userRowId == Guid.Empty) { return null; }
 
             var dbType = _connectionManager.GetConnectionInfo(databaseId).DatabaseType;
-            string tbl = dbType.QuoteIdentifier("ft_employee");
+            string tbl = dbType.QuoteIdentifier("st_employee");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");

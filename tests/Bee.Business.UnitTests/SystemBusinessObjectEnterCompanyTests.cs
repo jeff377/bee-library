@@ -87,13 +87,13 @@ namespace Bee.Business.UnitTests
             throw new InvalidOperationException($"Cannot resolve user rowid for '{userId}'.");
         }
 
-        // ft_employee lives in the company database (CompanyDbId), not common.
+        // st_employee lives in the company database (CompanyDbId), not common.
         private DbAccess CompanyDb() => _fx.NewDbAccess(CompanyDbId);
 
         private void InsertEmployee(Guid empRowId, string empId, Guid deptRowId, Guid userRowId)
         {
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                "INSERT INTO ft_employee (sys_rowid, sys_id, sys_name, dept_rowid, user_rowid) " +
+                "INSERT INTO st_employee (sys_rowid, sys_id, sys_name, dept_rowid, user_rowid) " +
                 "VALUES ({0}, {1}, {2}, {3}, {4})",
                 empRowId, empId, "BO 測試員工", deptRowId, userRowId);
             CompanyDb().Execute(insert);
@@ -102,7 +102,7 @@ namespace Bee.Business.UnitTests
         private void DeleteEmployee(Guid empRowId)
         {
             var delete = new DbCommandSpec(DbCommandKind.NonQuery,
-                "DELETE FROM ft_employee WHERE sys_rowid = {0}", empRowId);
+                "DELETE FROM st_employee WHERE sys_rowid = {0}", empRowId);
             CompanyDb().Execute(delete);
         }
 
@@ -225,7 +225,7 @@ namespace Bee.Business.UnitTests
             {
                 bo.EnterCompany(new EnterCompanyArgs { CompanyId = SeedCompanyId });
 
-                // Seed user '001' has no ft_employee row → user rowid resolves, employee/dept empty.
+                // Seed user '001' has no st_employee row → user rowid resolves, employee/dept empty.
                 var session = sessionService.Get(accessToken)!;
                 Assert.Equal(userRowId, session.UserRowId);
                 Assert.Equal(Guid.Empty, session.EmployeeRowId);

@@ -8,7 +8,7 @@ using Bee.Tests.Shared;
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
-    /// DepartmentRepository 的 5 DB round-trip 測試：在 company DB insert ft_department
+    /// DepartmentRepository 的 5 DB round-trip 測試：在 company DB insert st_department
     /// （含 parent_rowid 連結），驗證 GetDepartments 查回節點與父子關係正確。
     /// </summary>
     public class DepartmentRepositoryTests : IClassFixture<SharedDbFixture>
@@ -29,7 +29,7 @@ namespace Bee.Repository.UnitTests
             var parentId = string.Concat("DEP_", Guid.NewGuid().ToString("N").AsSpan(0, 6));
             var childId = string.Concat("DEP_", Guid.NewGuid().ToString("N").AsSpan(0, 6));
 
-            string tbl = dbType.QuoteIdentifier("ft_department");
+            string tbl = dbType.QuoteIdentifier("st_department");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");

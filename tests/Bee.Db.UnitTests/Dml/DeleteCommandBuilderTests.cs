@@ -14,7 +14,7 @@ namespace Bee.Db.UnitTests.Dml
         {
             var schema = new FormSchema("Employee", "Employee Form");
             var table = schema.Tables!.Add("Employee", "Employee");
-            table.DbTableName = "ft_employee";
+            table.DbTableName = "st_employee";
             table.Fields!.Add(SysFields.RowId, "Row ID", FieldDbType.Guid);
             table.Fields!.Add(SysFields.MasterRowId, "Master Row ID", FieldDbType.Guid);
             table.Fields!.AddStringField("sys_id", "Employee Id", 50);
@@ -58,7 +58,7 @@ namespace Bee.Db.UnitTests.Dml
             var spec = builder.Build("Employee", FilterCondition.Equal(SysFields.RowId, rowId));
 
             Assert.Equal(DbCommandKind.NonQuery, spec.Kind);
-            Assert.Equal("DELETE FROM [ft_employee] WHERE [sys_rowid] = @p0", spec.CommandText);
+            Assert.Equal("DELETE FROM [st_employee] WHERE [sys_rowid] = @p0", spec.CommandText);
             Assert.Single(spec.Parameters);
             Assert.Equal(rowId, spec.Parameters[0].Value);
         }
@@ -70,7 +70,7 @@ namespace Bee.Db.UnitTests.Dml
             var builder = new DeleteCommandBuilder(BuildEmployeeSchema(), DatabaseType.PostgreSQL);
             var spec = builder.Build("Employee", FilterCondition.Equal(SysFields.RowId, Guid.NewGuid()));
 
-            Assert.Equal("DELETE FROM \"ft_employee\" WHERE \"sys_rowid\" = @p0", spec.CommandText);
+            Assert.Equal("DELETE FROM \"st_employee\" WHERE \"sys_rowid\" = @p0", spec.CommandText);
         }
 
         [Fact]

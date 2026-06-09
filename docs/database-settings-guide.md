@@ -63,7 +63,7 @@ DatabaseSettings.Items (3 entries)                  Physical DBs (1)
 DatabaseItem  CategoryId="common"   DbName=erp ──┐
 DatabaseItem  CategoryId="company"  DbName=erp ──┼──► erp (contains st_user, st_session,
 DatabaseItem  CategoryId="log"      DbName=erp ──┘     st_company, st_user_company,
-                                                       ft_department, ft_employee,
+                                                       st_department, st_employee,
                                                        ft_project, log tables)
 ```
 
@@ -73,7 +73,7 @@ DatabaseItem  CategoryId="log"      DbName=erp ──┘     st_company, st_user
 DatabaseSettings.Items (3 entries)                  Physical DBs (3)
 ─────────────────────────────                       ────────────────
 DatabaseItem  CategoryId="common"   DbName=erp_common  ──► erp_common  (st_user, st_session, st_company, st_user_company)
-DatabaseItem  CategoryId="company"  DbName=erp_company ──► erp_company (ft_department, ft_employee, ft_project)
+DatabaseItem  CategoryId="company"  DbName=erp_company ──► erp_company (st_department, st_employee, ft_project)
 DatabaseItem  CategoryId="log"      DbName=erp_log     ──► erp_log     (log tables)
 ```
 
@@ -83,9 +83,9 @@ DatabaseItem  CategoryId="log"      DbName=erp_log     ──► erp_log     (lo
 DatabaseSettings.Items (2 + N entries)              Physical DBs (2 + N)
 ─────────────────────────────                       ────────────────
 DatabaseItem  Id="common"      CategoryId="common"   ──► erp_common
-DatabaseItem  Id="company001"  CategoryId="company"  ──► company001  (ft_department, ft_employee, ft_project)
-DatabaseItem  Id="company002"  CategoryId="company"  ──► company002  (ft_department, ft_employee, ft_project)
-DatabaseItem  Id="company003"  CategoryId="company"  ──► company003  (ft_department, ft_employee, ft_project)
+DatabaseItem  Id="company001"  CategoryId="company"  ──► company001  (st_department, st_employee, ft_project)
+DatabaseItem  Id="company002"  CategoryId="company"  ──► company002  (st_department, st_employee, ft_project)
+DatabaseItem  Id="company003"  CategoryId="company"  ──► company003  (st_department, st_employee, ft_project)
    ⋮          (one entry per company)
 DatabaseItem  Id="log"         CategoryId="log"      ──► erp_log
 ```
@@ -255,8 +255,10 @@ The framework uses three default logical categories:
 | Category Id | Purpose | Typical Tables |
 |-------------|---------|----------------|
 | `common` | Shared database — system tables shared across companies | `st_user`, `st_session`, `st_company`, `st_user_company` |
-| `company` | Company database — business data, separate per company | `ft_department`, `ft_employee`, `ft_project` |
+| `company` | Company database — business data, separate per company | `st_department`, `st_employee`, `ft_project` |
 | `log` | Log database — audit / operation records with frequent writes | (depends on the application) |
+
+> For the canonical list of framework-owned tables in each category, see [Framework-Reserved Names](framework-reserved-names.md).
 
 **`common` is a framework-mandated contract**: it must exist and `DatabaseItem.Id == CategoryId == "common"` (enforced at startup by `services.AddBeeFramework`; system services such as `SessionRepository` route through the fixed `databaseId = "common"`). See the [`DbCategoryIds`](../src/Bee.Definition/Database/DbCategoryIds.cs) constants.
 
@@ -334,7 +336,7 @@ Every FormSchema must declare its category:
 
 ```xml
 <FormSchema ProgId="EmployeeForm" CategoryId="company" ...>
-  <FormTable TableName="ft_employee" ...>
+  <FormTable TableName="st_employee" ...>
     ...
   </FormTable>
 </FormSchema>
@@ -354,8 +356,8 @@ TableSchemas derived from FormSchemas are stored in directories grouped by Categ
               │     ├── st_company.TableSchema.xml
               │     └── st_user_company.TableSchema.xml
               ├── company/
-              │     ├── ft_department.TableSchema.xml
-              │     └── ft_employee.TableSchema.xml
+              │     ├── st_department.TableSchema.xml
+              │     └── st_employee.TableSchema.xml
               └── log/
 ```
 
@@ -399,8 +401,8 @@ Application code chooses `databaseId` based on "which logical category the data 
 | Data to Access | Category | Deployment Scenario | DatabaseId Used |
 |----------------|----------|---------------------|-----------------|
 | `st_user`, `st_session`, `st_company`, `st_user_company` | common | Any | Fixed string `"common"` (framework contract: `DatabaseItem.Id == "common"`) |
-| `ft_employee`, `ft_department` | company | Single company | The `Id` of the entry with `CategoryId=company` |
-| `ft_employee`, `ft_department` | company | Multi-tenant | The `Id` of `companyXXX` for the current tenant (e.g. `$"company{tenantId:D3}"`) |
+| `st_employee`, `st_department` | company | Single company | The `Id` of the entry with `CategoryId=company` |
+| `st_employee`, `st_department` | company | Multi-tenant | The `Id` of `companyXXX` for the current tenant (e.g. `$"company{tenantId:D3}"`) |
 | Log writes | log | Single DB | The `Id` of the entry with `CategoryId=log` |
 | Log writes | log | Year-based archival | The `log_YYYY` for the current year (e.g. `$"log_{DateTime.UtcNow.Year}"`) |
 | Log cross-year queries | log | Year-based archival | Multiple DatabaseIds for the year range, queried separately and aggregated |
@@ -492,8 +494,8 @@ Both settings files are located at the root of `PathOptions.DefinePath`:
     </DbCategory>
     <DbCategory Id="company" DisplayName="Company Database">
       <Tables>
-        <TableItem TableName="ft_department" DisplayName="Department" />
-        <TableItem TableName="ft_employee" DisplayName="Employee" />
+        <TableItem TableName="st_department" DisplayName="Department" />
+        <TableItem TableName="st_employee" DisplayName="Employee" />
         <TableItem TableName="ft_project" DisplayName="Project" />
       </Tables>
     </DbCategory>

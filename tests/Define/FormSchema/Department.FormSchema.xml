@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Department" DisplayName="部門" CategoryId="company" ListFields="">
   <Tables>
-    <FormTable TableName="Department" DbTableName="ft_department" DisplayName="部門">
+    <FormTable TableName="Department" DbTableName="st_department" DisplayName="部門">
       <Fields>
         <FormField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
         <FormField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />

@@ -12,6 +12,8 @@ This is the single-page reference of every public BO method exposed through
 > a method requires updating both this document and the test baseline; the build
 > will fail otherwise.
 
+> Looking for which `progId`s are reserved by the framework? See [Framework-Reserved Names](framework-reserved-names.md).
+
 ## Reading the columns
 
 | Column | Meaning |

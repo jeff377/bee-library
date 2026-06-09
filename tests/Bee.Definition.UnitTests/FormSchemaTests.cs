@@ -38,7 +38,7 @@ namespace Bee.Definition.UnitTests
         {
             var formSchema = new FormSchema("Department", "部門");
             var table = formSchema.Tables!.Add("Department", "部門");
-            table.DbTableName = "ft_department";
+            table.DbTableName = "st_department";
             table.Fields!.Add("sys_no", "流水號", FieldDbType.AutoIncrement);
             table.Fields!.Add("sys_rowid", "唯一識別", FieldDbType.Guid);
             table.Fields!.Add("sys_id", "部門編號", FieldDbType.String);
@@ -62,7 +62,7 @@ namespace Bee.Definition.UnitTests
         {
             var formSchema = new FormSchema("Employee", "員工");
             var table = formSchema.Tables!.Add("Employee", "員工");
-            table.DbTableName = "ft_employee";
+            table.DbTableName = "st_employee";
             table.Fields!.Add("sys_no", "流水號", FieldDbType.AutoIncrement);
             table.Fields!.Add("sys_rowid", "唯一識別", FieldDbType.Guid);
             table.Fields!.Add("sys_id", "員工編號", FieldDbType.String);

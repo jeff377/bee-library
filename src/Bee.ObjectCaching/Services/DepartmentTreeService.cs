@@ -6,7 +6,7 @@ namespace Bee.ObjectCaching.Services
 {
     /// <summary>
     /// Department-tree snapshot service. On a cache miss, resolves the company database via
-    /// <see cref="ICompanyInfoService"/>, reads <c>ft_department</c> via
+    /// <see cref="ICompanyInfoService"/>, reads <c>st_department</c> via
     /// <see cref="IDepartmentRepository"/>, builds a <see cref="DepartmentTree"/> snapshot and
     /// caches it — so subsequent scope queries run entirely from memory.
     /// </summary>

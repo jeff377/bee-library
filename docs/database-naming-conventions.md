@@ -5,6 +5,8 @@
 This document defines the naming rules for database tables, columns, and system fields, applicable to all database object designs.
 A unified naming style avoids cross-database case and semantic inconsistencies and improves maintainability.
 
+> Looking for the actual list of `st_*` tables the framework owns? See [Framework-Reserved Names](framework-reserved-names.md).
+
 ---
 
 ## 1️⃣ Overall Database Conventions

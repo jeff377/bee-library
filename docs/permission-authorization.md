@@ -84,10 +84,10 @@ INSERT INTO st_role_grant (role_id, model_id, action, scope) VALUES
 
 ## 4. Link users to employees (for department scope)
 
-Department / owner scope needs to resolve **the current user → their department**. A user (`st_user`, common DB) is linked to an employee (`ft_employee`, company DB) via `ft_employee.user_rowid`:
+Department / owner scope needs to resolve **the current user → their department**. A user (`st_user`, common DB) is linked to an employee (`st_employee`, company DB) via `st_employee.user_rowid`:
 
 ```
-st_user.sys_rowid  ──(ft_employee.user_rowid)──▶  ft_employee  ──(dept_rowid)──▶  ft_department
+st_user.sys_rowid  ──(st_employee.user_rowid)──▶  st_employee  ──(dept_rowid)──▶  st_department
 ```
 
 On `EnterCompany`, the framework resolves `user → employee → department` once and snapshots `UserRowId`, `EmployeeRowId`, `DeptRowId` onto the session. Scope filtering then runs zero-DB. A user without a linked employee gets empty employee/department — `Own` still matches their `UserRowId`, while `Dept`/`DeptAndSub` match nothing (fail-closed).

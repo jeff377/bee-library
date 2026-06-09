@@ -21,7 +21,7 @@ namespace Bee.Definition.Organization
         /// <summary>
         /// Initializes a new <see cref="DepartmentNode"/>.
         /// </summary>
-        /// <param name="rowId">The department row id (<c>ft_department.sys_rowid</c>).</param>
+        /// <param name="rowId">The department row id (<c>st_department.sys_rowid</c>).</param>
         /// <param name="deptId">The department business id (<c>sys_id</c>).</param>
         /// <param name="deptName">The department name (<c>sys_name</c>).</param>
         /// <param name="managerRowId">The manager (employee) row id.</param>
@@ -33,7 +33,7 @@ namespace Bee.Definition.Organization
             ManagerRowId = managerRowId;
         }
 
-        /// <summary>Gets or sets the department row id (<c>ft_department.sys_rowid</c>).</summary>
+        /// <summary>Gets or sets the department row id (<c>st_department.sys_rowid</c>).</summary>
         [Key(100)]
         [XmlAttribute]
         public Guid RowId { get; set; }

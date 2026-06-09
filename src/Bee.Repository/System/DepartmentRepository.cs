@@ -8,7 +8,7 @@ using Bee.Repository.Abstractions.System;
 namespace Bee.Repository.System
 {
     /// <summary>
-    /// Reads a company's department nodes from <c>ft_department</c> (a company-database table).
+    /// Reads a company's department nodes from <c>st_department</c> (a company-database table).
     /// Every method takes the company database id explicitly; node relations use row ids
     /// (<c>sys_rowid</c> / <c>parent_rowid</c>), which the in-memory <see cref="DepartmentTree"/>
     /// turns into the hierarchy.
@@ -32,7 +32,7 @@ namespace Bee.Repository.System
             ArgumentException.ThrowIfNullOrWhiteSpace(databaseId);
 
             var dbType = _connectionManager.GetConnectionInfo(databaseId).DatabaseType;
-            string tbl = dbType.QuoteIdentifier("ft_department");
+            string tbl = dbType.QuoteIdentifier("st_department");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");

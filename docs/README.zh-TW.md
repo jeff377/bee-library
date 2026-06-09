@@ -28,6 +28,7 @@
 | 文件 | 說明 |
 |------|------|
 | [資料庫命名規範](database-naming-conventions.zh-TW.md) | 表名、欄位、索引、系統欄位的命名規則；跨資料庫大小寫敏感性對照 |
+| [框架保留命名](framework-reserved-names.zh-TW.md) | 框架擁有的 `st_*` 系統表與保留 `progId` registry |
 | [DatabaseSettings 與 DbCategorySettings 指引](database-settings-guide.zh-TW.md) | 兩個資料庫相關設定檔的結構、存取方式與運作流程 |
 | [資料庫 Schema 升級](database-schema-upgrade.zh-TW.md) | Schema 升級流程與策略 |
 

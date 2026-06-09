@@ -3,7 +3,7 @@ using Bee.Definition.Organization;
 namespace Bee.Repository.Abstractions.System
 {
     /// <summary>
-    /// Data access for a company's employee table (<c>ft_employee</c>). Lives in a company database,
+    /// Data access for a company's employee table (<c>st_employee</c>). Lives in a company database,
     /// so methods take the company database id explicitly (resolved by the caller via the
     /// company-DB router).
     /// </summary>

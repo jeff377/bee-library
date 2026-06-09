@@ -20,7 +20,7 @@ namespace Bee.Definition.UnitTests
             // Arrange
             var original = new FormSchema("Employee", "員工") { ListFields = "sys_id,sys_name" };
             var table = original.Tables!.Add("Employee", "員工");
-            table.DbTableName = "ft_employee";
+            table.DbTableName = "st_employee";
             table.Fields!.Add("sys_id", "員工編號", FieldDbType.String);
             table.Fields!.Add("sys_name", "員工姓名", FieldDbType.String);
 
@@ -35,7 +35,7 @@ namespace Bee.Definition.UnitTests
             Assert.Equal("sys_id,sys_name", restored.ListFields);
             Assert.NotNull(restored.Tables);
             Assert.Single(restored.Tables!);
-            Assert.Equal("ft_employee", restored.Tables![0].DbTableName);
+            Assert.Equal("st_employee", restored.Tables![0].DbTableName);
             Assert.Equal(2, restored.Tables[0].Fields!.Count);
         }
 
@@ -65,7 +65,7 @@ namespace Bee.Definition.UnitTests
             // Arrange
             var original = new TableSchema
             {
-                TableName = "ft_employee",
+                TableName = "st_employee",
                 DisplayName = "員工資料表"
             };
             original.Fields!.Add("sys_no", "流水號", FieldDbType.AutoIncrement);
@@ -79,7 +79,7 @@ namespace Bee.Definition.UnitTests
 
             // Assert
             Assert.NotNull(restored);
-            Assert.Equal("ft_employee", restored!.TableName);
+            Assert.Equal("st_employee", restored!.TableName);
             Assert.Equal(3, restored.Fields!.Count);
             Assert.Equal(20, restored.Fields!["sys_id"].Length);
 

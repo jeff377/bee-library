@@ -32,12 +32,12 @@ namespace Bee.Definition.UnitTests.Forms
         public void GenerateDbTable_DelegatesToSchemaGenerator()
         {
             var ft = BuildBasic();
-            ft.DbTableName = "ft_employee";
+            ft.DbTableName = "st_employee";
 
             var schema = ft.GenerateDbTable();
 
             Assert.NotNull(schema);
-            Assert.Equal("ft_employee", schema.TableName);
+            Assert.Equal("st_employee", schema.TableName);
         }
 
         [Fact]

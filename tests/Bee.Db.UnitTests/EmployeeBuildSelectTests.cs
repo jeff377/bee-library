@@ -36,7 +36,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("Employee BuildSelect 不指定欄位應產生含 ft_employee 的 SELECT/FROM")]
+        [DisplayName("Employee BuildSelect 不指定欄位應產生含 st_employee 的 SELECT/FROM")]
         public void BuildSelect_AllFields_ContainsTableNameAndKeywords()
         {
             var builder = NewBuilder();
@@ -47,7 +47,7 @@ namespace Bee.Db.UnitTests
             Assert.Equal(DbCommandKind.DataTable, spec.Kind);
             Assert.Contains("SELECT", spec.CommandText, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("FROM", spec.CommandText, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("ft_employee", spec.CommandText);
+            Assert.Contains("st_employee", spec.CommandText);
         }
 
         [Fact]
@@ -65,7 +65,7 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("Employee BuildSelect 取部門參考欄位應 JOIN 至 ft_department")]
+        [DisplayName("Employee BuildSelect 取部門參考欄位應 JOIN 至 st_department")]
         public void BuildSelect_WithDeptRelationField_JoinsDepartment()
         {
             var builder = NewBuilder();
@@ -75,7 +75,7 @@ namespace Bee.Db.UnitTests
 
             Assert.NotNull(spec);
             Assert.Contains("JOIN", spec.CommandText, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("ft_department", spec.CommandText);
+            Assert.Contains("st_department", spec.CommandText);
             Assert.Equal(1, CountJoins(spec.CommandText));
         }
 
@@ -91,8 +91,8 @@ namespace Bee.Db.UnitTests
             Assert.NotNull(spec);
             int joins = CountJoins(spec.CommandText);
             Assert.True(joins >= 2, $"預期至少 2 個 JOIN（Department + Employee），實際 {joins}");
-            Assert.Contains("ft_department", spec.CommandText);
-            Assert.Contains("ft_employee", spec.CommandText);
+            Assert.Contains("st_department", spec.CommandText);
+            Assert.Contains("st_employee", spec.CommandText);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Bee.Db.UnitTests
 
             Assert.NotNull(spec);
             Assert.Contains("JOIN", spec.CommandText, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("ft_department", spec.CommandText);
+            Assert.Contains("st_department", spec.CommandText);
             Assert.Single(spec.Parameters);
         }
 
@@ -139,7 +139,7 @@ namespace Bee.Db.UnitTests
 
             Assert.NotNull(spec);
             Assert.Contains("JOIN", spec.CommandText, StringComparison.OrdinalIgnoreCase);
-            Assert.Contains("ft_department", spec.CommandText);
+            Assert.Contains("st_department", spec.CommandText);
             Assert.Contains("ORDER BY", spec.CommandText, StringComparison.OrdinalIgnoreCase);
         }
 

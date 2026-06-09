@@ -67,7 +67,7 @@ namespace Bee.Repository.Factories
         }
 
         /// <summary>
-        /// Creates an <see cref="IDepartmentRepository"/> (per-company <c>ft_department</c> reader).
+        /// Creates an <see cref="IDepartmentRepository"/> (per-company <c>st_department</c> reader).
         /// </summary>
         public IDepartmentRepository CreateDepartmentRepository()
         {
@@ -83,7 +83,7 @@ namespace Bee.Repository.Factories
         }
 
         /// <summary>
-        /// Creates an <see cref="IEmployeeRepository"/> (per-company <c>ft_employee</c> reader).
+        /// Creates an <see cref="IEmployeeRepository"/> (per-company <c>st_employee</c> reader).
         /// </summary>
         public IEmployeeRepository CreateEmployeeRepository()
         {

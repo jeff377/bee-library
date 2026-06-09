@@ -14,7 +14,7 @@ namespace Bee.Db.UnitTests.Dml
         {
             var schema = new FormSchema("Employee", "Employee Form");
             var table = schema.Tables!.Add("Employee", "Employee");
-            table.DbTableName = "ft_employee";
+            table.DbTableName = "st_employee";
 
             // Auto-increment field — must be skipped.
             table.Fields!.Add(SysFields.No, "Sequence", FieldDbType.AutoIncrement);
@@ -159,7 +159,7 @@ namespace Bee.Db.UnitTests.Dml
 
             Assert.Equal(DbCommandKind.NonQuery, spec.Kind);
             Assert.Equal(
-                "UPDATE [ft_employee] SET [sys_name] = {0} WHERE [sys_rowid] = {1}",
+                "UPDATE [st_employee] SET [sys_name] = {0} WHERE [sys_rowid] = {1}",
                 spec.CommandText);
             Assert.Equal(2, spec.Parameters.Count);
             Assert.Equal("Bob", spec.Parameters[0].Value);
@@ -197,7 +197,7 @@ namespace Bee.Db.UnitTests.Dml
             var spec = builder.Build("Employee", row);
 
             Assert.Equal(
-                "UPDATE \"ft_employee\" SET \"sys_name\" = {0} WHERE \"sys_rowid\" = {1}",
+                "UPDATE \"st_employee\" SET \"sys_name\" = {0} WHERE \"sys_rowid\" = {1}",
                 spec.CommandText);
         }
 

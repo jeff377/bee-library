@@ -14,7 +14,7 @@ namespace Bee.Db.UnitTests.Dml
         {
             var schema = new FormSchema("Employee", "Employee Form");
             var table = schema.Tables!.Add("Employee", "Employee");
-            table.DbTableName = "ft_employee";
+            table.DbTableName = "st_employee";
 
             // Auto-increment system field — should be skipped.
             table.Fields!.Add(SysFields.No, "Sequence", FieldDbType.AutoIncrement);
@@ -92,7 +92,7 @@ namespace Bee.Db.UnitTests.Dml
 
             Assert.Equal(DbCommandKind.NonQuery, spec.Kind);
             Assert.Equal(
-                "INSERT INTO [ft_employee] ([sys_rowid], [sys_id], [sys_name]) VALUES ({0}, {1}, {2})",
+                "INSERT INTO [st_employee] ([sys_rowid], [sys_id], [sys_name]) VALUES ({0}, {1}, {2})",
                 spec.CommandText);
             Assert.Equal(3, spec.Parameters.Count);
             Assert.Equal(rowId, spec.Parameters[0].Value);
@@ -115,7 +115,7 @@ namespace Bee.Db.UnitTests.Dml
             var spec = builder.Build("Employee", row);
 
             Assert.Equal(
-                "INSERT INTO \"ft_employee\" (\"sys_rowid\", \"sys_id\", \"sys_name\") VALUES ({0}, {1}, {2})",
+                "INSERT INTO \"st_employee\" (\"sys_rowid\", \"sys_id\", \"sys_name\") VALUES ({0}, {1}, {2})",
                 spec.CommandText);
         }
 

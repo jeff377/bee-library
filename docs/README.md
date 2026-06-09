@@ -28,6 +28,7 @@ This directory contains the public-facing developer documentation for the Bee.NE
 | Document | Description |
 |----------|-------------|
 | [Database Naming Conventions](database-naming-conventions.md) | Naming rules for tables, columns, indexes, and system fields; cross-DB case sensitivity reference |
+| [Framework-Reserved Names](framework-reserved-names.md) | Registry of `st_*` system tables and reserved `progId`s owned by the framework |
 | [DatabaseSettings & DbCategorySettings Guide](database-settings-guide.md) | Structure, access patterns, and runtime behavior of the two database-related settings files |
 | [Database Schema Upgrade](database-schema-upgrade.md) | Schema upgrade workflow and strategy |
 

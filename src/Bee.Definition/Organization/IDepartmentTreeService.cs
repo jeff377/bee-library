@@ -2,7 +2,7 @@ namespace Bee.Definition.Organization
 {
     /// <summary>
     /// Access service for per-company department-tree snapshots: a cache fronting the company
-    /// database's <c>ft_department</c> table.
+    /// database's <c>st_department</c> table.
     /// </summary>
     public interface IDepartmentTreeService
     {

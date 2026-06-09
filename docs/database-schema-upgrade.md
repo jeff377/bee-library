@@ -36,7 +36,7 @@ public class MyService(ISystemRepositoryFactory repoFactory)
     {
         var repo = repoFactory.CreateDatabaseRepository();
         // Parameter order: databaseId (physical connection id), categoryId (logical category), tableName
-        return repo.UpgradeTableSchema("myDb", "common", "ft_employee");
+        return repo.UpgradeTableSchema("myDb", "common", "st_employee");
     }
 }
 ```
@@ -54,13 +54,13 @@ When you need finer control (dry-run, `UpgradeOptions`, structured diff), drop d
 var builder = new TableSchemaBuilder("myDb", defineAccess, connectionManager);
 
 // Get the structured diff (no execution); the first argument of subsequent methods is the categoryId
-TableSchemaDiff diff = builder.CompareToDiff("common", "ft_employee");
+TableSchemaDiff diff = builder.CompareToDiff("common", "st_employee");
 
 // Get the SQL that would be executed (no execution)
-string sql = builder.GetCommandText("common", "ft_employee");
+string sql = builder.GetCommandText("common", "st_employee");
 
 // Run the upgrade (UpgradeOptions is optional)
-bool upgraded = builder.Execute("common", "ft_employee", new UpgradeOptions
+bool upgraded = builder.Execute("common", "st_employee", new UpgradeOptions
 {
     AllowColumnNarrowing = true,
 });
@@ -111,7 +111,7 @@ It also carries `DescriptionChanges` (MS_Description / extended-property synchro
 [UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs) holds the `Mode` (`NoChange` / `Create` / `Alter` / `Rebuild`), the `Stages` (staged SQL), and `Warnings`. You can print the SQL directly:
 
 ```csharp
-var diff = builder.CompareToDiff("common", "ft_employee");
+var diff = builder.CompareToDiff("common", "st_employee");
 var plan = new TableUpgradeOrchestrator("myDb", connectionManager).Plan(diff);
 
 Console.WriteLine($"Mode: {plan.Mode}");
@@ -174,7 +174,7 @@ When the definition specifies a length / precision smaller than the current colu
 
 ```csharp
 var options = new UpgradeOptions { AllowColumnNarrowing = true };
-builder.Execute("myDb", "ft_employee", options);
+builder.Execute("myDb", "st_employee", options);
 ```
 
 > **When to enable**: you have already verified that existing data fits the new length (e.g. `SELECT MAX(LEN(col))`), or the column is brand-new with no data yet. **When not to enable**: for narrowing on a live business table, clean up the data first, then upgrade the schema.
@@ -282,7 +282,35 @@ If the dry-run shows a rebuild but downtime is unacceptable, consider:
 - Manual online schema change: run provider-specific SQL yourself, bypassing the Bee.NET upgrade
 - Run side by side: leave the old table untouched, build new functionality on a new table, retire the old one over time
 
-## 10. References
+## 10. Renaming framework tables
+
+> Manual rename DDL. Provided so deployments can match a framework rename release (e.g. the `ft_department` / `ft_employee` → `st_*` rename in the upcoming version) without losing data. Run against the **company database**.
+
+The framework's auto-upgrade pipeline never renames tables on its own (see §8 Unsupported Scenarios). When the framework changes a system-table name across releases, deployments that pre-created the old name must rename manually.
+
+### SQL Server / MySQL / Oracle / PostgreSQL
+
+```sql
+-- SQL Server
+EXEC sp_rename 'ft_department', 'st_department';
+EXEC sp_rename 'ft_employee',   'st_employee';
+
+-- MySQL
+RENAME TABLE ft_department TO st_department;
+RENAME TABLE ft_employee   TO st_employee;
+
+-- PostgreSQL
+ALTER TABLE ft_department RENAME TO st_department;
+ALTER TABLE ft_employee   RENAME TO st_employee;
+
+-- Oracle
+ALTER TABLE ft_department RENAME TO st_department;
+ALTER TABLE ft_employee   RENAME TO st_employee;
+```
+
+Indexes / foreign keys named after the old table prefix (e.g. `pk_ft_employee`) are left alone by `RENAME TABLE`; they keep working under the new table. The framework's index-name templates use `{0}` to bind to the table name at create time, so freshly-created indexes from now on will pick up `pk_st_employee` automatically.
+
+## 11. References
 
 ### Source files
 - [TableSchemaBuilder](../src/Bee.Db/Schema/TableSchemaBuilder.cs) — public entry point

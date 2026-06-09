@@ -13,7 +13,7 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
 
 設計時的硬性約束：
 
-1. **多租戶 per-company**：角色與授權是公司內配置，必然 per-company（與 `ft_employee` 同隔離）。
+1. **多租戶 per-company**：角色與授權是公司內配置，必然 per-company（與 `st_employee` 同隔離）。
 2. **判權限零 DB**：每個 API 請求都要判權限，不能每次查 DB——必須走記憶體快取 + session 快照。
 3. **與 form 解耦**（對齊 Odoo `ir.model.access` / `ir.rule`）：權限綁「業務實體（model）」不綁表單（progId）也不綁資料表／欄；一個 model 可被多個 progId 消費，授一次三功能生效。
 4. **安全邊界在後端**：前端送來的 payload 不可信，授權判定不能依賴 client 提供的值。
@@ -51,7 +51,7 @@ Bee.NET 原本只有**身分驗證**（[ADR-012](adr-012-session-company-context
   - `Own` = owner 欄 `IN {UserRowId, EmployeeRowId}`（**二身分**：欄可能存 user rowid〔如登打者〕或 employee rowid〔如請假人員〕，Guid 不碰撞、單一策略涵蓋；user 未必對應 employee）。
   - `Dept` = `dept 欄 = DeptRowId` **OR Own**（隱含 Own）。
   - `DeptAndSub` = `dept 欄 IN GetSelfAndDescendants(DeptRowId)` **OR Own**，用 per-company `DepartmentTree` 快取展開。
-- **「user → 部門」零 DB**：`ft_employee.user_rowid` 連結 common `st_user` ↔ company `ft_employee`；`EnterCompany` 一次性解析 `user→employee→dept`，把 `UserRowId`/`EmployeeRowId`/`DeptRowId` **快照進 `SessionInfo`**，查詢時零 DB。
+- **「user → 部門」零 DB**：`st_employee.user_rowid` 連結 common `st_user` ↔ company `st_employee`；`EnterCompany` 一次性解析 `user→employee→dept`，把 `UserRowId`/`EmployeeRowId`/`DeptRowId` **快照進 `SessionInfo`**，查詢時零 DB。
 - **讀取端**：`GetList`/`GetData` 把 scope filter `AND` 進查詢（越範圍列被過濾 / 越範圍單列回 `null`，與「查無」不可區分）。
 - **寫入端（Update / Delete）= 後端權威 re-query**：對 target rowId 下 `sys_rowid = id AND scope` 的存在性查詢（`ExistsInScope`），確認 **DB 那筆**在範圍內——**不評估 client 送來的列值**（偽造 payload relabel 也繞不過）。`Save` 先判主表列為「既存記錄存檔」（非 `Added`）才查；`Delete` 越範圍 → 刪 0、不 cascade。
 - **Create 不套 scope**：新列無「既存範圍」可違反，由動作授權（層一）把關。

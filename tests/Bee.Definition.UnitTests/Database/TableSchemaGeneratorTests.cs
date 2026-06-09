@@ -52,13 +52,13 @@ namespace Bee.Definition.UnitTests.Database
         public void Generate_DbTableNameSpecified_UsesDbTableName()
         {
             // Arrange
-            var formTable = BuildFormTable(dbTableName: "ft_employee");
+            var formTable = BuildFormTable(dbTableName: "st_employee");
 
             // Act
             var schema = TableSchemaGenerator.Generate(formTable);
 
             // Assert
-            Assert.Equal("ft_employee", schema.TableName);
+            Assert.Equal("st_employee", schema.TableName);
         }
 
         [Fact]
@@ -156,7 +156,7 @@ namespace Bee.Definition.UnitTests.Database
             Assert.Contains(schema.Indexes!, idx => idx.IndexFields!.Contains("dept_rowid") && !idx.Unique);
         }
 
-        private static FormTable BuildFormTable(string dbTableName = "ft_employee")
+        private static FormTable BuildFormTable(string dbTableName = "st_employee")
         {
             var formTable = new FormTable("Employee", "員工") { DbTableName = dbTableName };
             formTable.Fields!.Add(SysFields.No, "流水號", FieldDbType.AutoIncrement);

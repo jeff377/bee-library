@@ -36,7 +36,7 @@ public class MyService(ISystemRepositoryFactory repoFactory)
     {
         var repo = repoFactory.CreateDatabaseRepository();
         // 參數順序：databaseId（實體連線識別）、categoryId（邏輯分類）、tableName
-        return repo.UpgradeTableSchema("myDb", "common", "ft_employee");
+        return repo.UpgradeTableSchema("myDb", "common", "st_employee");
     }
 }
 ```
@@ -54,13 +54,13 @@ public class MyService(ISystemRepositoryFactory repoFactory)
 var builder = new TableSchemaBuilder("myDb", defineAccess, connectionManager);
 
 // 取得結構化 diff（不執行）；後續方法的第一參數為 categoryId
-TableSchemaDiff diff = builder.CompareToDiff("common", "ft_employee");
+TableSchemaDiff diff = builder.CompareToDiff("common", "st_employee");
 
 // 取得即將執行的 SQL（不執行）
-string sql = builder.GetCommandText("common", "ft_employee");
+string sql = builder.GetCommandText("common", "st_employee");
 
 // 執行升級（可選傳 UpgradeOptions）
-bool upgraded = builder.Execute("common", "ft_employee", new UpgradeOptions
+bool upgraded = builder.Execute("common", "st_employee", new UpgradeOptions
 {
     AllowColumnNarrowing = true,
 });
@@ -111,7 +111,7 @@ bool upgraded = builder.Execute("common", "ft_employee", new UpgradeOptions
 [UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs) 含 `Mode`（`NoChange` / `Create` / `Alter` / `Rebuild`）、`Stages`（分階段 SQL）與 `Warnings`。可直接列印 SQL：
 
 ```csharp
-var diff = builder.CompareToDiff("common", "ft_employee");
+var diff = builder.CompareToDiff("common", "st_employee");
 var plan = new TableUpgradeOrchestrator("myDb", connectionManager).Plan(diff);
 
 Console.WriteLine($"Mode: {plan.Mode}");
@@ -174,7 +174,7 @@ public class UpgradeOptions
 
 ```csharp
 var options = new UpgradeOptions { AllowColumnNarrowing = true };
-builder.Execute("myDb", "ft_employee", options);
+builder.Execute("myDb", "st_employee", options);
 ```
 
 > **何時該開啟**：你已經確認 DB 現有資料在新長度內（可預先 `SELECT MAX(LEN(col))` 驗證），或欄位剛建立還沒有資料。**何時不該開啟**：對線上業務表的縮減，先做資料修整再升級 schema。
@@ -282,7 +282,35 @@ if (plan.Mode == UpgradeExecutionMode.Rebuild)
 - 手動 online schema change：依 DB provider 能力自行下 SQL，跳過 Bee.NET 自動升級
 - 業務雙跑：暫不修改舊表，新功能用新表，舊表自然汰換
 
-## 10. 參考
+## 10. 框架表改名
+
+> 手動 rename DDL。供已落地部署在框架表名改版時（如下一版的 `ft_department` / `ft_employee` → `st_*`）對應 rename 不掉資料。對**公司資料庫**執行。
+
+框架的自動升級管線不會自動 rename 表（見 §8 不支援情境）。當跨版本框架改了系統表名稱，已預先建好舊名表的部署需手動 rename。
+
+### SQL Server / MySQL / Oracle / PostgreSQL
+
+```sql
+-- SQL Server
+EXEC sp_rename 'ft_department', 'st_department';
+EXEC sp_rename 'ft_employee',   'st_employee';
+
+-- MySQL
+RENAME TABLE ft_department TO st_department;
+RENAME TABLE ft_employee   TO st_employee;
+
+-- PostgreSQL
+ALTER TABLE ft_department RENAME TO st_department;
+ALTER TABLE ft_employee   RENAME TO st_employee;
+
+-- Oracle
+ALTER TABLE ft_department RENAME TO st_department;
+ALTER TABLE ft_employee   RENAME TO st_employee;
+```
+
+附帶舊表名前綴的 index / foreign key（如 `pk_ft_employee`）在 `RENAME TABLE` 後維持原名照常運作；框架的 index 名稱樣板以 `{0}` 綁定建表當下的表名，未來新建的 index 會自動帶上 `pk_st_employee`。
+
+## 11. 參考
 
 ### 原始檔
 - [TableSchemaBuilder](../src/Bee.Db/Schema/TableSchemaBuilder.cs) — 對外入口

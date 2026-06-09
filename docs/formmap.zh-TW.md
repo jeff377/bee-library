@@ -140,7 +140,7 @@ var command = builder.BuildSelect("Project", "sys_id,sys_name", filter);
 ```sql
 SELECT A.[sys_id], A.[sys_name]
 FROM [ft_project] A
-LEFT JOIN [ft_employee] B ON A.[pm_rowid] = B.[sys_rowid]
+LEFT JOIN [st_employee] B ON A.[pm_rowid] = B.[sys_rowid]
 WHERE B.[sys_name] LIKE @p0
 ```
 
@@ -160,8 +160,8 @@ var command = builder.BuildSelect("Project", "sys_id,sys_name", null, sortFields
 ```sql
 SELECT A.[sys_id], A.[sys_name]
 FROM [ft_project] A
-LEFT JOIN [ft_employee] B ON A.[pm_rowid] = B.[sys_rowid]
-LEFT JOIN [ft_department] C ON B.[dept_rowid] = C.[sys_rowid]
+LEFT JOIN [st_employee] B ON A.[pm_rowid] = B.[sys_rowid]
+LEFT JOIN [st_department] C ON B.[dept_rowid] = C.[sys_rowid]
 ORDER BY C.[sys_name] ASC
 ```
 
@@ -180,9 +180,9 @@ SELECT A.[sys_id], A.[sys_name],
        B.[sys_name] AS [ref_owner_dept_name],
        D.[sys_name] AS [ref_pm_dept_name]
 FROM [ft_project] A
-LEFT JOIN [ft_department] B ON A.[owner_dept_rowid] = B.[sys_rowid]
-LEFT JOIN [ft_employee]   C ON A.[pm_rowid]         = C.[sys_rowid]
-LEFT JOIN [ft_department] D ON C.[dept_rowid]       = D.[sys_rowid]
+LEFT JOIN [st_department] B ON A.[owner_dept_rowid] = B.[sys_rowid]
+LEFT JOIN [st_employee]   C ON A.[pm_rowid]         = C.[sys_rowid]
+LEFT JOIN [st_department] D ON C.[dept_rowid]       = D.[sys_rowid]
 ```
 
 兩個參考欄位走不同的 `FormSchema` 鏈，FormMap 自動建立分支 JOIN。
@@ -204,7 +204,7 @@ var command = builder.BuildSelect("Project", "sys_id,sys_name", filterGroup, sor
 ```sql
 SELECT A.[sys_id], A.[sys_name]
 FROM [ft_project] A
-LEFT JOIN [ft_employee] B ON A.[pm_rowid] = B.[sys_rowid]
+LEFT JOIN [st_employee] B ON A.[pm_rowid] = B.[sys_rowid]
 WHERE (A.[sys_name] LIKE @p0 AND B.[sys_name] = @p1)
 ORDER BY A.[sys_id] ASC
 ```

@@ -40,7 +40,7 @@ namespace Bee.Repository.Abstractions.Factories
         IRolePermissionRepository CreateRolePermissionRepository();
 
         /// <summary>
-        /// Creates an <see cref="IDepartmentRepository"/> (per-company <c>ft_department</c> reader).
+        /// Creates an <see cref="IDepartmentRepository"/> (per-company <c>st_department</c> reader).
         /// </summary>
         IDepartmentRepository CreateDepartmentRepository();
 
@@ -50,7 +50,7 @@ namespace Bee.Repository.Abstractions.Factories
         IUserRepository CreateUserRepository();
 
         /// <summary>
-        /// Creates an <see cref="IEmployeeRepository"/> (per-company <c>ft_employee</c> reader).
+        /// Creates an <see cref="IEmployeeRepository"/> (per-company <c>st_employee</c> reader).
         /// </summary>
         IEmployeeRepository CreateEmployeeRepository();
     }

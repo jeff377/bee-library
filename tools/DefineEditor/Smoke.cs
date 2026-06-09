@@ -386,7 +386,7 @@ internal static class Smoke
         var target = Path.Combine(tempDir, "Employee.TableSchema.xml");
         try
         {
-            var root = new TableSchema { TableName = "ft_employee", DisplayName = "員工" };
+            var root = new TableSchema { TableName = "st_employee", DisplayName = "員工" };
             root.Fields!.Add(new DbField("sys_no", "流水號", FieldDbType.AutoIncrement));
             root.Fields!.Add(new DbField("sys_id", "員工編號", FieldDbType.String) { Length = 30 });
             var pk = new DbTableIndex { Name = "PK_employee", PrimaryKey = true, Unique = true };

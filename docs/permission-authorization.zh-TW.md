@@ -84,10 +84,10 @@ INSERT INTO st_role_grant (role_id, model_id, action, scope) VALUES
 
 ## 4. 連結使用者與員工（部門 scope 需要）
 
-部門／擁有者 scope 需解析**當前使用者 → 所屬部門**。使用者（`st_user`，common DB）透過 `ft_employee.user_rowid` 連到員工（`ft_employee`，company DB）：
+部門／擁有者 scope 需解析**當前使用者 → 所屬部門**。使用者（`st_user`，common DB）透過 `st_employee.user_rowid` 連到員工（`st_employee`，company DB）：
 
 ```
-st_user.sys_rowid  ──(ft_employee.user_rowid)──▶  ft_employee  ──(dept_rowid)──▶  ft_department
+st_user.sys_rowid  ──(st_employee.user_rowid)──▶  st_employee  ──(dept_rowid)──▶  st_department
 ```
 
 `EnterCompany` 時框架一次性解析 `user → employee → 部門`，把 `UserRowId`、`EmployeeRowId`、`DeptRowId` 快照進 session，之後 scope 過濾零 DB。未綁員工的使用者其 employee/部門為空——`Own` 仍會比對 `UserRowId`，`Dept`/`DeptAndSub` 則不匹配任何列（fail-closed）。

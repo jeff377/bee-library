@@ -99,7 +99,7 @@ namespace Bee.Definition.Identity
         public Guid UserRowId { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// Gets or sets the current user's linked employee row id (<c>ft_employee.sys_rowid</c>) in
+        /// Gets or sets the current user's linked employee row id (<c>st_employee.sys_rowid</c>) in
         /// the entered company.
         /// </summary>
         /// <remarks>
@@ -110,7 +110,7 @@ namespace Bee.Definition.Identity
         public Guid EmployeeRowId { get; set; } = Guid.Empty;
 
         /// <summary>
-        /// Gets or sets the current user's department row id (<c>ft_employee.dept_rowid</c>) in the
+        /// Gets or sets the current user's department row id (<c>st_employee.dept_rowid</c>) in the
         /// entered company.
         /// </summary>
         /// <remarks>

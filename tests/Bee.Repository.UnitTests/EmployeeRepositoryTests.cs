@@ -8,7 +8,7 @@ using Bee.Tests.Shared;
 namespace Bee.Repository.UnitTests
 {
     /// <summary>
-    /// EmployeeRepository 的 5 DB round-trip 測試：在 company DB insert ft_employee
+    /// EmployeeRepository 的 5 DB round-trip 測試：在 company DB insert st_employee
     /// （含 user_rowid / dept_rowid 連結），驗證 GetByUserRowId 查回對應員工、未知 user 回 null。
     /// </summary>
     public class EmployeeRepositoryTests : IClassFixture<SharedDbFixture>
@@ -29,7 +29,7 @@ namespace Bee.Repository.UnitTests
             var deptRowId = Guid.NewGuid();
             var empId = string.Concat("EMP_", Guid.NewGuid().ToString("N").AsSpan(0, 6));
 
-            string tbl = dbType.QuoteIdentifier("ft_employee");
+            string tbl = dbType.QuoteIdentifier("st_employee");
             string colRowId = dbType.QuoteIdentifier("sys_rowid");
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");

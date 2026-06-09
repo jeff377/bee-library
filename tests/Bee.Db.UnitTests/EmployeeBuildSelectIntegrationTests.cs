@@ -87,7 +87,7 @@ namespace Bee.Db.UnitTests
                 InsertEmployee(db, employeeSchema, dbType, empARowId, $"EA{runId}", "員工A", deptARowId);
                 InsertEmployee(db, employeeSchema, dbType, empBRowId, $"EB{runId}", "員工B", deptBRowId);
 
-                // 用 ref_dept_id 篩選（必須透過 JOIN 到 ft_department）
+                // 用 ref_dept_id 篩選（必須透過 JOIN 到 st_department）
                 var spec = new SelectCommandBuilder(employeeSchema, dbType, Access)
                     .Build("Employee",
                         "sys_id,sys_name,ref_dept_id",
@@ -128,7 +128,7 @@ namespace Bee.Db.UnitTests
                 InsertEmployee(db, employeeSchema, dbType, empInZRowId, $"EZ{runId}", "員工Z", deptZRowId);
                 InsertEmployee(db, employeeSchema, dbType, empInARowId, $"EA{runId}", "員工A", deptARowId);
 
-                // 以 ref_dept_name 升冪排序（需 JOIN 到 ft_department）
+                // 以 ref_dept_name 升冪排序（需 JOIN 到 st_department）
                 // 加 filter 限制範圍以避免被其他測試殘餘資料干擾
                 var filter = FilterGroup.Any(
                     FilterCondition.Equal("sys_rowid", empInZRowId),
