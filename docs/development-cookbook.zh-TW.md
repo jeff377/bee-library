@@ -552,6 +552,28 @@ await builder.Build().RunAsync();
 
 > ⚠️ **`Bee.Web.Blazor.Wasm` 嚴禁相依任何後端組件**（`Bee.Repository` / `Bee.Business` / `Bee.Hosting` 等）—— Browser 執行環境無法載入 server-only 組件。此約束由相依鏈強制（`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` 全為純資料 / 協定層）。
 
+### Avalonia 桌面（Bee.UI.Avalonia）
+
+`Bee.UI.Avalonia` 歸 **`Bee.UI.*` family**，所以連 API 的方式與「桌面端」章節相同 —— 透過 `ClientInfo` static singleton，per-process 一個 token。
+
+內含 FormSchema 驅動控制項（`DynamicForm` + `DynamicGrid` + `FormView` + `FormDataObject`）與檔案後端 `FileEndpointStorage`（endpoint 落在 `Environment.SpecialFolder.LocalApplicationData/<appName>/endpoint.txt`）。單一 `net10.0` TFM；下限版本鎖在 `Avalonia 12.0.0` + `Avalonia.Controls.DataGrid 12.0.0`（後者目前 stable 最高就是 12.0.0），host 可以透過 transitive 帶更新的 12.0.x。
+
+```csharp
+// Avalonia host bootstrap — EndpointStorage 必須在任何 UI 控件 instantiate 前 wire 好。
+public static void Main(string[] args)
+{
+    ApiClientInfo.ApiKey = "my-app";
+    ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
+    ClientInfo.EndpointStorage = new FileEndpointStorage("MyApp");
+
+    BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+}
+```
+
+`FormView` 在 host 只設 `ProgId` 時自動向 `ClientInfo` 取得 `Schema` / `FormConnector` / `AccessToken`，鏡像 MAUI `FormPage` 的 fallback。`DynamicGrid` 內的 Avalonia `DataGrid` 走 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch（**不**走 `Binding "[FieldName]"`），原因詳見 [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md)。
+
+實際範例：[`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.zh-TW.md)。
+
 ### MAUI（Bee.UI.Maui）
 
 `Bee.UI.Maui` 歸 **`Bee.UI.*` family**，所以連 API 的方式與「桌面端」章節相同 —— 透過 `ClientInfo` static singleton。
@@ -562,7 +584,7 @@ Phase 1 已交付首版 FormSchema 驅動控制項（`DynamicForm` + `FormDataOb
 
 | 前端 | 連線抽象 | Token 承載 | Endpoint 持久化 | 模式 | 註冊方式 |
 |------|---------|-----------|---------------|------|---------|
-| 桌面端（MAUI / WinForms） | `ClientInfo` static | **1 個使用者 / process**（`ClientInfo._accessToken` static） | 本機檔案 + `IEndpointStorage` | Local 或 Remote | 啟動時 `ClientInfo.Initialize` |
+| 桌面端（Avalonia / MAUI / WinForms） | `ClientInfo` static | **1 個使用者 / process**（`ClientInfo._accessToken` static） | 本機檔案 + `IEndpointStorage` | Local 或 Remote | 啟動時 `ClientInfo.Initialize` |
 | Blazor Server | DI scope | **N 個使用者 / process**（per SignalR circuit） | appsettings / 啟動注入 | Local 或 Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
 | Blazor WASM | DI scope | 1 個使用者 / WASM heap | localStorage / JS interop | **強制 Remote** | `AddBeeWebBlazorWasm` + HttpClient |
 

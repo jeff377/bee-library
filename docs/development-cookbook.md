@@ -552,6 +552,28 @@ await builder.Build().RunAsync();
 
 > ⚠️ **`Bee.Web.Blazor.Wasm` must not depend on any backend project** (`Bee.Repository` / `Bee.Business` / `Bee.Hosting`, etc.) — the browser runtime cannot load server-only assemblies. The constraint is enforced by the dependency chain (`Bee.Api.Client → Bee.Api.Core → Bee.Api.Contracts/Definition` are all pure data/protocol layers).
 
+### Avalonia desktop (Bee.UI.Avalonia)
+
+`Bee.UI.Avalonia` belongs to the **`Bee.UI.*` family**, so its API-connection pattern matches the "Desktop" section above — through the `ClientInfo` static singleton with a per-process token model.
+
+Ships FormSchema-driven controls (`DynamicForm` + `DynamicGrid` + `FormView` + `FormDataObject`) plus a file-backed `FileEndpointStorage` (persists endpoint at `Environment.SpecialFolder.LocalApplicationData/<appName>/endpoint.txt`). Single `net10.0` TFM; lower-bound pins are `Avalonia 12.0.0` + `Avalonia.Controls.DataGrid 12.0.0` (latest stable for the DataGrid sub-package). Hosts may bring a newer `Avalonia 12.0.x` transitively.
+
+```csharp
+// Avalonia host bootstrap — wire EndpointStorage BEFORE any UI control instantiates.
+public static void Main(string[] args)
+{
+    ApiClientInfo.ApiKey = "my-app";
+    ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Remote;
+    ClientInfo.EndpointStorage = new FileEndpointStorage("MyApp");
+
+    BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+}
+```
+
+`FormView` resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host only sets `ProgId`, mirroring the MAUI `FormPage` fallback. The Avalonia `DataGrid` inside `DynamicGrid` uses `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch (not `Binding "[FieldName]"`) — see [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md) for why.
+
+Worked example: [`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.md).
+
 ### MAUI (Bee.UI.Maui)
 
 `Bee.UI.Maui` belongs to the **`Bee.UI.*` family**, so its API-connection pattern is the same as the "Desktop" section above — through the `ClientInfo` static singleton.
@@ -562,7 +584,7 @@ Phase 1 has shipped the first FormSchema-driven controls (`DynamicForm` + `FormD
 
 | Frontend | Connection abstraction | Token tenancy | Endpoint persistence | Mode | Registration |
 |---------|-----------------------|---------------|--------------------|------|-------------|
-| Desktop (MAUI / WinForms) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.Initialize` at startup |
+| Desktop (Avalonia / MAUI / WinForms) | `ClientInfo` static | **1 user / process** (`ClientInfo._accessToken` static) | Local file + `IEndpointStorage` | Local or Remote | `ClientInfo.Initialize` at startup |
 | Blazor Server | DI scope | **N users / process** (per SignalR circuit) | appsettings / startup injection | Local or Remote | `AddBeeFramework` + `AddBeeWebBlazorServer` |
 | Blazor WASM | DI scope | 1 user / WASM heap | localStorage / JS interop | **Remote only** | `AddBeeWebBlazorWasm` + `HttpClient` |
 

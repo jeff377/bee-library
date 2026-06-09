@@ -30,6 +30,8 @@ namespace Bee.UI.Avalonia.Controls
     /// the binding engine looks up CLR properties / typed indexers and never
     /// reaches <c>DataRowView.this[string]</c> — so cells silently render empty
     /// even though <see cref="DataGrid.ItemsSource"/> iterates the rows.
+    /// See docs/adr/adr-020-avalonia-datagrid-binding-strategy.md for the
+    /// full reasoning and trade-offs.
     /// </para>
     /// </remarks>
     public class DynamicGrid : UserControl

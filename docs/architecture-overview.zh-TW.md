@@ -142,7 +142,7 @@ FormSchema 更新
 |--|--|--|
 | 目的 | 通用 UI 描述語言 | 專為 ERP 制式表單設計 |
 | 複雜度 | 高，需處理所有 UI 場景 | 低，只描述 Master / Detail / Field 結構 |
-| 跨端 | 主要 WPF / MAUI | Web / Desktop / App 統一 |
+| 跨端 | 主要 WPF / MAUI / Avalonia | Web / Desktop / App 統一 |
 | 產生方式 | 手寫 | 從 FormSchema 自動推導，再微調 |
 
 ### ERP 制式版面模式
@@ -357,7 +357,7 @@ flowchart LR
 ```
 ┌──────────────────────────────────────────────────────┐
 │  View                                                │
-│  WinForms / Web (Blazor/React) / App (MAUI)         │  MVVM: View
+│  Avalonia / WinForms / Web (Blazor/React) / App (MAUI) │  MVVM: View
 ├──────────────────────────────────────────────────────┤
 │  ViewModel                                          │  MVVM: ViewModel
 │  （由 FormSchema 推導 binding 結構）                 │

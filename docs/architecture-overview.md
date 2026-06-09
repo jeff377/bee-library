@@ -143,7 +143,7 @@ The overlay is **two independent read-only layers, never merged**: the base pack
 |--|--|--|
 | Purpose | General-purpose UI description language | Designed specifically for standardized ERP forms |
 | Complexity | High; must handle all UI scenarios | Low; only describes Master / Detail / Field structure |
-| Cross-platform | Primarily WPF / MAUI | Unified across Web / Desktop / App |
+| Cross-platform | Primarily WPF / MAUI / Avalonia | Unified across Web / Desktop / App |
 | Generation | Hand-written | Auto-derived from FormSchema, then fine-tuned |
 
 ### Standardized ERP Layout Pattern
@@ -358,7 +358,7 @@ Common patterns discovered during each AnyCode customization can be distilled ba
 ```
 +------------------------------------------------------+
 |  View                                                |
-|  WinForms / Web (Blazor/React) / App (MAUI)         |  MVVM: View
+|  Avalonia / WinForms / Web (Blazor/React) / App (MAUI) |  MVVM: View
 +------------------------------------------------------+
 |  ViewModel                                           |  MVVM: ViewModel
 |  (binding structure derived from FormSchema)         |

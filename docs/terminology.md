@@ -291,11 +291,21 @@ The BeeNET framework automatically maintains the following system fields in all 
 
 | English | 中文 | Description |
 |---------|------|-------------|
-| `ClientInfo` | 用戶端資訊 | Static singleton that manages connection state (endpoint, AccessToken, UserInfo) and exposes `SystemApiConnector` / `CreateFormApiConnector` / `DefineAccess`. Designed for the "one process = one user" model (desktop / MAUI). **Must not be used in Blazor environments**, where multiple user circuits share a process |
-| `IEndpointStorage` | 端點儲存介面 | Abstraction for persisting the API endpoint (URL / settings) on the client side; default implementation stores in `{ExeName}.Settings.xml` |
-| `IUIViewService` | UI 視圖服務介面 | Host-supplied dialog service called when `ClientInfo.Initialize` needs to ask the user for the endpoint (`ShowApiConnect`); concrete implementation depends on the UI framework (MAUI ContentPage / WinForms Form, etc.) |
+| `ClientInfo` | 用戶端資訊 | Static singleton that manages connection state (endpoint, AccessToken, UserInfo) and exposes `SystemApiConnector` / `CreateFormApiConnector` / `DefineAccess`. Designed for the "one process = one user" model (Avalonia desktop / MAUI / native UI). **Must not be used in Blazor environments**, where multiple user circuits share a process |
+| `IEndpointStorage` | 端點儲存介面 | Abstraction for persisting the API endpoint (URL / settings) on the client side; default implementation stores in `{ExeName}.Settings.xml` (a `FileEndpointStorage` ships with `Bee.UI.Avalonia` for the per-user `LocalApplicationData` path) |
+| `IUIViewService` | UI 視圖服務介面 | Host-supplied dialog service called when `ClientInfo.Initialize` needs to ask the user for the endpoint (`ShowApiConnect`); concrete implementation depends on the UI framework (Avalonia Window / MAUI ContentPage / WinForms Form, etc.) |
 | `VersionInfo` | 版本資訊 | Version metadata reported by the client to the backend during handshake |
 | `SupportedConnectTypes` | 支援連線類型 | Flags controlling which connection modes (`Local` / `Remote` / `Both`) the host allows during `ClientInfo.Initialize` |
+
+### Avalonia Control Library (`Bee.UI.Avalonia`)
+
+| English | 中文 | Description |
+|---------|------|-------------|
+| `DynamicForm` | 動態表單 | Avalonia `UserControl` that renders the master section of a FormSchema-driven form at runtime |
+| `DynamicGrid` | 動態列表 | Avalonia `UserControl` that wraps `DataGrid` over `DataTable.DefaultView`; cell rendering goes through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` (see ADR-020) |
+| `FormView` | 表單檢視 | Avalonia container that wires `DynamicGrid` (list) + `DynamicForm` (master) + toolbar (New / Save / Delete); resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host sets only `ProgId` |
+| `FormDataObject` | 表單資料物件 | The data-binding object bound by `DynamicForm` / `DynamicGrid` / `FormView`, carrying the underlying `DataSet` and form-level state |
+| `FileEndpointStorage` | 檔案端點儲存 | File-backed `IEndpointStorage` implementation that persists the API endpoint to `LocalApplicationData/<appName>/endpoint.txt` |
 
 ### MAUI Control Library (`Bee.UI.Maui`)
 

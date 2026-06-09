@@ -291,11 +291,21 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
-| `ClientInfo` | 用戶端資訊 | Static singleton，管理連線狀態（endpoint、AccessToken、UserInfo），提供 `SystemApiConnector` / `CreateFormApiConnector` / `DefineAccess`。設計給「一個 process = 一個使用者」模型（桌面 / MAUI）。**禁止用於 Blazor 環境**，後者一個 process 服務多個 user circuit |
-| `IEndpointStorage` | 端點儲存介面 | 抽象 API endpoint（URL / 設定）的用戶端持久化機制；預設實作存於 `{ExeName}.Settings.xml` |
-| `IUIViewService` | UI 視圖服務介面 | 由宿主提供的 dialog service，當 `ClientInfo.Initialize` 需要詢問使用者 endpoint 時呼叫（`ShowApiConnect`）；具體實作依 UI 框架而定（MAUI ContentPage / WinForms Form 等） |
+| `ClientInfo` | 用戶端資訊 | Static singleton，管理連線狀態（endpoint、AccessToken、UserInfo），提供 `SystemApiConnector` / `CreateFormApiConnector` / `DefineAccess`。設計給「一個 process = 一個使用者」模型（Avalonia 桌面 / MAUI / native UI）。**禁止用於 Blazor 環境**，後者一個 process 服務多個 user circuit |
+| `IEndpointStorage` | 端點儲存介面 | 抽象 API endpoint（URL / 設定）的用戶端持久化機制；預設實作存於 `{ExeName}.Settings.xml`（`Bee.UI.Avalonia` 內附 `FileEndpointStorage`，存於 per-user `LocalApplicationData` 路徑） |
+| `IUIViewService` | UI 視圖服務介面 | 由宿主提供的 dialog service，當 `ClientInfo.Initialize` 需要詢問使用者 endpoint 時呼叫（`ShowApiConnect`）；具體實作依 UI 框架而定（Avalonia Window / MAUI ContentPage / WinForms Form 等） |
 | `VersionInfo` | 版本資訊 | 用戶端在與後端建立連線時回報的版本 metadata |
 | `SupportedConnectTypes` | 支援連線類型 | 控制 `ClientInfo.Initialize` 允許哪些連線模式（`Local` / `Remote` / `Both`）的 Flags |
+
+### Avalonia 控制項套件（`Bee.UI.Avalonia`）
+
+| 英文名稱 | 中文名稱 | 說明 |
+|----------|----------|------|
+| `DynamicForm` | 動態表單 | Avalonia `UserControl`，依 FormSchema 在執行時動態渲染 master 區的表單 |
+| `DynamicGrid` | 動態列表 | Avalonia `UserControl`，包裝 `DataGrid` 接 `DataTable.DefaultView`；cell 顯示走 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>`（詳見 ADR-020） |
+| `FormView` | 表單檢視 | Avalonia 容器，串 `DynamicGrid`（列表） + `DynamicForm`（master） + toolbar（New / Save / Delete）；host 只設 `ProgId` 時，自動向 `ClientInfo` 取 `Schema` / `FormConnector` / `AccessToken` |
+| `FormDataObject` | 表單資料物件 | `DynamicForm` / `DynamicGrid` / `FormView` 綁定的資料物件，承載底層 `DataSet` 與表單層級狀態 |
+| `FileEndpointStorage` | 檔案端點儲存 | 檔案後端的 `IEndpointStorage` 實作；endpoint 落在 `LocalApplicationData/<appName>/endpoint.txt` |
 
 ### MAUI 控制項套件（`Bee.UI.Maui`）
 
