@@ -16,6 +16,8 @@
 - **框架預設定義檔已以 embedded resource 形式 ship 在 `Bee.Definition.dll` 內**——所有 `st_*` `TableSchema` XML（11 檔）、框架預設 `Department` / `Employee` 的 `FormSchema` / `FormLayout` / `Language` 資源、精簡版 `DbCategorySettings.xml`（只宣告 11 張系統表）、保守 production 預設的 `SystemSettings.xml` template、空殼 `DatabaseSettings.xml` 一律住在 `src/Bee.Definition/Defaults/` 並以 `Bee.Definition.Defaults/{相對路徑}` manifest naming 嵌入 assembly。Master 副本從 `tests/Define/` 搬出——後者只保留測試專屬 fixture（`ft_project`、`PermGateForm`、`Project`、測試專用的 `SystemSettings` / `DatabaseSettings` / 擴展版 `DbCategorySettings`）。
 - **`Bee.Definition.Defaults` API**——存取 embedded 框架預設的公開方法：`Defaults.MaterializeTo(path, options)` 把所有 embedded 檔寫入指定目錄（預設 skip-existing，消費者客製不會被覆蓋）、`Defaults.ListEmbedded()` 列出相對路徑、`Defaults.OpenEmbedded(relativePath)` 取單一檔的 stream。Runtime `IDefineStorage` 不變——仍只讀 `DefinePath` 內的檔；embedded 預設只透過此 API 一次性匯出使用（通常由 CLI / 開發工具在 setup 階段呼叫）。
 - **`TestProcessBootstrap.SharedDefinePath`**——process-wide 合併後的 define 目錄（test-specific fixture + 首次呼叫時物化的框架預設）。`BeeTestFixture` 預設的 `DefinePath` 改指向這個目錄而非 `tests/Define/`，讓測試能透明地解析兩層內容。
+- **`Bee.Cli` dotnet tool（`dotnet bee`）**——框架級 CLI；本版 ship 出 `defines` subcommand group，用於 materialize / list embedded 框架預設。安裝：`dotnet tool install -g Bee.Cli`；用法：`dotnet bee defines materialize --path ./Define [--overwrite] [--filter <prefix>]`、`dotnet bee defines list`、`dotnet bee --version`。版本與框架 lock-step，`nuget-publish.yml` workflow 在 tag push 時連同其他套件一起 pack + push。保留 subcommand group（`schema` / `tenant` / `samples`）作為未來框架操作的命名 convention，本版尚未實作。
+- **DefineEditor 開啟資料夾時自動 materialize 框架預設**——使用者開啟 `DefinePath` 資料夾時，DefineEditor 在掃描 tree 之前呼叫 `Defaults.MaterializeTo(folder)`（skip-existing、in-process——與 CLI 走同一份程式碼）。有寫入時 status bar 顯示物化檔數。新消費者可直接開啟空資料夾即看到框架預設樹自動出現。
 
 ## [4.7.0]
 

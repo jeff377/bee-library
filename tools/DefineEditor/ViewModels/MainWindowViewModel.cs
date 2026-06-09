@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Bee.DefineEditor.Models;
 using Bee.DefineEditor.Services;
+using Bee.Definition;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -163,6 +164,12 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
+            // Materialise any missing framework-default define files into the
+            // opened folder before scanning. SkipExisting=true (the default)
+            // guarantees consumer customisations are never overwritten — only
+            // files the consumer hasn't created yet get written.
+            var materialiseResult = Defaults.MaterializeTo(definePath, MaterializeOptions.Default);
+
             var root = DefinePathScanner.Scan(definePath);
             Nodes = new ObservableCollection<DefineNode> { root };
             Solution = SolutionContext.FromTree(root);
@@ -170,7 +177,11 @@ public partial class MainWindowViewModel : ViewModelBase
             ActiveDocument = null;
             SelectedNode = null;
             SolutionPath = definePath;
-            StatusText = L("Status_SolutionLoaded", Solution.AvailableProgIds.Count);
+
+            var loadedMsg = L("Status_SolutionLoaded", Solution.AvailableProgIds.Count);
+            StatusText = materialiseResult.WrittenCount > 0
+                ? $"{L("Status_FrameworkDefaultsMaterialised", materialiseResult.WrittenCount)} · {loadedMsg}"
+                : loadedMsg;
         }
         catch (Exception ex) when (ex is IOException or ArgumentException or UnauthorizedAccessException)
         {

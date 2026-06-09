@@ -50,6 +50,8 @@ jobs:
         dotnet build src/Bee.Repository/Bee.Repository.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj --configuration Release --no-restore /p:Version=$ver
+        # Framework CLI (dotnet tool) — lock-stepped to framework version.
+        dotnet build tools/Bee.Cli/Bee.Cli.csproj --configuration Release --no-restore /p:Version=$ver
 
     - name: Pack NuGet packages
       run: |
@@ -72,6 +74,8 @@ jobs:
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        # Framework CLI (dotnet tool).
+        dotnet pack tools/Bee.Cli/Bee.Cli.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
 
     - name: Push to NuGet
       env:
@@ -118,5 +122,6 @@ jobs:
           - Bee.Repository
           - Bee.Web.Blazor.Server
           - Bee.Web.Blazor.Wasm
+          - Bee.Cli (dotnet tool；安裝 `dotnet tool install -g Bee.Cli`，呼叫 `dotnet bee defines materialize ...`)
 
           如需安裝請至 NuGet.org 查詢對應版本。

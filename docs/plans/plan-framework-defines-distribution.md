@@ -1,12 +1,12 @@
 # 計畫：框架預設定義的存放與發送機制
 
-**狀態：🚧 進行中（2026-06-09）**
+**狀態：✅ 已完成（2026-06-09）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | Master copies 搬到 `src/Bee.Definition/Defaults/`、`<EmbeddedResource>` 嵌入、新增 `Bee.Definition.Defaults` 公開 API、測試 fixture 對應調整 | ✅ 已完成（2026-06-09） |
-| 2 | `tools/Bee.Cli/` console 專案（dotnet tool）— 框架級 CLI，`dotnet bee defines ...` 子命令呼叫 Phase 1 API | 📝 待做 |
-| 3 | DefineEditor 啟動時呼叫 `Defaults.MaterializeTo(...)`（直呼 API，不 subprocess） | 📝 待做 |
+| 2 | `tools/Bee.Cli/` console 專案（dotnet tool）— 框架級 CLI，`dotnet bee defines ...` 子命令呼叫 Phase 1 API | ✅ 已完成（2026-06-09） |
+| 3 | DefineEditor 啟動時呼叫 `Defaults.MaterializeTo(...)`（直呼 API，不 subprocess） | ✅ 已完成（2026-06-09） |
 
 ## 背景
 

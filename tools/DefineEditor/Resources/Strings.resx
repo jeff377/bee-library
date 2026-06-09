@@ -182,6 +182,7 @@
   <data name="Status_ValidationPassed" xml:space="preserve"><value>Validation passed: no issues found.</value></data>
   <data name="Status_ValidationCompleted" xml:space="preserve"><value>Validation completed: {0} issues ({1} errors / {2} warnings).</value></data>
   <data name="Status_SolutionLoaded" xml:space="preserve"><value>Loaded {0} FormSchemas</value></data>
+  <data name="Status_FrameworkDefaultsMaterialised" xml:space="preserve"><value>Materialised {0} framework default file(s)</value></data>
   <data name="Status_OpenSolutionFailed" xml:space="preserve"><value>Open failed: {0}</value></data>
   <data name="Status_PermissionRuleCovered" xml:space="preserve"><value>This model already covers every PermissionAction — no more rules to add.</value></data>
   <data name="Status_SingletonHint" xml:space="preserve"><value>(Property edits commit to memory on focus loss; Save (⌘S) refreshes the tree headers and writes back to XML.)</value></data>

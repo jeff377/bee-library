@@ -169,6 +169,7 @@
   <data name="Status_ValidationPassed" xml:space="preserve"><value>驗證通過：未發現任何問題。</value></data>
   <data name="Status_ValidationCompleted" xml:space="preserve"><value>驗證完成：{0} 個問題（{1} Error / {2} Warning）。</value></data>
   <data name="Status_SolutionLoaded" xml:space="preserve"><value>已載入 {0} 個 FormSchema</value></data>
+  <data name="Status_FrameworkDefaultsMaterialised" xml:space="preserve"><value>已物化 {0} 個框架預設檔</value></data>
   <data name="Status_OpenSolutionFailed" xml:space="preserve"><value>開啟失敗：{0}</value></data>
   <data name="Status_PermissionRuleCovered" xml:space="preserve"><value>此模型已涵蓋所有 PermissionAction，無法再新增 Rule。</value></data>
   <data name="Status_SingletonHint" xml:space="preserve"><value>（屬性編輯於離開欄位時寫入記憶體；按儲存（⌘S）會刷新樹節點顯示並寫回 XML）</value></data>

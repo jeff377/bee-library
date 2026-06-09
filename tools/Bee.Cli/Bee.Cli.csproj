@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Bee.Cli</RootNamespace>
+    <AssemblyName>dotnet-bee</AssemblyName>
+
+    <!-- dotnet tool packaging. Overrides tools/Directory.Build.props (IsPackable=false). -->
+    <IsPackable>true</IsPackable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>dotnet-bee</ToolCommandName>
+    <PackageId>Bee.Cli</PackageId>
+    <PackageOutputPath>../../nupkgs</PackageOutputPath>
+
+    <!--
+      Version lock-stepped with the framework (src/Directory.Build.props). nuget-publish.yml
+      overrides via /p:Version=<tag> at release time, so this hardcoded value is the
+      local-development default only. Bump whenever bumping src/Directory.Build.props.
+    -->
+    <Version>4.7.0</Version>
+    <AssemblyVersion>4.7.0.0</AssemblyVersion>
+    <FileVersion>4.7.0.0</FileVersion>
+
+    <!-- Package metadata (lock-stepped with src/Directory.Build.props). -->
+    <Company>Bee.NET</Company>
+    <Authors>Bee.NET</Authors>
+    <Product>Bee.NET</Product>
+    <Copyright>© Bee.NET. All rights reserved.</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/jeff377/bee-library</PackageProjectUrl>
+
+    <Description>Bee.NET framework CLI. Currently ships the `defines` subcommand group for materialising / listing framework default define files (TableSchema / FormSchema / FormLayout / Language / SystemSettings / DatabaseSettings) shipped as embedded resources by Bee.Definition.</Description>
+    <PackageTags>bee.net;cli;dotnet-tool;defines</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- ProjectReference works for dotnet tool packaging: referenced DLLs are included in the tool package. -->
+    <ProjectReference Include="..\..\src\Bee.Definition\Bee.Definition.csproj" />
+  </ItemGroup>
+
+</Project>
