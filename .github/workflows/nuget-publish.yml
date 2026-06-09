@@ -40,6 +40,7 @@ jobs:
         dotnet build src/Bee.Business/Bee.Business.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --no-restore /p:Version=$ver
+        dotnet build src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.UI.Maui/Bee.UI.Maui.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --no-restore /p:Version=$ver
         dotnet build src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --no-restore /p:Version=$ver
@@ -61,6 +62,7 @@ jobs:
         dotnet pack src/Bee.Business/Bee.Business.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Api.Client/Bee.Api.Client.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
+        dotnet pack src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.UI.Maui/Bee.UI.Maui.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Api.Contracts/Bee.Api.Contracts.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
         dotnet pack src/Bee.Api.Core/Bee.Api.Core.csproj --configuration Release --output ./nupkgs --no-build /p:Version=$ver
@@ -106,6 +108,7 @@ jobs:
           - Bee.Business
           - Bee.Api.Client
           - Bee.UI.Core
+          - Bee.UI.Avalonia
           - Bee.UI.Maui
           - Bee.Api.Contracts
           - Bee.Api.Core

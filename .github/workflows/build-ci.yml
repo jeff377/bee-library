@@ -207,6 +207,7 @@ jobs:
         dotnet pack src/Bee.Repository.Abstractions/Bee.Repository.Abstractions.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Repository/Bee.Repository.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.UI.Core/Bee.UI.Core.csproj --configuration Release --output ./nupkgs --no-build
+        dotnet pack src/Bee.UI.Avalonia/Bee.UI.Avalonia.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.UI.Maui/Bee.UI.Maui.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Web.Blazor.Server/Bee.Web.Blazor.Server.csproj --configuration Release --output ./nupkgs --no-build
         dotnet pack src/Bee.Web.Blazor.Wasm/Bee.Web.Blazor.Wasm.csproj --configuration Release --output ./nupkgs --no-build
