@@ -352,13 +352,35 @@ namespace Bee.UI.Maui.Controls
 
             try
             {
-                var response = await connector.GetListAsync().ConfigureAwait(true);
+                // FormSchema.ListFields drives the server-side SELECT fallback but does
+                // not include sys_rowid; the framework only adds sys_rowid as an
+                // invisible LayoutColumn on the client side. Explicitly prepend it to
+                // SelectFields so the wire response carries the identifier the grid's
+                // row-selection handler needs (without it row taps silently drop on
+                // the floor because TryGetRowId can't find the column).
+                var response = await connector.GetListAsync(ComputeSelectFields()).ConfigureAwait(true);
                 _grid.Rows = response.Table;
             }
             catch (Exception ex)
             {
                 ReportError(ex);
             }
+        }
+
+        private string ComputeSelectFields()
+        {
+            var schema = Schema;
+            if (schema is null) return string.Empty;
+
+            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { SysFields.RowId };
+            var parts = new List<string> { SysFields.RowId };
+            foreach (var name in (schema.ListFields ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmed = name.Trim();
+                if (trimmed.Length > 0 && seen.Add(trimmed))
+                    parts.Add(trimmed);
+            }
+            return string.Join(",", parts);
         }
 
         private async Task OnRowSelectedAsync(Guid rowId)

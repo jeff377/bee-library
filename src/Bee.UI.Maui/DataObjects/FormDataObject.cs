@@ -109,8 +109,19 @@ namespace Bee.UI.Maui.DataObjects
 
         /// <summary>
         /// Writes <paramref name="value"/> to the master row after coercing it to the
-        /// column's declared CLR type. An empty input becomes <see cref="DBNull"/>.
+        /// column's declared CLR type. An empty input falls back to the column default
+        /// (or <see cref="DBNull"/> when the column allows nulls).
         /// </summary>
+        /// <remarks>
+        /// Idempotent against initial-render echoes — MAUI / Avalonia controls fire
+        /// <c>TextChanged</c> once with the value the object initializer just set,
+        /// before the user has touched anything. Re-writing that echo would dirty the
+        /// row and, on NOT-NULL columns whose <see cref="DataColumn.DefaultValue"/>
+        /// is still <see cref="DBNull"/> (typical for tables that round-trip through
+        /// the wire and never went through <c>DataTableExtensions.AddColumn</c>),
+        /// raise <see cref="NoNullAllowedException"/> during <c>EndEdit</c>.
+        /// Comparing against the existing value first short-circuits both hazards.
+        /// </remarks>
         /// <param name="fieldName">The field (column) name.</param>
         /// <param name="value">The string value supplied by the bound input.</param>
         public void SetField(string fieldName, string? value)
@@ -122,7 +133,10 @@ namespace Bee.UI.Maui.DataObjects
             if (!row.Table.Columns.Contains(fieldName)) return;
 
             var column = row.Table.Columns[fieldName]!;
-            row[fieldName] = ConvertToColumnValue(value, column);
+            var newValue = ConvertToColumnValue(value, column);
+            if (Equals(newValue, row[fieldName])) return;
+
+            row[fieldName] = newValue;
             IsDirty = true;
         }
 
@@ -338,10 +352,18 @@ namespace Bee.UI.Maui.DataObjects
         {
             if (string.IsNullOrEmpty(value))
             {
-                // Schemas built by DataTableExtensions.AddColumn pin AllowDBNull=false for
-                // any FieldDbType that exposes a non-null default; respect that contract
-                // by falling back to the column default rather than forcing DBNull.
-                return column.AllowDBNull ? DBNull.Value : column.DefaultValue;
+                if (column.AllowDBNull) return DBNull.Value;
+
+                // Non-nullable column: prefer the column's own DefaultValue when it
+                // was properly seeded (DataTableExtensions.AddColumn pins this to a
+                // type-appropriate non-null for every FieldDbType). Server-side
+                // responses often arrive with raw ADO.NET columns whose DefaultValue
+                // is still DBNull — for those, synthesise a non-null fallback from
+                // the column's CLR type rather than writing DBNull into a NOT NULL
+                // column, which would raise NoNullAllowedException on EndEdit.
+                if (column.DefaultValue is not null && column.DefaultValue != DBNull.Value)
+                    return column.DefaultValue;
+                return ResolveEmptyValueForType(column.DataType);
             }
 
             var targetType = column.DataType;
@@ -355,6 +377,16 @@ namespace Bee.UI.Maui.DataObjects
                 return DateTime.Parse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeLocal);
 
             return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
+        }
+
+        private static object ResolveEmptyValueForType(Type targetType)
+        {
+            if (targetType == typeof(string)) return string.Empty;
+            if (targetType == typeof(Guid)) return Guid.Empty;
+            if (targetType == typeof(DateTime)) return DateTime.MinValue;
+            if (targetType == typeof(byte[])) return Array.Empty<byte>();
+            if (targetType.IsValueType) return Activator.CreateInstance(targetType)!;
+            return DBNull.Value;
         }
     }
 }
