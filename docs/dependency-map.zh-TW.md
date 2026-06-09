@@ -92,6 +92,18 @@ graph BT
 
 除 `Bee.Web.Blazor.Wasm` 需 `wasm-tools` workload 外，所有專案皆以 `net10.0` 單一目標發布。
 
+## 工具套件（獨立發行）
+
+不屬於上方 `src/` 套件相依圖——以 `dotnet tool` 全域工具形式 ship 在 NuGet：
+
+| 套件 | 命令 | 說明 |
+|------|------|------|
+| **Bee.Cli**（`tools/Bee.Cli/`） | `dotnet bee` | 框架 CLI。本版 ship 出 `defines` subcommand group。Reference `Bee.Definition` 呼叫其公開 `Defaults` API，處理 embedded 框架預設的 materialize / list。版本與框架 lock-step。 |
+
+同位於 `tools/` 但不上 NuGet：
+
+- **Bee.DefineEditor**（`tools/DefineEditor/`）—— Avalonia 桌面工具，可視覺化編輯九種定義類型。以 `.app` / `.exe` 形式對外發行而非套件或 dotnet tool。開啟資料夾時 in-process 呼叫 `Bee.Definition.Defaults.MaterializeTo(...)`。
+
 ## 架構要點
 
 - **Bee.Base** 為最底層基礎套件，無任何內部相依性。

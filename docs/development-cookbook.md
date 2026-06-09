@@ -40,7 +40,35 @@ Host package selection:
 - **Non-ASP.NET Core host** (WinForms / WPF / Console / Worker Service / integration tests): reference `Bee.Hosting` directly. No `Microsoft.AspNetCore.App` dependency. After `BuildServiceProvider()`, set `ApiClientInfo.LocalServiceProvider = sp` to enable `Bee.Api.Client`'s near-end (in-process) mode.
 
 Reference implementation: `tests/Bee.Tests.Shared/TestProcessBootstrap.cs` — applies
-the same flow for the test process with `tests/Define/` as the `DefinePath`.
+the same flow for the test process with `tests/Define/` (merged with the embedded
+framework defaults at process start) as the `DefinePath`.
+
+### First-time `DefinePath` setup
+
+Step 1 of the startup flow requires `DefinePath` to exist with the framework's
+minimum define files (`st_*` TableSchemas, `SystemSettings.xml`, `DatabaseSettings.xml`,
+`DbCategorySettings.xml`, framework-shipped Department / Employee forms). The
+framework ships these as embedded resources in `Bee.Definition.dll`; consumers
+materialise them once into the target directory before first run.
+
+```bash
+# install the framework CLI (one-time, machine-wide)
+dotnet tool install -g Bee.Cli
+
+# materialise framework defaults into your DefinePath
+dotnet bee defines materialize --path ./Define
+
+# tweak SystemSettings (set MasterKeySource) + DatabaseSettings (add connection strings)
+# then start the app — DefinePath is now wired up
+```
+
+The CLI is a thin shell over `Bee.Definition.Defaults.MaterializeTo(...)`; the
+same API is available programmatically for hosts that prefer to materialise from
+code, and `tools/DefineEditor` calls it automatically when you open a folder.
+Skip-existing is the default so re-running never overwrites your customisations.
+
+See [Framework-Reserved Names](framework-reserved-names.md) for the complete
+list of files and consumer extension guidelines.
 
 ## Request Processing Pipeline
 

@@ -67,6 +67,12 @@ For the full developer documentation index, see [docs/README.md](docs/README.md)
 | **Bee.Web.Blazor.Server.dll** | Razor Class Library (RCL) for Blazor Server hosts; provides DI-scoped connectors and Blazor components (`DynamicForm`, `FormDataObject`). |
 | **Bee.Web.Blazor.Wasm.dll** | Razor Class Library (RCL) for Blazor WebAssembly hosts; forced to `RemoteApiProvider`. Must not depend on any backend project. |
 
+### Tooling (dotnet tool)
+
+| Package | Install | Description |
+|---|---|---|
+| **Bee.Cli** | `dotnet tool install -g Bee.Cli` | Framework CLI invoked as `dotnet bee`. Currently ships the `defines` subcommand group for materialising / listing the framework default define files (`st_*` TableSchema, framework-shipped FormSchema / FormLayout / Language, SystemSettings / DatabaseSettings templates). Use to bootstrap a new consumer's `DefinePath` from the embedded resources in `Bee.Definition.dll`. |
+
 
 ## 🚀 Quick Start
 

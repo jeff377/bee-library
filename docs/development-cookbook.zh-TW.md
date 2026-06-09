@@ -39,7 +39,31 @@ ctor 注入解析，無靜態入口點（service locator）。
 - **非 ASP.NET Core 宿主**（WinForms / WPF / Console / Worker Service / 整合測試）：直接引用 `Bee.Hosting`，不會拖入 `Microsoft.AspNetCore.App`。`BuildServiceProvider()` 後設定 `ApiClientInfo.LocalServiceProvider = sp` 即可啟用 `Bee.Api.Client` 的近端（in-process）模式
 
 參考實作：`tests/Bee.Tests.Shared/TestProcessBootstrap.cs` — 以 `tests/Define/`
-作為 `DefinePath` 套用同一流程。
+（process 啟動時與 embedded 框架預設合併後的結果）作為 `DefinePath` 套用同一流程。
+
+### 首次 `DefinePath` 初始化
+
+啟動流程的第一步要求 `DefinePath` 已存在框架最小定義檔組（`st_*` TableSchema、
+`SystemSettings.xml`、`DatabaseSettings.xml`、`DbCategorySettings.xml`、框架預設
+的 Department / Employee 表單）。這些檔以 embedded resource 形式 ship 在
+`Bee.Definition.dll` 內；消費者首次啟動前 materialize 一次到目標目錄即可。
+
+```bash
+# 一次性安裝框架 CLI（per-machine）
+dotnet tool install -g Bee.Cli
+
+# materialize 框架預設到自家 DefinePath
+dotnet bee defines materialize --path ./Define
+
+# 編輯 SystemSettings（設 MasterKeySource）+ DatabaseSettings（補連線字串）
+# 然後啟動 app —— DefinePath 已就緒
+```
+
+CLI 是 `Bee.Definition.Defaults.MaterializeTo(...)` 的 thin shell；宿主想在
+code 內 materialize 可直接呼叫同一支 API，而 `tools/DefineEditor` 開啟資料夾時
+也會自動呼叫。預設 skip-existing，重跑不會蓋掉客製。
+
+完整檔案列表與消費者擴充指引見 [框架保留命名](framework-reserved-names.zh-TW.md)。
 
 ## 請求處理管線
 

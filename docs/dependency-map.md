@@ -92,6 +92,18 @@ graph BT
 
 All projects target `net10.0`. `Bee.Web.Blazor.Wasm` additionally requires the `wasm-tools` workload.
 
+## Tooling Packages (separately distributed)
+
+Not part of the `src/` library graph above — these ship as `dotnet tool` global tools on NuGet:
+
+| Package | Command | Description |
+|---------|---------|-------------|
+| **Bee.Cli** (`tools/Bee.Cli/`) | `dotnet bee` | Framework CLI. Currently ships the `defines` subcommand group. References `Bee.Definition` to call its public `Defaults` API for materialise / list operations on embedded framework defaults. Version-locked to the framework. |
+
+Also under `tools/` but not on NuGet:
+
+- **Bee.DefineEditor** (`tools/DefineEditor/`) — Avalonia desktop tool for visually editing the nine define types. Distributed as a downloadable `.app` / `.exe` rather than as a library or dotnet tool. Calls `Bee.Definition.Defaults.MaterializeTo(...)` in-process on folder open.
+
 ## Architectural Notes
 
 - **Bee.Base** is the lowest-level foundation package with no internal dependencies.
