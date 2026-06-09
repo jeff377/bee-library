@@ -36,7 +36,7 @@ public class MyService(ISystemRepositoryFactory repoFactory)
     {
         var repo = repoFactory.CreateDatabaseRepository();
         // Parameter order: databaseId (physical connection id), categoryId (logical category), tableName
-        return repo.UpgradeTableSchema("myDb", "common", "st_employee");
+        return repo.UpgradeTableSchema("myDb", "company", "st_employee");
     }
 }
 ```
@@ -54,13 +54,13 @@ When you need finer control (dry-run, `UpgradeOptions`, structured diff), drop d
 var builder = new TableSchemaBuilder("myDb", defineAccess, connectionManager);
 
 // Get the structured diff (no execution); the first argument of subsequent methods is the categoryId
-TableSchemaDiff diff = builder.CompareToDiff("common", "st_employee");
+TableSchemaDiff diff = builder.CompareToDiff("company", "st_employee");
 
 // Get the SQL that would be executed (no execution)
-string sql = builder.GetCommandText("common", "st_employee");
+string sql = builder.GetCommandText("company", "st_employee");
 
 // Run the upgrade (UpgradeOptions is optional)
-bool upgraded = builder.Execute("common", "st_employee", new UpgradeOptions
+bool upgraded = builder.Execute("company", "st_employee", new UpgradeOptions
 {
     AllowColumnNarrowing = true,
 });
@@ -111,7 +111,7 @@ It also carries `DescriptionChanges` (MS_Description / extended-property synchro
 [UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs) holds the `Mode` (`NoChange` / `Create` / `Alter` / `Rebuild`), the `Stages` (staged SQL), and `Warnings`. You can print the SQL directly:
 
 ```csharp
-var diff = builder.CompareToDiff("common", "st_employee");
+var diff = builder.CompareToDiff("company", "st_employee");
 var plan = new TableUpgradeOrchestrator("myDb", connectionManager).Plan(diff);
 
 Console.WriteLine($"Mode: {plan.Mode}");
@@ -174,7 +174,7 @@ When the definition specifies a length / precision smaller than the current colu
 
 ```csharp
 var options = new UpgradeOptions { AllowColumnNarrowing = true };
-builder.Execute("myDb", "st_employee", options);
+builder.Execute("company", "st_employee", options);
 ```
 
 > **When to enable**: you have already verified that existing data fits the new length (e.g. `SELECT MAX(LEN(col))`), or the column is brand-new with no data yet. **When not to enable**: for narrowing on a live business table, clean up the data first, then upgrade the schema.

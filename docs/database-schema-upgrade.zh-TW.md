@@ -36,7 +36,7 @@ public class MyService(ISystemRepositoryFactory repoFactory)
     {
         var repo = repoFactory.CreateDatabaseRepository();
         // 參數順序：databaseId（實體連線識別）、categoryId（邏輯分類）、tableName
-        return repo.UpgradeTableSchema("myDb", "common", "st_employee");
+        return repo.UpgradeTableSchema("myDb", "company", "st_employee");
     }
 }
 ```
@@ -54,13 +54,13 @@ public class MyService(ISystemRepositoryFactory repoFactory)
 var builder = new TableSchemaBuilder("myDb", defineAccess, connectionManager);
 
 // 取得結構化 diff（不執行）；後續方法的第一參數為 categoryId
-TableSchemaDiff diff = builder.CompareToDiff("common", "st_employee");
+TableSchemaDiff diff = builder.CompareToDiff("company", "st_employee");
 
 // 取得即將執行的 SQL（不執行）
-string sql = builder.GetCommandText("common", "st_employee");
+string sql = builder.GetCommandText("company", "st_employee");
 
 // 執行升級（可選傳 UpgradeOptions）
-bool upgraded = builder.Execute("common", "st_employee", new UpgradeOptions
+bool upgraded = builder.Execute("company", "st_employee", new UpgradeOptions
 {
     AllowColumnNarrowing = true,
 });
@@ -111,7 +111,7 @@ bool upgraded = builder.Execute("common", "st_employee", new UpgradeOptions
 [UpgradePlan](../src/Bee.Db/Schema/UpgradePlan.cs) 含 `Mode`（`NoChange` / `Create` / `Alter` / `Rebuild`）、`Stages`（分階段 SQL）與 `Warnings`。可直接列印 SQL：
 
 ```csharp
-var diff = builder.CompareToDiff("common", "st_employee");
+var diff = builder.CompareToDiff("company", "st_employee");
 var plan = new TableUpgradeOrchestrator("myDb", connectionManager).Plan(diff);
 
 Console.WriteLine($"Mode: {plan.Mode}");
@@ -174,7 +174,7 @@ public class UpgradeOptions
 
 ```csharp
 var options = new UpgradeOptions { AllowColumnNarrowing = true };
-builder.Execute("myDb", "st_employee", options);
+builder.Execute("company", "st_employee", options);
 ```
 
 > **何時該開啟**：你已經確認 DB 現有資料在新長度內（可預先 `SELECT MAX(LEN(col))` 驗證），或欄位剛建立還沒有資料。**何時不該開啟**：對線上業務表的縮減，先做資料修整再升級 schema。
