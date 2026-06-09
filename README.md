@@ -71,7 +71,7 @@ For the full developer documentation index, see [docs/README.md](docs/README.md)
 
 | Package | Install | Description |
 |---|---|---|
-| **Bee.Cli** | `dotnet tool install -g Bee.Cli` | Framework CLI invoked as `dotnet bee`. Currently ships the `defines` subcommand group for materialising / listing the framework default define files (`st_*` TableSchema, framework-shipped FormSchema / FormLayout / Language, SystemSettings / DatabaseSettings templates). Use to bootstrap a new consumer's `DefinePath` from the embedded resources in `Bee.Definition.dll`. |
+| **Bee.Cli** | `dotnet tool install -g Bee.Cli` <br/>Upgrade: `dotnet tool update -g Bee.Cli` | Framework CLI invoked as `dotnet bee`. Currently ships the `defines` subcommand group for materialising / listing the framework default define files (`st_*` TableSchema, framework-shipped FormSchema / FormLayout / Language, SystemSettings / DatabaseSettings templates). Use to bootstrap a new consumer's `DefinePath` from the embedded resources in `Bee.Definition.dll`. |
 
 
 ## 🚀 Quick Start

@@ -69,7 +69,7 @@
 - **要擴充框架表**（例如為 `st_employee` 加自訂欄位）：在應用程式的 `DefinePath` 中放一份同名 `.TableSchema.xml`。runtime 框架只讀 `DefinePath`，這份檔就是框架實際看到的唯一來源。框架內 embedded 預設 runtime 不會參與——只供下方 API 一次性匯出使用。
 - **取得 base XML 起手**——三種途徑，按一般偏好排序：
     - **程式碼層 API**（canonical）：`Bee.Definition.Defaults.MaterializeTo("./Define")` 把所有 embedded 框架預設 XML 寫入指定目錄。預設 skip-existing，重複跑安全、不會覆蓋你的客製。詳見 [`src/Bee.Definition/Defaults.cs`](../src/Bee.Definition/Defaults.cs)。
-    - **CLI**（CI / setup 腳本首選）：一次性安裝 `dotnet tool install -g Bee.Cli`，後續 `dotnet bee defines materialize --path ./Define`——同一份 API 的 thin shell。`dotnet bee defines list` 列出所有 embedded 檔、`dotnet bee defines materialize --filter TableSchema/` 只 materialize 子集。
+    - **CLI**（CI / setup 腳本首選）：一次性安裝 `dotnet tool install -g Bee.Cli`（之後升版用 `dotnet tool update -g Bee.Cli`），後續 `dotnet bee defines materialize --path ./Define`——同一份 API 的 thin shell。`dotnet bee defines list` 列出所有 embedded 檔、`dotnet bee defines materialize --filter TableSchema/` 只 materialize 子集。
     - **GitHub 瀏覽**：所有 embedded 預設都活在 repo 的 [`src/Bee.Definition/Defaults/`](../src/Bee.Definition/Defaults/)——打開你要的檔，內容複製到自家 `DefinePath`。
 - **框架升版若異動 `st_*` 表結構**，會在 [CHANGELOG](../CHANGELOG.zh-TW.md) 中標示為 breaking change。改名類異動需手動執行 `RENAME TABLE`——範例見 [資料表結構升級指南 §框架表改名](database-schema-upgrade.zh-TW.md)。
 
