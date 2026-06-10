@@ -16,6 +16,8 @@ public partial class App : Application
 {
     public IRelayCommand AboutCommand { get; }
     public IRelayCommand HideCommand { get; }
+    public IRelayCommand HideOthersCommand { get; }
+    public IRelayCommand ShowAllCommand { get; }
     public IRelayCommand QuitCommand { get; }
     public IRelayCommand OpenSolutionCommand { get; }
     public IRelayCommand ToggleThemeCommand { get; }
@@ -46,7 +48,9 @@ public partial class App : Application
     public App()
     {
         AboutCommand = new RelayCommand(ShowAbout);
-        HideCommand = new RelayCommand(HideAllWindows);
+        HideCommand = new RelayCommand(HideApp);
+        HideOthersCommand = new RelayCommand(HideOtherApps);
+        ShowAllCommand = new RelayCommand(ShowAllApps);
         QuitCommand = new RelayCommand(Quit);
         OpenSolutionCommand = new RelayCommand(PromptOpenSolution);
         ToggleThemeCommand = new RelayCommand(ToggleTheme);
@@ -141,10 +145,14 @@ public partial class App : Application
         // into the macOS application menu — the bold first entry named after
         // the app. Program.cs disables Avalonia's default app menu items so
         // these are the only contents.
+        // Standard macOS app-menu shape: About / sep / Hide, Hide Others,
+        // Show All / sep / Quit.
         var menu = new NativeMenu();
         menu.Add(LocItem("MenuItem_AboutApp", AboutCommand, gesture: null, AppMenuName));
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(LocItem("MenuItem_HideApp", HideCommand, new KeyGesture(Key.H, KeyModifiers.Meta), AppMenuName));
+        menu.Add(LocItem("MenuItem_HideOthers", HideOthersCommand, new KeyGesture(Key.H, KeyModifiers.Meta | KeyModifiers.Alt)));
+        menu.Add(LocItem("MenuItem_ShowAll", ShowAllCommand, gesture: null));
         menu.Add(new NativeMenuItemSeparator());
         menu.Add(LocItem("MenuItem_QuitApp", QuitCommand, new KeyGesture(Key.Q, KeyModifiers.Meta), AppMenuName));
         NativeMenu.SetMenu(this, menu);
@@ -272,11 +280,35 @@ public partial class App : Application
             dialog.Show();
     }
 
-    private static void HideAllWindows()
+    /// <summary>
+    /// True macOS app hide (NSApplication <c>hide:</c>) — windows vanish
+    /// without the minimize animation and come back via Show All / Dock, the
+    /// platform-standard ⌘H semantics. Off macOS the native menu isn't
+    /// rendered, but keep a minimize fallback so the command stays sane if it
+    /// ever gets another entry point.
+    /// </summary>
+    private static void HideApp()
     {
+        if (OperatingSystem.IsMacOS())
+        {
+            MacNativeApp.Hide();
+            return;
+        }
         if (Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
             foreach (var w in lifetime.Windows)
                 w.WindowState = WindowState.Minimized;
+    }
+
+    private static void HideOtherApps()
+    {
+        if (OperatingSystem.IsMacOS())
+            MacNativeApp.HideOthers();
+    }
+
+    private static void ShowAllApps()
+    {
+        if (OperatingSystem.IsMacOS())
+            MacNativeApp.ShowAll();
     }
 
     private static void Quit()

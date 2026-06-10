@@ -86,8 +86,11 @@ POCO 無法發通知，改由 **view 層攔截使用者輸入事件**：
   選單在 SolutionPath 變更與語言切換時整批重建（避免 LocItem 訂閱累積）。
 - File 選單尾端新增 **Close Tab**（⌘W）：關閉 active tab，走 `PrepareCloseAsync`
   （含未儲存提示）。
-- 評估後不做：Hide Others / Show All（Avalonia 無 NSApp hide API）、
-  Check for Updates（無更新通道）、Services（NativeMenu 不支援）、
+- App 選單補齊 macOS 慣例三件組：**Hide DefineEditor（⌘H）/ Hide Others（⌥⌘H）/
+  Show All** — Avalonia NativeMenu 無內建 role，新增 `MacNativeApp`（objc_msgSend
+  直送 NSApplication 的 `hide:` / `hideOtherApplications:` / `unhideAllApplications:`）；
+  原 Hide 的「最小化所有視窗」實作改為真正的 NSApp hide。
+- 評估後不做：Check for Updates（無更新通道）、Services（NativeMenu 不支援）、
   Settings… 對話框與 Window 選單（使用者未選）。
 
 ## 不做的事

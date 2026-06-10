@@ -29,6 +29,8 @@
   <data name="MenuItem_ChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
   <data name="MenuItem_AboutApp" xml:space="preserve"><value>關於 {0}</value></data>
   <data name="MenuItem_HideApp" xml:space="preserve"><value>隱藏 {0}</value></data>
+  <data name="MenuItem_HideOthers" xml:space="preserve"><value>隱藏其他</value></data>
+  <data name="MenuItem_ShowAll" xml:space="preserve"><value>顯示全部</value></data>
   <data name="MenuItem_QuitApp" xml:space="preserve"><value>結束 {0}</value></data>
 
   <data name="Welcome_NoSolution" xml:space="preserve"><value>尚未開啟方案</value></data>
