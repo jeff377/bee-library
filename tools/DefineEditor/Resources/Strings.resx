@@ -26,6 +26,9 @@
   <data name="Menu_Language" xml:space="preserve"><value>Language</value></data>
 
   <data name="MenuItem_OpenFolder" xml:space="preserve"><value>Open Folder...</value></data>
+  <data name="MenuItem_OpenRecent" xml:space="preserve"><value>Open Recent</value></data>
+  <data name="MenuItem_ClearRecent" xml:space="preserve"><value>Clear Recent</value></data>
+  <data name="MenuItem_CloseActiveTab" xml:space="preserve"><value>Close Tab</value></data>
   <data name="MenuItem_Save" xml:space="preserve"><value>Save</value></data>
   <data name="MenuItem_SaveAll" xml:space="preserve"><value>Save All</value></data>
   <data name="MenuItem_Validate" xml:space="preserve"><value>Validate</value></data>

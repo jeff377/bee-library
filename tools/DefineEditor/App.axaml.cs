@@ -28,6 +28,20 @@ public partial class App : Application
     public IRelayCommand SaveActiveCommand { get; }
     public IRelayCommand SaveAllCommand { get; }
     public IRelayCommand ValidateActiveCommand { get; }
+    public IRelayCommand CloseActiveTabCommand { get; }
+
+    /// <summary>
+    /// Short product name shown as the macOS application-menu title and inside
+    /// the About / Hide / Quit item labels. VS Code shows "Code", not its full
+    /// product name — same idea; the About dialog keeps the full name.
+    /// </summary>
+    private const string AppMenuName = "DefineEditor";
+
+    /// <summary>
+    /// File → Open Recent submenu, rebuilt from <see cref="UserSettings.RecentSolutions"/>
+    /// whenever a solution opens, the list is cleared, or the UI culture changes.
+    /// </summary>
+    private readonly NativeMenu _recentMenu = new();
 
     public App()
     {
@@ -39,12 +53,14 @@ public partial class App : Application
         SaveActiveCommand = new RelayCommand(ExecuteActiveSave, CanExecuteActiveSave);
         SaveAllCommand = new RelayCommand(ExecuteSaveAll, CanExecuteSaveAll);
         ValidateActiveCommand = new RelayCommand(ExecuteActiveValidate, CanExecuteActiveValidate);
+        CloseActiveTabCommand = new RelayCommand(ExecuteCloseActiveTab, CanExecuteCloseActiveTab);
     }
 
     public override void Initialize()
     {
-        // macOS 主選單列的應用程式名（NSApplication.AppName）。
-        Name = "Bee.DefineEditor";
+        // macOS 主選單列的應用程式名（NSApplication.AppName）。短名慣例同
+        // VS Code 的 "Code"；About 對話框內文仍用完整名稱 Bee.DefineEditor。
+        Name = AppMenuName;
         AvaloniaXamlLoader.Load(this);
 
         // Load the persisted UI language (defaults to English) before any
@@ -82,12 +98,24 @@ public partial class App : Application
                 {
                     ((RelayCommand)SaveActiveCommand).NotifyCanExecuteChanged();
                     ((RelayCommand)ValidateActiveCommand).NotifyCanExecuteChanged();
+                    ((RelayCommand)CloseActiveTabCommand).NotifyCanExecuteChanged();
                 }
                 else if (e.PropertyName == nameof(MainWindowViewModel.HasDirtyDocuments))
                 {
                     ((RelayCommand)SaveAllCommand).NotifyCanExecuteChanged();
                 }
+                else if (e.PropertyName == nameof(MainWindowViewModel.SolutionPath))
+                {
+                    // OpenSolution touched UserSettings.RecentSolutions just
+                    // before assigning SolutionPath — refresh the submenu.
+                    RebuildRecentMenu();
+                }
             };
+
+            // The "Clear Recent" label inside the dynamically rebuilt submenu
+            // doesn't go through LocItem (rebuilding would pile up culture
+            // subscriptions), so refresh the whole submenu on culture switch.
+            LocalizationService.Current.CultureChanged += (_, _) => RebuildRecentMenu();
 
             // Window-level NativeMenu = the additional top-level menus that
             // sit to the right of the App menu (File / View / ...). Setting
@@ -114,11 +142,11 @@ public partial class App : Application
         // the app. Program.cs disables Avalonia's default app menu items so
         // these are the only contents.
         var menu = new NativeMenu();
-        menu.Add(LocItem("MenuItem_AboutApp", AboutCommand, gesture: null, "Bee.DefineEditor"));
+        menu.Add(LocItem("MenuItem_AboutApp", AboutCommand, gesture: null, AppMenuName));
         menu.Add(new NativeMenuItemSeparator());
-        menu.Add(LocItem("MenuItem_HideApp", HideCommand, new KeyGesture(Key.H, KeyModifiers.Meta), "Bee.DefineEditor"));
+        menu.Add(LocItem("MenuItem_HideApp", HideCommand, new KeyGesture(Key.H, KeyModifiers.Meta), AppMenuName));
         menu.Add(new NativeMenuItemSeparator());
-        menu.Add(LocItem("MenuItem_QuitApp", QuitCommand, new KeyGesture(Key.Q, KeyModifiers.Meta), "Bee.DefineEditor"));
+        menu.Add(LocItem("MenuItem_QuitApp", QuitCommand, new KeyGesture(Key.Q, KeyModifiers.Meta), AppMenuName));
         NativeMenu.SetMenu(this, menu);
     }
 
@@ -136,6 +164,10 @@ public partial class App : Application
         // VS Code's macOS shortcut for "Open Folder..." is Cmd+Shift+O; reused.
         fileMenu.Menu.Add(LocItem("MenuItem_OpenFolder", OpenSolutionCommand,
             new KeyGesture(Key.O, KeyModifiers.Meta | KeyModifiers.Shift)));
+        var openRecent = LocItem("MenuItem_OpenRecent", command: null, gesture: null);
+        openRecent.Menu = _recentMenu;
+        fileMenu.Menu.Add(openRecent);
+        RebuildRecentMenu();
         fileMenu.Menu.Add(new NativeMenuItemSeparator());
         fileMenu.Menu.Add(LocItem("MenuItem_Save", SaveActiveCommand,
             new KeyGesture(Key.S, KeyModifiers.Meta)));
@@ -145,6 +177,9 @@ public partial class App : Application
         // VS Code uses Cmd+Shift+B for build / validate-style commands; reused.
         fileMenu.Menu.Add(LocItem("MenuItem_Validate", ValidateActiveCommand,
             new KeyGesture(Key.B, KeyModifiers.Meta | KeyModifiers.Shift)));
+        fileMenu.Menu.Add(new NativeMenuItemSeparator());
+        fileMenu.Menu.Add(LocItem("MenuItem_CloseActiveTab", CloseActiveTabCommand,
+            new KeyGesture(Key.W, KeyModifiers.Meta)));
         menu.Add(fileMenu);
 
         // ── View menu ───────────────────────────────────────────────
@@ -269,6 +304,56 @@ public partial class App : Application
 
     private static void ExecuteActiveValidate() =>
         GetActiveDocument()?.FileValidateCommand?.Execute(null);
+
+    /// <summary>
+    /// Repopulates the File → Open Recent submenu from the persisted recent
+    /// list: one item per solution path (most recent first), then a separator
+    /// and "Clear Recent" (disabled while the list is empty). Items are plain
+    /// <see cref="NativeMenuItem"/>s rebuilt wholesale, so no per-item culture
+    /// subscriptions accumulate.
+    /// </summary>
+    private void RebuildRecentMenu()
+    {
+        _recentMenu.Items.Clear();
+
+        var recents = UserSettings.Load().RecentSolutions;
+        foreach (var path in recents)
+        {
+            var captured = path;
+            _recentMenu.Add(new NativeMenuItem(path)
+            {
+                Command = new RelayCommand(() => OpenRecentSolution(captured)),
+            });
+        }
+
+        if (recents.Count > 0)
+            _recentMenu.Add(new NativeMenuItemSeparator());
+        _recentMenu.Add(new NativeMenuItem(LocalizationService.Current["MenuItem_ClearRecent"])
+        {
+            Command = new RelayCommand(ClearRecentSolutions),
+            IsEnabled = recents.Count > 0,
+        });
+    }
+
+    private static void OpenRecentSolution(string path) =>
+        GetMainViewModel()?.OpenSolution(path);
+
+    private void ClearRecentSolutions()
+    {
+        var settings = UserSettings.Load();
+        settings.RecentSolutions.Clear();
+        settings.Save();
+        RebuildRecentMenu();
+    }
+
+    private static bool CanExecuteCloseActiveTab() => GetActiveDocument() is not null;
+
+    private static void ExecuteCloseActiveTab()
+    {
+        var vm = GetMainViewModel();
+        if (vm?.ActiveDocument is { } doc)
+            vm.CloseDocumentCommand.Execute(doc);
+    }
 
     private static MainWindowViewModel? GetMainViewModel() =>
         (Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow

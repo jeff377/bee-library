@@ -77,6 +77,19 @@ POCO 無法發通知，改由 **view 層攔截使用者輸入事件**：
 - 新增字串：`Confirm_CloseUnsavedTitle` / `Confirm_CloseUnsavedMessage` /
   `Confirm_CloseUnsavedMessageMulti` / `Action_Save` / `Action_DontSave`。
 
+### 5. macOS 主選單調整（追加項目）
+
+- App 選單標題由 `Bee.DefineEditor` 縮短為 `DefineEditor`（仿 VS Code 的 "Code"），
+  About / Hide / Quit 標籤同步；About 對話框內文保留完整名稱。
+- File 選單新增 **Open Recent** 子選單：最近開過的方案（`UserSettings.RecentSolutions`
+  持久化，上限 8 筆，最近優先）＋「清除最近紀錄」；於 `OpenSolution` 成功時記錄，
+  選單在 SolutionPath 變更與語言切換時整批重建（避免 LocItem 訂閱累積）。
+- File 選單尾端新增 **Close Tab**（⌘W）：關閉 active tab，走 `PrepareCloseAsync`
+  （含未儲存提示）。
+- 評估後不做：Hide Others / Show All（Avalonia 無 NSApp hide API）、
+  Check for Updates（無更新通道）、Services（NativeMenu 不支援）、
+  Settings… 對話框與 Window 選單（使用者未選）。
+
 ## 不做的事
 
 - 不引入 POCO 層的 change tracking（INPC 改造影響 Bee.Definition 整個套件，超出範圍）。

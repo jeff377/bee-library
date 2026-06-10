@@ -13,6 +13,9 @@
   <data name="Menu_Language" xml:space="preserve"><value>語言</value></data>
 
   <data name="MenuItem_OpenFolder" xml:space="preserve"><value>開啟方案...</value></data>
+  <data name="MenuItem_OpenRecent" xml:space="preserve"><value>開啟最近方案</value></data>
+  <data name="MenuItem_ClearRecent" xml:space="preserve"><value>清除最近紀錄</value></data>
+  <data name="MenuItem_CloseActiveTab" xml:space="preserve"><value>關閉分頁</value></data>
   <data name="MenuItem_Save" xml:space="preserve"><value>儲存</value></data>
   <data name="MenuItem_SaveAll" xml:space="preserve"><value>全部儲存</value></data>
   <data name="MenuItem_Validate" xml:space="preserve"><value>驗證</value></data>

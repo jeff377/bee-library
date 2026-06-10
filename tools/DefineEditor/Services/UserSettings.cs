@@ -3,9 +3,9 @@ using System.Text.Json;
 namespace Bee.DefineEditor.Services;
 
 /// <summary>
-/// Per-user persistent settings for DefineEditor (currently: language choice).
-/// Serialised as JSON to an OS-appropriate user-config location so the choice
-/// survives across app launches.
+/// Per-user persistent settings for DefineEditor (language choice and the
+/// recently opened solutions). Serialised as JSON to an OS-appropriate
+/// user-config location so the choices survive across app launches.
 /// </summary>
 public sealed class UserSettings
 {
@@ -14,6 +14,27 @@ public sealed class UserSettings
     /// the View → Language menu get e.g. <c>"zh-TW"</c> written here.
     /// </summary>
     public string Language { get; set; } = "en";
+
+    /// <summary>
+    /// Recently opened DefinePath solution folders, most recent first. Drives
+    /// the File → Open Recent menu; capped at <see cref="MaxRecentSolutions"/>.
+    /// </summary>
+    public List<string> RecentSolutions { get; set; } = new();
+
+    public const int MaxRecentSolutions = 8;
+
+    /// <summary>
+    /// Records <paramref name="path"/> as the most recently opened solution:
+    /// moves it to the front (case-insensitive de-dup — macOS and Windows
+    /// paths compare case-insensitively) and trims the list to the cap.
+    /// </summary>
+    public void TouchRecentSolution(string path)
+    {
+        RecentSolutions.RemoveAll(p => string.Equals(p, path, StringComparison.OrdinalIgnoreCase));
+        RecentSolutions.Insert(0, path);
+        if (RecentSolutions.Count > MaxRecentSolutions)
+            RecentSolutions.RemoveRange(MaxRecentSolutions, RecentSolutions.Count - MaxRecentSolutions);
+    }
 
     private const string DirectoryName = "Bee.DefineEditor";
     private const string FileName = "settings.json";

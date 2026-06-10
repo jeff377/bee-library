@@ -337,6 +337,14 @@ public partial class MainWindowViewModel : ViewModelBase
             DisposeAndClearOpenDocuments();
             ActiveDocument = null;
             SelectedNode = null;
+
+            // Record for File → Open Recent before assigning SolutionPath —
+            // its PropertyChanged fires synchronously and the App-side menu
+            // rebuild reads these settings in that handler.
+            var settings = UserSettings.Load();
+            settings.TouchRecentSolution(definePath);
+            settings.Save();
+
             SolutionPath = definePath;
 
             var loadedMsg = L("Status_SolutionLoaded", Solution.AvailableProgIds.Count);
