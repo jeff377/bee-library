@@ -71,6 +71,31 @@ namespace Bee.UI.Core.UnitTests
         }
 
         [Fact]
+        [DisplayName("Initialize(string) 有效本機路徑通過驗證後應將 ConnectType 設為 Local")]
+        public void Initialize_StringEndpoint_ValidLocalPath_SetsConnectTypeToLocal()
+        {
+            var tempDir = CreateTempDefinePath();
+            var originalConnectType = ApiClientInfo.ConnectType;
+            var originalEndpoint = ApiClientInfo.Endpoint;
+            var originalSupportedTypes = ApiClientInfo.SupportedConnectTypes;
+            try
+            {
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Both;
+                // Initialize(string) delegates to SetEndpoint which validates + calls
+                // SetConnectType; no local API service → SyncExecutor.Run throws.
+                Record.Exception(() => ClientInfo.Initialize(tempDir));
+                Assert.Equal(ConnectType.Local, ApiClientInfo.ConnectType);
+            }
+            finally
+            {
+                ApiClientInfo.ConnectType = originalConnectType;
+                ApiClientInfo.Endpoint = originalEndpoint;
+                ApiClientInfo.SupportedConnectTypes = originalSupportedTypes;
+                try { Directory.Delete(tempDir, recursive: true); } catch (IOException) { }
+            }
+        }
+
+        [Fact]
         [DisplayName("SetEndpoint 有效本機路徑通過驗證後應將 ConnectType 設為 Local")]
         public void SetEndpoint_ValidLocalPath_SetsConnectTypeToLocal()
         {

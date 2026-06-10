@@ -194,6 +194,59 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.Equal("backend rejected", captured!.Message);
         }
 
+        [Fact]
+        [DisplayName("InitializeAsync 已初始化後第二次呼叫為 no-op（不重建 DataObject 也不重新載入列表）")]
+        public async Task InitializeAsync_AlreadyInitialized_SecondCallIsNoOp()
+        {
+            var schema = BuildEmployeeSchema();
+            schema.ListFields = "sys_id,sys_name";
+            int getListCallCount = 0;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ =>
+                {
+                    getListCallCount++;
+                    return new GetListResponse { Table = BuildEmployeeListTable(Guid.NewGuid(), "Alice") };
+                },
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+            await view.InitializeAsync();
+            var firstDataObject = view.DataObject;
+
+            await view.InitializeAsync();
+
+            Assert.Same(firstDataObject, view.DataObject);
+            Assert.Equal(1, getListCallCount);
+        }
+
+        [Fact]
+        [DisplayName("OnDeleteClickedAsync 成功刪除後 MasterRow 為 null")]
+        public async Task OnDeleteClickedAsync_WithLoadedRow_DeletesAndResetsDataObject()
+        {
+            var schema = BuildEmployeeSchema();
+            var rowId = Guid.NewGuid();
+            Guid? deletedRowId = null;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "Eve") },
+                GetDataHandler = _ => new GetDataResponse { DataSet = BuildServerDataSet(rowId, "Eve") },
+                DeleteHandler = id =>
+                {
+                    deletedRowId = id;
+                    return new DeleteResponse();
+                },
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+            await view.InitializeAsync();
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+            Assert.NotNull(view.DataObject!.MasterRow);
+
+            await InvokePrivateAsync(view, "OnDeleteClickedAsync");
+
+            Assert.Equal(rowId, deletedRowId);
+            Assert.Null(view.DataObject.MasterRow);
+        }
+
         /// <summary>
         /// Overrides the <c>Resolve*</c> hooks so tests never read the process-wide
         /// <c>ClientInfo</c> statics; the unused <c>ResolveFormConnector</c> throws to

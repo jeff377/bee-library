@@ -438,6 +438,64 @@ namespace Bee.UI.Maui.UnitTests.DataObjects
             await Assert.ThrowsAsync<InvalidOperationException>(() => dataObject.DeleteAsync());
         }
 
+        [Fact]
+        [DisplayName("SetField 寫入與現值相同的值時不標記 IsDirty（初始 render echo 防護）")]
+        public void SetField_SameValue_DoesNotMarkDirty()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            dataObject.SetField("emp_name", dataObject.GetField("emp_name"));
+            Assert.False(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("GetField 在 DateTime 欄位含時間分量時回傳 yyyy-MM-ddTHH:mm:ss 格式")]
+        public void GetField_DateTime_WithTimeComponent_ReturnsIsoDateTimeFormat()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            var dt = new DateTime(2026, 5, 21, 14, 30, 0, DateTimeKind.Unspecified);
+            dataObject.MasterRow!["hire_date"] = dt;
+            var result = dataObject.GetField("hire_date");
+            Assert.Equal("2026-05-21T14:30:00", result);
+        }
+
+        [Fact]
+        [DisplayName("SetField 寫入 Guid 欄位後 GetField 可讀回相同字串")]
+        public void SetField_Guid_RoundTripsThroughGetField()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            var guid = Guid.NewGuid();
+            dataObject.SetField(SysFields.RowId, guid.ToString());
+            Assert.Equal(guid.ToString(), dataObject.GetField(SysFields.RowId));
+            Assert.Equal(guid, (Guid)dataObject.MasterRow![SysFields.RowId]);
+            Assert.True(dataObject.IsDirty);
+        }
+
+        private static FormSchema BuildSchemaWithBinary()
+        {
+            var schema = new FormSchema(TestProgId, TestProgId);
+            var master = schema.Tables!.Add(TestProgId, TestProgId);
+            master.Fields!.Add("avatar", "Avatar", FieldDbType.Binary);
+            return schema;
+        }
+
+        [Fact]
+        [DisplayName("SetField 寫入 Binary 欄位後儲存 byte[]，GetField 回傳 System.Byte[] 字串")]
+        public void SetField_Binary_StoresBytesFromBase64()
+        {
+            var schema = BuildSchemaWithBinary();
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+            var bytes = new byte[] { 0x01, 0x02, 0x03 };
+            var base64 = Convert.ToBase64String(bytes);
+            dataObject.SetField("avatar", base64);
+            Assert.Equal(bytes, (byte[])dataObject.MasterRow!["avatar"]);
+            Assert.True(dataObject.IsDirty);
+            Assert.Equal("System.Byte[]", dataObject.GetField("avatar"));
+        }
+
         /// <summary>
         /// Test double that bypasses the real JSON-RPC pipeline by overriding every
         /// virtual CRUD method on <see cref="FormApiConnector"/>. The base constructor

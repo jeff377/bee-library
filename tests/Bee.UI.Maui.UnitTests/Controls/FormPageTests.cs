@@ -195,6 +195,85 @@ namespace Bee.UI.Maui.UnitTests.Controls
             Assert.Equal("backend rejected", captured!.Message);
         }
 
+        [Fact]
+        [DisplayName("ComputeSelectFields 在 ListFields 非空時自動在頭部加上 sys_rowid")]
+        public async Task ComputeSelectFields_WithListFields_PrependsSysRowId()
+        {
+            var schema = BuildEmployeeSchema();
+            schema.ListFields = "sys_id,sys_name";
+            string? capturedSelectFields = null;
+            var connector = new SelectCapturingConnector(
+                sf => capturedSelectFields = sf,
+                BuildEmployeeListTable(Guid.NewGuid(), "Alice"));
+            var page = new FormPage { Schema = schema, FormConnector = connector };
+
+            await page.InitializeAsync();
+
+            Assert.Equal("sys_rowid,sys_id,sys_name", capturedSelectFields);
+        }
+
+        [Fact]
+        [DisplayName("OnDeleteClickedAsync 成功刪除後 MasterRow 為 null")]
+        public async Task OnDeleteClickedAsync_WithLoadedRow_DeletesAndResetsDataObject()
+        {
+            var schema = BuildEmployeeSchema();
+            var rowId = Guid.NewGuid();
+            Guid? deletedRowId = null;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = () => new GetListResponse { Table = BuildEmployeeListTable(rowId, "Eve") },
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Eve") },
+                DeleteHandler = id =>
+                {
+                    deletedRowId = id;
+                    return new DeleteResponse();
+                },
+            };
+            var page = new FormPage { Schema = schema, FormConnector = connector };
+            await page.InitializeAsync();
+
+            var rowSelectedMethod = typeof(FormPage).GetMethod(
+                "OnRowSelectedAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            await (Task)rowSelectedMethod!.Invoke(page, new object[] { rowId })!;
+            Assert.NotNull(page.DataObject!.MasterRow);
+
+            var deleteMethod = typeof(FormPage).GetMethod(
+                "OnDeleteClickedAsync", BindingFlags.NonPublic | BindingFlags.Instance);
+            await (Task)deleteMethod!.Invoke(page, Array.Empty<object>())!;
+
+            Assert.Equal(rowId, deletedRowId);
+            Assert.Null(page.DataObject.MasterRow);
+        }
+
+        /// <summary>
+        /// Captures the <c>selectFields</c> argument passed to
+        /// <see cref="FormApiConnector.GetListAsync"/> so tests can assert on the value
+        /// that <c>ComputeSelectFields</c> computed. The existing
+        /// <see cref="FakeFormApiConnector"/> discards that argument.
+        /// </summary>
+        private sealed class SelectCapturingConnector : FormApiConnector
+        {
+            private readonly Action<string> _onGetList;
+            private readonly DataTable _listTable;
+
+            public SelectCapturingConnector(Action<string> onGetList, DataTable listTable)
+                : base(Guid.NewGuid(), TestProgId)
+            {
+                _onGetList = onGetList;
+                _listTable = listTable;
+            }
+
+            public override Task<GetListResponse> GetListAsync(
+                string selectFields = "",
+                Bee.Definition.Filters.FilterNode? filter = null,
+                Bee.Definition.Sorting.SortFieldCollection? sortFields = null,
+                Bee.Definition.Paging.PagingOptions? paging = null)
+            {
+                _onGetList(selectFields);
+                return Task.FromResult(new GetListResponse { Table = _listTable });
+            }
+        }
+
         /// <summary>
         /// Same test double the FormDataObject tests use; overrides every virtual
         /// CRUD method on <see cref="FormApiConnector"/> so the base
