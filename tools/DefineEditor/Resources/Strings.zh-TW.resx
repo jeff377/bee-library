@@ -36,6 +36,8 @@
   <data name="Status_NoSolution" xml:space="preserve"><value>尚未開啟方案</value></data>
 
   <data name="Action_Cancel" xml:space="preserve"><value>取消</value></data>
+  <data name="Action_Save" xml:space="preserve"><value>儲存</value></data>
+  <data name="Action_DontSave" xml:space="preserve"><value>不儲存</value></data>
   <data name="Action_SaveAnyway" xml:space="preserve"><value>仍要存檔</value></data>
   <data name="Action_Delete" xml:space="preserve"><value>刪除</value></data>
   <data name="Action_OK" xml:space="preserve"><value>確定</value></data>
@@ -185,6 +187,12 @@
   <data name="Confirm_DeleteTitle" xml:space="preserve"><value>確認刪除</value></data>
   <data name="Confirm_DeleteMessage" xml:space="preserve"><value>確定要刪除「{0}」？
 從記憶體移除後仍需按儲存（⌘S）才會寫回檔案。</value></data>
+  <data name="Confirm_CloseUnsavedTitle" xml:space="preserve"><value>未儲存的變更</value></data>
+  <data name="Confirm_CloseUnsavedMessage" xml:space="preserve"><value>「{0}」有未儲存的變更。
+關閉前要先儲存嗎？</value></data>
+  <data name="Confirm_CloseUnsavedMessageMulti" xml:space="preserve"><value>有 {0} 個分頁未儲存。
+關閉前要先儲存嗎？
+{1}</value></data>
   <data name="Confirm_SaveAfterValidationTitle" xml:space="preserve"><value>存檔前驗證未通過</value></data>
   <data name="Confirm_SaveAfterValidationErrors" xml:space="preserve"><value>驗證發現 {0} 個 error。
 仍要繼續存檔嗎？</value></data>

@@ -143,15 +143,9 @@ public abstract partial class DocumentViewModelBase : ViewModelBase, IDisposable
             cancelLabel: L("Action_Cancel"));
     }
 
-    private static Window? GetOwnerWindow()
-    {
-        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
-            return lifetime.MainWindow;
-        return null;
-    }
-
-    // L() helpers live on ViewModelBase so MainWindowViewModel (and any other
-    // VM that doesn't derive from DocumentViewModelBase) can use them too.
+    // GetOwnerWindow / L() helpers live on ViewModelBase so MainWindowViewModel
+    // (and any other VM that doesn't derive from DocumentViewModelBase) can use
+    // them too.
 
     /// <summary>
     /// Prompts the user to confirm deletion of a tree node and returns the

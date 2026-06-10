@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.ComponentModel;
 using Bee.DefineEditor.Models;
 using Bee.DefineEditor.Services;
+using Bee.DefineEditor.Views;
 using Bee.Definition;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -161,13 +162,14 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void CloseDocument(DocumentViewModelBase? doc)
+    private async Task CloseDocument(DocumentViewModelBase? doc)
     {
         if (doc is null) return;
         var idx = OpenDocuments.IndexOf(doc);
         if (idx < 0) return;
+        if (!await PrepareCloseAsync(new List<DocumentViewModelBase> { doc })) return;
 
-        OpenDocuments.RemoveAt(idx);
+        OpenDocuments.Remove(doc);
         doc.Dispose();
 
         if (ActiveDocument == doc)
@@ -179,27 +181,85 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void CloseOtherDocuments(DocumentViewModelBase? doc)
+    private async Task CloseOtherDocuments(DocumentViewModelBase? doc)
     {
         if (doc is null) return;
-        CloseDocuments(OpenDocuments.Where(d => d != doc).ToList(), activate: doc);
+        var targets = OpenDocuments.Where(d => d != doc).ToList();
+        if (!await PrepareCloseAsync(targets)) return;
+        CloseDocuments(targets, activate: doc);
     }
 
     [RelayCommand]
-    private void CloseDocumentsToTheRight(DocumentViewModelBase? doc)
+    private async Task CloseDocumentsToTheRight(DocumentViewModelBase? doc)
     {
         if (doc is null) return;
         var idx = OpenDocuments.IndexOf(doc);
         if (idx < 0) return;
-        CloseDocuments(OpenDocuments.Skip(idx + 1).ToList(), activate: doc);
+        var targets = OpenDocuments.Skip(idx + 1).ToList();
+        if (!await PrepareCloseAsync(targets)) return;
+        CloseDocuments(targets, activate: doc);
     }
 
+    // Only ever closes clean tabs, so no unsaved-changes prompt is needed.
     [RelayCommand]
     private void CloseSavedDocuments() =>
         CloseDocuments(OpenDocuments.Where(d => !d.IsDirty).ToList(), activate: ActiveDocument);
 
     [RelayCommand]
-    private void CloseAllDocuments() => CloseDocuments(OpenDocuments.ToList(), activate: null);
+    private async Task CloseAllDocuments()
+    {
+        var targets = OpenDocuments.ToList();
+        if (!await PrepareCloseAsync(targets)) return;
+        CloseDocuments(targets, activate: null);
+    }
+
+    /// <summary>
+    /// Gatekeeper run before any tab-close action. When <paramref name="docs"/>
+    /// contains dirty documents, prompts Save / Don't Save / Cancel (VS Code
+    /// style). "Save" runs each dirty editor's own Save flow — if any of them
+    /// is backed out (validation-error prompt cancelled) the document stays
+    /// dirty and the whole close is aborted so no edits are lost. Returns
+    /// <c>true</c> when the caller may proceed with closing. Headless contexts
+    /// (no main window) skip the prompt, consistent with the other dialogs.
+    /// </summary>
+    private static async Task<bool> PrepareCloseAsync(IReadOnlyList<DocumentViewModelBase> docs)
+    {
+        var dirty = docs.Where(d => d.IsDirty).ToList();
+        if (dirty.Count == 0) return true;
+
+        var owner = GetOwnerWindow();
+        if (owner is null) return true;
+
+        var message = dirty.Count == 1
+            ? L("Confirm_CloseUnsavedMessage", dirty[0].Title)
+            : L("Confirm_CloseUnsavedMessageMulti", dirty.Count,
+                string.Join("\n", dirty.Select(d => "• " + d.Title)));
+
+        var choice = await ConfirmationDialog.ShowUnsavedAsync(
+            owner,
+            L("Confirm_CloseUnsavedTitle"),
+            message,
+            saveLabel: L("Action_Save"),
+            discardLabel: L("Action_DontSave"),
+            cancelLabel: L("Action_Cancel"));
+
+        switch (choice)
+        {
+            case ConfirmCloseResult.Discard:
+                return true;
+            case ConfirmCloseResult.Save:
+                foreach (var doc in dirty)
+                {
+                    if (doc.FileSaveCommand is IAsyncRelayCommand asyncSave)
+                        await asyncSave.ExecuteAsync(null);
+                    else
+                        doc.FileSaveCommand?.Execute(null);
+                }
+                return dirty.All(d => !d.IsDirty);
+            default:
+                return false;
+        }
+    }
 
     /// <summary>
     /// Removes and disposes <paramref name="docs"/>, then re-points

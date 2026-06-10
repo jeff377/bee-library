@@ -24,9 +24,11 @@
                            TextWrapping="Wrap" MaxWidth="360"/>
             </StackPanel>
 
-            <!-- 按鈕列 -->
+            <!-- 按鈕列（DiscardButton 僅三鍵的「未儲存」模式顯示，置左，仿 macOS Don't Save 慣例） -->
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                         HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
+                <Button x:Name="DiscardButton" Classes="tool" Click="OnDiscard" MinWidth="90"
+                        IsVisible="False" Margin="0,0,16,0"/>
                 <Button x:Name="CancelButton" Classes="tool" Content="{loc:Loc Action_Cancel}" Click="OnCancel" MinWidth="90"/>
                 <Button x:Name="ConfirmButton" Classes="tool Primary" Content="{loc:Loc Action_OK}" Click="OnConfirm" MinWidth="100"/>
             </StackPanel>

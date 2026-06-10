@@ -64,11 +64,23 @@ POCO 無法發通知，改由 **view 層攔截使用者輸入事件**：
   - File menu 在 Save 之後加「Save All」項，gesture `Cmd+Option+S`（VS Code 慣例）。
 - 新增字串：`MenuItem_SaveAll`（en + zh-TW）。
 
+### 4. 關閉 dirty tab 時提示未儲存（追加項目）
+
+- `ConfirmationDialog` 擴充三鍵模式（儲存 / 不儲存 / 取消），新增
+  `ConfirmCloseResult` 列舉與 `ShowUnsavedAsync`；視窗被直接關閉視同取消。
+- `MainWindowViewModel.PrepareCloseAsync(docs)`：要關的分頁含 dirty 時跳提示——
+  單一檔顯示檔名、多檔顯示數量與清單；選「儲存」逐一走各編輯器既有 Save 流程
+  （驗證錯誤確認框若被取消，該檔保持 dirty，**整個關閉動作中止**以免遺失）；
+  headless（無 MainWindow）時跳過提示直接關，與其他對話框慣例一致。
+- 五個 close 動作（按鈕 X、Close、Close Others、Close to the Right、Close All）
+  全部先過 `PrepareCloseAsync`；Close Saved 只關非 dirty 分頁，天然不觸發。
+- 新增字串：`Confirm_CloseUnsavedTitle` / `Confirm_CloseUnsavedMessage` /
+  `Confirm_CloseUnsavedMessageMulti` / `Action_Save` / `Action_DontSave`。
+
 ## 不做的事
 
 - 不引入 POCO 層的 change tracking（INPC 改造影響 Bee.Definition 整個套件，超出範圍）。
-- 不做「關閉 dirty tab 時提示未儲存」確認對話框（可另開需求）。
-- 關閉 dirty tab 時不擋（VS Code 會提示未儲存；本工具的未儲存提示可另開需求）。
+- 切換方案（OpenSolution）與關閉視窗時的未儲存提示不在本次範圍（可另開需求）。
 
 ## 驗證
 

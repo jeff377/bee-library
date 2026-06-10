@@ -567,6 +567,14 @@ internal static class Smoke
             if (vm.HasDirtyDocuments)
                 return Fail(136, "HasDirtyDocuments should be false after SaveAll");
 
+            // Closing a dirty tab headless must skip the unsaved-changes
+            // prompt (no owner window) and still proceed with the close.
+            var d = Open("D.xml");
+            d.IsDirty = true;
+            vm.CloseDocumentCommand.Execute(d);
+            if (vm.OpenDocuments.Contains(d))
+                return Fail(139, "Headless close of a dirty tab should proceed without prompting");
+
             vm.CloseAllDocumentsCommand.Execute(null);
             if (vm.OpenDocuments.Count != 0 || vm.ActiveDocument is not null)
                 return Fail(137, "CloseAll should close every tab");

@@ -1,4 +1,7 @@
 using System.Globalization;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Bee.DefineEditor.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 
@@ -6,6 +9,17 @@ namespace Bee.DefineEditor.ViewModels;
 
 public abstract class ViewModelBase : ObservableObject
 {
+    /// <summary>
+    /// Owner window for modal dialogs, or <c>null</c> in headless contexts
+    /// (smoke tests) — callers skip their dialog and proceed in that case.
+    /// </summary>
+    protected static Window? GetOwnerWindow()
+    {
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            return lifetime.MainWindow;
+        return null;
+    }
+
     /// <summary>
     /// Shorthand for looking up a localized string. Every view-model derives
     /// from this base, so they all write <c>L("Status_Saved", filename)</c>

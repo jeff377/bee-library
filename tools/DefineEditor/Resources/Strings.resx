@@ -49,6 +49,8 @@
   <data name="Status_NoSolution" xml:space="preserve"><value>No solution open</value></data>
 
   <data name="Action_Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="Action_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Action_DontSave" xml:space="preserve"><value>Don't Save</value></data>
   <data name="Action_SaveAnyway" xml:space="preserve"><value>Save anyway</value></data>
   <data name="Action_Delete" xml:space="preserve"><value>Delete</value></data>
   <data name="Action_OK" xml:space="preserve"><value>OK</value></data>
@@ -198,6 +200,12 @@
   <data name="Confirm_DeleteTitle" xml:space="preserve"><value>Confirm deletion</value></data>
   <data name="Confirm_DeleteMessage" xml:space="preserve"><value>Delete "{0}"?
 Removed from memory; press Save (⌘S) to persist.</value></data>
+  <data name="Confirm_CloseUnsavedTitle" xml:space="preserve"><value>Unsaved changes</value></data>
+  <data name="Confirm_CloseUnsavedMessage" xml:space="preserve"><value>"{0}" has unsaved changes.
+Do you want to save them before closing?</value></data>
+  <data name="Confirm_CloseUnsavedMessageMulti" xml:space="preserve"><value>{0} tabs have unsaved changes.
+Do you want to save them before closing?
+{1}</value></data>
   <data name="Confirm_SaveAfterValidationTitle" xml:space="preserve"><value>Validation failed before save</value></data>
   <data name="Confirm_SaveAfterValidationErrors" xml:space="preserve"><value>Validation found {0} errors.
 Save anyway?</value></data>
