@@ -14,7 +14,13 @@
 
   <data name="MenuItem_OpenFolder" xml:space="preserve"><value>開啟方案...</value></data>
   <data name="MenuItem_Save" xml:space="preserve"><value>儲存</value></data>
+  <data name="MenuItem_SaveAll" xml:space="preserve"><value>全部儲存</value></data>
   <data name="MenuItem_Validate" xml:space="preserve"><value>驗證</value></data>
+  <data name="MenuItem_CloseTab" xml:space="preserve"><value>關閉</value></data>
+  <data name="MenuItem_CloseOtherTabs" xml:space="preserve"><value>關閉其他</value></data>
+  <data name="MenuItem_CloseTabsToRight" xml:space="preserve"><value>關閉右側分頁</value></data>
+  <data name="MenuItem_CloseSavedTabs" xml:space="preserve"><value>關閉已儲存</value></data>
+  <data name="MenuItem_CloseAllTabs" xml:space="preserve"><value>全部關閉</value></data>
   <data name="MenuItem_ToggleTheme" xml:space="preserve"><value>切換深淺主題</value></data>
   <data name="MenuItem_English" xml:space="preserve"><value>English</value></data>
   <data name="MenuItem_ChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
@@ -164,6 +170,7 @@
   <data name="Status_Deleted" xml:space="preserve"><value>已刪除節點（尚未存檔）</value></data>
   <data name="Status_DeleteCancelled" xml:space="preserve"><value>已取消刪除。</value></data>
   <data name="Status_Saved" xml:space="preserve"><value>已儲存：{0}</value></data>
+  <data name="Status_SavedAll" xml:space="preserve"><value>已儲存 {0}/{1} 個檔案。</value></data>
   <data name="Status_SaveFailed" xml:space="preserve"><value>儲存失敗：{0}</value></data>
   <data name="Status_SaveCancelled" xml:space="preserve"><value>已取消儲存（{0} 個 error 未處理）。</value></data>
   <data name="Status_ValidationPassed" xml:space="preserve"><value>驗證通過：未發現任何問題。</value></data>

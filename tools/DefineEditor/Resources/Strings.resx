@@ -27,7 +27,13 @@
 
   <data name="MenuItem_OpenFolder" xml:space="preserve"><value>Open Folder...</value></data>
   <data name="MenuItem_Save" xml:space="preserve"><value>Save</value></data>
+  <data name="MenuItem_SaveAll" xml:space="preserve"><value>Save All</value></data>
   <data name="MenuItem_Validate" xml:space="preserve"><value>Validate</value></data>
+  <data name="MenuItem_CloseTab" xml:space="preserve"><value>Close</value></data>
+  <data name="MenuItem_CloseOtherTabs" xml:space="preserve"><value>Close Others</value></data>
+  <data name="MenuItem_CloseTabsToRight" xml:space="preserve"><value>Close to the Right</value></data>
+  <data name="MenuItem_CloseSavedTabs" xml:space="preserve"><value>Close Saved</value></data>
+  <data name="MenuItem_CloseAllTabs" xml:space="preserve"><value>Close All</value></data>
   <data name="MenuItem_ToggleTheme" xml:space="preserve"><value>Toggle Theme</value></data>
   <data name="MenuItem_English" xml:space="preserve"><value>English</value></data>
   <data name="MenuItem_ChineseTraditional" xml:space="preserve"><value>繁體中文</value></data>
@@ -177,6 +183,7 @@
   <data name="Status_Deleted" xml:space="preserve"><value>Node deleted (unsaved)</value></data>
   <data name="Status_DeleteCancelled" xml:space="preserve"><value>Deletion cancelled.</value></data>
   <data name="Status_Saved" xml:space="preserve"><value>Saved: {0}</value></data>
+  <data name="Status_SavedAll" xml:space="preserve"><value>Saved {0} of {1} file(s).</value></data>
   <data name="Status_SaveFailed" xml:space="preserve"><value>Save failed: {0}</value></data>
   <data name="Status_SaveCancelled" xml:space="preserve"><value>Save cancelled ({0} errors unresolved).</value></data>
   <data name="Status_ValidationPassed" xml:space="preserve"><value>Validation passed: no issues found.</value></data>

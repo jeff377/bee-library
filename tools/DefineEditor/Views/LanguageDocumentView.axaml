@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:Bee.DefineEditor.ViewModels"
              xmlns:loc="using:Bee.DefineEditor.Markup"
+             xmlns:behaviors="using:Bee.DefineEditor.Behaviors"
              xmlns:models="using:Bee.DefineEditor.Models"
              xmlns:lang="using:Bee.Definition.Language"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -122,7 +123,8 @@
             <GridSplitter Grid.Column="1" Background="{DynamicResource SemiColorBorder}" ResizeDirection="Columns"/>
             <Border Grid.Column="2" Padding="18,14">
                 <ScrollViewer Classes="props-pane" HorizontalScrollBarVisibility="Disabled">
-                    <ContentControl Content="{Binding SelectedEditorContext}"/>
+                    <ContentControl Content="{Binding SelectedEditorContext}"
+                                    behaviors:DirtyTracking.IsEnabled="True"/>
                 </ScrollViewer>
             </Border>
         </Grid>

@@ -27,7 +27,7 @@ internal static class Smoke
         var singletonResult = RunSingletonSmoke();
         if (singletonResult != 0) return singletonResult;
 
-        Console.WriteLine("[smoke] OK — FormSchema + 8 multi-instance editors + ConnectionStringParser all green.");
+        Console.WriteLine("[smoke] OK — FormSchema + 8 multi-instance editors + ConnectionStringParser + tab commands all green.");
         return 0;
     }
 
@@ -114,6 +114,7 @@ internal static class Smoke
             RunTableSchemaSmoke,
             RunFormLayoutSmoke,
             RunLanguageSmoke,
+            RunTabCommandsSmoke,
         };
         foreach (var phase in phases)
         {
@@ -508,6 +509,72 @@ internal static class Smoke
             return 0;
         }
         catch (Exception ex) { return Fail(126, $"Language smoke crashed: {ex.Message}"); }
+        finally { TryDelete(tempDir); }
+    }
+
+    /// <summary>
+    /// Exercises the shell-level tab commands (Close Others / Close to the
+    /// Right / Close Saved / Close All) and the batch Save All directly on
+    /// <see cref="MainWindowViewModel"/>, bypassing the tree so the smoke
+    /// stays fixture-free.
+    /// </summary>
+    private static int RunTabCommandsSmoke()
+    {
+        var tempDir = MakeTempDir("tabs");
+        try
+        {
+            var vm = new MainWindowViewModel();
+            PermissionModelsDocumentViewModel Open(string name)
+            {
+                var path = Path.Combine(tempDir, name);
+                Bee.Base.Serialization.XmlCodec.SerializeToFile(new PermissionModels(), path);
+                var doc = PermissionModelsDocumentViewModel.Load(path);
+                vm.OpenDocuments.Add(doc);
+                vm.ActiveDocument = doc;
+                return doc;
+            }
+
+            Open("A.xml");
+            var b = Open("B.xml");
+            Open("C.xml");
+            vm.CloseOtherDocumentsCommand.Execute(b);
+            if (vm.OpenDocuments.Count != 1 || vm.OpenDocuments[0] != b || vm.ActiveDocument != b)
+                return Fail(131, "CloseOthers should leave only the clicked tab");
+
+            vm.CloseAllDocumentsCommand.Execute(null);
+            var a = Open("A.xml");
+            Open("B.xml");
+            Open("C.xml");
+            vm.CloseDocumentsToTheRightCommand.Execute(a);
+            if (vm.OpenDocuments.Count != 1 || vm.OpenDocuments[0] != a)
+                return Fail(132, "CloseToTheRight should close everything after the clicked tab");
+
+            vm.CloseAllDocumentsCommand.Execute(null);
+            a = Open("A.xml");
+            Open("B.xml");
+            a.IsDirty = true;
+            vm.CloseSavedDocumentsCommand.Execute(null);
+            if (vm.OpenDocuments.Count != 1 || vm.OpenDocuments[0] != a || vm.ActiveDocument != a)
+                return Fail(133, "CloseSaved should keep only dirty tabs");
+            if (!vm.HasDirtyDocuments)
+                return Fail(134, "HasDirtyDocuments should be true while a dirty tab is open");
+
+            var b2 = Open("B.xml");
+            b2.IsDirty = true;
+            vm.SaveAllCommand.ExecuteAsync(null).GetAwaiter().GetResult();
+            if (a.IsDirty || b2.IsDirty)
+                return Fail(135, "SaveAll left documents dirty");
+            if (vm.HasDirtyDocuments)
+                return Fail(136, "HasDirtyDocuments should be false after SaveAll");
+
+            vm.CloseAllDocumentsCommand.Execute(null);
+            if (vm.OpenDocuments.Count != 0 || vm.ActiveDocument is not null)
+                return Fail(137, "CloseAll should close every tab");
+
+            Console.WriteLine("[smoke:tabs] OK");
+            return 0;
+        }
+        catch (Exception ex) { return Fail(138, $"Tab commands smoke crashed: {ex.Message}"); }
         finally { TryDelete(tempDir); }
     }
 

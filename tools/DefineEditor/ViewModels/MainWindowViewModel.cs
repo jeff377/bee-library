@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.ComponentModel;
 using Bee.DefineEditor.Models;
 using Bee.DefineEditor.Services;
 using Bee.Definition;
@@ -54,6 +55,14 @@ public partial class MainWindowViewModel : ViewModelBase
     public bool HasActiveDocument => ActiveDocument is not null;
 
     /// <summary>
+    /// True when at least one open document has unsaved edits and supports
+    /// saving. Drives the File menu's "Save All" availability; refreshed from
+    /// each document's IsDirty change (see <see cref="OnOpenDocumentsChanged"/>).
+    /// </summary>
+    public bool HasDirtyDocuments =>
+        OpenDocuments.Any(d => d.IsDirty && d.FileSaveCommand is not null);
+
+    /// <summary>
     /// Active document's file path relative to <see cref="SolutionPath"/>, e.g.
     /// "FormSchema/Employee.xml". Empty when no document is active or the
     /// solution root is unknown. Bound to the status bar so the user can see
@@ -84,10 +93,34 @@ public partial class MainWindowViewModel : ViewModelBase
         OpenDocuments.CollectionChanged += OnOpenDocumentsChanged;
     }
 
+    /// <summary>
+    /// Documents whose PropertyChanged we are currently subscribed to for
+    /// IsDirty tracking. Re-synced wholesale on every collection change —
+    /// tab counts are small, and full resync sidesteps the Reset-action
+    /// case where the removed items are not reported.
+    /// </summary>
+    private readonly List<DocumentViewModelBase> _dirtySubscriptions = new();
+
     private void OnOpenDocumentsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         OnPropertyChanged(nameof(HasOpenDocuments));
         OnPropertyChanged(nameof(ShowDocumentWelcome));
+
+        foreach (var doc in _dirtySubscriptions)
+            doc.PropertyChanged -= OnDocumentPropertyChanged;
+        _dirtySubscriptions.Clear();
+        foreach (var doc in OpenDocuments)
+        {
+            doc.PropertyChanged += OnDocumentPropertyChanged;
+            _dirtySubscriptions.Add(doc);
+        }
+        OnPropertyChanged(nameof(HasDirtyDocuments));
+    }
+
+    private void OnDocumentPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(DocumentViewModelBase.IsDirty))
+            OnPropertyChanged(nameof(HasDirtyDocuments));
     }
 
     partial void OnSolutionPathChanged(string value)
@@ -143,6 +176,74 @@ public partial class MainWindowViewModel : ViewModelBase
                 ? null
                 : OpenDocuments[Math.Min(idx, OpenDocuments.Count - 1)];
         }
+    }
+
+    [RelayCommand]
+    private void CloseOtherDocuments(DocumentViewModelBase? doc)
+    {
+        if (doc is null) return;
+        CloseDocuments(OpenDocuments.Where(d => d != doc).ToList(), activate: doc);
+    }
+
+    [RelayCommand]
+    private void CloseDocumentsToTheRight(DocumentViewModelBase? doc)
+    {
+        if (doc is null) return;
+        var idx = OpenDocuments.IndexOf(doc);
+        if (idx < 0) return;
+        CloseDocuments(OpenDocuments.Skip(idx + 1).ToList(), activate: doc);
+    }
+
+    [RelayCommand]
+    private void CloseSavedDocuments() =>
+        CloseDocuments(OpenDocuments.Where(d => !d.IsDirty).ToList(), activate: ActiveDocument);
+
+    [RelayCommand]
+    private void CloseAllDocuments() => CloseDocuments(OpenDocuments.ToList(), activate: null);
+
+    /// <summary>
+    /// Removes and disposes <paramref name="docs"/>, then re-points
+    /// <see cref="ActiveDocument"/>: prefer <paramref name="activate"/> when it
+    /// survived the close, otherwise fall back to the last remaining tab (or
+    /// null when none are left). Shared by the tab context-menu close actions.
+    /// </summary>
+    private void CloseDocuments(IReadOnlyList<DocumentViewModelBase> docs, DocumentViewModelBase? activate)
+    {
+        foreach (var doc in docs)
+        {
+            OpenDocuments.Remove(doc);
+            doc.Dispose();
+        }
+
+        if (activate is not null && OpenDocuments.Contains(activate))
+            ActiveDocument = activate;
+        else if (ActiveDocument is null || !OpenDocuments.Contains(ActiveDocument))
+            ActiveDocument = OpenDocuments.LastOrDefault();
+    }
+
+    /// <summary>
+    /// Saves every dirty document that supports saving, reusing each editor's
+    /// own Save flow (including the save-despite-validation-errors prompt — a
+    /// cancelled prompt leaves that document dirty and the batch moves on).
+    /// </summary>
+    [RelayCommand]
+    private async Task SaveAll()
+    {
+        var targets = OpenDocuments
+            .Where(d => d.IsDirty && d.FileSaveCommand is not null)
+            .ToList();
+        if (targets.Count == 0) return;
+
+        var saved = 0;
+        foreach (var doc in targets)
+        {
+            if (doc.FileSaveCommand is IAsyncRelayCommand asyncSave)
+                await asyncSave.ExecuteAsync(null);
+            else
+                doc.FileSaveCommand!.Execute(null);
+            if (!doc.IsDirty) saved++;
+        }
+        StatusText = L("Status_SavedAll", saved, targets.Count);
     }
 
     /// <summary>

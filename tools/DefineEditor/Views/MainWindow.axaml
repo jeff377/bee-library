@@ -110,6 +110,26 @@
                     <TabControl.ItemTemplate>
                         <DataTemplate x:DataType="vm:DocumentViewModelBase">
                             <Grid ColumnDefinitions="Auto,*,Auto,Auto" MinWidth="120">
+                                <!-- 仿 VS Code 的 tab 右鍵選單：五個 close 動作。
+                                     命令掛在 MainWindowViewModel（透過 #WindowRoot），
+                                     CommandParameter 是被右鍵的那個 tab 的 doc。 -->
+                                <Grid.ContextMenu>
+                                    <ContextMenu>
+                                        <MenuItem Header="{loc:Loc MenuItem_CloseTab}"
+                                                  Command="{Binding #WindowRoot.((vm:MainWindowViewModel)DataContext).CloseDocumentCommand}"
+                                                  CommandParameter="{Binding}"/>
+                                        <MenuItem Header="{loc:Loc MenuItem_CloseOtherTabs}"
+                                                  Command="{Binding #WindowRoot.((vm:MainWindowViewModel)DataContext).CloseOtherDocumentsCommand}"
+                                                  CommandParameter="{Binding}"/>
+                                        <MenuItem Header="{loc:Loc MenuItem_CloseTabsToRight}"
+                                                  Command="{Binding #WindowRoot.((vm:MainWindowViewModel)DataContext).CloseDocumentsToTheRightCommand}"
+                                                  CommandParameter="{Binding}"/>
+                                        <MenuItem Header="{loc:Loc MenuItem_CloseSavedTabs}"
+                                                  Command="{Binding #WindowRoot.((vm:MainWindowViewModel)DataContext).CloseSavedDocumentsCommand}"/>
+                                        <MenuItem Header="{loc:Loc MenuItem_CloseAllTabs}"
+                                                  Command="{Binding #WindowRoot.((vm:MainWindowViewModel)DataContext).CloseAllDocumentsCommand}"/>
+                                    </ContextMenu>
+                                </Grid.ContextMenu>
                                 <PathIcon Grid.Column="0" Classes="tab-icon" Margin="0,0,8,0"
                                           Data="{Binding TabIcon, Converter={StaticResource IconKeyToGeometry}}"/>
                                 <TextBlock Grid.Column="1" Text="{Binding Title}"

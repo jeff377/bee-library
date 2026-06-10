@@ -26,6 +26,7 @@ public partial class App : Application
     // out when no document is open or when the active one doesn't support
     // saving (e.g. UnsupportedDocumentViewModel).
     public IRelayCommand SaveActiveCommand { get; }
+    public IRelayCommand SaveAllCommand { get; }
     public IRelayCommand ValidateActiveCommand { get; }
 
     public App()
@@ -36,6 +37,7 @@ public partial class App : Application
         OpenSolutionCommand = new RelayCommand(PromptOpenSolution);
         ToggleThemeCommand = new RelayCommand(ToggleTheme);
         SaveActiveCommand = new RelayCommand(ExecuteActiveSave, CanExecuteActiveSave);
+        SaveAllCommand = new RelayCommand(ExecuteSaveAll, CanExecuteSaveAll);
         ValidateActiveCommand = new RelayCommand(ExecuteActiveValidate, CanExecuteActiveValidate);
     }
 
@@ -80,6 +82,10 @@ public partial class App : Application
                 {
                     ((RelayCommand)SaveActiveCommand).NotifyCanExecuteChanged();
                     ((RelayCommand)ValidateActiveCommand).NotifyCanExecuteChanged();
+                }
+                else if (e.PropertyName == nameof(MainWindowViewModel.HasDirtyDocuments))
+                {
+                    ((RelayCommand)SaveAllCommand).NotifyCanExecuteChanged();
                 }
             };
 
@@ -133,6 +139,9 @@ public partial class App : Application
         fileMenu.Menu.Add(new NativeMenuItemSeparator());
         fileMenu.Menu.Add(LocItem("MenuItem_Save", SaveActiveCommand,
             new KeyGesture(Key.S, KeyModifiers.Meta)));
+        // VS Code's macOS shortcut for "Save All" is Cmd+Option+S; reused.
+        fileMenu.Menu.Add(LocItem("MenuItem_SaveAll", SaveAllCommand,
+            new KeyGesture(Key.S, KeyModifiers.Meta | KeyModifiers.Alt)));
         // VS Code uses Cmd+Shift+B for build / validate-style commands; reused.
         fileMenu.Menu.Add(LocItem("MenuItem_Validate", ValidateActiveCommand,
             new KeyGesture(Key.B, KeyModifiers.Meta | KeyModifiers.Shift)));
@@ -247,15 +256,7 @@ public partial class App : Application
     /// the command list, and to avoid holding stale references when the
     /// lifetime swaps windows.
     /// </summary>
-    private static DocumentViewModelBase? GetActiveDocument()
-    {
-        if ((Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
-            is { DataContext: MainWindowViewModel vm })
-        {
-            return vm.ActiveDocument;
-        }
-        return null;
-    }
+    private static DocumentViewModelBase? GetActiveDocument() => GetMainViewModel()?.ActiveDocument;
 
     private static bool CanExecuteActiveSave() =>
         GetActiveDocument()?.FileSaveCommand?.CanExecute(null) ?? false;
@@ -268,6 +269,16 @@ public partial class App : Application
 
     private static void ExecuteActiveValidate() =>
         GetActiveDocument()?.FileValidateCommand?.Execute(null);
+
+    private static MainWindowViewModel? GetMainViewModel() =>
+        (Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.MainWindow
+            ?.DataContext as MainWindowViewModel;
+
+    private static bool CanExecuteSaveAll() =>
+        GetMainViewModel()?.HasDirtyDocuments ?? false;
+
+    private static void ExecuteSaveAll() =>
+        GetMainViewModel()?.SaveAllCommand.Execute(null);
 
     /// <summary>
     /// Forwards "Open Folder..." from the macOS menu to <see cref="MainWindow"/>
