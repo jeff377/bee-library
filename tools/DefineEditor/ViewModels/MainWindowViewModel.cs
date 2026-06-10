@@ -83,6 +83,13 @@ public partial class MainWindowViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// True when the active document has a backing file path to show in the
+    /// status bar. False for path-less tabs (Welcome) so the "›" separator
+    /// doesn't dangle with nothing after it.
+    /// </summary>
+    public bool HasActiveDocumentPath => ActiveDocumentRelativePath.Length > 0;
+
+    /// <summary>
     /// Visibility hint for the right-pane "select a node to open a tab" welcome.
     /// Shown only when a solution is open but no document tab is active —
     /// otherwise the left-pane "Open Folder" welcome covers the empty state.
@@ -129,12 +136,34 @@ public partial class MainWindowViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsSolutionOpened));
         OnPropertyChanged(nameof(ShowDocumentWelcome));
         OnPropertyChanged(nameof(ActiveDocumentRelativePath));
+        OnPropertyChanged(nameof(HasActiveDocumentPath));
     }
 
     partial void OnActiveDocumentChanged(DocumentViewModelBase? value)
     {
         OnPropertyChanged(nameof(HasActiveDocument));
         OnPropertyChanged(nameof(ActiveDocumentRelativePath));
+        OnPropertyChanged(nameof(HasActiveDocumentPath));
+    }
+
+    /// <summary>
+    /// Activates the Welcome tab, creating it (pinned as the first tab, like
+    /// VS Code) when it isn't open. Called at startup when
+    /// <see cref="UserSettings.ShowWelcomeOnStartup"/> is set and from
+    /// View → Welcome.
+    /// </summary>
+    public void ShowWelcome()
+    {
+        var existing = OpenDocuments.OfType<WelcomeDocumentViewModel>().FirstOrDefault();
+        if (existing is not null)
+        {
+            ActiveDocument = existing;
+            return;
+        }
+
+        var doc = new WelcomeDocumentViewModel();
+        OpenDocuments.Insert(0, doc);
+        ActiveDocument = doc;
     }
 
     partial void OnSelectedNodeChanged(DefineNode? value)

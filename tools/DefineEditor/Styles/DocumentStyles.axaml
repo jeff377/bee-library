@@ -61,6 +61,9 @@
         <!-- 後備（file-outline） -->
         <StreamGeometry x:Key="DefUnknown">M13,9V3.5L18.5,9M6,2C4.89,2 4,2.89 4,4V20A2,2 0 0,0 6,22H18A2,2 0 0,0 20,20V8L14,2H6Z</StreamGeometry>
 
+        <!-- Welcome tab: home icon -->
+        <StreamGeometry x:Key="DefWelcome">M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z</StreamGeometry>
+
         <!-- =================================================================
              內層樹節點圖示（每編輯器內部展開的小節點）
              ================================================================= -->

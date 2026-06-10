@@ -21,6 +21,13 @@ public sealed class UserSettings
     /// </summary>
     public List<string> RecentSolutions { get; set; } = new();
 
+    /// <summary>
+    /// Whether the Welcome tab opens automatically at startup. Toggled by the
+    /// checkbox on the Welcome page itself; the tab stays reachable via
+    /// View → Welcome either way.
+    /// </summary>
+    public bool ShowWelcomeOnStartup { get; set; } = true;
+
     public const int MaxRecentSolutions = 8;
 
     /// <summary>

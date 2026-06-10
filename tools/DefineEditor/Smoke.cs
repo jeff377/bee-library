@@ -534,6 +534,16 @@ internal static class Smoke
                 return doc;
             }
 
+            // Welcome tab: idempotent (re-invoking activates, not duplicates),
+            // closes like a plain tab.
+            vm.ShowWelcome();
+            vm.ShowWelcome();
+            if (vm.OpenDocuments.OfType<WelcomeDocumentViewModel>().Count() != 1)
+                return Fail(140, "ShowWelcome should activate the existing tab, not duplicate it");
+            vm.CloseAllDocumentsCommand.Execute(null);
+            if (vm.OpenDocuments.Count != 0)
+                return Fail(141, "Welcome tab should close like a normal tab");
+
             Open("A.xml");
             var b = Open("B.xml");
             Open("C.xml");

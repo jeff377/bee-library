@@ -21,6 +21,7 @@ public partial class App : Application
     public IRelayCommand QuitCommand { get; }
     public IRelayCommand OpenSolutionCommand { get; }
     public IRelayCommand ToggleThemeCommand { get; }
+    public IRelayCommand WelcomeCommand { get; }
 
     // Proxies that forward File menu Save / Validate to whichever document is
     // currently active. CanExecute is re-evaluated each time ActiveDocument
@@ -54,6 +55,7 @@ public partial class App : Application
         QuitCommand = new RelayCommand(Quit);
         OpenSolutionCommand = new RelayCommand(PromptOpenSolution);
         ToggleThemeCommand = new RelayCommand(ToggleTheme);
+        WelcomeCommand = new RelayCommand(() => GetMainViewModel()?.ShowWelcome());
         SaveActiveCommand = new RelayCommand(ExecuteActiveSave, CanExecuteActiveSave);
         SaveAllCommand = new RelayCommand(ExecuteSaveAll, CanExecuteSaveAll);
         ValidateActiveCommand = new RelayCommand(ExecuteActiveValidate, CanExecuteActiveValidate);
@@ -91,6 +93,11 @@ public partial class App : Application
                 DataContext = vm,
             };
             desktop.MainWindow = mainWindow;
+
+            // VS Code-style Welcome tab on startup; opt-out via the checkbox
+            // on the page itself, reachable any time through View → Welcome.
+            if (UserSettings.Load().ShowWelcomeOnStartup)
+                vm.ShowWelcome();
 
             // Re-evaluate the File menu's Save / Validate availability when
             // the active tab changes. Without this the menu items stay
@@ -193,6 +200,8 @@ public partial class App : Application
         // ── View menu ───────────────────────────────────────────────
         var viewMenu = LocItem("Menu_View", command: null, gesture: null);
         viewMenu.Menu = new NativeMenu();
+        viewMenu.Menu.Add(LocItem("MenuItem_Welcome", WelcomeCommand, gesture: null));
+        viewMenu.Menu.Add(new NativeMenuItemSeparator());
         viewMenu.Menu.Add(LocItem("MenuItem_ToggleTheme", ToggleThemeCommand, gesture: null));
         viewMenu.Menu.Add(new NativeMenuItemSeparator());
 

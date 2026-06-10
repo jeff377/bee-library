@@ -37,15 +37,15 @@
                                TextTrimming="CharacterEllipsis"
                                ToolTip.Tip="{Binding SolutionPath}"/>
 
-                    <!-- separator + 當前 active document 的相對路徑 -->
+                    <!-- separator + 當前 active document 的相對路徑（Welcome 等無檔案分頁不顯示） -->
                     <TextBlock Text="›" Classes="muted" VerticalAlignment="Center"
                                Margin="4,0,0,0"
-                               IsVisible="{Binding HasActiveDocument}"/>
+                               IsVisible="{Binding HasActiveDocumentPath}"/>
                     <TextBlock Text="{Binding ActiveDocumentRelativePath}"
                                Classes="muted" VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"
                                ToolTip.Tip="{Binding ActiveDocumentRelativePath}"
-                               IsVisible="{Binding HasActiveDocument}"/>
+                               IsVisible="{Binding HasActiveDocumentPath}"/>
                 </StackPanel>
                 <TextBlock Grid.Column="0" Text="{loc:Loc Status_NoSolution}"
                            Classes="muted" VerticalAlignment="Center"

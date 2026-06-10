@@ -51,6 +51,18 @@
   <data name="Welcome_OpenFolderTip" xml:space="preserve"><value>Select a DefinePath solution folder</value></data>
   <data name="Welcome_MenuAlternative" xml:space="preserve"><value>Or use File → Open Folder...</value></data>
 
+  <!-- Welcome tab -->
+  <data name="MenuItem_Welcome" xml:space="preserve"><value>Welcome</value></data>
+  <data name="Welcome_TabTitle" xml:space="preserve"><value>Welcome</value></data>
+  <data name="Welcome_SectionStart" xml:space="preserve"><value>Start</value></data>
+  <data name="Welcome_SectionRecent" xml:space="preserve"><value>Recent</value></data>
+  <data name="Welcome_SectionTips" xml:space="preserve"><value>Tips</value></data>
+  <data name="Welcome_NoRecent" xml:space="preserve"><value>No recently opened folders yet.</value></data>
+  <data name="Welcome_Tip1" xml:space="preserve"><value>Pick a define file from the solution tree on the left to open it as a tab; clicking an already-open file switches to its tab.</value></data>
+  <data name="Welcome_Tip2" xml:space="preserve"><value>⌘S saves the active tab, ⌥⌘S saves all dirty tabs, ⇧⌘B validates the active define.</value></data>
+  <data name="Welcome_Tip3" xml:space="preserve"><value>Nine define types are supported: FormSchema, TableSchema, FormLayout, Language and the singleton settings files.</value></data>
+  <data name="Welcome_ShowOnStartup" xml:space="preserve"><value>Show welcome page on startup</value></data>
+
   <data name="Status_NoSolution" xml:space="preserve"><value>No solution open</value></data>
 
   <data name="Action_Cancel" xml:space="preserve"><value>Cancel</value></data>

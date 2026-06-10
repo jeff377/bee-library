@@ -38,6 +38,18 @@
   <data name="Welcome_OpenFolderTip" xml:space="preserve"><value>選擇 DefinePath 方案資料夾</value></data>
   <data name="Welcome_MenuAlternative" xml:space="preserve"><value>亦可從上方「檔案 → 開啟方案...」</value></data>
 
+  <!-- Welcome tab -->
+  <data name="MenuItem_Welcome" xml:space="preserve"><value>歡迎</value></data>
+  <data name="Welcome_TabTitle" xml:space="preserve"><value>歡迎</value></data>
+  <data name="Welcome_SectionStart" xml:space="preserve"><value>開始</value></data>
+  <data name="Welcome_SectionRecent" xml:space="preserve"><value>最近</value></data>
+  <data name="Welcome_SectionTips" xml:space="preserve"><value>操作提示</value></data>
+  <data name="Welcome_NoRecent" xml:space="preserve"><value>（尚無最近開啟的方案）</value></data>
+  <data name="Welcome_Tip1" xml:space="preserve"><value>從左側方案樹點選定義檔即開啟編輯分頁；點選已開啟的檔案會切換到既有分頁。</value></data>
+  <data name="Welcome_Tip2" xml:space="preserve"><value>⌘S 儲存目前分頁、⌥⌘S 儲存所有未存分頁、⇧⌘B 驗證目前定義。</value></data>
+  <data name="Welcome_Tip3" xml:space="preserve"><value>支援 9 種定義型別：FormSchema、TableSchema、FormLayout、Language 與各 Settings 單例定義。</value></data>
+  <data name="Welcome_ShowOnStartup" xml:space="preserve"><value>啟動時顯示歡迎頁</value></data>
+
   <data name="Status_NoSolution" xml:space="preserve"><value>尚未開啟方案</value></data>
 
   <data name="Action_Cancel" xml:space="preserve"><value>取消</value></data>

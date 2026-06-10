@@ -93,6 +93,18 @@ POCO 無法發通知，改由 **view 層攔截使用者輸入事件**：
 - 評估後不做：Check for Updates（無更新通道）、Services（NativeMenu 不支援）、
   Settings… 對話框與 Window 選單（使用者未選）。
 
+### 6. Welcome tab（追加項目）
+
+- 仿 VS Code 啟動歡迎頁：`WelcomeDocumentViewModel` + `WelcomeDocumentView`，
+  走既有 tab / ViewLocator 機制；不可 dirty、不可儲存（File → Save 自動反灰）、
+  `DocumentKey` 為空（狀態列不顯示路徑段）。
+- 內容：開始（開啟方案…）、最近（吃 `UserSettings.RecentSolutions`，點擊直接開）、
+  操作提示三則、「啟動時顯示歡迎頁」核取（存 `UserSettings.ShowWelcomeOnStartup`，
+  預設 true）。
+- 入口：啟動時自動開啟（依設定）；View → Welcome 隨時叫回（重複呼叫只切換不重開）。
+- 開啟方案會關閉所有分頁（既有行為），Welcome 一併關閉——與 VS Code 開資料夾
+  重載視窗的行為等價。
+
 ## 不做的事
 
 - 不引入 POCO 層的 change tracking（INPC 改造影響 Bee.Definition 整個套件，超出範圍）。

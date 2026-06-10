@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:Bee.DefineEditor.ViewModels"
+             xmlns:loc="using:Bee.DefineEditor.Markup"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+             x:Class="Bee.DefineEditor.Views.WelcomeDocumentView"
+             x:DataType="vm:WelcomeDocumentViewModel"
+             x:CompileBindings="True">
+
+    <UserControl.Styles>
+        <!-- VS Code welcome 頁的連結式按鈕：無框、主色文字、手型游標 -->
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="2,3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{DynamicResource SemiColorPrimary}"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+        <Style Selector="Button.link:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="TextElement.Foreground" Value="{DynamicResource SemiColorPrimaryHover}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel MaxWidth="780" Margin="56,44" Spacing="4"
+                    HorizontalAlignment="Left">
+            <TextBlock Classes="h1" FontSize="34" Text="DefineEditor"/>
+            <TextBlock Classes="muted" FontSize="15" Margin="0,2,0,30"
+                       Text="{loc:Loc About_Subtitle}"/>
+
+            <Grid ColumnDefinitions="5*,56,4*">
+                <!-- 左欄：開始 + 最近 -->
+                <StackPanel Grid.Column="0" Spacing="8">
+                    <TextBlock Classes="h2" Text="{loc:Loc Welcome_SectionStart}"/>
+                    <Button Classes="link" Command="{Binding OpenFolderCommand}">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <PathIcon Data="{StaticResource IconFolder}" Width="14" Height="14"/>
+                            <TextBlock Text="{loc:Loc Welcome_OpenFolderButton}" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+
+                    <TextBlock Classes="h2" Text="{loc:Loc Welcome_SectionRecent}" Margin="0,22,0,0"/>
+                    <ItemsControl ItemsSource="{Binding RecentSolutions}"
+                                  IsVisible="{Binding HasRecentSolutions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="x:String">
+                                <Button Classes="link"
+                                        Command="{Binding $parent[ItemsControl].((vm:WelcomeDocumentViewModel)DataContext).OpenRecentCommand}"
+                                        CommandParameter="{Binding}"
+                                        ToolTip.Tip="{Binding}">
+                                    <TextBlock Text="{Binding}" TextTrimming="CharacterEllipsis" MaxWidth="380"/>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Classes="muted" Text="{loc:Loc Welcome_NoRecent}"
+                               IsVisible="{Binding !HasRecentSolutions}"/>
+                </StackPanel>
+
+                <!-- 右欄：操作提示 -->
+                <StackPanel Grid.Column="2" Spacing="10">
+                    <TextBlock Classes="h2" Text="{loc:Loc Welcome_SectionTips}"/>
+                    <TextBlock Classes="muted" TextWrapping="Wrap" Text="{loc:Loc Welcome_Tip1}"/>
+                    <TextBlock Classes="muted" TextWrapping="Wrap" Text="{loc:Loc Welcome_Tip2}"/>
+                    <TextBlock Classes="muted" TextWrapping="Wrap" Text="{loc:Loc Welcome_Tip3}"/>
+                </StackPanel>
+            </Grid>
+
+            <CheckBox Margin="0,36,0,0"
+                      IsChecked="{Binding ShowOnStartup, Mode=TwoWay}"
+                      Content="{loc:Loc Welcome_ShowOnStartup}"/>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
