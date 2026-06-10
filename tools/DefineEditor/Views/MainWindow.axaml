@@ -59,8 +59,9 @@
 
         <!-- 主體：左方案樹 + 右文件 tab 區 -->
         <Grid ColumnDefinitions="320,4,*">
-            <!-- 左側：有方案時顯示 TreeView，否則顯示 VS Code 風 welcome / Open Folder -->
-            <Grid Grid.Column="0">
+            <!-- 左側：有方案時顯示 TreeView，否則顯示 VS Code 風 welcome / Open Folder。
+                 sidebar class 讓整欄（含樹下方空白與 welcome 面板）套 VS Code 風底色。 -->
+            <Grid Grid.Column="0" Classes="sidebar">
                 <TreeView IsVisible="{Binding IsSolutionOpened}"
                           ItemsSource="{Binding Nodes}"
                           SelectedItem="{Binding SelectedNode, Mode=TwoWay}"

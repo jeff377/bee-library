@@ -11,6 +11,17 @@
 
     <Application.Resources>
         <ResourceDictionary>
+            <ResourceDictionary.ThemeDictionaries>
+                <!-- 仿 VS Code 的 sidebar 配色：Light 比編輯區（白）深一階、
+                     Dark 比編輯區淺一階，讓方案樹與定義編輯區有明確區隔。
+                     色值取自 VS Code 預設主題的 sideBar.background。 -->
+                <ResourceDictionary x:Key="Light">
+                    <SolidColorBrush x:Key="SidebarBackground">#F3F3F3</SolidColorBrush>
+                </ResourceDictionary>
+                <ResourceDictionary x:Key="Dark">
+                    <SolidColorBrush x:Key="SidebarBackground">#252526</SolidColorBrush>
+                </ResourceDictionary>
+            </ResourceDictionary.ThemeDictionaries>
             <conv:IconKeyToGeometryConverter x:Key="IconKeyToGeometry"/>
         </ResourceDictionary>
     </Application.Resources>

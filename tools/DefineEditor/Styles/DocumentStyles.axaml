@@ -183,9 +183,18 @@
         <Setter Property="FontFamily" Value="ui-monospace, Menlo, Consolas, monospace"/>
     </Style>
 
-    <!-- 左側樹面板與編輯面區隔（沉面層） -->
+    <!-- 文件內層樹（各編輯器左欄）：沉面層 -->
     <Style Selector="TreeView">
         <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+    </Style>
+    <!-- 仿 VS Code sidebar：左側方案樹整欄套專屬底色（SidebarBackground 定義於
+         App.axaml ThemeDictionaries —— Light 比編輯區深一階、Dark 淺一階），
+         欄內 TreeView 改透明讓整欄同色；文件內層樹不受影響（上方泛用樣式）。 -->
+    <Style Selector="Grid.sidebar">
+        <Setter Property="Background" Value="{DynamicResource SidebarBackground}"/>
+    </Style>
+    <Style Selector="Grid.sidebar TreeView">
+        <Setter Property="Background" Value="Transparent"/>
     </Style>
     <Style Selector="TreeViewItem">
         <Setter Property="FontSize" Value="14"/>
