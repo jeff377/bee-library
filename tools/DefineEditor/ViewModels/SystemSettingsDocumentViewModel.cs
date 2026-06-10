@@ -37,6 +37,8 @@ public sealed partial class SystemSettingsDocumentViewModel : SingletonDocumentV
 
     public bool SelectedKindIsExtendedGroup => SelectedTreeNode?.Kind == KindExtendedGroup;
 
+    protected override bool HasVisibleAddMenuItems => SelectedKindIsExtendedGroup;
+
     protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
         OnPropertyChanged(nameof(SelectedKindIsExtendedGroup));

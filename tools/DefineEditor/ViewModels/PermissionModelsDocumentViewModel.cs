@@ -26,6 +26,9 @@ public sealed partial class PermissionModelsDocumentViewModel : SingletonDocumen
     public bool SelectedKindIsRoot => SelectedTreeNode?.Kind == KindRoot;
     public bool SelectedKindIsModel => SelectedTreeNode?.Kind == KindModel;
 
+    protected override bool HasVisibleAddMenuItems =>
+        SelectedKindIsRoot || SelectedKindIsModel;
+
     protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
         OnPropertyChanged(nameof(SelectedKindIsRoot));

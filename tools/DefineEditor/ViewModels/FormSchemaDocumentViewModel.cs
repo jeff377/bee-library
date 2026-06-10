@@ -37,6 +37,10 @@ public sealed partial class FormSchemaDocumentViewModel : SingletonDocumentViewM
     public bool SelectedKindIsLookupGroup => SelectedTreeNode?.Kind == FormSchemaKinds.LookupGroup;
     public bool SelectedKindIsListItemsGroup => SelectedTreeNode?.Kind == FormSchemaKinds.ListItemsGroup;
 
+    protected override bool HasVisibleAddMenuItems =>
+        SelectedKindIsSchema || SelectedKindIsTable || SelectedKindIsRelationGroup ||
+        SelectedKindIsLookupGroup || SelectedKindIsListItemsGroup;
+
     /// <summary>
     /// Content shown in the right-pane <see cref="Avalonia.Controls.ContentControl"/>.
     /// Group nodes (Relation / Lookup) yield a dedicated <see cref="MappingGroupEditor"/>

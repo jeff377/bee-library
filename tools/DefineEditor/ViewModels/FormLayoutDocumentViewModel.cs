@@ -30,6 +30,10 @@ public sealed partial class FormLayoutDocumentViewModel : SingletonDocumentViewM
     public bool SelectedKindIsDetailsGroup => SelectedTreeNode?.Kind == KindDetailsGroup;
     public bool SelectedKindIsGrid => SelectedTreeNode?.Kind == KindGrid;
 
+    protected override bool HasVisibleAddMenuItems =>
+        SelectedKindIsSectionsGroup || SelectedKindIsSection ||
+        SelectedKindIsDetailsGroup || SelectedKindIsGrid;
+
     protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
         OnPropertyChanged(nameof(SelectedKindIsSectionsGroup));

@@ -38,6 +38,10 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
         // SelectedKindIsXxx flags powering the tree-view context menu, kind-
         // specific to each settings document).
         OnSelectedTreeNodeRefreshDerivedProperties(value);
+
+        // ShowDeleteSeparator depends on the subclass flags refreshed above,
+        // so it must be raised after the hook.
+        OnPropertyChanged(nameof(ShowDeleteSeparator));
     }
 
     /// <summary>
@@ -55,6 +59,21 @@ public abstract partial class SingletonDocumentViewModelBase : DocumentViewModel
     /// </summary>
     public bool SelectedKindCanDelete =>
         SelectedTreeNode is not null && GetDeleteAction(SelectedTreeNode) is not null;
+
+    /// <summary>
+    /// Whether the context-menu separator between the Add items and the
+    /// Delete item should show. A separator only makes sense when both
+    /// sides are visible — a delete-only menu would otherwise render an
+    /// orphaned line above its single item.
+    /// </summary>
+    public bool ShowDeleteSeparator => SelectedKindCanDelete && HasVisibleAddMenuItems;
+
+    /// <summary>
+    /// Whether any Add menu item is visible for the current selection —
+    /// the OR of the subclass's <c>SelectedKindIsXxx</c> flags that gate
+    /// its Add items. Drives <see cref="ShowDeleteSeparator"/>.
+    /// </summary>
+    protected abstract bool HasVisibleAddMenuItems { get; }
 
     // IsDirty / StatusText / culture-change refresh are inherited from
     // DocumentViewModelBase.

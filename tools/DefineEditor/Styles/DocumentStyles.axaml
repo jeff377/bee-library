@@ -116,14 +116,16 @@
         <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}"/>
         <Setter Property="FontSize" Value="13"/>
     </Style>
+    <!-- NOTE: no MaxWidth on stretched editors. `Stretch` + `MaxWidth` makes
+         Avalonia centre the element inside the leftover slot once the pane
+         grows past the cap, breaking left alignment with fixed-width rows
+         (`.short` ComboBox). Width-capped fields belong to `.row.short`. -->
     <Style Selector="DockPanel.row > TextBox">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="MaxWidth" Value="640"/>
         <Setter Property="FontSize" Value="13"/>
     </Style>
     <Style Selector="DockPanel.row > ComboBox">
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
-        <Setter Property="MaxWidth" Value="640"/>
         <Setter Property="FontSize" Value="13"/>
     </Style>
     <Style Selector="DockPanel.row > CheckBox">

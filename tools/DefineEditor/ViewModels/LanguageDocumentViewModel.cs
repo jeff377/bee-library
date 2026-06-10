@@ -28,6 +28,9 @@ public sealed partial class LanguageDocumentViewModel : SingletonDocumentViewMod
     public bool SelectedKindIsEnumsGroup => SelectedTreeNode?.Kind == KindEnumsGroup;
     public bool SelectedKindIsEnum => SelectedTreeNode?.Kind == KindEnum;
 
+    protected override bool HasVisibleAddMenuItems =>
+        SelectedKindIsItemsGroup || SelectedKindIsEnumsGroup || SelectedKindIsEnum;
+
     protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
         OnPropertyChanged(nameof(SelectedKindIsItemsGroup));

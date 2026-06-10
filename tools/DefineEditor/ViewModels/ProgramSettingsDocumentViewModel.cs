@@ -25,6 +25,9 @@ public sealed partial class ProgramSettingsDocumentViewModel : SingletonDocument
     public bool SelectedKindIsRoot => SelectedTreeNode?.Kind == KindRoot;
     public bool SelectedKindIsCategory => SelectedTreeNode?.Kind == KindCategory;
 
+    protected override bool HasVisibleAddMenuItems =>
+        SelectedKindIsRoot || SelectedKindIsCategory;
+
     protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
         OnPropertyChanged(nameof(SelectedKindIsRoot));

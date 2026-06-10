@@ -286,7 +286,7 @@
                                 <PathIcon Data="{StaticResource IconList}" Width="14" Height="14"/>
                             </MenuItem.Icon>
                         </MenuItem>
-                        <Separator IsVisible="{Binding SelectedKindCanDelete}"/>
+                        <Separator IsVisible="{Binding ShowDeleteSeparator}"/>
                         <MenuItem Header="{loc:Loc Action_Delete}"
                                   Command="{Binding DeleteCommand}"
                                   IsVisible="{Binding SelectedKindCanDelete}">

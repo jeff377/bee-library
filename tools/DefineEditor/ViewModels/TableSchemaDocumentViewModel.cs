@@ -29,6 +29,9 @@ public sealed partial class TableSchemaDocumentViewModel : SingletonDocumentView
     public bool SelectedKindIsIndexesGroup => SelectedTreeNode?.Kind == KindIndexesGroup;
     public bool SelectedKindIsIndex => SelectedTreeNode?.Kind == KindIndex;
 
+    protected override bool HasVisibleAddMenuItems =>
+        SelectedKindIsFieldsGroup || SelectedKindIsIndexesGroup || SelectedKindIsIndex;
+
     protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
         OnPropertyChanged(nameof(SelectedKindIsFieldsGroup));

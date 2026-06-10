@@ -30,6 +30,9 @@ public sealed partial class DatabaseSettingsDocumentViewModel : SingletonDocumen
     public bool SelectedKindIsServersGroup => SelectedTreeNode?.Kind == KindServersGroup;
     public bool SelectedKindIsItemsGroup => SelectedTreeNode?.Kind == KindItemsGroup;
 
+    protected override bool HasVisibleAddMenuItems =>
+        SelectedKindIsServersGroup || SelectedKindIsItemsGroup;
+
     protected override void OnSelectedTreeNodeRefreshDerivedProperties(SettingsTreeNode? value)
     {
         OnPropertyChanged(nameof(SelectedKindIsServersGroup));
