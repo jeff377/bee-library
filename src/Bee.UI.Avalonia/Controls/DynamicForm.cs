@@ -248,7 +248,12 @@ namespace Bee.UI.Avalonia.Controls
                     DateTimeStyles.AssumeLocal,
                     out var parsed))
             {
-                picker.SelectedDate = new DateTimeOffset(parsed.Date, TimeSpan.Zero);
+                // `AssumeLocal` yields Kind=Local, and the DateTimeOffset(DateTime, TimeSpan)
+                // constructor rejects a Local value whose offset argument differs from the
+                // machine's UTC offset — so pinning TimeSpan.Zero throws everywhere outside
+                // UTC. Strip the kind first; the picker only consumes the date component.
+                var dateOnly = DateTime.SpecifyKind(parsed.Date, DateTimeKind.Unspecified);
+                picker.SelectedDate = new DateTimeOffset(dateOnly, TimeSpan.Zero);
             }
             picker.SelectedDateChanged += (_, e) =>
             {
