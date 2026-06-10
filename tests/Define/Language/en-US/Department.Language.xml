@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Department" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Department" />
+    <LanguageItem Key="Table.Department.DisplayName" Value="Department" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence No." />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row Id" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Department No." />
+    <LanguageItem Key="Field.sys_name.Caption" Value="Department Name" />
+    <LanguageItem Key="Field.manager_rowid.Caption" Value="Manager Row Id" />
+    <LanguageItem Key="Field.ref_manager_id.Caption" Value="Manager No." />
+    <LanguageItem Key="Field.ref_manager_name.Caption" Value="Manager Name" />
+  </Items>
+  <Enums />
+</LanguageResource>
