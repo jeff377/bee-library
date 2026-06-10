@@ -59,15 +59,15 @@
                         <TextBlock Text="{Binding ParseResult.RewrittenConnectionString, StringFormat='ConnectionString：{0}'}" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding ParseResult.Errors}" Margin="0,4,0,0">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource ErrorForeground}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource SemiColorDanger}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <ItemsControl ItemsSource="{Binding ParseResult.Warnings}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource WarningForeground}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource SemiColorWarning}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <Button Classes="tool primary" Command="{Binding ApplyCommand}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                        <Button Classes="tool Primary" Command="{Binding ApplyCommand}" Margin="0,8,0,0" HorizontalAlignment="Left"
                                 ToolTip.Tip="{loc:Loc DatabaseSettings_ApplyServerTooltip}">
                             <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconApply}"/><TextBlock Text="{loc:Loc DatabaseSettings_ApplyServer}" VerticalAlignment="Center"/></StackPanel>
                         </Button>
@@ -124,15 +124,15 @@
                         <TextBlock Text="{Binding ParseResult.RewrittenConnectionString, StringFormat='ConnectionString：{0}'}" TextWrapping="Wrap"/>
                         <ItemsControl ItemsSource="{Binding ParseResult.Errors}" Margin="0,4,0,0">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource ErrorForeground}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource SemiColorDanger}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <ItemsControl ItemsSource="{Binding ParseResult.Warnings}">
                             <ItemsControl.ItemTemplate>
-                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource WarningForeground}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
+                                <DataTemplate><TextBlock Text="{Binding}" Foreground="{DynamicResource SemiColorWarning}" FontSize="11" TextWrapping="Wrap"/></DataTemplate>
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
-                        <Button Classes="tool primary" Command="{Binding ApplyCommand}" Margin="0,8,0,0" HorizontalAlignment="Left"
+                        <Button Classes="tool Primary" Command="{Binding ApplyCommand}" Margin="0,8,0,0" HorizontalAlignment="Left"
                                 ToolTip.Tip="{loc:Loc DatabaseSettings_ApplyItemTooltip}">
                             <StackPanel Orientation="Horizontal" Spacing="6"><PathIcon Data="{StaticResource IconApply}"/><TextBlock Text="{loc:Loc DatabaseSettings_ApplyItem}" VerticalAlignment="Center"/></StackPanel>
                         </Button>
@@ -207,7 +207,7 @@
                     </ContextMenu>
                 </TreeView.ContextMenu>
             </TreeView>
-            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SemiColorBorder}" ResizeDirection="Columns"/>
             <Border Grid.Column="2" Padding="18,14">
                 <ScrollViewer Classes="props-pane" HorizontalScrollBarVisibility="Disabled">
                     <ContentControl Content="{Binding SelectedEditorContext}"/>

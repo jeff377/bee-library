@@ -46,7 +46,7 @@
         <DataTemplate DataType="settings:SecurityKeySettings">
             <StackPanel x:DataType="settings:SecurityKeySettings" Spacing="2">
                 <TextBlock Classes="h2" Text="{loc:Loc SystemSettings_SecurityProps}" Margin="0,0,0,4"/>
-                <TextBlock Classes="muted" Foreground="{DynamicResource WarningForeground}" Margin="0,0,0,8" TextWrapping="Wrap"
+                <TextBlock Classes="muted" Foreground="{DynamicResource SemiColorWarning}" Margin="0,0,0,8" TextWrapping="Wrap"
                            Text="{loc:Loc SystemSettings_SecurityWarning}"/>
                 <DockPanel Classes="row">
                     <TextBlock Classes="label" Text="ApiEncryptionKey"/>
@@ -182,7 +182,7 @@
                     </ContextMenu>
                 </TreeView.ContextMenu>
             </TreeView>
-            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SemiColorBorder}" ResizeDirection="Columns"/>
             <Border Grid.Column="2" Padding="18,14">
                 <ScrollViewer Classes="props-pane" HorizontalScrollBarVisibility="Disabled">
                     <ContentControl Content="{Binding SelectedEditorContext}"/>

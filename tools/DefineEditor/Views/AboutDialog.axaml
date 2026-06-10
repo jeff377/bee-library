@@ -16,14 +16,14 @@
             <!-- 確認列 -->
             <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
                         HorizontalAlignment="Right" Margin="0,18,0,0">
-                <Button Classes="tool primary" Content="{loc:Loc Action_OK}" Click="OnOk" MinWidth="100"/>
+                <Button Classes="tool Primary" Content="{loc:Loc Action_OK}" Click="OnOk" MinWidth="100"/>
             </StackPanel>
 
             <!-- 主體 -->
             <StackPanel Spacing="10" HorizontalAlignment="Center">
                 <PathIcon Data="{StaticResource DefRoot}" Width="56" Height="56"
                           HorizontalAlignment="Center"
-                          Foreground="{DynamicResource PrimaryButtonBackground}"/>
+                          Foreground="{DynamicResource SemiColorLink}"/>
                 <TextBlock Classes="h1" Text="Bee.DefineEditor"
                            HorizontalAlignment="Center"/>
                 <TextBlock Classes="muted" HorizontalAlignment="Center"

@@ -77,56 +77,22 @@
     </Styles.Resources>
 
     <!-- =================================================================
-         工具列按鈕（含圖示 + 短標籤 + tooltip）
+         工具列按鈕（含圖示 + 短標籤 + tooltip）— 外觀交給 Semi，僅留尺寸
          ================================================================= -->
     <Style Selector="Button.tool">
-        <Setter Property="Background" Value="{DynamicResource ToolButtonBackground}"/>
-        <Setter Property="Foreground" Value="{DynamicResource ToolButtonForeground}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource ToolButtonBorder}"/>
-        <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="11,6"/>
-        <Setter Property="CornerRadius" Value="3"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="MinHeight" Value="32"/>
     </Style>
-    <Style Selector="Button.tool:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ToolButtonBackgroundHover}"/>
-        <Setter Property="Foreground" Value="{DynamicResource ToolButtonForegroundHover}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource ToolButtonBorderHover}"/>
-    </Style>
-    <Style Selector="Button.tool:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ToolButtonBackgroundPressed}"/>
-    </Style>
-    <Style Selector="Button.tool:disabled /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ToolButtonBackgroundDisabled}"/>
-        <Setter Property="Foreground" Value="{DynamicResource ToolButtonForegroundDisabled}"/>
+
+    <!-- 主行為按鈕（例：儲存）：Semi SolidButton 主題 + Primary 語意 class -->
+    <Style Selector="Button.tool.Primary">
+        <Setter Property="Theme" Value="{DynamicResource SolidButton}"/>
     </Style>
 
-    <!-- 主行為按鈕（藍底，例：儲存） -->
-    <Style Selector="Button.tool.primary">
-        <Setter Property="Background" Value="{DynamicResource PrimaryButtonBackground}"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryButtonBackground}"/>
-    </Style>
-    <Style Selector="Button.tool.primary:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource PrimaryButtonBackgroundHover}"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryButtonBackgroundHover}"/>
-    </Style>
-    <Style Selector="Button.tool.primary:pressed /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource PrimaryButtonBackgroundPressed}"/>
-    </Style>
-
-    <!-- 危險按鈕（紅底，例：刪除） -->
-    <Style Selector="Button.tool.danger">
-        <Setter Property="Background" Value="{DynamicResource DangerButtonBackground}"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource DangerButtonBackground}"/>
-    </Style>
-    <Style Selector="Button.tool.danger:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource DangerButtonBackgroundHover}"/>
-        <Setter Property="Foreground" Value="White"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource DangerButtonBackgroundHover}"/>
+    <!-- 危險按鈕（例：刪除）：Semi SolidButton 主題 + Danger 語意 class -->
+    <Style Selector="Button.tool.Danger">
+        <Setter Property="Theme" Value="{DynamicResource SolidButton}"/>
     </Style>
 
     <!-- 圖示按鈕內部 PathIcon -->
@@ -147,7 +113,7 @@
         <Setter Property="DockPanel.Dock" Value="Left"/>
         <Setter Property="Width" Value="180"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
-        <Setter Property="Foreground" Value="{DynamicResource PropertyLabelForeground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}"/>
         <Setter Property="FontSize" Value="13"/>
     </Style>
     <Style Selector="DockPanel.row > TextBox">
@@ -175,49 +141,46 @@
     </Style>
 
     <!-- =================================================================
-         面板區塊背景（主題感知）
+         面板區塊背景（Semi 分層 token：Bg0 主面、Bg1 沉面、Bg2 抬升面）
          ================================================================= -->
     <Style Selector="Border.surface">
-        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
+        <Setter Property="Background" Value="{DynamicResource SemiColorBackground0}"/>
     </Style>
     <Style Selector="Border.surface-sunken">
-        <Setter Property="Background" Value="{DynamicResource SunkenBackground}"/>
+        <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
     </Style>
     <Style Selector="Border.titlebar">
-        <Setter Property="Background" Value="{DynamicResource TitleBarBackground}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource TitleBarBorder}"/>
+        <Setter Property="Background" Value="{DynamicResource SemiColorBackground2}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
     </Style>
     <Style Selector="Border.statusbar">
-        <Setter Property="Background" Value="{DynamicResource StatusBarBackground}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource TitleBarBorder}"/>
+        <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource SemiColorBorder}"/>
         <Setter Property="BorderThickness" Value="0,1,0,0"/>
     </Style>
 
     <Style Selector="TextBlock.h1">
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource HeadingForeground}"/>
     </Style>
     <Style Selector="TextBlock.h2">
         <Setter Property="FontSize" Value="15"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource HeadingForeground}"/>
     </Style>
     <Style Selector="TextBlock.muted">
-        <Setter Property="Foreground" Value="{DynamicResource MutedForeground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}"/>
         <Setter Property="FontSize" Value="12"/>
     </Style>
     <Style Selector="TextBlock.path">
-        <Setter Property="Foreground" Value="{DynamicResource MutedForeground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontFamily" Value="ui-monospace, Menlo, Consolas, monospace"/>
     </Style>
 
-    <!-- TreeView 主題色 -->
+    <!-- 左側樹面板與編輯面區隔（沉面層） -->
     <Style Selector="TreeView">
-        <Setter Property="Background" Value="{DynamicResource TreeBackground}"/>
-        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
+        <Setter Property="Background" Value="{DynamicResource SemiColorBackground1}"/>
     </Style>
     <Style Selector="TreeViewItem">
         <Setter Property="FontSize" Value="14"/>
@@ -251,50 +214,35 @@
     <Style Selector="Window">
         <Setter Property="FontFamily" Value="fonts:Inter#Inter, $Default"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
-        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
+        <Setter Property="Background" Value="{DynamicResource SemiColorBackground0}"/>
     </Style>
     <Style Selector="UserControl">
         <Setter Property="FontFamily" Value="fonts:Inter#Inter, $Default"/>
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
-        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
     </Style>
 
     <!-- =================================================================
-         Tab 按鈕（IDE 風）+ 關閉鈕
+         Tab（IDE 風密度）+ 關閉鈕 — 配色交給 Semi，僅留尺寸
          ================================================================= -->
-    <Style Selector="TabControl">
-        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
-    </Style>
     <Style Selector="TabItem">
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="MinHeight" Value="36"/>
         <Setter Property="Padding" Value="14,6"/>
-        <Setter Property="Foreground" Value="{DynamicResource MutedForeground}"/>
-        <Setter Property="Background" Value="Transparent"/>
-    </Style>
-    <Style Selector="TabItem:selected">
-        <Setter Property="Foreground" Value="{DynamicResource HeadingForeground}"/>
-        <Setter Property="Background" Value="{DynamicResource SurfaceBackground}"/>
-    </Style>
-    <Style Selector="TabItem:pointerover">
-        <Setter Property="Foreground" Value="{DynamicResource Foreground}"/>
     </Style>
 
-    <!-- Tab 內的關閉按鈕 -->
+    <!-- Tab 內的關閉按鈕（無框小鈕，hover 走 Semi fill） -->
     <Style Selector="Button.tabclose">
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="3"/>
         <Setter Property="Margin" Value="6,0,0,0"/>
         <Setter Property="CornerRadius" Value="3"/>
-        <Setter Property="Foreground" Value="{DynamicResource MutedForeground}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
     <Style Selector="Button.tabclose:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ToolButtonBackgroundHover}"/>
-        <Setter Property="Foreground" Value="{DynamicResource HeadingForeground}"/>
+        <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
     </Style>
 
     <!-- 表格按鈕（行內用：未來擴充） -->
@@ -303,11 +251,10 @@
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Padding" Value="7"/>
         <Setter Property="CornerRadius" Value="3"/>
-        <Setter Property="Foreground" Value="{DynamicResource ToolButtonForeground}"/>
     </Style>
     <Style Selector="Button.icon:pointerover /template/ ContentPresenter">
-        <Setter Property="Background" Value="{DynamicResource ToolButtonBackgroundHover}"/>
-        <Setter Property="Foreground" Value="{DynamicResource ToolButtonForegroundHover}"/>
+        <Setter Property="Background" Value="{DynamicResource SemiColorFill1}"/>
+        <Setter Property="Foreground" Value="{DynamicResource SemiColorText0}"/>
     </Style>
     <Style Selector="Button.icon PathIcon">
         <Setter Property="Width" Value="18"/>

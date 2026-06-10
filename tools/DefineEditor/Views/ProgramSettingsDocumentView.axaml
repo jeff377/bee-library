@@ -118,7 +118,7 @@
                     </ContextMenu>
                 </TreeView.ContextMenu>
             </TreeView>
-            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"/>
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SemiColorBorder}" ResizeDirection="Columns"/>
             <Border Grid.Column="2" Padding="18,14">
                 <ScrollViewer Classes="props-pane" HorizontalScrollBarVisibility="Disabled">
                     <ContentControl Content="{Binding SelectedEditorContext}"/>

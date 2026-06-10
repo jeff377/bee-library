@@ -31,7 +31,7 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6"
                             IsVisible="{Binding IsSolutionOpened}">
                     <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12"
-                              Foreground="{DynamicResource MutedForeground}"/>
+                              Foreground="{DynamicResource SemiColorText2}"/>
                     <TextBlock Text="{Binding SolutionPath}" Classes="muted"
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"
@@ -98,7 +98,7 @@
                 </Border>
             </Grid>
 
-            <GridSplitter Grid.Column="1" Background="{DynamicResource SplitterBrush}" ResizeDirection="Columns"
+            <GridSplitter Grid.Column="1" Background="{DynamicResource SemiColorBorder}" ResizeDirection="Columns"
                           IsVisible="{Binding IsSolutionOpened}"/>
 
             <Grid Grid.Column="2">
@@ -117,7 +117,7 @@
                                            TextTrimming="CharacterEllipsis" MaxWidth="260"
                                            ToolTip.Tip="{Binding DocumentKey}"/>
                                 <Ellipse Grid.Column="2" Width="6" Height="6"
-                                         Fill="{DynamicResource DirtyIndicator}"
+                                         Fill="{DynamicResource SemiColorWarning}"
                                          VerticalAlignment="Center" Margin="6,0,0,0"
                                          IsVisible="{Binding IsDirty}"
                                          ToolTip.Tip="{loc:Loc Tab_DirtyTooltip}"/>
@@ -141,7 +141,7 @@
                 <Border Padding="40" IsVisible="{Binding ShowDocumentWelcome}">
                     <StackPanel Spacing="14" HorizontalAlignment="Center" VerticalAlignment="Center">
                         <PathIcon Data="{StaticResource IconFolder}" Width="48" Height="48"
-                                  Foreground="{DynamicResource MutedForeground}"/>
+                                  Foreground="{DynamicResource SemiColorText2}"/>
                         <TextBlock Classes="muted" HorizontalAlignment="Center"
                                    Text="{loc:Loc DocumentWelcome_Tip}"/>
                     </StackPanel>
