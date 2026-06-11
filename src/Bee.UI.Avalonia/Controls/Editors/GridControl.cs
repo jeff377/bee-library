@@ -247,6 +247,9 @@ namespace Bee.UI.Avalonia.Controls.Editors
             // Attaching the row marks the data object dirty through its DataTable
             // event bridge; no explicit notification is needed here.
             _dataTable.Rows.Add(row);
+            // The DataGrid does not observe DataView changes — re-realize so the
+            // new row shows up.
+            RefreshRows();
         }
 
         /// <summary>
@@ -257,6 +260,9 @@ namespace Bee.UI.Avalonia.Controls.Editors
         {
             if (SelectedItem is not DataRowView rowView) return;
             rowView.Row.Delete();
+            // The DataGrid does not observe DataView changes — re-realize so the
+            // deleted row disappears.
+            RefreshRows();
         }
 
         /// <inheritdoc />
