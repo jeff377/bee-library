@@ -103,15 +103,15 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             {
                 GetListHandler = _ => throw new InvalidOperationException("list fetch failed"),
             };
-            var view = new TestFormView
-            {
-                Schema = schema,
-                FormConnector = connector,
-            };
+            // Schema 先設；FormConnector=null 時 OnInputsChanged 提早返回，不啟動初始化
+            var view = new TestFormView { Schema = schema };
 
             Exception? captured = null;
             view.ErrorOccurred += (_, ex) => captured = ex;
 
+            // 設定 FormConnector 觸發 OnInputsChanged → InitializeAsync 同步執行，
+            // 此時 ErrorOccurred 已訂閱，GetListAsync 拋出後 ReportError 能正確觸發事件
+            view.FormConnector = connector;
             await view.InitializeAsync();
 
             Assert.NotNull(captured);

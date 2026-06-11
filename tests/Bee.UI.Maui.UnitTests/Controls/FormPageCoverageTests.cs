@@ -124,15 +124,15 @@ namespace Bee.UI.Maui.UnitTests.Controls
             {
                 GetListHandler = _ => throw new InvalidOperationException("list fetch failed"),
             };
-            var page = new TestFormPage
-            {
-                Schema = schema,
-                FormConnector = connector,
-            };
+            // Schema 先設；FormConnector=null 時 OnInputsChanged 提早返回，不啟動初始化
+            var page = new TestFormPage { Schema = schema };
 
             Exception? captured = null;
             page.ErrorOccurred += (_, ex) => captured = ex;
 
+            // 設定 FormConnector 觸發 OnInputsChanged → InitializeAsync 同步執行，
+            // 此時 ErrorOccurred 已訂閱，GetListAsync 拋出後 ReportError 能正確觸發事件
+            page.FormConnector = connector;
             await page.InitializeAsync();
 
             Assert.NotNull(captured);
