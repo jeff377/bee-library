@@ -64,28 +64,37 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             method!.Invoke(grid, new object?[] { null, null });
         }
 
+        private static StackPanel GetToolbar(GridControl grid)
+            => Assert.IsType<StackPanel>(Assert.IsType<DockPanel>(grid.Content).Children[0]);
+
         [Fact]
-        [DisplayName("GridControl 為 DataGrid 子類別且 StyleKeyOverride 指向 DataGrid")]
-        public void Type_IsDataGridSubclassWithBaseStyleKey()
+        [DisplayName("GridControl 為 ContentControl 組合，內含工具列與 DataGrid")]
+        public void Type_IsContentControlCompositeWithBaseStyleKey()
         {
             var grid = new GridControl();
 
-            Assert.IsAssignableFrom<DataGrid>(grid);
+            Assert.IsAssignableFrom<ContentControl>(grid);
             var styleKey = typeof(global::Avalonia.StyledElement)
                 .GetProperty("StyleKeyOverride", BindingFlags.Instance | BindingFlags.NonPublic)!
                 .GetValue(grid);
-            Assert.Equal(typeof(DataGrid), styleKey);
+            Assert.Equal(typeof(ContentControl), styleKey);
+
+            var host = Assert.IsType<DockPanel>(grid.Content);
+            Assert.IsType<StackPanel>(host.Children[0]);
+            Assert.Same(grid.InnerGrid, host.Children[1]);
         }
 
         [Fact]
-        [DisplayName("預設為唯讀、單選、不自動產生欄位")]
+        [DisplayName("預設為唯讀、單選、不自動產生欄位、工具列隱藏")]
         public void Defaults_AreReadOnlySingleSelection()
         {
             var grid = new GridControl();
 
-            Assert.True(grid.IsReadOnly);
-            Assert.False(grid.AutoGenerateColumns);
-            Assert.Equal(DataGridSelectionMode.Single, grid.SelectionMode);
+            Assert.True(grid.InnerGrid.IsReadOnly);
+            Assert.False(grid.InnerGrid.AutoGenerateColumns);
+            Assert.Equal(DataGridSelectionMode.Single, grid.InnerGrid.SelectionMode);
+            Assert.False(grid.AllowEdit);
+            Assert.False(GetToolbar(grid).IsVisible);
         }
 
         [Fact]
@@ -97,11 +106,11 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
 
             // Three visible columns (sys_id, sys_name, hire_date); internal_notes hidden.
-            Assert.Equal(3, grid.Columns.Count);
-            Assert.Equal("Employee ID", grid.Columns[0].Header);
-            Assert.Equal("Name", grid.Columns[1].Header);
-            Assert.Equal("Hire Date", grid.Columns[2].Header);
-            Assert.NotNull(grid.ItemsSource);
+            Assert.Equal(3, grid.InnerGrid.Columns.Count);
+            Assert.Equal("Employee ID", grid.InnerGrid.Columns[0].Header);
+            Assert.Equal("Name", grid.InnerGrid.Columns[1].Header);
+            Assert.Equal("Hire Date", grid.InnerGrid.Columns[2].Header);
+            Assert.NotNull(grid.InnerGrid.ItemsSource);
             Assert.Equal("Employee", grid.TableName);
         }
 
@@ -113,9 +122,9 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
 
-            Assert.Equal(120d, grid.Columns[1].Width.Value);
-            Assert.Equal(DataGridLengthUnitType.Pixel, grid.Columns[1].Width.UnitType);
-            Assert.Equal(DataGridLengthUnitType.Star, grid.Columns[0].Width.UnitType);
+            Assert.Equal(120d, grid.InnerGrid.Columns[1].Width.Value);
+            Assert.Equal(DataGridLengthUnitType.Pixel, grid.InnerGrid.Columns[1].Width.UnitType);
+            Assert.Equal(DataGridLengthUnitType.Star, grid.InnerGrid.Columns[0].Width.UnitType);
         }
 
         [Fact]
@@ -130,7 +139,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             grid.Bind(dataObject, layout);
 
             Assert.Same(dataObject.DataSet.Tables["EmployeePhone"], grid.DataTable);
-            Assert.Single(grid.Columns);
+            Assert.Single(grid.InnerGrid.Columns);
         }
 
         [Fact]
@@ -145,8 +154,8 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             grid.Bind(dataObject, layout);
 
             Assert.Null(grid.DataTable);
-            Assert.Null(grid.ItemsSource);
-            Assert.Single(grid.Columns);
+            Assert.Null(grid.InnerGrid.ItemsSource);
+            Assert.Single(grid.InnerGrid.Columns);
         }
 
         [Fact]
@@ -155,12 +164,12 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         {
             var grid = new GridControl();
             grid.Bind(BuildEmployeeListLayout(), null);
-            Assert.Null(grid.ItemsSource);
+            Assert.Null(grid.InnerGrid.ItemsSource);
 
             grid.DataTable = BuildEmployeeRows();
 
-            Assert.NotNull(grid.ItemsSource);
-            Assert.Equal(3, grid.Columns.Count);
+            Assert.NotNull(grid.InnerGrid.ItemsSource);
+            Assert.Equal(3, grid.InnerGrid.Columns.Count);
         }
 
         [Fact]
@@ -254,10 +263,10 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             grid.Bind(dataObject, layout);
 
             grid.SetControlState(SingleFormMode.Edit);
-            Assert.False(grid.IsReadOnly);
+            Assert.False(grid.InnerGrid.IsReadOnly);
 
             grid.SetControlState(SingleFormMode.View);
-            Assert.True(grid.IsReadOnly);
+            Assert.True(grid.InnerGrid.IsReadOnly);
         }
 
         [Fact]
@@ -275,7 +284,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             grid.Bind(dataObject, layout);
             grid.SetControlState(SingleFormMode.Edit);
 
-            Assert.True(grid.IsReadOnly);
+            Assert.True(grid.InnerGrid.IsReadOnly);
         }
 
         [Fact]
@@ -287,7 +296,117 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             grid.SetControlState(SingleFormMode.Edit);
 
-            Assert.True(grid.IsReadOnly);
+            Assert.True(grid.InnerGrid.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("SetControlState 映射 AllowEdit：View 關閉、Add/Edit 開啟")]
+        public void SetControlState_MapsFormModeToAllowEdit()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            grid.SetControlState(SingleFormMode.View);
+            Assert.False(grid.AllowEdit);
+
+            grid.SetControlState(SingleFormMode.Add);
+            Assert.True(grid.AllowEdit);
+
+            grid.SetControlState(SingleFormMode.Edit);
+            Assert.True(grid.AllowEdit);
+        }
+
+        [Fact]
+        [DisplayName("明細綁定時工具列隨 AllowEdit 顯示/隱藏")]
+        public void AllowEdit_DetailBound_TogglesToolbarVisibility()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+
+            // The ambient form mode defaults to Edit, so the explicit bind leaves
+            // the grid editable with the toolbar shown.
+            grid.Bind(dataObject, layout);
+            Assert.True(grid.AllowEdit);
+            Assert.True(GetToolbar(grid).IsVisible);
+            Assert.False(grid.InnerGrid.IsReadOnly);
+
+            grid.AllowEdit = false;
+            Assert.False(GetToolbar(grid).IsVisible);
+            Assert.True(grid.InnerGrid.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("list-mode 綁定即使 AllowEdit 開啟仍隱藏工具列且唯讀")]
+        public void AllowEdit_ListMode_KeepsToolbarHiddenAndReadOnly()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            grid.AllowEdit = true;
+
+            Assert.False(GetToolbar(grid).IsVisible);
+            Assert.True(grid.InnerGrid.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("工具列按鈕依 AllowActions 與 EditMode 顯示")]
+        public void Toolbar_ButtonVisibility_FollowsAllowActionsAndEditMode()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            var toolbar = GetToolbar(grid);
+            var addButton = Assert.IsType<Button>(toolbar.Children[0]);
+            var editButton = Assert.IsType<Button>(toolbar.Children[1]);
+            var deleteButton = Assert.IsType<Button>(toolbar.Children[2]);
+
+            // In-cell editing needs no Edit button (cells edit in place).
+            Assert.True(addButton.IsVisible);
+            Assert.False(editButton.IsVisible);
+            Assert.True(deleteButton.IsVisible);
+
+            grid.EditMode = GridEditMode.EditForm;
+            Assert.True(editButton.IsVisible);
+
+            var restricted = new LayoutGrid("EmployeePhone", "Phones")
+            {
+                AllowActions = GridControlAllowActions.Add | GridControlAllowActions.Delete,
+            };
+            restricted.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var restrictedGrid = new GridControl { EditMode = GridEditMode.EditForm };
+            restrictedGrid.Bind(dataObject, restricted);
+
+            var restrictedToolbar = GetToolbar(restrictedGrid);
+            Assert.True(restrictedToolbar.IsVisible);
+            Assert.True(Assert.IsType<Button>(restrictedToolbar.Children[0]).IsVisible);
+            Assert.False(Assert.IsType<Button>(restrictedToolbar.Children[1]).IsVisible);
+            Assert.True(Assert.IsType<Button>(restrictedToolbar.Children[2]).IsVisible);
+        }
+
+        [Fact]
+        [DisplayName("AllowActions=None 時工具列不顯示")]
+        public void Toolbar_NoAllowedActions_StaysHidden()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones")
+            {
+                AllowActions = GridControlAllowActions.None,
+            };
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            Assert.True(grid.AllowEdit);
+            Assert.False(GetToolbar(grid).IsVisible);
+            Assert.True(grid.InnerGrid.IsReadOnly);
         }
 
         [Fact]
@@ -409,9 +528,9 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             grid.Bind(dataObject, layout);
             grid.SetControlState(SingleFormMode.Edit);
 
-            Assert.False(grid.IsReadOnly);
-            Assert.True(grid.Columns[0].IsReadOnly);
-            Assert.False(grid.Columns[1].IsReadOnly);
+            Assert.False(grid.InnerGrid.IsReadOnly);
+            Assert.True(grid.InnerGrid.Columns[0].IsReadOnly);
+            Assert.False(grid.InnerGrid.Columns[1].IsReadOnly);
         }
 
         [Fact]
@@ -427,14 +546,14 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var grid = new GridControl();
             grid.Bind(dataObject, layout);
 
-            var textColumn = Assert.IsType<DataGridTemplateColumn>(grid.Columns[0]);
+            var textColumn = Assert.IsType<DataGridTemplateColumn>(grid.InnerGrid.Columns[0]);
             Assert.NotNull(textColumn.CellEditingTemplate);
 
-            var dropDownColumn = Assert.IsType<DataGridTemplateColumn>(grid.Columns[1]);
+            var dropDownColumn = Assert.IsType<DataGridTemplateColumn>(grid.InnerGrid.Columns[1]);
             Assert.Null(dropDownColumn.CellEditingTemplate);
             Assert.True(dropDownColumn.IsReadOnly);
 
-            var checkColumn = Assert.IsType<DataGridTemplateColumn>(grid.Columns[2]);
+            var checkColumn = Assert.IsType<DataGridTemplateColumn>(grid.InnerGrid.Columns[2]);
             Assert.Null(checkColumn.CellEditingTemplate);
             Assert.True(checkColumn.IsReadOnly);
         }
@@ -468,7 +587,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             editableLayout.Columns!.Add(column);
             var editableGrid = new GridControl();
             editableGrid.Bind(dataObject, editableLayout);
-            Assert.False(editableGrid.IsReadOnly);
+            Assert.False(editableGrid.InnerGrid.IsReadOnly);
             var editableCell = Assert.IsType<CheckBox>(method.Invoke(editableGrid, new object?[] { rowView, column }));
             Assert.True(editableCell.IsEnabled);
 

@@ -13,13 +13,21 @@ namespace Bee.UI.Avalonia.Controls.Editors
 {
     /// <summary>
     /// Tabular control that renders a <see cref="LayoutGrid"/> definition over a
-    /// <see cref="System.Data.DataTable"/> by inheriting the native
-    /// <see cref="DataGrid"/>. Implements the definition-layer
+    /// <see cref="System.Data.DataTable"/>. Composes a built-in icon toolbar
+    /// (Add / Edit / Delete, shown only while <see cref="AllowEdit"/> grants
+    /// editing) above an inner native <see cref="DataGrid"/> exposed as
+    /// <see cref="InnerGrid"/>. Implements the definition-layer
     /// <see cref="IBindTableControl"/> / <see cref="IUIControl"/> contracts.
     /// Raises <see cref="RowSelected"/> with the row's <see cref="SysFields.RowId"/>
     /// Guid when the user selects a row.
     /// </summary>
     /// <remarks>
+    /// <see cref="AllowEdit"/> is the single editing switch: the form host flips it
+    /// through <see cref="SetControlState"/> (only single-record forms carry a form
+    /// mode), other hosts set the property directly. Toolbar visibility, in-cell
+    /// editing and the edit-form flow all derive from it inside the control;
+    /// list-mode binds (rows without a <see cref="FormDataObject"/>) never edit.
+    /// <para>
     /// Each column uses a <see cref="DataGridTemplateColumn"/> with a
     /// <see cref="FuncDataTemplate{T}"/> that fetches the cell value from
     /// <see cref="DataRowView"/>'s indexer at render time. The straightforward
@@ -30,16 +38,16 @@ namespace Bee.UI.Avalonia.Controls.Editors
     /// even though <see cref="DataGrid.ItemsSource"/> iterates the rows.
     /// See docs/adr/adr-020-avalonia-datagrid-binding-strategy.md for the
     /// full reasoning and trade-offs.
+    /// </para>
     /// <para>
     /// In-grid editing is available when the grid is bound to a
-    /// <see cref="FormDataObject"/> detail table, the form mode is not
-    /// <see cref="SingleFormMode.View"/>, and the layout grants
-    /// <see cref="GridControlAllowActions.Edit"/>; list-mode binds stay read-only.
-    /// An empty table renders headers only — hosts that need an "empty" hint
-    /// overlay their own placeholder.
+    /// <see cref="FormDataObject"/> detail table, <see cref="AllowEdit"/> is set,
+    /// and the layout grants <see cref="GridControlAllowActions.Edit"/>; list-mode
+    /// binds stay read-only. An empty table renders headers only — hosts that need
+    /// an "empty" hint overlay their own placeholder.
     /// </para>
     /// </remarks>
-    public class GridControl : DataGrid, IBindTableControl, IUIControl
+    public class GridControl : ContentControl, IBindTableControl, IUIControl
     {
         /// <summary>
         /// Identifies the <see cref="TableName"/> styled property.
@@ -53,7 +61,34 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public static readonly StyledProperty<GridEditMode> EditModeProperty =
             AvaloniaProperty.Register<GridControl, GridEditMode>(nameof(EditMode), GridEditMode.InCell);
 
+        /// <summary>
+        /// Identifies the <see cref="AllowEdit"/> styled property.
+        /// </summary>
+        public static readonly StyledProperty<bool> AllowEditProperty =
+            AvaloniaProperty.Register<GridControl, bool>(nameof(AllowEdit), false);
+
+        // Simple geometric glyphs (24 grid) drawn for the toolbar, embedded so the
+        // control renders the same under any application theme.
+        private const string AddIconGeometry =
+            "M12 4a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5a1 1 0 0 1 1-1Z";
+        private const string EditIconGeometry =
+            "M16.77 3.16a2.5 2.5 0 0 1 3.54 0l.53.53a2.5 2.5 0 0 1 0 3.54l-1.42 1.41-4.06-4.06 1.41-1.42Z" +
+            "M14.3 5.64l4.06 4.06-9.53 9.53a2 2 0 0 1-.94.53l-3.6.9a.75.75 0 0 1-.91-.9l.9-3.61a2 2 0 0 1 .53-.94L14.3 5.64Z";
+        private const string DeleteIconGeometry =
+            "M10 2.5h4A1.5 1.5 0 0 1 15.5 4v.5H20a1 1 0 1 1 0 2h-.55l-.88 13.2A2.5 2.5 0 0 1 16.08 22H7.92" +
+            "a2.5 2.5 0 0 1-2.49-2.3L4.55 6.5H4a1 1 0 0 1 0-2h4.5V4A1.5 1.5 0 0 1 10 2.5Z" +
+            "M6.56 6.5l.86 12.97a.5.5 0 0 0 .5.46h8.16a.5.5 0 0 0 .5-.46l.86-12.97H6.56Z" +
+            "M10 9.5a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1Zm4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1Z";
+
         private readonly GridControlBinder _binder;
+        private readonly DataGrid _grid;
+        private readonly StackPanel _toolbar;
+        private readonly Button _addButton;
+        private readonly Button _editButton;
+        private readonly Button _deleteButton;
+        private readonly PathIcon _addIcon;
+        private readonly PathIcon _editIcon;
+        private readonly PathIcon _deleteIcon;
         private LayoutGrid? _layout;
         private DataTable? _dataTable;
         private Action? _endActiveInlineEdit;
@@ -61,30 +96,79 @@ namespace Bee.UI.Avalonia.Controls.Editors
         static GridControl()
         {
             TableNameProperty.Changed.AddClassHandler<GridControl>((o, _) => o._binder.OnBindingContextChanged());
-            EditModeProperty.Changed.AddClassHandler<GridControl>((o, _) => o.SetControlState(o.GetValue(FormScope.FormModeProperty)));
+            EditModeProperty.Changed.AddClassHandler<GridControl>((o, _) => o.UpdateControlState());
+            AllowEditProperty.Changed.AddClassHandler<GridControl>((o, _) => o.UpdateControlState());
             FormScope.DataObjectProperty.Changed.AddClassHandler<GridControl>((o, _) => o._binder.OnBindingContextChanged());
             FormScope.FormModeProperty.Changed.AddClassHandler<GridControl>((o, e) => o.SetControlState((SingleFormMode)e.NewValue!));
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="GridControl"/> with read-only,
-        /// single-selection defaults.
+        /// Initializes a new instance of <see cref="GridControl"/> with a hidden
+        /// toolbar and a read-only, single-selection inner grid.
         /// </summary>
         public GridControl()
         {
             _binder = new GridControlBinder(this);
-            IsReadOnly = true;
-            AutoGenerateColumns = false;
-            CanUserResizeColumns = true;
-            SelectionMode = DataGridSelectionMode.Single;
-            SelectionChanged += OnSelectionChangedCore;
+
+            _grid = new DataGrid
+            {
+                IsReadOnly = true,
+                AutoGenerateColumns = false,
+                CanUserResizeColumns = true,
+                SelectionMode = DataGridSelectionMode.Single,
+            };
+            _grid.SelectionChanged += OnSelectionChangedCore;
+            _grid.DoubleTapped += async (_, _) =>
+            {
+                if (!CanUseEditForm) return;
+                await EditSelectedRowAsync().ConfigureAwait(true);
+            };
+
+            _addIcon = BuildToolbarIcon();
+            _editIcon = BuildToolbarIcon();
+            _deleteIcon = BuildToolbarIcon();
+            _addButton = BuildToolbarButton(_addIcon, "Add");
+            _editButton = BuildToolbarButton(_editIcon, "Edit");
+            _deleteButton = BuildToolbarButton(_deleteIcon, "Delete");
+            _addButton.Click += async (_, _) => await AddRowAsync().ConfigureAwait(true);
+            _editButton.Click += async (_, _) => await EditSelectedRowAsync().ConfigureAwait(true);
+            _deleteButton.Click += (_, _) =>
+            {
+                EndEdit();
+                DeleteSelectedRow();
+            };
+
+            _toolbar = new StackPanel
+            {
+                Orientation = global::Avalonia.Layout.Orientation.Horizontal,
+                Spacing = 4,
+                Margin = new Thickness(0, 0, 0, 4),
+                IsVisible = false,
+            };
+            _toolbar.Children.Add(_addButton);
+            _toolbar.Children.Add(_editButton);
+            _toolbar.Children.Add(_deleteButton);
+
+            var host = new DockPanel();
+            DockPanel.SetDock(_toolbar, Dock.Top);
+            host.Children.Add(_toolbar);
+            host.Children.Add(_grid);
+            Content = host;
         }
 
         /// <inheritdoc />
         // WARNING: Without this override the subclass looks up a ControlTheme keyed by
         // its own type, which the application theme does not provide, and the control
         // renders with no visual at all.
-        protected override Type StyleKeyOverride => typeof(DataGrid);
+        protected override Type StyleKeyOverride => typeof(ContentControl);
+
+        /// <summary>
+        /// Gets the inner native <see cref="DataGrid"/>. Columns, items and
+        /// selection internals live here; the composite keeps only the bound-grid
+        /// surface (<see cref="Bind(FormDataObject, LayoutGrid)"/>,
+        /// <see cref="AllowEdit"/>, row actions) on itself.
+        /// </summary>
+        public DataGrid InnerGrid => _grid;
 
         /// <summary>
         /// Gets or sets the bound table name.
@@ -97,12 +181,27 @@ namespace Bee.UI.Avalonia.Controls.Editors
 
         /// <summary>
         /// Gets or sets the editing model. <see cref="GridEditMode.EditForm"/> keeps
-        /// the grid read-only; the host opens a popup edit form per row instead.
+        /// the inner grid read-only; rows are edited in a popup edit form opened by
+        /// the toolbar Edit button or a double tap.
         /// </summary>
         public GridEditMode EditMode
         {
             get => GetValue(EditModeProperty);
             set => SetValue(EditModeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets whether editing is allowed. This is the single switch the
+        /// host controls: single-record forms flip it through
+        /// <see cref="SetControlState"/> on form-mode changes, other hosts set it
+        /// directly. The toolbar, in-cell editing and the edit-form flow all follow
+        /// it, further gated by the layout's <see cref="LayoutGrid.AllowActions"/>
+        /// and the presence of a bound <see cref="FormDataObject"/>.
+        /// </summary>
+        public bool AllowEdit
+        {
+            get => GetValue(AllowEditProperty);
+            set => SetValue(AllowEditProperty, value);
         }
 
         /// <summary>
@@ -123,6 +222,15 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// Gets the layout definition supplied to <c>Bind</c>, or <c>null</c>.
         /// </summary>
         public LayoutGrid? Layout => _layout;
+
+        /// <summary>
+        /// Gets or sets the selected item of the inner grid.
+        /// </summary>
+        public object? SelectedItem
+        {
+            get => _grid.SelectedItem;
+            set => _grid.SelectedItem = value;
+        }
 
         /// <summary>
         /// Raised when the user selects a row; carries the row's
@@ -152,7 +260,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
 
         /// <summary>
         /// Binds a caller-supplied table (list mode): the rows of a
-        /// <c>GetListAsync</c> response live outside any <see cref="FormDataObject"/>.
+        /// <c>GetListAsync</c> response live outside any <see cref="FormDataObject"/>,
+        /// so the grid never edits them and the toolbar stays hidden.
         /// </summary>
         /// <param name="layout">The grid layout that defines the columns.</param>
         /// <param name="rows">The data rows to render, or <c>null</c> for headers only.</param>
@@ -187,7 +296,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         public void RefreshRows()
         {
-            ItemsSource = null;
+            _grid.ItemsSource = null;
             RebuildRows();
         }
 
@@ -199,30 +308,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public void EndEdit()
         {
             _endActiveInlineEdit?.Invoke();
-            CommitEdit();
-            if (SelectedItem is DataRowView { IsEdit: true } rowView)
+            _grid.CommitEdit();
+            if (_grid.SelectedItem is DataRowView { IsEdit: true } rowView)
                 rowView.EndEdit();
         }
 
         /// <inheritdoc />
         public void SetControlState(SingleFormMode formMode)
         {
-            // In-cell editing only makes sense against a FormDataObject detail table
-            // whose layout grants the Edit action; list-mode rows stay read-only, and
-            // EditForm mode keeps the grid itself read-only (rows are edited in the
-            // popup edit form).
-            var allowEdit = formMode != SingleFormMode.View
-                && EditMode == GridEditMode.InCell
-                && _binder.DataObject is not null
-                && (_layout?.AllowActions.HasFlag(GridControlAllowActions.Edit) ?? false);
-            var readOnly = !allowEdit;
-            if (IsReadOnly == readOnly) return;
-
-            IsReadOnly = readOnly;
-            // Always-on editor cells capture the enabled state when their template
-            // builds, so a mode switch must re-realize the rows.
-            ItemsSource = null;
-            RebuildRows();
+            AllowEdit = formMode != SingleFormMode.View;
+            // The property handler skips unchanged values, but bind-time calls still
+            // need the effective state re-evaluated against the (possibly new)
+            // layout and data object.
+            UpdateControlState();
         }
 
         /// <summary>
@@ -258,7 +356,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         public void DeleteSelectedRow()
         {
-            if (SelectedItem is not DataRowView rowView) return;
+            if (_grid.SelectedItem is not DataRowView rowView) return;
             rowView.Row.Delete();
             // The DataGrid does not observe DataView changes — re-realize so the
             // deleted row disappears.
@@ -277,6 +375,18 @@ namespace Bee.UI.Avalonia.Controls.Editors
         {
             base.OnDetachedFromLogicalTree(e);
             _binder.NotifyDetached();
+        }
+
+        /// <inheritdoc />
+        protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToVisualTree(e);
+            // `Geometry.Parse` needs platform services that are absent when unit
+            // tests construct the control without an Avalonia platform, so the icon
+            // data is created on first visual attach instead of in the constructor.
+            _addIcon.Data ??= Geometry.Parse(AddIconGeometry);
+            _editIcon.Data ??= Geometry.Parse(EditIconGeometry);
+            _deleteIcon.Data ??= Geometry.Parse(DeleteIconGeometry);
         }
 
         /// <summary>
@@ -298,27 +408,129 @@ namespace Bee.UI.Avalonia.Controls.Editors
             RebuildRows();
         }
 
+        private bool CanUseEditForm
+            => AllowEdit
+                && EditMode == GridEditMode.EditForm
+                && _binder.DataObject is not null
+                && (_layout?.AllowActions.HasFlag(GridControlAllowActions.Edit) ?? false);
+
+        // Recomputes the effective editing state after AllowEdit / EditMode / bind
+        // changes: toolbar visibility per action flag, in-cell editability of the
+        // inner grid.
+        private void UpdateControlState()
+        {
+            var actions = _layout?.AllowActions ?? GridControlAllowActions.None;
+            var canEdit = AllowEdit && _binder.DataObject is not null;
+
+            _addButton.IsVisible = actions.HasFlag(GridControlAllowActions.Add);
+            _deleteButton.IsVisible = actions.HasFlag(GridControlAllowActions.Delete);
+            // In-cell editing needs no Edit button (cells edit in place); EditForm
+            // surfaces one beside the double-tap gesture.
+            _editButton.IsVisible = EditMode == GridEditMode.EditForm
+                && actions.HasFlag(GridControlAllowActions.Edit);
+            _toolbar.IsVisible = canEdit && actions != GridControlAllowActions.None;
+
+            var inCellEdit = canEdit
+                && EditMode == GridEditMode.InCell
+                && actions.HasFlag(GridControlAllowActions.Edit);
+            var readOnly = !inCellEdit;
+            if (_grid.IsReadOnly == readOnly) return;
+
+            _grid.IsReadOnly = readOnly;
+            // Always-on editor cells capture the enabled state when their template
+            // builds, so an editability switch must re-realize the rows.
+            _grid.ItemsSource = null;
+            RebuildRows();
+        }
+
+        private async Task AddRowAsync()
+        {
+            if (_binder.DataObject is null || _layout is null || _dataTable is null) return;
+            AddRow();
+            if (EditMode != GridEditMode.EditForm) return;
+
+            var table = _dataTable;
+            var row = table.Rows[table.Rows.Count - 1];
+            var committed = await RowEditDialog.ShowAsync(this, _binder.DataObject, _layout, row).ConfigureAwait(true);
+            if (committed)
+            {
+                RefreshAndFocusRow(row);
+            }
+            else
+            {
+                // A cancelled Add removes the blank row again instead of leaving an
+                // empty line in the detail table.
+                table.Rows.Remove(row);
+                RefreshRows();
+            }
+        }
+
+        private async Task EditSelectedRowAsync()
+        {
+            if (_binder.DataObject is null || _layout is null) return;
+            if (_grid.SelectedItem is not DataRowView rowView) return;
+
+            var row = rowView.Row;
+            var committed = await RowEditDialog.ShowAsync(this, _binder.DataObject, _layout, row).ConfigureAwait(true);
+            if (committed)
+                RefreshAndFocusRow(row);
+        }
+
+        // Realized text cells capture their value at template build, so a committed
+        // edit form re-realizes the rows and scrolls back to the affected row.
+        private void RefreshAndFocusRow(DataRow row)
+        {
+            RefreshRows();
+            var rowView = _dataTable?.DefaultView
+                .Cast<DataRowView>()
+                .FirstOrDefault(v => ReferenceEquals(v.Row, row));
+            if (rowView is null) return;
+            _grid.SelectedItem = rowView;
+            _grid.ScrollIntoView(rowView, null);
+        }
+
+        private static PathIcon BuildToolbarIcon()
+            => new()
+            {
+                Width = 14,
+                Height = 14,
+            };
+
+        private static Button BuildToolbarButton(PathIcon icon, string toolTip)
+        {
+            var button = new Button
+            {
+                Content = icon,
+                Focusable = false,
+                Padding = new Thickness(6, 4),
+                MinWidth = 0,
+                MinHeight = 0,
+            };
+            ToolTip.SetTip(button, toolTip);
+            return button;
+        }
+
         private void RebuildFallbackColumns()
         {
-            Columns.Clear();
+            _grid.Columns.Clear();
             if (_dataTable is null) return;
             foreach (DataColumn column in _dataTable.Columns)
-                Columns.Add(BuildColumn(new LayoutColumn(column.ColumnName, column.ColumnName, ControlType.TextEdit)));
+                _grid.Columns.Add(BuildColumn(new LayoutColumn(column.ColumnName, column.ColumnName, ControlType.TextEdit)));
         }
 
         private void RebuildColumns()
         {
-            Columns.Clear();
+            _grid.Columns.Clear();
             if (_layout is null) return;
             foreach (var column in EnumerateVisibleColumns(_layout))
-                Columns.Add(BuildColumn(column));
+                _grid.Columns.Add(BuildColumn(column));
         }
 
         private void RebuildRows()
         {
             // Re-realizing discards any cell that hosted an inline editor.
             _endActiveInlineEdit = null;
-            ItemsSource = _dataTable?.DefaultView;
+            _grid.ItemsSource = _dataTable?.DefaultView;
         }
 
         private DataGridTemplateColumn BuildColumn(LayoutColumn column)
@@ -390,7 +602,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         // edit pipeline, so opening the editor's popup cannot tear the editor down.
         private Control BuildInteractiveCell(DataRowView? rowView, LayoutColumn column)
         {
-            var canEdit = !IsReadOnly && !column.ReadOnly && rowView is not null;
+            var canEdit = !_grid.IsReadOnly && !column.ReadOnly && rowView is not null;
 
             if (column.ControlType == ControlType.CheckEdit)
             {
@@ -656,7 +868,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         {
             var handler = RowSelected;
             if (handler is null) return;
-            if (SelectedItem is not DataRowView rowView) return;
+            if (_grid.SelectedItem is not DataRowView rowView) return;
             if (!TryGetRowId(rowView.Row, out var rowId)) return;
             handler(this, rowId);
         }

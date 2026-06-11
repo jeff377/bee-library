@@ -28,14 +28,15 @@ dotnet run --project samples/Avalonia.Editors.Gallery/Avalonia.Editors.Gallery.c
 6. **GridControl 區**：表頭 / 列 hover / 選取列 / 格線與左欄原生 `DataGrid` 一致；
    「Ambient」列驗證只設 `TableName` 即從 `FormScope` 自動綁定明細表（欄位自動產生）
 7. **In-cell 編輯**（策略見 [ADR-021](../../docs/adr/adr-021-avalonia-datagrid-editing-strategy.md)）：
-   「Layout 綁定」表的五個欄位各對應一種 column ControlType——
+   「Layout 綁定」表上方有 grid 內建的圖示工具列（新增 / 刪除列；只在 grid 可編輯時顯示，
+   `AllowEdit` 關閉或 list-mode 綁定時自動隱藏）。五個欄位各對應一種 column ControlType——
    - Phone=`TextEdit`：**雙擊 cell（或 F2）**進入 TextBox 編輯，Enter / 點別處 commit、Esc 取消
    - Primary=`CheckEdit`：置中 CheckBox 常駐，**直接點勾選**
    - Type=`DropDownEdit`、Valid From=`DateEdit`、Bill Month=`YearMonthEdit`：靜置顯示文字，
      **單擊 cell 置換為編輯器**（下拉自動展開；日期為三段式選輪），選完 / 失焦自動換回文字
      並顯示寫回後的值（popup 型編輯器與 DataGrid 編輯管線衝突，置換由控件自管）
-8. **EditForm 模式區**（最下方，走真實 `DynamicForm` 整合）：grid 唯讀，**雙擊列或工具列
-   Edit 鈕**開彈窗編輯整列（同一組 field editors）；彈窗內 Cancel 完整還原、OK 落實並
+8. **EditForm 模式區**（最下方，走真實 `DynamicForm` 整合）：grid 唯讀，**雙擊列或內建工具列
+   的 Edit 圖示**開彈窗編輯整列（同一組 field editors）；彈窗內 Cancel 完整還原、OK 落實並
    捲回該列；Add 開彈窗編輯新列、取消時自動移除空列。注意此區與上方 in-cell 區共用同一份
    Phones 資料——在一區改完，另一區要捲動或重啟才會反映（realized cell 不追蹤外部寫入）
 

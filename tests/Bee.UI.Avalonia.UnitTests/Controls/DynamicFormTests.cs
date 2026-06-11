@@ -169,11 +169,11 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             var detailStack = Assert.IsType<StackPanel>(detailBorder.Child);
             var caption = Assert.IsType<TextBlock>(detailStack.Children[0]);
             Assert.Equal("Phones", caption.Text);
-            // AllowActions defaults to All, so an Add/Delete toolbar precedes the grid.
-            var toolbar = Assert.IsType<StackPanel>(detailStack.Children[1]);
-            Assert.Equal(2, toolbar.Children.Count);
-            var grid = Assert.IsType<GridControl>(detailStack.Children[2]);
+            // The toolbar is built into the grid; the detail section is caption + grid.
+            Assert.Equal(2, detailStack.Children.Count);
+            var grid = Assert.IsType<GridControl>(detailStack.Children[1]);
             Assert.Same(dataObject.DataSet.Tables["EmployeePhone"], grid.DataTable);
+            Assert.True(GetGridToolbar(grid).IsVisible);
         }
 
         [Fact]
@@ -196,14 +196,14 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
 
             var host = Assert.IsType<StackPanel>(component.Content);
             var detailStack = Assert.IsType<StackPanel>(Assert.IsType<Border>(host.Children[0]).Child);
-            // Add / Edit / Delete (AllowActions defaults to All).
-            var toolbar = Assert.IsType<StackPanel>(detailStack.Children[1]);
-            Assert.Equal(3, toolbar.Children.Count);
-            Assert.Equal("Edit", Assert.IsType<Button>(toolbar.Children[1]).Content);
-
-            var grid = Assert.IsType<GridControl>(detailStack.Children[2]);
+            var grid = Assert.IsType<GridControl>(detailStack.Children[1]);
             Assert.Equal(GridEditMode.EditForm, grid.EditMode);
-            Assert.True(grid.IsReadOnly);
+            Assert.True(grid.InnerGrid.IsReadOnly);
+
+            // EditForm surfaces the Edit button beside Add / Delete.
+            var toolbar = GetGridToolbar(grid);
+            Assert.True(toolbar.IsVisible);
+            Assert.True(Assert.IsType<Button>(toolbar.Children[1]).IsVisible);
         }
 
         [Fact]
@@ -225,12 +225,14 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
 
             var host = Assert.IsType<StackPanel>(component.Content);
             var detailStack = Assert.IsType<StackPanel>(Assert.IsType<Border>(host.Children[0]).Child);
-            var toolbar = Assert.IsType<StackPanel>(detailStack.Children[1]);
-            Assert.Equal(2, toolbar.Children.Count);
-
-            var grid = Assert.IsType<GridControl>(detailStack.Children[2]);
+            var grid = Assert.IsType<GridControl>(detailStack.Children[1]);
             Assert.Equal(GridEditMode.InCell, grid.EditMode);
-            Assert.False(grid.IsReadOnly);
+            Assert.False(grid.InnerGrid.IsReadOnly);
+
+            // In-cell editing keeps the Edit button hidden (cells edit in place).
+            var toolbar = GetGridToolbar(grid);
+            Assert.True(toolbar.IsVisible);
+            Assert.False(Assert.IsType<Button>(toolbar.Children[1]).IsVisible);
         }
 
         [Fact]
@@ -253,10 +255,13 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             var host = Assert.IsType<StackPanel>(component.Content);
             var detailBorder = Assert.IsType<Border>(host.Children[0]);
             var detailStack = Assert.IsType<StackPanel>(detailBorder.Child);
-            // Caption followed directly by the grid — no toolbar in between.
-            Assert.Equal(2, detailStack.Children.Count);
-            Assert.IsType<GridControl>(detailStack.Children[1]);
+            var grid = Assert.IsType<GridControl>(detailStack.Children[1]);
+            // No allowed action — the built-in toolbar stays hidden.
+            Assert.False(GetGridToolbar(grid).IsVisible);
         }
+
+        private static StackPanel GetGridToolbar(GridControl grid)
+            => Assert.IsType<StackPanel>(Assert.IsType<DockPanel>(grid.Content).Children[0]);
 
         private static FormSchema BuildSchemaWithDetail()
         {
