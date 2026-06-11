@@ -1,3 +1,4 @@
+using System.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
@@ -202,8 +203,14 @@ namespace Bee.UI.Avalonia.Controls
                 });
             }
 
-            var grid = new GridControl { MinHeight = 120 };
+            var grid = new GridControl { MinHeight = 120, EditMode = DetailEditMode };
             grid.Bind(DataObject!, layout);
+            if (DetailEditMode == GridEditMode.EditForm
+                && layout.AllowActions.HasFlag(GridControlAllowActions.Edit))
+            {
+                grid.DoubleTapped += async (_, _) =>
+                    await EditSelectedRowAsync(grid, layout).ConfigureAwait(true);
+            }
             if (BuildDetailToolbar(layout, grid) is { } toolbar)
                 stack.Children.Add(toolbar);
             stack.Children.Add(grid);
@@ -217,18 +224,30 @@ namespace Bee.UI.Avalonia.Controls
             };
         }
 
-        private static StackPanel? BuildDetailToolbar(LayoutGrid layout, GridControl grid)
+        private StackPanel? BuildDetailToolbar(LayoutGrid layout, GridControl grid)
         {
             var allowAdd = layout.AllowActions.HasFlag(GridControlAllowActions.Add);
             var allowDelete = layout.AllowActions.HasFlag(GridControlAllowActions.Delete);
-            if (!allowAdd && !allowDelete) return null;
+            // In-cell editing needs no Edit button (cells edit in place); EditForm
+            // surfaces one beside the double-tap gesture.
+            var allowEdit = DetailEditMode == GridEditMode.EditForm
+                && layout.AllowActions.HasFlag(GridControlAllowActions.Edit);
+            if (!allowAdd && !allowEdit && !allowDelete) return null;
 
             var toolbar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             if (allowAdd)
             {
                 var addButton = new Button { Content = "Add" };
-                addButton.Click += (_, _) => grid.AddRow();
+                addButton.Click += async (_, _) =>
+                    await AddDetailRowAsync(grid, layout).ConfigureAwait(true);
                 toolbar.Children.Add(addButton);
+            }
+            if (allowEdit)
+            {
+                var editButton = new Button { Content = "Edit" };
+                editButton.Click += async (_, _) =>
+                    await EditSelectedRowAsync(grid, layout).ConfigureAwait(true);
+                toolbar.Children.Add(editButton);
             }
             if (allowDelete)
             {
@@ -241,6 +260,53 @@ namespace Bee.UI.Avalonia.Controls
                 toolbar.Children.Add(deleteButton);
             }
             return toolbar;
+        }
+
+        private async Task AddDetailRowAsync(GridControl grid, LayoutGrid layout)
+        {
+            grid.AddRow();
+            if (DetailEditMode != GridEditMode.EditForm) return;
+
+            var table = grid.DataTable;
+            if (table is null || DataObject is null) return;
+            var row = table.Rows[table.Rows.Count - 1];
+
+            var committed = await RowEditDialog.ShowAsync(this, DataObject, layout, row).ConfigureAwait(true);
+            if (committed)
+            {
+                RefreshAndFocusRow(grid, row);
+            }
+            else
+            {
+                // A cancelled Add removes the blank row again instead of leaving an
+                // empty line in the detail table.
+                table.Rows.Remove(row);
+                grid.RefreshRows();
+            }
+        }
+
+        private async Task EditSelectedRowAsync(GridControl grid, LayoutGrid layout)
+        {
+            if (DataObject is null) return;
+            if (grid.SelectedItem is not DataRowView rowView) return;
+
+            var row = rowView.Row;
+            var committed = await RowEditDialog.ShowAsync(this, DataObject, layout, row).ConfigureAwait(true);
+            if (committed)
+                RefreshAndFocusRow(grid, row);
+        }
+
+        // Realized text cells capture their value at template build, so a committed
+        // edit form re-realizes the rows and scrolls back to the affected row.
+        private static void RefreshAndFocusRow(GridControl grid, DataRow row)
+        {
+            grid.RefreshRows();
+            var rowView = grid.DataTable?.DefaultView
+                .Cast<DataRowView>()
+                .FirstOrDefault(v => ReferenceEquals(v.Row, row));
+            if (rowView is null) return;
+            grid.SelectedItem = rowView;
+            grid.ScrollIntoView(rowView, null);
         }
 
         private IEnumerable<LayoutSection> EnumerateSections()

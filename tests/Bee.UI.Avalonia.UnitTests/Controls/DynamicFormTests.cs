@@ -177,6 +177,63 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         }
 
         [Fact]
+        [DisplayName("DetailEditMode=EditForm 時明細 grid 唯讀且工具列含 Edit 鈕")]
+        public void DetailEditMode_EditForm_GridReadOnlyWithEditButton()
+        {
+            var layout = new FormLayout { ColumnCount = 2 };
+            var detail = new LayoutGrid("EmployeePhone", "Phones");
+            detail.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            layout.Details!.Add(detail);
+
+            var dataObject = new FormDataObject(BuildSchemaWithDetail());
+            dataObject.InitializeNewMaster();
+            var component = new DynamicForm
+            {
+                FormLayout = layout,
+                DataObject = dataObject,
+                DetailEditMode = GridEditMode.EditForm,
+            };
+
+            var host = Assert.IsType<StackPanel>(component.Content);
+            var detailStack = Assert.IsType<StackPanel>(Assert.IsType<Border>(host.Children[0]).Child);
+            // Add / Edit / Delete (AllowActions defaults to All).
+            var toolbar = Assert.IsType<StackPanel>(detailStack.Children[1]);
+            Assert.Equal(3, toolbar.Children.Count);
+            Assert.Equal("Edit", Assert.IsType<Button>(toolbar.Children[1]).Content);
+
+            var grid = Assert.IsType<GridControl>(detailStack.Children[2]);
+            Assert.Equal(GridEditMode.EditForm, grid.EditMode);
+            Assert.True(grid.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("DetailEditMode 預設 InCell：工具列無 Edit 鈕、grid 可編輯")]
+        public void DetailEditMode_Default_InCellWithoutEditButton()
+        {
+            var layout = new FormLayout { ColumnCount = 2 };
+            var detail = new LayoutGrid("EmployeePhone", "Phones");
+            detail.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            layout.Details!.Add(detail);
+
+            var dataObject = new FormDataObject(BuildSchemaWithDetail());
+            dataObject.InitializeNewMaster();
+            var component = new DynamicForm
+            {
+                FormLayout = layout,
+                DataObject = dataObject,
+            };
+
+            var host = Assert.IsType<StackPanel>(component.Content);
+            var detailStack = Assert.IsType<StackPanel>(Assert.IsType<Border>(host.Children[0]).Child);
+            var toolbar = Assert.IsType<StackPanel>(detailStack.Children[1]);
+            Assert.Equal(2, toolbar.Children.Count);
+
+            var grid = Assert.IsType<GridControl>(detailStack.Children[2]);
+            Assert.Equal(GridEditMode.InCell, grid.EditMode);
+            Assert.False(grid.IsReadOnly);
+        }
+
+        [Fact]
         [DisplayName("AllowActions=None 時明細區不出現工具列")]
         public void AssignedLayoutWithDetails_NoAllowActions_OmitsToolbar()
         {
