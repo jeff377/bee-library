@@ -453,6 +453,91 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
             await Assert.ThrowsAsync<InvalidOperationException>(() => dataObject.DeleteAsync());
         }
 
+        [Fact]
+        [DisplayName("SetField 寫入新值時觸發一次 FieldValueChanged 並攜帶欄位名與綁定字串")]
+        public void SetField_NewValue_RaisesFieldValueChangedOnce()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+
+            var raised = new List<FieldValueChangedEventArgs>();
+            dataObject.FieldValueChanged += (_, e) => raised.Add(e);
+
+            dataObject.SetField("emp_name", "Alice");
+
+            var args = Assert.Single(raised);
+            Assert.Equal("emp_name", args.FieldName);
+            Assert.Equal("Alice", args.Value);
+        }
+
+        [Fact]
+        [DisplayName("SetField 寫入相同值時不觸發 FieldValueChanged（echo 防護）")]
+        public void SetField_SameValue_DoesNotRaiseFieldValueChanged()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            dataObject.SetField("emp_name", "Alice");
+
+            var raisedCount = 0;
+            dataObject.FieldValueChanged += (_, _) => raisedCount++;
+
+            dataObject.SetField("emp_name", "Alice");
+
+            Assert.Equal(0, raisedCount);
+        }
+
+        [Fact]
+        [DisplayName("InitializeNewMaster 觸發 DataSetReplaced")]
+        public void InitializeNewMaster_RaisesDataSetReplaced()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+
+            var raisedCount = 0;
+            dataObject.DataSetReplaced += (_, _) => raisedCount++;
+
+            dataObject.InitializeNewMaster();
+
+            Assert.Equal(1, raisedCount);
+        }
+
+        [Fact]
+        [DisplayName("LoadAsync 置換 DataSet 後觸發 DataSetReplaced")]
+        public async Task LoadAsync_Success_RaisesDataSetReplaced()
+        {
+            var rowId = Guid.NewGuid();
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = _ => new GetDataResponse { DataSet = BuildServerDataSet(rowId, "Alice") },
+            };
+            var dataObject = new FormDataObject(BuildEmployeeSchema(), connector);
+
+            var raisedCount = 0;
+            dataObject.DataSetReplaced += (_, _) => raisedCount++;
+
+            await dataObject.LoadAsync(rowId);
+
+            Assert.Equal(1, raisedCount);
+        }
+
+        [Fact]
+        [DisplayName("SaveAsync 在 server 回傳 null DataSet 時不觸發 DataSetReplaced")]
+        public async Task SaveAsync_NullRefreshedDataSet_DoesNotRaiseDataSetReplaced()
+        {
+            var connector = new FakeFormApiConnector
+            {
+                SaveHandler = _ => new SaveResponse(),
+            };
+            var dataObject = new FormDataObject(BuildEmployeeSchema(), connector);
+            dataObject.InitializeNewMaster();
+
+            var raisedCount = 0;
+            dataObject.DataSetReplaced += (_, _) => raisedCount++;
+
+            await dataObject.SaveAsync();
+
+            Assert.Equal(0, raisedCount);
+        }
+
         /// <summary>
         /// Test double that bypasses the real JSON-RPC pipeline by overriding every
         /// virtual CRUD method on <see cref="FormApiConnector"/>. The base constructor

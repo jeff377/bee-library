@@ -90,6 +90,22 @@ namespace Bee.UI.Avalonia.DataObjects
         public bool IsDirty { get; private set; }
 
         /// <summary>
+        /// Raised after <see cref="SetField"/> writes a value that differs from the
+        /// current one. Bound editors use this to refresh cross-field dependencies;
+        /// the initial-render echo guard in <see cref="SetField"/> keeps the event
+        /// from re-entering on writes that do not change the value.
+        /// </summary>
+        public event EventHandler<FieldValueChangedEventArgs>? FieldValueChanged;
+
+        /// <summary>
+        /// Raised after the underlying <see cref="DataSet"/> is replaced or reset
+        /// (<see cref="LoadAsync"/>, <see cref="SaveAsync"/>, <see cref="DeleteAsync"/>,
+        /// <see cref="NewAsync"/>, <see cref="InitializeNewMaster"/>). Bound editors
+        /// re-pull their values instead of requiring a full visual rebuild.
+        /// </summary>
+        public event EventHandler? DataSetReplaced;
+
+        /// <summary>
         /// Reads the field value from the master row and renders it as a string suitable
         /// for two-way bound input controls. Returns an empty string when the master row
         /// is absent, the field does not exist, or the value is <see cref="DBNull"/>.
@@ -139,6 +155,7 @@ namespace Bee.UI.Avalonia.DataObjects
 
             row[fieldName] = newValue;
             IsDirty = true;
+            FieldValueChanged?.Invoke(this, new FieldValueChangedEventArgs(fieldName, FormatForBinding(newValue)));
         }
 
         /// <summary>
@@ -153,6 +170,7 @@ namespace Bee.UI.Avalonia.DataObjects
             MasterTable.Rows.Clear();
             MasterTable.Rows.Add(MasterTable.NewRow());
             IsDirty = false;
+            OnDataSetReplaced();
         }
 
         /// <summary>
@@ -192,6 +210,7 @@ namespace Bee.UI.Avalonia.DataObjects
 
                 DataSet = response.DataSet;
                 IsDirty = false;
+                OnDataSetReplaced();
             }
             finally
             {
@@ -216,7 +235,10 @@ namespace Bee.UI.Avalonia.DataObjects
             {
                 var response = await connector.SaveAsync(DataSet).ConfigureAwait(false);
                 if (response.DataSet is not null)
+                {
                     DataSet = response.DataSet;
+                    OnDataSetReplaced();
+                }
                 IsDirty = false;
             }
             finally
@@ -245,6 +267,7 @@ namespace Bee.UI.Avalonia.DataObjects
                 await connector.DeleteAsync(rowId).ConfigureAwait(false);
                 DataSet = BuildEmptyDataSet(_schema);
                 IsDirty = false;
+                OnDataSetReplaced();
             }
             finally
             {
@@ -275,11 +298,17 @@ namespace Bee.UI.Avalonia.DataObjects
 
                 DataSet = response.DataSet;
                 IsDirty = false;
+                OnDataSetReplaced();
             }
             finally
             {
                 IsLoading = false;
             }
+        }
+
+        private void OnDataSetReplaced()
+        {
+            DataSetReplaced?.Invoke(this, EventArgs.Empty);
         }
 
         private FormApiConnector RequireConnector(string operation)
