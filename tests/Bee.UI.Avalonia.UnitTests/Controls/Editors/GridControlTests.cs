@@ -412,6 +412,61 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("Popup 型欄位（Check/DropDown/Date/YearMonth）繞過編輯管線改走常駐編輯器")]
+        public void BuildColumn_PopupEditorTypes_BypassEditPipeline()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn("phone", "Phone", ControlType.TextEdit));
+            layout.Columns.Add(new LayoutColumn("type", "Type", ControlType.DropDownEdit));
+            layout.Columns.Add(new LayoutColumn("ok", "OK", ControlType.CheckEdit));
+
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            var textColumn = Assert.IsType<DataGridTemplateColumn>(grid.Columns[0]);
+            Assert.NotNull(textColumn.CellEditingTemplate);
+
+            var dropDownColumn = Assert.IsType<DataGridTemplateColumn>(grid.Columns[1]);
+            Assert.Null(dropDownColumn.CellEditingTemplate);
+            Assert.True(dropDownColumn.IsReadOnly);
+
+            var checkColumn = Assert.IsType<DataGridTemplateColumn>(grid.Columns[2]);
+            Assert.Null(checkColumn.CellEditingTemplate);
+            Assert.True(checkColumn.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("常駐 cell 在可編輯 grid 為互動控件、唯讀 grid 為文字")]
+        public void BuildAlwaysOnCell_EditableVsReadOnly_SwitchesControl()
+        {
+            var table = new DataTable("Items");
+            table.Columns.Add("ok", typeof(bool));
+            table.Rows.Add(true);
+            var rowView = table.DefaultView[0];
+            var column = new LayoutColumn("ok", "OK", ControlType.CheckEdit);
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildAlwaysOnCell", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+
+            // List-mode grid is read-only: the cell renders formatted text.
+            var readOnlyGrid = new GridControl();
+            readOnlyGrid.Bind(new LayoutGrid("Items", "Items"), table);
+            var readOnlyCell = Assert.IsType<TextBlock>(method!.Invoke(readOnlyGrid, new object?[] { rowView, column }));
+            Assert.Equal("True", readOnlyCell.Text);
+
+            // Detail-bound editable grid: the cell hosts the interactive control.
+            var dataObject = BuildDataObjectWithDetail();
+            var editableLayout = new LayoutGrid("EmployeePhone", "Phones");
+            editableLayout.Columns!.Add(column);
+            var editableGrid = new GridControl();
+            editableGrid.Bind(dataObject, editableLayout);
+            Assert.False(editableGrid.IsReadOnly);
+            Assert.IsType<CheckBox>(method.Invoke(editableGrid, new object?[] { rowView, column }));
+        }
+
+        [Fact]
         [DisplayName("EndEdit 在無編輯狀態下不拋例外")]
         public void EndEdit_NoActiveEdit_DoesNotThrow()
         {

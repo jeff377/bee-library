@@ -27,11 +27,13 @@ dotnet run --project samples/Avalonia.Editors.Gallery/Avalonia.Editors.Gallery.c
 5. **唯讀列**：右欄唯讀（經 `LayoutField.ReadOnly` 綁定）與左欄手動停用的視覺應對等
 6. **GridControl 區**：表頭 / 列 hover / 選取列 / 格線與左欄原生 `DataGrid` 一致；
    「Ambient」列驗證只設 `TableName` 即從 `FormScope` 自動綁定明細表（欄位自動產生）
-7. **In-cell 編輯**：「Layout 綁定」表的五個欄位各對應一種 column ControlType——
-   雙擊 cell（或 F2）進入編輯：Phone=`TextEdit`（TextBox）、Type=`DropDownEdit`
-   （ComboBox，選項來自 `FormField.ListItems`）、Primary=`CheckEdit`（CheckBox）、
-   Valid From=`DateEdit`（DatePicker）、Bill Month=`YearMonthEdit`（無日欄、寫回
-   `yyyy-MM`）；Enter / 點別處 commit、Esc 取消
+7. **In-cell 編輯**（策略見 [ADR-021](../../docs/adr/adr-021-avalonia-datagrid-editing-strategy.md)）：
+   「Layout 綁定」表的五個欄位各對應一種 column ControlType——
+   - Phone=`TextEdit`：**雙擊 cell（或 F2）**進入 TextBox 編輯，Enter / 點別處 commit、Esc 取消
+   - Type=`DropDownEdit`（ComboBox，選項來自 `FormField.ListItems`）、Primary=`CheckEdit`
+     （CheckBox）、Valid From=`DateEdit`（DatePicker）、Bill Month=`YearMonthEdit`（無日欄、
+     寫回 `yyyy-MM`）：**常駐互動控件，直接點擊操作**（popup 型編輯器與 DataGrid 編輯管線
+     衝突，故繞過編輯模式）
 
 ## 對應 library 元件
 

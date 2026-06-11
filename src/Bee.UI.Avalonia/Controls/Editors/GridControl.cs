@@ -180,7 +180,14 @@ namespace Bee.UI.Avalonia.Controls.Editors
             var allowEdit = formMode != SingleFormMode.View
                 && _binder.DataObject is not null
                 && (_layout?.AllowActions.HasFlag(GridControlAllowActions.Edit) ?? false);
-            IsReadOnly = !allowEdit;
+            var readOnly = !allowEdit;
+            if (IsReadOnly == readOnly) return;
+
+            IsReadOnly = readOnly;
+            // Always-on editor cells capture the enabled state when their template
+            // builds, so a mode switch must re-realize the rows.
+            ItemsSource = null;
+            RebuildRows();
         }
 
         /// <summary>
@@ -284,19 +291,36 @@ namespace Bee.UI.Avalonia.Controls.Editors
             {
                 Header = column.Caption,
                 IsReadOnly = column.ReadOnly,
-                CellTemplate = new FuncDataTemplate<DataRowView>(
+            };
+
+            if (IsAlwaysOnEditor(column.ControlType))
+            {
+                // Popup-based editors (ComboBox dropdown, DatePicker flyout) break
+                // inside the DataGrid edit pipeline: opening the popup moves focus out
+                // of the cell and the grid tears the editing template down. These
+                // columns host the interactive control directly in the display
+                // template instead and bypass the edit pipeline entirely.
+                // See docs/adr/adr-021-avalonia-datagrid-editing-strategy.md.
+                templateColumn.IsReadOnly = true;
+                templateColumn.CellTemplate = new FuncDataTemplate<DataRowView>(
+                    (row, _) => BuildAlwaysOnCell(row, column),
+                    supportsRecycling: false);
+            }
+            else
+            {
+                templateColumn.CellTemplate = new FuncDataTemplate<DataRowView>(
                     (row, _) => new TextBlock
                     {
                         Text = FormatCell(row, fieldName, displayFormat, numberFormat),
                         Margin = new Thickness(8, 4),
                     },
-                    supportsRecycling: true),
+                    supportsRecycling: true);
                 // Recycling is off: each edit session gets a fresh editor whose change
                 // handlers close over the row being edited.
-                CellEditingTemplate = new FuncDataTemplate<DataRowView>(
+                templateColumn.CellEditingTemplate = new FuncDataTemplate<DataRowView>(
                     (row, _) => BuildCellEditor(row, column),
-                    supportsRecycling: false),
-            };
+                    supportsRecycling: false);
+            }
 
             if (column.Width > 0)
             {
@@ -310,6 +334,29 @@ namespace Bee.UI.Avalonia.Controls.Editors
             }
 
             return templateColumn;
+        }
+
+        private static bool IsAlwaysOnEditor(ControlType controlType)
+            => controlType is ControlType.CheckEdit or ControlType.DropDownEdit
+                or ControlType.DateEdit or ControlType.YearMonthEdit;
+
+        // Display template for the popup-based editor columns: an interactive control
+        // when the grid is editable, the plain formatted text otherwise.
+        private Control BuildAlwaysOnCell(DataRowView? rowView, LayoutColumn column)
+        {
+            var canEdit = !IsReadOnly && !column.ReadOnly;
+            if (!canEdit || rowView is null)
+            {
+                return new TextBlock
+                {
+                    Text = FormatCell(rowView, column.FieldName, column.DisplayFormat, column.NumberFormat),
+                    Margin = new Thickness(8, 4),
+                };
+            }
+
+            var editor = BuildCellEditor(rowView, column);
+            editor.Margin = new Thickness(4, 2);
+            return editor;
         }
 
         // Builds the in-cell editor for the column's ControlType. The writes go
