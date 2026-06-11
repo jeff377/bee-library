@@ -466,8 +466,101 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
             dataObject.SetField("emp_name", "Alice");
 
             var args = Assert.Single(raised);
-            Assert.Equal("emp_name", args.FieldName);
+            Assert.Equal(TestProgId, args.TableName);
+            Assert.Equal("emp_name", args.FieldName, ignoreCase: true);
             Assert.Equal("Alice", args.Value);
+            Assert.Same(dataObject.MasterRow, args.Row);
+        }
+
+        [Fact]
+        [DisplayName("明細列直接寫入 DataRow 也觸發 FieldValueChanged（事件橋接）並標記 dirty")]
+        public void DetailRowDirectWrite_RaisesFieldValueChangedAndDirties()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            var detail = dataObject.DataSet.Tables["EmployeePhone"]!;
+            detail.Rows.Add("02-1234-5678");
+            detail.AcceptChanges();
+            // Reset the dirty flag accumulated while arranging the detail row.
+            dataObject.InitializeNewMaster();
+
+            var raised = new List<FieldValueChangedEventArgs>();
+            dataObject.FieldValueChanged += (_, e) => raised.Add(e);
+
+            detail.Rows[0]["phone"] = "0912-345-678";
+
+            var args = Assert.Single(raised);
+            Assert.Equal("EmployeePhone", args.TableName);
+            Assert.Equal("phone", args.FieldName, ignoreCase: true);
+            Assert.Equal("0912-345-678", args.Value);
+            Assert.Same(detail.Rows[0], args.Row);
+            Assert.True(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("Detached 列（NewRow 未 Add）的寫入不觸發 FieldValueChanged")]
+        public void DetachedRowWrite_DoesNotRaiseFieldValueChanged()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+
+            var raisedCount = 0;
+            dataObject.FieldValueChanged += (_, _) => raisedCount++;
+
+            var detail = dataObject.DataSet.Tables["EmployeePhone"]!;
+            var row = detail.NewRow();
+            row["phone"] = "02-1234-5678";
+
+            Assert.Equal(0, raisedCount);
+        }
+
+        [Fact]
+        [DisplayName("明細增列 / 刪列經橋接標記 dirty，AcceptChanges 不標")]
+        public void DetailRowAddDelete_DirtyTracking()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            Assert.False(dataObject.IsDirty);
+
+            var detail = dataObject.DataSet.Tables["EmployeePhone"]!;
+            detail.Rows.Add("02-1234-5678");
+            Assert.True(dataObject.IsDirty);
+
+            dataObject.InitializeNewMaster();
+            Assert.False(dataObject.IsDirty);
+            detail.AcceptChanges();
+            Assert.False(dataObject.IsDirty);
+
+            detail.Rows[0].Delete();
+            Assert.True(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("DataSet 置換後新表寫入仍觸發事件、舊表寫入不再觸發（重訂閱）")]
+        public async Task ReplaceDataSet_MovesSubscriptionToNewTables()
+        {
+            var oldDataObjectSeedRowId = Guid.NewGuid();
+            var refreshed = BuildServerDataSet(oldDataObjectSeedRowId, "Alice");
+            var connector = new FakeFormApiConnector
+            {
+                GetNewDataHandler = () => new GetNewDataResponse { DataSet = refreshed },
+            };
+            var dataObject = new FormDataObject(BuildEmployeeSchema(), connector);
+            dataObject.InitializeNewMaster();
+            var oldMaster = dataObject.MasterTable;
+
+            await dataObject.NewAsync();
+
+            var raisedCount = 0;
+            dataObject.FieldValueChanged += (_, _) => raisedCount++;
+
+            // The retired table no longer feeds the bridge.
+            oldMaster.Rows[0]["emp_name"] = "Stale";
+            Assert.Equal(0, raisedCount);
+
+            // The replacement table does.
+            dataObject.SetField("emp_name", "Bob");
+            Assert.Equal(1, raisedCount);
         }
 
         [Fact]

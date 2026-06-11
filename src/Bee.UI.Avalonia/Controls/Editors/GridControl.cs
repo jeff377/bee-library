@@ -212,8 +212,9 @@ namespace Bee.UI.Avalonia.Controls.Editors
                     row[column] = FormDataObject.ResolveEmptyValueForType(column.DataType);
                 }
             }
+            // Attaching the row marks the data object dirty through its DataTable
+            // event bridge; no explicit notification is needed here.
             _dataTable.Rows.Add(row);
-            _binder.DataObject?.MarkDirty();
         }
 
         /// <summary>
@@ -224,7 +225,6 @@ namespace Bee.UI.Avalonia.Controls.Editors
         {
             if (SelectedItem is not DataRowView rowView) return;
             rowView.Row.Delete();
-            _binder.DataObject?.MarkDirty();
         }
 
         /// <inheritdoc />
@@ -564,12 +564,13 @@ namespace Bee.UI.Avalonia.Controls.Editors
             return textBox;
         }
 
-        private void WriteCell(DataRowView rowView, DataColumn column, string? value)
+        private static void WriteCell(DataRowView rowView, DataColumn column, string? value)
         {
             if (!TryConvertCellValue(value, column, out var converted)) return;
             if (Equals(converted, rowView.Row[column])) return;
+            // The write raises FieldValueChanged and marks dirty through the data
+            // object's DataTable event bridge.
             rowView.Row[column] = converted;
-            _binder.DataObject?.MarkDirty();
         }
 
         private static bool TryConvertCellValue(string? value, DataColumn column, out object converted)

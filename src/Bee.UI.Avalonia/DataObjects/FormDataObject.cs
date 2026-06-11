@@ -42,7 +42,8 @@ namespace Bee.UI.Avalonia.DataObjects
 
             _schema = schema;
             _connector = connector;
-            DataSet = BuildEmptyDataSet(schema);
+            DataSet = null!;
+            ReplaceDataSet(BuildEmptyDataSet(schema), notify: false);
         }
 
         /// <summary>
@@ -90,10 +91,12 @@ namespace Bee.UI.Avalonia.DataObjects
         public bool IsDirty { get; private set; }
 
         /// <summary>
-        /// Raised after <see cref="SetField"/> writes a value that differs from the
-        /// current one. Bound editors use this to refresh cross-field dependencies;
-        /// the initial-render echo guard in <see cref="SetField"/> keeps the event
-        /// from re-entering on writes that do not change the value.
+        /// Raised after any field value changes in any table of the
+        /// <see cref="DataSet"/> — master and detail alike, regardless of the write
+        /// path (<see cref="SetField"/>, grid cell editors, lookup write-backs,
+        /// direct <see cref="DataRow"/> writes). Bridged from the ADO.NET
+        /// <see cref="DataTable.ColumnChanged"/> event so no writer has to remember
+        /// to raise it.
         /// </summary>
         public event EventHandler<FieldValueChangedEventArgs>? FieldValueChanged;
 
@@ -153,9 +156,10 @@ namespace Bee.UI.Avalonia.DataObjects
             var newValue = ConvertToColumnValue(value, column);
             if (Equals(newValue, row[fieldName])) return;
 
+            // The write itself raises FieldValueChanged and marks dirty through the
+            // DataTable event bridge; the compare-first guard above keeps no-op
+            // writes (initial-render echoes) from producing event noise.
             row[fieldName] = newValue;
-            IsDirty = true;
-            FieldValueChanged?.Invoke(this, new FieldValueChangedEventArgs(fieldName, FormatForBinding(newValue)));
         }
 
         /// <summary>
@@ -170,7 +174,9 @@ namespace Bee.UI.Avalonia.DataObjects
             MasterTable.Rows.Clear();
             MasterTable.Rows.Add(MasterTable.NewRow());
             IsDirty = false;
-            OnDataSetReplaced();
+            // The dataset instance is unchanged (no resubscription needed), but the
+            // visible content was reset — notify so bound editors re-pull.
+            DataSetReplaced?.Invoke(this, EventArgs.Empty);
         }
 
         /// <summary>
@@ -205,15 +211,6 @@ namespace Bee.UI.Avalonia.DataObjects
             return table.Fields.Contains(fieldName) ? table.Fields[fieldName] : null;
         }
 
-        /// <summary>
-        /// Marks the data object dirty. UI components that mutate detail tables
-        /// directly (grid cell edits, row add/delete) call this because those writes
-        /// bypass <see cref="SetField"/>.
-        /// </summary>
-        public void MarkDirty()
-        {
-            IsDirty = true;
-        }
 
         /// <summary>
         /// Loads the master row (and its details) identified by <paramref name="rowId"/>
@@ -236,9 +233,8 @@ namespace Bee.UI.Avalonia.DataObjects
                     throw new InvalidOperationException(
                         $"No master row found for {SysFields.RowId} = {rowId}.");
 
-                DataSet = response.DataSet;
+                ReplaceDataSet(response.DataSet);
                 IsDirty = false;
-                OnDataSetReplaced();
             }
             finally
             {
@@ -263,10 +259,7 @@ namespace Bee.UI.Avalonia.DataObjects
             {
                 var response = await connector.SaveAsync(DataSet).ConfigureAwait(false);
                 if (response.DataSet is not null)
-                {
-                    DataSet = response.DataSet;
-                    OnDataSetReplaced();
-                }
+                    ReplaceDataSet(response.DataSet);
                 IsDirty = false;
             }
             finally
@@ -293,9 +286,8 @@ namespace Bee.UI.Avalonia.DataObjects
             try
             {
                 await connector.DeleteAsync(rowId).ConfigureAwait(false);
-                DataSet = BuildEmptyDataSet(_schema);
+                ReplaceDataSet(BuildEmptyDataSet(_schema));
                 IsDirty = false;
-                OnDataSetReplaced();
             }
             finally
             {
@@ -324,9 +316,8 @@ namespace Bee.UI.Avalonia.DataObjects
                     throw new InvalidOperationException(
                         "GetNewData returned a null DataSet; cannot initialize a new master row.");
 
-                DataSet = response.DataSet;
+                ReplaceDataSet(response.DataSet);
                 IsDirty = false;
-                OnDataSetReplaced();
             }
             finally
             {
@@ -334,9 +325,67 @@ namespace Bee.UI.Avalonia.DataObjects
             }
         }
 
-        private void OnDataSetReplaced()
+        /// <summary>
+        /// The single assignment point for <see cref="DataSet"/>: moves the table
+        /// event subscriptions from the old dataset to the new one (subscribing only
+        /// after the server has fully populated it, so loading raises nothing) and
+        /// notifies subscribers.
+        /// </summary>
+        private void ReplaceDataSet(DataSet dataSet, bool notify = true)
         {
-            DataSetReplaced?.Invoke(this, EventArgs.Empty);
+            DetachTableEvents(DataSet);
+            DataSet = dataSet;
+            AttachTableEvents(dataSet);
+            if (notify)
+                DataSetReplaced?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void AttachTableEvents(DataSet dataSet)
+        {
+            foreach (DataTable table in dataSet.Tables)
+            {
+                table.ColumnChanged += OnTableColumnChanged;
+                table.RowChanged += OnTableRowChanged;
+                table.RowDeleted += OnTableRowDeleted;
+            }
+        }
+
+        private void DetachTableEvents(DataSet? dataSet)
+        {
+            if (dataSet is null) return;
+            foreach (DataTable table in dataSet.Tables)
+            {
+                table.ColumnChanged -= OnTableColumnChanged;
+                table.RowChanged -= OnTableRowChanged;
+                table.RowDeleted -= OnTableRowDeleted;
+            }
+        }
+
+        private void OnTableColumnChanged(object? sender, DataColumnChangeEventArgs e)
+        {
+            // Seeding a detached row (NewRow before Rows.Add) stays silent; attaching
+            // the row marks dirty through RowChanged instead.
+            if (e.Row.RowState == DataRowState.Detached) return;
+
+            IsDirty = true;
+            FieldValueChanged?.Invoke(this, new FieldValueChangedEventArgs(
+                ((DataTable)sender!).TableName,
+                e.Column!.ColumnName,
+                FormatForBinding(e.ProposedValue),
+                e.Row));
+        }
+
+        private void OnTableRowChanged(object? sender, DataRowChangeEventArgs e)
+        {
+            // Only data mutations dirty the object; framework actions (AcceptChanges
+            // raises Commit, RejectChanges raises Rollback) do not.
+            if (e.Action is DataRowAction.Add or DataRowAction.Change)
+                IsDirty = true;
+        }
+
+        private void OnTableRowDeleted(object? sender, DataRowChangeEventArgs e)
+        {
+            IsDirty = true;
         }
 
         private FormApiConnector RequireConnector(string operation)

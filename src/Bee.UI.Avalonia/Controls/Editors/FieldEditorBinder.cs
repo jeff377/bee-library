@@ -235,8 +235,14 @@ namespace Bee.UI.Avalonia.Controls.Editors
             // `_suppress` is true while this editor itself is writing back, so a
             // self-originated event is ignored; changes to the same field that other
             // parties wrote (for example lookup write-backs) refresh the editor.
+            // Field editors bind the master row, so detail-table changes (bridged
+            // through the same event) are filtered out by table name. Comparisons are
+            // case-insensitive to follow DataTable semantics — `AddColumn` stores
+            // column names uppercase while wire-deserialized tables keep the
+            // original casing.
             if (_suppress) return;
-            if (string.Equals(e.FieldName, FieldName, StringComparison.Ordinal))
+            if (!string.Equals(e.TableName, DataObject?.MasterTable.TableName, StringComparison.OrdinalIgnoreCase)) return;
+            if (string.Equals(e.FieldName, FieldName, StringComparison.OrdinalIgnoreCase))
                 RunSuppressed(_refresh);
         }
     }
