@@ -302,9 +302,13 @@ BeeNET 框架在所有受管理資料表中自動維護以下系統欄位：
 | 英文名稱 | 中文名稱 | 說明 |
 |----------|----------|------|
 | `DynamicForm` | 動態表單 | Avalonia `UserControl`，依 FormSchema 在執行時動態渲染 master 區的表單 |
-| `DynamicGrid` | 動態列表 | Avalonia `UserControl`，包裝 `DataGrid` 接 `DataTable.DefaultView`；cell 顯示走 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>`（詳見 ADR-020） |
-| `FormView` | 表單檢視 | Avalonia 容器，串 `DynamicGrid`（列表） + `DynamicForm`（master） + toolbar（New / Save / Delete）；host 只設 `ProgId` 時，自動向 `ClientInfo` 取 `Schema` / `FormConnector` / `AccessToken` |
-| `FormDataObject` | 表單資料物件 | `DynamicForm` / `DynamicGrid` / `FormView` 綁定的資料物件，承載底層 `DataSet` 與表單層級狀態 |
+| `GridControl` | 表格控件 | 繼承 `DataGrid`、由 `LayoutGrid` 驅動；實作 `IBindTableControl`；cell 顯示走 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>`（ADR-020），編輯依 `GridEditMode`（ADR-021） |
+| Field editors（`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`） | 欄位編輯器 | 繼承原生控件（`StyleKeyOverride` 沿用主題）、各綁定 `FormDataObject` 一個欄位；自動套用 `FormField` metadata（MaxLength / ListItems） |
+| `FormScope` | 表單作用域 | 可繼承的 attached properties（`DataObject` / `FormMode`）：容器設一次，子孫編輯器憑 `FieldName` 自動綁定 |
+| `GridEditMode` | 表格編輯模式 | `GridControl` 的 UI 層編輯模型：`InCell`（逐格）/ `EditForm`（彈窗整列） |
+| `RowEditPanel` / `RowEditDialog` | 列編輯面板／彈窗 | EditForm 模式的編輯面，由 field editors 組成；走暫存列編輯協定（`BeginRowEdit` / `CommitRowEdit` / `CancelRowEdit`） |
+| `FormView` | 表單檢視 | Avalonia 容器，串 `GridControl`（列表） + `DynamicForm`（master） + toolbar（New / Save / Delete）；host 只設 `ProgId` 時，自動向 `ClientInfo` 取 `Schema` / `FormConnector` / `AccessToken` |
+| `FormDataObject` | 表單資料物件 | Avalonia 控件綁定的 view-model：承載 `DataSet`、把 ADO.NET 表事件橋接為 `FieldValueChanged` 與 dirty 追蹤，並提供暫存列編輯協定 |
 | `FileEndpointStorage` | 檔案端點儲存 | 檔案後端的 `IEndpointStorage` 實作；endpoint 落在 `LocalApplicationData/<appName>/endpoint.txt` |
 
 ### MAUI 控制項套件（`Bee.UI.Maui`）

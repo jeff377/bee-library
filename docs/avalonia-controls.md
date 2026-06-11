@@ -445,13 +445,13 @@ protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
 
 ## 6. 模式 C：`UserControl` 組合式
 
-適合「**把多個現成控件組合成一個元件**」，不需要可替換的 template。repo 內三個自訂控件都是這個模式：
+適合「**把多個現成控件組合成一個元件**」，不需要可替換的 template。repo 內的 `DynamicForm` / `FormView` 屬此模式（模式 A 的實例則看 `Controls/Editors/` 控件組——`TextEdit : TextBox` 等 field editors 與 `GridControl : DataGrid`）：
 
 | 控件 | 檔案 | 組合內容 |
 |------|------|---------|
 | `DynamicForm` | [DynamicForm.cs](../src/Bee.UI.Avalonia/Controls/DynamicForm.cs) | 依 `FormLayout` 動態產生 `TextBox` / `ComboBox` / `CheckBox` 等欄位 |
-| `DynamicGrid` | [DynamicGrid.cs](../src/Bee.UI.Avalonia/Controls/DynamicGrid.cs) | 包 `DataGrid`，以 `FuncDataTemplate` 解 `DataRowView` 綁定限制（[ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md)） |
-| `FormView` | [FormView.cs](../src/Bee.UI.Avalonia/Controls/FormView.cs) | 整合 `DynamicGrid` + `DynamicForm` + 工具列 |
+| `GridControl` | [GridControl.cs](../src/Bee.UI.Avalonia/Controls/Editors/GridControl.cs) | 繼承 `DataGrid`（模式 A 實例），以 `FuncDataTemplate` 解 `DataRowView` 綁定限制（[ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md)），編輯策略見 [ADR-021](adr/adr-021-avalonia-datagrid-editing-strategy.md) |
+| `FormView` | [FormView.cs](../src/Bee.UI.Avalonia/Controls/FormView.cs) | 整合 `GridControl`（列表）+ `DynamicForm` + 工具列 |
 
 模式骨架（取自 `DynamicForm` 的精簡版）：
 

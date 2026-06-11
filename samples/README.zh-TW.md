@@ -44,6 +44,7 @@ dotnet run                          # → http://localhost:5070
 | 如何在 Blazor 內用 `Bee.Web.Blazor.Wasm` 元件(瀏覽器端跑 .NET,必走 HTTP) | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.zh-TW.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) |
 | 同一份 `FormSchema` 在原生行動 App 上如何渲染（Mac Catalyst / iOS / Android） | [`Maui.Demo`](Maui.Demo/README.zh-TW.md) |
 | 同一份 `FormSchema` 在桌面 Avalonia 上如何渲染（Windows / macOS / Linux） | [`Avalonia.Demo`](Avalonia.Demo/README.zh-TW.md) |
+| field editor / `GridControl` 與原生 Avalonia 控件的樣式比對，含兩種 grid 編輯模式 | [`Avalonia.Editors.Gallery`](Avalonia.Editors.Gallery/README.md) |
 | 如何用純 JavaScript 從瀏覽器呼叫 Bee（前端無 .NET，走 Plain wire format） | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) |
 | Login、AccessToken、Encrypted payload 的客戶端 fallback 機制 | `Blazor.Server.Demo` 或 `Maui.Demo`(任一) |
 
@@ -58,6 +59,7 @@ dotnet run                          # → http://localhost:5070
 | [`Blazor.Wasm.Demo.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) | Wasm 靜態檔 + API host | `5070` | `dotnet run` | Bee.Api.AspNetCore + Bee.Web.Blazor.Wasm |
 | [`Maui.Demo`](Maui.Demo/README.zh-TW.md) | 原生行動 App 客戶端 | —(連 5050) | `dotnet build -t:Run -c Debug -f net10.0-maccatalyst` | Bee.UI.Maui + Bee.Api.Client |
 | [`Avalonia.Demo`](Avalonia.Demo/README.zh-TW.md) | 桌面 Avalonia 客戶端 | —(連 5050) | `dotnet run -c Debug` | Bee.UI.Avalonia + Bee.Api.Client |
+| [`Avalonia.Editors.Gallery`](Avalonia.Editors.Gallery/README.md) | 桌面 Avalonia 控件 gallery | —(無後端) | `dotnet run -c Debug` | Bee.UI.Avalonia |
 | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) | 純 JS 瀏覽器客戶端 | —(連 5050) | `open index.html` | (無 .NET — vanilla HTML/JS) |
 | [`Bee.Samples.Shared`](Bee.Samples.Shared/) | 共用後端 wiring | — | (被引用) | Bee.Business + Bee.Db + Bee.Hosting + Bee.Api.Client |
 

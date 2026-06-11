@@ -302,9 +302,13 @@ The BeeNET framework automatically maintains the following system fields in all 
 | English | 中文 | Description |
 |---------|------|-------------|
 | `DynamicForm` | 動態表單 | Avalonia `UserControl` that renders the master section of a FormSchema-driven form at runtime |
-| `DynamicGrid` | 動態列表 | Avalonia `UserControl` that wraps `DataGrid` over `DataTable.DefaultView`; cell rendering goes through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` (see ADR-020) |
-| `FormView` | 表單檢視 | Avalonia container that wires `DynamicGrid` (list) + `DynamicForm` (master) + toolbar (New / Save / Delete); resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host sets only `ProgId` |
-| `FormDataObject` | 表單資料物件 | The data-binding object bound by `DynamicForm` / `DynamicGrid` / `FormView`, carrying the underlying `DataSet` and form-level state |
+| `GridControl` | 表格控件 | `DataGrid` subclass driven by a `LayoutGrid`; implements `IBindTableControl`; cell rendering goes through `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` (ADR-020) and editing follows `GridEditMode` (ADR-021) |
+| Field editors（`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`） | 欄位編輯器 | Native-control subclasses (`StyleKeyOverride` keeps the theme) bound to one `FormDataObject` field; auto-apply `FormField` metadata (MaxLength / ListItems) |
+| `FormScope` | 表單作用域 | Attached inherited properties (`DataObject` / `FormMode`): set once on a container and descendant editors with a `FieldName` bind themselves |
+| `GridEditMode` | 表格編輯模式 | UI-layer editing model for `GridControl`: `InCell` (cell editing) / `EditForm` (popup row editing) |
+| `RowEditPanel` / `RowEditDialog` | 列編輯面板／彈窗 | EditForm-mode editing surface built from the field editors; uses the buffered row-edit protocol (`BeginRowEdit` / `CommitRowEdit` / `CancelRowEdit`) |
+| `FormView` | 表單檢視 | Avalonia container that wires `GridControl` (list) + `DynamicForm` (master) + toolbar (New / Save / Delete); resolves `Schema` / `FormConnector` / `AccessToken` from `ClientInfo` when the host sets only `ProgId` |
+| `FormDataObject` | 表單資料物件 | The view-model object bound by the Avalonia controls: carries the `DataSet`, bridges ADO.NET table events into `FieldValueChanged` / dirty tracking, and exposes the buffered row-edit protocol |
 | `FileEndpointStorage` | 檔案端點儲存 | File-backed `IEndpointStorage` implementation that persists the API endpoint to `LocalApplicationData/<appName>/endpoint.txt` |
 
 ### MAUI Control Library (`Bee.UI.Maui`)

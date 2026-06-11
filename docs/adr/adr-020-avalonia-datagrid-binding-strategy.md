@@ -96,3 +96,7 @@ private static DataGridTemplateColumn BuildColumn(LayoutColumn column)
 - **Cell-level 編輯**：目前 `DynamicGrid` 為 read-only；若日後需要 inline 編輯，可在那時再評估「自己寫 two-way binding 機制」或「投影到 ViewModel POCO」哪個成本較低
 - **Avalonia CompiledBinding 對 `DataRowView` 的支援**：是 Avalonia upstream 議題，不在 Bee.NET 這層處理
 - **將 `FormatCell` 抽到 `Bee.UI.Core` 與 `Bee.UI.Maui.DynamicGrid` 共用**：行為對稱但載體型別不同（Avalonia `DataRowView` 用 `row.Row[name]`、MAUI 直接吃 `DataRow`），抽共用需要先抽 helper signature，與本 ADR 的決策正交；本 ADR 範圍不處理
+
+## 後記（2026-06-11）
+
+本 ADR 的實作位置已由 `DynamicGrid`（`UserControl` 包裝，現已移除）遷移為 `GridControl`（直接繼承 `DataGrid`，`src/Bee.UI.Avalonia/Controls/Editors/GridControl.cs`）；`DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch 的綁定策略不變。in-cell / EditForm 編輯策略的後續決策見 [ADR-021](adr-021-avalonia-datagrid-editing-strategy.md)。

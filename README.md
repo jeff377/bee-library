@@ -62,7 +62,7 @@ For the full developer documentation index, see [docs/README.md](docs/README.md)
 |---|---|
 | **Bee.Api.Client.dll** | Connector for local or remote invocation of backend Business Objects (`LocalApiProvider` / `RemoteApiProvider`). |
 | **Bee.UI.Core.dll** | Cross-platform UI common layer (`ClientInfo` / `IEndpointStorage` / `IUIViewService` / `VersionInfo`); shared by native UI hosts for client-side connection state and endpoint persistence. |
-| **Bee.UI.Avalonia.dll** | Avalonia desktop control library (Windows / macOS / Linux); ships FormSchema-driven controls (`DynamicForm` + `DynamicGrid` + `FormView` + `FormDataObject`) plus a file-backed `FileEndpointStorage`. Single `net10.0` TFM; Avalonia 12.0.0 + DataGrid 12.0.0 as lower bound. |
+| **Bee.UI.Avalonia.dll** | Avalonia desktop control library (Windows / macOS / Linux); ships FormSchema-driven controls (`FormView` / `DynamicForm` / `GridControl` plus a field-editor family with `FormScope` ambient binding, all backed by `FormDataObject`) plus a file-backed `FileEndpointStorage`. Single `net10.0` TFM; Avalonia 12.0.0 + DataGrid 12.0.0 as lower bound. |
 | **Bee.UI.Maui.dll** | MAUI cross-platform control library (iOS / Android / macOS / Windows); ships FormSchema-driven controls (`DynamicForm` + `FormDataObject`). Default TFM `net10.0`; platform TFMs opt-in via `-p:BeeUiMauiFullPlatforms=true`. |
 | **Bee.Web.Blazor.Server.dll** | Razor Class Library (RCL) for Blazor Server hosts; provides DI-scoped connectors and Blazor components (`DynamicForm`, `FormDataObject`). |
 | **Bee.Web.Blazor.Wasm.dll** | Razor Class Library (RCL) for Blazor WebAssembly hosts; forced to `RemoteApiProvider`. Must not depend on any backend project. |
@@ -101,6 +101,7 @@ All demos live in-repo under [`samples/`](samples/README.md). They're minimal, f
 | Blazor Wasm | [`Blazor.Wasm.Demo`](samples/Blazor.Wasm.Demo/README.md) + [`.Host`](samples/Blazor.Wasm.Demo.Host/README.md) | Same Blazor components running in the browser, dispatched over HTTP via `RemoteApiProvider` |
 | MAUI | [`Maui.Demo`](samples/Maui.Demo/README.md) | Native mobile-app client (Mac Catalyst / iOS / Android / Windows) rendering the same `FormSchema` |
 | Avalonia | [`Avalonia.Demo`](samples/Avalonia.Demo/README.md) | Desktop Avalonia client (Windows / macOS / Linux) rendering the same `FormSchema` |
+| Avalonia | [`Avalonia.Editors.Gallery`](samples/Avalonia.Editors.Gallery/README.md) | Style-parity gallery for the field editors / `GridControl` against native controls (Semi.Avalonia, no backend) |
 | Pure JS | [`Web.Js.Demo`](samples/Web.Js.Demo/README.md) | Calling the JSON-RPC API from vanilla JavaScript in a browser — no .NET on the client, no npm |
 
 
