@@ -169,8 +169,36 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             var detailStack = Assert.IsType<StackPanel>(detailBorder.Child);
             var caption = Assert.IsType<TextBlock>(detailStack.Children[0]);
             Assert.Equal("Phones", caption.Text);
-            var grid = Assert.IsType<GridControl>(detailStack.Children[1]);
+            // AllowActions defaults to All, so an Add/Delete toolbar precedes the grid.
+            var toolbar = Assert.IsType<StackPanel>(detailStack.Children[1]);
+            Assert.Equal(2, toolbar.Children.Count);
+            var grid = Assert.IsType<GridControl>(detailStack.Children[2]);
             Assert.Same(dataObject.DataSet.Tables["EmployeePhone"], grid.DataTable);
+        }
+
+        [Fact]
+        [DisplayName("AllowActions=None 時明細區不出現工具列")]
+        public void AssignedLayoutWithDetails_NoAllowActions_OmitsToolbar()
+        {
+            var layout = new FormLayout { ColumnCount = 2 };
+            var detail = new LayoutGrid("EmployeePhone", "Phones") { AllowActions = GridControlAllowActions.None };
+            detail.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            layout.Details!.Add(detail);
+
+            var dataObject = new FormDataObject(BuildSchemaWithDetail());
+            dataObject.InitializeNewMaster();
+            var component = new DynamicForm
+            {
+                FormLayout = layout,
+                DataObject = dataObject,
+            };
+
+            var host = Assert.IsType<StackPanel>(component.Content);
+            var detailBorder = Assert.IsType<Border>(host.Children[0]);
+            var detailStack = Assert.IsType<StackPanel>(detailBorder.Child);
+            // Caption followed directly by the grid — no toolbar in between.
+            Assert.Equal(2, detailStack.Children.Count);
+            Assert.IsType<GridControl>(detailStack.Children[1]);
         }
 
         private static FormSchema BuildSchemaWithDetail()

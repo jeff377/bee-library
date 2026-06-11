@@ -188,6 +188,34 @@ namespace Bee.UI.Avalonia.DataObjects
         }
 
         /// <summary>
+        /// Looks up the <see cref="FormField"/> metadata on the named table (master or
+        /// detail), or <c>null</c> if the table or field does not exist. Detail-grid
+        /// editors use this to reach per-column metadata such as
+        /// <see cref="FormField.ListItems"/>.
+        /// </summary>
+        /// <param name="tableName">The schema table name.</param>
+        /// <param name="fieldName">The field (column) name.</param>
+        public FormField? GetFormField(string tableName, string fieldName)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(tableName);
+            ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
+
+            var table = _schema.Tables?.GetOrDefault(tableName);
+            if (table?.Fields is null) return null;
+            return table.Fields.Contains(fieldName) ? table.Fields[fieldName] : null;
+        }
+
+        /// <summary>
+        /// Marks the data object dirty. UI components that mutate detail tables
+        /// directly (grid cell edits, row add/delete) call this because those writes
+        /// bypass <see cref="SetField"/>.
+        /// </summary>
+        public void MarkDirty()
+        {
+            IsDirty = true;
+        }
+
+        /// <summary>
         /// Loads the master row (and its details) identified by <paramref name="rowId"/>
         /// from the backend BO and replaces the local <see cref="DataSet"/>.
         /// </summary>
@@ -378,7 +406,9 @@ namespace Bee.UI.Avalonia.DataObjects
             };
         }
 
-        private static object ConvertToColumnValue(string? value, DataColumn column)
+        // NOTE: Internal (not private) so GridControl's in-cell editors reuse the same
+        // string-to-column coercion rules instead of growing a divergent copy.
+        internal static object ConvertToColumnValue(string? value, DataColumn column)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -409,7 +439,7 @@ namespace Bee.UI.Avalonia.DataObjects
             return Convert.ChangeType(value, targetType, CultureInfo.InvariantCulture);
         }
 
-        private static object ResolveEmptyValueForType(Type targetType)
+        internal static object ResolveEmptyValueForType(Type targetType)
         {
             if (targetType == typeof(string)) return string.Empty;
             if (targetType == typeof(Guid)) return Guid.Empty;

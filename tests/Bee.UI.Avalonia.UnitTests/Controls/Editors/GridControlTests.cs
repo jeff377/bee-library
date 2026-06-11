@@ -240,16 +240,187 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("SetControlState 在任何模式下維持唯讀（編輯屬後續階段）")]
-        public void SetControlState_AnyMode_StaysReadOnly()
+        [DisplayName("明細綁定 + AllowActions.Edit 時 Edit 模式可編輯、View 模式唯讀")]
+        public void SetControlState_DetailBoundEditMode_TogglesReadOnly()
         {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+
             var grid = new GridControl();
+            grid.Bind(dataObject, layout);
 
             grid.SetControlState(SingleFormMode.Edit);
-            Assert.True(grid.IsReadOnly);
+            Assert.False(grid.IsReadOnly);
 
             grid.SetControlState(SingleFormMode.View);
             Assert.True(grid.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("AllowActions 不含 Edit 時任何模式皆唯讀")]
+        public void SetControlState_AllowActionsWithoutEdit_StaysReadOnly()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones")
+            {
+                AllowActions = GridControlAllowActions.Add | GridControlAllowActions.Delete,
+            };
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+            grid.SetControlState(SingleFormMode.Edit);
+
+            Assert.True(grid.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("列表模式（無 FormDataObject）維持唯讀")]
+        public void SetControlState_ListMode_StaysReadOnly()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            grid.SetControlState(SingleFormMode.Edit);
+
+            Assert.True(grid.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("AddRow 新增列、補齊 NOT NULL 預設並標記 dirty")]
+        public void AddRow_AppendsRowAndMarksDirty()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            grid.AddRow();
+
+            Assert.Equal(1, grid.DataTable!.Rows.Count);
+            Assert.True(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("AddRow 對 wire 形態（無 DefaultValue 的 NOT NULL 欄）補型別空值")]
+        public void AddRow_WireShapedTable_SeedsNonNullDefaults()
+        {
+            var table = new DataTable("Items");
+            table.Columns.Add(new DataColumn("name", typeof(string)) { AllowDBNull = false });
+            table.Columns.Add(new DataColumn("qty", typeof(int)) { AllowDBNull = false });
+            var layout = new LayoutGrid("Items", "Items");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "name", Caption = "Name", Visible = true });
+
+            var grid = new GridControl();
+            grid.Bind(layout, table);
+            grid.AddRow();
+
+            var row = table.Rows[0];
+            Assert.Equal(string.Empty, row["name"]);
+            Assert.Equal(0, row["qty"]);
+        }
+
+        [Fact]
+        [DisplayName("DeleteSelectedRow 將選取列標記 Deleted 並標記 dirty")]
+        public void DeleteSelectedRow_MarksRowDeletedAndDirty()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+            grid.AddRow();
+            grid.DataTable!.AcceptChanges();
+
+            grid.SelectedItem = grid.DataTable.DefaultView[0];
+            grid.DeleteSelectedRow();
+
+            Assert.Equal(DataRowState.Deleted, grid.DataTable.Rows[0].RowState);
+            Assert.True(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("文字 cell editor 寫回 DataRow，無效輸入保留原值")]
+        public void BuildCellEditor_TextEditor_WritesBackAndIgnoresInvalid()
+        {
+            var table = new DataTable("Items");
+            table.Columns.Add("name", typeof(string));
+            table.Columns.Add("qty", typeof(int));
+            table.Rows.Add("Widget", 5);
+            var grid = new GridControl();
+            grid.Bind(new LayoutGrid("Items", "Items"), table);
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            var rowView = table.DefaultView[0];
+
+            var nameEditor = Assert.IsType<TextBox>(method!.Invoke(
+                grid, new object?[] { rowView, new LayoutColumn { FieldName = "name" } }));
+            nameEditor.Text = "Gadget";
+            Assert.Equal("Gadget", table.Rows[0]["name"]);
+
+            var qtyEditor = Assert.IsType<TextBox>(method.Invoke(
+                grid, new object?[] { rowView, new LayoutColumn { FieldName = "qty" } }));
+            qtyEditor.Text = "abc";
+            Assert.Equal(5, table.Rows[0]["qty"]);
+            qtyEditor.Text = "12";
+            Assert.Equal(12, table.Rows[0]["qty"]);
+        }
+
+        [Fact]
+        [DisplayName("CheckEdit cell editor 以 CheckBox 寫回布林")]
+        public void BuildCellEditor_CheckEditor_WritesBoolean()
+        {
+            var table = new DataTable("Items");
+            table.Columns.Add("ok", typeof(bool));
+            table.Rows.Add(false);
+            var grid = new GridControl();
+            grid.Bind(new LayoutGrid("Items", "Items"), table);
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            var editor = Assert.IsType<CheckBox>(method!.Invoke(
+                grid, new object?[] { table.DefaultView[0], new LayoutColumn { FieldName = "ok", ControlType = ControlType.CheckEdit } }));
+
+            editor.IsChecked = true;
+
+            Assert.Equal(true, table.Rows[0]["ok"]);
+        }
+
+        [Fact]
+        [DisplayName("LayoutColumn.ReadOnly 反映到 DataGrid 欄位唯讀（可編輯 grid 上驗證）")]
+        public void Bind_ReadOnlyColumn_SetsColumnReadOnly()
+        {
+            // The DataGridColumn.IsReadOnly getter coerces with the owning grid's
+            // IsReadOnly, so the per-column flag is only observable on an editable
+            // (detail-bound, Edit-mode) grid.
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true, ReadOnly = true });
+            layout.Columns.Add(new LayoutColumn { FieldName = "type", Caption = "Type", Visible = true });
+
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+            grid.SetControlState(SingleFormMode.Edit);
+
+            Assert.False(grid.IsReadOnly);
+            Assert.True(grid.Columns[0].IsReadOnly);
+            Assert.False(grid.Columns[1].IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("EndEdit 在無編輯狀態下不拋例外")]
+        public void EndEdit_NoActiveEdit_DoesNotThrow()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            var exception = Record.Exception(grid.EndEdit);
+
+            Assert.Null(exception);
         }
 
         [Fact]

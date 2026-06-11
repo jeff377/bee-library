@@ -186,6 +186,8 @@ namespace Bee.UI.Avalonia.Controls
 
             var grid = new GridControl { MinHeight = 120 };
             grid.Bind(DataObject!, layout);
+            if (BuildDetailToolbar(layout, grid) is { } toolbar)
+                stack.Children.Add(toolbar);
             stack.Children.Add(grid);
 
             return new Border
@@ -195,6 +197,32 @@ namespace Bee.UI.Avalonia.Controls
                 BorderBrush = Brushes.Gray,
                 Child = stack,
             };
+        }
+
+        private static StackPanel? BuildDetailToolbar(LayoutGrid layout, GridControl grid)
+        {
+            var allowAdd = layout.AllowActions.HasFlag(GridControlAllowActions.Add);
+            var allowDelete = layout.AllowActions.HasFlag(GridControlAllowActions.Delete);
+            if (!allowAdd && !allowDelete) return null;
+
+            var toolbar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+            if (allowAdd)
+            {
+                var addButton = new Button { Content = "Add" };
+                addButton.Click += (_, _) => grid.AddRow();
+                toolbar.Children.Add(addButton);
+            }
+            if (allowDelete)
+            {
+                var deleteButton = new Button { Content = "Delete" };
+                deleteButton.Click += (_, _) =>
+                {
+                    grid.EndEdit();
+                    grid.DeleteSelectedRow();
+                };
+                toolbar.Children.Add(deleteButton);
+            }
+            return toolbar;
         }
 
         private IEnumerable<LayoutSection> EnumerateSections()

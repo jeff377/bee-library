@@ -30,10 +30,12 @@ namespace Bee.UI.Avalonia.Controls.Editors
     /// See docs/adr/adr-020-avalonia-datagrid-binding-strategy.md for the
     /// full reasoning and trade-offs.
     /// <para>
-    /// The grid is read-only in this phase; in-grid editing and the
-    /// <see cref="LayoutGrid.AllowActions"/> row actions arrive in a later stage
-    /// of plan-avalonia-grid-control. An empty table renders headers only — hosts
-    /// that need an "empty" hint overlay their own placeholder.
+    /// In-grid editing is available when the grid is bound to a
+    /// <see cref="FormDataObject"/> detail table, the form mode is not
+    /// <see cref="SingleFormMode.View"/>, and the layout grants
+    /// <see cref="GridControlAllowActions.Edit"/>; list-mode binds stay read-only.
+    /// An empty table renders headers only — hosts that need an "empty" hint
+    /// overlay their own placeholder.
     /// </para>
     /// </remarks>
     public class GridControl : DataGrid, IBindTableControl, IUIControl
@@ -146,6 +148,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             _dataTable = rows;
             RebuildColumns();
             RebuildRows();
+            SetControlState(GetValue(FormScope.FormModeProperty));
         }
 
         /// <summary>
@@ -158,21 +161,60 @@ namespace Bee.UI.Avalonia.Controls.Editors
         }
 
         /// <summary>
-        /// Ends the current edit operation.
+        /// Commits the in-progress cell and row edit (if any) so the underlying
+        /// <see cref="DataRow"/> leaves its edit state before the host inspects or
+        /// persists the dataset.
         /// </summary>
-        /// <remarks>
-        /// No-op in the read-only phase: there is no in-grid editing surface yet.
-        /// A later stage of plan-avalonia-grid-control implements commit semantics.
-        /// </remarks>
         public void EndEdit()
         {
+            CommitEdit();
+            if (SelectedItem is DataRowView { IsEdit: true } rowView)
+                rowView.EndEdit();
         }
 
         /// <inheritdoc />
         public void SetControlState(SingleFormMode formMode)
         {
-            // Editing arrives in a later stage; the grid stays read-only in every mode.
-            IsReadOnly = true;
+            // Editing only makes sense against a FormDataObject detail table whose
+            // layout grants the Edit action; list-mode rows stay read-only.
+            var allowEdit = formMode != SingleFormMode.View
+                && _binder.DataObject is not null
+                && (_layout?.AllowActions.HasFlag(GridControlAllowActions.Edit) ?? false);
+            IsReadOnly = !allowEdit;
+        }
+
+        /// <summary>
+        /// Appends a new row to the bound table, seeding non-nullable columns whose
+        /// <see cref="DataColumn.DefaultValue"/> is still <see cref="DBNull"/> with a
+        /// type-appropriate empty value (wire-deserialized tables often lack the
+        /// pinned defaults that schema-derived tables carry).
+        /// </summary>
+        public void AddRow()
+        {
+            if (_dataTable is null) return;
+
+            var row = _dataTable.NewRow();
+            foreach (DataColumn column in _dataTable.Columns)
+            {
+                if (!column.AllowDBNull
+                    && (column.DefaultValue is null || column.DefaultValue == DBNull.Value))
+                {
+                    row[column] = FormDataObject.ResolveEmptyValueForType(column.DataType);
+                }
+            }
+            _dataTable.Rows.Add(row);
+            _binder.DataObject?.MarkDirty();
+        }
+
+        /// <summary>
+        /// Deletes the selected row (marks it <see cref="DataRowState.Deleted"/> so the
+        /// save pipeline can translate the change). No-op when nothing is selected.
+        /// </summary>
+        public void DeleteSelectedRow()
+        {
+            if (SelectedItem is not DataRowView rowView) return;
+            rowView.Row.Delete();
+            _binder.DataObject?.MarkDirty();
         }
 
         /// <inheritdoc />
@@ -229,7 +271,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             ItemsSource = _dataTable?.DefaultView;
         }
 
-        private static DataGridTemplateColumn BuildColumn(LayoutColumn column)
+        private DataGridTemplateColumn BuildColumn(LayoutColumn column)
         {
             // Capture per-column metadata into locals so each cell template closure
             // resolves the correct field name / display format regardless of when
@@ -241,6 +283,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             var templateColumn = new DataGridTemplateColumn
             {
                 Header = column.Caption,
+                IsReadOnly = column.ReadOnly,
                 CellTemplate = new FuncDataTemplate<DataRowView>(
                     (row, _) => new TextBlock
                     {
@@ -248,6 +291,11 @@ namespace Bee.UI.Avalonia.Controls.Editors
                         Margin = new Thickness(8, 4),
                     },
                     supportsRecycling: true),
+                // Recycling is off: each edit session gets a fresh editor whose change
+                // handlers close over the row being edited.
+                CellEditingTemplate = new FuncDataTemplate<DataRowView>(
+                    (row, _) => BuildCellEditor(row, column),
+                    supportsRecycling: false),
             };
 
             if (column.Width > 0)
@@ -262,6 +310,97 @@ namespace Bee.UI.Avalonia.Controls.Editors
             }
 
             return templateColumn;
+        }
+
+        // Builds the in-cell editor for the column's ControlType. The writes go
+        // straight to the DataRow (the ADR-020 binding limitation applies to editing
+        // templates too); invalid partial input keeps the last valid value.
+        private Control BuildCellEditor(DataRowView? rowView, LayoutColumn column)
+        {
+            if (rowView is null) return new TextBlock();
+            var fieldName = column.FieldName;
+            var dataColumn = rowView.Row.Table.Columns.Contains(fieldName)
+                ? rowView.Row.Table.Columns[fieldName]
+                : null;
+            if (dataColumn is null) return new TextBlock();
+
+            var current = FormatCell(rowView, fieldName, string.Empty, string.Empty);
+
+            if (column.ControlType == ControlType.CheckEdit)
+            {
+                var checkBox = new CheckBox
+                {
+                    IsChecked = string.Equals(current, bool.TrueString, StringComparison.OrdinalIgnoreCase),
+                };
+                checkBox.IsCheckedChanged += (_, _) =>
+                    WriteCell(rowView, dataColumn, (checkBox.IsChecked ?? false).ToString());
+                return checkBox;
+            }
+
+            if (column.ControlType is ControlType.DateEdit or ControlType.YearMonthEdit)
+            {
+                var format = column.ControlType == ControlType.YearMonthEdit ? "yyyy-MM" : "yyyy-MM-dd";
+                var picker = new DatePicker
+                {
+                    DayVisible = column.ControlType != ControlType.YearMonthEdit,
+                    SelectedDate = DateEdit.ParseToOffset(current),
+                };
+                picker.SelectedDateChanged += (_, e) =>
+                    WriteCell(rowView, dataColumn, e.NewDate?.DateTime.ToString(format, CultureInfo.InvariantCulture));
+                return picker;
+            }
+
+            if (column.ControlType == ControlType.DropDownEdit
+                && _binder.DataObject?.GetFormField(TableName, fieldName)?.ListItems is { Count: > 0 } items)
+            {
+                var options = items.ToList();
+                var combo = new ComboBox
+                {
+                    ItemsSource = options,
+                    ItemTemplate = new FuncDataTemplate<Bee.Definition.Collections.ListItem>(
+                        (item, _) => new TextBlock { Text = item?.Text ?? string.Empty },
+                        supportsRecycling: true),
+                    SelectedItem = options.FirstOrDefault(i => string.Equals(i.Value, current, StringComparison.Ordinal)),
+                };
+                combo.SelectionChanged += (_, _) =>
+                    WriteCell(rowView, dataColumn, (combo.SelectedItem as Bee.Definition.Collections.ListItem)?.Value);
+                return combo;
+            }
+
+            var textBox = new TextBox { Text = current };
+            // `TextChanged` is not raised reliably for programmatic writes; hook the
+            // property change instead (same approach as `TextEdit`).
+            textBox.PropertyChanged += (_, e) =>
+            {
+                if (e.Property == TextBox.TextProperty)
+                    WriteCell(rowView, dataColumn, textBox.Text);
+            };
+            return textBox;
+        }
+
+        private void WriteCell(DataRowView rowView, DataColumn column, string? value)
+        {
+            if (!TryConvertCellValue(value, column, out var converted)) return;
+            if (Equals(converted, rowView.Row[column])) return;
+            rowView.Row[column] = converted;
+            _binder.DataObject?.MarkDirty();
+        }
+
+        private static bool TryConvertCellValue(string? value, DataColumn column, out object converted)
+        {
+            try
+            {
+                converted = FormDataObject.ConvertToColumnValue(value, column);
+                return true;
+            }
+            catch (Exception ex) when (ex is FormatException or InvalidCastException or OverflowException)
+            {
+                // Partial keystroke input (for example "12." in a decimal column)
+                // cannot convert yet; the cell keeps its last valid value until the
+                // input parses.
+                converted = DBNull.Value;
+                return false;
+            }
         }
 
         private static string FormatCell(DataRowView? row, string fieldName, string displayFormat, string numberFormat)

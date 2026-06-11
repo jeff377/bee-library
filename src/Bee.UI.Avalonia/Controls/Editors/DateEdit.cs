@@ -130,7 +130,9 @@ namespace Bee.UI.Avalonia.Controls.Editors
             IsEnabled = !_binder.IsLayoutReadOnly;
         }
 
-        private static DateTimeOffset? ParseToOffset(string? raw)
+        // NOTE: Internal (not private) so GridControl's in-cell date editors share the
+        // same DateTimeKind handling.
+        internal static DateTimeOffset? ParseToOffset(string? raw)
         {
             if (!DateTime.TryParse(
                     raw,
