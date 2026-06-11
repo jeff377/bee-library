@@ -34,6 +34,10 @@ dotnet run --project samples/Avalonia.Editors.Gallery/Avalonia.Editors.Gallery.c
    - Type=`DropDownEdit`、Valid From=`DateEdit`、Bill Month=`YearMonthEdit`：靜置顯示文字，
      **單擊 cell 置換為編輯器**（下拉自動展開；日期為三段式選輪），選完 / 失焦自動換回文字
      並顯示寫回後的值（popup 型編輯器與 DataGrid 編輯管線衝突，置換由控件自管）
+8. **EditForm 模式區**（最下方，走真實 `DynamicForm` 整合）：grid 唯讀，**雙擊列或工具列
+   Edit 鈕**開彈窗編輯整列（同一組 field editors）；彈窗內 Cancel 完整還原、OK 落實並
+   捲回該列；Add 開彈窗編輯新列、取消時自動移除空列。注意此區與上方 in-cell 區共用同一份
+   Phones 資料——在一區改完，另一區要捲動或重啟才會反映（realized cell 不追蹤外部寫入）
 
 ## 對應 library 元件
 

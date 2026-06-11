@@ -48,7 +48,12 @@ Gallery 實測結果：**文字欄（`TextEdit`）編輯正常，popup 型編輯
 - 寫回仍直接落 `DataRow`（ADR-020 的限制同樣適用顯示模板內的控件），經 `FormDataObject.MarkDirty()` 反映 dirty
 - 控件的變更監聽一律 hook **property changed**（`TextProperty` / `SelectedDateProperty`），不依賴 `TextChanged` / `SelectedDateChanged` 事件——後者對程式設值不保證觸發
 
-選項 4（列級編輯面板）不因此放棄：規劃為**進階編輯模式**另案實作（plan-avalonia-grid-row-edit-panel），與 in-cell 模式由 layout 設定選擇。
+選項 4（列級編輯）已落地為 **EditForm 模式**（plan-avalonia-grid-row-edit-panel，2026-06-11）：
+
+- 編輯模式（`GridEditMode`：`InCell` / `EditForm`）是 **UI 層屬性**（`GridControl.EditMode` / `DynamicForm.DetailEditMode`），不進共同定義層——`LayoutGrid` 跨 UI 家族共用，編輯模型屬各框架的呈現決策
+- 呈現採**彈窗**（`RowEditDialog` 包 `RowEditPanel`）而非 grid 下方 inline 面板：批次作業明細列數可能很大，inline 面板有「編輯區離選列太遠」與「展開收合 + 新增列落表尾造成畫面跳動」兩個結構性問題；彈窗零版面位移、與列數無關
+- 暫存語意走 `FormDataObject` 的列編輯協定（`BeginRowEdit` / `CommitRowEdit` / `CancelRowEdit`，包裝 ADO.NET `DataRow.BeginEdit` 家族）：實測釘住 **`BeginEdit` 不抑制 `ColumnChanged`、且無變更的 `EndEdit` 仍發 `RowChanged`** 兩個 ADO.NET 行為——以「編輯中列集合」讓事件橋接靜默、commit 時 diff Proposed vs Current 統一補發、無變更 commit 改走 `CancelEdit`；取消零事件、確認事件齊全
+- 確認後 grid 重 realize + `ScrollIntoView` 捲回該列；`Add` 開彈窗編輯新列、取消時移除空列
 
 ## 影響
 

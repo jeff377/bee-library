@@ -7,6 +7,7 @@ using Avalonia.Styling;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
@@ -166,6 +167,48 @@ namespace Avalonia.Editors.Gallery
                 WithContent(BindReadOnly(new CheckEdit(), "is_active"), "Active"));
 
             AddGridSection();
+            AddEditFormSection();
+        }
+
+        // The EditForm comparison goes through the real integration path: a
+        // DynamicForm whose layout carries only the detail grid, so the toolbar,
+        // double-tap gesture and RowEditDialog wiring are exactly what production
+        // forms get.
+        private void AddEditFormSection()
+        {
+            var layout = new FormLayout();
+            var detail = new LayoutGrid("Phones", "Phones");
+            detail.Columns!.Add(new LayoutColumn("phone", "Phone", ControlType.TextEdit));
+            detail.Columns.Add(new LayoutColumn("type", "Type", ControlType.DropDownEdit));
+            detail.Columns.Add(new LayoutColumn("is_primary", "Primary", ControlType.CheckEdit));
+            detail.Columns.Add(new LayoutColumn("valid_from", "Valid From", ControlType.DateEdit));
+            detail.Columns.Add(new LayoutColumn("bill_month", "Bill Month", ControlType.YearMonthEdit));
+            layout.Details!.Add(detail);
+
+            var form = new DynamicForm
+            {
+                FormLayout = layout,
+                DataObject = _dataObject,
+                DetailEditMode = GridEditMode.EditForm,
+            };
+
+            var section = new StackPanel { Spacing = 8 };
+            section.Children.Add(new TextBlock
+            {
+                Text = "GridControl EditForm 模式（grid 唯讀，雙擊列或 Edit 鈕開彈窗編輯）",
+                FontSize = 15,
+                FontWeight = FontWeight.Bold,
+            });
+            section.Children.Add(form);
+
+            GalleryHost.Children.Add(new Border
+            {
+                Padding = new global::Avalonia.Thickness(12),
+                BorderThickness = new global::Avalonia.Thickness(1),
+                BorderBrush = Brushes.Gray,
+                CornerRadius = new global::Avalonia.CornerRadius(4),
+                Child = section,
+            });
         }
 
         private void AddGridSection()
