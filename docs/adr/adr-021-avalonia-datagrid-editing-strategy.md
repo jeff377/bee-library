@@ -31,14 +31,17 @@ Gallery 實測結果：**文字欄（`TextEdit`）編輯正常，popup 型編輯
 | ControlType | Cell 呈現 | 編輯方式 |
 |-------------|----------|---------|
 | `TextEdit` / `ButtonEdit` / `Auto`（文字類） | `TextBlock` | `CellEditingTemplate`（雙擊 / F2 進入，`TextBox` 編輯）——焦點留在 cell 內，編輯管線運作正常 |
-| `CheckEdit` / `DropDownEdit` / `DateEdit` / `YearMonthEdit` | **可編輯時**：互動控件常駐 `CellTemplate`；**唯讀時**：`TextBlock` 格式化文字 | 直接互動（點勾選、開下拉、開日期面板），繞過編輯管線；對應 column 標記 `IsReadOnly = true` 使管線永不介入 |
+| `CheckEdit` | 置中 `CheckBox` 常駐（唯讀時 disabled） | 直接點勾選；繞過編輯管線 |
+| `DropDownEdit` / `DateEdit` / `YearMonthEdit` | **靜置**：`TextBlock` 格式化文字（與唯讀 cell 完全相同）；**點擊**：在 `CellTemplate` 內自管置換為編輯控件 | 單擊 cell → 置換編輯器（下拉自動展開）；值寫回或編輯結束後**換回文字呈現**。置換由控件自管、不經編輯管線，popup 不會被撕掉 |
+
+點擊置換（click-to-swap）曾評估過的替代版本是「互動控件常駐 cell」：實測樣式問題連環（ComboBox 寬度、`DatePicker` 截斷、與文字 cell 視覺不一致），且要持續以 local value 對抗主題；靜置回歸 `TextBlock` 一次解決全部視覺一致性問題，編輯器只在編輯瞬間存在。
 
 配套規則：
 
-- 常駐編輯器的啟用狀態在模板建構時決定，`SetControlState` 切換唯讀狀態時**重新 realize 列**（`ItemsSource` 重設）讓既有 cell 反映新狀態
-- 唯讀呈現（list 模式、`View` 模式、`LayoutColumn.ReadOnly`）退回 `TextBlock`，視覺與唯讀 grid 完全一致；**例外：布林欄任何狀態都呈現置中的 `CheckBox`**（唯讀時 disabled）——勾選框比 "True"/"False" 文字易讀
-- 常駐編輯器以 **inline chrome** 呈現（背景 / 邊框透明、撐滿 cell 寬），靜置時與周圍文字 cell 視覺一致；代價是蓋掉主題的 hover tint（local value 優先於 theme style），屬有意取捨
-- **日期欄用 `CalendarDatePicker`**（文字 + 日曆圖示，`CustomDateFormatString` 控制 `yyyy-MM-dd` / `yyyy-MM`），不用三段式 `DatePicker`——後者天生過寬，在 cell 內必截斷；`YearMonthEdit` 的日曆仍會選到「日」，只取年月寫回
+- popup 型 column 標記 `IsReadOnly = true` 使 DataGrid 編輯管線永不介入；置換的生命週期：`PointerPressed` 換入 → 值確認（property changed）或 `LostFocus` / 下拉關閉換回，換回時**重讀 `DataRow`** 呈現已寫回的值
+- 可編輯狀態在模板建構時決定，`SetControlState` 切換唯讀時**重新 realize 列**（`ItemsSource` 重設）
+- 唯讀呈現（list 模式、`View` 模式、`LayoutColumn.ReadOnly`）為 `TextBlock`；**例外：布林欄任何狀態都呈現置中 `CheckBox`**（唯讀時 disabled）——勾選框比 "True"/"False" 文字易讀
+- 日期編輯維持**三段式 `DatePicker`**（`DayVisible` 區分 Date / YearMonth）：編輯器只在編輯瞬間出現，寬度截斷不再是常態問題，且選輪體驗與 form 端 `DateEdit` 一致
 - 寫回仍直接落 `DataRow`（ADR-020 的限制同樣適用顯示模板內的控件），經 `FormDataObject.MarkDirty()` 反映 dirty
 - 控件的變更監聽一律 hook **property changed**（`TextProperty` / `SelectedDateProperty`），不依賴 `TextChanged` / `SelectedDateChanged` 事件——後者對程式設值不保證觸發
 

@@ -47,6 +47,9 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             master.Fields!.Add("emp_name", "Name", FieldDbType.String);
             var detail = schema.Tables.Add("EmployeePhone", "Phones");
             detail.Fields!.Add("phone", "Phone", FieldDbType.String);
+            var phoneType = detail.Fields.Add("type", "Type", FieldDbType.String);
+            phoneType.ListItems!.Add("OF", "Office");
+            phoneType.ListItems.Add("MB", "Mobile");
 
             var dataObject = new FormDataObject(schema);
             dataObject.InitializeNewMaster();
@@ -437,8 +440,8 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("常駐 cell 在可編輯 grid 為互動控件、唯讀 grid 為文字")]
-        public void BuildAlwaysOnCell_EditableVsReadOnly_SwitchesControl()
+        [DisplayName("互動 cell：布林為置中勾選框；popup 型唯讀為文字、可編輯為點擊置換 host")]
+        public void BuildInteractiveCell_StateVariants_BuildExpectedControls()
         {
             var table = new DataTable("Items");
             table.Columns.Add("ok", typeof(bool));
@@ -447,7 +450,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var column = new LayoutColumn("ok", "OK", ControlType.CheckEdit);
 
             var method = typeof(GridControl).GetMethod(
-                "BuildAlwaysOnCell", BindingFlags.NonPublic | BindingFlags.Instance);
+                "BuildInteractiveCell", BindingFlags.NonPublic | BindingFlags.Instance);
             Assert.NotNull(method);
 
             // Boolean cells render a centred checkbox in every state: disabled on a
@@ -458,6 +461,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             Assert.False(readOnlyCell.IsEnabled);
             Assert.True(readOnlyCell.IsChecked);
             Assert.Null(readOnlyCell.Content);
+            Assert.Equal(global::Avalonia.Layout.VerticalAlignment.Center, readOnlyCell.VerticalAlignment);
 
             var dataObject = BuildDataObjectWithDetail();
             var editableLayout = new LayoutGrid("EmployeePhone", "Phones");
@@ -468,14 +472,18 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var editableCell = Assert.IsType<CheckBox>(method.Invoke(editableGrid, new object?[] { rowView, column }));
             Assert.True(editableCell.IsEnabled);
 
-            // Non-boolean popup columns still fall back to text on a read-only grid.
+            // Popup columns: text on a read-only grid, click-to-edit host on an
+            // editable one (resting content is still the plain text).
             var dateColumn = new LayoutColumn("ok", "OK", ControlType.DateEdit);
             Assert.IsType<TextBlock>(method.Invoke(readOnlyGrid, new object?[] { rowView, dateColumn }));
+            var swapHost = Assert.IsType<ContentControl>(
+                method.Invoke(editableGrid, new object?[] { rowView, dateColumn }), exactMatch: false);
+            Assert.IsType<TextBlock>(swapHost.Content);
         }
 
         [Fact]
-        [DisplayName("Date 系 cell editor 使用緊湊 CalendarDatePicker 並依格式寫回")]
-        public void BuildCellEditor_DateEditor_UsesCalendarDatePicker()
+        [DisplayName("Date 系 cell editor 使用三段式 DatePicker 並依格式寫回")]
+        public void BuildCellEditor_DateEditor_UsesSegmentedDatePicker()
         {
             var table = new DataTable("Items");
             table.Columns.Add("d", typeof(DateTime));
@@ -488,16 +496,47 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var method = typeof(GridControl).GetMethod(
                 "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
 
-            var datePicker = Assert.IsType<CalendarDatePicker>(method!.Invoke(
+            var datePicker = Assert.IsType<DatePicker>(method!.Invoke(
                 grid, new object?[] { rowView, new LayoutColumn("d", "D", ControlType.DateEdit) }));
-            Assert.Equal(new DateTime(2026, 1, 15), datePicker.SelectedDate);
-            datePicker.SelectedDate = new DateTime(2026, 5, 1);
+            Assert.True(datePicker.DayVisible);
+            Assert.Equal(new DateTime(2026, 1, 15), datePicker.SelectedDate!.Value.DateTime);
+            datePicker.SelectedDate = new DateTimeOffset(
+                new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Unspecified), TimeSpan.Zero);
             Assert.Equal(new DateTime(2026, 5, 1), (DateTime)table.Rows[0]["d"]);
 
-            var monthPicker = Assert.IsType<CalendarDatePicker>(method.Invoke(
+            var monthPicker = Assert.IsType<DatePicker>(method.Invoke(
                 grid, new object?[] { rowView, new LayoutColumn("ym", "YM", ControlType.YearMonthEdit) }));
-            monthPicker.SelectedDate = new DateTime(2026, 7, 20);
+            Assert.False(monthPicker.DayVisible);
+            monthPicker.SelectedDate = new DateTimeOffset(
+                new DateTime(2026, 7, 20, 0, 0, 0, DateTimeKind.Unspecified), TimeSpan.Zero);
             Assert.Equal("2026-07", table.Rows[0]["ym"]);
+        }
+
+        [Fact]
+        [DisplayName("DropDown cell editor 選取後以 ListItem.Value 寫回 DataRow")]
+        public void BuildCellEditor_DropDownEditor_WritesBackValue()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn("type", "Type", ControlType.DropDownEdit));
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            var detailTable = grid.DataTable!;
+            detailTable.Rows.Add("0912-345-678", "OF");
+            var rowView = detailTable.DefaultView[0];
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            var combo = Assert.IsType<ComboBox>(method!.Invoke(
+                grid, new object?[] { rowView, new LayoutColumn("type", "Type", ControlType.DropDownEdit) }));
+
+            var selected = Assert.IsType<Bee.Definition.Collections.ListItem>(combo.SelectedItem);
+            Assert.Equal("OF", selected.Value);
+
+            combo.SelectedIndex = 1;
+
+            Assert.Equal("MB", detailTable.Rows[0]["type"]);
         }
 
         [Fact]

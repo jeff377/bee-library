@@ -4,7 +4,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
-using Avalonia.Media;
 using Bee.Definition;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.DataObjects;
@@ -299,12 +298,12 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 // Popup-based editors (ComboBox dropdown, DatePicker flyout) break
                 // inside the DataGrid edit pipeline: opening the popup moves focus out
                 // of the cell and the grid tears the editing template down. These
-                // columns host the interactive control directly in the display
+                // columns manage their own click-to-edit swap inside the display
                 // template instead and bypass the edit pipeline entirely.
                 // See docs/adr/adr-021-avalonia-datagrid-editing-strategy.md.
                 templateColumn.IsReadOnly = true;
                 templateColumn.CellTemplate = new FuncDataTemplate<DataRowView>(
-                    (row, _) => BuildAlwaysOnCell(row, column),
+                    (row, _) => BuildInteractiveCell(row, column),
                     supportsRecycling: false);
             }
             else
@@ -341,11 +340,12 @@ namespace Bee.UI.Avalonia.Controls.Editors
             => controlType is ControlType.CheckEdit or ControlType.DropDownEdit
                 or ControlType.DateEdit or ControlType.YearMonthEdit;
 
-        // Display template for the popup-based editor columns: an interactive control
-        // when the grid is editable, the plain formatted text otherwise. Boolean
-        // cells render a centred checkbox in every state — a disabled checkbox reads
-        // better than "True"/"False" text.
-        private Control BuildAlwaysOnCell(DataRowView? rowView, LayoutColumn column)
+        // Display template for the popup-based editor columns. Boolean cells render a
+        // centred checkbox in every state (a disabled checkbox reads better than
+        // "True"/"False" text); the other types rest as plain formatted text and swap
+        // in their editor on click — the swap is managed here, not by the DataGrid
+        // edit pipeline, so opening the editor's popup cannot tear the editor down.
+        private Control BuildInteractiveCell(DataRowView? rowView, LayoutColumn column)
         {
             var canEdit = !IsReadOnly && !column.ReadOnly && rowView is not null;
 
@@ -364,21 +364,83 @@ namespace Bee.UI.Avalonia.Controls.Editors
                     checkBox = new CheckBox { IsChecked = value, IsEnabled = false };
                 }
                 checkBox.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Center;
+                checkBox.VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center;
                 return checkBox;
             }
 
-            if (!canEdit)
+            if (!canEdit || rowView is null)
             {
                 return new TextBlock
                 {
                     Text = FormatCell(rowView, column.FieldName, column.DisplayFormat, column.NumberFormat),
                     Margin = new Thickness(8, 4),
+                    VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
                 };
             }
 
-            var editor = BuildCellEditor(rowView, column);
-            editor.Margin = new Thickness(4, 1);
-            return editor;
+            return BuildSwapCell(rowView, column);
+        }
+
+        // Click-to-edit host: rests as the original text rendering, swaps to the
+        // editor on pointer press and swaps back when the edit session ends, re-reading
+        // the row so the committed value is what gets displayed.
+        private Control BuildSwapCell(DataRowView rowView, LayoutColumn column)
+        {
+            var host = new ContentControl
+            {
+                HorizontalContentAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch,
+                VerticalContentAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
+            };
+
+            void ShowDisplay() => host.Content = new TextBlock
+            {
+                Text = FormatCell(rowView, column.FieldName, column.DisplayFormat, column.NumberFormat),
+                Margin = new Thickness(8, 4),
+                VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
+            };
+
+            host.PointerPressed += (_, _) =>
+            {
+                if (host.Content is not TextBlock) return;
+                var editor = BuildCellEditor(rowView, column);
+                editor.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
+                WireInlineEditEnd(editor, ShowDisplay);
+                host.Content = editor;
+            };
+
+            ShowDisplay();
+            return host;
+        }
+
+        private static void WireInlineEditEnd(Control editor, Action endEdit)
+        {
+            switch (editor)
+            {
+                case ComboBox combo:
+                    // Open the dropdown as soon as the editor lands so a single click
+                    // on the cell goes straight to picking an option.
+                    combo.AttachedToVisualTree += (_, _) => combo.IsDropDownOpen = true;
+                    combo.PropertyChanged += (_, e) =>
+                    {
+                        if (e.Property == ComboBox.IsDropDownOpenProperty && !combo.IsDropDownOpen)
+                            endEdit();
+                    };
+                    break;
+                case DatePicker picker:
+                    // Confirming a date raises the property change (the write-back hook
+                    // subscribed first, so the row is updated before the swap-back);
+                    // dismissing without a pick falls through to LostFocus.
+                    picker.PropertyChanged += (_, e) =>
+                    {
+                        if (e.Property == DatePicker.SelectedDateProperty)
+                            endEdit();
+                    };
+                    picker.LostFocus += (_, _) => endEdit();
+                    break;
+                default:
+                    editor.LostFocus += (_, _) => endEdit();
+                    break;
+            }
         }
 
         // Builds the in-cell editor for the column's ControlType. The writes go
@@ -408,23 +470,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
 
             if (column.ControlType is ControlType.DateEdit or ControlType.YearMonthEdit)
             {
-                // CalendarDatePicker (text + calendar icon) fits a cell; the segmented
-                // DatePicker is too wide and truncates. For YearMonthEdit the calendar
-                // still picks a day — only the year-month portion is written back.
                 var format = column.ControlType == ControlType.YearMonthEdit ? "yyyy-MM" : "yyyy-MM-dd";
-                var picker = WithInlineChrome(new CalendarDatePicker
+                var picker = new DatePicker
                 {
-                    SelectedDateFormat = CalendarDatePickerFormat.Custom,
-                    CustomDateFormatString = format,
-                    SelectedDate = DateEdit.ParseToOffset(current)?.DateTime,
-                });
+                    DayVisible = column.ControlType != ControlType.YearMonthEdit,
+                    SelectedDate = DateEdit.ParseToOffset(current),
+                };
                 // `SelectedDateChanged` is not raised reliably for programmatic
                 // writes; hook the property change instead (same approach as the
                 // TextBox editor).
                 picker.PropertyChanged += (_, e) =>
                 {
-                    if (e.Property == CalendarDatePicker.SelectedDateProperty)
-                        WriteCell(rowView, dataColumn, picker.SelectedDate?.ToString(format, CultureInfo.InvariantCulture));
+                    if (e.Property == DatePicker.SelectedDateProperty)
+                        WriteCell(rowView, dataColumn, picker.SelectedDate?.DateTime.ToString(format, CultureInfo.InvariantCulture));
                 };
                 return picker;
             }
@@ -433,14 +491,14 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 && _binder.DataObject?.GetFormField(TableName, fieldName)?.ListItems is { Count: > 0 } items)
             {
                 var options = items.ToList();
-                var combo = WithInlineChrome(new ComboBox
+                var combo = new ComboBox
                 {
                     ItemsSource = options,
                     ItemTemplate = new FuncDataTemplate<Bee.Definition.Collections.ListItem>(
                         (item, _) => new TextBlock { Text = item?.Text ?? string.Empty },
                         supportsRecycling: true),
                     SelectedItem = options.FirstOrDefault(i => string.Equals(i.Value, current, StringComparison.Ordinal)),
-                });
+                };
                 combo.SelectionChanged += (_, _) =>
                     WriteCell(rowView, dataColumn, (combo.SelectedItem as Bee.Definition.Collections.ListItem)?.Value);
                 return combo;
@@ -455,18 +513,6 @@ namespace Bee.UI.Avalonia.Controls.Editors
                     WriteCell(rowView, dataColumn, textBox.Text);
             };
             return textBox;
-        }
-
-        // Resting cells should read like the plain-text cells around them, so the
-        // inline editors drop their chrome. NOTE: Local values intentionally beat the
-        // theme here, which also suppresses the theme's hover tint on these controls —
-        // an accepted trade-off for visual parity with read-only cells.
-        private static T WithInlineChrome<T>(T control) where T : global::Avalonia.Controls.Primitives.TemplatedControl
-        {
-            control.Background = Brushes.Transparent;
-            control.BorderBrush = Brushes.Transparent;
-            control.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
-            return control;
         }
 
         private void WriteCell(DataRowView rowView, DataColumn column, string? value)
