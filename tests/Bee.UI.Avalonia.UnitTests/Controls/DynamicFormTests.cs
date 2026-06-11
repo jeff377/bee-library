@@ -6,6 +6,7 @@ using Bee.Base.Data;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls;
+using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls
@@ -17,7 +18,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
     /// </summary>
     public class DynamicFormTests
     {
-        private static readonly Type[] s_buildInputParams = [typeof(LayoutField), typeof(string)];
+        private static readonly Type[] s_buildInputParams = [typeof(LayoutField)];
 
         private static FormSchema BuildSchema()
         {
@@ -29,17 +30,17 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             return schema;
         }
 
-        private static Control InvokeBuildInputControl(DynamicForm form, LayoutField field, string rawValue)
+        private static Control InvokeBuildInputControl(DynamicForm form, LayoutField field)
         {
             var method = typeof(DynamicForm).GetMethod(
                 "BuildInputControl",
                 BindingFlags.NonPublic | BindingFlags.Instance,
                 null, s_buildInputParams, null);
             Assert.NotNull(method);
-            return (Control)method!.Invoke(form, new object[] { field, rawValue })!;
+            return (Control)method!.Invoke(form, new object[] { field })!;
         }
 
-        private static DynamicForm BuildFormWithDataObjectOnly()
+        private static (DynamicForm Form, FormDataObject DataObject) BuildFormWithDataObjectOnly()
         {
             var form = new DynamicForm();
             // Only DataObject is assigned (FormLayout stays null) so Rebuild() renders
@@ -47,7 +48,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             var dataObject = new FormDataObject(BuildSchema());
             dataObject.InitializeNewMaster();
             form.DataObject = dataObject;
-            return form;
+            return (form, dataObject);
         }
 
         [Fact]
@@ -142,71 +143,73 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         }
 
         [Theory]
-        [InlineData(ControlType.CheckEdit, typeof(CheckBox))]
-        [InlineData(ControlType.DateEdit, typeof(DatePicker))]
-        [InlineData(ControlType.YearMonthEdit, typeof(DatePicker))]
-        [InlineData(ControlType.MemoEdit, typeof(TextBox))]
-        [InlineData(ControlType.DropDownEdit, typeof(ComboBox))]
-        [InlineData(ControlType.TextEdit, typeof(TextBox))]
-        [DisplayName("BuildInputControl 依 ControlType 分派對應的 Avalonia 控件")]
+        [InlineData(ControlType.CheckEdit, typeof(CheckEdit))]
+        [InlineData(ControlType.DateEdit, typeof(DateEdit))]
+        [InlineData(ControlType.YearMonthEdit, typeof(YearMonthEdit))]
+        [InlineData(ControlType.MemoEdit, typeof(MemoEdit))]
+        [InlineData(ControlType.DropDownEdit, typeof(DropDownEdit))]
+        [InlineData(ControlType.ButtonEdit, typeof(ButtonEdit))]
+        [InlineData(ControlType.TextEdit, typeof(TextEdit))]
+        [InlineData(ControlType.Auto, typeof(TextEdit))]
+        [DisplayName("BuildInputControl 依 ControlType 分派對應的 field editor 並完成綁定")]
         public void BuildInputControl_DispatchesByControlType(ControlType controlType, Type expectedControlType)
         {
-            var form = BuildFormWithDataObjectOnly();
+            var (form, _) = BuildFormWithDataObjectOnly();
             var field = new LayoutField { FieldName = "emp_id", ControlType = controlType };
 
-            var control = InvokeBuildInputControl(form, field, string.Empty);
+            var control = InvokeBuildInputControl(form, field);
 
             Assert.IsType(expectedControlType, control);
         }
 
         [Fact]
-        [DisplayName("MemoEdit 建立的 TextBox 接受多行輸入")]
+        [DisplayName("MemoEdit 編輯器接受多行輸入並載入初值")]
         public void BuildInputControl_MemoEdit_AcceptsReturn()
         {
-            var form = BuildFormWithDataObjectOnly();
+            var (form, dataObject) = BuildFormWithDataObjectOnly();
+            dataObject.SetField("emp_id", "some text");
             var field = new LayoutField { FieldName = "emp_id", ControlType = ControlType.MemoEdit };
 
-            var control = Assert.IsType<TextBox>(InvokeBuildInputControl(form, field, "some text"));
+            var control = Assert.IsType<MemoEdit>(InvokeBuildInputControl(form, field));
 
             Assert.True(control.AcceptsReturn);
             Assert.Equal("some text", control.Text);
         }
 
         [Fact]
-        [DisplayName("ReadOnly 欄位建立的 TextBox 為唯讀")]
-        public void BuildInputControl_ReadOnlyField_CreatesReadOnlyTextBox()
+        [DisplayName("ReadOnly 欄位建立的編輯器為唯讀")]
+        public void BuildInputControl_ReadOnlyField_CreatesReadOnlyTextEdit()
         {
-            var form = BuildFormWithDataObjectOnly();
+            var (form, _) = BuildFormWithDataObjectOnly();
             var field = new LayoutField { FieldName = "emp_id", ReadOnly = true };
 
-            var control = Assert.IsType<TextBox>(InvokeBuildInputControl(form, field, "E001"));
+            var control = Assert.IsType<TextEdit>(InvokeBuildInputControl(form, field));
 
             Assert.True(control.IsReadOnly);
         }
 
         [Fact]
-        [DisplayName("DateEdit 以 ISO 日期初始化 DatePicker.SelectedDate")]
+        [DisplayName("DateEdit 以 ISO 日期初始化 SelectedDate")]
         public void BuildInputControl_DateEdit_ParsesInitialValue()
         {
-            var form = BuildFormWithDataObjectOnly();
+            var (form, dataObject) = BuildFormWithDataObjectOnly();
+            dataObject.SetField("hire_date", "2026-05-21");
             var field = new LayoutField { FieldName = "hire_date", ControlType = ControlType.DateEdit };
 
-            var picker = Assert.IsType<DatePicker>(InvokeBuildInputControl(form, field, "2026-05-21"));
+            var picker = Assert.IsType<DateEdit>(InvokeBuildInputControl(form, field));
 
             Assert.NotNull(picker.SelectedDate);
             Assert.Equal(new DateTime(2026, 5, 21), picker.SelectedDate!.Value.Date);
         }
 
         [Fact]
-        [DisplayName("CheckBox 勾選變更會回寫 DataObject 欄位")]
+        [DisplayName("CheckEdit 勾選變更會回寫 DataObject 欄位")]
         public void BuildInputControl_CheckEdit_WritesBackToDataObject()
         {
-            var dataObject = new FormDataObject(BuildSchema());
-            dataObject.InitializeNewMaster();
-            var form = new DynamicForm { DataObject = dataObject };
+            var (form, dataObject) = BuildFormWithDataObjectOnly();
             var field = new LayoutField { FieldName = "is_active", ControlType = ControlType.CheckEdit };
 
-            var checkBox = Assert.IsType<CheckBox>(InvokeBuildInputControl(form, field, "False"));
+            var checkBox = Assert.IsType<CheckEdit>(InvokeBuildInputControl(form, field));
             checkBox.IsChecked = true;
 
             Assert.Equal("True", dataObject.GetField("is_active"));

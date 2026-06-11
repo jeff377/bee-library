@@ -1,13 +1,13 @@
 # 計畫：Avalonia Field Editor 控件組 — ControlType 對應與定義層深度綁定
 
-**狀態：🚧 進行中（2026-06-11）**
+**狀態：✅ 已完成（2026-06-11）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | `FormDataObject` 變更通知事件 | ✅ 已完成（2026-06-11） |
 | 2 | Field Editor 控件組 + `FormScope` ambient 綁定 | ✅ 已完成（2026-06-11） |
 | 3 | `Avalonia.Editors.Gallery` 樣式比對 sample（Semi.Avalonia） | ✅ 已完成（2026-06-11） |
-| 4 | `DynamicForm` 重構改用控件組 | 📝 待做 |
+| 4 | `DynamicForm` 重構改用控件組 | ✅ 已完成（2026-06-11） |
 
 ## 背景
 

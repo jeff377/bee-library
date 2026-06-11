@@ -1,11 +1,9 @@
-using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Media;
-using Bee.Definition.Collections;
 using Bee.Definition.Layouts;
+using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
 namespace Bee.UI.Avalonia.Controls
@@ -22,8 +20,6 @@ namespace Bee.UI.Avalonia.Controls
     /// </remarks>
     public class DynamicForm : UserControl
     {
-        private static readonly ListItem[] _emptyOptions = Array.Empty<ListItem>();
-
         /// <summary>
         /// Identifies the <see cref="FormLayout"/> styled property.
         /// </summary>
@@ -158,113 +154,20 @@ namespace Bee.UI.Avalonia.Controls
 
         private StackPanel BuildFieldCell(LayoutField field)
         {
-            var rawValue = DataObject?.GetField(field.FieldName) ?? string.Empty;
             var stack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 2 };
             stack.Children.Add(new TextBlock { Text = field.Caption });
-            stack.Children.Add(BuildInputControl(field, rawValue));
+            stack.Children.Add(BuildInputControl(field));
             return stack;
         }
 
-        // Dispatches LayoutField.ControlType to the corresponding Avalonia control, mirroring
-        // the MAUI / Blazor DynamicForm switch.
-        private Control BuildInputControl(LayoutField field, string rawValue)
+        // Dispatches LayoutField.ControlType to the corresponding field editor; the
+        // editor pulls its value, applies FormField metadata (MaxLength, ListItems)
+        // and refreshes itself through the FormDataObject events.
+        private Control BuildInputControl(LayoutField field)
         {
-            switch (field.ControlType)
-            {
-                case ControlType.CheckEdit:
-                    {
-                        var control = new CheckBox
-                        {
-                            IsChecked = string.Equals(rawValue, bool.TrueString, StringComparison.OrdinalIgnoreCase),
-                            IsEnabled = !field.ReadOnly,
-                        };
-                        control.IsCheckedChanged += (_, _) =>
-                            DataObject?.SetField(field.FieldName, (control.IsChecked ?? false).ToString());
-                        return control;
-                    }
-                case ControlType.DateEdit:
-                    return BuildDatePicker(field, rawValue, "yyyy-MM-dd");
-                case ControlType.YearMonthEdit:
-                    return BuildDatePicker(field, rawValue, "yyyy-MM");
-                case ControlType.MemoEdit:
-                    {
-                        var control = new TextBox
-                        {
-                            Text = rawValue,
-                            IsReadOnly = field.ReadOnly,
-                            AcceptsReturn = true,
-                            TextWrapping = TextWrapping.Wrap,
-                            MinHeight = 60,
-                        };
-                        control.TextChanged += (_, _) =>
-                            DataObject?.SetField(field.FieldName, control.Text);
-                        return control;
-                    }
-                case ControlType.DropDownEdit:
-                    {
-                        var items = EnumerateOptions(field).ToList();
-                        var combo = new ComboBox
-                        {
-                            IsEnabled = !field.ReadOnly,
-                            ItemsSource = items,
-                            ItemTemplate = new FuncDataTemplate<ListItem>(
-                                (item, _) => new TextBlock { Text = item?.Text ?? string.Empty },
-                                supportsRecycling: true),
-                        };
-                        var selected = items.FirstOrDefault(i =>
-                            string.Equals(i.Value, rawValue, StringComparison.Ordinal));
-                        if (selected is not null)
-                            combo.SelectedItem = selected;
-                        combo.SelectionChanged += (_, _) =>
-                        {
-                            var item = combo.SelectedItem as ListItem;
-                            DataObject?.SetField(field.FieldName, item?.Value);
-                        };
-                        return combo;
-                    }
-                default:
-                    {
-                        var control = new TextBox
-                        {
-                            Text = rawValue,
-                            IsReadOnly = field.ReadOnly,
-                        };
-                        control.TextChanged += (_, _) =>
-                            DataObject?.SetField(field.FieldName, control.Text);
-                        return control;
-                    }
-            }
-        }
-
-        private DatePicker BuildDatePicker(LayoutField field, string rawValue, string format)
-        {
-            var picker = new DatePicker
-            {
-                IsEnabled = !field.ReadOnly,
-            };
-            if (DateTime.TryParse(
-                    rawValue,
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.AssumeLocal,
-                    out var parsed))
-            {
-                // `AssumeLocal` yields Kind=Local, and the DateTimeOffset(DateTime, TimeSpan)
-                // constructor rejects a Local value whose offset argument differs from the
-                // machine's UTC offset — so pinning TimeSpan.Zero throws everywhere outside
-                // UTC. Strip the kind first; the picker only consumes the date component.
-                var dateOnly = DateTime.SpecifyKind(parsed.Date, DateTimeKind.Unspecified);
-                picker.SelectedDate = new DateTimeOffset(dateOnly, TimeSpan.Zero);
-            }
-            picker.SelectedDateChanged += (_, e) =>
-            {
-                if (e.NewDate is { } date)
-                    DataObject?.SetField(
-                        field.FieldName,
-                        date.DateTime.ToString(format, CultureInfo.InvariantCulture));
-                else
-                    DataObject?.SetField(field.FieldName, null);
-            };
-            return picker;
+            var editor = FieldEditorFactory.Create(field.ControlType);
+            ((IFieldEditor)editor).Bind(DataObject!, field);
+            return editor;
         }
 
         private IEnumerable<LayoutSection> EnumerateSections()
@@ -272,12 +175,6 @@ namespace Bee.UI.Avalonia.Controls
 
         private static IEnumerable<LayoutField> EnumerateFields(LayoutSection section)
             => section.Fields?.Where(f => f.Visible) ?? Enumerable.Empty<LayoutField>();
-
-        private IEnumerable<ListItem> EnumerateOptions(LayoutField field)
-        {
-            var formField = DataObject?.GetFormField(field.FieldName);
-            return formField?.ListItems ?? (IEnumerable<ListItem>)_emptyOptions;
-        }
 
         private static int NormalizeColumnCount(int? columnCount)
         {
