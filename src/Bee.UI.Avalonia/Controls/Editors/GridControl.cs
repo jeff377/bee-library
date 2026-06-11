@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Bee.Definition;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.DataObjects;
@@ -394,6 +395,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
             {
                 HorizontalContentAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch,
                 VerticalContentAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
+                // Transparent (not null) background: a null background excludes the
+                // empty area beside the text from hit-testing, so only the characters
+                // themselves would react to the click.
+                Background = Brushes.Transparent,
             };
 
             void ShowDisplay() => host.Content = new TextBlock
@@ -456,6 +461,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
                     };
                     break;
                 case DatePicker picker:
+                    // Pop the spinner flyout right away so a single click on the cell
+                    // goes straight to picking. DatePicker has no public open API;
+                    // raising Click on the template's flyout button is the supported
+                    // route in. Background priority defers past the layout pass so the
+                    // flyout positions against the realized picker.
+                    picker.AttachedToVisualTree += (_, _) =>
+                        global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            picker.ApplyTemplate();
+                            var flyoutButton = global::Avalonia.VisualTree.VisualExtensions
+                                .FindDescendantOfType<Button>(picker);
+                            flyoutButton?.RaiseEvent(new global::Avalonia.Interactivity.RoutedEventArgs(Button.ClickEvent));
+                        }, global::Avalonia.Threading.DispatcherPriority.Background);
                     // Commit-driven swap-back only: confirming a date changes
                     // SelectedDate (the write-back hook subscribed first, so the row
                     // is updated before the swap-back re-reads it). LostFocus is NOT
