@@ -1,11 +1,11 @@
 # 計畫：新增 Avalonia 相關 skill（i18n + macOS bundle）
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-06-10）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | `avalonia-i18n` skill — runtime localization 標準做法 + 雷區 | 📝 待做 |
-| 2 | `avalonia-macos-bundle` skill — publish.sh + .app 打包 + icon + Gatekeeper | 📝 待做 |
+| 1 | `avalonia-i18n` skill — runtime localization 標準做法 + 雷區 | ✅ 已完成（2026-06-10） |
+| 2 | `avalonia-macos-bundle` skill — publish.sh + .app 打包 + icon + Gatekeeper | ✅ 已完成（2026-06-10） |
 
 ## 背景
 
