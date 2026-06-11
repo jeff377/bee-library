@@ -1,6 +1,5 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Bee.Definition.Collections;
 using Bee.Definition.Layouts;
@@ -36,9 +35,11 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public DropDownEdit()
         {
             _binder = new FieldEditorBinder(this, RefreshFromSource, ApplyMetadata);
-            ItemTemplate = new FuncDataTemplate<ListItem>(
-                (item, _) => new TextBlock { Text = item?.Text ?? string.Empty },
-                supportsRecycling: true);
+            // NOTE: A recycling FuncDataTemplate hands the same TextBlock instance to
+            // both the dropdown item and the selection box, and a control cannot live
+            // in two places — the collapsed combo then fails to show the picked value.
+            // DisplayMemberBinding materialises per-container content instead.
+            DisplayMemberBinding = new global::Avalonia.Data.Binding(nameof(ListItem.Text));
             SelectionChanged += (_, _) => _binder.WriteBack((SelectedItem as ListItem)?.Value);
         }
 

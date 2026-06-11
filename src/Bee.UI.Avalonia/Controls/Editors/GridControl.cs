@@ -575,9 +575,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 var combo = new ComboBox
                 {
                     ItemsSource = options,
-                    ItemTemplate = new FuncDataTemplate<Bee.Definition.Collections.ListItem>(
-                        (item, _) => new TextBlock { Text = item?.Text ?? string.Empty },
-                        supportsRecycling: true),
+                    // Same selection-box pitfall as DropDownEdit: a recycling template
+                    // starves the collapsed combo of its content instance.
+                    DisplayMemberBinding = new global::Avalonia.Data.Binding(
+                        nameof(Bee.Definition.Collections.ListItem.Text)),
                     SelectedItem = options.FirstOrDefault(i => string.Equals(i.Value, current, StringComparison.Ordinal)),
                 };
                 combo.SelectionChanged += (_, _) =>
