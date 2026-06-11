@@ -36,8 +36,11 @@ Gallery 實測結果：**文字欄（`TextEdit`）編輯正常，popup 型編輯
 配套規則：
 
 - 常駐編輯器的啟用狀態在模板建構時決定，`SetControlState` 切換唯讀狀態時**重新 realize 列**（`ItemsSource` 重設）讓既有 cell 反映新狀態
-- 唯讀呈現（list 模式、`View` 模式、`LayoutColumn.ReadOnly`）一律退回 `TextBlock`，視覺與唯讀 grid 完全一致
+- 唯讀呈現（list 模式、`View` 模式、`LayoutColumn.ReadOnly`）退回 `TextBlock`，視覺與唯讀 grid 完全一致；**例外：布林欄任何狀態都呈現置中的 `CheckBox`**（唯讀時 disabled）——勾選框比 "True"/"False" 文字易讀
+- 常駐編輯器以 **inline chrome** 呈現（背景 / 邊框透明、撐滿 cell 寬），靜置時與周圍文字 cell 視覺一致；代價是蓋掉主題的 hover tint（local value 優先於 theme style），屬有意取捨
+- **日期欄用 `CalendarDatePicker`**（文字 + 日曆圖示，`CustomDateFormatString` 控制 `yyyy-MM-dd` / `yyyy-MM`），不用三段式 `DatePicker`——後者天生過寬，在 cell 內必截斷；`YearMonthEdit` 的日曆仍會選到「日」，只取年月寫回
 - 寫回仍直接落 `DataRow`（ADR-020 的限制同樣適用顯示模板內的控件），經 `FormDataObject.MarkDirty()` 反映 dirty
+- 控件的變更監聽一律 hook **property changed**（`TextProperty` / `SelectedDateProperty`），不依賴 `TextChanged` / `SelectedDateChanged` 事件——後者對程式設值不保證觸發
 
 選項 4（列級編輯面板）不因此放棄：規劃為**進階編輯模式**另案實作（plan-avalonia-grid-row-edit-panel），與 in-cell 模式由 layout 設定選擇。
 

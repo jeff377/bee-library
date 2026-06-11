@@ -4,6 +4,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Bee.Definition;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.DataObjects;
@@ -341,11 +342,32 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 or ControlType.DateEdit or ControlType.YearMonthEdit;
 
         // Display template for the popup-based editor columns: an interactive control
-        // when the grid is editable, the plain formatted text otherwise.
+        // when the grid is editable, the plain formatted text otherwise. Boolean
+        // cells render a centred checkbox in every state — a disabled checkbox reads
+        // better than "True"/"False" text.
         private Control BuildAlwaysOnCell(DataRowView? rowView, LayoutColumn column)
         {
-            var canEdit = !IsReadOnly && !column.ReadOnly;
-            if (!canEdit || rowView is null)
+            var canEdit = !IsReadOnly && !column.ReadOnly && rowView is not null;
+
+            if (column.ControlType == ControlType.CheckEdit)
+            {
+                CheckBox checkBox;
+                if (canEdit)
+                {
+                    checkBox = (CheckBox)BuildCellEditor(rowView, column);
+                }
+                else
+                {
+                    var value = string.Equals(
+                        FormatCell(rowView, column.FieldName, string.Empty, string.Empty),
+                        bool.TrueString, StringComparison.OrdinalIgnoreCase);
+                    checkBox = new CheckBox { IsChecked = value, IsEnabled = false };
+                }
+                checkBox.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Center;
+                return checkBox;
+            }
+
+            if (!canEdit)
             {
                 return new TextBlock
                 {
@@ -355,7 +377,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             }
 
             var editor = BuildCellEditor(rowView, column);
-            editor.Margin = new Thickness(4, 2);
+            editor.Margin = new Thickness(4, 1);
             return editor;
         }
 
@@ -386,14 +408,24 @@ namespace Bee.UI.Avalonia.Controls.Editors
 
             if (column.ControlType is ControlType.DateEdit or ControlType.YearMonthEdit)
             {
+                // CalendarDatePicker (text + calendar icon) fits a cell; the segmented
+                // DatePicker is too wide and truncates. For YearMonthEdit the calendar
+                // still picks a day — only the year-month portion is written back.
                 var format = column.ControlType == ControlType.YearMonthEdit ? "yyyy-MM" : "yyyy-MM-dd";
-                var picker = new DatePicker
+                var picker = WithInlineChrome(new CalendarDatePicker
                 {
-                    DayVisible = column.ControlType != ControlType.YearMonthEdit,
-                    SelectedDate = DateEdit.ParseToOffset(current),
+                    SelectedDateFormat = CalendarDatePickerFormat.Custom,
+                    CustomDateFormatString = format,
+                    SelectedDate = DateEdit.ParseToOffset(current)?.DateTime,
+                });
+                // `SelectedDateChanged` is not raised reliably for programmatic
+                // writes; hook the property change instead (same approach as the
+                // TextBox editor).
+                picker.PropertyChanged += (_, e) =>
+                {
+                    if (e.Property == CalendarDatePicker.SelectedDateProperty)
+                        WriteCell(rowView, dataColumn, picker.SelectedDate?.ToString(format, CultureInfo.InvariantCulture));
                 };
-                picker.SelectedDateChanged += (_, e) =>
-                    WriteCell(rowView, dataColumn, e.NewDate?.DateTime.ToString(format, CultureInfo.InvariantCulture));
                 return picker;
             }
 
@@ -401,14 +433,14 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 && _binder.DataObject?.GetFormField(TableName, fieldName)?.ListItems is { Count: > 0 } items)
             {
                 var options = items.ToList();
-                var combo = new ComboBox
+                var combo = WithInlineChrome(new ComboBox
                 {
                     ItemsSource = options,
                     ItemTemplate = new FuncDataTemplate<Bee.Definition.Collections.ListItem>(
                         (item, _) => new TextBlock { Text = item?.Text ?? string.Empty },
                         supportsRecycling: true),
                     SelectedItem = options.FirstOrDefault(i => string.Equals(i.Value, current, StringComparison.Ordinal)),
-                };
+                });
                 combo.SelectionChanged += (_, _) =>
                     WriteCell(rowView, dataColumn, (combo.SelectedItem as Bee.Definition.Collections.ListItem)?.Value);
                 return combo;
@@ -423,6 +455,18 @@ namespace Bee.UI.Avalonia.Controls.Editors
                     WriteCell(rowView, dataColumn, textBox.Text);
             };
             return textBox;
+        }
+
+        // Resting cells should read like the plain-text cells around them, so the
+        // inline editors drop their chrome. NOTE: Local values intentionally beat the
+        // theme here, which also suppresses the theme's hover tint on these controls —
+        // an accepted trade-off for visual parity with read-only cells.
+        private static T WithInlineChrome<T>(T control) where T : global::Avalonia.Controls.Primitives.TemplatedControl
+        {
+            control.Background = Brushes.Transparent;
+            control.BorderBrush = Brushes.Transparent;
+            control.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
+            return control;
         }
 
         private void WriteCell(DataRowView rowView, DataColumn column, string? value)

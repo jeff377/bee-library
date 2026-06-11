@@ -450,20 +450,54 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
                 "BuildAlwaysOnCell", BindingFlags.NonPublic | BindingFlags.Instance);
             Assert.NotNull(method);
 
-            // List-mode grid is read-only: the cell renders formatted text.
+            // Boolean cells render a centred checkbox in every state: disabled on a
+            // read-only (list-mode) grid, interactive on an editable one.
             var readOnlyGrid = new GridControl();
             readOnlyGrid.Bind(new LayoutGrid("Items", "Items"), table);
-            var readOnlyCell = Assert.IsType<TextBlock>(method!.Invoke(readOnlyGrid, new object?[] { rowView, column }));
-            Assert.Equal("True", readOnlyCell.Text);
+            var readOnlyCell = Assert.IsType<CheckBox>(method!.Invoke(readOnlyGrid, new object?[] { rowView, column }));
+            Assert.False(readOnlyCell.IsEnabled);
+            Assert.True(readOnlyCell.IsChecked);
+            Assert.Null(readOnlyCell.Content);
 
-            // Detail-bound editable grid: the cell hosts the interactive control.
             var dataObject = BuildDataObjectWithDetail();
             var editableLayout = new LayoutGrid("EmployeePhone", "Phones");
             editableLayout.Columns!.Add(column);
             var editableGrid = new GridControl();
             editableGrid.Bind(dataObject, editableLayout);
             Assert.False(editableGrid.IsReadOnly);
-            Assert.IsType<CheckBox>(method.Invoke(editableGrid, new object?[] { rowView, column }));
+            var editableCell = Assert.IsType<CheckBox>(method.Invoke(editableGrid, new object?[] { rowView, column }));
+            Assert.True(editableCell.IsEnabled);
+
+            // Non-boolean popup columns still fall back to text on a read-only grid.
+            var dateColumn = new LayoutColumn("ok", "OK", ControlType.DateEdit);
+            Assert.IsType<TextBlock>(method.Invoke(readOnlyGrid, new object?[] { rowView, dateColumn }));
+        }
+
+        [Fact]
+        [DisplayName("Date 系 cell editor 使用緊湊 CalendarDatePicker 並依格式寫回")]
+        public void BuildCellEditor_DateEditor_UsesCalendarDatePicker()
+        {
+            var table = new DataTable("Items");
+            table.Columns.Add("d", typeof(DateTime));
+            table.Columns.Add("ym", typeof(string));
+            table.Rows.Add(new DateTime(2026, 1, 15), "2026-06");
+            var rowView = table.DefaultView[0];
+            var grid = new GridControl();
+            grid.Bind(new LayoutGrid("Items", "Items"), table);
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+
+            var datePicker = Assert.IsType<CalendarDatePicker>(method!.Invoke(
+                grid, new object?[] { rowView, new LayoutColumn("d", "D", ControlType.DateEdit) }));
+            Assert.Equal(new DateTime(2026, 1, 15), datePicker.SelectedDate);
+            datePicker.SelectedDate = new DateTime(2026, 5, 1);
+            Assert.Equal(new DateTime(2026, 5, 1), (DateTime)table.Rows[0]["d"]);
+
+            var monthPicker = Assert.IsType<CalendarDatePicker>(method.Invoke(
+                grid, new object?[] { rowView, new LayoutColumn("ym", "YM", ControlType.YearMonthEdit) }));
+            monthPicker.SelectedDate = new DateTime(2026, 7, 20);
+            Assert.Equal("2026-07", table.Rows[0]["ym"]);
         }
 
         [Fact]
