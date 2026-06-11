@@ -205,6 +205,41 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("DataSet 置換後依 TableName 重解析新的明細表實例")]
+        public async Task Bind_DataObjectDetail_DataSetReplaced_ReResolvesTable()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add("emp_name", "Name", FieldDbType.String);
+            var detail = schema.Tables.Add("EmployeePhone", "Phones");
+            detail.Fields!.Add("phone", "Phone", FieldDbType.String);
+
+            var refreshed = new DataSet("Employee");
+            refreshed.Tables.Add(new DataTable("Employee"));
+            var refreshedDetail = new DataTable("EmployeePhone");
+            refreshedDetail.Columns.Add("phone", typeof(string));
+            refreshedDetail.Rows.Add("02-1234-5678");
+            refreshed.Tables.Add(refreshedDetail);
+
+            var connector = new FakeFormApiConnector
+            {
+                GetNewDataHandler = () => new Bee.Api.Core.Messages.Form.GetNewDataResponse { DataSet = refreshed },
+            };
+            var dataObject = new FormDataObject(schema, connector);
+
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+            var originalTable = grid.DataTable;
+
+            await dataObject.NewAsync();
+
+            Assert.NotSame(originalTable, grid.DataTable);
+            Assert.Same(refreshedDetail, grid.DataTable);
+        }
+
+        [Fact]
         [DisplayName("SetControlState 在任何模式下維持唯讀（編輯屬後續階段）")]
         public void SetControlState_AnyMode_StaysReadOnly()
         {
@@ -285,6 +320,21 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             var nullRow = (string)method!.Invoke(null, new object?[] { null, "date_only", "", "" })!;
             Assert.Equal(string.Empty, nullRow);
+        }
+
+        /// <summary>
+        /// Test double that bypasses the real JSON-RPC pipeline by overriding the
+        /// virtual CRUD methods used here. Mirrors the fake in
+        /// <c>FormDataObjectTests</c>.
+        /// </summary>
+        private sealed class FakeFormApiConnector : Bee.Api.Client.Connectors.FormApiConnector
+        {
+            public FakeFormApiConnector() : base(Guid.NewGuid(), "Employee") { }
+
+            public Func<Bee.Api.Core.Messages.Form.GetNewDataResponse>? GetNewDataHandler { get; set; }
+
+            public override Task<Bee.Api.Core.Messages.Form.GetNewDataResponse> GetNewDataAsync()
+                => Task.FromResult((GetNewDataHandler ?? (() => new Bee.Api.Core.Messages.Form.GetNewDataResponse()))());
         }
     }
 }

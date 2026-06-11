@@ -142,6 +142,45 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.Equal(3, grid.Children.Count);
         }
 
+        [Fact]
+        [DisplayName("FormLayout.Details 在 master sections 之後渲染為綁定的 GridControl")]
+        public void AssignedLayoutWithDetails_RendersDetailGridControl()
+        {
+            var layout = new FormLayout { ColumnCount = 2 };
+            var section = new LayoutSection { Caption = "Main", ShowCaption = false };
+            section.Fields!.Add(new LayoutField { FieldName = "emp_id", Caption = "ID" });
+            layout.Sections!.Add(section);
+            var detail = new LayoutGrid("EmployeePhone", "Phones");
+            detail.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            layout.Details!.Add(detail);
+
+            var dataObject = new FormDataObject(BuildSchemaWithDetail());
+            dataObject.InitializeNewMaster();
+            var component = new DynamicForm
+            {
+                FormLayout = layout,
+                DataObject = dataObject,
+            };
+
+            var host = Assert.IsType<StackPanel>(component.Content);
+            // One section border followed by one detail border.
+            Assert.Equal(2, host.Children.Count);
+            var detailBorder = Assert.IsType<Border>(host.Children[1]);
+            var detailStack = Assert.IsType<StackPanel>(detailBorder.Child);
+            var caption = Assert.IsType<TextBlock>(detailStack.Children[0]);
+            Assert.Equal("Phones", caption.Text);
+            var grid = Assert.IsType<GridControl>(detailStack.Children[1]);
+            Assert.Same(dataObject.DataSet.Tables["EmployeePhone"], grid.DataTable);
+        }
+
+        private static FormSchema BuildSchemaWithDetail()
+        {
+            var schema = BuildSchema();
+            var detail = schema.Tables!.Add("EmployeePhone", "Phones");
+            detail.Fields!.Add("phone", "Phone", FieldDbType.String);
+            return schema;
+        }
+
         [Theory]
         [InlineData(ControlType.CheckEdit, typeof(CheckEdit))]
         [InlineData(ControlType.DateEdit, typeof(DateEdit))]

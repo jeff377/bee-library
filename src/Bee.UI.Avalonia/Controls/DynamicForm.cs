@@ -15,8 +15,8 @@ namespace Bee.UI.Avalonia.Controls
     /// <c>DynamicForm</c> structure and behaviour for cross-family parity.
     /// </summary>
     /// <remarks>
-    /// This phase is layout-only and renders the master area only. Detail grids
-    /// (<see cref="FormLayout.Details"/>) are wired up alongside <c>DynamicGrid</c>.
+    /// Renders the master sections followed by the detail grids
+    /// (<see cref="FormLayout.Details"/>), each as a bound <see cref="GridControl"/>.
     /// </remarks>
     public class DynamicForm : UserControl
     {
@@ -81,6 +81,8 @@ namespace Bee.UI.Avalonia.Controls
             {
                 foreach (var section in EnumerateSections())
                     host.Children.Add(BuildSection(section));
+                foreach (var detail in EnumerateDetails())
+                    host.Children.Add(BuildDetailSection(detail));
             }
             Content = host;
         }
@@ -170,8 +172,36 @@ namespace Bee.UI.Avalonia.Controls
             return editor;
         }
 
+        private Border BuildDetailSection(LayoutGrid layout)
+        {
+            var stack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 4 };
+            if (!string.IsNullOrEmpty(layout.Caption))
+            {
+                stack.Children.Add(new TextBlock
+                {
+                    Text = layout.Caption,
+                    FontWeight = FontWeight.Bold,
+                });
+            }
+
+            var grid = new GridControl { MinHeight = 120 };
+            grid.Bind(DataObject!, layout);
+            stack.Children.Add(grid);
+
+            return new Border
+            {
+                Padding = new Thickness(8),
+                BorderThickness = new Thickness(1),
+                BorderBrush = Brushes.Gray,
+                Child = stack,
+            };
+        }
+
         private IEnumerable<LayoutSection> EnumerateSections()
             => FormLayout?.Sections ?? Enumerable.Empty<LayoutSection>();
+
+        private IEnumerable<LayoutGrid> EnumerateDetails()
+            => FormLayout?.Details ?? Enumerable.Empty<LayoutGrid>();
 
         private static IEnumerable<LayoutField> EnumerateFields(LayoutSection section)
             => section.Fields?.Where(f => f.Visible) ?? Enumerable.Empty<LayoutField>();

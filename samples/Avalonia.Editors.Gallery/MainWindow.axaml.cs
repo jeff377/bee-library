@@ -1,4 +1,6 @@
+using System.Data;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -54,9 +56,15 @@ namespace Avalonia.Editors.Gallery
             dept.ListItems.Add("IT", "Information Technology");
             dept.ListItems.Add("FIN", "Finance");
             master.Fields.Add("is_active", "Active", FieldDbType.Boolean);
+            var phones = schema.Tables.Add("Phones", "Phones");
+            phones.Fields!.Add("phone", "Phone", FieldDbType.String);
+            phones.Fields.Add("type", "Type", FieldDbType.String);
 
             var dataObject = new FormDataObject(schema);
             dataObject.InitializeNewMaster();
+            var phoneTable = dataObject.DataSet.Tables["Phones"]!;
+            phoneTable.Rows.Add("02-1234-5678", "Office");
+            phoneTable.Rows.Add("0912-345-678", "Mobile");
             dataObject.SetField("emp_name", "Alice Chen");
             dataObject.SetField("notes", "Multi-line memo content.");
             dataObject.SetField("emp_code", "EMP-001");
@@ -146,6 +154,89 @@ namespace Avalonia.Editors.Gallery
                 new CheckBox { Content = "Active", IsChecked = true, IsEnabled = false },
                 new CheckEdit { FieldName = "is_active", Content = "Active" },
                 WithContent(BindReadOnly(new CheckEdit(), "is_active"), "Active"));
+
+            AddGridSection();
+        }
+
+        private void AddGridSection()
+        {
+            var phoneTable = _dataObject.DataSet.Tables["Phones"]!;
+
+            var layout = new LayoutGrid("Phones", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            layout.Columns.Add(new LayoutColumn { FieldName = "type", Caption = "Type", Visible = true });
+
+            var bound = new GridControl { MinHeight = 120 };
+            bound.Bind(_dataObject, layout);
+
+            // TableName only: the grid binds through the ambient FormScope on attach
+            // and generates plain columns from the table when no layout is supplied.
+            var ambient = new GridControl { TableName = "Phones", MinHeight = 120 };
+
+            var grid = new Grid { ColumnSpacing = 12, RowSpacing = 8 };
+            grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(90)));
+            grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+            for (var i = 0; i < 3; i++)
+                grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+            AddCell(grid, 0, 1, new TextBlock { Text = "原生控件", FontWeight = FontWeight.SemiBold });
+            AddCell(grid, 0, 2, new TextBlock { Text = "繼承控件（已綁定）", FontWeight = FontWeight.SemiBold });
+            AddCell(grid, 1, 0, new TextBlock { Text = "Layout 綁定", Opacity = 0.7, VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center });
+            AddCell(grid, 1, 1, BuildNativeGrid(phoneTable));
+            AddCell(grid, 1, 2, bound);
+            AddCell(grid, 2, 0, new TextBlock { Text = "Ambient", Opacity = 0.7, VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center });
+            AddCell(grid, 2, 1, new TextBlock
+            {
+                Text = "（原生無對應 — 右側為 TableName 自動綁定，欄位由表自動產生）",
+                Opacity = 0.6,
+                VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
+                TextWrapping = TextWrapping.Wrap,
+            });
+            AddCell(grid, 2, 2, ambient);
+
+            var section = new StackPanel { Spacing = 8 };
+            section.Children.Add(new TextBlock { Text = "GridControl ← DataGrid", FontSize = 15, FontWeight = FontWeight.Bold });
+            section.Children.Add(grid);
+
+            GalleryHost.Children.Add(new Border
+            {
+                Padding = new global::Avalonia.Thickness(12),
+                BorderThickness = new global::Avalonia.Thickness(1),
+                BorderBrush = Brushes.Gray,
+                CornerRadius = new global::Avalonia.CornerRadius(4),
+                Child = section,
+            });
+        }
+
+        private static DataGrid BuildNativeGrid(DataTable table)
+        {
+            var grid = new DataGrid
+            {
+                IsReadOnly = true,
+                AutoGenerateColumns = false,
+                CanUserResizeColumns = true,
+                SelectionMode = DataGridSelectionMode.Single,
+                MinHeight = 120,
+            };
+            foreach (DataColumn column in table.Columns)
+            {
+                var name = column.ColumnName;
+                grid.Columns.Add(new DataGridTemplateColumn
+                {
+                    Header = name,
+                    Width = new DataGridLength(1, DataGridLengthUnitType.Star),
+                    CellTemplate = new FuncDataTemplate<DataRowView>(
+                        (row, _) => new TextBlock
+                        {
+                            Text = row?.Row[name]?.ToString() ?? string.Empty,
+                            Margin = new global::Avalonia.Thickness(8, 4),
+                        },
+                        supportsRecycling: true),
+                });
+            }
+            grid.ItemsSource = table.DefaultView;
+            return grid;
         }
 
         private T BindReadOnly<T>(T editor, string fieldName)

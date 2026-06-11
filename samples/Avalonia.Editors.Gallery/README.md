@@ -1,6 +1,6 @@
 # Avalonia.Editors.Gallery
 
-驗證 `Bee.UI.Avalonia` field editor 控件組（`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`）在 **Semi.Avalonia** 主題下與原生控件的樣式一致性，同時示範 `FormScope` ambient 綁定的最小用法。
+驗證 `Bee.UI.Avalonia` field editor 控件組（`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`）與 `GridControl` 在 **Semi.Avalonia** 主題下與原生控件的樣式一致性，同時示範 `FormScope` ambient 綁定的最小用法。
 
 繼承控件以 `StyleKeyOverride` 沿用原生 ControlTheme，理論上視覺應與原生完全一致；本 gallery 把兩者並排，讓回歸一眼可見。
 
@@ -25,6 +25,8 @@ dotnet run --project samples/Avalonia.Editors.Gallery/Avalonia.Editors.Gallery.c
 4. **綁定行為**：在右欄輸入，底部「FormDataObject 即時欄位值」應即時更新；
    `TextEdit` 受 `MaxLength=20` 限制、`DropDownEdit` 選項來自 `FormField.ListItems`
 5. **唯讀列**：右欄唯讀（經 `LayoutField.ReadOnly` 綁定）與左欄手動停用的視覺應對等
+6. **GridControl 區**：表頭 / 列 hover / 選取列 / 格線與左欄原生 `DataGrid` 一致；
+   「Ambient」列驗證只設 `TableName` 即從 `FormScope` 自動綁定明細表（欄位自動產生）
 
 ## 對應 library 元件
 

@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.LogicalTree;
 using Bee.Definition;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.DataObjects;
@@ -43,8 +44,16 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public static readonly StyledProperty<string> TableNameProperty =
             AvaloniaProperty.Register<GridControl, string>(nameof(TableName), string.Empty);
 
+        private readonly GridControlBinder _binder;
         private LayoutGrid? _layout;
         private DataTable? _dataTable;
+
+        static GridControl()
+        {
+            TableNameProperty.Changed.AddClassHandler<GridControl>((o, _) => o._binder.OnBindingContextChanged());
+            FormScope.DataObjectProperty.Changed.AddClassHandler<GridControl>((o, _) => o._binder.OnBindingContextChanged());
+            FormScope.FormModeProperty.Changed.AddClassHandler<GridControl>((o, e) => o.SetControlState((SingleFormMode)e.NewValue!));
+        }
 
         /// <summary>
         /// Initializes a new instance of <see cref="GridControl"/> with read-only,
@@ -52,6 +61,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         public GridControl()
         {
+            _binder = new GridControlBinder(this);
             IsReadOnly = true;
             AutoGenerateColumns = false;
             CanUserResizeColumns = true;
@@ -112,9 +122,11 @@ namespace Bee.UI.Avalonia.Controls.Editors
         {
             ArgumentNullException.ThrowIfNull(dataObject);
             ArgumentNullException.ThrowIfNull(layout);
-            var tables = dataObject.DataSet.Tables;
-            var table = tables.Contains(layout.TableName) ? tables[layout.TableName] : null;
-            Bind(layout, table);
+            _layout = layout;
+            TableName = layout.TableName;
+            RebuildColumns();
+            _binder.BindExplicit(dataObject);
+            RefreshFromDataObject();
         }
 
         /// <summary>
@@ -126,11 +138,23 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public void Bind(LayoutGrid layout, DataTable? rows)
         {
             ArgumentNullException.ThrowIfNull(layout);
+            // List-mode rows live outside any data object; drop a previous detail
+            // subscription so a stale DataSetReplaced cannot overwrite these rows.
+            _binder.Unbind();
             _layout = layout;
             TableName = layout.TableName;
             _dataTable = rows;
             RebuildColumns();
             RebuildRows();
+        }
+
+        /// <summary>
+        /// Releases the data object subscription (if any). The current columns and
+        /// rows stay rendered.
+        /// </summary>
+        public void Unbind()
+        {
+            _binder.Unbind();
         }
 
         /// <summary>
@@ -149,6 +173,47 @@ namespace Bee.UI.Avalonia.Controls.Editors
         {
             // Editing arrives in a later stage; the grid stays read-only in every mode.
             IsReadOnly = true;
+        }
+
+        /// <inheritdoc />
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+            _binder.NotifyAttached();
+        }
+
+        /// <inheritdoc />
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+            _binder.NotifyDetached();
+        }
+
+        /// <summary>
+        /// Re-resolves the bound table from the data object by <see cref="TableName"/>
+        /// and refreshes the rows. Called after binding and whenever the underlying
+        /// <c>DataSet</c> is replaced. Without a layout (ambient, table-name-only
+        /// binds), plain text columns are generated from the table's columns.
+        /// </summary>
+        internal void RefreshFromDataObject()
+        {
+            var dataObject = _binder.DataObject;
+            if (dataObject is null) return;
+
+            var tables = dataObject.DataSet.Tables;
+            var tableName = TableName;
+            _dataTable = tableName.Length > 0 && tables.Contains(tableName) ? tables[tableName] : null;
+            if (_layout is null)
+                RebuildFallbackColumns();
+            RebuildRows();
+        }
+
+        private void RebuildFallbackColumns()
+        {
+            Columns.Clear();
+            if (_dataTable is null) return;
+            foreach (DataColumn column in _dataTable.Columns)
+                Columns.Add(BuildColumn(new LayoutColumn(column.ColumnName, column.ColumnName, ControlType.TextEdit)));
         }
 
         private void RebuildColumns()
