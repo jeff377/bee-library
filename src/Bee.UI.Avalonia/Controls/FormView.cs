@@ -5,13 +5,15 @@ using Avalonia.Media;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
+using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 using Bee.UI.Core;
 
 namespace Bee.UI.Avalonia.Controls
 {
     /// <summary>
-    /// Avalonia <see cref="UserControl"/> that wires <see cref="DynamicGrid"/> (list view)
+    /// Avalonia <see cref="UserControl"/> that wires <see cref="GridControl"/> (list view)
     /// to <see cref="DynamicForm"/> (master detail) via a shared
     /// <see cref="FormDataObject"/>. Selecting a list row drives
     /// <see cref="FormDataObject.LoadAsync"/>; the toolbar buttons fan out to
@@ -63,9 +65,11 @@ namespace Bee.UI.Avalonia.Controls
         private readonly TextBlock _dirtyMarker;
         private readonly TextBlock _errorLabel;
         private readonly TextBlock _loadingLabel;
-        private readonly DynamicGrid _grid;
+        private readonly TextBlock _emptyListLabel;
+        private readonly GridControl _grid;
         private readonly DynamicForm _form;
         private FormDataObject? _dataObject;
+        private LayoutGrid? _listLayout;
         private bool _isBusy;
         private bool _initialized;
         private bool _isInitializing;
@@ -113,8 +117,12 @@ namespace Bee.UI.Avalonia.Controls
             toolbar.Children.Add(_deleteButton);
             toolbar.Children.Add(_dirtyMarker);
 
-            _grid = new DynamicGrid();
+            _grid = new GridControl();
             _grid.RowSelected += async (_, rowId) => await OnRowSelectedAsync(rowId).ConfigureAwait(true);
+
+            // GridControl renders headers only when the list is empty; the view keeps
+            // the textual hint the retired DynamicGrid used to provide.
+            _emptyListLabel = new TextBlock { Text = "No data.", IsVisible = false };
 
             _form = new DynamicForm();
 
@@ -127,6 +135,7 @@ namespace Bee.UI.Avalonia.Controls
             host.Children.Add(_loadingLabel);
             host.Children.Add(toolbar);
             host.Children.Add(_grid);
+            host.Children.Add(_emptyListLabel);
             host.Children.Add(_form);
 
             Content = host;
@@ -264,7 +273,9 @@ namespace Bee.UI.Avalonia.Controls
             _dataObject = new FormDataObject(Schema!, FormConnector!);
             _form.FormLayout = Schema!.GetFormLayout();
             _form.DataObject = _dataObject;
-            _grid.ListLayout = Schema.GetListLayout();
+            _listLayout = Schema.GetListLayout();
+            // Columns render immediately; the rows arrive with the first ReloadListAsync.
+            _grid.Bind(_listLayout, rows: null);
         }
 
         /// <summary>
@@ -316,7 +327,10 @@ namespace Bee.UI.Avalonia.Controls
                 // row-selection handler needs (without it row clicks silently drop on
                 // the floor because TryGetRowId can't find the column).
                 var response = await connector.GetListAsync(ComputeSelectFields()).ConfigureAwait(true);
-                _grid.Rows = response.Table;
+                _grid.DataTable = response.Table;
+                var isEmpty = response.Table is null || response.Table.Rows.Count == 0;
+                _grid.IsVisible = !isEmpty;
+                _emptyListLabel.IsVisible = isEmpty;
             }
             catch (Exception ex)
             {
