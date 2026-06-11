@@ -56,15 +56,25 @@ namespace Avalonia.Editors.Gallery
             dept.ListItems.Add("IT", "Information Technology");
             dept.ListItems.Add("FIN", "Finance");
             master.Fields.Add("is_active", "Active", FieldDbType.Boolean);
+            // The detail table carries one field per in-cell editor control type so the
+            // GridControl section exercises every editing path.
             var phones = schema.Tables.Add("Phones", "Phones");
             phones.Fields!.Add("phone", "Phone", FieldDbType.String);
-            phones.Fields.Add("type", "Type", FieldDbType.String);
+            var phoneType = phones.Fields.Add("type", "Type", FieldDbType.String);
+            phoneType.ListItems!.Add("Office", "Office");
+            phoneType.ListItems.Add("Mobile", "Mobile");
+            phoneType.ListItems.Add("Home", "Home");
+            phones.Fields.Add("is_primary", "Primary", FieldDbType.Boolean);
+            phones.Fields.Add("valid_from", "Valid From", FieldDbType.Date);
+            phones.Fields.Add("bill_month", "Bill Month", FieldDbType.String);
 
             var dataObject = new FormDataObject(schema);
             dataObject.InitializeNewMaster();
             var phoneTable = dataObject.DataSet.Tables["Phones"]!;
-            phoneTable.Rows.Add("02-1234-5678", "Office");
-            phoneTable.Rows.Add("0912-345-678", "Mobile");
+            phoneTable.Rows.Add("02-1234-5678", "Office", true,
+                new DateTime(2026, 1, 15, 0, 0, 0, DateTimeKind.Unspecified), "2026-06");
+            phoneTable.Rows.Add("0912-345-678", "Mobile", false,
+                new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Unspecified), "2026-07");
             dataObject.SetField("emp_name", "Alice Chen");
             dataObject.SetField("notes", "Multi-line memo content.");
             dataObject.SetField("emp_code", "EMP-001");
@@ -162,9 +172,15 @@ namespace Avalonia.Editors.Gallery
         {
             var phoneTable = _dataObject.DataSet.Tables["Phones"]!;
 
+            // One column per supported in-cell editor: TextEdit / DropDownEdit /
+            // CheckEdit / DateEdit / YearMonthEdit. Double-click a cell on the bound
+            // grid to edit.
             var layout = new LayoutGrid("Phones", "Phones");
-            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
-            layout.Columns.Add(new LayoutColumn { FieldName = "type", Caption = "Type", Visible = true });
+            layout.Columns!.Add(new LayoutColumn("phone", "Phone（TextEdit）", ControlType.TextEdit));
+            layout.Columns.Add(new LayoutColumn("type", "Type（DropDown）", ControlType.DropDownEdit));
+            layout.Columns.Add(new LayoutColumn("is_primary", "Primary（Check）", ControlType.CheckEdit));
+            layout.Columns.Add(new LayoutColumn("valid_from", "Valid From（Date）", ControlType.DateEdit));
+            layout.Columns.Add(new LayoutColumn("bill_month", "Bill Month（YearMonth）", ControlType.YearMonthEdit));
 
             var bound = new GridControl { MinHeight = 120 };
             bound.Bind(_dataObject, layout);
