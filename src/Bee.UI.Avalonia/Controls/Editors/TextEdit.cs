@@ -1,0 +1,137 @@
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.LogicalTree;
+using Bee.Definition.Layouts;
+using Bee.UI.Avalonia.DataObjects;
+
+namespace Bee.UI.Avalonia.Controls.Editors
+{
+    /// <summary>
+    /// Field editor for <see cref="ControlType.TextEdit"/>: a <see cref="TextBox"/>
+    /// two-way bound to a <see cref="FormDataObject"/> field, applying
+    /// <c>FormField.MaxLength</c> and the layout read-only flag automatically.
+    /// </summary>
+    public class TextEdit : TextBox, IFieldEditor
+    {
+        /// <summary>
+        /// Identifies the <see cref="FieldName"/> styled property.
+        /// </summary>
+        public static readonly StyledProperty<string> FieldNameProperty =
+            AvaloniaProperty.Register<TextEdit, string>(nameof(FieldName), string.Empty);
+
+        private readonly FieldEditorBinder _binder;
+
+        static TextEdit()
+        {
+            FieldNameProperty.Changed.AddClassHandler<TextEdit>((o, _) => o._binder.OnBindingContextChanged());
+            FormScope.DataObjectProperty.Changed.AddClassHandler<TextEdit>((o, _) => o._binder.OnBindingContextChanged());
+            FormScope.FormModeProperty.Changed.AddClassHandler<TextEdit>((o, e) => o._binder.OnFormModeChanged((SingleFormMode)e.NewValue!));
+        }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="TextEdit"/>.
+        /// </summary>
+        public TextEdit()
+        {
+            _binder = new FieldEditorBinder(this, RefreshFromSource, ApplyMetadata);
+        }
+
+        /// <inheritdoc />
+        // WARNING: Without this override the subclass looks up a ControlTheme keyed by
+        // its own type, which the application theme does not provide, and the control
+        // renders with no visual at all.
+        protected override Type StyleKeyOverride => typeof(TextBox);
+
+        /// <summary>
+        /// Gets the binder that drives the field binding. Derived editors use it to
+        /// reach layout/schema metadata.
+        /// </summary>
+        internal FieldEditorBinder Binder => _binder;
+
+        /// <summary>
+        /// Gets or sets the bound field (column) name.
+        /// </summary>
+        public string FieldName
+        {
+            get => GetValue(FieldNameProperty);
+            set => SetValue(FieldNameProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the editor value as the bound field value.
+        /// </summary>
+        public object? FieldValue
+        {
+            get => Text;
+            set => Text = value as string ?? value?.ToString() ?? string.Empty;
+        }
+
+        /// <inheritdoc />
+        public void Bind(FormDataObject dataObject, LayoutField field)
+        {
+            ArgumentNullException.ThrowIfNull(field);
+            _binder.BindExplicit(dataObject, field.FieldName, field);
+        }
+
+        /// <inheritdoc />
+        public void Bind(FormDataObject dataObject, string fieldName)
+        {
+            _binder.BindExplicit(dataObject, fieldName, layoutField: null);
+        }
+
+        /// <inheritdoc />
+        public void Unbind()
+        {
+            _binder.Unbind();
+        }
+
+        /// <inheritdoc />
+        public void SetControlState(SingleFormMode formMode)
+        {
+            IsReadOnly = formMode == SingleFormMode.View || _binder.IsLayoutReadOnly;
+        }
+
+        /// <inheritdoc />
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            // `TextChanged` is not raised reliably for programmatic writes, so the
+            // write-back hooks the property change instead; the binder's suppression
+            // flag keeps source-driven refreshes from echoing back.
+            if (change.Property == TextProperty)
+                _binder.WriteBack(Text);
+        }
+
+        /// <inheritdoc />
+        protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnAttachedToLogicalTree(e);
+            _binder.NotifyAttached();
+        }
+
+        /// <inheritdoc />
+        protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
+        {
+            base.OnDetachedFromLogicalTree(e);
+            _binder.NotifyDetached();
+        }
+
+        /// <summary>
+        /// Pulls the bound value from the data object into the editor.
+        /// </summary>
+        protected virtual void RefreshFromSource()
+        {
+            Text = _binder.GetValue();
+        }
+
+        /// <summary>
+        /// Applies layout/schema metadata to the editor.
+        /// </summary>
+        protected virtual void ApplyMetadata()
+        {
+            IsReadOnly = _binder.IsLayoutReadOnly;
+            if (_binder.FormField is { MaxLength: > 0 } formField)
+                MaxLength = formField.MaxLength;
+        }
+    }
+}
