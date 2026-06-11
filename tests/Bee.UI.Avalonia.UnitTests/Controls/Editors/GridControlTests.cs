@@ -552,6 +552,75 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("AddRow DataTable 為 null 時為 no-op")]
+        public void AddRow_NullDataTable_IsNoOp()
+        {
+            var grid = new GridControl();
+
+            var exception = Record.Exception(grid.AddRow);
+
+            Assert.Null(exception);
+            Assert.Null(grid.DataTable);
+        }
+
+        [Fact]
+        [DisplayName("DeleteSelectedRow 無選取時為 no-op")]
+        public void DeleteSelectedRow_NothingSelected_IsNoOp()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            var exception = Record.Exception(grid.DeleteSelectedRow);
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        [DisplayName("Unbind 在無綁定時不拋例外")]
+        public void Unbind_WithNoBinding_IsNoOp()
+        {
+            var grid = new GridControl();
+
+            var exception = Record.Exception(grid.Unbind);
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        [DisplayName("Unbind 取消明細 DataObject 的 DataSetReplaced 訂閱")]
+        public void Unbind_AfterDetailBind_StopsDataObjectUpdates()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+            var tableBeforeUnbind = grid.DataTable;
+
+            grid.Unbind();
+            dataObject.InitializeNewMaster();
+
+            Assert.Same(tableBeforeUnbind, grid.DataTable);
+        }
+
+        [Fact]
+        [DisplayName("列表模式 Bind 在明細模式之後取消 DataObject 的 DataSetReplaced 訂閱")]
+        public void Bind_ListModeAfterDetailBind_UnsubscribesDataObjectEvents()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var rows = BuildEmployeeRows();
+            var detailLayout = new LayoutGrid("EmployeePhone", "Phones");
+            detailLayout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, detailLayout);
+
+            grid.Bind(BuildEmployeeListLayout(), rows);
+            dataObject.InitializeNewMaster();
+
+            Assert.Same(rows, grid.DataTable);
+        }
+
+        [Fact]
         [DisplayName("TryGetRowId 接受 Guid 欄位、字串可解析的 Guid、DBNull 時回傳 false")]
         public void TryGetRowId_VariantInputs_Behaviour()
         {

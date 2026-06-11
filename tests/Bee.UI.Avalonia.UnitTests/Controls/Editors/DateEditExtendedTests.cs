@@ -170,12 +170,15 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var dataObject = BuildDataObject();
             var editor = new DateEdit();
             editor.Bind(dataObject, "hire_date");
+            // FieldDbType.Date defaults to DateTime.Today, so capture whatever value
+            // was initialised rather than assuming empty string.
+            var valueAfterBind = dataObject.GetField("hire_date");
             editor.Unbind();
 
             editor.SelectedDate = new DateTimeOffset(
                 new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Unspecified), TimeSpan.Zero);
 
-            Assert.Equal(string.Empty, dataObject.GetField("hire_date"));
+            Assert.Equal(valueAfterBind, dataObject.GetField("hire_date"));
         }
 
         [Fact]
