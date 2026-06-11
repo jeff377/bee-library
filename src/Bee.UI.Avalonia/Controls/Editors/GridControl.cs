@@ -49,6 +49,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         private readonly GridControlBinder _binder;
         private LayoutGrid? _layout;
         private DataTable? _dataTable;
+        private Action? _endActiveInlineEdit;
 
         static GridControl()
         {
@@ -167,6 +168,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         public void EndEdit()
         {
+            _endActiveInlineEdit?.Invoke();
             CommitEdit();
             if (SelectedItem is DataRowView { IsEdit: true } rowView)
                 rowView.EndEdit();
@@ -275,6 +277,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
 
         private void RebuildRows()
         {
+            // Re-realizing discards any cell that hosted an inline editor.
+            _endActiveInlineEdit = null;
             ItemsSource = _dataTable?.DefaultView;
         }
 
@@ -402,10 +406,23 @@ namespace Bee.UI.Avalonia.Controls.Editors
             host.PointerPressed += (_, _) =>
             {
                 if (host.Content is not TextBlock) return;
+                // Only one inline editor at a time: starting an edit here closes a
+                // lingering editor in another cell (e.g. a dismissed date pick).
+                _endActiveInlineEdit?.Invoke();
+
                 var editor = BuildCellEditor(rowView, column);
                 editor.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Stretch;
-                WireInlineEditEnd(editor, ShowDisplay);
+                Action end = null!;
+                end = () =>
+                {
+                    if (host.Content is TextBlock) return;
+                    ShowDisplay();
+                    if (ReferenceEquals(_endActiveInlineEdit, end))
+                        _endActiveInlineEdit = null;
+                };
+                WireInlineEditEnd(editor, end);
                 host.Content = editor;
+                _endActiveInlineEdit = end;
             };
 
             ShowDisplay();
@@ -417,25 +434,39 @@ namespace Bee.UI.Avalonia.Controls.Editors
             switch (editor)
             {
                 case ComboBox combo:
-                    // Open the dropdown as soon as the editor lands so a single click
-                    // on the cell goes straight to picking an option.
-                    combo.AttachedToVisualTree += (_, _) => combo.IsDropDownOpen = true;
+                    // Open the dropdown so a single click on the cell goes straight to
+                    // picking an option — deferred past the click that swapped the
+                    // editor in, otherwise the same pointer interaction closes the
+                    // dropdown again immediately. Only a close that follows a real
+                    // open ends the edit (guards the same race on the way out).
+                    var opened = false;
+                    combo.AttachedToVisualTree += (_, _) =>
+                        global::Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                        {
+                            opened = true;
+                            combo.IsDropDownOpen = true;
+                        });
                     combo.PropertyChanged += (_, e) =>
                     {
-                        if (e.Property == ComboBox.IsDropDownOpenProperty && !combo.IsDropDownOpen)
+                        if (e.Property != ComboBox.IsDropDownOpenProperty) return;
+                        if (combo.IsDropDownOpen)
+                            opened = true;
+                        else if (opened)
                             endEdit();
                     };
                     break;
                 case DatePicker picker:
-                    // Confirming a date raises the property change (the write-back hook
-                    // subscribed first, so the row is updated before the swap-back);
-                    // dismissing without a pick falls through to LostFocus.
+                    // Commit-driven swap-back only: confirming a date changes
+                    // SelectedDate (the write-back hook subscribed first, so the row
+                    // is updated before the swap-back re-reads it). LostFocus is NOT
+                    // wired — the spinner flyout takes focus and would tear the editor
+                    // down mid-pick. A dismissed flyout leaves the editor in place
+                    // until the next inline edit or EndEdit closes it.
                     picker.PropertyChanged += (_, e) =>
                     {
                         if (e.Property == DatePicker.SelectedDateProperty)
                             endEdit();
                     };
-                    picker.LostFocus += (_, _) => endEdit();
                     break;
                 default:
                     editor.LostFocus += (_, _) => endEdit();

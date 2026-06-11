@@ -38,7 +38,10 @@ Gallery 實測結果：**文字欄（`TextEdit`）編輯正常，popup 型編輯
 
 配套規則：
 
-- popup 型 column 標記 `IsReadOnly = true` 使 DataGrid 編輯管線永不介入；置換的生命週期：`PointerPressed` 換入 → 值確認（property changed）或 `LostFocus` / 下拉關閉換回，換回時**重讀 `DataRow`** 呈現已寫回的值
+- popup 型 column 標記 `IsReadOnly = true` 使 DataGrid 編輯管線永不介入；置換的生命週期：`PointerPressed` 換入 → 結束條件依控件而異，換回時**重讀 `DataRow`** 呈現已寫回的值
+  - `ComboBox`：換入後 **Dispatcher 延後**自動展開（同一次點擊的後續事件會把立刻開啟的下拉再關掉）；「真的開啟過」之後的關閉才視為編輯結束
+  - `DatePicker`：**僅值確認（`SelectedDate` 變更）時換回**——`LostFocus` 不可接（選輪 flyout 拿走焦點會提前撕掉編輯器）；放棄選擇的編輯器留在原地，由「下一次 inline 編輯開始」或 `EndEdit()` 收掉
+  - grid 同時只允許一個 inline 編輯器（開新的先收舊的；列重 realize 時一併重置）
 - 可編輯狀態在模板建構時決定，`SetControlState` 切換唯讀時**重新 realize 列**（`ItemsSource` 重設）
 - 唯讀呈現（list 模式、`View` 模式、`LayoutColumn.ReadOnly`）為 `TextBlock`；**例外：布林欄任何狀態都呈現置中 `CheckBox`**（唯讀時 disabled）——勾選框比 "True"/"False" 文字易讀
 - 日期編輯維持**三段式 `DatePicker`**（`DayVisible` 區分 Date / YearMonth）：編輯器只在編輯瞬間出現，寬度截斷不再是常態問題，且選輪體驗與 form 端 `DateEdit` 一致
