@@ -69,7 +69,6 @@ namespace Bee.UI.Avalonia.Controls
         private readonly GridControl _grid;
         private readonly DynamicForm _form;
         private FormDataObject? _dataObject;
-        private LayoutGrid? _listLayout;
         private bool _isBusy;
         private bool _initialized;
         private bool _isInitializing;
@@ -273,9 +272,9 @@ namespace Bee.UI.Avalonia.Controls
             _dataObject = new FormDataObject(Schema!, FormConnector!);
             _form.FormLayout = Schema!.GetFormLayout();
             _form.DataObject = _dataObject;
-            _listLayout = Schema.GetListLayout();
+            var listLayout = Schema.GetListLayout();
             // Columns render immediately; the rows arrive with the first ReloadListAsync.
-            _grid.Bind(_listLayout, rows: null);
+            _grid.Bind(listLayout, rows: null);
         }
 
         /// <summary>
