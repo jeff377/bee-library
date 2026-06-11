@@ -59,6 +59,16 @@
                 "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
             },
             "env": { "ASPNETCORE_ENVIRONMENT": "Development" }
+        },
+        {
+            "name": "Run Avalonia.Editors.Gallery",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-avalonia-editors-gallery",
+            "program": "${workspaceFolder}/samples/Avalonia.Editors.Gallery/bin/Debug/net10.0/Avalonia.Editors.Gallery.dll",
+            "cwd": "${workspaceFolder}/samples/Avalonia.Editors.Gallery",
+            "console": "internalConsole",
+            "stopAtEntry": false
         }
     ]
 }
