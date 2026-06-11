@@ -32,10 +32,17 @@ namespace Bee.UI.Avalonia.Controls
         public static readonly StyledProperty<FormDataObject?> DataObjectProperty =
             AvaloniaProperty.Register<DynamicForm, FormDataObject?>(nameof(DataObject));
 
+        /// <summary>
+        /// Identifies the <see cref="DetailEditMode"/> styled property.
+        /// </summary>
+        public static readonly StyledProperty<GridEditMode> DetailEditModeProperty =
+            AvaloniaProperty.Register<DynamicForm, GridEditMode>(nameof(DetailEditMode), GridEditMode.InCell);
+
         static DynamicForm()
         {
             FormLayoutProperty.Changed.AddClassHandler<DynamicForm>((d, _) => d.Rebuild());
             DataObjectProperty.Changed.AddClassHandler<DynamicForm>((d, _) => d.Rebuild());
+            DetailEditModeProperty.Changed.AddClassHandler<DynamicForm>((d, _) => d.Rebuild());
         }
 
         /// <summary>
@@ -62,6 +69,17 @@ namespace Bee.UI.Avalonia.Controls
         {
             get => GetValue(DataObjectProperty);
             set => SetValue(DataObjectProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the editing model applied to every detail grid this form
+        /// renders. The editing model is a UI-layer decision — the shared layout
+        /// definitions stay framework-neutral — so the host sets it here once.
+        /// </summary>
+        public GridEditMode DetailEditMode
+        {
+            get => GetValue(DetailEditModeProperty);
+            set => SetValue(DetailEditModeProperty, value);
         }
 
         /// <summary>

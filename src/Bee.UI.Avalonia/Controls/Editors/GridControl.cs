@@ -47,6 +47,12 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public static readonly StyledProperty<string> TableNameProperty =
             AvaloniaProperty.Register<GridControl, string>(nameof(TableName), string.Empty);
 
+        /// <summary>
+        /// Identifies the <see cref="EditMode"/> styled property.
+        /// </summary>
+        public static readonly StyledProperty<GridEditMode> EditModeProperty =
+            AvaloniaProperty.Register<GridControl, GridEditMode>(nameof(EditMode), GridEditMode.InCell);
+
         private readonly GridControlBinder _binder;
         private LayoutGrid? _layout;
         private DataTable? _dataTable;
@@ -55,6 +61,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         static GridControl()
         {
             TableNameProperty.Changed.AddClassHandler<GridControl>((o, _) => o._binder.OnBindingContextChanged());
+            EditModeProperty.Changed.AddClassHandler<GridControl>((o, _) => o.SetControlState(o.GetValue(FormScope.FormModeProperty)));
             FormScope.DataObjectProperty.Changed.AddClassHandler<GridControl>((o, _) => o._binder.OnBindingContextChanged());
             FormScope.FormModeProperty.Changed.AddClassHandler<GridControl>((o, e) => o.SetControlState((SingleFormMode)e.NewValue!));
         }
@@ -86,6 +93,16 @@ namespace Bee.UI.Avalonia.Controls.Editors
         {
             get => GetValue(TableNameProperty);
             set => SetValue(TableNameProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the editing model. <see cref="GridEditMode.EditForm"/> keeps
+        /// the grid read-only; the host opens a popup edit form per row instead.
+        /// </summary>
+        public GridEditMode EditMode
+        {
+            get => GetValue(EditModeProperty);
+            set => SetValue(EditModeProperty, value);
         }
 
         /// <summary>
@@ -163,6 +180,18 @@ namespace Bee.UI.Avalonia.Controls.Editors
         }
 
         /// <summary>
+        /// Re-realizes the rows. Hosts call this after mutating row values outside
+        /// the grid (for example after a popup edit form commits) — realized text
+        /// cells capture their value when their template builds and do not track
+        /// later <see cref="DataRow"/> writes.
+        /// </summary>
+        public void RefreshRows()
+        {
+            ItemsSource = null;
+            RebuildRows();
+        }
+
+        /// <summary>
         /// Commits the in-progress cell and row edit (if any) so the underlying
         /// <see cref="DataRow"/> leaves its edit state before the host inspects or
         /// persists the dataset.
@@ -178,9 +207,12 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <inheritdoc />
         public void SetControlState(SingleFormMode formMode)
         {
-            // Editing only makes sense against a FormDataObject detail table whose
-            // layout grants the Edit action; list-mode rows stay read-only.
+            // In-cell editing only makes sense against a FormDataObject detail table
+            // whose layout grants the Edit action; list-mode rows stay read-only, and
+            // EditForm mode keeps the grid itself read-only (rows are edited in the
+            // popup edit form).
             var allowEdit = formMode != SingleFormMode.View
+                && EditMode == GridEditMode.InCell
                 && _binder.DataObject is not null
                 && (_layout?.AllowActions.HasFlag(GridControlAllowActions.Edit) ?? false);
             var readOnly = !allowEdit;

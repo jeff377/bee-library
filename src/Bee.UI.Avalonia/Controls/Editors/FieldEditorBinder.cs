@@ -1,3 +1,4 @@
+using System.Data;
 using Avalonia.Controls;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
@@ -48,10 +49,16 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public string FieldName { get; private set; } = string.Empty;
 
         /// <summary>
-        /// Gets the layout field supplied to the explicit bind, or <c>null</c> when the
-        /// binding came from the ambient scope or by field name only.
+        /// Gets the layout field (or grid column) supplied to the explicit bind, or
+        /// <c>null</c> when the binding came from the ambient scope or by field name only.
         /// </summary>
-        public LayoutField? LayoutField { get; private set; }
+        public LayoutFieldBase? LayoutField { get; private set; }
+
+        /// <summary>
+        /// Gets the row a row-scoped bind targets, or <c>null</c> for master-row
+        /// bindings.
+        /// </summary>
+        public DataRow? TargetRow { get; private set; }
 
         /// <summary>
         /// Gets the schema metadata resolved for the bound field, or <c>null</c>.
@@ -75,12 +82,29 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <param name="dataObject">The data object that backs two-way binding.</param>
         /// <param name="fieldName">The field (column) name to bind.</param>
         /// <param name="layoutField">Optional layout field carrying rendering attributes.</param>
-        public void BindExplicit(FormDataObject dataObject, string fieldName, LayoutField? layoutField)
+        public void BindExplicit(FormDataObject dataObject, string fieldName, LayoutFieldBase? layoutField)
         {
             ArgumentNullException.ThrowIfNull(dataObject);
             ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
             Unbind();
             BindCore(dataObject, fieldName, layoutField, fromAmbient: false);
+        }
+
+        /// <summary>
+        /// Binds to a specific row (master or detail), replacing any current binding.
+        /// Used by the row edit form; value reads and write-backs target
+        /// <paramref name="row"/> and metadata resolves against the row's table.
+        /// </summary>
+        /// <param name="dataObject">The data object that backs two-way binding.</param>
+        /// <param name="field">The layout field / grid column carrying rendering attributes.</param>
+        /// <param name="row">The row to bind.</param>
+        public void BindRow(FormDataObject dataObject, LayoutFieldBase field, DataRow row)
+        {
+            ArgumentNullException.ThrowIfNull(dataObject);
+            ArgumentNullException.ThrowIfNull(field);
+            ArgumentNullException.ThrowIfNull(row);
+            Unbind();
+            BindCore(dataObject, field.FieldName, field, fromAmbient: false, row);
         }
 
         /// <summary>
@@ -96,6 +120,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             DataObject = null;
             LayoutField = null;
             FormField = null;
+            TargetRow = null;
             FieldName = string.Empty;
             _boundFromAmbient = false;
         }
@@ -146,7 +171,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         public string GetValue()
         {
-            return DataObject?.GetField(FieldName) ?? string.Empty;
+            if (DataObject is null) return string.Empty;
+            return TargetRow is not null
+                ? DataObject.GetField(TargetRow, FieldName)
+                : DataObject.GetField(FieldName);
         }
 
         /// <summary>
@@ -160,7 +188,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
             _suppress = true;
             try
             {
-                DataObject.SetField(FieldName, value);
+                if (TargetRow is not null)
+                    DataObject.SetField(TargetRow, FieldName, value);
+                else
+                    DataObject.SetField(FieldName, value);
             }
             finally
             {
@@ -188,7 +219,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             BindCore(ambient, fieldName, layoutField: null, fromAmbient: true);
         }
 
-        private void BindCore(FormDataObject dataObject, string fieldName, LayoutField? layoutField, bool fromAmbient)
+        private void BindCore(FormDataObject dataObject, string fieldName, LayoutFieldBase? layoutField, bool fromAmbient, DataRow? row = null)
         {
             _updatingBinding = true;
             try
@@ -196,7 +227,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 DataObject = dataObject;
                 FieldName = fieldName;
                 LayoutField = layoutField;
-                FormField = dataObject.GetFormField(fieldName);
+                TargetRow = row;
+                FormField = row is not null
+                    ? dataObject.GetFormField(row.Table.TableName, fieldName)
+                    : dataObject.GetFormField(fieldName);
                 _boundFromAmbient = fromAmbient;
                 if (!string.Equals(_editor.FieldName, fieldName, StringComparison.Ordinal))
                     _editor.FieldName = fieldName;
@@ -235,13 +269,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
             // `_suppress` is true while this editor itself is writing back, so a
             // self-originated event is ignored; changes to the same field that other
             // parties wrote (for example lookup write-backs) refresh the editor.
-            // Field editors bind the master row, so detail-table changes (bridged
-            // through the same event) are filtered out by table name. Comparisons are
-            // case-insensitive to follow DataTable semantics — `AddColumn` stores
-            // column names uppercase while wire-deserialized tables keep the
-            // original casing.
+            // Master bindings filter by the master table name; row bindings match the
+            // exact target row. Comparisons are case-insensitive to follow DataTable
+            // semantics — `AddColumn` stores column names uppercase while
+            // wire-deserialized tables keep the original casing.
             if (_suppress) return;
-            if (!string.Equals(e.TableName, DataObject?.MasterTable.TableName, StringComparison.OrdinalIgnoreCase)) return;
+            if (TargetRow is not null)
+            {
+                if (!ReferenceEquals(e.Row, TargetRow)) return;
+            }
+            else if (!string.Equals(e.TableName, DataObject?.MasterTable.TableName, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
             if (string.Equals(e.FieldName, FieldName, StringComparison.OrdinalIgnoreCase))
                 RunSuppressed(_refresh);
         }

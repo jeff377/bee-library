@@ -23,6 +23,10 @@ namespace Bee.UI.Avalonia.DataObjects
     {
         private readonly FormSchema _schema;
         private readonly FormApiConnector? _connector;
+        // Rows under an explicit BeginRowEdit session. ADO.NET does NOT suppress
+        // ColumnChanged during BeginEdit (pinned by test) — the bridge consults this
+        // set to stay silent until CommitRowEdit re-publishes the session's changes.
+        private readonly HashSet<DataRow> _rowsInEdit = [];
 
         /// <summary>
         /// Initializes a new instance of <see cref="FormDataObject"/> and derives the
@@ -93,7 +97,7 @@ namespace Bee.UI.Avalonia.DataObjects
         /// <summary>
         /// Raised after any field value changes in any table of the
         /// <see cref="DataSet"/> — master and detail alike, regardless of the write
-        /// path (<see cref="SetField"/>, grid cell editors, lookup write-backs,
+        /// path (<see cref="SetField(string, string?)"/>, grid cell editors, lookup write-backs,
         /// direct <see cref="DataRow"/> writes). Bridged from the ADO.NET
         /// <see cref="DataTable.ColumnChanged"/> event so no writer has to remember
         /// to raise it.
@@ -120,10 +124,24 @@ namespace Bee.UI.Avalonia.DataObjects
 
             var row = MasterRow;
             if (row is null) return string.Empty;
-            if (!row.Table.Columns.Contains(fieldName)) return string.Empty;
+            return GetField(row, fieldName);
+        }
 
-            var raw = row[fieldName];
-            return FormatForBinding(raw);
+        /// <summary>
+        /// Reads the field value from <paramref name="row"/> (master or detail) and
+        /// renders it as a binding string. While the row is in an edit session
+        /// (<see cref="BeginRowEdit"/>), the proposed value is returned.
+        /// </summary>
+        /// <param name="row">The row to read from.</param>
+        /// <param name="fieldName">The field (column) name.</param>
+        public string GetField(DataRow row, string fieldName)
+        {
+            ArgumentNullException.ThrowIfNull(row);
+            ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
+            EnsureOwnedRow(row);
+
+            if (!row.Table.Columns.Contains(fieldName)) return string.Empty;
+            return FormatForBinding(row[fieldName]);
         }
 
         /// <summary>
@@ -150,6 +168,23 @@ namespace Bee.UI.Avalonia.DataObjects
 
             var row = MasterRow;
             if (row is null) return;
+            SetField(row, fieldName, value);
+        }
+
+        /// <summary>
+        /// Writes <paramref name="value"/> to <paramref name="row"/> (master or
+        /// detail) after coercing it to the column's declared CLR type, with the
+        /// same empty-input and echo-guard semantics as the master overload.
+        /// </summary>
+        /// <param name="row">The row to write to.</param>
+        /// <param name="fieldName">The field (column) name.</param>
+        /// <param name="value">The string value supplied by the bound input.</param>
+        public void SetField(DataRow row, string fieldName, string? value)
+        {
+            ArgumentNullException.ThrowIfNull(row);
+            ArgumentException.ThrowIfNullOrWhiteSpace(fieldName);
+            EnsureOwnedRow(row);
+
             if (!row.Table.Columns.Contains(fieldName)) return;
 
             var column = row.Table.Columns[fieldName]!;
@@ -160,6 +195,84 @@ namespace Bee.UI.Avalonia.DataObjects
             // DataTable event bridge; the compare-first guard above keeps no-op
             // writes (initial-render echoes) from producing event noise.
             row[fieldName] = newValue;
+        }
+
+        /// <summary>
+        /// Starts a buffered edit session on <paramref name="row"/>: subsequent
+        /// writes go to the row's proposed version and ADO.NET suspends change
+        /// events until the session ends.
+        /// </summary>
+        /// <param name="row">The row to edit.</param>
+        public void BeginRowEdit(DataRow row)
+        {
+            ArgumentNullException.ThrowIfNull(row);
+            EnsureOwnedRow(row);
+            _rowsInEdit.Add(row);
+            row.BeginEdit();
+        }
+
+        /// <summary>
+        /// Commits a buffered edit session: captures which fields the session
+        /// actually changed (proposed vs current — taken before <c>EndEdit</c>
+        /// merges them), ends the edit, then re-publishes the per-field
+        /// <see cref="FieldValueChanged"/> events ADO.NET suppressed during the
+        /// session. Dirty tracking flows through the event bridge.
+        /// </summary>
+        /// <param name="row">The row whose edit session to commit.</param>
+        public void CommitRowEdit(DataRow row)
+        {
+            ArgumentNullException.ThrowIfNull(row);
+            EnsureOwnedRow(row);
+            _rowsInEdit.Remove(row);
+
+            if (!row.HasVersion(DataRowVersion.Proposed))
+            {
+                row.EndEdit();
+                return;
+            }
+
+            var changedFields = new List<string>();
+            foreach (DataColumn column in row.Table.Columns)
+            {
+                if (!Equals(row[column, DataRowVersion.Proposed], row[column, DataRowVersion.Current]))
+                    changedFields.Add(column.ColumnName);
+            }
+
+            if (changedFields.Count == 0)
+            {
+                // BeginEdit creates the proposed version eagerly, so EndEdit would
+                // raise RowChanged (and dirty the object) even though nothing
+                // changed; cancelling is equivalent and stays silent.
+                row.CancelEdit();
+                return;
+            }
+
+            row.EndEdit();
+
+            foreach (var fieldName in changedFields)
+            {
+                FieldValueChanged?.Invoke(this, new FieldValueChangedEventArgs(
+                    row.Table.TableName, fieldName, GetField(row, fieldName), row));
+            }
+        }
+
+        /// <summary>
+        /// Cancels a buffered edit session, restoring every field to its pre-session
+        /// value. No events are raised — nothing changed.
+        /// </summary>
+        /// <param name="row">The row whose edit session to cancel.</param>
+        public void CancelRowEdit(DataRow row)
+        {
+            ArgumentNullException.ThrowIfNull(row);
+            EnsureOwnedRow(row);
+            _rowsInEdit.Remove(row);
+            row.CancelEdit();
+        }
+
+        private void EnsureOwnedRow(DataRow row)
+        {
+            if (!ReferenceEquals(row.Table.DataSet, DataSet))
+                throw new ArgumentException("Row does not belong to this data object's DataSet.", nameof(row));
         }
 
         /// <summary>
@@ -334,6 +447,7 @@ namespace Bee.UI.Avalonia.DataObjects
         private void ReplaceDataSet(DataSet dataSet, bool notify = true)
         {
             DetachTableEvents(DataSet);
+            _rowsInEdit.Clear();
             DataSet = dataSet;
             AttachTableEvents(dataSet);
             if (notify)
@@ -366,6 +480,10 @@ namespace Bee.UI.Avalonia.DataObjects
             // Seeding a detached row (NewRow before Rows.Add) stays silent; attaching
             // the row marks dirty through RowChanged instead.
             if (e.Row.RowState == DataRowState.Detached) return;
+            // Rows under an explicit edit session publish nothing until commit —
+            // CommitRowEdit re-publishes the session's changes; a cancelled session
+            // must leak no events for values that were rolled back.
+            if (_rowsInEdit.Contains(e.Row)) return;
 
             IsDirty = true;
             FieldValueChanged?.Invoke(this, new FieldValueChangedEventArgs(
@@ -378,7 +496,9 @@ namespace Bee.UI.Avalonia.DataObjects
         private void OnTableRowChanged(object? sender, DataRowChangeEventArgs e)
         {
             // Only data mutations dirty the object; framework actions (AcceptChanges
-            // raises Commit, RejectChanges raises Rollback) do not.
+            // raises Commit, RejectChanges raises Rollback) do not. Rows in an
+            // explicit edit session dirty the object at commit, not per keystroke.
+            if (_rowsInEdit.Contains(e.Row)) return;
             if (e.Action is DataRowAction.Add or DataRowAction.Change)
                 IsDirty = true;
         }

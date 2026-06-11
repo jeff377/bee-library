@@ -87,6 +87,12 @@ namespace Bee.UI.Avalonia.Controls.Editors
         }
 
         /// <inheritdoc />
+        public void Bind(FormDataObject dataObject, LayoutFieldBase field, System.Data.DataRow row)
+        {
+            _binder.BindRow(dataObject, field, row);
+        }
+
+        /// <inheritdoc />
         public void Unbind()
         {
             _binder.Unbind();

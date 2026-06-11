@@ -37,6 +37,17 @@ namespace Bee.UI.Avalonia.Controls.Editors
         void Bind(FormDataObject dataObject, string fieldName);
 
         /// <summary>
+        /// Binds the editor to a specific row (master or detail) of
+        /// <paramref name="dataObject"/>. Value reads and write-backs target
+        /// <paramref name="row"/>; schema metadata resolves against the row's table.
+        /// Used by the row edit form.
+        /// </summary>
+        /// <param name="dataObject">The data object that backs two-way binding.</param>
+        /// <param name="field">The layout field / grid column carrying rendering attributes.</param>
+        /// <param name="row">The row to bind.</param>
+        void Bind(FormDataObject dataObject, LayoutFieldBase field, System.Data.DataRow row);
+
+        /// <summary>
         /// Releases the binding and unsubscribes from data object events.
         /// </summary>
         void Unbind();

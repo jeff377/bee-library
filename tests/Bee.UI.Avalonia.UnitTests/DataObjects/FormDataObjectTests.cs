@@ -12,7 +12,7 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
     /// <summary>
     /// Verifies that <see cref="FormDataObject"/> derives the correct <see cref="DataSet"/>
     /// shape from <see cref="FormSchema"/>, round-trips values through
-    /// <see cref="FormDataObject.GetField"/> / <see cref="FormDataObject.SetField"/>, and
+    /// <see cref="FormDataObject.GetField(string)"/> / <see cref="FormDataObject.SetField(string, string?)"/>, and
     /// drives the four async server methods through a supplied
     /// <see cref="FormApiConnector"/>. Mirrors the MAUI <c>FormDataObjectTests</c> for
     /// cross-family parity.
@@ -629,6 +629,99 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
             await dataObject.SaveAsync();
 
             Assert.Equal(0, raisedCount);
+        }
+
+        [Fact]
+        [DisplayName("列編輯協定：BeginRowEdit 期間事件靜默，CommitRowEdit 只補發本次變更欄位並標 dirty")]
+        public void RowEditProtocol_CommitPublishesSessionChangesOnly()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            var detail = dataObject.DataSet.Tables["EmployeePhone"]!;
+            detail.Rows.Add("02-1234-5678");
+            detail.AcceptChanges();
+            dataObject.InitializeNewMaster();
+            var row = detail.Rows[0];
+
+            var raised = new List<FieldValueChangedEventArgs>();
+            dataObject.FieldValueChanged += (_, e) => raised.Add(e);
+
+            dataObject.BeginRowEdit(row);
+            dataObject.SetField(row, "phone", "0912-345-678");
+            // ADO.NET suspends change events during an explicit edit session — pin it.
+            Assert.Empty(raised);
+            // Proposed value is readable through the row accessor during the session.
+            Assert.Equal("0912-345-678", dataObject.GetField(row, "phone"));
+
+            dataObject.CommitRowEdit(row);
+
+            var args = Assert.Single(raised);
+            Assert.Equal("EmployeePhone", args.TableName);
+            Assert.Equal("phone", args.FieldName, ignoreCase: true);
+            Assert.Equal("0912-345-678", args.Value);
+            Assert.Same(row, args.Row);
+            Assert.True(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("列編輯協定：CancelRowEdit 完整還原且零事件、不弄髒")]
+        public void RowEditProtocol_CancelRestoresSilently()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            var detail = dataObject.DataSet.Tables["EmployeePhone"]!;
+            detail.Rows.Add("02-1234-5678");
+            detail.AcceptChanges();
+            dataObject.InitializeNewMaster();
+            var row = detail.Rows[0];
+
+            var raisedCount = 0;
+            dataObject.FieldValueChanged += (_, _) => raisedCount++;
+
+            dataObject.BeginRowEdit(row);
+            dataObject.SetField(row, "phone", "0912-345-678");
+            dataObject.CancelRowEdit(row);
+
+            Assert.Equal(0, raisedCount);
+            Assert.Equal("02-1234-5678", dataObject.GetField(row, "phone"));
+            Assert.False(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("列編輯協定：無變更的 Commit 不發事件、不弄髒")]
+        public void RowEditProtocol_CommitWithoutChanges_StaysSilent()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            var detail = dataObject.DataSet.Tables["EmployeePhone"]!;
+            detail.Rows.Add("02-1234-5678");
+            detail.AcceptChanges();
+            dataObject.InitializeNewMaster();
+            var row = detail.Rows[0];
+
+            var raisedCount = 0;
+            dataObject.FieldValueChanged += (_, _) => raisedCount++;
+
+            dataObject.BeginRowEdit(row);
+            dataObject.CommitRowEdit(row);
+
+            Assert.Equal(0, raisedCount);
+            Assert.False(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("列存取 API 拒絕不屬於本 DataSet 的列")]
+        public void RowAccessors_ForeignRow_Throws()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            var foreign = new DataTable("Foreign");
+            foreign.Columns.Add("x", typeof(string));
+            foreign.Rows.Add("y");
+            var foreignRow = foreign.Rows[0];
+
+            Assert.Throws<ArgumentException>(() => dataObject.GetField(foreignRow, "x"));
+            Assert.Throws<ArgumentException>(() => dataObject.SetField(foreignRow, "x", "z"));
+            Assert.Throws<ArgumentException>(() => dataObject.BeginRowEdit(foreignRow));
         }
 
         /// <summary>

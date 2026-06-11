@@ -42,7 +42,7 @@ namespace Bee.UI.Avalonia.DataObjects
 
         /// <summary>
         /// Gets the new value rendered as a binding string (same format as
-        /// <see cref="FormDataObject.GetField"/>).
+        /// <see cref="FormDataObject.GetField(string)"/>).
         /// </summary>
         public string Value { get; }
 

@@ -154,6 +154,59 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("列綁定：載入明細列值、寫回該列、套用明細表 metadata")]
+        public void BindRow_DetailRow_LoadsWritesAndAppliesMetadata()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add("emp_name", "Name", FieldDbType.String);
+            var detail = schema.Tables.Add("EmployeePhone", "Phones");
+            var phone = detail.Fields!.Add("phone", "Phone", FieldDbType.String);
+            phone.MaxLength = 15;
+
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+            var table = dataObject.DataSet.Tables["EmployeePhone"]!;
+            table.Rows.Add("02-1234-5678");
+            var row = table.Rows[0];
+
+            var editor = new TextEdit();
+            editor.Bind(dataObject, new LayoutColumn("phone", "Phone", ControlType.TextEdit), row);
+
+            Assert.Equal("02-1234-5678", editor.Text);
+            Assert.Equal(15, editor.MaxLength);
+
+            editor.Text = "0912-345-678";
+            Assert.Equal("0912-345-678", row["phone"]);
+        }
+
+        [Fact]
+        [DisplayName("列綁定：他列變更不刷新、本列他方變更會刷新")]
+        public void BindRow_EventFiltering_MatchesTargetRowOnly()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add("emp_name", "Name", FieldDbType.String);
+            var detail = schema.Tables.Add("EmployeePhone", "Phones");
+            detail.Fields!.Add("phone", "Phone", FieldDbType.String);
+
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+            var table = dataObject.DataSet.Tables["EmployeePhone"]!;
+            table.Rows.Add("row0");
+            table.Rows.Add("row1");
+
+            var editor = new TextEdit();
+            editor.Bind(dataObject, new LayoutColumn("phone", "Phone", ControlType.TextEdit), table.Rows[0]);
+
+            dataObject.SetField(table.Rows[1], "phone", "other-row");
+            Assert.Equal("row0", editor.Text);
+
+            dataObject.SetField(table.Rows[0], "phone", "target-row");
+            Assert.Equal("target-row", editor.Text);
+        }
+
+        [Fact]
         [DisplayName("MemoEdit 預設多行設定")]
         public void MemoEdit_Defaults_AreMultiLine()
         {
