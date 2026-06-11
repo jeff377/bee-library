@@ -12,6 +12,11 @@ namespace Bee.UI.Avalonia.Controls.Editors
     /// lookup flow itself (open a picker, write mapped fields back) is the caller's
     /// responsibility through <see cref="ButtonClick"/>.
     /// </summary>
+    /// <remarks>
+    /// The lookup button follows <see cref="TextBox.IsReadOnly"/>: whenever the editor
+    /// becomes read-only (View mode, a read-only layout field, or a direct assignment)
+    /// the button is disabled, because the lookup flow writes mapped fields back.
+    /// </remarks>
     public class ButtonEdit : TextEdit
     {
         // Magnifier glyph taken from Semi.Avalonia `SemiIconSearchStroked` (MIT),
@@ -60,6 +65,17 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// Raised when the embedded lookup icon is clicked.
         /// </summary>
         public event EventHandler? ButtonClick;
+
+        /// <inheritdoc />
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            // A single property hook covers every path that turns the editor
+            // read-only — `SetControlState`, layout metadata and direct assignment —
+            // so the lookup button cannot fire `ButtonClick` on a read-only editor.
+            if (change.Property == IsReadOnlyProperty)
+                _button.IsEnabled = !IsReadOnly;
+        }
 
         /// <inheritdoc />
         protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)

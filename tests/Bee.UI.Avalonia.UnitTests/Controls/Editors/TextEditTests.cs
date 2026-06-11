@@ -231,5 +231,35 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             Assert.Equal(1, raised);
         }
+
+        [Fact]
+        [DisplayName("ButtonEdit View 模式停用內嵌按鈕，Edit 模式恢復")]
+        public void ButtonEdit_SetControlState_TogglesButtonEnabled()
+        {
+            var dataObject = BuildDataObject();
+            var editor = new ButtonEdit();
+            editor.Bind(dataObject, "emp_name");
+            var button = Assert.IsType<global::Avalonia.Controls.Button>(editor.InnerRightContent);
+
+            editor.SetControlState(SingleFormMode.View);
+            Assert.False(button.IsEnabled);
+
+            editor.SetControlState(SingleFormMode.Edit);
+            Assert.True(button.IsEnabled);
+        }
+
+        [Fact]
+        [DisplayName("ButtonEdit 綁定 ReadOnly LayoutField 時停用內嵌按鈕")]
+        public void ButtonEdit_BindReadOnlyLayoutField_DisablesButton()
+        {
+            var dataObject = BuildDataObject();
+            var field = new LayoutField { FieldName = "emp_name", ReadOnly = true };
+            var editor = new ButtonEdit();
+
+            editor.Bind(dataObject, field);
+
+            var button = Assert.IsType<global::Avalonia.Controls.Button>(editor.InnerRightContent);
+            Assert.False(button.IsEnabled);
+        }
     }
 }
