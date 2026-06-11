@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | UI 層：`GridEditMode` enum + `GridControl.EditMode` / `DynamicForm.DetailEditMode` 屬性 | ✅ 已完成（2026-06-11） |
 | 2 | Field editor 列綁定泛化（binder row-scope + `FormDataObject` 列存取） | ✅ 已完成（2026-06-11） |
-| 3 | `RowEditPanel` 編輯面 + 彈窗包裝（暫存編輯 + 確認/取消） | 📝 待做 |
+| 3 | `RowEditPanel` 編輯面 + 彈窗包裝（暫存編輯 + 確認/取消） | ✅ 已完成（2026-06-11） |
 | 4 | `GridControl` / `DynamicForm` 整合（EditMode 分流） | 📝 待做 |
 | 5 | Gallery 比對區 + 收尾 | 📝 待做 |
 
