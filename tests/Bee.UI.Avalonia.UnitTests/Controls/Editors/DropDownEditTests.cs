@@ -35,7 +35,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             editor.Bind(dataObject, "dept_id");
 
-            var items = Assert.IsAssignableFrom<IEnumerable<ListItem>>(editor.ItemsSource).ToList();
+            var items = Assert.IsType<List<ListItem>>(editor.ItemsSource);
             Assert.Equal(2, items.Count);
             Assert.Equal("HR", items[0].Value);
         }
