@@ -636,7 +636,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 };
             }
 
-            return BuildSwapCell(rowView, column);
+            return BuildSwapCell(rowView!, column);
         }
 
         // Click-to-edit host: rests as the original text rendering, swaps to the
