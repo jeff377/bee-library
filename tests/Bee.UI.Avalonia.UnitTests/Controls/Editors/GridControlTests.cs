@@ -779,6 +779,147 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             Assert.Equal(string.Empty, nullRow);
         }
 
+        [Fact]
+        [DisplayName("RefreshRows 清空後重建 ItemsSource（呼叫後不為 null）")]
+        public void RefreshRows_AfterBind_RebuildsSameItemsSource()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+            Assert.NotNull(grid.InnerGrid.ItemsSource);
+
+            grid.RefreshRows();
+
+            Assert.NotNull(grid.InnerGrid.ItemsSource);
+        }
+
+        [Fact]
+        [DisplayName("Unbind 對列表模式綁定不拋例外")]
+        public void Unbind_ListModeBound_DoesNotThrow()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            var exception = Record.Exception(grid.Unbind);
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        [DisplayName("AddRow 在無資料表時為 no-op 不拋例外")]
+        public void AddRow_NoDataTable_IsNoOp()
+        {
+            var grid = new GridControl();
+
+            var exception = Record.Exception(grid.AddRow);
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        [DisplayName("DeleteSelectedRow 未選取列時為 no-op 不拋例外")]
+        public void DeleteSelectedRow_NothingSelected_IsNoOp()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            var exception = Record.Exception(grid.DeleteSelectedRow);
+
+            Assert.Null(exception);
+        }
+
+        [Fact]
+        [DisplayName("FormatCell 對非 IFormattable 字串值使用 ToString()")]
+        public void FormatCell_NonFormattableString_ReturnsRawString()
+        {
+            var method = typeof(GridControl).GetMethod(
+                "FormatCell", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.NotNull(method);
+
+            var table = new DataTable();
+            table.Columns.Add("label", typeof(string));
+            table.Rows.Add("Hello World");
+            var row = table.DefaultView[0];
+
+            var result = (string)method!.Invoke(null, new object?[] { row, "label", "", "" })!;
+
+            Assert.Equal("Hello World", result);
+        }
+
+        [Fact]
+        [DisplayName("FormatCell 對無格式字串的 IFormattable 值呼叫 ToString(null, ...)")]
+        public void FormatCell_FormattableValueNoFormatString_UsesDefaultFormat()
+        {
+            var method = typeof(GridControl).GetMethod(
+                "FormatCell", BindingFlags.NonPublic | BindingFlags.Static);
+            Assert.NotNull(method);
+
+            var table = new DataTable();
+            table.Columns.Add("amount", typeof(decimal));
+            table.Rows.Add(1234.56m);
+            var row = table.DefaultView[0];
+
+            var result = (string)method!.Invoke(null, new object?[] { row, "amount", "", "" })!;
+
+            Assert.Equal("1234.56", result);
+        }
+
+        [Fact]
+        [DisplayName("BuildCellEditor null rowView 回傳 TextBlock")]
+        public void BuildCellEditor_NullRowView_ReturnsTextBlock()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+
+            var result = method!.Invoke(grid, new object?[] { null, new LayoutColumn { FieldName = "sys_id" } });
+
+            Assert.IsType<TextBlock>(result);
+        }
+
+        [Fact]
+        [DisplayName("BuildCellEditor 欄位不存在於 DataTable 時回傳 TextBlock")]
+        public void BuildCellEditor_MissingColumn_ReturnsTextBlock()
+        {
+            var table = new DataTable("Items");
+            table.Columns.Add("name", typeof(string));
+            table.Rows.Add("Widget");
+            var grid = new GridControl();
+            grid.Bind(new LayoutGrid("Items", "Items"), table);
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            var rowView = table.DefaultView[0];
+
+            var result = method!.Invoke(grid, new object?[] { rowView, new LayoutColumn { FieldName = "nonexistent_field" } });
+
+            Assert.IsType<TextBlock>(result);
+        }
+
+        [Fact]
+        [DisplayName("BuildCellEditor DropDownEdit 無清單項目時 fallback 為 TextBox")]
+        public void BuildCellEditor_DropDownEdit_NoListItems_FallsBackToTextBox()
+        {
+            var table = new DataTable("Items");
+            table.Columns.Add("status", typeof(string));
+            table.Rows.Add("active");
+            var grid = new GridControl();
+            grid.Bind(new LayoutGrid("Items", "Items"), table);
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            var rowView = table.DefaultView[0];
+
+            var result = method!.Invoke(
+                grid, new object?[] { rowView, new LayoutColumn("status", "Status", ControlType.DropDownEdit) });
+
+            Assert.IsType<TextBox>(result);
+        }
+
         /// <summary>
         /// Test double that bypasses the real JSON-RPC pipeline by overriding the
         /// virtual CRUD methods used here. Mirrors the fake in
