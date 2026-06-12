@@ -1,5 +1,7 @@
 using System.ComponentModel;
 using System.Data;
+using System.Reflection;
+using Avalonia.Input;
 using Bee.Base.Data;
 using Bee.Definition;
 using Bee.Definition.Database;
@@ -160,6 +162,46 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             Assert.False(editor.HasLookup);
             Assert.False(editor.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("Delete 鍵於 lookup Edit 模式清除選取並標記事件已處理")]
+        public void OnKeyDown_DeleteKey_LookupEditMode_ClearsSelectionAndHandlesEvent()
+        {
+            var (editor, dataObject, field) = BindLookupEditor();
+            dataObject.ApplyLookupSelection(field, BuildSelectedRow(Guid.NewGuid(), "C001", "客戶甲"));
+            editor.SetControlState(SingleFormMode.Edit);
+            Assert.Equal("客戶甲", editor.Text);
+
+            var e = new KeyEventArgs { Key = Key.Delete };
+            var onKeyDown = typeof(ButtonEdit).GetMethod(
+                "OnKeyDown", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(onKeyDown);
+            onKeyDown!.Invoke(editor, new object[] { e });
+
+            Assert.True(e.Handled);
+            Assert.Equal(string.Empty, editor.Text);
+        }
+
+        [Fact]
+        [DisplayName("LayoutField.DisplayField 覆蓋 schema 預設顯示欄，Text 反映自訂欄位值")]
+        public void LayoutFieldDisplayField_OverridesSchemaDefault_TextReflectsCustomField()
+        {
+            var schema = BuildOrderSchema();
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+            dataObject.SetField("ref_customer_id", "C001");
+            dataObject.SetField("ref_customer_name", "客戶甲");
+
+            // 以 ref_customer_id 覆蓋 schema 預設顯示欄（ref_customer_name）
+            var layoutField = new LayoutField { FieldName = "customer_rowid", DisplayField = "ref_customer_id" };
+            var editor = new ButtonEdit();
+            editor.Bind(dataObject, layoutField);
+
+            Assert.Equal("C001", editor.Text);
+
+            dataObject.SetField("ref_customer_id", "C002");
+            Assert.Equal("C002", editor.Text);
         }
     }
 }
