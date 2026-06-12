@@ -274,6 +274,120 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.Equal(SingleFormMode.View, view.FormMode);
         }
 
+        [Fact]
+        [DisplayName("OnDeleteClickedAsync 委派到 DeleteAsync 並回到 View 模式")]
+        public async Task OnDeleteClickedAsync_DelegatesToDeleteAsync()
+        {
+            var schema = BuildEmployeeSchema();
+            var rowId = Guid.NewGuid();
+            Guid? deletedRowId = null;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "Alice") },
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Alice") },
+                DeleteHandler = id => { deletedRowId = id; return new DeleteResponse(); },
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+            await view.InitializeAsync();
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+
+            await InvokePrivateAsync(view, "OnDeleteClickedAsync");
+
+            Assert.Equal(rowId, deletedRowId);
+            Assert.Equal(SingleFormMode.View, view.FormMode);
+        }
+
+        [Fact]
+        [DisplayName("Delete 拋出例外時 ErrorOccurred 帶出例外訊息")]
+        public async Task ErrorOccurred_FiresWhenDeleteThrows()
+        {
+            var schema = BuildEmployeeSchema();
+            var rowId = Guid.NewGuid();
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "X") },
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "X") },
+                DeleteHandler = _ => throw new InvalidOperationException("delete rejected"),
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+            await view.InitializeAsync();
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+
+            Exception? captured = null;
+            view.ErrorOccurred += (_, ex) => captured = ex;
+
+            await InvokePrivateAsync(view, "OnDeleteClickedAsync");
+
+            Assert.NotNull(captured);
+            Assert.Equal("delete rejected", captured!.Message);
+        }
+
+        [Fact]
+        [DisplayName("ListFields 為 null 時 ComputeSelectFields 只回傳 sys_rowid")]
+        public async Task ComputeSelectFields_NullListFields_ReturnsJustRowId()
+        {
+            var schema = new FormSchema(TestProgId, TestProgId);
+            var master = schema.Tables!.Add(TestProgId, TestProgId);
+            master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            string? capturedSelectFields = null;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = fields =>
+                {
+                    capturedSelectFields = fields;
+                    return new GetListResponse { Table = null };
+                },
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+
+            await view.InitializeAsync();
+
+            Assert.Equal("sys_rowid", capturedSelectFields);
+        }
+
+        [Fact]
+        [DisplayName("GetListAsync 拋出例外時 InitializeAsync 觸發 ErrorOccurred")]
+        public async Task InitializeAsync_GetListThrows_ErrorOccurred()
+        {
+            var schema = BuildEmployeeSchema();
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => throw new InvalidOperationException("list load failed"),
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+
+            Exception? captured = null;
+            view.ErrorOccurred += (_, ex) => captured = ex;
+
+            await view.InitializeAsync();
+
+            Assert.NotNull(captured);
+            Assert.Equal("list load failed", captured!.Message);
+        }
+
+        [Fact]
+        [DisplayName("GetDataAsync 拋出例外時 OnRowSelectedAsync 觸發 ErrorOccurred")]
+        public async Task OnRowSelectedAsync_LoadThrows_ErrorOccurred()
+        {
+            var schema = BuildEmployeeSchema();
+            var rowId = Guid.NewGuid();
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "X") },
+                GetDataHandler = _ => throw new InvalidOperationException("load failed"),
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+            await view.InitializeAsync();
+
+            Exception? captured = null;
+            view.ErrorOccurred += (_, ex) => captured = ex;
+
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+
+            Assert.NotNull(captured);
+            Assert.Equal("load failed", captured!.Message);
+        }
+
         /// <summary>
         /// Overrides the <c>Resolve*</c> hooks so tests never read the process-wide
         /// <c>ClientInfo</c> statics; the unused <c>ResolveFormConnector</c> throws to
