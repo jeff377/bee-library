@@ -341,7 +341,11 @@ namespace Bee.UI.Avalonia.DataObjects
             IsLoading = true;
             try
             {
-                var response = await connector.GetDataAsync(rowId).ConfigureAwait(false);
+                // NOTE: No ConfigureAwait(false) here or in the other CRUD methods —
+                // the continuation mutates the DataSet and raises change events that
+                // Avalonia controls consume, and those are thread-affine, so it must
+                // resume on the captured UI context.
+                var response = await connector.GetDataAsync(rowId);
                 if (response.DataSet is null)
                     throw new InvalidOperationException(
                         $"No master row found for {SysFields.RowId} = {rowId}.");
@@ -370,7 +374,7 @@ namespace Bee.UI.Avalonia.DataObjects
             IsLoading = true;
             try
             {
-                var response = await connector.SaveAsync(DataSet).ConfigureAwait(false);
+                var response = await connector.SaveAsync(DataSet);
                 if (response.DataSet is not null)
                     ReplaceDataSet(response.DataSet);
                 IsDirty = false;
@@ -398,7 +402,7 @@ namespace Bee.UI.Avalonia.DataObjects
             IsLoading = true;
             try
             {
-                await connector.DeleteAsync(rowId).ConfigureAwait(false);
+                await connector.DeleteAsync(rowId);
                 ReplaceDataSet(BuildEmptyDataSet(_schema));
                 IsDirty = false;
             }
@@ -424,7 +428,7 @@ namespace Bee.UI.Avalonia.DataObjects
             IsLoading = true;
             try
             {
-                var response = await connector.GetNewDataAsync().ConfigureAwait(false);
+                var response = await connector.GetNewDataAsync();
                 if (response.DataSet is null)
                     throw new InvalidOperationException(
                         "GetNewData returned a null DataSet; cannot initialize a new master row.");
