@@ -548,7 +548,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             editor.IsChecked = true;
 
-            Assert.Equal(true, table.Rows[0]["ok"]);
+            Assert.True((bool)table.Rows[0]["ok"]);
         }
 
         [Fact]
