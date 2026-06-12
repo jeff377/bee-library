@@ -626,7 +626,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 return checkBox;
             }
 
-            if (!canEdit || rowView is null)
+            if (!canEdit)
             {
                 return new TextBlock
                 {
