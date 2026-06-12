@@ -200,6 +200,22 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
+        /// Gets or sets the name of the local field whose value is displayed in place of
+        /// this field's bound value. Used by lookup editors: the field itself stores a
+        /// row identifier (Guid), while the editor shows the mapped display value
+        /// (e.g. <c>ref_owner_dept_name</c>).
+        /// </summary>
+        /// <remarks>
+        /// When empty, layout generation falls back to the
+        /// <see cref="RelationFieldMappings"/> entry whose source field is <c>sys_name</c>.
+        /// </remarks>
+        [XmlAttribute]
+        [Category("Relation")]
+        [Description("Local field whose value is displayed in place of the bound value (lookup editors).")]
+        [DefaultValue("")]
+        public string DisplayField { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets a value indicating whether this field is visible.
         /// </summary>
         [Category(PropertyCategories.Layout)]
@@ -310,6 +326,7 @@ namespace Bee.Definition.Forms
                 NumberFormat = NumberFormat,
                 RelationProgId = RelationProgId,
                 LookupProgId = LookupProgId,
+                DisplayField = DisplayField,
                 Visible = Visible,
                 Width = Width,
                 LangEnumName = LangEnumName,

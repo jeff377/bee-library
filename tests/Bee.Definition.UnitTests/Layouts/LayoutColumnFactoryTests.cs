@@ -105,5 +105,124 @@ namespace Bee.Definition.UnitTests.Layouts
 
             Assert.Equal(0, column.Width);
         }
+
+        [Fact]
+        [DisplayName("ResolveControlType Auto + RelationProgId 應解析為 ButtonEdit")]
+        public void ResolveControlType_AutoWithRelation_ProducesButtonEdit()
+        {
+            var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
+            {
+                RelationProgId = "Customer",
+            };
+
+            var actual = LayoutColumnFactory.ResolveControlType(formField);
+
+            Assert.Equal(ControlType.ButtonEdit, actual);
+        }
+
+        [Fact]
+        [DisplayName("ResolveControlType 顯式 ControlType 應優先於 RelationProgId 推導")]
+        public void ResolveControlType_ExplicitTypeWithRelation_ExplicitWins()
+        {
+            var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
+            {
+                ControlType = ControlType.DropDownEdit,
+                RelationProgId = "Customer",
+            };
+
+            var actual = LayoutColumnFactory.ResolveControlType(formField);
+
+            Assert.Equal(ControlType.DropDownEdit, actual);
+        }
+
+        [Fact]
+        [DisplayName("ResolveDisplayField 顯式 DisplayField 應優先於慣例推導")]
+        public void ResolveDisplayField_Explicit_WinsOverConvention()
+        {
+            var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
+            {
+                RelationProgId = "Customer",
+                DisplayField = "ref_customer_id",
+            };
+            formField.RelationFieldMappings!.Add("sys_name", "ref_customer_name");
+
+            var actual = LayoutColumnFactory.ResolveDisplayField(formField);
+
+            Assert.Equal("ref_customer_id", actual);
+        }
+
+        [Fact]
+        [DisplayName("ResolveDisplayField 未設時應取 SourceField=sys_name 的 DestinationField")]
+        public void ResolveDisplayField_Convention_UsesSysNameMapping()
+        {
+            var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
+            {
+                RelationProgId = "Customer",
+            };
+            formField.RelationFieldMappings!.Add("sys_id", "ref_customer_id");
+            formField.RelationFieldMappings!.Add("sys_name", "ref_customer_name");
+
+            var actual = LayoutColumnFactory.ResolveDisplayField(formField);
+
+            Assert.Equal("ref_customer_name", actual);
+        }
+
+        [Fact]
+        [DisplayName("ResolveDisplayField 無 sys_name mapping 時應回傳空字串")]
+        public void ResolveDisplayField_NoSysNameMapping_ReturnsEmpty()
+        {
+            var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
+            {
+                RelationProgId = "Customer",
+            };
+            formField.RelationFieldMappings!.Add("sys_id", "ref_customer_id");
+
+            var actual = LayoutColumnFactory.ResolveDisplayField(formField);
+
+            Assert.Equal(string.Empty, actual);
+        }
+
+        [Fact]
+        [DisplayName("ResolveDisplayField 非 relation 欄位應回傳空字串")]
+        public void ResolveDisplayField_NonRelationField_ReturnsEmpty()
+        {
+            var formField = new FormField("amount", "金額", FieldDbType.Decimal);
+
+            var actual = LayoutColumnFactory.ResolveDisplayField(formField);
+
+            Assert.Equal(string.Empty, actual);
+        }
+
+        [Fact]
+        [DisplayName("ToField relation 欄位應帶 ButtonEdit 與慣例 DisplayField")]
+        public void ToField_RelationField_CarriesButtonEditAndDisplayField()
+        {
+            var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
+            {
+                RelationProgId = "Customer",
+            };
+            formField.RelationFieldMappings!.Add("sys_name", "ref_customer_name");
+
+            var field = LayoutColumnFactory.ToField(formField);
+
+            Assert.Equal(ControlType.ButtonEdit, field.ControlType);
+            Assert.Equal("ref_customer_name", field.DisplayField);
+        }
+
+        [Fact]
+        [DisplayName("ToColumn relation 欄位應帶 ButtonEdit 與慣例 DisplayField")]
+        public void ToColumn_RelationField_CarriesButtonEditAndDisplayField()
+        {
+            var formField = new FormField("product_rowid", "商品", FieldDbType.Guid)
+            {
+                RelationProgId = "Product",
+            };
+            formField.RelationFieldMappings!.Add("sys_name", "ref_product_name");
+
+            var column = LayoutColumnFactory.ToColumn(formField);
+
+            Assert.Equal(ControlType.ButtonEdit, column.ControlType);
+            Assert.Equal("ref_product_name", column.DisplayField);
+        }
     }
 }

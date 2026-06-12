@@ -118,6 +118,22 @@ namespace Bee.Definition.Forms
         public string ListFields { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the field collection string exposed to lookup queries, with
+        /// multiple fields separated by commas. Declares which fields this form returns
+        /// when other forms open it as a lookup source; the server enforces this set.
+        /// </summary>
+        /// <remarks>
+        /// When empty, lookup queries fall back to <c>sys_id</c> and <c>sys_name</c>
+        /// (skipping any that the master table does not define). The response always
+        /// includes <c>sys_rowid</c> regardless of this declaration.
+        /// </remarks>
+        [XmlAttribute]
+        [Category(PropertyCategories.Data)]
+        [Description("Field collection string exposed to lookup queries, with multiple fields separated by commas.")]
+        [DefaultValue("")]
+        public string LookupFields { get; set; } = string.Empty;
+
+        /// <summary>
         /// Gets or sets the permission model id that this form's main aggregate maps to.
         /// References a <c>PermissionModel.ModelId</c> in the permission registry; the
         /// backend method-level enforcement uses it to resolve the (model, action) to check.
@@ -197,6 +213,7 @@ namespace Bee.Definition.Forms
             {
                 CategoryId = CategoryId,
                 ListFields = ListFields,
+                LookupFields = LookupFields,
                 PermissionModelId = PermissionModelId,
             };
             if (_tables != null)
