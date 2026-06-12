@@ -123,7 +123,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             Unbind();
         }
 
-        private Control BuildContent(FormDataObject dataObject, LayoutGrid layout, DataRow row)
+        private StackPanel BuildContent(FormDataObject dataObject, LayoutGrid layout, DataRow row)
         {
             var grid = new Grid
             {
