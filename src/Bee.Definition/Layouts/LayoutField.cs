@@ -47,5 +47,16 @@ namespace Bee.Definition.Layouts
                 _columnSpan = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the form modes in which this field is editable. Combined
+        /// with <see cref="LayoutFieldBase.ReadOnly"/>, which forces read-only in
+        /// every mode regardless of these flags.
+        /// </summary>
+        [Category(PropertyCategories.Appearance)]
+        [XmlAttribute]
+        [Description("Form modes in which this field is editable.")]
+        [DefaultValue(FormEditModes.All)]
+        public FormEditModes AllowEditModes { get; set; } = FormEditModes.All;
     }
 }

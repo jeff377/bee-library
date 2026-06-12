@@ -18,6 +18,28 @@ namespace Bee.Definition.UnitTests.Layouts
             Assert.Equal(string.Empty, grid.TableName);
             Assert.Equal(string.Empty, grid.Caption);
             Assert.Equal(GridControlAllowActions.All, grid.AllowActions);
+            Assert.Equal(FormEditModes.All, grid.AllowEditModes);
+        }
+
+        [Fact]
+        [DisplayName("AllowEditModes 非預設值經 XML round-trip 還原；預設值不落檔")]
+        public void AllowEditModes_XmlRoundTrip_PreservesValueAndOmitsDefault()
+        {
+            var layout = new FormLayout();
+            var detail = new LayoutGrid("Orders", "訂單") { AllowEditModes = FormEditModes.Edit };
+            detail.Columns!.Add(new LayoutColumn { FieldName = "qty", Caption = "Qty" });
+            layout.Details!.Add(detail);
+            layout.Details.Add(new LayoutGrid("Notes", "備註"));
+
+            var xml = XmlCodec.Serialize(layout);
+            Assert.Contains("AllowEditModes=\"Edit\"", xml);
+            // The default (All) must not be written, so existing layout files stay untouched.
+            Assert.Single(xml.Split("AllowEditModes", StringSplitOptions.None).Skip(1));
+
+            var restored = XmlCodec.Deserialize<FormLayout>(xml);
+            Assert.NotNull(restored);
+            Assert.Equal(FormEditModes.Edit, restored!.Details![0].AllowEditModes);
+            Assert.Equal(FormEditModes.All, restored.Details[1].AllowEditModes);
         }
 
         [Fact]

@@ -63,6 +63,16 @@ namespace Bee.Definition.Layouts
         public GridControlAllowActions AllowActions { get; set; } = GridControlAllowActions.All;
 
         /// <summary>
+        /// Gets or sets the form modes in which this grid allows its editing
+        /// actions. Combined with <see cref="AllowActions"/>: an action is effective
+        /// only when its flag is granted and the current form mode is allowed here.
+        /// </summary>
+        [XmlAttribute]
+        [Description("Form modes in which this grid allows editing actions.")]
+        [DefaultValue(FormEditModes.All)]
+        public FormEditModes AllowEditModes { get; set; } = FormEditModes.All;
+
+        /// <summary>
         /// Gets the column collection.
         /// </summary>
         [Description("Column collection.")]
