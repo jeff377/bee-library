@@ -136,8 +136,8 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
-        [DisplayName("ResolveDisplayField 顯式 DisplayField 應優先於慣例推導")]
-        public void ResolveDisplayField_Explicit_WinsOverConvention()
+        [DisplayName("GetDisplayField 顯式 DisplayField 應優先於慣例推導")]
+        public void GetDisplayField_Explicit_WinsOverConvention()
         {
             var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
             {
@@ -146,14 +146,14 @@ namespace Bee.Definition.UnitTests.Layouts
             };
             formField.RelationFieldMappings!.Add("sys_name", "ref_customer_name");
 
-            var actual = LayoutColumnFactory.ResolveDisplayField(formField);
+            var actual = formField.GetDisplayField();
 
             Assert.Equal("ref_customer_id", actual);
         }
 
         [Fact]
-        [DisplayName("ResolveDisplayField 未設時應取 SourceField=sys_name 的 DestinationField")]
-        public void ResolveDisplayField_Convention_UsesSysNameMapping()
+        [DisplayName("GetDisplayField 未設時應取 SourceField=sys_name 的 DestinationField")]
+        public void GetDisplayField_Convention_UsesSysNameMapping()
         {
             var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
             {
@@ -162,14 +162,14 @@ namespace Bee.Definition.UnitTests.Layouts
             formField.RelationFieldMappings!.Add("sys_id", "ref_customer_id");
             formField.RelationFieldMappings!.Add("sys_name", "ref_customer_name");
 
-            var actual = LayoutColumnFactory.ResolveDisplayField(formField);
+            var actual = formField.GetDisplayField();
 
             Assert.Equal("ref_customer_name", actual);
         }
 
         [Fact]
-        [DisplayName("ResolveDisplayField 無 sys_name mapping 時應回傳空字串")]
-        public void ResolveDisplayField_NoSysNameMapping_ReturnsEmpty()
+        [DisplayName("GetDisplayField 無 sys_name mapping 時應回傳空字串")]
+        public void GetDisplayField_NoSysNameMapping_ReturnsEmpty()
         {
             var formField = new FormField("customer_rowid", "客戶", FieldDbType.Guid)
             {
@@ -177,18 +177,18 @@ namespace Bee.Definition.UnitTests.Layouts
             };
             formField.RelationFieldMappings!.Add("sys_id", "ref_customer_id");
 
-            var actual = LayoutColumnFactory.ResolveDisplayField(formField);
+            var actual = formField.GetDisplayField();
 
             Assert.Equal(string.Empty, actual);
         }
 
         [Fact]
-        [DisplayName("ResolveDisplayField 非 relation 欄位應回傳空字串")]
-        public void ResolveDisplayField_NonRelationField_ReturnsEmpty()
+        [DisplayName("GetDisplayField 非 relation 欄位應回傳空字串")]
+        public void GetDisplayField_NonRelationField_ReturnsEmpty()
         {
             var formField = new FormField("amount", "金額", FieldDbType.Decimal);
 
-            var actual = LayoutColumnFactory.ResolveDisplayField(formField);
+            var actual = formField.GetDisplayField();
 
             Assert.Equal(string.Empty, actual);
         }

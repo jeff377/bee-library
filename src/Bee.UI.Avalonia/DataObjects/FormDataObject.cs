@@ -326,6 +326,79 @@ namespace Bee.UI.Avalonia.DataObjects
 
 
         /// <summary>
+        /// Applies a lookup selection to the bound row: writes the selected row's
+        /// <c>sys_rowid</c> into <paramref name="field"/> and copies each mapped source
+        /// field to its local destination field. <see cref="FormField.LookupFieldMappings"/>
+        /// wins over <see cref="FormField.RelationFieldMappings"/> when both are declared.
+        /// </summary>
+        /// <remarks>
+        /// The locally written <c>ref_*</c> values are display-only between saves — a
+        /// reload re-derives them from the server-side relation JOIN, which stays the
+        /// single source of truth.
+        /// </remarks>
+        /// <param name="field">The relation field the lookup belongs to.</param>
+        /// <param name="selectedRow">The row picked in the lookup window.</param>
+        /// <param name="targetRow">The detail row to write to; <c>null</c> targets the master row.</param>
+        /// <exception cref="InvalidOperationException">
+        /// Thrown when <paramref name="selectedRow"/> lacks <c>sys_rowid</c> or a mapped
+        /// source field — the mapping must stay within the target form's lookup field set.
+        /// </exception>
+        public void ApplyLookupSelection(FormField field, DataRow selectedRow, DataRow? targetRow = null)
+        {
+            ArgumentNullException.ThrowIfNull(field);
+            ArgumentNullException.ThrowIfNull(selectedRow);
+
+            if (!selectedRow.Table.Columns.Contains(SysFields.RowId))
+                throw new InvalidOperationException("The lookup selection is missing the sys_rowid column.");
+
+            SetLookupField(targetRow, field.FieldName, FormatForBinding(selectedRow[SysFields.RowId]));
+
+            foreach (var mapping in ResolveLookupMappings(field))
+            {
+                // A silently skipped mapping would leave stale display values behind,
+                // so a source field outside the lookup result is a hard error.
+                if (!selectedRow.Table.Columns.Contains(mapping.SourceField))
+                    throw new InvalidOperationException(
+                        $"Lookup source field '{mapping.SourceField}' is not in the lookup result; " +
+                        "declare it in the target form's LookupFields.");
+                SetLookupField(targetRow, mapping.DestinationField, FormatForBinding(selectedRow[mapping.SourceField]));
+            }
+        }
+
+        /// <summary>
+        /// Clears a lookup selection: resets <paramref name="field"/> and every mapped
+        /// destination field to the column default (empty input semantics of
+        /// <see cref="SetField(string, string?)"/>).
+        /// </summary>
+        /// <param name="field">The relation field the lookup belongs to.</param>
+        /// <param name="targetRow">The detail row to write to; <c>null</c> targets the master row.</param>
+        public void ClearLookupSelection(FormField field, DataRow? targetRow = null)
+        {
+            ArgumentNullException.ThrowIfNull(field);
+
+            SetLookupField(targetRow, field.FieldName, null);
+            foreach (var mapping in ResolveLookupMappings(field))
+                SetLookupField(targetRow, mapping.DestinationField, null);
+        }
+
+        private void SetLookupField(DataRow? targetRow, string fieldName, string? value)
+        {
+            if (targetRow is not null)
+                SetField(targetRow, fieldName, value);
+            else
+                SetField(fieldName, value);
+        }
+
+        private static IEnumerable<FieldMapping> ResolveLookupMappings(FormField field)
+        {
+            if (field.LookupFieldMappings is { Count: > 0 } lookupMappings)
+                return lookupMappings;
+            if (field.RelationFieldMappings is { Count: > 0 } relationMappings)
+                return relationMappings;
+            return [];
+        }
+
+        /// <summary>
         /// Loads the master row (and its details) identified by <paramref name="rowId"/>
         /// from the backend BO and replaces the local <see cref="DataSet"/>.
         /// </summary>

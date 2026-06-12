@@ -7,8 +7,8 @@
 | 1 | 定義層：`DisplayField`、`LookupFields` 屬性 + `ControlType.Auto` 對 Relation 欄位解析為 ButtonEdit | ✅ 已完成（2026-06-12） |
 | 2 | API/BO 層：`GetLookup` 專用方法（wire action + BO + Client connector，含 BO 業務過濾覆寫點） | ✅ 已完成（2026-06-12） |
 | 3 | `LookupDialog` 元件：以 `GetLookupAsync` 取數、搜尋、分頁、單選回傳 | ✅ 已完成（2026-06-12） |
-| 4 | 主表欄位接線：ButtonClick → 開窗 → mapping 寫回 FormDataObject（含顯示值與清空） | 📝 待做 |
-| 5 | 明細 grid EditForm 模式：RowEditDialog / RowEditPanel 內的 lookup | 📝 待做 |
+| 4 | 主表欄位接線：ButtonClick → 開窗 → mapping 寫回 FormDataObject（含顯示值與清空） | ✅ 已完成（2026-06-12） |
+| 5 | 明細 grid EditForm 模式：RowEditDialog / RowEditPanel 內的 lookup | ✅ 已完成（2026-06-12，UI 動線待使用者自測） |
 | 6 | 明細 grid InCell 模式：ButtonEdit cell（ADR-021 click-to-swap 管線） | 📝 待做 |
 | 7 | 測試補齊 + samples 接線（Project lookup 範例進 samples/Define） | 📝 待做 |
 

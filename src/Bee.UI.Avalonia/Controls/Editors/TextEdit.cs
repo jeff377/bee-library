@@ -92,10 +92,17 @@ namespace Bee.UI.Avalonia.Controls.Editors
         }
 
         /// <inheritdoc />
-        public void SetControlState(SingleFormMode formMode)
+        public virtual void SetControlState(SingleFormMode formMode)
         {
             IsReadOnly = !_binder.AllowsEdit(formMode);
         }
+
+        /// <summary>
+        /// Whether a <see cref="TextBox.Text"/> change writes back to the bound field.
+        /// Lookup editors display a different field than the one they bind, so they
+        /// suppress the write-back (the lookup flow writes through the data object).
+        /// </summary>
+        protected virtual bool ShouldWriteBackText => true;
 
         /// <inheritdoc />
         protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
@@ -104,7 +111,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             // `TextChanged` is not raised reliably for programmatic writes, so the
             // write-back hooks the property change instead; the binder's suppression
             // flag keeps source-driven refreshes from echoing back.
-            if (change.Property == TextProperty)
+            if (change.Property == TextProperty && ShouldWriteBackText)
                 _binder.WriteBack(Text);
         }
 

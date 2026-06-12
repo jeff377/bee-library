@@ -18,7 +18,7 @@ namespace Bee.Definition.Layouts
             FieldName = field.FieldName,
             Caption = field.Caption,
             ControlType = ResolveControlType(field),
-            DisplayField = ResolveDisplayField(field),
+            DisplayField = field.GetDisplayField(),
             DisplayFormat = field.DisplayFormat,
             NumberFormat = field.NumberFormat,
         };
@@ -31,7 +31,7 @@ namespace Bee.Definition.Layouts
             FieldName = field.FieldName,
             Caption = field.Caption,
             ControlType = ResolveControlType(field),
-            DisplayField = ResolveDisplayField(field),
+            DisplayField = field.GetDisplayField(),
             Width = field.Width,
             DisplayFormat = field.DisplayFormat,
             NumberFormat = field.NumberFormat,
@@ -61,21 +61,5 @@ namespace Bee.Definition.Layouts
                 _ => ControlType.TextEdit,
             };
 
-        /// <summary>
-        /// Resolves the display field for the given form field. An explicit
-        /// <see cref="FormField.DisplayField"/> wins; relation fields fall back to the
-        /// <see cref="FormField.RelationFieldMappings"/> entry whose source field is
-        /// <c>sys_name</c>. Returns an empty string when no display field applies.
-        /// </summary>
-        public static string ResolveDisplayField(FormField field)
-        {
-            if (StringUtilities.IsNotEmpty(field.DisplayField))
-                return field.DisplayField;
-            if (StringUtilities.IsEmpty(field.RelationProgId))
-                return string.Empty;
-            var mapping = field.RelationFieldMappings?.FirstOrDefault(
-                m => StringUtilities.IsEquals(m.SourceField, SysFields.Name));
-            return mapping?.DestinationField ?? string.Empty;
-        }
     }
 }

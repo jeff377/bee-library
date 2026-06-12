@@ -1,3 +1,4 @@
+using Bee.Base;
 using Bee.Base.Attributes;
 using Bee.Base.Data;
 using Bee.Base.Serialization;
@@ -292,6 +293,21 @@ namespace Bee.Definition.Forms
                 if (Collection == null) { return null; }
                 return (Collection as FormFieldCollection)?.Owner as FormTable;
             }
+        }
+
+        /// <summary>
+        /// Resolves the effective display field for lookup editors: an explicit
+        /// <see cref="DisplayField"/> wins; relation fields fall back to the
+        /// <see cref="RelationFieldMappings"/> entry whose source field is
+        /// <c>sys_name</c>. Returns an empty string when no display field applies.
+        /// </summary>
+        public string GetDisplayField()
+        {
+            if (StringUtilities.IsNotEmpty(DisplayField)) { return DisplayField; }
+            if (StringUtilities.IsEmpty(RelationProgId)) { return string.Empty; }
+            var mapping = _relationFieldMappings?.FirstOrDefault(
+                m => StringUtilities.IsEquals(m.SourceField, SysFields.Name));
+            return mapping?.DestinationField ?? string.Empty;
         }
 
         /// <summary>
