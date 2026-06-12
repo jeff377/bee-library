@@ -395,7 +395,7 @@ namespace Bee.UI.Avalonia.DataObjects
                 return lookupMappings;
             if (field.RelationFieldMappings is { Count: > 0 } relationMappings)
                 return relationMappings;
-            return new FieldMappingCollection();
+            return [];
         }
 
         /// <summary>
