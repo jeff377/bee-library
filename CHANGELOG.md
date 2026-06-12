@@ -4,6 +4,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.9.0]
+
+> Bee.NET remains in pre-stable evolution. The theme of this release is "Avalonia editable forms land in full": a field editor suite mapped 1:1 to `ControlType`, a new `GridControl` with in-cell and dialog-based row editing, a form-mode lifecycle (`SingleFormBase` broadcasting `FormMode` to the whole control tree), and a definition-layer `FormEditModes` setting for per-mode editability. The release contains **one breaking change**, confined to the Avalonia family: `DynamicGrid` was removed from `Bee.UI.Avalonia` (its Blazor / MAUI counterparts are unaffected). It also ships a **security upgrade** of the MessagePack dependency.
+
+### Breaking Changes
+
+- **`Bee.UI.Avalonia` `DynamicGrid` removed — `FormView` list rendering moves to `GridControl`** — Row-presentation logic now has a single home in `GridControl`. The Blazor and MAUI `DynamicGrid` controls are unaffected. Note that `GridControl` is a `ContentControl` composite (built-in toolbar + inner grid), not a `DataGrid` subclass: code that used `DataGrid` members directly (`Columns` / `ItemsSource` / `IsReadOnly` / ...) should go through `GridControl.InnerGrid`.
+
+### Security
+
+- **MessagePack 3.1.4 → 3.1.7 (GHSA-hv8m-jj95-wg3x)** — LZ4 decompression could throw an `AccessViolationException` on malicious input (NU1903 high severity). 3.1.7 is the official patched release; all packages that transitively reference MessagePack pick it up.
+
+### Added
+
+- **Field editor suite (`Bee.UI.Avalonia`)** — Seven editors mapped 1:1 to `ControlType` (`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`), each inheriting the native Avalonia control with `StyleKeyOverride` so the active theme keeps applying. A shared binding state machine lives in `FieldEditorBinder` (explicit `Bind`, ambient auto-wiring, event-driven refresh, echo protection); `FormScope` provides inheritable `DataObject` / `FormMode` attached properties; `FieldEditorFactory` creates editors by `ControlType`. `DynamicForm` now renders through this suite instead of an internal switch-case.
+- **`GridControl` — the `LayoutGrid`-driven grid** — A composite control (built-in icon toolbar + inner `DataGrid` exposed as `InnerGrid`) with two explicit binding modes (`FormDataObject` detail table by `TableName`, or a raw `DataTable` for list views) plus `FormScope` ambient binding. Supports in-cell editing per `LayoutColumn.ControlType` (popup-style columns use click-to-swap presentation — see [ADR-021](docs/adr/adr-021-avalonia-datagrid-editing-strategy.md)), add / delete rows via `AllowActions`, and a single `AllowEdit` switch for host control. `DynamicForm` now renders `FormLayout.Details` as caption + bound `GridControl` sections.
+- **Row editing: `GridEditMode` (`InCell` / `EditForm`) + `RowEditPanel` / `RowEditDialog`** — A UI-layer edit-mode property (zero definition-layer changes): `EditForm` mode keeps the grid read-only and opens a modal row dialog on double-click or the toolbar Edit button. Backed by a row-edit protocol on `FormDataObject` (`BeginRowEdit` / `CommitRowEdit` / `CancelRowEdit`) with ADO.NET `BeginEdit` semantics pinned by tests.
+- **`SingleFormBase` — form-mode owner and broadcaster** — A base class for single-record forms that owns `FormMode` (default `View`) and broadcasts changes to every editor and grid in its subtree. `FormView` now inherits it and gains a mode lifecycle: row selection loads into read-only `View`, the Edit button enters `Edit`, New enters `Add`, and a successful Save / Delete returns to `View`.
+- **`FormEditModes` (`Bee.Definition`)** — A `[Flags]` enum (`None` / `Add` / `Edit` / `All`; `View` is never editable so it is not a flag) plus `LayoutField.AllowEditModes` / `LayoutGrid.AllowEditModes` (default `All`). Lets a field express "editable when adding, locked when editing" (e.g. a document-number field) and lets a grid restrict editing to specific form modes. AND-composed with the existing `ReadOnly` / `AllowActions`; defaults are not serialised, so existing layout files are unaffected.
+- **`FormDataObject` change-notification events** — `FieldValueChanged` / `DataSetReplaced` events, with an ADO.NET event bridge so every write path (`SetField`, grid cell edits, direct `DataRow` writes) publishes uniformly; plus row-overload `GetField` / `SetField` access.
+- **`samples/Avalonia.Editors.Gallery`** — Side-by-side comparison of native controls vs the inherited field editors per `ControlType`, in-cell editing across all column `ControlType`s, and an `EditForm`-mode comparison section; doubles as the usage example for `FormScope` ambient binding.
+- **DefineEditor tool improvements** — Switched to the Semi.Avalonia theme, added a VS Code-style Welcome tab, tab dirty markers + tab context menu (close / close others / close right / close saved / close all) + Save All, an unsaved-changes prompt when closing dirty tabs, and macOS menu polish (Open Recent, Close Tab, Hide / Hide Others / Show All).
+
+### Changed
+
+- **`FormView` now loads records in read-only `View` mode** — Previously a loaded record was immediately editable; now the Edit button must be pressed first. Toolbar enablement follows the current mode.
+
+### Fixed
+
+- **`DataTable` deserialization broken by the MessagePack 3.1.5+ built-in blocklist** — MessagePack's new blocklist treats `System.Data.DataTable` as a BinaryFormatter gadget and rejects it during typeless deserialization, which broke `ParameterCollection` wire transfers carrying a `DataTable`. The framework's `DataTable` formatter rebuilds tables column-by-column and never touches BinaryFormatter, so that attack surface does not exist here. `SafeMessagePackSerializerOptions` now lets the fixed framework trust list take precedence; all other types remain double-gated by the built-in blocklist plus the application namespace whitelist.
+- **`FormDataObject` async CRUD continuations now resume on the UI thread** — `ConfigureAwait(false)` left `LoadAsync` / `SaveAsync` / `DeleteAsync` / `NewAsync` continuations on thread-pool threads, so the change events drove thread-affine Avalonia controls off the UI thread ("The calling thread cannot access this object"), breaking the post-Save refresh.
+- **`DynamicForm` `DateEdit` threw on machines in a non-UTC time zone** — Rendering an initial value built a `DateTimeOffset` with a zero offset from a `Kind=Local` value, failing the whole form render. Caught by the new `Bee.UI.Avalonia.UnitTests` project.
+- **`ComboBox` selection box did not display the selected value** — A recycling `FuncDataTemplate` handed the same `TextBlock` instance to both the dropdown item and the selection box; `DropDownEdit` and the in-cell `ComboBox` now use `DisplayMemberBinding`.
+- **Grid rows now re-realize after add / delete** — Avalonia's `DataGrid` does not observe `DataView` changes, so a deleted row stayed visible; `GridControl` refreshes rows itself after `AddRow` / `DeleteSelectedRow`.
+- **`ButtonEdit` read-only state now disables the embedded lookup button** — Previously only `IsReadOnly` was set and the button stayed clickable (the lookup flow writes mapped fields back). The embedded icon was also restyled to a DatePicker-style chromeless `PathIcon` that adapts to light / dark themes.
+- **Demo backend now materializes `st_cache_notify`** — The samples backend creates the table at startup, stopping `CacheNotifyPoller` from logging a warning every polling cycle.
+
 ## [4.8.0]
 
 > Bee.NET remains in pre-stable evolution. The theme of this release is "framework default definitions become first-class": the `st_*` system table schemas, framework-shipped `Department` / `Employee` forms, and bootstrap settings templates now ship as embedded resources inside `Bee.Definition.dll`, accessible via the new `Bee.Definition.Defaults` public API. A new `Bee.Cli` dotnet tool (`dotnet bee defines materialize ...`) and a DefineEditor auto-materialise hook turn this into a one-command first-time setup. The release contains **one breaking change**: the framework organisation tables `ft_department` / `ft_employee` were renamed to `st_department` / `st_employee` to align with the rest of the `st_*` namespace.
