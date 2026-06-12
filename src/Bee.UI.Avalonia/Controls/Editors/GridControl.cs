@@ -6,6 +6,7 @@ using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Bee.Definition;
+using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.DataObjects;
 
@@ -253,8 +254,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
             ArgumentNullException.ThrowIfNull(layout);
             _layout = layout;
             TableName = layout.TableName;
-            RebuildColumns();
+            // Bind before building columns: lookup-column detection resolves the
+            // FormField metadata through the bound data object.
             _binder.BindExplicit(dataObject);
+            RebuildColumns();
             RefreshFromDataObject();
         }
 
@@ -551,7 +554,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 IsReadOnly = column.ReadOnly,
             };
 
-            if (IsAlwaysOnEditor(column.ControlType))
+            if (TryGetLookupFormField(column) is { } lookupField)
+            {
+                // The lookup editor is a modal dialog: it takes focus out of the cell,
+                // which would tear a CellEditingTemplate down mid-edit, so lookup
+                // columns bypass the DataGrid edit pipeline entirely and open the
+                // dialog from the display template instead.
+                // See docs/adr/adr-021-avalonia-datagrid-editing-strategy.md.
+                templateColumn.IsReadOnly = true;
+                templateColumn.CellTemplate = new FuncDataTemplate<DataRowView>(
+                    (row, _) => BuildLookupCell(row, column, lookupField),
+                    supportsRecycling: false);
+            }
+            else if (IsAlwaysOnEditor(column.ControlType))
             {
                 // Popup-based editors (ComboBox dropdown, DatePicker flyout) break
                 // inside the DataGrid edit pipeline: opening the popup moves focus out
@@ -566,10 +581,15 @@ namespace Bee.UI.Avalonia.Controls.Editors
             }
             else
             {
+                // List-mode lookup columns (no data object → no lookup flow) still
+                // render the display field instead of the raw row id.
+                var textField = string.IsNullOrEmpty(column.DisplayField)
+                    ? fieldName
+                    : column.DisplayField;
                 templateColumn.CellTemplate = new FuncDataTemplate<DataRowView>(
                     (row, _) => new TextBlock
                     {
-                        Text = FormatCell(row, fieldName, displayFormat, numberFormat),
+                        Text = FormatCell(row, textField, displayFormat, numberFormat),
                         Margin = new Thickness(8, 4),
                     },
                     supportsRecycling: true);
@@ -597,6 +617,86 @@ namespace Bee.UI.Avalonia.Controls.Editors
         private static bool IsAlwaysOnEditor(ControlType controlType)
             => controlType is ControlType.CheckEdit or ControlType.DropDownEdit
                 or ControlType.DateEdit or ControlType.YearMonthEdit;
+
+        /// <summary>
+        /// Resolves the relation metadata for a lookup column: a
+        /// <see cref="ControlType.ButtonEdit"/> column whose schema field carries
+        /// <c>RelationProgId</c> on the bound table. Returns <c>null</c> in list mode
+        /// (no data object) — lookup editing needs the data object write path.
+        /// </summary>
+        private FormField? TryGetLookupFormField(LayoutColumn column)
+        {
+            if (column.ControlType != ControlType.ButtonEdit) return null;
+            var dataObject = _binder.DataObject;
+            var tableName = TableName;
+            if (dataObject is null || string.IsNullOrEmpty(tableName)) return null;
+            var field = dataObject.GetFormField(tableName, column.FieldName);
+            return field is not null && !string.IsNullOrEmpty(field.RelationProgId) ? field : null;
+        }
+
+        // Lookup cells rest as the display-field text (empty when no display field
+        // resolves — never the raw Guid); a click on an editable cell opens the
+        // lookup dialog and the selection writes back through the data object.
+        private Control BuildLookupCell(DataRowView? rowView, LayoutColumn column, FormField lookupField)
+        {
+            var displayField = string.IsNullOrEmpty(column.DisplayField)
+                ? lookupField.GetDisplayField()
+                : column.DisplayField;
+            var text = new TextBlock
+            {
+                Text = string.IsNullOrEmpty(displayField)
+                    ? string.Empty
+                    : FormatCell(rowView, displayField, column.DisplayFormat, column.NumberFormat),
+                Margin = new Thickness(8, 4),
+                VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
+            };
+
+            var canEdit = !_grid.IsReadOnly && !column.ReadOnly && rowView is not null;
+            if (!canEdit) return text;
+
+            // Transparent (not null) background: a null background excludes the empty
+            // area beside the text from hit-testing.
+            var host = new Border
+            {
+                Background = Brushes.Transparent,
+                Child = text,
+            };
+            host.PointerPressed += async (_, e) =>
+            {
+                e.Handled = true;
+                // Only one inline editor at a time: opening the dialog closes a
+                // lingering editor in another cell.
+                _endActiveInlineEdit?.Invoke();
+                await OpenLookupCellAsync(rowView!.Row, lookupField).ConfigureAwait(true);
+            };
+            return host;
+        }
+
+        private async Task OpenLookupCellAsync(DataRow row, FormField lookupField)
+        {
+            var dataObject = _binder.DataObject;
+            if (dataObject is null) return;
+
+            var progId = string.IsNullOrEmpty(lookupField.LookupProgId)
+                ? lookupField.RelationProgId
+                : lookupField.LookupProgId;
+            try
+            {
+                var selected = await LookupDialog.ShowAsync(this, progId).ConfigureAwait(true);
+                if (selected is null) return;
+                dataObject.ApplyLookupSelection(lookupField, selected, row);
+                // Realized text cells capture their value at template build;
+                // re-realize and scroll back to the affected row (same as a
+                // committed edit form).
+                RefreshAndFocusRow(row);
+            }
+            catch (Exception ex)
+            {
+                // UI boundary: an async pointer handler must not crash the app;
+                // surface the failure as the grid's tooltip.
+                ToolTip.SetTip(this, ex.Message);
+            }
+        }
 
         // Display template for the popup-based editor columns. Boolean cells render a
         // centred checkbox in every state (a disabled checkbox reads better than
