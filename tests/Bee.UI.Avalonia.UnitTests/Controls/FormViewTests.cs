@@ -347,19 +347,20 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
 
         [Fact]
         [DisplayName("GetListAsync 拋出例外時 InitializeAsync 觸發 ErrorOccurred")]
-        public async Task InitializeAsync_GetListThrows_ErrorOccurred()
+        public void InitializeAsync_GetListThrows_ErrorOccurred()
         {
             var schema = BuildEmployeeSchema();
             var connector = new FakeFormApiConnector
             {
                 GetListHandler = _ => throw new InvalidOperationException("list load failed"),
             };
-            var view = new TestFormView { Schema = schema, FormConnector = connector };
+            var view = new TestFormView();
+            view.Schema = schema;
 
             Exception? captured = null;
             view.ErrorOccurred += (_, ex) => captured = ex;
 
-            await view.InitializeAsync();
+            view.FormConnector = connector;
 
             Assert.NotNull(captured);
             Assert.Equal("list load failed", captured!.Message);

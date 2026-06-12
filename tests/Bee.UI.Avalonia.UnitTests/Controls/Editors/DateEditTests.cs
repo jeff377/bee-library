@@ -102,14 +102,12 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         [InlineData(null)]
         [InlineData("")]
         [InlineData("not-a-date")]
-        [DisplayName("無效或空日期字串 Bind 後 SelectedDate 為 null")]
-        public void Bind_InvalidOrEmptyDateString_LeavesSelectedDateNull(string? invalidDate)
+        [DisplayName("無效或空字串設入 FieldValue 後 SelectedDate 為 null")]
+        public void FieldValue_InvalidOrEmptyDateString_LeavesSelectedDateNull(string? invalidDate)
         {
-            var dataObject = BuildDataObject();
-            dataObject.SetField("hire_date", invalidDate ?? string.Empty);
             var editor = new DateEdit();
 
-            editor.Bind(dataObject, "hire_date");
+            editor.FieldValue = invalidDate;
 
             Assert.Null(editor.SelectedDate);
         }
