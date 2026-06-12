@@ -779,6 +779,51 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             Assert.Equal(string.Empty, nullRow);
         }
 
+        [Fact]
+        [DisplayName("Bind(layout, rows) 覆蓋既有 detail 綁定後不拋例外且欄位重建")]
+        public void Bind_ListModeAfterDetailBind_UnsubscribesAndRebindsCleanly()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            var exception = Record.Exception(() => grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows()));
+
+            Assert.Null(exception);
+            Assert.Equal(3, grid.InnerGrid.Columns.Count);
+        }
+
+        [Fact]
+        [DisplayName("Unbind 後不拋例外且格線保留 Layout 參照")]
+        public void Unbind_AfterDetailBind_DoesNotThrowAndRetainsLayout()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            var exception = Record.Exception(grid.Unbind);
+
+            Assert.Null(exception);
+            Assert.NotNull(grid.Layout);
+        }
+
+        [Fact]
+        [DisplayName("RefreshRows 不拋例外且保持 ItemsSource 非空")]
+        public void RefreshRows_DoesNotThrowAndMaintainsItemsSource()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            var exception = Record.Exception(grid.RefreshRows);
+
+            Assert.Null(exception);
+            Assert.NotNull(grid.InnerGrid.ItemsSource);
+        }
+
         /// <summary>
         /// Test double that bypasses the real JSON-RPC pipeline by overriding the
         /// virtual CRUD methods used here. Mirrors the fake in
