@@ -389,13 +389,13 @@ namespace Bee.UI.Avalonia.DataObjects
                 SetField(fieldName, value);
         }
 
-        private static IEnumerable<FieldMapping> ResolveLookupMappings(FormField field)
+        private static FieldMappingCollection ResolveLookupMappings(FormField field)
         {
             if (field.LookupFieldMappings is { Count: > 0 } lookupMappings)
                 return lookupMappings;
             if (field.RelationFieldMappings is { Count: > 0 } relationMappings)
                 return relationMappings;
-            return [];
+            return new FieldMappingCollection();
         }
 
         /// <summary>
