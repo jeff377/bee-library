@@ -23,6 +23,7 @@ public static class DemoSchemaSeeder
     private const string DatabaseId = "common";
     private const string EmployeeTable = "ft_employee";
     private const string EmployeePhoneTable = "ft_employee_phone";
+    private const string CacheNotifyTable = "st_cache_notify";
 
     public static void EnsureSchemaAndSeed(IDefineAccess defineAccess, IDbConnectionManager connectionManager, IDbAccessFactory dbAccessFactory)
     {
@@ -39,6 +40,9 @@ public static class DemoSchemaSeeder
         var builder = new TableSchemaBuilder(DatabaseId, defineAccess, connectionManager);
         builder.Execute("common", EmployeeTable);
         builder.Execute("common", EmployeePhoneTable);
+        // Framework table polled by CacheNotifyPoller; schema materialized from
+        // Bee.Definition embedded defaults by DemoBackend.AddBeeBackend.
+        builder.Execute("common", CacheNotifyTable);
     }
 
     private static void SeedEmployees(IDbAccessFactory dbAccessFactory)

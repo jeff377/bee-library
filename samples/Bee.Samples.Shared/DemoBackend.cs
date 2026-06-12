@@ -43,6 +43,15 @@ public static class DemoBackend
 
         var paths = new PathOptions { DefinePath = ResolveDefinePath() };
 
+        // AddBeeFramework registers the cache-notify poller, which reads st_cache_notify.
+        // Its TableSchema ships as an embedded framework default in Bee.Definition, so
+        // materialize it into the demo DefinePath (skip-if-exists) for IDefineAccess to
+        // resolve; DemoSchemaSeeder then creates the table alongside the Employee tables.
+        Defaults.MaterializeTo(paths.DefinePath, new MaterializeOptions
+        {
+            Filter = rel => rel == "TableSchema/common/st_cache_notify.TableSchema.xml"
+        });
+
         // SQLite providers — keep dialect registration explicit so the framework does
         // not force every host to pull every ADO.NET driver.
         DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance);
