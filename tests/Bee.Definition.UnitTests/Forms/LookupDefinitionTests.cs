@@ -25,6 +25,7 @@ namespace Bee.Definition.UnitTests.Forms
                 LookupFields = "sys_id,sys_name,customer_grade",
             };
             var table = schema.Tables!.Add("Order", "訂單");
+            table.Fields!.Add(new FormField("sys_rowid", "唯一識別", FieldDbType.Guid));
             table.Fields!.Add(new FormField("sys_id", "單號", FieldDbType.String));
             table.Fields!.Add(new FormField("sys_name", "名稱", FieldDbType.String));
 
@@ -151,6 +152,22 @@ namespace Bee.Definition.UnitTests.Forms
 
             Assert.Single(fields);
             Assert.Equal("sys_id", fields[0].FieldName);
+        }
+
+        [Fact]
+        [DisplayName("GetLookupLayout 應含 lookup 欄位與隱藏 sys_rowid、不允許編輯動作")]
+        public void GetLookupLayout_BuildsSelectionOnlyGrid()
+        {
+            var schema = BuildSchema();
+
+            var layout = schema.GetLookupLayout();
+
+            Assert.Equal(GridControlAllowActions.None, layout.AllowActions);
+            Assert.Equal(3, layout.Columns!.Count);
+            Assert.Equal("sys_id", layout.Columns[0].FieldName);
+            Assert.Equal("sys_name", layout.Columns[1].FieldName);
+            Assert.Equal("sys_rowid", layout.Columns[2].FieldName);
+            Assert.False(layout.Columns[2].Visible);
         }
 
         [Fact]

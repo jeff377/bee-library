@@ -196,6 +196,13 @@ namespace Bee.Definition.Forms
             => ListLayoutGenerator.Generate(this);
 
         /// <summary>
+        /// Gets the lookup layout for this form schema: one column per resolved
+        /// lookup field plus a hidden <c>sys_rowid</c> column, for lookup picker windows.
+        /// </summary>
+        public LayoutGrid GetLookupLayout()
+            => LookupLayoutGenerator.Generate(this);
+
+        /// <summary>
         /// Resolves the lookup field set this form exposes to lookup queries.
         /// Fields declared in <see cref="LookupFields"/> win; an empty declaration
         /// falls back to <c>sys_id</c> and <c>sys_name</c>. Only fields defined on
