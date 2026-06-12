@@ -320,6 +320,45 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("SetControlState 依 LayoutGrid.AllowEditModes 限縮可編輯模式")]
+        public void SetControlState_AllowEditModes_NarrowsModes()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones") { AllowEditModes = FormEditModes.Add };
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            grid.SetControlState(SingleFormMode.Add);
+            Assert.True(grid.AllowEdit);
+            Assert.False(grid.InnerGrid.IsReadOnly);
+
+            grid.SetControlState(SingleFormMode.Edit);
+            Assert.False(grid.AllowEdit);
+            Assert.True(grid.InnerGrid.IsReadOnly);
+
+            grid.SetControlState(SingleFormMode.View);
+            Assert.False(grid.AllowEdit);
+        }
+
+        [Fact]
+        [DisplayName("AllowEditModes=None 時任何模式皆不可編輯")]
+        public void SetControlState_AllowEditModesNone_NeverEditable()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones") { AllowEditModes = FormEditModes.None };
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            grid.SetControlState(SingleFormMode.Add);
+            Assert.False(grid.AllowEdit);
+
+            grid.SetControlState(SingleFormMode.Edit);
+            Assert.False(grid.AllowEdit);
+        }
+
+        [Fact]
         [DisplayName("明細綁定時工具列隨 AllowEdit 顯示/隱藏")]
         public void AllowEdit_DetailBound_TogglesToolbarVisibility()
         {

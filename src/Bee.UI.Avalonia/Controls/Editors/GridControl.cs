@@ -316,7 +316,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <inheritdoc />
         public void SetControlState(SingleFormMode formMode)
         {
-            AllowEdit = formMode != SingleFormMode.View;
+            // The layout's AllowEditModes narrows which form modes may edit; without
+            // a layout the mode alone cannot grant editing.
+            AllowEdit = formMode != SingleFormMode.View
+                && (_layout?.AllowEditModes.Allows(formMode) ?? false);
             // The property handler skips unchanged values, but bind-time calls still
             // need the effective state re-evaluated against the (possibly new)
             // layout and data object.

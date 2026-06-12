@@ -1,6 +1,6 @@
 # 計畫：Layout 定義層支援依表單模式（FormMode）的可編輯設定
 
-**狀態：📝 擬定中**
+**狀態：✅ 已完成（2026-06-12）**
 
 > **前置作業**：
 > 1. [plan-avalonia-gridcontrol-toolbar.md](plan-avalonia-gridcontrol-toolbar.md) ——
@@ -12,9 +12,9 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | Bee.Definition：`FormEditModes` enum + `LayoutField` / `LayoutGrid` 新增 `AllowEditModes` + 測試 | 📝 待做 |
-| 2 | Bee.UI.Avalonia 欄位編輯器：`FieldEditorBinder.AllowsEdit` 合成 + 各編輯器 `SetControlState` + 測試 | 📝 待做 |
-| 3 | Bee.UI.Avalonia GridControl：`SetControlState` 納入 `AllowEditModes` + 測試 | 📝 待做 |
+| 1 | Bee.Definition：`FormEditModes` enum + `LayoutField` / `LayoutGrid` 新增 `AllowEditModes` + 測試 | ✅ 已完成（2026-06-12） |
+| 2 | Bee.UI.Avalonia 欄位編輯器：`FieldEditorBinder.AllowsEdit` 合成 + 各編輯器 `SetControlState` + 測試 | ✅ 已完成（2026-06-12） |
+| 3 | Bee.UI.Avalonia GridControl：`SetControlState` 納入 `AllowEditModes` + 測試 | ✅ 已完成（2026-06-12） |
 
 ## 背景
 
