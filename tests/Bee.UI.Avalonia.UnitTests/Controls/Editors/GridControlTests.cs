@@ -671,6 +671,66 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("Unbind 解除 DataObject 訂閱")]
+        public void Unbind_ClearsBoundDataObject()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            var binderField = typeof(GridControl).GetField("_binder", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var binder = binderField.GetValue(grid)!;
+            var dataObjectProp = binder.GetType().GetProperty("DataObject", BindingFlags.Public | BindingFlags.Instance)!;
+            Assert.Same(dataObject, dataObjectProp.GetValue(binder));
+
+            grid.Unbind();
+
+            Assert.Null(dataObjectProp.GetValue(binder));
+        }
+
+        [Fact]
+        [DisplayName("RefreshRows 重置並重建 ItemsSource")]
+        public void RefreshRows_ResetsAndRebuildsItemsSource()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+            Assert.NotNull(grid.InnerGrid.ItemsSource);
+
+            var exception = Record.Exception(grid.RefreshRows);
+
+            Assert.Null(exception);
+            Assert.NotNull(grid.InnerGrid.ItemsSource);
+        }
+
+        [Fact]
+        [DisplayName("RefreshFromDataObject 無 layout 時依 DataTable 欄位建立後備欄位")]
+        public void RefreshFromDataObject_WithNoLayout_BuildsFallbackColumns()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add("sys_id", "ID", FieldDbType.String);
+            master.Fields.Add("sys_name", "Name", FieldDbType.String);
+
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+
+            var grid = new GridControl();
+            grid.TableName = "Employee";
+
+            var binderField = typeof(GridControl).GetField("_binder", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            var binder = binderField.GetValue(grid)!;
+            var bindMethod = binder.GetType().GetMethod("BindExplicit", BindingFlags.Public | BindingFlags.Instance)!;
+            bindMethod.Invoke(binder, new object[] { dataObject });
+
+            var refreshMethod = typeof(GridControl).GetMethod("RefreshFromDataObject", BindingFlags.NonPublic | BindingFlags.Instance)!;
+            refreshMethod.Invoke(grid, null);
+
+            Assert.True(grid.InnerGrid.Columns.Count > 0);
+        }
+
+        [Fact]
         [DisplayName("TryGetRowId 接受 Guid 欄位、字串可解析的 Guid、DBNull 時回傳 false")]
         public void TryGetRowId_VariantInputs_Behaviour()
         {
