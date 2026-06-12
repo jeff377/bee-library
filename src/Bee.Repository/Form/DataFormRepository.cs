@@ -348,9 +348,13 @@ namespace Bee.Repository.Form
 
             foreach (FormField field in formTable.Fields)
             {
-                // Skip virtual and relation fields — they are not part of the
-                // underlying table and have no persistent column.
-                if (field.Type != FieldType.DbField)
+                // The skeleton mirrors the GetData SELECT shape: persistent columns
+                // plus relation display fields (`ref_*`), which the client lookup
+                // write-back fills locally — without the column the write is silently
+                // dropped and the picked value never shows on a new record. Virtual
+                // (calculated) fields stay excluded; the command builders filter by
+                // `FieldType.DbField`, so the extra columns never reach the SQL.
+                if (field.Type == FieldType.VirtualField)
                     continue;
                 dataTable.AddColumn(field.FieldName, field.DbType);
             }

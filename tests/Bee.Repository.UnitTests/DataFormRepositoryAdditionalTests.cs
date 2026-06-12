@@ -222,6 +222,29 @@ namespace Bee.Repository.UnitTests
         }
 
         [Fact]
+        [DisplayName("GetNewData 骨架應含 RelationField 欄位（lookup 寫回落地）、排除 VirtualField")]
+        public void GetNewData_Skeleton_IncludesRelationFieldsExcludesVirtual()
+        {
+            // 回歸：骨架缺 ref_* 欄位時，client 端 lookup 寫回會被 SetField 靜默跳過，
+            // 新增流程選取的顯示值永遠帶不回表單。
+            var schema = new FormSchema("Project", "Project");
+            var master = schema.Tables!.Add("Project", "Project");
+            master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            var deptField = master.Fields.Add("owner_dept_rowid", "Owner Department", FieldDbType.Guid);
+            deptField.RelationProgId = "Department";
+            master.Fields.Add(new FormField("ref_dept_name", "Department Name", FieldDbType.String, FieldType.RelationField));
+            master.Fields.Add(new FormField("calc_total", "Total", FieldDbType.Decimal, FieldType.VirtualField));
+
+            var repo = CreateRepository(schema);
+            var dataSet = repo.GetNewData();
+
+            var columns = dataSet.Tables["Project"]!.Columns;
+            Assert.True(columns.Contains("owner_dept_rowid"));
+            Assert.True(columns.Contains("ref_dept_name"));
+            Assert.False(columns.Contains("calc_total"));
+        }
+
+        [Fact]
         [DisplayName("GetNewData 欄位有字串預設值時 master 列應套用該預設值")]
         public void GetNewData_FieldWithStringDefaultValue_AppliesDefault()
         {
