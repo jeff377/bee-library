@@ -274,6 +274,51 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.Equal(SingleFormMode.View, view.FormMode);
         }
 
+        [Fact]
+        [DisplayName("Delete 成功後回到 View 模式並重新載入列表")]
+        public async Task OnDeleteClicked_DeletesRowAndReloadsListAndReturnsToView()
+        {
+            var rowId = Guid.NewGuid();
+            var deletedRowId = Guid.Empty;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "Alice") },
+                GetDataHandler = _ => new GetDataResponse { DataSet = BuildServerDataSet(rowId, "Alice") },
+                DeleteHandler = id => { deletedRowId = id; return new DeleteResponse(); },
+            };
+            var view = new TestFormView { Schema = BuildEmployeeSchema(), FormConnector = connector };
+            await view.InitializeAsync();
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+
+            await InvokePrivateAsync(view, "OnDeleteClickedAsync");
+
+            Assert.Equal(rowId, deletedRowId);
+            Assert.Equal(SingleFormMode.View, view.FormMode);
+        }
+
+        [Fact]
+        [DisplayName("列表無資料時顯示空白提示標籤")]
+        public async Task ReloadList_EmptyResponse_ShowsEmptyListLabel()
+        {
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = new DataTable(TestProgId) },
+            };
+            var view = new TestFormView { Schema = BuildEmployeeSchema(), FormConnector = connector };
+
+            await view.InitializeAsync();
+
+            var emptyLabel = GetFormViewField<TextBlock>(view, "_emptyListLabel");
+            Assert.True(emptyLabel.IsVisible);
+        }
+
+        private static T GetFormViewField<T>(object obj, string fieldName)
+        {
+            var field = typeof(FormView).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(field);
+            return (T)field!.GetValue(obj)!;
+        }
+
         /// <summary>
         /// Overrides the <c>Resolve*</c> hooks so tests never read the process-wide
         /// <c>ClientInfo</c> statics; the unused <c>ResolveFormConnector</c> throws to
