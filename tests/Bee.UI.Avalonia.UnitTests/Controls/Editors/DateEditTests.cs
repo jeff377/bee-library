@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
@@ -76,6 +77,25 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             editor.Bind(dataObject, "pay_month");
 
             Assert.Null(editor.SelectedDate);
+        }
+
+        [Fact]
+        [DisplayName("AllowEditModes=Add 時僅新增模式啟用")]
+        public void SetControlState_AllowEditModesAdd_OnlyAddEnabled()
+        {
+            var dataObject = BuildDataObject();
+            var field = new LayoutField { FieldName = "hire_date", AllowEditModes = FormEditModes.Add };
+            var editor = new DateEdit();
+            editor.Bind(dataObject, field);
+
+            editor.SetControlState(SingleFormMode.Add);
+            Assert.True(editor.IsEnabled);
+
+            editor.SetControlState(SingleFormMode.Edit);
+            Assert.False(editor.IsEnabled);
+
+            editor.SetControlState(SingleFormMode.View);
+            Assert.False(editor.IsEnabled);
         }
     }
 }

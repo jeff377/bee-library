@@ -261,5 +261,41 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var button = Assert.IsType<global::Avalonia.Controls.Button>(editor.InnerRightContent);
             Assert.False(button.IsEnabled);
         }
+
+        [Fact]
+        [DisplayName("AllowEditModes=Add 時僅新增模式可編輯（如單號欄）")]
+        public void SetControlState_AllowEditModesAdd_OnlyAddEditable()
+        {
+            var dataObject = BuildDataObject();
+            var field = new LayoutField { FieldName = "emp_name", AllowEditModes = FormEditModes.Add };
+            var editor = new TextEdit();
+            editor.Bind(dataObject, field);
+
+            editor.SetControlState(SingleFormMode.Add);
+            Assert.False(editor.IsReadOnly);
+
+            editor.SetControlState(SingleFormMode.Edit);
+            Assert.True(editor.IsReadOnly);
+
+            editor.SetControlState(SingleFormMode.View);
+            Assert.True(editor.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("ButtonEdit AllowEditModes=Add 時內嵌按鈕跟隨模式啟停")]
+        public void ButtonEdit_AllowEditModesAdd_ButtonFollowsMode()
+        {
+            var dataObject = BuildDataObject();
+            var field = new LayoutField { FieldName = "emp_name", AllowEditModes = FormEditModes.Add };
+            var editor = new ButtonEdit();
+            editor.Bind(dataObject, field);
+            var button = Assert.IsType<global::Avalonia.Controls.Button>(editor.InnerRightContent);
+
+            editor.SetControlState(SingleFormMode.Add);
+            Assert.True(button.IsEnabled);
+
+            editor.SetControlState(SingleFormMode.Edit);
+            Assert.False(button.IsEnabled);
+        }
     }
 }

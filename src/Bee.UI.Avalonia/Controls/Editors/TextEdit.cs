@@ -94,7 +94,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <inheritdoc />
         public void SetControlState(SingleFormMode formMode)
         {
-            IsReadOnly = formMode == SingleFormMode.View || _binder.IsLayoutReadOnly;
+            IsReadOnly = !_binder.AllowsEdit(formMode);
         }
 
         /// <inheritdoc />

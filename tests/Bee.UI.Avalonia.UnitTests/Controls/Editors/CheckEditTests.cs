@@ -65,6 +65,25 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("AllowEditModes=Add 時僅新增模式啟用")]
+        public void SetControlState_AllowEditModesAdd_OnlyAddEnabled()
+        {
+            var dataObject = BuildDataObject();
+            var field = new LayoutField { FieldName = "is_active", AllowEditModes = FormEditModes.Add };
+            var editor = new CheckEdit();
+            editor.Bind(dataObject, field);
+
+            editor.SetControlState(SingleFormMode.Add);
+            Assert.True(editor.IsEnabled);
+
+            editor.SetControlState(SingleFormMode.Edit);
+            Assert.False(editor.IsEnabled);
+
+            editor.SetControlState(SingleFormMode.View);
+            Assert.False(editor.IsEnabled);
+        }
+
+        [Fact]
         [DisplayName("FieldValue 接受 bool 與字串表示")]
         public void FieldValue_BoolAndString_MapToIsChecked()
         {

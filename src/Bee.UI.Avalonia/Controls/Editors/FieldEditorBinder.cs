@@ -76,6 +76,20 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public bool IsLayoutReadOnly => LayoutField?.ReadOnly ?? false;
 
         /// <summary>
+        /// Determines whether the bound field is editable in the specified form
+        /// mode, combining the mode, the layout read-only flag and the master
+        /// field's <see cref="Bee.Definition.Layouts.LayoutField.AllowEditModes"/>.
+        /// Row-scoped grid columns carry no per-mode setting (the grid gates them
+        /// as a whole) and follow the mode alone.
+        /// </summary>
+        /// <param name="formMode">The single-record form mode.</param>
+        public bool AllowsEdit(SingleFormMode formMode)
+            => formMode != SingleFormMode.View
+                && !IsLayoutReadOnly
+                && (LayoutField is not Bee.Definition.Layouts.LayoutField field
+                    || field.AllowEditModes.Allows(formMode));
+
+        /// <summary>
         /// Binds explicitly, replacing any current binding. Explicit bindings take
         /// precedence over the ambient scope while the editor stays attached.
         /// </summary>
