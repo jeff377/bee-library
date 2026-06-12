@@ -1,9 +1,10 @@
 using System.ComponentModel;
+using System.Data;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
-using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
+using Bee.UI.Avalonia.Controls.Editors;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 {
@@ -296,6 +297,31 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             editor.SetControlState(SingleFormMode.Edit);
             Assert.False(button.IsEnabled);
+        }
+
+        [Fact]
+        [DisplayName("明細表欄位變更不應刷新主檔欄位編輯器（不同表過濾）")]
+        public void FieldValueChanged_DetailTableChange_DoesNotRefreshMasterEditor()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add("emp_name", "Name", FieldDbType.String);
+            var detail = schema.Tables.Add("EmployeePhone", "Phones");
+            detail.Fields!.Add("phone", "Phone", FieldDbType.String);
+
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+            dataObject.SetField("emp_name", "Alice");
+
+            var editor = new TextEdit();
+            editor.Bind(dataObject, "emp_name");
+            Assert.Equal("Alice", editor.Text);
+
+            var detailTable = dataObject.DataSet.Tables["EmployeePhone"]!;
+            detailTable.Rows.Add("555-1234");
+            dataObject.SetField(detailTable.Rows[0], "phone", "555-9999");
+
+            Assert.Equal("Alice", editor.Text);
         }
     }
 }
