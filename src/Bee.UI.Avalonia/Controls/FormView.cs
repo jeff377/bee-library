@@ -13,12 +13,16 @@ using Bee.UI.Core;
 namespace Bee.UI.Avalonia.Controls
 {
     /// <summary>
-    /// Avalonia <see cref="UserControl"/> that wires <see cref="GridControl"/> (list view)
+    /// Single-record data form that wires <see cref="GridControl"/> (list view)
     /// to <see cref="DynamicForm"/> (master detail) via a shared
     /// <see cref="FormDataObject"/>. Selecting a list row drives
     /// <see cref="FormDataObject.LoadAsync"/>; the toolbar buttons fan out to
     /// <see cref="FormDataObject.NewAsync"/> / <c>SaveAsync</c> / <c>DeleteAsync</c>.
     /// Mirrors the MAUI <c>FormPage</c> structure for cross-family parity.
+    /// As a <see cref="SingleFormBase"/> it owns the form mode: loading a row enters
+    /// View (read-only browsing), the Edit button enters Edit, New enters Add, and a
+    /// successful Save returns to View — each transition broadcasts to every editor
+    /// and grid in the form through the ambient <see cref="FormScope"/>.
     /// </summary>
     /// <remarks>
     /// The host typically supplies only <see cref="ProgId"/>. When <see cref="Schema"/>
@@ -33,7 +37,7 @@ namespace Bee.UI.Avalonia.Controls
     /// <c>ResolveSystemConnector</c> / <c>ResolveFormConnector</c> / <c>ResolveAccessToken</c>
     /// hooks below.
     /// </remarks>
-    public class FormView : UserControl
+    public class FormView : SingleFormBase
     {
         /// <summary>
         /// Identifies the <see cref="ProgId"/> styled property.
@@ -60,6 +64,7 @@ namespace Bee.UI.Avalonia.Controls
             AvaloniaProperty.Register<FormView, FormApiConnector?>(nameof(FormConnector));
 
         private readonly Button _newButton;
+        private readonly Button _editButton;
         private readonly Button _saveButton;
         private readonly Button _deleteButton;
         private readonly TextBlock _dirtyMarker;
@@ -93,6 +98,9 @@ namespace Bee.UI.Avalonia.Controls
             _newButton = new Button { Content = "New", IsEnabled = false };
             _newButton.Click += async (_, _) => await OnNewClickedAsync().ConfigureAwait(true);
 
+            _editButton = new Button { Content = "Edit", IsEnabled = false };
+            _editButton.Click += (_, _) => OnEditClicked();
+
             _saveButton = new Button { Content = "Save", IsEnabled = false };
             _saveButton.Click += async (_, _) => await OnSaveClickedAsync().ConfigureAwait(true);
 
@@ -113,6 +121,7 @@ namespace Bee.UI.Avalonia.Controls
                 Spacing = 8,
             };
             toolbar.Children.Add(_newButton);
+            toolbar.Children.Add(_editButton);
             toolbar.Children.Add(_saveButton);
             toolbar.Children.Add(_deleteButton);
             toolbar.Children.Add(_dirtyMarker);
@@ -354,16 +363,33 @@ namespace Bee.UI.Avalonia.Controls
             return string.Join(",", parts);
         }
 
+        // Mode transitions sit on the success path of each guarded action — a thrown
+        // round-trip leaves the form in its current mode.
         private async Task OnRowSelectedAsync(Guid rowId)
         {
             if (_dataObject is null) return;
-            await RunGuardedAsync(() => _dataObject.LoadAsync(rowId)).ConfigureAwait(true);
+            await RunGuardedAsync(async () =>
+            {
+                await _dataObject.LoadAsync(rowId).ConfigureAwait(true);
+                FormMode = SingleFormMode.View;
+            }).ConfigureAwait(true);
+        }
+
+        private void OnEditClicked()
+        {
+            if (_dataObject?.MasterRow is null) return;
+            FormMode = SingleFormMode.Edit;
+            UpdateToolbarState();
         }
 
         private async Task OnNewClickedAsync()
         {
             if (_dataObject is null) return;
-            await RunGuardedAsync(_dataObject.NewAsync).ConfigureAwait(true);
+            await RunGuardedAsync(async () =>
+            {
+                await _dataObject.NewAsync().ConfigureAwait(true);
+                FormMode = SingleFormMode.Add;
+            }).ConfigureAwait(true);
         }
 
         private async Task OnSaveClickedAsync()
@@ -373,6 +399,7 @@ namespace Bee.UI.Avalonia.Controls
             {
                 await _dataObject.SaveAsync().ConfigureAwait(true);
                 await ReloadListAsync().ConfigureAwait(true);
+                FormMode = SingleFormMode.View;
             }).ConfigureAwait(true);
         }
 
@@ -383,6 +410,7 @@ namespace Bee.UI.Avalonia.Controls
             {
                 await _dataObject.DeleteAsync().ConfigureAwait(true);
                 await ReloadListAsync().ConfigureAwait(true);
+                FormMode = SingleFormMode.View;
             }).ConfigureAwait(true);
         }
 
@@ -416,12 +444,21 @@ namespace Bee.UI.Avalonia.Controls
             _form.Refresh();
         }
 
+        /// <inheritdoc />
+        protected override void OnFormModeChanged(SingleFormMode formMode)
+        {
+            UpdateToolbarState();
+        }
+
         private void UpdateToolbarState()
         {
             var hasMaster = _dataObject?.MasterRow is not null;
+            var browsing = FormMode == SingleFormMode.View;
             _newButton.IsEnabled = _initialized && !_isBusy;
-            _saveButton.IsEnabled = _initialized && !_isBusy && hasMaster;
-            _deleteButton.IsEnabled = _initialized && !_isBusy && hasMaster;
+            // Edit enters Edit mode from browsing; Save commits an Add/Edit session.
+            _editButton.IsEnabled = _initialized && !_isBusy && hasMaster && browsing;
+            _saveButton.IsEnabled = _initialized && !_isBusy && hasMaster && !browsing;
+            _deleteButton.IsEnabled = _initialized && !_isBusy && hasMaster && browsing;
             _dirtyMarker.IsVisible = _dataObject?.IsDirty == true;
         }
 

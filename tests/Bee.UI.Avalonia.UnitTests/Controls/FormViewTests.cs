@@ -8,6 +8,7 @@ using Bee.Api.Core.Messages.Form;
 using Bee.Base.Data;
 using Bee.Definition;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls
@@ -65,10 +66,11 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         }
 
         [Fact]
-        [DisplayName("FormView 為 Avalonia UserControl 子類別")]
-        public void Type_IsUserControlSubclass()
+        [DisplayName("FormView 為 SingleFormBase 資料表單子類別")]
+        public void Type_IsSingleFormBaseSubclass()
         {
             Assert.True(typeof(UserControl).IsAssignableFrom(typeof(FormView)));
+            Assert.True(typeof(SingleFormBase).IsAssignableFrom(typeof(FormView)));
         }
 
         [Theory]
@@ -192,6 +194,84 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
 
             Assert.NotNull(captured);
             Assert.Equal("backend rejected", captured!.Message);
+        }
+
+        private static void InvokeEditClicked(FormView view)
+        {
+            var method = typeof(FormView).GetMethod(
+                "OnEditClicked", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            method!.Invoke(view, null);
+        }
+
+        private static TestFormView BuildInitializableView(Guid rowId, string name)
+        {
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, name) },
+                GetDataHandler = _ => new GetDataResponse { DataSet = BuildServerDataSet(rowId, name) },
+                GetNewDataHandler = () => new GetNewDataResponse { DataSet = BuildServerDataSet(Guid.NewGuid(), "Pending") },
+            };
+            return new TestFormView { Schema = BuildEmployeeSchema(), FormConnector = connector };
+        }
+
+        [Fact]
+        [DisplayName("初始為 View，選列載入後維持 View（唯讀瀏覽）")]
+        public async Task FormMode_InitialAndAfterLoad_IsView()
+        {
+            var rowId = Guid.NewGuid();
+            var view = BuildInitializableView(rowId, "Bob");
+            await view.InitializeAsync();
+
+            Assert.Equal(SingleFormMode.View, view.FormMode);
+
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+
+            Assert.Equal(SingleFormMode.View, view.FormMode);
+        }
+
+        [Fact]
+        [DisplayName("Edit 鈕進入 Edit 模式；New 進入 Add 模式")]
+        public async Task FormMode_EditAndNew_EnterEditingModes()
+        {
+            var rowId = Guid.NewGuid();
+            var view = BuildInitializableView(rowId, "Bob");
+            await view.InitializeAsync();
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+
+            InvokeEditClicked(view);
+            Assert.Equal(SingleFormMode.Edit, view.FormMode);
+
+            await InvokePrivateAsync(view, "OnNewClickedAsync");
+            Assert.Equal(SingleFormMode.Add, view.FormMode);
+        }
+
+        [Fact]
+        [DisplayName("Save 成功回到 View；Save 失敗停留在原模式")]
+        public async Task FormMode_SaveOutcome_DrivesTransition()
+        {
+            var rowId = Guid.NewGuid();
+            var saveShouldThrow = true;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "X") },
+                GetNewDataHandler = () => new GetNewDataResponse { DataSet = BuildServerDataSet(Guid.NewGuid(), "Pending") },
+                SaveHandler = _ => saveShouldThrow
+                    ? throw new InvalidOperationException("backend rejected")
+                    : new SaveResponse(),
+            };
+            var view = new TestFormView { Schema = BuildEmployeeSchema(), FormConnector = connector };
+            await view.InitializeAsync();
+
+            await InvokePrivateAsync(view, "OnNewClickedAsync");
+            Assert.Equal(SingleFormMode.Add, view.FormMode);
+
+            await InvokePrivateAsync(view, "OnSaveClickedAsync");
+            Assert.Equal(SingleFormMode.Add, view.FormMode);
+
+            saveShouldThrow = false;
+            await InvokePrivateAsync(view, "OnSaveClickedAsync");
+            Assert.Equal(SingleFormMode.View, view.FormMode);
         }
 
         /// <summary>

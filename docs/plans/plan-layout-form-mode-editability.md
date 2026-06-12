@@ -2,9 +2,13 @@
 
 **狀態：📝 擬定中**
 
-> **前置作業**：[plan-avalonia-gridcontrol-toolbar.md](plan-avalonia-gridcontrol-toolbar.md) ——
-> GridControl 內建圖示工具列 + `AllowEdit` 屬性（與 FormMode 無直接相關，先獨立完成）。
-> 前置完成後本計畫的階段 3 只剩 `SetControlState` 映射加入 `AllowEditModes` 條件。
+> **前置作業**：
+> 1. [plan-avalonia-gridcontrol-toolbar.md](plan-avalonia-gridcontrol-toolbar.md) ——
+>    GridControl 內建圖示工具列 + `AllowEdit` 屬性（✅ 已完成）。
+>    完成後本計畫的階段 3 只剩 `SetControlState` 映射加入 `AllowEditModes` 條件。
+> 2. [plan-avalonia-single-form-base.md](plan-avalonia-single-form-base.md) ——
+>    資料表單基底類別 `SingleFormBase`（FormMode 擁有者與 ambient 廣播）。
+>    完成後本計畫的測試可走「表單切模式 → 廣播 → 子樹控件切換」的真實管線。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
