@@ -2,7 +2,7 @@
 
 [English](README.md) | **繁體中文**
 
-Bee.NET 範例專案：Avalonia 桌面用戶端，連 `samples/QuickStart.Server` 的 JSON-RPC API，渲染共用的 `Define/FormSchema/Employee.FormSchema.xml`。結構上對應 `samples/Maui.Demo`，但走桌面 Avalonia（Windows / macOS / Linux）而非 MAUI 的行動裝置矩陣。
+Bee.NET 範例專案：Avalonia 桌面用戶端，連 `samples/QuickStart.Server` 的 JSON-RPC API，渲染共用的 `Define/FormSchema/` 定義（Employee / Department / Project）。結構上對應 `samples/Maui.Demo`，但走桌面 Avalonia（Windows / macOS / Linux）而非 MAUI 的行動裝置矩陣，並額外展示 **lookup 開窗流程**（relation 欄位開啟搜尋選取對話框）。
 
 ## 它要證明什麼
 
@@ -36,13 +36,18 @@ dotnet run --configuration Debug
 ## 預期畫面
 
 1. **Connection 頁**：endpoint 預設 `http://localhost:5050/api`。按 **Connect** 會呼叫 `ClientInfo.Initialize(endpoint)`，由 `ApiConnectValidator` 做 HTTP reachability + `system.ping`。成功後主視窗切到 Login。
-2. **Login 頁**：兩格 textbox，預設帶入 `demo` / `demo`（對應 QuickStart seed）。按 **Sign in** 呼叫 `SystemApiConnector.LoginAsync`，token 透過 `ClientInfo.ApplyLoginResult` 存起來，視窗前進到 Employee。
-3. **Employee 頁**：內含 `<bee:FormView ProgId="Employee" />`。Avalonia 端不傳 `Schema` / `FormConnector`，由 fallback 從 `ClientInfo` 取得：
-   - `ClientInfo.SystemApiConnector.GetDefineAsync<FormSchema>(DefineType.FormSchema, ["Employee"])`
-   - `ClientInfo.CreateFormApiConnector("Employee")`
-   - `ClientInfo.AccessToken`
+2. **Login 頁**：兩格 textbox，預設帶入 `demo` / `demo`（對應 QuickStart seed）。按 **Sign in** 呼叫 `SystemApiConnector.LoginAsync`，token 透過 `ClientInfo.ApplyLoginResult` 存起來，視窗前進到 Forms 頁。
+3. **Forms 頁**：tab 列，每個 tab 各放一個 `<bee:FormView ProgId="..." />`。各表單不傳 `Schema` / `FormConnector`，由 fallback 從 `ClientInfo` 取得（`GetDefineAsync<FormSchema>` / `CreateFormApiConnector` / `AccessToken`）：
+   - **Employee** — 原本的 master-detail 表單；三筆種子資料（Alice / Bob / Carol）列在上方，點任一列驅動下方 `DynamicForm`，**New** / **Save** / **Delete** 走 BO 回 server。
+   - **Department** — 純主檔表單，同時是 **lookup 來源**；schema 顯式宣告 `LookupFields="sys_id,sys_name"`（與 server 預設集相同，宣告是為了示範語法）。
+   - **Project** — **lookup 展示**：主表「Owner Department」欄位呈現為 `ButtonEdit`，按 icon 開部門選取窗（搜尋走 server 端 `GetLookup`）；Project Members 明細的「Member」欄點 cell 即開員工選取窗（InCell lookup）。選取後 rowid + 映射的 `ref_*` 顯示欄位經 `FormDataObject` 寫回；主表 lookup 欄按 Delete/Backspace 可清空。
 
-   渲染後：上方 `DynamicGrid`（Avalonia 內建 `DataGrid` 接 `DataTable.DefaultView`）列出三筆種子資料（Alice / Bob / Carol），點任一列 → 下方 `DynamicForm` 顯示明細；**New** / **Save** / **Delete** 走 BO 回 server。
+### Lookup 操作流程
+
+1. 在 **Department** tab 先建一兩個部門（如 `D001 / Engineering`）。
+2. 切到 **Project**，按 **New**，點「Owner Department」的放大鏡 —— 搜尋、雙擊列（或選取 + OK），部門名稱即帶出。
+3. 在 **Project Members** 新增一列、點「Member」cell —— 員工選取窗開啟，挑一筆種子員工。
+4. **Save** 後從清單重選該專案：`ref_*` 欄位此時來自 server 端 relation JOIN（單一真相來源）。
 
 ## 對應 library 元件
 

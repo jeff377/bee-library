@@ -1,6 +1,6 @@
 # 計畫：Avalonia Lookup 開窗機制（ButtonEdit 完整管線）
 
-**狀態：🚧 進行中（2026-06-12）**
+**狀態：✅ 已完成（2026-06-12）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -10,7 +10,7 @@
 | 4 | 主表欄位接線：ButtonClick → 開窗 → mapping 寫回 FormDataObject（含顯示值與清空） | ✅ 已完成（2026-06-12） |
 | 5 | 明細 grid EditForm 模式：RowEditDialog / RowEditPanel 內的 lookup | ✅ 已完成（2026-06-12，UI 動線待使用者自測） |
 | 6 | 明細 grid InCell 模式：ButtonEdit cell（ADR-021 click-to-swap 管線） | ✅ 已完成（2026-06-12，UI 動線待使用者自測） |
-| 7 | 測試補齊 + samples 接線（Project lookup 範例進 samples/Define） | 📝 待做 |
+| 7 | 測試補齊 + samples 接線（Project lookup 範例進 samples/Define） | ✅ 已完成（2026-06-12，UI 動線待使用者自測） |
 
 > **本 plan 是 [plan-mini-erp-demo.md](plan-mini-erp-demo.md) 的前置依賴**：迷你進銷存的交易單據（訂單選客戶/商品）需要完整 lookup 管線。
 

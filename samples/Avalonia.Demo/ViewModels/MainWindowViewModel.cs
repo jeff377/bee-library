@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace Avalonia.Demo.ViewModels
 {
     /// <summary>
-    /// Top-level VM that drives the Connection → Login → Employee flow by swapping
+    /// Top-level VM that drives the Connection → Login → Forms flow by swapping
     /// <see cref="CurrentView"/>. Each child VM gets a callback action to advance to
     /// the next step; using callbacks (rather than CLR events) keeps the navigation
     /// graph explicit at construction time and avoids forgetting to unsubscribe.
@@ -27,12 +27,12 @@ namespace Avalonia.Demo.ViewModels
 
         private void NavigateToLogin()
         {
-            CurrentView = new LoginViewModel(NavigateToEmployee);
+            CurrentView = new LoginViewModel(NavigateToForms);
         }
 
-        private void NavigateToEmployee()
+        private void NavigateToForms()
         {
-            CurrentView = new EmployeeViewModel();
+            CurrentView = new FormsViewModel();
         }
     }
 }

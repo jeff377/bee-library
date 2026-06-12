@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lookup demo form: the master `owner_dept_rowid` field picks a Department
+     (form-level lookup editor), and the ProjectMember detail's `member_rowid`
+     picks an Employee (in-cell grid lookup). Relation fields resolve to
+     `ButtonEdit` automatically; the `ref_*` fields are filled by the lookup
+     write-back locally and re-derived by the server-side JOIN on reload. -->
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Project" DisplayName="Project" CategoryId="common" ListFields="sys_id,sys_name,ref_dept_name">
+  <Tables>
+    <FormTable TableName="Project" DbTableName="ft_project" DisplayName="Project">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+        <FormField FieldName="sys_id" Caption="Project ID" DbType="String" />
+        <FormField FieldName="sys_name" Caption="Project Name" DbType="String" />
+        <FormField FieldName="owner_dept_rowid" Caption="Owner Department" DbType="Guid" RelationProgId="Department">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_dept_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_dept_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_dept_id" Caption="Department ID" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_dept_name" Caption="Department Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="start_date" Caption="Start Date" DbType="Date" />
+      </Fields>
+    </FormTable>
+    <FormTable TableName="ProjectMember" DbTableName="ft_project_member" DisplayName="Project Members">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+        <FormField FieldName="sys_master_rowid" Caption="Master Row ID" DbType="Guid" />
+        <FormField FieldName="member_rowid" Caption="Member" DbType="Guid" RelationProgId="Employee">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_member_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_member_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_member_id" Caption="Member ID" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_member_name" Caption="Member Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="role" Caption="Role" DbType="String" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>

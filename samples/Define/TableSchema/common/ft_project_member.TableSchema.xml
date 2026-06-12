@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="ft_project_member" DisplayName="Project Members">
+  <Fields>
+    <DbField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+    <DbField FieldName="sys_master_rowid" Caption="Master Row ID" DbType="Guid" />
+    <DbField FieldName="member_rowid" Caption="Member" DbType="Guid" />
+    <DbField FieldName="role" Caption="Role" DbType="String" Length="30" />
+  </Fields>
+  <Indexes>
+    <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+      <IndexFields>
+        <IndexField FieldName="sys_no" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="rx_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="fk_{0}_master">
+      <IndexFields>
+        <IndexField FieldName="sys_master_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+  </Indexes>
+</TableSchema>

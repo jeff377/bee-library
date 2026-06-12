@@ -2,7 +2,7 @@
 
 **English** | [繁體中文](README.zh-TW.md)
 
-A Bee.NET sample: an Avalonia desktop client that talks to the JSON-RPC API hosted by `samples/QuickStart.Server`, rendering the shared `Define/FormSchema/Employee.FormSchema.xml`. Structurally symmetric to `samples/Maui.Demo` but targets desktop Avalonia (Windows / macOS / Linux) instead of MAUI's mobile-first matrix.
+A Bee.NET sample: an Avalonia desktop client that talks to the JSON-RPC API hosted by `samples/QuickStart.Server`, rendering the shared `Define/FormSchema/` definitions (Employee / Department / Project). Structurally symmetric to `samples/Maui.Demo` but targets desktop Avalonia (Windows / macOS / Linux) instead of MAUI's mobile-first matrix, and additionally demonstrates the **lookup picker flow** (relation fields opening a search-and-pick dialog).
 
 ## What it proves
 
@@ -36,13 +36,18 @@ dotnet run --configuration Debug
 ## What you'll see
 
 1. **Connection view**: endpoint defaults to `http://localhost:5050/api`. Clicking **Connect** calls `ClientInfo.Initialize(endpoint)`, which runs an HTTP reachability check plus `system.ping` via `ApiConnectValidator`. On success the main window swaps to Login.
-2. **Login view**: two text fields pre-filled with `demo` / `demo` (matches the QuickStart seed). Clicking **Sign in** calls `SystemApiConnector.LoginAsync`; the token is stored through `ClientInfo.ApplyLoginResult` and the window advances to Employee.
-3. **Employee view**: hosts `<bee:FormView ProgId="Employee" />`. The Avalonia side passes neither `Schema` nor `FormConnector`; the fallback pulls them from `ClientInfo`:
-   - `ClientInfo.SystemApiConnector.GetDefineAsync<FormSchema>(DefineType.FormSchema, ["Employee"])`
-   - `ClientInfo.CreateFormApiConnector("Employee")`
-   - `ClientInfo.AccessToken`
+2. **Login view**: two text fields pre-filled with `demo` / `demo` (matches the QuickStart seed). Clicking **Sign in** calls `SystemApiConnector.LoginAsync`; the token is stored through `ClientInfo.ApplyLoginResult` and the window advances to the Forms view.
+3. **Forms view**: a tab strip hosting one `<bee:FormView ProgId="..." />` per demo form. Each view passes neither `Schema` nor `FormConnector`; the fallback pulls them from `ClientInfo` (`GetDefineAsync<FormSchema>` / `CreateFormApiConnector` / `AccessToken`):
+   - **Employee** — the original master-detail form; the seeded rows (Alice / Bob / Carol) list at the top, selecting a row drives the `DynamicForm`, and **New** / **Save** / **Delete** round-trip through the BO.
+   - **Department** — a plain master form that doubles as the **lookup source**; its schema declares `LookupFields="sys_id,sys_name"` (the same set the server would default to).
+   - **Project** — the **lookup demo**: the master *Owner Department* field renders as a `ButtonEdit` whose icon opens the Department picker (server-side search via `GetLookup`), and the *Member* column of the Project Members detail grid opens the Employee picker on cell click (in-cell lookup). Selections write the row id plus the mapped `ref_*` display fields back through `FormDataObject`; Delete/Backspace on the master lookup field clears it.
 
-   After rendering: the top `DynamicGrid` (Avalonia `DataGrid` bound to `DataTable.DefaultView`) lists the three seeded rows (Alice / Bob / Carol); selecting a row drives the `DynamicForm` below; **New** / **Save** / **Delete** round-trip through the BO back to the server.
+### Lookup walkthrough
+
+1. On the **Department** tab create a department or two (e.g. `D001 / Engineering`).
+2. Switch to **Project**, click **New**, then click the magnifier on *Owner Department* — search, double-click a row (or select + OK), and watch the department name appear.
+3. In **Project Members** add a row and click the *Member* cell — the Employee picker opens; pick one of the seeded employees.
+4. **Save**, reselect the project from the list: the `ref_*` columns now come from the server-side relation JOIN (the single source of truth).
 
 ## What this maps to in the library
 

@@ -1,0 +1,40 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Avalonia.Demo.ViewModels"
+             xmlns:bee="clr-namespace:Bee.UI.Avalonia.Controls;assembly=Bee.UI.Avalonia"
+             mc:Ignorable="d"
+             x:Class="Avalonia.Demo.Views.FormsView"
+             x:DataType="vm:FormsViewModel">
+
+  <!-- FormView resolves Schema / FormConnector / AccessToken from ClientInfo via
+       its built-in fallback; we only have to set ProgId. Each FormView initialises
+       lazily when its tab first attaches to the visual tree.
+       Project demonstrates the lookup flow: the master Owner Department field and
+       the member column of the detail grid both open a lookup picker. -->
+  <TabControl Margin="12">
+    <TabItem Header="Employee">
+      <ScrollViewer>
+        <StackPanel Margin="0,12,0,0" Spacing="12">
+          <bee:FormView ProgId="Employee" />
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+    <TabItem Header="Department">
+      <ScrollViewer>
+        <StackPanel Margin="0,12,0,0" Spacing="12">
+          <bee:FormView ProgId="Department" />
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+    <TabItem Header="Project">
+      <ScrollViewer>
+        <StackPanel Margin="0,12,0,0" Spacing="12">
+          <bee:FormView ProgId="Project" />
+        </StackPanel>
+      </ScrollViewer>
+    </TabItem>
+  </TabControl>
+
+</UserControl>
