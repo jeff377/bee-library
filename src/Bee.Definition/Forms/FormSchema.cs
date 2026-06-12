@@ -196,6 +196,35 @@ namespace Bee.Definition.Forms
             => ListLayoutGenerator.Generate(this);
 
         /// <summary>
+        /// Resolves the lookup field set this form exposes to lookup queries.
+        /// Fields declared in <see cref="LookupFields"/> win; an empty declaration
+        /// falls back to <c>sys_id</c> and <c>sys_name</c>. Only fields defined on
+        /// the master table are returned (others are skipped); <c>sys_rowid</c> is
+        /// excluded because callers always prepend it to the projection.
+        /// </summary>
+        public IReadOnlyList<FormField> GetLookupFields()
+        {
+            var fields = new List<FormField>();
+            var master = MasterTable;
+            if (master?.Fields == null) { return fields; }
+
+            var names = StringUtilities.IsNotEmpty(LookupFields)
+                ? LookupFields.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                : [SysFields.Id, SysFields.Name];
+
+            foreach (var name in names)
+            {
+                if (StringUtilities.IsEquals(name, SysFields.RowId)) { continue; }
+                if (master.Fields.Contains(name) &&
+                    !fields.Any(f => StringUtilities.IsEquals(f.FieldName, name)))
+                {
+                    fields.Add(master.Fields[name]);
+                }
+            }
+            return fields;
+        }
+
+        /// <summary>
         /// Creates a deep copy of this instance. Use this whenever a per-session
         /// view of a cached <see cref="FormSchema"/> must be mutated (e.g. before
         /// applying language-specific localization).

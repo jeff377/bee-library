@@ -99,6 +99,61 @@ namespace Bee.Definition.UnitTests.Forms
         }
 
         [Fact]
+        [DisplayName("GetLookupFields 依宣告順序回傳並略過 master 不存在的欄位")]
+        public void GetLookupFields_Declared_SkipsMissingFields()
+        {
+            var schema = BuildSchema();
+
+            var fields = schema.GetLookupFields();
+
+            // Declared "sys_id,sys_name,customer_grade" — customer_grade is not on the master table.
+            Assert.Equal(2, fields.Count);
+            Assert.Equal("sys_id", fields[0].FieldName);
+            Assert.Equal("sys_name", fields[1].FieldName);
+        }
+
+        [Fact]
+        [DisplayName("GetLookupFields 未宣告時應預設取 sys_id 與 sys_name")]
+        public void GetLookupFields_NotDeclared_DefaultsToIdAndName()
+        {
+            var schema = BuildSchema();
+            schema.LookupFields = string.Empty;
+
+            var fields = schema.GetLookupFields();
+
+            Assert.Equal(2, fields.Count);
+            Assert.Equal("sys_id", fields[0].FieldName);
+            Assert.Equal("sys_name", fields[1].FieldName);
+        }
+
+        [Fact]
+        [DisplayName("GetLookupFields 宣告含 sys_rowid 應排除（呼叫端固定 prepend）")]
+        public void GetLookupFields_DeclaredRowId_Excluded()
+        {
+            var schema = BuildSchema();
+            schema.LookupFields = "sys_rowid,sys_id";
+
+            var fields = schema.GetLookupFields();
+
+            Assert.Single(fields);
+            Assert.Equal("sys_id", fields[0].FieldName);
+        }
+
+        [Fact]
+        [DisplayName("GetLookupFields master 無 sys_name 時預設集只回傳 sys_id")]
+        public void GetLookupFields_MasterWithoutSysName_DefaultsToIdOnly()
+        {
+            var schema = new FormSchema("Unit", "單位") { CategoryId = "common" };
+            var table = schema.Tables!.Add("Unit", "單位");
+            table.Fields!.Add(new FormField("sys_id", "代碼", FieldDbType.String));
+
+            var fields = schema.GetLookupFields();
+
+            Assert.Single(fields);
+            Assert.Equal("sys_id", fields[0].FieldName);
+        }
+
+        [Fact]
         [DisplayName("GetFormLayout relation 欄位應解析為 ButtonEdit 並帶 DisplayField")]
         public void GetFormLayout_RelationField_ResolvesButtonEditWithDisplayField()
         {

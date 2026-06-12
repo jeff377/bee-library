@@ -115,6 +115,29 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
+        /// Asynchronously retrieves lookup candidate rows for picker windows that
+        /// reference <see cref="ProgId"/>. The projection is server-resolved from
+        /// <c>FormSchema.LookupFields</c> (falling back to <c>sys_id</c> / <c>sys_name</c>)
+        /// and always includes <c>sys_rowid</c>; the caller cannot widen it.
+        /// </summary>
+        /// <param name="searchText">
+        /// The search text matched server-side against the string-typed lookup fields;
+        /// an empty value applies no search filter.
+        /// </param>
+        /// <param name="paging">The paging options; <c>null</c> applies the server-side default page size.</param>
+        public virtual async Task<GetLookupResponse> GetLookupAsync(
+            string searchText = "",
+            PagingOptions? paging = null)
+        {
+            var request = new GetLookupRequest
+            {
+                SearchText = searchText,
+                Paging = paging,
+            };
+            return await ExecuteAsync<GetLookupResponse>(FormActions.GetLookup, request).ConfigureAwait(false);
+        }
+
+        /// <summary>
         /// Asynchronously requests a blank <c>DataSet</c> skeleton seeded with
         /// FormSchema defaults and a server-issued <c>sys_rowid</c>; step 1 of
         /// the new-and-save flow.

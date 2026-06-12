@@ -13,6 +13,13 @@ namespace Bee.Business.Form
         GetListResult GetList(GetListArgs args);
 
         /// <summary>
+        /// Retrieves lookup candidate rows for picker windows that reference this
+        /// form; the projection is server-resolved from <c>FormSchema.LookupFields</c>.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        GetLookupResult GetLookup(GetLookupArgs args);
+
+        /// <summary>
         /// Returns a blank <c>DataSet</c> skeleton seeded with FormSchema
         /// defaults and a server-issued <c>sys_rowid</c>; step 1 of the
         /// new-and-save flow.

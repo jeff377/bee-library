@@ -1,10 +1,13 @@
 using System.Data;
 using Bee.Base;
+using Bee.Base.Data;
 using Bee.Base.Exceptions;
 using Bee.Definition;
 using Bee.Definition.Attributes;
 using Bee.Definition.Filters;
+using Bee.Definition.Forms;
 using Bee.Definition.Identity;
+using Bee.Definition.Paging;
 using Bee.Definition.Security;
 using Bee.Definition.Settings;
 using Bee.Repository.Abstractions.Form;
@@ -84,6 +87,81 @@ namespace Bee.Business.Form
                 Paging = listResult.Paging,
             };
         }
+
+        /// <summary>
+        /// Retrieves lookup candidate rows for picker windows that reference this form.
+        /// The projection is the server-resolved lookup field set
+        /// (see <c>FormSchema.GetLookupFields</c>) prefixed with <c>sys_rowid</c>;
+        /// the caller cannot widen it.
+        /// </summary>
+        /// <param name="args">The input arguments.</param>
+        /// <remarks>
+        /// Unlike <see cref="GetList"/>, this action is intentionally not gated by the
+        /// form's <c>Read</c> permission: a user who may not browse the target form's
+        /// list still needs to pick a reference value from it. Exposure is bounded by
+        /// the <c>FormSchema.LookupFields</c> declaration. Override
+        /// <see cref="GetLookupFilter"/> to constrain the candidate rows (e.g. active
+        /// records only). When <see cref="GetLookupArgs.Paging"/> is <c>null</c> a
+        /// default page size of 100 is applied.
+        /// </remarks>
+        [ApiAccessControl(ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated)]
+        public virtual GetLookupResult GetLookup(GetLookupArgs args)
+        {
+            ArgumentNullException.ThrowIfNull(args);
+
+            var schema = DefineAccess.GetFormSchema(ProgId);
+            var lookupFields = schema.GetLookupFields();
+            var selectFields = string.Join(",",
+                lookupFields.Select(f => f.FieldName).Prepend(SysFields.RowId));
+            var filter = CombineWithScope(
+                BuildLookupSearchFilter(lookupFields, args.SearchText),
+                GetLookupFilter());
+            var paging = args.Paging ?? new PagingOptions { PageSize = DefaultLookupPageSize };
+
+            var repository = CreateDataFormRepository(ProgId);
+            var listResult = repository.GetList(selectFields, filter, null, paging);
+
+            return new GetLookupResult
+            {
+                Table = listResult.Table,
+                Paging = listResult.Paging,
+            };
+        }
+
+        /// <summary>
+        /// Override to constrain lookup candidate rows with a business filter
+        /// (e.g. active records only). The default returns <c>null</c> (no constraint);
+        /// a non-null filter is AND-combined with the search filter.
+        /// </summary>
+        protected virtual FilterNode? GetLookupFilter() => null;
+
+        /// <summary>
+        /// Builds the OR-combined LIKE filter that matches <paramref name="searchText"/>
+        /// against the string-typed lookup fields; <c>null</c> when the text is empty or
+        /// no string-typed field exists.
+        /// </summary>
+        private static FilterNode? BuildLookupSearchFilter(
+            IReadOnlyList<FormField> lookupFields, string searchText)
+        {
+            if (StringUtilities.IsEmpty(searchText)) { return null; }
+
+            var conditions = lookupFields
+                .Where(f => f.DbType == FieldDbType.String)
+                .Select(f => (FilterNode)FilterCondition.Contains(f.FieldName, searchText))
+                .ToArray();
+            return conditions.Length switch
+            {
+                0 => null,
+                1 => conditions[0],
+                _ => FilterGroup.Any(conditions),
+            };
+        }
+
+        /// <summary>
+        /// Default page size applied to lookup queries when the caller omits paging,
+        /// so an unbounded lookup never loads a large table into memory.
+        /// </summary>
+        private const int DefaultLookupPageSize = 100;
 
         /// <summary>
         /// Returns a blank <c>DataSet</c> skeleton seeded with FormSchema

@@ -76,6 +76,7 @@ per-program BO 實體，wire 上以 `<progId>.<action>` 派發（例如 `Employe
 | Method | Protection | Auth | 用途 |
 |--------|------------|------|------|
 | `GetList` | Public | Authenticated | Master table 列表查詢；支援 `Filter` / `Sort` / `Paging`（呼叫端務必分頁）。 |
+| `GetLookup` | Public | Authenticated | Lookup 開窗候選列查詢；投影由 server 依 `FormSchema.LookupFields` 解析（未宣告 fallback `sys_id` / `sys_name`，一律附 `sys_rowid`）。`SearchText` 比對字串型 lookup 欄位；未帶分頁時套預設分頁。刻意不受表單 `Read` 權限把關。 |
 | `GetNewData` | Public | Authenticated | 回傳空白 `DataSet` 骨架（含 FormSchema 預設值 + server 派發的 `sys_rowid`）。 |
 | `GetData` | Public | Authenticated | 依 `RowId` 載入單筆主檔列（與其所有子表列）。 |
 | `Save` | Public | Authenticated | 將 `DataSet` 持久化，依每列 `RowState` dispatch INSERT / UPDATE / DELETE。 |

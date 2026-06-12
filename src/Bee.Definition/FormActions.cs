@@ -11,6 +11,12 @@ namespace Bee.Definition
         public const string GetList = "GetList";
 
         /// <summary>
+        /// Retrieves lookup candidate rows for picker windows referencing this
+        /// form; the projection is server-resolved from <c>FormSchema.LookupFields</c>.
+        /// </summary>
+        public const string GetLookup = "GetLookup";
+
+        /// <summary>
         /// Returns a blank <c>DataSet</c> skeleton seeded with FormSchema
         /// defaults and a server-issued <c>sys_rowid</c>; step 1 of the
         /// new-and-save flow.

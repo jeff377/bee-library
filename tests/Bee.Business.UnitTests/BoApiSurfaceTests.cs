@@ -48,6 +48,7 @@ namespace Bee.Business.UnitTests
             new ApiSurfaceEntry("FormBusinessObject", "Delete",     ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("FormBusinessObject", "GetData",    ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("FormBusinessObject", "GetList",    ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
+            new ApiSurfaceEntry("FormBusinessObject", "GetLookup",  ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("FormBusinessObject", "GetNewData", ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
             new ApiSurfaceEntry("FormBusinessObject", "Save",       ApiProtectionLevel.Public, ApiAccessRequirement.Authenticated),
 

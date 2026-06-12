@@ -80,6 +80,7 @@ Per-program BO instance, accessed as `<progId>.<action>` over the wire
 | Method | Protection | Auth | Purpose |
 |--------|------------|------|---------|
 | `GetList` | Public | Authenticated | Master-table list query; supports `Filter` / `Sort` / `Paging` (callers should always paginate). |
+| `GetLookup` | Public | Authenticated | Lookup candidate rows for picker windows; projection is server-resolved from `FormSchema.LookupFields` (fallback `sys_id` / `sys_name`, always prefixed with `sys_rowid`). `SearchText` matches string-typed lookup fields; default paging applies when omitted. Intentionally not gated by the form's `Read` permission. |
 | `GetNewData` | Public | Authenticated | Returns a blank `DataSet` skeleton with FormSchema defaults + server-issued `sys_rowid`. |
 | `GetData` | Public | Authenticated | Loads one master row (and its details) by `RowId`. |
 | `Save` | Public | Authenticated | Persists a `DataSet` by dispatching INSERT / UPDATE / DELETE per row's `RowState`. |
