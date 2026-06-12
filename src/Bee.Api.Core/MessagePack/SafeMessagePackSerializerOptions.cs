@@ -47,12 +47,21 @@ namespace Bee.Api.Core.MessagePack
         /// </exception>
         public override void ThrowIfDeserializingTypeIsDisallowed(Type type)
         {
-            // Apply the built-in blocklist first (known-dangerous types)
-            base.ThrowIfDeserializingTypeIsDisallowed(type);
-
             var fullName = type.FullName;
             if (fullName == null)
                 throw new InvalidOperationException("Cannot deserialize a type with no FullName.");
+
+            // The fixed framework whitelist wins over the built-in blocklist:
+            // MessagePack 3.1.5+ rejects `System.Data.DataTable` as a
+            // BinaryFormatter gadget, but this wire rebuilds tables through the
+            // framework's own formatter, so the type stays deliberately trusted.
+            // See `SafeTypelessFormatter.IsExplicitlyTrustedType` remarks.
+            if (SafeTypelessFormatter.IsExplicitlyTrustedType(fullName))
+                return;
+
+            // Apply the built-in blocklist (known-dangerous types) before the
+            // application-level namespace whitelist.
+            base.ThrowIfDeserializingTypeIsDisallowed(type);
 
             if (!SafeTypelessFormatter.IsTypeAllowed(fullName))
             {

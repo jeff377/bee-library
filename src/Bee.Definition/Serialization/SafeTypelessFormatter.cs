@@ -106,6 +106,23 @@ namespace Bee.Definition.Serialization
         }
 
         /// <summary>
+        /// Validates whether the specified type full name is in the fixed,
+        /// framework-controlled whitelist (well-known primitives plus
+        /// <c>System.Data.DataTable</c>).
+        /// </summary>
+        /// <remarks>
+        /// These types stay trusted even where the MessagePack built-in blocklist
+        /// disagrees: since 3.1.5 the blocklist rejects <c>System.Data.DataTable</c>
+        /// as a classic BinaryFormatter gadget, but on this wire the table is
+        /// rebuilt column-by-column by the framework's own formatter, so that
+        /// attack path does not exist here.
+        /// </remarks>
+        /// <param name="fullName">The full name of the type to validate.</param>
+        /// <returns><c>true</c> if the type is in the fixed whitelist.</returns>
+        public static bool IsExplicitlyTrustedType(string fullName)
+            => AllowedPrimitiveTypes.Contains(fullName);
+
+        /// <summary>
         /// Validates whether the specified type full name is in the allowed whitelist.
         /// Used by both the formatter (post-check) and the pre-instantiation check
         /// in the custom <see cref="MessagePackSerializerOptions"/> subclass.
