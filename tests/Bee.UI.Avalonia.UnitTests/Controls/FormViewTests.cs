@@ -194,6 +194,57 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.Equal("backend rejected", captured!.Message);
         }
 
+        [Fact]
+        [DisplayName("Delete 失敗時 ErrorOccurred 會帶出例外訊息")]
+        public async Task ErrorOccurred_FiresWhenDeleteThrows()
+        {
+            var schema = BuildEmployeeSchema();
+            var rowId = Guid.NewGuid();
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "Alice") },
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Alice") },
+                DeleteHandler = _ => throw new InvalidOperationException("delete rejected"),
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+            await view.InitializeAsync();
+
+            Exception? captured = null;
+            view.ErrorOccurred += (_, ex) => captured = ex;
+
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+            Assert.NotNull(view.DataObject!.MasterRow);
+
+            await InvokePrivateAsync(view, "OnDeleteClickedAsync");
+
+            Assert.NotNull(captured);
+            Assert.Equal("delete rejected", captured!.Message);
+        }
+
+        [Fact]
+        [DisplayName("Delete 成功後 DataObject.MasterRow 清除")]
+        public async Task OnDeleteClicked_DelegatesToDeleteAsync()
+        {
+            var schema = BuildEmployeeSchema();
+            var rowId = Guid.NewGuid();
+            Guid? deletedRowId = null;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "Alice") },
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Alice") },
+                DeleteHandler = id => { deletedRowId = id; return new DeleteResponse(); },
+            };
+            var view = new TestFormView { Schema = schema, FormConnector = connector };
+            await view.InitializeAsync();
+
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+            Assert.NotNull(view.DataObject!.MasterRow);
+
+            await InvokePrivateAsync(view, "OnDeleteClickedAsync");
+
+            Assert.Equal(rowId, deletedRowId);
+        }
+
         /// <summary>
         /// Overrides the <c>Resolve*</c> hooks so tests never read the process-wide
         /// <c>ClientInfo</c> statics; the unused <c>ResolveFormConnector</c> throws to
