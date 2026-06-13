@@ -242,7 +242,7 @@ apps/
 
 > Demo 過程發現的框架缺口記在這裡，完成後評估是否各自立 plan / 直接改 src（開發期 ProjectReference 即時生效）。
 
-- （已知）`Bee.UI.Avalonia` 的 `LookupDialog` / `RowEditDialog` 用 `Window.ShowDialog`（多視窗），WASM / Mobile 無多視窗 —— 跨平台需 dialog 抽象（overlay / 單視窗 fallback）。本 demo 只做 Desktop 不觸及，但 Web/Mobile head 的前置 plan 須先處理
+- （已知）`Bee.UI.Avalonia` 的 `LookupDialog` / `RowEditDialog` 用 `Window.ShowDialog`。**WASM 裡 `Window` 型別根本不存在**（Avalonia browser 走 single-view 模式，非「行為不同」而是 API 不存在），Mobile 同樣無桌面式多視窗 —— 跨平台需把 dialog 改成 **single-view overlay**（在唯一 view 上疊一層 UserControl）。方向：抽一個 `IDialogPresenter`（桌面用 `Window`、browser/mobile 用 overlay），或採社群現成方案（`DialogHost.Avalonia` / `Ursa.Avalonia` `OverlayDialog` / `FluentAvalonia` `ContentDialog`）。本 demo 只做 Desktop 不觸及，但 Web/Mobile head 的前置 plan 須先處理。**注意**：Avalonia web 是 Skia 繪 canvas（非 HTML DOM），故 `FormView` / `DynamicForm` / `GridControl` 等 UI 在 web 原樣可跑、不需重寫 —— 唯一卡點就是 dialog
 - （預期）單據編號序列生成器是否值得上收為框架服務
 - （預期）FormField 驗證規則（Required / Min / Max）定義層支援
 - （觀察）自關連 lookup 是否需要框架層特別處理（避免無限遞迴開窗等）
