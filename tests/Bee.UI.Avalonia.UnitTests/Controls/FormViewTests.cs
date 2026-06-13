@@ -319,7 +319,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         public void ComputeSelectFields_NullListFields_ReturnsOnlyRowId()
         {
             var schema = BuildEmployeeSchema();
-            schema.ListFields = null;
+            schema.ListFields = null!;
             var view = new TestFormView { Schema = schema };
             var method = typeof(FormView).GetMethod(
                 "ComputeSelectFields", BindingFlags.NonPublic | BindingFlags.Instance);
