@@ -779,6 +779,107 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             Assert.Equal(string.Empty, nullRow);
         }
 
+        [Fact]
+        [DisplayName("Unbind 解除訂閱：後續 DataSet 置換不刷新明細表")]
+        public async Task Unbind_AfterDetailBind_StopsReceivingDataSetReplaced()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add("emp_name", "Name", FieldDbType.String);
+            var detail = schema.Tables.Add("EmployeePhone", "Phones");
+            detail.Fields!.Add("phone", "Phone", FieldDbType.String);
+
+            var refreshed = new DataSet("Employee");
+            refreshed.Tables.Add(new DataTable("Employee"));
+            var refreshedDetail = new DataTable("EmployeePhone");
+            refreshedDetail.Columns.Add("phone", typeof(string));
+            refreshed.Tables.Add(refreshedDetail);
+
+            var connector = new FakeFormApiConnector
+            {
+                GetNewDataHandler = () => new Bee.Api.Core.Messages.Form.GetNewDataResponse { DataSet = refreshed },
+            };
+            var dataObject = new FormDataObject(schema, connector);
+
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+            var tableBeforeUnbind = grid.DataTable;
+
+            grid.Unbind();
+            await dataObject.NewAsync();
+
+            // After Unbind the grid is unsubscribed from DataSetReplaced; DataTable must still
+            // point to the original stale instance, not the refreshed one.
+            Assert.Same(tableBeforeUnbind, grid.DataTable);
+            Assert.NotSame(refreshedDetail, grid.DataTable);
+        }
+
+        [Fact]
+        [DisplayName("RefreshRows 執行後 ItemsSource 不為 null（不拋例外）")]
+        public void RefreshRows_AfterBind_DoesNotThrowAndItemsSourceIsNonNull()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            var exception = Record.Exception(grid.RefreshRows);
+
+            Assert.Null(exception);
+            Assert.NotNull(grid.InnerGrid.ItemsSource);
+        }
+
+        [Fact]
+        [DisplayName("DeleteSelectedRow 無選取列時為 no-op，不拋例外且列數不變")]
+        public void DeleteSelectedRow_NothingSelected_IsNoOp()
+        {
+            var rows = BuildEmployeeRows();
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), rows);
+            var countBefore = rows.Rows.Count;
+
+            var exception = Record.Exception(grid.DeleteSelectedRow);
+
+            Assert.Null(exception);
+            Assert.Equal(countBefore, rows.Rows.Count);
+        }
+
+        [Fact]
+        [DisplayName("BuildCellEditor rowView 為 null 時立即回傳空 TextBlock")]
+        public void BuildCellEditor_NullRowView_ReturnsTextBlock()
+        {
+            var grid = new GridControl();
+            grid.Bind(BuildEmployeeListLayout(), BuildEmployeeRows());
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+
+            var result = method!.Invoke(grid, new object?[] { null, new LayoutColumn { FieldName = "sys_name" } });
+
+            Assert.IsType<TextBlock>(result);
+        }
+
+        [Fact]
+        [DisplayName("DropDownEdit 欄位無 ListItems 時 BuildCellEditor 回退為 TextBox（列表模式無資料物件）")]
+        public void BuildCellEditor_DropDownEdit_NoListItems_FallsBackToTextBox()
+        {
+            var table = new DataTable("Items");
+            table.Columns.Add("category", typeof(string));
+            table.Rows.Add("X");
+            var grid = new GridControl();
+            grid.Bind(new LayoutGrid("Items", "Items"), table);
+
+            var method = typeof(GridControl).GetMethod(
+                "BuildCellEditor", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            var column = new LayoutColumn("category", "Category", ControlType.DropDownEdit);
+
+            var editor = method!.Invoke(grid, new object?[] { table.DefaultView[0], column });
+
+            Assert.IsType<TextBox>(editor);
+        }
+
         /// <summary>
         /// Test double that bypasses the real JSON-RPC pipeline by overriding the
         /// virtual CRUD methods used here. Mirrors the fake in
