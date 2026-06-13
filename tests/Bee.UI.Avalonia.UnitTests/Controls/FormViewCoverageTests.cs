@@ -40,7 +40,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             var schema = new FormSchema("Employee", "Employee");
             var master = schema.Tables!.Add("Employee", "Employee");
             master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
-            schema.ListFields = null;
+            schema.ListFields = null!;
 
             var view = new TestFormView { Schema = schema };
 
@@ -85,7 +85,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
 
             // sys_rowid 應只出現一次
             var fields = result.Split(',');
-            Assert.Single(fields.Where(f => string.Equals(f, SysFields.RowId, StringComparison.OrdinalIgnoreCase)));
+            Assert.Single(fields, f => string.Equals(f, SysFields.RowId, StringComparison.OrdinalIgnoreCase));
         }
 
         [Fact]
