@@ -24,6 +24,18 @@ namespace Bee.UI.Avalonia.UnitTests
             new GridControl().DataTable = new DataTable("warmup");
             new DropDownEdit().SelectedItem = null;
 
+            // `ComboBox.UpdateSelectionBoxItem` parses an indexer binding for the
+            // selection box the first time a selected item renders; that parse
+            // populates a shared expression-AST cache whose first population is not
+            // thread-safe either (observed as "Collection was modified" inside
+            // `ExpressionNodeFactory.CreateFromAst` on 2-core CI runners). Selecting
+            // an item here walks that path once, single-threaded.
+            var combo = new DropDownEdit
+            {
+                ItemsSource = new[] { new Bee.Definition.Collections.ListItem("warm", "Warm") },
+            };
+            combo.SelectedIndex = 0;
+
             // Constructing the remaining controls warms their styled-property paths.
             _ = new TextEdit();
             _ = new MemoEdit();
