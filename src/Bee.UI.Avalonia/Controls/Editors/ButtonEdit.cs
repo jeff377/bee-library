@@ -204,8 +204,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
             {
                 // UI boundary: an async click handler must not crash the app; surface
                 // the failure to the host (or the tooltip as a last resort).
-                if (LookupFailed is { } handler)
-                    handler(this, ex);
+                if (LookupFailed != null)
+                    LookupFailed(this, ex);
                 else
                     ToolTip.SetTip(this, ex.Message);
             }
