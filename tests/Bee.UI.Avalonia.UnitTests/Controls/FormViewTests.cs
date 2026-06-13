@@ -274,6 +274,62 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.Equal(SingleFormMode.View, view.FormMode);
         }
 
+        [Fact]
+        [DisplayName("OnDeleteClickedAsync 呼叫 DeleteAsync 並重載列表，最終回到 View 模式")]
+        public async Task OnDeleteClickedAsync_DelegatesToDeleteAsyncAndReturnsToView()
+        {
+            var rowId = Guid.NewGuid();
+            var deleteInvoked = false;
+            var connector = new FakeFormApiConnector
+            {
+                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "Alice") },
+                GetDataHandler = _ => new GetDataResponse { DataSet = BuildServerDataSet(rowId, "Alice") },
+                DeleteHandler = _ =>
+                {
+                    deleteInvoked = true;
+                    return new DeleteResponse();
+                },
+            };
+            var view = new TestFormView { Schema = BuildEmployeeSchema(), FormConnector = connector };
+            await view.InitializeAsync();
+            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
+
+            await InvokePrivateAsync(view, "OnDeleteClickedAsync");
+
+            Assert.True(deleteInvoked);
+            Assert.Equal(SingleFormMode.View, view.FormMode);
+        }
+
+        [Fact]
+        [DisplayName("ComputeSelectFields Schema 為 null 時回傳空字串")]
+        public void ComputeSelectFields_NullSchema_ReturnsEmpty()
+        {
+            var view = new TestFormView();
+            var method = typeof(FormView).GetMethod(
+                "ComputeSelectFields", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+
+            var result = (string)method!.Invoke(view, null)!;
+
+            Assert.Equal(string.Empty, result);
+        }
+
+        [Fact]
+        [DisplayName("ComputeSelectFields ListFields 為 null 時只回傳 sys_rowid")]
+        public void ComputeSelectFields_NullListFields_ReturnsOnlyRowId()
+        {
+            var schema = BuildEmployeeSchema();
+            schema.ListFields = null;
+            var view = new TestFormView { Schema = schema };
+            var method = typeof(FormView).GetMethod(
+                "ComputeSelectFields", BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+
+            var result = (string)method!.Invoke(view, null)!;
+
+            Assert.Equal(SysFields.RowId, result);
+        }
+
         /// <summary>
         /// Overrides the <c>Resolve*</c> hooks so tests never read the process-wide
         /// <c>ClientInfo</c> statics; the unused <c>ResolveFormConnector</c> throws to
