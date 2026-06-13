@@ -739,7 +739,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 return checkBox;
             }
 
-            if (!canEdit || rowView is null)
+            if (!canEdit)
             {
                 return new TextBlock
                 {
@@ -749,13 +749,13 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 };
             }
 
-            return BuildSwapCell(rowView, column);
+            return BuildSwapCell(rowView!, column);
         }
 
         // Click-to-edit host: rests as the original text rendering, swaps to the
         // editor on pointer press and swaps back when the edit session ends, re-reading
         // the row so the committed value is what gets displayed.
-        private Control BuildSwapCell(DataRowView rowView, LayoutColumn column)
+        private ContentControl BuildSwapCell(DataRowView rowView, LayoutColumn column)
         {
             var host = new ContentControl
             {
