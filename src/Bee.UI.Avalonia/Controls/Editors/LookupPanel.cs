@@ -24,10 +24,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
     public class LookupPanel : UserControl
     {
         private readonly TextBox _searchBox;
-        private readonly Button _searchButton;
         private readonly GridControl _grid;
         private readonly Button _okButton;
-        private readonly Button _cancelButton;
         private readonly TextBlock _errorLabel;
         private FormApiConnector? _connector;
 
@@ -53,8 +51,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 e.Handled = true;
                 await ReloadAsync().ConfigureAwait(true);
             };
-            _searchButton = new Button { Content = "Search" };
-            _searchButton.Click += async (_, _) => await ReloadAsync().ConfigureAwait(true);
+            var searchButton = new Button { Content = "Search" };
+            searchButton.Click += async (_, _) => await ReloadAsync().ConfigureAwait(true);
 
             _grid = new GridControl { MinHeight = 240 };
             _grid.RowSelected += (_, _) => UpdateOkState();
@@ -62,8 +60,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
 
             _okButton = new Button { Content = "OK", MinWidth = 80, IsEnabled = false };
             _okButton.Click += (_, _) => Commit();
-            _cancelButton = new Button { Content = "Cancel", MinWidth = 80 };
-            _cancelButton.Click += (_, _) => Cancel();
+            var cancelButton = new Button { Content = "Cancel", MinWidth = 80 };
+            cancelButton.Click += (_, _) => Cancel();
 
             _errorLabel = new TextBlock
             {
@@ -73,9 +71,9 @@ namespace Bee.UI.Avalonia.Controls.Editors
             };
 
             var searchRow = new DockPanel { LastChildFill = true };
-            DockPanel.SetDock(_searchButton, Dock.Right);
-            _searchButton.Margin = new Thickness(8, 0, 0, 0);
-            searchRow.Children.Add(_searchButton);
+            DockPanel.SetDock(searchButton, Dock.Right);
+            searchButton.Margin = new Thickness(8, 0, 0, 0);
+            searchRow.Children.Add(searchButton);
             searchRow.Children.Add(_searchBox);
 
             var buttons = new StackPanel
@@ -85,7 +83,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 HorizontalAlignment = HorizontalAlignment.Right,
             };
             buttons.Children.Add(_okButton);
-            buttons.Children.Add(_cancelButton);
+            buttons.Children.Add(cancelButton);
 
             var host = new StackPanel
             {
