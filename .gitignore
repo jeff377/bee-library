@@ -442,6 +442,14 @@ Master.key
 # Materialized at startup by DemoBackend from Bee.Definition embedded defaults
 /samples/Define/TableSchema/common/st_cache_notify.TableSchema.xml
 
+# Apps runtime artifacts (generated when running the demo apps; never committed)
+/apps/**/*.db
+/apps/**/*.db-journal
+/apps/**/*.db-shm
+/apps/**/*.db-wal
+# Materialized at startup by NorthwindBackend from Bee.Definition embedded defaults
+/apps/Bee.Northwind/Define/TableSchema/common/st_cache_notify.TableSchema.xml
+
 # macOS
 .DS_Store
 **/.DS_Store

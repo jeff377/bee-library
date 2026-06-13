@@ -1,0 +1,60 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Bee.Northwind.UI.ViewModels"
+             mc:Ignorable="d"
+             x:Class="Bee.Northwind.UI.Views.ConnectionView"
+             x:DataType="vm:ConnectionViewModel">
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.status">
+      <Setter Property="Foreground" Value="{DynamicResource SemiColorText2}" />
+    </Style>
+    <Style Selector="TextBlock.status.error">
+      <Setter Property="Foreground" Value="{DynamicResource SemiColorDanger}" />
+    </Style>
+  </UserControl.Styles>
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+    <Border Width="420" Margin="24"
+            HorizontalAlignment="Center" VerticalAlignment="Center"
+            Background="{DynamicResource SemiColorBackground0}"
+            BorderBrush="{DynamicResource SemiColorBorder}"
+            BorderThickness="1" CornerRadius="8" Padding="28">
+      <StackPanel Spacing="14">
+
+        <TextBlock Text="Bee.Northwind" FontSize="24" FontWeight="Bold" />
+
+        <TextBlock TextWrapping="Wrap"
+                   Foreground="{DynamicResource SemiColorText2}"
+                   Text="A Northwind inventory demo built entirely from FormSchema definitions. Point this app at the Bee.Northwind.Server JSON-RPC endpoint and connect." />
+
+        <StackPanel Spacing="6">
+          <TextBlock Text="Endpoint" Foreground="{DynamicResource SemiColorText1}" />
+          <TextBox Text="{Binding Endpoint, Mode=TwoWay}"
+                   PlaceholderText="http://host:port/api"
+                   IsEnabled="{Binding IsNotBusy}" />
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Spacing="12">
+          <Button Content="Connect"
+                  Classes="Primary"
+                  Command="{Binding ConnectCommand}"
+                  IsEnabled="{Binding IsNotBusy}" />
+          <ProgressBar IsIndeterminate="True"
+                       Width="120"
+                       VerticalAlignment="Center"
+                       IsVisible="{Binding IsBusy}" />
+        </StackPanel>
+
+        <TextBlock Classes="status"
+                   Classes.error="{Binding IsError}"
+                   Text="{Binding Status}"
+                   TextWrapping="Wrap" />
+
+      </StackPanel>
+    </Border>
+  </ScrollViewer>
+
+</UserControl>

@@ -1,12 +1,12 @@
 # 計畫：Bee.Northwind 進銷存範例（Avalonia / 先 Desktop head）
 
-**狀態：📝 擬定中（2026-06-13 命名 Bee.Northwind、框架系統表 st_ + 業務表 ft_ 分層、前端 UI + Desktop head、開發於 `apps/`、完成後畢業移獨立 repo）**
+**狀態：🚧 進行中（2026-06-13 起；命名 Bee.Northwind、框架系統表 st_ + 業務表 ft_ 分層、前端 UI + Desktop head、開發於 `apps/`、完成後畢業移獨立 repo）**
 
 > **前置依賴已解除**：`plan-avalonia-lookup-edit`（Avalonia lookup 開窗機制）已於 2026-06-12 全階段完成並封存至 `docs/archive/`。本 plan 各階段不再有 lookup 阻塞。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 專案骨架：`apps/Bee.Northwind/`（3 專案 Server / UI / Desktop + `Define/` 定義檔目錄）+ 獨立 slnx + ProjectReference，跑通最小主檔表單 | 📝 待做 |
+| 1 | 專案骨架：`apps/Bee.Northwind/`（3 專案 Server / UI / Desktop + `Define/` 定義檔目錄）+ 獨立 slnx + ProjectReference，跑通最小主檔表單 | ✅ 已完成（2026-06-13） |
 | 2 | 業務純主檔：Category / Supplier / Customer / Shipper（ft_，零 lookup、零 C#）— 最純定義驅動 | 📝 待做 |
 | 3 | 框架系統表 + 擴充：Department（複製框架定義）+ Employee（複製框架 st_employee + Northwind 欄位擴充，dept→Department lookup） | 📝 待做 |
 | 4 | 業務 lookup 主檔：Product（Supplier + Category 雙 lookup）（仍零 C#） | 📝 待做 |

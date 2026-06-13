@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Category" DisplayName="Category" CategoryId="common" ListFields="sys_id,sys_name,description" LookupFields="sys_id,sys_name">
+  <Tables>
+    <FormTable TableName="Category" DbTableName="ft_category" DisplayName="Category">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+        <FormField FieldName="sys_id" Caption="Category Code" DbType="String" />
+        <FormField FieldName="sys_name" Caption="Category Name" DbType="String" />
+        <FormField FieldName="description" Caption="Description" DbType="String" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>
