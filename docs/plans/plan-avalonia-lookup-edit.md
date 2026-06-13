@@ -35,8 +35,9 @@
 
 ## 設計決策（已與使用者確認）
 
-1. **顯示值**：`FormField` 新增 `DisplayFields` 屬性（逗號分隔，與 `ListFields` / `LookupFields` 同族），指定 ButtonEdit 顯示哪些本地欄位、值以空格串接（如 `ref_dept_id,ref_dept_name` → `D001 - Engineering`）；未宣告時慣例取 `RelationFieldMappings` 中 `SourceField == sys_id` 與 `sys_name` 的目的欄（依序、缺者略過）—— 主檔目標顯示「編號 - 名稱」，交易型目標（如採購單）只映射 `sys_id` 時自然只顯示單號。（2026-06-13 自測回饋由單一 `DisplayField` 升級為複合顯示）
-2. **InCell 一併做**：明細逐格編輯選商品是 ERP 使用者的自然期待，InCell ButtonEdit cell 納入本 plan（階段 6），走 ADR-021 click-to-swap 編輯管線。
+1. **顯示值**：`FormField` 新增 `DisplayFields` 屬性（逗號分隔，與 `ListFields` / `LookupFields` 同族），指定 ButtonEdit 顯示哪些本地欄位、值以「 - 」串接（如 `ref_dept_id,ref_dept_name` → `D001 - Engineering`）；未宣告時慣例取 `RelationFieldMappings` 中 `SourceField == sys_id` 與 `sys_name` 的目的欄（依序、缺者略過）—— 主檔目標顯示「編號 - 名稱」，交易型目標（如採購單）只映射 `sys_id` 時自然只顯示單號。（2026-06-13 自測回饋由單一 `DisplayField` 升級為複合顯示）
+2. **layout 產生的涵蓋規則**（2026-06-13 自測回饋）：`Visible` 回歸直觀語意 ——「這個欄位的值會不會被直接看到」：rowid 永遠看不到 → `Visible=false`；`ref_*` 是實際看到的值 → `Visible=true`。`FormLayoutGenerator`（sections + details 同規則）：relation 欄位由 `RelationProgId` 驅動一律產出 ButtonEdit（不依 `Visible`，因為它是編輯入口、承載複合顯示）；被其有效 `DisplayFields` 涵蓋的欄位不另行產生；未涵蓋的 `ref_*`（如主管名稱等額外投影）依自身 `Visible` 正常產出，不丟資訊。清單側維持 `ListFields` 顯式宣告（拆欄顯示 `ref_*`、不列 rowid），匯出即所見即所得；明細匯出的 lookup 欄拆欄規則留給未來匯出器。
+3. **InCell 一併做**：明細逐格編輯選商品是 ERP 使用者的自然期待，InCell ButtonEdit cell 納入本 plan（階段 6），走 ADR-021 click-to-swap 編輯管線。
 4. **開窗取數走專用方法 `GetLookup`**，不共用 `GetList`。理由：
    - **權限軸分離**：開單據的使用者可能沒有目標主檔的清單查詢權限，但需要能 lookup 選取；獨立 action 才能分開授權
    - **欄位曝險由 server 控**：`GetList` + selectFields 是 client 決定欄位，lookup 可能被用來越權取敏感欄位（信用額度、議價）；專用方法由目標表單定義宣告曝險集
