@@ -2,7 +2,6 @@ using System.ComponentModel;
 using System.Data;
 using System.Reflection;
 using Avalonia.Controls;
-using Bee.Definition;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls.Editors;
 
