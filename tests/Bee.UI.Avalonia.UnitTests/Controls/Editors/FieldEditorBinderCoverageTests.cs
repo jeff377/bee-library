@@ -62,7 +62,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("NotifyAttached：ambient DataObject 未設定時不綁定，Text 維持空字串")]
+        [DisplayName("NotifyAttached：ambient DataObject 未設定時不綁定，Text 維持 null")]
         public void NotifyAttached_NoAmbientDataObject_DoesNotBind()
         {
             var editor = new TextEdit();
@@ -70,7 +70,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             InvokeNotifyAttached(GetBinder(editor));
 
-            Assert.Equal(string.Empty, editor.Text);
+            Assert.Null(editor.Text);
         }
 
         [Fact]
