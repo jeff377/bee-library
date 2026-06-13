@@ -27,7 +27,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var editor = FieldEditorFactory.Create(controlType);
 
             Assert.IsType(expectedType, editor);
-            Assert.IsAssignableFrom<IFieldEditor>(editor);
+            Assert.IsType<IFieldEditor>(editor, false);
         }
 
         [Theory]
