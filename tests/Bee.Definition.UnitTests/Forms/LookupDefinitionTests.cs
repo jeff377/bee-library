@@ -182,5 +182,73 @@ namespace Bee.Definition.UnitTests.Forms
             Assert.Equal(ControlType.ButtonEdit, field.ControlType);
             Assert.Equal("ref_customer_name", field.DisplayFields);
         }
+
+        [Fact]
+        [DisplayName("GetFormLayout：relation 欄 Visible=false 仍產出 ButtonEdit；被 DisplayFields 涵蓋的欄位不另行產生")]
+        public void GetFormLayout_RelationField_CoversDisplayFields()
+        {
+            // 直觀設定：rowid 的原始值（Guid）永遠不會被看到 → Visible=false；
+            // ref 欄位是實際看到的值 → Visible=true。ButtonEdit 由 RelationProgId
+            // 驅動產生並承載 DisplayFields，被涵蓋的欄位不再各自出現。
+            var schema = BuildSchema();
+            var customerField = schema.MasterTable!.Fields!["customer_rowid"];
+            customerField.Visible = false;
+            customerField.DisplayFields = string.Empty;  // 慣例：ref_customer_id + ref_customer_name
+
+            var layout = schema.GetFormLayout();
+            var fields = layout.Sections![0].Fields!;
+
+            // relation 欄位仍產出（編輯入口）
+            var lookup = fields.First(f => f.FieldName == "customer_rowid");
+            Assert.Equal(ControlType.ButtonEdit, lookup.ControlType);
+            Assert.Equal("ref_customer_id,ref_customer_name", lookup.DisplayFields);
+            // 被複合顯示涵蓋的欄位不另行產生
+            Assert.DoesNotContain(fields, f => f.FieldName == "ref_customer_id");
+            Assert.DoesNotContain(fields, f => f.FieldName == "ref_customer_name");
+        }
+
+        [Fact]
+        [DisplayName("GetFormLayout：未被 DisplayFields 涵蓋的 ref 欄位仍各自產出（不丟資訊）")]
+        public void GetFormLayout_UncoveredRelationDisplayField_StillEmitted()
+        {
+            var schema = BuildSchema();
+            var customerField = schema.MasterTable!.Fields!["customer_rowid"];
+            // 顯式只顯示名稱 → ref_customer_id 未被涵蓋，應以獨立欄位產出
+            customerField.DisplayFields = "ref_customer_name";
+
+            var layout = schema.GetFormLayout();
+            var fields = layout.Sections![0].Fields!;
+
+            Assert.Contains(fields, f => f.FieldName == "ref_customer_id");
+            Assert.DoesNotContain(fields, f => f.FieldName == "ref_customer_name");
+        }
+
+        [Fact]
+        [DisplayName("GetFormLayout：明細表套用同一套涵蓋規則")]
+        public void GetFormLayout_DetailGrid_CoversDisplayFields()
+        {
+            var schema = BuildSchema();
+            var detail = schema.Tables!.Add("OrderLine", "訂單明細");
+            detail.Fields!.Add(new FormField("sys_rowid", "唯一識別", FieldDbType.Guid));
+            detail.Fields!.Add(new FormField("sys_master_rowid", "主檔識別", FieldDbType.Guid));
+            var productField = new FormField("product_rowid", "商品", FieldDbType.Guid)
+            {
+                RelationProgId = "Product",
+                Visible = false,
+            };
+            productField.RelationFieldMappings!.Add("sys_id", "ref_product_id");
+            productField.RelationFieldMappings!.Add("sys_name", "ref_product_name");
+            detail.Fields!.Add(productField);
+            detail.Fields!.Add(new FormField("ref_product_id", "商品代碼", FieldDbType.String, FieldType.RelationField));
+            detail.Fields!.Add(new FormField("ref_product_name", "商品名稱", FieldDbType.String, FieldType.RelationField));
+
+            var layout = schema.GetFormLayout();
+            var columns = layout.Details![0].Columns!;
+
+            var lookup = columns.First(c => c.FieldName == "product_rowid");
+            Assert.Equal(ControlType.ButtonEdit, lookup.ControlType);
+            Assert.DoesNotContain(columns, c => c.FieldName == "ref_product_id");
+            Assert.DoesNotContain(columns, c => c.FieldName == "ref_product_name");
+        }
     }
 }

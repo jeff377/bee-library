@@ -37,12 +37,12 @@
 
 1. **顯示值**：`FormField` 新增 `DisplayFields` 屬性（逗號分隔，與 `ListFields` / `LookupFields` 同族），指定 ButtonEdit 顯示哪些本地欄位、值以空格串接（如 `ref_dept_id,ref_dept_name` → `D001 - Engineering`）；未宣告時慣例取 `RelationFieldMappings` 中 `SourceField == sys_id` 與 `sys_name` 的目的欄（依序、缺者略過）—— 主檔目標顯示「編號 - 名稱」，交易型目標（如採購單）只映射 `sys_id` 時自然只顯示單號。（2026-06-13 自測回饋由單一 `DisplayField` 升級為複合顯示）
 2. **InCell 一併做**：明細逐格編輯選商品是 ERP 使用者的自然期待，InCell ButtonEdit cell 納入本 plan（階段 6），走 ADR-021 click-to-swap 編輯管線。
-3. **開窗取數走專用方法 `GetLookup`**，不共用 `GetList`。理由：
+4. **開窗取數走專用方法 `GetLookup`**，不共用 `GetList`。理由：
    - **權限軸分離**：開單據的使用者可能沒有目標主檔的清單查詢權限，但需要能 lookup 選取；獨立 action 才能分開授權
    - **欄位曝險由 server 控**：`GetList` + selectFields 是 client 決定欄位，lookup 可能被用來越權取敏感欄位（信用額度、議價）；專用方法由目標表單定義宣告曝險集
    - **BO 業務過濾覆寫點**：lookup 常要「只列有效客戶 / 可售商品」，這類過濾不應污染主檔管理清單的 `GetList`
    - **搜尋邏輯收斂 server**：`GetLookup(searchText, paging)` 讓 FilterNode 組裝留在 server，各前端不重複實作
-4. **回傳欄位集**：`FormSchema` 新增 `LookupFields`（逗號分隔，同 `ListFields` 風格）；未設定時預設取 `sys_rowid, sys_id, sys_name`（主檔慣例識別欄位，固定可預測；欄位不存在於 schema 時略過）；回應一律附 `sys_rowid`。**契約**：呼叫端 mapping 的 `SourceField` 必須 ⊆ 目標表單的 lookup 欄位集（未來可在定義載入時跨 schema 驗證）。
+5. **回傳欄位集**：`FormSchema` 新增 `LookupFields`（逗號分隔，同 `ListFields` 風格）；未設定時預設取 `sys_rowid, sys_id, sys_name`（主檔慣例識別欄位，固定可預測；欄位不存在於 schema 時略過）；回應一律附 `sys_rowid`。**契約**：呼叫端 mapping 的 `SourceField` 必須 ⊆ 目標表單的 lookup 欄位集（未來可在定義載入時跨 schema 驗證）。
 
 ## 行為規格
 

@@ -55,7 +55,8 @@ namespace Bee.Definition.Layouts
                 Caption = master.DisplayName,
             };
 
-            foreach (var field in master.Fields.Where(f => f.Visible))
+            var covered = CollectCoveredDisplayFields(master);
+            foreach (var field in master.Fields.Where(f => ShouldEmit(f, covered)))
                 section.Fields!.Add(LayoutColumnFactory.ToField(field));
 
             if (section.Fields!.Count > 0)
@@ -80,8 +81,9 @@ namespace Bee.Definition.Layouts
                     AllowActions = GridControlAllowActions.All,
                 };
 
-                // 1. Visible=true fields
-                foreach (var field in table.Fields.Where(f => f.Visible))
+                // 1. Emitted fields (relation lookup editors + visible plain fields)
+                var covered = CollectCoveredDisplayFields(table);
+                foreach (var field in table.Fields.Where(f => ShouldEmit(f, covered)))
                     grid.Columns!.Add(LayoutColumnFactory.ToColumn(field));
 
                 // 2. System fields required for grid binding (whitelist), hidden in layout
@@ -97,6 +99,37 @@ namespace Bee.Definition.Layouts
                 if (grid.Columns!.Count > 0)
                     layout.Details!.Add(grid);
             }
+        }
+
+        /// <summary>
+        /// Collects the fields expressed through a relation field's composite lookup
+        /// display (its effective <c>DisplayFields</c>); they are not generated as
+        /// separate layout fields.
+        /// </summary>
+        private static HashSet<string> CollectCoveredDisplayFields(FormTable table)
+        {
+            var covered = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            foreach (var field in table.Fields!.Where(f => StringUtilities.IsNotEmpty(f.RelationProgId)))
+            {
+                foreach (var name in field.GetDisplayFields())
+                    covered.Add(name);
+            }
+            return covered;
+        }
+
+        /// <summary>
+        /// Whether the field gets its own layout field. A relation field always renders
+        /// — its lookup editor carries the display fields, and the intuitive authoring
+        /// marks the raw row-id value invisible (<c>Visible=false</c>) because the raw
+        /// Guid is never shown as data. Plain fields follow <see cref="FormField.Visible"/>
+        /// and skip the ones a lookup display already covers; uncovered relation display
+        /// fields (e.g. extra <c>ref_*</c> projections) still render on their own.
+        /// </summary>
+        private static bool ShouldEmit(FormField field, HashSet<string> covered)
+        {
+            if (StringUtilities.IsNotEmpty(field.RelationProgId)) return true;
+            if (!field.Visible) return false;
+            return !covered.Contains(field.FieldName);
         }
     }
 }
