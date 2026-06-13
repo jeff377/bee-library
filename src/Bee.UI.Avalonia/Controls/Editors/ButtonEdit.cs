@@ -122,12 +122,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 Text = string.Empty;
                 return;
             }
-            var values = displayFields
+            Text = LookupDisplay.Compose(displayFields
                 .Select(f => Binder.TargetRow is not null
                     ? dataObject.GetField(Binder.TargetRow, f)
-                    : dataObject.GetField(f))
-                .Where(v => !string.IsNullOrEmpty(v));
-            Text = string.Join(" ", values);
+                    : dataObject.GetField(f)));
         }
 
         /// <inheritdoc />

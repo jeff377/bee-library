@@ -35,7 +35,7 @@
 
 ## 設計決策（已與使用者確認）
 
-1. **顯示值**：`FormField` 新增 `DisplayFields` 屬性（逗號分隔，與 `ListFields` / `LookupFields` 同族），指定 ButtonEdit 顯示哪些本地欄位、值以空格串接（如 `ref_dept_id,ref_dept_name` → `D001 Engineering`）；未宣告時慣例取 `RelationFieldMappings` 中 `SourceField == sys_id` 與 `sys_name` 的目的欄（依序、缺者略過）—— 主檔目標顯示「編號 名稱」，交易型目標（如採購單）只映射 `sys_id` 時自然只顯示單號。（2026-06-13 自測回饋由單一 `DisplayField` 升級為複合顯示）
+1. **顯示值**：`FormField` 新增 `DisplayFields` 屬性（逗號分隔，與 `ListFields` / `LookupFields` 同族），指定 ButtonEdit 顯示哪些本地欄位、值以空格串接（如 `ref_dept_id,ref_dept_name` → `D001 - Engineering`）；未宣告時慣例取 `RelationFieldMappings` 中 `SourceField == sys_id` 與 `sys_name` 的目的欄（依序、缺者略過）—— 主檔目標顯示「編號 - 名稱」，交易型目標（如採購單）只映射 `sys_id` 時自然只顯示單號。（2026-06-13 自測回饋由單一 `DisplayField` 升級為複合顯示）
 2. **InCell 一併做**：明細逐格編輯選商品是 ERP 使用者的自然期待，InCell ButtonEdit cell 納入本 plan（階段 6），走 ADR-021 click-to-swap 編輯管線。
 3. **開窗取數走專用方法 `GetLookup`**，不共用 `GetList`。理由：
    - **權限軸分離**：開單據的使用者可能沒有目標主檔的清單查詢權限，但需要能 lookup 選取；獨立 action 才能分開授權
@@ -69,7 +69,7 @@
 
 ### 顯示與清空
 
-- ButtonEdit 文字框顯示 `DisplayFields` 各欄位值的空格串接（空值略過）、**唯讀**（不可手動輸入，v1 不做「鍵入代碼直接解析」，列入未來延伸）
+- ButtonEdit 文字框顯示 `DisplayFields` 各欄位值以「 - 」串接（空值略過；空格會與含空格的英文名稱混淆）、**唯讀**（不可手動輸入，v1 不做「鍵入代碼直接解析」，列入未來延伸）
 - 清空互動：提供清除途徑（具體形式於階段 4 定案，傾向 clear icon 或 Delete 鍵），清空時 rowid 設 `Guid.Empty`、mapping 的 `DestinationField` 一併清空
 - View 模式 / read-only layout 下按鈕已自動停用（ButtonEdit 既有行為，沿用）
 

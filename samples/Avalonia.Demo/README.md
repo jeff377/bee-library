@@ -45,7 +45,7 @@ dotnet run --configuration Debug
 ### Lookup walkthrough
 
 1. On the **Department** tab create a department or two (e.g. `D001 / Engineering`).
-2. Switch to **Project**, click **New**, then click the magnifier on *Owner Department* — search, double-click a row (or select + OK), and watch "D001 Engineering" (id + name) appear.
+2. Switch to **Project**, click **New**, then click the magnifier on *Owner Department* — search, double-click a row (or select + OK), and watch "D001 - Engineering" (id + name) appear.
 3. In **Project Members** add a row and click the *Member* cell — the Employee picker opens; pick one of the seeded employees.
 4. **Save**, reselect the project from the list: the `ref_*` columns now come from the server-side relation JOIN (the single source of truth).
 

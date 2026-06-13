@@ -60,14 +60,14 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("lookup 欄位的 Text 應組合顯示「編號 名稱」而非 Guid")]
+        [DisplayName("lookup 欄位的 Text 應組合顯示「編號 - 名稱」而非 Guid")]
         public void RefreshFromSource_ShowsComposedIdAndName()
         {
             var (editor, dataObject, field) = BindLookupEditor();
 
             dataObject.ApplyLookupSelection(field, BuildSelectedRow(Guid.NewGuid(), "C001", "客戶甲"));
 
-            Assert.Equal("C001 客戶甲", editor.Text);
+            Assert.Equal("C001 - 客戶甲", editor.Text);
         }
 
         [Fact]

@@ -204,8 +204,8 @@ namespace Bee.Definition.Forms
         /// Gets or sets the local fields whose values are displayed in place of this
         /// field's bound value, with multiple fields separated by commas. Used by lookup
         /// editors: the field itself stores a row identifier (Guid), while the editor
-        /// shows the mapped display values joined with spaces
-        /// (e.g. <c>"ref_dept_id,ref_dept_name"</c> renders as <c>D001 Engineering</c>).
+        /// shows the mapped display values joined with " - "
+        /// (e.g. <c>"ref_dept_id,ref_dept_name"</c> renders as <c>D001 - Engineering</c>).
         /// </summary>
         /// <remarks>
         /// When empty, the resolution falls back to the <see cref="RelationFieldMappings"/>
@@ -304,7 +304,8 @@ namespace Bee.Definition.Forms
         /// the <see cref="RelationFieldMappings"/> entries whose source fields are
         /// <c>sys_id</c> and <c>sys_name</c> (in that order, skipping absent mappings).
         /// Returns an empty list when no display field applies; editors join the
-        /// resolved values with spaces.
+        /// resolved values with " - " (a plain space would be ambiguous because
+        /// names themselves contain spaces).
         /// </summary>
         public IReadOnlyList<string> GetDisplayFields()
         {

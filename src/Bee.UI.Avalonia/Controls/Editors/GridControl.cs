@@ -676,15 +676,13 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 ? []
                 : displayFields.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-        // Joins the non-empty display-field values with spaces (e.g. "D001 Engineering").
+        // Joins the non-empty display-field values (e.g. "D001 - Engineering").
         private static string ComposeDisplayText(
             DataRowView? rowView, string[] displayFields, string displayFormat, string numberFormat)
         {
             if (displayFields.Length == 0) return string.Empty;
-            var values = displayFields
-                .Select(f => FormatCell(rowView, f, displayFormat, numberFormat))
-                .Where(v => !string.IsNullOrEmpty(v));
-            return string.Join(" ", values);
+            return LookupDisplay.Compose(displayFields
+                .Select(f => FormatCell(rowView, f, displayFormat, numberFormat)));
         }
 
         private async Task OpenLookupCellAsync(DataRow row, FormField lookupField)

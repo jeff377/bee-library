@@ -48,7 +48,7 @@ namespace Bee.Definition.Layouts
         /// Gets or sets the local fields whose values are displayed in place of this
         /// field's bound value, with multiple fields separated by commas. Used by lookup
         /// editors: the bound field stores a row identifier (Guid), while the editor
-        /// shows the mapped display values joined with spaces.
+        /// shows the mapped display values joined with " - ".
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
