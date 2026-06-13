@@ -158,5 +158,25 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             // 版面覆寫後只取 ref_customer_id，不含名稱
             Assert.Equal("C001", editor.Text);
         }
+
+        [Fact]
+        [DisplayName("lookup 開啟失敗時觸發 LookupFailed 事件")]
+        public async Task OnButtonClickAsync_LookupDialogThrows_RaisesLookupFailed()
+        {
+            var dataObject = BuildOrderDataObject();
+            var layout = BuildOrderSchema().GetFormLayout();
+            var layoutField = layout.Sections![0].Fields!.First(f => f.FieldName == "customer_rowid");
+            var editor = new ButtonEdit();
+            editor.Bind(dataObject, layoutField);
+            editor.SetControlState(SingleFormMode.Edit);
+            Assert.True(editor.HasLookup);
+
+            Exception? captured = null;
+            editor.LookupFailed += (_, ex) => captured = ex;
+
+            await InvokeOnButtonClickAsync(editor);
+
+            Assert.NotNull(captured);
+        }
     }
 }
