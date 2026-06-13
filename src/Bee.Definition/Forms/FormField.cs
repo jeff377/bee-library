@@ -201,20 +201,23 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
-        /// Gets or sets the name of the local field whose value is displayed in place of
-        /// this field's bound value. Used by lookup editors: the field itself stores a
-        /// row identifier (Guid), while the editor shows the mapped display value
-        /// (e.g. <c>ref_owner_dept_name</c>).
+        /// Gets or sets the local fields whose values are displayed in place of this
+        /// field's bound value, with multiple fields separated by commas. Used by lookup
+        /// editors: the field itself stores a row identifier (Guid), while the editor
+        /// shows the mapped display values joined with spaces
+        /// (e.g. <c>"ref_dept_id,ref_dept_name"</c> renders as <c>D001 Engineering</c>).
         /// </summary>
         /// <remarks>
-        /// When empty, layout generation falls back to the
-        /// <see cref="RelationFieldMappings"/> entry whose source field is <c>sys_name</c>.
+        /// When empty, the resolution falls back to the <see cref="RelationFieldMappings"/>
+        /// entries whose source fields are <c>sys_id</c> and <c>sys_name</c> (in that
+        /// order, skipping absent mappings) — so a transactional lookup target that only
+        /// maps <c>sys_id</c> displays the document number alone.
         /// </remarks>
         [XmlAttribute]
         [Category("Relation")]
-        [Description("Local field whose value is displayed in place of the bound value (lookup editors).")]
+        [Description("Local fields displayed in place of the bound value, comma separated (lookup editors).")]
         [DefaultValue("")]
-        public string DisplayField { get; set; } = string.Empty;
+        public string DisplayFields { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets a value indicating whether this field is visible.
@@ -296,18 +299,31 @@ namespace Bee.Definition.Forms
         }
 
         /// <summary>
-        /// Resolves the effective display field for lookup editors: an explicit
-        /// <see cref="DisplayField"/> wins; relation fields fall back to the
-        /// <see cref="RelationFieldMappings"/> entry whose source field is
-        /// <c>sys_name</c>. Returns an empty string when no display field applies.
+        /// Resolves the effective display fields for lookup editors. An explicit
+        /// <see cref="DisplayFields"/> declaration wins; relation fields fall back to
+        /// the <see cref="RelationFieldMappings"/> entries whose source fields are
+        /// <c>sys_id</c> and <c>sys_name</c> (in that order, skipping absent mappings).
+        /// Returns an empty list when no display field applies; editors join the
+        /// resolved values with spaces.
         /// </summary>
-        public string GetDisplayField()
+        public IReadOnlyList<string> GetDisplayFields()
         {
-            if (StringUtilities.IsNotEmpty(DisplayField)) { return DisplayField; }
-            if (StringUtilities.IsEmpty(RelationProgId)) { return string.Empty; }
-            var mapping = _relationFieldMappings?.FirstOrDefault(
-                m => StringUtilities.IsEquals(m.SourceField, SysFields.Name));
-            return mapping?.DestinationField ?? string.Empty;
+            if (StringUtilities.IsNotEmpty(DisplayFields))
+            {
+                return DisplayFields.Split(',',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            }
+            if (StringUtilities.IsEmpty(RelationProgId)) { return []; }
+
+            var fields = new List<string>();
+            foreach (var sourceField in new[] { SysFields.Id, SysFields.Name })
+            {
+                var mapping = _relationFieldMappings?.FirstOrDefault(
+                    m => StringUtilities.IsEquals(m.SourceField, sourceField));
+                if (mapping is not null && StringUtilities.IsNotEmpty(mapping.DestinationField))
+                    fields.Add(mapping.DestinationField);
+            }
+            return fields;
         }
 
         /// <summary>
@@ -342,7 +358,7 @@ namespace Bee.Definition.Forms
                 NumberFormat = NumberFormat,
                 RelationProgId = RelationProgId,
                 LookupProgId = LookupProgId,
-                DisplayField = DisplayField,
+                DisplayFields = DisplayFields,
                 Visible = Visible,
                 Width = Width,
                 LangEnumName = LangEnumName,

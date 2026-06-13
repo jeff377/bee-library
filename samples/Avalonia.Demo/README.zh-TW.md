@@ -45,7 +45,7 @@ dotnet run --configuration Debug
 ### Lookup 操作流程
 
 1. 在 **Department** tab 先建一兩個部門（如 `D001 / Engineering`）。
-2. 切到 **Project**，按 **New**，點「Owner Department」的放大鏡 —— 搜尋、雙擊列（或選取 + OK），部門名稱即帶出。
+2. 切到 **Project**，按 **New**，點「Owner Department」的放大鏡 —— 搜尋、雙擊列（或選取 + OK），「D001 Engineering」（編號+名稱）即帶出。
 3. 在 **Project Members** 新增一列、點「Member」cell —— 員工選取窗開啟，挑一筆種子員工。
 4. **Save** 後從清單重選該專案：`ref_*` 欄位此時來自 server 端 relation JOIN（單一真相來源）。
 

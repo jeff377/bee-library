@@ -18,7 +18,7 @@ namespace Bee.Definition.Layouts
             FieldName = field.FieldName,
             Caption = field.Caption,
             ControlType = ResolveControlType(field),
-            DisplayField = field.GetDisplayField(),
+            DisplayFields = string.Join(",", field.GetDisplayFields()),
             DisplayFormat = field.DisplayFormat,
             NumberFormat = field.NumberFormat,
         };
@@ -31,7 +31,7 @@ namespace Bee.Definition.Layouts
             FieldName = field.FieldName,
             Caption = field.Caption,
             ControlType = ResolveControlType(field),
-            DisplayField = field.GetDisplayField(),
+            DisplayFields = string.Join(",", field.GetDisplayFields()),
             Width = field.Width,
             DisplayFormat = field.DisplayFormat,
             NumberFormat = field.NumberFormat,

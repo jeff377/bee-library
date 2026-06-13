@@ -66,12 +66,12 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public FormField? FormField { get; private set; }
 
         /// <summary>
-        /// Gets or sets an additional field whose value changes refresh the editor.
-        /// Lookup editors display a different local field (the display field) than the
-        /// one they bind, so changes to that field must refresh the editor too.
+        /// Gets or sets additional fields whose value changes refresh the editor.
+        /// Lookup editors display different local fields (the display fields) than the
+        /// one they bind, so changes to those fields must refresh the editor too.
         /// Cleared on <see cref="Unbind"/>.
         /// </summary>
-        public string? WatchFieldName { get; set; }
+        public IReadOnlyList<string>? WatchFieldNames { get; set; }
 
         /// <summary>
         /// Gets a value indicating whether the editor is currently bound.
@@ -144,7 +144,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             FormField = null;
             TargetRow = null;
             FieldName = string.Empty;
-            WatchFieldName = null;
+            WatchFieldNames = null;
             _boundFromAmbient = false;
         }
 
@@ -306,8 +306,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 return;
             }
             if (string.Equals(e.FieldName, FieldName, StringComparison.OrdinalIgnoreCase)
-                || (!string.IsNullOrEmpty(WatchFieldName)
-                    && string.Equals(e.FieldName, WatchFieldName, StringComparison.OrdinalIgnoreCase)))
+                || (WatchFieldNames is { Count: > 0 } watched
+                    && watched.Any(w => string.Equals(e.FieldName, w, StringComparison.OrdinalIgnoreCase))))
             {
                 RunSuppressed(_refresh);
             }

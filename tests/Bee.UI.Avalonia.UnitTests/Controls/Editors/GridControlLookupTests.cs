@@ -14,7 +14,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 {
     /// <summary>
     /// GridControl lookup 欄測試：lookup 欄繞過 DataGrid 編輯管線（column 唯讀）、
-    /// cell 顯示 DisplayField 值而非 Guid、可編輯時包 hit-testable host、
+    /// cell 顯示 DisplayFields 組合值而非 Guid、可編輯時包 hit-testable host、
     /// 唯讀 / list 模式呈現純文字。
     /// </summary>
     public class GridControlLookupTests
@@ -73,7 +73,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("可編輯 lookup cell 應為 hit-testable host 且顯示 DisplayField 值")]
+        [DisplayName("可編輯 lookup cell 應為 hit-testable host 且顯示 DisplayFields 組合值")]
         public void BuildLookupCell_Editable_WrapsTextInHost()
         {
             var (grid, dataObject, line) = BindDetailGrid();
@@ -108,11 +108,11 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("list 模式 Bind(layout, rows) 的 ButtonEdit 欄文字 cell 應取 DisplayField")]
+        [DisplayName("list 模式 Bind(layout, rows) 的 ButtonEdit 欄文字 cell 應取 DisplayFields")]
         public void ListMode_ButtonEditColumn_UsesDisplayFieldText()
         {
             // 無 data object 的 list 模式：lookup 偵測為 null、走文字 branch，
-            // 文字欄位仍應取 DisplayField 而非 rowid。
+            // 文字欄位仍應取 DisplayFields 而非 rowid。
             var schema = BuildOrderSchema();
             var layout = schema.GetFormLayout().Details![0];
             var rows = new DataTable("OrderLine");

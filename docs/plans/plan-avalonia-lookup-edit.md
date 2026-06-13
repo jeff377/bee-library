@@ -4,7 +4,7 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 定義層：`DisplayField`、`LookupFields` 屬性 + `ControlType.Auto` 對 Relation 欄位解析為 ButtonEdit | ✅ 已完成（2026-06-12） |
+| 1 | 定義層：`DisplayFields`、`LookupFields` 屬性 + `ControlType.Auto` 對 Relation 欄位解析為 ButtonEdit | ✅ 已完成（2026-06-12） |
 | 2 | API/BO 層：`GetLookup` 專用方法（wire action + BO + Client connector，含 BO 業務過濾覆寫點） | ✅ 已完成（2026-06-12） |
 | 3 | `LookupDialog` 元件：以 `GetLookupAsync` 取數、搜尋、分頁、單選回傳 | ✅ 已完成（2026-06-12） |
 | 4 | 主表欄位接線：ButtonClick → 開窗 → mapping 寫回 FormDataObject（含顯示值與清空） | ✅ 已完成（2026-06-12） |
@@ -35,7 +35,7 @@
 
 ## 設計決策（已與使用者確認）
 
-1. **顯示值**：`FormField` 新增 `DisplayField` 屬性（與 `SourceField` / `DestinationField` / `ListFields` 的欄位參照命名同族），明確指定 ButtonEdit 顯示哪個本地欄位（如 `ref_owner_dept_name`）；`FormLayoutGenerator` 在未指定時以慣例補值 —— 取 `RelationFieldMappings` 中 `SourceField == sys_name` 的 `DestinationField`。
+1. **顯示值**：`FormField` 新增 `DisplayFields` 屬性（逗號分隔，與 `ListFields` / `LookupFields` 同族），指定 ButtonEdit 顯示哪些本地欄位、值以空格串接（如 `ref_dept_id,ref_dept_name` → `D001 Engineering`）；未宣告時慣例取 `RelationFieldMappings` 中 `SourceField == sys_id` 與 `sys_name` 的目的欄（依序、缺者略過）—— 主檔目標顯示「編號 名稱」，交易型目標（如採購單）只映射 `sys_id` 時自然只顯示單號。（2026-06-13 自測回饋由單一 `DisplayField` 升級為複合顯示）
 2. **InCell 一併做**：明細逐格編輯選商品是 ERP 使用者的自然期待，InCell ButtonEdit cell 納入本 plan（階段 6），走 ADR-021 click-to-swap 編輯管線。
 3. **開窗取數走專用方法 `GetLookup`**，不共用 `GetList`。理由：
    - **權限軸分離**：開單據的使用者可能沒有目標主檔的清單查詢權限，但需要能 lookup 選取；獨立 action 才能分開授權
@@ -69,7 +69,7 @@
 
 ### 顯示與清空
 
-- ButtonEdit 文字框顯示 `DisplayField` 欄位值、**唯讀**（不可手動輸入，v1 不做「鍵入代碼直接解析」，列入未來延伸）
+- ButtonEdit 文字框顯示 `DisplayFields` 各欄位值的空格串接（空值略過）、**唯讀**（不可手動輸入，v1 不做「鍵入代碼直接解析」，列入未來延伸）
 - 清空互動：提供清除途徑（具體形式於階段 4 定案，傾向 clear icon 或 Delete 鍵），清空時 rowid 設 `Guid.Empty`、mapping 的 `DestinationField` 一併清空
 - View 模式 / read-only layout 下按鈕已自動停用（ButtonEdit 既有行為，沿用）
 
@@ -77,8 +77,8 @@
 
 ### 階段 1：定義層與 Auto 解析
 
-- `FormField.DisplayField` 屬性、`FormSchema.LookupFields` 屬性（XmlAttribute、三棲序列化、Clone 同步）
-- `FormLayoutGenerator`：`ControlType.Auto` 且 `RelationProgId` 非空 → `ButtonEdit`；`DisplayField` 未設時依慣例補
+- `FormField.DisplayFields` 屬性、`FormSchema.LookupFields` 屬性（XmlAttribute、三棲序列化、Clone 同步）
+- `FormLayoutGenerator`：`ControlType.Auto` 且 `RelationProgId` 非空 → `ButtonEdit`；`DisplayFields` 未設時依慣例補
 - 單元測試：generator 解析、序列化 round-trip
 - **驗收**：Project.FormSchema 經 generator 產出的 layout，relation 欄位為 ButtonEdit 且帶正確顯示欄位
 
@@ -99,7 +99,7 @@
 ### 階段 4：主表欄位接線
 
 - `DynamicForm` / `FieldEditorBinder`：ButtonEdit 建立時若欄位帶 RelationProgId，訂閱 `ButtonClick` → 開 LookupDialog → 寫回
-- 顯示值綁定：text 綁 `DisplayField` 欄位、value 為 `FieldName`（binder 雙欄位綁定）
+- 顯示值綁定：text 綁 `DisplayFields` 欄位組合、value 為 `FieldName`（binder 雙欄位綁定）
 - 清空互動實作
 - **驗收**：Project 表單（Department / Employee lookup）在 Avalonia 端可開窗選取、ref 欄位即時帶出、存檔 round-trip 正確
 
@@ -111,7 +111,7 @@
 ### 階段 6：Grid InCell 模式
 
 - ButtonEdit 作為 cell editor 進 InCell 編輯管線（ADR-021 click-to-swap；DataGrid 編輯管線與 popup 編輯器互動是已知雷區，預留打磨時間）
-- 顯示 cell 呈現 `DisplayField` 值；編輯態進 ButtonEdit、開窗選取後 commit 寫回該列
+- 顯示 cell 呈現 `DisplayFields` 組合值；編輯態進 ButtonEdit、開窗選取後 commit 寫回該列
 - **驗收**：明細 grid 逐格點擊商品欄 → 開窗 → 選取 → 該列 mapping 欄位同步更新
 
 ### 階段 7：測試補齊 + samples 接線
@@ -129,7 +129,7 @@
 | 程式設值不觸發控件事件 | 寫回一律走 FormDataObject property-changed 管線，不直接 set 控件 |
 | mapping `SourceField` 不在目標 lookup 欄位集 → 寫回拿不到值 | `GetLookup` 回應缺欄位時寫回端拋明確錯誤（不沉默跳過）；定義載入期跨 schema 驗證列未來延伸 |
 | LookupDialog 大表全載 | server 端預設分頁上限；搜尋走 server-side FilterNode |
-| `DisplayField` 慣例補值猜錯（mapping 無 sys_name） | 慣例落空時 fallback 顯示空字串並於 generator 出 debug log；定義端可顯式指定 |
+| `DisplayFields` 慣例補值落空（無 sys_id/sys_name mapping） | 慣例落空時 fallback 顯示空字串並於 generator 出 debug log；定義端可顯式指定 |
 
 ## 未來延伸（不在本 plan）
 

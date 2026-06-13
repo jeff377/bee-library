@@ -112,28 +112,32 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 base.RefreshFromSource();
                 return;
             }
-            // Lookup editors show the display field; a relation field without a
+            // Lookup editors compose the display fields (typically "<id> <name>",
+            // id only for transactional targets); a relation field without any
             // resolvable display field shows an empty string rather than the raw Guid.
-            var displayField = ResolveDisplayFieldName();
+            var displayFields = ResolveDisplayFieldNames();
             var dataObject = Binder.DataObject;
-            if (string.IsNullOrEmpty(displayField) || dataObject is null)
+            if (displayFields.Count == 0 || dataObject is null)
             {
                 Text = string.Empty;
                 return;
             }
-            Text = Binder.TargetRow is not null
-                ? dataObject.GetField(Binder.TargetRow, displayField)
-                : dataObject.GetField(displayField);
+            var values = displayFields
+                .Select(f => Binder.TargetRow is not null
+                    ? dataObject.GetField(Binder.TargetRow, f)
+                    : dataObject.GetField(f))
+                .Where(v => !string.IsNullOrEmpty(v));
+            Text = string.Join(" ", values);
         }
 
         /// <inheritdoc />
         protected override void ApplyMetadata()
         {
             base.ApplyMetadata();
-            // Changes to the display field (e.g. a lookup write-back) must refresh
+            // Changes to any display field (e.g. a lookup write-back) must refresh
             // this editor even though it binds the row-id field.
-            var displayField = HasLookup ? ResolveDisplayFieldName() : string.Empty;
-            Binder.WatchFieldName = string.IsNullOrEmpty(displayField) ? null : displayField;
+            var displayFields = HasLookup ? ResolveDisplayFieldNames() : [];
+            Binder.WatchFieldNames = displayFields.Count == 0 ? null : displayFields;
         }
 
         /// <inheritdoc />
@@ -209,12 +213,16 @@ namespace Bee.UI.Avalonia.Controls.Editors
             }
         }
 
-        private string ResolveDisplayFieldName()
+        private IReadOnlyList<string> ResolveDisplayFieldNames()
         {
             // A layout-level override wins over the schema-level resolution.
-            var fromLayout = Binder.LayoutField?.DisplayField;
-            if (!string.IsNullOrEmpty(fromLayout)) return fromLayout!;
-            return Binder.FormField?.GetDisplayField() ?? string.Empty;
+            var fromLayout = Binder.LayoutField?.DisplayFields;
+            if (!string.IsNullOrEmpty(fromLayout))
+            {
+                return fromLayout.Split(',',
+                    StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            }
+            return Binder.FormField?.GetDisplayFields() ?? [];
         }
     }
 }

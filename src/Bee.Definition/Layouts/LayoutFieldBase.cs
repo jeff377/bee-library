@@ -45,15 +45,16 @@ namespace Bee.Definition.Layouts
         public ControlType ControlType { get; set; } = ControlType.TextEdit;
 
         /// <summary>
-        /// Gets or sets the name of the local field whose value is displayed in place of
-        /// this field's bound value. Used by lookup editors: the bound field stores a row
-        /// identifier (Guid), while the editor shows the mapped display value.
+        /// Gets or sets the local fields whose values are displayed in place of this
+        /// field's bound value, with multiple fields separated by commas. Used by lookup
+        /// editors: the bound field stores a row identifier (Guid), while the editor
+        /// shows the mapped display values joined with spaces.
         /// </summary>
         [Category(PropertyCategories.Data)]
         [XmlAttribute]
-        [Description("Local field whose value is displayed in place of the bound value (lookup editors).")]
+        [Description("Local fields displayed in place of the bound value, comma separated (lookup editors).")]
         [DefaultValue("")]
-        public string DisplayField { get; set; } = string.Empty;
+        public string DisplayFields { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the display format string.

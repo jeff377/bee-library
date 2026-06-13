@@ -60,22 +60,23 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("lookup 欄位的 Text 應顯示 DisplayField 值而非 Guid")]
-        public void RefreshFromSource_ShowsDisplayFieldValue()
+        [DisplayName("lookup 欄位的 Text 應組合顯示「編號 名稱」而非 Guid")]
+        public void RefreshFromSource_ShowsComposedIdAndName()
         {
             var (editor, dataObject, field) = BindLookupEditor();
 
             dataObject.ApplyLookupSelection(field, BuildSelectedRow(Guid.NewGuid(), "C001", "客戶甲"));
 
-            Assert.Equal("客戶甲", editor.Text);
+            Assert.Equal("C001 客戶甲", editor.Text);
         }
 
         [Fact]
-        [DisplayName("顯示欄位值變更應同步刷新 Text（WatchFieldName）")]
+        [DisplayName("任一顯示欄位值變更應同步刷新 Text（WatchFieldNames）")]
         public void DisplayFieldChange_RefreshesText()
         {
             var (editor, dataObject, _) = BindLookupEditor();
 
+            // 只有名稱欄有值：編號欄空白會被略過，組合結果只剩名稱。
             dataObject.SetField("ref_customer_name", "客戶乙");
 
             Assert.Equal("客戶乙", editor.Text);

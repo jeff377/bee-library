@@ -582,14 +582,14 @@ namespace Bee.UI.Avalonia.Controls.Editors
             else
             {
                 // List-mode lookup columns (no data object → no lookup flow) still
-                // render the display field instead of the raw row id.
-                var textField = string.IsNullOrEmpty(column.DisplayField)
-                    ? fieldName
-                    : column.DisplayField;
+                // render the display fields instead of the raw row id.
+                var textFields = SplitDisplayFields(column.DisplayFields);
                 templateColumn.CellTemplate = new FuncDataTemplate<DataRowView>(
                     (row, _) => new TextBlock
                     {
-                        Text = FormatCell(row, textField, displayFormat, numberFormat),
+                        Text = textFields.Length == 0
+                            ? FormatCell(row, fieldName, displayFormat, numberFormat)
+                            : ComposeDisplayText(row, textFields, displayFormat, numberFormat),
                         Margin = new Thickness(8, 4),
                     },
                     supportsRecycling: true);
@@ -634,19 +634,18 @@ namespace Bee.UI.Avalonia.Controls.Editors
             return field is not null && !string.IsNullOrEmpty(field.RelationProgId) ? field : null;
         }
 
-        // Lookup cells rest as the display-field text (empty when no display field
-        // resolves — never the raw Guid); a click on an editable cell opens the
-        // lookup dialog and the selection writes back through the data object.
+        // Lookup cells rest as the composed display-field text — typically
+        // "<id> <name>", id only for transactional targets, empty when no display
+        // field resolves (never the raw Guid); a click on an editable cell opens
+        // the lookup dialog and the selection writes back through the data object.
         private Control BuildLookupCell(DataRowView? rowView, LayoutColumn column, FormField lookupField)
         {
-            var displayField = string.IsNullOrEmpty(column.DisplayField)
-                ? lookupField.GetDisplayField()
-                : column.DisplayField;
+            var displayFields = SplitDisplayFields(column.DisplayFields);
+            if (displayFields.Length == 0)
+                displayFields = [.. lookupField.GetDisplayFields()];
             var text = new TextBlock
             {
-                Text = string.IsNullOrEmpty(displayField)
-                    ? string.Empty
-                    : FormatCell(rowView, displayField, column.DisplayFormat, column.NumberFormat),
+                Text = ComposeDisplayText(rowView, displayFields, column.DisplayFormat, column.NumberFormat),
                 Margin = new Thickness(8, 4),
                 VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
             };
@@ -670,6 +669,22 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 await OpenLookupCellAsync(rowView!.Row, lookupField).ConfigureAwait(true);
             };
             return host;
+        }
+
+        private static string[] SplitDisplayFields(string displayFields)
+            => string.IsNullOrEmpty(displayFields)
+                ? []
+                : displayFields.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        // Joins the non-empty display-field values with spaces (e.g. "D001 Engineering").
+        private static string ComposeDisplayText(
+            DataRowView? rowView, string[] displayFields, string displayFormat, string numberFormat)
+        {
+            if (displayFields.Length == 0) return string.Empty;
+            var values = displayFields
+                .Select(f => FormatCell(rowView, f, displayFormat, numberFormat))
+                .Where(v => !string.IsNullOrEmpty(v));
+            return string.Join(" ", values);
         }
 
         private async Task OpenLookupCellAsync(DataRow row, FormField lookupField)
