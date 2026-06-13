@@ -211,7 +211,7 @@ namespace Bee.Business.UnitTests.Form
                 return new FormBusinessObject(ctx, Guid.NewGuid(), ProgId);
             }
 
-            public FormBusinessObject CreateFilteredBo(FilterNode filter)
+            public FilteredLookupBo CreateFilteredBo(FilterNode filter)
             {
                 var ctx = CreateContext();
                 return new FilteredLookupBo(ctx, Guid.NewGuid(), ProgId, filter);
