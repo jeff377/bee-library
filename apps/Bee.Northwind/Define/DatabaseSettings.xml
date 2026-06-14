@@ -1,10 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <DatabaseSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Items>
+    <!-- common: framework / cross-company shared tables (st_session, st_cache_notify). -->
     <DatabaseItem
         Id="common"
         CategoryId="common"
-        DisplayName="Northwind Database (SQLite)"
+        DisplayName="Northwind Shared Database (SQLite)"
+        DatabaseType="SQLite"
+        ConnectionString="Data Source=northwind.db;Cache=Shared" />
+    <!-- company: business data (ft_*) and the app's org tables (st_department / st_employee).
+         A real multi-company deployment gives each company its own database; this single-company
+         demo colocates both categories in one SQLite file. -->
+    <DatabaseItem
+        Id="company"
+        CategoryId="company"
+        DisplayName="Northwind Company Database (SQLite)"
         DatabaseType="SQLite"
         ConnectionString="Data Source=northwind.db;Cache=Shared" />
   </Items>

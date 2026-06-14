@@ -16,6 +16,21 @@ public static class NorthwindCredentials
     public const string DisplayName = "Demo User";
 
     /// <summary>
+    /// The single demo company the session auto-enters at login. Company-scoped forms
+    /// (<c>CategoryId="company"</c>) resolve their database through this id.
+    /// </summary>
+    public const string CompanyId = "NORTHWIND";
+
+    /// <summary>The demo company display name.</summary>
+    public const string CompanyName = "Northwind Traders";
+
+    /// <summary>
+    /// The logical <c>DatabaseSettings</c> id backing the demo company — the
+    /// <c>CompanyInfo.CompanyDatabaseId</c> the router resolves company scope to.
+    /// </summary>
+    public const string CompanyDatabaseId = "company";
+
+    /// <summary>
     /// Hard-coded Base64 AES-CBC-HMAC combined key (64 bytes) used by the demo when
     /// <c>BEE_MASTER_KEY</c> is not set in the environment.
     /// </summary>

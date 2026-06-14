@@ -6,6 +6,7 @@ using Bee.Db.Manager;
 using Bee.Db.Providers.Sqlite;
 using Bee.Definition;
 using Bee.Definition.Database;
+using Bee.Definition.Identity;
 using Bee.Definition.Storage;
 using Bee.Hosting;
 using Microsoft.AspNetCore.Builder;
@@ -74,6 +75,11 @@ public static class NorthwindBackend
         // to NorthwindAuthenticatingSystemBusinessObject. The default IFormBoTypeResolver
         // is left in place — Category CRUD continues to resolve via FormBusinessObject.
         builder.Services.AddSingleton<IBusinessObjectFactory, NorthwindBusinessObjectFactory>();
+
+        // Replace the default ICompanyInfoService (which reads st_company) with a hard-coded
+        // demo company, so company-scoped forms route to the company database without seeding
+        // the company / user-access tables. Registered after AddBeeFramework so it wins.
+        builder.Services.AddSingleton<ICompanyInfoService, NorthwindCompanyInfoService>();
 
         return paths;
     }

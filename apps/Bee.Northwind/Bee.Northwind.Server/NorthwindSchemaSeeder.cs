@@ -23,7 +23,11 @@ namespace Bee.Northwind.Server;
 /// </remarks>
 public static class NorthwindSchemaSeeder
 {
-    private const string DatabaseId = "common";
+    // Business data (ft_* + the app's org tables) lives in the company database; framework
+    // cross-company tables (st_cache_notify) live in common. Both ids resolve to the same
+    // SQLite file in this single-company demo (see DatabaseSettings.xml).
+    private const string CommonDatabaseId = "common";
+    private const string CompanyDatabaseId = "company";
 
     private sealed record SeedTable(
         string Table,
@@ -76,7 +80,8 @@ public static class NorthwindSchemaSeeder
 
         EnsureSchema(defineAccess, connectionManager);
 
-        var dbAccess = dbAccessFactory.Create(DatabaseId);
+        // All seed data is business data, so it lands in the company database.
+        var dbAccess = dbAccessFactory.Create(CompanyDatabaseId);
         var seedDir = Path.Combine(AppContext.BaseDirectory, "SeedData");
 
         foreach (var seed in s_seeds)
@@ -88,32 +93,26 @@ public static class NorthwindSchemaSeeder
 
     private static void EnsureSchema(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
     {
-        var builder = new TableSchemaBuilder(DatabaseId, defineAccess, connectionManager);
-
         // Build every table registered in DbCategorySettings, so adding a new table is pure XML
         // (a TableSchema file + a DbCategorySettings entry) — no edit here. This is what makes
-        // the README's "add a Region form in 30 minutes, zero code" walkthrough honest.
-        foreach (var table in EnumerateRegisteredTables(defineAccess))
-            builder.Execute(DatabaseId, table);
-
-        foreach (var table in s_frameworkTables)
-            builder.Execute(DatabaseId, table);
-    }
-
-    /// <summary>
-    /// Enumerates the table names registered across every category in <c>DbCategorySettings</c>.
-    /// </summary>
-    private static IEnumerable<string> EnumerateRegisteredTables(IDefineAccess defineAccess)
-    {
+        // the README's "add a Region form in 30 minutes, zero code" walkthrough honest. Each
+        // category's id names both the target database and the TableSchema/<id>/ folder.
         var settings = defineAccess.GetDbCategorySettings();
-        if (settings.Categories == null) { yield break; }
-
-        foreach (var category in settings.Categories)
+        if (settings.Categories != null)
         {
-            if (category.Tables == null) { continue; }
-            foreach (var table in category.Tables)
-                yield return table.TableName;
+            foreach (var category in settings.Categories)
+            {
+                if (category.Tables == null) { continue; }
+                var builder = new TableSchemaBuilder(category.Id, defineAccess, connectionManager);
+                foreach (var table in category.Tables)
+                    builder.Execute(category.Id, table.TableName);
+            }
         }
+
+        // Framework tables live in the common database and the TableSchema/common/ folder.
+        var commonBuilder = new TableSchemaBuilder(CommonDatabaseId, defineAccess, connectionManager);
+        foreach (var table in s_frameworkTables)
+            commonBuilder.Execute(CommonDatabaseId, table);
     }
 
     private static void InsertRows(DbAccess dbAccess, SeedTable seed, string seedDir)

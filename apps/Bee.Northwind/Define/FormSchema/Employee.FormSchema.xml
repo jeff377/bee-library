@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Employee" DisplayName="Employee" CategoryId="common" ListFields="sys_id,sys_name,title,ref_dept_name" LookupFields="sys_id,sys_name">
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Employee" DisplayName="Employee" CategoryId="company" ListFields="sys_id,sys_name,title,ref_dept_name" LookupFields="sys_id,sys_name">
   <Tables>
     <FormTable TableName="Employee" DbTableName="st_employee" DisplayName="Employee">
       <Fields>

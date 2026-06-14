@@ -62,6 +62,15 @@ The table prefix records **who owns the table, not which database it lives in**:
 
 `Order → Employee` is the interesting cross-layer edge: a business table (`ft_order`) points at a framework system table (`st_employee`) — the salesperson on an order is a framework employee.
 
+### Which database (`common` vs `company`)
+
+The prefix says who *owns* a table; a separate axis says which *database* it lives in. A `FormSchema`'s `CategoryId` selects the database scope:
+
+- **`company`** — per-company business data. **All of this demo's data is company data**: the `ft_` tables *and* the org tables `st_department` / `st_employee` (an application's employees belong to that company). The router resolves company scope through the session's company to the company database.
+- **`common`** — cross-company shared framework tables (sessions, the cache-notify signal). Not application data.
+
+This demo is single-company, so it auto-enters one fixed company at login (`NorthwindCompanyInfoService` + a `CompanyId` stamped on the session — the company-context analogue of the hard-coded login) and points both the `common` and `company` databases at the same `northwind.db` file. A real multi-company deployment would give each company its own database and enter it through the full `EnterCompany` flow.
+
 ## Northwind → bee model mapping
 
 Northwind is a normalized relational schema; bee is a `sys_rowid` (Guid) relation model. The demo borrows Northwind's business case and data, but the keys and relations follow bee conventions:
@@ -96,7 +105,9 @@ The single C# business object, [`OrderBO`](Bee.Northwind.Server/BusinessObjects/
 
 Northwind has a `Region` table the demo leaves out — so you can add it yourself. You will write **three XML files and one menu line, all definitions, no code**, then restart and get a fully working CRUD screen.
 
-### 1. The table — `Define/TableSchema/common/ft_region.TableSchema.xml`
+### 1. The table — `Define/TableSchema/company/ft_region.TableSchema.xml`
+
+A region is business data, so it goes in the **company** category (`TableSchema/company/`), alongside the other `ft_` tables.
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -125,7 +136,7 @@ Northwind has a `Region` table the demo leaves out — so you can add it yoursel
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Region" DisplayName="Region" CategoryId="common" ListFields="sys_id,sys_name">
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Region" DisplayName="Region" CategoryId="company" ListFields="sys_id,sys_name">
   <Tables>
     <FormTable TableName="Region" DbTableName="ft_region" DisplayName="Region">
       <Fields>
@@ -141,13 +152,13 @@ Northwind has a `Region` table the demo leaves out — so you can add it yoursel
 
 There is no `FormLayout` file to write — the framework generates the layout from the `FormSchema` at delivery time.
 
-### 3. Register the table — add to `Define/DbCategorySettings.xml`
+### 3. Register the table — add to the company category in `Define/DbCategorySettings.xml`
 
 ```xml
 <TableItem TableName="ft_region" DisplayName="Region" />
 ```
 
-This is what makes the seeder build the table on the next start (it builds every table registered here).
+This is what makes the seeder build the table on the next start (it builds every table registered here, into the database the category maps to).
 
 ### 4. Put it on the menu — add to `Define/ProgramSettings.xml`
 
@@ -167,8 +178,9 @@ Restart the server (it creates `ft_region`) and the desktop client. **Regions** 
 apps/Bee.Northwind/
 ├── Define/                       definitions — the source of truth (no project, read by the server)
 │   ├── FormSchema/               one form per file
-│   ├── TableSchema/common/       one table per file
-│   ├── DbCategorySettings.xml    which tables exist (drives schema build)
+│   ├── TableSchema/company/      business tables (company/ + common/ for framework)
+│   ├── DatabaseSettings.xml      the common + company databases
+│   ├── DbCategorySettings.xml    which tables exist, per category (drives schema build)
 │   └── ProgramSettings.xml       the program list (drives the menu + BO binding)
 ├── Bee.Northwind.Server/         JSON-RPC backend, OrderBO, JSON seed data
 ├── Bee.Northwind.UI/             Avalonia shared UI (views, view models, navigation)

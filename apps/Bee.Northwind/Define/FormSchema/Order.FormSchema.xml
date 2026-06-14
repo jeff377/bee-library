@@ -6,7 +6,7 @@
      the ref_* fields are written back locally and re-derived by the server JOIN on
      reload. Order has no natural sys_name, so it is omitted (only lookup-source
      tables need sys_name). Zero application code — definitions only. -->
-<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Order" DisplayName="Order" CategoryId="common" ListFields="sys_id,order_date,ref_customer_name,ref_employee_name,status,total_amount">
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Order" DisplayName="Order" CategoryId="company" ListFields="sys_id,order_date,ref_customer_name,ref_employee_name,status,total_amount">
   <Tables>
     <FormTable TableName="Order" DbTableName="ft_order" DisplayName="Order">
       <Fields>

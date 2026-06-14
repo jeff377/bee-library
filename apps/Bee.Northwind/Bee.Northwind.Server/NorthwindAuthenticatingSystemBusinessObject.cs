@@ -26,4 +26,23 @@ public sealed class NorthwindAuthenticatingSystemBusinessObject : SystemBusiness
         userName = string.Empty;
         return false;
     }
+
+    /// <summary>
+    /// Logs in and auto-enters the single demo company so company-scoped forms resolve their
+    /// database. The full <c>EnterCompany</c> path validates <c>st_user_company</c> access and
+    /// snapshots roles / employee context — none of which the hard-coded demo has; setting
+    /// <c>SessionInfo.CompanyId</c> directly is the minimal equivalent for a single-company demo
+    /// whose forms declare no permission models.
+    /// </summary>
+    public override LoginResult Login(LoginArgs args)
+    {
+        var result = base.Login(args);
+
+        // The session was just created by base.Login; stamp the company context onto it.
+        var session = SessionInfoService.Get(result.AccessToken);
+        session.CompanyId = NorthwindCredentials.CompanyId;
+        SessionInfoService.Set(session);
+
+        return result;
+    }
 }
