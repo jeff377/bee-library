@@ -1,11 +1,4 @@
 <Solution>
-  <Folder Name="/Define/">
-    <File Path="Define/SystemSettings.xml" />
-    <File Path="Define/DatabaseSettings.xml" />
-    <File Path="Define/DbCategorySettings.xml" />
-    <File Path="Define/FormSchema/Category.FormSchema.xml" />
-    <File Path="Define/TableSchema/common/ft_category.TableSchema.xml" />
-  </Folder>
   <Folder Name="/Server/">
     <Project Path="Bee.Northwind.Server/Bee.Northwind.Server.csproj" />
   </Folder>
