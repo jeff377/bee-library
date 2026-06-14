@@ -1,0 +1,92 @@
+# Smoke flow consumed by the `demo-smoke` skill.
+# See .claude/skills/demo-smoke/SKILL.md for the schema.
+#
+# Navigation + view smoke: connect, sign in, browse the Categories list, switch to
+# Orders via the grouped menu, then open a seeded order to verify the master-detail
+# round-trip (Phase 5) and the OrderBO-seeded status / total (Phase 6). It exercises
+# the integration without scripting data entry — record creation goes through lookup
+# dialogs and field typing that OCR-level clicking cannot drive reliably.
+
+name: Bee.Northwind
+display_name: Bee.Northwind
+
+prerequisites:
+  - id: server
+    cwd: apps/Bee.Northwind/Bee.Northwind.Server
+    cmd: dotnet run --configuration Debug --no-build
+    ready_when: "Now listening on"
+    timeout_seconds: 30
+
+launch:
+  app_name: Bee.Northwind
+  # Avalonia desktop ships a plain .NET executable (no .app bundle). Launch the built
+  # host DLL via `dotnet` rather than `dotnet run` so we avoid the file-watch loop.
+  launch_cmd: dotnet apps/Bee.Northwind/Bee.Northwind.Desktop/bin/Debug/net10.0/Bee.Northwind.Desktop.dll
+
+flow:
+  - step: take initial screenshot
+    action: screenshot
+    expect_text:
+      - "Bee.Northwind"
+      - "Endpoint"
+      - "Connect"
+
+  - step: click Connect
+    action: click
+    target: { label: "Connect" }
+    wait_after_seconds: 4
+    expect_text:
+      - "Sign in"
+      - "User ID"
+      - "Password"
+
+  - step: click Sign in
+    action: click
+    target: { label: "Sign in" }
+    wait_after_seconds: 6
+    # Lands on the Forms shell; the first menu entry (Categories) opens automatically.
+    expect_text:
+      - "Master Data"
+      - "Transactions"
+      - "Beverages"
+
+  - step: category-list screenshot
+    action: screenshot
+    save_as: northwind-category-list.png
+
+  # Switch forms via the grouped left menu — opens Orders as a new document tab.
+  - step: open Orders
+    action: click
+    target: { label: "Orders" }
+    wait_after_seconds: 4
+    expect_text:
+      - "10248"
+      - "Shipped"
+
+  - step: order-list screenshot
+    action: screenshot
+    save_as: northwind-order-list.png
+
+  # Select the first order row, then View to open its record (single tap only selects).
+  - step: select order 10248
+    action: click
+    target: { label: "10248" }
+    wait_after_seconds: 2
+
+  - step: open the order record
+    action: click
+    target: { label: "View" }
+    wait_after_seconds: 3
+    # Master fields + the Order Details grid with a seeded product line.
+    expect_text:
+      - "Order Details"
+      - "Queso Cabrales"
+      - "Total Amount"
+
+  - step: order-detail screenshot
+    action: screenshot
+    save_as: northwind-order-detail.png
+
+teardown:
+  kill_app: true
+  kill_prerequisites: true
