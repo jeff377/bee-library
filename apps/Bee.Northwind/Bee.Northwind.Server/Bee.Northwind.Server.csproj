@@ -12,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Bee.Api.AspNetCore\Bee.Api.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\..\src\Bee.Api.Client\Bee.Api.Client.csproj" />
     <ProjectReference Include="..\..\..\src\Bee.Business\Bee.Business.csproj" />
     <ProjectReference Include="..\..\..\src\Bee.Db\Bee.Db.csproj" />
     <ProjectReference Include="..\..\..\src\Bee.Hosting\Bee.Hosting.csproj" />

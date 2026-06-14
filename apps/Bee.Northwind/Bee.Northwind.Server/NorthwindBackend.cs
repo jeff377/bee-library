@@ -1,4 +1,3 @@
-using Bee.Api.Client;
 using Bee.Api.Core;
 using Bee.Base;
 using Bee.Business;
@@ -80,15 +79,12 @@ public static class NorthwindBackend
     }
 
     /// <summary>
-    /// After the host is built: hooks <see cref="ApiClientInfo.LocalServiceProvider"/> and
-    /// runs the schema seeder once.
+    /// After the host is built: runs the schema seeder once.
     /// </summary>
     /// <param name="app">The built web application.</param>
     public static void UseNorthwindBackend(this WebApplication app)
     {
         ArgumentNullException.ThrowIfNull(app);
-
-        ApiClientInfo.LocalServiceProvider = app.Services;
 
         var defineAccess = app.Services.GetRequiredService<IDefineAccess>();
         var connectionManager = app.Services.GetRequiredService<IDbConnectionManager>();
