@@ -164,6 +164,34 @@
             ],
             "problemMatcher": "$msCompile",
             "group": "build"
+        },
+        {
+            "label": "build-northwind-server",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Server/Bee.Northwind.Server.csproj",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
+        },
+        {
+            "label": "build-northwind-desktop",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Desktop/Bee.Northwind.Desktop.csproj",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
         }
     ]
 }

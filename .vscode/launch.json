@@ -69,6 +69,36 @@
             "cwd": "${workspaceFolder}/samples/Avalonia.Editors.Gallery",
             "console": "internalConsole",
             "stopAtEntry": false
+        },
+        {
+            "name": "Run Bee.Northwind.Server",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-northwind-server",
+            "program": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Server/bin/Debug/net10.0/Bee.Northwind.Server.dll",
+            "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Server",
+            "console": "integratedTerminal",
+            "env": { "ASPNETCORE_ENVIRONMENT": "Development" }
+        },
+        {
+            "name": "Run Bee.Northwind.Desktop",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-northwind-desktop",
+            "program": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Desktop/bin/Debug/net10.0/Bee.Northwind.Desktop.dll",
+            "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Desktop",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Run Bee.Northwind (Server + Desktop)",
+            "configurations": [
+                "Run Bee.Northwind.Server",
+                "Run Bee.Northwind.Desktop"
+            ],
+            "stopAll": true
         }
     ]
 }
