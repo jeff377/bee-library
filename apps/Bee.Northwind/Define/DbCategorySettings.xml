@@ -7,6 +7,8 @@
         <TableItem TableName="ft_supplier" DisplayName="Supplier" />
         <TableItem TableName="ft_customer" DisplayName="Customer" />
         <TableItem TableName="ft_shipper" DisplayName="Shipper" />
+        <TableItem TableName="st_department" DisplayName="Department" />
+        <TableItem TableName="st_employee" DisplayName="Employee" />
       </Tables>
     </DbCategory>
   </Categories>

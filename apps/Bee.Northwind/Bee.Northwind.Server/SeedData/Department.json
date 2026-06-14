@@ -1,0 +1,6 @@
+[
+  { "sys_id": "IT", "sys_name": "Information Technology", "manager_rowid": "E003" },
+  { "sys_id": "SALES", "sys_name": "Sales", "manager_rowid": "E002" },
+  { "sys_id": "HR", "sys_name": "Human Resources", "manager_rowid": "E004" },
+  { "sys_id": "FIN", "sys_name": "Finance", "manager_rowid": "E005" }
+]

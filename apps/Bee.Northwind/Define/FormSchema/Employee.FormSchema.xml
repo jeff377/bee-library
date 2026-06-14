@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Employee" DisplayName="Employee" CategoryId="common" ListFields="sys_id,sys_name,title,ref_dept_name" LookupFields="sys_id,sys_name">
+  <Tables>
+    <FormTable TableName="Employee" DbTableName="st_employee" DisplayName="Employee">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" Visible="false" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" Visible="false" />
+        <FormField FieldName="sys_id" Caption="Employee Code" DbType="String" />
+        <FormField FieldName="sys_name" Caption="Employee Name" DbType="String" />
+        <FormField FieldName="title" Caption="Title" DbType="String" />
+        <FormField FieldName="hire_date" Caption="Hire Date" DbType="Date" />
+        <FormField FieldName="dept_rowid" Caption="Department" DbType="Guid" RelationProgId="Department">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_dept_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_dept_name" />
+            <FieldMapping SourceField="ref_manager_id" DestinationField="ref_supervisor_id" />
+            <FieldMapping SourceField="ref_manager_name" DestinationField="ref_supervisor_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_dept_id" Caption="Department Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_dept_name" Caption="Department Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_supervisor_id" Caption="Supervisor Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_supervisor_name" Caption="Supervisor Name" DbType="String" Type="RelationField" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>

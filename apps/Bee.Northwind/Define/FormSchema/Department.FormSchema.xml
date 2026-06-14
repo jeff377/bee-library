@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Department" DisplayName="Department" CategoryId="common" ListFields="sys_id,sys_name,ref_manager_name" LookupFields="sys_id,sys_name,ref_manager_id,ref_manager_name">
+  <Tables>
+    <FormTable TableName="Department" DbTableName="st_department" DisplayName="Department">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" Visible="false" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" Visible="false" />
+        <FormField FieldName="sys_id" Caption="Department Code" DbType="String" />
+        <FormField FieldName="sys_name" Caption="Department Name" DbType="String" />
+        <FormField FieldName="manager_rowid" Caption="Manager" DbType="Guid" RelationProgId="Employee">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_manager_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_manager_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_manager_id" Caption="Manager Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_manager_name" Caption="Manager Name" DbType="String" Type="RelationField" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>

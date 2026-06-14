@@ -21,6 +21,9 @@ public partial class FormsViewModel : ViewModelBase
         NavItem.Form("Suppliers", "Supplier"),
         NavItem.Form("Customers", "Customer"),
         NavItem.Form("Shippers", "Shipper"),
+        NavItem.Header("Organization"),
+        NavItem.Form("Departments", "Department"),
+        NavItem.Form("Employees", "Employee"),
     ];
 
     /// <summary>

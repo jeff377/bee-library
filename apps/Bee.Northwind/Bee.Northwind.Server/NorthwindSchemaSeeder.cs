@@ -9,38 +9,48 @@ namespace Bee.Northwind.Server;
 
 /// <summary>
 /// Process-once helper that materializes the demo's table schema from the
-/// <c>TableSchema</c> definitions and seeds each business master from a JSON file in
-/// <c>SeedData/</c>. Idempotent: schema build is create-if-not-exists, and each table is
-/// seeded only when empty.
+/// <c>TableSchema</c> definitions and seeds each table from a JSON file in <c>SeedData/</c>.
+/// Idempotent: schema build is create-if-not-exists, each table is seeded only when empty,
+/// and the deferred relation pass re-applies the same UPDATEs harmlessly.
 /// </summary>
 /// <remarks>
-/// The seed JSON carries a Northwind subset (real category / supplier / customer / shipper
-/// content). Each row's columns are the object's keys; <c>sys_rowid</c> is generated per row.
-/// Table and column identifiers come from in-repo definition / seed files (not user input);
-/// all values are passed as parameters.
+/// Relation columns in the seed JSON carry the <em>target's</em> <c>sys_id</c> (human
+/// readable); the seeder resolves it to the target's <c>sys_rowid</c>. Forward relations are
+/// resolved inline on insert (target already seeded). Circular relations — Department.manager
+/// references an Employee while Employee.dept references a Department — are listed as deferred
+/// and resolved in a second pass after every table is inserted. Table / column identifiers
+/// come from in-repo definition / seed files (not user input); all values are parameters.
 /// </remarks>
 public static class NorthwindSchemaSeeder
 {
     private const string DatabaseId = "common";
 
-    private static readonly string[] s_tables =
+    private sealed record SeedTable(
+        string Table,
+        string File,
+        Dictionary<string, string>? Forward = null,
+        Dictionary<string, string>? Deferred = null);
+
+    private static readonly string[] s_schemaTables =
     {
-        "ft_category",
-        "ft_supplier",
-        "ft_customer",
-        "ft_shipper",
-        // Framework table polled by CacheNotifyPoller; its schema is materialized from
+        "ft_category", "ft_supplier", "ft_customer", "ft_shipper",
+        "st_department", "st_employee",
+        // Framework table polled by CacheNotifyPoller; schema materialized from
         // Bee.Definition embedded defaults by NorthwindBackend.AddNorthwindBackend.
         "st_cache_notify",
     };
 
-    // table → seed JSON file (under SeedData/). Tables without an entry are schema-only.
-    private static readonly (string Table, string File)[] s_seeds =
+    // Insert order: a forward-relation target must precede its dependents.
+    private static readonly SeedTable[] s_seeds =
     {
-        ("ft_category", "Category.json"),
-        ("ft_supplier", "Supplier.json"),
-        ("ft_customer", "Customer.json"),
-        ("ft_shipper", "Shipper.json"),
+        new("ft_category", "Category.json"),
+        new("ft_supplier", "Supplier.json"),
+        new("ft_customer", "Customer.json"),
+        new("ft_shipper", "Shipper.json"),
+        // Department.manager_rowid -> Employee is circular, so it is deferred; Employee is
+        // inserted next with dept_rowid resolved forward to the just-inserted departments.
+        new("st_department", "Department.json", Deferred: new() { ["manager_rowid"] = "st_employee" }),
+        new("st_employee", "Employee.json", Forward: new() { ["dept_rowid"] = "st_department" }),
     };
 
     public static void EnsureSchemaAndSeed(
@@ -52,42 +62,88 @@ public static class NorthwindSchemaSeeder
 
         EnsureSchema(defineAccess, connectionManager);
 
+        var dbAccess = dbAccessFactory.Create(DatabaseId);
         var seedDir = Path.Combine(AppContext.BaseDirectory, "SeedData");
-        foreach (var (table, file) in s_seeds)
-            SeedFromJson(dbAccessFactory, table, Path.Combine(seedDir, file));
+
+        foreach (var seed in s_seeds)
+            InsertRows(dbAccess, seed, seedDir);
+
+        foreach (var seed in s_seeds.Where(s => s.Deferred is not null))
+            ApplyDeferredRelations(dbAccess, seed, seedDir);
     }
 
     private static void EnsureSchema(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
     {
         var builder = new TableSchemaBuilder(DatabaseId, defineAccess, connectionManager);
-        foreach (var table in s_tables)
+        foreach (var table in s_schemaTables)
             builder.Execute(DatabaseId, table);
     }
 
-    private static void SeedFromJson(IDbAccessFactory dbAccessFactory, string table, string jsonPath)
+    private static void InsertRows(DbAccess dbAccess, SeedTable seed, string seedDir)
     {
-        var dbAccess = dbAccessFactory.Create(DatabaseId);
+        var countSpec = new DbCommandSpec(DbCommandKind.Scalar, $"SELECT COUNT(*) FROM {seed.Table}");
+        if (Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture) > 0) return;
 
-        var countSpec = new DbCommandSpec(DbCommandKind.Scalar, $"SELECT COUNT(*) FROM {table}");
-        var count = Convert.ToInt32(dbAccess.Execute(countSpec).Scalar, CultureInfo.InvariantCulture);
-        if (count > 0) return;
-
-        var rows = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(File.ReadAllText(jsonPath))
-                   ?? new List<Dictionary<string, JsonElement>>();
-
-        foreach (var row in rows)
+        foreach (var row in ReadRows(seedDir, seed.File))
         {
             var columns = new List<string> { "sys_rowid" };
             var values = new List<object> { Guid.NewGuid() };
+
             foreach (var pair in row)
             {
+                // Deferred columns are written in the second pass once their target exists.
+                if (seed.Deferred?.ContainsKey(pair.Key) == true) continue;
+
                 columns.Add(pair.Key);
-                values.Add(pair.Value.GetString() ?? string.Empty);
+                if (seed.Forward is not null && seed.Forward.TryGetValue(pair.Key, out var target))
+                    values.Add(ResolveRowId(dbAccess, target, pair.Value.GetString()));
+                else
+                    values.Add(pair.Value.GetString() ?? string.Empty);
             }
 
             var placeholders = string.Join(",", Enumerable.Range(0, values.Count).Select(i => $"{{{i}}}"));
-            var sql = $"INSERT INTO {table} ({string.Join(",", columns)}) VALUES ({placeholders})";
+            var sql = $"INSERT INTO {seed.Table} ({string.Join(",", columns)}) VALUES ({placeholders})";
             dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql, values.ToArray()));
         }
     }
+
+    private static void ApplyDeferredRelations(DbAccess dbAccess, SeedTable seed, string seedDir)
+    {
+        foreach (var row in ReadRows(seedDir, seed.File))
+        {
+            if (!row.TryGetValue("sys_id", out var keyElement)) continue;
+            var key = keyElement.GetString();
+            if (string.IsNullOrEmpty(key)) continue;
+
+            foreach (var (column, target) in seed.Deferred!)
+            {
+                if (!row.TryGetValue(column, out var refElement)) continue;
+                var rowId = ResolveRowId(dbAccess, target, refElement.GetString());
+                if (rowId == Guid.Empty) continue;
+
+                var sql = $"UPDATE {seed.Table} SET {column} = {{0}} WHERE sys_id = {{1}}";
+                dbAccess.Execute(new DbCommandSpec(DbCommandKind.NonQuery, sql, rowId, key));
+            }
+        }
+    }
+
+    private static Guid ResolveRowId(DbAccess dbAccess, string targetTable, string? sysId)
+    {
+        if (string.IsNullOrEmpty(sysId)) return Guid.Empty;
+        var spec = new DbCommandSpec(DbCommandKind.Scalar, $"SELECT sys_rowid FROM {targetTable} WHERE sys_id = {{0}}", sysId);
+        return ToGuid(dbAccess.Execute(spec).Scalar);
+    }
+
+    private static List<Dictionary<string, JsonElement>> ReadRows(string seedDir, string file)
+        => JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(
+               File.ReadAllText(Path.Combine(seedDir, file)))
+           ?? new List<Dictionary<string, JsonElement>>();
+
+    private static Guid ToGuid(object? value) => value switch
+    {
+        Guid g => g,
+        string s when Guid.TryParse(s, out var g) => g,
+        byte[] { Length: 16 } b => new Guid(b),
+        _ => Guid.Empty,
+    };
 }

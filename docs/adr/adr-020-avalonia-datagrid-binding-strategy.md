@@ -100,3 +100,7 @@ private static DataGridTemplateColumn BuildColumn(LayoutColumn column)
 ## 後記（2026-06-11）
 
 本 ADR 的實作位置已由 `DynamicGrid`（`UserControl` 包裝，現已移除）遷移為 `GridControl`（直接繼承 `DataGrid`，`src/Bee.UI.Avalonia/Controls/Editors/GridControl.cs`）；`DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch 的綁定策略不變。in-cell / EditForm 編輯策略的後續決策見 [ADR-021](adr-021-avalonia-datagrid-editing-strategy.md)。
+
+## 後記（2026-06-14）：清單 cell 的 `supportsRecycling` 修正
+
+上方「決策」範例對唯讀清單純文字 cell 用了 `supportsRecycling: true` —— 這與「`Text` 算死、非 binding」相沖：DataGrid 跨列回收 presenter 時不重跑建立委派，導致顯示文字與底層列脫鉤（lookup picker 上表現為「看到某列、帶回別列」）。已改為 `supportsRecycling: false`，詳見 [ADR-022](adr-022-avalonia-datagrid-cell-recycling.md)。

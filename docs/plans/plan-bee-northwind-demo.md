@@ -8,7 +8,7 @@
 |------|------|------|
 | 1 | 專案骨架：`apps/Bee.Northwind/`（3 專案 Server / UI / Desktop + `Define/` 定義檔目錄）+ 獨立 slnx + ProjectReference，跑通最小主檔表單 | ✅ 已完成（2026-06-13） |
 | 2 | 業務純主檔：Category / Supplier / Customer / Shipper（ft_，零 lookup、零 C#）— 最純定義驅動 | ✅ 已完成（2026-06-14） |
-| 3 | 框架系統表 + 擴充：Department（複製框架定義）+ Employee（複製框架 st_employee + Northwind 欄位擴充，dept→Department lookup） | 📝 待做 |
+| 3 | 框架系統表 + 擴充：Department（複製框架定義）+ Employee（複製框架 st_employee + Northwind 欄位擴充，dept→Department lookup） | ✅ 已完成（2026-06-14） |
 | 4 | 業務 lookup 主檔：Product（Supplier + Category 雙 lookup）（仍零 C#） | 📝 待做 |
 | 5 | 交易單據：Order + Order Details（master-detail + 三 lookup + 明細 InCell，仍零 C#） | 📝 待做 |
 | 6 | 應用層業務：OrderBO 覆寫（單據編號、狀態、驗證、金額計算） | 📝 待做 |

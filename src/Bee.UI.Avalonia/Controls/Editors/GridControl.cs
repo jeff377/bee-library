@@ -584,6 +584,11 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 // List-mode lookup columns (no data object → no lookup flow) still
                 // render the display fields instead of the raw row id.
                 var textFields = SplitDisplayFields(column.DisplayFields);
+                // Recycling MUST stay off: the cell Text is computed once at build time
+                // (it is not a binding to the row's DataContext). With recycling on, the
+                // DataGrid reuses a presenter across rows and the stale Text no longer
+                // matches the underlying DataRowView — so the displayed value diverges
+                // from the row, and a lookup pick returns a different row than shown.
                 templateColumn.CellTemplate = new FuncDataTemplate<DataRowView>(
                     (row, _) => new TextBlock
                     {
@@ -592,7 +597,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
                             : ComposeDisplayText(row, textFields, displayFormat, numberFormat),
                         Margin = new Thickness(8, 4),
                     },
-                    supportsRecycling: true);
+                    supportsRecycling: false);
                 // Recycling is off: each edit session gets a fresh editor whose change
                 // handlers close over the row being edited.
                 templateColumn.CellEditingTemplate = new FuncDataTemplate<DataRowView>(
