@@ -18,6 +18,9 @@ public partial class FormsViewModel : ViewModelBase
     [
         NavItem.Header("Master Data"),
         NavItem.Form("Categories", "Category"),
+        NavItem.Form("Suppliers", "Supplier"),
+        NavItem.Form("Customers", "Customer"),
+        NavItem.Form("Shippers", "Shipper"),
     ];
 
     /// <summary>

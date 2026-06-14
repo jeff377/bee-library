@@ -22,4 +22,10 @@
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.4" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Northwind seed subset read by NorthwindSchemaSeeder at first run. The Web SDK
+         already globs these as Content; only override the copy-to-output behaviour. -->
+    <Content Update="SeedData\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>

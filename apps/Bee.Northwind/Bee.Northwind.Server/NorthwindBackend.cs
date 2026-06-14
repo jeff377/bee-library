@@ -92,7 +92,8 @@ public static class NorthwindBackend
 
         var defineAccess = app.Services.GetRequiredService<IDefineAccess>();
         var connectionManager = app.Services.GetRequiredService<IDbConnectionManager>();
-        NorthwindSchemaSeeder.EnsureSchema(defineAccess, connectionManager);
+        var dbAccessFactory = app.Services.GetRequiredService<IDbAccessFactory>();
+        NorthwindSchemaSeeder.EnsureSchemaAndSeed(defineAccess, connectionManager, dbAccessFactory);
     }
 
     private static string ResolveDefinePath()

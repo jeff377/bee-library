@@ -1,0 +1,7 @@
+[
+  { "sys_id": "EXOTIC", "sys_name": "Exotic Liquids", "contact_name": "Charlotte Cooper", "contact_title": "Purchasing Manager", "city": "London", "country": "UK", "phone": "(171) 555-2222" },
+  { "sys_id": "CAJUN", "sys_name": "New Orleans Cajun Delights", "contact_name": "Shelley Burke", "contact_title": "Order Administrator", "city": "New Orleans", "country": "USA", "phone": "(100) 555-4822" },
+  { "sys_id": "GRANDMA", "sys_name": "Grandma Kelly's Homestead", "contact_name": "Regina Murphy", "contact_title": "Sales Representative", "city": "Ann Arbor", "country": "USA", "phone": "(313) 555-5735" },
+  { "sys_id": "TOKYO", "sys_name": "Tokyo Traders", "contact_name": "Yoshi Nagase", "contact_title": "Marketing Manager", "city": "Tokyo", "country": "Japan", "phone": "(03) 3555-5011" },
+  { "sys_id": "CABRAS", "sys_name": "Cooperativa de Quesos 'Las Cabras'", "contact_name": "Antonio del Valle Saavedra", "contact_title": "Export Administrator", "city": "Oviedo", "country": "Spain", "phone": "(98) 598 76 54" }
+]

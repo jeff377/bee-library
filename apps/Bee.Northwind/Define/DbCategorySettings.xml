@@ -4,6 +4,9 @@
     <DbCategory Id="common" DisplayName="Northwind Database">
       <Tables>
         <TableItem TableName="ft_category" DisplayName="Category" />
+        <TableItem TableName="ft_supplier" DisplayName="Supplier" />
+        <TableItem TableName="ft_customer" DisplayName="Customer" />
+        <TableItem TableName="ft_shipper" DisplayName="Shipper" />
       </Tables>
     </DbCategory>
   </Categories>

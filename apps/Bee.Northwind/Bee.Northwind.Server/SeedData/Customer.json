@@ -1,0 +1,12 @@
+[
+  { "sys_id": "ALFKI", "sys_name": "Alfreds Futterkiste", "contact_name": "Maria Anders", "contact_title": "Sales Representative", "city": "Berlin", "country": "Germany", "phone": "030-0074321" },
+  { "sys_id": "ANATR", "sys_name": "Ana Trujillo Emparedados y helados", "contact_name": "Ana Trujillo", "contact_title": "Owner", "city": "México D.F.", "country": "Mexico", "phone": "(5) 555-4729" },
+  { "sys_id": "ANTON", "sys_name": "Antonio Moreno Taquería", "contact_name": "Antonio Moreno", "contact_title": "Owner", "city": "México D.F.", "country": "Mexico", "phone": "(5) 555-3932" },
+  { "sys_id": "AROUT", "sys_name": "Around the Horn", "contact_name": "Thomas Hardy", "contact_title": "Sales Representative", "city": "London", "country": "UK", "phone": "(171) 555-7788" },
+  { "sys_id": "BERGS", "sys_name": "Berglunds snabbköp", "contact_name": "Christina Berglund", "contact_title": "Order Administrator", "city": "Luleå", "country": "Sweden", "phone": "0921-12 34 65" },
+  { "sys_id": "BLAUS", "sys_name": "Blauer See Delikatessen", "contact_name": "Hanna Moos", "contact_title": "Sales Representative", "city": "Mannheim", "country": "Germany", "phone": "0621-08460" },
+  { "sys_id": "BLONP", "sys_name": "Blondesddsl père et fils", "contact_name": "Frédérique Citeaux", "contact_title": "Marketing Manager", "city": "Strasbourg", "country": "France", "phone": "88.60.15.31" },
+  { "sys_id": "BOLID", "sys_name": "Bólido Comidas preparadas", "contact_name": "Martín Sommer", "contact_title": "Owner", "city": "Madrid", "country": "Spain", "phone": "(91) 555 22 82" },
+  { "sys_id": "BONAP", "sys_name": "Bon app'", "contact_name": "Laurence Lebihan", "contact_title": "Owner", "city": "Marseille", "country": "France", "phone": "91.24.45.40" },
+  { "sys_id": "BOTTM", "sys_name": "Bottom-Dollar Markets", "contact_name": "Elizabeth Lincoln", "contact_title": "Accounting Manager", "city": "Tsawassen", "country": "Canada", "phone": "(604) 555-4729" }
+]
