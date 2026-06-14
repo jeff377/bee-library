@@ -46,7 +46,7 @@
             <ListItem Value="Shipped" Text="Shipped" />
           </ListItems>
         </FormField>
-        <FormField FieldName="total_amount" Caption="Total Amount" DbType="Currency" />
+        <FormField FieldName="total_amount" Caption="Total Amount" DbType="Currency" ReadOnly="true" />
       </Fields>
     </FormTable>
     <FormTable TableName="OrderDetail" DbTableName="ft_order_detail" DisplayName="Order Details">
@@ -65,7 +65,7 @@
         <FormField FieldName="quantity" Caption="Quantity" DbType="Integer" />
         <FormField FieldName="unit_price" Caption="Unit Price" DbType="Currency" />
         <FormField FieldName="discount" Caption="Discount" DbType="Decimal" />
-        <FormField FieldName="amount" Caption="Amount" DbType="Currency" />
+        <FormField FieldName="amount" Caption="Amount" DbType="Currency" ReadOnly="true" />
       </Fields>
     </FormTable>
   </Tables>
