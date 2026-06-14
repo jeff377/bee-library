@@ -6,7 +6,7 @@
      the ref_* fields are written back locally and re-derived by the server JOIN on
      reload. Order has no natural sys_name, so it is omitted (only lookup-source
      tables need sys_name). Zero application code — definitions only. -->
-<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Order" DisplayName="Order" CategoryId="common" ListFields="sys_id,order_date,ref_customer_name,ref_employee_name,ref_shipper_name">
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Order" DisplayName="Order" CategoryId="common" ListFields="sys_id,order_date,ref_customer_name,ref_employee_name,status,total_amount">
   <Tables>
     <FormTable TableName="Order" DbTableName="ft_order" DisplayName="Order">
       <Fields>
@@ -39,6 +39,14 @@
         <FormField FieldName="ref_shipper_id" Caption="Shipper Code" DbType="String" Type="RelationField" />
         <FormField FieldName="ref_shipper_name" Caption="Shipper Name" DbType="String" Type="RelationField" />
         <FormField FieldName="freight" Caption="Freight" DbType="Currency" />
+        <FormField FieldName="status" Caption="Status" DbType="String" ControlType="DropDownEdit" DefaultValue="Draft">
+          <ListItems>
+            <ListItem Value="Draft" Text="Draft" />
+            <ListItem Value="Confirmed" Text="Confirmed" />
+            <ListItem Value="Shipped" Text="Shipped" />
+          </ListItems>
+        </FormField>
+        <FormField FieldName="total_amount" Caption="Total Amount" DbType="Currency" />
       </Fields>
     </FormTable>
     <FormTable TableName="OrderDetail" DbTableName="ft_order_detail" DisplayName="Order Details">
@@ -56,6 +64,8 @@
         <FormField FieldName="ref_product_name" Caption="Product Name" DbType="String" Type="RelationField" />
         <FormField FieldName="quantity" Caption="Quantity" DbType="Integer" />
         <FormField FieldName="unit_price" Caption="Unit Price" DbType="Currency" />
+        <FormField FieldName="discount" Caption="Discount" DbType="Decimal" />
+        <FormField FieldName="amount" Caption="Amount" DbType="Currency" />
       </Fields>
     </FormTable>
   </Tables>

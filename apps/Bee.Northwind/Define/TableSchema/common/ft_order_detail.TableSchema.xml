@@ -7,6 +7,8 @@
     <DbField FieldName="product_rowid" Caption="Product Row ID" DbType="Guid" />
     <DbField FieldName="quantity" Caption="Quantity" DbType="Integer" />
     <DbField FieldName="unit_price" Caption="Unit Price" DbType="Currency" />
+    <DbField FieldName="discount" Caption="Discount" DbType="Decimal" />
+    <DbField FieldName="amount" Caption="Amount" DbType="Currency" />
   </Fields>
   <Indexes>
     <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">

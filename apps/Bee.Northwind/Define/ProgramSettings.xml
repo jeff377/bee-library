@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Binds a progId to a custom FormBusinessObject. ProgramSettingsFormBoTypeResolver loads
+     the type by its assembly-qualified name; any progId not listed here (Category, Product,
+     Employee, ...) resolves to the framework's default FormBusinessObject and stays pure
+     definition-driven CRUD. Only Order needs application code (number / status / validation /
+     amount), so only Order is bound. -->
+<ProgramSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Categories>
+    <ProgramCategory Id="common" DisplayName="Northwind">
+      <Items>
+        <ProgramItem ProgId="Order" DisplayName="Order" BusinessObject="Bee.Northwind.Server.BusinessObjects.OrderBO, Bee.Northwind.Server" />
+      </Items>
+    </ProgramCategory>
+  </Categories>
+</ProgramSettings>

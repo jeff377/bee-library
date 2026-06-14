@@ -9,6 +9,8 @@
     <DbField FieldName="employee_rowid" Caption="Employee Row ID" DbType="Guid" />
     <DbField FieldName="shipper_rowid" Caption="Shipper Row ID" DbType="Guid" />
     <DbField FieldName="freight" Caption="Freight" DbType="Currency" />
+    <DbField FieldName="status" Caption="Status" DbType="String" Length="12" />
+    <DbField FieldName="total_amount" Caption="Total Amount" DbType="Currency" />
   </Fields>
   <Indexes>
     <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">

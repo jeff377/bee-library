@@ -23,6 +23,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Expose internal order rules (OrderRules / OrderDataSet) to the test project. -->
+    <InternalsVisibleTo Include="Bee.Northwind.Server.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Northwind seed subset read by NorthwindSchemaSeeder at first run. The Web SDK
          already globs these as Content; only override the copy-to-output behaviour. -->
     <Content Update="SeedData\**\*.json" CopyToOutputDirectory="PreserveNewest" />
