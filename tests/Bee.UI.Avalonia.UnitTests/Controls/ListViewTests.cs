@@ -175,8 +175,8 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         }
 
         [Fact]
-        [DisplayName("選取列後雙擊觸發 EditRequested")]
-        public async Task DoubleTap_AfterRowSelected_RaisesEditRequested()
+        [DisplayName("選取列後雙擊觸發 ViewRequested（開啟唯讀檢視，不進入編輯）")]
+        public async Task DoubleTap_AfterRowSelected_RaisesViewRequested()
         {
             var rowId = Guid.NewGuid();
             var connector = new FakeFormApiConnector
@@ -186,13 +186,16 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             var view = BuildInitializableView(connector);
             await view.InitializeAsync();
 
-            Guid requested = Guid.Empty;
-            view.EditRequested += (_, id) => requested = id;
+            Guid viewRequested = Guid.Empty;
+            Guid editRequested = Guid.Empty;
+            view.ViewRequested += (_, id) => viewRequested = id;
+            view.EditRequested += (_, id) => editRequested = id;
 
             InvokePrivate(view, "OnRowSelected", rowId);
             InvokePrivate(view, "OnGridDoubleTapped");
 
-            Assert.Equal(rowId, requested);
+            Assert.Equal(rowId, viewRequested);
+            Assert.Equal(Guid.Empty, editRequested);
         }
 
         [Fact]

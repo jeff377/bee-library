@@ -100,7 +100,8 @@ namespace Bee.UI.Avalonia.Controls
             _grid.RowSelected += (_, rowId) => OnRowSelected(rowId);
             // List mode never binds a FormDataObject, so the grid's own double-tap path
             // (detail EditForm editing) stays dormant; the bubbling DoubleTapped is ours to
-            // treat as "open this record for editing".
+            // treat as "open this record" — opening read-only (View), so browsing the list
+            // never accidentally enters edit mode. Editing is the explicit Edit action.
             _grid.DoubleTapped += (_, _) => OnGridDoubleTapped();
 
             _emptyListLabel = new TextBlock { Text = "No data.", IsVisible = false };
@@ -338,8 +339,10 @@ namespace Bee.UI.Avalonia.Controls
 
         private void OnGridDoubleTapped()
         {
+            // Opening a row from the list is a read-only View; editing is the explicit Edit
+            // action (toolbar button), so clicking through the list never mutates by accident.
             if (_selectedRowId != Guid.Empty)
-                EditRequested?.Invoke(this, _selectedRowId);
+                ViewRequested?.Invoke(this, _selectedRowId);
         }
 
         private void OnViewClicked()
