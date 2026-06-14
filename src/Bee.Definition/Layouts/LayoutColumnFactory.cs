@@ -21,6 +21,7 @@ namespace Bee.Definition.Layouts
             DisplayFields = string.Join(",", field.GetDisplayFields()),
             DisplayFormat = field.DisplayFormat,
             NumberFormat = field.NumberFormat,
+            ReadOnly = field.ReadOnly,
         };
 
         /// <summary>
@@ -35,6 +36,7 @@ namespace Bee.Definition.Layouts
             Width = field.Width,
             DisplayFormat = field.DisplayFormat,
             NumberFormat = field.NumberFormat,
+            ReadOnly = field.ReadOnly,
         };
 
         /// <summary>

@@ -183,5 +183,38 @@ namespace Bee.Definition.UnitTests.Layouts
             Assert.Single(layout.Details!);
             Assert.Equal("Other", layout.Details![0].TableName);
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [DisplayName("GetFormLayout 主檔欄位 FormField.ReadOnly 應傳遞到 LayoutField.ReadOnly")]
+        public void GetFormLayout_MasterField_PropagatesReadOnly(bool readOnly)
+        {
+            var schema = new FormSchema("Demo", "示範");
+            var master = schema.Tables!.Add("Demo", "示範");
+            master.Fields!.Add(new FormField("amount", "金額", FieldDbType.Currency) { ReadOnly = readOnly });
+
+            var layout = schema.GetFormLayout("default");
+
+            var field = layout.Sections![0].Fields!.First(f => f.FieldName == "amount");
+            Assert.Equal(readOnly, field.ReadOnly);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [DisplayName("GetFormLayout 明細欄位 FormField.ReadOnly 應傳遞到 LayoutColumn.ReadOnly")]
+        public void GetFormLayout_DetailColumn_PropagatesReadOnly(bool readOnly)
+        {
+            var schema = BuildMasterDetailSchema();
+            var detail = schema.Tables!.Add("OrderItem", "訂單明細");
+            detail.Fields!.Add(new FormField("amount", "金額", FieldDbType.Currency) { ReadOnly = readOnly });
+
+            var layout = schema.GetFormLayout("default");
+
+            var grid = layout.Details!.First(g => g.TableName == "OrderItem");
+            var column = grid.Columns!.First(c => c.FieldName == "amount");
+            Assert.Equal(readOnly, column.ReadOnly);
+        }
     }
 }

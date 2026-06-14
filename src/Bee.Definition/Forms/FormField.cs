@@ -229,6 +229,19 @@ namespace Bee.Definition.Forms
         public bool Visible { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets a value indicating whether this field is read-only. Propagated by the
+        /// layout generator to <see cref="Layouts.LayoutFieldBase.ReadOnly"/>, so a
+        /// <see cref="FormSchema"/> can mark computed or server-derived fields (for example an
+        /// order line amount calculated by the business object) non-editable without authoring a
+        /// separate <c>FormLayout</c>.
+        /// </summary>
+        [Category(PropertyCategories.Layout)]
+        [XmlAttribute]
+        [Description("Indicates whether this field is read-only.")]
+        [DefaultValue(false)]
+        public bool ReadOnly { get; set; }
+
+        /// <summary>
         /// Gets the list item collection used as the option source shared across layouts.
         /// </summary>
         [Category(PropertyCategories.Data)]
