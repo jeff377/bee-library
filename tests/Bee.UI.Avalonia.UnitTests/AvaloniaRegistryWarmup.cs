@@ -45,6 +45,11 @@ namespace Bee.UI.Avalonia.UnitTests
             _ = new CheckEdit();
             _ = new DynamicForm();
             _ = new RowEditPanel();
+            // FormView builds a StackPanel with 6 children in its constructor, exercising
+            // AvaloniaPropertyDictionaryPool.Get/Return via SetInheritanceParent on each
+            // child. Without a single-threaded warmup, parallel test classes that all
+            // construct FormView (or add children to panels) can exhaust the pool.
+            _ = new FormView();
         }
     }
 }
