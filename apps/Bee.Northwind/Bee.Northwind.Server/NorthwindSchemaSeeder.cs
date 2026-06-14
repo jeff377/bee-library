@@ -31,15 +31,10 @@ public static class NorthwindSchemaSeeder
         Dictionary<string, string>? Forward = null,
         Dictionary<string, string>? Deferred = null);
 
-    private static readonly string[] s_schemaTables =
-    {
-        "ft_category", "ft_supplier", "ft_customer", "ft_shipper", "ft_product",
-        "ft_order", "ft_order_detail",
-        "st_department", "st_employee",
-        // Framework table polled by CacheNotifyPoller; schema materialized from
-        // Bee.Definition embedded defaults by NorthwindBackend.AddNorthwindBackend.
-        "st_cache_notify",
-    };
+    // Framework tables not registered in DbCategorySettings; their TableSchema is materialized
+    // from Bee.Definition embedded defaults by NorthwindBackend.AddNorthwindBackend. Currently
+    // just st_cache_notify, polled by CacheNotifyPoller.
+    private static readonly string[] s_frameworkTables = { "st_cache_notify" };
 
     // Insert order: a forward-relation target must precede its dependents.
     private static readonly SeedTable[] s_seeds =
@@ -94,8 +89,31 @@ public static class NorthwindSchemaSeeder
     private static void EnsureSchema(IDefineAccess defineAccess, IDbConnectionManager connectionManager)
     {
         var builder = new TableSchemaBuilder(DatabaseId, defineAccess, connectionManager);
-        foreach (var table in s_schemaTables)
+
+        // Build every table registered in DbCategorySettings, so adding a new table is pure XML
+        // (a TableSchema file + a DbCategorySettings entry) — no edit here. This is what makes
+        // the README's "add a Region form in 30 minutes, zero code" walkthrough honest.
+        foreach (var table in EnumerateRegisteredTables(defineAccess))
             builder.Execute(DatabaseId, table);
+
+        foreach (var table in s_frameworkTables)
+            builder.Execute(DatabaseId, table);
+    }
+
+    /// <summary>
+    /// Enumerates the table names registered across every category in <c>DbCategorySettings</c>.
+    /// </summary>
+    private static IEnumerable<string> EnumerateRegisteredTables(IDefineAccess defineAccess)
+    {
+        var settings = defineAccess.GetDbCategorySettings();
+        if (settings.Categories == null) { yield break; }
+
+        foreach (var category in settings.Categories)
+        {
+            if (category.Tables == null) { continue; }
+            foreach (var table in category.Tables)
+                yield return table.TableName;
+        }
     }
 
     private static void InsertRows(DbAccess dbAccess, SeedTable seed, string seedDir)

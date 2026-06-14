@@ -26,7 +26,7 @@ public class OrderBoBindingTests
         var settings = XmlCodec.DeserializeFromFile<ProgramSettings>(path);
         Assert.NotNull(settings);
 
-        var category = settings!.Categories!["common"];
+        var category = settings!.Categories!["transactions"];
         Assert.NotNull(category);
 
         var item = category!.Items!["Order"];

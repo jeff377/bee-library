@@ -13,7 +13,7 @@
 | 5 | 交易單據：Order + Order Details（master-detail + 三 lookup + 明細 InCell，仍零 C#） | ✅ 已完成（2026-06-14） |
 | 6 | 應用層業務：OrderBO 覆寫（單據編號、狀態、驗證、金額計算） | ✅ 已完成（2026-06-14） |
 | 7 | Avalonia 導航整合：選單式多表單切換、完整操作動線 | ✅ 已完成（2026-06-14） |
-| 8 | 教學文件：README + 「30 分鐘加一張 Region 表單」終章 | 📝 待做 |
+| 8 | 教學文件：README + 「30 分鐘加一張 Region 表單」終章 | ✅ 已完成（2026-06-14） |
 | 9 | 畢業：發 NuGet 新版 → 整個 `apps/Bee.Northwind/` 移至獨立 repo `bee-northwind-avalonia`、ProjectReference 改 PackageReference | 📝 待做 |
 
 ## 背景
@@ -267,6 +267,7 @@ apps/
 
 - （已知）`Bee.UI.Avalonia` 的 `LookupDialog` / `RowEditDialog` 用 `Window.ShowDialog`。WASM 裡 `Window` 型別根本不存在（single-view），跨平台需 dialog 改 single-view overlay（抽 `IDialogPresenter` 或採 `DialogHost.Avalonia` / `Ursa` `OverlayDialog` / `FluentAvalonia` `ContentDialog`）。本 demo 只做 Desktop 不觸及，Web/Mobile head 前置 plan 須先處理
 - （觀察）「開新專案」從 `Defaults` 複製系統表定義到 `Define/` 的流程是否順手 —— 是否值得有個 skill / CLI 一鍵把指定框架系統表 scaffold 進專案的 `Define/`
+- （階段 8 落地）為讓終章「加一張表單 = 純 XML、零程式碼」誠實，demo 把兩處改為資料驅動：(1) seeder 建表改自 `DbCategorySettings.xml` 列舉（非 C# 硬編表名）；(2) Avalonia 左側選單改自 `ProgramSettings.xml` 列舉（非 C# 硬編 NavItems）。`ProgramSettings.xml` 一檔身兼 BO 綁定 + 選單來源。此模式是否值得收斂為框架／樣板預設值得評估
 - （預期）單據編號序列生成器是否值得上收為框架服務 —— 階段 6 已以 `OrderBO` 應用層示範（`ORD-yyyyMM-NNN`，Save 時讀當月 max 遞增；併發以 `sys_id` unique index 兜底，非交易序列）。確認模式可行，是否上收框架另議
 - （預期）FormField 驗證規則（Required / Min / Max）定義層支援 —— 階段 6 必填/數量驗證以 `OrderBO` 程式碼示範（`UserMessageException`），確認「定義驅動 vs pro-code」分工界線後再評估上收
 - （階段 6 發現）`FormField` 無 `ReadOnly` 屬性 —— 計算欄（`amount` / `total_amount`）只能維持可編輯，由 BO 於 Save 權威覆寫；前端使用者仍可改但值會被忽略。若要前端鎖定顯示，需框架補欄位層 ReadOnly
