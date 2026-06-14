@@ -360,6 +360,29 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.True(editor.IsReadOnly);
         }
 
+        [Fact]
+        [DisplayName("程式寫入欄位後綁定編輯器即時刷新（lookup 寫回的基礎）")]
+        public void SetField_RefreshesBoundEditor()
+        {
+            var schema = BuildRenderSchema();
+            var layout = new FormLayout { ColumnCount = 1 };
+            var section = new LayoutSection { Caption = "Main", ShowCaption = false };
+            section.Fields!.Add(new LayoutField { FieldName = "emp_id", Caption = "ID", ControlType = ControlType.TextEdit });
+            layout.Sections!.Add(section);
+
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+
+            var view = new TestFormView { FormMode = SingleFormMode.Edit };
+            var host = RenderForm(view, layout, dataObject);
+            var editor = FindDescendant<TextEdit>(host);
+            Assert.NotNull(editor);
+
+            dataObject.SetField("emp_id", "HELLO");
+
+            Assert.Equal("HELLO", editor!.Text);
+        }
+
         // ---- rendering (ported from the retired DynamicForm) ----
 
         [Fact]
