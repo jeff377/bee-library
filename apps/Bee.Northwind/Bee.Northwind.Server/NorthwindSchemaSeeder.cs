@@ -33,7 +33,7 @@ public static class NorthwindSchemaSeeder
 
     private static readonly string[] s_schemaTables =
     {
-        "ft_category", "ft_supplier", "ft_customer", "ft_shipper",
+        "ft_category", "ft_supplier", "ft_customer", "ft_shipper", "ft_product",
         "st_department", "st_employee",
         // Framework table polled by CacheNotifyPoller; schema materialized from
         // Bee.Definition embedded defaults by NorthwindBackend.AddNorthwindBackend.
@@ -47,6 +47,8 @@ public static class NorthwindSchemaSeeder
         new("ft_supplier", "Supplier.json"),
         new("ft_customer", "Customer.json"),
         new("ft_shipper", "Shipper.json"),
+        new("ft_product", "Product.json",
+            Forward: new() { ["supplier_rowid"] = "ft_supplier", ["category_rowid"] = "ft_category" }),
         // Department.manager_rowid -> Employee is circular, so it is deferred; Employee is
         // inserted next with dept_rowid resolved forward to the just-inserted departments.
         new("st_department", "Department.json", Deferred: new() { ["manager_rowid"] = "st_employee" }),

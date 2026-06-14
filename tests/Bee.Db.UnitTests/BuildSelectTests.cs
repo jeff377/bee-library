@@ -90,6 +90,14 @@ namespace Bee.Db.UnitTests
                 index += "JOIN".Length;
             }
             Assert.True(joinCount >= 2, $"應包含至少 2 個 JOIN，實際: {joinCount}");
+
+            // 每個頂層外鍵都必須 JOIN 自主表別名 A。先前的 bug 讓第 2 個關連 JOIN 自
+            // 第 1 個關連的別名（如 B.pm_rowid），產生「no such column」的無效 SQL。
+            // 去除識別字引號後比對，避免綁定特定 dialect 的引號格式。
+            var normalized = command.CommandText
+                .Replace("[", "").Replace("]", "").Replace("\"", "").Replace("`", "");
+            Assert.Contains("A.owner_dept_rowid", normalized, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("A.pm_rowid", normalized, StringComparison.OrdinalIgnoreCase);
         }
 
         [DbFact(DatabaseType.SQLServer)]

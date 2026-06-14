@@ -105,16 +105,21 @@ namespace Bee.UI.Avalonia.Controls
 
             _emptyListLabel = new TextBlock { Text = "No data.", IsVisible = false };
 
-            var host = new StackPanel
-            {
-                Orientation = Orientation.Vertical,
-                Spacing = 12,
-            };
+            // DockPanel (not StackPanel): the chrome docks to the top and the grid fills the
+            // remaining BOUNDED height as the last child. A StackPanel would give the grid
+            // unbounded height, so the DataGrid grows to fit every row and never shows its
+            // own vertical scrollbar.
+            toolbar.Margin = new Thickness(0, 0, 0, 8);
+            var host = new DockPanel { LastChildFill = true };
+            DockPanel.SetDock(_errorLabel, Dock.Top);
+            DockPanel.SetDock(_loadingLabel, Dock.Top);
+            DockPanel.SetDock(toolbar, Dock.Top);
+            DockPanel.SetDock(_emptyListLabel, Dock.Top);
             host.Children.Add(_errorLabel);
             host.Children.Add(_loadingLabel);
             host.Children.Add(toolbar);
-            host.Children.Add(_grid);
             host.Children.Add(_emptyListLabel);
+            host.Children.Add(_grid);
 
             Content = host;
         }

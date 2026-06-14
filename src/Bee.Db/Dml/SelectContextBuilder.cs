@@ -38,8 +38,14 @@ namespace Bee.Db.Dml
         {
             var context = new SelectContext();
 
-            // The main table uses alias "A"
-            _currentTableAlias = "A";
+            // The main table uses alias "A". Relation joins get fresh right-side aliases
+            // (B, C, …) from GetActiveTableAlias, which advances _currentTableAlias as a
+            // side effect. Each TOP-LEVEL relation joins off the main table, so its left
+            // alias is always the main alias — passing the mutating _currentTableAlias
+            // instead made the 2nd relation join off the 1st relation's table (producing
+            // e.g. "B.category_rowid", a column that does not exist on the supplier join).
+            const string mainAlias = "A";
+            _currentTableAlias = mainAlias;
 
             // For foreign key fields, build JOIN relationships between tables
             foreach (var field in _formTable.Fields!)
@@ -53,7 +59,7 @@ namespace Bee.Db.Dml
 
                 // Use "<MainTable>.<FieldName>.<SourceProgId>" as the unique JOIN key
                 string key = $"{_formTable.TableName}.{field.FieldName}.{field.RelationProgId}";
-                AddTableJoin(context, key, field, fieldMappings, _formTable.DbTableName, _currentTableAlias);
+                AddTableJoin(context, key, field, fieldMappings, _formTable.DbTableName, mainAlias);
             }
             return context;
         }
