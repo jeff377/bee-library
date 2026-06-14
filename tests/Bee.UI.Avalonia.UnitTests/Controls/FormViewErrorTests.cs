@@ -49,7 +49,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         }
 
         [Fact]
-        [DisplayName("補強 <see cref=\"FormView\"/> 覆蓋率：ReloadListAsync 失敗路徑、第二次 InitializeAsync 為 no-op、_emptyListLabel 可見性。")]
+        [DisplayName("ReloadListAsync 拋例外時觸發 ErrorOccurred 並不崩潰")]
         public async Task ReloadListAsync_GetListThrows_FiresErrorOccurred()
         {
             var connector = new FakeFormApiConnector
