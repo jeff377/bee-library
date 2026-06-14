@@ -2,7 +2,7 @@
 
 [繁體中文](README.zh-TW.md)
 
-A small but complete inventory application — the classic **Northwind** business case — built on the [Bee.NET](../../README.md) framework. It exists to make one argument concrete:
+A demonstration sample — the classic **Northwind** inventory business case — built on the [Bee.NET](../../README.md) framework to show how an application is assembled from definitions. It is a teaching sample, not a finished product: enough breadth to exercise the framework's patterns end to end, deliberately not the depth of a deployable system. It exists to make one argument concrete:
 
 > **A new screen with full create / read / update / delete, list browsing, and cross-table lookups is a few XML definition files — not UI code, not CRUD code, not SQL.**
 
