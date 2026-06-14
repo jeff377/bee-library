@@ -272,7 +272,7 @@ apps/
 - （階段 8 後修正）業務表 scope 從 `common` 改為正確的 `company`：`CategoryId` 即 `FormRepositoryFactory.ParseCategoryId` 的 scope 選擇器（common/company/log），原本全掛 common（cross-company 共享 scope）是錯的。業務表（ft_* + 應用組織表 st_department/st_employee）→ company、框架共享表（st_cache_notify）→ common。**輕量 company context 模式**：自訂 `ICompanyInfoService` 回傳固定 demo 公司 + 登入時 override 蓋 `session.CompanyId`，不建 st_user/st_company/st_user_company、不走完整 EnterCompany（單公司、表單無權限模型）。common/company 兩 DatabaseItem 指向同一 SQLite 檔保持單檔。此「最小 company scope」是否值得做成 sample/skill 樣板值得評估
 - （預期）單據編號序列生成器是否值得上收為框架服務 —— 階段 6 已以 `OrderBO` 應用層示範（`ORD-yyyyMM-NNN`，Save 時讀當月 max 遞增；併發以 `sys_id` unique index 兜底，非交易序列）。確認模式可行，是否上收框架另議
 - （預期）FormField 驗證規則（Required / Min / Max）定義層支援 —— 階段 6 必填/數量驗證以 `OrderBO` 程式碼示範（`UserMessageException`），確認「定義驅動 vs pro-code」分工界線後再評估上收
-- （階段 6 發現）`FormField` 無 `ReadOnly` 屬性 —— 計算欄（`amount` / `total_amount`）只能維持可編輯，由 BO 於 Save 權威覆寫；前端使用者仍可改但值會被忽略。若要前端鎖定顯示，需框架補欄位層 ReadOnly
+- ~~（階段 6 發現）`FormField` 無 `ReadOnly` 屬性 —— 計算欄只能維持可編輯~~ **已修（f06192b2）**：新增 `FormField.ReadOnly`，`LayoutColumnFactory` 傳遞到 `LayoutField`/`LayoutColumn`（runtime 早已尊重 layout 層 ReadOnly）。Order 的 `amount` / `total_amount` 已標唯讀
 - （待發現）……
 
 ## 給執行 session 的 handoff 摘要
