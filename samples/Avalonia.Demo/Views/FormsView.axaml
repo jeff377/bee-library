@@ -3,37 +3,24 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="clr-namespace:Avalonia.Demo.ViewModels"
-             xmlns:bee="clr-namespace:Bee.UI.Avalonia.Controls;assembly=Bee.UI.Avalonia"
+             xmlns:local="clr-namespace:Avalonia.Demo"
              mc:Ignorable="d"
              x:Class="Avalonia.Demo.Views.FormsView"
              x:DataType="vm:FormsViewModel">
 
-  <!-- FormView resolves Schema / FormConnector / AccessToken from ClientInfo via
-       its built-in fallback; we only have to set ProgId. Each FormView initialises
-       lazily when its tab first attaches to the visual tree.
-       Project demonstrates the lookup flow: the master Owner Department field and
-       the member column of the detail grid both open a lookup picker. -->
+  <!-- Each tab hosts a FormWorkspace: a ListView (browse) that swaps to a FormView
+       (single record) on View / Edit / New, following the ERP list/record split. The
+       workspace only needs the ProgId; ListView and FormView resolve schema / connector /
+       token from ClientInfo. Project demonstrates the lookup flow. -->
   <TabControl Margin="12">
     <TabItem Header="Employee">
-      <ScrollViewer>
-        <StackPanel Margin="0,12,0,0" Spacing="12">
-          <bee:FormView ProgId="Employee" />
-        </StackPanel>
-      </ScrollViewer>
+      <local:FormWorkspace ProgId="Employee" />
     </TabItem>
     <TabItem Header="Department">
-      <ScrollViewer>
-        <StackPanel Margin="0,12,0,0" Spacing="12">
-          <bee:FormView ProgId="Department" />
-        </StackPanel>
-      </ScrollViewer>
+      <local:FormWorkspace ProgId="Department" />
     </TabItem>
     <TabItem Header="Project">
-      <ScrollViewer>
-        <StackPanel Margin="0,12,0,0" Spacing="12">
-          <bee:FormView ProgId="Project" />
-        </StackPanel>
-      </ScrollViewer>
+      <local:FormWorkspace ProgId="Project" />
     </TabItem>
   </TabControl>
 

@@ -8,6 +8,23 @@
              x:Class="Bee.Northwind.UI.Views.FormsView"
              x:DataType="vm:FormsViewModel">
 
+  <UserControl.Styles>
+    <!-- Tab close button: flat by default, a subtle fill block only on hover / press. -->
+    <Style Selector="Button.tabclose">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="Padding" Value="4,0" />
+      <Setter Property="MinWidth" Value="0" />
+      <Setter Property="CornerRadius" Value="4" />
+    </Style>
+    <Style Selector="Button.tabclose:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SemiColorFill1}" />
+    </Style>
+    <Style Selector="Button.tabclose:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource SemiColorFill2}" />
+    </Style>
+  </UserControl.Styles>
+
   <DockPanel>
 
     <!-- Top bar: hamburger toggles the navigation pane; brand sits next to it; the
@@ -29,6 +46,7 @@
         <ToggleSwitch Grid.Column="3"
                       x:Name="ThemeToggle"
                       OnContent="Dark" OffContent="Light"
+                      IsChecked="True"
                       VerticalAlignment="Center"
                       IsCheckedChanged="OnThemeToggled" />
       </Grid>
@@ -47,7 +65,7 @@
                  Background="Transparent"
                  BorderThickness="0"
                  Padding="6,8"
-                 SelectionChanged="OnNavSelectionChanged">
+                 Tapped="OnNavTapped">
           <ListBox.Styles>
             <!-- Header rows are labels, not choices: disable so selection skips them. -->
             <Style Selector="ListBoxItem">
@@ -73,9 +91,10 @@
         </ListBox>
       </SplitView.Pane>
 
-      <!-- Form host: a fresh FormView is created per selection in code-behind so each one
-           runs its attach-time initialisation. -->
-      <ContentControl x:Name="FormHost" Margin="12" />
+      <!-- Open forms as IDE-style document tabs. Selecting a menu entry opens a new tab
+           (a fresh FormView so it runs its attach-time initialisation) or switches to the
+           existing one; tabs are built and de-duplicated in code-behind. -->
+      <TabControl x:Name="Tabs" Margin="8" />
 
     </SplitView>
 

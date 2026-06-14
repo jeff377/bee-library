@@ -10,28 +10,51 @@ using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls;
+using Bee.UI.Avalonia.Controls.Editors;
+using Bee.UI.Avalonia.DataObjects;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls
 {
     /// <summary>
-    /// Behaviour tests for <see cref="FormView"/>. Drives the view through
-    /// <see cref="FormView.InitializeAsync"/> + a <see cref="FakeFormApiConnector"/>
-    /// so the unit-test environment never needs an Avalonia visual tree nor a live
-    /// JSON-RPC backend. A <see cref="TestFormView"/> subclass overrides the
-    /// <c>Resolve*</c> hooks so the static <c>ClientInfo</c> is never touched.
+    /// Behaviour + structure tests for the unified single-record <see cref="FormView"/>: the
+    /// CRUD / three-mode flow (View / Add / Edit, Save / Cancel / Back), the
+    /// <see cref="FormView.FormMode"/> broadcast through the ambient <see cref="FormScope"/>,
+    /// and the record rendering (master sections + detail grids). A <see cref="TestFormView"/>
+    /// overrides the <c>Resolve*</c> hooks so the static <c>ClientInfo</c> is never touched.
     /// </summary>
     public class FormViewTests
     {
-        private const string TestProgId = "Employee";
+        private const string TestProgId = "Category";
+        private static readonly Type[] s_buildInputParams = [typeof(LayoutField)];
 
-        private static FormSchema BuildEmployeeSchema()
+        // ---- shared builders ----
+
+        private static FormSchema BuildSchema()
         {
             var schema = new FormSchema(TestProgId, TestProgId);
             schema.ListFields = "sys_id,sys_name";
             var master = schema.Tables!.Add(TestProgId, TestProgId);
             master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
-            master.Fields.Add("sys_id", "Employee ID", FieldDbType.String);
-            master.Fields.Add("sys_name", "Name", FieldDbType.String);
+            master.Fields.Add("sys_id", "Category Code", FieldDbType.String);
+            master.Fields.Add("sys_name", "Category Name", FieldDbType.String);
+            return schema;
+        }
+
+        private static FormSchema BuildRenderSchema()
+        {
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add("emp_id", "ID", FieldDbType.String);
+            master.Fields.Add("is_active", "Active", FieldDbType.Boolean);
+            master.Fields.Add("hire_date", "Hire Date", FieldDbType.Date);
+            return schema;
+        }
+
+        private static FormSchema BuildRenderSchemaWithDetail()
+        {
+            var schema = BuildRenderSchema();
+            var detail = schema.Tables!.Add("EmployeePhone", "Phones");
+            detail.Fields!.Add("phone", "Phone", FieldDbType.String);
             return schema;
         }
 
@@ -47,30 +70,69 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             return dataSet;
         }
 
-        private static DataTable BuildEmployeeListTable(Guid rowId, string name)
+        private static TestFormView BuildView(FakeFormApiConnector connector)
+            => new() { Schema = BuildSchema(), FormConnector = connector };
+
+        // ---- reflection helpers ----
+
+        private static void InvokePrivate(FormView view, string methodName, params object[] args)
         {
-            var table = new DataTable(TestProgId);
-            table.Columns.Add(SysFields.RowId, typeof(Guid));
-            table.Columns.Add("sys_id", typeof(string));
-            table.Columns.Add("sys_name", typeof(string));
-            table.Rows.Add(rowId, "E001", name);
-            return table;
+            var method = typeof(FormView).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(method);
+            method!.Invoke(view, args);
         }
 
         private static async Task InvokePrivateAsync(FormView view, string methodName, params object[] args)
         {
-            var method = typeof(FormView).GetMethod(
-                methodName, BindingFlags.NonPublic | BindingFlags.Instance);
+            var method = typeof(FormView).GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
             Assert.NotNull(method);
             await (Task)method!.Invoke(view, args)!;
         }
 
+        private static T GetPrivateField<T>(FormView view, string fieldName)
+        {
+            var field = typeof(FormView).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(field);
+            return (T)field!.GetValue(view)!;
+        }
+
+        private static void SetPrivateField(FormView view, string fieldName, object? value)
+        {
+            var field = typeof(FormView).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Instance);
+            Assert.NotNull(field);
+            field!.SetValue(view, value);
+        }
+
+        // Renders the form directly against a layout + data object (bypassing the backend
+        // round-trip) by seeding the private state and invoking the private Rebuild, then
+        // returns the form-body host panel for structural assertions.
+        private static StackPanel RenderForm(FormView view, FormLayout layout, FormDataObject dataObject)
+        {
+            SetPrivateField(view, "_formLayout", layout);
+            SetPrivateField(view, "_dataObject", dataObject);
+            InvokePrivate(view, "Rebuild");
+            return GetPrivateField<StackPanel>(view, "_formHost");
+        }
+
+        private static Control InvokeBuildInputControl(FormView view, FormDataObject dataObject, LayoutField field)
+        {
+            SetPrivateField(view, "_dataObject", dataObject);
+            var method = typeof(FormView).GetMethod(
+                "BuildInputControl", BindingFlags.NonPublic | BindingFlags.Instance, null, s_buildInputParams, null);
+            Assert.NotNull(method);
+            return (Control)method!.Invoke(view, new object[] { field })!;
+        }
+
+        private static StackPanel GetGridToolbar(GridControl grid)
+            => Assert.IsType<StackPanel>(Assert.IsType<DockPanel>(grid.Content).Children[0]);
+
+        // ---- type / property surface ----
+
         [Fact]
-        [DisplayName("FormView 為 SingleFormBase 資料表單子類別")]
-        public void Type_IsSingleFormBaseSubclass()
+        [DisplayName("FormView 為 Avalonia UserControl 子類別")]
+        public void Type_IsUserControlSubclass()
         {
             Assert.True(typeof(UserControl).IsAssignableFrom(typeof(FormView)));
-            Assert.True(typeof(SingleFormBase).IsAssignableFrom(typeof(FormView)));
         }
 
         [Theory]
@@ -78,238 +140,413 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         [InlineData(nameof(FormView.AccessToken), "AccessTokenProperty")]
         [InlineData(nameof(FormView.Schema), "SchemaProperty")]
         [InlineData(nameof(FormView.FormConnector), "FormConnectorProperty")]
+        [InlineData(nameof(FormView.FormMode), "FormModeProperty")]
+        [InlineData(nameof(FormView.DetailEditMode), "DetailEditModeProperty")]
         [DisplayName("公開屬性皆有對應的 StyledProperty 註冊")]
         public void PublicProperties_HaveMatchingStyledProperty(string propertyName, string styledPropertyFieldName)
         {
-            var property = typeof(FormView).GetProperty(
-                propertyName, BindingFlags.Public | BindingFlags.Instance);
+            var property = typeof(FormView).GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
             Assert.NotNull(property);
 
-            var styled = typeof(FormView).GetField(
-                styledPropertyFieldName,
-                BindingFlags.Public | BindingFlags.Static);
+            var styled = typeof(FormView).GetField(styledPropertyFieldName, BindingFlags.Public | BindingFlags.Static);
             Assert.NotNull(styled);
             Assert.True(typeof(AvaloniaProperty).IsAssignableFrom(styled!.FieldType));
-            Assert.NotNull(styled.GetValue(null));
+        }
+
+        // ---- CRUD / mode flow ----
+
+        [Fact]
+        [DisplayName("ViewAsync 載入記錄並進入 View 模式")]
+        public async Task ViewAsync_LoadsRecord_EntersViewMode()
+        {
+            var rowId = Guid.NewGuid();
+            Guid requestedId = Guid.Empty;
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = id =>
+                {
+                    requestedId = id;
+                    return new GetDataResponse { DataSet = BuildServerDataSet(id, "Beverages") };
+                },
+            };
+            var view = BuildView(connector);
+
+            await view.ViewAsync(rowId);
+
+            Assert.Equal(rowId, requestedId);
+            Assert.Equal(SingleFormMode.View, view.FormMode);
+            Assert.NotNull(view.DataObject?.MasterRow);
         }
 
         [Fact]
-        [DisplayName("缺少 Schema/Connector 時 InitializeAsync 為 no-op")]
-        public async Task InitializeAsync_MissingInputs_IsNoOp()
+        [DisplayName("EditAsync 載入記錄並進入 Edit 模式")]
+        public async Task EditAsync_LoadsRecord_EntersEditMode()
+        {
+            var rowId = Guid.NewGuid();
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Beverages") },
+            };
+            var view = BuildView(connector);
+
+            await view.EditAsync(rowId);
+
+            Assert.Equal(SingleFormMode.Edit, view.FormMode);
+        }
+
+        [Fact]
+        [DisplayName("NewAsync 取得空白資料並進入 Add 模式")]
+        public async Task NewAsync_GetsBlank_EntersAddMode()
+        {
+            var called = false;
+            var connector = new FakeFormApiConnector
+            {
+                GetNewDataHandler = () =>
+                {
+                    called = true;
+                    return new GetNewDataResponse { DataSet = BuildServerDataSet(Guid.NewGuid(), "New") };
+                },
+            };
+            var view = BuildView(connector);
+
+            await view.NewAsync();
+
+            Assert.True(called);
+            Assert.Equal(SingleFormMode.Add, view.FormMode);
+        }
+
+        [Fact]
+        [DisplayName("Save 成功呼叫 SaveAsync 並觸發 Saved")]
+        public async Task Save_OnSuccess_CallsSaveAndRaisesSaved()
+        {
+            var rowId = Guid.NewGuid();
+            var saveCalled = false;
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Beverages") },
+                SaveHandler = _ =>
+                {
+                    saveCalled = true;
+                    return new SaveResponse();
+                },
+            };
+            var view = BuildView(connector);
+            await view.EditAsync(rowId);
+
+            var saved = false;
+            view.Saved += (_, _) => saved = true;
+
+            await InvokePrivateAsync(view, "OnSaveClickedAsync");
+
+            Assert.True(saveCalled);
+            Assert.True(saved);
+        }
+
+        [Fact]
+        [DisplayName("Save 失敗觸發 ErrorOccurred 且不觸發 Saved")]
+        public async Task Save_OnFailure_RaisesErrorAndNotSaved()
+        {
+            var rowId = Guid.NewGuid();
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Beverages") },
+                SaveHandler = _ => throw new InvalidOperationException("backend rejected"),
+            };
+            var view = BuildView(connector);
+            await view.EditAsync(rowId);
+
+            var saved = false;
+            Exception? reported = null;
+            view.Saved += (_, _) => saved = true;
+            view.ErrorOccurred += (_, ex) => reported = ex;
+
+            await InvokePrivateAsync(view, "OnSaveClickedAsync");
+
+            Assert.False(saved);
+            Assert.IsType<InvalidOperationException>(reported);
+        }
+
+        [Fact]
+        [DisplayName("Cancel / Back 觸發 Closed")]
+        public async Task Close_RaisesClosed()
+        {
+            var rowId = Guid.NewGuid();
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Beverages") },
+            };
+            var view = BuildView(connector);
+            await view.EditAsync(rowId);
+
+            var closed = false;
+            view.Closed += (_, _) => closed = true;
+
+            InvokePrivate(view, "OnCloseClicked");
+
+            Assert.True(closed);
+        }
+
+        [Fact]
+        [DisplayName("View 模式只顯示返回鈕；Edit 模式顯示儲存/取消")]
+        public async Task Toolbar_ReflectsMode()
+        {
+            var rowId = Guid.NewGuid();
+            var connector = new FakeFormApiConnector
+            {
+                GetDataHandler = id => new GetDataResponse { DataSet = BuildServerDataSet(id, "Beverages") },
+            };
+            var view = BuildView(connector);
+
+            await view.ViewAsync(rowId);
+            Assert.True(GetPrivateField<Button>(view, "_backButton").IsVisible);
+            Assert.False(GetPrivateField<Button>(view, "_saveButton").IsVisible);
+            Assert.False(GetPrivateField<Button>(view, "_cancelButton").IsVisible);
+
+            await view.EditAsync(rowId);
+            Assert.True(GetPrivateField<Button>(view, "_saveButton").IsVisible);
+            Assert.True(GetPrivateField<Button>(view, "_cancelButton").IsVisible);
+            Assert.False(GetPrivateField<Button>(view, "_backButton").IsVisible);
+        }
+
+        // ---- FormMode broadcast (ported from the retired SingleFormBase) ----
+
+        [Fact]
+        [DisplayName("預設 View 並把 ambient scope 釘到 View")]
+        public void Defaults_PinScopeToView()
+        {
+            var view = new TestFormView();
+            Assert.Equal(SingleFormMode.View, view.FormMode);
+            Assert.Equal(SingleFormMode.View, FormScope.GetFormMode(view));
+        }
+
+        [Fact]
+        [DisplayName("OnFormModeChanged hook 於每次模式變更後被呼叫")]
+        public void OnFormModeChanged_InvokedPerChange()
         {
             var view = new TestFormView();
 
-            await view.InitializeAsync();
+            view.FormMode = SingleFormMode.Add;
+            view.FormMode = SingleFormMode.Edit;
 
-            Assert.Null(view.DataObject);
+            Assert.Equal(2, view.ModeChangedCount);
+            Assert.Equal(SingleFormMode.Edit, view.LastMode);
         }
 
         [Fact]
-        [DisplayName("只設 Schema 時 InitializeAsync 不建立 FormDataObject")]
-        public async Task InitializeAsync_OnlySchema_DoesNotBuildDataObject()
+        [DisplayName("子樹編輯器隨 FormMode 廣播切換唯讀（真實管線）")]
+        public void FormModeBroadcast_TogglesRenderedEditor()
         {
-            var view = new TestFormView { Schema = BuildEmployeeSchema() };
+            var schema = BuildRenderSchema();
+            var layout = new FormLayout { ColumnCount = 1 };
+            var section = new LayoutSection { Caption = "Main", ShowCaption = false };
+            section.Fields!.Add(new LayoutField { FieldName = "emp_id", Caption = "ID", ControlType = ControlType.TextEdit });
+            layout.Sections!.Add(section);
 
-            await view.InitializeAsync();
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
 
-            Assert.Null(view.DataObject);
+            var view = new TestFormView();
+            view.FormMode = SingleFormMode.View;
+            var host = RenderForm(view, layout, dataObject);
+
+            var editor = FindDescendant<TextEdit>(host);
+            Assert.NotNull(editor);
+            Assert.True(editor!.IsReadOnly);
+
+            view.FormMode = SingleFormMode.Edit;
+            Assert.False(editor.IsReadOnly);
+
+            view.FormMode = SingleFormMode.View;
+            Assert.True(editor.IsReadOnly);
+        }
+
+        // ---- rendering (ported from the retired DynamicForm) ----
+
+        [Fact]
+        [DisplayName("渲染後每個 Section 一個 Border")]
+        public void Render_OneBorderPerSection()
+        {
+            var schema = BuildRenderSchema();
+            var layout = schema.GetFormLayout();
+            Assert.NotEmpty(layout.Sections!);
+
+            var dataObject = new FormDataObject(schema);
+            var host = RenderForm(new TestFormView(), layout, dataObject);
+
+            Assert.Equal(layout.Sections!.Count, host.Children.Count);
+            Assert.All(host.Children, child => Assert.IsType<Border>(child));
         }
 
         [Fact]
-        [DisplayName("Schema + FormConnector 都設好後 InitializeAsync 會建立 FormDataObject 並載入列表")]
-        public async Task InitializeAsync_WithInputs_BuildsDataObjectAndLoadsList()
+        [DisplayName("欄位數超過 ColumnCount 時 Grid 換行配置")]
+        public void Render_FieldGridWrapsWhenFieldsExceedColumnCount()
         {
-            var schema = BuildEmployeeSchema();
-            string? capturedSelectFields = null;
-            var connector = new FakeFormApiConnector
+            var layout = new FormLayout { ColumnCount = 2 };
+            var section = new LayoutSection { Caption = "Main", ShowCaption = false };
+            section.Fields!.Add(new LayoutField { FieldName = "emp_id", Caption = "ID" });
+            section.Fields.Add(new LayoutField { FieldName = "is_active", Caption = "Active" });
+            section.Fields.Add(new LayoutField { FieldName = "hire_date", Caption = "Hire Date" });
+            layout.Sections!.Add(section);
+
+            var host = RenderForm(new TestFormView(), layout, new FormDataObject(BuildRenderSchema()));
+
+            var border = Assert.IsType<Border>(host.Children[0]);
+            var sectionStack = Assert.IsType<StackPanel>(border.Child);
+            var grid = Assert.IsType<Grid>(sectionStack.Children[^1]);
+
+            Assert.Equal(2, grid.ColumnDefinitions.Count);
+            Assert.Equal(2, grid.RowDefinitions.Count);
+            Assert.Equal(3, grid.Children.Count);
+        }
+
+        [Fact]
+        [DisplayName("FormLayout.Details 在 master sections 之後渲染為綁定的 GridControl")]
+        public void Render_DetailsRenderDetailGridControl()
+        {
+            var layout = new FormLayout { ColumnCount = 2 };
+            var section = new LayoutSection { Caption = "Main", ShowCaption = false };
+            section.Fields!.Add(new LayoutField { FieldName = "emp_id", Caption = "ID" });
+            layout.Sections!.Add(section);
+            var detail = new LayoutGrid("EmployeePhone", "Phones");
+            detail.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            layout.Details!.Add(detail);
+
+            var dataObject = new FormDataObject(BuildRenderSchemaWithDetail());
+            dataObject.InitializeNewMaster();
+            var host = RenderForm(new TestFormView(), layout, dataObject);
+
+            Assert.Equal(2, host.Children.Count);
+            var detailStack = Assert.IsType<StackPanel>(Assert.IsType<Border>(host.Children[1]).Child);
+            Assert.Equal("Phones", Assert.IsType<TextBlock>(detailStack.Children[0]).Text);
+            var grid = Assert.IsType<GridControl>(detailStack.Children[1]);
+            Assert.Same(dataObject.DataSet.Tables["EmployeePhone"], grid.DataTable);
+        }
+
+        [Fact]
+        [DisplayName("DetailEditMode=EditForm 時明細 grid 唯讀且工具列含 Edit 鈕")]
+        public void Render_DetailEditMode_EditForm()
+        {
+            var layout = new FormLayout { ColumnCount = 2 };
+            var detail = new LayoutGrid("EmployeePhone", "Phones");
+            detail.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            layout.Details!.Add(detail);
+
+            var dataObject = new FormDataObject(BuildRenderSchemaWithDetail());
+            dataObject.InitializeNewMaster();
+            var view = new TestFormView { DetailEditMode = GridEditMode.EditForm };
+            var host = RenderForm(view, layout, dataObject);
+
+            var detailStack = Assert.IsType<StackPanel>(Assert.IsType<Border>(host.Children[0]).Child);
+            var grid = Assert.IsType<GridControl>(detailStack.Children[1]);
+            Assert.Equal(GridEditMode.EditForm, grid.EditMode);
+            Assert.True(grid.InnerGrid.IsReadOnly);
+            Assert.True(Assert.IsType<Button>(GetGridToolbar(grid).Children[1]).IsVisible);
+        }
+
+        [Theory]
+        [InlineData(ControlType.CheckEdit, typeof(CheckEdit))]
+        [InlineData(ControlType.DateEdit, typeof(DateEdit))]
+        [InlineData(ControlType.YearMonthEdit, typeof(YearMonthEdit))]
+        [InlineData(ControlType.MemoEdit, typeof(MemoEdit))]
+        [InlineData(ControlType.DropDownEdit, typeof(DropDownEdit))]
+        [InlineData(ControlType.ButtonEdit, typeof(ButtonEdit))]
+        [InlineData(ControlType.TextEdit, typeof(TextEdit))]
+        [InlineData(ControlType.Auto, typeof(TextEdit))]
+        [DisplayName("BuildInputControl 依 ControlType 分派對應的 field editor")]
+        public void BuildInputControl_DispatchesByControlType(ControlType controlType, Type expectedControlType)
+        {
+            var dataObject = new FormDataObject(BuildRenderSchema());
+            dataObject.InitializeNewMaster();
+            var field = new LayoutField { FieldName = "emp_id", ControlType = controlType };
+
+            var control = InvokeBuildInputControl(new TestFormView(), dataObject, field);
+
+            Assert.IsType(expectedControlType, control);
+        }
+
+        [Fact]
+        [DisplayName("ReadOnly 欄位建立的編輯器為唯讀")]
+        public void BuildInputControl_ReadOnlyField_CreatesReadOnlyTextEdit()
+        {
+            var dataObject = new FormDataObject(BuildRenderSchema());
+            dataObject.InitializeNewMaster();
+            var field = new LayoutField { FieldName = "emp_id", ReadOnly = true };
+
+            var control = Assert.IsType<TextEdit>(InvokeBuildInputControl(new TestFormView(), dataObject, field));
+
+            Assert.True(control.IsReadOnly);
+        }
+
+        [Fact]
+        [DisplayName("CheckEdit 勾選變更會回寫 DataObject 欄位")]
+        public void BuildInputControl_CheckEdit_WritesBackToDataObject()
+        {
+            var dataObject = new FormDataObject(BuildRenderSchema());
+            dataObject.InitializeNewMaster();
+            var field = new LayoutField { FieldName = "is_active", ControlType = ControlType.CheckEdit };
+
+            var checkBox = Assert.IsType<CheckEdit>(InvokeBuildInputControl(new TestFormView(), dataObject, field));
+            checkBox.IsChecked = true;
+
+            Assert.Equal("True", dataObject.GetField("is_active"));
+            Assert.True(dataObject.IsDirty);
+        }
+
+        private static T? FindDescendant<T>(Control root) where T : Control
+        {
+            if (root is T match) return match;
+            if (root is Panel panel)
             {
-                GetListHandler = selectFields =>
-                {
-                    capturedSelectFields = selectFields;
-                    return new GetListResponse { Table = BuildEmployeeListTable(Guid.NewGuid(), "Alice") };
-                },
-            };
-            var view = new TestFormView
+                foreach (var child in panel.Children)
+                    if (child is Control c && FindDescendant<T>(c) is { } found)
+                        return found;
+            }
+            else if (root is Border { Child: Control borderChild })
             {
-                Schema = schema,
-                FormConnector = connector,
-            };
-
-            await view.InitializeAsync();
-
-            Assert.NotNull(view.DataObject);
-            // ComputeSelectFields must prepend sys_rowid ahead of FormSchema.ListFields
-            // so the wire response carries the identifier row selection needs.
-            Assert.Equal("sys_rowid,sys_id,sys_name", capturedSelectFields);
-        }
-
-        [Fact]
-        [DisplayName("OnRowSelectedAsync 會委派到 FormDataObject.LoadAsync")]
-        public async Task OnRowSelected_DelegatesToLoadAsync()
-        {
-            var schema = BuildEmployeeSchema();
-            var rowId = Guid.NewGuid();
-            var loadedDataSet = BuildServerDataSet(rowId, "Loaded Bob");
-            Guid? requestedRowId = null;
-            var connector = new FakeFormApiConnector
+                return FindDescendant<T>(borderChild);
+            }
+            else if (root is ContentControl { Content: Control content })
             {
-                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "Bob") },
-                GetDataHandler = id =>
-                {
-                    requestedRowId = id;
-                    return new GetDataResponse { DataSet = loadedDataSet };
-                },
-            };
-            var view = new TestFormView { Schema = schema, FormConnector = connector };
-            await view.InitializeAsync();
-
-            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
-
-            Assert.Equal(rowId, requestedRowId);
-            Assert.NotNull(view.DataObject!.MasterRow);
-            Assert.Equal("Loaded Bob", view.DataObject!.GetField("sys_name"));
-        }
-
-        [Fact]
-        [DisplayName("Save 失敗時 ErrorOccurred 會帶出例外訊息")]
-        public async Task ErrorOccurred_FiresWhenSaveThrows()
-        {
-            var schema = BuildEmployeeSchema();
-            var connector = new FakeFormApiConnector
-            {
-                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(Guid.NewGuid(), "X") },
-                GetNewDataHandler = () => new GetNewDataResponse { DataSet = BuildServerDataSet(Guid.NewGuid(), "Pending") },
-                SaveHandler = _ => throw new InvalidOperationException("backend rejected"),
-            };
-            var view = new TestFormView { Schema = schema, FormConnector = connector };
-            await view.InitializeAsync();
-
-            Exception? captured = null;
-            view.ErrorOccurred += (_, ex) => captured = ex;
-
-            await InvokePrivateAsync(view, "OnNewClickedAsync");
-            Assert.NotNull(view.DataObject!.MasterRow);
-
-            await InvokePrivateAsync(view, "OnSaveClickedAsync");
-
-            Assert.NotNull(captured);
-            Assert.Equal("backend rejected", captured!.Message);
-        }
-
-        private static void InvokeEditClicked(FormView view)
-        {
-            var method = typeof(FormView).GetMethod(
-                "OnEditClicked", BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.NotNull(method);
-            method!.Invoke(view, null);
-        }
-
-        private static TestFormView BuildInitializableView(Guid rowId, string name)
-        {
-            var connector = new FakeFormApiConnector
-            {
-                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, name) },
-                GetDataHandler = _ => new GetDataResponse { DataSet = BuildServerDataSet(rowId, name) },
-                GetNewDataHandler = () => new GetNewDataResponse { DataSet = BuildServerDataSet(Guid.NewGuid(), "Pending") },
-            };
-            return new TestFormView { Schema = BuildEmployeeSchema(), FormConnector = connector };
-        }
-
-        [Fact]
-        [DisplayName("初始為 View，選列載入後維持 View（唯讀瀏覽）")]
-        public async Task FormMode_InitialAndAfterLoad_IsView()
-        {
-            var rowId = Guid.NewGuid();
-            var view = BuildInitializableView(rowId, "Bob");
-            await view.InitializeAsync();
-
-            Assert.Equal(SingleFormMode.View, view.FormMode);
-
-            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
-
-            Assert.Equal(SingleFormMode.View, view.FormMode);
-        }
-
-        [Fact]
-        [DisplayName("Edit 鈕進入 Edit 模式；New 進入 Add 模式")]
-        public async Task FormMode_EditAndNew_EnterEditingModes()
-        {
-            var rowId = Guid.NewGuid();
-            var view = BuildInitializableView(rowId, "Bob");
-            await view.InitializeAsync();
-            await InvokePrivateAsync(view, "OnRowSelectedAsync", rowId);
-
-            InvokeEditClicked(view);
-            Assert.Equal(SingleFormMode.Edit, view.FormMode);
-
-            await InvokePrivateAsync(view, "OnNewClickedAsync");
-            Assert.Equal(SingleFormMode.Add, view.FormMode);
-        }
-
-        [Fact]
-        [DisplayName("Save 成功回到 View；Save 失敗停留在原模式")]
-        public async Task FormMode_SaveOutcome_DrivesTransition()
-        {
-            var rowId = Guid.NewGuid();
-            var saveShouldThrow = true;
-            var connector = new FakeFormApiConnector
-            {
-                GetListHandler = _ => new GetListResponse { Table = BuildEmployeeListTable(rowId, "X") },
-                GetNewDataHandler = () => new GetNewDataResponse { DataSet = BuildServerDataSet(Guid.NewGuid(), "Pending") },
-                SaveHandler = _ => saveShouldThrow
-                    ? throw new InvalidOperationException("backend rejected")
-                    : new SaveResponse(),
-            };
-            var view = new TestFormView { Schema = BuildEmployeeSchema(), FormConnector = connector };
-            await view.InitializeAsync();
-
-            await InvokePrivateAsync(view, "OnNewClickedAsync");
-            Assert.Equal(SingleFormMode.Add, view.FormMode);
-
-            await InvokePrivateAsync(view, "OnSaveClickedAsync");
-            Assert.Equal(SingleFormMode.Add, view.FormMode);
-
-            saveShouldThrow = false;
-            await InvokePrivateAsync(view, "OnSaveClickedAsync");
-            Assert.Equal(SingleFormMode.View, view.FormMode);
+                return FindDescendant<T>(content);
+            }
+            return null;
         }
 
         /// <summary>
-        /// Overrides the <c>Resolve*</c> hooks so tests never read the process-wide
-        /// <c>ClientInfo</c> statics; the unused <c>ResolveFormConnector</c> throws to
-        /// flag any unexpected ProgId-fallback path.
+        /// Overrides the <c>Resolve*</c> hooks so tests never read <c>ClientInfo</c>, and
+        /// surfaces the <c>OnFormModeChanged</c> hook for assertions.
         /// </summary>
         private sealed class TestFormView : FormView
         {
+            public int ModeChangedCount { get; private set; }
+            public SingleFormMode? LastMode { get; private set; }
+
             protected override SystemApiConnector? ResolveSystemConnector() => null;
 
             protected override FormApiConnector ResolveFormConnector(string progId)
                 => throw new InvalidOperationException("ClientInfo fallback must not be reached in unit tests.");
 
             protected override Guid ResolveAccessToken() => Guid.Empty;
+
+            protected override void OnFormModeChanged(SingleFormMode formMode)
+            {
+                base.OnFormModeChanged(formMode);
+                ModeChangedCount++;
+                LastMode = formMode;
+            }
         }
 
         /// <summary>
-        /// Same test double the FormDataObject tests use; overrides every virtual
-        /// CRUD method on <see cref="FormApiConnector"/> so the base
-        /// <c>LocalApiProvider</c> is never reached.
+        /// Test double overriding every virtual round-trip on <see cref="FormApiConnector"/>
+        /// so the base <c>LocalApiProvider</c> is never reached.
         /// </summary>
         private sealed class FakeFormApiConnector : FormApiConnector
         {
             public FakeFormApiConnector() : base(Guid.NewGuid(), TestProgId) { }
 
-            public Func<string, GetListResponse>? GetListHandler { get; set; }
             public Func<Guid, GetDataResponse>? GetDataHandler { get; set; }
             public Func<GetNewDataResponse>? GetNewDataHandler { get; set; }
             public Func<DataSet, SaveResponse>? SaveHandler { get; set; }
-            public Func<Guid, DeleteResponse>? DeleteHandler { get; set; }
-
-            public override Task<GetListResponse> GetListAsync(
-                string selectFields = "",
-                Bee.Definition.Filters.FilterNode? filter = null,
-                Bee.Definition.Sorting.SortFieldCollection? sortFields = null,
-                Bee.Definition.Paging.PagingOptions? paging = null)
-                => Task.FromResult((GetListHandler ?? (_ => new GetListResponse()))(selectFields));
 
             public override Task<GetDataResponse> GetDataAsync(Guid rowId)
                 => Task.FromResult((GetDataHandler ?? (_ => new GetDataResponse()))(rowId));
@@ -319,9 +556,6 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
 
             public override Task<SaveResponse> SaveAsync(DataSet dataSet)
                 => Task.FromResult((SaveHandler ?? (_ => new SaveResponse()))(dataSet));
-
-            public override Task<DeleteResponse> DeleteAsync(Guid rowId)
-                => Task.FromResult((DeleteHandler ?? (_ => new DeleteResponse()))(rowId));
         }
     }
 }

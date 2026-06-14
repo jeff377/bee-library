@@ -13,145 +13,108 @@ using Bee.UI.Core;
 namespace Bee.UI.Avalonia.Controls
 {
     /// <summary>
-    /// Single-record data form that wires <see cref="GridControl"/> (list view)
-    /// to <see cref="DynamicForm"/> (master detail) via a shared
-    /// <see cref="FormDataObject"/>. Selecting a list row drives
-    /// <see cref="FormDataObject.LoadAsync"/>; the toolbar buttons fan out to
-    /// <see cref="FormDataObject.NewAsync"/> / <c>SaveAsync</c> / <c>DeleteAsync</c>.
-    /// Mirrors the MAUI <c>FormPage</c> structure for cross-family parity.
-    /// As a <see cref="SingleFormBase"/> it owns the form mode: loading a row enters
-    /// View (read-only browsing), the Edit button enters Edit, New enters Add, and a
-    /// successful Save returns to View — each transition broadcasts to every editor
-    /// and grid in the form through the ambient <see cref="FormScope"/>.
+    /// Single-record surface — the editor half of the ERP list/record split, paired with
+    /// <see cref="ListView"/>. A record is one complete master + detail unit loaded through
+    /// the form's <c>GetData</c> round-trip. The view renders the record from its
+    /// <see cref="FormSchema.GetFormLayout"/> (master sections + detail grids) and carries
+    /// the three <see cref="SingleFormMode"/> states: <see cref="SingleFormMode.View"/>
+    /// (read-only, Back only), <see cref="SingleFormMode.Add"/> and
+    /// <see cref="SingleFormMode.Edit"/> (editable, Save / Cancel). The host drives it through
+    /// <see cref="ViewAsync"/> / <see cref="EditAsync"/> / <see cref="NewAsync"/> and reacts to
+    /// <see cref="Saved"/> / <see cref="Closed"/> to return to the list.
     /// </summary>
     /// <remarks>
-    /// The host typically supplies only <see cref="ProgId"/>. When <see cref="Schema"/>
-    /// and <see cref="FormConnector"/> are left unset, <see cref="InitializeAsync"/>
-    /// resolves them from <see cref="ClientInfo"/>:
-    /// <c>SystemApiConnector.GetDefineAsync&lt;FormSchema&gt;</c> for the schema and
-    /// <c>CreateFormApiConnector(ProgId)</c> for the connector. The same path applies
-    /// to <see cref="AccessToken"/>, which falls back to <see cref="ClientInfo.AccessToken"/>
-    /// when the host leaves it as <see cref="Guid.Empty"/>. Hosts that want to bypass
-    /// the static <see cref="ClientInfo"/> can either supply <see cref="Schema"/> /
-    /// <see cref="FormConnector"/> directly, or subclass and override the
-    /// <c>ResolveSystemConnector</c> / <c>ResolveFormConnector</c> / <c>ResolveAccessToken</c>
-    /// hooks below.
+    /// The host typically supplies only <see cref="ProgId"/>; the schema, connector and access
+    /// token resolve from <see cref="ClientInfo"/> through the <c>Resolve*</c> hooks, which a
+    /// subclass can override to bypass the static state (the unit tests rely on this). Setting
+    /// <see cref="FormMode"/> broadcasts through the ambient <see cref="FormScope"/> so the
+    /// field editors and detail grids switch read-only / editable to match.
     /// </remarks>
-    public class FormView : SingleFormBase
+    public class FormView : UserControl
     {
-        /// <summary>
-        /// Identifies the <see cref="ProgId"/> styled property.
-        /// </summary>
+        /// <summary>Identifies the <see cref="ProgId"/> styled property.</summary>
         public static readonly StyledProperty<string> ProgIdProperty =
             AvaloniaProperty.Register<FormView, string>(nameof(ProgId), defaultValue: string.Empty);
 
-        /// <summary>
-        /// Identifies the <see cref="AccessToken"/> styled property.
-        /// </summary>
+        /// <summary>Identifies the <see cref="AccessToken"/> styled property.</summary>
         public static readonly StyledProperty<Guid> AccessTokenProperty =
             AvaloniaProperty.Register<FormView, Guid>(nameof(AccessToken), defaultValue: Guid.Empty);
 
-        /// <summary>
-        /// Identifies the <see cref="Schema"/> styled property.
-        /// </summary>
+        /// <summary>Identifies the <see cref="Schema"/> styled property.</summary>
         public static readonly StyledProperty<FormSchema?> SchemaProperty =
             AvaloniaProperty.Register<FormView, FormSchema?>(nameof(Schema));
 
-        /// <summary>
-        /// Identifies the <see cref="FormConnector"/> styled property.
-        /// </summary>
+        /// <summary>Identifies the <see cref="FormConnector"/> styled property.</summary>
         public static readonly StyledProperty<FormApiConnector?> FormConnectorProperty =
             AvaloniaProperty.Register<FormView, FormApiConnector?>(nameof(FormConnector));
 
-        private readonly Button _newButton;
-        private readonly Button _editButton;
+        /// <summary>Identifies the <see cref="FormMode"/> styled property.</summary>
+        public static readonly StyledProperty<SingleFormMode> FormModeProperty =
+            AvaloniaProperty.Register<FormView, SingleFormMode>(nameof(FormMode), SingleFormMode.View);
+
+        /// <summary>Identifies the <see cref="DetailEditMode"/> styled property.</summary>
+        public static readonly StyledProperty<GridEditMode> DetailEditModeProperty =
+            AvaloniaProperty.Register<FormView, GridEditMode>(nameof(DetailEditMode), GridEditMode.InCell);
+
         private readonly Button _saveButton;
-        private readonly Button _deleteButton;
-        private readonly TextBlock _dirtyMarker;
+        private readonly Button _cancelButton;
+        private readonly Button _backButton;
         private readonly TextBlock _errorLabel;
-        private readonly TextBlock _loadingLabel;
-        private readonly TextBlock _emptyListLabel;
-        private readonly GridControl _grid;
-        private readonly DynamicForm _form;
+        private readonly StackPanel _formHost;
         private FormDataObject? _dataObject;
-        private LayoutGrid? _listLayout;
+        private FormLayout? _formLayout;
         private bool _isBusy;
-        private bool _initialized;
-        private bool _isInitializing;
 
         static FormView()
         {
-            SchemaProperty.Changed.AddClassHandler<FormView>((v, _) => v.OnInputsChanged());
-            FormConnectorProperty.Changed.AddClassHandler<FormView>((v, _) => v.OnInputsChanged());
+            FormModeProperty.Changed.AddClassHandler<FormView>((v, e) =>
+            {
+                var formMode = (SingleFormMode)e.NewValue!;
+                FormScope.SetFormMode(v, formMode);
+                v.OnFormModeChanged(formMode);
+            });
         }
 
         /// <summary>
-        /// Initializes a new instance of <see cref="FormView"/> with the toolbar +
-        /// list + form layout assembled. The toolbar buttons are disabled until
-        /// <see cref="InitializeAsync"/> resolves the schema and connector inputs.
+        /// Initializes a new instance of <see cref="FormView"/> with the toolbar + form body
+        /// assembled. The toolbar reflects the current <see cref="FormMode"/>.
         /// </summary>
         public FormView()
         {
+            // The ambient scope defaults to Edit so standalone editors stay editable; a data
+            // form owns the mode, so pin the scope to the initial View here (the property
+            // change handler cannot cover this — the default value never raises a change).
+            FormScope.SetFormMode(this, FormMode);
+
             _errorLabel = new TextBlock { Foreground = Brushes.Red, IsVisible = false };
-            _loadingLabel = new TextBlock { Text = "Loading…", IsVisible = true };
 
-            _newButton = new Button { Content = "New", IsEnabled = false };
-            _newButton.Click += async (_, _) => await OnNewClickedAsync().ConfigureAwait(true);
-
-            _editButton = new Button { Content = "Edit", IsEnabled = false };
-            _editButton.Click += (_, _) => OnEditClicked();
-
-            _saveButton = new Button { Content = "Save", IsEnabled = false };
+            _saveButton = new Button { Content = "Save" };
             _saveButton.Click += async (_, _) => await OnSaveClickedAsync().ConfigureAwait(true);
 
-            _deleteButton = new Button { Content = "Delete", IsEnabled = false };
-            _deleteButton.Click += async (_, _) => await OnDeleteClickedAsync().ConfigureAwait(true);
+            _cancelButton = new Button { Content = "Cancel" };
+            _cancelButton.Click += (_, _) => OnCloseClicked();
 
-            _dirtyMarker = new TextBlock
-            {
-                Text = "● unsaved",
-                Foreground = Brushes.DarkGoldenrod,
-                VerticalAlignment = VerticalAlignment.Center,
-                IsVisible = false,
-            };
+            _backButton = new Button { Content = "Back" };
+            _backButton.Click += (_, _) => OnCloseClicked();
 
-            var toolbar = new StackPanel
-            {
-                Orientation = Orientation.Horizontal,
-                Spacing = 8,
-            };
-            toolbar.Children.Add(_newButton);
-            toolbar.Children.Add(_editButton);
+            var toolbar = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
             toolbar.Children.Add(_saveButton);
-            toolbar.Children.Add(_deleteButton);
-            toolbar.Children.Add(_dirtyMarker);
+            toolbar.Children.Add(_cancelButton);
+            toolbar.Children.Add(_backButton);
 
-            _grid = new GridControl();
-            _grid.RowSelected += async (_, rowId) => await OnRowSelectedAsync(rowId).ConfigureAwait(true);
+            _formHost = new StackPanel { Orientation = Orientation.Vertical, Spacing = 8 };
 
-            // GridControl renders headers only when the list is empty; the view keeps
-            // the textual hint the retired DynamicGrid used to provide.
-            _emptyListLabel = new TextBlock { Text = "No data.", IsVisible = false };
-
-            _form = new DynamicForm();
-
-            var host = new StackPanel
-            {
-                Orientation = Orientation.Vertical,
-                Spacing = 12,
-            };
+            var host = new StackPanel { Orientation = Orientation.Vertical, Spacing = 12 };
             host.Children.Add(_errorLabel);
-            host.Children.Add(_loadingLabel);
             host.Children.Add(toolbar);
-            host.Children.Add(_grid);
-            host.Children.Add(_emptyListLabel);
-            host.Children.Add(_form);
+            host.Children.Add(_formHost);
 
             Content = host;
+            UpdateToolbarState();
         }
 
         /// <summary>
-        /// Gets or sets the program identifier (e.g. "Employee"). Drives both the
+        /// Gets or sets the program identifier (e.g. "Category"). Drives both the
         /// <see cref="ClientInfo"/>-backed FormSchema lookup and the
         /// <see cref="FormApiConnector"/> creation when the host leaves
         /// <see cref="Schema"/> / <see cref="FormConnector"/> unset.
@@ -164,9 +127,8 @@ namespace Bee.UI.Avalonia.Controls
 
         /// <summary>
         /// Gets or sets the access token surfaced on the view. Defaults to
-        /// <see cref="Guid.Empty"/> (anonymous); <see cref="InitializeAsync"/>
-        /// fills this in from <see cref="ClientInfo.AccessToken"/> when the host
-        /// did not supply one.
+        /// <see cref="Guid.Empty"/>; resolves from <see cref="ClientInfo.AccessToken"/> when
+        /// the host did not supply one.
         /// </summary>
         public Guid AccessToken
         {
@@ -174,18 +136,14 @@ namespace Bee.UI.Avalonia.Controls
             set => SetValue(AccessTokenProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the resolved <see cref="FormSchema"/>.
-        /// </summary>
+        /// <summary>Gets or sets the resolved <see cref="FormSchema"/>.</summary>
         public FormSchema? Schema
         {
             get => GetValue(SchemaProperty);
             set => SetValue(SchemaProperty, value);
         }
 
-        /// <summary>
-        /// Gets or sets the connector used for all CRUD round-trips.
-        /// </summary>
+        /// <summary>Gets or sets the connector used for the load / save round-trips.</summary>
         public FormApiConnector? FormConnector
         {
             get => GetValue(FormConnectorProperty);
@@ -193,46 +151,132 @@ namespace Bee.UI.Avalonia.Controls
         }
 
         /// <summary>
-        /// Raised whenever a backend round-trip throws.
+        /// Gets or sets the form mode. Defaults to <see cref="SingleFormMode.View"/>; every
+        /// change is broadcast to descendant editors and grids through the ambient
+        /// <see cref="FormScope"/>.
         /// </summary>
-        public event EventHandler<Exception>? ErrorOccurred;
+        public SingleFormMode FormMode
+        {
+            get => GetValue(FormModeProperty);
+            set => SetValue(FormModeProperty, value);
+        }
 
         /// <summary>
-        /// Gets the data object built once <see cref="Schema"/> and
-        /// <see cref="FormConnector"/> are both supplied.
+        /// Gets or sets the editing model applied to every detail grid this form renders.
         /// </summary>
+        public GridEditMode DetailEditMode
+        {
+            get => GetValue(DetailEditModeProperty);
+            set => SetValue(DetailEditModeProperty, value);
+        }
+
+        /// <summary>Gets the data object built once the schema + connector are resolved.</summary>
         public FormDataObject? DataObject => _dataObject;
 
+        /// <summary>Raised after a record is saved successfully.</summary>
+        public event EventHandler? Saved;
+
         /// <summary>
-        /// Builds <see cref="FormDataObject"/> from the current <see cref="Schema"/>
-        /// + <see cref="FormConnector"/> and runs the initial list reload.
+        /// Raised when the surface is dismissed without saving — Cancel (Add / Edit) or Back
+        /// (View). The host returns to the list.
         /// </summary>
-        public async Task InitializeAsync()
+        public event EventHandler? Closed;
+
+        /// <summary>Raised whenever a backend round-trip throws.</summary>
+        public event EventHandler<Exception>? ErrorOccurred;
+
+        /// <summary>Loads a record read-only (<see cref="SingleFormMode.View"/>).</summary>
+        public async Task ViewAsync(Guid rowId)
         {
-            if (_initialized || _isInitializing) return;
-
-            var hasProgId = !string.IsNullOrEmpty(ProgId);
-            if (!hasProgId && (Schema is null || FormConnector is null)) return;
-
-            _isInitializing = true;
-            try
+            if (!await EnsureInitializedAsync().ConfigureAwait(true)) return;
+            await RunGuardedAsync(async () =>
             {
-                ApplyAccessTokenFallback();
+                await _dataObject!.LoadAsync(rowId).ConfigureAwait(true);
+                FormMode = SingleFormMode.View;
+            }).ConfigureAwait(true);
+        }
 
-                if (!await TryResolveSchemaAsync(hasProgId).ConfigureAwait(true)) return;
-                ResolveFormConnectorFallback(hasProgId);
-
-                if (Schema is null || FormConnector is null) return;
-                AttachDataObject();
-
-                _initialized = true;
-                await ReloadListAsync().ConfigureAwait(true);
-                UpdateToolbarState();
-            }
-            finally
+        /// <summary>Loads a record for editing (<see cref="SingleFormMode.Edit"/>).</summary>
+        public async Task EditAsync(Guid rowId)
+        {
+            if (!await EnsureInitializedAsync().ConfigureAwait(true)) return;
+            await RunGuardedAsync(async () =>
             {
-                _isInitializing = false;
+                await _dataObject!.LoadAsync(rowId).ConfigureAwait(true);
+                FormMode = SingleFormMode.Edit;
+            }).ConfigureAwait(true);
+        }
+
+        /// <summary>Starts a blank record (<see cref="SingleFormMode.Add"/>).</summary>
+        public async Task NewAsync()
+        {
+            if (!await EnsureInitializedAsync().ConfigureAwait(true)) return;
+            await RunGuardedAsync(async () =>
+            {
+                await _dataObject!.NewAsync().ConfigureAwait(true);
+                FormMode = SingleFormMode.Add;
+            }).ConfigureAwait(true);
+        }
+
+        /// <summary>
+        /// Resolves the <see cref="SystemApiConnector"/> used to load the
+        /// <see cref="FormSchema"/>. Override to bypass <see cref="ClientInfo"/>.
+        /// </summary>
+        protected virtual SystemApiConnector? ResolveSystemConnector() => ClientInfo.SystemApiConnector;
+
+        /// <summary>
+        /// Resolves the <see cref="FormApiConnector"/> for the load / save round-trips.
+        /// Override to bypass <see cref="ClientInfo"/>.
+        /// </summary>
+        protected virtual FormApiConnector ResolveFormConnector(string progId)
+            => ClientInfo.CreateFormApiConnector(progId);
+
+        /// <summary>Resolves the access token. Override to plug in a different session source.</summary>
+        protected virtual Guid ResolveAccessToken() => ClientInfo.AccessToken;
+
+        /// <summary>
+        /// Called after the form mode changed and was broadcast to the scope. Refreshes the
+        /// mode-dependent toolbar.
+        /// </summary>
+        /// <param name="formMode">The new form mode.</param>
+        protected virtual void OnFormModeChanged(SingleFormMode formMode) => UpdateToolbarState();
+
+        private async Task<bool> EnsureInitializedAsync()
+        {
+            if (_dataObject is not null) return true;
+
+            ApplyAccessTokenFallback();
+
+            if (Schema is null && !string.IsNullOrEmpty(ProgId))
+            {
+                var systemConnector = ResolveSystemConnector();
+                if (systemConnector is not null)
+                {
+                    try
+                    {
+                        var key = new[] { ProgId };
+                        var loaded = await systemConnector
+                            .GetDefineAsync<FormSchema>(DefineType.FormSchema, key)
+                            .ConfigureAwait(true);
+                        if (loaded is not null)
+                            Schema = loaded;
+                    }
+                    catch (Exception ex)
+                    {
+                        ReportError(ex);
+                        return false;
+                    }
+                }
             }
+
+            if (FormConnector is null && !string.IsNullOrEmpty(ProgId))
+                FormConnector = ResolveFormConnector(ProgId);
+
+            if (Schema is null || FormConnector is null) return false;
+
+            _dataObject = new FormDataObject(Schema, FormConnector);
+            _formLayout = Schema.GetFormLayout();
+            return true;
         }
 
         private void ApplyAccessTokenFallback()
@@ -243,175 +287,24 @@ namespace Bee.UI.Avalonia.Controls
                 AccessToken = fallbackToken;
         }
 
-        private async Task<bool> TryResolveSchemaAsync(bool hasProgId)
-        {
-            if (Schema is not null || !hasProgId) return true;
-
-            var systemConnector = ResolveSystemConnector();
-            if (systemConnector is null) return true;
-
-            ClearError();
-            try
-            {
-                var key = new[] { ProgId };
-                var loaded = await systemConnector
-                    .GetDefineAsync<FormSchema>(DefineType.FormSchema, key)
-                    .ConfigureAwait(true);
-                if (loaded is not null)
-                    Schema = loaded;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                ReportError(ex);
-                return false;
-            }
-        }
-
-        private void ResolveFormConnectorFallback(bool hasProgId)
-        {
-            if (FormConnector is not null || !hasProgId) return;
-            FormConnector = ResolveFormConnector(ProgId);
-        }
-
-        private void AttachDataObject()
-        {
-            ClearError();
-            _loadingLabel.IsVisible = false;
-
-            _dataObject = new FormDataObject(Schema!, FormConnector!);
-            _form.FormLayout = Schema!.GetFormLayout();
-            _form.DataObject = _dataObject;
-            _listLayout = Schema.GetListLayout();
-            // Columns render immediately; the rows arrive with the first ReloadListAsync.
-            _grid.Bind(_listLayout, rows: null);
-        }
-
-        /// <summary>
-        /// Resolves the <see cref="SystemApiConnector"/> used to load the
-        /// <see cref="FormSchema"/>. Override to bypass <see cref="ClientInfo"/>.
-        /// </summary>
-        protected virtual SystemApiConnector? ResolveSystemConnector() => ClientInfo.SystemApiConnector;
-
-        /// <summary>
-        /// Resolves the <see cref="FormApiConnector"/> for CRUD round-trips.
-        /// Override to bypass <see cref="ClientInfo"/>.
-        /// </summary>
-        protected virtual FormApiConnector ResolveFormConnector(string progId)
-            => ClientInfo.CreateFormApiConnector(progId);
-
-        /// <summary>
-        /// Resolves the access token. Override to plug in a different session source.
-        /// </summary>
-        protected virtual Guid ResolveAccessToken() => ClientInfo.AccessToken;
-
-        /// <inheritdoc/>
-        protected override void OnAttachedToVisualTree(global::Avalonia.VisualTreeAttachmentEventArgs e)
-        {
-            base.OnAttachedToVisualTree(e);
-            // Fire-and-forget: the host attached us to a real visual tree, so trigger
-            // the same async init the MAUI / Blazor sides run from their handler /
-            // OnInitializedAsync hooks.
-            if (!_initialized && !_isInitializing)
-                _ = InitializeAsync();
-        }
-
-        private void OnInputsChanged()
-        {
-            if (_initialized || _isInitializing) return;
-            _ = InitializeAsync();
-        }
-
-        private async Task ReloadListAsync()
-        {
-            var connector = FormConnector;
-            if (connector is null) return;
-
-            try
-            {
-                // FormSchema.ListFields drives the server-side SELECT fallback but does
-                // not include sys_rowid; the framework only adds sys_rowid as an
-                // invisible LayoutColumn on the client side. Explicitly prepend it to
-                // SelectFields so the wire response carries the identifier the grid's
-                // row-selection handler needs (without it row clicks silently drop on
-                // the floor because TryGetRowId can't find the column).
-                var response = await connector.GetListAsync(ComputeSelectFields()).ConfigureAwait(true);
-                _grid.DataTable = response.Table;
-                var isEmpty = response.Table is null || response.Table.Rows.Count == 0;
-                _grid.IsVisible = !isEmpty;
-                _emptyListLabel.IsVisible = isEmpty;
-            }
-            catch (Exception ex)
-            {
-                ReportError(ex);
-            }
-        }
-
-        private string ComputeSelectFields()
-        {
-            var schema = Schema;
-            if (schema is null) return string.Empty;
-
-            var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { SysFields.RowId };
-            var parts = new List<string> { SysFields.RowId };
-            foreach (var name in (schema.ListFields ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries))
-            {
-                var trimmed = name.Trim();
-                if (trimmed.Length > 0 && seen.Add(trimmed))
-                    parts.Add(trimmed);
-            }
-            return string.Join(",", parts);
-        }
-
-        // Mode transitions sit on the success path of each guarded action — a thrown
-        // round-trip leaves the form in its current mode.
-        private async Task OnRowSelectedAsync(Guid rowId)
-        {
-            if (_dataObject is null) return;
-            await RunGuardedAsync(async () =>
-            {
-                await _dataObject.LoadAsync(rowId).ConfigureAwait(true);
-                FormMode = SingleFormMode.View;
-            }).ConfigureAwait(true);
-        }
-
-        private void OnEditClicked()
-        {
-            if (_dataObject?.MasterRow is null) return;
-            FormMode = SingleFormMode.Edit;
-            UpdateToolbarState();
-        }
-
-        private async Task OnNewClickedAsync()
-        {
-            if (_dataObject is null) return;
-            await RunGuardedAsync(async () =>
-            {
-                await _dataObject.NewAsync().ConfigureAwait(true);
-                FormMode = SingleFormMode.Add;
-            }).ConfigureAwait(true);
-        }
-
         private async Task OnSaveClickedAsync()
         {
             if (_dataObject is null) return;
+            var saved = false;
             await RunGuardedAsync(async () =>
             {
                 await _dataObject.SaveAsync().ConfigureAwait(true);
-                await ReloadListAsync().ConfigureAwait(true);
-                FormMode = SingleFormMode.View;
+                saved = true;
             }).ConfigureAwait(true);
+
+            if (saved)
+                Saved?.Invoke(this, EventArgs.Empty);
         }
 
-        private async Task OnDeleteClickedAsync()
+        private void OnCloseClicked()
         {
-            if (_dataObject is null) return;
-            await RunGuardedAsync(async () =>
-            {
-                await _dataObject.DeleteAsync().ConfigureAwait(true);
-                await ReloadListAsync().ConfigureAwait(true);
-                FormMode = SingleFormMode.View;
-            }).ConfigureAwait(true);
+            if (_isBusy) return;
+            Closed?.Invoke(this, EventArgs.Empty);
         }
 
         private async Task RunGuardedAsync(Func<Task> action)
@@ -430,36 +323,153 @@ namespace Bee.UI.Avalonia.Controls
             finally
             {
                 _isBusy = false;
+                Rebuild();
                 UpdateToolbarState();
-                RefreshFormView();
             }
-        }
-
-        private void RefreshFormView()
-        {
-            // FormDataObject mutates its DataSet in place across New/Load/Save/Delete,
-            // so reassigning the same reference into DataObjectProperty would be a no-op
-            // (StyledProperty change handlers only fire on reference changes). Drive
-            // Rebuild explicitly instead.
-            _form.Refresh();
-        }
-
-        /// <inheritdoc />
-        protected override void OnFormModeChanged(SingleFormMode formMode)
-        {
-            UpdateToolbarState();
         }
 
         private void UpdateToolbarState()
         {
-            var hasMaster = _dataObject?.MasterRow is not null;
-            var browsing = FormMode == SingleFormMode.View;
-            _newButton.IsEnabled = _initialized && !_isBusy;
-            // Edit enters Edit mode from browsing; Save commits an Add/Edit session.
-            _editButton.IsEnabled = _initialized && !_isBusy && hasMaster && browsing;
-            _saveButton.IsEnabled = _initialized && !_isBusy && hasMaster && !browsing;
-            _deleteButton.IsEnabled = _initialized && !_isBusy && hasMaster && browsing;
-            _dirtyMarker.IsVisible = _dataObject?.IsDirty == true;
+            var editing = FormMode != SingleFormMode.View;
+            _saveButton.IsVisible = editing;
+            _cancelButton.IsVisible = editing;
+            _backButton.IsVisible = !editing;
+
+            _saveButton.IsEnabled = editing && !_isBusy && _dataObject?.MasterRow is not null;
+        }
+
+        // ---- Record rendering (master sections + detail grids) ----
+
+        private void Rebuild()
+        {
+            _formHost.Children.Clear();
+            if (_formLayout is null || _dataObject is null) return;
+
+            foreach (var section in EnumerateSections())
+                _formHost.Children.Add(BuildSection(section));
+            foreach (var detail in EnumerateDetails())
+                _formHost.Children.Add(BuildDetailSection(detail));
+        }
+
+        private Border BuildSection(LayoutSection section)
+        {
+            var stack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 4 };
+            if (section.ShowCaption && !string.IsNullOrEmpty(section.Caption))
+            {
+                stack.Children.Add(new TextBlock { Text = section.Caption, FontWeight = FontWeight.Bold });
+            }
+
+            stack.Children.Add(BuildFieldGrid(section));
+
+            return new Border
+            {
+                Padding = new Thickness(8),
+                BorderThickness = new Thickness(1),
+                BorderBrush = Brushes.Gray,
+                Child = stack,
+            };
+        }
+
+        private Grid BuildFieldGrid(LayoutSection section)
+        {
+            var columnCount = NormalizeColumnCount(_formLayout?.ColumnCount);
+            var grid = new Grid { ColumnSpacing = 8, RowSpacing = 8 };
+            for (int i = 0; i < columnCount; i++)
+                grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+
+            int row = 0, col = 0;
+            foreach (var field in EnumerateFields(section))
+            {
+                var (rowSpan, colSpan) = NormalizeSpans(field);
+
+                // CSS-grid-like wrap: if the field would overflow the row, advance first.
+                if (col + colSpan > columnCount)
+                {
+                    row++;
+                    col = 0;
+                }
+
+                while (grid.RowDefinitions.Count < row + rowSpan)
+                    grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+                var cell = BuildFieldCell(field);
+                Grid.SetRow(cell, row);
+                Grid.SetColumn(cell, col);
+                Grid.SetRowSpan(cell, rowSpan);
+                Grid.SetColumnSpan(cell, colSpan);
+                grid.Children.Add(cell);
+
+                col += colSpan;
+                if (col >= columnCount)
+                {
+                    row++;
+                    col = 0;
+                }
+            }
+
+            return grid;
+        }
+
+        private StackPanel BuildFieldCell(LayoutField field)
+        {
+            var stack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 2 };
+            stack.Children.Add(new TextBlock { Text = field.Caption });
+            stack.Children.Add(BuildInputControl(field));
+            return stack;
+        }
+
+        // Dispatches LayoutField.ControlType to the corresponding field editor; the editor
+        // pulls its value, applies FormField metadata and refreshes through FormDataObject.
+        private Control BuildInputControl(LayoutField field)
+        {
+            var editor = FieldEditorFactory.Create(field.ControlType);
+            ((IFieldEditor)editor).Bind(_dataObject!, field);
+            return editor;
+        }
+
+        private Border BuildDetailSection(LayoutGrid layout)
+        {
+            var stack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 4 };
+            if (!string.IsNullOrEmpty(layout.Caption))
+            {
+                stack.Children.Add(new TextBlock { Text = layout.Caption, FontWeight = FontWeight.Bold });
+            }
+
+            // The grid carries its own icon toolbar and edit-form flow; the form only
+            // supplies the layout, the data object and the editing model.
+            var grid = new GridControl { MinHeight = 120, EditMode = DetailEditMode };
+            grid.Bind(_dataObject!, layout);
+            stack.Children.Add(grid);
+
+            return new Border
+            {
+                Padding = new Thickness(8),
+                BorderThickness = new Thickness(1),
+                BorderBrush = Brushes.Gray,
+                Child = stack,
+            };
+        }
+
+        private IEnumerable<LayoutSection> EnumerateSections()
+            => _formLayout?.Sections ?? Enumerable.Empty<LayoutSection>();
+
+        private IEnumerable<LayoutGrid> EnumerateDetails()
+            => _formLayout?.Details ?? Enumerable.Empty<LayoutGrid>();
+
+        private static IEnumerable<LayoutField> EnumerateFields(LayoutSection section)
+            => section.Fields?.Where(f => f.Visible) ?? Enumerable.Empty<LayoutField>();
+
+        private static int NormalizeColumnCount(int? columnCount)
+        {
+            var n = columnCount ?? 1;
+            return n < 1 ? 1 : n;
+        }
+
+        private static (int rowSpan, int columnSpan) NormalizeSpans(LayoutField field)
+        {
+            var rowSpan = field.RowSpan < 1 ? 1 : field.RowSpan;
+            var colSpan = field.ColumnSpan < 1 ? 1 : field.ColumnSpan;
+            return (rowSpan, colSpan);
         }
 
         private void ReportError(Exception ex)

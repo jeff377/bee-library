@@ -43,12 +43,13 @@ namespace Bee.UI.Avalonia.UnitTests
             _ = new DateEdit();
             _ = new YearMonthEdit();
             _ = new CheckEdit();
-            _ = new DynamicForm();
             _ = new RowEditPanel();
-            // FormView builds a StackPanel with 6 children in its constructor, exercising
-            // AvaloniaPropertyDictionaryPool.Get/Return via SetInheritanceParent on each
-            // child. Without a single-threaded warmup, parallel test classes that all
-            // construct FormView (or add children to panels) can exhaust the pool.
+
+            // ListView / FormView build their full child tree and set Content in their
+            // constructors, which walks SetInheritanceParent and the property-store pool.
+            // Warming them here single-threaded keeps the first-population paths off the
+            // parallel test threads (same reason as the controls above).
+            _ = new ListView();
             _ = new FormView();
         }
     }

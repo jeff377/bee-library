@@ -8,7 +8,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
     /// <see cref="ControlType"/> with an Avalonia control bound to a
     /// <see cref="FormDataObject"/> field. Extends the definition-layer
     /// <see cref="IBindFieldControl"/> / <see cref="IUIControl"/> contracts with the
-    /// explicit binding surface used by <c>DynamicForm</c> and code-behind callers.
+    /// explicit binding surface used by <c>FormView</c> and code-behind callers.
     /// </summary>
     /// <remarks>
     /// Editors can alternatively bind ambiently: place them under a container whose

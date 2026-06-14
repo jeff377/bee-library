@@ -170,27 +170,20 @@ namespace Avalonia.Editors.Gallery
             AddEditFormSection();
         }
 
-        // The EditForm comparison goes through the real integration path: a
-        // DynamicForm whose layout carries only the detail grid, so the toolbar,
-        // double-tap gesture and RowEditDialog wiring are exactly what production
-        // forms get.
+        // The EditForm comparison binds a GridControl directly in EditForm mode, so the
+        // toolbar, double-tap gesture and RowEditDialog wiring are exactly what production
+        // detail grids get.
         private void AddEditFormSection()
         {
-            var layout = new FormLayout();
             var detail = new LayoutGrid("Phones", "Phones");
             detail.Columns!.Add(new LayoutColumn("phone", "Phone", ControlType.TextEdit));
             detail.Columns.Add(new LayoutColumn("type", "Type", ControlType.DropDownEdit));
             detail.Columns.Add(new LayoutColumn("is_primary", "Primary", ControlType.CheckEdit));
             detail.Columns.Add(new LayoutColumn("valid_from", "Valid From", ControlType.DateEdit));
             detail.Columns.Add(new LayoutColumn("bill_month", "Bill Month", ControlType.YearMonthEdit));
-            layout.Details!.Add(detail);
 
-            var form = new DynamicForm
-            {
-                FormLayout = layout,
-                DataObject = _dataObject,
-                DetailEditMode = GridEditMode.EditForm,
-            };
+            var grid = new GridControl { MinHeight = 120, EditMode = GridEditMode.EditForm };
+            grid.Bind(_dataObject, detail);
 
             var section = new StackPanel { Spacing = 8 };
             section.Children.Add(new TextBlock
@@ -199,7 +192,7 @@ namespace Avalonia.Editors.Gallery
                 FontSize = 15,
                 FontWeight = FontWeight.Bold,
             });
-            section.Children.Add(form);
+            section.Children.Add(grid);
 
             GalleryHost.Children.Add(new Border
             {

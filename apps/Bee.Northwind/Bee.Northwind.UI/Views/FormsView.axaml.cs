@@ -1,23 +1,24 @@
+using System.Linq;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Styling;
+using Bee.Northwind.UI.Controls;
 using Bee.Northwind.UI.Models;
-using Bee.UI.Avalonia.Controls;
 
 namespace Bee.Northwind.UI.Views;
 
 /// <summary>
-/// Application shell. Hosts the collapsible navigation menu and swaps the content host to a
-/// freshly created <see cref="FormView"/> whenever a form link is selected — a new control
-/// per selection so each one runs its attach-time initialisation (FormView resolves its
-/// schema / connector lazily in <c>OnAttachedToVisualTree</c>, so reusing one instance and
-/// only changing <c>ProgId</c> would not re-initialise it).
+/// Application shell. The left menu opens each form as a document tab hosting a
+/// <see cref="FormWorkspace"/> (the ERP list ↔ record flow lives inside the workspace);
+/// one tab per form, de-duplicated by program id.
 /// </summary>
 /// <remarks>
-/// The code-behind relies on the source-generated <c>InitializeComponent</c> so the
-/// <c>x:Name</c> controls (<c>NavList</c> / <c>FormHost</c>) are wired into fields. A
-/// hand-written <c>InitializeComponent</c> calling <c>AvaloniaXamlLoader.Load</c> would
-/// load the XAML but leave those fields null.
+/// Opening is driven from the menu's <c>Tapped</c> event rather than <c>SelectionChanged</c>
+/// so tapping an already-selected entry still re-opens its tab. The code-behind relies on the
+/// source-generated <c>InitializeComponent</c> so the <c>x:Name</c> controls are wired into
+/// fields.
 /// </remarks>
 public partial class FormsView : UserControl
 {
@@ -36,32 +37,102 @@ public partial class FormsView : UserControl
     {
         base.OnLoaded(e);
 
-        // Select the first form link once the bound DataContext has populated the menu.
-        // Doing this in the constructor is too early: the ViewLocator assigns DataContext
-        // after construction, so NavList.Items would still be empty.
+        // Open the first form once the bound DataContext has populated the menu. Doing this
+        // in the constructor is too early: the ViewLocator assigns DataContext afterwards.
         if (_initialSelectionDone) return;
         _initialSelectionDone = true;
-        SelectFirstForm();
+
+        var first = NavList.Items.OfType<NavItem>().FirstOrDefault(n => !n.IsHeader);
+        if (first is not null)
+        {
+            NavList.SelectedItem = first;
+            OpenForm(first);
+        }
     }
 
-    private void SelectFirstForm()
+    private void OnNavTapped(object? sender, TappedEventArgs e)
     {
-        foreach (var item in NavList.Items)
+        // By the time Tapped fires the click has already updated the selection, so the
+        // tapped entry is SelectedItem — including when it was already selected.
+        if (NavList.SelectedItem is NavItem { IsHeader: false, ProgId.Length: > 0 } item)
         {
-            if (item is NavItem { IsHeader: false })
+            OpenForm(item);
+        }
+    }
+
+    private void OpenForm(NavItem item)
+    {
+        foreach (var existing in Tabs.Items.OfType<TabItem>())
+        {
+            if ((string?)existing.Tag == item.ProgId)
             {
-                NavList.SelectedItem = item;
+                Tabs.SelectedItem = existing;
                 return;
             }
         }
+
+        var tab = new TabItem
+        {
+            Tag = item.ProgId,
+            Header = BuildTabHeader(item.Title, item.ProgId),
+            Content = new FormWorkspace(item.ProgId),
+        };
+        Tabs.Items.Add(tab);
+        Tabs.SelectedItem = tab;
     }
 
-    private void OnNavSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    private Control BuildTabHeader(string title, string tag)
     {
-        if (NavList.SelectedItem is NavItem { IsHeader: false, ProgId.Length: > 0 } item)
+        var text = new TextBlock { Text = title, VerticalAlignment = VerticalAlignment.Center };
+        var close = new Button
         {
-            FormHost.Content = new FormView { ProgId = item.ProgId };
+            Content = "✕",
+            Tag = tag,
+            Classes = { "tabclose" },
+            FontSize = 11,
+            VerticalAlignment = VerticalAlignment.Center,
+        };
+        close.Click += OnCloseTabClick;
+
+        var panel = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+        panel.Children.Add(text);
+        panel.Children.Add(close);
+        return panel;
+    }
+
+    private void OnCloseTabClick(object? sender, RoutedEventArgs e)
+    {
+        // Stop the click from also selecting the tab being closed.
+        e.Handled = true;
+        if (sender is Button { Tag: string tag })
+        {
+            CloseTab(tag);
         }
+    }
+
+    private void CloseTab(string tag)
+    {
+        var tab = Tabs.Items.OfType<TabItem>().FirstOrDefault(t => (string?)t.Tag == tag);
+        if (tab is null) return;
+
+        var index = Tabs.Items.IndexOf(tab);
+        Tabs.Items.Remove(tab);
+
+        if (Tabs.Items.Count > 0)
+        {
+            Tabs.SelectedIndex = global::System.Math.Min(index, Tabs.Items.Count - 1);
+        }
+
+        SyncNavToActiveTab();
+    }
+
+    /// <summary>Highlights the menu entry matching the currently active tab.</summary>
+    private void SyncNavToActiveTab()
+    {
+        var activeProgId = (Tabs.SelectedItem as TabItem)?.Tag as string;
+        NavList.SelectedItem = activeProgId is null
+            ? null
+            : NavList.Items.OfType<NavItem>().FirstOrDefault(n => n.ProgId == activeProgId);
     }
 
     private void OnThemeToggled(object? sender, RoutedEventArgs e)

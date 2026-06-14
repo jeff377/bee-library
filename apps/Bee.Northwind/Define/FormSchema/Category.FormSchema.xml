@@ -3,8 +3,8 @@
   <Tables>
     <FormTable TableName="Category" DbTableName="ft_category" DisplayName="Category">
       <Fields>
-        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
-        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" Visible="false" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" Visible="false" />
         <FormField FieldName="sys_id" Caption="Category Code" DbType="String" />
         <FormField FieldName="sys_name" Caption="Category Name" DbType="String" />
         <FormField FieldName="description" Caption="Description" DbType="String" />
