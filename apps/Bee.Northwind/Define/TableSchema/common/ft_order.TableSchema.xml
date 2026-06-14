@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="ft_order" DisplayName="Order">
+  <Fields>
+    <DbField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+    <DbField FieldName="sys_id" Caption="Order No" DbType="String" Length="20" />
+    <DbField FieldName="order_date" Caption="Order Date" DbType="Date" />
+    <DbField FieldName="customer_rowid" Caption="Customer Row ID" DbType="Guid" />
+    <DbField FieldName="employee_rowid" Caption="Employee Row ID" DbType="Guid" />
+    <DbField FieldName="shipper_rowid" Caption="Shipper Row ID" DbType="Guid" />
+    <DbField FieldName="freight" Caption="Freight" DbType="Currency" />
+  </Fields>
+  <Indexes>
+    <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">
+      <IndexFields>
+        <IndexField FieldName="sys_no" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="rx_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="uk_{0}" Unique="true">
+      <IndexFields>
+        <IndexField FieldName="sys_id" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="fk_{0}_customer_rowid">
+      <IndexFields>
+        <IndexField FieldName="customer_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="fk_{0}_employee_rowid">
+      <IndexFields>
+        <IndexField FieldName="employee_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+    <DbTableIndex Name="fk_{0}_shipper_rowid">
+      <IndexFields>
+        <IndexField FieldName="shipper_rowid" />
+      </IndexFields>
+    </DbTableIndex>
+  </Indexes>
+</TableSchema>

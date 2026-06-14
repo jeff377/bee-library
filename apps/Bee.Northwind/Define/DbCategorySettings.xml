@@ -8,6 +8,8 @@
         <TableItem TableName="ft_customer" DisplayName="Customer" />
         <TableItem TableName="ft_shipper" DisplayName="Shipper" />
         <TableItem TableName="ft_product" DisplayName="Product" />
+        <TableItem TableName="ft_order" DisplayName="Order" />
+        <TableItem TableName="ft_order_detail" DisplayName="Order Details" />
         <TableItem TableName="st_department" DisplayName="Department" />
         <TableItem TableName="st_employee" DisplayName="Employee" />
       </Tables>

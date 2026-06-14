@@ -34,6 +34,7 @@ public static class NorthwindSchemaSeeder
     private static readonly string[] s_schemaTables =
     {
         "ft_category", "ft_supplier", "ft_customer", "ft_shipper", "ft_product",
+        "ft_order", "ft_order_detail",
         "st_department", "st_employee",
         // Framework table polled by CacheNotifyPoller; schema materialized from
         // Bee.Definition embedded defaults by NorthwindBackend.AddNorthwindBackend.
@@ -53,6 +54,22 @@ public static class NorthwindSchemaSeeder
         // inserted next with dept_rowid resolved forward to the just-inserted departments.
         new("st_department", "Department.json", Deferred: new() { ["manager_rowid"] = "st_employee" }),
         new("st_employee", "Employee.json", Forward: new() { ["dept_rowid"] = "st_department" }),
+        // Order header references three lookups; employee_rowid points at the framework
+        // system table st_employee (a business table referencing a framework table). All
+        // three targets are inserted above, so the relations resolve forward on insert.
+        new("ft_order", "Order.json",
+            Forward: new()
+            {
+                ["customer_rowid"] = "ft_customer",
+                ["employee_rowid"] = "st_employee",
+                ["shipper_rowid"] = "ft_shipper",
+            }),
+        // Detail rows resolve sys_master_rowid to the just-inserted order's sys_rowid via
+        // the same forward mechanism (the seed carries the order's sys_id), and product_rowid
+        // to the product. ft_order_detail has no sys_id of its own, which is fine — only the
+        // deferred relation pass requires sys_id, and details declare no deferred relations.
+        new("ft_order_detail", "OrderDetail.json",
+            Forward: new() { ["sys_master_rowid"] = "ft_order", ["product_rowid"] = "ft_product" }),
     };
 
     public static void EnsureSchemaAndSeed(

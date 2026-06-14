@@ -10,7 +10,7 @@
 | 2 | 業務純主檔：Category / Supplier / Customer / Shipper（ft_，零 lookup、零 C#）— 最純定義驅動 | ✅ 已完成（2026-06-14） |
 | 3 | 框架系統表 + 擴充：Department（複製框架定義）+ Employee（複製框架 st_employee + Northwind 欄位擴充，dept→Department lookup） | ✅ 已完成（2026-06-14） |
 | 4 | 業務 lookup 主檔：Product（Supplier + Category 雙 lookup）（仍零 C#） | ✅ 已完成（2026-06-14） |
-| 5 | 交易單據：Order + Order Details（master-detail + 三 lookup + 明細 InCell，仍零 C#） | 📝 待做 |
+| 5 | 交易單據：Order + Order Details（master-detail + 三 lookup + 明細 InCell，仍零 C#） | ✅ 已完成（2026-06-14） |
 | 6 | 應用層業務：OrderBO 覆寫（單據編號、狀態、驗證、金額計算） | 📝 待做 |
 | 7 | Avalonia 導航整合：選單式多表單切換、完整操作動線 | 📝 待做 |
 | 8 | 教學文件：README + 「30 分鐘加一張 Region 表單」終章 | 📝 待做 |
