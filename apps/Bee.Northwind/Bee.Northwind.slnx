@@ -8,7 +8,6 @@
   </Folder>
   <Folder Name="/Server/">
     <Project Path="Bee.Northwind.Server/Bee.Northwind.Server.csproj" />
-    <Project Path="Bee.Northwind.Server.Tests/Bee.Northwind.Server.Tests.csproj" />
   </Folder>
   <Folder Name="/UI/">
     <Project Path="Bee.Northwind.UI/Bee.Northwind.UI.csproj" />

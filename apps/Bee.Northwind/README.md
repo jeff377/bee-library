@@ -90,7 +90,7 @@ This is the whole argument in one table.
 | Login / session / encryption | **framework** | `SystemBusinessObject`, API pipeline |
 | **Order number, status transitions, validation, amounts** | **application code** | `OrderBO` (the only business logic in the app) |
 
-The single C# business object, [`OrderBO`](Bee.Northwind.Server/BusinessObjects/OrderBO.cs), overrides `Save` / `GetNewData` to add what a generic form cannot express. Its pure rules ([`OrderRules`](Bee.Northwind.Server/BusinessObjects/OrderRules.cs), [`OrderDataSet`](Bee.Northwind.Server/BusinessObjects/OrderDataSet.cs)) are unit-tested in [`Bee.Northwind.Server.Tests`](Bee.Northwind.Server.Tests).
+The single C# business object, [`OrderBO`](Bee.Northwind.Server/BusinessObjects/OrderBO.cs), overrides `Save` / `GetNewData` to add what a generic form cannot express. Its pure rules are factored into [`OrderRules`](Bee.Northwind.Server/BusinessObjects/OrderRules.cs) and [`OrderDataSet`](Bee.Northwind.Server/BusinessObjects/OrderDataSet.cs), kept free of database dependencies and separate from the orchestration.
 
 ## Closing chapter: add a Region form in 30 minutes, with zero code
 
@@ -171,7 +171,6 @@ apps/Bee.Northwind/
 │   ├── DbCategorySettings.xml    which tables exist (drives schema build)
 │   └── ProgramSettings.xml       the program list (drives the menu + BO binding)
 ├── Bee.Northwind.Server/         JSON-RPC backend, OrderBO, JSON seed data
-├── Bee.Northwind.Server.Tests/   xUnit tests for the order rules
 ├── Bee.Northwind.UI/             Avalonia shared UI (views, view models, navigation)
 └── Bee.Northwind.Desktop/        desktop entry point
 ```

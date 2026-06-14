@@ -227,6 +227,7 @@ apps/
 - 金額計算：明細 數量×單價（套 Discount）、主表總額彙總（BO 內算，不信任前端值）
 - BO 跨層新增走 `bee-add-bo-method` skill（若需新 action）；單純覆寫 `Save` / `GetNewData` 則直接 override
 - **驗收**：BO 層 xUnit 測試 + 前端操作違規時收到可讀錯誤訊息
+  - 註：BO 測試（`OrderRules` / `OrderDataSet` / ProgramSettings 綁定）在階段 6–8 期間存在於 `Bee.Northwind.Server.Tests`，階段 8 後決議移除——範例以「被閱讀」為主、`apps/` 不在 CI、測試專案翻倍程式碼表面稀釋「幾乎不寫 code」論點。純規則仍拆為 `OrderRules` / `OrderDataSet` 保持可測結構，只是不附測試專案
 
 ### 階段 7：Avalonia 導航整合
 
