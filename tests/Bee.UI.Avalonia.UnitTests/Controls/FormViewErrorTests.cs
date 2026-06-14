@@ -56,9 +56,10 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             {
                 GetListHandler = _ => throw new InvalidOperationException("list load failed"),
             };
-            var view = new TestFormView { Schema = BuildEmployeeSchema(), FormConnector = connector };
+            var view = new TestFormView { Schema = BuildEmployeeSchema() };
             Exception? captured = null;
             view.ErrorOccurred += (_, ex) => captured = ex;
+            view.FormConnector = connector;
 
             var exception = await Record.ExceptionAsync(view.InitializeAsync);
 

@@ -93,13 +93,10 @@ namespace Bee.UI.Maui.UnitTests.Controls
             {
                 GetListHandler = () => throw new InvalidOperationException("list load failed"),
             };
-            var page = new FormPage
-            {
-                Schema = BuildEmployeeSchema("sys_id"),
-                FormConnector = connector,
-            };
+            var page = new FormPage { Schema = BuildEmployeeSchema("sys_id") };
             Exception? captured = null;
             page.ErrorOccurred += (_, ex) => captured = ex;
+            page.FormConnector = connector;
 
             var exception = await Record.ExceptionAsync(page.InitializeAsync);
 
