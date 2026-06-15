@@ -7,7 +7,7 @@ using Bee.Api.Core.Messages.Form;
 using Bee.Base.Data;
 using Bee.Definition;
 using Bee.Definition.Forms;
-using Bee.UI.Avalonia.Controls;
+using Bee.UI.Avalonia.Views;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls
 {

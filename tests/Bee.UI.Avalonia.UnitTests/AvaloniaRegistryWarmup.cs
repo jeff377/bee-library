@@ -1,6 +1,7 @@
 using System.Data;
 using System.Runtime.CompilerServices;
 using Bee.UI.Avalonia.Controls;
+using Bee.UI.Avalonia.Views;
 using Bee.UI.Avalonia.Controls.Editors;
 
 namespace Bee.UI.Avalonia.UnitTests

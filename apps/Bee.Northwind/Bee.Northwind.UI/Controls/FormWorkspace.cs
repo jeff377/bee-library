@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Bee.UI.Avalonia.Controls;
+using Bee.UI.Avalonia.Views;
 
 namespace Bee.Northwind.UI.Controls;
 

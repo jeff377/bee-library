@@ -10,8 +10,8 @@
 
 ### 破壞性變更
 
-- **`Bee.UI.Avalonia` 移除 `DynamicForm` 與 `SingleFormBase`，清單職責拆至新 `ListView`、單筆收斂於 `FormView`** — 對齊 ERP 慣例的「清單／單筆」分離：`ListView` 負責列表（載入、選取、捲動），`FormView` 專注單筆檢視／編輯（含明細 grid）。原本經 `DynamicForm` / `SingleFormBase` 組合的用法改用 `FormView`（單筆）+ `ListView`（清單）。
-- **`GridControl` 命名空間由 `Bee.UI.Avalonia.Controls.Editors` 移至 `Bee.UI.Avalonia.Controls`** — 與同級高階控件 `FormView` / `ListView` 並列（`GridControlBinder` / `GridEditMode` 一併移動）；`Editors/` 留給 field editor 與 lookup／列編輯支援 UI。以 `Bee.UI.Avalonia.Controls.Editors.GridControl` 完整限定、或僅為它 import 該命名空間的呼叫端需調整 using。
+- **`Bee.UI.Avalonia` 移除 `DynamicForm` 與 `SingleFormBase`，清單職責拆至新 `ListView`、單筆收斂於 `FormView`，且兩者移至新命名空間 `Bee.UI.Avalonia.Views`** — 對齊 ERP 慣例的「清單／單筆」分離：`ListView` 負責列表（載入、選取、捲動），`FormView` 專注單筆檢視／編輯（含明細 grid）。表單／畫面層級控件自成 `.Views` 命名空間，與 widget 層級控件區隔。原本經 `DynamicForm` / `SingleFormBase` 組合的用法改用 `FormView`（單筆）+ `ListView`（清單），呼叫端 `using Bee.UI.Avalonia.Views;`。
+- **`GridControl` 命名空間由 `Bee.UI.Avalonia.Controls.Editors` 移至 `Bee.UI.Avalonia.Controls`** — `GridControlBinder` / `GridEditMode` 一併移動；命名空間自此三分：`.Views`（`FormView` / `ListView` 畫面層）、`.Controls`（`GridControl` 組合式 widget）、`.Controls.Editors`（field editor 與 lookup／列編輯支援 UI）。以 `Bee.UI.Avalonia.Controls.Editors.GridControl` 完整限定、或僅為它 import 該命名空間的呼叫端需調整 using。
 - **`Bee.Db` 移除逐列 `InsertCommandBuilder` / `UpdateCommandBuilder`** — `DataFormRepository.Save` 改走 DataTable 級 `DataAdapter.Update`（見「變更」），這兩個「只組含變更欄位的單列 SQL」builder 在 production 已無使用者而移除。`DeleteCommandBuilder` / `SelectCommandBuilder` 仍保留（`Delete()` / `GetData()` 使用）。
 
 ### 新增

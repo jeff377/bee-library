@@ -6,11 +6,12 @@ using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 using Bee.UI.Core;
 
-namespace Bee.UI.Avalonia.Controls
+namespace Bee.UI.Avalonia.Views
 {
     /// <summary>
     /// Single-record surface — the editor half of the ERP list/record split, paired with

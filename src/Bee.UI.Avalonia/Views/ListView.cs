@@ -5,9 +5,10 @@ using Avalonia.Media;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
+using Bee.UI.Avalonia.Controls;
 using Bee.UI.Core;
 
-namespace Bee.UI.Avalonia.Controls
+namespace Bee.UI.Avalonia.Views
 {
     /// <summary>
     /// Read-only browser for every record of a form (the master list). Pairs with
