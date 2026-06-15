@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- **Lookup relation mechanism (`Bee.Definition` / `Bee.Api` / `Bee.UI.Avalonia`)** — a definition-driven dialog lookup:
+- **Lookup relation mechanism (`Bee.Definition` / `Bee.Api` / `Bee.UI.Avalonia`)** — a definition-driven dialog lookup (design in [ADR-023](docs/adr/adr-023-lookup-relation-mechanism.md)):
   - Definition-layer `DisplayField` / `LookupFields`; relation fields (`RelationProgId` + `RelationFieldMappings`) are auto-resolved by `FormLayoutGenerator` into a `ButtonEdit` with coverage rules (the relation field carries the display, the corresponding `ref_*` fields are not generated twice); `DisplayFields` renders a composite "code - name".
   - Server-side `FormBusinessObject.GetLookup` (with `GetLookupFilter()`) for the dialog list query.
   - Client `LookupPanel` / `LookupDialog` pick components, a built-in `ButtonEdit` lookup flow (display binding, write back mapped fields on pick, clear), and `GridControl` in-cell click-to-open lookup for detail rows.
@@ -24,7 +24,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- **`DataFormRepository.Save` now uses DataTable-level IUD (`DataAdapter.Update`)** — each table applies a full-column parameterized Insert/Update/Delete in one pass; a Modified row whose values are unchanged is just a harmless same-value update, eliminating the whole "Modified but no column change → empty SET → `UPDATE would be empty`" class of error (the root cause of re-saving an existing master-detail document). A DataSet with no pending changes is a no-op returning 0 (previously it threw).
+- **`DataFormRepository.Save` now uses DataTable-level IUD (`DataAdapter.Update`)** — each table applies a full-column parameterized Insert/Update/Delete in one pass; a Modified row whose values are unchanged is just a harmless same-value update, eliminating the whole "Modified but no column change → empty SET → `UPDATE would be empty`" class of error (the root cause of re-saving an existing master-detail document). A DataSet with no pending changes is a no-op returning 0 (previously it threw). Design and the SQLite adapter backfill are in [ADR-024](docs/adr/adr-024-dataform-save-dataadapter.md).
 - **`FormView` opens a list row read-only on double-click** — double-clicking a list row enters a read-only view rather than going straight to edit; toolbar enablement follows the current mode.
 
 ### Fixed

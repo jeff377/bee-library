@@ -224,8 +224,8 @@ Only `FormSchema` definitions actually referenced are joined — FormMap never a
 | `Bee.Db.Dml.WhereBuilder` | builds the `WHERE` clause with parameterization |
 | `Bee.Db.Dml.SortBuilder` | builds the `ORDER BY` clause |
 | `Bee.Db.Dml.SelectCommandBuilder` | combines the four sub-builders into a final SELECT `DbCommandSpec` |
-| `Bee.Db.Dml.InsertCommandBuilder` / `UpdateCommandBuilder` / `DeleteCommandBuilder` | produce IUD `DbCommandSpec` from a `FormSchema` and a `DataRow` / `FilterNode` (single-table, no JOIN, identifiers quoted per dialect) |
-| `Bee.Db.Dml.IFormCommandBuilder` | per-dialect entry point (`SqlFormCommandBuilder` / `PgFormCommandBuilder`); methods `Build{Select,Insert,Update,Delete}` delegate to the shared cores above |
+| `Bee.Db.Dml.DeleteCommandBuilder` | produces a single-table DELETE `DbCommandSpec` from a `FormSchema` and a `FilterNode` (used by `Delete()`; no JOIN, identifiers quoted per dialect). Insert/Update are no longer per-row: `DataFormRepository.Save` builds a `DataTableUpdateSpec` via `TableSchemaCommandBuilder` and applies it through `DataAdapter.Update` (see [ADR-024](adr/adr-024-dataform-save-dataadapter.md)) |
+| `Bee.Db.Dml.IFormCommandBuilder` | per-dialect entry point (`SqlFormCommandBuilder` / `PgFormCommandBuilder`); methods `Build{Select,Count,Delete}` delegate to the shared cores above |
 
 ---
 

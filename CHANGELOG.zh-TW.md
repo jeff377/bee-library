@@ -15,7 +15,7 @@
 
 ### 新增
 
-- **Lookup 關連機制（`Bee.Definition` / `Bee.Api` / `Bee.UI.Avalonia`）** — 一套定義驅動的開窗 lookup：
+- **Lookup 關連機制（`Bee.Definition` / `Bee.Api` / `Bee.UI.Avalonia`）** — 一套定義驅動的開窗 lookup（設計見 [ADR-023](docs/adr/adr-023-lookup-relation-mechanism.md)）：
   - 定義層 `DisplayField` / `LookupFields`；relation 欄（`RelationProgId` + `RelationFieldMappings`）由 `FormLayoutGenerator` 自動解析為 `ButtonEdit` 並套涵蓋規則（relation 欄承載顯示、對應 `ref_*` 欄不重複產生）；`DisplayFields` 複合顯示「編號 - 名稱」。
   - 後端 `FormBusinessObject.GetLookup`（含 `GetLookupFilter()`）為開窗清單專用取數。
   - 前端 `LookupPanel` / `LookupDialog` 選取元件、`ButtonEdit` 內建 lookup 開窗流程（顯示綁定、開窗寫回 mapped 欄、清空）、`GridControl` 明細 InCell 點擊開窗。
@@ -24,7 +24,7 @@
 
 ### 變更
 
-- **`DataFormRepository.Save` 改用 DataTable 級 IUD（`DataAdapter.Update`）** — 每張表以「全欄位參數化」Insert/Update/Delete 一次套用；Modified 列即使值未變也只是無害同值更新，徹底消除「Modified 但無欄位變更 → 空 SET → `UPDATE would be empty`」整類錯誤（master-detail 重存既有單據的根因）。整個 DataSet 無變更時為 no-op 回 0（原為丟例外）。
+- **`DataFormRepository.Save` 改用 DataTable 級 IUD（`DataAdapter.Update`）** — 每張表以「全欄位參數化」Insert/Update/Delete 一次套用；Modified 列即使值未變也只是無害同值更新，徹底消除「Modified 但無欄位變更 → 空 SET → `UPDATE would be empty`」整類錯誤（master-detail 重存既有單據的根因）。整個 DataSet 無變更時為 no-op 回 0（原為丟例外）。設計與 SQLite adapter 補位見 [ADR-024](docs/adr/adr-024-dataform-save-dataadapter.md)。
 - **`FormView` 清單列雙擊開啟唯讀 `View`** — 雙擊清單列進入唯讀檢視，不再直接進編輯；工具列啟用狀態隨當前模式。
 
 ### 修正
