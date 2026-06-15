@@ -273,6 +273,9 @@ namespace Bee.Tests.Shared
                 VerifyConnection(commonDatabaseId, connectionManager);
                 EnsureSchema(dbType, access, connectionManager);
                 EnsureSeedData(dbType, commonDatabaseId, connectionManager);
+                // Business-table seed lives in the company database. Idempotent (per-table
+                // empty check); only runs when the company category is registered.
+                NorthwindTestSeed.Seed(dbType, access, connectionManager);
             }
             catch (Exception ex)
             {

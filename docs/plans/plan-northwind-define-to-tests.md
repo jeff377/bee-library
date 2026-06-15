@@ -1,13 +1,29 @@
 # 計畫：將 Bee.Northwind/Define 引入 tests/Define 作為框架單元測試案例
 
-**狀態：🚧 進行中（2026-06-15，依 4 階段執行中）**
+**狀態：✅ 已完成（2026-06-15，4 階段全數落地、五 DB 全套件綠）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 新增 6 業務實體 FormSchema/FormLayout/TableSchema + DbCategorySettings 追加 ft_* | ✅ 已完成（2026-06-15） |
 | 2 | 升級重疊實體 Employee/Department/st_employee/st_department 為 Northwind 超集（D1） | ✅ 已完成（2026-06-15） |
 | 3 | 產 6 實體雙語 Language（D2） | ✅ 已完成（2026-06-15） |
-| 4 | 擴充 SharedDatabaseState 加 Northwind seed（D3） | 🚧 進行中 |
+| 4 | 擴充 SharedDatabaseState 加 Northwind seed（D3） | ✅ 已完成（2026-06-15） |
+
+## 階段 4 實作補記（D3 的跨行程 seed 競態）
+
+seed 落在 `tests/Bee.Tests.Shared/NorthwindTestSeed.cs`（JSON 以 EmbeddedResource 內嵌）。
+實作中發現兩個 plan 未預見的問題，已解：
+
+- **跨行程 seed 競態（R5 的延伸）**：`./test.sh` 以多個平行行程跑各 test 專案、共用同一實體 DB。
+  per-table `COUNT>0` 跳過不具跨行程原子性 → 無唯一業務鍵的 `ft_order_detail` 被兩行程各插一次（24 列）。
+  **解**：整個 seed 包在單一 transaction，gate 改判第一張表 `ft_category`（具 unique `sys_id`）；贏家原子提交全套，
+  輸家卡在 unique key 後失敗 rollback（由 `EnsureDatabase` catch+log），其他行程只會看到「空」或「完整」兩態。
+- **PG `timestamptz` 綁定**：Date 欄在 PG 對映 `timestamp with time zone`，Npgsql 要求 `DateTimeKind.Utc`；
+  seed 值轉型改用 Utc（對其餘 4 DB 同樣安全）。
+
+驗證：清空 4 實體 DB 後平行重跑，SQL Server/PG/MySQL/(Oracle) + SQLite 皆得 cat=8 ord=5 det=12 emp=5；
+全套件五 DB 綠。新增 `tests/Bee.Db.UnitTests/NorthwindSeedTests.cs`（5 DB 各一 `[DbFact]`）斷言 seed 完整性
+與 master-detail 連結（亦覆蓋 SQLite GUID COLLATE NOCASE 跨大小寫比對）。
 
 ## 目標
 

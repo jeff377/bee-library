@@ -1,0 +1,10 @@
+[
+  { "sys_id": "BEVERAGES", "sys_name": "Beverages", "description": "Soft drinks, coffees, teas, beers, and ales" },
+  { "sys_id": "CONDIMENTS", "sys_name": "Condiments", "description": "Sweet and savory sauces, relishes, spreads, and seasonings" },
+  { "sys_id": "CONFECTIONS", "sys_name": "Confections", "description": "Desserts, candies, and sweet breads" },
+  { "sys_id": "DAIRY", "sys_name": "Dairy Products", "description": "Cheeses" },
+  { "sys_id": "GRAINS", "sys_name": "Grains/Cereals", "description": "Breads, crackers, pasta, and cereal" },
+  { "sys_id": "MEAT", "sys_name": "Meat/Poultry", "description": "Prepared meats" },
+  { "sys_id": "PRODUCE", "sys_name": "Produce", "description": "Dried fruit and bean curd" },
+  { "sys_id": "SEAFOOD", "sys_name": "Seafood", "description": "Seaweed and fish" }
+]

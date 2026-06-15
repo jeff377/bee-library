@@ -1,0 +1,7 @@
+[
+  { "sys_id": "10248", "order_date": "1996-07-04", "customer_rowid": "ALFKI", "employee_rowid": "E001", "shipper_rowid": "FEDS", "freight": "32.38", "status": "Shipped", "total_amount": "352" },
+  { "sys_id": "10249", "order_date": "1996-07-05", "customer_rowid": "ANATR", "employee_rowid": "E002", "shipper_rowid": "SPDY", "freight": "11.61", "status": "Shipped", "total_amount": "4089.25" },
+  { "sys_id": "10250", "order_date": "1996-07-08", "customer_rowid": "ANTON", "employee_rowid": "E003", "shipper_rowid": "UNPK", "freight": "65.83", "status": "Confirmed", "total_amount": "1735" },
+  { "sys_id": "10251", "order_date": "1996-07-08", "customer_rowid": "AROUT", "employee_rowid": "E001", "shipper_rowid": "SPDY", "freight": "41.34", "status": "Confirmed", "total_amount": "364.5" },
+  { "sys_id": "10252", "order_date": "1996-07-09", "customer_rowid": "BERGS", "employee_rowid": "E004", "shipper_rowid": "UNPK", "freight": "51.30", "status": "Draft", "total_amount": "2235" }
+]

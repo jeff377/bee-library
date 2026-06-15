@@ -1,0 +1,17 @@
+[
+  { "sys_id": "P001", "sys_name": "Chai", "supplier_rowid": "EXOTIC", "category_rowid": "BEVERAGES", "unit_price": "18", "units_in_stock": "39" },
+  { "sys_id": "P002", "sys_name": "Chang", "supplier_rowid": "EXOTIC", "category_rowid": "BEVERAGES", "unit_price": "19", "units_in_stock": "17" },
+  { "sys_id": "P003", "sys_name": "Aniseed Syrup", "supplier_rowid": "EXOTIC", "category_rowid": "CONDIMENTS", "unit_price": "10", "units_in_stock": "13" },
+  { "sys_id": "P004", "sys_name": "Chef Anton's Cajun Seasoning", "supplier_rowid": "CAJUN", "category_rowid": "CONDIMENTS", "unit_price": "22", "units_in_stock": "53" },
+  { "sys_id": "P005", "sys_name": "Chef Anton's Gumbo Mix", "supplier_rowid": "CAJUN", "category_rowid": "CONDIMENTS", "unit_price": "21.35", "units_in_stock": "0" },
+  { "sys_id": "P006", "sys_name": "Grandma's Boysenberry Spread", "supplier_rowid": "GRANDMA", "category_rowid": "CONDIMENTS", "unit_price": "25", "units_in_stock": "120" },
+  { "sys_id": "P007", "sys_name": "Uncle Bob's Organic Dried Pears", "supplier_rowid": "GRANDMA", "category_rowid": "PRODUCE", "unit_price": "30", "units_in_stock": "15" },
+  { "sys_id": "P008", "sys_name": "Northwoods Cranberry Sauce", "supplier_rowid": "GRANDMA", "category_rowid": "CONDIMENTS", "unit_price": "40", "units_in_stock": "6" },
+  { "sys_id": "P009", "sys_name": "Mishi Kobe Niku", "supplier_rowid": "TOKYO", "category_rowid": "MEAT", "unit_price": "97", "units_in_stock": "29" },
+  { "sys_id": "P010", "sys_name": "Ikura", "supplier_rowid": "TOKYO", "category_rowid": "SEAFOOD", "unit_price": "31", "units_in_stock": "31" },
+  { "sys_id": "P011", "sys_name": "Queso Cabrales", "supplier_rowid": "CABRAS", "category_rowid": "DAIRY", "unit_price": "21", "units_in_stock": "22" },
+  { "sys_id": "P012", "sys_name": "Queso Manchego La Pastora", "supplier_rowid": "CABRAS", "category_rowid": "DAIRY", "unit_price": "38", "units_in_stock": "86" },
+  { "sys_id": "P013", "sys_name": "Konbu", "supplier_rowid": "TOKYO", "category_rowid": "SEAFOOD", "unit_price": "6", "units_in_stock": "24" },
+  { "sys_id": "P014", "sys_name": "Tofu", "supplier_rowid": "TOKYO", "category_rowid": "PRODUCE", "unit_price": "23.25", "units_in_stock": "35" },
+  { "sys_id": "P015", "sys_name": "Genen Shouyu", "supplier_rowid": "TOKYO", "category_rowid": "CONDIMENTS", "unit_price": "15.5", "units_in_stock": "39" }
+]

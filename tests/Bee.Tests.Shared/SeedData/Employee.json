@@ -1,0 +1,7 @@
+[
+  { "sys_id": "E001", "sys_name": "Nancy Davolio", "title": "Sales Representative", "hire_date": "1992-05-01", "dept_rowid": "SALES" },
+  { "sys_id": "E002", "sys_name": "Andrew Fuller", "title": "Vice President, Sales", "hire_date": "1992-08-14", "dept_rowid": "SALES" },
+  { "sys_id": "E003", "sys_name": "Janet Leverling", "title": "Sales Representative", "hire_date": "1992-04-01", "dept_rowid": "IT" },
+  { "sys_id": "E004", "sys_name": "Margaret Peacock", "title": "Sales Representative", "hire_date": "1993-05-03", "dept_rowid": "HR" },
+  { "sys_id": "E005", "sys_name": "Steven Buchanan", "title": "Sales Manager", "hire_date": "1993-10-17", "dept_rowid": "FIN" }
+]

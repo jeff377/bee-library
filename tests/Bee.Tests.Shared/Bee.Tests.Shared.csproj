@@ -37,4 +37,10 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Northwind seed rows consumed by NorthwindTestSeed; embedded so referencing
+         test projects need no content-copy step. -->
+    <EmbeddedResource Include="SeedData\*.json" />
+  </ItemGroup>
+
 </Project>
