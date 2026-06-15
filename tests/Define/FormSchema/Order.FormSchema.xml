@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Master-detail sales order. The master picks three lookups (Customer / Employee /
+     Shipper); note Order -> Employee is a business table (ft_order) referencing a
+     framework system table (st_employee). The Order Details grid picks a Product per
+     row via in-cell lookup. Relation fields render as lookup editors automatically;
+     the ref_* fields are written back locally and re-derived by the server JOIN on
+     reload. Order has no natural sys_name, so it is omitted (only lookup-source
+     tables need sys_name). Zero application code — definitions only. -->
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Order" DisplayName="Order" CategoryId="company" ListFields="sys_id,order_date,ref_customer_name,ref_employee_name,status,total_amount">
+  <Tables>
+    <FormTable TableName="Order" DbTableName="ft_order" DisplayName="Order">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" Visible="false" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" Visible="false" />
+        <FormField FieldName="sys_id" Caption="Order No" DbType="String" />
+        <FormField FieldName="order_date" Caption="Order Date" DbType="Date" />
+        <FormField FieldName="customer_rowid" Caption="Customer" DbType="Guid" RelationProgId="Customer">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_customer_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_customer_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_customer_id" Caption="Customer Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_customer_name" Caption="Customer Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="employee_rowid" Caption="Employee" DbType="Guid" RelationProgId="Employee">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_employee_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_employee_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_employee_id" Caption="Employee Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_employee_name" Caption="Employee Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="shipper_rowid" Caption="Shipper" DbType="Guid" RelationProgId="Shipper">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_shipper_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_shipper_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_shipper_id" Caption="Shipper Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_shipper_name" Caption="Shipper Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="freight" Caption="Freight" DbType="Currency" />
+        <FormField FieldName="status" Caption="Status" DbType="String" ControlType="DropDownEdit" DefaultValue="Draft">
+          <ListItems>
+            <ListItem Value="Draft" Text="Draft" />
+            <ListItem Value="Confirmed" Text="Confirmed" />
+            <ListItem Value="Shipped" Text="Shipped" />
+          </ListItems>
+        </FormField>
+        <FormField FieldName="total_amount" Caption="Total Amount" DbType="Currency" ReadOnly="true" />
+      </Fields>
+    </FormTable>
+    <FormTable TableName="OrderDetail" DbTableName="ft_order_detail" DisplayName="Order Details">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" Visible="false" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" Visible="false" />
+        <FormField FieldName="sys_master_rowid" Caption="Master Row ID" DbType="Guid" Visible="false" />
+        <FormField FieldName="product_rowid" Caption="Product" DbType="Guid" RelationProgId="Product">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_product_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_product_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_product_id" Caption="Product Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_product_name" Caption="Product Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="quantity" Caption="Quantity" DbType="Integer" />
+        <FormField FieldName="unit_price" Caption="Unit Price" DbType="Currency" />
+        <FormField FieldName="discount" Caption="Discount" DbType="Decimal" />
+        <FormField FieldName="amount" Caption="Amount" DbType="Currency" ReadOnly="true" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>

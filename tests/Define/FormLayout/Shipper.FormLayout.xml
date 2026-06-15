@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Shipper" ProgId="Shipper" Caption="Shipper">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Shipper">
+      <Fields>
+        <LayoutField FieldName="sys_id" Caption="Shipper Code" />
+        <LayoutField FieldName="sys_name" Caption="Company Name" />
+        <LayoutField FieldName="phone" Caption="Phone" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>

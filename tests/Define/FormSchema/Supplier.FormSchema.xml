@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Supplier" DisplayName="Supplier" CategoryId="company" ListFields="sys_id,sys_name,contact_name,city,country" LookupFields="sys_id,sys_name">
+  <Tables>
+    <FormTable TableName="Supplier" DbTableName="ft_supplier" DisplayName="Supplier">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" Visible="false" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" Visible="false" />
+        <FormField FieldName="sys_id" Caption="Supplier Code" DbType="String" />
+        <FormField FieldName="sys_name" Caption="Company Name" DbType="String" />
+        <FormField FieldName="contact_name" Caption="Contact Name" DbType="String" />
+        <FormField FieldName="contact_title" Caption="Contact Title" DbType="String" />
+        <FormField FieldName="city" Caption="City" DbType="String" />
+        <FormField FieldName="country" Caption="Country" DbType="String" />
+        <FormField FieldName="phone" Caption="Phone" DbType="String" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>

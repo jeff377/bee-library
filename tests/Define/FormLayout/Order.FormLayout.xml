@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Order" ProgId="Order" Caption="Order">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Order">
+      <Fields>
+        <LayoutField FieldName="sys_id" Caption="Order No" />
+        <LayoutField FieldName="order_date" Caption="Order Date" />
+        <LayoutField FieldName="customer_rowid" Caption="Customer" ControlType="ButtonEdit" DisplayFields="ref_customer_id,ref_customer_name" />
+        <LayoutField FieldName="employee_rowid" Caption="Employee" ControlType="ButtonEdit" DisplayFields="ref_employee_id,ref_employee_name" />
+        <LayoutField FieldName="shipper_rowid" Caption="Shipper" ControlType="ButtonEdit" DisplayFields="ref_shipper_id,ref_shipper_name" />
+        <LayoutField FieldName="freight" Caption="Freight" />
+        <LayoutField FieldName="status" Caption="Status" ControlType="DropDownEdit" />
+        <LayoutField FieldName="total_amount" Caption="Total Amount" ReadOnly="true" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+  <Details>
+    <LayoutGrid TableName="OrderDetail" Caption="Order Details">
+      <Columns>
+        <LayoutColumn FieldName="product_rowid" Caption="Product" ControlType="ButtonEdit" DisplayFields="ref_product_id,ref_product_name" />
+        <LayoutColumn FieldName="quantity" Caption="Quantity" />
+        <LayoutColumn FieldName="unit_price" Caption="Unit Price" />
+        <LayoutColumn FieldName="discount" Caption="Discount" />
+        <LayoutColumn FieldName="amount" Caption="Amount" ReadOnly="true" />
+        <LayoutColumn FieldName="sys_rowid" Caption="Row ID" Visible="false" />
+        <LayoutColumn FieldName="sys_master_rowid" Caption="Master Row ID" Visible="false" />
+      </Columns>
+    </LayoutGrid>
+  </Details>
+</FormLayout>

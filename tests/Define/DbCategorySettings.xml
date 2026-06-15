@@ -19,6 +19,13 @@
 				<TableItem TableName="st_role" DisplayName="角色" />
 				<TableItem TableName="st_role_grant" DisplayName="角色授權" />
 				<TableItem TableName="st_user_role" DisplayName="使用者角色" />
+				<TableItem TableName="ft_category" DisplayName="產品類別" />
+				<TableItem TableName="ft_supplier" DisplayName="供應商" />
+				<TableItem TableName="ft_customer" DisplayName="客戶" />
+				<TableItem TableName="ft_shipper" DisplayName="貨運商" />
+				<TableItem TableName="ft_product" DisplayName="產品" />
+				<TableItem TableName="ft_order" DisplayName="訂單" />
+				<TableItem TableName="ft_order_detail" DisplayName="訂單明細" />
 			</Tables>
 		</DbCategory>
 		<DbCategory Id="log" DisplayName="日誌資料庫">

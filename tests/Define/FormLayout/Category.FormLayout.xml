@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Category" ProgId="Category" Caption="Category">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Category">
+      <Fields>
+        <LayoutField FieldName="sys_id" Caption="Category Code" />
+        <LayoutField FieldName="sys_name" Caption="Category Name" />
+        <LayoutField FieldName="description" Caption="Description" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ProgId="Product" DisplayName="Product" CategoryId="company" ListFields="sys_id,sys_name,ref_supplier_name,ref_category_name,unit_price" LookupFields="sys_id,sys_name">
+  <Tables>
+    <FormTable TableName="Product" DbTableName="ft_product" DisplayName="Product">
+      <Fields>
+        <FormField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" Visible="false" />
+        <FormField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" Visible="false" />
+        <FormField FieldName="sys_id" Caption="Product Code" DbType="String" />
+        <FormField FieldName="sys_name" Caption="Product Name" DbType="String" />
+        <FormField FieldName="supplier_rowid" Caption="Supplier" DbType="Guid" RelationProgId="Supplier">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_supplier_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_supplier_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_supplier_id" Caption="Supplier Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_supplier_name" Caption="Supplier Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="category_rowid" Caption="Category" DbType="Guid" RelationProgId="Category">
+          <RelationFieldMappings>
+            <FieldMapping SourceField="sys_id" DestinationField="ref_category_id" />
+            <FieldMapping SourceField="sys_name" DestinationField="ref_category_name" />
+          </RelationFieldMappings>
+        </FormField>
+        <FormField FieldName="ref_category_id" Caption="Category Code" DbType="String" Type="RelationField" />
+        <FormField FieldName="ref_category_name" Caption="Category Name" DbType="String" Type="RelationField" />
+        <FormField FieldName="unit_price" Caption="Unit Price" DbType="Currency" />
+        <FormField FieldName="units_in_stock" Caption="Units In Stock" DbType="Integer" />
+      </Fields>
+    </FormTable>
+  </Tables>
+</FormSchema>

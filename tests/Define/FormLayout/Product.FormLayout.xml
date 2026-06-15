@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Product" ProgId="Product" Caption="Product">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Product">
+      <Fields>
+        <LayoutField FieldName="sys_id" Caption="Product Code" />
+        <LayoutField FieldName="sys_name" Caption="Product Name" />
+        <LayoutField FieldName="supplier_rowid" Caption="Supplier" ControlType="ButtonEdit" DisplayFields="ref_supplier_id,ref_supplier_name" />
+        <LayoutField FieldName="category_rowid" Caption="Category" ControlType="ButtonEdit" DisplayFields="ref_category_id,ref_category_name" />
+        <LayoutField FieldName="unit_price" Caption="Unit Price" />
+        <LayoutField FieldName="units_in_stock" Caption="Units In Stock" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>
