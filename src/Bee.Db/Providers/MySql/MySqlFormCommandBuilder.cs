@@ -1,4 +1,3 @@
-using System.Data;
 using Bee.Db.Dml;
 using Bee.Definition.Database;
 using Bee.Definition.Filters;
@@ -61,28 +60,6 @@ namespace Bee.Db.Providers.MySql
         {
             var builder = new SelectCommandBuilder(FormSchema, DatabaseType.MySQL, _defineAccess);
             return builder.BuildCount(tableName, filter);
-        }
-
-        /// <summary>
-        /// Builds the INSERT command specification.
-        /// </summary>
-        /// <param name="tableName">The form table name.</param>
-        /// <param name="row">The data row to insert.</param>
-        public DbCommandSpec BuildInsert(string tableName, DataRow row)
-        {
-            var builder = new InsertCommandBuilder(FormSchema, DatabaseType.MySQL);
-            return builder.Build(tableName, row);
-        }
-
-        /// <summary>
-        /// Builds the UPDATE command specification.
-        /// </summary>
-        /// <param name="tableName">The form table name.</param>
-        /// <param name="row">The modified data row.</param>
-        public DbCommandSpec BuildUpdate(string tableName, DataRow row)
-        {
-            var builder = new UpdateCommandBuilder(FormSchema, DatabaseType.MySQL);
-            return builder.Build(tableName, row);
         }
 
         /// <summary>

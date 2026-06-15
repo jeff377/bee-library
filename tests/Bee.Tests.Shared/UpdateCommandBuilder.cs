@@ -1,14 +1,18 @@
 using System.Data;
 using System.Text;
 using Bee.Base.Data;
+using Bee.Db;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Database;
 
-namespace Bee.Db.Dml
+namespace Bee.Tests.Shared
 {
     /// <summary>
-    /// Builds UPDATE command specifications from a form schema.
+    /// Test-only single-row UPDATE builder: builds an UPDATE <see cref="DbCommandSpec"/> (only the
+    /// changed writable columns) from a Modified <see cref="DataRow"/>, used by DB integration
+    /// tests. Production persistence goes through <c>DbAccess.UpdateDataTable(s)</c>, so this no
+    /// longer ships in the library.
     /// </summary>
     public class UpdateCommandBuilder
     {

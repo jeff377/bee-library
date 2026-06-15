@@ -116,7 +116,7 @@ namespace Bee.Db.UnitTests
 
                 // INSERT
                 var insertRow = NewRow(formSchema, tableName, rowId, "alice", 10);
-                int inserted = dbAccess.Execute(formBuilder.BuildInsert("Foo", insertRow)).RowsAffected;
+                int inserted = dbAccess.Execute(new InsertCommandBuilder(formSchema, DatabaseType.Oracle).Build("Foo", insertRow)).RowsAffected;
                 Assert.Equal(1, inserted);
 
                 // SELECT 驗證 INSERT 落地（含 WHERE rowId 等值）
@@ -132,7 +132,7 @@ namespace Bee.Db.UnitTests
                 var updateRow = ExistingRow(formSchema, tableName, rowId, "alice", 10);
                 updateRow["name"] = "alice2";
                 updateRow["qty"] = 99;
-                int updated = dbAccess.Execute(formBuilder.BuildUpdate("Foo", updateRow)).RowsAffected;
+                int updated = dbAccess.Execute(new UpdateCommandBuilder(formSchema, DatabaseType.Oracle).Build("Foo", updateRow)).RowsAffected;
                 Assert.Equal(1, updated);
 
                 var afterUpdate = dbAccess.Execute(selectByRowId);
@@ -250,7 +250,7 @@ namespace Bee.Db.UnitTests
                 var insertRow = NewRow(formSchema, tableName, rowId);
                 insertRow["comment"] = "hello";
                 insertRow["order"] = 7;
-                dbAccess.Execute(formBuilder.BuildInsert("Foo", insertRow));
+                dbAccess.Execute(new InsertCommandBuilder(formSchema, DatabaseType.Oracle).Build("Foo", insertRow));
 
                 var selected = dbAccess.Execute(formBuilder.BuildSelect("Foo", "comment,order",
                     FilterCondition.Equal("order", 7), null));

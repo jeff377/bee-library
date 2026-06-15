@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Data;
 using Bee.Base.Data;
 using Bee.Db.Providers.MySql;
 using Bee.Definition;
@@ -62,40 +61,6 @@ namespace Bee.Db.UnitTests
             Assert.Contains("`name`", spec.CommandText);
         }
 
-        [Fact]
-        [DisplayName("BuildInsert 應委派至 MySQL 方言並產生 INSERT 語句")]
-        public void BuildInsert_DelegatesToMySqlDialect()
-        {
-            var dt = new DataTable();
-            dt.Columns.Add("name", typeof(string));
-            var row = dt.NewRow();
-            row["name"] = "n";
-
-            var builder = NewBuilder();
-            var spec = builder.BuildInsert("Foo", row);
-
-            Assert.Contains("INSERT INTO `tb_foo`", spec.CommandText);
-        }
-
-        [Fact]
-        [DisplayName("BuildUpdate 應委派至 MySQL 方言並產生 UPDATE 語句")]
-        public void BuildUpdate_DelegatesToMySqlDialect()
-        {
-            var dt = new DataTable();
-            dt.Columns.Add(SysFields.RowId, typeof(Guid));
-            dt.Columns.Add("name", typeof(string));
-            var row = dt.NewRow();
-            row[SysFields.RowId] = Guid.NewGuid();
-            row["name"] = "old";
-            dt.Rows.Add(row);
-            dt.AcceptChanges();
-            row["name"] = "new";
-
-            var builder = NewBuilder();
-            var spec = builder.BuildUpdate("Foo", row);
-
-            Assert.Contains("UPDATE `tb_foo`", spec.CommandText);
-        }
 
         [Fact]
         [DisplayName("BuildDelete 應委派至 MySQL 方言並產生 DELETE 語句")]

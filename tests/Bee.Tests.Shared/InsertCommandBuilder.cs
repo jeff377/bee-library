@@ -1,13 +1,17 @@
 using System.Data;
 using System.Text;
 using Bee.Base.Data;
+using Bee.Db;
 using Bee.Definition.Forms;
 using Bee.Definition.Database;
 
-namespace Bee.Db.Dml
+namespace Bee.Tests.Shared
 {
     /// <summary>
-    /// Builds INSERT command specifications from a form schema.
+    /// Test-only single-row INSERT builder: builds an INSERT <see cref="DbCommandSpec"/> from a
+    /// <see cref="DataRow"/> and a <see cref="FormSchema"/>, used to seed rows in DB integration
+    /// tests. Production persistence goes through <c>DbAccess.UpdateDataTable(s)</c>, so this no
+    /// longer ships in the library.
     /// </summary>
     public class InsertCommandBuilder
     {

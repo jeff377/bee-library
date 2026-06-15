@@ -1,4 +1,3 @@
-using System.Data;
 using Bee.Definition.Filters;
 using Bee.Definition.Sorting;
 
@@ -27,20 +26,6 @@ namespace Bee.Db.Dml
         /// <param name="tableName">The form table name.</param>
         /// <param name="filter">The filter condition.</param>
         DbCommandSpec BuildCount(string tableName, FilterNode? filter = null);
-
-        /// <summary>
-        /// Builds the INSERT command specification for the specified table from a <see cref="DataRow"/>.
-        /// </summary>
-        /// <param name="tableName">The form table name.</param>
-        /// <param name="row">The data row to insert.</param>
-        DbCommandSpec BuildInsert(string tableName, DataRow row);
-
-        /// <summary>
-        /// Builds the UPDATE command specification for the specified table from a <see cref="DataRow"/>.
-        /// </summary>
-        /// <param name="tableName">The form table name.</param>
-        /// <param name="row">The modified data row.</param>
-        DbCommandSpec BuildUpdate(string tableName, DataRow row);
 
         /// <summary>
         /// Builds the DELETE command specification for the specified table using the supplied filter.
