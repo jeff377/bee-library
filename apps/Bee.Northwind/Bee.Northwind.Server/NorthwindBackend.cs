@@ -57,7 +57,7 @@ public static class NorthwindBackend
 
         // SQLite providers — keep dialect registration explicit so the framework does
         // not force every host to pull every ADO.NET driver.
-        DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance);
+        DbProviderRegistry.Register(DatabaseType.SQLite, new SqliteProviderFactory(SqliteFactory.Instance));
         DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
 
         var settings = SystemSettingsLoader.Load(paths);

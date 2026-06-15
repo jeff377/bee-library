@@ -302,22 +302,18 @@ namespace Bee.Db
                 cmd.CommandTimeout = ResolveTimeout(command.CommandTimeout);
                 if (transaction != null) cmd.Transaction = transaction;
 
-                var adapter = Provider.CreateDataAdapter();
+                // Every registered provider supplies a DbDataAdapter — SQLite via the framework's
+                // SqliteProviderFactory wrapper — so the sync read uses Fill uniformly. (The async
+                // overload cannot: DbDataAdapter has no FillAsync, so it streams via DbDataReader.)
+                var adapter = Provider.CreateDataAdapter()
+                    ?? throw new InvalidOperationException(
+                        $"Provider for {DatabaseType} supplies no DbDataAdapter; register " +
+                        "SqliteProviderFactory for SQLite.");
                 var table = new DataTable("DataTable");
-                if (adapter != null)
+                using (adapter)
                 {
-                    using (adapter)
-                    {
-                        adapter.SelectCommand = cmd;
-                        adapter.Fill(table);
-                    }
-                }
-                else
-                {
-                    // The provider does not supply a DbDataAdapter (e.g. Microsoft.Data.Sqlite).
-                    // Fall back to the same DbDataReader + DataTable.Load path used by the async overload.
-                    using var reader = cmd.ExecuteReader();
-                    table.Load(reader);
+                    adapter.SelectCommand = cmd;
+                    adapter.Fill(table);
                 }
                 table.UppercaseColumnNames();
                 return DbCommandResult.ForTable(table);
@@ -383,39 +379,37 @@ namespace Bee.Db
         }
 
         /// <summary>
-        /// Applies one update spec on the given connection/transaction, via a provider
-        /// <see cref="DbDataAdapter"/> when available, otherwise by applying the prebuilt
-        /// INSERT/UPDATE/DELETE commands manually per changed row. The manual path keeps
-        /// writes working on providers that ship no adapter — among the registered providers
-        /// that is Microsoft.Data.Sqlite (the demo / test database); SqlClient, Npgsql,
-        /// MySqlConnector and ODP.NET all supply one. It mirrors the no-adapter fallback
-        /// already used for reads in <see cref="ExecuteDataTableCore"/>.
+        /// Applies one update spec on the given connection/transaction through a provider
+        /// <see cref="DbDataAdapter"/>. Every registered provider supplies one — SQLite via the
+        /// framework's <see cref="Bee.Db.Providers.Sqlite.SqliteProviderFactory"/> wrapper — so a
+        /// null adapter means the host registered the raw Sqlite factory by mistake and is reported
+        /// as a configuration error.
         /// </summary>
         private int ApplySpec(DataTableUpdateSpec spec, DbConnection connection, DbTransaction? tran)
         {
             DbCommand? insert = spec.InsertCommand?.CreateCommand(DatabaseType, connection);
             DbCommand? update = spec.UpdateCommand?.CreateCommand(DatabaseType, connection);
             DbCommand? delete = spec.DeleteCommand?.CreateCommand(DatabaseType, connection);
-            if (insert != null) insert.CommandTimeout = ResolveTimeout(spec.InsertCommand!.CommandTimeout);
-            if (update != null) update.CommandTimeout = ResolveTimeout(spec.UpdateCommand!.CommandTimeout);
-            if (delete != null) delete.CommandTimeout = ResolveTimeout(spec.DeleteCommand!.CommandTimeout);
+            // The framework re-fetches saved rows via GetData, so the adapter must not try to read
+            // results back into the DataTable after each command.
+            if (insert != null) { insert.CommandTimeout = ResolveTimeout(spec.InsertCommand!.CommandTimeout); insert.UpdatedRowSource = UpdateRowSource.None; }
+            if (update != null) { update.CommandTimeout = ResolveTimeout(spec.UpdateCommand!.CommandTimeout); update.UpdatedRowSource = UpdateRowSource.None; }
+            if (delete != null) { delete.CommandTimeout = ResolveTimeout(spec.DeleteCommand!.CommandTimeout); delete.UpdatedRowSource = UpdateRowSource.None; }
             AttachTransaction(tran, insert, update, delete);
 
             try
             {
-                var adapter = Provider.CreateDataAdapter();
-                if (adapter != null)
+                var adapter = Provider.CreateDataAdapter()
+                    ?? throw new InvalidOperationException(
+                        $"Provider for {DatabaseType} supplies no DbDataAdapter; register " +
+                        "SqliteProviderFactory for SQLite.");
+                using (adapter)
                 {
-                    using (adapter)
-                    {
-                        adapter.InsertCommand = insert;
-                        adapter.UpdateCommand = update;
-                        adapter.DeleteCommand = delete;
-                        return adapter.Update(spec.DataTable);
-                    }
+                    adapter.InsertCommand = insert;
+                    adapter.UpdateCommand = update;
+                    adapter.DeleteCommand = delete;
+                    return adapter.Update(spec.DataTable);
                 }
-
-                return ApplySpecManually(spec.DataTable, insert, update, delete);
             }
             finally
             {
@@ -423,57 +417,6 @@ namespace Bee.Db
                 update?.Dispose();
                 delete?.Dispose();
             }
-        }
-
-        /// <summary>
-        /// Applies the prebuilt commands row by row when no <see cref="DbDataAdapter"/> is available:
-        /// dispatch by <see cref="DataRowState"/>, bind each command parameter from the row using the
-        /// parameter's <see cref="DbParameter.SourceColumn"/> / <see cref="DbParameter.SourceVersion"/>
-        /// (exactly what a DataAdapter does internally), and sum the affected rows.
-        /// </summary>
-        private static int ApplySpecManually(DataTable table, DbCommand? insert, DbCommand? update, DbCommand? delete)
-        {
-            int affected = 0;
-            foreach (DataRow row in table.Rows)
-            {
-                DbCommand? cmd = row.RowState switch
-                {
-                    DataRowState.Added => insert,
-                    DataRowState.Modified => update,
-                    DataRowState.Deleted => delete,
-                    _ => null,
-                };
-                if (cmd == null) { continue; }
-
-                BindRowParameters(cmd, row);
-                affected += cmd.ExecuteNonQuery();
-            }
-            return affected;
-        }
-
-        private static void BindRowParameters(DbCommand cmd, DataRow row)
-        {
-            foreach (DbParameter p in cmd.Parameters)
-            {
-                if (string.IsNullOrEmpty(p.SourceColumn) || !row.Table.Columns.Contains(p.SourceColumn))
-                {
-                    p.Value = DBNull.Value;
-                    continue;
-                }
-                p.Value = row[p.SourceColumn, ResolveRowVersion(row.RowState, p.SourceVersion)] ?? DBNull.Value;
-            }
-        }
-
-        /// <summary>
-        /// Picks the readable <see cref="DataRowVersion"/> for binding: a Deleted row exposes only
-        /// Original, an Added row only Current; a Modified/Unchanged row honors the parameter's intent
-        /// (Original for the WHERE key, Current for the SET/INSERT values).
-        /// </summary>
-        private static DataRowVersion ResolveRowVersion(DataRowState state, DataRowVersion requested)
-        {
-            if (state == DataRowState.Deleted) { return DataRowVersion.Original; }
-            if (state == DataRowState.Added) { return DataRowVersion.Current; }
-            return requested == DataRowVersion.Original ? DataRowVersion.Original : DataRowVersion.Current;
         }
 
         /// <summary>

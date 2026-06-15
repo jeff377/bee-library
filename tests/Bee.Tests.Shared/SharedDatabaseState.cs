@@ -164,7 +164,7 @@ namespace Bee.Tests.Shared
 
         private static void RegisterSqlite(IDefineAccess bootstrapAccess, List<string> categoryIds)
         {
-            DbProviderRegistry.Register(DatabaseType.SQLite, SqliteFactory.Instance);
+            DbProviderRegistry.Register(DatabaseType.SQLite, new SqliteProviderFactory(SqliteFactory.Instance));
             DbDialectRegistry.Register(DatabaseType.SQLite, new SqliteDialectFactory());
 
             var connStr = Environment.GetEnvironmentVariable(TestDbConventions.GetConnectionStringEnvVar(DatabaseType.SQLite));

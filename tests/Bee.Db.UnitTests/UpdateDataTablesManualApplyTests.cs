@@ -10,11 +10,12 @@ using Bee.Tests.Shared;
 namespace Bee.Db.UnitTests
 {
     /// <summary>
-    /// Exercises the no-<see cref="System.Data.Common.DbDataAdapter"/> fallback in
-    /// <see cref="DbAccess.UpdateDataTables"/> on Microsoft.Data.Sqlite (which ships no adapter):
-    /// the prebuilt INSERT/UPDATE/DELETE commands are applied manually per <see cref="DataRowState"/>
-    /// inside one transaction, and a Modified row whose values are unchanged re-writes the same
-    /// values without raising an "empty UPDATE" error.
+    /// Verifies <see cref="DbAccess.UpdateDataTables"/> on SQLite, which gains a
+    /// <see cref="System.Data.Common.DbDataAdapter"/> through the framework's
+    /// <see cref="Bee.Db.Providers.Sqlite.SqliteProviderFactory"/> wrapper (Microsoft.Data.Sqlite
+    /// ships none of its own): INSERT/UPDATE/DELETE dispatch by <see cref="DataRowState"/> inside one
+    /// transaction, and a Modified row whose values are unchanged re-writes the same values without
+    /// raising an "empty UPDATE" error.
     /// </summary>
     public class UpdateDataTablesManualApplyTests : IClassFixture<SharedDbFixture>
     {
@@ -23,7 +24,7 @@ namespace Bee.Db.UnitTests
         public UpdateDataTablesManualApplyTests(SharedDbFixture fx) { _fx = fx; }
 
         [DbFact(DatabaseType.SQLite)]
-        [DisplayName("SQLite（無 DataAdapter）：UpdateDataTables 手動套用 Added / Modified(no-op) / Deleted 同一交易不應拋錯")]
+        [DisplayName("SQLite（SqliteDataAdapter）：UpdateDataTables 於同一交易處理 Added / Modified(no-op) / Deleted 不應拋錯")]
         public void Sqlite_ManualApply_HandlesAllRowStatesInOneTransaction()
         {
             var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(DatabaseType.SQLite));
