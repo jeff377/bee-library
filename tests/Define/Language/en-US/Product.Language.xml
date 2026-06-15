@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Product" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Product" />
+    <LanguageItem Key="Table.Product.DisplayName" Value="Product" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row ID" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Product Code" />
+    <LanguageItem Key="Field.sys_name.Caption" Value="Product Name" />
+    <LanguageItem Key="Field.supplier_rowid.Caption" Value="Supplier" />
+    <LanguageItem Key="Field.ref_supplier_id.Caption" Value="Supplier Code" />
+    <LanguageItem Key="Field.ref_supplier_name.Caption" Value="Supplier Name" />
+    <LanguageItem Key="Field.category_rowid.Caption" Value="Category" />
+    <LanguageItem Key="Field.ref_category_id.Caption" Value="Category Code" />
+    <LanguageItem Key="Field.ref_category_name.Caption" Value="Category Name" />
+    <LanguageItem Key="Field.unit_price.Caption" Value="Unit Price" />
+    <LanguageItem Key="Field.units_in_stock.Caption" Value="Units In Stock" />
+  </Items>
+  <Enums />
+</LanguageResource>

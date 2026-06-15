@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Shipper" Lang="zh-TW">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="貨運商" />
+    <LanguageItem Key="Table.Shipper.DisplayName" Value="貨運商" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="流水號" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="唯一識別" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="貨運商編號" />
+    <LanguageItem Key="Field.sys_name.Caption" Value="公司名稱" />
+    <LanguageItem Key="Field.phone.Caption" Value="電話" />
+  </Items>
+  <Enums />
+</LanguageResource>

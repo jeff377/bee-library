@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Order" Lang="zh-TW">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="訂單" />
+    <LanguageItem Key="Table.Order.DisplayName" Value="訂單" />
+    <LanguageItem Key="Table.OrderDetail.DisplayName" Value="訂單明細" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="流水號" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="唯一識別" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="訂單編號" />
+    <LanguageItem Key="Field.order_date.Caption" Value="訂單日期" />
+    <LanguageItem Key="Field.customer_rowid.Caption" Value="客戶" />
+    <LanguageItem Key="Field.ref_customer_id.Caption" Value="客戶編號" />
+    <LanguageItem Key="Field.ref_customer_name.Caption" Value="客戶名稱" />
+    <LanguageItem Key="Field.employee_rowid.Caption" Value="員工" />
+    <LanguageItem Key="Field.ref_employee_id.Caption" Value="員工編號" />
+    <LanguageItem Key="Field.ref_employee_name.Caption" Value="員工姓名" />
+    <LanguageItem Key="Field.shipper_rowid.Caption" Value="貨運商" />
+    <LanguageItem Key="Field.ref_shipper_id.Caption" Value="貨運商編號" />
+    <LanguageItem Key="Field.ref_shipper_name.Caption" Value="貨運商名稱" />
+    <LanguageItem Key="Field.freight.Caption" Value="運費" />
+    <LanguageItem Key="Field.status.Caption" Value="狀態" />
+    <LanguageItem Key="Field.total_amount.Caption" Value="訂單總額" />
+    <LanguageItem Key="Field.sys_master_rowid.Caption" Value="主檔唯一識別" />
+    <LanguageItem Key="Field.product_rowid.Caption" Value="產品" />
+    <LanguageItem Key="Field.ref_product_id.Caption" Value="產品編號" />
+    <LanguageItem Key="Field.ref_product_name.Caption" Value="產品名稱" />
+    <LanguageItem Key="Field.quantity.Caption" Value="數量" />
+    <LanguageItem Key="Field.unit_price.Caption" Value="單價" />
+    <LanguageItem Key="Field.discount.Caption" Value="折扣" />
+    <LanguageItem Key="Field.amount.Caption" Value="小計" />
+  </Items>
+  <Enums />
+</LanguageResource>

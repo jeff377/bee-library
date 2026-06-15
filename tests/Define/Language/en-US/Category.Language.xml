@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Category" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Category" />
+    <LanguageItem Key="Table.Category.DisplayName" Value="Category" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row ID" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Category Code" />
+    <LanguageItem Key="Field.sys_name.Caption" Value="Category Name" />
+    <LanguageItem Key="Field.description.Caption" Value="Description" />
+  </Items>
+  <Enums />
+</LanguageResource>

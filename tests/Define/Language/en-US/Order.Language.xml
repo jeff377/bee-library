@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Order" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Order" />
+    <LanguageItem Key="Table.Order.DisplayName" Value="Order" />
+    <LanguageItem Key="Table.OrderDetail.DisplayName" Value="Order Details" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row ID" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Order No" />
+    <LanguageItem Key="Field.order_date.Caption" Value="Order Date" />
+    <LanguageItem Key="Field.customer_rowid.Caption" Value="Customer" />
+    <LanguageItem Key="Field.ref_customer_id.Caption" Value="Customer Code" />
+    <LanguageItem Key="Field.ref_customer_name.Caption" Value="Customer Name" />
+    <LanguageItem Key="Field.employee_rowid.Caption" Value="Employee" />
+    <LanguageItem Key="Field.ref_employee_id.Caption" Value="Employee Code" />
+    <LanguageItem Key="Field.ref_employee_name.Caption" Value="Employee Name" />
+    <LanguageItem Key="Field.shipper_rowid.Caption" Value="Shipper" />
+    <LanguageItem Key="Field.ref_shipper_id.Caption" Value="Shipper Code" />
+    <LanguageItem Key="Field.ref_shipper_name.Caption" Value="Shipper Name" />
+    <LanguageItem Key="Field.freight.Caption" Value="Freight" />
+    <LanguageItem Key="Field.status.Caption" Value="Status" />
+    <LanguageItem Key="Field.total_amount.Caption" Value="Total Amount" />
+    <LanguageItem Key="Field.sys_master_rowid.Caption" Value="Master Row ID" />
+    <LanguageItem Key="Field.product_rowid.Caption" Value="Product" />
+    <LanguageItem Key="Field.ref_product_id.Caption" Value="Product Code" />
+    <LanguageItem Key="Field.ref_product_name.Caption" Value="Product Name" />
+    <LanguageItem Key="Field.quantity.Caption" Value="Quantity" />
+    <LanguageItem Key="Field.unit_price.Caption" Value="Unit Price" />
+    <LanguageItem Key="Field.discount.Caption" Value="Discount" />
+    <LanguageItem Key="Field.amount.Caption" Value="Amount" />
+  </Items>
+  <Enums />
+</LanguageResource>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Supplier" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Supplier" />
+    <LanguageItem Key="Table.Supplier.DisplayName" Value="Supplier" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row ID" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Supplier Code" />
+    <LanguageItem Key="Field.sys_name.Caption" Value="Company Name" />
+    <LanguageItem Key="Field.contact_name.Caption" Value="Contact Name" />
+    <LanguageItem Key="Field.contact_title.Caption" Value="Contact Title" />
+    <LanguageItem Key="Field.city.Caption" Value="City" />
+    <LanguageItem Key="Field.country.Caption" Value="Country" />
+    <LanguageItem Key="Field.phone.Caption" Value="Phone" />
+  </Items>
+  <Enums />
+</LanguageResource>

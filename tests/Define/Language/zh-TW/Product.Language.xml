@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Product" Lang="zh-TW">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="產品" />
+    <LanguageItem Key="Table.Product.DisplayName" Value="產品" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="流水號" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="唯一識別" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="產品編號" />
+    <LanguageItem Key="Field.sys_name.Caption" Value="產品名稱" />
+    <LanguageItem Key="Field.supplier_rowid.Caption" Value="供應商" />
+    <LanguageItem Key="Field.ref_supplier_id.Caption" Value="供應商編號" />
+    <LanguageItem Key="Field.ref_supplier_name.Caption" Value="供應商名稱" />
+    <LanguageItem Key="Field.category_rowid.Caption" Value="產品類別" />
+    <LanguageItem Key="Field.ref_category_id.Caption" Value="類別編號" />
+    <LanguageItem Key="Field.ref_category_name.Caption" Value="類別名稱" />
+    <LanguageItem Key="Field.unit_price.Caption" Value="單價" />
+    <LanguageItem Key="Field.units_in_stock.Caption" Value="庫存量" />
+  </Items>
+  <Enums />
+</LanguageResource>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageResource xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Namespace="Shipper" Lang="en-US">
+  <Items>
+    <LanguageItem Key="Schema.DisplayName" Value="Shipper" />
+    <LanguageItem Key="Table.Shipper.DisplayName" Value="Shipper" />
+    <LanguageItem Key="Field.sys_no.Caption" Value="Sequence" />
+    <LanguageItem Key="Field.sys_rowid.Caption" Value="Row ID" />
+    <LanguageItem Key="Field.sys_id.Caption" Value="Shipper Code" />
+    <LanguageItem Key="Field.sys_name.Caption" Value="Company Name" />
+    <LanguageItem Key="Field.phone.Caption" Value="Phone" />
+  </Items>
+  <Enums />
+</LanguageResource>
