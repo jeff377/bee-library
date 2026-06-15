@@ -13,7 +13,7 @@ Nine forms, master-detail orders with three lookups, framework organization tabl
 - **Definition-driven CRUD** — `FormSchema` is the single source of truth that drives the UI form, the list view, the database table, and the validation surface.
 - **Cross-table lookups with zero code** — a relation field plus a field-mapping in XML gives you a pick dialog, the foreign key, and the denormalized display columns (re-derived by a server JOIN on reload).
 - **Master-detail documents** — orders carry a detail grid with per-row product lookup, saved and reloaded as one unit.
-- **The pro-code boundary, drawn honestly** — order numbering, status transitions, required-field validation, and amount calculation are the *only* C# in the app, in one `OrderBO`. The README's comparison table shows exactly which behavior is definition, which is framework, and which is application code.
+- **A custom business-logic object** — order numbering, status transitions, required-field validation, and amount calculation are the *only* C# in the app, in one `OrderBO`. The README's comparison table shows exactly which behavior is definition, which is framework, and which is application code.
 - **Framework system tables (`st_`) alongside business tables (`ft_`)** — `Employee` / `Department` are framework tables the app reuses and extends; `Customer` / `Product` / `Order` are business tables the app defines.
 
 ## Running the demo
