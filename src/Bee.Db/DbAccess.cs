@@ -362,36 +362,13 @@ namespace Bee.Db
 
             using (var scope = CreateScope())
             {
-                DbCommand? insert = null, update = null, delete = null;
                 DbTransaction? tran = null;
-
                 try
                 {
                     tran = BeginTransactionIfRequested(scope, spec);
-
-                    insert = spec.InsertCommand?.CreateCommand(DatabaseType, scope.Connection!);
-                    update = spec.UpdateCommand?.CreateCommand(DatabaseType, scope.Connection!);
-                    delete = spec.DeleteCommand?.CreateCommand(DatabaseType, scope.Connection!);
-                    if (insert != null) insert.CommandTimeout = ResolveTimeout(spec.InsertCommand!.CommandTimeout);
-                    if (update != null) update.CommandTimeout = ResolveTimeout(spec.UpdateCommand!.CommandTimeout);
-                    if (delete != null) delete.CommandTimeout = ResolveTimeout(spec.DeleteCommand!.CommandTimeout);
-
-                    var adapter = Provider.CreateDataAdapter()
-                                  ?? throw new InvalidOperationException("DbProviderFactory.CreateDataAdapter() returned null.");
-
-                    using (adapter)
-                    {
-                        adapter.InsertCommand = insert;
-                        adapter.UpdateCommand = update;
-                        adapter.DeleteCommand = delete;
-
-                        AttachTransaction(tran, insert, update, delete);
-
-                        int affected = adapter.Update(spec.DataTable);
-
-                        tran?.Commit();
-                        return affected;
-                    }
+                    int affected = ApplySpec(spec, scope.Connection!, tran);
+                    tran?.Commit();
+                    return affected;
                 }
                 catch
                 {
@@ -400,9 +377,139 @@ namespace Bee.Db
                 }
                 finally
                 {
-                    insert?.Dispose();
-                    update?.Dispose();
-                    delete?.Dispose();
+                    tran?.Dispose();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Applies one update spec on the given connection/transaction, via a provider
+        /// <see cref="DbDataAdapter"/> when available, otherwise by applying the prebuilt
+        /// INSERT/UPDATE/DELETE commands manually per changed row. The manual path keeps
+        /// writes working on providers that ship no adapter — among the registered providers
+        /// that is Microsoft.Data.Sqlite (the demo / test database); SqlClient, Npgsql,
+        /// MySqlConnector and ODP.NET all supply one. It mirrors the no-adapter fallback
+        /// already used for reads in <see cref="ExecuteDataTableCore"/>.
+        /// </summary>
+        private int ApplySpec(DataTableUpdateSpec spec, DbConnection connection, DbTransaction? tran)
+        {
+            DbCommand? insert = spec.InsertCommand?.CreateCommand(DatabaseType, connection);
+            DbCommand? update = spec.UpdateCommand?.CreateCommand(DatabaseType, connection);
+            DbCommand? delete = spec.DeleteCommand?.CreateCommand(DatabaseType, connection);
+            if (insert != null) insert.CommandTimeout = ResolveTimeout(spec.InsertCommand!.CommandTimeout);
+            if (update != null) update.CommandTimeout = ResolveTimeout(spec.UpdateCommand!.CommandTimeout);
+            if (delete != null) delete.CommandTimeout = ResolveTimeout(spec.DeleteCommand!.CommandTimeout);
+            AttachTransaction(tran, insert, update, delete);
+
+            try
+            {
+                var adapter = Provider.CreateDataAdapter();
+                if (adapter != null)
+                {
+                    using (adapter)
+                    {
+                        adapter.InsertCommand = insert;
+                        adapter.UpdateCommand = update;
+                        adapter.DeleteCommand = delete;
+                        return adapter.Update(spec.DataTable);
+                    }
+                }
+
+                return ApplySpecManually(spec.DataTable, insert, update, delete);
+            }
+            finally
+            {
+                insert?.Dispose();
+                update?.Dispose();
+                delete?.Dispose();
+            }
+        }
+
+        /// <summary>
+        /// Applies the prebuilt commands row by row when no <see cref="DbDataAdapter"/> is available:
+        /// dispatch by <see cref="DataRowState"/>, bind each command parameter from the row using the
+        /// parameter's <see cref="DbParameter.SourceColumn"/> / <see cref="DbParameter.SourceVersion"/>
+        /// (exactly what a DataAdapter does internally), and sum the affected rows.
+        /// </summary>
+        private static int ApplySpecManually(DataTable table, DbCommand? insert, DbCommand? update, DbCommand? delete)
+        {
+            int affected = 0;
+            foreach (DataRow row in table.Rows)
+            {
+                DbCommand? cmd = row.RowState switch
+                {
+                    DataRowState.Added => insert,
+                    DataRowState.Modified => update,
+                    DataRowState.Deleted => delete,
+                    _ => null,
+                };
+                if (cmd == null) { continue; }
+
+                BindRowParameters(cmd, row);
+                affected += cmd.ExecuteNonQuery();
+            }
+            return affected;
+        }
+
+        private static void BindRowParameters(DbCommand cmd, DataRow row)
+        {
+            foreach (DbParameter p in cmd.Parameters)
+            {
+                if (string.IsNullOrEmpty(p.SourceColumn) || !row.Table.Columns.Contains(p.SourceColumn))
+                {
+                    p.Value = DBNull.Value;
+                    continue;
+                }
+                p.Value = row[p.SourceColumn, ResolveRowVersion(row.RowState, p.SourceVersion)] ?? DBNull.Value;
+            }
+        }
+
+        /// <summary>
+        /// Picks the readable <see cref="DataRowVersion"/> for binding: a Deleted row exposes only
+        /// Original, an Added row only Current; a Modified/Unchanged row honors the parameter's intent
+        /// (Original for the WHERE key, Current for the SET/INSERT values).
+        /// </summary>
+        private static DataRowVersion ResolveRowVersion(DataRowState state, DataRowVersion requested)
+        {
+            if (state == DataRowState.Deleted) { return DataRowVersion.Original; }
+            if (state == DataRowState.Added) { return DataRowVersion.Current; }
+            return requested == DataRowVersion.Original ? DataRowVersion.Original : DataRowVersion.Current;
+        }
+
+        /// <summary>
+        /// Writes changes from several DataTables back to the database inside a single
+        /// transaction. Each spec is applied in list order through a DataAdapter, so the
+        /// caller supplies parent-before-child order for insert FK correctness. Either every
+        /// spec commits, or any failure rolls the whole batch back.
+        /// </summary>
+        /// <param name="specs">The per-table update specifications, in execution order.</param>
+        /// <returns>Rows affected per spec, aligned with the input order.</returns>
+        public IReadOnlyList<int> UpdateDataTables(IReadOnlyList<DataTableUpdateSpec> specs)
+        {
+            ArgumentNullException.ThrowIfNull(specs);
+            if (specs.Count == 0) return Array.Empty<int>();
+            foreach (var spec in specs) ValidateUpdateSpec(spec);
+
+            using (var scope = CreateScope())
+            {
+                DbTransaction? tran = null;
+                try
+                {
+                    tran = scope.Connection!.BeginTransaction();
+                    var affected = new int[specs.Count];
+                    for (int i = 0; i < specs.Count; i++)
+                        affected[i] = ApplySpec(specs[i], scope.Connection!, tran);
+
+                    tran.Commit();
+                    return affected;
+                }
+                catch
+                {
+                    TryRollbackQuiet(tran);
+                    throw;
+                }
+                finally
+                {
                     tran?.Dispose();
                 }
             }

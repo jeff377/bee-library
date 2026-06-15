@@ -59,9 +59,9 @@ namespace Bee.Business.UnitTests.Form
             => RunSaveDeletedRow(DatabaseType.SQLite);
 
         [DbFact(DatabaseType.SQLite)]
-        [DisplayName("SQLite:Save DataSet 無任何變更應拋 InvalidOperationException")]
-        public void Save_Sqlite_NoChanges_Throws()
-            => RunSaveNoChangesThrows(DatabaseType.SQLite);
+        [DisplayName("SQLite:Save DataSet 無任何變更為 no-op（回傳 0 筆，不拋例外）")]
+        public void Save_Sqlite_NoChanges_IsNoOp()
+            => RunSaveNoChangesIsNoOp(DatabaseType.SQLite);
 
         private void RunSaveAddedRow(DatabaseType dbType)
         {
@@ -153,7 +153,7 @@ namespace Bee.Business.UnitTests.Form
             }
         }
 
-        private void RunSaveNoChangesThrows(DatabaseType dbType)
+        private void RunSaveNoChangesIsNoOp(DatabaseType dbType)
         {
             var ctx = new CrudTestContext(_fx, dbType);
             string runId = Guid.NewGuid().ToString("N")[..8];
@@ -166,9 +166,9 @@ namespace Bee.Business.UnitTests.Form
                 var loaded = ctx.CreateBo().GetData(new GetDataArgs { RowId = rowId });
                 Assert.NotNull(loaded.DataSet);
 
-                // 沒有任何變更
-                Assert.Throws<InvalidOperationException>(() =>
-                    ctx.CreateBo().Save(new SaveArgs { DataSet = loaded.DataSet }));
+                // No pending changes — Save is a no-op: it persists nothing and never throws.
+                var result = ctx.CreateBo().Save(new SaveArgs { DataSet = loaded.DataSet });
+                Assert.DoesNotContain(result.AffectedRows, kv => kv.Value > 0);
             }
             finally
             {

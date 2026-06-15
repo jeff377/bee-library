@@ -238,41 +238,41 @@ namespace Bee.Repository.Form
             ArgumentNullException.ThrowIfNull(dataSet);
 
             var connInfo = _connectionManager.GetConnectionInfo(_databaseId);
-            var builder = DbDialectRegistry.Get(connInfo.DatabaseType)
-                .CreateFormCommandBuilder(_schema, _defineAccess);
+            var dbType = connInfo.DatabaseType;
 
-            var affected = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var batch = new DbBatchSpec { UseTransaction = true };
-
-            // Determine the order in which tables are processed. Detail
-            // deletions run before master deletion to avoid FK violations;
-            // inserts/updates use master-first order so detail rows can
-            // reference an already-persisted master.
             var masterTable = _schema.MasterTable
                 ?? throw new InvalidOperationException(
                     $"FormSchema '{ProgId}' has no master table; cannot Save.");
-            var detailTables = EnumerateDetailTables().ToList();
 
-            // First pass: per-table deletes (details before master).
-            foreach (var detail in detailTables)
-                CollectRowCommands(builder, dataSet, detail.TableName, batch, affected, includeDelete: true,
-                                   includeInsertUpdate: false);
-            CollectRowCommands(builder, dataSet, masterTable.TableName, batch, affected, includeDelete: true,
-                               includeInsertUpdate: false);
+            // Build one DataTableUpdateSpec per changed table, master before details so a new
+            // master is inserted before the detail rows that reference it. Each spec drives an
+            // ADO.NET DataAdapter: Added rows INSERT, Deleted rows DELETE, and Modified rows
+            // UPDATE the full column set — a Modified row whose values are unchanged simply
+            // re-writes the same values, so there is no "empty UPDATE" to special-case.
+            var specs = new List<DataTableUpdateSpec>();
+            var specTableNames = new List<string>();
+            foreach (var formTable in EnumerateTablesMasterFirst(masterTable))
+            {
+                if (!dataSet.Tables.Contains(formTable.TableName)) { continue; }
+                var dataTable = dataSet.Tables[formTable.TableName]!;
+                using var changes = dataTable.GetChanges();
+                if (changes is null) { continue; }   // nothing pending for this table
 
-            // Second pass: master insert/update first, then details.
-            CollectRowCommands(builder, dataSet, masterTable.TableName, batch, affected, includeDelete: false,
-                               includeInsertUpdate: true);
-            foreach (var detail in detailTables)
-                CollectRowCommands(builder, dataSet, detail.TableName, batch, affected, includeDelete: false,
-                                   includeInsertUpdate: true);
+                var tableSchema = formTable.GenerateDbTable();
+                var spec = new Bee.Db.Dml.TableSchemaCommandBuilder(dbType, tableSchema).BuildUpdateSpec(dataTable);
+                specs.Add(spec);
+                specTableNames.Add(formTable.TableName);
+            }
 
-            if (batch.Commands.Count == 0)
-                throw new InvalidOperationException(
-                    "DataSet has no pending changes; Save would be a no-op.");
-
-            var dbAccess = _dbAccessFactory.Create(_databaseId);
-            dbAccess.ExecuteBatch(batch);
+            // No pending changes anywhere is a no-op (zero rows affected), not an error.
+            var affected = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            if (specs.Count > 0)
+            {
+                var dbAccess = _dbAccessFactory.Create(_databaseId);
+                var counts = dbAccess.UpdateDataTables(specs);
+                for (int i = 0; i < specs.Count; i++)
+                    affected[specTableNames[i]] = counts[i];
+            }
 
             // Re-fetch the saved master so server-generated columns surface
             // back to the caller.
@@ -340,6 +340,17 @@ namespace Bee.Repository.Form
             }
         }
 
+        /// <summary>
+        /// Enumerates the form's tables master-first, then each detail. Save applies them in this
+        /// order so a newly inserted master row exists before the detail rows that reference it.
+        /// </summary>
+        private IEnumerable<FormTable> EnumerateTablesMasterFirst(FormTable masterTable)
+        {
+            yield return masterTable;
+            foreach (var detail in EnumerateDetailTables())
+                yield return detail;
+        }
+
         private static DataTable BuildEmptyDataTable(FormTable formTable)
         {
             var dataTable = new DataTable(formTable.TableName);
@@ -399,47 +410,6 @@ namespace Bee.Repository.Form
             {
                 return DBNull.Value;
             }
-        }
-
-        private static void CollectRowCommands(
-            Bee.Db.Dml.IFormCommandBuilder builder,
-            DataSet dataSet,
-            string tableName,
-            DbBatchSpec batch,
-            Dictionary<string, int> affected,
-            bool includeDelete,
-            bool includeInsertUpdate)
-        {
-            if (!dataSet.Tables.Contains(tableName))
-                return;
-
-            var table = dataSet.Tables[tableName]!;
-            int tableCount = affected.TryGetValue(tableName, out var existing) ? existing : 0;
-
-            foreach (DataRow row in table.Rows)
-            {
-                switch (row.RowState)
-                {
-                    case DataRowState.Added when includeInsertUpdate:
-                        batch.Commands.Add(builder.BuildInsert(tableName, row));
-                        tableCount++;
-                        break;
-                    case DataRowState.Modified when includeInsertUpdate:
-                        batch.Commands.Add(builder.BuildUpdate(tableName, row));
-                        tableCount++;
-                        break;
-                    case DataRowState.Deleted when includeDelete:
-                        var rowId = CoerceToGuid(row[SysFields.RowId, DataRowVersion.Original]);
-                        batch.Commands.Add(builder.BuildDelete(tableName,
-                            FilterCondition.Equal(SysFields.RowId, rowId)));
-                        tableCount++;
-                        break;
-                    default:
-                        break;
-                }
-            }
-
-            affected[tableName] = tableCount;
         }
 
         private static Guid? ExtractMasterRowId(DataSet dataSet, string masterTableName)
