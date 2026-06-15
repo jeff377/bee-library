@@ -84,7 +84,7 @@
             "name": "Run Bee.Northwind.Desktop",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build-northwind-desktop",
+            "preLaunchTask": "prep-northwind-desktop",
             "program": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Desktop/bin/Debug/net10.0/Bee.Northwind.Desktop.dll",
             "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Desktop",
             "console": "internalConsole",
