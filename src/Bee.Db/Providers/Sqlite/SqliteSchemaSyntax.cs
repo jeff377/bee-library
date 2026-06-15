@@ -92,12 +92,18 @@ namespace Bee.Db.Providers.Sqlite
         /// <c>ORDER BY</c>) are case-insensitive by default — matches the ERP expectation that
         /// <c>WHERE name = 'jeff'</c> hits a row stored as <c>Jeff</c>. Note SQLite's
         /// <c>NOCASE</c> only folds ASCII A–Z; non-ASCII characters remain case-sensitive.
+        /// <see cref="FieldDbType.Guid"/> columns get the same collation: SQLite stores a GUID
+        /// as case-sensitive TEXT, but a GUID is logically case-insensitive (its hex is all
+        /// ASCII <c>0-9A-F</c>, fully covered by <c>NOCASE</c>). Without this, a key written in
+        /// one casing (a lowercased <c>Guid.ToString()</c>) fails to match the same GUID stored
+        /// in another (uppercase seed / provider TEXT), orphaning detail rows on reload. The
+        /// other providers compare GUIDs case-insensitively by nature; NOCASE aligns SQLite.
         /// </remarks>
         /// <param name="field">The field definition.</param>
         public static string GetColumnDefinition(DbField field)
         {
             string dbType = SqliteTypeMapping.GetSqliteType(field);
-            string collateClause = IsTextType(field.DbType) ? " COLLATE NOCASE" : string.Empty;
+            string collateClause = UsesNoCaseCollation(field.DbType) ? " COLLATE NOCASE" : string.Empty;
             string nullability = field.AllowNull ? "NULL" : "NOT NULL";
             string defaultExpression = GetDefaultExpression(field);
             string defaultClause = StringUtilities.IsNotEmpty(defaultExpression) ? $" DEFAULT {defaultExpression}" : string.Empty;
@@ -105,13 +111,16 @@ namespace Bee.Db.Providers.Sqlite
         }
 
         /// <summary>
-        /// Returns true if the field stores text and should use <c>COLLATE NOCASE</c> for
-        /// case-insensitive comparison.
+        /// Returns true if the field should use <c>COLLATE NOCASE</c> for case-insensitive
+        /// comparison: text fields (the ERP default) and GUID fields (logically
+        /// case-insensitive, but stored by SQLite as case-sensitive TEXT).
         /// </summary>
         /// <param name="dbType">The field data type.</param>
-        private static bool IsTextType(FieldDbType dbType)
+        private static bool UsesNoCaseCollation(FieldDbType dbType)
         {
-            return dbType == FieldDbType.String || dbType == FieldDbType.Text;
+            return dbType == FieldDbType.String
+                || dbType == FieldDbType.Text
+                || dbType == FieldDbType.Guid;
         }
 
         /// <summary>

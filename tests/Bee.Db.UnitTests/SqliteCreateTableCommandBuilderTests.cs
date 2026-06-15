@@ -307,21 +307,38 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
-        [DisplayName("GetCommandText 全為非文字欄位的 schema 不應出現 COLLATE 子句")]
-        public void GetCommandText_NonTextSchema_OmitsCollate()
+        [DisplayName("GetCommandText 全為非 collate 欄位的 schema 不應出現 COLLATE 子句")]
+        public void GetCommandText_NonCollateSchema_OmitsCollate()
         {
+            // 排除 String/Text/Guid（三者皆套 COLLATE NOCASE），只留純數值/時間/二進制欄位。
             var schema = new TableSchema { TableName = "st_demo" };
-            schema.Fields!.Add("rowid", "Row ID", FieldDbType.Guid);
+            schema.Fields!.Add("id", "Id", FieldDbType.Integer);
             schema.Fields.Add("count", "Count", FieldDbType.Integer);
             schema.Fields.Add("amount", "Amount", FieldDbType.Decimal);
             schema.Fields.Add("created", "Created", FieldDbType.DateTime);
             schema.Fields.Add("data", "Data", FieldDbType.Binary);
-            schema.Indexes!.AddPrimaryKey("rowid");
+            schema.Indexes!.AddPrimaryKey("id");
             var builder = new SqliteCreateTableCommandBuilder();
 
             string sql = builder.GetCommandText(schema);
 
             Assert.DoesNotContain("COLLATE", sql);
+        }
+
+        [Fact]
+        [DisplayName("GetCommandText Guid 欄位 column 定義應帶 COLLATE NOCASE（GUID 比對大小寫無關）")]
+        public void GetCommandText_GuidField_IncludesCollateNocase()
+        {
+            // SQLite 以區分大小寫 TEXT 存 GUID；COLLATE NOCASE 讓 sys_master_rowid 等
+            // GUID key 跨大小寫仍能命中，避免 master-detail reload 時明細成孤兒。
+            var schema = new TableSchema { TableName = "st_demo" };
+            schema.Fields!.Add("sys_rowid", "Row ID", FieldDbType.Guid);
+            schema.Indexes!.AddPrimaryKey("sys_rowid");
+            var builder = new SqliteCreateTableCommandBuilder();
+
+            string sql = builder.GetCommandText(schema);
+
+            Assert.Contains("\"sys_rowid\" UUID COLLATE NOCASE", sql);
         }
 
         #endregion

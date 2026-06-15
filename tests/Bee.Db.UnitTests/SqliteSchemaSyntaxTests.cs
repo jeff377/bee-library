@@ -131,6 +131,15 @@ namespace Bee.Db.UnitTests
         }
 
         [Fact]
+        [DisplayName("SQLite GetColumnDefinition：Guid 欄位應帶 COLLATE NOCASE（GUID 比對大小寫無關）")]
+        public void GetColumnDefinition_Guid_IncludesCollateNoCase()
+        {
+            var field = new DbField("sys_rowid", "RowId", FieldDbType.Guid);
+            var sql = SqliteSchemaSyntax.GetColumnDefinition(field);
+            Assert.Contains("\"sys_rowid\" UUID COLLATE NOCASE NOT NULL", sql);
+        }
+
+        [Fact]
         [DisplayName("SQLite GetColumnDefinition：Integer NOT NULL 應帶 DEFAULT 0")]
         public void GetColumnDefinition_IntegerNotNull_IncludesDefaultZero()
         {

@@ -80,6 +80,40 @@ namespace Bee.Db.UnitTests
         }
 
         [DbFact(DatabaseType.SQLite)]
+        [DisplayName("SQLite GUID 欄位比對應為 case-insensitive（COLLATE NOCASE，跨大小寫命中）")]
+        public void GuidComparison_IsCaseInsensitive()
+        {
+            var databaseId = TestDbConventions.GetDatabaseId(DatabaseType.SQLite);
+            var dbAccess = _fx.NewDbAccess(databaseId);
+
+            // 直接以 GUID 欄的實際宣告（UUID COLLATE NOCASE）建表，驗證 SQLite runtime
+            // 對 GUID 字串以大小寫無關方式比對 —— 這正是 master-detail reload 用 sys_master_rowid
+            // 當 key 比對時，避免明細因大小寫脫鉤而成孤兒所依賴的行為。
+            dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                "DROP TABLE IF EXISTS guid_ci_test"));
+            dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                "CREATE TABLE guid_ci_test (sys_rowid UUID COLLATE NOCASE NOT NULL)"));
+
+            try
+            {
+                // 以大寫存入（對齊 seed / provider TEXT 慣例），以小寫查回。
+                dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                    "INSERT INTO guid_ci_test (sys_rowid) VALUES ({0})", "6689B38C-39D5-43B0-9682-27F9ADEEEDC5"));
+
+                var result = dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.Scalar,
+                    "SELECT COUNT(*) FROM guid_ci_test WHERE sys_rowid = {0}", "6689b38c-39d5-43b0-9682-27f9adeeedc5"));
+
+                Assert.NotNull(result);
+                Assert.Equal(1, Convert.ToInt32(result.Scalar!, CultureInfo.InvariantCulture));
+            }
+            finally
+            {
+                dbAccess.Execute(new Bee.Db.DbCommandSpec(Bee.Db.DbCommandKind.NonQuery,
+                    "DROP TABLE IF EXISTS guid_ci_test"));
+            }
+        }
+
+        [DbFact(DatabaseType.SQLite)]
         [DisplayName("SQLite SchemaProvider 應讀回非主鍵的二級索引（含 unique 旗標）")]
         public void SchemaProvider_ReadsSecondaryIndexes()
         {
