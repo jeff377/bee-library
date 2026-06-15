@@ -73,7 +73,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         {
             var grid = new GridControl();
 
-            Assert.IsAssignableFrom<ContentControl>(grid);
+            Assert.IsType<ContentControl>(grid, exactMatch: false);
             var styleKey = typeof(global::Avalonia.StyledElement)
                 .GetProperty("StyleKeyOverride", BindingFlags.Instance | BindingFlags.NonPublic)!
                 .GetValue(grid);
