@@ -1,4 +1,4 @@
-namespace Bee.UI.Avalonia.Controls.Editors
+namespace Bee.UI.Avalonia.Controls
 {
     /// <summary>
     /// Editing model for <see cref="GridControl"/>. A UI-layer concern by design:

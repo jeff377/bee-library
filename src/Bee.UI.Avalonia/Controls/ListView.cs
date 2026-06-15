@@ -5,7 +5,6 @@ using Avalonia.Media;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
-using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Core;
 
 namespace Bee.UI.Avalonia.Controls

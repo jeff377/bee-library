@@ -8,9 +8,10 @@ using Avalonia.Media;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
+using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
-namespace Bee.UI.Avalonia.Controls.Editors
+namespace Bee.UI.Avalonia.Controls
 {
     /// <summary>
     /// Tabular control that renders a <see cref="LayoutGrid"/> definition over a

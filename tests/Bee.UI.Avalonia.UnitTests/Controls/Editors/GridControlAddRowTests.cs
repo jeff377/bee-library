@@ -2,7 +2,7 @@ using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Definition;
 using Bee.Definition.Forms;
-using Bee.UI.Avalonia.Controls.Editors;
+using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.DataObjects;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls.Editors

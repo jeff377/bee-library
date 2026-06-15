@@ -1,6 +1,7 @@
+using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
-namespace Bee.UI.Avalonia.Controls.Editors
+namespace Bee.UI.Avalonia.Controls
 {
     /// <summary>
     /// Binding engine held by <see cref="GridControl"/>. Mirrors the

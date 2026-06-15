@@ -4,7 +4,7 @@ using System.Reflection;
 using Avalonia.Controls;
 using Bee.Definition;
 using Bee.Definition.Layouts;
-using Bee.UI.Avalonia.Controls.Editors;
+using Bee.UI.Avalonia.Controls;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 {

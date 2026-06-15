@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Reflection;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
+using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 

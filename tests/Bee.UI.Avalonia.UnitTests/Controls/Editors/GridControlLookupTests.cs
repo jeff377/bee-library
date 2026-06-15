@@ -7,7 +7,7 @@ using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
-using Bee.UI.Avalonia.Controls.Editors;
+using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.DataObjects;
 
 namespace Bee.UI.Avalonia.UnitTests.Controls.Editors

@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 ### Breaking Changes
 
 - **`Bee.UI.Avalonia` removes `DynamicForm` and `SingleFormBase`; list duties move to a new `ListView` and single-record duties consolidate in `FormView`** — Aligns with the ERP list/single separation: `ListView` owns the list (load, select, scroll), `FormView` focuses on single-record view/edit (including detail grids). Code composed via `DynamicForm` / `SingleFormBase` should use `FormView` (single) plus `ListView` (list).
+- **`GridControl` moved from namespace `Bee.UI.Avalonia.Controls.Editors` to `Bee.UI.Avalonia.Controls`** — placed alongside its peer high-level controls `FormView` / `ListView` (`GridControlBinder` / `GridEditMode` moved with it); `Editors/` is left to field editors and the lookup / row-edit support UI. Callers that fully-qualified it as `Bee.UI.Avalonia.Controls.Editors.GridControl`, or imported that namespace solely for it, must adjust their usings.
 - **`Bee.Db` removes the row-by-row `InsertCommandBuilder` / `UpdateCommandBuilder`** — `DataFormRepository.Save` now goes through DataTable-level `DataAdapter.Update` (see Changed); these "single-row SQL with only changed columns" builders had no remaining production caller and were removed. `DeleteCommandBuilder` / `SelectCommandBuilder` remain (used by `Delete()` / `GetData()`).
 
 ### Added

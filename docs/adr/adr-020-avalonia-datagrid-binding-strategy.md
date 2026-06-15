@@ -99,7 +99,7 @@ private static DataGridTemplateColumn BuildColumn(LayoutColumn column)
 
 ## 後記（2026-06-11）
 
-本 ADR 的實作位置已由 `DynamicGrid`（`UserControl` 包裝，現已移除）遷移為 `GridControl`（直接繼承 `DataGrid`，`src/Bee.UI.Avalonia/Controls/Editors/GridControl.cs`）；`DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch 的綁定策略不變。in-cell / EditForm 編輯策略的後續決策見 [ADR-021](adr-021-avalonia-datagrid-editing-strategy.md)。
+本 ADR 的實作位置已由 `DynamicGrid`（`UserControl` 包裝，現已移除）遷移為 `GridControl`（`src/Bee.UI.Avalonia/Controls/GridControl.cs`；最初直接繼承 `DataGrid`，後重構為 `ContentControl` 組合式、內部 `DataGrid` 以 `InnerGrid` 公開）；`DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch 的綁定策略不變。in-cell / EditForm 編輯策略的後續決策見 [ADR-021](adr-021-avalonia-datagrid-editing-strategy.md)。
 
 ## 後記（2026-06-14）：清單 cell 的 `supportsRecycling` 修正
 

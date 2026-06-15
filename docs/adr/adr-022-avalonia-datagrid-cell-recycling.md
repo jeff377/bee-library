@@ -59,7 +59,7 @@ templateColumn.CellTemplate = new FuncDataTemplate<DataRowView>(
 
 - [ADR-020：Avalonia DataGrid 對 DataTable 列的綁定策略](adr-020-avalonia-datagrid-binding-strategy.md) — 本 ADR 修正其範例中的 `supportsRecycling: true`
 - [ADR-021：Avalonia DataGrid in-cell / EditForm 編輯策略](adr-021-avalonia-datagrid-editing-strategy.md)
-- `src/Bee.UI.Avalonia/Controls/Editors/GridControl.cs` — `BuildColumn` 清單純文字 cell 模板
+- `src/Bee.UI.Avalonia/Controls/GridControl.cs` — `BuildColumn` 清單純文字 cell 模板
 - 逼出此問題的 plan：`docs/plans/plan-bee-northwind-demo.md` 階段 3（Employee→Department lookup）
 
 ## 不在範圍
