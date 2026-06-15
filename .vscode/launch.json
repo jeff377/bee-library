@@ -78,7 +78,9 @@
             "program": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Server/bin/Debug/net10.0/Bee.Northwind.Server.dll",
             "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Server",
             "console": "integratedTerminal",
-            "env": { "ASPNETCORE_ENVIRONMENT": "Development" }
+            "env": { "ASPNETCORE_ENVIRONMENT": "Development" },
+            "//justMyCode": "false so the debugger does not break on UserMessageException — a deliberate business-rule exception (e.g. 'Order details are locked') thrown in a BO and caught by the framework's JsonRpc layer. It is handled; the client receives a friendly message.",
+            "justMyCode": false
         },
         {
             "name": "Run Bee.Northwind.Desktop",
