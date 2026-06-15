@@ -5,7 +5,6 @@ using Avalonia.Media;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
-using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Core;
 
@@ -52,7 +51,6 @@ namespace Bee.UI.Avalonia.Controls
         private readonly TextBlock _loadingLabel;
         private readonly TextBlock _emptyListLabel;
         private readonly GridControl _grid;
-        private LayoutGrid? _listLayout;
         private Guid _selectedRowId;
         private bool _isBusy;
         private bool _initialized;
@@ -308,9 +306,9 @@ namespace Bee.UI.Avalonia.Controls
             ClearError();
             _loadingLabel.IsVisible = false;
 
-            _listLayout = Schema!.GetListLayout();
+            var listLayout = Schema!.GetListLayout();
             // Columns render immediately; rows arrive with the first ReloadAsync.
-            _grid.Bind(_listLayout, rows: null);
+            _grid.Bind(listLayout, rows: null);
         }
 
         // FormSchema.ListFields drives the server SELECT but omits sys_rowid; prepend it so
