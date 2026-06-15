@@ -4,6 +4,37 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.10.0]
+
+> Bee.NET remains in pre-stable evolution. The theme of this release is "the lookup relation mechanism lands in full": relation fields automatically become dialog-based lookup editors with composite "code - name" display, with two pick entry points (master `ButtonEdit` and detail in-cell), backed by a server-side `GetLookup`. It also splits the Avalonia single-record and list concerns into `FormView` / `ListView` (the ERP list/single separation), and consolidates DataForm persistence onto a DataTable-level `DataAdapter` path (a home-grown `SqliteDataAdapter` lets SQLite use the adapter path too). The release contains **several breaking changes**, confined to the construction surface of `Bee.UI.Avalonia` and `Bee.Db`.
+
+### Breaking Changes
+
+- **`Bee.UI.Avalonia` removes `DynamicForm` and `SingleFormBase`; list duties move to a new `ListView` and single-record duties consolidate in `FormView`** — Aligns with the ERP list/single separation: `ListView` owns the list (load, select, scroll), `FormView` focuses on single-record view/edit (including detail grids). Code composed via `DynamicForm` / `SingleFormBase` should use `FormView` (single) plus `ListView` (list).
+- **`Bee.Db` removes the row-by-row `InsertCommandBuilder` / `UpdateCommandBuilder`** — `DataFormRepository.Save` now goes through DataTable-level `DataAdapter.Update` (see Changed); these "single-row SQL with only changed columns" builders had no remaining production caller and were removed. `DeleteCommandBuilder` / `SelectCommandBuilder` remain (used by `Delete()` / `GetData()`).
+
+### Added
+
+- **Lookup relation mechanism (`Bee.Definition` / `Bee.Api` / `Bee.UI.Avalonia`)** — a definition-driven dialog lookup:
+  - Definition-layer `DisplayField` / `LookupFields`; relation fields (`RelationProgId` + `RelationFieldMappings`) are auto-resolved by `FormLayoutGenerator` into a `ButtonEdit` with coverage rules (the relation field carries the display, the corresponding `ref_*` fields are not generated twice); `DisplayFields` renders a composite "code - name".
+  - Server-side `FormBusinessObject.GetLookup` (with `GetLookupFilter()`) for the dialog list query.
+  - Client `LookupPanel` / `LookupDialog` pick components, a built-in `ButtonEdit` lookup flow (display binding, write back mapped fields on pick, clear), and `GridControl` in-cell click-to-open lookup for detail rows.
+- **`FormField.ReadOnly` (`Bee.Definition`)** — a read-only property propagated by `FormLayoutGenerator` to `LayoutField` / `LayoutColumn` (the runtime already honored layout-level ReadOnly); computed fields (e.g. amount, total) can be marked read-only.
+- **Home-grown `SqliteDataAdapter` (`Bee.Db`)** — Microsoft.Data.Sqlite ships no `DbDataAdapter`; the framework supplies one via `SqliteProviderFactory` so SQLite reads and writes use the adapter path consistently with the other four providers, with no provider-specific fallback.
+
+### Changed
+
+- **`DataFormRepository.Save` now uses DataTable-level IUD (`DataAdapter.Update`)** — each table applies a full-column parameterized Insert/Update/Delete in one pass; a Modified row whose values are unchanged is just a harmless same-value update, eliminating the whole "Modified but no column change → empty SET → `UPDATE would be empty`" class of error (the root cause of re-saving an existing master-detail document). A DataSet with no pending changes is a no-op returning 0 (previously it threw).
+- **`FormView` opens a list row read-only on double-click** — double-clicking a list row enters a read-only view rather than going straight to edit; toolbar enablement follows the current mode.
+
+### Fixed
+
+- **SQLite GUID columns get `COLLATE NOCASE`** — SQLite stores GUIDs as case-sensitive TEXT; a lowercase client key drifting from the uppercase seed/provider storage would orphan master-detail rows when `sys_master_rowid` failed to match. GUID columns now carry `COLLATE NOCASE` (CREATE and ALTER ADD alike), making the comparison case-insensitive and aligning SQLite with the other four databases' natural behavior.
+- **New rows get non-null defaults from `FormSchema`, and the master link preserves the raw value** — `FormRowDefaults` fills type-appropriate non-null defaults (text→empty string, numeric→0, …) to avoid NOT NULL violations; the master-detail link writes the master's raw `sys_rowid` value (preserving the provider's stored casing) into the detail `sys_master_rowid` rather than round-tripping through `Guid.Parse/ToString`.
+- **`GetNewData` skeleton includes `RelationField` columns** — fixes the lookup add flow not bringing back display values.
+- **Multi-relation JOIN resolution (`SelectContextBuilder`)** — fixes JOIN generation when one table has multiple relation fields.
+- **`ListView` list scrollbar** — scrolls correctly when rows exceed the visible area.
+
 ## [4.9.0]
 
 > Bee.NET remains in pre-stable evolution. The theme of this release is "Avalonia editable forms land in full": a field editor suite mapped 1:1 to `ControlType`, a new `GridControl` with in-cell and dialog-based row editing, a form-mode lifecycle (`SingleFormBase` broadcasting `FormMode` to the whole control tree), and a definition-layer `FormEditModes` setting for per-mode editability. The release contains **one breaking change**, confined to the Avalonia family: `DynamicGrid` was removed from `Bee.UI.Avalonia` (its Blazor / MAUI counterparts are unaffected). It also ships a **security upgrade** of the MessagePack dependency.
