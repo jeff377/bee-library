@@ -243,12 +243,17 @@ apps/
   - 「哪些是定義、哪些是業務碼、哪些是框架自帶」對照表
 - **驗收**：使用者照終章操作一次走通
 
-### 階段 9：畢業（移至獨立 repo）
+### 階段 9：畢業（複製至獨立 repo；來源保留）
+
+> **執行方式調整（2026-06-15）**：建新 repo 是「**複製**」而非「搬走」——bee-library 內的
+> `apps/Bee.Northwind` **保留不 `git rm`**。因 Bee.UI.Avalonia 仍是進行中的試點，續作補齊時
+> 需要 in-repo demo（ProjectReference、隨框架同步演進）做 dogfooding 測試。`git rm` 延後到
+> Bee.UI.Avalonia 全部完成才執行。見記憶 `northwind-graduation-keep-source`。
 
 - 確認框架穩定，依 `~/.claude/rules/releasing.md` 發 NuGet 新版（含本 demo 期間對 src 的所有底層改動）
-- 建立獨立 repo `bee-northwind-avalonia`，整個 `apps/Bee.Northwind/` 搬入
-- ProjectReference（`../../src/Bee.*`）改為 PackageReference（指發佈版本）
-- bee-library 內 `git rm apps/Bee.Northwind/`
+- 建立獨立 repo `bee-northwind-avalonia`，把 `apps/Bee.Northwind/` 內容**複製**入
+- 新 repo 內 ProjectReference（`../../src/Bee.*`）改為 PackageReference（指發佈版本）
+- **bee-library 內 `apps/Bee.Northwind/` 保留**（延後 `git rm` 至 Avalonia 完成）
 - 新 repo README 補套件版本與 `dotnet restore` 即可跑的說明
 - **驗收**：新 repo clone 下來 `dotnet restore` + `dotnet run`（Desktop head）起得來（純 NuGet、無任何 ProjectReference）
 
