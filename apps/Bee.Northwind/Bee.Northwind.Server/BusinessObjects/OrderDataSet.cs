@@ -81,6 +81,13 @@ internal static class OrderDataSet
     /// Recomputes every line amount and the master total from quantity, unit price, and discount —
     /// authoritatively, so a forged client total never persists. Returns the computed total.
     /// </summary>
+    /// <remarks>
+    /// Each computed value is written back only when it actually differs from the current cell.
+    /// Assigning an equal value through the <c>DataRow</c> indexer still flips an Unchanged row to
+    /// Modified, which on save would reach the framework's UPDATE builder with no changed columns
+    /// and raise "UPDATE would be empty". Reloading and re-saving an order must not mark untouched
+    /// detail lines dirty.
+    /// </remarks>
     public static decimal ComputeAmounts(DataSet dataSet)
     {
         var master = MasterRow(dataSet);
@@ -91,10 +98,12 @@ internal static class OrderDataSet
                 ValueUtilities.CInt(row["quantity"]),
                 ValueUtilities.CDecimal(row["unit_price"]),
                 ValueUtilities.CDecimal(row["discount"]));
-            row["amount"] = amount;
+            if (ValueUtilities.CDecimal(row["amount"]) != amount)
+                row["amount"] = amount;
             total += amount;
         }
-        master["total_amount"] = total;
+        if (ValueUtilities.CDecimal(master["total_amount"]) != total)
+            master["total_amount"] = total;
         return total;
     }
 }
