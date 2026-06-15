@@ -724,6 +724,87 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
             Assert.Throws<ArgumentException>(() => dataObject.BeginRowEdit(foreignRow));
         }
 
+        [Fact]
+        [DisplayName("新明細列由 FormSchema 補非空值（sys_rowid 新 Guid、master 連結、各型別預設、DBNull 型別補值）")]
+        public void NewDetailRow_SeedsNonNullDefaultsFromSchema()
+        {
+            var schema = new FormSchema("Order", "Order");
+            var master = schema.Tables!.Add("Order", "Order");
+            master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            var detail = schema.Tables.Add("OrderLine", "Lines");
+            detail.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            detail.Fields.Add(SysFields.MasterRowId, "Master", FieldDbType.Guid);
+            detail.Fields.Add("note", "Note", FieldDbType.String);
+            detail.Fields.Add("qty", "Qty", FieldDbType.Integer);
+            detail.Fields.Add("price", "Price", FieldDbType.Currency);
+            detail.Fields.Add("order_date", "Date", FieldDbType.Date);
+            detail.Fields.Add("product_rowid", "Product", FieldDbType.Guid);
+            detail.Fields.Add("seq", "Seq", FieldDbType.Short);   // DBNull column default → proves seeding fills it
+
+            var dataObject = new FormDataObject(schema);
+            dataObject.InitializeNewMaster();
+            var masterRowId = Guid.NewGuid();
+            dataObject.MasterRow![SysFields.RowId] = masterRowId;
+
+            var lineTable = dataObject.DataSet.Tables["OrderLine"]!;
+            var line = lineTable.NewRow();
+            lineTable.Rows.Add(line);
+
+            Assert.NotEqual(Guid.Empty, (Guid)line[SysFields.RowId]);     // fresh primary key
+            Assert.Equal(masterRowId, (Guid)line[SysFields.MasterRowId]); // linked to master
+            Assert.Equal(string.Empty, line["note"]);
+            Assert.Equal(0, line["qty"]);
+            Assert.Equal(0m, line["price"]);
+            Assert.Equal(DateTime.Today, line["order_date"]);
+            Assert.Equal(Guid.Empty, (Guid)line["product_rowid"]);        // non-key Guid → empty
+            Assert.NotEqual(DBNull.Value, line["seq"]);                   // seeded (no column default)
+            Assert.Equal((short)0, line["seq"]);
+        }
+
+        [Fact]
+        [DisplayName("新增明細經 BeginRowEdit/CommitRowEdit 後 SaveAsync 應送出該 Added 明細列")]
+        public async Task AddDetail_EditFormFlow_ReachesSaveAsAddedRow()
+        {
+            var schema = new FormSchema("Order", "Order");
+            var master = schema.Tables!.Add("Order", "Order");
+            master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            var detail = schema.Tables.Add("OrderLine", "Lines");
+            detail.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            detail.Fields.Add(SysFields.MasterRowId, "Master", FieldDbType.Guid);
+            detail.Fields.Add("product_rowid", "Product", FieldDbType.Guid);
+            detail.Fields.Add("qty", "Qty", FieldDbType.Integer);
+
+            DataSet? captured = null;
+            var connector = new FakeFormApiConnector
+            {
+                SaveHandler = ds => { captured = ds.Copy(); return new SaveResponse { DataSet = ds }; },
+            };
+            var dataObject = new FormDataObject(schema, connector);
+            dataObject.InitializeNewMaster();
+            var masterRowId = (Guid)dataObject.MasterRow![SysFields.RowId];
+
+            var lineTable = dataObject.DataSet.Tables["OrderLine"]!;
+            var line = lineTable.NewRow();   // TableNewRow seeds sys_rowid + master link + defaults
+            lineTable.Rows.Add(line);
+
+            // Mirror the EditForm dialog: begin a buffered edit, fill fields, commit.
+            dataObject.BeginRowEdit(line);
+            line["product_rowid"] = Guid.NewGuid();
+            line["qty"] = 5;
+            dataObject.CommitRowEdit(line);
+
+            Assert.Equal(DataRowState.Added, line.RowState);
+
+            await dataObject.SaveAsync();
+
+            Assert.NotNull(captured);
+            var capturedDetail = captured!.Tables["OrderLine"]!;
+            Assert.Single(capturedDetail.Rows);
+            Assert.Equal(DataRowState.Added, capturedDetail.Rows[0].RowState);
+            Assert.Equal(masterRowId, (Guid)capturedDetail.Rows[0][SysFields.MasterRowId]);
+            Assert.Equal(5, capturedDetail.Rows[0]["qty"]);
+        }
+
         /// <summary>
         /// Test double that bypasses the real JSON-RPC pipeline by overriding every
         /// virtual CRUD method on <see cref="FormApiConnector"/>. The base constructor

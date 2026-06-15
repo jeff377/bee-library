@@ -198,6 +198,26 @@ namespace Bee.Repository.UnitTests
             Assert.Throws<InvalidOperationException>(() => repo.GetNewData());
         }
 
+        [Fact]
+        [DisplayName("GetNewData master 列應由 schema 補非空值（含無欄位預設的 Short 型別）")]
+        public void GetNewData_MasterRow_SeedsNonNullDefaults()
+        {
+            // The master table name must match CreateRepository's progId ("Employee").
+            var schema = new FormSchema("Employee", "Employee");
+            var master = schema.Tables!.Add("Employee", "Employee");
+            master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
+            master.Fields.Add("title", "Title", FieldDbType.String);
+            master.Fields.Add("seq", "Seq", FieldDbType.Short);   // DBNull column default → seeded
+            var repo = CreateRepository(schema);
+
+            var row = repo.GetNewData().Tables["Employee"]!.Rows[0];
+
+            Assert.NotEqual(Guid.Empty, (Guid)row[SysFields.RowId]);
+            Assert.Equal(string.Empty, row["title"]);
+            Assert.NotEqual(DBNull.Value, row["seq"]);
+            Assert.Equal((short)0, row["seq"]);
+        }
+
         #endregion
 
         #region ConvertDefaultValue（私有靜態方法）

@@ -330,22 +330,29 @@ namespace Bee.UI.Avalonia.Controls.Editors
         }
 
         /// <summary>
-        /// Appends a new row to the bound table, seeding non-nullable columns whose
-        /// <see cref="DataColumn.DefaultValue"/> is still <see cref="DBNull"/> with a
-        /// type-appropriate empty value (wire-deserialized tables often lack the
-        /// pinned defaults that schema-derived tables carry).
+        /// Appends a new row to the bound table. The owning <see cref="FormDataObject"/> seeds the
+        /// row's non-null columns from the FormSchema (a fresh <c>sys_rowid</c>, the
+        /// <c>sys_master_rowid</c> master link, and type-appropriate defaults) through its
+        /// <see cref="DataTable.TableNewRow"/> hook, so the row is insert-ready on creation.
         /// </summary>
         public void AddRow()
         {
             if (_dataTable is null) return;
 
             var row = _dataTable.NewRow();
-            foreach (DataColumn column in _dataTable.Columns)
+            // Form-backed binds: the FormDataObject seeds the row's non-null columns (a fresh
+            // sys_rowid, the sys_master_rowid link, and type-appropriate defaults) from the
+            // FormSchema via its TableNewRow hook. Raw-table (list-mode) binds have no such hook,
+            // so the grid fills non-nullable columns itself with type-appropriate empty values.
+            if (_binder.DataObject is null)
             {
-                if (!column.AllowDBNull
-                    && (column.DefaultValue is null || column.DefaultValue == DBNull.Value))
+                foreach (DataColumn column in _dataTable.Columns)
                 {
-                    row[column] = FormDataObject.ResolveEmptyValueForType(column.DataType);
+                    if (!column.AllowDBNull
+                        && (column.DefaultValue is null || column.DefaultValue == DBNull.Value))
+                    {
+                        row[column] = FormDataObject.ResolveEmptyValueForType(column.DataType);
+                    }
                 }
             }
             // Attaching the row marks the data object dirty through its DataTable

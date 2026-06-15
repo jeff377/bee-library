@@ -186,8 +186,10 @@ namespace Bee.Repository.Form
             dataSet.Tables.Add(masterDataTable);
 
             var masterRow = masterDataTable.NewRow();
+            // Schema-driven non-null seeding (fresh sys_rowid + type defaults), then the
+            // FormSchema field defaults (e.g. a status of "Draft") which take precedence.
+            FormRowDefaults.Apply(masterTable, masterRow);
             ApplyMasterDefaults(masterRow, masterTable);
-            masterRow[SysFields.RowId] = Guid.NewGuid();
             masterDataTable.Rows.Add(masterRow);
 
             foreach (var detail in EnumerateDetailTables())

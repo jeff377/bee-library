@@ -535,6 +535,7 @@ namespace Bee.UI.Avalonia.DataObjects
         {
             foreach (DataTable table in dataSet.Tables)
             {
+                table.TableNewRow += OnTableNewRow;
                 table.ColumnChanged += OnTableColumnChanged;
                 table.RowChanged += OnTableRowChanged;
                 table.RowDeleted += OnTableRowDeleted;
@@ -546,10 +547,41 @@ namespace Bee.UI.Avalonia.DataObjects
             if (dataSet is null) return;
             foreach (DataTable table in dataSet.Tables)
             {
+                table.TableNewRow -= OnTableNewRow;
                 table.ColumnChanged -= OnTableColumnChanged;
                 table.RowChanged -= OnTableRowChanged;
                 table.RowDeleted -= OnTableRowDeleted;
             }
+        }
+
+        /// <summary>
+        /// Seeds a freshly created row's persisted columns with type-appropriate non-null values
+        /// drawn from the FormSchema, so a new row never reaches the database with a NULL that would
+        /// violate a NOT NULL constraint. <c>sys_rowid</c> gets a fresh key, <c>sys_master_rowid</c>
+        /// links to the loaded master, and other columns default by <see cref="FieldDbType"/>
+        /// (text → empty string, numeric → 0, Date → today, DateTime → now, …). Columns that already
+        /// carry a value (e.g. a schema-pinned default) are left untouched.
+        /// </summary>
+        private void OnTableNewRow(object? sender, DataTableNewRowEventArgs e)
+        {
+            var formTable = _schema.Tables?.GetOrDefault(e.Row.Table.TableName);
+            if (formTable is null) return;
+
+            // Same schema-driven seeding the server uses for the GetNewData master row, plus the
+            // master link for a detail row (the client knows the loaded master).
+            FormRowDefaults.Apply(formTable, e.Row, ResolveMasterRowId());
+        }
+
+        // The master row's sys_rowid a new detail row links through sys_master_rowid. Returns the
+        // raw value (Guid or the provider's exact string form) so the link preserves the master's
+        // casing — a re-parsed Guid would lowercase a string key and orphan the detail under a
+        // case-sensitive comparison (e.g. SQLite stores GUIDs as case-sensitive TEXT).
+        private object? ResolveMasterRowId()
+        {
+            var master = MasterRow;
+            if (master is null || !master.Table.Columns.Contains(SysFields.RowId)) return null;
+            var value = master[SysFields.RowId];
+            return value == DBNull.Value ? null : value;
         }
 
         private void OnTableColumnChanged(object? sender, DataColumnChangeEventArgs e)
