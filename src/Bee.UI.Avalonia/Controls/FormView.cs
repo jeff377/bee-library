@@ -290,12 +290,11 @@ namespace Bee.UI.Avalonia.Controls
         private async Task OnSaveClickedAsync()
         {
             if (_dataObject is null) return;
-            var saved = false;
-            await RunGuardedAsync(async () =>
-            {
-                await _dataObject.SaveAsync().ConfigureAwait(true);
-                saved = true;
-            }).ConfigureAwait(true);
+            // RunGuardedAsync reports whether the action completed, rather than the action
+            // mutating a captured local — the latter defeats the analyzer's data-flow
+            // tracking through the closure and trips a false "always false" on the check below.
+            var saved = await RunGuardedAsync(
+                () => _dataObject.SaveAsync()).ConfigureAwait(true);
 
             if (saved)
                 Saved?.Invoke(this, EventArgs.Empty);
@@ -307,14 +306,16 @@ namespace Bee.UI.Avalonia.Controls
             Closed?.Invoke(this, EventArgs.Empty);
         }
 
-        private async Task RunGuardedAsync(Func<Task> action)
+        private async Task<bool> RunGuardedAsync(Func<Task> action)
         {
-            if (_isBusy) return;
+            if (_isBusy) return false;
             _isBusy = true;
             ClearError();
+            var completed = false;
             try
             {
                 await action().ConfigureAwait(true);
+                completed = true;
             }
             catch (Exception ex)
             {
@@ -326,6 +327,7 @@ namespace Bee.UI.Avalonia.Controls
                 Rebuild();
                 UpdateToolbarState();
             }
+            return completed;
         }
 
         private void UpdateToolbarState()

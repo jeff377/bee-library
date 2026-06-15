@@ -751,7 +751,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 return checkBox;
             }
 
-            if (!canEdit || rowView is null)
+            if (!canEdit)
             {
                 return new TextBlock
                 {
@@ -761,7 +761,9 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 };
             }
 
-            return BuildSwapCell(rowView, column);
+            // canEdit is true only when rowView is not null (see its definition above),
+            // so the swap-cell branch always has a non-null row.
+            return BuildSwapCell(rowView!, column);
         }
 
         // Click-to-edit host: rests as the original text rendering, swaps to the

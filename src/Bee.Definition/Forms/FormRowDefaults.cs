@@ -34,28 +34,31 @@ namespace Bee.Definition.Forms
             if (formTable?.Fields is null) { return; }
 
             foreach (FormField field in formTable.Fields)
+                ApplyField(field, row, masterRowId);
+        }
+
+        private static void ApplyField(FormField field, DataRow row, object? masterRowId)
+        {
+            // Persisted columns only: the database generates AutoIncrement, and
+            // relation / virtual fields are never stored.
+            if (field.Type != FieldType.DbField || field.DbType == FieldDbType.AutoIncrement) { return; }
+            if (!row.Table.Columns.Contains(field.FieldName)) { return; }
+
+            if (string.Equals(field.FieldName, SysFields.RowId, StringComparison.OrdinalIgnoreCase))
             {
-                // Persisted columns only: the database generates AutoIncrement, and
-                // relation / virtual fields are never stored.
-                if (field.Type != FieldType.DbField || field.DbType == FieldDbType.AutoIncrement) { continue; }
-                if (!row.Table.Columns.Contains(field.FieldName)) { continue; }
-
-                if (string.Equals(field.FieldName, SysFields.RowId, StringComparison.OrdinalIgnoreCase))
-                {
-                    row[field.FieldName] = Guid.NewGuid();
-                    continue;
-                }
-                if (masterRowId is not null && masterRowId != DBNull.Value
-                    && string.Equals(field.FieldName, SysFields.MasterRowId, StringComparison.OrdinalIgnoreCase))
-                {
-                    row[field.FieldName] = masterRowId;
-                    continue;
-                }
-                if (row[field.FieldName] != DBNull.Value) { continue; }
-
-                var value = DefaultForDbType(field.DbType);
-                if (value != DBNull.Value) { row[field.FieldName] = value; }
+                row[field.FieldName] = Guid.NewGuid();
+                return;
             }
+            if (masterRowId is not null && masterRowId != DBNull.Value
+                && string.Equals(field.FieldName, SysFields.MasterRowId, StringComparison.OrdinalIgnoreCase))
+            {
+                row[field.FieldName] = masterRowId;
+                return;
+            }
+            if (row[field.FieldName] != DBNull.Value) { return; }
+
+            var value = DefaultForDbType(field.DbType);
+            if (value != DBNull.Value) { row[field.FieldName] = value; }
         }
 
         /// <summary>
