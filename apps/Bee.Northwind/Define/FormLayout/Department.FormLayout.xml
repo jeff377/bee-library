@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Department" ProgId="Department" Caption="Department">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Department">
+      <Fields>
+        <LayoutField FieldName="sys_id" Caption="Department Code" />
+        <LayoutField FieldName="sys_name" Caption="Department Name" />
+        <LayoutField FieldName="manager_rowid" Caption="Manager" ControlType="ButtonEdit" DisplayFields="ref_manager_id,ref_manager_name" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>

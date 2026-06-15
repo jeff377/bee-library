@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Employee" ProgId="Employee" Caption="Employee">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Employee">
+      <Fields>
+        <LayoutField FieldName="sys_id" Caption="Employee Code" />
+        <LayoutField FieldName="sys_name" Caption="Employee Name" />
+        <LayoutField FieldName="title" Caption="Title" />
+        <LayoutField FieldName="hire_date" Caption="Hire Date" />
+        <LayoutField FieldName="dept_rowid" Caption="Department" ControlType="ButtonEdit" DisplayFields="ref_dept_id,ref_dept_name" />
+        <LayoutField FieldName="ref_supervisor_id" Caption="Supervisor Code" />
+        <LayoutField FieldName="ref_supervisor_name" Caption="Supervisor Name" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>

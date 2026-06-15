@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FormLayout xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" LayoutId="Customer" ProgId="Customer" Caption="Customer">
+  <Sections>
+    <LayoutSection Name="Main" Caption="Customer">
+      <Fields>
+        <LayoutField FieldName="sys_id" Caption="Customer Code" />
+        <LayoutField FieldName="sys_name" Caption="Company Name" />
+        <LayoutField FieldName="contact_name" Caption="Contact Name" />
+        <LayoutField FieldName="contact_title" Caption="Contact Title" />
+        <LayoutField FieldName="city" Caption="City" />
+        <LayoutField FieldName="country" Caption="Country" />
+        <LayoutField FieldName="phone" Caption="Phone" />
+      </Fields>
+    </LayoutSection>
+  </Sections>
+</FormLayout>
