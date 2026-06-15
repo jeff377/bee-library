@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="st_department" DisplayName="部門">
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="st_department" DisplayName="Department">
   <Fields>
-    <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
-    <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
-    <DbField FieldName="sys_id" Caption="部門編號" DbType="String" Length="20" />
-    <DbField FieldName="sys_name" Caption="部門名稱" DbType="String" Length="50" />
-    <DbField FieldName="manager_rowid" Caption="部門主管唯一識別" DbType="Guid" />
-    <DbField FieldName="parent_rowid" Caption="上級部門唯一識別" DbType="Guid" />
+    <DbField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+    <DbField FieldName="sys_id" Caption="Department Code" DbType="String" Length="20" />
+    <DbField FieldName="sys_name" Caption="Department Name" DbType="String" Length="50" />
+    <DbField FieldName="manager_rowid" Caption="Manager Row ID" DbType="Guid" />
+    <DbField FieldName="parent_rowid" Caption="Parent Row ID" DbType="Guid" />
   </Fields>
   <Indexes>
     <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">

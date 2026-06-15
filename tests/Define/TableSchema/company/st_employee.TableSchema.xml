@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="st_employee" DisplayName="員工">
+<TableSchema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" TableName="st_employee" DisplayName="Employee">
   <Fields>
-    <DbField FieldName="sys_no" Caption="流水號" DbType="AutoIncrement" />
-    <DbField FieldName="sys_rowid" Caption="唯一識別" DbType="Guid" />
-    <DbField FieldName="sys_id" Caption="員工編號" DbType="String" Length="20" />
-    <DbField FieldName="sys_name" Caption="員工姓名" DbType="String" Length="50" />
-    <DbField FieldName="dept_rowid" Caption="部門唯一識別" DbType="Guid" />
-    <DbField FieldName="user_rowid" Caption="使用者唯一識別" DbType="Guid" />
+    <DbField FieldName="sys_no" Caption="Sequence" DbType="AutoIncrement" />
+    <DbField FieldName="sys_rowid" Caption="Row ID" DbType="Guid" />
+    <DbField FieldName="sys_id" Caption="Employee Code" DbType="String" Length="20" />
+    <DbField FieldName="sys_name" Caption="Employee Name" DbType="String" Length="50" />
+    <DbField FieldName="dept_rowid" Caption="Department Row ID" DbType="Guid" />
+    <DbField FieldName="user_rowid" Caption="User Row ID" DbType="Guid" />
+    <DbField FieldName="title" Caption="Title" DbType="String" Length="40" />
+    <DbField FieldName="hire_date" Caption="Hire Date" DbType="Date" />
   </Fields>
   <Indexes>
     <DbTableIndex Name="pk_{0}" Unique="true" PrimaryKey="true">

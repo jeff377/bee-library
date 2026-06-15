@@ -5,8 +5,8 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 新增 6 業務實體 FormSchema/FormLayout/TableSchema + DbCategorySettings 追加 ft_* | ✅ 已完成（2026-06-15） |
-| 2 | 升級重疊實體 Employee/Department/st_employee/st_department 為 Northwind 超集（D1） | 🚧 進行中 |
-| 3 | 產 6 實體雙語 Language（D2） | 📝 待做 |
+| 2 | 升級重疊實體 Employee/Department/st_employee/st_department 為 Northwind 超集（D1） | ✅ 已完成（2026-06-15） |
+| 3 | 產 6 實體雙語 Language（D2） | 🚧 進行中 |
 | 4 | 擴充 SharedDatabaseState 加 Northwind seed（D3） | 📝 待做 |
 
 ## 目標
