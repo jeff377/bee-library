@@ -212,7 +212,9 @@ namespace Avalonia.Editors.Gallery
             // CheckEdit / DateEdit / YearMonthEdit. Double-click a cell on the bound
             // grid to edit.
             var layout = new LayoutGrid("Phones", "Phones");
-            layout.Columns!.Add(new LayoutColumn("phone", "Phone（TextEdit）", ControlType.TextEdit));
+            // Read-only column: its header caption is coloured to mark the whole column
+            // read-only (cells render plain text and cannot be click-to-edited).
+            layout.Columns!.Add(new LayoutColumn("phone", "Phone（唯讀）", ControlType.TextEdit) { ReadOnly = true });
             layout.Columns.Add(new LayoutColumn("type", "Type（DropDown）", ControlType.DropDownEdit));
             layout.Columns.Add(new LayoutColumn("is_primary", "Primary（Check）", ControlType.CheckEdit));
             layout.Columns.Add(new LayoutColumn("valid_from", "Valid From（Date）", ControlType.DateEdit));

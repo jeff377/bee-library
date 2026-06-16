@@ -1,13 +1,13 @@
 # 計畫：欄位控件唯讀模式採「去框留底線」外觀，統一套用至 BindFieldControl
 
-**狀態：🚧 進行中（2026-06-16）**
+**狀態：✅ 已完成（2026-06-17）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | TextEdit 族（TextBox）唯讀外觀：去四邊框、留底線（程式碼自足路徑，含 ButtonEdit 隱藏按鈕） | ✅ 已完成（2026-06-16，使用者目視確認） |
 | 2 | DateEdit / DropDownEdit 唯讀：template 置換為底線顯示（隱藏按鈕、不灰化、stretch 滿版） | ✅ 已完成（2026-06-16，使用者目視確認） |
 | 3 | CheckEdit 唯讀：方塊灰化（disabled）但標題文字保持正常可讀 | ✅ 已完成（2026-06-16，使用者確認） |
-| 4 | GridControl 內嵌編輯器影響驗證 + sample 目視確認 | 📝 待做 |
+| 4 | GridControl 唯讀欄辨識：唯讀欄表頭文字上特定色（棕色） | ✅ 已完成（2026-06-17，使用者確認） |
 
 > **實測校準（2026-06-16）**：底線色 = `#80808080` α=`0xB0`（≈69%，使用者確認的深度）；唯讀值左內縮 8px 對齊 TextBox；DateEdit/DropDownEdit 加 `HorizontalAlignment=Stretch`（比照 TextBox 預設）使寬度由容器決定、底線滿版、編輯/唯讀同寬。
 
@@ -69,6 +69,13 @@
   - **DatePicker** `SetSelectedDateText()/SetGrid()` **無 null 防護**解參 `PART_DayTextBlock`/`PART_MonthTextBlock`/`PART_YearTextBlock`/`PART_*Spacer`/`PART_ButtonContentGrid` → 必須全數註冊（隱藏）。
   - **Popup/Button 只「註冊不入 visual tree」**——把 `Popup` 當 Panel 子節點會凍結 layout（實測 UI hang）。`NameScope.Register` 即可滿足 `Find`/`Get`。
 - **寬度**：`HorizontalAlignment=Stretch`（比照 TextBox）使底線滿版、寬度固定不隨內容變。
+
+### 決策 6：GridControl 唯讀欄——表頭文字上色（已完成）
+
+grid 內唯讀欄與可編輯欄**靜止時外觀相同**（皆顯示純文字，可編輯欄點擊才 swap 進編輯器），使用者「點了沒反應才知唯讀」。決策：**唯讀欄表頭文字上特定色（棕色 `#A0522D` sienna，使用者選定）**標示整欄唯讀，**儲存格資料維持正常深度不淡化**（與 CheckEdit 標題一致，重閱讀）。
+
+- 辨識 key 在 `column.ReadOnly`（layout 旗標），**非** `DataGridColumn.IsReadOnly`——lookup / 下拉 / 日期欄為繞開 DataGrid 編輯管線也設後者為 true 但其實可編輯（click-to-swap），不可誤標。
+- 實作：`GridControl.BuildColumnHeader`，唯讀欄 Header 改為帶 `Foreground` 的 `TextBlock`，否則維持字串 caption。
 
 ### 決策 5：CheckBox——方塊灰化但標題保持可讀（特例，已完成）
 
