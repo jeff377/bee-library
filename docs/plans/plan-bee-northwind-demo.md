@@ -1,6 +1,6 @@
 # 計畫：Bee.Northwind 進銷存範例（Avalonia / 先 Desktop head）
 
-**狀態：🚧 進行中（2026-06-13 起；命名 Bee.Northwind、框架系統表 st_ + 業務表 ft_ 分層、前端 UI + Desktop head、開發於 `apps/`、完成後畢業移獨立 repo）**
+**狀態：✅ 已完成（demo 階段 1–8 於 2026-06-14；階段 9 畢業延後，待 Avalonia 完成後另案移至獨立 repo `bee-northwind-avalonia`，`apps/Bee.Northwind` 先保留供 dogfooding）**
 
 > **前置依賴已解除**：`plan-avalonia-lookup-edit`（Avalonia lookup 開窗機制）已於 2026-06-12 全階段完成並封存至 `docs/archive/`。本 plan 各階段不再有 lookup 阻塞。
 
@@ -14,7 +14,7 @@
 | 6 | 應用層業務：OrderBO 覆寫（單據編號、狀態、驗證、金額計算） | ✅ 已完成（2026-06-14） |
 | 7 | Avalonia 導航整合：選單式多表單切換、完整操作動線 | ✅ 已完成（2026-06-14） |
 | 8 | 教學文件：README + 「30 分鐘加一張 Region 表單」終章 | ✅ 已完成（2026-06-14） |
-| 9 | 畢業：發 NuGet 新版 → 整個 `apps/Bee.Northwind/` 移至獨立 repo `bee-northwind-avalonia`、ProjectReference 改 PackageReference | 📝 待做 |
+| 9 | 畢業：發 NuGet 新版 → 整個 `apps/Bee.Northwind/` 移至獨立 repo `bee-northwind-avalonia`、ProjectReference 改 PackageReference | 📝 延後（待 Avalonia 完成後另案；來源保留 dogfooding） |
 
 ## 背景
 
