@@ -1,6 +1,8 @@
 using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
+using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.DataObjects;
@@ -20,6 +22,21 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public static readonly StyledProperty<string> FieldNameProperty =
             AvaloniaProperty.Register<DateEdit, string>(nameof(FieldName), string.Empty);
 
+        /// <summary>
+        /// Identifies the <see cref="ReadOnlyText"/> styled property.
+        /// </summary>
+        public static readonly StyledProperty<string?> ReadOnlyTextProperty =
+            AvaloniaProperty.Register<DateEdit, string?>(nameof(ReadOnlyText));
+
+        // The read-only view swaps the whole DatePicker template for a flat underlined
+        // label: the picker has no read-only mode that hides the calendar button without
+        // greying out, and restyling theme-specific template parts is not portable across
+        // Fluent / Semi. The label tracks `ReadOnlyText`; the native template returns on
+        // ClearValue when the field becomes editable again.
+        private static readonly FuncControlTemplate<DateEdit> s_readOnlyTemplate =
+            new((control, scope) => ReadOnlyFieldVisual.Build(
+                control.GetObservable(ReadOnlyTextProperty), scope, ReadOnlyFieldVisual.HostKind.DatePicker));
+
         private readonly FieldEditorBinder _binder;
 
         static DateEdit()
@@ -34,6 +51,10 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         public DateEdit()
         {
+            // Fill the cell width like the TextBox-based editors (whose base already
+            // stretches), so the field keeps a fixed width and the read-only underline
+            // spans the whole field rather than the picker's content width.
+            HorizontalAlignment = HorizontalAlignment.Stretch;
             _binder = new FieldEditorBinder(this, RefreshFromSource, ApplyMetadata);
             SelectedDateChanged += OnSelectedDateChangedCore;
         }
@@ -56,6 +77,15 @@ namespace Bee.UI.Avalonia.Controls.Editors
         {
             get => GetValue(FieldNameProperty);
             set => SetValue(FieldNameProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the formatted text shown by the read-only display template.
+        /// </summary>
+        public string? ReadOnlyText
+        {
+            get => GetValue(ReadOnlyTextProperty);
+            set => SetValue(ReadOnlyTextProperty, value);
         }
 
         /// <summary>
@@ -101,7 +131,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <inheritdoc />
         public void SetControlState(SingleFormMode formMode)
         {
-            IsEnabled = _binder.AllowsEdit(formMode);
+            if (_binder.AllowsEdit(formMode))
+            {
+                ClearValue(TemplateProperty);
+                ClearValue(FocusableProperty);
+                ClearValue(IsHitTestVisibleProperty);
+            }
+            else
+            {
+                // Swap to the flat underlined display: no calendar button, no grey-out.
+                Template = s_readOnlyTemplate;
+                Focusable = false;
+                IsHitTestVisible = false;
+            }
         }
 
         /// <inheritdoc />
@@ -128,12 +170,15 @@ namespace Bee.UI.Avalonia.Controls.Editors
 
         private void RefreshFromSource()
         {
-            SelectedDate = ParseToOffset(_binder.GetValue());
+            var date = ParseToOffset(_binder.GetValue());
+            SelectedDate = date;
+            ReadOnlyText = date?.DateTime.ToString(ValueFormat, CultureInfo.InvariantCulture) ?? string.Empty;
         }
 
         private void ApplyMetadata()
         {
-            IsEnabled = !_binder.IsLayoutReadOnly;
+            // The read-only view state is applied by SetControlState, which the binder
+            // runs immediately after this on bind and on every form-mode change.
         }
 
         // NOTE: Internal (not private) so GridControl's in-cell date editors share the

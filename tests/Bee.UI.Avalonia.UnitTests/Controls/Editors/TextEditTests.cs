@@ -134,9 +134,13 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             editor.SetControlState(SingleFormMode.View);
             Assert.True(editor.IsReadOnly);
+            // Read-only collapses the box border to a single bottom line.
+            Assert.Equal(new global::Avalonia.Thickness(0, 0, 0, 1), editor.BorderThickness);
 
             editor.SetControlState(SingleFormMode.Edit);
             Assert.False(editor.IsReadOnly);
+            // Editable clears the local override, restoring the theme border.
+            Assert.False(editor.IsSet(global::Avalonia.Controls.Primitives.TemplatedControl.BorderThicknessProperty));
         }
 
         [Fact]

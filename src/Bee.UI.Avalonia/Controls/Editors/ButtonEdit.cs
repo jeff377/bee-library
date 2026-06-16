@@ -89,16 +89,23 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <inheritdoc />
         public override void SetControlState(SingleFormMode formMode)
         {
-            if (!HasLookup)
+            var allowEdit = Binder.AllowsEdit(formMode);
+            if (HasLookup)
+            {
+                _allowLookupEdit = allowEdit;
+                // The display text is never hand-editable; the icon button alone follows
+                // the effective edit permission.
+                IsReadOnly = true;
+                _button.IsEnabled = allowEdit;
+                ApplyReadOnlyAppearance(!allowEdit);
+            }
+            else
             {
                 base.SetControlState(formMode);
-                return;
             }
-            _allowLookupEdit = Binder.AllowsEdit(formMode);
-            // The display text is never hand-editable; the icon button alone follows
-            // the effective edit permission.
-            IsReadOnly = true;
-            _button.IsEnabled = _allowLookupEdit;
+            // The lookup / action icon is visual noise in a read-only field; hide it so
+            // the field reads as a clean underlined value like the other editors.
+            _button.IsVisible = allowEdit;
         }
 
         /// <inheritdoc />

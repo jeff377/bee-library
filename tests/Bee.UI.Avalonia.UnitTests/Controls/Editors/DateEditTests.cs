@@ -88,14 +88,42 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var editor = new DateEdit();
             editor.Bind(dataObject, field);
 
+            // Read-only swaps to a flat, non-interactive display rather than greying out,
+            // so editability is observed through IsHitTestVisible instead of IsEnabled.
             editor.SetControlState(SingleFormMode.Add);
-            Assert.True(editor.IsEnabled);
+            Assert.True(editor.IsHitTestVisible);
 
             editor.SetControlState(SingleFormMode.Edit);
-            Assert.False(editor.IsEnabled);
+            Assert.False(editor.IsHitTestVisible);
 
             editor.SetControlState(SingleFormMode.View);
-            Assert.False(editor.IsEnabled);
+            Assert.False(editor.IsHitTestVisible);
+        }
+
+        [Fact]
+        [DisplayName("Bind 後 ReadOnlyText 以 yyyy-MM-dd 格式化")]
+        public void ReadOnlyText_AfterBind_FormatsSelectedDate()
+        {
+            var dataObject = BuildDataObject();
+            dataObject.SetField("hire_date", "2026-06-11");
+
+            var editor = new DateEdit();
+            editor.Bind(dataObject, "hire_date");
+
+            Assert.Equal("2026-06-11", editor.ReadOnlyText);
+        }
+
+        [Fact]
+        [DisplayName("YearMonthEdit 的 ReadOnlyText 以 yyyy-MM 格式化")]
+        public void ReadOnlyText_YearMonthEdit_FormatsYearMonth()
+        {
+            var dataObject = BuildDataObject();
+            dataObject.SetField("pay_month", "2026-06");
+
+            var editor = new YearMonthEdit();
+            editor.Bind(dataObject, "pay_month");
+
+            Assert.Equal("2026-06", editor.ReadOnlyText);
         }
     }
 }

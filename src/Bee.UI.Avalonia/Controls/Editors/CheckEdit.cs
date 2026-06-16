@@ -1,5 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
+using Avalonia.Controls.Primitives;
 using Avalonia.LogicalTree;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.DataObjects;
@@ -90,7 +92,22 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <inheritdoc />
         public void SetControlState(SingleFormMode formMode)
         {
+            // Read-only greys the check box via the theme's disabled state; the caption is
+            // kept readable by the Foreground override in the constructor.
             IsEnabled = _binder.AllowsEdit(formMode);
+        }
+
+        /// <inheritdoc />
+        protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+        {
+            base.OnApplyTemplate(e);
+            // Read-only greys the check box via the theme's disabled state, which also dims
+            // the caption through the content presenter's Foreground brush. Pin that brush
+            // to the control's own (normal) Foreground as a local value — local priority
+            // beats the theme's disabled setter — so only the box greys and the caption
+            // stays readable. Tracking Foreground keeps it correct across theme variants.
+            if (e.NameScope.Find<ContentPresenter>("PART_ContentPresenter") is { } presenter)
+                presenter.Bind(ContentPresenter.ForegroundProperty, this.GetObservable(ForegroundProperty));
         }
 
         /// <inheritdoc />

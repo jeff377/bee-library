@@ -90,14 +90,29 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var editor = new DropDownEdit();
             editor.Bind(dataObject, field);
 
+            // Read-only swaps to a flat, non-interactive display rather than greying out,
+            // so editability is observed through IsHitTestVisible instead of IsEnabled.
             editor.SetControlState(SingleFormMode.Add);
-            Assert.True(editor.IsEnabled);
+            Assert.True(editor.IsHitTestVisible);
 
             editor.SetControlState(SingleFormMode.Edit);
-            Assert.False(editor.IsEnabled);
+            Assert.False(editor.IsHitTestVisible);
 
             editor.SetControlState(SingleFormMode.View);
-            Assert.False(editor.IsEnabled);
+            Assert.False(editor.IsHitTestVisible);
+        }
+
+        [Fact]
+        [DisplayName("Bind 後 ReadOnlyText 顯示選取項目的文字")]
+        public void ReadOnlyText_AfterBind_ShowsSelectedItemText()
+        {
+            var dataObject = BuildDataObject();
+            dataObject.SetField("dept_id", "IT");
+
+            var editor = new DropDownEdit();
+            editor.Bind(dataObject, "dept_id");
+
+            Assert.Equal("Information Technology", editor.ReadOnlyText);
         }
     }
 }

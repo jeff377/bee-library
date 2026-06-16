@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.LogicalTree;
+using Avalonia.Media;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.DataObjects;
 
@@ -94,7 +95,39 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// <inheritdoc />
         public virtual void SetControlState(SingleFormMode formMode)
         {
-            IsReadOnly = !_binder.AllowsEdit(formMode);
+            var readOnly = !_binder.AllowsEdit(formMode);
+            IsReadOnly = readOnly;
+            ApplyReadOnlyAppearance(readOnly);
+        }
+
+        /// <summary>
+        /// Applies the read-only field appearance. In read-only mode the four-sided box
+        /// border collapses to a single bottom line and the fill goes transparent, so a
+        /// form viewed read-only reads as a clean record rather than a grid of input
+        /// boxes. Editable mode clears the local overrides and restores the theme values.
+        /// </summary>
+        /// <remarks>
+        /// The bottom line uses a constant light brush set as a local value, so it stays
+        /// visible at rest (not only on hover) and keeps the value separated from its
+        /// caption. The state is driven by the effective edit permission rather than
+        /// <see cref="TextBox.IsReadOnly"/>, because lookup editors keep the text box
+        /// permanently read-only while still being editable through their dialog.
+        /// </remarks>
+        /// <param name="readOnly">Whether the editor is in the read-only view state.</param>
+        protected void ApplyReadOnlyAppearance(bool readOnly)
+        {
+            if (readOnly)
+            {
+                BorderBrush = ReadOnlyFieldVisual.UnderlineBrush;
+                BorderThickness = new Thickness(0, 0, 0, 1);
+                Background = Brushes.Transparent;
+            }
+            else
+            {
+                ClearValue(BorderBrushProperty);
+                ClearValue(BorderThicknessProperty);
+                ClearValue(BackgroundProperty);
+            }
         }
 
         /// <summary>
