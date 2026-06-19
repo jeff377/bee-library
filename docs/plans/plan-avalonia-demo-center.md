@@ -1,6 +1,6 @@
 # 計畫：Bee.UI.Avalonia 控件 Demo Center（DevExpress Demo Center 模式）
 
-**狀態：🚧 進行中（2026-06-19）**
+**狀態：✅ 已完成（2026-06-19）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
@@ -8,7 +8,7 @@
 | 2 | `DemoModule` 抽象 + 模組註冊表 + View Source（嵌入式原始碼） | ✅ 已完成（2026-06-19） |
 | 3 | Data Editors 場景組（7 個編輯器 × 多場景） | ✅ 已完成（2026-06-19） |
 | 4 | Grid / Views 場景組（GridControl、FormView、ListView） | ✅ 已完成（2026-06-19） |
-| 5 | 收尾：主題矩陣、README/smoke、定位為試點對齊基準 | 📝 待做 |
+| 5 | 收尾：主題矩陣、README/smoke、定位為試點對齊基準 | ✅ 已完成（2026-06-19） |
 
 ## 背景與目標
 
@@ -116,10 +116,11 @@ public interface IDemoModule
   - 兩者皆註明生產的 FormView/ListView 後端載入/存檔/列事件由 `Avalonia.Demo` 負責。
   - 註：library 的 `FieldCaptionStyle`（唯讀棕/必填藍 caption 上色）為 internal，本中心渲染純色 caption；該視覺於 GridControl 總覽的表頭已示範。
 
-### 階段 5：收尾
-- 主題矩陣掃過（Fluent × Semi × Light/Dark）逐場景目視。
-- 更新 README（雙語）、`.smoke.yaml`；評估是否改名 `Avalonia.DemoCenter` 並同步 `Bee.Samples.slnx`。
-- 文件化「本 Demo Center 為 Maui/Blazor 移植的對齊基準」。
+### 階段 5：收尾 ✅
+- 主題矩陣：依拍板決議 #2 範圍為 `Semi.Avalonia` × Light/Dark（不含 Fluent）；README 已附「主題 / FormMode 自測矩陣」供逐場景目視（程式已驗證可建置可啟動，外觀一致性為人眼確認）。
+- README 收尾：新增場景 how-to、自測矩陣、「Maui/Blazor 移植對齊基準」定位段落；`.smoke.yaml` 擴充 expect_text 涵蓋導覽樹各類別（Data Editors / TextEdit / Grid / Views）。
+- 改名 `Avalonia.DemoCenter` 已於階段 1 完成（含 `Bee.Samples.slnx`、雙語 repo 文件、`.vscode` 同步）。
+- 定位為試點對齊基準已文件化（README + 此 plan）。
 
 ## 已拍板決議（2026-06-19）
 

@@ -75,8 +75,34 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 
 **View Source**：右側 `Demo` / `Source` 分頁。`Source` 顯示模組自身的真實 `.cs`——`DemoModuleBase.GetSourceText()` 從 EmbeddedResource 讀出（csproj 把 `Modules/**/*.cs` 一併嵌入），故顯示內容永不與實際執行的程式碼脫鉤。
 
-## 規劃中的後續階段
+## 新增一個場景
 
-見 [plan-avalonia-demo-center.md](../../docs/plans/plan-avalonia-demo-center.md)：
+1. 在 `Modules/`（或子資料夾）實作 `DemoModuleBase`，覆寫 `Category` / `ControlName` / `ScenarioTitle` / `Description` / `BuildView()`。
+2. 在 [`DemoModuleRegistry`](Modules/DemoModuleRegistry.cs) 的 `Modules` 清單加一行。
 
-- 階段 5：主題矩陣掃描（Light/Dark 逐場景目視）、定位為 Maui/Blazor 移植對齊基準
+導覽樹與 View Source 會自動帶出——`Modules/**/*.cs` 已設為 EmbeddedResource，`GetSourceText()` 依型別全名解析資源（資料夾須對映命名空間）。
+
+## 主題 / FormMode 自測矩陣
+
+逐場景目視掃過（程式已驗證可建置、可啟動；外觀一致性需人眼確認）：
+
+| 維度 | 切換點 | 看什麼 |
+|------|--------|--------|
+| Light / Dark | 右上 ToggleSwitch | 每個場景在兩個 variant 下，繼承控件背景/邊框/字色與原生對齊，無突兀色塊 |
+| FormMode 三態 | 工具列下拉 | View → ambient 綁定欄整批轉唯讀（去框）；Add / Edit → 可編輯 |
+| 唯讀雙軌 | — | 每模組的 `LayoutField.ReadOnly` 永久唯讀欄，與 FormMode=View 的整批唯讀外觀一致 |
+| View Source | Demo / Source 分頁 | 每場景 Source 顯示該模組真實 `.cs`，與 Demo 行為一致 |
+
+> 主題範圍：僅 `Semi.Avalonia` × Light/Dark（不納 Fluent runtime 切換，見 plan 已拍板決議 #2）。
+
+## 作為 Maui / Blazor 移植的對齊基準
+
+`Bee.UI.Avalonia` 是 UI 架構試點：繼承式控件 + View 層先在此定稿，再移植 Maui / Blazor。本 Demo Center 即「對齊範本」——
+
+- 每個控件的**標準行為與外觀契約**（綁定、Metadata、唯讀、FormMode 反應）在此一處可見、可比對。
+- 日後在 Maui / Blazor 實作對應控件時，以本中心每個場景的行為為驗收基準：相同 schema / 假資料 / FormMode 下，跨平台應呈現一致的綁定與狀態切換。
+- 控件外觀變更（如唯讀去框）先在此目視驗證，再回推其他平台。
+
+## 後續
+
+本 plan（階段 1–5）已完成，見 [plan-avalonia-demo-center.md](../../docs/plans/plan-avalonia-demo-center.md)。

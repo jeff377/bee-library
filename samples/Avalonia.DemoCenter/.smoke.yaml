@@ -19,7 +19,11 @@ flow:
     expect_text:
       - "Demo Center"
       - "FormMode"
+      # Navigation tree categories.
       - "Data Editors"
+      - "TextEdit"
+      - "Grid"
+      - "Views"
 
   - step: shell screenshot
     action: screenshot
