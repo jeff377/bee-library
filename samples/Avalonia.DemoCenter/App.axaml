@@ -6,6 +6,13 @@
   <Application.Styles>
     <StyleInclude Source="avares://Semi.Avalonia/Index.axaml" />
     <StyleInclude Source="avares://Semi.Avalonia.DataGrid/Index.axaml" />
+
+    <!-- Match VS Code's macOS editor font: Menlo, base size 12. Set on Window so it
+         inherits to every descendant control (and the lookup picker dialog). -->
+    <Style Selector="Window">
+      <Setter Property="FontFamily" Value="Menlo,Monaco,Courier New,monospace" />
+      <Setter Property="FontSize" Value="12" />
+    </Style>
   </Application.Styles>
 
 </Application>
