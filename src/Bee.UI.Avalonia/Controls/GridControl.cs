@@ -260,6 +260,12 @@ namespace Bee.UI.Avalonia.Controls
             _binder.BindExplicit(dataObject);
             RebuildColumns();
             RefreshFromDataObject();
+            // Initialise the editing state from the current ambient form mode. Without
+            // this, AllowEdit stays at its default until a FormMode *change* is raised, so
+            // an explicitly-bound grid whose host never drives FormMode (its ambient value
+            // stays at the default) would keep the EditForm toolbar hidden. Mirrors the
+            // list-mode Bind overload, which already self-initialises.
+            SetControlState(GetValue(FormScope.FormModeProperty));
         }
 
         /// <summary>
