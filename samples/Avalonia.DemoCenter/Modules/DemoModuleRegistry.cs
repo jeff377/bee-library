@@ -1,7 +1,10 @@
 using Avalonia.DemoCenter.Modules.ControlTypes;
 using Avalonia.DemoCenter.Modules.DataBinding;
 using Avalonia.DemoCenter.Modules.FormModes;
+using Avalonia.DemoCenter.Modules.Grids;
+using Avalonia.DemoCenter.Modules.Layouts;
 using Avalonia.DemoCenter.Modules.Lookup;
+using Avalonia.DemoCenter.Modules.MasterDetail;
 using Avalonia.DemoCenter.Modules.ReadOnlyRequired;
 
 namespace Avalonia.DemoCenter.Modules
@@ -32,6 +35,16 @@ namespace Avalonia.DemoCenter.Modules
             new GridFormModeModule(),
             // 開窗選資料 (Lookup).
             new LookupPickerModule(),
+            // Layout 排版.
+            new AutoFormLayoutModule(),
+            new MultiColumnLayoutModule(),
+            // Grid.
+            new InCellEditModule(),
+            new EditFormModule(),
+            new AmbientGridModule(),
+            new ListModeModule(),
+            // Master-Detail.
+            new MasterDetailModule(),
         ];
     }
 }

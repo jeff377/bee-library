@@ -25,9 +25,10 @@ namespace Avalonia.DemoCenter.Modules.Views
         public static Control Render(FormDataObject dataObject, FormLayout layout, GridEditMode detailEditMode)
         {
             var host = new StackPanel { Orientation = Orientation.Vertical, Spacing = 12, Margin = new Thickness(4) };
+            var columnCount = NormalizeColumnCount(layout.ColumnCount);
 
             foreach (var section in layout.Sections ?? [])
-                host.Children.Add(BuildSection(dataObject, section));
+                host.Children.Add(BuildSection(dataObject, section, columnCount));
 
             foreach (var detail in layout.Details ?? [])
                 host.Children.Add(BuildDetailSection(dataObject, detail, detailEditMode));
@@ -37,16 +38,56 @@ namespace Avalonia.DemoCenter.Modules.Views
             return root;
         }
 
-        private static Border BuildSection(FormDataObject dataObject, LayoutSection section)
+        private static Border BuildSection(FormDataObject dataObject, LayoutSection section, int columnCount)
         {
             var stack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 6 };
             if (section.ShowCaption && !string.IsNullOrEmpty(section.Caption))
                 stack.Children.Add(new TextBlock { Text = section.Caption, FontWeight = FontWeight.Bold });
 
-            foreach (var field in (section.Fields ?? []).Where(f => f.Visible))
-                stack.Children.Add(BuildFieldCell(dataObject, field));
-
+            stack.Children.Add(BuildFieldGrid(dataObject, section, columnCount));
             return Card(stack);
+        }
+
+        // CSS-grid-like field placement, mirroring FormView.BuildFieldGrid: place each field
+        // by its column/row span, wrapping to the next row when it would overflow.
+        private static Grid BuildFieldGrid(FormDataObject dataObject, LayoutSection section, int columnCount)
+        {
+            var grid = new Grid { ColumnSpacing = 12, RowSpacing = 8 };
+            for (var i = 0; i < columnCount; i++)
+                grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
+
+            int row = 0, col = 0;
+            foreach (var field in (section.Fields ?? []).Where(f => f.Visible))
+            {
+                var rowSpan = field.RowSpan < 1 ? 1 : field.RowSpan;
+                var colSpan = field.ColumnSpan < 1 ? 1 : field.ColumnSpan;
+                if (colSpan > columnCount) colSpan = columnCount;
+
+                if (col + colSpan > columnCount)
+                {
+                    row++;
+                    col = 0;
+                }
+
+                while (grid.RowDefinitions.Count < row + rowSpan)
+                    grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
+
+                var cell = BuildFieldCell(dataObject, field);
+                Grid.SetRow(cell, row);
+                Grid.SetColumn(cell, col);
+                Grid.SetRowSpan(cell, rowSpan);
+                Grid.SetColumnSpan(cell, colSpan);
+                grid.Children.Add(cell);
+
+                col += colSpan;
+                if (col >= columnCount)
+                {
+                    row++;
+                    col = 0;
+                }
+            }
+
+            return grid;
         }
 
         private static StackPanel BuildFieldCell(FormDataObject dataObject, LayoutField field)
@@ -58,12 +99,13 @@ namespace Avalonia.DemoCenter.Modules.Views
             stack.Children.Add(new TextBlock { Text = field.Caption });
 
             var editor = FieldEditorFactory.Create(field.ControlType);
-            editor.MinWidth = 240;
-            editor.HorizontalAlignment = HorizontalAlignment.Left;
+            editor.HorizontalAlignment = HorizontalAlignment.Stretch;
             ((IFieldEditor)editor).Bind(dataObject, field);
             stack.Children.Add(editor);
             return stack;
         }
+
+        private static int NormalizeColumnCount(int columnCount) => columnCount < 1 ? 1 : columnCount;
 
         private static Border BuildDetailSection(FormDataObject dataObject, LayoutGrid layout, GridEditMode detailEditMode)
         {

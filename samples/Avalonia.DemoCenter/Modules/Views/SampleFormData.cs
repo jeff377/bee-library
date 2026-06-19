@@ -15,6 +15,56 @@ namespace Avalonia.DemoCenter.Modules.Views
     internal static class SampleFormData
     {
         /// <summary>
+        /// Builds a master-only Employee <see cref="FormSchema"/> (no detail), for the Layout
+        /// scenarios. Includes a memo field so column-span layout can be shown.
+        /// </summary>
+        public static FormSchema BuildMasterFormSchema()
+        {
+            var schema = new FormSchema("Employee", "員工");
+            var master = schema.Tables!.Add("Employee", "員工");
+            master.Fields!.Add("emp_code", "代碼", FieldDbType.String);
+            master.Fields.Add("emp_name", "姓名", FieldDbType.String);
+            var dept = master.Fields.Add("dept", "部門", FieldDbType.String);
+            dept.ListItems!.Add("HR", "Human Resources");
+            dept.ListItems.Add("IT", "Information Technology");
+            dept.ListItems.Add("FIN", "Finance");
+            master.Fields.Add("hire_date", "到職日", FieldDbType.Date);
+            master.Fields.Add("is_active", "在職", FieldDbType.Boolean);
+            master.Fields.Add("notes", "備註", FieldDbType.String);
+            return schema;
+        }
+
+        /// <summary>
+        /// Builds a master-only data object (from <paramref name="schema"/>) seeded with one
+        /// employee.
+        /// </summary>
+        public static FormDataObject BuildMasterForm(FormSchema schema)
+        {
+            var data = new FormDataObject(schema);
+            data.InitializeNewMaster();
+            data.SetField("emp_code", "EMP-001");
+            data.SetField("emp_name", "Alice Chen");
+            data.SetField("dept", "IT");
+            data.SetField("hire_date", "2026-06-11");
+            data.SetField("is_active", bool.TrueString);
+            data.SetField("notes", "備註內容");
+            return data;
+        }
+
+        /// <summary>
+        /// The Phones detail layout used by the Grid / Master-Detail scenarios.
+        /// </summary>
+        public static LayoutGrid BuildPhonesLayout()
+        {
+            var layout = new LayoutGrid("Phones", "電話");
+            layout.Columns!.Add(new LayoutColumn("phone", "號碼", ControlType.TextEdit));
+            layout.Columns.Add(new LayoutColumn("type", "類型", ControlType.DropDownEdit));
+            layout.Columns.Add(new LayoutColumn("is_primary", "主要", ControlType.CheckEdit));
+            layout.Columns.Add(new LayoutColumn("valid_from", "生效日", ControlType.DateEdit));
+            return layout;
+        }
+
+        /// <summary>
         /// Builds the Employee + Phones <see cref="FormSchema"/> (master-detail).
         /// </summary>
         public static FormSchema BuildSchema()
