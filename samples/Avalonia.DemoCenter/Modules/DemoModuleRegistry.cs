@@ -1,4 +1,8 @@
 using Avalonia.DemoCenter.Modules.ControlTypes;
+using Avalonia.DemoCenter.Modules.DataBinding;
+using Avalonia.DemoCenter.Modules.FormModes;
+using Avalonia.DemoCenter.Modules.Lookup;
+using Avalonia.DemoCenter.Modules.ReadOnlyRequired;
 
 namespace Avalonia.DemoCenter.Modules
 {
@@ -16,6 +20,18 @@ namespace Avalonia.DemoCenter.Modules
             new ControlGalleryModule(),
             new FieldControlComparisonModule(),
             new TableControlComparisonModule(),
+            // 資料繫結 (Data Binding).
+            new AmbientBindingModule(),
+            new ExplicitBindingModule(),
+            new TwoWaySyncModule(),
+            // 唯讀與必填 (Read-only & Required).
+            new ReadOnlyFieldModule(),
+            new RequiredReadOnlyMarkModule(),
+            // FormMode 顯示狀態.
+            new FormModeStatesModule(),
+            new GridFormModeModule(),
+            // 開窗選資料 (Lookup).
+            new LookupPickerModule(),
         ];
     }
 }
