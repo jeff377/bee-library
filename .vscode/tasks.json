@@ -138,12 +138,12 @@
             "group": "build"
         },
         {
-            "label": "build-avalonia-editors-gallery",
+            "label": "build-avalonia-democenter",
             "type": "process",
             "command": "dotnet",
             "args": [
                 "build",
-                "${workspaceFolder}/samples/Avalonia.Editors.Gallery/Avalonia.Editors.Gallery.csproj",
+                "${workspaceFolder}/samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj",
                 "--configuration",
                 "Debug",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"

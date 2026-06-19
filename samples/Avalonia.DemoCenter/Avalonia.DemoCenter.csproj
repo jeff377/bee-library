@@ -5,8 +5,8 @@
     <OutputType>WinExe</OutputType>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Avalonia.Editors.Gallery</RootNamespace>
-    <AssemblyName>Avalonia.Editors.Gallery</AssemblyName>
+    <RootNamespace>Avalonia.DemoCenter</RootNamespace>
+    <AssemblyName>Avalonia.DemoCenter</AssemblyName>
     <IsPackable>false</IsPackable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <ApplicationManifest>app.manifest</ApplicationManifest>

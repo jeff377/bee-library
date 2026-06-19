@@ -25,6 +25,6 @@
   </Folder>
   <Folder Name="/Avalonia/">
     <Project Path="Avalonia.Demo/Avalonia.Demo.csproj" />
-    <Project Path="Avalonia.Editors.Gallery/Avalonia.Editors.Gallery.csproj" />
+    <Project Path="Avalonia.DemoCenter/Avalonia.DemoCenter.csproj" />
   </Folder>
 </Solution>

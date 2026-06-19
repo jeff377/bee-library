@@ -1,10 +1,10 @@
 using Avalonia;
 
-namespace Avalonia.Editors.Gallery
+namespace Avalonia.DemoCenter
 {
     /// <summary>
-    /// Process entry point. The gallery is fully in-memory (no backend, no Bee client
-    /// singletons), so it only configures the Avalonia classic-desktop lifetime.
+    /// Process entry point. The demo center is fully in-memory (no backend, no Bee
+    /// client singletons), so it only configures the Avalonia classic-desktop lifetime.
     /// </summary>
     internal static class Program
     {

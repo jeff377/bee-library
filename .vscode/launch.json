@@ -61,12 +61,12 @@
             "env": { "ASPNETCORE_ENVIRONMENT": "Development" }
         },
         {
-            "name": "Run Avalonia.Editors.Gallery",
+            "name": "Run Avalonia.DemoCenter",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build-avalonia-editors-gallery",
-            "program": "${workspaceFolder}/samples/Avalonia.Editors.Gallery/bin/Debug/net10.0/Avalonia.Editors.Gallery.dll",
-            "cwd": "${workspaceFolder}/samples/Avalonia.Editors.Gallery",
+            "preLaunchTask": "build-avalonia-democenter",
+            "program": "${workspaceFolder}/samples/Avalonia.DemoCenter/bin/Debug/net10.0/Avalonia.DemoCenter.dll",
+            "cwd": "${workspaceFolder}/samples/Avalonia.DemoCenter",
             "console": "internalConsole",
             "stopAtEntry": false
         },

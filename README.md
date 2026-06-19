@@ -101,7 +101,7 @@ All demos live in-repo under [`samples/`](samples/README.md). They're minimal, f
 | Blazor Wasm | [`Blazor.Wasm.Demo`](samples/Blazor.Wasm.Demo/README.md) + [`.Host`](samples/Blazor.Wasm.Demo.Host/README.md) | Same Blazor components running in the browser, dispatched over HTTP via `RemoteApiProvider` |
 | MAUI | [`Maui.Demo`](samples/Maui.Demo/README.md) | Native mobile-app client (Mac Catalyst / iOS / Android / Windows) rendering the same `FormSchema` |
 | Avalonia | [`Avalonia.Demo`](samples/Avalonia.Demo/README.md) | Desktop Avalonia client (Windows / macOS / Linux) rendering the same `FormSchema` |
-| Avalonia | [`Avalonia.Editors.Gallery`](samples/Avalonia.Editors.Gallery/README.md) | Style-parity gallery for the field editors / `GridControl` against native controls (Semi.Avalonia, no backend) |
+| Avalonia | [`Avalonia.DemoCenter`](samples/Avalonia.DemoCenter/README.md) | Control demo center (DevExpress-style): nav tree + scenario host + global theme/FormMode toolbar; style-parity of field editors / `GridControl` against native controls (Semi.Avalonia, no backend) |
 | Pure JS | [`Web.Js.Demo`](samples/Web.Js.Demo/README.md) | Calling the JSON-RPC API from vanilla JavaScript in a browser — no .NET on the client, no npm |
 
 

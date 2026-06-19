@@ -596,7 +596,7 @@ public static void Main(string[] args)
 
 `FormView` 在 host 只設 `ProgId` 時自動向 `ClientInfo` 取得 `Schema` / `FormConnector` / `AccessToken`，鏡像 MAUI `FormPage` 的 fallback。`GridControl`（`ContentControl` 組合式控件，內部 `DataGrid` 以 `InnerGrid` 公開）的 cell 走 `DataGridTemplateColumn` + `FuncDataTemplate<DataRowView>` + code-fetch（**不**走 `Binding "[FieldName]"`，原因詳見 [ADR-020](adr/adr-020-avalonia-datagrid-binding-strategy.md)），並以 `GridEditMode` 提供兩種編輯模型（`InCell` 逐格 / `EditForm` 彈窗整列，詳見 [ADR-021](adr/adr-021-avalonia-datagrid-editing-strategy.md)）。field editor 支援 ambient 綁定：容器設一次 `FormScope.DataObject`，子孫編輯器憑 `FieldName` 自動接線。
 
-實際範例：[`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.zh-TW.md)（完整 CRUD 流程）與 [`samples/Avalonia.Editors.Gallery`](../samples/Avalonia.Editors.Gallery/README.md)（控件 gallery）。
+實際範例：[`samples/Avalonia.Demo`](../samples/Avalonia.Demo/README.zh-TW.md)（完整 CRUD 流程）與 [`samples/Avalonia.DemoCenter`](../samples/Avalonia.DemoCenter/README.md)（控件 demo center）。
 
 ### MAUI（Bee.UI.Maui）
 

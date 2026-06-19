@@ -1,10 +1,10 @@
 # 計畫：Bee.UI.Avalonia 控件 Demo Center（DevExpress Demo Center 模式）
 
-**狀態：📝 擬定中（2026-06-16）**
+**狀態：🚧 進行中（2026-06-19）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | Shell 骨架：導覽樹 + 模組宿主 + 工具列（主題切換、FormMode 切換），現有 Gallery 比對遷為一種場景 | 📝 待做 |
+| 1 | Shell 骨架：導覽樹 + 模組宿主 + 工具列（主題切換、FormMode 切換），現有 Gallery 比對遷為一種場景 | ✅ 已完成（2026-06-19） |
 | 2 | `DemoModule` 抽象 + 模組註冊表 + View Source（嵌入式原始碼） | 📝 待做 |
 | 3 | Data Editors 場景組（7 個編輯器 × 多場景） | 📝 待做 |
 | 4 | Grid / Views 場景組（GridControl、FormView、ListView） | 📝 待做 |
@@ -113,12 +113,12 @@ public interface IDemoModule
 - 更新 README（雙語）、`.smoke.yaml`；評估是否改名 `Avalonia.DemoCenter` 並同步 `Bee.Samples.slnx`。
 - 文件化「本 Demo Center 為 Maui/Blazor 移植的對齊基準」。
 
-## 待拍板清單
+## 已拍板決議（2026-06-19）
 
-1. **就地升級 Gallery vs 改名另立** —— 傾向就地升級，最後階段再評估改名。
-2. **View Source 機制** —— 傾向 EmbeddedResource 讀真實原始碼。
-3. **支援主題集合** —— Fluent + Semi 都納？（兩 sample 各用其一，建議都納以驗證跨主題一致性）。
-4. **Demo Center 是否涉入 app 級表單** —— 傾向只聚焦控件層，app 級端到端維持由 `Avalonia.Demo` 負責，避免與其重疊。
+1. **改名 `Avalonia.DemoCenter` 另立** —— 不就地沿用 Gallery 專案名；階段 1 即建新專案、移植內容、移除舊 `Avalonia.Editors.Gallery`、同步 `Bee.Samples.slnx` / README / `.smoke.yaml`。
+2. **僅 Semi（+ Light/Dark）** —— 工具列主題切換只做 Light/Dark，沿用現有 `Semi.Avalonia`；不納 Fluent runtime 切換。
+3. **View Source 走 EmbeddedResource 讀真實 `.cs`** —— 模組檔案組織以此為前提（階段 2 實作）。
+4. **只聚焦控件層** —— app 級端到端維持由 `Avalonia.Demo` 負責，Demo Center 不涉入 Login / CRUD 流程。
 
 ## 風險
 

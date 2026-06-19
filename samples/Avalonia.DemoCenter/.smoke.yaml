@@ -1,0 +1,29 @@
+# Smoke flow consumed by the `demo-smoke` skill.
+# See .claude/skills/demo-smoke/SKILL.md for the schema.
+#
+# The demo center is fully in-memory (no backend), so there are no prerequisites.
+
+name: Avalonia.DemoCenter
+display_name: Bee.UI.Avalonia Demo Center
+
+launch:
+  app_name: Bee.UI.Avalonia Demo Center
+  # Avalonia desktop ships a plain .NET executable (no .app bundle on macOS,
+  # no MSIX on Windows). Launch via `dotnet` and the published host DLL so we
+  # don't depend on `dotnet run`'s built-in file-watch loop while smoke testing.
+  launch_cmd: dotnet samples/Avalonia.DemoCenter/bin/Debug/net10.0/Avalonia.DemoCenter.dll
+
+flow:
+  - step: take initial screenshot
+    action: screenshot
+    expect_text:
+      - "Demo Center"
+      - "FormMode"
+      - "Data Editors"
+
+  - step: shell screenshot
+    action: screenshot
+    save_as: avalonia-democenter-shell.png
+
+teardown:
+  kill_app: true

@@ -1,9 +1,8 @@
 using System.Data;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Avalonia.Interactivity;
+using Avalonia.Layout;
 using Avalonia.Media;
-using Avalonia.Styling;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
@@ -11,35 +10,80 @@ using Bee.UI.Avalonia.Controls;
 using Bee.UI.Avalonia.Controls.Editors;
 using Bee.UI.Avalonia.DataObjects;
 
-namespace Avalonia.Editors.Gallery
+namespace Avalonia.DemoCenter.Scenarios
 {
     /// <summary>
-    /// The gallery window: one section per <see cref="ControlType"/>, each comparing
-    /// the native Avalonia control (left) against the inherited field editor (right)
-    /// in the normal and read-only/disabled states. The editors bind through
-    /// <see cref="FormScope"/> ambient scope, doubling as a usage sample.
+    /// The original gallery content, migrated into a single Demo Center scenario:
+    /// one section per <see cref="ControlType"/>, each comparing the native Avalonia
+    /// control (left) against the inherited field editor (right) in the normal and
+    /// read-only states. The editors bind through <see cref="FormScope"/> ambient
+    /// scope, so the shell's global FormMode switch drives them live.
     /// </summary>
-    public partial class MainWindow : Window
+    /// <remarks>
+    /// The host window sets the ambient <see cref="FormScope.FormModeProperty"/> on the
+    /// scenario container, so this view only owns the <see cref="FormScope.DataObjectProperty"/>.
+    /// </remarks>
+    public sealed class EditorsComparisonScenario
     {
         private static readonly string[] s_fieldNames =
             ["emp_name", "notes", "emp_code", "hire_date", "pay_month", "dept_id", "is_active"];
 
         private readonly FormDataObject _dataObject;
+        private readonly StackPanel _galleryHost = new() { Spacing = 16, Margin = new Thickness(0, 0, 12, 0) };
+        private readonly TextBlock _valuesText = new()
+        {
+            FontFamily = new FontFamily("Menlo,Consolas,monospace"),
+            FontSize = 12,
+        };
+
+        private EditorsComparisonScenario()
+        {
+            _dataObject = BuildDataObject();
+        }
 
         /// <summary>
-        /// Initializes the window, the in-memory data object and the gallery rows.
+        /// Builds a fresh scenario view with its own in-memory data object.
         /// </summary>
-        public MainWindow()
+        public static Control Build()
         {
-            InitializeComponent();
-            _dataObject = BuildDataObject();
+            var scenario = new EditorsComparisonScenario();
+            return scenario.BuildRoot();
+        }
 
-            // Ambient scope: descendants with a FieldName bind themselves on attach.
-            FormScope.SetDataObject(GalleryHost, _dataObject);
-            _dataObject.FieldValueChanged += (_, _) => UpdateValues();
-
+        private Control BuildRoot()
+        {
             BuildGallery();
             UpdateValues();
+            _dataObject.FieldValueChanged += (_, _) => UpdateValues();
+
+            var root = new DockPanel { Margin = new Thickness(16) };
+
+            var valuesBorder = new Border
+            {
+                Margin = new Thickness(0, 12, 0, 0),
+                Padding = new Thickness(12),
+                BorderThickness = new Thickness(1),
+                BorderBrush = Brushes.Gray,
+                CornerRadius = new CornerRadius(4),
+                Child = new StackPanel
+                {
+                    Spacing = 4,
+                    Children =
+                    {
+                        new TextBlock { Text = "FormDataObject 即時欄位值", FontWeight = FontWeight.SemiBold },
+                        _valuesText,
+                    },
+                },
+            };
+            DockPanel.SetDock(valuesBorder, Dock.Bottom);
+            root.Children.Add(valuesBorder);
+
+            root.Children.Add(new ScrollViewer { Content = _galleryHost });
+
+            // Ambient scope: descendants with a FieldName bind themselves on attach.
+            // The shell owns FormMode; this scenario owns the data object.
+            FormScope.SetDataObject(root, _dataObject);
+            return root;
         }
 
         private static FormDataObject BuildDataObject()
@@ -194,12 +238,12 @@ namespace Avalonia.Editors.Gallery
             });
             section.Children.Add(grid);
 
-            GalleryHost.Children.Add(new Border
+            _galleryHost.Children.Add(new Border
             {
-                Padding = new global::Avalonia.Thickness(12),
-                BorderThickness = new global::Avalonia.Thickness(1),
+                Padding = new Thickness(12),
+                BorderThickness = new Thickness(1),
                 BorderBrush = Brushes.Gray,
-                CornerRadius = new global::Avalonia.CornerRadius(4),
+                CornerRadius = new CornerRadius(4),
                 Child = section,
             });
         }
@@ -237,15 +281,15 @@ namespace Avalonia.Editors.Gallery
 
             AddCell(grid, 0, 1, new TextBlock { Text = "原生控件", FontWeight = FontWeight.SemiBold });
             AddCell(grid, 0, 2, new TextBlock { Text = "繼承控件（已綁定）", FontWeight = FontWeight.SemiBold });
-            AddCell(grid, 1, 0, new TextBlock { Text = "Layout 綁定", Opacity = 0.7, VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center });
+            AddCell(grid, 1, 0, new TextBlock { Text = "Layout 綁定", Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center });
             AddCell(grid, 1, 1, BuildNativeGrid(phoneTable));
             AddCell(grid, 1, 2, bound);
-            AddCell(grid, 2, 0, new TextBlock { Text = "Ambient", Opacity = 0.7, VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center });
+            AddCell(grid, 2, 0, new TextBlock { Text = "Ambient", Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center });
             AddCell(grid, 2, 1, new TextBlock
             {
                 Text = "（原生無對應 — 右側為 TableName 自動綁定，欄位由表自動產生）",
                 Opacity = 0.6,
-                VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center,
                 TextWrapping = TextWrapping.Wrap,
             });
             AddCell(grid, 2, 2, ambient);
@@ -254,12 +298,12 @@ namespace Avalonia.Editors.Gallery
             section.Children.Add(new TextBlock { Text = "GridControl ← DataGrid", FontSize = 15, FontWeight = FontWeight.Bold });
             section.Children.Add(grid);
 
-            GalleryHost.Children.Add(new Border
+            _galleryHost.Children.Add(new Border
             {
-                Padding = new global::Avalonia.Thickness(12),
-                BorderThickness = new global::Avalonia.Thickness(1),
+                Padding = new Thickness(12),
+                BorderThickness = new Thickness(1),
                 BorderBrush = Brushes.Gray,
-                CornerRadius = new global::Avalonia.CornerRadius(4),
+                CornerRadius = new CornerRadius(4),
                 Child = section,
             });
         }
@@ -285,7 +329,7 @@ namespace Avalonia.Editors.Gallery
                         (row, _) => new TextBlock
                         {
                             Text = row?.Row[name]?.ToString() ?? string.Empty,
-                            Margin = new global::Avalonia.Thickness(8, 4),
+                            Margin = new Thickness(8, 4),
                         },
                         supportsRecycling: true),
                 });
@@ -319,10 +363,10 @@ namespace Avalonia.Editors.Gallery
 
             AddCell(grid, 0, 1, new TextBlock { Text = "原生控件", FontWeight = FontWeight.SemiBold });
             AddCell(grid, 0, 2, new TextBlock { Text = "繼承控件（已綁定）", FontWeight = FontWeight.SemiBold });
-            AddCell(grid, 1, 0, new TextBlock { Text = "一般", Opacity = 0.7, VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center });
+            AddCell(grid, 1, 0, new TextBlock { Text = "一般", Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center });
             AddCell(grid, 1, 1, nativeNormal);
             AddCell(grid, 1, 2, editorNormal);
-            AddCell(grid, 2, 0, new TextBlock { Text = "唯讀 / 停用", Opacity = 0.7, VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center });
+            AddCell(grid, 2, 0, new TextBlock { Text = "唯讀 / 停用", Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center });
             AddCell(grid, 2, 1, nativeRestricted);
             AddCell(grid, 2, 2, editorRestricted);
 
@@ -330,12 +374,12 @@ namespace Avalonia.Editors.Gallery
             section.Children.Add(new TextBlock { Text = title, FontSize = 15, FontWeight = FontWeight.Bold });
             section.Children.Add(grid);
 
-            GalleryHost.Children.Add(new Border
+            _galleryHost.Children.Add(new Border
             {
-                Padding = new global::Avalonia.Thickness(12),
-                BorderThickness = new global::Avalonia.Thickness(1),
+                Padding = new Thickness(12),
+                BorderThickness = new Thickness(1),
                 BorderBrush = Brushes.Gray,
-                CornerRadius = new global::Avalonia.CornerRadius(4),
+                CornerRadius = new CornerRadius(4),
                 Child = section,
             });
         }
@@ -349,15 +393,9 @@ namespace Avalonia.Editors.Gallery
 
         private void UpdateValues()
         {
-            ValuesText.Text = string.Join(
+            _valuesText.Text = string.Join(
                 Environment.NewLine,
                 s_fieldNames.Select(f => $"{f,-10} = {_dataObject.GetField(f)}"));
-        }
-
-        private void OnThemeToggled(object? sender, RoutedEventArgs e)
-        {
-            if (global::Avalonia.Application.Current is { } app)
-                app.RequestedThemeVariant = ThemeToggle.IsChecked == true ? ThemeVariant.Dark : ThemeVariant.Light;
         }
     }
 }

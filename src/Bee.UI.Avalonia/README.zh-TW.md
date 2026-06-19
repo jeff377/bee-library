@@ -57,4 +57,4 @@ ClientInfo.EndpointStorage = new FileEndpointStorage("MyApp");
 ## 範例
 
 - [`samples/Avalonia.Demo`](../../samples/Avalonia.Demo/README.zh-TW.md) —— `FormView` 的完整 Connection → Login → CRUD 流程。
-- [`samples/Avalonia.Editors.Gallery`](../../samples/Avalonia.Editors.Gallery/README.md) —— field editor / `GridControl` 的樣式比對 gallery，含兩種 grid 編輯模式。
+- [`samples/Avalonia.DemoCenter`](../../samples/Avalonia.DemoCenter/README.md) —— 控件 demo center（導覽樹 + 場景宿主 + 主題/FormMode 工具列）；含 field editor / `GridControl` 的樣式比對與兩種 grid 編輯模式。

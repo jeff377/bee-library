@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Avalonia.DemoCenter.MainWindow"
+        Title="Bee.UI.Avalonia Demo Center — Semi.Avalonia"
+        Width="1100" Height="820">
+
+  <DockPanel>
+
+    <!-- Global toolbar: theme (Light/Dark) + FormMode (View/Add/Edit). -->
+    <Border DockPanel.Dock="Top" Padding="12,8" BorderThickness="0,0,0,1" BorderBrush="#22808080">
+      <DockPanel>
+        <ToggleSwitch x:Name="ThemeToggle"
+                      DockPanel.Dock="Right"
+                      OnContent="Dark" OffContent="Light"
+                      IsCheckedChanged="OnThemeToggled" />
+        <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+          <TextBlock Text="Bee.UI.Avalonia Demo Center" FontSize="16" FontWeight="Bold"
+                     VerticalAlignment="Center" />
+          <Border Width="1" Background="#33808080" Margin="8,2" />
+          <TextBlock Text="FormMode" VerticalAlignment="Center" Opacity="0.8" />
+          <ComboBox x:Name="FormModeCombo" MinWidth="110"
+                    SelectionChanged="OnFormModeChanged" />
+        </StackPanel>
+      </DockPanel>
+    </Border>
+
+    <!-- Navigation tree: Category → Control → Scenario. -->
+    <Border DockPanel.Dock="Left" Width="240" BorderThickness="0,0,1,0" BorderBrush="#22808080">
+      <TreeView x:Name="NavTree" SelectionChanged="OnScenarioSelected" Padding="4" />
+    </Border>
+
+    <!-- Scenario host: header (title + description) above the live interactive view. -->
+    <DockPanel>
+      <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="16,12,16,0">
+        <TextBlock x:Name="ScenarioTitleText" FontSize="18" FontWeight="Bold" />
+        <TextBlock x:Name="ScenarioDescText" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+      </StackPanel>
+      <ContentControl x:Name="ScenarioHost" />
+    </DockPanel>
+
+  </DockPanel>
+
+</Window>

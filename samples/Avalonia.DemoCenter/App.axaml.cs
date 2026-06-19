@@ -2,11 +2,11 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 
-namespace Avalonia.Editors.Gallery
+namespace Avalonia.DemoCenter
 {
     /// <summary>
-    /// Application root. Creates the single gallery window; everything else (schema,
-    /// data object, editor rows) is built by <see cref="MainWindow"/>.
+    /// Application root. Creates the single shell window; the navigation tree,
+    /// scenario host and every scenario view are built by <see cref="MainWindow"/>.
     /// </summary>
     public partial class App : Application
     {
