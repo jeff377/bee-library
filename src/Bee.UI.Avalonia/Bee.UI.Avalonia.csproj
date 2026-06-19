@@ -23,4 +23,8 @@
     <ProjectReference Include="..\Bee.Definition\Bee.Definition.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Bee.UI.Avalonia.UnitTests" />
+  </ItemGroup>
+
 </Project>

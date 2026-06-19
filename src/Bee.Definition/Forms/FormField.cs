@@ -242,6 +242,17 @@ namespace Bee.Definition.Forms
         public bool ReadOnly { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this field is required (mandatory input).
+        /// Propagated by the layout generator to <see cref="Layouts.LayoutFieldBase.Required"/>,
+        /// driving the required caption colour cue without authoring a separate <c>FormLayout</c>.
+        /// </summary>
+        [Category(PropertyCategories.Layout)]
+        [XmlAttribute]
+        [Description("Indicates whether this field is required (mandatory input).")]
+        [DefaultValue(false)]
+        public bool Required { get; set; }
+
+        /// <summary>
         /// Gets the list item collection used as the option source shared across layouts.
         /// </summary>
         [Category(PropertyCategories.Data)]

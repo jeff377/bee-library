@@ -215,7 +215,8 @@ namespace Avalonia.Editors.Gallery
             // Read-only column: its header caption is coloured to mark the whole column
             // read-only (cells render plain text and cannot be click-to-edited).
             layout.Columns!.Add(new LayoutColumn("phone", "Phone（唯讀）", ControlType.TextEdit) { ReadOnly = true });
-            layout.Columns.Add(new LayoutColumn("type", "Type（DropDown）", ControlType.DropDownEdit));
+            // Required column: its header caption is coloured blue (vs the read-only brown).
+            layout.Columns.Add(new LayoutColumn("type", "Type（必填）", ControlType.DropDownEdit) { Required = true });
             layout.Columns.Add(new LayoutColumn("is_primary", "Primary（Check）", ControlType.CheckEdit));
             layout.Columns.Add(new LayoutColumn("valid_from", "Valid From（Date）", ControlType.DateEdit));
             layout.Columns.Add(new LayoutColumn("bill_month", "Bill Month（YearMonth）", ControlType.YearMonthEdit));

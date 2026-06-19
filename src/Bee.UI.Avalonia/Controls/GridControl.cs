@@ -5,7 +5,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
-using Avalonia.Media.Immutable;
 using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
@@ -628,24 +627,21 @@ namespace Bee.UI.Avalonia.Controls
             return templateColumn;
         }
 
-        // Read-only columns look identical to editable ones at rest — both render plain
-        // text until a click swaps in an editor — so the column caption is the read-only
-        // cue. Tunable; kept a deliberate muted slate rather than the disabled grey so it
-        // reads as "this column is read-only", not "this header is inactive".
-        private static readonly ImmutableSolidColorBrush s_readOnlyHeaderBrush =
-            new(Color.FromRgb(0xA0, 0x52, 0x2D));
-
-        // Keyed on the layout ReadOnly flag, NOT the DataGrid column IsReadOnly: lookup and
-        // popup-editor columns set IsReadOnly to bypass the edit pipeline while staying
-        // editable through click-to-swap, so they must not show the read-only header cue.
+        // Read-only / required columns look identical to plain ones at rest, so the column
+        // caption colour is the cue (brown = read-only, blue = required; see
+        // FieldCaptionStyle). Keyed on the layout ReadOnly flag, NOT the DataGrid column
+        // IsReadOnly: lookup and popup-editor columns set IsReadOnly to bypass the edit
+        // pipeline while staying editable through click-to-swap, so they must not show the
+        // read-only cue.
         private static object BuildColumnHeader(LayoutColumn column)
         {
-            if (!column.ReadOnly)
+            var brush = FieldCaptionStyle.GetCaptionForeground(column.ReadOnly, column.Required);
+            if (brush is null)
                 return column.Caption;
             return new TextBlock
             {
                 Text = column.Caption,
-                Foreground = s_readOnlyHeaderBrush,
+                Foreground = brush,
             };
         }
 

@@ -416,7 +416,12 @@ namespace Bee.UI.Avalonia.Views
         private StackPanel BuildFieldCell(LayoutField field)
         {
             var stack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 2 };
-            stack.Children.Add(new TextBlock { Text = field.Caption });
+            var caption = new TextBlock { Text = field.Caption };
+            // Caption colour marks field state uniformly with the detail grid headers:
+            // brown = read-only, blue = required (read-only wins). See FieldCaptionStyle.
+            if (Controls.FieldCaptionStyle.GetCaptionForeground(field.ReadOnly, field.Required) is { } brush)
+                caption.Foreground = brush;
+            stack.Children.Add(caption);
             stack.Children.Add(BuildInputControl(field));
             return stack;
         }

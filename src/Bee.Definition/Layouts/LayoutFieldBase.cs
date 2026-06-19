@@ -95,6 +95,17 @@ namespace Bee.Definition.Layouts
         public bool ReadOnly { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets a value indicating whether this field is required (mandatory input).
+        /// Drives the caption colour cue in the UI; independent of the database NotNull
+        /// constraint so a field can be required for user input without authoring a schema.
+        /// </summary>
+        [Category(PropertyCategories.Appearance)]
+        [XmlAttribute]
+        [Description("Indicates whether this field is required (mandatory input).")]
+        [DefaultValue(false)]
+        public bool Required { get; set; } = false;
+
+        /// <summary>
         /// Gets the extended property collection.
         /// </summary>
         [Description("Extended property collection.")]

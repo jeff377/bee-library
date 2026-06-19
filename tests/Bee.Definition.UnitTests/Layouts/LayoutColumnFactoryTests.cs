@@ -96,6 +96,25 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
+        [DisplayName("ToField/ToColumn 應傳遞 ReadOnly 與 Required 旗標")]
+        public void ToFieldAndColumn_PropagateReadOnlyAndRequired()
+        {
+            var formField = new FormField("amount", "金額", FieldDbType.Decimal)
+            {
+                ReadOnly = true,
+                Required = true,
+            };
+
+            var field = LayoutColumnFactory.ToField(formField);
+            var column = LayoutColumnFactory.ToColumn(formField);
+
+            Assert.True(field.ReadOnly);
+            Assert.True(field.Required);
+            Assert.True(column.ReadOnly);
+            Assert.True(column.Required);
+        }
+
+        [Fact]
         [DisplayName("ToColumn Width=0 應保留 0 表示 auto/未設")]
         public void ToColumn_WidthZero_StaysZero()
         {
