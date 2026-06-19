@@ -5,7 +5,7 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | Shell 骨架：導覽樹 + 模組宿主 + 工具列（主題切換、FormMode 切換），現有 Gallery 比對遷為一種場景 | ✅ 已完成（2026-06-19） |
-| 2 | `DemoModule` 抽象 + 模組註冊表 + View Source（嵌入式原始碼） | 📝 待做 |
+| 2 | `DemoModule` 抽象 + 模組註冊表 + View Source（嵌入式原始碼） | ✅ 已完成（2026-06-19） |
 | 3 | Data Editors 場景組（7 個編輯器 × 多場景） | 📝 待做 |
 | 4 | Grid / Views 場景組（GridControl、FormView、ListView） | 📝 待做 |
 | 5 | 收尾：主題矩陣、README/smoke、定位為試點對齊基準 | 📝 待做 |

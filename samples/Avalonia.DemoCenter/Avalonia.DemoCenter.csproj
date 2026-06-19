@@ -25,4 +25,11 @@
     <ProjectReference Include="..\..\src\Bee.UI.Avalonia\Bee.UI.Avalonia.csproj" />
   </ItemGroup>
 
+  <!-- Embed each module's own .cs as a resource so the View Source panel reads the
+       real, current source (never drifts from what runs). The files stay compiled
+       as usual; this only adds a parallel embedded copy. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Modules\**\*.cs" />
+  </ItemGroup>
+
 </Project>

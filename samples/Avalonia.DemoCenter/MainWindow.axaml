@@ -29,13 +29,25 @@
       <TreeView x:Name="NavTree" SelectionChanged="OnScenarioSelected" Padding="4" />
     </Border>
 
-    <!-- Scenario host: header (title + description) above the live interactive view. -->
+    <!-- Scenario host: header (title + description) above a Demo / Source tab pair.
+         FormMode is set on the TabControl, so it propagates into the live Demo view. -->
     <DockPanel>
       <StackPanel DockPanel.Dock="Top" Spacing="2" Margin="16,12,16,0">
         <TextBlock x:Name="ScenarioTitleText" FontSize="18" FontWeight="Bold" />
         <TextBlock x:Name="ScenarioDescText" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
       </StackPanel>
-      <ContentControl x:Name="ScenarioHost" />
+      <TabControl x:Name="ScenarioHost" Margin="12,8,12,12">
+        <TabItem Header="Demo">
+          <ContentControl x:Name="DemoHost" />
+        </TabItem>
+        <TabItem Header="Source">
+          <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <SelectableTextBlock x:Name="SourceText"
+                                 FontFamily="Menlo,Consolas,monospace" FontSize="12"
+                                 Margin="8" />
+          </ScrollViewer>
+        </TabItem>
+      </TabControl>
     </DockPanel>
 
   </DockPanel>

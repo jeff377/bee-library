@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
-using Avalonia.DemoCenter.Scenarios;
+using Avalonia.DemoCenter.Modules;
 using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls.Editors;
 
@@ -9,31 +9,15 @@ namespace Avalonia.DemoCenter
 {
     /// <summary>
     /// Demo Center shell: a global toolbar (theme + FormMode), a navigation tree
-    /// (Category → Control → Scenario) and a scenario host. The host carries the
-    /// ambient <see cref="Bee.UI.Avalonia.Controls.Editors.FormScope"/> FormMode, so the
-    /// toolbar's FormMode switch drives every editor in the active scenario live.
+    /// (Category → Control → Scenario), and a Demo / Source tab pair. The Demo tab hosts
+    /// the live scenario view; the Source tab shows the module's real embedded source.
+    /// FormMode is set on the tab host, so the toolbar's FormMode switch drives every
+    /// editor in the active scenario live.
     /// </summary>
-    /// <remarks>
-    /// Stage 1 registers a single migrated scenario (the editor-vs-native comparison).
-    /// Stage 2 replaces the inline registry with the <c>IDemoModule</c> abstraction and
-    /// adds the View Source panel.
-    /// </remarks>
     public partial class MainWindow : Window
     {
-        // Stage 1 registry: a flat list grouped into the nav tree by Category / ControlName.
-        private static readonly DemoScenario[] s_scenarios =
-        [
-            new DemoScenario(
-                "Data Editors",
-                "原生 vs 繼承 比對",
-                "全部編輯器",
-                "每個 ControlType 一個區塊：左欄原生 Avalonia 控件、右欄繼承控件（FormScope ambient 綁定）。"
-                + "工具列的 FormMode 切換會即時驅動右欄繼承控件的唯讀 / 編輯外觀。",
-                EditorsComparisonScenario.Build),
-        ];
-
         // Built scenario views are cached so re-selecting a node preserves its state.
-        private readonly Dictionary<DemoScenario, Control> _viewCache = [];
+        private readonly Dictionary<IDemoModule, Control> _viewCache = [];
         private bool _initialized;
 
         /// <summary>
@@ -55,18 +39,18 @@ namespace Avalonia.DemoCenter
 
         private void BuildNavTree()
         {
-            foreach (var categoryGroup in s_scenarios.GroupBy(s => s.Category))
+            foreach (var categoryGroup in DemoModuleRegistry.Modules.GroupBy(m => m.Category))
             {
                 var categoryNode = new TreeViewItem { Header = categoryGroup.Key, IsExpanded = true };
-                foreach (var controlGroup in categoryGroup.GroupBy(s => s.ControlName))
+                foreach (var controlGroup in categoryGroup.GroupBy(m => m.ControlName))
                 {
                     var controlNode = new TreeViewItem { Header = controlGroup.Key, IsExpanded = true };
-                    foreach (var scenario in controlGroup)
+                    foreach (var module in controlGroup)
                     {
                         controlNode.Items.Add(new TreeViewItem
                         {
-                            Header = scenario.ScenarioTitle,
-                            Tag = scenario,
+                            Header = module.ScenarioTitle,
+                            Tag = module,
                         });
                     }
                     categoryNode.Items.Add(controlNode);
@@ -87,7 +71,7 @@ namespace Avalonia.DemoCenter
         {
             foreach (var node in nodes)
             {
-                if (node.Tag is DemoScenario)
+                if (node.Tag is IDemoModule)
                     return node;
                 var leaf = FindFirstLeaf(node.Items.OfType<TreeViewItem>());
                 if (leaf is not null)
@@ -98,18 +82,19 @@ namespace Avalonia.DemoCenter
 
         private void OnScenarioSelected(object? sender, SelectionChangedEventArgs e)
         {
-            if (NavTree.SelectedItem is not TreeViewItem { Tag: DemoScenario scenario })
+            if (NavTree.SelectedItem is not TreeViewItem { Tag: IDemoModule module })
                 return;
 
-            if (!_viewCache.TryGetValue(scenario, out var view))
+            if (!_viewCache.TryGetValue(module, out var view))
             {
-                view = scenario.BuildView();
-                _viewCache[scenario] = view;
+                view = module.BuildView();
+                _viewCache[module] = view;
             }
 
-            ScenarioTitleText.Text = $"{scenario.ControlName} — {scenario.ScenarioTitle}";
-            ScenarioDescText.Text = scenario.Description;
-            ScenarioHost.Content = view;
+            ScenarioTitleText.Text = $"{module.ControlName} — {module.ScenarioTitle}";
+            ScenarioDescText.Text = module.Description;
+            DemoHost.Content = view;
+            SourceText.Text = module.GetSourceText();
         }
 
         private void OnFormModeChanged(object? sender, SelectionChangedEventArgs e)

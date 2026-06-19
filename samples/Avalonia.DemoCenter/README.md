@@ -55,11 +55,16 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 | FormMode 驅動唯讀 / 編輯 | [FieldEditorBinder.cs](../../src/Bee.UI.Avalonia/Controls/Editors/FieldEditorBinder.cs) 的 `OnFormModeChanged` |
 | 欄位值即時刷新 | [FormDataObject.cs](../../src/Bee.UI.Avalonia/DataObjects/FormDataObject.cs) 的 `FieldValueChanged` 事件 |
 
+## 模組架構（IDemoModule）
+
+每個場景是一個 [`IDemoModule`](Modules/IDemoModule.cs)，集中註冊於 [`DemoModuleRegistry`](Modules/DemoModuleRegistry.cs)；導覽樹由註冊表自動生成（依 `Category` → `ControlName` 分組）。新增場景只需實作 [`DemoModuleBase`](Modules/DemoModuleBase.cs) 並在註冊表加一行。
+
+**View Source**：右側 `Demo` / `Source` 分頁。`Source` 顯示模組自身的真實 `.cs`——`DemoModuleBase.GetSourceText()` 從 EmbeddedResource 讀出（csproj 把 `Modules/**/*.cs` 一併嵌入），故顯示內容永不與實際執行的程式碼脫鉤。
+
 ## 規劃中的後續階段
 
 見 [plan-avalonia-demo-center.md](../../docs/plans/plan-avalonia-demo-center.md)：
 
-- 階段 2：`IDemoModule` 抽象 + 模組註冊表 + View Source（EmbeddedResource 讀真實 `.cs`）
 - 階段 3：Data Editors 場景組（7 個編輯器 × 多場景）
 - 階段 4：Grid / Views 場景組
 - 階段 5：主題矩陣掃描、定位為 Maui/Blazor 移植對齊基準
