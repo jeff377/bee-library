@@ -1,7 +1,6 @@
 using System.Data;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
@@ -94,33 +93,14 @@ namespace Avalonia.DemoCenter.Modules.ControlTypes
                 var bound = new GridControl { MinHeight = 120 };
                 bound.Bind(_data, layout);
 
-                var ambient = new GridControl { TableName = "Phones", MinHeight = 120 };
-
-                var grid = new Grid { ColumnSpacing = 12, RowSpacing = 8 };
-                grid.ColumnDefinitions.Add(new ColumnDefinition(new GridLength(90)));
-                grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-                grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
-                for (var i = 0; i < 3; i++)
-                    grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
-
-                AddCell(grid, 0, 1, new TextBlock { Text = "原生控件", FontWeight = FontWeight.SemiBold });
-                AddCell(grid, 0, 2, new TextBlock { Text = "繼承控件（已綁定）", FontWeight = FontWeight.SemiBold });
-                AddCell(grid, 1, 0, new TextBlock { Text = "Layout 綁定", Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center });
-                AddCell(grid, 1, 1, BuildNativeGrid(phoneTable));
-                AddCell(grid, 1, 2, bound);
-                AddCell(grid, 2, 0, new TextBlock { Text = "Ambient", Opacity = 0.7, VerticalAlignment = VerticalAlignment.Center });
-                AddCell(grid, 2, 1, new TextBlock
-                {
-                    Text = "（原生無對應 — 右側為 TableName 自動綁定，欄位由表自動產生）",
-                    Opacity = 0.6,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    TextWrapping = TextWrapping.Wrap,
-                });
-                AddCell(grid, 2, 2, ambient);
-
+                // Stacked top/bottom (not side-by-side) so each grid spans the full width and
+                // shows every column without truncation.
                 var section = new StackPanel { Spacing = 8 };
                 section.Children.Add(new TextBlock { Text = "GridControl ← DataGrid", FontSize = 15, FontWeight = FontWeight.Bold });
-                section.Children.Add(grid);
+                section.Children.Add(new TextBlock { Text = "原生控件 (DataGrid)", FontWeight = FontWeight.SemiBold });
+                section.Children.Add(BuildNativeGrid(phoneTable));
+                section.Children.Add(new TextBlock { Text = "繼承控件 (GridControl, Layout 綁定)", FontWeight = FontWeight.SemiBold });
+                section.Children.Add(bound);
 
                 _host.Children.Add(Card(section));
             }
@@ -187,13 +167,6 @@ namespace Avalonia.DemoCenter.Modules.ControlTypes
                 CornerRadius = new CornerRadius(4),
                 Child = child,
             };
-
-            private static void AddCell(Grid grid, int row, int column, Control control)
-            {
-                Grid.SetRow(control, row);
-                Grid.SetColumn(control, column);
-                grid.Children.Add(control);
-            }
         }
     }
 }
