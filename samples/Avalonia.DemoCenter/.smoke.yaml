@@ -19,11 +19,11 @@ flow:
     expect_text:
       - "Demo Center"
       - "FormMode"
-      # Navigation tree categories.
-      - "Data Editors"
-      - "TextEdit"
+      # Navigation tree themes (Category nodes).
+      - "控件類型"
+      - "資料繫結"
       - "Grid"
-      - "Views"
+      - "Master-Detail"
 
   - step: shell screenshot
     action: screenshot

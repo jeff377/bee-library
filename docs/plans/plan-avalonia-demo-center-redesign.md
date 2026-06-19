@@ -1,6 +1,6 @@
 # 計畫：Avalonia.DemoCenter 重新設計為「概念/功能主題」導向
 
-**狀態：🚧 進行中（2026-06-19）**
+**狀態：✅ 已完成（2026-06-19）**
 
 > 全域預設主題：**深色（Dark）**（使用者指定；工具列仍可切回 Light）。
 
@@ -9,7 +9,7 @@
 | 1 | IA 重構：`IDemoModule` 改 2 層（主題 → 案例）、shell 導覽樹改 2 層、移除舊 per-control / 總覽模組；交付「控件類型」主題作為新結構驗證；預設深色 | ✅ 已完成（2026-06-19） |
 | 2 | 主題：資料繫結、唯讀與必填、FormMode 顯示狀態、開窗選資料 | ✅ 已完成（2026-06-19） |
 | 3 | 主題：Layout 排版、Grid、Master-Detail | ✅ 已完成（2026-06-19） |
-| 4 | 收尾：README（repo 雙語同步）、`.smoke.yaml`、主題/Light·Dark 自測矩陣、對齊基準定位更新 | 📝 待做 |
+| 4 | 收尾：README（repo 雙語同步）、`.smoke.yaml`、主題/Light·Dark 自測矩陣、對齊基準定位更新 | ✅ 已完成（2026-06-19） |
 
 ## 背景
 
@@ -97,8 +97,10 @@ public interface IDemoModule
 - 升級 `FormLayoutRenderer` 支援多欄。
 - Grid 四案例、Master-Detail 一案例。
 
-### 階段 4：收尾
-- README 改寫（主題導向導覽說明）、repo 雙語文件如需同步、`.smoke.yaml` expect_text 更新為新主題、自測矩陣、對齊基準定位更新。
+### 階段 4：收尾 ✅
+- README 全面改寫為主題導向：2 層 IA、8 主題案例表、預設深色、Views 路線說明、新增案例 how-to（2 層 + helper）、自測矩陣（含 AllowEditModes）、對齊基準定位、雙 plan 連結。
+- `.smoke.yaml` expect_text 更新為新主題節點（控件類型 / 資料繫結 / Grid / Master-Detail）。
+- repo 層雙語文件（根 / samples README 等）為高階描述（「控件 demo center」），仍正確，無需改。
 
 ## 風險
 
