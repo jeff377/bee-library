@@ -2,38 +2,30 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Styling;
 using Avalonia.DemoCenter.Modules;
-using Bee.Definition.Layouts;
-using Bee.UI.Avalonia.Controls.Editors;
 
 namespace Avalonia.DemoCenter
 {
     /// <summary>
-    /// Demo Center shell: a global toolbar (theme + FormMode), a navigation tree
-    /// (Category → Control → Scenario), and a Demo / Source tab pair. The Demo tab hosts
-    /// the live scenario view; the Source tab shows the module's real embedded source.
-    /// FormMode is set on the tab host, so the toolbar's FormMode switch drives every
-    /// editor in the active scenario live.
+    /// Demo Center shell: a global toolbar (theme toggle), a navigation tree (theme → case),
+    /// and a Demo / Source tab pair. The Demo tab hosts the live scenario view; the Source
+    /// tab shows the module's real embedded source. FormMode switching is not global — it
+    /// lives inside the "FormMode 顯示狀態" theme so it never drives unrelated demos.
     /// </summary>
     public partial class MainWindow : Window
     {
         // Built scenario views are cached so re-selecting a node preserves its state.
         private readonly Dictionary<IDemoModule, Control> _viewCache = [];
-        private bool _initialized;
+
+        // Last nav-column width, restored when the tree is shown again.
+        private GridLength _savedNavWidth = new(240);
 
         /// <summary>
-        /// Initializes the shell, populates the FormMode selector and the navigation tree,
-        /// and selects the first scenario.
+        /// Initializes the shell, builds the navigation tree and selects the first scenario.
         /// </summary>
         public MainWindow()
         {
             InitializeComponent();
-
-            FormModeCombo.ItemsSource = Enum.GetValues<SingleFormMode>();
-            FormModeCombo.SelectedItem = SingleFormMode.Edit;
-
             BuildNavTree();
-            _initialized = true;
-
             SelectFirstScenario();
         }
 
@@ -93,14 +85,28 @@ namespace Avalonia.DemoCenter
             SourceText.Text = module.GetSourceText();
         }
 
-        private void OnFormModeChanged(object? sender, SelectionChangedEventArgs e)
+        private void OnToggleNav(object? sender, RoutedEventArgs e)
         {
-            if (!_initialized || FormModeCombo.SelectedItem is not SingleFormMode formMode)
-                return;
-
-            // The host is the ambient FormScope ancestor of every scenario view, so
-            // setting FormMode here propagates down to all bound editors live.
-            FormScope.SetFormMode(ScenarioHost, formMode);
+            var navColumn = BodyGrid.ColumnDefinitions[0];
+            if (NavPanel.IsVisible)
+            {
+                // Hide: remember the width, collapse the column (MinWidth would otherwise
+                // pin it open) and hide the panel + splitter.
+                _savedNavWidth = navColumn.Width;
+                navColumn.MinWidth = 0;
+                navColumn.Width = new GridLength(0);
+                NavPanel.IsVisible = false;
+                NavSplitter.IsVisible = false;
+            }
+            else
+            {
+                navColumn.MinWidth = 160;
+                navColumn.Width = _savedNavWidth.IsAbsolute && _savedNavWidth.Value > 0
+                    ? _savedNavWidth
+                    : new GridLength(240);
+                NavPanel.IsVisible = true;
+                NavSplitter.IsVisible = true;
+            }
         }
 
         private void OnThemeToggled(object? sender, RoutedEventArgs e)

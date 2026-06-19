@@ -48,7 +48,7 @@ namespace Avalonia.DemoCenter.Modules.Lookup
                 data,
                 DataEditorParts.Section(
                     "開窗選資料",
-                    "點右側放大鏡開 picker，選取後值即時寫回；工具列 FormMode 切 View 時圖示隱藏。",
+                    "點右側放大鏡開 picker，選取後值即時寫回（唯讀時圖示隱藏 — 見下方唯讀區與 FormMode 主題）。",
                     DataEditorParts.LabeledRow("code", bound),
                     DataEditorParts.LiveValue(data, "code")),
                 DataEditorParts.Section(

@@ -34,7 +34,7 @@ namespace Avalonia.DemoCenter.Modules.ControlTypes
 
             var editors = DataEditorParts.Section(
                 "繼承控件一覽",
-                "每個控件綁定一個欄位；工具列 FormMode 切 View 時整批轉唯讀（去框）。",
+                "每個控件綁定一個欄位（預設 Edit 模式可編輯）；FormMode 模式切換見「FormMode 顯示狀態」主題。",
                 DataEditorParts.LabeledRow("TextEdit", new TextEdit { FieldName = "name" }),
                 DataEditorParts.LabeledRow("MemoEdit", new MemoEdit { FieldName = "notes", MinHeight = 56 }),
                 DataEditorParts.LabeledRow("ButtonEdit", new ButtonEdit { FieldName = "code" }),

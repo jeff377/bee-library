@@ -34,7 +34,7 @@ namespace Avalonia.DemoCenter.Modules.ReadOnlyRequired
                 data,
                 DataEditorParts.Section(
                     "一般（依 FormMode 可編輯）",
-                    "ambient 綁定；工具列 FormMode 切 View 時也會轉唯讀。",
+                    "ambient 綁定，預設 Edit 可編輯（FormMode 驅動唯讀見「FormMode 顯示狀態」主題）。",
                     DataEditorParts.LabeledRow("name", new TextEdit { FieldName = "name" }),
                     DataEditorParts.LabeledRow("hire_date", new DateEdit { FieldName = "hire_date" }),
                     DataEditorParts.LabeledRow("dept", new DropDownEdit { FieldName = "dept" }),

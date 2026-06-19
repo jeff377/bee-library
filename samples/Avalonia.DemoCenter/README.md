@@ -1,6 +1,6 @@
 # Avalonia.DemoCenter
 
-`Bee.UI.Avalonia` 控件展示中心（DevExpress Demo Center 模式，**主題/功能導向**）：左側導覽樹（主題 → 案例）、右側 `Demo` / `Source` 分頁、頂部全域工具列（主題 Light/Dark、FormMode View/Add/Edit）。**預設深色**。
+`Bee.UI.Avalonia` 控件展示中心（DevExpress Demo Center 模式，**主題/功能導向**）：左側導覽樹（主題 → 案例）、右側 `Demo` / `Source` 分頁、頂部全域工具列（主題 Light/Dark）。**預設深色**。FormMode 切換不在全域工具列，收在「FormMode 顯示狀態」主題內，避免驅動不相關的範例。
 
 每個案例只示範**單一主題**（資料繫結、唯讀、FormMode…），對應 DevExpress「每個 demo 只講一件事」的清爽。
 
@@ -28,7 +28,8 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 ## 全域工具列
 
 - **主題切換**：右上角 ToggleSwitch 切 Light / Dark（沿用 `Semi.Avalonia`；預設 Dark）。
-- **FormMode 切換**：View / Add / Edit 下拉，驅動 `FormScope.SetFormMode`，即時翻動目前案例內 ambient 綁定控件的唯讀 / 編輯外觀。
+
+> FormMode（View/Add/Edit）切換**不**在全域工具列——它只屬於「FormMode 顯示狀態」主題（互動切換案例 + 三欄釘住比對），不該驅動其他不相關範例。其餘案例預設 Edit 模式（可編輯）。
 
 ## 主題與案例
 
@@ -44,7 +45,8 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 | | 即時雙向同步 | 兩控件綁同欄位，一改全動（FormDataObject 為單一來源） |
 | **唯讀與必填** | LayoutField.ReadOnly | 永久唯讀去框留底線；CheckEdit 灰框留字 |
 | | 必填 / 唯讀標示 | `GridControl` 表頭色：唯讀棕、必填藍（library 內建上色） |
-| **FormMode 顯示狀態** | 控件 × FormMode 三態（含 AllowEditModes） | 三欄釘 View/Add/Edit；欄位帶不同 `AllowEditModes`（All / Add / Edit / None），看控件呈現 + 逐欄可編輯閘控 |
+| **FormMode 顯示狀態** | 互動切換 | FormMode 下拉即時驅動一組控件 + 明細 grid 的唯讀/編輯（FormMode 切換唯一的所在） |
+| | 控件 × FormMode 三態（含 AllowEditModes） | 三欄釘 View/Add/Edit；欄位帶不同 `AllowEditModes`（All / Add / Edit / None），看控件呈現 + 逐欄可編輯閘控 |
 | | Grid × FormMode | GridControl 三態下編輯能力 / 工具列可見性差異 |
 | **開窗選資料** | ButtonEdit 開窗選資料 | 點圖示開本機 picker 寫回值（生產 `RelationProgId`→`LookupDialog` 後端流程見 `Avalonia.Demo`） |
 | **Layout 排版** | FormLayout 自動產生 | `GetFormLayout()` 由 schema 自動產生區段 + 欄位擺放 |
@@ -86,8 +88,8 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 | 維度 | 切換點 | 看什麼 |
 |------|--------|--------|
 | Light / Dark | 右上 ToggleSwitch | 每個案例在兩個 variant 下，繼承控件背景/邊框/字色與原生對齊，無突兀色塊 |
-| FormMode 三態 | 工具列下拉 | View → ambient 綁定欄整批轉唯讀（去框）；Add / Edit → 可編輯 |
-| AllowEditModes | FormMode 顯示狀態主題 | 三欄釘 View/Add/Edit，逐欄依 `AllowEditModes` 啟用/停用 |
+| FormMode 三態 | FormMode 顯示狀態 → 互動切換 | 切 View → 去框唯讀、ButtonEdit 圖示隱藏、grid 唯讀；Add / Edit → 可編輯 |
+| AllowEditModes | FormMode 顯示狀態 → 控件 × 三態 | 三欄釘 View/Add/Edit，逐欄依 `AllowEditModes` 啟用/停用 |
 | View Source | Demo / Source 分頁 | 每案例 Source 顯示該模組真實 `.cs`，與 Demo 行為一致 |
 
 > 主題範圍：僅 `Semi.Avalonia` × Light/Dark（不納 Fluent runtime 切換，見 plan 拍板決議 #2）。

@@ -19,7 +19,7 @@ namespace Avalonia.DemoCenter.Modules.MasterDetail
 
         /// <inheritdoc/>
         public override string Description =>
-            "Employee 主檔區段 + Phones 明細 grid，綁定同一個 FormDataObject；工具列 FormMode 同時驅動主檔與明細。"
+            "Employee 主檔區段 + Phones 明細 grid，綁定同一個 FormDataObject（預設 Edit 可編輯）。"
             + "生產的後端載入/存檔流程見 Avalonia.Demo。";
 
         /// <inheritdoc/>

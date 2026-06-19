@@ -31,6 +31,7 @@ namespace Avalonia.DemoCenter.Modules
             new ReadOnlyFieldModule(),
             new RequiredReadOnlyMarkModule(),
             // FormMode 顯示狀態.
+            new InteractiveFormModeModule(),
             new FormModeStatesModule(),
             new GridFormModeModule(),
             // 開窗選資料 (Lookup).
