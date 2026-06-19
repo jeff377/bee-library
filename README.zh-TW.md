@@ -100,7 +100,7 @@ Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo
 | Blazor Wasm | [`Blazor.Wasm.Demo`](samples/Blazor.Wasm.Demo/README.zh-TW.md) + [`.Host`](samples/Blazor.Wasm.Demo.Host/README.zh-TW.md) | 同元件改在瀏覽器內跑,走 `RemoteApiProvider` 經 HTTP 派遣 |
 | MAUI | [`Maui.Demo`](samples/Maui.Demo/README.zh-TW.md) | 原生行動 App 客戶端（Mac Catalyst / iOS / Android / Windows）渲染同一份 `FormSchema` |
 | Avalonia | [`Avalonia.Demo`](samples/Avalonia.Demo/README.zh-TW.md) | 桌面 Avalonia 客戶端（Windows / macOS / Linux）渲染同一份 `FormSchema` |
-| Avalonia | [`Avalonia.DemoCenter`](samples/Avalonia.DemoCenter/README.md) | 控件 demo center（DevExpress 風格）：導覽樹 + 場景宿主 + 全域主題/FormMode 工具列；含 field editor / `GridControl` 與原生控件的樣式比對（Semi.Avalonia，無後端） |
+| Avalonia | [`Avalonia.DemoCenter`](samples/Avalonia.DemoCenter/README.md) | 主題導向控件 demo center（DevExpress 風格）：導覽樹（主題 → 案例）+ Demo/Source 分頁 + 主題/FormMode 工具列；涵蓋資料繫結、唯讀必填、FormMode、Layout、Grid、原生 vs 繼承比對（Semi.Avalonia，無後端） |
 | 純 JS | [`Web.Js.Demo`](samples/Web.Js.Demo/README.zh-TW.md) | 用瀏覽器原生 JavaScript 呼叫 JSON-RPC API — 前端無 .NET、無 npm |
 
 ## 📬 聯絡與關注

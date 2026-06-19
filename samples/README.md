@@ -44,7 +44,7 @@ Both sign in with **`demo / demo`** and render the same `Employee` FormSchema.
 | How to use `Bee.Web.Blazor.Wasm` components (.NET running in the browser, HTTP only) | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.md) |
 | How the same `FormSchema` renders inside a native mobile app (Mac Catalyst / iOS / Android) | [`Maui.Demo`](Maui.Demo/README.md) |
 | How the same `FormSchema` renders inside a desktop Avalonia app (Windows / macOS / Linux) | [`Avalonia.Demo`](Avalonia.Demo/README.md) |
-| Control demo center: nav tree + scenario host + theme/FormMode toolbar; style parity of field editors / `GridControl` against native Avalonia controls, plus both grid editing modes | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) |
+| Theme-oriented control demo center (theme → case nav, Demo/Source tabs, theme/FormMode toolbar): data binding, read-only/required, FormMode, layout, grid, native-vs-inherited parity | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) |
 | How to call Bee from pure JavaScript (no .NET on the client, Plain wire format) | [`Web.Js.Demo`](Web.Js.Demo/README.md) |
 | Login, AccessToken, and encrypted-payload fallback resolution on the client | `Blazor.Server.Demo` or `Maui.Demo` (either) |
 

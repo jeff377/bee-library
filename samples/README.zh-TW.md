@@ -44,7 +44,7 @@ dotnet run                          # → http://localhost:5070
 | 如何在 Blazor 內用 `Bee.Web.Blazor.Wasm` 元件(瀏覽器端跑 .NET,必走 HTTP) | [`Blazor.Wasm.Demo`](Blazor.Wasm.Demo/README.zh-TW.md) + [`.Host`](Blazor.Wasm.Demo.Host/README.zh-TW.md) |
 | 同一份 `FormSchema` 在原生行動 App 上如何渲染（Mac Catalyst / iOS / Android） | [`Maui.Demo`](Maui.Demo/README.zh-TW.md) |
 | 同一份 `FormSchema` 在桌面 Avalonia 上如何渲染（Windows / macOS / Linux） | [`Avalonia.Demo`](Avalonia.Demo/README.zh-TW.md) |
-| 控件 demo center：導覽樹 + 場景宿主 + 主題/FormMode 工具列；含 field editor / `GridControl` 與原生 Avalonia 控件的樣式比對、兩種 grid 編輯模式 | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) |
+| 主題導向控件 demo center（導覽樹 主題→案例、Demo/Source 分頁、主題/FormMode 工具列）：資料繫結、唯讀必填、FormMode、Layout、Grid、原生 vs 繼承比對 | [`Avalonia.DemoCenter`](Avalonia.DemoCenter/README.md) |
 | 如何用純 JavaScript 從瀏覽器呼叫 Bee（前端無 .NET，走 Plain wire format） | [`Web.Js.Demo`](Web.Js.Demo/README.zh-TW.md) |
 | Login、AccessToken、Encrypted payload 的客戶端 fallback 機制 | `Blazor.Server.Demo` 或 `Maui.Demo`(任一) |
 

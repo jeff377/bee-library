@@ -57,4 +57,4 @@ ClientInfo.EndpointStorage = new FileEndpointStorage("MyApp");
 ## Samples
 
 - [`samples/Avalonia.Demo`](../../samples/Avalonia.Demo/README.md) — full Connection → Login → CRUD flow over `FormView`.
-- [`samples/Avalonia.DemoCenter`](../../samples/Avalonia.DemoCenter/README.md) — control demo center (nav tree + scenario host + theme/FormMode toolbar); includes style parity for the field editors / `GridControl` and both grid editing modes.
+- [`samples/Avalonia.DemoCenter`](../../samples/Avalonia.DemoCenter/README.md) — theme-oriented control demo center (theme → case nav, Demo/Source tabs, theme/FormMode toolbar): data binding, read-only/required, FormMode, layout, grid, and native-vs-inherited parity.
