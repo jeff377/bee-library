@@ -38,6 +38,12 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 
 「唯讀」雙軌：每模組含一個永久唯讀欄（`LayoutField.ReadOnly`）；另切工具列 FormMode 至 View 時，ambient 綁定欄整批轉唯讀。
 
+- **Grid**（`Modules/Grids/`）— `GridControl`：Layout 綁定 + in-cell 編輯、ambient（只設 `TableName`）、EditForm 彈窗編輯三種模式（編輯策略見 [ADR-021](../../docs/adr/adr-021-avalonia-datagrid-editing-strategy.md)）。
+- **Views**（`Modules/Views/`）— 採「`FormDataObject` 當 VM + 假資料 → 前端繫結」路線（FormView/ListView 為後端耦合控件，本中心無後端）：
+  - `FormView`：以 `FormSchema.GetFormLayout()` 產 layout，透過公開 primitive（`FieldEditorFactory` + `GridControl`，與生產 `FormView` 同一套）渲染 master 區段 + 明細 grid；FormMode 三態由工具列驅動。
+  - `ListView`：`GridControl` list-mode 綁定獨立 `DataTable`（唯讀、工具列隱藏）。
+  - 生產的 FormView/ListView 後端載入/存檔/列事件見 `Avalonia.Demo`。
+
 ## 總覽比對 checklist
 
 每個 `ControlType` 一個區塊，左欄原生控件、右欄繼承控件，各含「一般」與「唯讀 / 停用」兩種狀態。比對 checklist：
@@ -73,5 +79,4 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 
 見 [plan-avalonia-demo-center.md](../../docs/plans/plan-avalonia-demo-center.md)：
 
-- 階段 4：Grid / Views 場景組（GridControl、FormView、ListView）
-- 階段 5：主題矩陣掃描、定位為 Maui/Blazor 移植對齊基準
+- 階段 5：主題矩陣掃描（Light/Dark 逐場景目視）、定位為 Maui/Blazor 移植對齊基準

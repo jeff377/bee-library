@@ -7,7 +7,7 @@
 | 1 | Shell 骨架：導覽樹 + 模組宿主 + 工具列（主題切換、FormMode 切換），現有 Gallery 比對遷為一種場景 | ✅ 已完成（2026-06-19） |
 | 2 | `DemoModule` 抽象 + 模組註冊表 + View Source（嵌入式原始碼） | ✅ 已完成（2026-06-19） |
 | 3 | Data Editors 場景組（7 個編輯器 × 多場景） | ✅ 已完成（2026-06-19） |
-| 4 | Grid / Views 場景組（GridControl、FormView、ListView） | 📝 待做 |
+| 4 | Grid / Views 場景組（GridControl、FormView、ListView） | ✅ 已完成（2026-06-19） |
 | 5 | 收尾：主題矩陣、README/smoke、定位為試點對齊基準 | 📝 待做 |
 
 ## 背景與目標
@@ -108,8 +108,13 @@ public interface IDemoModule
 - ButtonEdit ⑤：本中心無後端，以 `ButtonClick` 開**本機 picker** 寫回值示範；生產的 `RelationProgId` → `LookupDialog` 後端查詢流程仍由 `Avalonia.Demo` 負責（README 已註明）。
 - 共用 `DataEditorParts` helper（單欄資料物件、區塊卡、即時值 readout、ambient root）讓每個模組精簡一致。
 
-### 階段 4：Grid / Views 場景組
-- GridControl、FormView、ListView 的場景模組。
+### 階段 4：Grid / Views 場景組 ✅
+- **GridControl**（`Modules/Grids/`）：Layout 綁定 + in-cell、ambient（只設 TableName）、EditForm 三種綁定/編輯模式各一區塊，每區塊獨立 data object 避免互相污染。
+- **Views**（`Modules/Views/`）：拍板採「FormDataObject 當 VM + 假資料 → 前端資料繫結」路線（FormView/ListView 為後端耦合控件，Demo Center 無後端）。
+  - `FormViewModule`：以 `FormSchema.GetFormLayout()` 產 layout，透過公開 primitive（`FieldEditorFactory` + `GridControl`，與生產 `FormView.Rebuild` 同一套）渲染 master 區段 + 明細 grid，綁定本機假資料；FormMode 三態由工具列驅動。共用 `FormLayoutRenderer` + `SampleFormData`。
+  - `ListViewModule`：`GridControl` list-mode 綁定獨立 `DataTable`（唯讀、工具列隱藏）。
+  - 兩者皆註明生產的 FormView/ListView 後端載入/存檔/列事件由 `Avalonia.Demo` 負責。
+  - 註：library 的 `FieldCaptionStyle`（唯讀棕/必填藍 caption 上色）為 internal，本中心渲染純色 caption；該視覺於 GridControl 總覽的表頭已示範。
 
 ### 階段 5：收尾
 - 主題矩陣掃過（Fluent × Semi × Light/Dark）逐場景目視。

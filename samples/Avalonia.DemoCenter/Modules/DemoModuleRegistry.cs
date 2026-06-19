@@ -1,4 +1,6 @@
 using Avalonia.DemoCenter.Modules.DataEditors;
+using Avalonia.DemoCenter.Modules.Grids;
+using Avalonia.DemoCenter.Modules.Views;
 
 namespace Avalonia.DemoCenter.Modules
 {
@@ -21,6 +23,11 @@ namespace Avalonia.DemoCenter.Modules
             new YearMonthEditModule(),
             new DropDownEditModule(),
             new CheckEditModule(),
+            // Grid scenarios.
+            new GridControlModule(),
+            // View scenarios (FormView / ListView patterns, backend-free).
+            new FormViewModule(),
+            new ListViewModule(),
             // Overview: all editors, native vs inherited (the migrated gallery regression).
             new EditorsComparisonModule(),
         ];
