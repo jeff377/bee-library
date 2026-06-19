@@ -16,4 +16,13 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CS1570;CS1572;CS1573;CS1574;CS1580;CS1581;CS1584;CS1587;CS1589;CS1591;CS1592</NoWarn>
   </PropertyGroup>
+
+  <!-- NU1903: SQLitePCLRaw.lib.e_sqlite3 (bundled SQLite engine) advisory
+       GHSA-2m69-gcr7-jv3q, pulled transitively by Microsoft.Data.Sqlite 9.0.4. There is no
+       patched 2.1.x (advisory firstPatchedVersion is null; vulnerable <= 2.1.11); the only
+       fix is a major SQLitePCLRaw 2.x -> 3.x bump, which needs cross-DB verification.
+       Suppressed to keep CI green; tracked in docs/plans/plan-sqlitepclraw-3x-upgrade.md. -->
+  <ItemGroup>
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+  </ItemGroup>
 </Project>
