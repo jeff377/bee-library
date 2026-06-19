@@ -35,11 +35,4 @@
     <!-- <SymbolPackageFormat>snupkg</SymbolPackageFormat> -->
   </PropertyGroup>
 
-  <!-- NU1903: SQLitePCLRaw.lib.e_sqlite3 advisory GHSA-2m69-gcr7-jv3q (no patched 2.1.x;
-       only fix is a major 2.x -> 3.x bump). Covers samples/apps that import this root props
-       and use Microsoft.Data.Sqlite. Tracked in docs/plans/plan-sqlitepclraw-3x-upgrade.md. -->
-  <ItemGroup>
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
-  </ItemGroup>
-
 </Project>

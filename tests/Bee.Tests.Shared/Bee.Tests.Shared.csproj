@@ -16,6 +16,10 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.4" />
+    <!-- Force the SQLitePCLRaw native bundle to 3.x: Microsoft.Data.Sqlite 9.0.4 pulls
+         2.1.10 transitively, and the whole 2.1.x line (<= 2.1.11) carries advisory
+         GHSA-2m69-gcr7-jv3q with no 2.x patch. 3.0.3 ships a non-vulnerable SQLite engine. -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
     <PackageReference Include="Npgsql" Version="9.0.4" />
     <PackageReference Include="MySqlConnector" Version="2.4.0" />
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.26.200" />

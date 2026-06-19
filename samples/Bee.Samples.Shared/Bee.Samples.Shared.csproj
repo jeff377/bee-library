@@ -23,6 +23,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.4" />
+    <!-- Force SQLitePCLRaw native bundle to 3.x (non-vulnerable SQLite engine); the 2.1.x
+         line carries advisory GHSA-2m69-gcr7-jv3q with no 2.x patch. -->
+    <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="3.0.3" />
   </ItemGroup>
 
 </Project>

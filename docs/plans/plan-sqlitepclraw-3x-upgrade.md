@@ -1,6 +1,8 @@
 # 計畫：SQLitePCLRaw 2.x → 3.x 升級（解除 NU1903 抑制）
 
-**狀態：📝 待做（2026-06-19 開立）**
+**狀態：✅ 已完成（2026-06-19）**
+
+> 結果：三處直接引用 `Microsoft.Data.Sqlite` 的專案 pin `SQLitePCLRaw.bundle_e_sqlite3 3.0.3`，覆寫 transitive 2.1.10；兩處 `NuGetAuditSuppress` 已移除。全套件 restore 0 NU1903，`./test.sh` 全綠（SQLite in-memory round-trip + 其他 DB 容器測試全過），確認 MDS 9.0.4 與 SQLitePCLRaw core 3.0.3 runtime 相容、SQLite 行為無回歸。
 
 ## 背景
 
