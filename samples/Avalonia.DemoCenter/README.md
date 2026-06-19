@@ -30,7 +30,15 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 - **主題切換**：右上角 ToggleSwitch 切 Light / Dark（主題沿用 `Semi.Avalonia`）。
 - **FormMode 切換**：View / Add / Edit 下拉，驅動 `FormScope.SetFormMode`，即時翻動目前場景內繼承控件的唯讀 / 編輯外觀。
 
-## 場景：Data Editors → 全部編輯器
+## 導覽結構
+
+- **Data Editors** — 7 個編輯器各一個場景模組（`Modules/DataEditors/`）：`TextEdit` / `MemoEdit` / `ButtonEdit` / `DateEdit` / `YearMonthEdit` / `DropDownEdit` / `CheckEdit`。每個模組視圖以具標題的區塊呈現：**基本綁定 + 即時值**、**Metadata**（MaxLength / ListItems 等）、**唯讀**（`LayoutField.ReadOnly`）。
+  - `ButtonEdit`：本中心無後端，以 `ButtonClick` 開本機 picker 寫回值示範；生產的 `RelationProgId` → `LookupDialog` 後端查詢流程見 `Avalonia.Demo`。
+- **總覽 → 原生 vs 繼承** — 由原 Gallery 遷入的整批比對模組（`EditorsComparisonModule`）：每個 `ControlType` 左欄原生、右欄繼承，含「一般」與「唯讀 / 停用」、`GridControl` 兩種編輯模式，保留整批回歸價值。
+
+「唯讀」雙軌：每模組含一個永久唯讀欄（`LayoutField.ReadOnly`）；另切工具列 FormMode 至 View 時，ambient 綁定欄整批轉唯讀。
+
+## 總覽比對 checklist
 
 每個 `ControlType` 一個區塊，左欄原生控件、右欄繼承控件，各含「一般」與「唯讀 / 停用」兩種狀態。比對 checklist：
 
@@ -65,6 +73,5 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 
 見 [plan-avalonia-demo-center.md](../../docs/plans/plan-avalonia-demo-center.md)：
 
-- 階段 3：Data Editors 場景組（7 個編輯器 × 多場景）
-- 階段 4：Grid / Views 場景組
+- 階段 4：Grid / Views 場景組（GridControl、FormView、ListView）
 - 階段 5：主題矩陣掃描、定位為 Maui/Blazor 移植對齊基準

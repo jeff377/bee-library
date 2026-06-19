@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | Shell 骨架：導覽樹 + 模組宿主 + 工具列（主題切換、FormMode 切換），現有 Gallery 比對遷為一種場景 | ✅ 已完成（2026-06-19） |
 | 2 | `DemoModule` 抽象 + 模組註冊表 + View Source（嵌入式原始碼） | ✅ 已完成（2026-06-19） |
-| 3 | Data Editors 場景組（7 個編輯器 × 多場景） | 📝 待做 |
+| 3 | Data Editors 場景組（7 個編輯器 × 多場景） | ✅ 已完成（2026-06-19） |
 | 4 | Grid / Views 場景組（GridControl、FormView、ListView） | 📝 待做 |
 | 5 | 收尾：主題矩陣、README/smoke、定位為試點對齊基準 | 📝 待做 |
 
@@ -101,9 +101,12 @@ public interface IDemoModule
 - 實作 View Source（EmbeddedResource 讀取）。
 - 把階段 1 那塊內容重構成符合 `IDemoModule` 的第一批模組。
 
-### 階段 3：Data Editors 場景組
-- 7 個編輯器逐一補齊場景 ①–④（+ ButtonEdit 的 ⑤）。
-- 「唯讀 vs 編輯」場景與 readonly 去框成果對接。
+### 階段 3：Data Editors 場景組 ✅
+- 7 個編輯器各一個 `IDemoModule`（`Modules/DataEditors/`），每個模組視圖把場景 ①–③ 以**具標題的區塊**呈現（基本綁定 + 即時值、Metadata、唯讀），而非拆成 7×4 個近重複的樹葉節點——避免範圍膨脹，仍涵蓋各維度。
+- 場景 ④（原生 vs 繼承）維持為「總覽」單一模組（`EditorsComparisonModule`，由階段 1 遷入），保留整批回歸比對價值。
+- 「唯讀」維度雙軌呈現：每模組含一個 `LayoutField.ReadOnly` 永久唯讀欄；另全域 FormMode 切 View 時，ambient 綁定欄整批轉唯讀（對接 readonly 去框成果）。
+- ButtonEdit ⑤：本中心無後端，以 `ButtonClick` 開**本機 picker** 寫回值示範；生產的 `RelationProgId` → `LookupDialog` 後端查詢流程仍由 `Avalonia.Demo` 負責（README 已註明）。
+- 共用 `DataEditorParts` helper（單欄資料物件、區塊卡、即時值 readout、ambient root）讓每個模組精簡一致。
 
 ### 階段 4：Grid / Views 場景組
 - GridControl、FormView、ListView 的場景模組。

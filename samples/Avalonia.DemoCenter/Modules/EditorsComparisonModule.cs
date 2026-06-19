@@ -22,10 +22,10 @@ namespace Avalonia.DemoCenter.Modules
     public sealed class EditorsComparisonModule : DemoModuleBase
     {
         /// <inheritdoc/>
-        public override string Category => "Data Editors";
+        public override string Category => "總覽";
 
         /// <inheritdoc/>
-        public override string ControlName => "原生 vs 繼承 比對";
+        public override string ControlName => "原生 vs 繼承";
 
         /// <inheritdoc/>
         public override string ScenarioTitle => "全部編輯器";

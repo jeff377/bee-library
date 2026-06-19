@@ -1,3 +1,5 @@
+using Avalonia.DemoCenter.Modules.DataEditors;
+
 namespace Avalonia.DemoCenter.Modules
 {
     /// <summary>
@@ -11,6 +13,15 @@ namespace Avalonia.DemoCenter.Modules
         /// <summary>All registered demo modules, in navigation order.</summary>
         public static IReadOnlyList<IDemoModule> Modules { get; } =
         [
+            // Per-editor scenarios.
+            new TextEditModule(),
+            new MemoEditModule(),
+            new ButtonEditModule(),
+            new DateEditModule(),
+            new YearMonthEditModule(),
+            new DropDownEditModule(),
+            new CheckEditModule(),
+            // Overview: all editors, native vs inherited (the migrated gallery regression).
             new EditorsComparisonModule(),
         ];
     }
