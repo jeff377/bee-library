@@ -11,6 +11,7 @@
       <DockPanel>
         <ToggleSwitch x:Name="ThemeToggle"
                       DockPanel.Dock="Right"
+                      IsChecked="True"
                       OnContent="Dark" OffContent="Light"
                       IsCheckedChanged="OnThemeToggled" />
         <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">

@@ -20,10 +20,7 @@ namespace Avalonia.DemoCenter.Modules
         public abstract string Category { get; }
 
         /// <inheritdoc/>
-        public abstract string ControlName { get; }
-
-        /// <inheritdoc/>
-        public abstract string ScenarioTitle { get; }
+        public abstract string Title { get; }
 
         /// <inheritdoc/>
         public abstract string Description { get; }

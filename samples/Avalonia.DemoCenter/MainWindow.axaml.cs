@@ -39,21 +39,17 @@ namespace Avalonia.DemoCenter
 
         private void BuildNavTree()
         {
+            // Two-level tree: theme (Category) → case (Title).
             foreach (var categoryGroup in DemoModuleRegistry.Modules.GroupBy(m => m.Category))
             {
                 var categoryNode = new TreeViewItem { Header = categoryGroup.Key, IsExpanded = true };
-                foreach (var controlGroup in categoryGroup.GroupBy(m => m.ControlName))
+                foreach (var module in categoryGroup)
                 {
-                    var controlNode = new TreeViewItem { Header = controlGroup.Key, IsExpanded = true };
-                    foreach (var module in controlGroup)
+                    categoryNode.Items.Add(new TreeViewItem
                     {
-                        controlNode.Items.Add(new TreeViewItem
-                        {
-                            Header = module.ScenarioTitle,
-                            Tag = module,
-                        });
-                    }
-                    categoryNode.Items.Add(controlNode);
+                        Header = module.Title,
+                        Tag = module,
+                    });
                 }
                 NavTree.Items.Add(categoryNode);
             }
@@ -91,7 +87,7 @@ namespace Avalonia.DemoCenter
                 _viewCache[module] = view;
             }
 
-            ScenarioTitleText.Text = $"{module.ControlName} — {module.ScenarioTitle}";
+            ScenarioTitleText.Text = $"{module.Category} — {module.Title}";
             ScenarioDescText.Text = module.Description;
             DemoHost.Content = view;
             SourceText.Text = module.GetSourceText();
