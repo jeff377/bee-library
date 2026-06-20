@@ -1,5 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Bee.Definition.Layouts;
@@ -35,6 +37,11 @@ namespace Bee.UI.Avalonia.Controls.Editors
         public TextEdit()
         {
             _binder = new FieldEditorBinder(this, RefreshFromSource, ApplyMetadata);
+            // Commit on leaving the control (or Enter on single-line editors) rather than
+            // per keystroke, so FieldValueChanged — and any dependent recalculation — fires
+            // once the user finishes the value.
+            LostFocus += OnEditorLostFocus;
+            KeyDown += OnEditorKeyDown;
         }
 
         /// <inheritdoc />
@@ -137,14 +144,19 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         protected virtual bool ShouldWriteBackText => true;
 
-        /// <inheritdoc />
-        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        // Commit on leaving the control. Programmatic refreshes (RefreshFromSource) never
+        // reach here, so they cannot echo back.
+        private void OnEditorLostFocus(object? sender, RoutedEventArgs e)
         {
-            base.OnPropertyChanged(change);
-            // `TextChanged` is not raised reliably for programmatic writes, so the
-            // write-back hooks the property change instead; the binder's suppression
-            // flag keeps source-driven refreshes from echoing back.
-            if (change.Property == TextProperty && ShouldWriteBackText)
+            if (ShouldWriteBackText)
+                _binder.WriteBack(Text);
+        }
+
+        // Enter commits on single-line editors; multi-line ones (MemoEdit sets AcceptsReturn)
+        // treat Enter as a newline and commit on LostFocus only.
+        private void OnEditorKeyDown(object? sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter && !AcceptsReturn && ShouldWriteBackText)
                 _binder.WriteBack(Text);
         }
 

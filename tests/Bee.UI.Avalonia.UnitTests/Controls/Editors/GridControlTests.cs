@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Data;
 using System.Reflection;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Bee.Base.Data;
 using Bee.Definition;
 using Bee.Definition.Forms;
@@ -520,14 +521,19 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             var nameEditor = Assert.IsType<TextBox>(method!.Invoke(
                 grid, new object?[] { rowView, new LayoutColumn { FieldName = "name" } }));
+            // In-cell text commits on Enter / leaving the cell, not per keystroke.
             nameEditor.Text = "Gadget";
+            Assert.NotEqual("Gadget", table.Rows[0]["name"]);
+            nameEditor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
             Assert.Equal("Gadget", table.Rows[0]["name"]);
 
             var qtyEditor = Assert.IsType<TextBox>(method.Invoke(
                 grid, new object?[] { rowView, new LayoutColumn { FieldName = "qty" } }));
             qtyEditor.Text = "abc";
+            qtyEditor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
             Assert.Equal(5, table.Rows[0]["qty"]);
             qtyEditor.Text = "12";
+            qtyEditor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
             Assert.Equal(12, table.Rows[0]["qty"]);
         }
 

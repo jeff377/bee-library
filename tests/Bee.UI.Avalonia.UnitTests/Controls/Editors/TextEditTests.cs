@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using Avalonia.Input;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
@@ -45,14 +46,31 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("輸入文字寫回 FormDataObject")]
-        public void TextChanged_AfterBind_WritesBack()
+        [DisplayName("逐字輸入不寫回(離開控件或 Enter 才提交)")]
+        public void Typing_AloneDoesNotWriteBack()
         {
             var dataObject = BuildDataObject();
             var editor = new TextEdit();
             editor.Bind(dataObject, "emp_name");
 
             editor.Text = "Bob";
+
+            // Per-keystroke text changes no longer commit; the value writes back on leaving
+            // the control (LostFocus) or pressing Enter.
+            Assert.NotEqual("Bob", dataObject.GetField("emp_name"));
+            Assert.False(dataObject.IsDirty);
+        }
+
+        [Fact]
+        [DisplayName("單行 TextEdit 按 Enter 提交,寫回 FormDataObject")]
+        public void EnterKey_OnSingleLine_WritesBack()
+        {
+            var dataObject = BuildDataObject();
+            var editor = new TextEdit();
+            editor.Bind(dataObject, "emp_name");
+
+            editor.Text = "Bob";
+            editor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
 
             Assert.Equal("Bob", dataObject.GetField("emp_name"));
             Assert.True(dataObject.IsDirty);
@@ -153,6 +171,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
 
             editor.Unbind();
             editor.Text = "Bob";
+            editor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
 
             Assert.Equal(string.Empty, dataObject.GetField("emp_name"));
         }
@@ -181,6 +200,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             Assert.Equal(15, editor.MaxLength);
 
             editor.Text = "0912-345-678";
+            editor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
             Assert.Equal("0912-345-678", row["phone"]);
         }
 

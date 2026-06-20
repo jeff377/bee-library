@@ -3,6 +3,7 @@ using System.Globalization;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Bee.Definition;
@@ -960,11 +961,15 @@ namespace Bee.UI.Avalonia.Controls
             }
 
             var textBox = new TextBox { Text = current };
-            // `TextChanged` is not raised reliably for programmatic writes; hook the
-            // property change instead (same approach as `TextEdit`).
-            textBox.PropertyChanged += (_, e) =>
+            // Commit on leaving the cell editor (or Enter) rather than per keystroke, matching
+            // the standalone TextEdit — so a field's value (and any dependent recalculation)
+            // is written once the entry is complete. This LostFocus runs before the swap-back
+            // one wired by WireInlineEditEnd (subscribed first), so the row is updated before
+            // the display re-reads it.
+            textBox.LostFocus += (_, _) => WriteCell(rowView, dataColumn, textBox.Text);
+            textBox.KeyDown += (_, e) =>
             {
-                if (e.Property == TextBox.TextProperty)
+                if (e.Key == Key.Enter)
                     WriteCell(rowView, dataColumn, textBox.Text);
             };
             return textBox;

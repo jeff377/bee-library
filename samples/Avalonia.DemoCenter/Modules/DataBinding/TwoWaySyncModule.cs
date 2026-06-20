@@ -16,11 +16,11 @@ namespace Avalonia.DemoCenter.Modules.DataBinding
         public override string Category => "資料繫結";
 
         /// <inheritdoc/>
-        public override string Title => "即時雙向同步";
+        public override string Title => "雙向同步";
 
         /// <inheritdoc/>
         public override string Description =>
-            "兩個控件綁同一欄位：在任一個輸入，另一個與下方即時值同步更新（FormDataObject 為單一真實來源）。";
+            "兩個控件綁同一欄位：在其中一個輸入後離開（或按 Enter）提交，另一個與下方值同步更新（FormDataObject 為單一真實來源）。";
 
         /// <inheritdoc/>
         public override Control BuildView()
@@ -31,7 +31,7 @@ namespace Avalonia.DemoCenter.Modules.DataBinding
                 data,
                 DataEditorParts.Section(
                     "兩控件綁同一欄位 name",
-                    "在上面任一個輸入框打字，另一個立即同步。",
+                    "在上面任一個輸入框輸入後離開（或按 Enter），另一個同步更新。",
                     DataEditorParts.LabeledRow("編輯器 A", new TextEdit { FieldName = "name" }),
                     DataEditorParts.LabeledRow("編輯器 B", new TextEdit { FieldName = "name" })),
                 DataEditorParts.Section(

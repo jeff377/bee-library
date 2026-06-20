@@ -42,7 +42,8 @@ dotnet run --project samples/Avalonia.DemoCenter/Avalonia.DemoCenter.csproj
 | | 原生 vs 繼承（BindTableControl） | 表格級控件（`IBindTableControl`：`GridControl`）並排原生 `DataGrid` |
 | **資料繫結** | Ambient 繫結 | 容器設一次 `FormScope.SetDataObject`，子編輯器只給 `FieldName` 自動綁定 |
 | | 明確繫結 | `editor.Bind(dataObject, layoutField)` 不靠 ambient |
-| | 即時雙向同步 | 兩控件綁同欄位，一改全動（FormDataObject 為單一來源） |
+| | 雙向同步 | 兩控件綁同欄位，輸入離開（或 Enter）提交後同步（FormDataObject 為單一來源） |
+| | DataObject 事件 | `FieldValueChanged` / `RowAdded` / `RowDeleted` / `IsDirtyChanged` / `DataSetReplaced` 即時記錄 |
 | **唯讀與必填** | LayoutField.ReadOnly | 永久唯讀去框留底線；CheckEdit 灰框留字 |
 | | 必填 / 唯讀標示 | `GridControl` 表頭色：唯讀棕、必填藍（library 內建上色） |
 | **FormMode 顯示狀態** | 互動切換 | FormMode 下拉即時驅動一組控件 + 明細 grid 的唯讀/編輯（FormMode 切換唯一的所在） |

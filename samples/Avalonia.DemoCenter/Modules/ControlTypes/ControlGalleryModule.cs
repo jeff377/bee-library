@@ -25,7 +25,8 @@ namespace Avalonia.DemoCenter.Modules.ControlTypes
 
         /// <inheritdoc/>
         public override string Description =>
-            "每個 ControlType 對應的繼承控件各一，經 FormScope ambient 綁定；在任一控件輸入，下方即時值同步更新。";
+            "每個 ControlType 對應的繼承控件各一，經 FormScope ambient 綁定；文字控件輸入後離開（或 Enter）、"
+            + "下拉/勾選/日期選取後即更新下方值。";
 
         /// <inheritdoc/>
         public override Control BuildView()

@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Data;
+using Avalonia.Input;
 using Bee.Base.Data;
 using Bee.Definition.Forms;
 using Bee.Definition.Layouts;
@@ -91,7 +92,12 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var committedRaised = 0;
             panel.EditCommitted += (_, _) => committedRaised++;
 
-            FindEditor<TextEdit>(panel).Text = "07-999-8888";
+            var editor = FindEditor<TextEdit>(panel);
+            editor.Text = "07-999-8888";
+            // Commit-on-leave: the value writes to the buffered row when the field commits
+            // (Enter here; clicking OK blurs the field in the real UI), still suppressed by
+            // the edit session.
+            editor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
             Assert.Empty(raised);   // buffered: nothing publishes during the session
 
             panel.Commit();
@@ -118,7 +124,9 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var cancelledRaised = 0;
             panel.EditCancelled += (_, _) => cancelledRaised++;
 
-            FindEditor<TextEdit>(panel).Text = "07-999-8888";
+            var editor = FindEditor<TextEdit>(panel);
+            editor.Text = "07-999-8888";
+            editor.RaiseEvent(new KeyEventArgs { RoutedEvent = InputElement.KeyDownEvent, Key = Key.Enter });
             panel.Cancel();
 
             Assert.Equal("02-1234-5678", row["phone"]);
