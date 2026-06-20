@@ -27,6 +27,7 @@ namespace Avalonia.DemoCenter.Modules
             new AmbientBindingModule(),
             new ExplicitBindingModule(),
             new TwoWaySyncModule(),
+            new DataObjectEventsModule(),
             // 唯讀與必填 (Read-only & Required).
             new ReadOnlyFieldModule(),
             new RequiredReadOnlyMarkModule(),

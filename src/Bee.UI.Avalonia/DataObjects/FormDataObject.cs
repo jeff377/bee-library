@@ -88,11 +88,23 @@ namespace Bee.UI.Avalonia.DataObjects
         /// </summary>
         public bool IsLoading { get; private set; }
 
+        private bool _isDirty;
+
         /// <summary>
-        /// Gets a value indicating whether the master row has been modified since the
-        /// last load/save.
+        /// Gets a value indicating whether the data has been modified since the last
+        /// load/save. Changing this raises <see cref="IsDirtyChanged"/> only on an actual
+        /// transition (assigning the same value raises nothing).
         /// </summary>
-        public bool IsDirty { get; private set; }
+        public bool IsDirty
+        {
+            get => _isDirty;
+            private set
+            {
+                if (_isDirty == value) return;
+                _isDirty = value;
+                IsDirtyChanged?.Invoke(this, EventArgs.Empty);
+            }
+        }
 
         /// <summary>
         /// Raised after any field value changes in any table of the
@@ -103,6 +115,24 @@ namespace Bee.UI.Avalonia.DataObjects
         /// to raise it.
         /// </summary>
         public event EventHandler<FieldValueChangedEventArgs>? FieldValueChanged;
+
+        /// <summary>
+        /// Raised after a row is added to any table of the <see cref="DataSet"/> (e.g. a
+        /// detail grid's add action). Bridged from <see cref="DataTable.RowChanged"/>.
+        /// </summary>
+        public event EventHandler<RowChangedEventArgs>? RowAdded;
+
+        /// <summary>
+        /// Raised after a row is deleted from any table of the <see cref="DataSet"/> (e.g. a
+        /// detail grid's delete action). Bridged from <see cref="DataTable.RowDeleted"/>.
+        /// </summary>
+        public event EventHandler<RowChangedEventArgs>? RowDeleted;
+
+        /// <summary>
+        /// Raised when <see cref="IsDirty"/> transitions (clean ↔ dirty). Drives Save-button
+        /// enablement / unsaved-changes prompts without polling.
+        /// </summary>
+        public event EventHandler? IsDirtyChanged;
 
         /// <summary>
         /// Raised after the underlying <see cref="DataSet"/> is replaced or reset
@@ -610,11 +640,14 @@ namespace Bee.UI.Avalonia.DataObjects
             if (_rowsInEdit.Contains(e.Row)) return;
             if (e.Action is DataRowAction.Add or DataRowAction.Change)
                 IsDirty = true;
+            if (e.Action == DataRowAction.Add)
+                RowAdded?.Invoke(this, new RowChangedEventArgs(((DataTable)sender!).TableName, e.Row));
         }
 
         private void OnTableRowDeleted(object? sender, DataRowChangeEventArgs e)
         {
             IsDirty = true;
+            RowDeleted?.Invoke(this, new RowChangedEventArgs(((DataTable)sender!).TableName, e.Row));
         }
 
         private FormApiConnector RequireConnector(string operation)

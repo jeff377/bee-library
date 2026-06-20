@@ -805,6 +805,66 @@ namespace Bee.UI.Avalonia.UnitTests.DataObjects
             Assert.Equal(5, capturedDetail.Rows[0]["qty"]);
         }
 
+        [Fact]
+        [DisplayName("明細新增列觸發 RowAdded（帶 TableName + Row）")]
+        public void RowAdded_OnDetailRowAdd_Fires()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            var detail = dataObject.DataSet.Tables["EmployeePhone"]!;
+
+            RowChangedEventArgs? captured = null;
+            dataObject.RowAdded += (_, e) => captured = e;
+
+            var row = detail.NewRow();
+            detail.Rows.Add(row);
+
+            Assert.NotNull(captured);
+            Assert.Equal("EmployeePhone", captured!.TableName);
+            Assert.Same(row, captured.Row);
+        }
+
+        [Fact]
+        [DisplayName("明細刪除列觸發 RowDeleted（帶 TableName + Row）")]
+        public void RowDeleted_OnDetailRowDelete_Fires()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+            var detail = dataObject.DataSet.Tables["EmployeePhone"]!;
+            var row = detail.NewRow();
+            detail.Rows.Add(row);
+            detail.AcceptChanges();
+
+            RowChangedEventArgs? captured = null;
+            dataObject.RowDeleted += (_, e) => captured = e;
+
+            row.Delete();
+
+            Assert.NotNull(captured);
+            Assert.Equal("EmployeePhone", captured!.TableName);
+        }
+
+        [Fact]
+        [DisplayName("IsDirtyChanged 只在值翻轉時觸發,重複弄髒不重發")]
+        public void IsDirtyChanged_FiresOnlyOnTransition()
+        {
+            var dataObject = new FormDataObject(BuildEmployeeSchema());
+            dataObject.InitializeNewMaster();
+
+            var transitions = new List<bool>();
+            dataObject.IsDirtyChanged += (_, _) => transitions.Add(dataObject.IsDirty);
+
+            dataObject.SetField("emp_name", "Alice");
+            dataObject.SetField("emp_name", "Bob");
+
+            // One transition so far: clean -> dirty.
+            Assert.Equal([true], transitions);
+
+            // Reset to clean -> a second transition: dirty -> clean.
+            dataObject.InitializeNewMaster();
+            Assert.Equal([true, false], transitions);
+        }
+
         /// <summary>
         /// Test double that bypasses the real JSON-RPC pipeline by overriding every
         /// virtual CRUD method on <see cref="FormApiConnector"/>. The base constructor
