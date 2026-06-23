@@ -6,8 +6,9 @@
 |------|------|------|
 | 1 | 新增 `Bee.Northwind.Browser` head 專案，重用 `Bee.Northwind.UI`，瀏覽器可開出畫面 | ✅ 已完成（2026-06-23） |
 | 2 | `BrowserLocalStorageEndpointStorage`（取代 FileEndpointStorage），連線設定可持久化 | 🚧 已接線（持久化 round-trip 待連線可用後驗） |
-| 2b | client 連線路徑 async 化（WASM 不可 sync-over-async；spike 發現） | 🚧 程式完成、建置綠（live-verify 待真實瀏覽器點擊） |
-| 3 | `Bee.Northwind.Server` dev CORS（跨源 5200→5100 已驗）；同源 host 留作 production | 🚧 dev CORS 完成、headless 驗證跨源 OK |
+| 2b | client 連線路徑 async 化（WASM 不可 sync-over-async；spike 發現） | ✅ 已完成（2026-06-23，live 驗證進 Login） |
+| 2c | WASM 啟用 System.Text.Json 反射序列化（spike 發現） | ✅ 已完成（2026-06-23） |
+| 3 | `Bee.Northwind.Server` dev CORS（跨源 5200→5100）；同源 host 留作 production | ✅ 已完成（2026-06-23，連線跑通進 Login） |
 | 4 | popup Window 對話框（`LookupDialog` / `RowEditDialog`）改 overlay 疊層，WASM 可用 | 📝 待做 |
 | 5 | Trimming / FormSchema 反射序列化保留設定，Release 發佈可跑 | 📝 待做 |
 | 6 | README + 跑法文件，端到端冒煙 | 📝 待做 |
@@ -133,6 +134,16 @@ Bee.Northwind.Server   ← 後端不動（僅加靜態檔 host）
 - localStorage 存取用 `[JSImport]`（`System.Runtime.InteropServices.JavaScript`）包一層 `globalThis.localStorage.getItem/setItem`。
 
 **驗收**：在瀏覽器輸入端點 → 重整頁面 → 端點仍在（從 localStorage 回填）。
+
+## 階段 2c：WASM 啟用 System.Text.Json 反射序列化
+
+**spike 真因**：點 Connect 後 ping 失敗，完整例外鏈為 `JsonSerializerIsReflectionDisabled` —— browser-wasm **預設停用 System.Text.Json 反射式 (de)serialization**。Bee 的 `JsonCodec` 走反射（訊息型別非 source-generated），在 `request.ToJson()` 序列化 JSON-RPC 請求時就拋，**請求根本沒送出**（故 server log 無紀錄；headless 手刻 body 重放才會成功 —— 那繞過了 client 的 C# 序列化）。
+
+**修正**：`Bee.Northwind.Browser.csproj` 加 `<JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>`，重新開啟反射路徑。
+
+與 2b 同屬「WASM 連線必踩」：2b 是 sync-over-async、2c 是 STJ 反射停用。兩者修好後，WASM Connect → ping → `InitializeAsync`（含 `XmlCodec.Deserialize<CommonConfiguration>`，Debug 下 XmlSerializer 反射可用）→ 進 Login 全通（live 截圖確認）。
+
+> XmlSerializer（FormSchema / CommonConfiguration）的反射在 **Debug 可用**，Release/publish trimming 才需保留（見階段 5）。STJ 這個開關與 trimming 無關 —— Debug 也停用，故必加。
 
 ## 階段 3：跨源連通（dev CORS 為主，同源 host 留 production）
 

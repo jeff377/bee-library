@@ -10,6 +10,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- browser-wasm disables System.Text.Json reflection-based (de)serialization by default,
+         so Bee's JsonCodec throws "JsonSerializerIsReflectionDisabled" when (de)serializing the
+         JSON-RPC envelope. Bee's message types are not source-generated, so re-enable the
+         reflection path. (The XmlSerializer path used by FormSchema is handled separately via
+         trimming roots in the Release/publish phase.) -->
+    <JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault>
   </PropertyGroup>
 
   <ItemGroup>
