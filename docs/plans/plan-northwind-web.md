@@ -156,7 +156,7 @@ Bee.Northwind.Server   ← 後端不動（僅加靜態檔 host）
 
 ### 未來：框架級 async IDefineAccess（獨立工程，非本計畫）
 
-`IDefineAccess` 整個同步介面（21 個 Get/Save）在 remote 模式靠 `SyncExecutor`，WASM 本質不可行。長期正解是加 async 全套（IDefineAccess + RemoteDefineAccess + LocalDefineAccess + BO ripple，~11 檔，中等規模）。惠及所有 WASM 前端，但**非 Northwind Web 跑通的必要條件**（窄修已足）。已另開 [plan-define-access-async.md](plan-define-access-async.md)。
+`IDefineAccess` 整個同步介面（21 個 Get/Save）在 remote 模式靠 `SyncExecutor`，WASM 本質不可行。長期正解是加 async 全套（IDefineAccess + RemoteDefineAccess + LocalDefineAccess + BO ripple，~11 檔，中等規模）。惠及所有 WASM 前端，但**非 Northwind Web 跑通的必要條件**（窄修已足）。已另開 [plan-client-backend-async.md](plan-client-backend-async.md)（傘狀計畫：連線初始化 + IDefineAccess 統一 async）。
 
 ## 階段 3：跨源連通（dev CORS 為主，同源 host 留 production）
 
