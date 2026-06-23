@@ -22,6 +22,18 @@
     <PackageReference Include="Avalonia.Browser" Version="12.0.4" />
   </ItemGroup>
 
+  <!-- Release/publish: disable IL trimming. Bee (de)serializes definition and message types
+       by reflection throughout — System.Text.Json (JSON-RPC envelope), XmlSerializer
+       (FormSchema / TableSchema / CommonConfiguration), MessagePack, TypeDescriptor and
+       Assembly.GetType — none of which is source-generated, so the trimmer both emits IL2026
+       analysis errors (under TreatWarningsAsErrors) and would strip metadata the reflection
+       paths need at runtime. Shipping a trim-safe WASM build requires source-generating those
+       serializers (a framework-wide effort); until then we trade bundle size for correctness.
+       AOT stays off (default); see docs ADR when the source-gen path is taken. -->
+  <PropertyGroup>
+    <PublishTrimmed>false</PublishTrimmed>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Bee.Northwind.UI\Bee.Northwind.UI.csproj" />
   </ItemGroup>

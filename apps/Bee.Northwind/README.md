@@ -38,6 +38,21 @@ dotnet run --project apps/Bee.Northwind/Bee.Northwind.Desktop
 
 Then in the app: **Connect** (the endpoint is pre-filled) → **Sign in** with `demo` / `demo`.
 
+### Web client (Avalonia WASM)
+
+The same UI also runs in the browser via the **Avalonia Browser** head — the same `App`, view
+models and views compiled to WebAssembly. It needs the `wasm-tools` workload
+(`sudo dotnet workload install wasm-tools`) and the running server above, then:
+
+```bash
+# Web client dev server (Avalonia WASM on http://localhost:5200)
+dotnet run --project apps/Bee.Northwind/Bee.Northwind.Browser
+```
+
+Open <http://localhost:5200/> and connect / sign in the same way. See
+[`Bee.Northwind.Browser/README.md`](Bee.Northwind.Browser/README.md) for the WASM-specific wiring
+(localStorage endpoint, async connect, overlay dialogs, publish notes).
+
 > The first server run creates `northwind.db` next to the server project and seeds a Northwind subset. Delete that file to reseed from scratch.
 
 ## The forms
@@ -184,7 +199,8 @@ apps/Bee.Northwind/
 │   └── ProgramSettings.xml       the program list (drives the menu + BO binding)
 ├── Bee.Northwind.Server/         JSON-RPC backend, OrderBO, JSON seed data
 ├── Bee.Northwind.UI/             Avalonia shared UI (views, view models, navigation)
-└── Bee.Northwind.Desktop/        desktop entry point
+├── Bee.Northwind.Desktop/        desktop entry point (Avalonia.Desktop)
+└── Bee.Northwind.Browser/        web entry point (Avalonia WASM)
 ```
 
 The detailed plan and the running framework-feedback log live in [`docs/plans/plan-bee-northwind-demo.md`](../../docs/plans/plan-bee-northwind-demo.md).

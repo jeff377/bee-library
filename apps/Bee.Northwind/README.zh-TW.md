@@ -38,6 +38,21 @@ dotnet run --project apps/Bee.Northwind/Bee.Northwind.Desktop
 
 接著在 app 中：**Connect**（endpoint 已預填）→ 以 `demo` / `demo` **Sign in**。
 
+### 網頁前端（Avalonia WASM）
+
+同一套 UI 也能透過 **Avalonia Browser** head 在瀏覽器執行 —— 相同的 `App`、view model、view
+編譯成 WebAssembly。需要 `wasm-tools` workload（`sudo dotnet workload install wasm-tools`）與上面
+執行中的 server，然後：
+
+```bash
+# 網頁前端 dev server（Avalonia WASM，http://localhost:5200）
+dotnet run --project apps/Bee.Northwind/Bee.Northwind.Browser
+```
+
+開啟 <http://localhost:5200/>，以相同方式連線 / 登入。WASM 專屬接線（localStorage endpoint、
+async 連線、overlay 對話框、publish 注意事項）見
+[`Bee.Northwind.Browser/README.md`](Bee.Northwind.Browser/README.md)。
+
 > 首次執行 server 會在 server 專案旁建立 `northwind.db` 並灌入 Northwind 子集。刪除該檔即可重新建表灌種子。
 
 ## 表單清單
@@ -184,7 +199,8 @@ apps/Bee.Northwind/
 │   └── ProgramSettings.xml       程式清單（驅動選單 + BO 綁定）
 ├── Bee.Northwind.Server/         JSON-RPC 後端、OrderBO、JSON 種子資料
 ├── Bee.Northwind.UI/             Avalonia 共用 UI（views、view models、導航）
-└── Bee.Northwind.Desktop/        桌面進入點
+├── Bee.Northwind.Desktop/        桌面進入點（Avalonia.Desktop）
+└── Bee.Northwind.Browser/        網頁進入點（Avalonia WASM）
 ```
 
 詳細計畫與持續累積的框架回饋清單見 [`docs/plans/plan-bee-northwind-demo.md`](../../docs/plans/plan-bee-northwind-demo.md)。

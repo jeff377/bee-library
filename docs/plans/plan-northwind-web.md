@@ -1,18 +1,18 @@
 # 計畫：Bee.Northwind 新增 Web 案例（Avalonia Browser / WASM head）
 
-**狀態：🚧 進行中（2026-06-23）**
+**狀態：✅ 已完成（2026-06-23）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 新增 `Bee.Northwind.Browser` head 專案，重用 `Bee.Northwind.UI`，瀏覽器可開出畫面 | ✅ 已完成（2026-06-23） |
-| 2 | `BrowserLocalStorageEndpointStorage`（取代 FileEndpointStorage），連線設定可持久化 | 🚧 已接線（持久化 round-trip 待連線可用後驗） |
+| 2 | `BrowserLocalStorageEndpointStorage`（取代 FileEndpointStorage），連線設定可持久化 | ✅ 已完成（2026-06-23，連線流程中使用） |
 | 2b | client 連線路徑 async 化（WASM 不可 sync-over-async；spike 發現） | ✅ 已完成（2026-06-23，live 驗證進 Login） |
 | 2c | WASM 啟用 System.Text.Json 反射序列化（spike 發現） | ✅ 已完成（2026-06-23） |
 | 2d | define 載入避開 sync `IDefineAccess`（FormsViewModel 改 async；spike 發現） | ✅ 已完成（2026-06-23，連線→登入→選單全通） |
 | 3 | `Bee.Northwind.Server` dev CORS（跨源 5200→5100）；同源 host 留作 production | ✅ 已完成（2026-06-23，連線跑通進 Login） |
 | 4 | popup Window 對話框（`LookupDialog` / `RowEditDialog`）改 overlay 疊層，WASM 可用 | ✅ 已完成（2026-06-23，Supplier lookup overlay live 截圖確認） |
-| 5 | Trimming / FormSchema 反射序列化保留設定，Release 發佈可跑 | 📝 待做 |
-| 6 | README + 跑法文件，端到端冒煙 | 📝 待做 |
+| 5 | Release publish 可跑（停用 trimming；source-gen 留 ADR） | ✅ 已完成（2026-06-23，publish 成功 ~16M gzip） |
+| 6 | README + 跑法文件，端到端冒煙 | ✅ 已完成（2026-06-23） |
 
 ## 階段 1 spike 結果（2026-06-23）
 
@@ -193,30 +193,20 @@ Bee.Northwind.Server   ← 後端不動（僅加靜態檔 host）
 
 **驗收**：WASM auto-open `LookupDialog.ShowAsync(host, "Supplier")` → 疊層 modal 置中於 dimmed 背景、DataGrid 載入真實 Supplier 資料、OK/Cancel 正常（live 截圖確認）。同時驗證 `GetLookupAsync` async + DataGrid 在 WASM 渲染。桌面端 `Window.ShowDialog` 路徑未動。
 
-## 階段 5：Trimming / 序列化保留
+## 階段 5：Release publish 可跑（停用 trimming）
 
-`FormSchema` / `TableSchema` 走 `XmlCodec` → `XmlSerializerCache.Get(type)`（反射式 `XmlSerializer`，非 source-generated）。WASM Release publish 會 trim 掉反射 metadata，重演 `maui.md` 記錄的 `XmlSerializeErrorDetails, 2, 2`（看似 XML 壞，實為 type metadata 被砍）。
+**實測發現範圍比預期廣**：Release publish（`Microsoft.NET.Sdk.WebAssembly` 預設開 trimming）對 Bee 的反射式序列化全面報 **IL2026 trim 分析錯誤**（`TreatWarningsAsErrors` 下成 error，最終 `NETSDK1144` 失敗）——不只 `FormSchema` 的 `XmlSerializer`，還有 `JsonCodec`（STJ）、`MessagePack`、`TypeDescriptor`（`TreeNodeAttribute`）、`Assembly.GetType`（`DefineTypeExtensions` / `ViewLocator`）、`Avalonia.Controls.DataGrid`。`TrimmerRootAssembly` 只保留 metadata、**不消除 IL2026 警告**，故無法靠 root 過關。
 
-對策（依投入由低到高，先採低成本）：
+**決策：停用 trimming** —— `Bee.Northwind.Browser.csproj` 設 `<PublishTrimmed>false</PublishTrimmed>`。理由：全 trim-safe 需把 JSON / XML / MessagePack 全部 source-gen 化（框架級巨大工程），遠超 Northwind Web；停用 trimming 換較大 bundle 但能 ship，符合 `maui.md` 哲學（Debug 跑、ship 走另一套留 ADR）。AOT 維持關閉（預設）。
 
-1. **`Bee.Northwind.Browser.csproj` 保留組件**（首選，成本最低）：
-   ```xml
-   <ItemGroup>
-     <TrimmerRootAssembly Include="Bee.Definition" />
-     <TrimmerRootAssembly Include="Bee.Base" />
-   </ItemGroup>
-   ```
-   保留承載 FormSchema / 序列化型別的組件 metadata。
-2. Debug 開發期 trimming 較寬鬆，先確保 Debug 跑通，Release 再驗 trimming。
-3. 若 `TrimmerRootAssembly` 不足，退而對 `FormSchema` 子型別補 `[DynamicallyAccessedMembers]`（成本高、影響廣，留 ADR）。
-
-**驗收**：Release publish 後瀏覽器仍能正確反序列化 FormSchema、渲染表單（非 `2,2` 錯誤）。
+**驗收（2026-06-23）**：`dotnet publish -c Release` 成功，產出完整 `wwwroot/_framework`（含全部 Bee.* 受管組件 webcil；未壓縮 72M，`.gz` 壓縮傳輸 ~16M、`.br` 更小）。未 trim = metadata 全保留 = runtime 與已驗證的 Debug 對等。**未來**：source-gen 序列化以縮小 bundle + 開 trimming，屬 `plan-client-backend-async.md` 之外的另一框架工程，留 ADR。
 
 ## 階段 6：文件與冒煙
 
-- `apps/Bee.Northwind/Bee.Northwind.Browser/README.md`：跑法（先起 Server、再 serve / 同源開啟）、Debug vs Release 注意事項、trimming 雷記錄。
-- 更新 `apps/Bee.Northwind/README.md`（若有）列出三個 head（Desktop / Browser / Server）。
-- 端到端冒煙：Connection → Login(demo/demo) → 開一張表單 → CRUD 一筆。
+**已完成**：
+- 新增 `apps/Bee.Northwind/Bee.Northwind.Browser/README.md`（英文）：prerequisites（wasm-tools）、dev 跑法（Server 5100 + Browser 5200 + dev CORS）、WASM 專屬接線表（localStorage / STJ 反射 / async 連線 / overlay 對話框）、Release publish（`PublishTrimmed=false`，~16M gzip）。
+- 更新 `apps/Bee.Northwind/README.md` + `README.zh-TW.md`（雙語同步）：「Running the demo」加 Web client（Avalonia WASM）段落、專案結構列入 `Bee.Northwind.Browser/`。
+- 端到端冒煙（preview live 截圖）：Connection → Connect → Login(demo/demo) → Forms 選單（8 ProgId）→ 開表單 → Supplier lookup overlay 載入真實資料。
 
 ## 風險與待決
 
