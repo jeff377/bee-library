@@ -22,8 +22,8 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         [DisplayName("唯讀欄位標題為棕色")]
         public void GetCaptionForeground_ReadOnly_ReturnsBrown()
         {
-            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(
-                FieldCaptionStyle.GetCaptionForeground(readOnly: true, required: false));
+            var brush = Assert.IsType<ISolidColorBrush>(
+                FieldCaptionStyle.GetCaptionForeground(readOnly: true, required: false), exactMatch: false);
             Assert.Equal(Color.FromRgb(0xA0, 0x52, 0x2D), brush.Color);
         }
 
@@ -31,8 +31,8 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         [DisplayName("必填欄位標題為藍色")]
         public void GetCaptionForeground_Required_ReturnsBlue()
         {
-            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(
-                FieldCaptionStyle.GetCaptionForeground(readOnly: false, required: true));
+            var brush = Assert.IsType<ISolidColorBrush>(
+                FieldCaptionStyle.GetCaptionForeground(readOnly: false, required: true), exactMatch: false);
             Assert.Equal(Color.FromRgb(0x25, 0x63, 0xEB), brush.Color);
         }
 
@@ -40,8 +40,8 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         [DisplayName("唯讀＋必填時唯讀（棕）優先")]
         public void GetCaptionForeground_ReadOnlyAndRequired_ReadOnlyWins()
         {
-            var brush = Assert.IsAssignableFrom<ISolidColorBrush>(
-                FieldCaptionStyle.GetCaptionForeground(readOnly: true, required: true));
+            var brush = Assert.IsType<ISolidColorBrush>(
+                FieldCaptionStyle.GetCaptionForeground(readOnly: true, required: true), exactMatch: false);
             Assert.Equal(Color.FromRgb(0xA0, 0x52, 0x2D), brush.Color);
         }
     }
