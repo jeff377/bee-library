@@ -31,20 +31,34 @@ namespace Bee.UI.Avalonia.Controls.Editors
             ArgumentNullException.ThrowIfNull(row);
 
             var panel = new RowEditPanel();
+            var committed = false;
+            var title = string.IsNullOrEmpty(layout.Caption) ? layout.TableName : layout.Caption;
+            panel.Bind(dataObject, layout, row);
+
+            // Browser (WASM) hosts cannot open a native Window; host the panel on the top
+            // level's OverlayLayer instead. RowEditPanel cancels its buffered edit when it
+            // detaches from the tree, so removing the overlay rolls back an uncommitted edit
+            // exactly like closing the window did. Desktop keeps the native modal window.
+            if (OperatingSystem.IsBrowser())
+            {
+                var completed = new TaskCompletionSource();
+                panel.EditCommitted += (_, _) => { committed = true; completed.TrySetResult(); };
+                panel.EditCancelled += (_, _) => completed.TrySetResult();
+                await OverlayDialogHost.ShowAsync(host, panel, title, completed.Task);
+                return committed;
+            }
+
             var window = new Window
             {
-                Title = string.IsNullOrEmpty(layout.Caption) ? layout.TableName : layout.Caption,
+                Title = title,
                 Content = panel,
                 SizeToContent = SizeToContent.WidthAndHeight,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 CanResize = false,
                 ShowInTaskbar = false,
             };
-
-            var committed = false;
             panel.EditCommitted += (_, _) => { committed = true; window.Close(); };
             panel.EditCancelled += (_, _) => window.Close();
-            panel.Bind(dataObject, layout, row);
 
             if (TopLevel.GetTopLevel(host) is Window owner)
             {

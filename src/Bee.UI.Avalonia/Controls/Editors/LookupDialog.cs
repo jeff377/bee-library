@@ -41,6 +41,23 @@ namespace Bee.UI.Avalonia.Controls.Editors
             connector ??= ClientInfo.CreateFormApiConnector(progId);
 
             var panel = new LookupPanel();
+            DataRow? selected = null;
+            panel.Bind(schema, connector);
+            // Fire-and-forget: load failures surface on the panel's error label,
+            // and the dialog stays usable (retry via the search button).
+            _ = panel.ReloadAsync();
+
+            // Browser (WASM) hosts cannot open a native Window; host the panel on the
+            // top level's OverlayLayer instead. Desktop keeps the native modal window.
+            if (OperatingSystem.IsBrowser())
+            {
+                var completed = new TaskCompletionSource();
+                panel.Committed += (_, row) => { selected = row; completed.TrySetResult(); };
+                panel.Cancelled += (_, _) => completed.TrySetResult();
+                await OverlayDialogHost.ShowAsync(host, panel, schema.DisplayName, completed.Task);
+                return selected;
+            }
+
             var window = new Window
             {
                 Title = schema.DisplayName,
@@ -50,14 +67,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
                 ShowInTaskbar = false,
             };
-
-            DataRow? selected = null;
             panel.Committed += (_, row) => { selected = row; window.Close(); };
             panel.Cancelled += (_, _) => window.Close();
-            panel.Bind(schema, connector);
-            // Fire-and-forget: load failures surface on the panel's error label,
-            // and the dialog stays usable (retry via the search button).
-            _ = panel.ReloadAsync();
 
             if (TopLevel.GetTopLevel(host) is Window owner)
             {

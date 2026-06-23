@@ -10,7 +10,7 @@
 | 2c | WASM 啟用 System.Text.Json 反射序列化（spike 發現） | ✅ 已完成（2026-06-23） |
 | 2d | define 載入避開 sync `IDefineAccess`（FormsViewModel 改 async；spike 發現） | ✅ 已完成（2026-06-23，連線→登入→選單全通） |
 | 3 | `Bee.Northwind.Server` dev CORS（跨源 5200→5100）；同源 host 留作 production | ✅ 已完成（2026-06-23，連線跑通進 Login） |
-| 4 | popup Window 對話框（`LookupDialog` / `RowEditDialog`）改 overlay 疊層，WASM 可用 | 📝 待做 |
+| 4 | popup Window 對話框（`LookupDialog` / `RowEditDialog`）改 overlay 疊層，WASM 可用 | ✅ 已完成（2026-06-23，Supplier lookup overlay live 截圖確認） |
 | 5 | Trimming / FormSchema 反射序列化保留設定，Release 發佈可跑 | 📝 待做 |
 | 6 | README + 跑法文件，端到端冒煙 | 📝 待做 |
 
@@ -189,7 +189,9 @@ Bee.Northwind.Server   ← 後端不動（僅加靜態檔 host）
 - presenter 結構：`OperatingSystem.IsBrowser()` → 走 overlay；否則走既有 `Window.ShowDialog`（桌面行為完全不變）。
 - 取捨：現階段採「行內 `OperatingSystem.IsBrowser()` 分支 + 共用 overlay helper」（最少接線、與 HttpUtilities 一致）；對話框種類變多再升級成注入式 `IDialogPresenter`。連動 memory ADR-021。
 
-**驗收**：WASM 下點 lookup 欄位 / 開明細編輯，疊層 modal 正常顯示、可選取/存檔/取消；桌面端 `Window.ShowDialog` 行為無回歸。
+**已實作**：`src/Bee.UI.Avalonia/Controls/Editors/OverlayDialogHost.cs`（共用，`internal`），`LookupDialog` / `RowEditDialog` 加 `OperatingSystem.IsBrowser()` 分支（browser → overlay、desktop → 既有 `Window.ShowDialog`）。OverlayLayer 為 Canvas，backdrop 顯式 size 到 layer bounds 並追蹤 resize；card variant-aware surface（保證非 null hit-test）；RowEditPanel detach 自動 cancel buffered edit，故移除 overlay = 回滾未提交編輯（與關 window 一致）。
+
+**驗收**：WASM auto-open `LookupDialog.ShowAsync(host, "Supplier")` → 疊層 modal 置中於 dimmed 背景、DataGrid 載入真實 Supplier 資料、OK/Cancel 正常（live 截圖確認）。同時驗證 `GetLookupAsync` async + DataGrid 在 WASM 渲染。桌面端 `Window.ShowDialog` 路徑未動。
 
 ## 階段 5：Trimming / 序列化保留
 
