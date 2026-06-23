@@ -53,6 +53,10 @@ namespace Bee.Definition.Layouts
             {
                 Name = "Main",
                 Caption = master.DisplayName,
+                // The master section caption repeats the form's own name, which the host already
+                // frames (tab header / window title). Keep the caption as metadata but do not
+                // render it on the single-record surface. Detail sections keep their captions.
+                ShowCaption = false,
             };
 
             var covered = CollectCoveredDisplayFields(master);

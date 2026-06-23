@@ -25,7 +25,7 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
-        [DisplayName("GetFormLayout 主檔 Section 應命名為 Main 並使用主檔 DisplayName")]
+        [DisplayName("GetFormLayout 主檔 Section 應命名為 Main、Caption 用主檔 DisplayName 但不顯示")]
         public void GetFormLayout_CreatesMainSection()
         {
             var schema = BuildSchema();
@@ -36,7 +36,9 @@ namespace Bee.Definition.UnitTests.Layouts
             var section = layout.Sections![0];
             Assert.Equal("Main", section.Name);
             Assert.Equal("員工", section.Caption);
-            Assert.True(section.ShowCaption);
+            // The master section caption repeats the form name, so it is not rendered
+            // (the host frames the form via tab / title). See FormLayoutGenerator.AddSections.
+            Assert.False(section.ShowCaption);
         }
 
         [Fact]
