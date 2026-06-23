@@ -91,6 +91,15 @@
             "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Desktop",
             "console": "internalConsole",
             "stopAtEntry": false
+        },
+        {
+            "//": "Web (Avalonia WASM) head. blazorwasm is the .NET WebAssembly debug type — it builds and runs the WasmAppHost dev server (http://localhost:5200) and attaches the C# debugger through the /_framework/debug proxy, so breakpoints in the shared Bee.Northwind.UI hit in the browser. Needs the wasm-tools workload. Run the backend first — use the 'Server + Web' compound.",
+            "name": "Run Bee.Northwind.Browser (WASM)",
+            "type": "blazorwasm",
+            "request": "launch",
+            "preLaunchTask": "prep-northwind-browser",
+            "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Browser",
+            "url": "http://localhost:5200"
         }
     ],
     "compounds": [
@@ -99,6 +108,14 @@
             "configurations": [
                 "Run Bee.Northwind.Server",
                 "Run Bee.Northwind.Desktop"
+            ],
+            "stopAll": true
+        },
+        {
+            "name": "Run Bee.Northwind (Server + Web)",
+            "configurations": [
+                "Run Bee.Northwind.Server",
+                "Run Bee.Northwind.Browser (WASM)"
             ],
             "stopAll": true
         }

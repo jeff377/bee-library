@@ -214,6 +214,29 @@
                 "wait-for-northwind-server"
             ],
             "problemMatcher": []
+        },
+        {
+            "label": "build-northwind-browser",
+            "type": "process",
+            "command": "dotnet",
+            "args": [
+                "build",
+                "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Browser/Bee.Northwind.Browser.csproj",
+                "--configuration",
+                "Debug",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": "build"
+        },
+        {
+            "label": "prep-northwind-browser",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build-northwind-browser",
+                "wait-for-northwind-server"
+            ],
+            "problemMatcher": []
         }
     ]
 }
