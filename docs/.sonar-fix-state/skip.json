@@ -19,6 +19,33 @@
       "message": "Rename the enumeration 'PermissionAction' to match the regular expression: '^([A-Z]{1,3}[a-z0-9]+)*([A-Z]{2})?s$'.",
       "reason": "False Positive。PermissionAction 雖為 [Flags]，但每個成員是單一動作；全部公開 API（IAuthorizationService.Can、FormBusinessObject.Authorize、PermissionRule.Add/ctor）皆傳單一 action，PermissionAction.Read 在每個呼叫端讀起來自然。集合語意由成員名（AllowedActions 等）承載而非型別名。BCL 有單數 [Flags] 前例（FileAccess、FileShare）。曾於 25146aad 改複數後評估呼叫端可讀性，於本次 revert 回單數。請於 SonarCloud UI 標 False Positive。",
       "lastAttempt": "2026-06-05"
+    },
+    "AZ7ev6SgZN3jUhhcafZt": {
+      "rule": "external_roslyn:xUnit2032",
+      "severity": "INFO",
+      "component": "tests/Bee.UI.Avalonia.UnitTests/Controls/FieldCaptionStyleTests.cs",
+      "line": 25,
+      "message": "The naming of Assert.IsAssignableFrom can be confusing. An overload of Assert.IsType is available with an exact match flag.",
+      "reason": "測試 assertion 風格建議（Assert.IsAssignableFrom → Assert.IsType(exactMatch: false)）。sonar-fix 規則禁止修改既有測試 assertion，故不自動處理。如要採納，人工改測試後從此區塊移除；或於 SonarCloud UI 標 Won't Fix。INFO 級，不影響 quality gate。",
+      "lastAttempt": "2026-06-23"
+    },
+    "AZ7ev6SgZN3jUhhcafZu": {
+      "rule": "external_roslyn:xUnit2032",
+      "severity": "INFO",
+      "component": "tests/Bee.UI.Avalonia.UnitTests/Controls/FieldCaptionStyleTests.cs",
+      "line": 34,
+      "message": "The naming of Assert.IsAssignableFrom can be confusing. An overload of Assert.IsType is available with an exact match flag.",
+      "reason": "測試 assertion 風格建議（Assert.IsAssignableFrom → Assert.IsType(exactMatch: false)）。sonar-fix 規則禁止修改既有測試 assertion，故不自動處理。如要採納，人工改測試後從此區塊移除；或於 SonarCloud UI 標 Won't Fix。INFO 級，不影響 quality gate。",
+      "lastAttempt": "2026-06-23"
+    },
+    "AZ7ev6SgZN3jUhhcafZv": {
+      "rule": "external_roslyn:xUnit2032",
+      "severity": "INFO",
+      "component": "tests/Bee.UI.Avalonia.UnitTests/Controls/FieldCaptionStyleTests.cs",
+      "line": 43,
+      "message": "The naming of Assert.IsAssignableFrom can be confusing. An overload of Assert.IsType is available with an exact match flag.",
+      "reason": "測試 assertion 風格建議（Assert.IsAssignableFrom → Assert.IsType(exactMatch: false)）。sonar-fix 規則禁止修改既有測試 assertion，故不自動處理。如要採納，人工改測試後從此區塊移除；或於 SonarCloud UI 標 Won't Fix。INFO 級，不影響 quality gate。",
+      "lastAttempt": "2026-06-23"
     }
   }
 }

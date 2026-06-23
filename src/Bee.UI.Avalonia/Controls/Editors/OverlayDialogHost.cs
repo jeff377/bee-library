@@ -33,7 +33,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
             var overlay = OverlayLayer.GetOverlayLayer(host)
                 ?? throw new InvalidOperationException("No OverlayLayer is available for the current top level.");
 
-            var variant = (host as StyledElement)?.ActualThemeVariant ?? ThemeVariant.Default;
+            // Visual derives from StyledElement, so ActualThemeVariant is always available.
+            var variant = host.ActualThemeVariant;
             var card = BuildCard(content, title, variant);
             card.HorizontalAlignment = HorizontalAlignment.Center;
             card.VerticalAlignment = VerticalAlignment.Center;

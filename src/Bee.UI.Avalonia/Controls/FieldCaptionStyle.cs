@@ -26,6 +26,10 @@ namespace Bee.UI.Avalonia.Controls
         /// <param name="readOnly">Whether the field is read-only.</param>
         /// <param name="required">Whether the field is required (mandatory input).</param>
         public static IBrush? GetCaptionForeground(bool readOnly, bool required)
-            => readOnly ? s_readOnlyBrush : required ? s_requiredBrush : null;
+        {
+            if (readOnly) return s_readOnlyBrush;
+            if (required) return s_requiredBrush;
+            return null;
+        }
     }
 }
