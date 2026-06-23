@@ -1,0 +1,25 @@
+/* HTML splash screen shown until the Avalonia app starts; Avalonia adds the
+   `splash-close` class to fade it out once the first frame renders. */
+.avalonia-splash {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    background: #1b2a4e;
+    font-family: 'Outfit', sans-serif;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    pointer-events: none;
+}
+
+.avalonia-splash h2 {
+    font-weight: 400;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.avalonia-splash.splash-close {
+    transition: opacity 200ms, display 200ms;
+    display: none;
+    opacity: 0;
+}

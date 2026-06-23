@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:Bee.Northwind.UI.ViewModels"
+        xmlns:views="clr-namespace:Bee.Northwind.UI.Views"
         mc:Ignorable="d"
         x:Class="Bee.Northwind.UI.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -14,8 +15,7 @@
     <vm:MainWindowViewModel />
   </Design.DataContext>
 
-  <!-- ContentControl + DataTemplates wired in App.axaml resolves CurrentView to the
-       paired View by convention (FooViewModel -> FooView). -->
-  <ContentControl Content="{Binding CurrentView}" />
+  <!-- Desktop window is a thin shell around the shared, platform-neutral MainView. -->
+  <views:MainView />
 
 </Window>

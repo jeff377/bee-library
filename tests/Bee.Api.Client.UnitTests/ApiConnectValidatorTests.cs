@@ -149,5 +149,61 @@ namespace Bee.Api.Client.UnitTests
                 ApiClientInfo.SupportedConnectTypes = original;
             }
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        [DisplayName("ApiConnectValidator.ValidateAsync 空白 endpoint 應拋 ArgumentException")]
+        public async Task ValidateAsync_EmptyEndpoint_ThrowsArgumentException(string? endpoint)
+        {
+            await Assert.ThrowsAsync<ArgumentException>(() => ApiConnectValidator.ValidateAsync(endpoint!));
+        }
+
+        [Theory]
+        [InlineData("abc")]
+        [InlineData("not-a-url")]
+        [InlineData("ftp://example.com")]
+        [DisplayName("ApiConnectValidator.ValidateAsync 無法辨識的格式應拋 InvalidOperationException")]
+        public async Task ValidateAsync_UnknownFormat_ThrowsInvalidOperationException(string endpoint)
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(() => ApiConnectValidator.ValidateAsync(endpoint));
+        }
+
+        [Fact]
+        [DisplayName("ApiConnectValidator.ValidateAsync URL 格式但不支援 Remote 時應拋 InvalidOperationException")]
+        public async Task ValidateAsync_RemoteUrl_RemoteNotSupported_ThrowsInvalidOperationException()
+        {
+            var original = ApiClientInfo.SupportedConnectTypes;
+            try
+            {
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Local;
+                await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => ApiConnectValidator.ValidateAsync("http://example.com/api"));
+            }
+            finally
+            {
+                ApiClientInfo.SupportedConnectTypes = original;
+            }
+        }
+
+        [Fact]
+        [DisplayName("ApiConnectValidator.ValidateAsync URL 無法連線時應拋 InvalidOperationException 並指出 endpoint not reachable")]
+        public async Task ValidateAsync_RemoteUrl_NotReachable_ThrowsEndpointNotReachable()
+        {
+            var original = ApiClientInfo.SupportedConnectTypes;
+            try
+            {
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Both;
+                // 127.0.0.1:1 為 reserved port，本機不會有服務監聽，預檢必然失敗
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => ApiConnectValidator.ValidateAsync("http://127.0.0.1:1/jsonrpc/api"));
+                Assert.Contains("Endpoint not reachable", ex.Message);
+            }
+            finally
+            {
+                ApiClientInfo.SupportedConnectTypes = original;
+            }
+        }
     }
 }

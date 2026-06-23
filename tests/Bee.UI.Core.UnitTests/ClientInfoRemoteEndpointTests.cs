@@ -68,5 +68,39 @@ namespace Bee.UI.Core.UnitTests
                 ApiClientInfo.SupportedConnectTypes = originalSupportedTypes;
             }
         }
+
+        [Fact]
+        [DisplayName("SetEndpointAsync 無法連線的遠端 URL 應拋出 InvalidOperationException")]
+        public async Task SetEndpointAsync_UnreachableRemoteUrl_ThrowsInvalidOperationException()
+        {
+            var originalSupportedTypes = ApiClientInfo.SupportedConnectTypes;
+            try
+            {
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Both;
+                var ex = await Record.ExceptionAsync(() => ClientInfo.SetEndpointAsync("http://localhost:19999"));
+                Assert.IsType<InvalidOperationException>(ex);
+            }
+            finally
+            {
+                ApiClientInfo.SupportedConnectTypes = originalSupportedTypes;
+            }
+        }
+
+        [Fact]
+        [DisplayName("InitializeAsync 無法連線的遠端 URL 應拋出 InvalidOperationException")]
+        public async Task InitializeAsync_UnreachableRemoteUrl_ThrowsInvalidOperationException()
+        {
+            var originalSupportedTypes = ApiClientInfo.SupportedConnectTypes;
+            try
+            {
+                ApiClientInfo.SupportedConnectTypes = SupportedConnectTypes.Both;
+                var ex = await Record.ExceptionAsync(() => ClientInfo.InitializeAsync("http://localhost:19999"));
+                Assert.IsType<InvalidOperationException>(ex);
+            }
+            finally
+            {
+                ApiClientInfo.SupportedConnectTypes = originalSupportedTypes;
+            }
+        }
     }
 }

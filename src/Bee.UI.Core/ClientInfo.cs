@@ -180,6 +180,24 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
+        /// Sets the service endpoint and persists it, awaiting the validation and connector
+        /// initialization instead of blocking on them.
+        /// </summary>
+        /// <param name="endpoint">URL for remote connections; local file path for local connections.</param>
+        /// <remarks>
+        /// The async sibling of <see cref="SetEndpoint"/>. Use this from single-threaded
+        /// runtimes (browser WASM), where the sync path's blocking waits throw
+        /// "Cannot wait on monitors on this runtime".
+        /// </remarks>
+        public static async Task SetEndpointAsync(string endpoint)
+        {
+            var connectType = await ApiConnectValidator.ValidateAsync(endpoint, AllowGenerateSettings).ConfigureAwait(false);
+            SetConnectType(connectType, endpoint);
+            await SystemApiConnector.InitializeAsync().ConfigureAwait(false);
+            EndpointStorage.SaveEndpoint(endpoint);
+        }
+
+        /// <summary>
         /// Returns the currently configured service endpoint.
         /// </summary>
         public static string GetEndpoint()
@@ -232,6 +250,20 @@ namespace Bee.UI.Core
         public static void Initialize(string endpoint)
         {
             SetEndpoint(endpoint);
+        }
+
+        /// <summary>
+        /// Initializes with an explicit endpoint, awaiting the validation and connector
+        /// initialization. The async sibling of <see cref="Initialize(string)"/>.
+        /// </summary>
+        /// <param name="endpoint">URL for remote connections; local file path for local connections.</param>
+        /// <remarks>
+        /// Prefer this over <see cref="Initialize(string)"/> on single-threaded runtimes
+        /// (browser WASM), where blocking on async work throws "Cannot wait on monitors".
+        /// </remarks>
+        public static Task InitializeAsync(string endpoint)
+        {
+            return SetEndpointAsync(endpoint);
         }
 
         /// <summary>

@@ -1,0 +1,19 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Bee.Northwind.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="960" d:DesignHeight="640"
+             x:Class="Bee.Northwind.UI.Views.MainView"
+             x:DataType="vm:MainWindowViewModel">
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel />
+  </Design.DataContext>
+
+  <!-- ContentControl + DataTemplates wired in App.axaml resolves CurrentView to the
+       paired View by convention (FooViewModel -> FooView). Platform-neutral so the
+       desktop head wraps it in a Window and the browser head hosts it as the single view. -->
+  <ContentControl Content="{Binding CurrentView}" />
+
+</UserControl>
