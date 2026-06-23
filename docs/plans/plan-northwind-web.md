@@ -8,6 +8,7 @@
 | 2 | `BrowserLocalStorageEndpointStorage`（取代 FileEndpointStorage），連線設定可持久化 | 🚧 已接線（持久化 round-trip 待連線可用後驗） |
 | 2b | client 連線路徑 async 化（WASM 不可 sync-over-async；spike 發現） | ✅ 已完成（2026-06-23，live 驗證進 Login） |
 | 2c | WASM 啟用 System.Text.Json 反射序列化（spike 發現） | ✅ 已完成（2026-06-23） |
+| 2d | define 載入避開 sync `IDefineAccess`（FormsViewModel 改 async；spike 發現） | ✅ 已完成（2026-06-23，連線→登入→選單全通） |
 | 3 | `Bee.Northwind.Server` dev CORS（跨源 5200→5100）；同源 host 留作 production | ✅ 已完成（2026-06-23，連線跑通進 Login） |
 | 4 | popup Window 對話框（`LookupDialog` / `RowEditDialog`）改 overlay 疊層，WASM 可用 | 📝 待做 |
 | 5 | Trimming / FormSchema 反射序列化保留設定，Release 發佈可跑 | 📝 待做 |
@@ -144,6 +145,18 @@ Bee.Northwind.Server   ← 後端不動（僅加靜態檔 host）
 與 2b 同屬「WASM 連線必踩」：2b 是 sync-over-async、2c 是 STJ 反射停用。兩者修好後，WASM Connect → ping → `InitializeAsync`（含 `XmlCodec.Deserialize<CommonConfiguration>`，Debug 下 XmlSerializer 反射可用）→ 進 Login 全通（live 截圖確認）。
 
 > XmlSerializer（FormSchema / CommonConfiguration）的反射在 **Debug 可用**，Release/publish trimming 才需保留（見階段 5）。STJ 這個開關與 trimming 無關 —— Debug 也停用，故必加。
+
+## 階段 2d：define 載入避開 sync IDefineAccess
+
+**spike 真因**：登入 API **成功**後，`FormsViewModel` 同步呼叫 `ClientInfo.DefineAccess.GetProgramSettings()` 載入選單。`RemoteDefineAccess` 用 `SyncExecutor.Run` 橋接 async connector（`SyncExecutor` 註解本就寫「橋接同步介面如 IDefineAccess」），在 WASM 又踩 `Cannot wait on monitors`（與 2b 同根，不同路徑）。錯誤被 `LoginViewModel` 的 catch 包成 "Login failed"（誤導 —— login 其實成功，崩在後續選單載入）。
+
+**窄修（本計畫採用）**：`FormsViewModel` 改用 `await ClientInfo.SystemApiConnector.GetDefineAsync<ProgramSettings>(DefineType.ProgramSettings)`（與 `FormView` / Blazor `FormPage` 既有 async 慣例一致），建構子 fire-and-forget 載入、失敗顯示為一條 header。**Avalonia 開表單路徑已 async 安全**：`FormView` 走 `await GetDefineAsync<FormSchema>`，`Schema.GetFormLayout()` 是 FormSchema 本地方法（非 RemoteDefineAccess，不碰 SyncExecutor）。
+
+**驗收**：connect → login(demo/demo) → Forms shell 選單（Master Data / Organization / Transactions 共 8 個 ProgId）完整載入（live 截圖確認）。
+
+### 未來：框架級 async IDefineAccess（獨立工程，非本計畫）
+
+`IDefineAccess` 整個同步介面（21 個 Get/Save）在 remote 模式靠 `SyncExecutor`，WASM 本質不可行。長期正解是加 async 全套（IDefineAccess + RemoteDefineAccess + LocalDefineAccess + BO ripple，~11 檔，中等規模）。惠及所有 WASM 前端，但**非 Northwind Web 跑通的必要條件**（窄修已足）。日後另開 plan-define-access-async.md。
 
 ## 階段 3：跨源連通（dev CORS 為主，同源 host 留 production）
 
