@@ -634,20 +634,21 @@ namespace Bee.UI.Avalonia.Controls
             return templateColumn;
         }
 
-        // Read-only / required columns look identical to plain ones at rest, so the column
-        // caption colour is the cue (brown = read-only, blue = required; see
-        // FieldCaptionStyle). Keyed on the layout ReadOnly flag, NOT the DataGrid column
-        // IsReadOnly: lookup and popup-editor columns set IsReadOnly to bypass the edit
-        // pipeline while staying editable through click-to-swap, so they must not show the
-        // read-only cue.
+        // Read-only / required columns look identical to plain ones at rest, so the header marks
+        // the cue: a read-only column's caption is parenthesised (e.g. "(Amount)"), a required
+        // column's caption is blue (see FieldCaptionStyle). Keyed on the layout ReadOnly flag, NOT
+        // the DataGrid column IsReadOnly: lookup and popup-editor columns set IsReadOnly to bypass
+        // the edit pipeline while staying editable through click-to-swap, so they must not show
+        // the read-only cue.
         private static object BuildColumnHeader(LayoutColumn column)
         {
+            var caption = FieldCaptionStyle.FormatCaption(column.Caption, column.ReadOnly);
             var brush = FieldCaptionStyle.GetCaptionForeground(column.ReadOnly, column.Required);
             if (brush is null)
-                return column.Caption;
+                return caption;
             return new TextBlock
             {
-                Text = column.Caption,
+                Text = caption,
                 Foreground = brush,
             };
         }

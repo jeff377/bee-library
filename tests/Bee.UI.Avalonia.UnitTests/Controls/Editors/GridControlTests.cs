@@ -579,6 +579,22 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
+        [DisplayName("唯讀欄位 Header 以括號標示，可編輯欄位維持原樣")]
+        public void Bind_ReadOnlyColumn_HeaderParenthesised()
+        {
+            var dataObject = BuildDataObjectWithDetail();
+            var layout = new LayoutGrid("EmployeePhone", "Phones");
+            layout.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true, ReadOnly = true });
+            layout.Columns.Add(new LayoutColumn { FieldName = "type", Caption = "Type", Visible = true });
+
+            var grid = new GridControl();
+            grid.Bind(dataObject, layout);
+
+            Assert.Equal("(Phone)", grid.InnerGrid.Columns[0].Header);
+            Assert.Equal("Type", grid.InnerGrid.Columns[1].Header);
+        }
+
+        [Fact]
         [DisplayName("Popup 型欄位（Check/DropDown/Date/YearMonth）繞過編輯管線改走常駐編輯器")]
         public void BuildColumn_PopupEditorTypes_BypassEditPipeline()
         {

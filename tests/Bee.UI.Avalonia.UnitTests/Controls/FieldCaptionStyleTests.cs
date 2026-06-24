@@ -5,9 +5,9 @@ using Bee.UI.Avalonia.Controls;
 namespace Bee.UI.Avalonia.UnitTests.Controls
 {
     /// <summary>
-    /// Behaviour checks for <see cref="FieldCaptionStyle"/>: the shared caption-colour
-    /// convention (read-only = brown, required = blue, read-only wins) applied to master
-    /// field captions and detail grid headers.
+    /// Behaviour checks for <see cref="FieldCaptionStyle"/>: required captions are blue, read-only
+    /// captions stay the theme default (their cue is the parenthesised caption / editor underline),
+    /// and read-only suppresses the required colour.
     /// </summary>
     public class FieldCaptionStyleTests
     {
@@ -19,12 +19,10 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         }
 
         [Fact]
-        [DisplayName("唯讀欄位標題為棕色")]
-        public void GetCaptionForeground_ReadOnly_ReturnsBrown()
+        [DisplayName("唯讀欄位標題不上色（改以括號標示）")]
+        public void GetCaptionForeground_ReadOnly_ReturnsNull()
         {
-            var brush = Assert.IsType<ISolidColorBrush>(
-                FieldCaptionStyle.GetCaptionForeground(readOnly: true, required: false), exactMatch: false);
-            Assert.Equal(Color.FromRgb(0xA0, 0x52, 0x2D), brush.Color);
+            Assert.Null(FieldCaptionStyle.GetCaptionForeground(readOnly: true, required: false));
         }
 
         [Fact]
@@ -37,12 +35,31 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         }
 
         [Fact]
-        [DisplayName("唯讀＋必填時唯讀（棕）優先")]
-        public void GetCaptionForeground_ReadOnlyAndRequired_ReadOnlyWins()
+        [DisplayName("唯讀＋必填時唯讀優先（不套用必填藍色）")]
+        public void GetCaptionForeground_ReadOnlyAndRequired_ReturnsNull()
         {
-            var brush = Assert.IsType<ISolidColorBrush>(
-                FieldCaptionStyle.GetCaptionForeground(readOnly: true, required: true), exactMatch: false);
-            Assert.Equal(Color.FromRgb(0xA0, 0x52, 0x2D), brush.Color);
+            Assert.Null(FieldCaptionStyle.GetCaptionForeground(readOnly: true, required: true));
+        }
+
+        [Fact]
+        [DisplayName("唯讀欄位標題以括號包覆，例如 Amount → (Amount)")]
+        public void FormatCaption_ReadOnly_WrapsInParentheses()
+        {
+            Assert.Equal("(Amount)", FieldCaptionStyle.FormatCaption("Amount", readOnly: true));
+        }
+
+        [Fact]
+        [DisplayName("可編輯欄位標題維持原樣")]
+        public void FormatCaption_Editable_ReturnsPlain()
+        {
+            Assert.Equal("Amount", FieldCaptionStyle.FormatCaption("Amount", readOnly: false));
+        }
+
+        [Fact]
+        [DisplayName("唯讀但標題為空時不加括號")]
+        public void FormatCaption_ReadOnlyEmptyCaption_ReturnsEmpty()
+        {
+            Assert.Equal(string.Empty, FieldCaptionStyle.FormatCaption(string.Empty, readOnly: true));
         }
     }
 }

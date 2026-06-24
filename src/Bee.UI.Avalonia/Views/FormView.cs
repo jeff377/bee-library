@@ -411,8 +411,9 @@ namespace Bee.UI.Avalonia.Views
         {
             var stack = new StackPanel { Orientation = Orientation.Vertical, Spacing = 2 };
             var caption = new TextBlock { Text = field.Caption };
-            // Caption colour marks field state uniformly with the detail grid headers:
-            // brown = read-only, blue = required (read-only wins). See FieldCaptionStyle.
+            // A required field's caption is blue; a read-only field's caption stays the theme
+            // default — its cue is the editor's read-only underline (the detail grid, which has no
+            // such per-cell visual, parenthesises the header instead). See FieldCaptionStyle.
             if (Controls.FieldCaptionStyle.GetCaptionForeground(field.ReadOnly, field.Required) is { } brush)
                 caption.Foreground = brush;
             stack.Children.Add(caption);
