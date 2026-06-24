@@ -4,6 +4,54 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.11.0]
+
+> Bee.NET remains in pre-stable evolution. The theme of this release is "front-end ↔ back-end access goes fully async": the client connection lifecycle and the typed definition cache drop their synchronous-over-asynchronous bridges (`SyncExecutor` is gone), which in turn makes a single-window WASM host viable — this release is what lets an Avalonia Browser (WASM) head run. It contains **breaking changes** confined to the client construction / connection surface of `Bee.UI.Core`, `Bee.Api.Client`, and the Avalonia / MAUI heads. It also ships a **security upgrade** of the SQLitePCLRaw dependency.
+
+### Breaking Changes
+
+- **Public synchronous client APIs removed in favor of async** — `ClientInfo.Initialize(string)` / `ClientInfo.SetEndpoint`, `ApiConnectValidator.Validate`, and `IUIViewService.ShowApiConnect` are gone; use their async counterparts (`ClientInfo.InitializeAsync` / `ClientInfo.SetEndpointAsync`, `ApiConnectValidator.ValidateAsync`, `IUIViewService.ShowApiConnectAsync`). The connection bootstrap is async throughout, and `SyncExecutor` (plus the three sync wrappers on `SystemApiConnector`) is removed. A synchronous-over-asynchronous bridge cannot run in a browser (WASM) sandbox, so eliminating it is what makes the WASM head possible.
+- **`RemoteDefineAccess` → `ClientDefineAccess` (moved to the `Bee.Api.Client` root), `LocalDefineAccess` → `CacheDefineAccess`** — `ClientDefineAccess` is decoupled from `IDefineAccess` and is now a client-side async typed definition cache (read + save, concurrent de-duplication, evict-on-failure). `CacheDefineAccess` is renamed to join the `Cache*` naming family of `Bee.ObjectCaching`. Callers go through the `ClientInfo.DefineAccess` cache; control schema injection moves from a synchronous seam to a `ResolveSchemaAsync` hook.
+
+### Security
+
+- **SQLitePCLRaw upgraded to 3.x (GHSA-2m69-gcr7-jv3q)** — replaces the earlier NU1903 suppression with the real fix; the bundled SQLite native provider picks up the patched release.
+
+### Added
+
+- **Dialog overlay path for single-window hosts (`Bee.UI.Avalonia`)** — `LookupDialog` / `RowEditDialog` render through an `OverlayLayer` when the host has no multi-window support (`OperatingSystem.IsBrowser()`), falling back to a real `Window` on desktop. This is what lets lookup and row-edit dialogs work in an Avalonia Browser (WASM) head.
+- **`FormDataObject` collection events (`Bee.UI.Avalonia`)** — `RowAdded` / `RowDeleted` / `IsDirtyChanged`, completing the change-notification surface introduced in 4.9.0.
+
+### Changed
+
+- **Field editors commit on leave / Enter, not per keystroke (`Bee.UI.Avalonia`)** — text editors write the bound value when focus leaves the control or Enter is pressed, rather than on every character, matching ERP data-entry expectations.
+- **Field captions mark read-only and required uniformly (`Bee.UI.Avalonia`)** — read-only fields are indicated by a parenthesized caption (read-only mode also drops the box border, keeping only an underline); required fields by a blue caption.
+- **Generated form main section no longer repeats the form name (`Bee.Definition`)** — `FormLayoutGenerator` omits the redundant form-name caption on the main section.
+
+### Fixed
+
+- **`GridControl.Bind` self-initializes edit state on explicit bind (`Bee.UI.Avalonia`)** — an explicitly bound grid sets up its own edit state instead of relying on ambient wiring.
+
+### Upgrade Guide
+
+**Synchronous client bootstrap → async:**
+
+```diff
+- ClientInfo.Initialize(endpoint);
+- ClientInfo.SetEndpoint(endpoint);
++ await ClientInfo.InitializeAsync(endpoint);
++ await ClientInfo.SetEndpointAsync(endpoint);
+```
+
+**Type renames:**
+
+```diff
+- RemoteDefineAccess access = ...;
+- LocalDefineAccess cache = ...;
++ ClientDefineAccess access = ...;   // now at the Bee.Api.Client root
++ CacheDefineAccess cache = ...;
+```
+
 ## [4.10.0]
 
 > Bee.NET remains in pre-stable evolution. The theme of this release is "the lookup relation mechanism lands in full": relation fields automatically become dialog-based lookup editors with composite "code - name" display, with two pick entry points (master `ButtonEdit` and detail in-cell), backed by a server-side `GetLookup`. It also splits the Avalonia single-record and list concerns into `FormView` / `ListView` (the ERP list/single separation), and consolidates DataForm persistence onto a DataTable-level `DataAdapter` path (a home-grown `SqliteDataAdapter` lets SQLite use the adapter path too). The release contains **several breaking changes**, confined to the construction surface of `Bee.UI.Avalonia` and `Bee.Db`.
