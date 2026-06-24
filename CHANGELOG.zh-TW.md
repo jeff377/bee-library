@@ -8,7 +8,7 @@
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「前端↔後端存取全面 async 化」：client 連線生命週期與型別化定義快取卸除 sync-over-async 橋接（`SyncExecutor` 移除），連帶讓單視窗的 Avalonia Browser (WASM) head 可行。本版含**破壞性變更**，範圍限於 `Bee.UI.Core`、`Bee.Api.Client` 與 Avalonia / MAUI head 的 client 建構／連線面，另含 SQLitePCLRaw 的**安全性升級**。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.11.0.md](docs/changelogs/4.11.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.11.0.zh-TW.md](docs/changelogs/4.11.0.zh-TW.md)
 
 ### 破壞性變更
 
@@ -51,7 +51,7 @@
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「lookup 關連機制全面落地」：relation 欄自動成為開窗式 lookup 編輯器、複合顯示「編號 - 名稱」、主表 `ButtonEdit` 與明細 InCell 兩種選取入口，搭配後端 `GetLookup` 取數。同時把 Avalonia 單筆/清單拆為 `FormView` / `ListView` 兩個關注點（ERP 慣例的清單／單筆分離），並將 DataForm 持久化收斂到 DataTable 級 `DataAdapter` 路徑（自製 `SqliteDataAdapter` 讓 SQLite 同樣走 adapter）。本版含**數個 breaking change**，範圍限於 `Bee.UI.Avalonia` 與 `Bee.Db` 的建構面。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.10.0.md](docs/changelogs/4.10.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.10.0.zh-TW.md](docs/changelogs/4.10.0.zh-TW.md)
 
 ### 破壞性變更
 
@@ -82,7 +82,7 @@
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「Avalonia 可編輯表單全面落地」：與 `ControlType` 一一對應的 field editor 控件組、新的 `GridControl`（含 in-cell 與彈窗兩種列編輯）、表單模式生命週期（`SingleFormBase` 向整棵控件樹廣播 `FormMode`），以及定義層 `FormEditModes` 依表單模式的可編輯設定。本版含 **一個 breaking change**，範圍僅限 Avalonia 家族：`Bee.UI.Avalonia` 移除 `DynamicGrid`（Blazor / MAUI 版不受影響）。另含 MessagePack 相依套件的**安全性升級**。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.9.0.md](docs/changelogs/4.9.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.9.0.zh-TW.md](docs/changelogs/4.9.0.zh-TW.md)
 
 ### 破壞性變更
 
@@ -121,7 +121,7 @@
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「框架預設定義升為一等公民」：所有 `st_*` 系統表 schema、框架預設 `Department` / `Employee` 表單、以及 bootstrap 設定 template 全部以 embedded resource 形式 ship 在 `Bee.Definition.dll` 內，透過新公開 API `Bee.Definition.Defaults` 對外存取。新增 `Bee.Cli` dotnet tool（`dotnet bee defines materialize ...`）+ DefineEditor 自動 materialize hook，把首次 setup 縮成一條指令。本版含 **一個 breaking change**：框架組織表 `ft_department` / `ft_employee` 改名為 `st_department` / `st_employee` 對齊既有 `st_*` 命名空間。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.8.0.md](docs/changelogs/4.8.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.8.0.zh-TW.md](docs/changelogs/4.8.0.zh-TW.md)
 
 ### 破壞性變更
 
@@ -140,7 +140,7 @@
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「ERP 權限機制、i18n 與多租戶客製化全面落地」：新增權限線 A/B/record-scope 三段式機制、多國語系基礎建設、多租戶客製化覆蓋層、跨節點 DB 快取失效機制與「定義存 DB」儲存後端，並加開第三個桌面平台支援 — 新增 `Bee.UI.Avalonia` 套件。本版無 breaking change（既有公開 API 簽章未動）；但首次啟動會自動建立多張新系統表（`st_role` / `st_role_grant` / `st_user_role` / `st_cache_notify` / `st_define` / `st_user_company` 等），如以 framework 自動 schema 升級之外另自管 DDL 的部署需手動補建。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.7.0.md](docs/changelogs/4.7.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.7.0.zh-TW.md](docs/changelogs/4.7.0.zh-TW.md)
 
 ### 新增
 
@@ -174,7 +174,7 @@
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「開放 JSON-RPC 給 JS 前端」：FormBO / SystemBO 共 7 個 CRUD / Session 方法 `ProtectionLevel` 降為 `Public`、新增兩個 JSON-native 取得方法（`GetFormSchema` / `GetFormLayout`），並修正 Plain 路徑 DataSet 反序列化與 Blazor WebAssembly RSA 相關阻塞問題。`MasterKeySource` 預設值改為 `Environment`，依嚴格 SemVer 觀點屬 major，pre-stable 政策下以 minor 發佈。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.6.0.md](docs/changelogs/4.6.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.6.0.zh-TW.md](docs/changelogs/4.6.0.zh-TW.md)
 
 ### 新增
 
@@ -204,7 +204,7 @@
 
 > Bee.NET 仍處於 pre-stable 演進階段。本次新增三層前端套件（`Bee.UI.Core` 跨平台共通層、`Bee.UI.Maui` MAUI 行動／桌面控制項、`Bee.Web.Blazor.Server` / `Bee.Web.Blazor.Wasm` 兩個 Blazor RCL），並把 API connector 介面整批轉為 async-only。介面簽名變動由嚴格 SemVer 觀點屬 major，pre-stable 政策下以 minor 發佈。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.5.0.md](docs/changelogs/4.5.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.5.0.zh-TW.md](docs/changelogs/4.5.0.zh-TW.md)
 
 ### 新增
 
@@ -239,7 +239,7 @@
 
 > Bee.NET 仍處於 pre-stable 演進階段；對外公開 API 表面尚無外部消費者，minor 版本允許包含 API 搬遷與少量 breaking change。本次包含介面簽名變動（`IFormRepositoryFactory.CreateDataFormRepository`、`IDataFormRepository.GetList`）與屬性移除（`CompanyInfo.LogDatabaseId`），嚴格 SemVer 觀點屬 major，pre-stable 政策下以 minor 發佈。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.4.0.md](docs/changelogs/4.4.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.4.0.zh-TW.md](docs/changelogs/4.4.0.zh-TW.md)
 
 ### 新增
 
@@ -281,7 +281,7 @@
 
 > Bee.NET 仍處於 pre-stable 演進階段；對外公開 API 表面尚無外部消費者，minor 版本允許包含命名空間搬遷。本次調整以嚴格 SemVer 觀點屬 major，pre-stable 政策下以 minor 發佈。
 
-📄 詳細變更與設計脈絡：[docs/changelogs/4.3.0.md](docs/changelogs/4.3.0.md)
+📄 詳細變更與設計脈絡：[docs/changelogs/4.3.0.zh-TW.md](docs/changelogs/4.3.0.zh-TW.md)
 
 ### 新增
 
