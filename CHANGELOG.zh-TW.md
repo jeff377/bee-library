@@ -6,35 +6,33 @@
 
 ## [4.11.0]
 
-> Bee.NET 仍處 pre-stable 演進階段。本版主軸為「前端↔後端存取全面 async 化」：client 連線生命週期與型別化定義快取卸除 sync-over-async 橋接（`SyncExecutor` 移除），連帶讓單視窗的 WASM host 可行——本版正是讓 Avalonia Browser (WASM) head 得以執行的基礎。本版含**破壞性變更**，範圍限於 `Bee.UI.Core`、`Bee.Api.Client` 與 Avalonia / MAUI head 的 client 建構／連線面。另含 SQLitePCLRaw 相依套件的**安全性升級**。
+> Bee.NET 仍處 pre-stable 演進階段。本版主軸為「前端↔後端存取全面 async 化」：client 連線生命週期與型別化定義快取卸除 sync-over-async 橋接（`SyncExecutor` 移除），連帶讓單視窗的 Avalonia Browser (WASM) head 可行。本版含**破壞性變更**，範圍限於 `Bee.UI.Core`、`Bee.Api.Client` 與 Avalonia / MAUI head 的 client 建構／連線面，另含 SQLitePCLRaw 的**安全性升級**。
 
 ### 破壞性變更
 
-- **移除公開的同步 client API，改用 async** — `ClientInfo.Initialize(string)` / `ClientInfo.SetEndpoint`、`ApiConnectValidator.Validate`、`IUIViewService.ShowApiConnect` 移除；改用對應 async 版本（`ClientInfo.InitializeAsync` / `ClientInfo.SetEndpointAsync`、`ApiConnectValidator.ValidateAsync`、`IUIViewService.ShowApiConnectAsync`）。連線初始化全面 async，`SyncExecutor`（及 `SystemApiConnector` 上 3 個 sync 包裝）一併移除。sync-over-async 橋接無法在瀏覽器（WASM）沙箱執行，移除它正是 WASM head 可行的關鍵。
-- **`RemoteDefineAccess` → `ClientDefineAccess`（移至 `Bee.Api.Client` root）、`LocalDefineAccess` → `CacheDefineAccess`** — `ClientDefineAccess` 從 `IDefineAccess` 解耦，改為 client 端 async 型別化定義快取（read + save、並發去重、失敗驅逐）。`CacheDefineAccess` 更名以融入 `Bee.ObjectCaching` 的 `Cache*` 命名家族。呼叫端改走 `ClientInfo.DefineAccess` 快取；控件 schema 注入 seam 由同步改為 `ResolveSchemaAsync` hook。
+- 移除公開的同步 client API，改用 async —— `ClientInfo.Initialize(string)` / `SetEndpoint`、`ApiConnectValidator.Validate`、`IUIViewService.ShowApiConnect`（改用對應 `...Async`）；`SyncExecutor` 移除。
+- 型別更名 `RemoteDefineAccess` → `ClientDefineAccess`（移至 `Bee.Api.Client` root）、`LocalDefineAccess` → `CacheDefineAccess`。
 
 ### 安全性
 
-- **SQLitePCLRaw 升級至 3.x（GHSA-2m69-gcr7-jv3q）** — 以真正修復取代先前的 NU1903 抑制；內附的 SQLite native provider 一併採用修補版。
+- SQLitePCLRaw 升級至 3.x（GHSA-2m69-gcr7-jv3q），取代先前的 NU1903 抑制。
 
 ### 新增
 
-- **單視窗 host 的對話框疊層路徑（`Bee.UI.Avalonia`）** — `LookupDialog` / `RowEditDialog` 在 host 無多視窗支援時（`OperatingSystem.IsBrowser()`）改經 `OverlayLayer` 渲染，desktop 仍回退為真實 `Window`。這讓 lookup 與列編輯對話框得以在 Avalonia Browser (WASM) head 運作。
-- **`FormDataObject` 集合事件（`Bee.UI.Avalonia`）** — 新增 `RowAdded` / `RowDeleted` / `IsDirtyChanged`，補齊 4.9.0 引入的變更通知面。
+- `Bee.UI.Avalonia`：單視窗 host 的對話框疊層路徑（`OverlayLayer`），讓 lookup / 列編輯對話框得以在 Avalonia Browser (WASM) head 運作。
+- `Bee.UI.Avalonia`：`FormDataObject` 新增 `RowAdded` / `RowDeleted` / `IsDirtyChanged` 事件。
 
 ### 變更
 
-- **欄位編輯器改為離開／Enter 才提交，非逐字提交（`Bee.UI.Avalonia`）** — 文字編輯器在焦點離開控件或按下 Enter 時才寫回綁定值，不再逐字提交，符合 ERP 資料輸入慣例。
-- **欄位標題統一標示唯讀與必填（`Bee.UI.Avalonia`）** — 唯讀欄位以括號標題標示（唯讀模式並去除外框、僅留底線）；必填欄位以藍色標題標示。
-- **生成表單的主 section 不再重複表單名（`Bee.Definition`）** — `FormLayoutGenerator` 省略主 section 上重複的表單名標題。
+- `Bee.UI.Avalonia`：欄位編輯器改為離開／Enter 才提交，非逐字提交。
+- `Bee.UI.Avalonia`：欄位標題統一標示唯讀（括號、僅留底線）與必填（藍色）。
+- `Bee.Definition`：`FormLayoutGenerator` 生成的主 section 不再重複表單名。
 
 ### 修正
 
-- **`GridControl.Bind` 明確綁定時自我初始化編輯狀態（`Bee.UI.Avalonia`）** — 明確綁定的 grid 自行建立編輯狀態，不再依賴 ambient 接線。
+- `Bee.UI.Avalonia`：`GridControl.Bind` 明確綁定時自我初始化編輯狀態。
 
 ### 升級指引
-
-**同步 client 初始化 → async：**
 
 ```diff
 - ClientInfo.Initialize(endpoint);
@@ -42,14 +40,9 @@
 + await ClientInfo.InitializeAsync(endpoint);
 + await ClientInfo.SetEndpointAsync(endpoint);
 ```
-
-**型別更名：**
-
 ```diff
-- RemoteDefineAccess access = ...;
-- LocalDefineAccess cache = ...;
-+ ClientDefineAccess access = ...;   // 現位於 Bee.Api.Client root
-+ CacheDefineAccess cache = ...;
+- RemoteDefineAccess access = ...;   // LocalDefineAccess cache = ...;
++ ClientDefineAccess access = ...;   // CacheDefineAccess  cache = ...;
 ```
 
 ## [4.10.0]

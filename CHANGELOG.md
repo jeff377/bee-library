@@ -6,35 +6,33 @@ All notable changes to this project will be documented in this file.
 
 ## [4.11.0]
 
-> Bee.NET remains in pre-stable evolution. The theme of this release is "front-end ↔ back-end access goes fully async": the client connection lifecycle and the typed definition cache drop their synchronous-over-asynchronous bridges (`SyncExecutor` is gone), which in turn makes a single-window WASM host viable — this release is what lets an Avalonia Browser (WASM) head run. It contains **breaking changes** confined to the client construction / connection surface of `Bee.UI.Core`, `Bee.Api.Client`, and the Avalonia / MAUI heads. It also ships a **security upgrade** of the SQLitePCLRaw dependency.
+> Bee.NET remains in pre-stable evolution. The theme of this release is "front-end ↔ back-end access goes fully async": the client connection lifecycle and the typed definition cache drop their synchronous-over-asynchronous bridges (`SyncExecutor` is gone), which makes a single-window Avalonia Browser (WASM) head viable. It contains **breaking changes** confined to the client construction / connection surface of `Bee.UI.Core`, `Bee.Api.Client`, and the Avalonia / MAUI heads, plus a **security upgrade** of SQLitePCLRaw.
 
 ### Breaking Changes
 
-- **Public synchronous client APIs removed in favor of async** — `ClientInfo.Initialize(string)` / `ClientInfo.SetEndpoint`, `ApiConnectValidator.Validate`, and `IUIViewService.ShowApiConnect` are gone; use their async counterparts (`ClientInfo.InitializeAsync` / `ClientInfo.SetEndpointAsync`, `ApiConnectValidator.ValidateAsync`, `IUIViewService.ShowApiConnectAsync`). The connection bootstrap is async throughout, and `SyncExecutor` (plus the three sync wrappers on `SystemApiConnector`) is removed. A synchronous-over-asynchronous bridge cannot run in a browser (WASM) sandbox, so eliminating it is what makes the WASM head possible.
-- **`RemoteDefineAccess` → `ClientDefineAccess` (moved to the `Bee.Api.Client` root), `LocalDefineAccess` → `CacheDefineAccess`** — `ClientDefineAccess` is decoupled from `IDefineAccess` and is now a client-side async typed definition cache (read + save, concurrent de-duplication, evict-on-failure). `CacheDefineAccess` is renamed to join the `Cache*` naming family of `Bee.ObjectCaching`. Callers go through the `ClientInfo.DefineAccess` cache; control schema injection moves from a synchronous seam to a `ResolveSchemaAsync` hook.
+- Remove synchronous client APIs in favor of async — `ClientInfo.Initialize(string)` / `SetEndpoint`, `ApiConnectValidator.Validate`, `IUIViewService.ShowApiConnect` (use the `...Async` counterparts); `SyncExecutor` removed.
+- Rename `RemoteDefineAccess` → `ClientDefineAccess` (now at the `Bee.Api.Client` root) and `LocalDefineAccess` → `CacheDefineAccess`.
 
 ### Security
 
-- **SQLitePCLRaw upgraded to 3.x (GHSA-2m69-gcr7-jv3q)** — replaces the earlier NU1903 suppression with the real fix; the bundled SQLite native provider picks up the patched release.
+- Upgrade SQLitePCLRaw to 3.x (GHSA-2m69-gcr7-jv3q), replacing the NU1903 suppression.
 
 ### Added
 
-- **Dialog overlay path for single-window hosts (`Bee.UI.Avalonia`)** — `LookupDialog` / `RowEditDialog` render through an `OverlayLayer` when the host has no multi-window support (`OperatingSystem.IsBrowser()`), falling back to a real `Window` on desktop. This is what lets lookup and row-edit dialogs work in an Avalonia Browser (WASM) head.
-- **`FormDataObject` collection events (`Bee.UI.Avalonia`)** — `RowAdded` / `RowDeleted` / `IsDirtyChanged`, completing the change-notification surface introduced in 4.9.0.
+- `Bee.UI.Avalonia`: dialog overlay path (`OverlayLayer`) for single-window hosts, enabling lookup / row-edit dialogs in the Avalonia Browser (WASM) head.
+- `Bee.UI.Avalonia`: `FormDataObject` `RowAdded` / `RowDeleted` / `IsDirtyChanged` events.
 
 ### Changed
 
-- **Field editors commit on leave / Enter, not per keystroke (`Bee.UI.Avalonia`)** — text editors write the bound value when focus leaves the control or Enter is pressed, rather than on every character, matching ERP data-entry expectations.
-- **Field captions mark read-only and required uniformly (`Bee.UI.Avalonia`)** — read-only fields are indicated by a parenthesized caption (read-only mode also drops the box border, keeping only an underline); required fields by a blue caption.
-- **Generated form main section no longer repeats the form name (`Bee.Definition`)** — `FormLayoutGenerator` omits the redundant form-name caption on the main section.
+- `Bee.UI.Avalonia`: field editors commit on leave / Enter instead of per keystroke.
+- `Bee.UI.Avalonia`: field captions mark read-only (parenthesized, underline-only) and required (blue) uniformly.
+- `Bee.Definition`: `FormLayoutGenerator` no longer repeats the form name on the generated main section.
 
 ### Fixed
 
-- **`GridControl.Bind` self-initializes edit state on explicit bind (`Bee.UI.Avalonia`)** — an explicitly bound grid sets up its own edit state instead of relying on ambient wiring.
+- `Bee.UI.Avalonia`: `GridControl.Bind` self-initializes edit state on explicit bind.
 
 ### Upgrade Guide
-
-**Synchronous client bootstrap → async:**
 
 ```diff
 - ClientInfo.Initialize(endpoint);
@@ -42,14 +40,9 @@ All notable changes to this project will be documented in this file.
 + await ClientInfo.InitializeAsync(endpoint);
 + await ClientInfo.SetEndpointAsync(endpoint);
 ```
-
-**Type renames:**
-
 ```diff
-- RemoteDefineAccess access = ...;
-- LocalDefineAccess cache = ...;
-+ ClientDefineAccess access = ...;   // now at the Bee.Api.Client root
-+ CacheDefineAccess cache = ...;
+- RemoteDefineAccess access = ...;   // LocalDefineAccess cache = ...;
++ ClientDefineAccess access = ...;   // CacheDefineAccess  cache = ...;
 ```
 
 ## [4.10.0]
