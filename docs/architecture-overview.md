@@ -95,8 +95,8 @@ This is **pragmatic clean architecture** -- preserving dependency direction and 
 ```mermaid
 graph TD
     subgraph Generate FormSchema
-        A1["AI-powered generation (natural language)"]
-        A2["Visual tool adjustments (drag-and-drop fields and relationships)"]
+        A1["AI-powered generation"]
+        A2["Visual tool adjustments"]
     end
 
     A1 --> FD["FormSchema"]

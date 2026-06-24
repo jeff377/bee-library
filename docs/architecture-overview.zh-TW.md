@@ -94,8 +94,8 @@ BeeNET 以 **DataSet 取代強型別 Entity**，帶來：
 ```mermaid
 graph TD
     subgraph 產生 FormSchema
-        A1["AI 智能生成（自然語言）"]
-        A2["視覺化工具調整（拖拉欄位與關聯）"]
+        A1["AI 智能生成"]
+        A2["視覺化工具調整"]
     end
 
     A1 --> FD["FormSchema"]
