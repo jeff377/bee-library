@@ -8,6 +8,8 @@
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「前端↔後端存取全面 async 化」：client 連線生命週期與型別化定義快取卸除 sync-over-async 橋接（`SyncExecutor` 移除），連帶讓單視窗的 Avalonia Browser (WASM) head 可行。本版含**破壞性變更**，範圍限於 `Bee.UI.Core`、`Bee.Api.Client` 與 Avalonia / MAUI head 的 client 建構／連線面，另含 SQLitePCLRaw 的**安全性升級**。
 
+📄 詳細變更與設計脈絡：[docs/changelogs/4.11.0.md](docs/changelogs/4.11.0.md)
+
 ### 破壞性變更
 
 - 移除公開的同步 client API，改用 async —— `ClientInfo.Initialize(string)` / `SetEndpoint`、`ApiConnectValidator.Validate`、`IUIViewService.ShowApiConnect`（改用對應 `...Async`）；`SyncExecutor` 移除。

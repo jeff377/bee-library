@@ -8,6 +8,8 @@ All notable changes to this project will be documented in this file.
 
 > Bee.NET remains in pre-stable evolution. The theme of this release is "front-end ↔ back-end access goes fully async": the client connection lifecycle and the typed definition cache drop their synchronous-over-asynchronous bridges (`SyncExecutor` is gone), which makes a single-window Avalonia Browser (WASM) head viable. It contains **breaking changes** confined to the client construction / connection surface of `Bee.UI.Core`, `Bee.Api.Client`, and the Avalonia / MAUI heads, plus a **security upgrade** of SQLitePCLRaw.
 
+📄 Full notes & design context: [docs/changelogs/4.11.0.md](docs/changelogs/4.11.0.md)
+
 ### Breaking Changes
 
 - Remove synchronous client APIs in favor of async — `ClientInfo.Initialize(string)` / `SetEndpoint`, `ApiConnectValidator.Validate`, `IUIViewService.ShowApiConnect` (use the `...Async` counterparts); `SyncExecutor` removed.
