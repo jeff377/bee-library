@@ -1,14 +1,16 @@
 # 計畫：bee-northwind-avalonia 重新同步 + 新增 WASM Browser head
 
-**狀態：📝 擬定中（2026-06-24）**
+**狀態：✅ 已完成（2026-06-24）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | bee-library 發布框架 v4.11.0（含 WASM/async src 變更） | 📝 待做 |
-| 1 | avalonia repo 全量重新同步 UI/Desktop/Server/Define，套件 bump 4.10.0→4.11.0 | 📝 待做 |
-| 2 | 新增 Bee.Northwind.Browser head（複製 + 加入 slnx） | 📝 待做 |
-| 3 | 文件同步（top-level README 雙語加 Web 案例、wasm-tools 前置、launch 設定） | 📝 待做 |
-| 4 | 驗證（三 head build + Desktop/Browser 冒煙）→ commit + push | 📝 待做 |
+| 0 | bee-library 發布框架 v4.11.0（含 WASM/async src 變更） | ✅ 已完成（2026-06-24） |
+| 1 | avalonia repo 全量重新同步 UI/Desktop/Server/Define，套件 bump 4.10.0→4.11.0 | ✅ 已完成（2026-06-24） |
+| 2 | 新增 Bee.Northwind.Browser head（複製 + 加入 slnx） | ✅ 已完成（2026-06-24） |
+| 3 | 文件同步（top-level README 雙語加 Web 案例、wasm-tools 前置、launch 設定） | ✅ 已完成（2026-06-24） |
+| 4 | 驗證（三 head build + Desktop/Browser 冒煙）→ commit + push | ✅ 已完成（2026-06-24） |
+
+> 落地：bee-northwind-avalonia commit `aa4afae`（四專案含 WASM head 0 警告 0 錯誤；Server :5100 + WASM dev server :5200 啟動服務驗證通過）。完整 UI 點擊互動需真實瀏覽器，留待使用者自測。
 
 ## 背景
 
