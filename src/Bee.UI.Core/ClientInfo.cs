@@ -1,12 +1,10 @@
 using Bee.Api.Client;
 using Bee.Api.Client.Connectors;
-using Bee.Api.Client.DefineAccess;
 using Bee.Api.Core.Messages.System;
 using Bee.Base;
 using Bee.Base.Serialization;
 using Bee.Definition.Identity;
 using Bee.Definition.Settings;
-using Bee.Definition.Storage;
 using System.Reflection;
 
 namespace Bee.UI.Core
@@ -18,11 +16,11 @@ namespace Bee.UI.Core
     {
         private static ClientSettings? _clientSettings;
         private static SystemApiConnector? _systemConnector;
-        private static IDefineAccess? _defineAccess;
+        private static ClientDefineAccess? _defineAccess;
         private static Guid _accessToken = Guid.Empty;
 
         /// <summary>
-        /// Command-line arguments parsed at <see cref="Initialize(IUIViewService, SupportedConnectTypes)"/>.
+        /// Command-line arguments parsed at <see cref="InitializeAsync(IUIViewService, SupportedConnectTypes)"/>.
         /// </summary>
         public static Dictionary<string, string>? Arguments { get; private set; }
 
@@ -68,7 +66,7 @@ namespace Bee.UI.Core
             get { return _accessToken; }
             private set
             {
-                // NOTE: 重設 AccessToken 必須同步清掉 SystemApiConnector 與 IDefineAccess 快取，
+                // NOTE: 重設 AccessToken 必須同步清掉 SystemApiConnector 與 ClientDefineAccess 快取，
                 // 否則後續呼叫會帶舊 token 對 server 失敗。
                 if (value != _accessToken)
                 {
@@ -112,11 +110,11 @@ namespace Bee.UI.Core
         /// <summary>
         /// Definition-data accessor. Recreated whenever the endpoint changes.
         /// </summary>
-        public static IDefineAccess DefineAccess
+        public static ClientDefineAccess DefineAccess
         {
             get
             {
-                _defineAccess ??= new RemoteDefineAccess(SystemApiConnector);
+                _defineAccess ??= new ClientDefineAccess(SystemApiConnector);
                 return _defineAccess;
             }
         }
@@ -126,13 +124,13 @@ namespace Bee.UI.Core
         /// </summary>
         /// <remarks>
         /// Must be called after switching tenant context (<c>EnterCompany</c> / <c>LeaveCompany</c>),
-        /// because <see cref="RemoteDefineAccess"/> caches the server-overlaid FormLayout / Language /
+        /// because <see cref="ClientDefineAccess"/> caches the server-overlaid FormLayout / Language /
         /// ProgramSettings keyed only by progId / layoutId / namespace — stale entries would otherwise
         /// leak the previous tenant's customization. No-op when the accessor has not been created yet.
         /// </remarks>
         public static void ResetDefineCache()
         {
-            (_defineAccess as RemoteDefineAccess)?.ClearCache();
+            _defineAccess?.ClearCache();
         }
 
         /// <summary>
@@ -168,25 +166,13 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
-        /// Sets the service endpoint and persists it.
-        /// </summary>
-        /// <param name="endpoint">URL for remote connections; local file path for local connections.</param>
-        public static void SetEndpoint(string endpoint)
-        {
-            var connectType = ApiConnectValidator.Validate(endpoint, AllowGenerateSettings);
-            SetConnectType(connectType, endpoint);
-            SyncExecutor.Run(() => SystemApiConnector.InitializeAsync());
-            EndpointStorage.SaveEndpoint(endpoint);
-        }
-
-        /// <summary>
         /// Sets the service endpoint and persists it, awaiting the validation and connector
         /// initialization instead of blocking on them.
         /// </summary>
         /// <param name="endpoint">URL for remote connections; local file path for local connections.</param>
         /// <remarks>
-        /// The async sibling of <see cref="SetEndpoint"/>. Use this from single-threaded
-        /// runtimes (browser WASM), where the sync path's blocking waits throw
+        /// Validates the endpoint and initializes the connector without blocking, so it is safe on
+        /// single-threaded runtimes (browser WASM), where blocking on async work throws
         /// "Cannot wait on monitors on this runtime".
         /// </remarks>
         public static async Task SetEndpointAsync(string endpoint)
@@ -205,15 +191,15 @@ namespace Bee.UI.Core
             return EndpointStorage.LoadEndpoint();
         }
 
-        private static bool InitializeConnect(SupportedConnectTypes supportedConnectTypes)
+        private static async Task<bool> InitializeConnectAsync(SupportedConnectTypes supportedConnectTypes)
         {
             ApiClientInfo.SupportedConnectTypes = supportedConnectTypes;
             try
             {
                 string endpoint = GetEndpoint();
-                var connectType = ApiConnectValidator.Validate(endpoint, AllowGenerateSettings);
+                var connectType = await ApiConnectValidator.ValidateAsync(endpoint, AllowGenerateSettings).ConfigureAwait(false);
                 SetConnectType(connectType, endpoint);
-                SyncExecutor.Run(() => SystemApiConnector.InitializeAsync());
+                await SystemApiConnector.InitializeAsync().ConfigureAwait(false);
                 return true;
             }
             catch
@@ -228,7 +214,7 @@ namespace Bee.UI.Core
         /// </summary>
         /// <param name="service">UI view service supplied by the host application.</param>
         /// <param name="connectTypes">Connection types supported by the application.</param>
-        public static bool Initialize(IUIViewService service, SupportedConnectTypes connectTypes)
+        public static async Task<bool> InitializeAsync(IUIViewService service, SupportedConnectTypes connectTypes)
         {
             UIViewService = service;
             Arguments = ParseCommandLineArgs();
@@ -236,7 +222,8 @@ namespace Bee.UI.Core
             {
                 EndpointStorage.SetEndpoint(endpointArg);
             }
-            if (!InitializeConnect(connectTypes) && !UIViewService.ShowApiConnect())
+            if (!await InitializeConnectAsync(connectTypes).ConfigureAwait(false)
+                && !await UIViewService.ShowApiConnectAsync().ConfigureAwait(false))
             {
                 return false;
             }
@@ -244,22 +231,13 @@ namespace Bee.UI.Core
         }
 
         /// <summary>
-        /// Initializes with an explicit endpoint.
-        /// </summary>
-        /// <param name="endpoint">URL for remote connections; local file path for local connections.</param>
-        public static void Initialize(string endpoint)
-        {
-            SetEndpoint(endpoint);
-        }
-
-        /// <summary>
         /// Initializes with an explicit endpoint, awaiting the validation and connector
-        /// initialization. The async sibling of <see cref="Initialize(string)"/>.
+        /// initialization without blocking.
         /// </summary>
         /// <param name="endpoint">URL for remote connections; local file path for local connections.</param>
         /// <remarks>
-        /// Prefer this over <see cref="Initialize(string)"/> on single-threaded runtimes
-        /// (browser WASM), where blocking on async work throws "Cannot wait on monitors".
+        /// Safe on single-threaded runtimes (browser WASM), where blocking on async work throws
+        /// "Cannot wait on monitors".
         /// </remarks>
         public static Task InitializeAsync(string endpoint)
         {

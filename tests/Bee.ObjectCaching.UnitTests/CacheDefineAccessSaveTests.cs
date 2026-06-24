@@ -9,21 +9,21 @@ using Bee.Definition.Storage;
 namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
-    /// <see cref="LocalDefineAccess"/> 所有 Save 方法的覆蓋測試。
+    /// <see cref="CacheDefineAccess"/> 所有 Save 方法的覆蓋測試。
     /// 各測試以本地 <see cref="TempDir"/> 隔離 <see cref="PathOptions"/>，直接傳給
-    /// <see cref="LocalDefineAccess"/> ctor —— 不操弄 <see cref="DefinePathInfo"/>
+    /// <see cref="CacheDefineAccess"/> ctor —— 不操弄 <see cref="DefinePathInfo"/>
     /// process-wide static，可與其他 test class 平行執行。
     /// </summary>
     /// <remarks>
     /// Save 路徑會呼叫 <c>CacheContainer.X.Remove(key)</c> 失效 process-wide 快取，但 keys
     /// 皆為本測試特有（如 <c>dbX/t_sample</c>、<c>P_Test</c>），不會影響其他測試。
     /// </remarks>
-    public class LocalDefineAccessSaveTests
+    public class CacheDefineAccessSaveTests
     {
         private static readonly string[] DbViaDefineKeys = { "db_via_define" };
 
-        private static LocalDefineAccess CreateAccess(PathOptions paths)
-            => new LocalDefineAccess(new FileDefineStorage(paths), paths);
+        private static CacheDefineAccess CreateAccess(PathOptions paths)
+            => new CacheDefineAccess(new FileDefineStorage(paths), paths);
 
         [Fact]
         [DisplayName("SaveSystemSettings 應寫入 SystemSettings.xml 並可再讀回")]
@@ -134,7 +134,7 @@ namespace Bee.ObjectCaching.UnitTests
 
         // NOTE: cache-roundtrip 整合測試（Save → cache miss → reload via cache layer）刪除於
         // PR 5.2。原因：cache 層的 FileDefineStorage 由 CacheContainer.Initialize 構造時鎖定
-        // 在 GlobalFixture 的 PathOptions，與 LocalDefineAccess(temp.Options) 的儲存路徑不一致。
+        // 在 GlobalFixture 的 PathOptions，與 CacheDefineAccess(temp.Options) 的儲存路徑不一致。
         // PR 5.3 將 CacheContainer 改為 DI singleton 並讓 cache classes 接 PathOptions 後，重新引入。
 
         [Fact]

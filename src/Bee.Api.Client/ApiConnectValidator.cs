@@ -15,41 +15,10 @@ namespace Bee.Api.Client
         /// </summary>
         /// <param name="endpoint">The endpoint to validate: a URL for remote connections or a local path for local connections.</param>
         /// <param name="allowGenerateSettings">Whether to auto-generate missing settings files (SystemSettings.xml and DatabaseSettings.xml) for local connections.</param>
-        public static ConnectType Validate(string endpoint, bool allowGenerateSettings = false)
-        {
-            if (StringUtilities.IsEmpty(endpoint))
-                throw new ArgumentException("Input cannot be null or empty.", nameof(endpoint));
-
-            if (FileUtilities.IsLocalPath(endpoint))  // Local path: validate local connection settings
-            {
-                // Validate local connection settings
-                ValidateLocal(endpoint, allowGenerateSettings);
-                // Return local connection type
-                return ConnectType.Local;
-            }
-            else if (HttpUtilities.IsUrl(endpoint))    // URL: validate remote connection settings
-            {
-                // Validate remote connection settings
-                ValidateRemote(endpoint);
-                // Return remote connection type
-                return ConnectType.Remote;
-            }
-            else
-            {
-                throw new InvalidOperationException("Unrecognized connection type. Please enter a valid service endpoint or local path.");
-            }
-        }
-
-        /// <summary>
-        /// Asynchronously validates the input service endpoint and returns the corresponding
-        /// connection type.
-        /// </summary>
-        /// <param name="endpoint">The endpoint to validate: a URL for remote connections or a local path for local connections.</param>
-        /// <param name="allowGenerateSettings">Whether to auto-generate missing settings files (SystemSettings.xml and DatabaseSettings.xml) for local connections.</param>
         /// <remarks>
-        /// The async sibling of <see cref="Validate"/>. Remote validation awaits the ping and
-        /// reachability probes instead of blocking on them, so it is safe on single-threaded
-        /// runtimes (browser WASM) where the sync path throws "Cannot wait on monitors".
+        /// Remote validation awaits the ping and reachability probes instead of blocking on them,
+        /// so it is safe on single-threaded runtimes (browser WASM) where blocking would throw
+        /// "Cannot wait on monitors".
         /// </remarks>
         public static async Task<ConnectType> ValidateAsync(string endpoint, bool allowGenerateSettings = false)
         {
@@ -143,27 +112,7 @@ namespace Bee.Api.Client
         }
 
         /// <summary>
-        /// Validates the remote connection settings.
-        /// </summary>
-        /// <param name="endpoint">The service endpoint.</param>
-        private static void ValidateRemote(string endpoint)
-        {
-            // Verify the application supports remote connections
-            if (!ApiClientInfo.SupportedConnectTypes.HasFlag(SupportedConnectTypes.Remote))
-                throw new InvalidOperationException("Remote connections are not supported.");
-            if (StringUtilities.IsEmpty(endpoint))
-                throw new ArgumentException("The endpoint must be specified.", nameof(endpoint));
-            // Pre-check transport-level reachability before establishing the connector
-            if (!SyncExecutor.Run(() => HttpUtilities.IsEndpointReachableAsync(endpoint)))
-                throw new InvalidOperationException($"Endpoint not reachable: {endpoint}");
-            // Use remote connection to execute the Ping method
-            var connector = new SystemApiConnector(endpoint, Guid.Empty);
-            SyncExecutor.Run(() => connector.PingAsync());
-        }
-
-        /// <summary>
-        /// Asynchronously validates the remote connection settings. The async sibling of
-        /// <see cref="ValidateRemote"/>; awaits the reachability and ping probes.
+        /// Validates the remote connection settings, awaiting the reachability and ping probes.
         /// </summary>
         /// <param name="endpoint">The service endpoint.</param>
         private static async Task ValidateRemoteAsync(string endpoint)

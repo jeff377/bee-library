@@ -10,8 +10,8 @@ namespace Bee.UI.Avalonia.Storage
     /// <remarks>
     /// Hosts opt in by assigning
     /// <c>ClientInfo.EndpointStorage = new FileEndpointStorage("Bee.Avalonia.Demo");</c>
-    /// inside the application's bootstrap (before <see cref="ClientInfo.Initialize(string)"/>
-    /// or <see cref="ClientInfo.SetEndpoint(string)"/>).
+    /// inside the application's bootstrap (before <see cref="ClientInfo.InitializeAsync(string)"/>
+    /// or <see cref="ClientInfo.SetEndpointAsync(string)"/>).
     /// <para>
     /// Resolved storage path (per OS):
     /// <list type="bullet">

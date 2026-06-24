@@ -5,7 +5,7 @@ namespace Maui.Demo.Pages;
 
 /// <summary>
 /// First page the user sees. Lets them edit the JSON-RPC endpoint and run a
-/// <c>system.ping</c> through <see cref="ClientInfo.Initialize(string)"/>; on
+/// <c>system.ping</c> through <see cref="ClientInfo.InitializeAsync(string)"/>; on
 /// success it pushes <see cref="LoginPage"/> onto the Shell stack.
 /// </summary>
 /// <remarks>
@@ -93,11 +93,10 @@ public sealed class ConnectionPage : ContentPage
 
         try
         {
-            // ClientInfo.Initialize runs ApiConnectValidator (HTTP reachability + ping)
-            // then stores the endpoint via EndpointStorage. Use Task.Run because the
-            // current call eventually does sync HTTP I/O and we don't want to block
-            // the UI thread.
-            await Task.Run(() => ClientInfo.Initialize(endpoint)).ConfigureAwait(true);
+            // ClientInfo.InitializeAsync runs ApiConnectValidator (HTTP reachability + ping)
+            // then stores the endpoint via EndpointStorage, awaiting the work instead of
+            // blocking the UI thread.
+            await ClientInfo.InitializeAsync(endpoint).ConfigureAwait(true);
             ApiClientInfo.ApiKey = "maui-demo";
             SetStatus($"Connected to {endpoint}. ConnectType = {ApiClientInfo.ConnectType}.", isError: false);
             await Shell.Current.GoToAsync(nameof(LoginPage)).ConfigureAwait(true);

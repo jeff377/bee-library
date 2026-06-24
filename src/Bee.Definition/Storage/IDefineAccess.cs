@@ -62,8 +62,8 @@ namespace Bee.Definition.Storage
         /// Gets the permission model registry.
         /// </summary>
         /// <remarks>
-        /// Default implementation delegates to <see cref="GetDefine"/>; <c>LocalDefineAccess</c>
-        /// and <c>RemoteDefineAccess</c> override it with their cache / remote path.
+        /// Default implementation delegates to <see cref="GetDefine"/>; <c>CacheDefineAccess</c>
+        /// overrides it with its cache path.
         /// </remarks>
         PermissionModels GetPermissionModels() => (PermissionModels)GetDefine(DefineType.PermissionModels);
 
@@ -125,7 +125,7 @@ namespace Bee.Definition.Storage
         /// <param name="layoutId">The form layout ID.</param>
         /// <remarks>
         /// Default implementation ignores <paramref name="customizeId"/> and delegates to
-        /// <see cref="GetFormLayout(string)"/>. <c>LocalDefineAccess</c> overrides this to overlay;
+        /// <see cref="GetFormLayout(string)"/>. <c>CacheDefineAccess</c> overrides this to overlay;
         /// remote access already receives the server-side-overlaid result.
         /// </remarks>
         FormLayout GetFormLayout(string customizeId, string layoutId) => GetFormLayout(layoutId);

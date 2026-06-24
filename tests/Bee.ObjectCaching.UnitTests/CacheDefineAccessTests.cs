@@ -9,18 +9,18 @@ using Bee.Tests.Shared;
 namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
-    /// <see cref="LocalDefineAccess"/> 讀取路徑測試。透過 fixture 的 DI 容器解析共用實例
+    /// <see cref="CacheDefineAccess"/> 讀取路徑測試。透過 fixture 的 DI 容器解析共用實例
     /// （path = <c>tests/Define</c>）。PR 5.7 後 cache 改注入 PathOptions，不再走 process-wide
     /// static，可與其他 test class 平行執行。
     /// </summary>
-    public class LocalDefineAccessTests : IClassFixture<BeeTestFixture>
+    public class CacheDefineAccessTests : IClassFixture<BeeTestFixture>
     {
         private static readonly string[] s_tableSchemaKeys = { "common", "st_user" };
         private static readonly string[] s_formSchemaKeys = { "Department" };
 
         private readonly IDefineAccess _access;
 
-        public LocalDefineAccessTests(BeeTestFixture fx)
+        public CacheDefineAccessTests(BeeTestFixture fx)
         {
             _access = fx.GetRequiredService<IDefineAccess>();
         }

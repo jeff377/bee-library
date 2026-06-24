@@ -8,12 +8,12 @@ using Bee.Definition.Storage;
 namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
-    /// <see cref="LocalDefineAccess"/> 尚未覆蓋的路徑：
+    /// <see cref="CacheDefineAccess"/> 尚未覆蓋的路徑：
     /// ProgramSettings / PermissionModels / Language / FormLayout（GetDefine dispatch）
     /// 與 SavePermissionModels / SaveLanguage 的寫入路徑。
     /// 各測試透過獨立 TempDir + 唯一 cache prefix 隔離，可平行執行。
     /// </summary>
-    public class LocalDefineAccessMissingCoverageTests
+    public class CacheDefineAccessMissingCoverageTests
     {
         private static readonly string[] s_zhTwCommonKeys = { "zh-TW", "Common" };
         private static readonly string[] s_testLayoutKey = { "TestLayout" };
@@ -36,11 +36,11 @@ namespace Bee.ObjectCaching.UnitTests
             }
         }
 
-        private static LocalDefineAccess CreateAccess(PathOptions paths)
+        private static CacheDefineAccess CreateAccess(PathOptions paths)
         {
             var storage = new FileDefineStorage(paths);
             var cache = new CacheContainerService(storage, paths, "mcov_" + Guid.NewGuid().ToString("N"));
-            return new LocalDefineAccess(storage, paths, cache, Array.Empty<byte>());
+            return new CacheDefineAccess(storage, paths, cache, Array.Empty<byte>());
         }
 
         // ── ProgramSettings ──────────────────────────────────────────────────

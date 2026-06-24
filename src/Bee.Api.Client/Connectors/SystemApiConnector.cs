@@ -205,15 +205,6 @@ namespace Bee.Api.Client.Connectors
         }
 
         /// <summary>
-        /// Synchronously gets a form schema as a typed object.
-        /// </summary>
-        /// <param name="progId">The program identifier.</param>
-        public virtual FormSchema? GetFormSchema(string progId)
-        {
-            return SyncExecutor.Run(() => GetFormSchemaAsync(progId));
-        }
-
-        /// <summary>
         /// Asynchronously gets the current company's department tree (per-company organisation
         /// hierarchy). JSON-friendly for frontends; returns <c>null</c> when no company is entered.
         /// </summary>
@@ -223,14 +214,6 @@ namespace Bee.Api.Client.Connectors
             var result = await ExecuteAsync<GetDepartmentTreeResponse>(SystemActions.GetDepartmentTree, request)
                 .ConfigureAwait(false);
             return result.Tree;
-        }
-
-        /// <summary>
-        /// Synchronously gets the current company's department tree.
-        /// </summary>
-        public virtual DepartmentTree? GetDepartmentTree()
-        {
-            return SyncExecutor.Run(GetDepartmentTreeAsync);
         }
 
         /// <summary>
@@ -250,16 +233,6 @@ namespace Bee.Api.Client.Connectors
             var result = await ExecuteAsync<GetFormLayoutResponse>(SystemActions.GetFormLayout, request)
                 .ConfigureAwait(false);
             return result.Layout;
-        }
-
-        /// <summary>
-        /// Synchronously gets a form layout as a typed object.
-        /// </summary>
-        /// <param name="progId">The program identifier.</param>
-        /// <param name="layoutId">The layout identifier; empty string resolves to <c>"default"</c>.</param>
-        public virtual FormLayout? GetFormLayout(string progId, string layoutId = "")
-        {
-            return SyncExecutor.Run(() => GetFormLayoutAsync(progId, layoutId));
         }
 
         // Note: GetLanguage has no .NET client method. The BO method

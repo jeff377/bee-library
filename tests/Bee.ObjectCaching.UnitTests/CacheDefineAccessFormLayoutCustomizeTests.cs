@@ -9,15 +9,15 @@ using Bee.Definition.Storage;
 namespace Bee.ObjectCaching.UnitTests
 {
     /// <summary>
-    /// <see cref="LocalDefineAccess.GetFormLayout(string, string)"/> 整檔擇一疊加測試：
+    /// <see cref="CacheDefineAccess.GetFormLayout(string, string)"/> 整檔擇一疊加測試：
     /// cust 檔存在→回 cust；否則回 base；customizeId 空 / 無 reader→短路純 base（reader 零呼叫）。
     /// </summary>
-    public sealed class LocalDefineAccessFormLayoutCustomizeTests : IDisposable
+    public sealed class CacheDefineAccessFormLayoutCustomizeTests : IDisposable
     {
         private readonly string _baseRoot;
         private const string LayoutId = "EmployeeDefault";
 
-        public LocalDefineAccessFormLayoutCustomizeTests()
+        public CacheDefineAccessFormLayoutCustomizeTests()
         {
             _baseRoot = Path.Combine(Path.GetTempPath(), $"bee-fl-cust-{Guid.NewGuid():N}");
             Directory.CreateDirectory(_baseRoot);
@@ -28,7 +28,7 @@ namespace Bee.ObjectCaching.UnitTests
             try { Directory.Delete(_baseRoot, recursive: true); } catch (IOException) { /* best effort */ }
         }
 
-        private LocalDefineAccess CreateAccess(ICustomizeDefineReader? reader)
+        private CacheDefineAccess CreateAccess(ICustomizeDefineReader? reader)
         {
             var paths = new PathOptions { DefinePath = _baseRoot };
             // Write a base FormLayout so the base lookup returns a known instance.
@@ -36,7 +36,7 @@ namespace Bee.ObjectCaching.UnitTests
             var storage = new FileDefineStorage(paths);
             // Unique CachePrefix isolates these cache entries from other parallel tests.
             var cache = new CacheContainerService(storage, paths, Guid.NewGuid().ToString("N"));
-            return new LocalDefineAccess(storage, paths, cache, Array.Empty<byte>(), reader);
+            return new CacheDefineAccess(storage, paths, cache, Array.Empty<byte>(), reader);
         }
 
         [Fact]

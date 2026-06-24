@@ -12,7 +12,7 @@ namespace Bee.UI.Maui.Storage
     /// <remarks>
     /// Hosts opt in by assigning <c>ClientInfo.EndpointStorage = new MauiPreferenceEndpointStorage();</c>
     /// inside <c>MauiProgram.CreateMauiApp</c>, before any code calls
-    /// <see cref="ClientInfo.Initialize(string)"/> or <see cref="ClientInfo.SetEndpoint(string)"/>.
+    /// <see cref="ClientInfo.InitializeAsync(string)"/> or <see cref="ClientInfo.SetEndpointAsync(string)"/>.
     /// Reading and writing happen through <see cref="Microsoft.Maui.Storage.Preferences.Default"/>,
     /// so the value persists across launches at the platform-recommended key store
     /// (NSUserDefaults on Apple, SharedPreferences on Android, the registry on Windows).

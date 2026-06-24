@@ -9,6 +9,6 @@ namespace Bee.UI.Core
         /// Shows the API connection settings dialog.
         /// </summary>
         /// <returns>True when the user has completed the connection setup; otherwise, false.</returns>
-        bool ShowApiConnect();
+        Task<bool> ShowApiConnectAsync();
     }
 }

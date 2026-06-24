@@ -297,7 +297,8 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         /// </summary>
         private sealed class TestListView : ListView
         {
-            protected override SystemApiConnector? ResolveSystemConnector() => null;
+            protected override Task<FormSchema?> ResolveSchemaAsync(string progId)
+                => Task.FromResult<FormSchema?>(null);
 
             protected override FormApiConnector ResolveFormConnector(string progId)
                 => throw new InvalidOperationException("ClientInfo fallback must not be reached in unit tests.");

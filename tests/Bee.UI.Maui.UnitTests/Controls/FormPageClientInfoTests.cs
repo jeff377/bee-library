@@ -32,7 +32,6 @@ namespace Bee.UI.Maui.UnitTests.Controls
     public class FormPageClientInfoTests
     {
         private const string TestProgId = "Employee";
-        private static readonly string[] s_testProgIdKeys = [TestProgId];
         private static readonly object[] s_testProgIdArgs = [TestProgId];
 
         private static FormSchema BuildEmployeeSchema()
@@ -56,8 +55,8 @@ namespace Bee.UI.Maui.UnitTests.Controls
         }
 
         [Fact]
-        [DisplayName("Schema 為 null + ProgId 設好時 InitializeAsync 會從 ResolveSystemConnector 取 schema")]
-        public async Task InitializeAsync_NullSchema_ResolvesFromSystemConnector()
+        [DisplayName("Schema 為 null + ProgId 設好時 InitializeAsync 會從 ResolveSchemaAsync 取 schema")]
+        public async Task InitializeAsync_NullSchema_ResolvesFromHook()
         {
             using var scope = new ClientInfoTestScope();
             ApiClientInfo.ConnectType = ConnectType.Local;
@@ -68,17 +67,8 @@ namespace Bee.UI.Maui.UnitTests.Controls
             {
                 GetListHandler = () => new GetListResponse { Table = listTable },
             };
-            var systemConnector = new FakeSystemApiConnector
-            {
-                GetDefineHandler = (type, keys) =>
-                {
-                    Assert.Equal(DefineType.FormSchema, type);
-                    Assert.Equal(s_testProgIdKeys, keys);
-                    return schema;
-                },
-            };
 
-            var page = new FormPageTestProbe(systemConnector, formConnector)
+            var page = new FormPageTestProbe(_ => Task.FromResult<FormSchema?>(schema), formConnector)
             {
                 ProgId = TestProgId,
             };
@@ -86,6 +76,7 @@ namespace Bee.UI.Maui.UnitTests.Controls
             await page.InitializeAsync();
 
             Assert.Same(schema, page.Schema);
+            Assert.Equal(1, page.ResolveSchemaCalls);
             Assert.NotNull(page.DataObject);
         }
 
@@ -104,7 +95,7 @@ namespace Bee.UI.Maui.UnitTests.Controls
             };
 
             // Host pre-supplied the schema, so only the connector is missing.
-            var page = new FormPageTestProbe(systemConnector: null, formConnector)
+            var page = new FormPageTestProbe(schemaResolver: null, formConnector)
             {
                 Schema = schema,
                 ProgId = TestProgId,
@@ -131,7 +122,7 @@ namespace Bee.UI.Maui.UnitTests.Controls
             {
                 GetListHandler = () => new GetListResponse { Table = listTable },
             };
-            var page = new FormPageTestProbe(systemConnector: null, formConnector)
+            var page = new FormPageTestProbe(schemaResolver: null, formConnector)
             {
                 Schema = schema,
                 ProgId = TestProgId,
@@ -157,7 +148,7 @@ namespace Bee.UI.Maui.UnitTests.Controls
             {
                 GetListHandler = () => new GetListResponse { Table = listTable },
             };
-            var page = new FormPageTestProbe(systemConnector: null, formConnector)
+            var page = new FormPageTestProbe(schemaResolver: null, formConnector)
             {
                 Schema = schema,
                 ProgId = TestProgId,
@@ -175,7 +166,7 @@ namespace Bee.UI.Maui.UnitTests.Controls
         {
             using var scope = new ClientInfoTestScope();
 
-            var page = new FormPageTestProbe(systemConnector: null, formConnector: null);
+            var page = new FormPageTestProbe(schemaResolver: null, formConnector: null);
 
             await page.InitializeAsync();
 
@@ -183,21 +174,19 @@ namespace Bee.UI.Maui.UnitTests.Controls
             Assert.Null(page.Schema);
             Assert.Null(page.FormConnector);
             Assert.Equal(0, page.ResolveFormConnectorCalls);
-            Assert.Equal(0, page.ResolveSystemConnectorCalls);
+            Assert.Equal(0, page.ResolveSchemaCalls);
         }
 
         [Fact]
         [DisplayName("Resolve hooks 拋出時錯誤會路由到 ErrorOccurred")]
-        public async Task InitializeAsync_SystemConnectorThrows_ReportsError()
+        public async Task InitializeAsync_SchemaResolveThrows_ReportsError()
         {
             using var scope = new ClientInfoTestScope();
             ApiClientInfo.ConnectType = ConnectType.Local;
 
-            var systemConnector = new FakeSystemApiConnector
-            {
-                GetDefineHandler = (_, _) => throw new InvalidOperationException("schema fetch failed"),
-            };
-            var page = new FormPageTestProbe(systemConnector, formConnector: null)
+            var page = new FormPageTestProbe(
+                _ => throw new InvalidOperationException("schema fetch failed"),
+                formConnector: null)
             {
                 ProgId = TestProgId,
             };
@@ -226,18 +215,18 @@ namespace Bee.UI.Maui.UnitTests.Controls
                 : string.Empty;
 
             var page = new FormPage();
-            var resolveSystem = typeof(FormPage).GetMethod(
-                "ResolveSystemConnector", BindingFlags.NonPublic | BindingFlags.Instance);
+            var resolveSchema = typeof(FormPage).GetMethod(
+                "ResolveSchemaAsync", BindingFlags.NonPublic | BindingFlags.Instance);
             var resolveForm = typeof(FormPage).GetMethod(
                 "ResolveFormConnector", BindingFlags.NonPublic | BindingFlags.Instance);
             var resolveToken = typeof(FormPage).GetMethod(
                 "ResolveAccessToken", BindingFlags.NonPublic | BindingFlags.Instance);
-            Assert.NotNull(resolveSystem);
+            // ResolveSchemaAsync defaults to the cached ClientInfo.DefineAccess; its presence is
+            // asserted but not invoked here (invoking would issue a real define round-trip).
+            Assert.NotNull(resolveSchema);
             Assert.NotNull(resolveForm);
             Assert.NotNull(resolveToken);
 
-            var system = (SystemApiConnector?)resolveSystem!.Invoke(page, Array.Empty<object>());
-            Assert.NotNull(system);
             var form = (FormApiConnector)resolveForm!.Invoke(page, s_testProgIdArgs)!;
             Assert.Equal(TestProgId, form.ProgId);
             var token = (Guid)resolveToken!.Invoke(page, Array.Empty<object>())!;
@@ -246,36 +235,34 @@ namespace Bee.UI.Maui.UnitTests.Controls
             var expectedProviderType = connectType == ConnectType.Local
                 ? typeof(LocalApiProvider)
                 : typeof(RemoteApiProvider);
-            Assert.IsType(expectedProviderType, system!.Provider);
             Assert.IsType(expectedProviderType, form.Provider);
         }
 
         /// <summary>
-        /// <see cref="FormPage"/> subclass that lets a test inject the
-        /// <see cref="SystemApiConnector"/> and <see cref="FormApiConnector"/>
-        /// that the Phase 1d fallback would otherwise pull from <see cref="ClientInfo"/>.
-        /// Also counts <c>Resolve*</c> invocations so tests can assert the
-        /// fallback was — or was not — exercised.
+        /// <see cref="FormPage"/> subclass that lets a test inject the <see cref="FormSchema"/>
+        /// and <see cref="FormApiConnector"/> that the fallback would otherwise pull from
+        /// <see cref="ClientInfo"/>. Also counts <c>Resolve*</c> invocations so tests can assert
+        /// the fallback was — or was not — exercised.
         /// </summary>
         private sealed class FormPageTestProbe : FormPage
         {
-            private readonly SystemApiConnector? _systemConnector;
+            private readonly Func<string, Task<FormSchema?>>? _schemaResolver;
             private readonly FormApiConnector? _formConnector;
 
-            public FormPageTestProbe(SystemApiConnector? systemConnector, FormApiConnector? formConnector)
+            public FormPageTestProbe(Func<string, Task<FormSchema?>>? schemaResolver, FormApiConnector? formConnector)
             {
-                _systemConnector = systemConnector;
+                _schemaResolver = schemaResolver;
                 _formConnector = formConnector;
             }
 
-            public int ResolveSystemConnectorCalls { get; private set; }
+            public int ResolveSchemaCalls { get; private set; }
 
             public int ResolveFormConnectorCalls { get; private set; }
 
-            protected override SystemApiConnector? ResolveSystemConnector()
+            protected override Task<FormSchema?> ResolveSchemaAsync(string progId)
             {
-                ResolveSystemConnectorCalls++;
-                return _systemConnector;
+                ResolveSchemaCalls++;
+                return _schemaResolver?.Invoke(progId) ?? Task.FromResult<FormSchema?>(null);
             }
 
             protected override FormApiConnector ResolveFormConnector(string progId)
@@ -284,26 +271,6 @@ namespace Bee.UI.Maui.UnitTests.Controls
                 return _formConnector
                     ?? throw new InvalidOperationException(
                         "FormPageTestProbe.ResolveFormConnector was invoked but no fake connector was supplied.");
-            }
-        }
-
-        /// <summary>
-        /// Stub <see cref="SystemApiConnector"/> whose <see cref="GetDefineAsync{T}"/>
-        /// is intercepted via a handler delegate. The base ctor still wires in a
-        /// <see cref="LocalApiProvider"/>, but the override below never reaches it.
-        /// </summary>
-        private sealed class FakeSystemApiConnector : SystemApiConnector
-        {
-            public FakeSystemApiConnector() : base(Guid.NewGuid()) { }
-
-            public Func<DefineType, string[]?, object?>? GetDefineHandler { get; set; }
-
-            public override Task<T> GetDefineAsync<T>(DefineType defineType, string[]? keys = null)
-            {
-                var handler = GetDefineHandler
-                    ?? throw new InvalidOperationException("GetDefineHandler not set.");
-                var result = handler(defineType, keys);
-                return Task.FromResult((T)result!);
             }
         }
 

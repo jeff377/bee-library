@@ -2,7 +2,6 @@ using System.Data;
 using Avalonia;
 using Avalonia.Controls;
 using Bee.Api.Client.Connectors;
-using Bee.Definition;
 using Bee.Definition.Forms;
 using Bee.UI.Core;
 
@@ -22,7 +21,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
         /// </summary>
         /// <param name="host">A visual inside the owning window; used to resolve the dialog owner.</param>
         /// <param name="progId">The target program identifier (the lookup source form).</param>
-        /// <param name="schema">The target form's schema; <c>null</c> loads it through <see cref="ClientInfo.SystemApiConnector"/>.</param>
+        /// <param name="schema">The target form's schema; <c>null</c> loads it through <see cref="ClientInfo.DefineAccess"/> (cached).</param>
         /// <param name="connector">The connector for the target form; <c>null</c> creates one through <see cref="ClientInfo.CreateFormApiConnector"/>.</param>
         public static async Task<DataRow?> ShowAsync(
             Visual host,
@@ -33,8 +32,8 @@ namespace Bee.UI.Avalonia.Controls.Editors
             ArgumentNullException.ThrowIfNull(host);
             ArgumentException.ThrowIfNullOrWhiteSpace(progId);
 
-            schema ??= await ClientInfo.SystemApiConnector
-                .GetDefineAsync<FormSchema>(DefineType.FormSchema, [progId])
+            schema ??= await ClientInfo.DefineAccess
+                .GetFormSchemaAsync(progId)
                 .ConfigureAwait(true);
             if (schema is null)
                 throw new InvalidOperationException($"FormSchema '{progId}' was not found for lookup.");

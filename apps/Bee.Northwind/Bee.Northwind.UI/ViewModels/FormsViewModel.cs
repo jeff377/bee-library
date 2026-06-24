@@ -1,5 +1,4 @@
 using System.Collections.ObjectModel;
-using Bee.Definition;
 using Bee.Definition.Settings;
 using Bee.Northwind.UI.Models;
 using Bee.UI.Core;
@@ -17,10 +16,9 @@ namespace Bee.Northwind.UI.ViewModels;
 /// <remarks>
 /// The menu is built from <see cref="ProgramSettings"/> fetched from the server, so the
 /// navigation is pure definition — adding a form to the menu is a ProgramSettings.xml entry,
-/// not a code change. The fetch goes directly through the async connector
-/// (<see cref="ClientInfo.SystemApiConnector"/>) rather than the synchronous
-/// <see cref="ClientInfo.DefineAccess"/>, whose <c>SyncExecutor</c> bridge blocks the single
-/// browser-wasm thread ("Cannot wait on monitors"). It runs once, right after login, when the
+/// not a code change. The fetch goes through <see cref="ClientInfo.DefineAccess"/>, the async
+/// typed definition cache; it is safe on the single browser-wasm thread (no sync-over-async
+/// bridge) and serves later reads from cache. It runs once, right after login, when the
 /// session token is already set.
 /// </remarks>
 public partial class FormsViewModel : ViewModelBase
@@ -54,8 +52,8 @@ public partial class FormsViewModel : ViewModelBase
         ProgramSettings settings;
         try
         {
-            settings = await ClientInfo.SystemApiConnector
-                .GetDefineAsync<ProgramSettings>(DefineType.ProgramSettings)
+            settings = await ClientInfo.DefineAccess
+                .GetProgramSettingsAsync()
                 .ConfigureAwait(true);
         }
         catch (Exception ex)

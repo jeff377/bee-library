@@ -38,7 +38,7 @@ namespace Bee.Definition
         /// <summary>
         /// Default define access type.
         /// </summary>
-        public const string DefineAccess = "Bee.ObjectCaching.LocalDefineAccess, Bee.ObjectCaching";
+        public const string DefineAccess = "Bee.ObjectCaching.CacheDefineAccess, Bee.ObjectCaching";
 
         // ---------------- Services ----------------
         /// <summary>

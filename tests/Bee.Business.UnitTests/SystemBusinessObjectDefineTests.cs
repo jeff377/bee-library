@@ -66,7 +66,7 @@ namespace Bee.Business.UnitTests
             try
             {
                 var tempPaths = new PathOptions { DefinePath = tempDir };
-                var tempAccess = new LocalDefineAccess(new FileDefineStorage(tempPaths), tempPaths);
+                var tempAccess = new CacheDefineAccess(new FileDefineStorage(tempPaths), tempPaths);
                 var saveBo = new SystemBusinessObject(
                     TestBeeContext.CreateWithDefineAccess(_fx, tempAccess), Guid.Empty, isLocalCall: true);
 

@@ -18,14 +18,13 @@ namespace Bee.UI.Maui.Controls
     /// The host typically supplies only <see cref="ProgId"/>. When <see cref="Schema"/>
     /// and <see cref="FormConnector"/> are left unset, <see cref="InitializeAsync"/>
     /// resolves them from <see cref="ClientInfo"/>:
-    /// <c>SystemApiConnector.GetDefineAsync&lt;FormSchema&gt;</c> for the schema and
-    /// <c>CreateFormApiConnector(ProgId)</c> for the connector. The same path applies
+    /// <see cref="ClientInfo.DefineAccess"/> (the cached async definition accessor) for the
+    /// schema and <c>CreateFormApiConnector(ProgId)</c> for the connector. The same path applies
     /// to <see cref="AccessToken"/>, which falls back to <see cref="ClientInfo.AccessToken"/>
     /// when the host leaves it as <see cref="Guid.Empty"/>. Hosts that want to bypass
     /// the static <see cref="ClientInfo"/> can either supply <see cref="Schema"/> /
     /// <see cref="FormConnector"/> directly, or subclass and override the
-    /// <c>ResolveSystemConnector</c> / <c>ResolveFormConnector</c> / <c>ResolveAccessToken</c>
-    /// hooks below.
+    /// <c>ResolveSchemaAsync</c> / <c>ResolveFormConnector</c> / <c>ResolveAccessToken</c> hooks below.
     /// </remarks>
     public class FormPage : ContentView
     {
@@ -189,8 +188,9 @@ namespace Bee.UI.Maui.Controls
         /// Builds <see cref="FormDataObject"/> from the current <see cref="Schema"/>
         /// + <see cref="FormConnector"/> and runs the initial list reload. When
         /// either is missing, the page resolves the gap from <see cref="ClientInfo"/>
-        /// via the <c>ResolveSystemConnector</c> / <c>ResolveFormConnector</c> /
-        /// <c>ResolveAccessToken</c> hooks. The call is a no-op while a previous
+        /// via the <c>ResolveSchemaAsync</c> / <c>ResolveFormConnector</c> /
+        /// <c>ResolveAccessToken</c> hooks (schema defaults to the cached
+        /// <see cref="ClientInfo.DefineAccess"/>). The call is a no-op while a previous
         /// invocation is still running and after the first successful initialization,
         /// mirroring the lazy attach behaviour of the Blazor <c>OnInitializedAsync</c>
         /// hook.
@@ -240,7 +240,7 @@ namespace Bee.UI.Maui.Controls
         }
 
         /// <summary>
-        /// Loads the <see cref="FormSchema"/> via <see cref="ResolveSystemConnector"/>
+        /// Loads the <see cref="FormSchema"/> via <see cref="ResolveSchemaAsync"/>
         /// when the host did not pre-set <see cref="Schema"/>. Returns
         /// <see langword="false"/> when the call throws (the caller must short-circuit);
         /// returns <see langword="true"/> otherwise (including the no-op cases where
@@ -250,15 +250,10 @@ namespace Bee.UI.Maui.Controls
         {
             if (Schema is not null || !hasProgId) return true;
 
-            var systemConnector = ResolveSystemConnector();
-            if (systemConnector is null) return true;
-
             ClearError();
             try
             {
-                var loaded = await systemConnector
-                    .GetDefineAsync<FormSchema>(DefineType.FormSchema, new[] { ProgId })
-                    .ConfigureAwait(true);
+                var loaded = await ResolveSchemaAsync(ProgId).ConfigureAwait(true);
                 if (loaded is not null)
                     Schema = loaded;
                 return true;
@@ -299,12 +294,13 @@ namespace Bee.UI.Maui.Controls
         }
 
         /// <summary>
-        /// Resolves the <see cref="SystemApiConnector"/> used to load the
-        /// <see cref="FormSchema"/> when the host did not pre-set <see cref="Schema"/>.
-        /// Defaults to <see cref="ClientInfo.SystemApiConnector"/>; tests and hosts
-        /// that need to bypass the static <see cref="ClientInfo"/> can override.
+        /// Resolves the <see cref="FormSchema"/> for <paramref name="progId"/> when the host did
+        /// not pre-set <see cref="Schema"/>. Defaults to the cached <see cref="ClientInfo.DefineAccess"/>;
+        /// tests and hosts that need to bypass the static <see cref="ClientInfo"/> can override.
         /// </summary>
-        protected virtual SystemApiConnector? ResolveSystemConnector() => ClientInfo.SystemApiConnector;
+        /// <param name="progId">Program identifier the schema targets.</param>
+        protected virtual async Task<FormSchema?> ResolveSchemaAsync(string progId)
+            => await ClientInfo.DefineAccess.GetFormSchemaAsync(progId).ConfigureAwait(false);
 
         /// <summary>
         /// Resolves the <see cref="FormApiConnector"/> used for CRUD round-trips

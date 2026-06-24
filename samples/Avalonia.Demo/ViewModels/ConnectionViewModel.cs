@@ -7,7 +7,7 @@ namespace Avalonia.Demo.ViewModels
 {
     /// <summary>
     /// First step of the demo flow. Lets the user edit the JSON-RPC endpoint and
-    /// runs a <c>system.ping</c> through <see cref="ClientInfo.Initialize(string)"/>;
+    /// runs a <c>system.ping</c> through <see cref="ClientInfo.InitializeAsync(string)"/>;
     /// on success it invokes the <c>onConnected</c> callback supplied by the
     /// parent <see cref="MainWindowViewModel"/>.
     /// </summary>
@@ -61,7 +61,7 @@ namespace Avalonia.Demo.ViewModels
 
         /// <summary>
         /// Bound to the Connect button. Pings <see cref="Endpoint"/> via
-        /// <see cref="ClientInfo.Initialize(string)"/> and advances on success.
+        /// <see cref="ClientInfo.InitializeAsync(string)"/> and advances on success.
         /// </summary>
         [RelayCommand]
         private async Task ConnectAsync()
@@ -80,11 +80,10 @@ namespace Avalonia.Demo.ViewModels
 
             try
             {
-                // ClientInfo.Initialize runs ApiConnectValidator (HTTP reachability +
-                // ping) then stores the endpoint via EndpointStorage. Wrapped in
-                // Task.Run because the call eventually does sync HTTP I/O; we don't
-                // want to block the UI thread while waiting.
-                await Task.Run(() => ClientInfo.Initialize(endpoint)).ConfigureAwait(true);
+                // ClientInfo.InitializeAsync runs ApiConnectValidator (HTTP reachability +
+                // ping) then stores the endpoint via EndpointStorage, awaiting the work
+                // instead of blocking the UI thread.
+                await ClientInfo.InitializeAsync(endpoint).ConfigureAwait(true);
                 ApiClientInfo.ApiKey = "avalonia-demo";
 
                 SetStatus(

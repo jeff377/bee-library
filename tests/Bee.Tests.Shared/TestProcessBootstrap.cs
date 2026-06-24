@@ -87,7 +87,7 @@ namespace Bee.Tests.Shared
             // 這個 bootstrap access 只活在 InitializeOnce scope 內，不對外公開；DI 容器內由
             // AddBeeFramework 重新建立正式的 IDefineAccess 實例（用同一份 PathOptions 即可共用 cache）。
             var bootstrapStorage = new FileDefineStorage(pathOptions);
-            var bootstrapAccess = new LocalDefineAccess(bootstrapStorage, pathOptions);
+            var bootstrapAccess = new CacheDefineAccess(bootstrapStorage, pathOptions);
 
             // DB provider / dialect / DatabaseItem 註冊統一交給 SharedDatabaseState。
             SharedDatabaseState.EnsureRegistered(bootstrapAccess);

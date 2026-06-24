@@ -13,7 +13,7 @@ namespace Bee.Northwind.Browser.Storage;
 /// Hosts opt in by assigning
 /// <c>ClientInfo.EndpointStorage = new BrowserLocalStorageEndpointStorage("Bee.Northwind");</c>
 /// in the head's <c>Program.Main</c>, before any code calls
-/// <see cref="ClientInfo.Initialize(string)"/> or <see cref="ClientInfo.SetEndpoint(string)"/>.
+/// <see cref="ClientInfo.InitializeAsync(string)"/> or <see cref="ClientInfo.SetEndpointAsync(string)"/>.
 /// <para>
 /// Mirroring <c>FileEndpointStorage</c>, <see cref="SetEndpoint"/> mutates an in-memory cache
 /// only; the localStorage entry is written solely by <see cref="SaveEndpoint"/> so a bound

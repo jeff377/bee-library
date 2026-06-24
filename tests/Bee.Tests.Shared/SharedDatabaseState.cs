@@ -50,7 +50,7 @@ namespace Bee.Tests.Shared
         /// whose connection string env var is set. Idempotent across the process.
         /// </summary>
         /// <param name="bootstrapAccess">
-        /// A <c>LocalDefineAccess</c> backed by the same <c>CacheContainer</c> the rest
+        /// A <c>CacheDefineAccess</c> backed by the same <c>CacheContainer</c> the rest
         /// of the framework will read from; new items are added to its <c>DatabaseSettings</c>.
         /// </param>
         public static void EnsureRegistered(IDefineAccess bootstrapAccess)

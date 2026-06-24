@@ -1,14 +1,14 @@
 using System.ComponentModel;
 using System.Reflection;
+using Bee.Api.Client;
 using Bee.Api.Client.Connectors;
-using Bee.Api.Client.DefineAccess;
 
 namespace Bee.UI.Core.UnitTests
 {
     /// <summary>
     /// 補強 <see cref="ClientInfo.ResetDefineCache"/> 的測試覆蓋率。
     /// 驗證 _defineAccess 為 null 時不拋例外（no-op），
-    /// 以及 _defineAccess 為 RemoteDefineAccess 時呼叫 ClearCache 不拋例外。
+    /// 以及 _defineAccess 為 ClientDefineAccess 時呼叫 ClearCache 不拋例外。
     /// 因修改靜態狀態，納入 ClientInfoState collection 確保串行執行。
     /// </summary>
     [Collection("ClientInfoState")]
@@ -35,14 +35,14 @@ namespace Bee.UI.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("ResetDefineCache _defineAccess 為 RemoteDefineAccess 時應呼叫 ClearCache 且不拋例外")]
-        public void ResetDefineCache_WhenDefineAccessIsRemoteDefineAccess_DoesNotThrow()
+        [DisplayName("ResetDefineCache _defineAccess 為 ClientDefineAccess 時應呼叫 ClearCache 且不拋例外")]
+        public void ResetDefineCache_WhenDefineAccessIsClientDefineAccess_DoesNotThrow()
         {
             var original = s_defineAccessField.GetValue(null);
             try
             {
                 var connector = new SystemApiConnector(Guid.Empty);
-                var remoteAccess = new RemoteDefineAccess(connector);
+                var remoteAccess = new ClientDefineAccess(connector);
                 s_defineAccessField.SetValue(null, remoteAccess);
                 var exception = Record.Exception(() => ClientInfo.ResetDefineCache());
                 Assert.Null(exception);

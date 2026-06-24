@@ -545,7 +545,8 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             public int ModeChangedCount { get; private set; }
             public SingleFormMode? LastMode { get; private set; }
 
-            protected override SystemApiConnector? ResolveSystemConnector() => null;
+            protected override Task<FormSchema?> ResolveSchemaAsync(string progId)
+                => Task.FromResult<FormSchema?>(null);
 
             protected override FormApiConnector ResolveFormConnector(string progId)
                 => throw new InvalidOperationException("ClientInfo fallback must not be reached in unit tests.");

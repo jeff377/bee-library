@@ -233,10 +233,12 @@ namespace Bee.UI.Avalonia.Views
         }
 
         /// <summary>
-        /// Resolves the <see cref="SystemApiConnector"/> used to load the
-        /// <see cref="FormSchema"/>. Override to bypass <see cref="ClientInfo"/>.
+        /// Resolves the <see cref="FormSchema"/> for <paramref name="progId"/> when the host did
+        /// not pre-set <see cref="Schema"/>. Defaults to the cached <see cref="ClientInfo.DefineAccess"/>;
+        /// override to supply a schema without touching the static <see cref="ClientInfo"/>.
         /// </summary>
-        protected virtual SystemApiConnector? ResolveSystemConnector() => ClientInfo.SystemApiConnector;
+        protected virtual async Task<FormSchema?> ResolveSchemaAsync(string progId)
+            => await ClientInfo.DefineAccess.GetFormSchemaAsync(progId).ConfigureAwait(false);
 
         /// <summary>
         /// Resolves the <see cref="FormApiConnector"/> for the list / delete round-trips.
@@ -274,16 +276,10 @@ namespace Bee.UI.Avalonia.Views
         {
             if (Schema is not null || !hasProgId) return true;
 
-            var systemConnector = ResolveSystemConnector();
-            if (systemConnector is null) return true;
-
             ClearError();
             try
             {
-                var key = new[] { ProgId };
-                var loaded = await systemConnector
-                    .GetDefineAsync<FormSchema>(DefineType.FormSchema, key)
-                    .ConfigureAwait(true);
+                var loaded = await ResolveSchemaAsync(ProgId).ConfigureAwait(true);
                 if (loaded is not null)
                     Schema = loaded;
                 return true;

@@ -38,7 +38,7 @@ namespace Bee.UI.Core.UnitTests
         }
 
         [Fact]
-        [DisplayName("DefineAccess getter 應以 Lazy 模式建立非 null 的 IDefineAccess 實例")]
+        [DisplayName("DefineAccess getter 應以 Lazy 模式建立非 null 的 ClientDefineAccess 實例")]
         public void DefineAccess_LocalConnectType_ReturnsNotNull()
         {
             var access = ClientInfo.DefineAccess;

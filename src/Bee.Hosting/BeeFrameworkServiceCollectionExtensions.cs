@@ -235,7 +235,7 @@ namespace Bee.Hosting
         /// <summary>
         /// Resolves the configured <see cref="IDefineAccess"/> implementation. Supports
         /// <c>(IDefineStorage, PathOptions, ICacheContainer, byte[], ICustomizeDefineReader)</c>
-        /// (used by <c>LocalDefineAccess</c> with the customization overlay),
+        /// (used by <c>CacheDefineAccess</c> with the customization overlay),
         /// <c>(IDefineStorage, PathOptions, ICacheContainer, byte[])</c>,
         /// <c>(IDefineStorage, PathOptions)</c>, <c>(IDefineStorage)</c> (legacy), and
         /// parameterless ctors.
