@@ -2,6 +2,19 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "northwind-server",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "apps/Bee.Northwind/Bee.Northwind.Server/Bee.Northwind.Server.csproj",
+        "--configuration",
+        "Debug"
+      ],
+      "port": 5100,
+      "autoPort": false
+    },
+    {
       "name": "northwind-browser",
       "runtimeExecutable": "dotnet",
       "runtimeArgs": [

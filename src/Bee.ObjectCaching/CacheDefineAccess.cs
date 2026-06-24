@@ -10,8 +10,16 @@ using Bee.Definition.Storage;
 namespace Bee.ObjectCaching
 {
     /// <summary>
-    /// Local definition data access that retrieves and saves definition data via the cache.
+    /// Cache-backed <see cref="IDefineAccess"/> implementation that reads definition data from an
+    /// <see cref="IDefineStorage"/> and caches it in an <see cref="ICacheContainer"/>; writes are
+    /// persisted through the storage and invalidate the affected cache entries.
     /// </summary>
+    /// <remarks>
+    /// The definition accessor used by the backend (business / repository layers). It additionally
+    /// encrypts configuration passwords in <c>DatabaseSettings.xml</c> when an encryption key is
+    /// supplied, and overlays tenant FormLayout customizations when an
+    /// <see cref="ICustomizeDefineReader"/> is provided.
+    /// </remarks>
     public class CacheDefineAccess : IDefineAccess
     {
         private readonly IDefineStorage _storage;
