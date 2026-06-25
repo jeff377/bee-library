@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | iOS 工具鏈就緒（`ios` workload + 模擬器 runtime + 空殼驗證） | ✅ 已完成（2026-06-25） |
 | 2 | Scaffold `Bee.Northwind.iOS` head（bootstrap + client 接線 + slnx） | ✅ 已完成（2026-06-25） |
-| 3 | 模擬器 Debug 跑通 + 端到端冒煙（連線 → 登入 → 表單） | 📝 待做 |
+| 3 | 模擬器 Debug 跑通 + 端到端冒煙（連線 → 登入 → 表單） | 🚧 進行中（app 已在模擬器啟動並渲染連線畫面；連線→登入→表單待測） |
 | 4 | 響應式佈局（FormView 依寬度：主檔欄位 2 欄↔1 欄重排 + 明細 InCell↔EditForm，**框架層 + 測試 + CI**） | ✅ 已完成（2026-06-25） |
 | 5 | 行動 UX 微調（safe area / 觸控 / 方向 / EditForm 彈窗全螢幕化） | 📝 待做 |
 
@@ -92,15 +92,8 @@ Bee.Northwind.iOS/
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>Bee.Northwind.iOS</RootNamespace>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- 不設 TreatWarningsAsErrors：iOS trim 分析會對 Bee 反射序列化噴 IL2026/2104（見頂部範圍外）-->
-  </PropertyGroup>
-  <!-- Debug 模擬器走 interpreter（無 AOT）→ 關掉 managed linker，避免 trimming 砍掉
-       XmlSerializer(FormSchema)/DataSet 反射路徑導致 runtime 炸 XmlSerializeErrorDetails 2,2。
-       Release 不可用 None（破壞 AOT），故僅限 Debug。 -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <MtouchLink>None</MtouchLink>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia.iOS" Version="12.0.4" />
@@ -111,8 +104,12 @@ Bee.Northwind.iOS/
 </Project>
 ```
 
-> 實測：未關 linker 時 Debug 模擬器建置噴 58 個 trim 警告（含 `System.Private.Xml`）；加
-> `MtouchLink=None` 後 0 警告 0 錯誤，序列化路徑完整保留。
+> **linker 雷（實測）**：一度加 `<MtouchLink>None</MtouchLink>`（Debug）想關 trimming，
+> 結果 app 啟動即 **`load_aot_module` SIGABRT** —— 正是 maui.md「None 單獨 → AOT 模組不符」。
+> 已 revert。**預設 Debug 建置（58 個 trim 警告、不覆寫 linker）可正常啟動並渲染**；
+> 預設 Debug 對 app code 不做破壞性 trim，UI 完整顯示。FormSchema/DataSet 序列化是否受
+> SDK 層 trim 影響，待「Connect → 開表單」實測（若炸 `XmlSerializeErrorDetails 2,2` 再走
+> TrimmerRootDescriptor / `[DynamicallyAccessedMembers]`，不可用 MtouchLink=None）。
 
 ### client 接線（沿用 Desktop/Browser 契約）
 

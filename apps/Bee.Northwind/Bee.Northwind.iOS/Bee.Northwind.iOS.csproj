@@ -18,18 +18,6 @@
     -->
   </PropertyGroup>
 
-  <!--
-    Debug runs on the simulator under the Mono interpreter (no AOT), so disable the managed
-    linker entirely. Bee (de)serializes FormSchema / DataSet via reflection (XmlSerializer,
-    System.Text.Json, MessagePack); with trimming on, ILLink strips those paths and the app
-    fails at runtime with "XmlSerializeErrorDetails 2,2" (see .claude/rules/maui.md). Release
-    trim-safe packaging is a separate follow-up; MtouchLink=None must NOT be used for Release
-    (it breaks AOT). Scoped to Debug only.
-  -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <MtouchLink>None</MtouchLink>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Avalonia.iOS" Version="12.0.4" />
   </ItemGroup>
