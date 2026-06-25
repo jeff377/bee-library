@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Bee.Api.Client.Connectors;
@@ -120,10 +121,25 @@ namespace Bee.UI.Avalonia.Views
 
             _formHost = new StackPanel { Orientation = Orientation.Vertical, Spacing = 8 };
 
-            var host = new StackPanel { Orientation = Orientation.Vertical, Spacing = 12 };
-            host.Children.Add(_errorLabel);
-            host.Children.Add(toolbar);
-            host.Children.Add(_formHost);
+            // Error label + toolbar stay pinned at the top (Save / Cancel / Back always reachable);
+            // the form body scrolls. Without this, a tall single-column (compact) layout overflows
+            // the viewport with no way to reach the controls below the fold.
+            var topBar = new StackPanel { Orientation = Orientation.Vertical, Spacing = 12 };
+            topBar.Children.Add(_errorLabel);
+            topBar.Children.Add(toolbar);
+            DockPanel.SetDock(topBar, Dock.Top);
+
+            var scroller = new ScrollViewer
+            {
+                Content = _formHost,
+                HorizontalScrollBarVisibility = ScrollBarVisibility.Disabled,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Margin = new Thickness(0, 12, 0, 0),
+            };
+
+            var host = new DockPanel();
+            host.Children.Add(topBar);
+            host.Children.Add(scroller);
 
             Content = host;
             UpdateToolbarState();
