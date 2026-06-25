@@ -59,11 +59,16 @@ namespace Bee.UI.Avalonia.Controls.Editors
             {
                 Title = title,
                 Content = panel,
+                // SizeToContent gives a sensible initial size from the editors; CanResize then lets
+                // the user widen the dialog (the panel's star-width columns expand to fill).
                 SizeToContent = SizeToContent.WidthAndHeight,
                 WindowStartupLocation = WindowStartupLocation.CenterOwner,
-                CanResize = false,
+                CanResize = true,
                 ShowInTaskbar = false,
             };
+            // Once the window has taken its initial content-driven size, drop SizeToContent so it
+            // no longer snaps back to content size and the user's manual resize sticks.
+            window.Opened += (_, _) => window.SizeToContent = SizeToContent.Manual;
             panel.EditCommitted += (_, _) => { committed = true; window.Close(); };
             panel.EditCancelled += (_, _) => window.Close();
 
