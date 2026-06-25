@@ -56,6 +56,18 @@ namespace Bee.UI.Avalonia.Views
         public static readonly StyledProperty<GridEditMode> DetailEditModeProperty =
             AvaloniaProperty.Register<FormView, GridEditMode>(nameof(DetailEditMode), GridEditMode.InCell);
 
+        /// <summary>
+        /// Default <see cref="CompactWidthThreshold"/> (DIPs): viewports narrower than this —
+        /// phones, narrow windows — collapse master fields to a single column and switch detail
+        /// grids to <see cref="GridEditMode.EditForm"/>.
+        /// </summary>
+        public const double DefaultCompactWidthThreshold = 600;
+
+        /// <summary>Identifies the <see cref="CompactWidthThreshold"/> styled property.</summary>
+        public static readonly StyledProperty<double> CompactWidthThresholdProperty =
+            AvaloniaProperty.Register<FormView, double>(
+                nameof(CompactWidthThreshold), DefaultCompactWidthThreshold);
+
         private readonly Button _saveButton;
         private readonly Button _cancelButton;
         private readonly Button _backButton;
@@ -64,6 +76,10 @@ namespace Bee.UI.Avalonia.Views
         private FormDataObject? _dataObject;
         private FormLayout? _formLayout;
         private bool _isBusy;
+        // Last applied compact-layout state. Crossing the width threshold rebuilds the form so
+        // master fields reflow (multi-column <-> single) and detail grids re-render in the
+        // matching edit model; a plain Bounds tick that does not cross the threshold is a no-op.
+        private bool _isCompact;
 
         static FormView()
         {
@@ -162,12 +178,27 @@ namespace Bee.UI.Avalonia.Views
         }
 
         /// <summary>
-        /// Gets or sets the editing model applied to every detail grid this form renders.
+        /// Gets or sets the preferred detail-grid editing model for wide (desktop) viewports.
+        /// On viewports narrower than <see cref="CompactWidthThreshold"/> this is overridden by
+        /// <see cref="GridEditMode.EditForm"/> so phone-sized layouts edit rows in a form rather
+        /// than in-cell. Defaults to <see cref="GridEditMode.InCell"/>.
         /// </summary>
         public GridEditMode DetailEditMode
         {
             get => GetValue(DetailEditModeProperty);
             set => SetValue(DetailEditModeProperty, value);
+        }
+
+        /// <summary>
+        /// Gets or sets the viewport width (DIPs) at or above which detail grids honour
+        /// <see cref="DetailEditMode"/>. Below it the grids switch to
+        /// <see cref="GridEditMode.EditForm"/> regardless of <see cref="DetailEditMode"/>.
+        /// Defaults to <see cref="DefaultCompactWidthThreshold"/>.
+        /// </summary>
+        public double CompactWidthThreshold
+        {
+            get => GetValue(CompactWidthThresholdProperty);
+            set => SetValue(CompactWidthThresholdProperty, value);
         }
 
         /// <summary>Gets the data object built once the schema + connector are resolved.</summary>
@@ -342,6 +373,11 @@ namespace Bee.UI.Avalonia.Views
             _formHost.Children.Clear();
             if (_formLayout is null || _dataObject is null) return;
 
+            // Build against the current width so the first render (which may run before any Bounds
+            // notification) already reflects the compact state; resize crossings re-enter via
+            // ApplyResponsiveState.
+            _isCompact = IsCompactWidth(GetViewportWidth(), CompactWidthThreshold);
+
             foreach (var section in EnumerateSections())
                 _formHost.Children.Add(BuildSection(section));
             foreach (var detail in EnumerateDetails())
@@ -369,7 +405,7 @@ namespace Bee.UI.Avalonia.Views
 
         private Grid BuildFieldGrid(LayoutSection section)
         {
-            var columnCount = NormalizeColumnCount(_formLayout?.ColumnCount);
+            var columnCount = EffectiveColumnCount();
             var grid = new Grid { ColumnSpacing = 8, RowSpacing = 8 };
             for (int i = 0; i < columnCount; i++)
                 grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
@@ -438,9 +474,9 @@ namespace Bee.UI.Avalonia.Views
                 stack.Children.Add(new TextBlock { Text = layout.Caption, FontWeight = FontWeight.Bold });
             }
 
-            // The grid carries its own icon toolbar and edit-form flow; the form only
-            // supplies the layout, the data object and the editing model.
-            var grid = new GridControl { MinHeight = 120, EditMode = DetailEditMode };
+            // The grid carries its own icon toolbar and edit-form flow; the form only supplies the
+            // layout, the data object and the editing model (responsive — see EffectiveDetailEditMode).
+            var grid = new GridControl { MinHeight = 120, EditMode = EffectiveDetailEditMode() };
             grid.Bind(_dataObject!, layout);
             stack.Children.Add(grid);
 
@@ -452,6 +488,72 @@ namespace Bee.UI.Avalonia.Views
                 Child = stack,
             };
         }
+
+        // ---- Responsive layout (compact = phone-sized viewport) ----
+
+        /// <summary>
+        /// Reacts to the inputs of the responsive layout decision. <see cref="Visual.Bounds"/> is
+        /// a direct property whose change notifications are not delivered to static class handlers,
+        /// so the width reaction is wired here (the same pattern OverlayDialogHost uses) rather than
+        /// in the static constructor.
+        /// </summary>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+            if (change.Property == BoundsProperty || change.Property == CompactWidthThresholdProperty)
+            {
+                ApplyResponsiveState();
+            }
+            else if (change.Property == DetailEditModeProperty && !_isCompact)
+            {
+                // The preferred detail mode only takes effect on wide layouts; a compact layout
+                // forces EditForm regardless, so only a wide form needs to re-render here.
+                RebuildIfReady();
+            }
+        }
+
+        /// <summary>
+        /// Pure decision: a positive width below <paramref name="compactWidthThreshold"/> is a
+        /// compact (phone-sized) viewport. A non-positive width means "not measured yet", so the
+        /// layout stays in its wide form until the first layout pass.
+        /// </summary>
+        internal static bool IsCompactWidth(double viewportWidth, double compactWidthThreshold)
+            => viewportWidth > 0 && viewportWidth < compactWidthThreshold;
+
+        /// <summary>
+        /// Gets the viewport width used for the compact-layout decision. Defaults to the
+        /// control's own <see cref="Visual.Bounds"/> width; overridden in tests to drive the
+        /// responsive switch without a real layout pass.
+        /// </summary>
+        protected virtual double GetViewportWidth() => Bounds.Width;
+
+        /// <summary>
+        /// Recomputes the compact state from the current viewport width and rebuilds the form only
+        /// when the <see cref="CompactWidthThreshold"/> boundary is crossed, so the frequent
+        /// within-band <see cref="Visual.Bounds"/> ticks during layout cost a single comparison.
+        /// </summary>
+        protected void ApplyResponsiveState()
+        {
+            var compact = IsCompactWidth(GetViewportWidth(), CompactWidthThreshold);
+            if (compact == _isCompact) return;
+            _isCompact = compact;
+            RebuildIfReady();
+        }
+
+        private void RebuildIfReady()
+        {
+            if (_formLayout is not null && _dataObject is not null)
+                Rebuild();
+        }
+
+        // Master fields collapse to a single column on a compact viewport; otherwise the layout's
+        // own column count applies.
+        private int EffectiveColumnCount()
+            => _isCompact ? 1 : NormalizeColumnCount(_formLayout?.ColumnCount);
+
+        // Detail grids edit in a form on a compact viewport; otherwise the preferred mode applies.
+        private GridEditMode EffectiveDetailEditMode()
+            => _isCompact ? GridEditMode.EditForm : DetailEditMode;
 
         private IEnumerable<LayoutSection> EnumerateSections()
             => _formLayout?.Sections ?? Enumerable.Empty<LayoutSection>();

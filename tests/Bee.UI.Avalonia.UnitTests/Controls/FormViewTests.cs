@@ -143,6 +143,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         [InlineData(nameof(FormView.FormConnector), "FormConnectorProperty")]
         [InlineData(nameof(FormView.FormMode), "FormModeProperty")]
         [InlineData(nameof(FormView.DetailEditMode), "DetailEditModeProperty")]
+        [InlineData(nameof(FormView.CompactWidthThreshold), "CompactWidthThresholdProperty")]
         [DisplayName("公開屬性皆有對應的 StyledProperty 註冊")]
         public void PublicProperties_HaveMatchingStyledProperty(string propertyName, string styledPropertyFieldName)
         {
@@ -467,6 +468,75 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
             Assert.True(Assert.IsType<Button>(GetGridToolbar(grid).Children[1]).IsVisible);
         }
 
+        // ---- responsive layout (phone = small screen → 1 column + EditForm) ----
+
+        [Theory]
+        [InlineData(400.0, 600.0, true)]    // narrow → compact
+        [InlineData(800.0, 600.0, false)]   // wide → not compact
+        [InlineData(600.0, 600.0, false)]   // exactly threshold → not compact
+        [InlineData(0.0, 600.0, false)]     // unmeasured → not compact
+        [DisplayName("IsCompactWidth 依寬度與門檻判定 compact")]
+        public void IsCompactWidth_ByWidthAndThreshold(double width, double threshold, bool expected)
+        {
+            Assert.Equal(expected, FormView.IsCompactWidth(width, threshold));
+        }
+
+        private static GridControl GetDetailGrid(StackPanel host)
+        {
+            var detailStack = Assert.IsType<StackPanel>(Assert.IsType<Border>(host.Children[^1]).Child);
+            return Assert.IsType<GridControl>(detailStack.Children[1]);
+        }
+
+        private static Grid GetSectionFieldGrid(StackPanel host)
+        {
+            var sectionStack = Assert.IsType<StackPanel>(Assert.IsType<Border>(host.Children[0]).Child);
+            return Assert.IsType<Grid>(sectionStack.Children[^1]);
+        }
+
+        [Fact]
+        [DisplayName("窄視窗下明細 grid 切 EditForm，放寬後重排回 DetailEditMode")]
+        public void DetailEditMode_RespondsToViewportWidth()
+        {
+            var layout = new FormLayout { ColumnCount = 2 };
+            var detail = new LayoutGrid("EmployeePhone", "Phones");
+            detail.Columns!.Add(new LayoutColumn { FieldName = "phone", Caption = "Phone", Visible = true });
+            layout.Details!.Add(detail);
+
+            var dataObject = new FormDataObject(BuildRenderSchemaWithDetail());
+            dataObject.InitializeNewMaster();
+
+            // Narrow viewport (400 < 600 threshold) with an InCell preference renders EditForm.
+            var view = new TestFormView { DetailEditMode = GridEditMode.InCell, CompactWidthThreshold = 600 };
+            view.ViewportWidthOverride = 400;
+            var host = RenderForm(view, layout, dataObject);
+            Assert.Equal(GridEditMode.EditForm, GetDetailGrid(host).EditMode);
+
+            // Widening past the threshold rebuilds the form; the fresh detail grid honours the
+            // preferred mode again.
+            view.ViewportWidthOverride = 900;
+            Assert.Equal(GridEditMode.InCell, GetDetailGrid(host).EditMode);
+        }
+
+        [Fact]
+        [DisplayName("窄視窗下主檔欄位重排為單欄，放寬後恢復多欄")]
+        public void MasterFields_ReflowToSingleColumnWhenCompact()
+        {
+            var layout = new FormLayout { ColumnCount = 2 };
+            var section = new LayoutSection { Caption = "Main", ShowCaption = false };
+            section.Fields!.Add(new LayoutField { FieldName = "emp_id", Caption = "ID" });
+            section.Fields.Add(new LayoutField { FieldName = "is_active", Caption = "Active" });
+            section.Fields.Add(new LayoutField { FieldName = "hire_date", Caption = "Hire Date" });
+            layout.Sections!.Add(section);
+
+            var view = new TestFormView { CompactWidthThreshold = 600 };
+            view.ViewportWidthOverride = 400; // compact → single column
+            var host = RenderForm(view, layout, new FormDataObject(BuildRenderSchema()));
+            Assert.Single(GetSectionFieldGrid(host).ColumnDefinitions);
+
+            view.ViewportWidthOverride = 900; // wide → layout's own column count
+            Assert.Equal(2, GetSectionFieldGrid(host).ColumnDefinitions.Count);
+        }
+
         [Theory]
         [InlineData(ControlType.CheckEdit, typeof(CheckEdit))]
         [InlineData(ControlType.DateEdit, typeof(DateEdit))]
@@ -544,6 +614,25 @@ namespace Bee.UI.Avalonia.UnitTests.Controls
         {
             public int ModeChangedCount { get; private set; }
             public SingleFormMode? LastMode { get; private set; }
+
+            private double? _viewportWidthOverride;
+
+            /// <summary>
+            /// Drives the responsive switch without a real layout pass. Assigning re-applies the
+            /// compact state (mirroring what a real Bounds change would do).
+            /// </summary>
+            public double? ViewportWidthOverride
+            {
+                get => _viewportWidthOverride;
+                set
+                {
+                    _viewportWidthOverride = value;
+                    ApplyResponsiveState();
+                }
+            }
+
+            protected override double GetViewportWidth()
+                => _viewportWidthOverride ?? base.GetViewportWidth();
 
             protected override Task<FormSchema?> ResolveSchemaAsync(string progId)
                 => Task.FromResult<FormSchema?>(null);
