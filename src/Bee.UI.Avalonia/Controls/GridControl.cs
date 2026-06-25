@@ -82,6 +82,10 @@ namespace Bee.UI.Avalonia.Controls
             "a2.5 2.5 0 0 1-2.49-2.3L4.55 6.5H4a1 1 0 0 1 0-2h4.5V4A1.5 1.5 0 0 1 10 2.5Z" +
             "M6.56 6.5l.86 12.97a.5.5 0 0 0 .5.46h8.16a.5.5 0 0 0 .5-.46l.86-12.97H6.56Z" +
             "M10 9.5a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1Zm4 0a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1Z";
+        // Magnifier glyph for the trailing lookup-cell icon, matching the standalone
+        // ButtonEdit's cue. Taken from Semi.Avalonia `SemiIconSearchStroked` (MIT).
+        private const string LookupIconGeometry =
+            "M16 10a6 6 0 1 1-12 0 6 6 0 0 1 12 0Zm-1.1 6.32a8 8 0 1 1 1.41-1.41l5.4 5.38a1 1 0 0 1-1.42 1.42l-5.38-5.39Z";
 
         private readonly GridControlBinder _binder;
         private readonly DataGrid _grid;
@@ -692,12 +696,22 @@ namespace Bee.UI.Avalonia.Controls
             var canEdit = !_grid.IsReadOnly && !column.ReadOnly && rowView is not null;
             if (!canEdit) return text;
 
+            // Mirror the standalone ButtonEdit: an editable lookup cell shows a trailing
+            // magnifier icon as the "opens a dialog" cue. The text fills the remaining
+            // width so the icon stays pinned to the right edge.
+            text.HorizontalAlignment = global::Avalonia.Layout.HorizontalAlignment.Left;
+            var icon = BuildLookupCellIcon();
+            DockPanel.SetDock(icon, Dock.Right);
+            var content = new DockPanel { LastChildFill = true };
+            content.Children.Add(icon);
+            content.Children.Add(text);
+
             // Transparent (not null) background: a null background excludes the empty
             // area beside the text from hit-testing.
             var host = new Border
             {
                 Background = Brushes.Transparent,
-                Child = text,
+                Child = content,
             };
             host.PointerPressed += async (_, e) =>
             {
@@ -708,6 +722,28 @@ namespace Bee.UI.Avalonia.Controls
                 await OpenLookupCellAsync(rowView!.Row, lookupField).ConfigureAwait(true);
             };
             return host;
+        }
+
+        // Trailing magnifier icon for an editable lookup cell, matching the muted tone
+        // of the standalone ButtonEdit's icon. `Geometry.Parse` and `Cursor` both need
+        // platform services that are absent when unit tests build cells without an
+        // Avalonia platform, so they are created on first visual attach instead.
+        private static PathIcon BuildLookupCellIcon()
+        {
+            var icon = new PathIcon
+            {
+                Width = 14,
+                Height = 14,
+                Opacity = 0.65,
+                Margin = new Thickness(4, 0, 8, 0),
+                VerticalAlignment = global::Avalonia.Layout.VerticalAlignment.Center,
+            };
+            icon.AttachedToVisualTree += (_, _) =>
+            {
+                icon.Data ??= Geometry.Parse(LookupIconGeometry);
+                icon.Cursor ??= new Cursor(StandardCursorType.Hand);
+            };
+            return icon;
         }
 
         private static string[] SplitDisplayFields(string displayFields)

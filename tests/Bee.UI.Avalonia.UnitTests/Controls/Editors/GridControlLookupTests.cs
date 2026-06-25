@@ -73,7 +73,7 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
         }
 
         [Fact]
-        [DisplayName("可編輯 lookup cell 應為 hit-testable host 且顯示 DisplayFields 組合值")]
+        [DisplayName("可編輯 lookup cell 應為 hit-testable host、顯示 DisplayFields 組合值並帶開窗圖示")]
         public void BuildLookupCell_Editable_WrapsTextInHost()
         {
             var (grid, dataObject, line) = BindDetailGrid();
@@ -84,9 +84,13 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             var cell = InvokeBuildLookupCell(grid, rowView, column, field);
 
             var host = Assert.IsType<Border>(cell);
-            var text = Assert.IsType<TextBlock>(host.Child);
-            Assert.Equal("商品甲", text.Text);
             Assert.NotNull(host.Background);
+            // 可編輯狀態：text 在左、開窗圖示靠右（DockPanel 容器）
+            var content = Assert.IsType<DockPanel>(host.Child);
+            var text = content.Children.OfType<TextBlock>().Single();
+            Assert.Equal("商品甲", text.Text);
+            var icon = content.Children.OfType<PathIcon>().Single();
+            Assert.Equal(Dock.Right, DockPanel.GetDock(icon));
         }
 
         [Fact]
