@@ -74,7 +74,7 @@
             "name": "Run Bee.Northwind.Server",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build-northwind-server",
+            "preLaunchTask": "prep-northwind-server",
             "program": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Server/bin/Debug/net10.0/Bee.Northwind.Server.dll",
             "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Server",
             "console": "integratedTerminal",
@@ -87,6 +87,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "prep-northwind-desktop",
+            "postDebugTask": "free-northwind-port",
             "program": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Desktop/bin/Debug/net10.0/Bee.Northwind.Desktop.dll",
             "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Desktop",
             "console": "internalConsole",
@@ -98,6 +99,7 @@
             "type": "blazorwasm",
             "request": "launch",
             "preLaunchTask": "prep-northwind-browser",
+            "postDebugTask": "free-northwind-port",
             "cwd": "${workspaceFolder}/apps/Bee.Northwind/Bee.Northwind.Browser",
             "url": "http://localhost:5200"
         }

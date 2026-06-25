@@ -180,6 +180,28 @@
             "group": "build"
         },
         {
+            "label": "free-northwind-port",
+            "type": "shell",
+            "command": "pids=$(lsof -ti tcp:5100); if [ -n \"$pids\" ]; then echo \"Killing stale Bee.Northwind.Server on :5100 ($pids)\"; kill $pids; fi; exit 0",
+            "windows": {
+                "command": "$p=(Get-NetTCPConnection -LocalPort 5100 -State Listen -ErrorAction SilentlyContinue).OwningProcess; if ($p) { Write-Host \"Killing stale Bee.Northwind.Server on :5100 ($p)\"; Stop-Process -Id $p -Force }; exit 0"
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "prep-northwind-server",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "build-northwind-server",
+                "free-northwind-port"
+            ],
+            "problemMatcher": []
+        },
+        {
             "label": "build-northwind-desktop",
             "type": "process",
             "command": "dotnet",
