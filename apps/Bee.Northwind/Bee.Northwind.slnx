@@ -6,5 +6,6 @@
     <Project Path="Bee.Northwind.UI/Bee.Northwind.UI.csproj" />
     <Project Path="Bee.Northwind.Desktop/Bee.Northwind.Desktop.csproj" />
     <Project Path="Bee.Northwind.Browser/Bee.Northwind.Browser.csproj" />
+    <Project Path="Bee.Northwind.iOS/Bee.Northwind.iOS.csproj" />
   </Folder>
 </Solution>

@@ -4,8 +4,8 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | iOS 工具鏈就緒（`ios` workload + 模擬器 runtime + 空殼驗證） | 📝 待做 |
-| 2 | Scaffold `Bee.Northwind.iOS` head（bootstrap + client 接線 + slnx） | 📝 待做 |
+| 1 | iOS 工具鏈就緒（`ios` workload + 模擬器 runtime + 空殼驗證） | ✅ 已完成（2026-06-25） |
+| 2 | Scaffold `Bee.Northwind.iOS` head（bootstrap + client 接線 + slnx） | ✅ 已完成（2026-06-25） |
 | 3 | 模擬器 Debug 跑通 + 端到端冒煙（連線 → 登入 → 表單） | 📝 待做 |
 | 4 | 響應式佈局（FormView 依寬度：主檔欄位 2 欄↔1 欄重排 + 明細 InCell↔EditForm，**框架層 + 測試 + CI**） | ✅ 已完成（2026-06-25） |
 | 5 | 行動 UX 微調（safe area / 觸控 / 方向 / EditForm 彈窗全螢幕化） | 📝 待做 |
@@ -94,7 +94,13 @@ Bee.Northwind.iOS/
     <RootNamespace>Bee.Northwind.iOS</RootNamespace>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
-    <!-- 本期 Debug-first：Release trim 範圍外（見計畫頂部範圍外說明） -->
+    <!-- 不設 TreatWarningsAsErrors：iOS trim 分析會對 Bee 反射序列化噴 IL2026/2104（見頂部範圍外）-->
+  </PropertyGroup>
+  <!-- Debug 模擬器走 interpreter（無 AOT）→ 關掉 managed linker，避免 trimming 砍掉
+       XmlSerializer(FormSchema)/DataSet 反射路徑導致 runtime 炸 XmlSerializeErrorDetails 2,2。
+       Release 不可用 None（破壞 AOT），故僅限 Debug。 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <MtouchLink>None</MtouchLink>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia.iOS" Version="12.0.4" />
@@ -104,6 +110,9 @@ Bee.Northwind.iOS/
   </ItemGroup>
 </Project>
 ```
+
+> 實測：未關 linker 時 Debug 模擬器建置噴 58 個 trim 警告（含 `System.Private.Xml`）；加
+> `MtouchLink=None` 後 0 警告 0 錯誤，序列化路徑完整保留。
 
 ### client 接線（沿用 Desktop/Browser 契約）
 
