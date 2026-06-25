@@ -33,6 +33,13 @@ namespace Bee.UI.Avalonia.Controls.Editors
             var panel = new RowEditPanel();
             var committed = false;
             var title = string.IsNullOrEmpty(layout.Caption) ? layout.TableName : layout.Caption;
+
+            // Lay the edit form out in a single column on phone-sized screens. The decision uses
+            // the hosting top level's width (the app window / single view that owns the grid), not
+            // the dialog's own size: a desktop dialog is a small SizeToContent window whose width
+            // would read as "compact" and wrongly collapse, whereas the owning window is wide.
+            var screenWidth = TopLevel.GetTopLevel(host)?.Bounds.Width ?? 0;
+            panel.Compact = RowEditPanel.IsCompactWidth(screenWidth);
             panel.Bind(dataObject, layout, row);
 
             // Browser (WASM) hosts cannot open a native Window; host the panel on the top

@@ -23,11 +23,33 @@ namespace Bee.UI.Avalonia.Controls.Editors
     /// </remarks>
     public class RowEditPanel : UserControl
     {
-        private const int ColumnCount = 2;
+        /// <summary>
+        /// Default screen width (DIPs) below which the edit form collapses to a single column —
+        /// phones and narrow windows. Mirrors <c>FormView.DefaultCompactWidthThreshold</c>.
+        /// </summary>
+        public const double CompactWidthThreshold = 600;
+
+        private const int WideColumnCount = 2;
+        private const int CompactColumnCount = 1;
 
         private readonly List<IFieldEditor> _editors = [];
         private FormDataObject? _dataObject;
         private DataRow? _row;
+
+        /// <summary>
+        /// Gets or sets whether the edit form lays out in a single column (compact / phone-sized
+        /// screens) instead of the default two. Assign before <see cref="Bind"/>; the column count
+        /// is fixed for the bound session. <see cref="RowEditDialog"/> sets this from the hosting
+        /// screen width via <see cref="IsCompactWidth"/>.
+        /// </summary>
+        public bool Compact { get; set; }
+
+        /// <summary>
+        /// Returns whether a screen of <paramref name="screenWidth"/> DIPs is compact
+        /// (single-column). A non-positive width (not measured) is treated as wide.
+        /// </summary>
+        internal static bool IsCompactWidth(double screenWidth)
+            => screenWidth > 0 && screenWidth < CompactWidthThreshold;
 
         /// <summary>
         /// Raised after the OK button commits the edit session.
@@ -125,12 +147,13 @@ namespace Bee.UI.Avalonia.Controls.Editors
 
         private StackPanel BuildContent(FormDataObject dataObject, LayoutGrid layout, DataRow row)
         {
+            var columnCount = Compact ? CompactColumnCount : WideColumnCount;
             var grid = new Grid
             {
                 ColumnSpacing = 12,
                 RowSpacing = 8,
             };
-            for (var i = 0; i < ColumnCount; i++)
+            for (var i = 0; i < columnCount; i++)
                 grid.ColumnDefinitions.Add(new ColumnDefinition(GridLength.Star));
 
             var index = 0;
@@ -144,11 +167,11 @@ namespace Bee.UI.Avalonia.Controls.Editors
                 _editors.Add((IFieldEditor)editor);
                 cell.Children.Add(editor);
 
-                var rowIndex = index / ColumnCount;
+                var rowIndex = index / columnCount;
                 while (grid.RowDefinitions.Count <= rowIndex)
                     grid.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
                 Grid.SetRow(cell, rowIndex);
-                Grid.SetColumn(cell, index % ColumnCount);
+                Grid.SetColumn(cell, index % columnCount);
                 grid.Children.Add(cell);
                 index++;
             }

@@ -182,7 +182,7 @@ isCompact = viewportWidth > 0 && viewportWidth < CompactWidthThreshold
 
 共用 `MainView` 目前是桌面導向（DataGrid、側邊導覽）。本階段做最小行動適配，不重寫 UI：
 
-- **EditForm 彈窗在小畫面全螢幕化** —— 現 `RowEditDialog` 為 popup，手機上應改為全螢幕 / sheet 呈現（接續階段 4）
+- **EditForm 彈窗在 iOS 改走 overlay / 全螢幕 sheet** —— `RowEditDialog` 目前只特判 browser 用 overlay，其餘一律開 native `Window`；iOS single-view **不支援 native Window**，此分支須改成「非 desktop → overlay」（panel 欄數響應式已於階段 4 完成，見 `RowEditPanel.Compact`）
 - 階段 4 `CompactWidthThreshold` 的最終值 / 是否納入方向啟發式，於此對模擬器調校定案
 - safe area（瀏海 / Home indicator）內距
 - 觸控目標尺寸（按鈕 / 列高）

@@ -135,6 +135,34 @@ namespace Bee.UI.Avalonia.UnitTests.Controls.Editors
             Assert.False(dataObject.IsDirty);
         }
 
+        [Theory]
+        [InlineData(false, 2)]  // wide screen → two columns
+        [InlineData(true, 1)]   // compact screen → single column
+        [DisplayName("Compact 旗標決定編輯表單欄數")]
+        public void Compact_DrivesColumnCount(bool compact, int expectedColumns)
+        {
+            var dataObject = BuildDataObject();
+            var row = dataObject.DataSet.Tables["EmployeePhone"]!.Rows[0];
+            var panel = new RowEditPanel { Compact = compact };
+
+            panel.Bind(dataObject, BuildLayout(), row);
+
+            var host = Assert.IsType<global::Avalonia.Controls.StackPanel>(panel.Content);
+            var grid = Assert.IsType<global::Avalonia.Controls.Grid>(host.Children[0]);
+            Assert.Equal(expectedColumns, grid.ColumnDefinitions.Count);
+        }
+
+        [Theory]
+        [InlineData(400.0, true)]   // phone-sized → compact
+        [InlineData(900.0, false)]  // desktop → not compact
+        [InlineData(600.0, false)]  // exactly threshold → not compact
+        [InlineData(0.0, false)]    // unmeasured → not compact
+        [DisplayName("IsCompactWidth 依螢幕寬度判定 compact")]
+        public void IsCompactWidth_ByScreenWidth(double width, bool expected)
+        {
+            Assert.Equal(expected, RowEditPanel.IsCompactWidth(width));
+        }
+
         [Fact]
         [DisplayName("重複 Bind 取消前一筆 session")]
         public void Rebind_CancelsPreviousSession()
