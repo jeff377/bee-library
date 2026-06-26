@@ -53,6 +53,23 @@ dotnet run --project apps/Bee.Northwind/Bee.Northwind.Browser
 async 連線、overlay 對話框、publish 注意事項）見
 [`Bee.Northwind.Browser/README.md`](Bee.Northwind.Browser/README.md)。
 
+### 行動前端（Avalonia iOS / Android）
+
+同一套 UI 也能以 Avalonia single-view head 在 iOS 與 Android 上執行，並連同上面執行中的 server。
+兩者目前皆 **僅 Debug**（Release 需 trim-safe 序列化，另案）。畫面會響應式重排 —— 窄螢幕下表單
+單欄、清單卡片化 —— 且 Android 硬體 / 手勢返回鍵會先退記錄 → 關分頁，才退出 app。
+
+```bash
+# iOS 模擬器（需 ios workload + Xcode；先啟動一個模擬器）
+dotnet build apps/Bee.Northwind/Bee.Northwind.iOS -t:Run -f net10.0-ios -c Debug
+
+# Android 模擬器（需 Android SDK + JDK 17；先啟動一個 AVD）
+dotnet build apps/Bee.Northwind/Bee.Northwind.Android -t:Run -f net10.0-android -c Debug
+```
+
+在 **Android 模擬器**，主機要用 `10.0.2.2`（非 `localhost`），endpoint 填 `http://10.0.2.2:5100/api`；
+manifest 已開 dev 明文 HTTP。在 **iOS 模擬器**則用 `http://localhost:5100/api`（ATS 於 dev 允許任意連線）。
+
 > 首次執行 server 會在 server 專案旁建立 `northwind.db` 並灌入 Northwind 子集。刪除該檔即可重新建表灌種子。
 
 ## 表單清單
@@ -200,7 +217,9 @@ apps/Bee.Northwind/
 ├── Bee.Northwind.Server/         JSON-RPC 後端、OrderBO、JSON 種子資料
 ├── Bee.Northwind.UI/             Avalonia 共用 UI（views、view models、導航）
 ├── Bee.Northwind.Desktop/        桌面進入點（Avalonia.Desktop）
-└── Bee.Northwind.Browser/        網頁進入點（Avalonia WASM）
+├── Bee.Northwind.Browser/        網頁進入點（Avalonia WASM）
+├── Bee.Northwind.iOS/            iOS 進入點（Avalonia.iOS，Debug-first）
+└── Bee.Northwind.Android/        Android 進入點（Avalonia.Android，Debug-first）
 ```
 
 詳細計畫與持續累積的框架回饋清單見 [`docs/plans/plan-bee-northwind-demo.md`](../../docs/plans/plan-bee-northwind-demo.md)。
