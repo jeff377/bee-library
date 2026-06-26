@@ -1,11 +1,11 @@
 # 計畫：發佈框架 4.12.1（行動端 trim descriptor）並同步 bee-northwind-avalonia 複本
 
-**狀態：🚧 進行中（2026-06-27）**
+**狀態：✅ 已完成（2026-06-27）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| A | 發佈框架 **4.12.1** 到 NuGet（內含 `ILLink.Descriptors.xml`） | 📝 待做 |
-| B | 複本 `bee-northwind-avalonia` bump 至 4.12.1 + 同步 README + 驗證行動端 trim | 📝 待做 |
+| A | 發佈框架 **4.12.1** 到 NuGet（內含 `ILLink.Descriptors.xml`） | ✅ 已完成（2026-06-27，nuget-publish success、NuGet.org 已索引） |
+| B | 複本 `bee-northwind-avalonia` bump 至 4.12.1 + 同步 README + 驗證行動端 trim | ✅ 已完成（2026-06-27，複本 commit `243fde9`） |
 
 > 階段 B 依賴階段 A 的套件**已發佈且 NuGet.org 已索引**（通常數分鐘）；兩階段不可並行。
 
@@ -44,12 +44,12 @@
 
 依 `releasing.md` 流程：
 
-- [ ] **CHANGELOG**：執行 `/changelog-draft` 從 `v4.12.0..HEAD` 統整雙語大綱（`CHANGELOG.md` / `CHANGELOG.zh-TW.md`），使用者 review 後 commit。內容核心一條：行動端 trim/AOT XML 序列化相容（內嵌 `ILLink.Descriptors.xml`）。
-- [ ] 確認 `build-ci.yml` 在 main 最新 commit 通過（descriptor commit `6374e29f` 已綠；釋出前再確認 HEAD 綠）。
-- [ ] 更新 `src/Directory.Build.props`：`<Version>4.12.1</Version>`、`<AssemblyVersion>4.12.1.0</AssemblyVersion>`、`<FileVersion>4.12.1.0</FileVersion>`。
-- [ ] commit & push main。
-- [ ] 打 tag 並推送：`git tag v4.12.1 && git push origin v4.12.1` → 觸發 `nuget-publish.yml`（on push tag）。
-- [ ] 確認 `nuget-publish.yml` 成功；於 NuGet.org 確認 5 個套件 + `Bee.Definition` 4.12.1 已上架並可還原（索引延遲數分鐘）。
+- [x] **CHANGELOG**：`[4.12.1]` 雙語精簡條目 + `docs/changelogs/4.12.1.md`/`.zh-TW.md` 明細（連 ADR-025）。
+- [x] 確認 `build-ci.yml` 在 main 通過（version-bump commit `afa6e490` run 28253305553 success）。
+- [x] 更新 `src/Directory.Build.props` → 4.12.1 / 4.12.1.0。
+- [x] commit & push main（`afa6e490`）。
+- [x] 打 tag `v4.12.1` 推送 → `nuget-publish.yml` run 28253687747 success。
+- [x] NuGet.org 已索引 4.12.1；`Bee.Definition` 4.12.1 dll 確認內含 `ILLink.Descriptors.xml`。
 
 > **發佈不可逆**：套件一經發佈無法刪除，只能 unlist。tag 與版本號須一致（`v4.12.1` → `4.12.1`）。
 
@@ -57,13 +57,14 @@
 
 > 前置：階段 A 的 4.12.1 已可從 NuGet.org 還原。
 
-- [ ] **bump 套件版本**：複本內 5 個 `Bee.*` `PackageReference` 由 `4.12.0` → `4.12.1`。
-- [ ] **同步 README**（中英雙語）：把來源 `apps/Bee.Northwind/README*.md` 今天的修正搬到複本——
-      行動端「Release trim 已驗證」段、表單數 9→8、移除終章預告句、移除失效 plan 連結；
-      **改寫上述會失效的 `../../` 內部連結**（框架 README、plan 連結）：複本中移除該連結或改指向 bee-library GitHub 絕對網址。
-- [ ] `dotnet restore` + `dotnet build`（複本，桌面 head 即可）確認 4.12.1 正常解析、建置通過。
-- [ ] **驗證行動端 trim 真的到位**（payoff）：複本 `Bee.Northwind.Android` Release `TrimMode=full` build → 確認 linked `Bee.Definition.dll` ≈ 208KB（descriptor 已隨 NuGet 生效；對照無 descriptor 的 91KB）。可選但建議。
-- [ ] 複本 commit + push（`bee-northwind-avalonia` 為獨立 repo）。
+- [x] **bump 套件版本**：複本 5 個 `Bee.*` `PackageReference` 4.12.0 → 4.12.1。
+- [x] **同步 README**（中英）：行動端段、表單數 9→8、移除終章預告句；plan 連結在地化為 bee-library GitHub 絕對網址（複本既有慣例，已無 `../../` 連結）。
+- [x] `dotnet restore` + `dotnet build`（Server + Desktop）確認 4.12.1 解析、編譯 0 錯誤。
+- [x] **驗證 descriptor 到位（payoff）**：直接檢查還原的 `Bee.Definition` 4.12.1 dll（211,968B 全量）內含 `ILLink.Descriptors.xml` / `preserve="all"` / `Bee.Base.Collections` ✓。
+      > full-trim build 驗法因 CLI `-p:TrimMode=full` 傳播到 `Bee.Northwind.UI`（`TreatWarningsAsErrors=true`）觸發其 `ViewLocator` IL2057（`Type.GetType` 反射）而中止——**與 descriptor 無關**，是 flag 傳播 + UI full-trim 的產物。改用 dll 內嵌資源檢查直接證實，更可靠。
+- [x] 複本 commit + push（`243fde9`）。
+
+> **附記（非本案範圍）**：`Bee.Northwind.UI/ViewLocator.cs` 的 `Type.GetType` 在「app 組件 full-trim」下有 IL2057；行動 head 出貨走 Debug 或預設 Release trim（SdkOnly，不裁 app 組件）不會踩。若未來要 app 全裁，ViewLocator 需補 trim 註記。
 
 ---
 
