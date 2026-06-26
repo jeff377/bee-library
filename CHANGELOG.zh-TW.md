@@ -4,6 +4,16 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.12.1]
+
+> Bee.NET 仍處 pre-stable 演進階段。本 patch 在 `Bee.Definition` 內嵌 trimmer descriptor，讓定義型別圖在 full trim / AOT 下保留，補完 4.12.0 起步的 Avalonia **iOS** / **Android** Release 打包路徑（4.12.0 讓同一批型別可於 reflection-only XmlSerializer 反序列化）。無破壞性變更。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.12.1.zh-TW.md](docs/changelogs/4.12.1.zh-TW.md)
+
+### 修正
+
+- `Bee.Definition`：隨套件內嵌 `ILLink.Descriptors.xml`，在 full trim / AOT 下保留定義型別圖（`Bee.Definition.*` + `Bee.Base.Collections.*`），使裝置端 `XmlCodec.Deserialize<FormSchema>` 路徑在 trimmed iOS / Android Release 建置下不被裁掉。自動套用至所有下游 trimmed / AOT 消費端，呼叫端無需任何改動。
+
 ## [4.12.0]
 
 > Bee.NET 仍處 pre-stable 演進階段。本版讓 `Bee.UI.Avalonia` 控件家族在手機／窄視窗下響應式，並讓 `Bee.Definition` 型別可於 AOT reflection-only XmlSerializer 反序列化 —— 兩者合起來讓 Avalonia 的 **iOS** 與 **Android** head 得以成立。無破壞性變更。

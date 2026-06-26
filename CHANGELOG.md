@@ -4,6 +4,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.12.1]
+
+> Bee.NET remains in pre-stable evolution. This patch ships an embedded trimmer descriptor in `Bee.Definition` so the definition type graph survives full trim / AOT, completing the Avalonia **iOS** / **Android** Release-packaging path begun in 4.12.0 (which made the same types deserialize under the reflection-only XmlSerializer). No breaking changes.
+
+📄 Full notes & design context: [docs/changelogs/4.12.1.md](docs/changelogs/4.12.1.md)
+
+### Fixed
+
+- `Bee.Definition`: ship an embedded `ILLink.Descriptors.xml` preserving the definition type graph (`Bee.Definition.*` + `Bee.Base.Collections.*`) under full trim / AOT, so the on-device `XmlCodec.Deserialize<FormSchema>` path is not stripped on trimmed iOS / Android Release builds. Auto-applied to every downstream trimmed / AOT consumer; no consumer action required.
+
 ## [4.12.0]
 
 > Bee.NET remains in pre-stable evolution. This release makes the `Bee.UI.Avalonia` control family responsive for phone / narrow viewports and makes the `Bee.Definition` types deserialize under the AOT reflection-only XmlSerializer — together these enable the Avalonia **iOS** and **Android** heads. No breaking changes.
