@@ -1,10 +1,13 @@
+using System.Data;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Templates;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Bee.Api.Client.Connectors;
 using Bee.Definition;
 using Bee.Definition.Forms;
+using Bee.Definition.Layouts;
 using Bee.UI.Avalonia.Controls;
 using Bee.UI.Core;
 
@@ -51,10 +54,15 @@ namespace Bee.UI.Avalonia.Views
         private readonly TextBlock _loadingLabel;
         private readonly TextBlock _emptyListLabel;
         private readonly GridControl _grid;
+        private readonly ListBox _cardList;
         private Guid _selectedRowId;
         private bool _isBusy;
         private bool _initialized;
         private bool _isInitializing;
+        // On a narrow (phone) viewport the wide column grid is replaced by a stacked card list;
+        // _hasData / _isCompact gate which surface is shown (see UpdateContentVisibility).
+        private bool _hasData;
+        private bool _isCompact;
 
         static ListView()
         {
@@ -102,13 +110,30 @@ namespace Bee.UI.Avalonia.Views
             // never accidentally enters edit mode. Editing is the explicit Edit action.
             _grid.DoubleTapped += (_, _) => OnGridDoubleTapped();
 
+            // Compact (phone) surface: one card per row with the columns stacked as caption/value
+            // lines, so narrow viewports stay readable instead of horizontally scrolling a wide
+            // grid. Bound to the same DataTable; only one of grid / card list is visible at a time.
+            _cardList = new ListBox
+            {
+                IsVisible = false,
+                Background = Brushes.Transparent,
+                SelectionMode = SelectionMode.Single,
+            };
+            _cardList.SelectionChanged += (_, _) => OnCardSelectionChanged();
+            _cardList.DoubleTapped += (_, _) => OnGridDoubleTapped();
+
             _emptyListLabel = new TextBlock { Text = "No data.", IsVisible = false };
 
-            // DockPanel (not StackPanel): the chrome docks to the top and the grid fills the
-            // remaining BOUNDED height as the last child. A StackPanel would give the grid
-            // unbounded height, so the DataGrid grows to fit every row and never shows its
-            // own vertical scrollbar.
+            // DockPanel (not StackPanel): the chrome docks to the top and the content area fills the
+            // remaining BOUNDED height as the last child. A StackPanel would give the grid unbounded
+            // height, so the DataGrid grows to fit every row and never shows its own vertical scrollbar.
             toolbar.Margin = new Thickness(0, 0, 0, 8);
+
+            // Grid and card list overlay the same fill region; visibility selects between them.
+            var contentArea = new Panel();
+            contentArea.Children.Add(_grid);
+            contentArea.Children.Add(_cardList);
+
             var host = new DockPanel { LastChildFill = true };
             DockPanel.SetDock(_errorLabel, Dock.Top);
             DockPanel.SetDock(_loadingLabel, Dock.Top);
@@ -118,7 +143,7 @@ namespace Bee.UI.Avalonia.Views
             host.Children.Add(_loadingLabel);
             host.Children.Add(toolbar);
             host.Children.Add(_emptyListLabel);
-            host.Children.Add(_grid);
+            host.Children.Add(contentArea);
 
             Content = host;
         }
@@ -217,9 +242,10 @@ namespace Bee.UI.Avalonia.Views
             {
                 var response = await connector.GetListAsync(ComputeSelectFields()).ConfigureAwait(true);
                 _grid.DataTable = response.Table;
-                var isEmpty = response.Table is null || response.Table.Rows.Count == 0;
-                _grid.IsVisible = !isEmpty;
-                _emptyListLabel.IsVisible = isEmpty;
+                _cardList.ItemsSource = response.Table?.DefaultView;
+                _hasData = response.Table is not null && response.Table.Rows.Count > 0;
+                _emptyListLabel.IsVisible = !_hasData;
+                UpdateContentVisibility();
                 _selectedRowId = Guid.Empty;
             }
             catch (Exception ex)
@@ -256,6 +282,80 @@ namespace Bee.UI.Avalonia.Views
             base.OnAttachedToVisualTree(e);
             if (!_initialized && !_isInitializing)
                 _ = InitializeAsync();
+        }
+
+        /// <inheritdoc/>
+        protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+        {
+            base.OnPropertyChanged(change);
+
+            // Switch between the wide column grid and the stacked card list as the viewport crosses
+            // the compact width threshold. Bounds is a direct property whose changes are not
+            // delivered to static class handlers, so the reaction is wired here.
+            if (change.Property == BoundsProperty)
+            {
+                var compact = Bounds.Width > 0 && Bounds.Width < FormView.DefaultCompactWidthThreshold;
+                if (compact != _isCompact)
+                {
+                    _isCompact = compact;
+                    UpdateContentVisibility();
+                }
+            }
+        }
+
+        private void UpdateContentVisibility()
+        {
+            _grid.IsVisible = _hasData && !_isCompact;
+            _cardList.IsVisible = _hasData && _isCompact;
+        }
+
+        // One card per row: each visible column rendered as a "caption  value" line, read straight
+        // off the DataRowView (no reflection binding, so it works under iOS AOT).
+        private static IDataTemplate BuildCardTemplate(IReadOnlyList<LayoutColumn> columns)
+            => new FuncDataTemplate<DataRowView>((row, _) =>
+            {
+                var stack = new StackPanel { Spacing = 3 };
+                foreach (var column in columns)
+                {
+                    var line = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
+                    line.Children.Add(new TextBlock
+                    {
+                        Text = column.Caption,
+                        FontWeight = FontWeight.SemiBold,
+                        MinWidth = 92,
+                        Opacity = 0.7,
+                    });
+                    var value = row is not null && row.Row.Table.Columns.Contains(column.FieldName)
+                        ? row[column.FieldName]?.ToString()
+                        : string.Empty;
+                    line.Children.Add(new TextBlock { Text = value, TextWrapping = TextWrapping.Wrap });
+                    stack.Children.Add(line);
+                }
+
+                return new Border
+                {
+                    Padding = new Thickness(10),
+                    Margin = new Thickness(0, 0, 0, 6),
+                    BorderThickness = new Thickness(1),
+                    BorderBrush = Brushes.Gray,
+                    CornerRadius = new CornerRadius(6),
+                    Child = stack,
+                };
+            });
+
+        private void OnCardSelectionChanged()
+        {
+            if (_cardList.SelectedItem is not DataRowView drv
+                || !drv.Row.Table.Columns.Contains(SysFields.RowId))
+            {
+                return;
+            }
+
+            var value = drv.Row[SysFields.RowId];
+            if (value is Guid rowId)
+                OnRowSelected(rowId);
+            else if (Guid.TryParse(value?.ToString(), out var parsed))
+                OnRowSelected(parsed);
         }
 
         private void OnInputsChanged()
@@ -305,6 +405,11 @@ namespace Bee.UI.Avalonia.Views
             var listLayout = Schema!.GetListLayout();
             // Columns render immediately; rows arrive with the first ReloadAsync.
             _grid.Bind(listLayout, rows: null);
+
+            var columns = (listLayout.Columns ?? Enumerable.Empty<LayoutColumn>())
+                .Where(c => c.Visible)
+                .ToArray();
+            _cardList.ItemTemplate = BuildCardTemplate(columns);
         }
 
         // FormSchema.ListFields drives the server SELECT but omits sys_rowid; prepend it so
