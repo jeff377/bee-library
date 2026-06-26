@@ -90,6 +90,10 @@ dotnet run
 
 The console will print `System.Ping` status and an echoed message returned from a custom BO. See [`samples/README.md`](samples/README.md) for the full demo list and what each one shows.
 
+## 🐝 Featured demo — Bee.Northwind
+
+[`apps/Bee.Northwind`](apps/Bee.Northwind/README.md) is the flagship demo: the classic Northwind inventory case built almost entirely from definitions (nine forms, master-detail orders with lookups, exactly one hand-written business object — everything else is XML). The same shared `Bee.Northwind.UI` runs on **four Avalonia heads** — Desktop, Browser (WASM), iOS, and Android — against one JSON-RPC server. See [`apps/Bee.Northwind/README.md`](apps/Bee.Northwind/README.md).
+
 ## 💡 Sample Projects
 
 All demos live in-repo under [`samples/`](samples/README.md). They're minimal, focused, and evolve alongside the framework. Build them with `dotnet build samples/Bee.Samples.slnx` (kept separate from the main `Bee.Library.slnx`, so the main CI/build stays unaffected).
