@@ -6,7 +6,7 @@ A demonstration — the classic **Northwind** inventory business case — built 
 
 > **A new screen with full create / read / update / delete, list browsing, and cross-table lookups is a few XML definition files — not UI code, not CRUD code, not SQL.**
 
-Nine forms, master-detail orders with three lookups, framework organization tables, and exactly one hand-written business object (the order rules) — everything else is definitions. The closing chapter walks you through adding a tenth form in about thirty minutes, writing zero code.
+Nine forms, master-detail orders with three lookups, framework organization tables, and exactly one hand-written business object (the order rules) — everything else is definitions.
 
 ## What it demonstrates
 
