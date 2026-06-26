@@ -386,7 +386,7 @@ namespace Bee.Db.UnitTests
                     TestDbConventions.GetDatabaseId(DatabaseType.Oracle), _fx.GetRequiredService<IDbConnectionManager>());
                 var real = provider.GetTableSchema(tableName);
                 Assert.NotNull(real);
-                var defineField = define.Fields["customize_id"];
+                var defineField = define.Fields!["customize_id"];
                 var realField = real!.Fields![defineField.FieldName];
                 Assert.False(realField.AllowNull);
                 Assert.True(defineField.Compare(realField));

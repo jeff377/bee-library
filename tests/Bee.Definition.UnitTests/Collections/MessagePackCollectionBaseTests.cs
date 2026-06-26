@@ -53,7 +53,7 @@ namespace Bee.Definition.UnitTests.Collections
             var col = new SortFieldCollection();
             ICollectionItem item = MakeField();
 
-            col.Add(item);
+            ((ICollectionBase)col).Add(item);
 
             Assert.Single(col);
             Assert.Same(col, ((SortField)item).Collection);

@@ -1,4 +1,6 @@
-﻿namespace Bee.Business.Form
+﻿using Bee.Definition.Collections;
+
+namespace Bee.Business.Form
 {
     /// <summary>
     /// Custom method handler for form-level business logic objects.

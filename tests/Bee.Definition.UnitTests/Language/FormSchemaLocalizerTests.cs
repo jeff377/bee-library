@@ -1,3 +1,4 @@
+using Bee.Definition.Collections;
 using System.ComponentModel;
 using System.Globalization;
 using Bee.Base.Data;

@@ -1,3 +1,4 @@
+using Bee.Definition.Collections;
 using System.ComponentModel;
 using Bee.Base.Data;
 using Bee.Base.Serialization;

@@ -68,7 +68,12 @@ namespace Bee.Definition.Collections
         /// Adds an item to the collection.
         /// </summary>
         /// <param name="value">The item to add.</param>
-        public void Add(ICollectionItem value)
+        /// <remarks>
+        /// Explicit interface implementation so the type exposes a single public instance <c>Add</c>
+        /// (the strongly-typed <c>Add(T)</c>); see <see cref="Bee.Base.Collections.CollectionBase{T}"/>
+        /// for why XmlSerializer's reflection path requires this on AOT targets.
+        /// </remarks>
+        void ICollectionBase.Add(ICollectionItem value)
         {
             base.Add((T)value);
         }

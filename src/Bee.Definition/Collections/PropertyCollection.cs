@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using Bee.Base;
 using Bee.Base.Collections;
 
@@ -10,16 +10,6 @@ namespace Bee.Definition.Collections
     [Description("Custom property collection.")]
     public class PropertyCollection : KeyCollectionBase<Property>
     {
-        /// <summary>
-        /// Adds a new property to the collection.
-        /// </summary>
-        /// <param name="name">The property name.</param>
-        /// <param name="value">The property value.</param>
-        public void Add(string name, string value)
-        {
-            base.Add(new Property(name, value));
-        }
-
         /// <summary>
         /// Gets the string value of a property.
         /// </summary>
@@ -57,6 +47,24 @@ namespace Bee.Definition.Collections
                 return ValueUtilities.CInt(this[name].Value);
             else
                 return defaultValue;
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for <see cref="PropertyCollection"/>.
+    /// </summary>
+    public static class PropertyCollectionExtensions
+    {
+        /// <summary>
+        /// Adds a new property to the collection.
+        /// </summary>
+        /// <param name="collection">The collection to add to.</param>
+        /// <param name="name">The property name.</param>
+        /// <param name="value">The property value.</param>
+        public static void Add(this PropertyCollection? collection, string name, string value)
+        {
+            ArgumentNullException.ThrowIfNull(collection);
+            collection.Add(new Property(name, value));
         }
     }
 }

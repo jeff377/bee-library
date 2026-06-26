@@ -14,19 +14,37 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Initializes a new instance of <see cref="PermissionModelCollection"/>.
         /// </summary>
-        /// <param name="models">The owning permission model registry.</param>
-        public PermissionModelCollection(PermissionModels models) : base(models)
+        /// <remarks>
+        /// Required by XmlSerializer's reflection-only deserialization path (AOT targets such as iOS
+        /// create the collection via the public parameterless constructor).
+        /// </remarks>
+        public PermissionModelCollection() : base()
         { }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="PermissionModelCollection"/>.
+        /// </summary>
+        /// <param name="models">The owning permission model registry.</param>
+        public PermissionModelCollection(PermissionModels models) : base(models)
+        { }
+    }
+
+    /// <summary>
+    /// Extension methods for <see cref="PermissionModelCollection"/>.
+    /// </summary>
+    public static class PermissionModelCollectionExtensions
+    {
+        /// <summary>
         /// Adds a permission model to the collection.
         /// </summary>
+        /// <param name="collection">The collection to add to.</param>
         /// <param name="modelId">The model id.</param>
         /// <param name="displayName">The display name.</param>
-        public PermissionModel Add(string modelId, string displayName)
+        public static PermissionModel Add(this PermissionModelCollection? collection, string modelId, string displayName)
         {
+            ArgumentNullException.ThrowIfNull(collection);
             var model = new PermissionModel(modelId, displayName);
-            base.Add(model);
+            collection.Add(model);
             return model;
         }
     }

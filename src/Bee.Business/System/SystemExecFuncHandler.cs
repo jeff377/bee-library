@@ -1,4 +1,5 @@
 using Bee.Definition.Settings;
+using Bee.Definition.Collections;
 using Bee.Business.Attributes;
 using Bee.Repository.Abstractions.Factories;
 using Bee.Definition.Security;

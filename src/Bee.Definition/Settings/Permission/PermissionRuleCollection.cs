@@ -14,19 +14,37 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Initializes a new instance of <see cref="PermissionRuleCollection"/>.
         /// </summary>
-        /// <param name="model">The owning permission model.</param>
-        public PermissionRuleCollection(PermissionModel model) : base(model)
+        /// <remarks>
+        /// Required by XmlSerializer's reflection-only deserialization path (AOT targets such as iOS
+        /// create the collection via the public parameterless constructor).
+        /// </remarks>
+        public PermissionRuleCollection() : base()
         { }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="PermissionRuleCollection"/>.
+        /// </summary>
+        /// <param name="model">The owning permission model.</param>
+        public PermissionRuleCollection(PermissionModel model) : base(model)
+        { }
+    }
+
+    /// <summary>
+    /// Extension methods for <see cref="PermissionRuleCollection"/>.
+    /// </summary>
+    public static class PermissionRuleCollectionExtensions
+    {
+        /// <summary>
         /// Adds a permission rule to the collection.
         /// </summary>
+        /// <param name="collection">The collection to add to.</param>
         /// <param name="action">The permission action.</param>
         /// <param name="scope">The record-scope strategy.</param>
-        public PermissionRule Add(PermissionAction action, ScopeStrategy scope = ScopeStrategy.Inherit)
+        public static PermissionRule Add(this PermissionRuleCollection? collection, PermissionAction action, ScopeStrategy scope = ScopeStrategy.Inherit)
         {
+            ArgumentNullException.ThrowIfNull(collection);
             var rule = new PermissionRule(action, scope);
-            base.Add(rule);
+            collection.Add(rule);
             return rule;
         }
     }

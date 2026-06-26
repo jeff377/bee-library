@@ -164,7 +164,7 @@ namespace Bee.Definition.UnitTests.Collections
             var col = new ParameterCollection();
             IKeyCollectionItem item = new Parameter("P1", 1);
 
-            col.Add(item);
+            ((IKeyCollectionBase)col).Add(item);
 
             Assert.Single(col);
             Assert.Equal("P1", col[0].Name);

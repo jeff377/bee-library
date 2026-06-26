@@ -14,19 +14,37 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Initializes a new instance of <see cref="ProgramCategoryCollection"/>.
         /// </summary>
-        /// <param name="settings">The owning program settings.</param>
-        public ProgramCategoryCollection(ProgramSettings settings) : base(settings)
+        /// <remarks>
+        /// Required by XmlSerializer's reflection-only deserialization path (AOT targets such as iOS
+        /// create the collection via the public parameterless constructor).
+        /// </remarks>
+        public ProgramCategoryCollection() : base()
         { }
 
         /// <summary>
+        /// Initializes a new instance of <see cref="ProgramCategoryCollection"/>.
+        /// </summary>
+        /// <param name="settings">The owning program settings.</param>
+        public ProgramCategoryCollection(ProgramSettings settings) : base(settings)
+        { }
+    }
+
+    /// <summary>
+    /// Provides extension methods for <see cref="ProgramCategoryCollection"/>.
+    /// </summary>
+    public static class ProgramCategoryCollectionExtensions
+    {
+        /// <summary>
         /// Adds a category to the collection.
         /// </summary>
+        /// <param name="collection">The collection to add to.</param>
         /// <param name="id">The category ID.</param>
         /// <param name="displayName">The display name.</param>
-        public ProgramCategory Add(string id, string displayName)
+        public static ProgramCategory Add(this ProgramCategoryCollection? collection, string id, string displayName)
         {
+            ArgumentNullException.ThrowIfNull(collection);
             var category = new ProgramCategory(id, displayName);
-            base.Add(category);
+            collection.Add(category);
             return category;
         }
     }

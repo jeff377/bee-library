@@ -24,15 +24,24 @@ namespace Bee.Definition.Language
         /// <param name="languageEnum">The owning language enum.</param>
         public LanguageEnumEntryCollection(LanguageEnum languageEnum) : base(languageEnum) { }
 
+    }
+
+    /// <summary>
+    /// Convenience extension methods for <see cref="LanguageEnumEntryCollection"/>.
+    /// </summary>
+    public static class LanguageEnumEntryCollectionExtensions
+    {
         /// <summary>
         /// Adds an entry to the collection.
         /// </summary>
+        /// <param name="collection">The collection to add to.</param>
         /// <param name="code">The persisted code.</param>
         /// <param name="text">The localized display text.</param>
-        public LanguageEnumEntry Add(string code, string text)
+        public static LanguageEnumEntry Add(this LanguageEnumEntryCollection? collection, string code, string text)
         {
+            ArgumentNullException.ThrowIfNull(collection);
             var entry = new LanguageEnumEntry { Code = code, Text = text };
-            base.Add(entry);
+            collection.Add(entry);
             return entry;
         }
     }

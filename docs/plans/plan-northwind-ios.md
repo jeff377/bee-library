@@ -6,7 +6,7 @@
 |------|------|------|
 | 1 | iOS 工具鏈就緒（`ios` workload + 模擬器 runtime + 空殼驗證） | ✅ 已完成（2026-06-25） |
 | 2 | Scaffold `Bee.Northwind.iOS` head（bootstrap + client 接線 + slnx） | ✅ 已完成（2026-06-25） |
-| 3 | 模擬器 Debug 跑通 + 端到端冒煙（連線 → 登入 → 表單） | 🚧 進行中（app 已在模擬器啟動並渲染連線畫面；連線→登入→表單待測） |
+| 3 | 模擬器 Debug 跑通 + 端到端冒煙（連線 → 登入 → 表單） | ✅ 已完成（2026-06-26）：端到端通過（連線→登入→選單→清單真實資料→開記錄響應式單欄）。修掉兩個 AOT XmlSerializer 不相容（見下） |
 | 4 | 響應式佈局（FormView 依寬度：主檔欄位 2 欄↔1 欄重排 + 明細 InCell↔EditForm，**框架層 + 測試 + CI**） | ✅ 已完成（2026-06-25） |
 | 5 | 行動 UX 微調（safe area / 觸控 / 方向 / EditForm 彈窗全螢幕化） | 📝 待做 |
 
@@ -137,6 +137,17 @@ ClientInfo.EndpointStorage = new FileEndpointStorage("Bee.Northwind"); // 階段
 **完成準則**：`dotnet build apps/Bee.Northwind/Bee.Northwind.iOS -f net10.0-ios -c Debug` 通過。
 
 ## 階段 3：模擬器 Debug 跑通 + 端到端冒煙
+
+> **結果（2026-06-26）**：端到端通過。連線 → 登入（demo/demo）→ 選單（ProgramSettings）→
+> Categories 清單顯示真實 Northwind 資料 → 開記錄（FormView 響應式單欄）全部正常。
+> 過程修掉**兩個 AOT XmlSerializer 不相容**（iOS 無 Reflection.Emit、走 reflection-only 反序列化）：
+>
+> 1. **多載 `Add` → `AmbiguousMatchException`**：reflection reader 用 `Type.GetMethod("Add")`（不帶參數型別）找集合 add，Bee 集合有多個 `Add` 多載即撞。**修法**：讓每個定義集合只剩一個 public instance `Add(T)` —— 基底的介面 `Add(I…CollectionItem)` 改顯式實作（4 基底）、各集合便利 `Add(...)` 改**擴充方法**（19 集合，呼叫端語法不變、`this` 可空 + `ThrowIfNull`）。
+> 2. **集合無無參數建構子 → `MissingMethodException`**：reflection reader 用 `Activator.CreateInstance` 建立集合需 public 無參數建構子；owner-coupled 集合（建構子收 owner）缺之。**修法**：為 12 個這類集合補 `public Xxx() : base()`（item 型別本就有無參數建構子）。
+>
+> 兩者皆**格式逐字不變**（XmlSerializer 仍照常處理集合，`[XmlArray]`/多型保留）——
+> Definition 723 + Base 464 round-trip 測試全綠驗證。詳見 `[[ios-xmlserializer-ambiguous-add]]`。
+> **桌面/WASM 用 codegen 路徑（有 Reflection.Emit）本就沒事，此修法對其無行為影響。**
 
 1. 部署到模擬器：`dotnet build -t:Run -f net10.0-ios -c Debug`（或從 IDE 選模擬器啟動）
 2. **端點儲存驗證**：在 ConnectionView 輸入 endpoint → 重啟 app → 確認 endpoint 有持久化

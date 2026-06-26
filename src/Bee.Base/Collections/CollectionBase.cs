@@ -65,7 +65,14 @@ namespace Bee.Base.Collections
         /// Adds the specified item to the collection.
         /// </summary>
         /// <param name="value">The item to add.</param>
-        public void Add(ICollectionItem value)
+        /// <remarks>
+        /// Explicit interface implementation so the type exposes a single public instance method
+        /// named <c>Add</c> (the strongly-typed <c>Add(T)</c>). XmlSerializer's reflection-only
+        /// path (used on AOT targets such as iOS) resolves the collection add via
+        /// <c>Type.GetMethod("Add")</c>, which throws <see cref="System.Reflection.AmbiguousMatchException"/>
+        /// when more than one <c>Add</c> overload is public.
+        /// </remarks>
+        void ICollectionBase.Add(ICollectionItem value)
         {
             base.Add((T)value);
         }

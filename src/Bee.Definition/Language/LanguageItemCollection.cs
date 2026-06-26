@@ -23,15 +23,24 @@ namespace Bee.Definition.Language
         /// <param name="resource">The owning language resource.</param>
         public LanguageItemCollection(LanguageResource resource) : base(resource) { }
 
+    }
+
+    /// <summary>
+    /// Convenience extension methods for <see cref="LanguageItemCollection"/>.
+    /// </summary>
+    public static class LanguageItemCollectionExtensions
+    {
         /// <summary>
         /// Adds a localized text item.
         /// </summary>
+        /// <param name="collection">The collection to add to.</param>
         /// <param name="key">The sub-key.</param>
         /// <param name="value">The localized text.</param>
-        public LanguageItem Add(string key, string value)
+        public static LanguageItem Add(this LanguageItemCollection? collection, string key, string value)
         {
+            ArgumentNullException.ThrowIfNull(collection);
             var item = new LanguageItem { Key = key, Value = value };
-            base.Add(item);
+            collection.Add(item);
             return item;
         }
     }

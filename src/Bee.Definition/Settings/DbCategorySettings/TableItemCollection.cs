@@ -14,6 +14,16 @@ namespace Bee.Definition.Settings
         /// <summary>
         /// Initializes a new instance of <see cref="TableItemCollection"/>.
         /// </summary>
+        /// <remarks>
+        /// Required by XmlSerializer's reflection-only deserialization path (AOT targets such as iOS
+        /// create the collection via the public parameterless constructor).
+        /// </remarks>
+        public TableItemCollection() : base()
+        { }
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="TableItemCollection"/>.
+        /// </summary>
         /// <param name="category">The owning database category.</param>
         public TableItemCollection(DbCategory category) : base(category)
         { }

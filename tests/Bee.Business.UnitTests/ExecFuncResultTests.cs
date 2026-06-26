@@ -1,3 +1,4 @@
+using Bee.Definition.Collections;
 using System.ComponentModel;
 
 namespace Bee.Business.UnitTests

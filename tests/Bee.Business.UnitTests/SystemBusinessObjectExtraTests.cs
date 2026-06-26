@@ -1,3 +1,4 @@
+using Bee.Definition.Collections;
 using System.ComponentModel;
 using Bee.Business.System;
 using Bee.Business.UnitTests.Fakes;

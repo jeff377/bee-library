@@ -1,4 +1,4 @@
-﻿using MessagePack;
+using MessagePack;
 
 namespace Bee.Definition.Collections
 {
@@ -8,23 +8,6 @@ namespace Bee.Definition.Collections
     [MessagePackObject]
     public class ParameterCollection : MessagePackKeyCollectionBase<Parameter>
     {
-        /// <summary>
-        /// Adds a parameter. If a parameter with the same name already exists, its value is updated.
-        /// </summary>
-        /// <param name="name">The parameter name.</param>
-        /// <param name="value">The parameter value.</param>
-        public void Add(string name, object value)
-        {
-            if (this.Contains(name))
-            {
-                this[name].Value = value;
-            }
-            else
-            {
-                this.Add(new Parameter(name, value));
-            }
-        }
-
         /// <summary>
         /// Gets the value of a parameter.
         /// </summary>
@@ -50,6 +33,31 @@ namespace Bee.Definition.Collections
                 return (T)this[name].Value!;
             else
                 return defaultValue;
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for <see cref="ParameterCollection"/>.
+    /// </summary>
+    public static class ParameterCollectionExtensions
+    {
+        /// <summary>
+        /// Adds a parameter. If a parameter with the same name already exists, its value is updated.
+        /// </summary>
+        /// <param name="collection">The collection to add to.</param>
+        /// <param name="name">The parameter name.</param>
+        /// <param name="value">The parameter value.</param>
+        public static void Add(this ParameterCollection? collection, string name, object value)
+        {
+            ArgumentNullException.ThrowIfNull(collection);
+            if (collection.Contains(name))
+            {
+                collection[name].Value = value;
+            }
+            else
+            {
+                collection.Add(new Parameter(name, value));
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using Bee.Definition.Collections;
 using Bee.Business.Attributes;
 using Bee.Definition.Security;
 

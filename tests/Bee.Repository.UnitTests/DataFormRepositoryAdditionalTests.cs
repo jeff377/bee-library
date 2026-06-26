@@ -232,7 +232,7 @@ namespace Bee.Repository.UnitTests
             master.Fields!.Add(SysFields.RowId, "Row Id", FieldDbType.Guid);
             var deptField = master.Fields.Add("owner_dept_rowid", "Owner Department", FieldDbType.Guid);
             deptField.RelationProgId = "Department";
-            master.Fields.Add(new FormField("ref_dept_name", "Department Name", FieldDbType.String, FieldType.RelationField));
+            master.Fields!.Add(new FormField("ref_dept_name", "Department Name", FieldDbType.String, FieldType.RelationField));
             master.Fields.Add(new FormField("calc_total", "Total", FieldDbType.Decimal, FieldType.VirtualField));
 
             var repo = CreateRepository(schema);

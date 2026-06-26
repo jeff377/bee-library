@@ -1,4 +1,4 @@
-﻿using System.Data;
+using System.Data;
 using Bee.Base;
 using Bee.Base.Collections;
 
@@ -20,18 +20,6 @@ namespace Bee.Definition.Collections
         #endregion
 
         /// <summary>
-        /// Adds an item to the collection.
-        /// </summary>
-        /// <param name="value">The item value.</param>
-        /// <param name="text">The display text.</param>
-        public ListItem Add(string value, string text)
-        {
-            var item = new ListItem(value, text);
-            Add(item);
-            return item;
-        }
-
-        /// <summary>
         /// Populates items from a data table.
         /// </summary>
         /// <param name="table">The data table.</param>
@@ -41,8 +29,28 @@ namespace Bee.Definition.Collections
         {
             foreach (DataRow row in table.Rows)
             {
-                Add(ValueUtilities.CStr(row[valueField]), ValueUtilities.CStr(row[textField]));
+                this.Add(ValueUtilities.CStr(row[valueField]), ValueUtilities.CStr(row[textField]));
             }
+        }
+    }
+
+    /// <summary>
+    /// Extension methods for <see cref="ListItemCollection"/>.
+    /// </summary>
+    public static class ListItemCollectionExtensions
+    {
+        /// <summary>
+        /// Adds an item to the collection.
+        /// </summary>
+        /// <param name="collection">The collection to add to.</param>
+        /// <param name="value">The item value.</param>
+        /// <param name="text">The display text.</param>
+        public static ListItem Add(this ListItemCollection? collection, string value, string text)
+        {
+            ArgumentNullException.ThrowIfNull(collection);
+            var item = new ListItem(value, text);
+            collection.Add(item);
+            return item;
         }
     }
 }

@@ -1,3 +1,4 @@
+using Bee.Definition.Collections;
 using Bee.Definition;
 
 namespace Bee.Business.UnitTests.Fakes
