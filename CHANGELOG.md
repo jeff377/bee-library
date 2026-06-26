@@ -4,6 +4,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.12.0]
+
+> Bee.NET remains in pre-stable evolution. This release makes the `Bee.UI.Avalonia` control family responsive for phone / narrow viewports and makes the `Bee.Definition` types deserialize under the AOT reflection-only XmlSerializer — together these enable the Avalonia **iOS** and **Android** heads. No breaking changes.
+
+📄 Full notes & design context: [docs/changelogs/4.12.0.md](docs/changelogs/4.12.0.md)
+
+### Added
+
+- `Bee.UI.Avalonia`: `FormView` responsive layout — master fields reflow multi-column → single column and detail grids switch `InCell` → `EditForm` below `CompactWidthThreshold` (default 600 DIP).
+- `Bee.UI.Avalonia`: `ListView` card layout on narrow viewports — one card per row instead of the wide column grid.
+- `Bee.UI.Avalonia`: `RowEditPanel` (EditForm) reflows 1 ↔ 2 columns by host width; `RowEditDialog` desktop window is resizable.
+
+### Fixed
+
+- `Bee.Definition`: definition collection types deserialize under the AOT reflection-only XmlSerializer (single public `Add(T)`, parameterless constructors) — enables the iOS / Android heads. Call syntax and XML format unchanged. [ADR-025](docs/adr/adr-025-define-types-aot-xmlserializer-compat.md)
+- `Bee.UI.Avalonia`: `RowEditDialog` renders through an `OverlayLayer` on single-view hosts (iOS / Android / browser) instead of a native `Window` (which crashed).
+- `Bee.UI.Avalonia`: `FormView` body scrolls vertically so controls below the fold stay reachable in a narrow single-column layout.
+- `Bee.UI.Avalonia`: `GridControl` lookup cells show the open-dialog magnifier icon in edit state.
+
 ## [4.11.0]
 
 > Bee.NET remains in pre-stable evolution. The theme of this release is "front-end ↔ back-end access goes fully async": the client connection lifecycle and the typed definition cache drop their synchronous-over-asynchronous bridges (`SyncExecutor` is gone), which makes a single-window Avalonia Browser (WASM) head viable. It contains **breaking changes** confined to the client construction / connection surface of `Bee.UI.Core`, `Bee.Api.Client`, and the Avalonia / MAUI heads, plus a **security upgrade** of SQLitePCLRaw.

@@ -4,6 +4,25 @@
 
 本檔記錄專案的所有重要變更。
 
+## [4.12.0]
+
+> Bee.NET 仍處 pre-stable 演進階段。本版讓 `Bee.UI.Avalonia` 控件家族在手機／窄視窗下響應式，並讓 `Bee.Definition` 型別可於 AOT reflection-only XmlSerializer 反序列化 —— 兩者合起來讓 Avalonia 的 **iOS** 與 **Android** head 得以成立。無破壞性變更。
+
+📄 詳細變更與設計脈絡：[docs/changelogs/4.12.0.zh-TW.md](docs/changelogs/4.12.0.zh-TW.md)
+
+### 新增
+
+- `Bee.UI.Avalonia`：`FormView` 響應式佈局 —— 主檔欄位於 `CompactWidthThreshold`（預設 600 DIP）以下由多欄重排為單欄、明細 grid 由 `InCell` 切為 `EditForm`。
+- `Bee.UI.Avalonia`：`ListView` 窄視窗卡片佈局 —— 以每筆一張卡取代寬欄 grid。
+- `Bee.UI.Avalonia`：`RowEditPanel`（EditForm）依宿主寬度 1 ↔ 2 欄重排；`RowEditDialog` 桌面視窗可調整大小。
+
+### 修正
+
+- `Bee.Definition`：定義集合型別可於 AOT reflection-only XmlSerializer 反序列化（單一 public `Add(T)`、無參數建構子）—— 讓 iOS / Android head 得以成立。呼叫端語法與 XML 格式皆不變。[ADR-025](docs/adr/adr-025-define-types-aot-xmlserializer-compat.md)
+- `Bee.UI.Avalonia`：`RowEditDialog` 在單視圖宿主（iOS / Android / 瀏覽器）改走 `OverlayLayer`，取代會崩潰的 native `Window`。
+- `Bee.UI.Avalonia`：`FormView` 表單本體垂直捲動，窄單欄佈局下方控件仍可觸及。
+- `Bee.UI.Avalonia`：`GridControl` lookup 可編輯 cell 顯示開窗放大鏡圖示。
+
 ## [4.11.0]
 
 > Bee.NET 仍處 pre-stable 演進階段。本版主軸為「前端↔後端存取全面 async 化」：client 連線生命週期與型別化定義快取卸除 sync-over-async 橋接（`SyncExecutor` 移除），連帶讓單視窗的 Avalonia Browser (WASM) head 可行。本版含**破壞性變更**，範圍限於 `Bee.UI.Core`、`Bee.Api.Client` 與 Avalonia / MAUI head 的 client 建構／連線面，另含 SQLitePCLRaw 的**安全性升級**。
