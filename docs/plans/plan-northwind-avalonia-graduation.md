@@ -4,8 +4,8 @@
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 0 | 框架發佈 **4.12.0**（畢業前置：把 v4.11.0 後的響應式 + AOT 修正推上 NuGet） | 🚧 進行中 |
-| 1 | 同步 source 至 `bee-northwind-avalonia`（補 iOS/Android、ProjectReference→NuGet 4.12.0、slnx、README） | 📝 待做 |
+| 0 | 框架發佈 **4.12.0**（畢業前置：把 v4.11.0 後的響應式 + AOT 修正推上 NuGet） | ✅ 已完成（2026-06-26）：CHANGELOG 雙語 + 4.12.0 明細、版號 bump、tag `v4.12.0`、build-ci 綠、nuget-publish 成功（全套 4.12.0 已 push；過程修掉 GitHub secret `NUGET_API_KEY` 誤設問題） |
+| 1 | 同步 source 至 `bee-northwind-avalonia`（補 iOS/Android、ProjectReference→NuGet 4.12.0、slnx、README） | 🚧 進行中 |
 | 2 | 獨立 repo build + 驗證（純 NuGet 4.12.0，四 head） | 📝 待做 |
 | 3 | commit + push 至 `bee-northwind-avalonia` | 📝 待做 |
 
