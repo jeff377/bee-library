@@ -6,7 +6,7 @@
 
 > **一張具備完整新增／查詢／修改／刪除、清單瀏覽、跨表 lookup 的畫面，就是幾個 XML 定義檔 —— 不是 UI 程式、不是 CRUD 程式、不是 SQL。**
 
-九張表單、含三個 lookup 的 master-detail 訂單、框架組織表，以及恰好一個手寫的業務物件（訂單規則）—— 其餘全是定義。
+八張表單、含三個 lookup 的 master-detail 訂單、框架組織表，以及恰好一個手寫的業務物件（訂單規則）—— 其餘全是定義。
 
 ## 展示了什麼
 
@@ -225,5 +225,3 @@ apps/Bee.Northwind/
 ├── Bee.Northwind.iOS/            iOS 進入點（Avalonia.iOS，Release trim 已驗證）
 └── Bee.Northwind.Android/        Android 進入點（Avalonia.Android，Release trim 已驗證）
 ```
-
-詳細計畫與持續累積的框架回饋清單見 [`docs/plans/plan-bee-northwind-demo.md`](../../docs/plans/plan-bee-northwind-demo.md)。

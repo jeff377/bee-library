@@ -6,7 +6,7 @@ A demonstration — the classic **Northwind** inventory business case — built 
 
 > **A new screen with full create / read / update / delete, list browsing, and cross-table lookups is a few XML definition files — not UI code, not CRUD code, not SQL.**
 
-Nine forms, master-detail orders with three lookups, framework organization tables, and exactly one hand-written business object (the order rules) — everything else is definitions.
+Eight forms, master-detail orders with three lookups, framework organization tables, and exactly one hand-written business object (the order rules) — everything else is definitions.
 
 ## What it demonstrates
 
@@ -228,5 +228,3 @@ apps/Bee.Northwind/
 ├── Bee.Northwind.iOS/            iOS entry point (Avalonia.iOS, Release trim validated)
 └── Bee.Northwind.Android/        Android entry point (Avalonia.Android, Release trim validated)
 ```
-
-The detailed plan and the running framework-feedback log live in [`docs/plans/plan-bee-northwind-demo.md`](../../docs/plans/plan-bee-northwind-demo.md).
