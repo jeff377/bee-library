@@ -38,15 +38,16 @@ namespace Bee.UI.Avalonia.Controls.Editors
             // the hosting top level's width (the app window / single view that owns the grid), not
             // the dialog's own size: a desktop dialog is a small SizeToContent window whose width
             // would read as "compact" and wrongly collapse, whereas the owning window is wide.
-            var screenWidth = TopLevel.GetTopLevel(host)?.Bounds.Width ?? 0;
-            panel.Compact = RowEditPanel.IsCompactWidth(screenWidth);
+            var topLevel = TopLevel.GetTopLevel(host);
+            panel.Compact = RowEditPanel.IsCompactWidth(topLevel?.Bounds.Width ?? 0);
             panel.Bind(dataObject, layout, row);
 
-            // Browser (WASM) hosts cannot open a native Window; host the panel on the top
-            // level's OverlayLayer instead. RowEditPanel cancels its buffered edit when it
-            // detaches from the tree, so removing the overlay rolls back an uncommitted edit
-            // exactly like closing the window did. Desktop keeps the native modal window.
-            if (OperatingSystem.IsBrowser())
+            // Only the desktop classic-window lifetime can parent a native modal Window. Single-view
+            // hosts — browser (WASM), iOS and Android — have no native window, so host the panel on
+            // the top level's OverlayLayer instead. RowEditPanel cancels its buffered edit when it
+            // detaches from the tree, so removing the overlay rolls back an uncommitted edit exactly
+            // like closing the window did.
+            if (topLevel is not Window owner)
             {
                 var completed = new TaskCompletionSource();
                 panel.EditCommitted += (_, _) => { committed = true; completed.TrySetResult(); };
@@ -72,20 +73,7 @@ namespace Bee.UI.Avalonia.Controls.Editors
             panel.EditCommitted += (_, _) => { committed = true; window.Close(); };
             panel.EditCancelled += (_, _) => window.Close();
 
-            if (TopLevel.GetTopLevel(host) is Window owner)
-            {
-                await window.ShowDialog(owner);
-            }
-            else
-            {
-                // Embedded hosts without a Window cannot parent a modal dialog;
-                // fall back to a free-standing window and await its closure.
-                var closed = new TaskCompletionSource();
-                window.Closed += (_, _) => closed.TrySetResult();
-                window.Show();
-                await closed.Task;
-            }
-
+            await window.ShowDialog(owner);
             return committed;
         }
     }
