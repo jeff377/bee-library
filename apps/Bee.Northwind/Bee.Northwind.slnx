@@ -7,5 +7,6 @@
     <Project Path="Bee.Northwind.Desktop/Bee.Northwind.Desktop.csproj" />
     <Project Path="Bee.Northwind.Browser/Bee.Northwind.Browser.csproj" />
     <Project Path="Bee.Northwind.iOS/Bee.Northwind.iOS.csproj" />
+    <Project Path="Bee.Northwind.Android/Bee.Northwind.Android.csproj" />
   </Folder>
 </Solution>

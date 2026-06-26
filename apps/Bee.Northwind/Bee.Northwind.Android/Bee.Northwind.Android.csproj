@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-android</TargetFramework>
+    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Bee.Northwind.Android</RootNamespace>
+    <AssemblyName>Bee.Northwind.Android</AssemblyName>
+    <ApplicationId>com.bee.northwind</ApplicationId>
+    <ApplicationVersion>1</ApplicationVersion>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <AndroidPackageFormat>apk</AndroidPackageFormat>
+    <!-- Debug-first head: no profiled AOT, so Debug builds run under the Mono interpreter
+         (JIT) where Reflection.Emit is available. The AOT-only XmlSerializer incompatibility
+         that surfaced on iOS therefore does not apply to Android Debug. -->
+    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!--
+      Unlike the other Northwind heads this deliberately does NOT set TreatWarningsAsErrors:
+      a Release Android build runs trim analysis and Bee's reflection-heavy serialization
+      (XmlSerializer for FormSchema, System.Text.Json, MessagePack) emits IL2026 / IL2104
+      trim warnings that are expected here. Release / trim-safe packaging is a separate
+      follow-up (see .claude/rules/maui.md Apple trim decision tree; the same reasoning applies).
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AndroidResource Include="Icon.png">
+      <Link>Resources\drawable\Icon.png</Link>
+    </AndroidResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Android" Version="12.0.4" />
+    <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.15" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bee.Northwind.UI\Bee.Northwind.UI.csproj" />
+  </ItemGroup>
+
+</Project>

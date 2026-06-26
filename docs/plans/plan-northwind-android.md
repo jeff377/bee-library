@@ -1,13 +1,13 @@
 # 計畫：Bee.Northwind 新增 Android head（Avalonia）
 
-**狀態：📝 擬定中（2026-06-26）**
+**狀態：✅ 已完成（2026-06-26）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | Android 工具鏈就緒（JDK + Android SDK + AVD + `android` workload） | 📝 待做 |
-| 2 | Scaffold `Bee.Northwind.Android` head（bootstrap + client 接線 + slnx） | 📝 待做 |
-| 3 | 模擬器 Debug 跑通 + 端到端冒煙（連線 → 登入 → 表單） | 📝 待做 |
-| 4 | 行動 UX 驗證 + Android 平台行為（返回鍵 / display cutout / 系統列） | 📝 待做 |
+| 1 | Android 工具鏈就緒（JDK + Android SDK + AVD） | ✅ 已完成（2026-06-26）：JDK 17（brew openjdk@17）+ android-commandlinetools + AVD `bee_pixel`（android-35 google_apis arm64-v8a）+ `platforms;android-36`/`build-tools;36.0.0`（net10.0-android 編譯需 API 36）。`maui-android` workload 已含 `Microsoft.Android.Sdk.Darwin`，**不需** `dotnet workload install android`。throwaway `avalonia.xplat` Android head build 通過驗證鏈路 |
+| 2 | Scaffold `Bee.Northwind.Android` head（bootstrap + client 接線 + slnx） | ✅ 已完成（2026-06-26）：`Application.cs`（`AvaloniaAndroidApplication<App>` + client 接線）、`MainActivity.cs`、`AndroidManifest.xml`（INTERNET + dev `usesCleartextTraffic`）、範本 Resources。`dotnet build -f net10.0-android -c Debug` 通過（0 警告 0 錯誤）。已加入 slnx |
+| 3 | 模擬器 Debug 跑通 + 端到端冒煙（連線 → 登入 → 表單） | ✅ 已完成（2026-06-26）：emulator（`bee_pixel`）部署 Debug，端到端通過 —— 連線（`http://10.0.2.2:5100/api`）→ 登入（demo/demo）→ 選單 → Categories 清單真實資料（窄螢幕卡片）→ 開 BEVERAGES 記錄（FormView 響應式單欄）。`FileEndpointStorage` 在 Android 沙箱可寫可讀（`files/Bee.Northwind/endpoint.txt` = `10.0.2.2`）。Debug JIT 下無 iOS 的 AOT XmlSerializer 例外。**注意**：ConnectionView 欄位仍預填 `AppDefaults.Endpoint`（localhost）不回讀 storage —— 此為共用 UI 既有行為，三 head 一致，非 Android 問題 |
+| 4 | 行動 UX 驗證 + Android 平台行為（返回鍵 / display cutout / 系統列） | ✅ 已完成（2026-06-26）：直/橫向 reflow 即時生效（FormView 1↔2 欄、ListView 卡片↔DataGrid，Activity 未重建）、nav pane 收合、safe area 頂部 inset 皆驗證。**返回鍵實作層級處理**（共用 `MainView` 接 `TopLevel.BackRequested`）：記錄→回清單、清單→關分頁、無分頁→退出 app，三層級於 emulator 驗證通過；Desktop/Browser head 同步 build 綠 |
 
 ## 背景
 

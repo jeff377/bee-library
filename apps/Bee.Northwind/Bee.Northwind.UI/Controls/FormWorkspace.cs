@@ -32,6 +32,28 @@ public sealed class FormWorkspace : UserControl
         Content = _host;
     }
 
+    /// <summary>
+    /// Attempts to unwind one navigation level in response to a platform back request (the
+    /// Android hardware / gesture back button, routed via <c>TopLevel.BackRequested</c>). If a
+    /// record is open it returns to the list — mirroring the on-screen Back button — and reports
+    /// that the request was consumed.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true"/> if a record was open and the workspace returned to the list;
+    /// <see langword="false"/> if the list was already showing, leaving the caller to decide the
+    /// next back action (close the tab, exit the app, …).
+    /// </returns>
+    public bool TryGoBack()
+    {
+        if (_host.Content is FormView)
+        {
+            ReturnToList(reload: false);
+            return true;
+        }
+
+        return false;
+    }
+
     private void ShowRecord(Func<FormView, Task> start)
     {
         var record = new FormView { ProgId = _progId };

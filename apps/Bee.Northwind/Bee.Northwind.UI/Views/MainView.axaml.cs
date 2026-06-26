@@ -1,7 +1,10 @@
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Platform;
+using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 
 namespace Bee.Northwind.UI.Views;
 
@@ -13,6 +16,7 @@ namespace Bee.Northwind.UI.Views;
 public partial class MainView : UserControl
 {
     private IInsetsManager? _insets;
+    private TopLevel? _topLevel;
 
     /// <summary>Loads the XAML.</summary>
     public MainView()
@@ -34,11 +38,21 @@ public partial class MainView : UserControl
         // bar and home indicator; inset the content by it so it stays clear of those system areas
         // in any orientation. Desktop / browser report an empty safe area (or no insets manager),
         // so this is a no-op there.
-        _insets = TopLevel.GetTopLevel(this)?.InsetsManager;
+        _topLevel = TopLevel.GetTopLevel(this);
+        _insets = _topLevel?.InsetsManager;
         if (_insets is not null)
         {
             _insets.SafeAreaChanged += OnSafeAreaChanged;
             Padding = _insets.SafeAreaPadding;
+        }
+
+        // Route the platform back request (Android hardware / gesture back; also the browser
+        // back button) into the Forms shell so it unwinds record → tab before the platform
+        // takes over (which on Android exits the app). Connection / Login have nothing to
+        // unwind, so the request falls through unhandled and the platform handles it.
+        if (_topLevel is not null)
+        {
+            _topLevel.BackRequested += OnBackRequested;
         }
     }
 
@@ -51,9 +65,26 @@ public partial class MainView : UserControl
             _insets = null;
         }
 
+        if (_topLevel is not null)
+        {
+            _topLevel.BackRequested -= OnBackRequested;
+            _topLevel = null;
+        }
+
         base.OnDetachedFromVisualTree(e);
     }
 
     private void OnSafeAreaChanged(object? sender, SafeAreaChangedArgs e)
         => Padding = e.SafeAreaPadding;
+
+    private void OnBackRequested(object? sender, RoutedEventArgs e)
+    {
+        // The Forms shell is the only step with nested navigation to unwind. When present and it
+        // consumes the back request, mark it handled so the platform does not also act on it.
+        var forms = this.GetVisualDescendants().OfType<FormsView>().FirstOrDefault();
+        if (forms is not null && forms.TryHandleBack())
+        {
+            e.Handled = true;
+        }
+    }
 }

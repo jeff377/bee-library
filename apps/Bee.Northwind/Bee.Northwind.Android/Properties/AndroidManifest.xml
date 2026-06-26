@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto">
+	<uses-permission android:name="android.permission.INTERNET" />
+	<!-- DEV ONLY: the JSON-RPC backend is reached over plain HTTP. From the emulator the dev
+	     machine is http://10.0.2.2:5100/api, and Android 9+ blocks cleartext HTTP by default.
+	     Allow it so the connection screen can talk to the dev server. Ship builds must serve the
+	     backend over HTTPS and remove this attribute. -->
+	<application android:label="Bee.Northwind" android:icon="@drawable/Icon" android:usesCleartextTraffic="true" />
+</manifest>
