@@ -22,6 +22,19 @@
   </ItemGroup>
 
   <!--
+    Trimmer / AOT preservation roots for the definition layer, shipped with the package.
+    The logical name "ILLink.Descriptors.xml" is the convention the .NET trimmer scans for,
+    so this is auto-applied for every downstream trimmed / AOT consumer (e.g. the Avalonia
+    iOS / Android heads). See ILLink.Descriptors.xml and
+    docs/plans/plan-mobile-release-trim-safe.md.
+  -->
+  <ItemGroup>
+    <EmbeddedResource Include="ILLink.Descriptors.xml">
+      <LogicalName>ILLink.Descriptors.xml</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <!--
     Framework default definitions (TableSchema / FormSchema / FormLayout / Language / DbCategorySettings)
     embedded as manifest resources. Consumed by Bee.Definition.Defaults.Defaults APIs.
 

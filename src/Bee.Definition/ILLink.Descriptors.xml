@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Trimmer / AOT preservation roots for the definition layer.
+
+  The definition graph (FormSchema, TableSchema, FormLayout, the *Settings family,
+  LanguageResource and their nested collections) is transported over the JSON-RPC wire
+  as an XML string and reconstructed ON THE CLIENT via XmlCodec.Deserialize<T>, which
+  drives XmlSerializer's reflection-only path on AOT targets (iOS) and trimmed Android
+  Release builds. Under trim the linker removes the parameterless constructors, public
+  property setters, and the strongly-typed collection Add(T) members it considers unused,
+  because nothing references them statically - the only caller is the reflection path.
+  At runtime that surfaces as the misleading "XmlSerializeErrorDetails, 2, 2" (line 2,
+  column 2 is the root element opening; the XML is fine, the type metadata was trimmed).
+
+  This descriptor is embedded as the logical resource "ILLink.Descriptors.xml" so the
+  trimmer auto-applies it for EVERY downstream consumer of the Bee.Definition package -
+  external framework users building trimmed/AOT mobile apps inherit the fix without
+  re-deriving their own linker file.
+
+  This is the broad "bottom layer" root (the definition type hierarchy is polymorphic and
+  subtype-dense, so a per-type DynamicallyAccessedMembers pass is error-prone here). It can
+  be narrowed later once the exact reflected surface is pinned down on a physical device.
+  See docs/plans/plan-mobile-release-trim-safe.md.
+-->
+<linker>
+  <assembly fullname="Bee.Definition">
+    <type fullname="*" preserve="all" />
+  </assembly>
+
+  <!--
+    The definition collections derive from the base collection types in Bee.Base; the
+    reflection-only serializer walks their inherited construct / add / enumerate members.
+  -->
+  <assembly fullname="Bee.Base">
+    <type fullname="Bee.Base.Collections.*" preserve="all" />
+  </assembly>
+</linker>
