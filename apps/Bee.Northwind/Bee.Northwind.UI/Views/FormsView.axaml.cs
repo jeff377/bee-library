@@ -6,6 +6,8 @@ using Avalonia.Layout;
 using Avalonia.Styling;
 using Bee.Northwind.UI.Controls;
 using Bee.Northwind.UI.Models;
+using Bee.Northwind.UI.ViewModels;
+using Bee.UI.Avalonia.Views;
 
 namespace Bee.Northwind.UI.Views;
 
@@ -57,6 +59,16 @@ public partial class FormsView : UserControl
         if (NavList.SelectedItem is NavItem { IsHeader: false, ProgId.Length: > 0 } item)
         {
             OpenForm(item);
+
+            // On a narrow (phone) layout the inline pane leaves the opened form almost no width,
+            // so collapse it after a selection; on a wide layout it stays open. Same width
+            // threshold as the responsive form layout, so menu and form switch together.
+            if (DataContext is FormsViewModel vm
+                && Bounds.Width > 0
+                && Bounds.Width < FormView.DefaultCompactWidthThreshold)
+            {
+                vm.IsPaneOpen = false;
+            }
         }
     }
 

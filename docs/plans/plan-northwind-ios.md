@@ -8,7 +8,7 @@
 | 2 | Scaffold `Bee.Northwind.iOS` head（bootstrap + client 接線 + slnx） | ✅ 已完成（2026-06-25） |
 | 3 | 模擬器 Debug 跑通 + 端到端冒煙（連線 → 登入 → 表單） | ✅ 已完成（2026-06-26）：端到端通過（連線→登入→選單→清單真實資料→開記錄響應式單欄）。修掉兩個 AOT XmlSerializer 不相容（見下） |
 | 4 | 響應式佈局（FormView 依寬度：主檔欄位 2 欄↔1 欄重排 + 明細 InCell↔EditForm，**框架層 + 測試 + CI**） | ✅ 已完成（2026-06-25） |
-| 5 | 行動 UX 微調 | 🚧 進行中：EditForm overlay ✅、safe area 內距 ✅、方向直/橫 reflow ✅（已驗證）；觸控目標 / 導覽抽屜 / 清單卡片化等純美化待做 |
+| 5 | 行動 UX 微調 | 🚧 進行中：EditForm overlay ✅、safe area ✅、方向 reflow ✅、窄螢幕選單點選後自動收起 pane ✅（已驗證）；觸控目標 / 清單卡片化等純美化待做 |
 
 > 階段 4 是 `src/Bee.UI.Avalonia` 框架層改動（非 iOS head），與 iOS 工具鏈解耦：**在桌面把視窗縮窄即可驗證**，不必等階段 1~3，亦可提前實作。列於此處只是敘事順序。
 
