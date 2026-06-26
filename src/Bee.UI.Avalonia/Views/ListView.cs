@@ -59,8 +59,8 @@ namespace Bee.UI.Avalonia.Views
         private bool _isBusy;
         private bool _initialized;
         private bool _isInitializing;
-        // On a narrow (phone) viewport the wide column grid is replaced by a stacked card list;
-        // _hasData / _isCompact gate which surface is shown (see UpdateContentVisibility).
+        // On a narrow (phone) viewport the wide column grid is replaced by a stacked card list.
+        // The `_hasData` and `_isCompact` flags gate which surface is shown (see `UpdateContentVisibility`).
         private bool _hasData;
         private bool _isCompact;
 
@@ -311,7 +311,7 @@ namespace Bee.UI.Avalonia.Views
 
         // One card per row: each visible column rendered as a "caption  value" line, read straight
         // off the DataRowView (no reflection binding, so it works under iOS AOT).
-        private static IDataTemplate BuildCardTemplate(IReadOnlyList<LayoutColumn> columns)
+        private static FuncDataTemplate<DataRowView> BuildCardTemplate(IReadOnlyList<LayoutColumn> columns)
             => new FuncDataTemplate<DataRowView>((row, _) =>
             {
                 var stack = new StackPanel { Spacing = 3 };

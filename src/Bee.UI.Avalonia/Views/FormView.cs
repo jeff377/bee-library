@@ -121,9 +121,10 @@ namespace Bee.UI.Avalonia.Views
 
             _formHost = new StackPanel { Orientation = Orientation.Vertical, Spacing = 8 };
 
-            // Error label + toolbar stay pinned at the top (Save / Cancel / Back always reachable);
-            // the form body scrolls. Without this, a tall single-column (compact) layout overflows
-            // the viewport with no way to reach the controls below the fold.
+            // Error label and toolbar stay pinned at the top so the `Save`, `Cancel` and `Back`
+            // buttons remain reachable, while the form body scrolls. Without this a tall
+            // single-column (compact) layout overflows the viewport with no way to reach the
+            // controls below the fold.
             var topBar = new StackPanel { Orientation = Orientation.Vertical, Spacing = 12 };
             topBar.Children.Add(_errorLabel);
             topBar.Children.Add(toolbar);
