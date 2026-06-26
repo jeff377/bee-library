@@ -56,7 +56,11 @@ async 連線、overlay 對話框、publish 注意事項）見
 ### 行動前端（Avalonia iOS / Android）
 
 同一套 UI 也能以 Avalonia single-view head 在 iOS 與 Android 上執行，並連同上面執行中的 server。
-兩者目前皆 **僅 Debug**（Release 需 trim-safe 序列化，另案）。畫面會響應式重排 —— 窄螢幕下表單
+下方預設用 **Debug** 跑（免簽章、迭代快）。Release 的 trim/AOT 序列化相容性**已解並驗證** ——
+`Bee.Definition` 內隨套件附上 `ILLink.Descriptors.xml`，在 full trim 下保留定義型別圖，已在
+Android 模擬器（full trim）與 iOS 模擬器（強制 reflection-only path，等同 device AOT）驗證通過，
+見 [`docs/plans/plan-mobile-release-trim-safe.md`](../../docs/plans/plan-mobile-release-trim-safe.md)；
+iOS 上實機則另需 Apple Developer 簽章憑證。畫面會響應式重排 —— 窄螢幕下表單
 單欄、清單卡片化 —— 且 Android 硬體 / 手勢返回鍵會先退記錄 → 關分頁，才退出 app。
 
 ```bash
@@ -218,8 +222,8 @@ apps/Bee.Northwind/
 ├── Bee.Northwind.UI/             Avalonia 共用 UI（views、view models、導航）
 ├── Bee.Northwind.Desktop/        桌面進入點（Avalonia.Desktop）
 ├── Bee.Northwind.Browser/        網頁進入點（Avalonia WASM）
-├── Bee.Northwind.iOS/            iOS 進入點（Avalonia.iOS，Debug-first）
-└── Bee.Northwind.Android/        Android 進入點（Avalonia.Android，Debug-first）
+├── Bee.Northwind.iOS/            iOS 進入點（Avalonia.iOS，Release trim 已驗證）
+└── Bee.Northwind.Android/        Android 進入點（Avalonia.Android，Release trim 已驗證）
 ```
 
 詳細計畫與持續累積的框架回饋清單見 [`docs/plans/plan-bee-northwind-demo.md`](../../docs/plans/plan-bee-northwind-demo.md)。

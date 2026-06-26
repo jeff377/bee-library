@@ -56,9 +56,14 @@ Open <http://localhost:5200/> and connect / sign in the same way. See
 ### Mobile clients (Avalonia iOS / Android)
 
 The same UI also runs on iOS and Android as Avalonia single-view heads, against the same server
-above. Both are **Debug-only** for now (a Release build needs trim-safe serialization, a separate
-follow-up). The screen reflows responsively — single-column forms and card lists on a narrow
-screen — and on Android the hardware / gesture back button unwinds record → tab before exiting.
+above. **Debug** is the convenient default below (no signing, fast iteration). Release trim/AOT
+serialization compatibility is **solved and validated** — an `ILLink.Descriptors.xml` shipped
+inside `Bee.Definition` preserves the definition graph under full trim, verified on an Android
+emulator (full trim) and the iOS simulator (forced reflection-only path, matching device AOT); see
+[`docs/plans/plan-mobile-release-trim-safe.md`](../../docs/plans/plan-mobile-release-trim-safe.md).
+Shipping to a physical iOS device additionally needs an Apple Developer signing identity. The
+screen reflows responsively — single-column forms and card lists on a narrow screen — and on
+Android the hardware / gesture back button unwinds record → tab before exiting.
 
 ```bash
 # iOS simulator (needs the ios workload + Xcode; start a simulator first)
@@ -220,8 +225,8 @@ apps/Bee.Northwind/
 ├── Bee.Northwind.UI/             Avalonia shared UI (views, view models, navigation)
 ├── Bee.Northwind.Desktop/        desktop entry point (Avalonia.Desktop)
 ├── Bee.Northwind.Browser/        web entry point (Avalonia WASM)
-├── Bee.Northwind.iOS/            iOS entry point (Avalonia.iOS, Debug-first)
-└── Bee.Northwind.Android/        Android entry point (Avalonia.Android, Debug-first)
+├── Bee.Northwind.iOS/            iOS entry point (Avalonia.iOS, Release trim validated)
+└── Bee.Northwind.Android/        Android entry point (Avalonia.Android, Release trim validated)
 ```
 
 The detailed plan and the running framework-feedback log live in [`docs/plans/plan-bee-northwind-demo.md`](../../docs/plans/plan-bee-northwind-demo.md).

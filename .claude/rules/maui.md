@@ -60,6 +60,8 @@ runtime 會拋 `FileNotFoundException`。預設樣板**不** register 任何 .tt
 
 ## Apple Release-mode trim 決策樹
 
+> **已解（2026-06-27，實測驗證）**：descriptor 內嵌 `Bee.Definition` 即解（下方 #4 升為**採用解法**）。Avalonia 行動 head（`net10.0-ios` / `net10.0-android`）同此機制——雖本檔以 MAUI 命名，trim/AOT 雷與解法共用。完整實測見 `docs/plans/plan-mobile-release-trim-safe.md`。以下保留決策樹脈絡供理解 why。
+
 `net10.0-maccatalyst` / `net10.0-ios` 在 Release 構建下，Mono linker 會砍未引用的反射相依。對 bee-library 來說，最常踩到的是 `System.Xml.Serialization` 的反射 fallback 被砍 → `XmlCodec.Deserialize<FormSchema>` 拋：
 
 ```
@@ -67,6 +69,8 @@ Error: XmlSerializeErrorDetails, 2, 2
 ```
 
 `2, 2` 是 line 2 col 2（XML 的根節點開頭），看起來像 XML 壞掉，**實際上是 type metadata 被砍**。
+
+> **實測補正**：問題其實有兩半——半 A（trim 砍 metadata）與半 B（AOT 禁 `Reflection.Emit`，XmlSerializer 改走 reflection-only path）。實測發現連 full-trim 砍 `Bee.Definition` 57% 都不打斷 FormSchema 反序列化，故 `2,2` **多半是半 B 而非半 A**，而半 B 的已知雷已於記憶 `ios-xmlserializer-ambiguous-add` 修好。descriptor 主要保證半 A 的完整覆蓋（多型子型別不漏）。
 
 ### 已知不可行的「修法」
 
@@ -94,16 +98,17 @@ Error: XmlSerializeErrorDetails, 2, 2
    - trimmer 看到註記就保留對應 metadata
    - 影響範圍大，要審慎 review
 
-4. **`TrimmerRootDescriptor` XML 保留特定 type**（特例使用）
-   - 寫一份 `Resources/Linker/linker.xml` 把整個 namespace 標為「不砍」
-   - 適合「只有少量已知 type 需要保留」的情境
-   - 不適合 bee-library 因 FormSchema 子 type 過多
+4. **✅ 採用解法：`ILLink.Descriptors.xml` 內嵌 `Bee.Definition`**（隨 NuGet 發佈）
+   - 不是 per-app `linker.xml`，而是以 `<EmbeddedResource LogicalName="ILLink.Descriptors.xml">` 內嵌於**函式庫**——trimmer 自動掃描此 logical name，**所有下游 trim/AOT app（含外部框架使用者）自動受益**，不必各自重推。
+   - wildcard `preserve="all"` root `Bee.Definition.*` + `Bee.Base.Collections.*`——「FormSchema 子 type 過多」反而正是用 wildcard 一次蓋滿的理由（推翻先前「不適合」的判斷）。
+   - 實測（`docs/plans/plan-mobile-release-trim-safe.md`）：Android emulator full-trim 無 descriptor 砍 57%、有 descriptor 保 ~98%；round-trip 皆過。檔案：`src/Bee.Definition/ILLink.Descriptors.xml`。
 
 ### 當前對策
 
-- 所有 MAUI sample **強制 Debug 跑**（`Maui.Demo/README.md` 已記）
-- 未來要 ship 任一 Bee MAUI app 時，走 #2 或 #3，留 ADR 紀錄選擇理由
-- `maui-app-scaffold` 的 README 樣板已把這條雷預先寫進
+- **行動端 Release trim/AOT 序列化已驗證可過**（descriptor 內嵌 `Bee.Definition`）：Android emulator full-trim round-trip PASS；iOS device-target AOT build 0 錯誤；iOS 模擬器以 `IsDynamicCodeSupported=false` 強制 reflection-only path（＝device AOT 同路徑）round-trip PASS。唯 iOS **實機** AOT 執行期為低風險形式收尾（需 Apple Developer 簽章 + 實機）。
+- 半 B 免實機驗證法：進入點第一行 `AppContext.SetSwitch("System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported", false)`（趕在任何 serializer 前），即可在桌面 / 模擬器重現 iOS AOT 的 reflection-only 序列化路徑。
+- iOS 編譯前置雷：workload 鎖 Xcode 版本不符時，build 加 `-p:ValidateXcodeVersion=false`；device-target build 止於簽章可加 `-p:EnableCodeSigning=false` 完成 AOT build（驗證用）。
+- Sgen（#2）／DAM（#3）暫不需要——descriptor（#4）已足。若日後實機驗出半 B 個案再升級。
 
 ## AOT 與 Interpreter
 
