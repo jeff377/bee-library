@@ -92,7 +92,7 @@ The console will print `System.Ping` status and an echoed message returned from 
 
 ## 🐝 Featured demo — Bee.Northwind
 
-[`apps/Bee.Northwind`](apps/Bee.Northwind/README.md) is the flagship demo: the classic Northwind inventory case built almost entirely from definitions (nine forms, master-detail orders with lookups, exactly one hand-written business object — everything else is XML). The same shared `Bee.Northwind.UI` runs on **four Avalonia heads** — Desktop, Browser (WASM), iOS, and Android — against one JSON-RPC server. See [`apps/Bee.Northwind/README.md`](apps/Bee.Northwind/README.md).
+[`apps/Bee.Northwind`](apps/Bee.Northwind/README.md) is the flagship demo: the classic Northwind inventory case built almost entirely from definitions (eight forms, master-detail orders with lookups, exactly one hand-written business object — everything else is XML). The same shared `Bee.Northwind.UI` runs on **four Avalonia heads** — Desktop, Browser (WASM), iOS, and Android — against one JSON-RPC server. See [`apps/Bee.Northwind/README.md`](apps/Bee.Northwind/README.md).
 
 ## 💡 Sample Projects
 

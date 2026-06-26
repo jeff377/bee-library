@@ -91,7 +91,7 @@ Console 會列出 `System.Ping` 狀態與自訂 BO 回應的訊息。完整 demo
 
 ## 🐝 旗艦範例 — Bee.Northwind
 
-[`apps/Bee.Northwind`](apps/Bee.Northwind/README.zh-TW.md) 是旗艦級範例：經典 Northwind 進銷存案例，**幾乎完全由定義組成**（九張表單、含 lookup 的主從訂單、僅一個手寫商業物件，其餘皆 XML）。同一套共用 `Bee.Northwind.UI` 跑在 **四個 Avalonia head** —— Desktop、Browser（WASM）、iOS、Android —— 連同一個 JSON-RPC 後端。詳見 [`apps/Bee.Northwind/README.zh-TW.md`](apps/Bee.Northwind/README.zh-TW.md)。
+[`apps/Bee.Northwind`](apps/Bee.Northwind/README.zh-TW.md) 是旗艦級範例：經典 Northwind 進銷存案例，**幾乎完全由定義組成**（八張表單、含 lookup 的主從訂單、僅一個手寫商業物件，其餘皆 XML）。同一套共用 `Bee.Northwind.UI` 跑在 **四個 Avalonia head** —— Desktop、Browser（WASM）、iOS、Android —— 連同一個 JSON-RPC 後端。詳見 [`apps/Bee.Northwind/README.zh-TW.md`](apps/Bee.Northwind/README.zh-TW.md)。
 
 ## 💡 範例程式
 
