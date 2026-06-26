@@ -1,13 +1,13 @@
 # 計畫：Bee.Northwind 畢業 — 同步至獨立 repo bee-northwind-avalonia
 
-**狀態：🚧 進行中（2026-06-26）**
+**狀態：✅ 已完成（2026-06-26）**
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 0 | 框架發佈 **4.12.0**（畢業前置：把 v4.11.0 後的響應式 + AOT 修正推上 NuGet） | ✅ 已完成（2026-06-26）：CHANGELOG 雙語 + 4.12.0 明細、版號 bump、tag `v4.12.0`、build-ci 綠、nuget-publish 成功（全套 4.12.0 已 push；過程修掉 GitHub secret `NUGET_API_KEY` 誤設問題） |
-| 1 | 同步 source 至 `bee-northwind-avalonia`（補 iOS/Android、ProjectReference→NuGet 4.12.0、slnx、README） | 🚧 進行中 |
-| 2 | 獨立 repo build + 驗證（純 NuGet 4.12.0，四 head） | 📝 待做 |
-| 3 | commit + push 至 `bee-northwind-avalonia` | 📝 待做 |
+| 1 | 同步 source 至 `bee-northwind-avalonia`（補 iOS/Android、ProjectReference→NuGet 4.12.0、slnx、README） | ✅ 已完成（2026-06-26）：rsync source（排除 bin/obj/csproj/README）、新增 iOS/Android、UI/Server csproj 升 4.12.0 PackageReference、slnx 補 6 專案、README 雙語手動 port 行動段（保留 standalone root 相對路徑與 NuGet 框架）。`.smoke.yaml` 維持 standalone 版不覆蓋 |
+| 2 | 獨立 repo build + 驗證（純 NuGet 4.12.0，四 head） | ✅ 已完成（2026-06-26）：Server / UI / Desktop / Browser / Android 對 NuGet 4.12.0 build 全綠（0 警告 0 錯誤）；Server runtime 啟動 + 建表通過。**iOS 僅卡本機 Xcode 26.5/26.6 workload 不匹配**（bee-library iOS head 同樣失敗 → 環境問題非同步 regression，待 `dotnet workload update` 對齊 Xcode 26.6） |
+| 3 | commit + push 至 `bee-northwind-avalonia` | ✅ 已完成（2026-06-26）：commit `268af2a` 推上 main（iOS 6 + Android 12 檔 + UI 3 源 + 2 csproj + slnx + 雙語 README，無 bin/obj/db） |
 
 ## 背景
 
