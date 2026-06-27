@@ -76,6 +76,23 @@ manifest 已開 dev 明文 HTTP。在 **iOS 模擬器**則用 `http://localhost:
 
 > 首次執行 server 會在 server 專案旁建立 `northwind.db` 並灌入 Northwind 子集。刪除該檔即可重新建表灌種子。
 
+## 執行畫面
+
+四個 Avalonia head 渲染同一張訂單表單 —— 同一份定義、同一套控件，差別只在最外層的平台殼。
+
+**桌面與 Browser（WASM）：**
+
+| 桌面 | Browser |
+|---|---|
+| ![桌面 — 訂單單筆](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-desktop-order-detail.png) | ![Browser — 訂單單筆](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-browser-order-detail.png) |
+
+**iOS 與 Android：**
+
+| | iOS | Android |
+|---|---|---|
+| **訂單清單** | ![iOS — 訂單清單](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-ios-order-list.png) | ![Android — 訂單清單](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-android-order-list.png) |
+| **訂單單筆** | ![iOS — 訂單單筆](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-ios-order-detail.png) | ![Android — 訂單單筆](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-android-order-detail.png) |
+
 ## 表單清單
 
 | 選單 | ProgId | 資料表 | 層級 | 重點 |

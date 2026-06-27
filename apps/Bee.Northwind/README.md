@@ -59,8 +59,7 @@ The same UI also runs on iOS and Android as Avalonia single-view heads, against 
 above. **Debug** is the convenient default below (no signing, fast iteration). Release trim/AOT
 serialization compatibility is **solved and validated** — an `ILLink.Descriptors.xml` shipped
 inside `Bee.Definition` preserves the definition graph under full trim, verified on an Android
-emulator (full trim) and the iOS simulator (forced reflection-only path, matching device AOT); see
-[`docs/plans/plan-mobile-release-trim-safe.md`](../../docs/plans/plan-mobile-release-trim-safe.md).
+emulator (full trim) and the iOS simulator (forced reflection-only path, matching device AOT).
 Shipping to a physical iOS device additionally needs an Apple Developer signing identity. The
 screen reflows responsively — single-column forms and card lists on a narrow screen — and on
 Android the hardware / gesture back button unwinds record → tab before exiting.
@@ -78,6 +77,23 @@ endpoint to `http://10.0.2.2:5100/api`; the manifest enables cleartext HTTP for 
 **iOS simulator** use `http://localhost:5100/api` (ATS allows arbitrary loads in dev).
 
 > The first server run creates `northwind.db` next to the server project and seeds a Northwind subset. Delete that file to reseed from scratch.
+
+## Screenshots
+
+The same Order form rendered by all four Avalonia heads — same definitions, same controls, only the platform shell differs.
+
+**Desktop and Browser (WASM):**
+
+| Desktop | Browser |
+|---|---|
+| ![Desktop — order detail](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-desktop-order-detail.png) | ![Browser — order detail](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-browser-order-detail.png) |
+
+**iOS and Android:**
+
+| | iOS | Android |
+|---|---|---|
+| **Order list** | ![iOS — order list](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-ios-order-list.png) | ![Android — order list](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-android-order-list.png) |
+| **Order detail** | ![iOS — order detail](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-ios-order-detail.png) | ![Android — order detail](https://raw.githubusercontent.com/jeff377/blog-images/main/avalonia-mobile-frontend-android-order-detail.png) |
 
 ## The forms
 
