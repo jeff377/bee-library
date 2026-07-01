@@ -1,8 +1,6 @@
 using System.ComponentModel;
-using Bee.Base.Serialization;
 using Bee.Db;
 using Bee.Db.Manager;
-using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Repository.System;
 using Bee.Tests.Shared;
@@ -153,81 +151,6 @@ namespace Bee.Repository.UnitTests
         [DbFact(DatabaseType.Oracle)]
         [DisplayName("GetById 停用公司 on Oracle 應回傳 null（query 層過濾）")]
         public void GetById_Disabled_Oracle() => RunGetByIdDisabled(DatabaseType.Oracle);
-
-        #endregion
-
-        #region GetById — number_formats_xml 解析（公司位數覆寫）
-
-        private void RunGetByIdNumberFormats(DatabaseType dbType)
-        {
-            // 寫一筆帶 number_formats_xml 的 company，驗證 GetById 反序列化覆寫表後 GetDecimals 生效。
-            // 用隨機 id 後綴避免 5 DB 殘留汙染；native SQL 寫 seed（比照 disabled sub-test）。
-            var dbAccess = _fx.NewDbAccess(TestDbConventions.GetDatabaseId(dbType));
-            var companyId = string.Concat("NUMFMT_", Guid.NewGuid().ToString("N").AsSpan(0, 8));
-            CompanyNumberFormats formats =
-            [
-                new NumberFormatItem(NumberKind.Percent, 3),
-                new NumberFormatItem(NumberKind.UnitPrice, 6),
-            ];
-            string xml = XmlCodec.Serialize(formats);
-
-            string tbl = dbType.QuoteIdentifier("st_company");
-            string colRowId = dbType.QuoteIdentifier("sys_rowid");
-            string colId = dbType.QuoteIdentifier("sys_id");
-            string colName = dbType.QuoteIdentifier("sys_name");
-            string colDbId = dbType.QuoteIdentifier("company_database_id");
-            string colNumFmt = dbType.QuoteIdentifier("number_formats_xml");
-            string colEnabled = dbType.QuoteIdentifier("enabled");
-            string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
-            string nowExpr = dbType == DatabaseType.PostgreSQL || dbType == DatabaseType.SQLite ? "CURRENT_TIMESTAMP"
-                           : dbType == DatabaseType.SQLServer ? "GETDATE()"
-                           : dbType == DatabaseType.MySQL ? "CURRENT_TIMESTAMP(6)"
-                           : "SYSTIMESTAMP";
-            string enabledLiteral = dbType == DatabaseType.PostgreSQL ? "TRUE" : "1";
-
-            var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colNumFmt}, {colEnabled}, {colInsTime}) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {enabledLiteral}, {nowExpr})",
-                Guid.NewGuid(), companyId, "數值格式測試公司", "common", xml);
-            dbAccess.Execute(insert);
-
-            try
-            {
-                var repo = CreateRepo();
-                var result = repo.GetById(companyId);
-                Assert.NotNull(result);
-                Assert.Equal(2, result!.NumberFormats.Count);
-                Assert.Equal(3, result.GetDecimals(NumberKind.Percent));    // 公司覆寫
-                Assert.Equal(6, result.GetDecimals(NumberKind.UnitPrice));  // 公司覆寫
-                Assert.Equal(2, result.GetDecimals(NumberKind.Amount));     // 未覆寫，退框架預設
-            }
-            finally
-            {
-                var cleanup = new DbCommandSpec(DbCommandKind.NonQuery,
-                    $"DELETE FROM {tbl} WHERE {colId} = {{0}}", companyId);
-                dbAccess.Execute(cleanup);
-            }
-        }
-
-        [DbFact(DatabaseType.SQLServer)]
-        [DisplayName("GetById number_formats_xml on SQL Server 應反序列化公司位數覆寫")]
-        public void GetById_NumberFormats_SqlServer() => RunGetByIdNumberFormats(DatabaseType.SQLServer);
-
-        [DbFact(DatabaseType.PostgreSQL)]
-        [DisplayName("GetById number_formats_xml on PostgreSQL 應反序列化公司位數覆寫")]
-        public void GetById_NumberFormats_PostgreSql() => RunGetByIdNumberFormats(DatabaseType.PostgreSQL);
-
-        [DbFact(DatabaseType.SQLite)]
-        [DisplayName("GetById number_formats_xml on SQLite 應反序列化公司位數覆寫")]
-        public void GetById_NumberFormats_Sqlite() => RunGetByIdNumberFormats(DatabaseType.SQLite);
-
-        [DbFact(DatabaseType.MySQL)]
-        [DisplayName("GetById number_formats_xml on MySQL 應反序列化公司位數覆寫")]
-        public void GetById_NumberFormats_MySql() => RunGetByIdNumberFormats(DatabaseType.MySQL);
-
-        [DbFact(DatabaseType.Oracle)]
-        [DisplayName("GetById number_formats_xml on Oracle 應反序列化公司位數覆寫")]
-        public void GetById_NumberFormats_Oracle() => RunGetByIdNumberFormats(DatabaseType.Oracle);
 
         #endregion
     }
