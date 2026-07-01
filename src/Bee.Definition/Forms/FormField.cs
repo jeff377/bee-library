@@ -147,6 +147,18 @@ namespace Bee.Definition.Forms
         public string NumberFormat { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the numeric semantic kind of this field. Propagated by the layout generator
+        /// to <see cref="Layouts.LayoutFieldBase.NumberKind"/>; drives the field's rounding policy and
+        /// decimal-places source (see plan-numeric-core.md). The default <see cref="Definition.NumberKind.None"/>
+        /// means no numeric handling is applied.
+        /// </summary>
+        [Category(PropertyCategories.Data)]
+        [XmlAttribute]
+        [Description("Numeric semantic kind driving rounding and decimal places.")]
+        [DefaultValue(NumberKind.None)]
+        public NumberKind NumberKind { get; set; } = NumberKind.None;
+
+        /// <summary>
         /// Gets or sets the program ID of the related program.
         /// </summary>
         [XmlAttribute]
@@ -381,10 +393,13 @@ namespace Bee.Definition.Forms
                 DefaultValue = DefaultValue,
                 DisplayFormat = DisplayFormat,
                 NumberFormat = NumberFormat,
+                NumberKind = NumberKind,
                 RelationProgId = RelationProgId,
                 LookupProgId = LookupProgId,
                 DisplayFields = DisplayFields,
                 Visible = Visible,
+                ReadOnly = ReadOnly,
+                Required = Required,
                 Width = Width,
                 LangEnumName = LangEnumName,
                 ScopeRole = ScopeRole,

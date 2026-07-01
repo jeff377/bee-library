@@ -62,6 +62,25 @@ namespace Bee.Definition.Identity
         public string CustomizeId { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the company-level decimal-places override table. Empty means every kind uses
+        /// the framework default. Loaded from the <c>number_formats_xml</c> column by
+        /// <c>CompanyRepository</c>; carries Percent and UnitPrice/Cost display decimals plus the
+        /// Quantity/Weight fallback when no unit is bound (see plan-numeric-core.md).
+        /// </summary>
+        [Key(4)]
+        public CompanyNumberFormats NumberFormats { get; set; } = [];
+
+        /// <summary>
+        /// Gets the decimal places for the specified kind: the company override when present,
+        /// otherwise the framework default from <see cref="NumberKindProfile.GetDefaultDecimals"/>.
+        /// </summary>
+        /// <param name="kind">The number kind.</param>
+        public int GetDecimals(NumberKind kind)
+        {
+            return NumberFormats.FindDecimals(kind) ?? NumberKindProfile.GetDefaultDecimals(kind);
+        }
+
+        /// <summary>
         /// Returns a string representation of this object.
         /// </summary>
         public override string ToString()

@@ -75,6 +75,17 @@ namespace Bee.Definition.Layouts
         public string NumberFormat { get; set; } = string.Empty;
 
         /// <summary>
+        /// Gets or sets the numeric semantic kind, propagated from <see cref="Forms.FormField.NumberKind"/>.
+        /// Drives the field's rounding policy and decimal-places source during delivery-time format baking
+        /// and runtime reference resolution (see plan-numeric-core.md).
+        /// </summary>
+        [Category(PropertyCategories.Data)]
+        [XmlAttribute]
+        [Description("Numeric semantic kind driving rounding and decimal places.")]
+        [DefaultValue(NumberKind.None)]
+        public NumberKind NumberKind { get; set; } = NumberKind.None;
+
+        /// <summary>
         /// Gets or sets a value indicating whether this field is visible.
         /// Layout-level visibility: false means the field exists in the layout
         /// (e.g. for grid row binding) but is not rendered.

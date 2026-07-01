@@ -1,7 +1,9 @@
 using Bee.Base;
 using Bee.Base.Data;
+using Bee.Base.Serialization;
 using Bee.Db;
 using Bee.Db.Manager;
+using Bee.Definition;
 using Bee.Definition.Database;
 using Bee.Definition.Identity;
 using Bee.Repository.Abstractions.System;
@@ -42,9 +44,10 @@ namespace Bee.Repository.System
             string colName = dbType.QuoteIdentifier("sys_name");
             string colDbId = dbType.QuoteIdentifier("company_database_id");
             string colCustId = dbType.QuoteIdentifier("customize_id");
+            string colNumFmt = dbType.QuoteIdentifier("number_formats_xml");
             string colEnabled = dbType.QuoteIdentifier("enabled");
 
-            string sql = $"SELECT {colId}, {colName}, {colDbId}, {colCustId} \n" +
+            string sql = $"SELECT {colId}, {colName}, {colDbId}, {colCustId}, {colNumFmt} \n" +
                          $"FROM {tbl} \n" +
                          $"WHERE {colId} = {{0}} AND {colEnabled} = {{1}}";
             var command = new DbCommandSpec(DbCommandKind.DataTable, sql, companyId, true);
@@ -54,12 +57,17 @@ namespace Bee.Repository.System
             if (table.IsEmpty()) { return null; }
 
             var row = table.Rows[0];
+            string numberFormatsXml = ValueUtilities.CStr(row["number_formats_xml"]);
+            var numberFormats = StringUtilities.IsEmpty(numberFormatsXml)
+                ? []
+                : XmlCodec.Deserialize<CompanyNumberFormats>(numberFormatsXml) ?? [];
             return new CompanyInfo
             {
                 CompanyId = ValueUtilities.CStr(row["sys_id"]),
                 CompanyName = ValueUtilities.CStr(row["sys_name"]),
                 CompanyDatabaseId = ValueUtilities.CStr(row["company_database_id"]),
-                CustomizeId = ValueUtilities.CStr(row["customize_id"])
+                CustomizeId = ValueUtilities.CStr(row["customize_id"]),
+                NumberFormats = numberFormats
             };
         }
     }

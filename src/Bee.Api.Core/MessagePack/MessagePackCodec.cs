@@ -1,3 +1,4 @@
+using Bee.Definition;
 using Bee.Definition.Filters;
 using Bee.Definition.Organization;
 using Bee.Definition.Serialization;
@@ -27,6 +28,7 @@ namespace Bee.Api.Core.MessagePack
                     new CollectionBaseFormatter<FilterNodeCollection, FilterNode>(),   // FilterNodeCollection as array
                     new CollectionBaseFormatter<SortFieldCollection, SortField>(),     // SortFieldCollection as array
                     new CollectionBaseFormatter<DepartmentNodeCollection, DepartmentNode>(), // DepartmentNodeCollection as array
+                    new CollectionBaseFormatter<CompanyNumberFormats, NumberFormatItem>(), // CompanyNumberFormats as array
                     SafeTypelessFormatter.Instance      // Type-validated polymorphic formatter
                 },
                 new IFormatterResolver[]

@@ -1,15 +1,34 @@
 # 計畫：數值處理核心（NumberKind + 公司位數 + round-then-sum）
 
-**狀態：📝 待做（2026-06-21）**
+**狀態：🚧 進行中（2026-07-01）**
 
 > 執行增量 1/3，最先做。設計理由、SAP/Odoo 對照見 [plan-numeric-formatting.md](plan-numeric-formatting.md)（設計總覽）。
 > 本 plan 不含幣別/單位的「參照欄綁定」——金額暫走公司預設位數（單一幣別）、數量/重量走公司位數；多幣別見 [plan-numeric-multicurrency.md](plan-numeric-multicurrency.md)、計量單位見 [plan-numeric-uom.md](plan-numeric-uom.md)。
 
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
-| 1 | 定義模型：`NumberKind`/`RoundingPolicy`/`NumberKindProfile`、`CompanyNumberFormats`、`FormField`/`LayoutFieldBase` 帶 `NumberKind` | 📝 待做 |
+| 1 | 定義模型：`NumberKind`/`RoundingPolicy`/`NumberKindProfile`、`CompanyNumberFormats`、`FormField`/`LayoutFieldBase` 帶 `NumberKind` | ✅ 已完成（2026-07-01） |
 | 2 | 邏輯：交付時依公司 bake 顯示格式；BO round-then-sum（捨到公司/框架位數） | 📝 待做 |
 | 3 | UI（Avalonia）：`NumericEdit` + 基礎 Grid 格式化 + DemoCenter 範例 | 📝 待做 |
+
+> **階段 1 落地note（2026-07-01）**：`CompanyInfo` 屬性命名為 `NumberFormats`（型別 `CompanyNumberFormats`），非總覽字面的 `CompanyNumberFormats`（避免 `company.CompanyNumberFormats` stutter）；對外 API 是 `company.GetDecimals(NumberKind)`。MessagePack 須在 `MessagePackCodec.Options` 顯式註冊 `CollectionBaseFormatter<CompanyNumberFormats, NumberFormatItem>`（ContractlessStandardResolver 排在動態 `FormatterResolver` 前，否則集合沉默出空——已驗證並修）。build + Definition(759)/Api.Core 非 DB 測試全綠；CompanyRepository 的 5-DB number_formats round-trip 為 `[DbFact]`，本機無 docker 自動 skip、待 CI 驗。
+
+## NumberKind 契約表（已拍板 2026-07-01，定案不再改）
+
+| 成員 | 格式字母 | `RoundingPolicy` | `DecimalsSource`（終版） | 框架預設位數 | 用途 |
+|------|:---:|:---:|:---:|:---:|------|
+| `None` | — | — | — | — | 非語意/非數值 |
+| `Quantity` | N | `Round` | `Unit`（無單位→`Company`） | 0 | 數量 |
+| `Weight` | N | `Round` | `Unit`（無單位→`Company`） | 3 | 重量 |
+| `Amount` | N | `Round` | `Currency`（無幣別→`Company`本幣→2） | 2 | 金額/稅/合計 |
+| `Percent` | P | `Round` | `Company` | 2 | 百分比 |
+| `UnitPrice` | N | `Preserve` | `Company`（位數僅顯示） | 4 | 單價 |
+| `Cost` | N | `Preserve` | `Company`（位數僅顯示） | 4 | 成本 |
+| `ExchangeRate` | N | `Preserve` | `SystemFixed` | 5 | 匯率 |
+
+- `DecimalsSource` enum 從 core 即定**終版四值**（`Currency`/`Unit`/`SystemFixed`/`Company`）、`GetDecimalsSource()` 一次寫對永不改。
+- **core 增量無 `CurrencySettings`/`UnitSettings`**：core 的 bake/round 邏輯對 `Currency`/`Unit` 兩源**暫退 `company.GetDecimals(kind)`**（用上表框架預設位數）；multicurrency/uom 增量才把退路換成真正的幣別/單位解析。**表不變，只有解析邏輯逐增量變厚**。
+- `CompanyInfo` MessagePack key 不預留空屬性：core 只加 `[Key(4)] CompanyNumberFormats`，`[Key(5)]`~`[Key(7)]`（DefaultCurrency/CashRounding/AllowedCurrencies）編號已由總覽 §1.5 釘死、留 multicurrency 增量時才加（尾端加 key 相容）。
 
 ## 範圍與不做
 
@@ -21,7 +40,8 @@
 
 - `src/Bee.Definition/NumberKind.cs`：enum（`None`/`Quantity`/`Weight`/`Amount`/`Percent`/`UnitPrice`/`Cost`/`ExchangeRate`）。
 - `NumberKindProfile`（取代孤立的 `NumberFormatPresets`，0 production caller、僅調其測試）：`GetFormatLetter`/`GetDefaultDecimals`/`GetRoundingPolicy`/`GetDecimalsSource`（本期僅回 `Company`/`SystemFixed`）/`BuildFormatString`。`RoundingPolicy` enum：`Round`/`Preserve`。
-- `CompanyInfo` 加 `[Key(4)]` `CompanyNumberFormats`（鍵值集合 `NumberFormatItem{NumberKind Kind; int Decimals}` + `KeyCollectionBase`，**不可用 Dictionary**）、`int GetDecimals(NumberKind)`（覆寫 else 框架預設）。`st_company` 加 `number_formats_xml`（Text，`XmlCodec`，同 `session_user_xml` 慣例）；`CompanyRepository.GetById` SELECT 增列、反序列化。物件三棲。
+- `CompanyInfo` 加 `[Key(4)]` `CompanyNumberFormats`（集合 `NumberFormatItem{NumberKind Kind; int Decimals}`，**不可用 Dictionary**）、`int GetDecimals(NumberKind)`（覆寫 else 框架預設）。
+  - **修正（2026-07-01 實作）**：基底用 **`MessagePackCollectionBase<NumberFormatItem>`** 而非總覽 §1.5 寫的 `KeyCollectionBase`——`CompanyInfo` 經 `IEnterCompanyResponse.Company` 走 MessagePack wire，而 `FormatterResolver`（src/Bee.Api.Core/MessagePack/FormatterResolver.cs:43-54）只認 `MessagePackCollectionBase<>`；`KeyCollectionBase` 會 fall 到 StandardResolver 無法乾淨序列化。`NumberFormatItem : MessagePackCollectionItem`（`[Key(100)]Kind`/`[Key(101)]Decimals`，仿 `SortField`）。鍵語意由 `FindDecimals(kind)` 線性查取代（覆寫表極小）。同樣修正套用到後續 `CurrencySettings`/`UnitSettings`（皆 ship client）。`st_company` 加 `number_formats_xml`（Text，`XmlCodec`，同 `session_user_xml` 慣例）；`CompanyRepository.GetById` SELECT 增列、反序列化。物件三棲。
 - `FormField` 加 `NumberKind`（`[XmlAttribute]`、`[DefaultValue(None)]`）；`LayoutFieldBase` 加 `NumberKind`；`LayoutColumnFactory.ToField/ToColumn` 傳遞。`FormField.Clone()` 補 `NumberKind` + 修漏複製的 `ReadOnly`。
 - **測試**：`NumberKindProfile` 各成員、`CompanyNumberFormats` 覆寫/fallback + 三棲 round-trip、`CompanyRepository` 解析、`FormField` 序列化/Clone、含 `NumberKind` 的 FormSchema XML round-trip。
 - **交付標準**：build + UnitTests 綠；既有手填 `NumberFormat` 行為不變。

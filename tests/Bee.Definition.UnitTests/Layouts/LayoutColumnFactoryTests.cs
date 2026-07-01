@@ -115,6 +115,22 @@ namespace Bee.Definition.UnitTests.Layouts
         }
 
         [Fact]
+        [DisplayName("ToField/ToColumn 應傳遞 NumberKind 語意型別")]
+        public void ToFieldAndColumn_PropagateNumberKind()
+        {
+            var formField = new FormField("amount", "金額", FieldDbType.Decimal)
+            {
+                NumberKind = NumberKind.Amount,
+            };
+
+            var field = LayoutColumnFactory.ToField(formField);
+            var column = LayoutColumnFactory.ToColumn(formField);
+
+            Assert.Equal(NumberKind.Amount, field.NumberKind);
+            Assert.Equal(NumberKind.Amount, column.NumberKind);
+        }
+
+        [Fact]
         [DisplayName("ToColumn Width=0 應保留 0 表示 auto/未設")]
         public void ToColumn_WidthZero_StaysZero()
         {
