@@ -5,6 +5,19 @@
 > 執行增量 2/3，相依 [plan-numeric-core.md](plan-numeric-core.md)。設計理由、SAP/Odoo 對照見 [plan-numeric-formatting.md](plan-numeric-formatting.md)（設計總覽 §1.3、§1.4、§1.5、§2.1–2.3、§3.2、§3.2b、§3.2c）。
 > 本 plan 引入「**參照欄綁定**」通用機制（金額→幣別），計量單位 plan 將重用之。
 
+## 接手指引（core 已完成，2026-07-01；務必沿用，勿重推導）
+
+> **開場先讀**：本 plan + [plan-numeric-core.md](plan-numeric-core.md) 的三個「階段落地 note」+ 設計總覽對應節次。core 已 commit、CI 綠。以下是 core 已定、multicurrency 必須沿用的既成事實：
+
+- **集合上 wire 一律 `MessagePackCollectionBase<T>`，不是 `KeyCollectionBase`**：`CompanyInfo` 走 `IEnterCompanyResponse.Company` MessagePack，而 `FormatterResolver` 只認 `MessagePackCollectionBase<>`。`CurrencySettings`/`CompanyCashRounding`/`CompanyAllowedCurrencies` 皆須此基底 + 在 `MessagePackCodec.Options` **顯式註冊** `CollectionBaseFormatter<TColl, TItem>`（否則沉默出空集合）。item 繼承 `MessagePackCollectionItem`、`[Key(100+)]`；鍵語意用線性 `FindX` 取代。core 的 `CompanyNumberFormats`/`NumberFormatItem` 是現成範本。
+- **`DecimalsSource` 已是終版四值，`Currency` 已就位**：core 的 `NumberFormatResolver.ResolveDecimals` 對 `Currency`/`Unit` 目前**暫退 `company.GetDecimals`**。multicurrency 只需把「退 company」換成「依 refCode（CUKY 欄當前幣別）查 `CurrencySettings.GetDecimals`」——**在 `NumberFormatResolver`/`NumberFormatApplier` 內擴充，勿另起入口**。`RoundByKind` 亦在此加 `refCode` 參數。
+- **`CompanyInfo` MessagePack 編號已保留**：core 只用了 `[Key(4)] NumberFormats`（型別 `CompanyNumberFormats`，屬性名 `NumberFormats` 非 `CompanyNumberFormats`）。`[Key(5)] DefaultCurrency` / `[Key(6)] CompanyCashRounding` / `[Key(7)] CompanyAllowedCurrencies` 依 §1.5 編號接續（尾端加 key 相容）。
+- **新增 `_xml`（Text）欄一律 NOT NULL、補齊所有 hand-written INSERT 帶 `''`**：`default_currency`（String）走 NOT NULL 預設空字串；`cash_rounding_xml`/`allowed_currencies_xml`（Text）NOT NULL——MySQL TEXT 不能 DEFAULT，故 `SharedDatabaseState` seed 與各測試 helper 的 st_company INSERT 都要把新欄列進去（見 [database-dialect-differences.md](../database-dialect-differences.md) §3.2）。**別為了過 MySQL 改 nullable**。core 已把 st_company 的 hand-written INSERT 補齊 `number_formats_xml`，照同一批位置加即可。
+- **`IDefineStorage` 雙模式新 define 的接點清單**（`CurrencySettings`）：`DefineType` 加成員、`IDefineStorage` File+Db 各實作 `Get/SaveCurrencySettings`、`ICacheContainer` 加 `CurrencySettingsCache`（仿 `ProgramSettingsCache`：File→檔案監控、Db→`st_cache_notify`）、`PathOptions.GetCurrencySettingsFilePath()`、`LocalDefineAccess` 對應方法、`Defaults/` scaffold。可參 `bee-add-cache-object` skill。
+- **交付 bake 分工已定**：`NumberFormatApplier.Bake` 對 `Company`/`SystemFixed` 於交付時 bake；`Currency`/`Unit` **不 bake**（runtime 決定），只標記參照欄名。multicurrency 的 UI runtime 解析走 §3.2。
+- **Grid 逐格格式化**：core 的 `CellValueFormatter` + `GridControl.FormatCell` 目前吃欄級固定 `NumberFormat`。multicurrency 需把 `FormatCell` 擴為帶 `NumberKind + CurrencyField + Resolver` 的逐格解析（§3.2c），`NumericEdit` 亦需 runtime 幣別重算。
+- **驗證環境雷（core 已踩）**：本機持久 DB 容器以 `ALTER ADD` 加欄會強制 nullable，**遮蔽** CI fresh-CREATE 的 NOT NULL 行為；要驗 MySQL NOT NULL 需 `docker exec mysql8 ... ALTER TABLE common.st_company MODIFY <col> LONGTEXT NOT NULL` 重現。桌面環境走「直接改 main + 本機 build/test 通過再 push」，CI 仍會複驗。
+
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 定義：`CurrencySettings`(define)、`FormSchema.CurrencyField` + `FormField.CurrencyField`、`CompanyInfo` 本幣/現金捨入/可用幣別 | 📝 待做 |
