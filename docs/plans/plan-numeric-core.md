@@ -8,8 +8,10 @@
 | 階段 | 範圍 | 狀態 |
 |------|------|------|
 | 1 | 定義模型：`NumberKind`/`RoundingPolicy`/`NumberKindProfile`、`CompanyNumberFormats`、`FormField`/`LayoutFieldBase` 帶 `NumberKind` | ✅ 已完成（2026-07-01） |
-| 2 | 邏輯：交付時依公司 bake 顯示格式；BO round-then-sum（捨到公司/框架位數） | 📝 待做 |
+| 2 | 邏輯：交付時依公司 bake 顯示格式；BO round-then-sum（捨到公司/框架位數） | ✅ 已完成（2026-07-01） |
 | 3 | UI（Avalonia）：`NumericEdit` + 基礎 Grid 格式化 + DemoCenter 範例 | 📝 待做 |
+
+> **階段 2 落地note（2026-07-01）**：`NumberFormatResolver`（Bee.Definition）= `ResolveDecimals`/`ResolveFormat`/`RoundByKind`（Round=AwayFromZero、Preserve 原值、SystemFixed 忽略公司覆寫、Company/Currency/Unit 退 company/框架）。`NumberFormatApplier.Bake(FormSchema, CompanyInfo?)`（Bee.Definition.Forms）在 `SystemBusinessObject.LoadAndLocalizeSchema` 的 clone 上 bake `FormField.NumberFormat`（explicit 優先、None 略過、不 mutate 快取；`HasNumericField` 保留 anonymous 非數值 schema 免 clone 的最佳化）。cookbook 增「Numeric Semantics, Company Decimals, and Rounding」節。Definition 778 測試全綠；GetFormSchema/GetFormLayout round-trip 無回歸（EnterCompany 失敗為既有無-docker 環境性）。
 
 > **階段 1 落地note（2026-07-01）**：`CompanyInfo` 屬性命名為 `NumberFormats`（型別 `CompanyNumberFormats`），非總覽字面的 `CompanyNumberFormats`（避免 `company.CompanyNumberFormats` stutter）；對外 API 是 `company.GetDecimals(NumberKind)`。MessagePack 須在 `MessagePackCodec.Options` 顯式註冊 `CollectionBaseFormatter<CompanyNumberFormats, NumberFormatItem>`（ContractlessStandardResolver 排在動態 `FormatterResolver` 前，否則集合沉默出空——已驗證並修）。build + Definition(759)/Api.Core 非 DB 測試全綠；CompanyRepository 的 5-DB number_formats round-trip 為 `[DbFact]`，本機無 docker 自動 skip、待 CI 驗。
 

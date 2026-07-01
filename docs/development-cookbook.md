@@ -362,6 +362,35 @@ var filter = new FilterGroup(LogicalOperator.And)
 
 Available comparison operators: `Equal`, `Like`, `Contains`, `StartsWith`, `Between`, `In`, `GreaterThan`, `LessThan`, etc.
 
+## Numeric Semantics, Company Decimals, and Rounding
+
+Numeric fields declare a semantic **`NumberKind`** on `FormField` (propagated to `LayoutFieldBase`). The kind drives three things — the display format, whether the value is rounded on write, and where the decimal places come from. The members and framework defaults are the signed-off contract in [plan-numeric-core.md](plans/plan-numeric-core.md).
+
+| `NumberKind` | Rounding policy | Decimals source | Framework default | Use |
+|-------------|-----------------|-----------------|:-----------------:|-----|
+| `Quantity` / `Weight` | `Round` | `Unit` (falls back to company) | 0 / 3 | quantities, weights |
+| `Amount` | `Round` | `Currency` (falls back to company) | 2 | amounts, tax, totals |
+| `Percent` | `Round` | `Company` | 2 | percentages |
+| `UnitPrice` / `Cost` | `Preserve` | `Company` (display-only) | 4 | prices, costs |
+| `ExchangeRate` | `Preserve` | `SystemFixed` | 5 | exchange rates |
+
+> The core increment ships without currency/unit settings, so `Currency` and `Unit` sources fall back to the company override table (else the framework default). The multi-currency and unit-of-measure increments replace those fallbacks with real reference-field resolution — the enum and the table above do not change.
+
+### Two rules that are easy to get wrong
+
+- **Round-then-sum (ERP invariant).** For `Round` kinds, a total must equal the **sum of already-rounded details**, never a full-precision sum rounded once at the end. Round each detail with `NumberFormatResolver.RoundByKind(value, kind, company)`, then add the rounded values. This guarantees `Σ details == total`.
+- **Preserve never writes a rounded value.** `UnitPrice` / `Cost` / `ExchangeRate` are stored at input precision; their decimals are display-only. `RoundByKind` returns these values unchanged. Rounding a source value injects error downstream — do not do it. (For API import, the only hard boundary is DB scale; see the persistence-boundary note in [plan-numeric-formatting.md](plans/plan-numeric-formatting.md) §2.4.)
+
+### Display format is baked at delivery
+
+`SystemBusinessObject.LoadAndLocalizeSchema` clones the cached `FormSchema` and calls `NumberFormatApplier.Bake(clone, company)`, which sets `FormField.NumberFormat` (e.g. `"N2"`, `"P4"`, `"N5"`) on every `NumberKind` field that has no explicit format. An author-supplied `NumberFormat` always wins. The cached schema is never mutated — baking runs on the per-call clone only (see the immutability note on that method).
+
+Because the format is resolved from the session company's decimals, the same schema delivered to two companies can carry different formats (e.g. `Percent` at `P2` vs `P4`). `SystemFixed` kinds (`ExchangeRate`) ignore any company override and always use the framework default.
+
+### DB storage precision is a capacity ceiling, not a display/calc setting
+
+Numeric columns use `Decimal` with a single framework-wide high scale (e.g. `Scale=8`), independent of any company or currency decimals — so there is no per-company/per-currency `ALTER`. The display decimals (`NumberFormat`) and the calculation decimals (`RoundByKind`) are orthogonal to the DB scale; the scale only bounds how much precision the column can hold.
+
 ## Cross-Process Cache Invalidation
 
 In-process caches (`Bee.ObjectCaching`) are evicted immediately on the writing process (`SaveX → Remove()`). To propagate an invalidation to **other processes / nodes** — required for multi-node deployments and for caches backed by the database (e.g. `CompanyInfo`, or definitions under `DbDefineStorage`) — use the database-backed notification mechanism. Design rationale is in [ADR-017](adr/adr-017-db-cache-invalidation.md); this section covers practical usage.

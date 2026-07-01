@@ -458,15 +458,35 @@ namespace Bee.Business.System
             var raw = DefineAccess.GetDefine(DefineType.FormSchema, new[] { progId }) as FormSchema
                 ?? throw new InvalidOperationException($"FormSchema '{progId}' not found.");
 
-            // Skip the clone + localize round-trip when the caller has no session lang
-            // (anonymous flows shouldn't be paying for a deep clone).
+            // Both localization and number-format baking mutate the schema, so both require a clone —
+            // the cached instance is process-shared and must not be touched. Skip the clone entirely
+            // when there is neither a session language nor a numeric field to bake (anonymous flows
+            // over a non-numeric schema shouldn't pay for a deep clone).
             string lang = GetCurrentLang();
-            if (string.IsNullOrWhiteSpace(lang))
+            bool hasLang = !string.IsNullOrWhiteSpace(lang);
+            bool needsBake = NumberFormatApplier.HasNumericField(raw);
+            if (!hasLang && !needsBake)
                 return raw;
 
             var clone = raw.Clone();
-            new FormSchemaLocalizer(LanguageService).Localize(clone, lang);
+            if (hasLang)
+                new FormSchemaLocalizer(LanguageService).Localize(clone, lang);
+            if (needsBake)
+                NumberFormatApplier.Bake(clone, TryGetCompanyInfo());
             return clone;
+        }
+
+        /// <summary>
+        /// Resolves the current session's <see cref="CompanyInfo"/>, or <c>null</c> when there is no
+        /// session or no company has been entered. Used to bake company-aware number formats; a
+        /// <c>null</c> company makes the applier fall back to framework default decimals.
+        /// </summary>
+        private CompanyInfo? TryGetCompanyInfo()
+        {
+            var session = SessionInfoService.Get(AccessToken);
+            if (session == null || string.IsNullOrEmpty(session.CompanyId))
+                return null;
+            return Services.GetRequiredService<ICompanyInfoService>().Get(session.CompanyId);
         }
 
         /// <summary>
