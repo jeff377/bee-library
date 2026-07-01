@@ -447,6 +447,7 @@ namespace Bee.Tests.Shared
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");
             string colDbId = dbType.QuoteIdentifier("company_database_id");
+            string colNumFmt = dbType.QuoteIdentifier("number_formats_xml");
             string colEnabled = dbType.QuoteIdentifier("enabled");
             string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
 
@@ -465,10 +466,13 @@ namespace Bee.Tests.Shared
             var companyDbId = TestDbConventions.GetDatabaseId(dbType, "company");
             // 各方言 boolean literal：SQL Server/SQLite/MySQL/Oracle 用 1，PG 用 TRUE。
             string enabledLiteral = dbType == DatabaseType.PostgreSQL ? "TRUE" : "1";
+            // number_formats_xml is a NOT NULL Text column with no company overrides here. MySQL TEXT
+            // columns cannot carry a DEFAULT, so every hand-written INSERT must supply the value
+            // explicitly (an empty string) rather than relying on a DB-side default.
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colEnabled}, {colInsTime}) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {enabledLiteral}, {now})",
-                newRowId, "C001", "測試公司", companyDbId);
+                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colNumFmt}, {colEnabled}, {colInsTime}) " +
+                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {enabledLiteral}, {now})",
+                newRowId, "C001", "測試公司", companyDbId, string.Empty);
             dbAccess.Execute(insert);
             Console.WriteLine($"SharedDatabaseState: {databaseId} seed company 'C001' inserted (rowid={newRowId})");
             return newRowId;

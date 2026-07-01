@@ -104,6 +104,7 @@ namespace Bee.Repository.UnitTests
             string colId = dbType.QuoteIdentifier("sys_id");
             string colName = dbType.QuoteIdentifier("sys_name");
             string colDbId = dbType.QuoteIdentifier("company_database_id");
+            string colNumFmt = dbType.QuoteIdentifier("number_formats_xml");
             string colEnabled = dbType.QuoteIdentifier("enabled");
             string colInsTime = dbType.QuoteIdentifier("sys_insert_time");
             string nowExpr = dbType == DatabaseType.PostgreSQL || dbType == DatabaseType.SQLite ? "CURRENT_TIMESTAMP"
@@ -112,10 +113,12 @@ namespace Bee.Repository.UnitTests
                            : "SYSTIMESTAMP";
             string disabledLiteral = dbType == DatabaseType.PostgreSQL ? "FALSE" : "0";
 
+            // number_formats_xml is NOT NULL; MySQL TEXT columns can't carry a DEFAULT, so the value
+            // must be supplied explicitly (empty string) rather than relying on a DB-side default.
             var insert = new DbCommandSpec(DbCommandKind.NonQuery,
-                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colEnabled}, {colInsTime}) " +
-                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {disabledLiteral}, {nowExpr})",
-                Guid.NewGuid(), companyId, "停用測試公司", "common");
+                $"INSERT INTO {tbl} ({colRowId}, {colId}, {colName}, {colDbId}, {colNumFmt}, {colEnabled}, {colInsTime}) " +
+                $"VALUES ({{0}}, {{1}}, {{2}}, {{3}}, {{4}}, {disabledLiteral}, {nowExpr})",
+                Guid.NewGuid(), companyId, "停用測試公司", "common", string.Empty);
             dbAccess.Execute(insert);
 
             try
